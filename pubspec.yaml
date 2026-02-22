@@ -1,0 +1,30 @@
+name: dsa_heldenverwaltung
+description: "A DSA Hero Application"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.6.1
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  file_picker: ^8.1.4
+  path_provider: ^2.1.5
+  share_plus: ^10.1.2
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/catalogs/house_rules_v1.json
+
