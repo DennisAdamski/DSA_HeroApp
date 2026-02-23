@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
@@ -123,6 +124,14 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('nachteile').text = hero.nachteileText;
     _field('ap_total').text = hero.apTotal.toString();
     _field('ap_spent').text = hero.apSpent.toString();
+    _field('mu').text = hero.attributes.mu.toString();
+    _field('kl').text = hero.attributes.kl.toString();
+    _field('inn').text = hero.attributes.inn.toString();
+    _field('ch').text = hero.attributes.ch.toString();
+    _field('ff').text = hero.attributes.ff.toString();
+    _field('ge').text = hero.attributes.ge.toString();
+    _field('ko').text = hero.attributes.ko.toString();
+    _field('kk').text = hero.attributes.kk.toString();
   }
 
   int _readInt(
@@ -176,6 +185,16 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       nachteileText: _field('nachteile').text.trim(),
       apTotal: _readInt('ap_total', min: 0),
       apSpent: _readInt('ap_spent', min: 0),
+      attributes: hero.attributes.copyWith(
+        mu: _readInt('mu', min: 0, max: 99),
+        kl: _readInt('kl', min: 0, max: 99),
+        inn: _readInt('inn', min: 0, max: 99),
+        ch: _readInt('ch', min: 0, max: 99),
+        ff: _readInt('ff', min: 0, max: 99),
+        ge: _readInt('ge', min: 0, max: 99),
+        ko: _readInt('ko', min: 0, max: 99),
+        kk: _readInt('kk', min: 0, max: 99),
+      ),
     );
 
     await ref.read(heroActionsProvider).saveHero(updatedHero);
@@ -340,32 +359,109 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
           ),
         ],
         const SizedBox(height: 16),
-        Text('Abgeleitete Werte', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 8),
         derivedAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stackTrace) => Text('Fehler: $error'),
-          data: (derived) {
-            final entries = [
-              ('LeP Max', derived.maxLep),
-              ('Au Max', derived.maxAu),
-              ('AsP Max', derived.maxAsp),
-              ('KaP Max', derived.maxKap),
-              ('MR', derived.mr),
-              ('Ini-Basis', derived.iniBase),
-              ('GS', derived.gs),
-              ('Ausweichen', derived.ausweichen),
-            ];
-            return Column(
+          data: _buildCombinedStatsAndAttributesSection,
+        ),
+      ],
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  Widget _buildCombinedStatsAndAttributesSection(DerivedStats derived) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final derivedSection = _buildDerivedValuesSection(derived);
+        final attributesSection = _buildAttributesSection();
+        if (constraints.maxWidth >= 900) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: derivedSection),
+              const SizedBox(width: 16),
+              Expanded(child: attributesSection),
+            ],
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            attributesSection,
+            const SizedBox(height: 16),
+            derivedSection,
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDerivedValuesSection(DerivedStats derived) {
+    final entries = [
+      ('LeP Max', derived.maxLep),
+      ('Au Max', derived.maxAu),
+      ('AsP Max', derived.maxAsp),
+      ('KaP Max', derived.maxKap),
+      ('MR', derived.mr),
+      ('Ini-Basis', derived.iniBase),
+      ('GS', derived.gs),
+      ('Ausweichen', derived.ausweichen),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Abgeleitete Werte', style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 8),
+        ...entries.map(
+          (entry) => Card(
+            child: ListTile(
+              title: Text(entry.$1),
+              trailing: Text(
+                entry.$2.toString(),
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAttributesSection() {
+    final entries = [
+      ('MU', 'mu'),
+      ('KL', 'kl'),
+      ('IN', 'inn'),
+      ('CH', 'ch'),
+      ('FF', 'ff'),
+      ('GE', 'ge'),
+      ('KO', 'ko'),
+      ('KK', 'kk'),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Eigenschaften', style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 8),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isTwoColumn = constraints.maxWidth >= 260;
+            final fieldWidth = isTwoColumn
+                ? (constraints.maxWidth - 12) / 2
+                : constraints.maxWidth;
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
               children: entries
                   .map(
-                    (entry) => Card(
-                      child: ListTile(
-                        title: Text(entry.$1),
-                        trailing: Text(
-                          entry.$2.toString(),
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
+                    (entry) => SizedBox(
+                      width: fieldWidth,
+                      child: _buildInputField(
+                        label: entry.$1,
+                        keyName: entry.$2,
+                        keyboardType: TextInputType.number,
                       ),
                     ),
                   )
@@ -376,9 +472,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       ],
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 
   Widget _buildInputField({
     required String label,

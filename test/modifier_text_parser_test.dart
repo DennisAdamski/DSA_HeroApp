@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 
 void main() {
@@ -34,5 +36,39 @@ void main() {
     expect(parsed.unknownFragments, contains('ABC+2'));
     expect(parsed.unknownFragments, contains('invalid text'));
     expect(parsed.unknownFragments, contains('XYZ-4'));
+  });
+
+  test('computes effective attributes from all modifier text fields', () {
+    const hero = HeroSheet(
+      id: 'h-1',
+      name: 'Test',
+      level: 1,
+      attributes: Attributes(
+        mu: 10,
+        kl: 10,
+        inn: 10,
+        ch: 10,
+        ff: 10,
+        ge: 10,
+        ko: 10,
+        kk: 10,
+      ),
+      rasseModText: 'MU+1, KL-1',
+      kulturModText: 'IN+2',
+      professionModText: 'CH+3',
+      vorteileText: 'FF+4',
+      nachteileText: 'KO-2, KK+5',
+    );
+
+    final effective = computeEffectiveAttributes(hero);
+
+    expect(effective.mu, 11);
+    expect(effective.kl, 9);
+    expect(effective.inn, 12);
+    expect(effective.ch, 13);
+    expect(effective.ff, 14);
+    expect(effective.ge, 10);
+    expect(effective.ko, 8);
+    expect(effective.kk, 15);
   });
 }

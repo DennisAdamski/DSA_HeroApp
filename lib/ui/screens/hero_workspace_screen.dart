@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_basis_tab.dart';
@@ -20,7 +21,8 @@ class HeroWorkspaceScreen extends ConsumerStatefulWidget {
   final String heroId;
 
   @override
-  ConsumerState<HeroWorkspaceScreen> createState() => _HeroWorkspaceScreenState();
+  ConsumerState<HeroWorkspaceScreen> createState() =>
+      _HeroWorkspaceScreenState();
 }
 
 class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
@@ -40,8 +42,10 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     _overviewTabIndex: false,
     _basisTabIndex: false,
   };
-  final Map<int, WorkspaceAsyncAction> _discardByTab = <int, WorkspaceAsyncAction>{};
-  final Map<int, WorkspaceTabEditActions> _editActionsByTab = <int, WorkspaceTabEditActions>{};
+  final Map<int, WorkspaceAsyncAction> _discardByTab =
+      <int, WorkspaceAsyncAction>{};
+  final Map<int, WorkspaceTabEditActions> _editActionsByTab =
+      <int, WorkspaceTabEditActions>{};
 
   @override
   void initState() {
@@ -225,24 +229,21 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           children: [
             if (isEditing) ...[
               OutlinedButton(
-                onPressed:
-                    _runningEditAction || !canRunActions
+                onPressed: _runningEditAction || !canRunActions
                     ? null
                     : () => _runEditAction(actions.cancel),
                 child: const Text('Abbrechen'),
               ),
               const SizedBox(width: 12),
               FilledButton(
-                onPressed:
-                    _runningEditAction || !canRunActions
+                onPressed: _runningEditAction || !canRunActions
                     ? null
                     : () => _runEditAction(actions.save),
                 child: const Text('Speichern'),
               ),
             ] else
               FilledButton.icon(
-                onPressed:
-                    _runningEditAction || !canRunActions
+                onPressed: _runningEditAction || !canRunActions
                     ? null
                     : () => _runEditAction(actions.startEdit),
                 icon: const Icon(Icons.edit),
@@ -280,7 +281,8 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
 
   @override
   Widget build(BuildContext context) {
-    final heroes = ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
+    final heroes =
+        ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
 
     HeroSheet? hero;
     for (final item in heroes) {
@@ -373,7 +375,8 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
                   ),
                   HeroBasisTab(
                     heroId: widget.heroId,
-                    onDirtyChanged: (isDirty) => _updateDirty(_basisTabIndex, isDirty),
+                    onDirtyChanged: (isDirty) =>
+                        _updateDirty(_basisTabIndex, isDirty),
                     onEditingChanged: (isEditing) =>
                         _updateEditing(_basisTabIndex, isEditing),
                     onRegisterDiscard: (discardAction) =>
@@ -408,7 +411,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   ) async {
     try {
       await Future<void>.delayed(const Duration(milliseconds: 700));
-      final payload = await ref.read(heroActionsProvider).buildExportJson(hero.id);
+      final payload = await ref
+          .read(heroActionsProvider)
+          .buildExportJson(hero.id);
       final gateway = ref.read(heroTransferFileGatewayProvider);
       final outcome = await gateway.exportJson(
         fileNameBase: hero.name,
@@ -434,7 +439,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       }
       if (outcome.result.name == 'downloaded') {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Held exportiert und Download gestartet')),
+          const SnackBar(
+            content: Text('Held exportiert und Download gestartet'),
+          ),
         );
         return;
       }
@@ -562,15 +569,16 @@ class _CoreAttributesHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveAttributes = computeEffectiveAttributes(hero);
     final attrs = [
-      ('MU', hero.attributes.mu),
-      ('KL', hero.attributes.kl),
-      ('IN', hero.attributes.inn),
-      ('CH', hero.attributes.ch),
-      ('FF', hero.attributes.ff),
-      ('GE', hero.attributes.ge),
-      ('KO', hero.attributes.ko),
-      ('KK', hero.attributes.kk),
+      ('MU', effectiveAttributes.mu),
+      ('KL', effectiveAttributes.kl),
+      ('IN', effectiveAttributes.inn),
+      ('CH', effectiveAttributes.ch),
+      ('FF', effectiveAttributes.ff),
+      ('GE', effectiveAttributes.ge),
+      ('KO', effectiveAttributes.ko),
+      ('KK', effectiveAttributes.kk),
     ];
 
     return Container(
@@ -620,7 +628,8 @@ class _CatalogPlaceholderTab extends ConsumerWidget {
 
     return catalogAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Center(child: Text('Katalog-Fehler: $error')),
+      error: (error, stackTrace) =>
+          Center(child: Text('Katalog-Fehler: $error')),
       data: (catalog) {
         final count = switch (section) {
           _CatalogSection.talents => catalog.talents.length,

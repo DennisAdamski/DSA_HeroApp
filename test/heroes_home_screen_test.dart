@@ -14,13 +14,29 @@ void main() {
     id: 'demo',
     name: 'Rondra',
     level: 1,
-    attributes: const Attributes(mu: 14, kl: 12, inn: 13, ch: 11, ff: 10, ge: 12, ko: 14, kk: 13),
+    attributes: const Attributes(
+      mu: 14,
+      kl: 12,
+      inn: 13,
+      ch: 11,
+      ff: 10,
+      ge: 12,
+      ko: 14,
+      kk: 13,
+    ),
   );
 
   testWidgets('shows hero picker with create action', (tester) async {
     final repo = FakeRepository(
       heroes: [hero],
-      states: {'demo': const HeroState(currentLep: 10, currentAsp: 10, currentKap: 0, currentAu: 10)},
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
     );
 
     await tester.pumpWidget(
@@ -36,10 +52,74 @@ void main() {
     expect(find.text('Neuer Held'), findsOneWidget);
   });
 
-  testWidgets('opens hero workspace with tabs and read-only core attributes header', (tester) async {
+  testWidgets(
+    'opens hero workspace with tabs and read-only core attributes header',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [hero],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+          child: const MaterialApp(home: HeroesHomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Rondra'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Übersicht'), findsOneWidget);
+      expect(find.text('Basis'), findsOneWidget);
+      expect(find.text('Kampf'), findsOneWidget);
+      expect(find.text('MU: 14'), findsOneWidget);
+      expect(find.text('KO: 14'), findsOneWidget);
+    },
+  );
+
+  testWidgets('core attributes header applies text-based attribute modifiers', (
+    tester,
+  ) async {
+    final modifiedHero = HeroSheet(
+      id: 'modded',
+      name: 'Modheld',
+      level: 1,
+      attributes: const Attributes(
+        mu: 14,
+        kl: 12,
+        inn: 13,
+        ch: 11,
+        ff: 10,
+        ge: 12,
+        ko: 14,
+        kk: 13,
+      ),
+      rasseModText: 'MU+2',
+      kulturModText: 'KO-1',
+      professionModText: '',
+      vorteileText: '',
+      nachteileText: '',
+    );
+
     final repo = FakeRepository(
-      heroes: [hero],
-      states: {'demo': const HeroState(currentLep: 10, currentAsp: 10, currentKap: 0, currentAu: 10)},
+      heroes: [modifiedHero],
+      states: {
+        'modded': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
     );
 
     await tester.pumpWidget(
@@ -50,13 +130,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Rondra'));
+    await tester.tap(find.text('Modheld'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Übersicht'), findsOneWidget);
-    expect(find.text('Basis'), findsOneWidget);
-    expect(find.text('Kampf'), findsOneWidget);
-    expect(find.text('MU: 14'), findsOneWidget);
-    expect(find.text('KO: 14'), findsOneWidget);
+    expect(find.text('MU: 16'), findsOneWidget);
+    expect(find.text('KO: 13'), findsOneWidget);
   });
 }

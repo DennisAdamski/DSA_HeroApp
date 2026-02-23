@@ -121,6 +121,85 @@ void main() {
     expect(hero.level, 2);
   });
 
+  testWidgets('overview edit/save persists attribute changes', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo);
+
+    await tester.tap(find.text('Bearbeiten').first);
+    await tester.pumpAndSettle();
+
+    final verticalScrollable = find.byWidgetPredicate(
+      (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+    );
+    final muField = find.byKey(const ValueKey<String>('overview-field-mu'));
+    await tester.scrollUntilVisible(
+      muField,
+      240,
+      scrollable: verticalScrollable.first,
+    );
+    await tester.enterText(muField, '16');
+
+    await tester.tap(find.text('Speichern').first);
+    await tester.pumpAndSettle();
+
+    final heroes = await repo.listHeroes();
+    final hero = findHeroById(heroes, 'demo');
+    expect(hero, isNotNull);
+    expect(hero!.attributes.mu, 16);
+  });
+
+  testWidgets('overview clamps attribute values to 0..99', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo);
+
+    await tester.tap(find.text('Bearbeiten').first);
+    await tester.pumpAndSettle();
+
+    final verticalScrollable = find.byWidgetPredicate(
+      (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+    );
+    final muField = find.byKey(const ValueKey<String>('overview-field-mu'));
+    final klField = find.byKey(const ValueKey<String>('overview-field-kl'));
+    await tester.scrollUntilVisible(
+      muField,
+      240,
+      scrollable: verticalScrollable.first,
+    );
+    await tester.enterText(muField, '-5');
+    await tester.enterText(klField, '120');
+
+    await tester.tap(find.text('Speichern').first);
+    await tester.pumpAndSettle();
+
+    final heroes = await repo.listHeroes();
+    final hero = findHeroById(heroes, 'demo');
+    expect(hero, isNotNull);
+    expect(hero!.attributes.mu, 0);
+    expect(hero.attributes.kl, 99);
+  });
+
   testWidgets('overview cancel discards local changes', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
@@ -282,5 +361,64 @@ void main() {
     final nameNarrow = tester.getTopLeft(nameFinder).dy;
     final rasseNarrow = tester.getTopLeft(rasseFinder).dy;
     expect((nameNarrow - rasseNarrow).abs(), greaterThan(4));
+  });
+
+  testWidgets('overview shows attributes and derived in responsive section', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo, size: const Size(1200, 1400));
+
+    final verticalScrollable = find.byWidgetPredicate(
+      (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+    );
+    final attributesHeader = find.text('Eigenschaften');
+    final derivedHeader = find.text('Abgeleitete Werte');
+
+    await tester.scrollUntilVisible(
+      attributesHeader,
+      240,
+      scrollable: verticalScrollable.first,
+    );
+    await tester.scrollUntilVisible(
+      derivedHeader,
+      240,
+      scrollable: verticalScrollable.first,
+    );
+
+    final attributesWide = tester.getTopLeft(attributesHeader);
+    final derivedWide = tester.getTopLeft(derivedHeader);
+    expect((attributesWide.dy - derivedWide.dy).abs(), lessThan(24));
+    expect(attributesWide.dx, greaterThan(derivedWide.dx));
+
+    tester.view.physicalSize = const Size(390, 1400);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      attributesHeader,
+      240,
+      scrollable: verticalScrollable.first,
+    );
+    await tester.scrollUntilVisible(
+      derivedHeader,
+      240,
+      scrollable: verticalScrollable.first,
+    );
+
+    final attributesNarrow = tester.getTopLeft(attributesHeader);
+    final derivedNarrow = tester.getTopLeft(derivedHeader);
+    expect(attributesNarrow.dy, lessThan(derivedNarrow.dy));
+    expect((attributesNarrow.dx - derivedNarrow.dx).abs(), lessThan(24));
   });
 }

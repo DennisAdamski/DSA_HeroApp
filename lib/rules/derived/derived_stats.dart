@@ -1,4 +1,3 @@
-import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 
@@ -29,7 +28,9 @@ class DerivedStats {
 
 DerivedStats computeDerivedStats(HeroSheet sheet, HeroState state) {
   final parsed = parseModifierTextsForHero(sheet);
-  final effectiveSheet = sheet.copyWith(attributes: _applyAttributeModifiers(sheet.attributes, parsed.attributeMods));
+  final effectiveSheet = sheet.copyWith(
+    attributes: applyAttributeModifiers(sheet.attributes, parsed.attributeMods),
+  );
   final mods = sheet.persistentMods + parsed.statMods + state.tempMods;
 
   return DerivedStats(
@@ -41,18 +42,5 @@ DerivedStats computeDerivedStats(HeroSheet sheet, HeroState state) {
     iniBase: computeIniBase(effectiveSheet, mods),
     gs: computeGs(effectiveSheet, mods),
     ausweichen: computeAusweichen(effectiveSheet, mods),
-  );
-}
-
-Attributes _applyAttributeModifiers(Attributes base, AttributeModifierSums mods) {
-  return base.copyWith(
-    mu: base.mu + mods.mu,
-    kl: base.kl + mods.kl,
-    inn: base.inn + mods.inn,
-    ch: base.ch + mods.ch,
-    ff: base.ff + mods.ff,
-    ge: base.ge + mods.ge,
-    ko: base.ko + mods.ko,
-    kk: base.kk + mods.kk,
   );
 }

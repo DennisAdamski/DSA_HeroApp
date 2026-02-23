@@ -1,5 +1,6 @@
-﻿import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 
 class AttributeModifierSums {
   const AttributeModifierSums({
@@ -64,6 +65,27 @@ ModifierParseResult parseModifierTextsForHero(HeroSheet hero) {
     professionModText: hero.professionModText,
     vorteileText: hero.vorteileText,
     nachteileText: hero.nachteileText,
+  );
+}
+
+Attributes computeEffectiveAttributes(HeroSheet hero) {
+  final parsed = parseModifierTextsForHero(hero);
+  return applyAttributeModifiers(hero.attributes, parsed.attributeMods);
+}
+
+Attributes applyAttributeModifiers(
+  Attributes base,
+  AttributeModifierSums mods,
+) {
+  return base.copyWith(
+    mu: base.mu + mods.mu,
+    kl: base.kl + mods.kl,
+    inn: base.inn + mods.inn,
+    ch: base.ch + mods.ch,
+    ff: base.ff + mods.ff,
+    ge: base.ge + mods.ge,
+    ko: base.ko + mods.ko,
+    kk: base.kk + mods.kk,
   );
 }
 
@@ -136,16 +158,16 @@ ModifierParseResult parseModifierTexts({
 String _normalizeCode(String input) {
   final text = input.toUpperCase().replaceAll(RegExp(r'[^A-Z]'), '');
 
-  const aliases = {
-    'AE': 'ASP',
-    'LE': 'LEP',
-    'AW': 'AUSWEICHEN',
-  };
+  const aliases = {'AE': 'ASP', 'LE': 'LEP', 'AW': 'AUSWEICHEN'};
 
   return aliases[text] ?? text;
 }
 
-AttributeModifierSums? _applyAttributeCode(String code, int amount, AttributeModifierSums current) {
+AttributeModifierSums? _applyAttributeCode(
+  String code,
+  int amount,
+  AttributeModifierSums current,
+) {
   switch (code) {
     case 'MU':
       return current.copyWith(mu: current.mu + amount);

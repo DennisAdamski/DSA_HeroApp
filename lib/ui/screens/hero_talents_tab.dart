@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
@@ -15,7 +16,8 @@ class HeroTalentsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final heroes = ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
+    final heroes =
+        ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
     HeroSheet? hero;
     for (final item in heroes) {
       if (item.id == heroId) {
@@ -27,29 +29,43 @@ class HeroTalentsTab extends ConsumerWidget {
     if (hero == null) {
       return const Center(child: Text('Held nicht gefunden.'));
     }
+    final effectiveAttributes = computeEffectiveAttributes(hero);
 
     final catalogAsync = ref.watch(rulesCatalogProvider);
 
     return catalogAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Center(child: Text('Katalog-Fehler: $error')),
+      error: (error, stackTrace) =>
+          Center(child: Text('Katalog-Fehler: $error')),
       data: (catalog) {
         final grouped = _groupTalents(catalog.talents);
-        final types = grouped.keys.toList()..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+        final types = grouped.keys.toList()
+          ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
 
         return ListView.builder(
           padding: const EdgeInsets.all(12),
           itemCount: types.length,
           itemBuilder: (context, index) {
             final type = types[index];
-            final talents = grouped[type]!..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+            final talents = grouped[type]!
+              ..sort(
+                (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+              );
 
             return Card(
               margin: const EdgeInsets.only(bottom: 10),
               child: ExpansionTile(
                 title: Text(type),
                 subtitle: Text('${talents.length} Talente'),
-                children: talents.map((talent) => _TalentTile(hero: hero!, talent: talent)).toList(growable: false),
+                children: talents
+                    .map(
+                      (talent) => _TalentTile(
+                        hero: hero!,
+                        talent: talent,
+                        effectiveAttributes: effectiveAttributes,
+                      ),
+                    )
+                    .toList(growable: false),
               ),
             );
           },
@@ -61,7 +77,9 @@ class HeroTalentsTab extends ConsumerWidget {
   Map<String, List<TalentDef>> _groupTalents(List<TalentDef> talents) {
     final map = <String, List<TalentDef>>{};
     for (final talent in talents.where((entry) => entry.active)) {
-      final type = talent.type.isNotEmpty ? talent.type : (talent.group.isNotEmpty ? talent.group : 'Ohne Typ');
+      final type = talent.type.isNotEmpty
+          ? talent.type
+          : (talent.group.isNotEmpty ? talent.group : 'Ohne Typ');
       map.putIfAbsent(type, () => <TalentDef>[]).add(talent);
     }
     return map;
@@ -69,15 +87,23 @@ class HeroTalentsTab extends ConsumerWidget {
 }
 
 class _TalentTile extends ConsumerWidget {
-  const _TalentTile({required this.hero, required this.talent});
+  const _TalentTile({
+    required this.hero,
+    required this.talent,
+    required this.effectiveAttributes,
+  });
 
   final HeroSheet hero;
   final TalentDef talent;
+  final Attributes effectiveAttributes;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final entry = hero.talents[talent.id] ?? const HeroTalentEntry();
-    final attributeLabel = _buildAttributeLabel(hero.attributes, talent.attributes);
+    final attributeLabel = _buildAttributeLabel(
+      effectiveAttributes,
+      talent.attributes,
+    );
 
     return ListTile(
       title: Text(talent.name),
@@ -86,7 +112,7 @@ class _TalentTile extends ConsumerWidget {
         children: [
           if (attributeLabel.isNotEmpty) Text(attributeLabel),
           Text(
-            'Komplexitaet: ${_fallback(talent.steigerung)} | BE-Mod: ${_fallback(talent.be)} |',// eBE: ToDo Einführen mit Rüstungswerten',
+            'Komplexitaet: ${_fallback(talent.steigerung)} | BE-Mod: ${_fallback(talent.be)} |', // eBE: ToDo Einführen mit Rüstungswerten',
           ),
           Text(
             'Talentwert: ${entry.talentValue} | Modifikator: ${entry.modifier} | Berechnet: ${_calculateTalentwert(entry)}',
@@ -105,7 +131,10 @@ class _TalentTile extends ConsumerWidget {
     );
   }
 
-  String _buildAttributeLabel(Attributes attributes, List<String> attributeNames) {
+  String _buildAttributeLabel(
+    Attributes attributes,
+    List<String> attributeNames,
+  ) {
     final parts = <String>[];
     for (final name in attributeNames) {
       final value = _attributeValue(attributes, name);
@@ -164,7 +193,7 @@ class _TalentTile extends ConsumerWidget {
   }
 
   int _calculateTalentwert(HeroTalentEntry entry) {
-        return entry.talentValue + entry.modifier - entry.ebe.toInt();
+    return entry.talentValue + entry.modifier - entry.ebe.toInt();
   }
 
   String _fallback(String value) {
@@ -181,9 +210,15 @@ class _TalentTile extends ConsumerWidget {
     TalentDef talent,
     HeroTalentEntry current,
   ) async {
-    final twController = TextEditingController(text: current.talentValue.toString());
-    final modController = TextEditingController(text: current.modifier.toString());
-    final expController = TextEditingController(text: current.specialExperiences.toString());
+    final twController = TextEditingController(
+      text: current.talentValue.toString(),
+    );
+    final modController = TextEditingController(
+      text: current.modifier.toString(),
+    );
+    final expController = TextEditingController(
+      text: current.specialExperiences.toString(),
+    );
     final spezController = TextEditingController(text: current.specializations);
     final sfController = TextEditingController(text: current.specialAbilities);
 
@@ -209,15 +244,21 @@ class _TalentTile extends ConsumerWidget {
                 TextField(
                   controller: expController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Spezielle Erfahrungen'),
+                  decoration: const InputDecoration(
+                    labelText: 'Spezielle Erfahrungen',
+                  ),
                 ),
                 TextField(
                   controller: spezController,
-                  decoration: const InputDecoration(labelText: 'Spezialisierungen'),
+                  decoration: const InputDecoration(
+                    labelText: 'Spezialisierungen',
+                  ),
                 ),
                 TextField(
                   controller: sfController,
-                  decoration: const InputDecoration(labelText: 'Sonderfertigkeiten'),
+                  decoration: const InputDecoration(
+                    labelText: 'Sonderfertigkeiten',
+                  ),
                 ),
               ],
             ),
@@ -229,7 +270,8 @@ class _TalentTile extends ConsumerWidget {
             ),
             FilledButton(
               onPressed: () {
-                int parseInt(TextEditingController c) => int.tryParse(c.text.trim()) ?? 0;
+                int parseInt(TextEditingController c) =>
+                    int.tryParse(c.text.trim()) ?? 0;
                 Navigator.of(context).pop(
                   HeroTalentEntry(
                     talentValue: parseInt(twController),
@@ -266,6 +308,8 @@ class _TalentTile extends ConsumerWidget {
     if (!context.mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${talent.name} gespeichert')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('${talent.name} gespeichert')));
   }
 }
