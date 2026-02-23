@@ -1,28 +1,290 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_basis_tab.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
-class HeroWorkspaceScreen extends ConsumerWidget {
+const int _overviewTabIndex = 0;
+const int _basisTabIndex = 1;
+
+class HeroWorkspaceScreen extends ConsumerStatefulWidget {
   const HeroWorkspaceScreen({super.key, required this.heroId});
 
   final String heroId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final heroes =
-        ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
+  ConsumerState<HeroWorkspaceScreen> createState() => _HeroWorkspaceScreenState();
+}
+
+class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  int _activeTabIndex = 0;
+  bool _handlingTabChange = false;
+  bool _revertingTabChange = false;
+  bool _runningEditAction = false;
+
+  final Map<int, bool> _dirtyByTab = <int, bool>{
+    _overviewTabIndex: false,
+    _basisTabIndex: false,
+  };
+  final Map<int, bool> _editingByTab = <int, bool>{
+    _overviewTabIndex: false,
+    _basisTabIndex: false,
+  };
+  final Map<int, WorkspaceAsyncAction> _discardByTab = <int, WorkspaceAsyncAction>{};
+  final Map<int, WorkspaceTabEditActions> _editActionsByTab = <int, WorkspaceTabEditActions>{};
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 7, vsync: this);
+    _tabController.addListener(_onTabControllerChanged);
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_onTabControllerChanged);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _onTabControllerChanged() {
+    if (_handlingTabChange || _revertingTabChange) {
+      return;
+    }
+    final nextIndex = _tabController.index;
+    if (nextIndex == _activeTabIndex) {
+      return;
+    }
+    _handleTabChangeAttempt(nextIndex);
+  }
+
+  Future<void> _handleTabChangeAttempt(int nextIndex) async {
+    if (_handlingTabChange) {
+      return;
+    }
+    _handlingTabChange = true;
+    final fromIndex = _activeTabIndex;
+    final mayLeave = await _confirmLeaveForTab(fromIndex);
+    if (!mounted) {
+      return;
+    }
+
+    if (mayLeave) {
+      setState(() {
+        _activeTabIndex = nextIndex;
+      });
+    } else {
+      _revertingTabChange = true;
+      _tabController.animateTo(fromIndex);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        _revertingTabChange = false;
+      });
+    }
+
+    _handlingTabChange = false;
+  }
+
+  Future<bool> _confirmLeaveForTab(int tabIndex) async {
+    final isDirty = _dirtyByTab[tabIndex] ?? false;
+    if (!isDirty) {
+      return true;
+    }
+
+    await Future<void>.delayed(const Duration(milliseconds: 150));
+    if (!mounted) {
+      return false;
+    }
+
+    final discard = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Ungespeicherte Änderungen verwerfen?'),
+          content: const Text(
+            'Wenn du fortfährst, gehen die ungespeicherten Änderungen '
+            'im aktuellen Tab verloren.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Nein'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Ja'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (discard != true) {
+      return false;
+    }
+
+    final discardAction = _discardByTab[tabIndex];
+    if (discardAction != null) {
+      await discardAction();
+    }
+
+    if (!mounted) {
+      return false;
+    }
+
+    setState(() {
+      _dirtyByTab[tabIndex] = false;
+    });
+    return true;
+  }
+
+  bool _isEditableTab(int tabIndex) {
+    return tabIndex == _overviewTabIndex || tabIndex == _basisTabIndex;
+  }
+
+  void _updateDirty(int tabIndex, bool isDirty) {
+    if ((_dirtyByTab[tabIndex] ?? false) == isDirty) {
+      return;
+    }
+    setState(() {
+      _dirtyByTab[tabIndex] = isDirty;
+    });
+  }
+
+  void _updateEditing(int tabIndex, bool isEditing) {
+    if ((_editingByTab[tabIndex] ?? false) == isEditing) {
+      return;
+    }
+    setState(() {
+      _editingByTab[tabIndex] = isEditing;
+    });
+  }
+
+  void _registerDiscard(int tabIndex, WorkspaceAsyncAction discardAction) {
+    _discardByTab[tabIndex] = discardAction;
+  }
+
+  void _registerEditActions(int tabIndex, WorkspaceTabEditActions actions) {
+    final wasMissing = !_editActionsByTab.containsKey(tabIndex);
+    _editActionsByTab[tabIndex] = actions;
+    if (wasMissing && _activeTabIndex == tabIndex) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _runEditAction(WorkspaceAsyncAction? action) async {
+    if (_runningEditAction || action == null) {
+      return;
+    }
+    setState(() {
+      _runningEditAction = true;
+    });
+    try {
+      await action();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _runningEditAction = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _navigateToHomeWithGuard() async {
+    final mayLeave = await _confirmLeaveForTab(_activeTabIndex);
+    if (!mounted || !mayLeave) {
+      return;
+    }
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const HeroesHomeScreen()),
+    );
+  }
+
+  Widget _buildGlobalActionHeader(BuildContext context) {
+    if (_isEditableTab(_activeTabIndex)) {
+      final isEditing = _editingByTab[_activeTabIndex] ?? false;
+      final actions = _editActionsByTab[_activeTabIndex];
+      final canRunActions = actions != null;
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            if (isEditing) ...[
+              OutlinedButton(
+                onPressed:
+                    _runningEditAction || !canRunActions
+                    ? null
+                    : () => _runEditAction(actions.cancel),
+                child: const Text('Abbrechen'),
+              ),
+              const SizedBox(width: 12),
+              FilledButton(
+                onPressed:
+                    _runningEditAction || !canRunActions
+                    ? null
+                    : () => _runEditAction(actions.save),
+                child: const Text('Speichern'),
+              ),
+            ] else
+              FilledButton.icon(
+                onPressed:
+                    _runningEditAction || !canRunActions
+                    ? null
+                    : () => _runEditAction(actions.startEdit),
+                icon: const Icon(Icons.edit),
+                label: const Text('Bearbeiten'),
+              ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: Row(
+        children: [
+          Tooltip(
+            message: 'In diesem Tab noch nicht verfügbar',
+            child: OutlinedButton.icon(
+              onPressed: null,
+              icon: const Icon(Icons.edit),
+              label: const Text('Bearbeiten'),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'In diesem Tab noch nicht verfügbar',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final heroes = ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
 
     HeroSheet? hero;
     for (final item in heroes) {
-      if (item.id == heroId) {
+      if (item.id == widget.heroId) {
         hero = item;
         break;
       }
@@ -35,19 +297,20 @@ class HeroWorkspaceScreen extends ConsumerWidget {
       );
     }
 
-    return DefaultTabController(
-      length: 7,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _navigateToHomeWithGuard();
+        }
+      },
       child: Scaffold(
         appBar: AppBar(
           title: Text(hero.name),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             tooltip: 'Heldenauswahl',
-            onPressed: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const HeroesHomeScreen()),
-              );
-            },
+            onPressed: _navigateToHomeWithGuard,
           ),
           actions: [
             IconButton(
@@ -63,7 +326,7 @@ class HeroWorkspaceScreen extends ConsumerWidget {
             IconButton(
               onPressed: () async {
                 final navigator = Navigator.of(context);
-                await ref.read(heroActionsProvider).deleteHero(heroId);
+                await ref.read(heroActionsProvider).deleteHero(widget.heroId);
                 if (!context.mounted) {
                   return;
                 }
@@ -75,10 +338,11 @@ class HeroWorkspaceScreen extends ConsumerWidget {
               tooltip: 'Held loeschen',
             ),
           ],
-          bottom: const TabBar(
+          bottom: TabBar(
+            controller: _tabController,
             isScrollable: true,
-            tabs: [
-              Tab(text: 'Uebersicht'),
+            tabs: const [
+              Tab(text: 'Übersicht'),
               Tab(text: 'Basis'),
               Tab(text: 'Kampf'),
               Tab(text: 'Magie'),
@@ -91,17 +355,38 @@ class HeroWorkspaceScreen extends ConsumerWidget {
         body: Column(
           children: [
             _CoreAttributesHeader(hero: hero),
+            _buildGlobalActionHeader(context),
             Expanded(
               child: TabBarView(
+                controller: _tabController,
                 children: [
-                  _OverviewTab(heroId: heroId, hero: hero),
-                  HeroBasisTab(heroId: heroId),
+                  HeroOverviewTab(
+                    heroId: widget.heroId,
+                    onDirtyChanged: (isDirty) =>
+                        _updateDirty(_overviewTabIndex, isDirty),
+                    onEditingChanged: (isEditing) =>
+                        _updateEditing(_overviewTabIndex, isEditing),
+                    onRegisterDiscard: (discardAction) =>
+                        _registerDiscard(_overviewTabIndex, discardAction),
+                    onRegisterEditActions: (actions) =>
+                        _registerEditActions(_overviewTabIndex, actions),
+                  ),
+                  HeroBasisTab(
+                    heroId: widget.heroId,
+                    onDirtyChanged: (isDirty) => _updateDirty(_basisTabIndex, isDirty),
+                    onEditingChanged: (isEditing) =>
+                        _updateEditing(_basisTabIndex, isEditing),
+                    onRegisterDiscard: (discardAction) =>
+                        _registerDiscard(_basisTabIndex, discardAction),
+                    onRegisterEditActions: (actions) =>
+                        _registerEditActions(_basisTabIndex, actions),
+                  ),
                   const _PlaceholderTab(title: 'Kampf'),
                   const _CatalogPlaceholderTab(
                     title: 'Magie',
                     section: _CatalogSection.spells,
                   ),
-                  HeroTalentsTab(heroId: heroId),
+                  HeroTalentsTab(heroId: widget.heroId),
                   const _CatalogPlaceholderTab(
                     title: 'Inventar',
                     section: _CatalogSection.weapons,
@@ -123,9 +408,7 @@ class HeroWorkspaceScreen extends ConsumerWidget {
   ) async {
     try {
       await Future<void>.delayed(const Duration(milliseconds: 700));
-      final payload = await ref
-          .read(heroActionsProvider)
-          .buildExportJson(hero.id);
+      final payload = await ref.read(heroActionsProvider).buildExportJson(hero.id);
       final gateway = ref.read(heroTransferFileGatewayProvider);
       final outcome = await gateway.exportJson(
         fileNameBase: hero.name,
@@ -151,9 +434,7 @@ class HeroWorkspaceScreen extends ConsumerWidget {
       }
       if (outcome.result.name == 'downloaded') {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Held exportiert und Download gestartet'),
-          ),
+          const SnackBar(content: Text('Held exportiert und Download gestartet')),
         );
         return;
       }
@@ -308,226 +589,7 @@ class _CoreAttributesHeader extends StatelessWidget {
                 visualDensity: VisualDensity.compact,
               ),
             )
-            .toList(),
-      ),
-    );
-  }
-}
-
-class _OverviewTab extends ConsumerWidget {
-  const _OverviewTab({required this.heroId, required this.hero});
-
-  final String heroId;
-  final HeroSheet hero;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final derivedAsync = ref.watch(derivedStatsProvider(heroId));
-
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text(
-          'Basisinformationen',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 8),
-        _summaryRow('Name', hero.name),
-        _summaryRow('Rasse', hero.rasse),
-        _summaryRow('Rasse Modifikatoren', hero.rasseModText),
-        _summaryRow('Kultur', hero.kultur),
-        _summaryRow('Kultur Modifikatoren', hero.kulturModText),
-        _summaryRow('Profession', hero.profession),
-        _summaryRow('Profession Modifikatoren', hero.professionModText),
-        _summaryRow('Geschlecht', hero.geschlecht),
-        _summaryRow('Alter', hero.alter),
-        _summaryRow('Groesse', hero.groesse),
-        _summaryRow('Gewicht', hero.gewicht),
-        _summaryRow('Haarfarbe', hero.haarfarbe),
-        _summaryRow('Augenfarbe', hero.augenfarbe),
-        _summaryRow('Aussehen', hero.aussehen),
-        _summaryRow('Stand', hero.stand),
-        _summaryRow('Titel', hero.titel),
-        _summaryRow(
-          'Familie/Herkunft/Hintergrund',
-          hero.familieHerkunftHintergrund,
-        ),
-        _summaryRow('Sozialstatus', hero.sozialstatus.toString()),
-        _summaryRow('Vorteile', hero.vorteileText),
-        _summaryRow('Nachteile', hero.nachteileText),
-        _summaryRow('AP Gesamt', hero.apTotal.toString()),
-        _summaryRow('AP Ausgegeben', hero.apSpent.toString()),
-        _summaryRow('AP Verfuegbar', hero.apAvailable.toString()),
-        _summaryRow('Level', hero.level.toString()),
-        const SizedBox(height: 12),
-        FilledButton.icon(
-          onPressed: () => _editAttributes(context, ref),
-          icon: const Icon(Icons.edit),
-          label: const Text('Eigenschaften bearbeiten'),
-        ),
-        if (hero.unknownModifierFragments.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          Text(
-            'Parser-Warnungen',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: hero.unknownModifierFragments
-                .map((entry) => Chip(label: Text(entry)))
-                .toList(),
-          ),
-        ],
-        const SizedBox(height: 16),
-        Text(
-          'Abgeleitete Werte',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 8),
-        derivedAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stackTrace) => Text('Fehler: $error'),
-          data: (derived) {
-            final entries = [
-              ('LeP Max', derived.maxLep),
-              ('Au Max', derived.maxAu),
-              ('AsP Max', derived.maxAsp),
-              ('KaP Max', derived.maxKap),
-              ('MR', derived.mr),
-              ('Ini-Basis', derived.iniBase),
-              ('GS', derived.gs),
-              ('Ausweichen', derived.ausweichen),
-            ];
-            return Column(
-              children: entries
-                  .map(
-                    (entry) => Card(
-                      child: ListTile(
-                        title: Text(entry.$1),
-                        trailing: Text(
-                          entry.$2.toString(),
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList(),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _summaryRow(String label, String value) {
-    final shown = value.trim().isEmpty ? '-' : value.trim();
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(width: 220, child: Text('$label:')),
-          Expanded(child: Text(shown)),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _editAttributes(BuildContext context, WidgetRef ref) async {
-    final mu = TextEditingController(text: hero.attributes.mu.toString());
-    final kl = TextEditingController(text: hero.attributes.kl.toString());
-    final inn = TextEditingController(text: hero.attributes.inn.toString());
-    final ch = TextEditingController(text: hero.attributes.ch.toString());
-    final ff = TextEditingController(text: hero.attributes.ff.toString());
-    final ge = TextEditingController(text: hero.attributes.ge.toString());
-    final ko = TextEditingController(text: hero.attributes.ko.toString());
-    final kk = TextEditingController(text: hero.attributes.kk.toString());
-
-    int parseInRange(TextEditingController c) {
-      final value = int.tryParse(c.text.trim()) ?? 8;
-      if (value < 1) {
-        return 1;
-      }
-      if (value > 30) {
-        return 30;
-      }
-      return value;
-    }
-
-    final saved = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Eigenschaften bearbeiten'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _attrField('MU', mu),
-                _attrField('KL', kl),
-                _attrField('IN', inn),
-                _attrField('CH', ch),
-                _attrField('FF', ff),
-                _attrField('GE', ge),
-                _attrField('KO', ko),
-                _attrField('KK', kk),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Abbrechen'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Speichern'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (saved == true) {
-      final updated = hero.copyWith(
-        attributes: Attributes(
-          mu: parseInRange(mu),
-          kl: parseInRange(kl),
-          inn: parseInRange(inn),
-          ch: parseInRange(ch),
-          ff: parseInRange(ff),
-          ge: parseInRange(ge),
-          ko: parseInRange(ko),
-          kk: parseInRange(kk),
-        ),
-      );
-      await ref.read(heroActionsProvider).saveHero(updated);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Eigenschaften gespeichert')),
-        );
-      }
-    }
-
-    mu.dispose();
-    kl.dispose();
-    inn.dispose();
-    ch.dispose();
-    ff.dispose();
-    ge.dispose();
-    ko.dispose();
-    kk.dispose();
-  }
-
-  Widget _attrField(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: TextField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(labelText: label),
+            .toList(growable: false),
       ),
     );
   }
@@ -558,8 +620,7 @@ class _CatalogPlaceholderTab extends ConsumerWidget {
 
     return catalogAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) =>
-          Center(child: Text('Katalog-Fehler: $error')),
+      error: (error, stackTrace) => Center(child: Text('Katalog-Fehler: $error')),
       data: (catalog) {
         final count = switch (section) {
           _CatalogSection.talents => catalog.talents.length,

@@ -53,7 +53,7 @@ void main() {
     await tester.tap(find.text('Rondra'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Uebersicht'), findsOneWidget);
+    expect(find.text('Übersicht'), findsOneWidget);
     expect(find.text('Basis'), findsOneWidget);
     expect(find.text('Kampf'), findsOneWidget);
     expect(find.text('MU: 14'), findsOneWidget);

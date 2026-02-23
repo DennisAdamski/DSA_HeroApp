@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -10,28 +9,55 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 class HeroBasisTab extends ConsumerStatefulWidget {
-  const HeroBasisTab({super.key, required this.heroId});
+  const HeroBasisTab({
+    super.key,
+    required this.heroId,
+    required this.onDirtyChanged,
+    required this.onEditingChanged,
+    required this.onRegisterDiscard,
+    required this.onRegisterEditActions,
+  });
 
   final String heroId;
+  final void Function(bool isDirty) onDirtyChanged;
+  final void Function(bool isEditing) onEditingChanged;
+  final void Function(WorkspaceAsyncAction discardAction) onRegisterDiscard;
+  final void Function(WorkspaceTabEditActions actions) onRegisterEditActions;
 
   @override
   ConsumerState<HeroBasisTab> createState() => _HeroBasisTabState();
 }
 
-class _HeroBasisTabState extends ConsumerState<HeroBasisTab> {
+class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
+    with AutomaticKeepAliveClientMixin {
   final _nameController = TextEditingController();
   final _levelController = TextEditingController();
   final _apAvailableController = TextEditingController();
-  final Map<String, TextEditingController> _controllers = {};
+  final Map<String, TextEditingController> _controllers = <String, TextEditingController>{};
 
-  Timer? _autosaveTimer;
+  bool _isEditing = false;
+  bool _isDirty = false;
   String _lastSyncedSignature = '';
+
+  HeroSheet? _latestHero;
+  HeroState? _latestState;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _registerWithParent();
+    });
+  }
 
   @override
   void dispose() {
-    _autosaveTimer?.cancel();
     _nameController.dispose();
     _levelController.dispose();
     _apAvailableController.dispose();
@@ -41,16 +67,52 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab> {
     super.dispose();
   }
 
+  void _registerWithParent() {
+    widget.onDirtyChanged(_isDirty);
+    widget.onEditingChanged(_isEditing);
+    widget.onRegisterDiscard(_discardChanges);
+    widget.onRegisterEditActions(
+      WorkspaceTabEditActions(
+        startEdit: _startEdit,
+        save: _saveFromParentAction,
+        cancel: _cancelFromParentAction,
+      ),
+    );
+  }
+
+  void _setDirty(bool value) {
+    if (_isDirty == value) {
+      return;
+    }
+    setState(() {
+      _isDirty = value;
+    });
+    widget.onDirtyChanged(value);
+  }
+
+  void _setEditing(bool value) {
+    if (_isEditing == value) {
+      return;
+    }
+    setState(() {
+      _isEditing = value;
+    });
+    widget.onEditingChanged(value);
+  }
+
   TextEditingController _field(String key) {
     return _controllers.putIfAbsent(key, () => TextEditingController());
   }
 
-  void _syncControllers(HeroSheet hero, HeroState state) {
+  void _syncControllers(HeroSheet hero, HeroState state, {bool force = false}) {
+    if (_isEditing && !force) {
+      return;
+    }
     final signature = jsonEncode({
       'hero': hero.toJson(),
       'state': state.toJson(),
     });
-    if (_lastSyncedSignature == signature) {
+    if (!force && _lastSyncedSignature == signature) {
       return;
     }
     _lastSyncedSignature = signature;
@@ -116,21 +178,46 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab> {
     return parsed;
   }
 
-  void _scheduleAutosave(HeroSheet hero) {
-    _autosaveTimer?.cancel();
-    _autosaveTimer = Timer(const Duration(milliseconds: 600), () {
-      if (!mounted) {
-        return;
-      }
-      _save(hero, showSnack: false);
-    });
+  Future<void> _startEdit() async {
+    _setEditing(true);
+    _setDirty(false);
+  }
+
+  Future<void> _saveFromParentAction() async {
+    final hero = _latestHero;
+    if (hero == null) {
+      return;
+    }
+    await _save(hero, showSnack: true);
+    if (!mounted) {
+      return;
+    }
+    _setEditing(false);
+    _setDirty(false);
+  }
+
+  Future<void> _cancelFromParentAction() async {
+    await _discardChanges();
+  }
+
+  Future<void> _discardChanges() async {
+    final hero = _latestHero;
+    final state = _latestState;
+    if (hero != null && state != null) {
+      _lastSyncedSignature = '';
+      _syncControllers(hero, state, force: true);
+    }
+    _setEditing(false);
+    _setDirty(false);
   }
 
   Future<void> _save(HeroSheet hero, {bool showSnack = true}) async {
     final actions = ref.read(heroActionsProvider);
 
     final updatedHero = hero.copyWith(
-      name: _nameController.text.trim().isEmpty ? 'Unbenannter Held' : _nameController.text.trim(),
+      name: _nameController.text.trim().isEmpty
+          ? 'Unbenannter Held'
+          : _nameController.text.trim(),
       rasse: _field('rasse').text.trim(),
       rasseModText: _field('rasse_mod').text.trim(),
       kultur: _field('kultur').text.trim(),
@@ -185,12 +272,21 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab> {
     if (!mounted || !showSnack) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Basisdaten gespeichert')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Basisdaten gespeichert')));
+  }
+
+  void _onEditableFieldChanged(String _) {
+    if (_isEditing) {
+      _setDirty(true);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final heroes = ref.watch(heroListProvider).valueOrNull ?? const [];
+    super.build(context);
+    final heroes = ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
     HeroSheet? hero;
     for (final item in heroes) {
       if (item.id == widget.heroId) {
@@ -209,6 +305,8 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab> {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) => Center(child: Text('Fehler: $error')),
       data: (state) {
+        _latestHero = hero;
+        _latestState = state;
         _syncControllers(hero!, state);
         final derived = computeDerivedStats(hero, state);
 
@@ -219,32 +317,38 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab> {
             const SizedBox(height: 8),
             TextField(
               controller: _nameController,
+              readOnly: !_isEditing,
               decoration: const InputDecoration(labelText: 'Name'),
-              onChanged: (_) => _scheduleAutosave(hero!),
+              onChanged: _isEditing ? _onEditableFieldChanged : null,
             ),
             const SizedBox(height: 12),
-            _tripleTextFields(hero, 'Rasse', 'rasse', 'Modifikatoren', 'rasse_mod'),
-            _tripleTextFields(hero, 'Kultur', 'kultur', 'Modifikatoren', 'kultur_mod'),
-            _tripleTextFields(hero, 'Profession', 'profession', 'Modifikatoren', 'profession_mod'),
+            _tripleTextFields('Rasse', 'rasse', 'Modifikatoren', 'rasse_mod'),
+            _tripleTextFields('Kultur', 'kultur', 'Modifikatoren', 'kultur_mod'),
+            _tripleTextFields(
+              'Profession',
+              'profession',
+              'Modifikatoren',
+              'profession_mod',
+            ),
             const SizedBox(height: 12),
-            _textField(hero, 'Geschlecht', 'geschlecht'),
-            _textField(hero, 'Alter', 'alter'),
-            _textField(hero, 'Groesse', 'groesse'),
-            _textField(hero, 'Gewicht', 'gewicht'),
-            _textField(hero, 'Haarfarbe', 'haarfarbe'),
-            _textField(hero, 'Augenfarbe', 'augenfarbe'),
-            _textField(hero, 'Aussehen', 'aussehen', maxLines: 2),
-            _textField(hero, 'Stand', 'stand'),
-            _textField(hero, 'Titel', 'titel'),
-            _textField(hero, 'Familie, Herkunft und Hintergrund', 'familie', maxLines: 3),
-            _intField(hero, 'Sozialstatus', 'sozialstatus'),
-            _textField(hero, 'Vorteile', 'vorteile', maxLines: 4),
-            _textField(hero, 'Nachteile', 'nachteile', maxLines: 4),
+            _textField('Geschlecht', 'geschlecht'),
+            _textField('Alter', 'alter'),
+            _textField('Groesse', 'groesse'),
+            _textField('Gewicht', 'gewicht'),
+            _textField('Haarfarbe', 'haarfarbe'),
+            _textField('Augenfarbe', 'augenfarbe'),
+            _textField('Aussehen', 'aussehen', maxLines: 2),
+            _textField('Stand', 'stand'),
+            _textField('Titel', 'titel'),
+            _textField('Familie, Herkunft und Hintergrund', 'familie', maxLines: 3),
+            _intField('Sozialstatus', 'sozialstatus'),
+            _textField('Vorteile', 'vorteile', maxLines: 4),
+            _textField('Nachteile', 'nachteile', maxLines: 4),
             const SizedBox(height: 16),
             Text('AP und Level', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            _intField(hero, 'AP Gesamt', 'ap_total', min: 0),
-            _intField(hero, 'AP Ausgegeben', 'ap_spent', min: 0),
+            _intField('AP Gesamt', 'ap_total', min: 0),
+            _intField('AP Ausgegeben', 'ap_spent', min: 0),
             TextField(
               controller: _apAvailableController,
               readOnly: true,
@@ -262,21 +366,23 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab> {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: hero.unknownModifierFragments.map((entry) => Chip(label: Text(entry))).toList(),
+                children: hero.unknownModifierFragments
+                    .map((entry) => Chip(label: Text(entry)))
+                    .toList(growable: false),
               ),
               const SizedBox(height: 16),
             ],
             Text('Zugekaufte Werte', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            _numberGrid(hero, ['b_lep', 'b_au', 'b_asp', 'b_kap', 'b_mr']),
+            _numberGrid(['b_lep', 'b_au', 'b_asp', 'b_kap', 'b_mr']),
             const SizedBox(height: 16),
             Text('Modifikatoren', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            _numberGrid(hero, ['m_lep', 'm_au', 'm_asp', 'm_kap', 'm_mr', 'm_ini', 'm_gs', 'm_ausw']),
+            _numberGrid(['m_lep', 'm_au', 'm_asp', 'm_kap', 'm_mr', 'm_ini', 'm_gs', 'm_ausw']),
             const SizedBox(height: 16),
             Text('Aktuelle Ressourcen', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            _numberGrid(hero, ['cur_lep', 'cur_au', 'cur_asp', 'cur_kap']),
+            _numberGrid(['cur_lep', 'cur_au', 'cur_asp', 'cur_kap']),
             const SizedBox(height: 16),
             Text('Schnellansicht Berechnet', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
@@ -291,12 +397,6 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab> {
                 _statChip('Ini-Basis', derived.iniBase),
               ],
             ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: () => _save(hero!, showSnack: true),
-              icon: const Icon(Icons.save),
-              label: const Text('Speichern'),
-            ),
           ],
         );
       },
@@ -304,7 +404,6 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab> {
   }
 
   Widget _tripleTextFields(
-    HeroSheet hero,
     String firstLabel,
     String firstKey,
     String secondLabel,
@@ -312,28 +411,30 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab> {
   ) {
     return Row(
       children: [
-        Expanded(child: _textField(hero, firstLabel, firstKey)),
+        Expanded(child: _textField(firstLabel, firstKey)),
         const SizedBox(width: 12),
-        Expanded(child: _textField(hero, secondLabel, secondKey)),
+        Expanded(child: _textField(secondLabel, secondKey)),
       ],
     );
   }
 
-  Widget _textField(HeroSheet hero, String label, String key, {int maxLines = 1}) {
+  Widget _textField(String label, String key, {int maxLines = 1}) {
     return TextField(
       controller: _field(key),
+      readOnly: !_isEditing,
       decoration: InputDecoration(labelText: label),
       maxLines: maxLines,
-      onChanged: (_) => _scheduleAutosave(hero),
+      onChanged: _isEditing ? _onEditableFieldChanged : null,
     );
   }
 
-  Widget _intField(HeroSheet hero, String label, String key, {int min = -999999}) {
+  Widget _intField(String label, String key, {int min = -999999}) {
     return TextField(
       controller: _field(key),
+      readOnly: !_isEditing,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(labelText: label),
-      onChanged: (_) => _scheduleAutosave(hero),
+      onChanged: _isEditing ? _onEditableFieldChanged : null,
     );
   }
 
@@ -341,21 +442,24 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab> {
     return Chip(label: Text('$label: $value'));
   }
 
-  Widget _numberGrid(HeroSheet hero, List<String> keys) {
+  Widget _numberGrid(List<String> keys) {
     return Wrap(
       spacing: 12,
       runSpacing: 12,
-      children: keys.map((key) {
-        return SizedBox(
-          width: 150,
-          child: TextField(
-            controller: _field(key),
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: _labelForKey(key)),
-            onChanged: (_) => _scheduleAutosave(hero),
-          ),
-        );
-      }).toList(),
+      children: keys
+          .map((key) {
+            return SizedBox(
+              width: 150,
+              child: TextField(
+                controller: _field(key),
+                readOnly: !_isEditing,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: _labelForKey(key)),
+                onChanged: _isEditing ? _onEditableFieldChanged : null,
+              ),
+            );
+          })
+          .toList(growable: false),
     );
   }
 
@@ -381,4 +485,7 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab> {
     };
     return labels[key] ?? key;
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
