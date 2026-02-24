@@ -9,6 +9,13 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
+const double _pagePadding = 16;
+const double _sectionSpacing = 16;
+const double _fieldSpacing = 12;
+const double _gridSpacing = 12;
+const double _standardTwoColumnBreakpoint = 700;
+const double _largeTwoColumnBreakpoint = 900;
+
 class HeroOverviewTab extends ConsumerStatefulWidget {
   const HeroOverviewTab({
     super.key,
@@ -31,7 +38,8 @@ class HeroOverviewTab extends ConsumerStatefulWidget {
 
 class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     with AutomaticKeepAliveClientMixin {
-  final Map<String, TextEditingController> _controllers = <String, TextEditingController>{};
+  final Map<String, TextEditingController> _controllers =
+      <String, TextEditingController>{};
 
   late final WorkspaceTabEditController _editController;
   HeroSheet? _latestHero;
@@ -187,7 +195,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _editController.markSaved();
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Übersicht gespeichert')));
+    ).showSnackBar(const SnackBar(content: Text('Ãœbersicht gespeichert')));
   }
 
   Future<void> _cancelChanges() async {
@@ -222,120 +230,116 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     final derivedAsync = ref.watch(derivedStatsProvider(widget.heroId));
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(_pagePadding),
       children: [
-        Text('Basisinformationen', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 8),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isTwoColumn = constraints.maxWidth >= 700;
-            final fields = <_OverviewFieldSpec>[
-              const _OverviewFieldSpec(label: 'Name', key: 'name'),
-              const _OverviewFieldSpec(label: 'Rasse', key: 'rasse'),
-              const _OverviewFieldSpec(label: 'Rasse Modifikatoren', key: 'rasse_mod'),
-              const _OverviewFieldSpec(label: 'Kultur', key: 'kultur'),
-              const _OverviewFieldSpec(label: 'Kultur Modifikatoren', key: 'kultur_mod'),
-              const _OverviewFieldSpec(label: 'Profession', key: 'profession'),
-              const _OverviewFieldSpec(label: 'Profession Modifikatoren', key: 'profession_mod'),
-              const _OverviewFieldSpec(label: 'Geschlecht', key: 'geschlecht'),
-              const _OverviewFieldSpec(label: 'Alter', key: 'alter'),
-              const _OverviewFieldSpec(label: 'Groesse', key: 'groesse'),
-              const _OverviewFieldSpec(label: 'Gewicht', key: 'gewicht'),
-              const _OverviewFieldSpec(label: 'Haarfarbe', key: 'haarfarbe'),
-              const _OverviewFieldSpec(label: 'Augenfarbe', key: 'augenfarbe'),
-              const _OverviewFieldSpec(label: 'Aussehen', key: 'aussehen', maxLines: 2),
-              const _OverviewFieldSpec(label: 'Stand', key: 'stand'),
-              const _OverviewFieldSpec(label: 'Titel', key: 'titel'),
-              const _OverviewFieldSpec(
-                label: 'Familie/Herkunft/Hintergrund',
-                key: 'familie',
-                maxLines: 3,
-              ),
-              const _OverviewFieldSpec(
-                label: 'Sozialstatus',
-                key: 'sozialstatus',
-                keyboardType: TextInputType.number,
-              ),
-            ];
-
-            if (isTwoColumn) {
-              final itemWidth = (constraints.maxWidth - 12) / 2;
-              return Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: fields
-                    .map(
-                      (entry) => SizedBox(
-                        width: itemWidth,
-                        child: _buildInputField(
-                          label: entry.label,
-                          keyName: entry.key,
-                          maxLines: entry.maxLines,
-                          keyboardType: entry.keyboardType,
-                        ),
-                      ),
-                    )
-                    .toList(growable: false),
-              );
-            }
-
-            return Column(
-              children: fields
-                  .map(
-                    (entry) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _buildInputField(
-                        label: entry.label,
-                        keyName: entry.key,
-                        maxLines: entry.maxLines,
-                        keyboardType: entry.keyboardType,
-                      ),
-                    ),
-                  )
-                  .toList(growable: false),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        _buildInputField(label: 'Vorteile', keyName: 'vorteile', maxLines: 4),
-        const SizedBox(height: 12),
-        _buildInputField(label: 'Nachteile', keyName: 'nachteile', maxLines: 4),
-        const SizedBox(height: 16),
-        Text('AP und Level', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 8),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _buildApEditorCard('AP Gesamt', _field('ap_total')),
-              const SizedBox(width: 12),
-              _buildApEditorCard('AP Ausgegeben', _field('ap_spent')),
-              const SizedBox(width: 12),
-              _buildApValueCard('AP Verfügbar', hero.apAvailable.toString()),
-              const SizedBox(width: 12),
-              _buildApValueCard('Level', hero.level.toString()),
-            ],
-          ),
-        ),
+        _buildBaseInfoSection(),
+        const SizedBox(height: _sectionSpacing),
+        _buildAdvantagesSection(),
+        const SizedBox(height: _sectionSpacing),
+        _buildApSection(hero),
         if (hero.unknownModifierFragments.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          Text('Parser-Warnungen', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: hero.unknownModifierFragments
-                .map((entry) => Chip(label: Text(entry)))
-                .toList(growable: false),
-          ),
+          const SizedBox(height: _sectionSpacing),
+          _buildParserWarningsSection(hero),
         ],
-        const SizedBox(height: 16),
+        const SizedBox(height: _sectionSpacing),
         derivedAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stackTrace) => Text('Fehler: $error'),
           data: _buildCombinedStatsAndAttributesSection,
         ),
       ],
+    );
+  }
+
+  Widget _buildBaseInfoSection() {
+    final fields = <_OverviewFieldSpec>[
+      const _OverviewFieldSpec(label: 'Name', key: 'name'),
+      const _OverviewFieldSpec(label: 'Rasse', key: 'rasse'),
+      const _OverviewFieldSpec(label: 'Rasse Modifikatoren', key: 'rasse_mod'),
+      const _OverviewFieldSpec(label: 'Kultur', key: 'kultur'),
+      const _OverviewFieldSpec(label: 'Kultur Modifikatoren', key: 'kultur_mod'),
+      const _OverviewFieldSpec(label: 'Profession', key: 'profession'),
+      const _OverviewFieldSpec(
+        label: 'Profession Modifikatoren',
+        key: 'profession_mod',
+      ),
+      const _OverviewFieldSpec(label: 'Geschlecht', key: 'geschlecht'),
+      const _OverviewFieldSpec(label: 'Alter', key: 'alter'),
+      const _OverviewFieldSpec(label: 'Groesse', key: 'groesse'),
+      const _OverviewFieldSpec(label: 'Gewicht', key: 'gewicht'),
+      const _OverviewFieldSpec(label: 'Haarfarbe', key: 'haarfarbe'),
+      const _OverviewFieldSpec(label: 'Augenfarbe', key: 'augenfarbe'),
+      const _OverviewFieldSpec(label: 'Aussehen', key: 'aussehen', maxLines: 2),
+      const _OverviewFieldSpec(label: 'Stand', key: 'stand'),
+      const _OverviewFieldSpec(label: 'Titel', key: 'titel'),
+      const _OverviewFieldSpec(
+        label: 'Familie/Herkunft/Hintergrund',
+        key: 'familie',
+        maxLines: 3,
+      ),
+      const _OverviewFieldSpec(
+        label: 'Sozialstatus',
+        key: 'sozialstatus',
+        keyboardType: TextInputType.number,
+      ),
+    ];
+
+    return _SectionCard(
+      title: 'Basisinformationen',
+      child: _ResponsiveFieldGrid(
+        breakpoint: _standardTwoColumnBreakpoint,
+        children: fields
+            .map(
+              (entry) => _buildInputField(
+                label: entry.label,
+                keyName: entry.key,
+                maxLines: entry.maxLines,
+                keyboardType: entry.keyboardType,
+              ),
+            )
+            .toList(growable: false),
+      ),
+    );
+  }
+
+  Widget _buildAdvantagesSection() {
+    return _SectionCard(
+      title: 'Vorteile und Nachteile',
+      child: Column(
+        children: [
+          _buildInputField(label: 'Vorteile', keyName: 'vorteile', maxLines: 4),
+          const SizedBox(height: _fieldSpacing),
+          _buildInputField(label: 'Nachteile', keyName: 'nachteile', maxLines: 4),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildApSection(HeroSheet hero) {
+    return _SectionCard(
+      title: 'AP und Level',
+      child: _ResponsiveFieldGrid(
+        breakpoint: _standardTwoColumnBreakpoint,
+        children: [
+          _buildApEditorCard('AP Gesamt', _field('ap_total')),
+          _buildApEditorCard('AP Ausgegeben', _field('ap_spent')),
+          _buildApValueCard('AP VerfÃ¼gbar', hero.apAvailable.toString()),
+          _buildApValueCard('Level', hero.level.toString()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildParserWarningsSection(HeroSheet hero) {
+    return _SectionCard(
+      title: 'Parser-Warnungen',
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: hero.unknownModifierFragments
+            .map((entry) => Chip(label: Text(entry)))
+            .toList(growable: false),
+      ),
     );
   }
 
@@ -347,13 +351,13 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       builder: (context, constraints) {
         final derivedSection = _buildDerivedValuesSection(derived);
         final attributesSection = _buildAttributesSection();
-        if (constraints.maxWidth >= 900) {
+        if (constraints.maxWidth >= _largeTwoColumnBreakpoint) {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: derivedSection),
-              const SizedBox(width: 16),
               Expanded(child: attributesSection),
+              const SizedBox(width: _sectionSpacing),
+              Expanded(child: derivedSection),
             ],
           );
         }
@@ -361,7 +365,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             attributesSection,
-            const SizedBox(height: 16),
+            const SizedBox(height: _sectionSpacing),
             derivedSection,
           ],
         );
@@ -380,23 +384,24 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       ('GS', derived.gs),
       ('Ausweichen', derived.ausweichen),
     ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Abgeleitete Werte', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 8),
-        ...entries.map(
-          (entry) => Card(
-            child: ListTile(
-              title: Text(entry.$1),
-              trailing: Text(
-                entry.$2.toString(),
-                style: Theme.of(context).textTheme.titleLarge,
+    return _SectionCard(
+      title: 'Abgeleitete Werte',
+      child: Column(
+        children: entries
+            .map(
+              (entry) => Card(
+                margin: const EdgeInsets.only(bottom: _fieldSpacing),
+                child: ListTile(
+                  title: Text(entry.$1),
+                  trailing: Text(
+                    entry.$2.toString(),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
-      ],
+            )
+            .toList(growable: false),
+      ),
     );
   }
 
@@ -411,36 +416,20 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       ('KO', 'ko'),
       ('KK', 'kk'),
     ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Eigenschaften', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 8),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isTwoColumn = constraints.maxWidth >= 260;
-            final fieldWidth = isTwoColumn
-                ? (constraints.maxWidth - 12) / 2
-                : constraints.maxWidth;
-            return Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: entries
-                  .map(
-                    (entry) => SizedBox(
-                      width: fieldWidth,
-                      child: _buildInputField(
-                        label: entry.$1,
-                        keyName: entry.$2,
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                  )
-                  .toList(growable: false),
-            );
-          },
-        ),
-      ],
+    return _SectionCard(
+      title: 'Eigenschaften',
+      child: _ResponsiveFieldGrid(
+        breakpoint: _standardTwoColumnBreakpoint,
+        children: entries
+            .map(
+              (entry) => _buildInputField(
+                label: entry.$1,
+                keyName: entry.$2,
+                keyboardType: TextInputType.number,
+              ),
+            )
+            .toList(growable: false),
+      ),
     );
   }
 
@@ -456,56 +445,119 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       readOnly: !_editController.isEditing,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      decoration: InputDecoration(labelText: label),
+      decoration: _inputDecoration(label),
       onChanged: _editController.isEditing ? _onFieldChanged : null,
     );
   }
 
   Widget _buildApEditorCard(String label, TextEditingController controller) {
-    return SizedBox(
-      width: 180,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: Theme.of(context).textTheme.labelLarge),
-              const SizedBox(height: 8),
-              TextField(
-                key: ValueKey<String>('overview-ap-$label'),
-                controller: controller,
-                readOnly: !_editController.isEditing,
-                keyboardType: TextInputType.number,
-                onChanged: _editController.isEditing ? _onFieldChanged : null,
-                decoration: InputDecoration(labelText: label, isDense: true),
-              ),
-            ],
-          ),
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 8),
+            TextField(
+              key: ValueKey<String>('overview-ap-$label'),
+              controller: controller,
+              readOnly: !_editController.isEditing,
+              keyboardType: TextInputType.number,
+              onChanged: _editController.isEditing ? _onFieldChanged : null,
+              decoration: _inputDecoration(label),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildApValueCard(String label, String value) {
-    return SizedBox(
-      width: 180,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: Theme.of(context).textTheme.labelLarge),
-              const SizedBox(height: 8),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ],
-          ),
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      isDense: true,
+      border: const OutlineInputBorder(),
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({
+    required this.title,
+    required this.child,
+  });
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: _fieldSpacing),
+            child,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ResponsiveFieldGrid extends StatelessWidget {
+  const _ResponsiveFieldGrid({
+    required this.children,
+    required this.breakpoint,
+  });
+
+  final List<Widget> children;
+  final double breakpoint;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= breakpoint ? 2 : 1;
+        final totalSpacing = (columns - 1) * _gridSpacing;
+        final itemWidth = (constraints.maxWidth - totalSpacing) / columns;
+
+        return Wrap(
+          spacing: _gridSpacing,
+          runSpacing: _gridSpacing,
+          children: children
+              .map(
+                (child) => SizedBox(
+                  width: itemWidth,
+                  child: child,
+                ),
+              )
+              .toList(growable: false),
+        );
+      },
     );
   }
 }

@@ -400,7 +400,7 @@ void main() {
     final attributesWide = tester.getTopLeft(attributesHeader);
     final derivedWide = tester.getTopLeft(derivedHeader);
     expect((attributesWide.dy - derivedWide.dy).abs(), lessThan(24));
-    expect(attributesWide.dx, greaterThan(derivedWide.dx));
+    expect(attributesWide.dx, lessThan(derivedWide.dx));
 
     tester.view.physicalSize = const Size(390, 1400);
     await tester.pumpAndSettle();

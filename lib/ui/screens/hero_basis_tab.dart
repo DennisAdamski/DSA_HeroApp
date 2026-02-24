@@ -12,6 +12,13 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
+const double _pagePadding = 16;
+const double _sectionSpacing = 16;
+const double _fieldSpacing = 12;
+const double _gridSpacing = 12;
+const double _standardTwoColumnBreakpoint = 700;
+const double _largeTwoColumnBreakpoint = 900;
+
 class HeroBasisTab extends ConsumerStatefulWidget {
   const HeroBasisTab({
     super.key,
@@ -37,7 +44,8 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
   final _nameController = TextEditingController();
   final _levelController = TextEditingController();
   final _apAvailableController = TextEditingController();
-  final Map<String, TextEditingController> _controllers = <String, TextEditingController>{};
+  final Map<String, TextEditingController> _controllers =
+      <String, TextEditingController>{};
 
   late final WorkspaceTabEditController _editController;
 
@@ -282,91 +290,56 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
         final derived = computeDerivedStats(hero, state);
 
         return ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(_pagePadding),
           children: [
-            Text('Basisdaten', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _nameController,
-              readOnly: !_editController.isEditing,
-              decoration: const InputDecoration(labelText: 'Name'),
-              onChanged: _editController.isEditing ? _onEditableFieldChanged : null,
-            ),
-            const SizedBox(height: 12),
-            _tripleTextFields('Rasse', 'rasse', 'Modifikatoren', 'rasse_mod'),
-            _tripleTextFields('Kultur', 'kultur', 'Modifikatoren', 'kultur_mod'),
-            _tripleTextFields(
-              'Profession',
-              'profession',
-              'Modifikatoren',
-              'profession_mod',
-            ),
-            const SizedBox(height: 12),
-            _textField('Geschlecht', 'geschlecht'),
-            _textField('Alter', 'alter'),
-            _textField('Groesse', 'groesse'),
-            _textField('Gewicht', 'gewicht'),
-            _textField('Haarfarbe', 'haarfarbe'),
-            _textField('Augenfarbe', 'augenfarbe'),
-            _textField('Aussehen', 'aussehen', maxLines: 2),
-            _textField('Stand', 'stand'),
-            _textField('Titel', 'titel'),
-            _textField('Familie, Herkunft und Hintergrund', 'familie', maxLines: 3),
-            _intField('Sozialstatus', 'sozialstatus'),
-            _textField('Vorteile', 'vorteile', maxLines: 4),
-            _textField('Nachteile', 'nachteile', maxLines: 4),
-            const SizedBox(height: 16),
-            Text('AP und Level', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            _intField('AP Gesamt', 'ap_total', min: 0),
-            _intField('AP Ausgegeben', 'ap_spent', min: 0),
-            TextField(
-              controller: _apAvailableController,
-              readOnly: true,
-              decoration: const InputDecoration(labelText: 'AP Verfuegbar (auto)'),
-            ),
-            TextField(
-              controller: _levelController,
-              readOnly: true,
-              decoration: const InputDecoration(labelText: 'Level (aus AP-Formel)'),
-            ),
-            const SizedBox(height: 16),
+            _buildStammdatenSection(),
+            const SizedBox(height: _sectionSpacing),
+            _buildBiografieSection(),
+            const SizedBox(height: _sectionSpacing),
+            _buildApSection(),
             if (hero.unknownModifierFragments.isNotEmpty) ...[
-              Text('Parser-Warnungen', style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: hero.unknownModifierFragments
-                    .map((entry) => Chip(label: Text(entry)))
-                    .toList(growable: false),
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: _sectionSpacing),
+              _buildParserWarningsSection(hero),
             ],
-            Text('Zugekaufte Werte', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            _numberGrid(['b_lep', 'b_au', 'b_asp', 'b_kap', 'b_mr']),
-            const SizedBox(height: 16),
-            Text('Modifikatoren', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            _numberGrid(['m_lep', 'm_au', 'm_asp', 'm_kap', 'm_mr', 'm_ini', 'm_gs', 'm_ausw']),
-            const SizedBox(height: 16),
-            Text('Aktuelle Ressourcen', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            _numberGrid(['cur_lep', 'cur_au', 'cur_asp', 'cur_kap']),
-            const SizedBox(height: 16),
-            Text('Schnellansicht Berechnet', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _statChip('LeP Max', derived.maxLep),
-                _statChip('Au Max', derived.maxAu),
-                _statChip('AsP Max', derived.maxAsp),
-                _statChip('MR', derived.mr),
-                _statChip('Ini-Basis', derived.iniBase),
-              ],
+            const SizedBox(height: _sectionSpacing),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth >= _largeTwoColumnBreakpoint) {
+                  return Column(
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: _buildBoughtSection()),
+                          const SizedBox(width: _sectionSpacing),
+                          Expanded(child: _buildCurrentResourcesSection()),
+                        ],
+                      ),
+                      const SizedBox(height: _sectionSpacing),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: _buildModifiersSection()),
+                          const SizedBox(width: _sectionSpacing),
+                          Expanded(child: _buildQuickViewSection(derived)),
+                        ],
+                      ),
+                    ],
+                  );
+                }
+
+                return Column(
+                  children: [
+                    _buildBoughtSection(),
+                    const SizedBox(height: _sectionSpacing),
+                    _buildModifiersSection(),
+                    const SizedBox(height: _sectionSpacing),
+                    _buildCurrentResourcesSection(),
+                    const SizedBox(height: _sectionSpacing),
+                    _buildQuickViewSection(derived),
+                  ],
+                );
+              },
             ),
           ],
         );
@@ -374,18 +347,133 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
     );
   }
 
-  Widget _tripleTextFields(
-    String firstLabel,
-    String firstKey,
-    String secondLabel,
-    String secondKey,
-  ) {
-    return Row(
-      children: [
-        Expanded(child: _textField(firstLabel, firstKey)),
-        const SizedBox(width: 12),
-        Expanded(child: _textField(secondLabel, secondKey)),
-      ],
+  Widget _buildStammdatenSection() {
+    return _SectionCard(
+      title: 'Stammdaten',
+      child: _ResponsiveFieldGrid(
+        breakpoint: _standardTwoColumnBreakpoint,
+        children: [
+          TextField(
+            controller: _nameController,
+            readOnly: !_editController.isEditing,
+            decoration: _inputDecoration('Name'),
+            onChanged: _editController.isEditing ? _onEditableFieldChanged : null,
+          ),
+          _textField('Rasse', 'rasse'),
+          _textField('Modifikatoren', 'rasse_mod'),
+          _textField('Kultur', 'kultur'),
+          _textField('Modifikatoren', 'kultur_mod'),
+          _textField('Profession', 'profession'),
+          _textField('Modifikatoren', 'profession_mod'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBiografieSection() {
+    return _SectionCard(
+      title: 'Biografie und Status',
+      child: _ResponsiveFieldGrid(
+        breakpoint: _standardTwoColumnBreakpoint,
+        children: [
+          _textField('Geschlecht', 'geschlecht'),
+          _textField('Alter', 'alter'),
+          _textField('Groesse', 'groesse'),
+          _textField('Gewicht', 'gewicht'),
+          _textField('Haarfarbe', 'haarfarbe'),
+          _textField('Augenfarbe', 'augenfarbe'),
+          _textField('Aussehen', 'aussehen', maxLines: 2),
+          _textField('Stand', 'stand'),
+          _textField('Titel', 'titel'),
+          _textField('Familie, Herkunft und Hintergrund', 'familie', maxLines: 3),
+          _intField('Sozialstatus', 'sozialstatus'),
+          _textField('Vorteile', 'vorteile', maxLines: 4),
+          _textField('Nachteile', 'nachteile', maxLines: 4),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildApSection() {
+    return _SectionCard(
+      title: 'AP und Level',
+      child: _ResponsiveFieldGrid(
+        breakpoint: _standardTwoColumnBreakpoint,
+        children: [
+          _intField('AP Gesamt', 'ap_total', min: 0),
+          _intField('AP Ausgegeben', 'ap_spent', min: 0),
+          TextField(
+            controller: _apAvailableController,
+            readOnly: true,
+            decoration: _inputDecoration('AP Verfuegbar (auto)'),
+          ),
+          TextField(
+            controller: _levelController,
+            readOnly: true,
+            decoration: _inputDecoration('Level (aus AP-Formel)'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildParserWarningsSection(HeroSheet hero) {
+    return _SectionCard(
+      title: 'Parser-Warnungen',
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: hero.unknownModifierFragments
+            .map((entry) => Chip(label: Text(entry)))
+            .toList(growable: false),
+      ),
+    );
+  }
+
+  Widget _buildBoughtSection() {
+    return _SectionCard(
+      title: 'Zugekaufte Werte',
+      child: _numberGrid(['b_lep', 'b_au', 'b_asp', 'b_kap', 'b_mr']),
+    );
+  }
+
+  Widget _buildModifiersSection() {
+    return _SectionCard(
+      title: 'Modifikatoren',
+      child: _numberGrid([
+        'm_lep',
+        'm_au',
+        'm_asp',
+        'm_kap',
+        'm_mr',
+        'm_ini',
+        'm_gs',
+        'm_ausw',
+      ]),
+    );
+  }
+
+  Widget _buildCurrentResourcesSection() {
+    return _SectionCard(
+      title: 'Aktuelle Ressourcen',
+      child: _numberGrid(['cur_lep', 'cur_au', 'cur_asp', 'cur_kap']),
+    );
+  }
+
+  Widget _buildQuickViewSection(DerivedStats derived) {
+    return _SectionCard(
+      title: 'Schnellansicht Berechnet',
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          _statChip('LeP Max', derived.maxLep),
+          _statChip('Au Max', derived.maxAu),
+          _statChip('AsP Max', derived.maxAsp),
+          _statChip('MR', derived.mr),
+          _statChip('Ini-Basis', derived.iniBase),
+        ],
+      ),
     );
   }
 
@@ -393,7 +481,7 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
     return TextField(
       controller: _field(key),
       readOnly: !_editController.isEditing,
-      decoration: InputDecoration(labelText: label),
+      decoration: _inputDecoration(label),
       maxLines: maxLines,
       onChanged: _editController.isEditing ? _onEditableFieldChanged : null,
     );
@@ -404,7 +492,7 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
       controller: _field(key),
       readOnly: !_editController.isEditing,
       keyboardType: TextInputType.number,
-      decoration: InputDecoration(labelText: label),
+      decoration: _inputDecoration(label),
       onChanged: _editController.isEditing ? _onEditableFieldChanged : null,
     );
   }
@@ -414,22 +502,18 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
   }
 
   Widget _numberGrid(List<String> keys) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+    return _ResponsiveFieldGrid(
+      breakpoint: _standardTwoColumnBreakpoint,
       children: keys
-          .map((key) {
-            return SizedBox(
-              width: 150,
-              child: TextField(
-                controller: _field(key),
-                readOnly: !_editController.isEditing,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: _labelForKey(key)),
-                onChanged: _editController.isEditing ? _onEditableFieldChanged : null,
-              ),
-            );
-          })
+          .map(
+            (key) => TextField(
+              controller: _field(key),
+              readOnly: !_editController.isEditing,
+              keyboardType: TextInputType.number,
+              decoration: _inputDecoration(_labelForKey(key)),
+              onChanged: _editController.isEditing ? _onEditableFieldChanged : null,
+            ),
+          )
           .toList(growable: false),
     );
   }
@@ -457,6 +541,75 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
     return labels[key] ?? key;
   }
 
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      isDense: true,
+      border: const OutlineInputBorder(),
+    );
+  }
+
   @override
   bool get wantKeepAlive => true;
+}
+
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({
+    required this.title,
+    required this.child,
+  });
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: _fieldSpacing),
+            child,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ResponsiveFieldGrid extends StatelessWidget {
+  const _ResponsiveFieldGrid({
+    required this.children,
+    required this.breakpoint,
+  });
+
+  final List<Widget> children;
+  final double breakpoint;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= breakpoint ? 2 : 1;
+        final totalSpacing = (columns - 1) * _gridSpacing;
+        final itemWidth = (constraints.maxWidth - totalSpacing) / columns;
+
+        return Wrap(
+          spacing: _gridSpacing,
+          runSpacing: _gridSpacing,
+          children: children
+              .map(
+                (child) => SizedBox(
+                  width: itemWidth,
+                  child: child,
+                ),
+              )
+              .toList(growable: false),
+        );
+      },
+    );
+  }
 }
