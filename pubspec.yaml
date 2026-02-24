@@ -27,4 +27,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/catalogs/house_rules_v1.json
+    - assets/heroes/
 
