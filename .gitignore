@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+~$Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx
+~$ListeTalente.xlsx
+~$ListeZaubersprueche.xlsx
+~$ListeWaffenUndTalente.xlsx

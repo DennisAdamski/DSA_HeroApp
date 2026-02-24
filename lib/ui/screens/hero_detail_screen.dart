@@ -1,3 +1,14 @@
+// Legacy-Screen, derzeit nicht in die aktive Navigation eingebunden.
+//
+// Historie:
+// - Vorlaeufige Einzelansicht fuer Heldendetails vor Einfuehrung der
+//   Workspace-Tabstruktur.
+// - Die aktive Bearbeitung laeuft heute ueber `HeroWorkspaceScreen` mit
+//   den Tabs "Uebersicht" und "Basis".
+//
+// Status:
+// - Datei bleibt bewusst erhalten, um Migration/Referenz zu erleichtern.
+// - Geplanter Nachfolger ist die modulare Workspace-Architektur.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

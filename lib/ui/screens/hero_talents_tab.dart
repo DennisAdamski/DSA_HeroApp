@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -16,15 +17,7 @@ class HeroTalentsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final heroes =
-        ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
-    HeroSheet? hero;
-    for (final item in heroes) {
-      if (item.id == heroId) {
-        hero = item;
-        break;
-      }
-    }
+    final hero = ref.watch(heroByIdProvider(heroId));
 
     if (hero == null) {
       return const Center(child: Text('Held nicht gefunden.'));
@@ -60,7 +53,7 @@ class HeroTalentsTab extends ConsumerWidget {
                 children: talents
                     .map(
                       (talent) => _TalentTile(
-                        hero: hero!,
+                        hero: hero,
                         talent: talent,
                         effectiveAttributes: effectiveAttributes,
                       ),
@@ -148,48 +141,11 @@ class _TalentTile extends ConsumerWidget {
   }
 
   int? _attributeValue(Attributes attributes, String name) {
-    final normalized = _normalizeName(name);
-    switch (normalized) {
-      case 'mu':
-      case 'mut':
-        return attributes.mu;
-      case 'kl':
-      case 'klugheit':
-        return attributes.kl;
-      case 'in':
-      case 'inn':
-      case 'intuition':
-        return attributes.inn;
-      case 'ch':
-      case 'charisma':
-        return attributes.ch;
-      case 'ff':
-      case 'fingerfertigkeit':
-        return attributes.ff;
-      case 'ge':
-      case 'gewandheit':
-        return attributes.ge;
-      case 'ko':
-      case 'konstitution':
-        return attributes.ko;
-      case 'kk':
-      case 'koerperkraft':
-      case 'korperkraft':
-        return attributes.kk;
-      default:
-        return null;
+    final code = parseAttributeCode(name);
+    if (code == null) {
+      return null;
     }
-  }
-
-  String _normalizeName(String value) {
-    var text = value.toLowerCase();
-    text = text
-        .replaceAll(String.fromCharCode(228), 'ae')
-        .replaceAll(String.fromCharCode(246), 'oe')
-        .replaceAll(String.fromCharCode(252), 'ue')
-        .replaceAll(String.fromCharCode(223), 'ss');
-    text = text.replaceAll(RegExp(r'[^a-z]'), '');
-    return text;
+    return readAttributeValue(attributes, code);
   }
 
   int _calculateTalentwert(HeroTalentEntry entry) {

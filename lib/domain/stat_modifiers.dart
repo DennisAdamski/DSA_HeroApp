@@ -1,3 +1,9 @@
+/// Aggregierte Modifikatoren fuer abgeleitete Kampf-/Ressourcenwerte.
+///
+/// Die Werte werden aus verschiedenen Quellen addiert:
+/// - persistente Modifikatoren am Helden (`HeroSheet.persistentMods`)
+/// - temporaere Modifikatoren am Zustand (`HeroState.tempMods`)
+/// - geparste Textmodifikatoren aus Basisdaten (z. B. Vorteile/Nachteile)
 class StatModifiers {
   const StatModifiers({
     this.lep = 0,
@@ -25,6 +31,7 @@ class StatModifiers {
   final int gs;
   final int ausweichen;
 
+  /// Erstellt eine angepasste Kopie mit selektiv ueberschriebenen Feldern.
   StatModifiers copyWith({
     int? lep,
     int? au,
@@ -53,6 +60,7 @@ class StatModifiers {
     );
   }
 
+  /// Addiert zwei Modifikatorbloecke feldweise.
   StatModifiers operator +(StatModifiers other) {
     return StatModifiers(
       lep: lep + other.lep,
@@ -69,6 +77,7 @@ class StatModifiers {
     );
   }
 
+  /// Serialisierung fuer Persistenz/Transfer.
   Map<String, dynamic> toJson() {
     return {
       'lep': lep,
@@ -85,6 +94,7 @@ class StatModifiers {
     };
   }
 
+  /// Robust gegen fehlende Schluessel: nicht vorhandene Felder werden `0`.
   static StatModifiers fromJson(Map<String, dynamic> json) {
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return StatModifiers(

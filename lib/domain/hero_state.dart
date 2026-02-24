@@ -1,5 +1,9 @@
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 
+/// Laufzeitzustand eines Helden, getrennt von den Stammdaten (`HeroSheet`).
+///
+/// Enthalten sind vor allem aktuelle Ressourcenstaende und temporaere
+/// Modifikatoren, die nicht dauerhaft ins Heldenblatt geschrieben werden.
 class HeroState {
   const HeroState({
     this.schemaVersion = 1,
@@ -25,6 +29,7 @@ class HeroState {
   final int currentAu;
   final StatModifiers tempMods;
 
+  /// Immutable Update fuer Teilmengen des Laufzeitzustands.
   HeroState copyWith({
     int? currentLep,
     int? currentAsp,
@@ -42,6 +47,7 @@ class HeroState {
     );
   }
 
+  /// Serialisierung fuer Persistenz (eigene State-Box).
   Map<String, dynamic> toJson() {
     return {
       'schemaVersion': schemaVersion,
@@ -53,6 +59,7 @@ class HeroState {
     };
   }
 
+  /// Robust gegen fehlende Felder in aelteren Daten.
   static HeroState fromJson(Map<String, dynamic> json) {
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return HeroState(

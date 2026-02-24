@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 class HeroBasisTab extends ConsumerStatefulWidget {
@@ -38,9 +39,7 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
   final _apAvailableController = TextEditingController();
   final Map<String, TextEditingController> _controllers = <String, TextEditingController>{};
 
-  bool _isEditing = false;
-  bool _isDirty = false;
-  String _lastSyncedSignature = '';
+  late final WorkspaceTabEditController _editController;
 
   HeroSheet? _latestHero;
   HeroState? _latestState;
@@ -48,6 +47,15 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
   @override
   void initState() {
     super.initState();
+    _editController = WorkspaceTabEditController(
+      onDirtyChanged: widget.onDirtyChanged,
+      onEditingChanged: widget.onEditingChanged,
+      requestRebuild: () {
+        if (mounted) {
+          setState(() {});
+        }
+      },
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
@@ -68,8 +76,7 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
   }
 
   void _registerWithParent() {
-    widget.onDirtyChanged(_isDirty);
-    widget.onEditingChanged(_isEditing);
+    _editController.emitCurrentState();
     widget.onRegisterDiscard(_discardChanges);
     widget.onRegisterEditActions(
       WorkspaceTabEditActions(
@@ -80,42 +87,18 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
     );
   }
 
-  void _setDirty(bool value) {
-    if (_isDirty == value) {
-      return;
-    }
-    setState(() {
-      _isDirty = value;
-    });
-    widget.onDirtyChanged(value);
-  }
-
-  void _setEditing(bool value) {
-    if (_isEditing == value) {
-      return;
-    }
-    setState(() {
-      _isEditing = value;
-    });
-    widget.onEditingChanged(value);
-  }
-
   TextEditingController _field(String key) {
     return _controllers.putIfAbsent(key, () => TextEditingController());
   }
 
   void _syncControllers(HeroSheet hero, HeroState state, {bool force = false}) {
-    if (_isEditing && !force) {
-      return;
-    }
     final signature = jsonEncode({
       'hero': hero.toJson(),
       'state': state.toJson(),
     });
-    if (!force && _lastSyncedSignature == signature) {
+    if (!_editController.shouldSync(signature, force: force)) {
       return;
     }
-    _lastSyncedSignature = signature;
 
     _nameController.text = hero.name;
     _levelController.text = hero.level.toString();
@@ -179,8 +162,7 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
   }
 
   Future<void> _startEdit() async {
-    _setEditing(true);
-    _setDirty(false);
+    _editController.startEdit();
   }
 
   Future<void> _saveFromParentAction() async {
@@ -192,8 +174,7 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
     if (!mounted) {
       return;
     }
-    _setEditing(false);
-    _setDirty(false);
+    _editController.markSaved();
   }
 
   Future<void> _cancelFromParentAction() async {
@@ -204,11 +185,10 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
     final hero = _latestHero;
     final state = _latestState;
     if (hero != null && state != null) {
-      _lastSyncedSignature = '';
+      _editController.clearSyncSignature();
       _syncControllers(hero, state, force: true);
     }
-    _setEditing(false);
-    _setDirty(false);
+    _editController.markDiscarded();
   }
 
   Future<void> _save(HeroSheet hero, {bool showSnack = true}) async {
@@ -278,22 +258,13 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
   }
 
   void _onEditableFieldChanged(String _) {
-    if (_isEditing) {
-      _setDirty(true);
-    }
+    _editController.markFieldChanged();
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final heroes = ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
-    HeroSheet? hero;
-    for (final item in heroes) {
-      if (item.id == widget.heroId) {
-        hero = item;
-        break;
-      }
-    }
+    final hero = ref.watch(heroByIdProvider(widget.heroId));
 
     if (hero == null) {
       return const Center(child: Text('Held nicht gefunden.'));
@@ -307,7 +278,7 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
       data: (state) {
         _latestHero = hero;
         _latestState = state;
-        _syncControllers(hero!, state);
+        _syncControllers(hero, state);
         final derived = computeDerivedStats(hero, state);
 
         return ListView(
@@ -317,9 +288,9 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
             const SizedBox(height: 8),
             TextField(
               controller: _nameController,
-              readOnly: !_isEditing,
+              readOnly: !_editController.isEditing,
               decoration: const InputDecoration(labelText: 'Name'),
-              onChanged: _isEditing ? _onEditableFieldChanged : null,
+              onChanged: _editController.isEditing ? _onEditableFieldChanged : null,
             ),
             const SizedBox(height: 12),
             _tripleTextFields('Rasse', 'rasse', 'Modifikatoren', 'rasse_mod'),
@@ -421,20 +392,20 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
   Widget _textField(String label, String key, {int maxLines = 1}) {
     return TextField(
       controller: _field(key),
-      readOnly: !_isEditing,
+      readOnly: !_editController.isEditing,
       decoration: InputDecoration(labelText: label),
       maxLines: maxLines,
-      onChanged: _isEditing ? _onEditableFieldChanged : null,
+      onChanged: _editController.isEditing ? _onEditableFieldChanged : null,
     );
   }
 
   Widget _intField(String label, String key, {int min = -999999}) {
     return TextField(
       controller: _field(key),
-      readOnly: !_isEditing,
+      readOnly: !_editController.isEditing,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(labelText: label),
-      onChanged: _isEditing ? _onEditableFieldChanged : null,
+      onChanged: _editController.isEditing ? _onEditableFieldChanged : null,
     );
   }
 
@@ -452,10 +423,10 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
               width: 150,
               child: TextField(
                 controller: _field(key),
-                readOnly: !_isEditing,
+                readOnly: !_editController.isEditing,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(labelText: _labelForKey(key)),
-                onChanged: _isEditing ? _onEditableFieldChanged : null,
+                onChanged: _editController.isEditing ? _onEditableFieldChanged : null,
               ),
             );
           })

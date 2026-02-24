@@ -3,6 +3,13 @@ import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 
+/// Persistiertes Kernmodell eines Helden (ohne Laufzeitzustand).
+///
+/// Wichtige Invarianten:
+/// - `id` ist der stabile Schluessel fuer Repository und Transfer.
+/// - `schemaVersion` beschreibt nur das Heldenobjektformat.
+/// - Laufzeitwerte wie aktuelle LeP/AsP liegen bewusst in `HeroState`.
+/// - `unknownModifierFragments` speichert Parser-Restfragmente fuer UI-Hinweise.
 class HeroSheet {
   const HeroSheet({
     required this.id,
@@ -71,6 +78,7 @@ class HeroSheet {
   final int apAvailable;
   final List<String> unknownModifierFragments;
 
+  /// Immutable Update fuer gezielte Feldanpassungen.
   HeroSheet copyWith({
     String? id,
     String? name,
@@ -140,6 +148,7 @@ class HeroSheet {
     );
   }
 
+  /// Serialisierung fuer lokale Persistenz und Export.
   Map<String, dynamic> toJson() {
     return {
       'schemaVersion': schemaVersion,
@@ -176,6 +185,7 @@ class HeroSheet {
     };
   }
 
+  /// Rueckwaertskompatibles Laden alter Datenstaende.
   static HeroSheet fromJson(Map<String, dynamic> json) {
     final rawTalents =
         (json['talents'] as Map?)?.cast<String, dynamic>() ??

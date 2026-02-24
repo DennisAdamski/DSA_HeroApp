@@ -12,16 +12,19 @@ import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import '../rules/derived/modifier_parser.dart';
 
+/// Repository-Abstraktion (wird beim App-Start ueberschrieben).
 final heroRepositoryProvider = Provider<HeroRepository>((ref) {
   throw UnimplementedError(
     'HeroRepository muss beim App-Start uebersteuert werden.',
   );
 });
 
+/// Codec fuer Transfer-JSON (Import/Export).
 final heroTransferCodecProvider = Provider<HeroTransferCodec>((ref) {
   return const HeroTransferCodec();
 });
 
+/// Plattformabhaengiger Dateigateway fuer Transferdateien.
 final heroTransferFileGatewayProvider = Provider<HeroTransferFileGateway>((
   ref,
 ) {
@@ -31,26 +34,49 @@ final heroTransferFileGatewayProvider = Provider<HeroTransferFileGateway>((
 final _heroesRevisionProvider = StateProvider<int>((ref) => 0);
 final selectedHeroIdProvider = StateProvider<String?>((ref) => null);
 
+/// Reaktive Heldenliste aus dem Repository.
 final heroListProvider = FutureProvider<List<HeroSheet>>((ref) async {
   ref.watch(_heroesRevisionProvider);
   final repo = ref.watch(heroRepositoryProvider);
   return repo.listHeroes();
 });
 
+/// Sucht einen Helden in einer bereits geladenen Liste ueber seine ID.
+HeroSheet? findHeroById(List<HeroSheet> heroes, String heroId) {
+  for (final hero in heroes) {
+    if (hero.id == heroId) {
+      return hero;
+    }
+  }
+  return null;
+}
+
+/// Schneller Zugriff auf den aktuell geladenen Helden je ID.
+final heroByIdProvider = Provider.family<HeroSheet?, String>((ref, heroId) {
+  final heroes = ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
+  return findHeroById(heroes, heroId);
+});
+
+/// Asynchrone Variante von `heroByIdProvider`.
+final heroByIdFutureProvider = FutureProvider.family<HeroSheet?, String>((
+  ref,
+  heroId,
+) async {
+  final heroes = await ref.watch(heroListProvider.future);
+  return findHeroById(heroes, heroId);
+});
+
+/// Ausgewaehlter Held fuer die Startansicht.
 final selectedHeroProvider = Provider<HeroSheet?>((ref) {
   final heroes = ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
   final selectedId = ref.watch(selectedHeroIdProvider);
   if (selectedId == null) {
     return heroes.isEmpty ? null : heroes.first;
   }
-  for (final hero in heroes) {
-    if (hero.id == selectedId) {
-      return hero;
-    }
-  }
-  return heroes.isEmpty ? null : heroes.first;
+  return findHeroById(heroes, selectedId) ?? (heroes.isEmpty ? null : heroes.first);
 });
 
+/// Laufzeitzustand (Ressourcen, temp. Modifikatoren) je Held.
 final heroStateProvider = FutureProvider.family<HeroState, String>((
   ref,
   heroId,
@@ -59,12 +85,15 @@ final heroStateProvider = FutureProvider.family<HeroState, String>((
   return (await repo.loadHeroState(heroId)) ?? const HeroState.empty();
 });
 
+/// Abgeleitete Werte je Held, berechnet aus Sheet + State.
 final derivedStatsProvider = FutureProvider.family<DerivedStats, String>((
   ref,
   heroId,
 ) async {
-  final heroes = await ref.watch(heroListProvider.future);
-  final hero = heroes.firstWhere((h) => h.id == heroId);
+  final hero = await ref.watch(heroByIdFutureProvider(heroId).future);
+  if (hero == null) {
+    throw StateError('Held mit ID "$heroId" wurde nicht gefunden.');
+  }
   final state = await ref.watch(heroStateProvider(heroId).future);
   return computeDerivedStats(hero, state);
 });
@@ -73,6 +102,7 @@ final heroActionsProvider = Provider<HeroActions>((ref) => HeroActions(ref));
 
 enum ImportConflictResolution { overwriteExisting, createNewHero }
 
+/// Schreiboperationen und Import/Export-Orchestrierung fuer Helden.
 class HeroActions {
   HeroActions(this._ref);
 

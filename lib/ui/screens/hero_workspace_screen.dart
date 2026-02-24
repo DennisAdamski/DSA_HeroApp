@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -10,6 +10,10 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_basis_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_global_action_header.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_import_export_actions.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_navigation_guard.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 const int _overviewTabIndex = 0;
@@ -28,29 +32,21 @@ class HeroWorkspaceScreen extends ConsumerStatefulWidget {
 class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  late final WorkspaceTabRegistry _tabRegistry;
+  final WorkspaceImportExportActions _importExportActions =
+      const WorkspaceImportExportActions();
 
-  int _activeTabIndex = 0;
   bool _handlingTabChange = false;
   bool _revertingTabChange = false;
   bool _runningEditAction = false;
-
-  final Map<int, bool> _dirtyByTab = <int, bool>{
-    _overviewTabIndex: false,
-    _basisTabIndex: false,
-  };
-  final Map<int, bool> _editingByTab = <int, bool>{
-    _overviewTabIndex: false,
-    _basisTabIndex: false,
-  };
-  final Map<int, WorkspaceAsyncAction> _discardByTab =
-      <int, WorkspaceAsyncAction>{};
-  final Map<int, WorkspaceTabEditActions> _editActionsByTab =
-      <int, WorkspaceTabEditActions>{};
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 7, vsync: this);
+    _tabRegistry = WorkspaceTabRegistry(
+      editableTabs: const <int>{_overviewTabIndex, _basisTabIndex},
+    );
     _tabController.addListener(_onTabControllerChanged);
   }
 
@@ -66,7 +62,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       return;
     }
     final nextIndex = _tabController.index;
-    if (nextIndex == _activeTabIndex) {
+    if (nextIndex == _tabRegistry.activeTabIndex) {
       return;
     }
     _handleTabChangeAttempt(nextIndex);
@@ -77,7 +73,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       return;
     }
     _handlingTabChange = true;
-    final fromIndex = _activeTabIndex;
+    final fromIndex = _tabRegistry.activeTabIndex;
     final mayLeave = await _confirmLeaveForTab(fromIndex);
     if (!mounted) {
       return;
@@ -85,7 +81,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
 
     if (mayLeave) {
       setState(() {
-        _activeTabIndex = nextIndex;
+        _tabRegistry.activeTabIndex = nextIndex;
       });
     } else {
       _revertingTabChange = true;
@@ -102,8 +98,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   }
 
   Future<bool> _confirmLeaveForTab(int tabIndex) async {
-    final isDirty = _dirtyByTab[tabIndex] ?? false;
-    if (!isDirty) {
+    if (!_tabRegistry.isDirty(tabIndex)) {
       return true;
     }
 
@@ -112,34 +107,12 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       return false;
     }
 
-    final discard = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Ungespeicherte Änderungen verwerfen?'),
-          content: const Text(
-            'Wenn du fortfährst, gehen die ungespeicherten Änderungen '
-            'im aktuellen Tab verloren.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Nein'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Ja'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (discard != true) {
+    final discard = await showWorkspaceDiscardDialog(context);
+    if (!discard) {
       return false;
     }
 
-    final discardAction = _discardByTab[tabIndex];
+    final discardAction = _tabRegistry.discardActionFor(tabIndex);
     if (discardAction != null) {
       await discardAction();
     }
@@ -148,42 +121,33 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       return false;
     }
 
-    setState(() {
-      _dirtyByTab[tabIndex] = false;
-    });
+    if (_tabRegistry.updateDirty(tabIndex, false)) {
+      setState(() {});
+    }
     return true;
   }
 
-  bool _isEditableTab(int tabIndex) {
-    return tabIndex == _overviewTabIndex || tabIndex == _basisTabIndex;
-  }
-
   void _updateDirty(int tabIndex, bool isDirty) {
-    if ((_dirtyByTab[tabIndex] ?? false) == isDirty) {
+    if (!_tabRegistry.updateDirty(tabIndex, isDirty)) {
       return;
     }
-    setState(() {
-      _dirtyByTab[tabIndex] = isDirty;
-    });
+    setState(() {});
   }
 
   void _updateEditing(int tabIndex, bool isEditing) {
-    if ((_editingByTab[tabIndex] ?? false) == isEditing) {
+    if (!_tabRegistry.updateEditing(tabIndex, isEditing)) {
       return;
     }
-    setState(() {
-      _editingByTab[tabIndex] = isEditing;
-    });
+    setState(() {});
   }
 
   void _registerDiscard(int tabIndex, WorkspaceAsyncAction discardAction) {
-    _discardByTab[tabIndex] = discardAction;
+    _tabRegistry.registerDiscard(tabIndex, discardAction);
   }
 
   void _registerEditActions(int tabIndex, WorkspaceTabEditActions actions) {
-    final wasMissing = !_editActionsByTab.containsKey(tabIndex);
-    _editActionsByTab[tabIndex] = actions;
-    if (wasMissing && _activeTabIndex == tabIndex) {
+    final wasMissing = _tabRegistry.registerEditActions(tabIndex, actions);
+    if (wasMissing && _tabRegistry.activeTabIndex == tabIndex) {
       setState(() {});
     }
   }
@@ -207,7 +171,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   }
 
   Future<void> _navigateToHomeWithGuard() async {
-    final mayLeave = await _confirmLeaveForTab(_activeTabIndex);
+    final mayLeave = await _confirmLeaveForTab(_tabRegistry.activeTabIndex);
     if (!mounted || !mayLeave) {
       return;
     }
@@ -216,81 +180,30 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
-  Widget _buildGlobalActionHeader(BuildContext context) {
-    if (_isEditableTab(_activeTabIndex)) {
-      final isEditing = _editingByTab[_activeTabIndex] ?? false;
-      final actions = _editActionsByTab[_activeTabIndex];
-      final canRunActions = actions != null;
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            if (isEditing) ...[
-              OutlinedButton(
-                onPressed: _runningEditAction || !canRunActions
-                    ? null
-                    : () => _runEditAction(actions.cancel),
-                child: const Text('Abbrechen'),
-              ),
-              const SizedBox(width: 12),
-              FilledButton(
-                onPressed: _runningEditAction || !canRunActions
-                    ? null
-                    : () => _runEditAction(actions.save),
-                child: const Text('Speichern'),
-              ),
-            ] else
-              FilledButton.icon(
-                onPressed: _runningEditAction || !canRunActions
-                    ? null
-                    : () => _runEditAction(actions.startEdit),
-                icon: const Icon(Icons.edit),
-                label: const Text('Bearbeiten'),
-              ),
-          ],
-        ),
-      );
+  Widget _buildGlobalActionHeader() {
+    final activeTabIndex = _tabRegistry.activeTabIndex;
+    final tabActions = _tabRegistry.editActionsFor(activeTabIndex);
+    VoidCallback? onStartEdit;
+    VoidCallback? onSave;
+    VoidCallback? onCancel;
+    if (!_runningEditAction && tabActions != null) {
+      onStartEdit = () => _runEditAction(tabActions.startEdit);
+      onSave = () => _runEditAction(tabActions.save);
+      onCancel = () => _runEditAction(tabActions.cancel);
     }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-      child: Row(
-        children: [
-          Tooltip(
-            message: 'In diesem Tab noch nicht verfügbar',
-            child: OutlinedButton.icon(
-              onPressed: null,
-              icon: const Icon(Icons.edit),
-              label: const Text('Bearbeiten'),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'In diesem Tab noch nicht verfügbar',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
-        ],
-      ),
+    return WorkspaceGlobalActionHeader(
+      isEditableTab: _tabRegistry.isEditableTab(activeTabIndex),
+      isEditing: _tabRegistry.isEditing(activeTabIndex),
+      onStartEdit: onStartEdit,
+      onSave: onSave,
+      onCancel: onCancel,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final heroes =
-        ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
-
-    HeroSheet? hero;
-    for (final item in heroes) {
-      if (item.id == widget.heroId) {
-        hero = item;
-        break;
-      }
-    }
+    final hero = ref.watch(heroByIdProvider(widget.heroId));
 
     if (hero == null) {
       return Scaffold(
@@ -316,7 +229,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           ),
           actions: [
             IconButton(
-              onPressed: () => _exportHeroData(context, ref, hero!),
+              onPressed: () => _exportHeroData(context, ref, hero),
               icon: const Icon(Icons.upload_file),
               tooltip: 'Held exportieren',
             ),
@@ -357,7 +270,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         body: Column(
           children: [
             _CoreAttributesHeader(hero: hero),
-            _buildGlobalActionHeader(context),
+            _buildGlobalActionHeader(),
             Expanded(
               child: TabBarView(
                 controller: _tabController,
@@ -410,24 +323,19 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     HeroSheet hero,
   ) async {
     try {
-      await Future<void>.delayed(const Duration(milliseconds: 700));
-      final payload = await ref
-          .read(heroActionsProvider)
-          .buildExportJson(hero.id);
-      final gateway = ref.read(heroTransferFileGatewayProvider);
-      final outcome = await gateway.exportJson(
-        fileNameBase: hero.name,
-        jsonPayload: payload,
+      final outcome = await _importExportActions.exportHeroData(
+        ref: ref,
+        hero: hero,
       );
 
       if (!context.mounted) {
         return;
       }
 
-      if (outcome.result.name == 'canceled') {
+      if (outcome.result == HeroTransferExportResult.canceled) {
         return;
       }
-      if (outcome.result.name == 'savedToFile') {
+      if (outcome.result == HeroTransferExportResult.savedToFile) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -437,7 +345,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         );
         return;
       }
-      if (outcome.result.name == 'downloaded') {
+      if (outcome.result == HeroTransferExportResult.downloaded) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Held exportiert und Download gestartet'),
@@ -459,27 +367,14 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   }
 
   Future<void> _importHeroData(BuildContext context, WidgetRef ref) async {
-    final gateway = ref.read(heroTransferFileGatewayProvider);
-    final rawJson = await gateway.pickImportJson();
-    if (rawJson == null) {
-      return;
-    }
-
     try {
-      final actions = ref.read(heroActionsProvider);
-      final bundle = await actions.parseImportJson(rawJson);
-      if (!context.mounted) {
-        return;
-      }
-      final resolution = await _resolveConflict(context, ref, bundle);
-      if (resolution == null) {
-        return;
-      }
-
-      final importedId = await actions.importHeroBundle(
-        bundle,
-        resolution: resolution,
+      final importedId = await _importExportActions.importHeroData(
+        context: context,
+        ref: ref,
       );
+      if (importedId == null) {
+        return;
+      }
 
       if (!context.mounted) {
         return;
@@ -507,58 +402,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         context,
       ).showSnackBar(SnackBar(content: Text('Import fehlgeschlagen: $error')));
     }
-  }
-
-  Future<ImportConflictResolution?> _resolveConflict(
-    BuildContext context,
-    WidgetRef ref,
-    HeroTransferBundle bundle,
-  ) async {
-    final heroes = await ref.read(heroListProvider.future);
-    var exists = false;
-    for (final hero in heroes) {
-      if (hero.id == bundle.hero.id) {
-        exists = true;
-        break;
-      }
-    }
-    if (!exists) {
-      return ImportConflictResolution.overwriteExisting;
-    }
-
-    if (!context.mounted) {
-      return null;
-    }
-    return showDialog<ImportConflictResolution>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Held bereits vorhanden'),
-          content: const Text(
-            'Die importierte Held-ID existiert bereits. Soll der vorhandene Held '
-            'ueberschrieben oder als neuer Held importiert werden?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Abbrechen'),
-            ),
-            OutlinedButton(
-              onPressed: () => Navigator.of(
-                dialogContext,
-              ).pop(ImportConflictResolution.createNewHero),
-              child: const Text('Als neu erstellen'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(
-                dialogContext,
-              ).pop(ImportConflictResolution.overwriteExisting),
-              child: const Text('Ueberschreiben'),
-            ),
-          ],
-        );
-      },
-    );
   }
 }
 

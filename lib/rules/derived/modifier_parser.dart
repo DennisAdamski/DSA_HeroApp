@@ -1,7 +1,9 @@
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 
+/// Summierte Attributmodifikatoren aus Textfragmenten.
 class AttributeModifierSums {
   const AttributeModifierSums({
     this.mu = 0,
@@ -46,6 +48,10 @@ class AttributeModifierSums {
   }
 }
 
+/// Parserergebnis fuer freie Modifikatortexte aus den Basisdaten.
+///
+/// Nicht erkannte Fragmente werden gesammelt, damit die UI sie sichtbar machen
+/// kann (`HeroSheet.unknownModifierFragments`).
 class ModifierParseResult {
   const ModifierParseResult({
     this.attributeMods = const AttributeModifierSums(),
@@ -58,6 +64,7 @@ class ModifierParseResult {
   final List<String> unknownFragments;
 }
 
+/// Komfortfunktion: parst alle relevanten Modifikatorfelder eines Helden.
 ModifierParseResult parseModifierTextsForHero(HeroSheet hero) {
   return parseModifierTexts(
     rasseModText: hero.rasseModText,
@@ -68,11 +75,13 @@ ModifierParseResult parseModifierTextsForHero(HeroSheet hero) {
   );
 }
 
+/// Berechnet effektive Attribute inklusive Textmodifikatoren.
 Attributes computeEffectiveAttributes(HeroSheet hero) {
   final parsed = parseModifierTextsForHero(hero);
   return applyAttributeModifiers(hero.attributes, parsed.attributeMods);
 }
 
+/// Addiert die Attributmodifikatoren auf den Basiswertesatz.
 Attributes applyAttributeModifiers(
   Attributes base,
   AttributeModifierSums mods,
@@ -89,6 +98,9 @@ Attributes applyAttributeModifiers(
   );
 }
 
+/// Zerlegt freie Texte in einzelne Modifikator-Fragmente und summiert diese.
+///
+/// Erlaubtes Grundformat pro Fragment: `CODE+N` oder `CODE-N`.
 ModifierParseResult parseModifierTexts({
   required String rasseModText,
   required String kulturModText,
@@ -168,24 +180,25 @@ AttributeModifierSums? _applyAttributeCode(
   int amount,
   AttributeModifierSums current,
 ) {
-  switch (code) {
-    case 'MU':
+  final parsed = parseAttributeCode(code);
+  switch (parsed) {
+    case AttributeCode.mu:
       return current.copyWith(mu: current.mu + amount);
-    case 'KL':
+    case AttributeCode.kl:
       return current.copyWith(kl: current.kl + amount);
-    case 'IN':
+    case AttributeCode.inn:
       return current.copyWith(inn: current.inn + amount);
-    case 'CH':
+    case AttributeCode.ch:
       return current.copyWith(ch: current.ch + amount);
-    case 'FF':
+    case AttributeCode.ff:
       return current.copyWith(ff: current.ff + amount);
-    case 'GE':
+    case AttributeCode.ge:
       return current.copyWith(ge: current.ge + amount);
-    case 'KO':
+    case AttributeCode.ko:
       return current.copyWith(ko: current.ko + amount);
-    case 'KK':
+    case AttributeCode.kk:
       return current.copyWith(kk: current.kk + amount);
-    default:
+    case null:
       return null;
   }
 }

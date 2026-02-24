@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attributes_rules.dart';
 import 'modifier_parser.dart';
 
+/// Ergebniscontainer fuer alle zentral berechneten Heldenwerte.
 class DerivedStats {
   const DerivedStats({
     required this.maxLep,
@@ -26,6 +27,13 @@ class DerivedStats {
   final int ausweichen;
 }
 
+/// Berechnet alle abgeleiteten Werte aus Stammdaten und Laufzeitzustand.
+///
+/// Datenfluss:
+/// 1. Textmodifikatoren parsen (`modifier_parser.dart`)
+/// 2. Attributmodifikatoren auf Basisattribute anwenden
+/// 3. Stat-Modifikatoren aus persistent + geparst + temporaer zusammenfuehren
+/// 4. Einzelformeln aus `attributes_rules.dart` auswerten
 DerivedStats computeDerivedStats(HeroSheet sheet, HeroState state) {
   final parsed = parseModifierTextsForHero(sheet);
   final effectiveSheet = sheet.copyWith(

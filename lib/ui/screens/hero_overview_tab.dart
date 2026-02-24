@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 class HeroOverviewTab extends ConsumerStatefulWidget {
@@ -32,14 +33,21 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     with AutomaticKeepAliveClientMixin {
   final Map<String, TextEditingController> _controllers = <String, TextEditingController>{};
 
-  bool _isEditing = false;
-  bool _isDirty = false;
-  String _lastSyncedSignature = '';
+  late final WorkspaceTabEditController _editController;
   HeroSheet? _latestHero;
 
   @override
   void initState() {
     super.initState();
+    _editController = WorkspaceTabEditController(
+      onDirtyChanged: widget.onDirtyChanged,
+      onEditingChanged: widget.onEditingChanged,
+      requestRebuild: () {
+        if (mounted) {
+          setState(() {});
+        }
+      },
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _registerWithParent();
@@ -56,8 +64,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   }
 
   void _registerWithParent() {
-    widget.onDirtyChanged(_isDirty);
-    widget.onEditingChanged(_isEditing);
+    _editController.emitCurrentState();
     widget.onRegisterDiscard(_discardChanges);
     widget.onRegisterEditActions(
       WorkspaceTabEditActions(
@@ -72,35 +79,11 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     return _controllers.putIfAbsent(key, () => TextEditingController());
   }
 
-  void _setDirty(bool value) {
-    if (_isDirty == value) {
-      return;
-    }
-    setState(() {
-      _isDirty = value;
-    });
-    widget.onDirtyChanged(value);
-  }
-
-  void _setEditing(bool value) {
-    if (_isEditing == value) {
-      return;
-    }
-    setState(() {
-      _isEditing = value;
-    });
-    widget.onEditingChanged(value);
-  }
-
   void _syncControllers(HeroSheet hero, {bool force = false}) {
-    if (_isEditing && !force) {
-      return;
-    }
     final signature = jsonEncode(hero.toJson());
-    if (!force && signature == _lastSyncedSignature) {
+    if (!_editController.shouldSync(signature, force: force)) {
       return;
     }
-    _lastSyncedSignature = signature;
 
     _field('name').text = hero.name;
     _field('rasse').text = hero.rasse;
@@ -150,8 +133,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   }
 
   Future<void> _startEdit() async {
-    _setEditing(true);
-    _setDirty(false);
+    _editController.startEdit();
   }
 
   Future<void> _saveChanges() async {
@@ -202,8 +184,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       return;
     }
 
-    _setEditing(false);
-    _setDirty(false);
+    _editController.markSaved();
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Übersicht gespeichert')));
@@ -216,30 +197,20 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   Future<void> _discardChanges() async {
     final hero = _latestHero;
     if (hero != null) {
-      _lastSyncedSignature = '';
+      _editController.clearSyncSignature();
       _syncControllers(hero, force: true);
     }
-    _setEditing(false);
-    _setDirty(false);
+    _editController.markDiscarded();
   }
 
   void _onFieldChanged(String _) {
-    if (_isEditing) {
-      _setDirty(true);
-    }
+    _editController.markFieldChanged();
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final heroes = ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
-    HeroSheet? hero;
-    for (final item in heroes) {
-      if (item.id == widget.heroId) {
-        hero = item;
-        break;
-      }
-    }
+    final hero = ref.watch(heroByIdProvider(widget.heroId));
 
     if (hero == null) {
       return const Center(child: Text('Held nicht gefunden.'));
@@ -482,11 +453,11 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     return TextField(
       key: ValueKey<String>('overview-field-$keyName'),
       controller: _field(keyName),
-      readOnly: !_isEditing,
+      readOnly: !_editController.isEditing,
       maxLines: maxLines,
       keyboardType: keyboardType,
       decoration: InputDecoration(labelText: label),
-      onChanged: _isEditing ? _onFieldChanged : null,
+      onChanged: _editController.isEditing ? _onFieldChanged : null,
     );
   }
 
@@ -504,9 +475,9 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
               TextField(
                 key: ValueKey<String>('overview-ap-$label'),
                 controller: controller,
-                readOnly: !_isEditing,
+                readOnly: !_editController.isEditing,
                 keyboardType: TextInputType.number,
-                onChanged: _isEditing ? _onFieldChanged : null,
+                onChanged: _editController.isEditing ? _onFieldChanged : null,
                 decoration: InputDecoration(labelText: label, isDense: true),
               ),
             ],
