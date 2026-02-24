@@ -11,11 +11,9 @@ import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 class StartupHeroImporter {
   const StartupHeroImporter({
     this.assetsPrefix = 'assets/heroes/',
-    this.assetManifestPath = 'AssetManifest.json',
   });
 
   final String assetsPrefix;
-  final String assetManifestPath;
 
   Future<void> importFromAssets(HeroRepository repository) async {
     final assetPaths = await _discoverHeroAssetPaths();
@@ -50,15 +48,11 @@ class StartupHeroImporter {
   }
 
   Future<List<String>> _discoverHeroAssetPaths() async {
-    final manifestRaw = await rootBundle.loadString(assetManifestPath);
-    final decoded = jsonDecode(manifestRaw);
-    if (decoded is! Map) {
-      return const <String>[];
-    }
+    final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+    final assets = manifest.listAssets();
 
     final paths = <String>[];
-    for (final entry in decoded.entries) {
-      final path = entry.key.toString();
+    for (final path in assets) {
       if (!path.startsWith(assetsPrefix)) {
         continue;
       }
