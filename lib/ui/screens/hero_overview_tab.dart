@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -136,6 +138,25 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('nachteile').text = hero.nachteileText;
     _field('ap_total').text = hero.apTotal.toString();
     _field('ap_spent').text = hero.apSpent.toString();
+    _field('b_lep').text = hero.bought.lep.toString();
+    _field('b_au').text = hero.bought.au.toString();
+    _field('b_asp').text = hero.bought.asp.toString();
+    _field('b_kap').text = hero.bought.kap.toString();
+    _field('b_mr').text = hero.bought.mr.toString();
+
+    _field('m_lep').text = hero.persistentMods.lep.toString();
+    _field('m_au').text = hero.persistentMods.au.toString();
+    _field('m_asp').text = hero.persistentMods.asp.toString();
+    _field('m_kap').text = hero.persistentMods.kap.toString();
+    _field('m_mr').text = hero.persistentMods.mr.toString();
+    _field('m_ini').text = hero.persistentMods.iniBase.toString();
+    _field('m_gs').text = hero.persistentMods.gs.toString();
+    _field('m_ausw').text = hero.persistentMods.ausweichen.toString();
+
+    _field('cur_lep').text = state.currentLep.toString();
+    _field('cur_au').text = state.currentAu.toString();
+    _field('cur_asp').text = state.currentAsp.toString();
+    _field('cur_kap').text = state.currentKap.toString();
 
     _field('mu').text = hero.attributes.mu.toString();
     _field('kl').text = hero.attributes.kl.toString();
@@ -216,6 +237,23 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       nachteileText: _field('nachteile').text.trim(),
       apTotal: _readInt('ap_total', min: 0),
       apSpent: _readInt('ap_spent', min: 0),
+      bought: BoughtStats(
+        lep: _readInt('b_lep', min: 0, max: 999),
+        au: _readInt('b_au', min: 0, max: 999),
+        asp: _readInt('b_asp', min: 0, max: 999),
+        kap: _readInt('b_kap', min: 0, max: 999),
+        mr: _readInt('b_mr', min: 0, max: 999),
+      ),
+      persistentMods: StatModifiers(
+        lep: _readInt('m_lep', min: -999999, max: 999999),
+        au: _readInt('m_au', min: -999999, max: 999999),
+        asp: _readInt('m_asp', min: -999999, max: 999999),
+        kap: _readInt('m_kap', min: -999999, max: 999999),
+        mr: _readInt('m_mr', min: -999999, max: 999999),
+        iniBase: _readInt('m_ini', min: -999999, max: 999999),
+        gs: _readInt('m_gs', min: -999999, max: 999999),
+        ausweichen: _readInt('m_ausw', min: -999999, max: 999999),
+      ),
       attributes: Attributes(
         mu: _readInt('mu', min: 0, max: 99),
         kl: _readInt('kl', min: 0, max: 99),
@@ -228,6 +266,10 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       ),
     );
     final updatedState = state.copyWith(
+      currentLep: _readInt('cur_lep', min: 0, max: 99999),
+      currentAu: _readInt('cur_au', min: 0, max: 99999),
+      currentAsp: _readInt('cur_asp', min: 0, max: 99999),
+      currentKap: _readInt('cur_kap', min: 0, max: 99999),
       tempAttributeMods: AttributeModifiers(
         mu: _readInt('mu_temp', min: -99, max: 99),
         kl: _readInt('kl_temp', min: -99, max: 99),
@@ -302,6 +344,12 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
             _buildAdvantagesSection(),
             const SizedBox(height: _sectionSpacing),
             _buildApSection(hero),
+            const SizedBox(height: _sectionSpacing),
+            _buildBoughtSection(),
+            const SizedBox(height: _sectionSpacing),
+            _buildModifiersSection(),
+            const SizedBox(height: _sectionSpacing),
+            _buildCurrentResourcesSection(),
             if (kShowParserWarnings && hero.unknownModifierFragments.isNotEmpty) ...[
               const SizedBox(height: _sectionSpacing),
               _buildParserWarningsSection(hero),
@@ -450,6 +498,36 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBoughtSection() {
+    return _SectionCard(
+      title: 'Zugekaufte Werte',
+      child: _numberGrid(['b_lep', 'b_au', 'b_asp', 'b_kap', 'b_mr']),
+    );
+  }
+
+  Widget _buildModifiersSection() {
+    return _SectionCard(
+      title: 'Modifikatoren',
+      child: _numberGrid([
+        'm_lep',
+        'm_au',
+        'm_asp',
+        'm_kap',
+        'm_mr',
+        'm_ini',
+        'm_gs',
+        'm_ausw',
+      ]),
+    );
+  }
+
+  Widget _buildCurrentResourcesSection() {
+    return _SectionCard(
+      title: 'Aktuelle Ressourcen',
+      child: _numberGrid(['cur_lep', 'cur_au', 'cur_asp', 'cur_kap']),
     );
   }
 
@@ -807,6 +885,44 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       decoration: _inputDecoration(label),
       onChanged: isReadOnly ? null : _onFieldChanged,
     );
+  }
+
+  Widget _numberGrid(List<String> keys) {
+    return _ResponsiveFieldGrid(
+      breakpoint: _standardTwoColumnBreakpoint,
+      children: keys
+          .map(
+            (key) => _buildInputField(
+              label: _labelForKey(key),
+              keyName: key,
+              keyboardType: TextInputType.number,
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+
+  String _labelForKey(String key) {
+    const labels = {
+      'b_lep': 'LeP gekauft',
+      'b_au': 'Au gekauft',
+      'b_asp': 'AsP gekauft',
+      'b_kap': 'KaP gekauft',
+      'b_mr': 'MR gekauft',
+      'm_lep': 'Mod LeP',
+      'm_au': 'Mod Au',
+      'm_asp': 'Mod AsP',
+      'm_kap': 'Mod KaP',
+      'm_mr': 'Mod MR',
+      'm_ini': 'Mod Ini',
+      'm_gs': 'Mod GS',
+      'm_ausw': 'Mod Ausweichen',
+      'cur_lep': 'LeP aktuell',
+      'cur_au': 'Au aktuell',
+      'cur_asp': 'AsP aktuell',
+      'cur_kap': 'KaP aktuell',
+    };
+    return labels[key] ?? key;
   }
 
   Widget _buildReadOnlyValueField({

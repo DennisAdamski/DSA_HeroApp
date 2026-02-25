@@ -79,10 +79,13 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Übersicht'), findsOneWidget);
-      expect(find.text('Basis'), findsOneWidget);
       expect(find.text('Kampf'), findsOneWidget);
       expect(find.text('MU: 14'), findsOneWidget);
       expect(find.text('KO: 14'), findsOneWidget);
+      expect(find.text('LEP: 10/22'), findsOneWidget);
+      expect(find.text('AU: 10/22'), findsOneWidget);
+      expect(find.text('ASP: 10/21'), findsOneWidget);
+      expect(find.text('KAP: 0/0'), findsOneWidget);
     },
   );
 

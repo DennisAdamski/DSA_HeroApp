@@ -164,6 +164,130 @@ void main() {
     expect(state!.tempAttributeMods.mu, 2);
   });
 
+  testWidgets(
+    'overview edit/save persists bought values, persistent modifiers, and current resources',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo);
+
+      await tester.tap(find.text('Bearbeiten').first);
+      await tester.pumpAndSettle();
+
+      final verticalScrollable = find.byWidgetPredicate(
+        (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      );
+      final boughtLepField = find.byKey(const ValueKey<String>('overview-field-b_lep'));
+      final modIniField = find.byKey(const ValueKey<String>('overview-field-m_ini'));
+      final currentKapField = find.byKey(const ValueKey<String>('overview-field-cur_kap'));
+
+      await tester.scrollUntilVisible(
+        boughtLepField,
+        240,
+        scrollable: verticalScrollable.first,
+      );
+      await tester.enterText(boughtLepField, '3');
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('overview-field-b_mr')),
+        '2',
+      );
+
+      await tester.scrollUntilVisible(
+        modIniField,
+        240,
+        scrollable: verticalScrollable.first,
+      );
+      await tester.enterText(modIniField, '5');
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('overview-field-m_lep')),
+        '-2',
+      );
+
+      await tester.scrollUntilVisible(
+        currentKapField,
+        240,
+        scrollable: verticalScrollable.first,
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('overview-field-cur_lep')),
+        '17',
+      );
+      await tester.enterText(currentKapField, '4');
+
+      await tester.tap(find.text('Speichern').first);
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = findHeroById(heroes, 'demo');
+      expect(hero, isNotNull);
+      expect(hero!.bought.lep, 3);
+      expect(hero.bought.mr, 2);
+      expect(hero.persistentMods.iniBase, 5);
+      expect(hero.persistentMods.lep, -2);
+
+      final state = await repo.loadHeroState('demo');
+      expect(state, isNotNull);
+      expect(state!.currentLep, 17);
+      expect(state.currentKap, 4);
+    },
+  );
+
+  testWidgets(
+    'header resources show current and max values after overview save',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo);
+      expect(find.text('LEP: 10/22'), findsOneWidget);
+
+      await tester.tap(find.text('Bearbeiten').first);
+      await tester.pumpAndSettle();
+
+      final verticalScrollable = find.byWidgetPredicate(
+        (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      );
+      final boughtLepField = find.byKey(const ValueKey<String>('overview-field-b_lep'));
+      final currentLepField = find.byKey(const ValueKey<String>('overview-field-cur_lep'));
+      await tester.scrollUntilVisible(
+        boughtLepField,
+        240,
+        scrollable: verticalScrollable.first,
+      );
+      await tester.enterText(boughtLepField, '2');
+      await tester.scrollUntilVisible(
+        currentLepField,
+        240,
+        scrollable: verticalScrollable.first,
+      );
+      await tester.enterText(currentLepField, '15');
+
+      await tester.tap(find.text('Speichern').first);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('LEP: 15/'), findsOneWidget);
+    },
+  );
+
   testWidgets('overview clamps attribute values to 0..99', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],

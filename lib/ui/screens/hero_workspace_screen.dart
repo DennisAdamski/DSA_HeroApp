@@ -6,7 +6,6 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_basis_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
@@ -17,7 +16,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_registry
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 const int _overviewTabIndex = 0;
-const int _basisTabIndex = 1;
 
 class HeroWorkspaceScreen extends ConsumerStatefulWidget {
   const HeroWorkspaceScreen({super.key, required this.heroId});
@@ -43,9 +41,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 7, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     _tabRegistry = WorkspaceTabRegistry(
-      editableTabs: const <int>{_overviewTabIndex, _basisTabIndex},
+      editableTabs: const <int>{_overviewTabIndex},
     );
     _tabController.addListener(_onTabControllerChanged);
   }
@@ -258,7 +256,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
             isScrollable: true,
             tabs: const [
               Tab(text: 'Übersicht'),
-              Tab(text: 'Basis'),
               Tab(text: 'Kampf'),
               Tab(text: 'Magie'),
               Tab(text: 'Talente'),
@@ -285,17 +282,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
                         _registerDiscard(_overviewTabIndex, discardAction),
                     onRegisterEditActions: (actions) =>
                         _registerEditActions(_overviewTabIndex, actions),
-                  ),
-                  HeroBasisTab(
-                    heroId: widget.heroId,
-                    onDirtyChanged: (isDirty) =>
-                        _updateDirty(_basisTabIndex, isDirty),
-                    onEditingChanged: (isEditing) =>
-                        _updateEditing(_basisTabIndex, isEditing),
-                    onRegisterDiscard: (discardAction) =>
-                        _registerDiscard(_basisTabIndex, discardAction),
-                    onRegisterEditActions: (actions) =>
-                        _registerEditActions(_basisTabIndex, actions),
                   ),
                   const _PlaceholderTab(title: 'Kampf'),
                   const _CatalogPlaceholderTab(
@@ -414,16 +400,31 @@ class _CoreAttributesHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final effectiveAsync = ref.watch(effectiveAttributesProvider(heroId));
+    final stateAsync = ref.watch(heroStateProvider(heroId));
+    final derivedAsync = ref.watch(derivedStatsProvider(heroId));
     final effectiveAttributes = effectiveAsync.valueOrNull ?? computeEffectiveAttributes(hero);
-    final attrs = [
-      ('MU', effectiveAttributes.mu),
-      ('KL', effectiveAttributes.kl),
-      ('IN', effectiveAttributes.inn),
-      ('CH', effectiveAttributes.ch),
-      ('FF', effectiveAttributes.ff),
-      ('GE', effectiveAttributes.ge),
-      ('KO', effectiveAttributes.ko),
-      ('KK', effectiveAttributes.kk),
+    final state = stateAsync.valueOrNull;
+    final derived = derivedAsync.valueOrNull;
+
+    String resourceText(int? current, int? max) {
+      final currentText = current?.toString() ?? '-';
+      final maxText = max?.toString() ?? '-';
+      return '$currentText/$maxText';
+    }
+
+    final chips = <String>[
+      'MU: ${effectiveAttributes.mu}',
+      'KL: ${effectiveAttributes.kl}',
+      'IN: ${effectiveAttributes.inn}',
+      'CH: ${effectiveAttributes.ch}',
+      'FF: ${effectiveAttributes.ff}',
+      'GE: ${effectiveAttributes.ge}',
+      'KO: ${effectiveAttributes.ko}',
+      'KK: ${effectiveAttributes.kk}',
+      'LEP: ${resourceText(state?.currentLep, derived?.maxLep)}',
+      'AU: ${resourceText(state?.currentAu, derived?.maxAu)}',
+      'ASP: ${resourceText(state?.currentAsp, derived?.maxAsp)}',
+      'KAP: ${resourceText(state?.currentKap, derived?.maxKap)}',
     ];
 
     return Container(
@@ -435,10 +436,10 @@ class _CoreAttributesHeader extends ConsumerWidget {
         runAlignment: WrapAlignment.center,
         spacing: 8,
         runSpacing: 8,
-        children: attrs
+        children: chips
             .map(
               (entry) => Chip(
-                label: Text('${entry.$1}: ${entry.$2}'),
+                label: Text(entry),
                 visualDensity: VisualDensity.compact,
               ),
             )
