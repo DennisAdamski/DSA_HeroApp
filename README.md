@@ -15,6 +15,18 @@ flutter test
 flutter run
 ```
 
+## iOS/Xcode setup (SPM-first)
+
+Fuer iOS-Builds auf Mac mit Xcode 15+:
+
+```bash
+bash tool/ios_bootstrap_spm.sh
+```
+
+Vollstaendige Anleitung:
+
+- `docs/ios_xcode_setup.md`
+
 ## Dateistatus (Stand: 2026-02-23)
 
 ### Runtime-relevant
