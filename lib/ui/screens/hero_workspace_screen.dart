@@ -269,7 +269,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         ),
         body: Column(
           children: [
-            _CoreAttributesHeader(hero: hero),
+            _CoreAttributesHeader(heroId: widget.heroId, hero: hero),
             _buildGlobalActionHeader(),
             Expanded(
               child: TabBarView(
@@ -405,14 +405,16 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   }
 }
 
-class _CoreAttributesHeader extends StatelessWidget {
-  const _CoreAttributesHeader({required this.hero});
+class _CoreAttributesHeader extends ConsumerWidget {
+  const _CoreAttributesHeader({required this.heroId, required this.hero});
 
+  final String heroId;
   final HeroSheet hero;
 
   @override
-  Widget build(BuildContext context) {
-    final effectiveAttributes = computeEffectiveAttributes(hero);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final effectiveAsync = ref.watch(effectiveAttributesProvider(heroId));
+    final effectiveAttributes = effectiveAsync.valueOrNull ?? computeEffectiveAttributes(hero);
     final attrs = [
       ('MU', effectiveAttributes.mu),
       ('KL', effectiveAttributes.kl),

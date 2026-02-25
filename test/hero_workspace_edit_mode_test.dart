@@ -98,8 +98,8 @@ void main() {
     final verticalScrollable = find.byWidgetPredicate(
       (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
     );
-    final apTotalField = find.byKey(const ValueKey<String>('overview-ap-AP Gesamt'));
-    final apSpentField = find.byKey(const ValueKey<String>('overview-ap-AP Ausgegeben'));
+    final apTotalField = find.byKey(const ValueKey<String>('overview-field-ap_total'));
+    final apSpentField = find.byKey(const ValueKey<String>('overview-field-ap_spent'));
     await tester.scrollUntilVisible(
       apTotalField,
       240,
@@ -121,7 +121,7 @@ void main() {
     expect(hero.level, 2);
   });
 
-  testWidgets('overview edit/save persists attribute changes', (tester) async {
+  testWidgets('overview edit/save persists attribute changes and temp mods', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -143,12 +143,14 @@ void main() {
       (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
     );
     final muField = find.byKey(const ValueKey<String>('overview-field-mu'));
+    final muTempField = find.byKey(const ValueKey<String>('overview-field-mu_temp'));
     await tester.scrollUntilVisible(
       muField,
       240,
       scrollable: verticalScrollable.first,
     );
     await tester.enterText(muField, '16');
+    await tester.enterText(muTempField, '2');
 
     await tester.tap(find.text('Speichern').first);
     await tester.pumpAndSettle();
@@ -157,6 +159,9 @@ void main() {
     final hero = findHeroById(heroes, 'demo');
     expect(hero, isNotNull);
     expect(hero!.attributes.mu, 16);
+    final state = await repo.loadHeroState('demo');
+    expect(state, isNotNull);
+    expect(state!.tempAttributeMods.mu, 2);
   });
 
   testWidgets('overview clamps attribute values to 0..99', (tester) async {
@@ -350,17 +355,22 @@ void main() {
 
     final nameFinder = find.byKey(const ValueKey<String>('overview-field-name'));
     final rasseFinder = find.byKey(const ValueKey<String>('overview-field-rasse'));
+    final rasseModFinder = find.byKey(const ValueKey<String>('overview-field-rasse_mod'));
 
     final nameWide = tester.getTopLeft(nameFinder).dy;
     final rasseWide = tester.getTopLeft(rasseFinder).dy;
-    expect((nameWide - rasseWide).abs(), lessThan(1));
+    final rasseModWide = tester.getTopLeft(rasseModFinder);
+    expect((nameWide - rasseWide).abs(), greaterThan(4));
+    expect((tester.getTopLeft(rasseFinder).dy - rasseModWide.dy).abs(), lessThan(1));
 
     tester.view.physicalSize = const Size(390, 1400);
     await tester.pumpAndSettle();
 
     final nameNarrow = tester.getTopLeft(nameFinder).dy;
     final rasseNarrow = tester.getTopLeft(rasseFinder).dy;
+    final rasseModNarrow = tester.getTopLeft(rasseModFinder).dy;
     expect((nameNarrow - rasseNarrow).abs(), greaterThan(4));
+    expect((rasseNarrow - rasseModNarrow).abs(), greaterThan(4));
   });
 
   testWidgets('overview shows attributes and derived in responsive section', (
@@ -397,6 +407,23 @@ void main() {
       scrollable: verticalScrollable.first,
     );
 
+    final muField = find.byKey(const ValueKey<String>('overview-field-mu'));
+    final klField = find.byKey(const ValueKey<String>('overview-field-kl'));
+    await tester.scrollUntilVisible(
+      muField,
+      240,
+      scrollable: verticalScrollable.first,
+    );
+    await tester.scrollUntilVisible(
+      klField,
+      240,
+      scrollable: verticalScrollable.first,
+    );
+    final muPosWide = tester.getTopLeft(muField);
+    final klPosWide = tester.getTopLeft(klField);
+    expect(klPosWide.dy, greaterThan(muPosWide.dy));
+    expect(klPosWide.dy - muPosWide.dy, lessThan(80));
+
     final attributesWide = tester.getTopLeft(attributesHeader);
     final derivedWide = tester.getTopLeft(derivedHeader);
     expect((attributesWide.dy - derivedWide.dy).abs(), lessThan(24));
@@ -415,6 +442,20 @@ void main() {
       240,
       scrollable: verticalScrollable.first,
     );
+
+    final attributesCard = find.ancestor(
+      of: attributesHeader,
+      matching: find.byType(Card),
+    ).first;
+    final horizontalScrollInAttributes = find.descendant(
+      of: attributesCard,
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is SingleChildScrollView &&
+            widget.scrollDirection == Axis.horizontal,
+      ),
+    );
+    expect(horizontalScrollInAttributes, findsOneWidget);
 
     final attributesNarrow = tester.getTopLeft(attributesHeader);
     final derivedNarrow = tester.getTopLeft(derivedHeader);

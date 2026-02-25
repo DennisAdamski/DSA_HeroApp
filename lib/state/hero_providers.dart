@@ -85,6 +85,22 @@ final heroStateProvider = FutureProvider.family<HeroState, String>((
   return (await repo.loadHeroState(heroId)) ?? const HeroState.empty();
 });
 
+/// Effektive Eigenschaften inklusive Text- und Zustand-Modifikatoren.
+final effectiveAttributesProvider = FutureProvider.family<Attributes, String>((
+  ref,
+  heroId,
+) async {
+  final hero = await ref.watch(heroByIdFutureProvider(heroId).future);
+  if (hero == null) {
+    throw StateError('Held mit ID "$heroId" wurde nicht gefunden.');
+  }
+  final state = await ref.watch(heroStateProvider(heroId).future);
+  return computeEffectiveAttributes(
+    hero,
+    tempAttributeMods: state.tempAttributeMods,
+  );
+});
+
 /// Abgeleitete Werte je Held, berechnet aus Sheet + State.
 final derivedStatsProvider = FutureProvider.family<DerivedStats, String>((
   ref,

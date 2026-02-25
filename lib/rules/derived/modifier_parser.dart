@@ -1,52 +1,8 @@
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
-
-/// Summierte Attributmodifikatoren aus Textfragmenten.
-class AttributeModifierSums {
-  const AttributeModifierSums({
-    this.mu = 0,
-    this.kl = 0,
-    this.inn = 0,
-    this.ch = 0,
-    this.ff = 0,
-    this.ge = 0,
-    this.ko = 0,
-    this.kk = 0,
-  });
-
-  final int mu;
-  final int kl;
-  final int inn;
-  final int ch;
-  final int ff;
-  final int ge;
-  final int ko;
-  final int kk;
-
-  AttributeModifierSums copyWith({
-    int? mu,
-    int? kl,
-    int? inn,
-    int? ch,
-    int? ff,
-    int? ge,
-    int? ko,
-    int? kk,
-  }) {
-    return AttributeModifierSums(
-      mu: mu ?? this.mu,
-      kl: kl ?? this.kl,
-      inn: inn ?? this.inn,
-      ch: ch ?? this.ch,
-      ff: ff ?? this.ff,
-      ge: ge ?? this.ge,
-      ko: ko ?? this.ko,
-      kk: kk ?? this.kk,
-    );
-  }
-}
 
 /// Parserergebnis fuer freie Modifikatortexte aus den Basisdaten.
 ///
@@ -54,12 +10,12 @@ class AttributeModifierSums {
 /// kann (`HeroSheet.unknownModifierFragments`).
 class ModifierParseResult {
   const ModifierParseResult({
-    this.attributeMods = const AttributeModifierSums(),
+    this.attributeMods = const AttributeModifiers(),
     this.statMods = const StatModifiers(),
     this.unknownFragments = const <String>[],
   });
 
-  final AttributeModifierSums attributeMods;
+  final AttributeModifiers attributeMods;
   final StatModifiers statMods;
   final List<String> unknownFragments;
 }
@@ -76,15 +32,21 @@ ModifierParseResult parseModifierTextsForHero(HeroSheet hero) {
 }
 
 /// Berechnet effektive Attribute inklusive Textmodifikatoren.
-Attributes computeEffectiveAttributes(HeroSheet hero) {
+Attributes computeEffectiveAttributes(
+  HeroSheet hero, {
+  AttributeModifiers tempAttributeMods = const AttributeModifiers(),
+}) {
   final parsed = parseModifierTextsForHero(hero);
-  return applyAttributeModifiers(hero.attributes, parsed.attributeMods);
+  return applyAttributeModifiers(
+    hero.attributes,
+    parsed.attributeMods + tempAttributeMods,
+  );
 }
 
 /// Addiert die Attributmodifikatoren auf den Basiswertesatz.
 Attributes applyAttributeModifiers(
   Attributes base,
-  AttributeModifierSums mods,
+  AttributeModifiers mods,
 ) {
   return base.copyWith(
     mu: base.mu + mods.mu,
@@ -108,7 +70,7 @@ ModifierParseResult parseModifierTexts({
   required String vorteileText,
   required String nachteileText,
 }) {
-  var attrMods = const AttributeModifierSums();
+  var attrMods = const AttributeModifiers();
   var statMods = const StatModifiers();
   final unknown = <String>[];
 
@@ -175,10 +137,10 @@ String _normalizeCode(String input) {
   return aliases[text] ?? text;
 }
 
-AttributeModifierSums? _applyAttributeCode(
+AttributeModifiers? _applyAttributeCode(
   String code,
   int amount,
-  AttributeModifierSums current,
+  AttributeModifiers current,
 ) {
   final parsed = parseAttributeCode(code);
   switch (parsed) {

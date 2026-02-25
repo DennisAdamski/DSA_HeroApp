@@ -44,6 +44,8 @@ void main() {
     expect(reloaded.apTotal, 2000);
     expect(reloaded.apAvailable, 500);
     expect(reloaded.unknownModifierFragments, contains('foo'));
+    expect(reloaded.startAttributes.mu, 12);
+    expect(reloaded.startAttributes.kk, 12);
   });
 
   test('hero sheet backwards compatibility for missing new fields', () {
@@ -70,5 +72,7 @@ void main() {
     expect(loaded.rasse, '');
     expect(loaded.apTotal, 0);
     expect(loaded.unknownModifierFragments, isEmpty);
+    expect(loaded.startAttributes.mu, loaded.attributes.mu);
+    expect(loaded.startAttributes.kk, loaded.attributes.kk);
   });
 }

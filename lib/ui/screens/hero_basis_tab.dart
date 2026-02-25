@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/ui_feature_flags.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
@@ -251,7 +253,9 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
       currentAu: _readInt('cur_au', min: 0, max: 99999),
       currentAsp: _readInt('cur_asp', min: 0, max: 99999),
       currentKap: _readInt('cur_kap', min: 0, max: 99999),
-      tempMods: const StatModifiers(),
+      tempMods: _latestState?.tempMods ?? const StatModifiers(),
+      tempAttributeMods:
+          _latestState?.tempAttributeMods ?? const AttributeModifiers(),
     );
 
     await actions.saveHero(updatedHero);
@@ -297,7 +301,7 @@ class _HeroBasisTabState extends ConsumerState<HeroBasisTab>
             _buildBiografieSection(),
             const SizedBox(height: _sectionSpacing),
             _buildApSection(),
-            if (hero.unknownModifierFragments.isNotEmpty) ...[
+            if (kShowParserWarnings && hero.unknownModifierFragments.isNotEmpty) ...[
               const SizedBox(height: _sectionSpacing),
               _buildParserWarningsSection(hero),
             ],

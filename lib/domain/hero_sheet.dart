@@ -17,6 +17,7 @@ class HeroSheet {
     required this.name,
     required this.level,
     required this.attributes,
+    Attributes? startAttributes,
     this.persistentMods = const StatModifiers(),
     this.bought = const BoughtStats(),
     this.talents = const <String, HeroTalentEntry>{},
@@ -43,13 +44,14 @@ class HeroSheet {
     this.apSpent = 0,
     this.apAvailable = 0,
     this.unknownModifierFragments = const <String>[],
-  });
+  }) : startAttributes = startAttributes ?? attributes;
 
   final String id;
   final int schemaVersion;
   final String name;
   final int level;
   final Attributes attributes;
+  final Attributes startAttributes;
   final StatModifiers persistentMods;
   final BoughtStats bought;
   final Map<String, HeroTalentEntry> talents;
@@ -84,6 +86,7 @@ class HeroSheet {
     String? name,
     int? level,
     Attributes? attributes,
+    Attributes? startAttributes,
     StatModifiers? persistentMods,
     BoughtStats? bought,
     Map<String, HeroTalentEntry>? talents,
@@ -117,6 +120,7 @@ class HeroSheet {
       name: name ?? this.name,
       level: level ?? this.level,
       attributes: attributes ?? this.attributes,
+      startAttributes: startAttributes ?? this.startAttributes,
       persistentMods: persistentMods ?? this.persistentMods,
       bought: bought ?? this.bought,
       talents: talents ?? this.talents,
@@ -156,6 +160,7 @@ class HeroSheet {
       'name': name,
       'level': level,
       'attributes': attributes.toJson(),
+      'startAttributes': startAttributes.toJson(),
       'persistentMods': persistentMods.toJson(),
       'bought': bought.toJson(),
       'talents': talents.map((key, value) => MapEntry(key, value.toJson())),
@@ -195,14 +200,22 @@ class HeroSheet {
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     String getString(String key) => (json[key] as String?) ?? '';
 
+    final parsedAttributes = Attributes.fromJson(
+      (json['attributes'] as Map?)?.cast<String, dynamic>() ?? const {},
+    );
+    final parsedStartAttributes = Attributes.fromJson(
+      (json['startAttributes'] as Map?)?.cast<String, dynamic>() ??
+          (json['attributes'] as Map?)?.cast<String, dynamic>() ??
+          const {},
+    );
+
     return HeroSheet(
       schemaVersion: (json['schemaVersion'] as num?)?.toInt() ?? 1,
       id: json['id'] as String,
       name: json['name'] as String? ?? 'Unbenannter Held',
       level: getInt('level') == 0 ? 1 : getInt('level'),
-      attributes: Attributes.fromJson(
-        (json['attributes'] as Map?)?.cast<String, dynamic>() ?? const {},
-      ),
+      attributes: parsedAttributes,
+      startAttributes: parsedStartAttributes,
       persistentMods: StatModifiers.fromJson(
         (json['persistentMods'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),

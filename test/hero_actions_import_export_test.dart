@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -90,6 +91,7 @@ void main() {
         currentAsp: 0,
         currentKap: 0,
         currentAu: 18,
+        tempAttributeMods: AttributeModifiers(mu: 3),
       ),
     );
 
@@ -104,6 +106,7 @@ void main() {
     expect(heroes.single.id, 'new-id');
     final state = await repo.loadHeroState('new-id');
     expect(state?.currentLep, 12);
+    expect(state?.tempAttributeMods.mu, 3);
   });
 
   test('conflict overwrite replaces existing hero and state', () async {

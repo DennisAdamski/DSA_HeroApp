@@ -37,7 +37,10 @@ class DerivedStats {
 DerivedStats computeDerivedStats(HeroSheet sheet, HeroState state) {
   final parsed = parseModifierTextsForHero(sheet);
   final effectiveSheet = sheet.copyWith(
-    attributes: applyAttributeModifiers(sheet.attributes, parsed.attributeMods),
+    attributes: computeEffectiveAttributes(
+      sheet,
+      tempAttributeMods: state.tempAttributeMods,
+    ),
   );
   final mods = sheet.persistentMods + parsed.statMods + state.tempMods;
 

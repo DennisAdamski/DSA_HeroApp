@@ -3,9 +3,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/ui_feature_flags.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
@@ -15,6 +20,7 @@ const double _fieldSpacing = 12;
 const double _gridSpacing = 12;
 const double _standardTwoColumnBreakpoint = 700;
 const double _largeTwoColumnBreakpoint = 900;
+const double _attributeValueCellWidth = 86;
 
 class HeroOverviewTab extends ConsumerStatefulWidget {
   const HeroOverviewTab({
@@ -41,8 +47,20 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   final Map<String, TextEditingController> _controllers =
       <String, TextEditingController>{};
 
+  static const List<(String, String)> _attributeEntries = [
+    ('MU', 'mu'),
+    ('KL', 'kl'),
+    ('IN', 'inn'),
+    ('CH', 'ch'),
+    ('FF', 'ff'),
+    ('GE', 'ge'),
+    ('KO', 'ko'),
+    ('KK', 'kk'),
+  ];
+
   late final WorkspaceTabEditController _editController;
   HeroSheet? _latestHero;
+  HeroState? _latestState;
 
   @override
   void initState() {
@@ -87,8 +105,11 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     return _controllers.putIfAbsent(key, () => TextEditingController());
   }
 
-  void _syncControllers(HeroSheet hero, {bool force = false}) {
-    final signature = jsonEncode(hero.toJson());
+  void _syncControllers(HeroSheet hero, HeroState state, {bool force = false}) {
+    final signature = jsonEncode({
+      'hero': hero.toJson(),
+      'state': state.toJson(),
+    });
     if (!_editController.shouldSync(signature, force: force)) {
       return;
     }
@@ -115,6 +136,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('nachteile').text = hero.nachteileText;
     _field('ap_total').text = hero.apTotal.toString();
     _field('ap_spent').text = hero.apSpent.toString();
+
     _field('mu').text = hero.attributes.mu.toString();
     _field('kl').text = hero.attributes.kl.toString();
     _field('inn').text = hero.attributes.inn.toString();
@@ -123,6 +145,24 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('ge').text = hero.attributes.ge.toString();
     _field('ko').text = hero.attributes.ko.toString();
     _field('kk').text = hero.attributes.kk.toString();
+
+    _field('mu_start').text = hero.startAttributes.mu.toString();
+    _field('kl_start').text = hero.startAttributes.kl.toString();
+    _field('inn_start').text = hero.startAttributes.inn.toString();
+    _field('ch_start').text = hero.startAttributes.ch.toString();
+    _field('ff_start').text = hero.startAttributes.ff.toString();
+    _field('ge_start').text = hero.startAttributes.ge.toString();
+    _field('ko_start').text = hero.startAttributes.ko.toString();
+    _field('kk_start').text = hero.startAttributes.kk.toString();
+
+    _field('mu_temp').text = state.tempAttributeMods.mu.toString();
+    _field('kl_temp').text = state.tempAttributeMods.kl.toString();
+    _field('inn_temp').text = state.tempAttributeMods.inn.toString();
+    _field('ch_temp').text = state.tempAttributeMods.ch.toString();
+    _field('ff_temp').text = state.tempAttributeMods.ff.toString();
+    _field('ge_temp').text = state.tempAttributeMods.ge.toString();
+    _field('ko_temp').text = state.tempAttributeMods.ko.toString();
+    _field('kk_temp').text = state.tempAttributeMods.kk.toString();
   }
 
   int _readInt(
@@ -146,7 +186,8 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
 
   Future<void> _saveChanges() async {
     final hero = _latestHero;
-    if (hero == null) {
+    final state = _latestState;
+    if (hero == null || state == null) {
       return;
     }
 
@@ -175,7 +216,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       nachteileText: _field('nachteile').text.trim(),
       apTotal: _readInt('ap_total', min: 0),
       apSpent: _readInt('ap_spent', min: 0),
-      attributes: hero.attributes.copyWith(
+      attributes: Attributes(
         mu: _readInt('mu', min: 0, max: 99),
         kl: _readInt('kl', min: 0, max: 99),
         inn: _readInt('inn', min: 0, max: 99),
@@ -186,8 +227,21 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         kk: _readInt('kk', min: 0, max: 99),
       ),
     );
+    final updatedState = state.copyWith(
+      tempAttributeMods: AttributeModifiers(
+        mu: _readInt('mu_temp', min: -99, max: 99),
+        kl: _readInt('kl_temp', min: -99, max: 99),
+        inn: _readInt('inn_temp', min: -99, max: 99),
+        ch: _readInt('ch_temp', min: -99, max: 99),
+        ff: _readInt('ff_temp', min: -99, max: 99),
+        ge: _readInt('ge_temp', min: -99, max: 99),
+        ko: _readInt('ko_temp', min: -99, max: 99),
+        kk: _readInt('kk_temp', min: -99, max: 99),
+      ),
+    );
 
     await ref.read(heroActionsProvider).saveHero(updatedHero);
+    await ref.read(heroActionsProvider).saveHeroState(updatedHero.id, updatedState);
     if (!mounted) {
       return;
     }
@@ -195,7 +249,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _editController.markSaved();
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Ãœbersicht gespeichert')));
+    ).showSnackBar(const SnackBar(content: Text('Uebersicht gespeichert')));
   }
 
   Future<void> _cancelChanges() async {
@@ -204,9 +258,10 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
 
   Future<void> _discardChanges() async {
     final hero = _latestHero;
-    if (hero != null) {
+    final state = _latestState;
+    if (hero != null && state != null) {
       _editController.clearSyncSignature();
-      _syncControllers(hero, force: true);
+      _syncControllers(hero, state, force: true);
     }
     _editController.markDiscarded();
   }
@@ -224,80 +279,124 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       return const Center(child: Text('Held nicht gefunden.'));
     }
 
-    _latestHero = hero;
-    _syncControllers(hero);
-
+    final stateAsync = ref.watch(heroStateProvider(widget.heroId));
     final derivedAsync = ref.watch(derivedStatsProvider(widget.heroId));
 
-    return ListView(
-      padding: const EdgeInsets.all(_pagePadding),
-      children: [
-        _buildBaseInfoSection(),
-        const SizedBox(height: _sectionSpacing),
-        _buildAdvantagesSection(),
-        const SizedBox(height: _sectionSpacing),
-        _buildApSection(hero),
-        if (hero.unknownModifierFragments.isNotEmpty) ...[
-          const SizedBox(height: _sectionSpacing),
-          _buildParserWarningsSection(hero),
-        ],
-        const SizedBox(height: _sectionSpacing),
-        derivedAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stackTrace) => Text('Fehler: $error'),
-          data: _buildCombinedStatsAndAttributesSection,
-        ),
-      ],
+    return stateAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Center(child: Text('Fehler: $error')),
+      data: (state) {
+        _latestHero = hero;
+        _latestState = state;
+        _syncControllers(hero, state);
+        final effectiveAttributes = computeEffectiveAttributes(
+          hero,
+          tempAttributeMods: state.tempAttributeMods,
+        );
+
+        return ListView(
+          padding: const EdgeInsets.all(_pagePadding),
+          children: [
+            _buildBaseInfoSection(),
+            const SizedBox(height: _sectionSpacing),
+            _buildAdvantagesSection(),
+            const SizedBox(height: _sectionSpacing),
+            _buildApSection(hero),
+            if (kShowParserWarnings && hero.unknownModifierFragments.isNotEmpty) ...[
+              const SizedBox(height: _sectionSpacing),
+              _buildParserWarningsSection(hero),
+            ],
+            const SizedBox(height: _sectionSpacing),
+            derivedAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) => Text('Fehler: $error'),
+              data: (derived) => _buildCombinedStatsAndAttributesSection(
+                hero,
+                state,
+                derived,
+                effectiveAttributes,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildBaseInfoSection() {
-    final fields = <_OverviewFieldSpec>[
-      const _OverviewFieldSpec(label: 'Name', key: 'name'),
-      const _OverviewFieldSpec(label: 'Rasse', key: 'rasse'),
-      const _OverviewFieldSpec(label: 'Rasse Modifikatoren', key: 'rasse_mod'),
-      const _OverviewFieldSpec(label: 'Kultur', key: 'kultur'),
-      const _OverviewFieldSpec(label: 'Kultur Modifikatoren', key: 'kultur_mod'),
-      const _OverviewFieldSpec(label: 'Profession', key: 'profession'),
-      const _OverviewFieldSpec(
-        label: 'Profession Modifikatoren',
-        key: 'profession_mod',
-      ),
-      const _OverviewFieldSpec(label: 'Geschlecht', key: 'geschlecht'),
-      const _OverviewFieldSpec(label: 'Alter', key: 'alter'),
-      const _OverviewFieldSpec(label: 'Groesse', key: 'groesse'),
-      const _OverviewFieldSpec(label: 'Gewicht', key: 'gewicht'),
-      const _OverviewFieldSpec(label: 'Haarfarbe', key: 'haarfarbe'),
-      const _OverviewFieldSpec(label: 'Augenfarbe', key: 'augenfarbe'),
-      const _OverviewFieldSpec(label: 'Aussehen', key: 'aussehen', maxLines: 2),
-      const _OverviewFieldSpec(label: 'Stand', key: 'stand'),
-      const _OverviewFieldSpec(label: 'Titel', key: 'titel'),
-      const _OverviewFieldSpec(
-        label: 'Familie/Herkunft/Hintergrund',
-        key: 'familie',
-        maxLines: 3,
-      ),
-      const _OverviewFieldSpec(
-        label: 'Sozialstatus',
-        key: 'sozialstatus',
-        keyboardType: TextInputType.number,
-      ),
-    ];
-
     return _SectionCard(
       title: 'Basisinformationen',
-      child: _ResponsiveFieldGrid(
-        breakpoint: _standardTwoColumnBreakpoint,
-        children: fields
-            .map(
-              (entry) => _buildInputField(
-                label: entry.label,
-                keyName: entry.key,
-                maxLines: entry.maxLines,
-                keyboardType: entry.keyboardType,
+      child: Column(
+        children: [
+          _buildInputField(label: 'Name', keyName: 'name'),
+          const SizedBox(height: _gridSpacing),
+          _ResponsiveFieldGrid(
+            breakpoint: _standardTwoColumnBreakpoint,
+            children: [
+              _buildInputField(label: 'Rasse', keyName: 'rasse'),
+              _buildInputField(label: 'Rasse Modifikatoren', keyName: 'rasse_mod'),
+            ],
+          ),
+          const SizedBox(height: _gridSpacing),
+          _ResponsiveFieldGrid(
+            breakpoint: _standardTwoColumnBreakpoint,
+            children: [
+              _buildInputField(label: 'Kultur', keyName: 'kultur'),
+              _buildInputField(
+                label: 'Kultur Modifikatoren',
+                keyName: 'kultur_mod',
               ),
-            )
-            .toList(growable: false),
+            ],
+          ),
+          const SizedBox(height: _gridSpacing),
+          _ResponsiveFieldGrid(
+            breakpoint: _standardTwoColumnBreakpoint,
+            children: [
+              _buildInputField(label: 'Profession', keyName: 'profession'),
+              _buildInputField(
+                label: 'Profession Modifikatoren',
+                keyName: 'profession_mod',
+              ),
+            ],
+          ),
+          const SizedBox(height: _gridSpacing),
+          _ResponsiveFieldGrid(
+            breakpoint: _standardTwoColumnBreakpoint,
+            children: [
+              _buildInputField(label: 'Geschlecht', keyName: 'geschlecht'),
+              _buildInputField(label: 'Alter', keyName: 'alter'),
+              _buildInputField(label: 'Groesse', keyName: 'groesse'),
+              _buildInputField(label: 'Gewicht', keyName: 'gewicht'),
+              _buildInputField(label: 'Haarfarbe', keyName: 'haarfarbe'),
+              _buildInputField(label: 'Augenfarbe', keyName: 'augenfarbe'),
+              _buildInputField(label: 'Stand', keyName: 'stand'),
+              _buildInputField(label: 'Titel', keyName: 'titel'),
+              _buildInputField(
+                label: 'Sozialstatus',
+                keyName: 'sozialstatus',
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          const SizedBox(height: _gridSpacing),
+          _ResponsiveFieldGrid(
+            breakpoint: _standardTwoColumnBreakpoint,
+            children: [
+              _buildInputField(
+                label: 'Aussehen',
+                keyName: 'aussehen',
+                minLines: 4,
+                maxLines: 6,
+              ),
+              _buildInputField(
+                label: 'Familie/Herkunft/Hintergrund',
+                keyName: 'familie',
+                minLines: 4,
+                maxLines: 6,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -305,11 +404,21 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   Widget _buildAdvantagesSection() {
     return _SectionCard(
       title: 'Vorteile und Nachteile',
-      child: Column(
+      child: _ResponsiveFieldGrid(
+        breakpoint: _standardTwoColumnBreakpoint,
         children: [
-          _buildInputField(label: 'Vorteile', keyName: 'vorteile', maxLines: 4),
-          const SizedBox(height: _fieldSpacing),
-          _buildInputField(label: 'Nachteile', keyName: 'nachteile', maxLines: 4),
+          _buildInputField(
+            label: 'Vorteile',
+            keyName: 'vorteile',
+            minLines: 2,
+            maxLines: null,
+          ),
+          _buildInputField(
+            label: 'Nachteile',
+            keyName: 'nachteile',
+            minLines: 2,
+            maxLines: null,
+          ),
         ],
       ),
     );
@@ -321,10 +430,24 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       child: _ResponsiveFieldGrid(
         breakpoint: _standardTwoColumnBreakpoint,
         children: [
-          _buildApEditorCard('AP Gesamt', _field('ap_total')),
-          _buildApEditorCard('AP Ausgegeben', _field('ap_spent')),
-          _buildApValueCard('AP VerfÃ¼gbar', hero.apAvailable.toString()),
-          _buildApValueCard('Level', hero.level.toString()),
+          _buildInputField(
+            label: 'AP Gesamt',
+            keyName: 'ap_total',
+            keyboardType: TextInputType.number,
+          ),
+          _buildInputField(
+            label: 'AP Ausgegeben',
+            keyName: 'ap_spent',
+            keyboardType: TextInputType.number,
+          ),
+          _buildReadOnlyValueField(
+            label: 'AP Verfuegbar',
+            value: hero.apAvailable.toString(),
+          ),
+          _buildReadOnlyValueField(
+            label: 'Level',
+            value: hero.level.toString(),
+          ),
         ],
       ),
     );
@@ -346,11 +469,16 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   @override
   bool get wantKeepAlive => true;
 
-  Widget _buildCombinedStatsAndAttributesSection(DerivedStats derived) {
+  Widget _buildCombinedStatsAndAttributesSection(
+    HeroSheet hero,
+    HeroState state,
+    DerivedStats derived,
+    Attributes effectiveAttributes,
+  ) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final derivedSection = _buildDerivedValuesSection(derived);
-        final attributesSection = _buildAttributesSection();
+        final derivedSection = _buildDerivedValuesSection(hero, state, derived);
+        final attributesSection = _buildAttributesSection(effectiveAttributes);
         if (constraints.maxWidth >= _largeTwoColumnBreakpoint) {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,122 +501,323 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     );
   }
 
-  Widget _buildDerivedValuesSection(DerivedStats derived) {
-    final entries = [
-      ('LeP Max', derived.maxLep),
-      ('Au Max', derived.maxAu),
-      ('AsP Max', derived.maxAsp),
-      ('KaP Max', derived.maxKap),
-      ('MR', derived.mr),
-      ('Ini-Basis', derived.iniBase),
-      ('GS', derived.gs),
-      ('Ausweichen', derived.ausweichen),
+  Widget _buildDerivedValuesSection(
+    HeroSheet hero,
+    HeroState state,
+    DerivedStats derived,
+  ) {
+    final parsed = parseModifierTextsForHero(hero);
+    final totalMods = hero.persistentMods + parsed.statMods + state.tempMods;
+    final entries = <_DerivedRow>[
+      _DerivedRow(
+        label: 'LeP Max',
+        current: derived.maxLep,
+        modifier: totalMods.lep + _cappedLevel(hero.level),
+        bought: hero.bought.lep,
+      ),
+      _DerivedRow(
+        label: 'Au Max',
+        current: derived.maxAu,
+        modifier: totalMods.au + hero.level * 2,
+        bought: hero.bought.au,
+      ),
+      _DerivedRow(
+        label: 'AsP Max',
+        current: derived.maxAsp,
+        modifier: totalMods.asp + hero.level * 2,
+        bought: hero.bought.asp,
+      ),
+      _DerivedRow(
+        label: 'KaP Max',
+        current: derived.maxKap,
+        modifier: totalMods.kap,
+        bought: hero.bought.kap,
+      ),
+      _DerivedRow(
+        label: 'MR',
+        current: derived.mr,
+        modifier: totalMods.mr,
+        bought: hero.bought.mr,
+      ),
+      _DerivedRow(
+        label: 'Ini-Basis',
+        current: derived.iniBase,
+        modifier: totalMods.iniBase,
+      ),
+      _DerivedRow(
+        label: 'GS',
+        current: derived.gs,
+        modifier: totalMods.gs,
+      ),
+      _DerivedRow(
+        label: 'Ausweichen',
+        current: derived.ausweichen,
+        modifier: totalMods.ausweichen,
+      ),
     ];
+
     return _SectionCard(
       title: 'Abgeleitete Werte',
-      child: Column(
-        children: entries
-            .map(
-              (entry) => Card(
-                margin: const EdgeInsets.only(bottom: _fieldSpacing),
-                child: ListTile(
-                  title: Text(entry.$1),
-                  trailing: Text(
-                    entry.$2.toString(),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 560),
+          child: Table(
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            columnWidths: const <int, TableColumnWidth>{
+              0: FixedColumnWidth(112),
+              1: FixedColumnWidth(_attributeValueCellWidth),
+              2: FixedColumnWidth(_attributeValueCellWidth),
+              3: FixedColumnWidth(_attributeValueCellWidth),
+              4: FixedColumnWidth(_attributeValueCellWidth),
+            },
+            children: [
+              TableRow(
+                children: [
+                  _buildAttributesTableHeaderCell('Wert'),
+                  _buildAttributesTableHeaderCell('Start'),
+                  _buildAttributesTableHeaderCell('Modifikator'),
+                  _buildAttributesTableHeaderCell('Aktuell'),
+                  _buildAttributesTableHeaderCell('Zugekauft'),
+                ],
+              ),
+              ...entries.map(
+                (entry) => TableRow(
+                  children: [
+                    _buildAttributesTableLabelCell(entry.label),
+                    _buildDerivedValueCell(
+                      value: (entry.current - entry.modifier - (entry.bought ?? 0))
+                          .toString(),
+                    ),
+                    _buildDerivedValueCell(value: entry.modifier.toString()),
+                    _buildDerivedValueCell(value: entry.current.toString()),
+                    _buildDerivedValueCell(
+                      value: entry.bought?.toString() ?? '-',
+                    ),
+                  ],
                 ),
               ),
-            )
-            .toList(growable: false),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildAttributesSection() {
-    final entries = [
-      ('MU', 'mu'),
-      ('KL', 'kl'),
-      ('IN', 'inn'),
-      ('CH', 'ch'),
-      ('FF', 'ff'),
-      ('GE', 'ge'),
-      ('KO', 'ko'),
-      ('KK', 'kk'),
-    ];
+  Widget _buildAttributesSection(Attributes effectiveAttributes) {
+    final rows = _attributeEntries.map((entry) {
+      final key = entry.$2;
+      final startKey = '${key}_start';
+      final tempKey = '${key}_temp';
+      final effective = _effectiveValueByKey(effectiveAttributes, key);
+      return TableRow(
+        children: [
+          _buildAttributesTableLabelCell(entry.$1),
+          _buildAttributesNumericCell(
+            keyName: startKey,
+            readOnly: true,
+          ),
+          _buildAttributesNumericCell(
+            keyName: key,
+            readOnly: false,
+          ),
+          _buildAttributesNumericCell(
+            keyName: tempKey,
+            readOnly: false,
+          ),
+          _buildAttributesComputedCell(
+            keyName: key,
+            value: effective.toString(),
+          ),
+        ],
+      );
+    }).toList(growable: false);
+
     return _SectionCard(
       title: 'Eigenschaften',
-      child: _ResponsiveFieldGrid(
-        breakpoint: _standardTwoColumnBreakpoint,
-        children: entries
-            .map(
-              (entry) => _buildInputField(
-                label: entry.$1,
-                keyName: entry.$2,
-                keyboardType: TextInputType.number,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 520),
+          child: Table(
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            columnWidths: const <int, TableColumnWidth>{
+              0: FixedColumnWidth(96),
+              1: FixedColumnWidth(_attributeValueCellWidth),
+              2: FixedColumnWidth(_attributeValueCellWidth),
+              3: FixedColumnWidth(_attributeValueCellWidth),
+              4: FixedColumnWidth(_attributeValueCellWidth),
+            },
+            children: [
+              TableRow(
+                children: [
+                  _buildAttributesTableHeaderCell('Eigenschaft'),
+                  _buildAttributesTableHeaderCell('Start'),
+                  _buildAttributesTableHeaderCell('Attribut'),
+                  _buildAttributesTableHeaderCell('Temp-Mod'),
+                  _buildAttributesTableHeaderCell('Berechnet'),
+                ],
               ),
-            )
-            .toList(growable: false),
+              ...rows,
+            ],
+          ),
+        ),
       ),
     );
+  }
+
+  Widget _buildAttributesTableHeaderCell(String text) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 6),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.labelMedium,
+      ),
+    );
+  }
+
+  Widget _buildAttributesTableLabelCell(String text) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
+    );
+  }
+
+  Widget _buildAttributesNumericCell({
+    required String keyName,
+    required bool readOnly,
+  }) {
+    final isReadOnly = readOnly || !_editController.isEditing;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
+      child: SizedBox(
+        width: _attributeValueCellWidth,
+        child: TextField(
+          key: ValueKey<String>('overview-field-$keyName'),
+          controller: _field(keyName),
+          readOnly: isReadOnly,
+          keyboardType: TextInputType.number,
+          decoration: _inputDecoration('').copyWith(
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 8,
+            ),
+          ),
+          onChanged: isReadOnly ? null : _onFieldChanged,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAttributesComputedCell({
+    required String keyName,
+    required String value,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
+      child: SizedBox(
+        width: _attributeValueCellWidth,
+        child: InputDecorator(
+          key: ValueKey<String>('overview-effective-$keyName'),
+          decoration: _inputDecoration('').copyWith(
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 8,
+            ),
+          ),
+          child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDerivedValueCell({required String value}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
+      child: SizedBox(
+        width: _attributeValueCellWidth,
+        child: InputDecorator(
+          decoration: _inputDecoration('').copyWith(
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 8,
+            ),
+          ),
+          child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
+        ),
+      ),
+    );
+  }
+
+  int _cappedLevel(int level) {
+    if (level < 0) {
+      return 0;
+    }
+    if (level > 21) {
+      return 21;
+    }
+    return level;
+  }
+
+  int _effectiveValueByKey(Attributes effective, String key) {
+    switch (key) {
+      case 'mu':
+        return effective.mu;
+      case 'kl':
+        return effective.kl;
+      case 'inn':
+        return effective.inn;
+      case 'ch':
+        return effective.ch;
+      case 'ff':
+        return effective.ff;
+      case 'ge':
+        return effective.ge;
+      case 'ko':
+        return effective.ko;
+      case 'kk':
+        return effective.kk;
+      default:
+        return 0;
+    }
   }
 
   Widget _buildInputField({
     required String label,
     required String keyName,
-    int maxLines = 1,
+    int? minLines,
+    int? maxLines = 1,
     TextInputType? keyboardType,
+    bool? readOnly,
   }) {
+    final isReadOnly = readOnly ?? !_editController.isEditing;
     return TextField(
       key: ValueKey<String>('overview-field-$keyName'),
       controller: _field(keyName),
-      readOnly: !_editController.isEditing,
+      readOnly: isReadOnly,
+      minLines: minLines,
       maxLines: maxLines,
       keyboardType: keyboardType,
       decoration: _inputDecoration(label),
-      onChanged: _editController.isEditing ? _onFieldChanged : null,
+      onChanged: isReadOnly ? null : _onFieldChanged,
     );
   }
 
-  Widget _buildApEditorCard(String label, TextEditingController controller) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
-            TextField(
-              key: ValueKey<String>('overview-ap-$label'),
-              controller: controller,
-              readOnly: !_editController.isEditing,
-              keyboardType: TextInputType.number,
-              onChanged: _editController.isEditing ? _onFieldChanged : null,
-              decoration: _inputDecoration(label),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildApValueCard(String label, String value) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ],
-        ),
-      ),
+  Widget _buildReadOnlyValueField({
+    required String label,
+    required String value,
+    Key? key,
+  }) {
+    return InputDecorator(
+      key: key,
+      decoration: _inputDecoration(label),
+      child: Text(value, style: Theme.of(context).textTheme.bodyLarge),
     );
   }
 
@@ -499,6 +828,20 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       border: const OutlineInputBorder(),
     );
   }
+}
+
+class _DerivedRow {
+  const _DerivedRow({
+    required this.label,
+    required this.current,
+    required this.modifier,
+    this.bought,
+  });
+
+  final String label;
+  final int current;
+  final int modifier;
+  final int? bought;
 }
 
 class _SectionCard extends StatelessWidget {
@@ -560,18 +903,4 @@ class _ResponsiveFieldGrid extends StatelessWidget {
       },
     );
   }
-}
-
-class _OverviewFieldSpec {
-  const _OverviewFieldSpec({
-    required this.label,
-    required this.key,
-    this.maxLines = 1,
-    this.keyboardType,
-  });
-
-  final String label;
-  final String key;
-  final int maxLines;
-  final TextInputType? keyboardType;
 }

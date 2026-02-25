@@ -22,48 +22,56 @@ class HeroTalentsTab extends ConsumerWidget {
     if (hero == null) {
       return const Center(child: Text('Held nicht gefunden.'));
     }
-    final effectiveAttributes = computeEffectiveAttributes(hero);
+    final heroStateAsync = ref.watch(heroStateProvider(heroId));
 
     final catalogAsync = ref.watch(rulesCatalogProvider);
 
-    return catalogAsync.when(
+    return heroStateAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) =>
-          Center(child: Text('Katalog-Fehler: $error')),
-      data: (catalog) {
-        final grouped = _groupTalents(catalog.talents);
-        final types = grouped.keys.toList()
-          ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+      error: (error, stackTrace) => Center(child: Text('Fehler: $error')),
+      data: (state) => catalogAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) =>
+            Center(child: Text('Katalog-Fehler: $error')),
+        data: (catalog) {
+          final effectiveAttributes = computeEffectiveAttributes(
+            hero,
+            tempAttributeMods: state.tempAttributeMods,
+          );
+          final grouped = _groupTalents(catalog.talents);
+          final types = grouped.keys.toList()
+            ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(12),
-          itemCount: types.length,
-          itemBuilder: (context, index) {
-            final type = types[index];
-            final talents = grouped[type]!
-              ..sort(
-                (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: types.length,
+            itemBuilder: (context, index) {
+              final type = types[index];
+              final talents = grouped[type]!
+                ..sort(
+                  (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+                );
+
+              return Card(
+                margin: const EdgeInsets.only(bottom: 10),
+                child: ExpansionTile(
+                  title: Text(type),
+                  subtitle: Text('${talents.length} Talente'),
+                  children: talents
+                      .map(
+                        (talent) => _TalentTile(
+                          hero: hero,
+                          talent: talent,
+                          effectiveAttributes: effectiveAttributes,
+                        ),
+                      )
+                      .toList(growable: false),
+                ),
               );
-
-            return Card(
-              margin: const EdgeInsets.only(bottom: 10),
-              child: ExpansionTile(
-                title: Text(type),
-                subtitle: Text('${talents.length} Talente'),
-                children: talents
-                    .map(
-                      (talent) => _TalentTile(
-                        hero: hero,
-                        talent: talent,
-                        effectiveAttributes: effectiveAttributes,
-                      ),
-                    )
-                    .toList(growable: false),
-              ),
-            );
-          },
-        );
-      },
+            },
+          );
+        },
+      ),
     );
   }
 

@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 
 /// Laufzeitzustand eines Helden, getrennt von den Stammdaten (`HeroSheet`).
@@ -6,21 +7,23 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 /// Modifikatoren, die nicht dauerhaft ins Heldenblatt geschrieben werden.
 class HeroState {
   const HeroState({
-    this.schemaVersion = 1,
+    this.schemaVersion = 2,
     required this.currentLep,
     required this.currentAsp,
     required this.currentKap,
     required this.currentAu,
     this.tempMods = const StatModifiers(),
+    this.tempAttributeMods = const AttributeModifiers(),
   });
 
   const HeroState.empty()
-      : schemaVersion = 1,
+      : schemaVersion = 2,
         currentLep = 0,
         currentAsp = 0,
         currentKap = 0,
         currentAu = 0,
-        tempMods = const StatModifiers();
+        tempMods = const StatModifiers(),
+        tempAttributeMods = const AttributeModifiers();
 
   final int schemaVersion;
   final int currentLep;
@@ -28,6 +31,7 @@ class HeroState {
   final int currentKap;
   final int currentAu;
   final StatModifiers tempMods;
+  final AttributeModifiers tempAttributeMods;
 
   /// Immutable Update fuer Teilmengen des Laufzeitzustands.
   HeroState copyWith({
@@ -36,6 +40,7 @@ class HeroState {
     int? currentKap,
     int? currentAu,
     StatModifiers? tempMods,
+    AttributeModifiers? tempAttributeMods,
   }) {
     return HeroState(
       schemaVersion: schemaVersion,
@@ -44,6 +49,7 @@ class HeroState {
       currentKap: currentKap ?? this.currentKap,
       currentAu: currentAu ?? this.currentAu,
       tempMods: tempMods ?? this.tempMods,
+      tempAttributeMods: tempAttributeMods ?? this.tempAttributeMods,
     );
   }
 
@@ -56,6 +62,7 @@ class HeroState {
       'currentKap': currentKap,
       'currentAu': currentAu,
       'tempMods': tempMods.toJson(),
+      'tempAttributeMods': tempAttributeMods.toJson(),
     };
   }
 
@@ -68,7 +75,13 @@ class HeroState {
       currentAsp: getInt('currentAsp'),
       currentKap: getInt('currentKap'),
       currentAu: getInt('currentAu'),
-      tempMods: StatModifiers.fromJson((json['tempMods'] as Map?)?.cast<String, dynamic>() ?? const {}),
+      tempMods: StatModifiers.fromJson(
+        (json['tempMods'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      tempAttributeMods: AttributeModifiers.fromJson(
+        (json['tempAttributeMods'] as Map?)?.cast<String, dynamic>() ??
+            const {},
+      ),
     );
   }
 }

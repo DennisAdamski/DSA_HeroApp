@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -28,6 +29,7 @@ void main() {
       currentAsp: 12,
       currentKap: 0,
       currentAu: 26,
+      tempAttributeMods: AttributeModifiers(mu: 2),
     );
     return HeroTransferBundle(
       exportedAt: DateTime.utc(2026, 2, 22, 12, 0, 0),
@@ -43,8 +45,10 @@ void main() {
     expect(reloaded.hero.id, bundle.hero.id);
     expect(reloaded.hero.name, bundle.hero.name);
     expect(reloaded.hero.rasse, bundle.hero.rasse);
+    expect(reloaded.hero.startAttributes.mu, bundle.hero.startAttributes.mu);
     expect(reloaded.state.currentLep, bundle.state.currentLep);
     expect(reloaded.state.currentAu, bundle.state.currentAu);
+    expect(reloaded.state.tempAttributeMods.mu, 2);
     expect(reloaded.exportedAt.toUtc(), bundle.exportedAt.toUtc());
   });
 

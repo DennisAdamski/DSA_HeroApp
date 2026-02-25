@@ -1,5 +1,6 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -13,9 +14,25 @@ void main() {
       id: 'h1',
       name: 'Testheld',
       level: 30,
-      attributes: Attributes(mu: 14, kl: 12, inn: 13, ch: 11, ff: 10, ge: 12, ko: 14, kk: 13),
+      attributes: Attributes(
+        mu: 14,
+        kl: 12,
+        inn: 13,
+        ch: 11,
+        ff: 10,
+        ge: 12,
+        ko: 14,
+        kk: 13,
+      ),
       bought: BoughtStats(lep: 1, au: 2, asp: 3, kap: 4, mr: 5),
-      persistentMods: StatModifiers(lep: 1, au: 1, asp: 1, kap: 1, mr: 1, iniBase: 1),
+      persistentMods: StatModifiers(
+        lep: 1,
+        au: 1,
+        asp: 1,
+        kap: 1,
+        mr: 1,
+        iniBase: 1,
+      ),
     );
 
     const state = HeroState(
@@ -24,16 +41,17 @@ void main() {
       currentKap: 0,
       currentAu: 0,
       tempMods: StatModifiers(lep: 1, au: 1, asp: 1, kap: 1, mr: 1, iniBase: 1),
+      tempAttributeMods: AttributeModifiers(mu: 4),
     );
 
     final d = computeDerivedStats(hero, state);
 
     expect(d.maxLep, 45);
-    expect(d.maxAu, 84);
-    expect(d.maxAsp, 84);
+    expect(d.maxAu, 86);
+    expect(d.maxAsp, 86);
     expect(d.maxKap, 6);
-    expect(d.mr, 15);
-    expect(d.iniBase, 13);
+    expect(d.mr, 16);
+    expect(d.iniBase, 15);
   });
 
   test('negative resources are clamped to zero', () {
@@ -61,8 +79,3 @@ void main() {
     expect(d.mr, 0);
   });
 }
-
-
-
-
-
