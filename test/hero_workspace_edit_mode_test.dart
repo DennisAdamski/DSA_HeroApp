@@ -187,20 +187,11 @@ void main() {
       final verticalScrollable = find.byWidgetPredicate(
         (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
       );
-      final boughtLepField = find.byKey(const ValueKey<String>('overview-field-b_lep'));
+      final boughtLepField = find.byKey(
+        const ValueKey<String>('overview-derived-bought-b_lep'),
+      );
       final modIniField = find.byKey(const ValueKey<String>('overview-field-m_ini'));
       final currentKapField = find.byKey(const ValueKey<String>('overview-field-cur_kap'));
-
-      await tester.scrollUntilVisible(
-        boughtLepField,
-        240,
-        scrollable: verticalScrollable.first,
-      );
-      await tester.enterText(boughtLepField, '3');
-      await tester.enterText(
-        find.byKey(const ValueKey<String>('overview-field-b_mr')),
-        '2',
-      );
 
       await tester.scrollUntilVisible(
         modIniField,
@@ -223,6 +214,17 @@ void main() {
         '17',
       );
       await tester.enterText(currentKapField, '4');
+
+      await tester.scrollUntilVisible(
+        boughtLepField,
+        240,
+        scrollable: verticalScrollable.first,
+      );
+      await tester.enterText(boughtLepField, '3');
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('overview-derived-bought-b_mr')),
+        '2',
+      );
 
       await tester.tap(find.text('Speichern').first);
       await tester.pumpAndSettle();
@@ -518,7 +520,7 @@ void main() {
       (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
     );
     final attributesHeader = find.text('Eigenschaften');
-    final derivedHeader = find.text('Abgeleitete Werte');
+    final derivedHeader = find.text('Basiswerte');
 
     await tester.scrollUntilVisible(
       attributesHeader,

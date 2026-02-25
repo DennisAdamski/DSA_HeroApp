@@ -592,30 +592,35 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         current: derived.maxLep,
         modifier: totalMods.lep + _cappedLevel(hero.level),
         bought: hero.bought.lep,
+        boughtKey: 'b_lep',
       ),
       _DerivedRow(
         label: 'Au Max',
         current: derived.maxAu,
         modifier: totalMods.au + hero.level * 2,
         bought: hero.bought.au,
+        boughtKey: 'b_au',
       ),
       _DerivedRow(
         label: 'AsP Max',
         current: derived.maxAsp,
         modifier: totalMods.asp + hero.level * 2,
         bought: hero.bought.asp,
+        boughtKey: 'b_asp',
       ),
       _DerivedRow(
         label: 'KaP Max',
         current: derived.maxKap,
         modifier: totalMods.kap,
         bought: hero.bought.kap,
+        boughtKey: 'b_kap',
       ),
       _DerivedRow(
         label: 'MR',
         current: derived.mr,
         modifier: totalMods.mr,
         bought: hero.bought.mr,
+        boughtKey: 'b_mr',
       ),
       _DerivedRow(
         label: 'Ini-Basis',
@@ -635,7 +640,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     ];
 
     return _SectionCard(
-      title: 'Abgeleitete Werte',
+      title: 'Basiswerte',
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
@@ -669,9 +674,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
                     ),
                     _buildDerivedValueCell(value: entry.modifier.toString()),
                     _buildDerivedValueCell(value: entry.current.toString()),
-                    _buildDerivedValueCell(
-                      value: entry.bought?.toString() ?? '-',
-                    ),
+                    _buildDerivedBoughtCell(entry),
                   ],
                 ),
               ),
@@ -833,6 +836,34 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     );
   }
 
+  Widget _buildDerivedBoughtCell(_DerivedRow entry) {
+    final keyName = entry.boughtKey;
+    if (keyName == null) {
+      return _buildDerivedValueCell(value: '-');
+    }
+    final isReadOnly = !_editController.isEditing;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
+      child: SizedBox(
+        width: _attributeValueCellWidth,
+        child: TextField(
+          key: ValueKey<String>('overview-derived-bought-$keyName'),
+          controller: _field(keyName),
+          readOnly: isReadOnly,
+          keyboardType: TextInputType.number,
+          decoration: _inputDecoration('').copyWith(
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 8,
+            ),
+          ),
+          onChanged: isReadOnly ? null : _onFieldChanged,
+        ),
+      ),
+    );
+  }
+
   int _cappedLevel(int level) {
     if (level < 0) {
       return 0;
@@ -952,12 +983,14 @@ class _DerivedRow {
     required this.current,
     required this.modifier,
     this.bought,
+    this.boughtKey,
   });
 
   final String label;
   final int current;
   final int modifier;
   final int? bought;
+  final String? boughtKey;
 }
 
 class _SectionCard extends StatelessWidget {
