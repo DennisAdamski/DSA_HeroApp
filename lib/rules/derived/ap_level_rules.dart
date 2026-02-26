@@ -3,7 +3,7 @@ import 'dart:math' as math;
 int computeLevelFromSpentAp(int spentAp) {
   final normalized = spentAp < 0 ? 0 : spentAp;
   final raw = math.sqrt(normalized / 50 + 0.25) + 0.5;
-  final level = raw.round();
+  final level = raw.floor();
   return level < 1 ? 1 : level;
 }
 

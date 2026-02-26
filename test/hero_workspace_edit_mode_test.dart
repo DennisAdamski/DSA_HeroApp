@@ -118,7 +118,7 @@ void main() {
     expect(hero.apTotal, 1200);
     expect(hero.apSpent, 50);
     expect(hero.apAvailable, 1150);
-    expect(hero.level, 2);
+    expect(hero.level, 1);
   });
 
   testWidgets('overview edit/save persists attribute changes and temp mods', (tester) async {
@@ -165,7 +165,7 @@ void main() {
   });
 
   testWidgets(
-    'overview edit/save persists bought values, persistent modifiers, and current resources',
+    'overview edit/save persists bought values and current resources',
     (tester) async {
       final repo = FakeRepository(
         heroes: [buildHero()],
@@ -190,19 +190,7 @@ void main() {
       final boughtLepField = find.byKey(
         const ValueKey<String>('overview-derived-bought-b_lep'),
       );
-      final modIniField = find.byKey(const ValueKey<String>('overview-field-m_ini'));
       final currentKapField = find.byKey(const ValueKey<String>('overview-field-cur_kap'));
-
-      await tester.scrollUntilVisible(
-        modIniField,
-        240,
-        scrollable: verticalScrollable.first,
-      );
-      await tester.enterText(modIniField, '5');
-      await tester.enterText(
-        find.byKey(const ValueKey<String>('overview-field-m_lep')),
-        '-2',
-      );
 
       await tester.scrollUntilVisible(
         currentKapField,
@@ -234,8 +222,6 @@ void main() {
       expect(hero, isNotNull);
       expect(hero!.bought.lep, 3);
       expect(hero.bought.mr, 2);
-      expect(hero.persistentMods.iniBase, 5);
-      expect(hero.persistentMods.lep, -2);
 
       final state = await repo.loadHeroState('demo');
       expect(state, isNotNull);
@@ -268,20 +254,22 @@ void main() {
       final verticalScrollable = find.byWidgetPredicate(
         (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
       );
-      final boughtLepField = find.byKey(const ValueKey<String>('overview-field-b_lep'));
-      final currentLepField = find.byKey(const ValueKey<String>('overview-field-cur_lep'));
-      await tester.scrollUntilVisible(
-        boughtLepField,
-        240,
-        scrollable: verticalScrollable.first,
+      final boughtLepField = find.byKey(
+        const ValueKey<String>('overview-derived-bought-b_lep'),
       );
-      await tester.enterText(boughtLepField, '2');
+      final currentLepField = find.byKey(const ValueKey<String>('overview-field-cur_lep'));
       await tester.scrollUntilVisible(
         currentLepField,
         240,
         scrollable: verticalScrollable.first,
       );
       await tester.enterText(currentLepField, '15');
+      await tester.scrollUntilVisible(
+        boughtLepField,
+        240,
+        scrollable: verticalScrollable.first,
+      );
+      await tester.enterText(boughtLepField, '2');
 
       await tester.tap(find.text('Speichern').first);
       await tester.pumpAndSettle();

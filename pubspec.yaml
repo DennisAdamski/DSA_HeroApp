@@ -26,6 +26,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/catalogs/house_rules_v1.json
+    - assets/catalogs/house_rules_v1/
     - assets/heroes/
 

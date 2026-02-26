@@ -1,0 +1,2054 @@
+﻿[
+    {
+        "id":  "tal_empathie",
+        "name":  "Empathie",
+        "group":  "Gabe",
+        "steigerung":  "F",
+        "attributes":  [
+                           "Mut",
+                           "Intuition",
+                           "Intuition"
+                       ],
+        "type":  "Gabe",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_gefahreninstinkt",
+        "name":  "Gefahreninstinkt",
+        "group":  "Gabe",
+        "steigerung":  "F",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Intuition"
+                       ],
+        "type":  "Gabe",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_geraeuschhexerei",
+        "name":  "Geräuschhexerei",
+        "group":  "Gabe",
+        "steigerung":  "F",
+        "attributes":  [
+                           "Intuition",
+                           "Charisma",
+                           "Konstitution"
+                       ],
+        "type":  "Gabe",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_kraefteschub",
+        "name":  "Kräfteschub",
+        "group":  "Gabe",
+        "steigerung":  "F",
+        "attributes":  [
+                           "Mut",
+                           "Intuition",
+                           "Konstitution"
+                       ],
+        "type":  "Gabe",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_talentschub",
+        "name":  "Talentschub",
+        "group":  "Gabe",
+        "steigerung":  "F",
+        "attributes":  [
+                           "Mut",
+                           "Intuition",
+                           "Konstitution"
+                       ],
+        "type":  "Gabe",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_magiegespuer",
+        "name":  "Magiegespür",
+        "group":  "Gabe",
+        "steigerung":  "F",
+        "attributes":  [
+                           "Mut",
+                           "Intuition",
+                           "Intuition"
+                       ],
+        "type":  "Gabe",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_prophezeien",
+        "name":  "Prophezeien",
+        "group":  "Gabe",
+        "steigerung":  "F",
+        "attributes":  [
+                           "Intuition",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Gabe",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_tierempathie",
+        "name":  "Tierempathie",
+        "group":  "Gabe",
+        "steigerung":  "F",
+        "attributes":  [
+                           "Mut",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Gabe",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_zwergennase",
+        "name":  "Zwergennase",
+        "group":  "Gabe",
+        "steigerung":  "F",
+        "attributes":  [
+                           "Intuition",
+                           "Intuition",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Gabe",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_athletik",
+        "name":  "Athletik",
+        "group":  "Körperliche Talente",
+        "steigerung":  "C",
+        "attributes":  [
+                           "Gewandheit",
+                           "Konstitution",
+                           "Körperkraft"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "x2",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_klettern",
+        "name":  "Klettern",
+        "group":  "Körperliche Talente",
+        "steigerung":  "D",
+        "attributes":  [
+                           "Mut",
+                           "Gewandheit",
+                           "Körperkraft"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "x2",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_koerperbeherrschung",
+        "name":  "Körperbeherrschung",
+        "group":  "Körperliche Talente",
+        "steigerung":  "D",
+        "attributes":  [
+                           "Mut",
+                           "Intuition",
+                           "Gewandheit"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "x2",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_schleichen",
+        "name":  "Schleichen",
+        "group":  "Körperliche Talente",
+        "steigerung":  "C",
+        "attributes":  [
+                           "Mut",
+                           "Intuition",
+                           "Gewandheit"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "x1",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_schwimmen",
+        "name":  "Schwimmen",
+        "group":  "Körperliche Talente",
+        "steigerung":  "D",
+        "attributes":  [
+                           "Gewandheit",
+                           "Konstitution",
+                           "Körperkraft"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "x2",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_selbstbeherrschung",
+        "name":  "Selbstbeherrschung",
+        "group":  "Körperliche Talente",
+        "steigerung":  "D",
+        "attributes":  [
+                           "Mut",
+                           "Konstitution",
+                           "Körperkraft"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_sich_verstecken",
+        "name":  "Sich Verstecken",
+        "group":  "Körperliche Talente",
+        "steigerung":  "C",
+        "attributes":  [
+                           "Mut",
+                           "Intuition",
+                           "Gewandheit"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "-2",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_singen",
+        "name":  "Singen",
+        "group":  "Körperliche Talente",
+        "steigerung":  "C",
+        "attributes":  [
+                           "Intuition",
+                           "Charisma",
+                           "Charisma"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "-3",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_sinnesschaerfe",
+        "name":  "Sinnesschärfe",
+        "group":  "Körperliche Talente",
+        "steigerung":  "D",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Intuition"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "spez.",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_tanzen",
+        "name":  "Tanzen",
+        "group":  "Körperliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Charisma",
+                           "Gewandheit",
+                           "Gewandheit"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "x2",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_zechen",
+        "name":  "Zechen",
+        "group":  "Körperliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Intuition",
+                           "Konstitution",
+                           "Körperkraft"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_akrobatik",
+        "name":  "Akrobatik",
+        "group":  "Körperliche Talente",
+        "steigerung":  "A",
+        "attributes":  [
+                           "Mut",
+                           "Gewandheit",
+                           "Körperkraft"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "x2",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_fliegen",
+        "name":  "Fliegen",
+        "group":  "Körperliche Talente",
+        "steigerung":  "D",
+        "attributes":  [
+                           "Mut",
+                           "Intuition",
+                           "Gewandheit"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "x1",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_gaukeleien",
+        "name":  "Gaukeleien",
+        "group":  "Körperliche Talente",
+        "steigerung":  "C",
+        "attributes":  [
+                           "Mut",
+                           "Charisma",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "x2",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_reiten",
+        "name":  "Reiten",
+        "group":  "Körperliche Talente",
+        "steigerung":  "D",
+        "attributes":  [
+                           "Charisma",
+                           "Gewandheit",
+                           "Körperkraft"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "-2",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_skifahren",
+        "name":  "Skifahren",
+        "group":  "Körperliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Gewandheit",
+                           "Gewandheit",
+                           "Konstitution"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "-2",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_stimmen_imitieren",
+        "name":  "Stimmen Imitieren",
+        "group":  "Körperliche Talente",
+        "steigerung":  "C",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "-4",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_taschendiebstahl",
+        "name":  "Taschendiebstahl",
+        "group":  "Körperliche Talente",
+        "steigerung":  "C",
+        "attributes":  [
+                           "Mut",
+                           "Intuition",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Körperliche Talente",
+        "be":  "x2",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_goetter_kulte",
+        "name":  "Götter / Kulte",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Intuition"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_rechnen",
+        "name":  "Rechnen",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Intuition"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_sagen_legenden",
+        "name":  "Sagen / Legenden",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_anatomie",
+        "name":  "Anatomie",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Mut",
+                           "Klugheit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_baukunst",
+        "name":  "Baukunst",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_brett_kartenspiel",
+        "name":  "Brett-/Kartenspiel",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Intuition"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_geographie",
+        "name":  "Geographie",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Intuition"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_geschichtswissen",
+        "name":  "Geschichtswissen",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Intuition"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_gesteinskunde",
+        "name":  "Gesteinskunde",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_heraldik",
+        "name":  "Heraldik",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_huettenkunde",
+        "name":  "Hüttenkunde",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Konstitution"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_kriegskunst",
+        "name":  "Kriegskunst",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Mut",
+                           "Klugheit",
+                           "Charisma"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_kryptographie",
+        "name":  "Kryptographie",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Intuition"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_magiekunde",
+        "name":  "Magiekunde",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Intuition"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_mechanik",
+        "name":  "Mechanik",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_pflanzenkunde",
+        "name":  "Pflanzenkunde",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_philosophie",
+        "name":  "Philosophie",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Intuition"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_rechtskunde",
+        "name":  "Rechtskunde",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Intuition"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_schaetzen",
+        "name":  "Schätzen",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Intuition"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_sprachenkunde",
+        "name":  "Sprachenkunde",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Intuition"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_staatskunst",
+        "name":  "Staatskunst",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_sternkunde",
+        "name":  "Sternkunde",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Intuition"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_tierkunde",
+        "name":  "Tierkunde",
+        "group":  "Wissenstalente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Mut",
+                           "Klugheit",
+                           "Intuition"
+                       ],
+        "type":  "Wissenstalente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_menschenkenntnis",
+        "name":  "Menschenkenntnis",
+        "group":  "Gesellschaftliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Gesellschaftliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_ueberreden",
+        "name":  "Überreden",
+        "group":  "Gesellschaftliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Mut",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Gesellschaftliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_betoeren",
+        "name":  "Betören",
+        "group":  "Gesellschaftliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Intuition",
+                           "Charisma",
+                           "Charisma"
+                       ],
+        "type":  "Gesellschaftliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_etikette",
+        "name":  "Etikette",
+        "group":  "Gesellschaftliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Gesellschaftliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_gassenwissen",
+        "name":  "Gassenwissen",
+        "group":  "Gesellschaftliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Gesellschaftliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_lehren",
+        "name":  "Lehren",
+        "group":  "Gesellschaftliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Gesellschaftliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_schauspielerei",
+        "name":  "Schauspielerei",
+        "group":  "Gesellschaftliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Mut",
+                           "Klugheit",
+                           "Charisma"
+                       ],
+        "type":  "Gesellschaftliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_schriftlicher_ausdruck",
+        "name":  "Schriftlicher Ausdruck",
+        "group":  "Gesellschaftliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Intuition"
+                       ],
+        "type":  "Gesellschaftliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_sich_verkleiden",
+        "name":  "Sich Verkleiden",
+        "group":  "Gesellschaftliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Mut",
+                           "Charisma",
+                           "Gewandheit"
+                       ],
+        "type":  "Gesellschaftliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_ueberzeugen",
+        "name":  "Überzeugen",
+        "group":  "Gesellschaftliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Gesellschaftliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_faehrtensuchen",
+        "name":  "Fährtensuchen",
+        "group":  "Natur Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Natur Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_orientierung",
+        "name":  "Orientierung",
+        "group":  "Natur Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Intuition"
+                       ],
+        "type":  "Natur Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_wildnisleben",
+        "name":  "Wildnisleben",
+        "group":  "Natur Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Intuition",
+                           "Gewandheit",
+                           "Konstitution"
+                       ],
+        "type":  "Natur Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_fallenstellen",
+        "name":  "Fallenstellen",
+        "group":  "Natur Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Natur Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_fesseln_entfesseln",
+        "name":  "Fesseln/Entfesseln",
+        "group":  "Natur Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Fingerfertigkeit",
+                           "Gewandheit",
+                           "Körperkraft"
+                       ],
+        "type":  "Natur Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_fischen_angeln",
+        "name":  "Fischen/Angeln",
+        "group":  "Natur Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Intuition",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Natur Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_wettervorhersage",
+        "name":  "Wettervorhersage",
+        "group":  "Natur Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Intuition"
+                       ],
+        "type":  "Natur Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_heilkunde_wunden",
+        "name":  "Heilkunde Wunden",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_holzbearbeitung",
+        "name":  "Holzbearbeitung",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_kochen",
+        "name":  "Kochen",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_lederarbeiten",
+        "name":  "Lederarbeiten",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_malen_zeichnen",
+        "name":  "Malen / Zeichnen",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_schneidern",
+        "name":  "Schneidern",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_abrichten",
+        "name":  "Abrichten",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Mut",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_ackerbau",
+        "name":  "Ackerbau",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Intuition",
+                           "Fingerfertigkeit",
+                           "Konstitution"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_alchemie",
+        "name":  "Alchemie",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Mut",
+                           "Klugheit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_bergbau",
+        "name":  "Bergbau",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Intuition",
+                           "Konstitution",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_bogenbau",
+        "name":  "Bogenbau",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_boote_fahren",
+        "name":  "Boote Fahren",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Gewandheit",
+                           "Konstitution",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_brauer",
+        "name":  "Brauer",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_drucker",
+        "name":  "Drucker",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_fahrzeug_lenken",
+        "name":  "Fahrzeug Lenken",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Intuition",
+                           "Charisma",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_falschspiel",
+        "name":  "Falschspiel",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Mut",
+                           "Charisma",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_feinmechanik",
+        "name":  "Feinmechanik",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_feuersteinbearbeitung",
+        "name":  "Feuersteinbearbeitung",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_fleischer",
+        "name":  "Fleischer",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_gerber_kuerschner",
+        "name":  "Gerber/Kürschner",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Konstitution"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_glaskunst",
+        "name":  "Glaskunst",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Konstitution"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_grobschmied",
+        "name":  "Grobschmied",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Fingerfertigkeit",
+                           "Konstitution",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_handel",
+        "name":  "Handel",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Charisma"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_hauswirtschaft",
+        "name":  "Hauswirtschaft",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Intuition",
+                           "Charisma",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_heilkunde_gift",
+        "name":  "Heilkunde Gift",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Mut",
+                           "Klugheit",
+                           "Intuition"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_heilkunde_krankheiten",
+        "name":  "Heilkunde Krankheiten",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Mut",
+                           "Klugheit",
+                           "Charisma"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_heilkunde_seele",
+        "name":  "Heilkunde Seele",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Intuition",
+                           "Charisma",
+                           "Charisma"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_instrumentenbauer",
+        "name":  "Instrumentenbauer",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_kartographie",
+        "name":  "Kartographie",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Klugheit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_kristallzucht",
+        "name":  "Kristallzucht",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_maurer",
+        "name":  "Maurer",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Fingerfertigkeit",
+                           "Gewandheit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_metallguss",
+        "name":  "Metallguss",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_musizieren",
+        "name":  "Musizieren",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Intuition",
+                           "Charisma",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_schloesser_knacken",
+        "name":  "Schlösser Knacken",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Intuition",
+                           "Fingerfertigkeit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_schnaps_brennen",
+        "name":  "Schnaps Brennen",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_seefahrt",
+        "name":  "Seefahrt",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Fingerfertigkeit",
+                           "Gewandheit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_seiler",
+        "name":  "Seiler",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Fingerfertigkeit",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_steinmetz",
+        "name":  "Steinmetz",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Fingerfertigkeit",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_steinschneider_juwelier",
+        "name":  "Steinschneider/Juwelier",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Intuition",
+                           "Fingerfertigkeit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_stellmacher",
+        "name":  "Stellmacher",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_stoffe_faerben",
+        "name":  "Stoffe Färben",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_taetowieren",
+        "name":  "Tätowieren",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Intuition",
+                           "Fingerfertigkeit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_toepfern",
+        "name":  "Töpfern",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Fingerfertigkeit"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_viehzucht",
+        "name":  "Viehzucht",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Intuition",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_webkunst",
+        "name":  "Webkunst",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Fingerfertigkeit",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_winzer",
+        "name":  "Winzer",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    },
+    {
+        "id":  "tal_zimmermann",
+        "name":  "Zimmermann",
+        "group":  "Handwerkliche Talente",
+        "steigerung":  "B",
+        "attributes":  [
+                           "Klugheit",
+                           "Fingerfertigkeit",
+                           "Körperkraft"
+                       ],
+        "type":  "Handwerkliche Talente",
+        "be":  "-",
+        "weaponCategory":  "",
+        "alternatives":  "",
+        "source":  "ListeTalente.xlsx:Tabelle1",
+        "description":  "",
+        "active":  true
+    }
+]
