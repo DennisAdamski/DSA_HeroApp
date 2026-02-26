@@ -32,6 +32,7 @@ void main() {
       apTotal: 2000,
       apSpent: 1500,
       apAvailable: 500,
+      hiddenTalentIds: ['tal_a', 'tal_a', ' ', 'tal_b'],
       unknownModifierFragments: ['foo'],
     );
 
@@ -43,6 +44,7 @@ void main() {
     expect(reloaded.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
     expect(reloaded.apAvailable, 500);
+    expect(reloaded.hiddenTalentIds, ['tal_a', 'tal_b']);
     expect(reloaded.unknownModifierFragments, contains('foo'));
     expect(reloaded.startAttributes.mu, 12);
     expect(reloaded.startAttributes.kk, 12);
@@ -71,6 +73,7 @@ void main() {
     final loaded = HeroSheet.fromJson(old);
     expect(loaded.rasse, '');
     expect(loaded.apTotal, 0);
+    expect(loaded.hiddenTalentIds, isEmpty);
     expect(loaded.unknownModifierFragments, isEmpty);
     expect(loaded.startAttributes.mu, loaded.attributes.mu);
     expect(loaded.startAttributes.kk, loaded.attributes.kk);

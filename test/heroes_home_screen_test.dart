@@ -78,8 +78,18 @@ void main() {
       await tester.tap(find.text('Rondra'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Übersicht'), findsOneWidget);
-      expect(find.text('Kampf'), findsOneWidget);
+      final tabLabels = tester
+          .widgetList<Tab>(find.byType(Tab))
+          .map((tab) => (tab.text ?? '').trim())
+          .toList(growable: false);
+      expect(tabLabels, [
+        'Übersicht',
+        'Talente',
+        'Kampf',
+        'Magie',
+        'Inventar',
+        'Notizen',
+      ]);
       expect(find.text('MU: 14'), findsOneWidget);
       expect(find.text('KO: 14'), findsOneWidget);
       expect(find.text('LEP: 10/22'), findsOneWidget);

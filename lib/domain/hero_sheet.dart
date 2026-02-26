@@ -21,6 +21,7 @@ class HeroSheet {
     this.persistentMods = const StatModifiers(),
     this.bought = const BoughtStats(),
     this.talents = const <String, HeroTalentEntry>{},
+    this.hiddenTalentIds = const <String>[],
     this.rasse = '',
     this.rasseModText = '',
     this.kultur = '',
@@ -55,6 +56,7 @@ class HeroSheet {
   final StatModifiers persistentMods;
   final BoughtStats bought;
   final Map<String, HeroTalentEntry> talents;
+  final List<String> hiddenTalentIds;
 
   final String rasse;
   final String rasseModText;
@@ -90,6 +92,7 @@ class HeroSheet {
     StatModifiers? persistentMods,
     BoughtStats? bought,
     Map<String, HeroTalentEntry>? talents,
+    List<String>? hiddenTalentIds,
     String? rasse,
     String? rasseModText,
     String? kultur,
@@ -124,6 +127,10 @@ class HeroSheet {
       persistentMods: persistentMods ?? this.persistentMods,
       bought: bought ?? this.bought,
       talents: talents ?? this.talents,
+      hiddenTalentIds:
+          hiddenTalentIds == null
+              ? this.hiddenTalentIds
+              : _normalizeHiddenTalentIds(hiddenTalentIds),
       rasse: rasse ?? this.rasse,
       rasseModText: rasseModText ?? this.rasseModText,
       kultur: kultur ?? this.kultur,
@@ -164,6 +171,7 @@ class HeroSheet {
       'persistentMods': persistentMods.toJson(),
       'bought': bought.toJson(),
       'talents': talents.map((key, value) => MapEntry(key, value.toJson())),
+      'hiddenTalentIds': _normalizeHiddenTalentIds(hiddenTalentIds),
       'rasse': rasse,
       'rasseModText': rasseModText,
       'kultur': kultur,
@@ -197,6 +205,8 @@ class HeroSheet {
         const <String, dynamic>{};
     final rawUnknown =
         (json['unknownModifierFragments'] as List?) ?? const <dynamic>[];
+    final rawHiddenTalentIds =
+        (json['hiddenTalentIds'] as List?) ?? const <dynamic>[];
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     String getString(String key) => (json[key] as String?) ?? '';
 
@@ -228,6 +238,7 @@ class HeroSheet {
             : const <String, dynamic>{};
         return MapEntry(key, HeroTalentEntry.fromJson(map));
       }),
+      hiddenTalentIds: _normalizeHiddenTalentIds(rawHiddenTalentIds),
       rasse: getString('rasse'),
       rasseModText: getString('rasseModText'),
       kultur: getString('kultur'),
@@ -255,4 +266,18 @@ class HeroSheet {
           .toList(growable: false),
     );
   }
+}
+
+List<String> _normalizeHiddenTalentIds(Iterable<dynamic> values) {
+  final seen = <String>{};
+  final normalized = <String>[];
+  for (final value in values) {
+    final id = value.toString().trim();
+    if (id.isEmpty || seen.contains(id)) {
+      continue;
+    }
+    seen.add(id);
+    normalized.add(id);
+  }
+  return normalized;
 }

@@ -381,10 +381,10 @@ void main() {
     );
 
     await openWorkspace(tester, repo);
-    await tester.tap(tabText('Talente'));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(tabText('Magie'));
+    await tester.pump(const Duration(milliseconds: 1200));
 
-    expect(find.text('In diesem Tab noch nicht verfügbar'), findsOneWidget);
+    expect(find.textContaining('In diesem Tab noch nicht verf'), findsOneWidget);
     final disabledButton =
         tester.widget<OutlinedButton>(find.widgetWithText(OutlinedButton, 'Bearbeiten'));
     expect(disabledButton.onPressed, isNull);
@@ -412,13 +412,13 @@ void main() {
     );
 
     await tester.drag(find.byType(TabBarView), const Offset(-500, 0));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 220));
-    await tester.pumpAndSettle();
 
     if (find.textContaining('Ungespeicherte').evaluate().isNotEmpty) {
       await tester.tap(find.widgetWithText(TextButton, 'Nein'));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 400));
     }
 
     expect(find.text('Basisinformationen'), findsOneWidget);

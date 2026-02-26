@@ -16,6 +16,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_registry
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 const int _overviewTabIndex = 0;
+const int _talentsTabIndex = 1;
+const int _combatTabIndex = 2;
 
 class HeroWorkspaceScreen extends ConsumerStatefulWidget {
   const HeroWorkspaceScreen({super.key, required this.heroId});
@@ -43,7 +45,11 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
     _tabRegistry = WorkspaceTabRegistry(
-      editableTabs: const <int>{_overviewTabIndex},
+      editableTabs: const <int>{
+        _overviewTabIndex,
+        _talentsTabIndex,
+        _combatTabIndex,
+      },
     );
     _tabController.addListener(_onTabControllerChanged);
   }
@@ -256,9 +262,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
             isScrollable: true,
             tabs: const [
               Tab(text: 'Übersicht'),
+              Tab(text: 'Talente'),
               Tab(text: 'Kampf'),
               Tab(text: 'Magie'),
-              Tab(text: 'Talente'),
               Tab(text: 'Inventar'),
               Tab(text: 'Notizen'),
             ],
@@ -283,12 +289,32 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
                     onRegisterEditActions: (actions) =>
                         _registerEditActions(_overviewTabIndex, actions),
                   ),
-                  const _PlaceholderTab(title: 'Kampf'),
+                  HeroTalentsTab(
+                    heroId: widget.heroId,
+                    onDirtyChanged: (isDirty) =>
+                        _updateDirty(_talentsTabIndex, isDirty),
+                    onEditingChanged: (isEditing) =>
+                        _updateEditing(_talentsTabIndex, isEditing),
+                    onRegisterDiscard: (discardAction) =>
+                        _registerDiscard(_talentsTabIndex, discardAction),
+                    onRegisterEditActions: (actions) =>
+                        _registerEditActions(_talentsTabIndex, actions),
+                  ),
+                  HeroCombatTalentsTab(
+                    heroId: widget.heroId,
+                    onDirtyChanged: (isDirty) =>
+                        _updateDirty(_combatTabIndex, isDirty),
+                    onEditingChanged: (isEditing) =>
+                        _updateEditing(_combatTabIndex, isEditing),
+                    onRegisterDiscard: (discardAction) =>
+                        _registerDiscard(_combatTabIndex, discardAction),
+                    onRegisterEditActions: (actions) =>
+                        _registerEditActions(_combatTabIndex, actions),
+                  ),
                   const _CatalogPlaceholderTab(
                     title: 'Magie',
                     section: _CatalogSection.spells,
                   ),
-                  HeroTalentsTab(heroId: widget.heroId),
                   const _CatalogPlaceholderTab(
                     title: 'Inventar',
                     section: _CatalogSection.weapons,
