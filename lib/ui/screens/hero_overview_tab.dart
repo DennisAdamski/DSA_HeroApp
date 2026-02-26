@@ -345,10 +345,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
             const SizedBox(height: _sectionSpacing),
             _buildApSection(hero),
             const SizedBox(height: _sectionSpacing),
-            _buildBoughtSection(),
-            const SizedBox(height: _sectionSpacing),
-            _buildModifiersSection(),
-            const SizedBox(height: _sectionSpacing),
             _buildCurrentResourcesSection(),
             if (kShowParserWarnings && hero.unknownModifierFragments.isNotEmpty) ...[
               const SizedBox(height: _sectionSpacing),
@@ -498,29 +494,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildBoughtSection() {
-    return _SectionCard(
-      title: 'Zugekaufte Werte',
-      child: _numberGrid(['b_lep', 'b_au', 'b_asp', 'b_kap', 'b_mr']),
-    );
-  }
-
-  Widget _buildModifiersSection() {
-    return _SectionCard(
-      title: 'Modifikatoren',
-      child: _numberGrid([
-        'm_lep',
-        'm_au',
-        'm_asp',
-        'm_kap',
-        'm_mr',
-        'm_ini',
-        'm_gs',
-        'm_ausw',
-      ]),
     );
   }
 

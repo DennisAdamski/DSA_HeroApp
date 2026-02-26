@@ -1,0 +1,14 @@
+﻿{
+    "version":  "house_rules_v1",
+    "source":  "ListeTalente.xlsx;ListeWaffenUndTalente.xlsx;ListeZaubersprueche.xlsx",
+    "metadata":  {
+                     "generatedBy":  "tool/convert_excel_to_catalog.py",
+                     "note":  "Generated from structured list files."
+                 },
+    "files":  {
+                  "talente":  "talente.json",
+                  "waffentalente":  "waffentalente.json",
+                  "waffen":  "waffen.json",
+                  "magie":  "magie.json"
+              }
+}
