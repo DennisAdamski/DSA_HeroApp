@@ -6,6 +6,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
@@ -18,6 +20,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 const int _overviewTabIndex = 0;
 const int _talentsTabIndex = 1;
 const int _combatTabIndex = 2;
+const int _inventoryTabIndex = 4;
 
 class HeroWorkspaceScreen extends ConsumerStatefulWidget {
   const HeroWorkspaceScreen({super.key, required this.heroId});
@@ -49,6 +52,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         _overviewTabIndex,
         _talentsTabIndex,
         _combatTabIndex,
+        _inventoryTabIndex,
       },
     );
     _tabController.addListener(_onTabControllerChanged);
@@ -300,7 +304,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
                     onRegisterEditActions: (actions) =>
                         _registerEditActions(_talentsTabIndex, actions),
                   ),
-                  HeroCombatTalentsTab(
+                  HeroCombatTab(
                     heroId: widget.heroId,
                     onDirtyChanged: (isDirty) =>
                         _updateDirty(_combatTabIndex, isDirty),
@@ -315,9 +319,16 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
                     title: 'Magie',
                     section: _CatalogSection.spells,
                   ),
-                  const _CatalogPlaceholderTab(
-                    title: 'Inventar',
-                    section: _CatalogSection.weapons,
+                  HeroInventoryTab(
+                    heroId: widget.heroId,
+                    onDirtyChanged: (isDirty) =>
+                        _updateDirty(_inventoryTabIndex, isDirty),
+                    onEditingChanged: (isEditing) =>
+                        _updateEditing(_inventoryTabIndex, isEditing),
+                    onRegisterDiscard: (discardAction) =>
+                        _registerDiscard(_inventoryTabIndex, discardAction),
+                    onRegisterEditActions: (actions) =>
+                        _registerEditActions(_inventoryTabIndex, actions),
                   ),
                   const _PlaceholderTab(title: 'Notizen'),
                 ],
@@ -428,7 +439,8 @@ class _CoreAttributesHeader extends ConsumerWidget {
     final effectiveAsync = ref.watch(effectiveAttributesProvider(heroId));
     final stateAsync = ref.watch(heroStateProvider(heroId));
     final derivedAsync = ref.watch(derivedStatsProvider(heroId));
-    final effectiveAttributes = effectiveAsync.valueOrNull ?? computeEffectiveAttributes(hero);
+    final effectiveAttributes =
+        effectiveAsync.valueOrNull ?? computeEffectiveAttributes(hero);
     final state = stateAsync.valueOrNull;
     final derived = derivedAsync.valueOrNull;
 

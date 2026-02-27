@@ -13,6 +13,9 @@ class DerivedStats {
     required this.maxKap,
     required this.mr,
     required this.iniBase,
+    required this.atBase,
+    required this.paBase,
+    required this.fkBase,
     required this.gs,
     required this.ausweichen,
   });
@@ -23,6 +26,9 @@ class DerivedStats {
   final int maxKap;
   final int mr;
   final int iniBase;
+  final int atBase;
+  final int paBase;
+  final int fkBase;
   final int gs;
   final int ausweichen;
 }
@@ -51,6 +57,9 @@ DerivedStats computeDerivedStats(HeroSheet sheet, HeroState state) {
     maxKap: computeMaxKap(effectiveSheet, mods),
     mr: computeMr(effectiveSheet, mods),
     iniBase: computeIniBase(effectiveSheet, mods),
+    atBase: computeAt(effectiveSheet, mods),
+    paBase: computePa(effectiveSheet, mods),
+    fkBase: computeFk(effectiveSheet, mods),
     gs: computeGs(effectiveSheet, mods),
     ausweichen: computeAusweichen(effectiveSheet, mods),
   );
