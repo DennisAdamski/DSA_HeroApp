@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
@@ -9,6 +10,7 @@ import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -138,6 +140,8 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('nachteile').text = hero.nachteileText;
     _field('ap_total').text = hero.apTotal.toString();
     _field('ap_spent').text = hero.apSpent.toString();
+    _field('ap_total_add').clear();
+    _field('ap_spent_add').clear();
     _field('b_lep').text = hero.bought.lep.toString();
     _field('b_au').text = hero.bought.au.toString();
     _field('b_asp').text = hero.bought.asp.toString();
@@ -308,6 +312,40 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
 
   void _onFieldChanged(String _) {
     _editController.markFieldChanged();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _applyApIncrement({
+    required String targetKey,
+    required String incrementKey,
+    required String label,
+  }) {
+    if (!_editController.isEditing) {
+      return;
+    }
+    final rawIncrement = _field(incrementKey).text.trim();
+    if (rawIncrement.isEmpty) {
+      return;
+    }
+    final increment = int.tryParse(rawIncrement);
+    if (increment == null || increment <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Fuer $label ist nur eine positive Ganzzahl erlaubt.'),
+        ),
+      );
+      return;
+    }
+    final updatedValue = _readInt(targetKey, min: 0) + increment;
+    _field(targetKey)
+      ..text = updatedValue.toString()
+      ..selection = TextSelection.collapsed(
+        offset: updatedValue.toString().length,
+      );
+    _field(incrementKey).clear();
+    _onFieldChanged(updatedValue.toString());
   }
 
   @override
@@ -471,31 +509,92 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   }
 
   Widget _buildApSection(HeroSheet hero) {
+    final isEditing = _editController.isEditing;
+    final apTotal = isEditing ? _readInt('ap_total', min: 0) : hero.apTotal;
+    final apSpent = isEditing ? _readInt('ap_spent', min: 0) : hero.apSpent;
+    final apAvailable = isEditing
+        ? computeAvailableAp(apTotal, apSpent)
+        : hero.apAvailable;
+    final level = isEditing ? computeLevelFromSpentAp(apSpent) : hero.level;
+
     return _SectionCard(
       title: 'AP und Level',
       child: _ResponsiveFieldGrid(
         breakpoint: _standardTwoColumnBreakpoint,
         children: [
-          _buildInputField(
+          _buildApInputWithAddButton(
             label: 'AP Gesamt',
             keyName: 'ap_total',
+            incrementKey: 'ap_total_add',
             keyboardType: TextInputType.number,
           ),
-          _buildInputField(
+          _buildApInputWithAddButton(
             label: 'AP Ausgegeben',
             keyName: 'ap_spent',
+            incrementKey: 'ap_spent_add',
             keyboardType: TextInputType.number,
           ),
           _buildReadOnlyValueField(
+            key: const ValueKey<String>('overview-readonly-ap_available'),
             label: 'AP Verfuegbar',
-            value: hero.apAvailable.toString(),
+            value: apAvailable.toString(),
           ),
           _buildReadOnlyValueField(
+            key: const ValueKey<String>('overview-readonly-level'),
             label: 'Level',
-            value: hero.level.toString(),
+            value: level.toString(),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildApInputWithAddButton({
+    required String label,
+    required String keyName,
+    required String incrementKey,
+    TextInputType? keyboardType,
+  }) {
+    final valueField = _buildInputField(
+      label: label,
+      keyName: keyName,
+      keyboardType: keyboardType,
+    );
+    if (!_editController.isEditing) {
+      return valueField;
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        valueField,
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                key: ValueKey<String>('overview-field-$incrementKey'),
+                controller: _field(incrementKey),
+                keyboardType: TextInputType.number,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                decoration: _inputDecoration('Addieren'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              key: ValueKey<String>('overview-action-$incrementKey'),
+              tooltip: '$label erhoehen',
+              onPressed: () => _applyApIncrement(
+                targetKey: keyName,
+                incrementKey: incrementKey,
+                label: label,
+              ),
+              icon: const Icon(Icons.add),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
