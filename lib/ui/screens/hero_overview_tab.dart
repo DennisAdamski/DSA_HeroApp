@@ -186,11 +186,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('kk_temp').text = state.tempAttributeMods.kk.toString();
   }
 
-  int _readInt(
-    String key, {
-    required int min,
-    int max = 999999,
-  }) {
+  int _readInt(String key, {required int min, int max = 999999}) {
     final parsed = int.tryParse(_field(key).text.trim()) ?? 0;
     if (parsed < min) {
       return min;
@@ -283,7 +279,9 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     );
 
     await ref.read(heroActionsProvider).saveHero(updatedHero);
-    await ref.read(heroActionsProvider).saveHeroState(updatedHero.id, updatedState);
+    await ref
+        .read(heroActionsProvider)
+        .saveHeroState(updatedHero.id, updatedState);
     if (!mounted) {
       return;
     }
@@ -346,7 +344,8 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
             _buildApSection(hero),
             const SizedBox(height: _sectionSpacing),
             _buildCurrentResourcesSection(),
-            if (kShowParserWarnings && hero.unknownModifierFragments.isNotEmpty) ...[
+            if (kShowParserWarnings &&
+                hero.unknownModifierFragments.isNotEmpty) ...[
               const SizedBox(height: _sectionSpacing),
               _buildParserWarningsSection(hero),
             ],
@@ -378,7 +377,10 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
             breakpoint: _standardTwoColumnBreakpoint,
             children: [
               _buildInputField(label: 'Rasse', keyName: 'rasse'),
-              _buildInputField(label: 'Rasse Modifikatoren', keyName: 'rasse_mod'),
+              _buildInputField(
+                label: 'Rasse Modifikatoren',
+                keyName: 'rasse_mod',
+              ),
             ],
           ),
           const SizedBox(height: _gridSpacing),
@@ -600,11 +602,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         current: derived.iniBase,
         modifier: totalMods.iniBase,
       ),
-      _DerivedRow(
-        label: 'GS',
-        current: derived.gs,
-        modifier: totalMods.gs,
-      ),
+      _DerivedRow(label: 'GS', current: derived.gs, modifier: totalMods.gs),
       _DerivedRow(
         label: 'Ausweichen',
         current: derived.ausweichen,
@@ -642,8 +640,9 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
                   children: [
                     _buildAttributesTableLabelCell(entry.label),
                     _buildDerivedValueCell(
-                      value: (entry.current - entry.modifier - (entry.bought ?? 0))
-                          .toString(),
+                      value:
+                          (entry.current - entry.modifier - (entry.bought ?? 0))
+                              .toString(),
                     ),
                     _buildDerivedValueCell(value: entry.modifier.toString()),
                     _buildDerivedValueCell(value: entry.current.toString()),
@@ -659,33 +658,29 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   }
 
   Widget _buildAttributesSection(Attributes effectiveAttributes) {
-    final rows = _attributeEntries.map((entry) {
-      final key = entry.$2;
-      final startKey = '${key}_start';
-      final tempKey = '${key}_temp';
-      final effective = _effectiveValueByKey(effectiveAttributes, key);
-      return TableRow(
-        children: [
-          _buildAttributesTableLabelCell(entry.$1),
-          _buildAttributesNumericCell(
-            keyName: startKey,
-            readOnly: true,
-          ),
-          _buildAttributesNumericCell(
-            keyName: key,
-            readOnly: false,
-          ),
-          _buildAttributesNumericCell(
-            keyName: tempKey,
-            readOnly: false,
-          ),
-          _buildAttributesComputedCell(
-            keyName: key,
-            value: effective.toString(),
-          ),
-        ],
-      );
-    }).toList(growable: false);
+    final rows = _attributeEntries
+        .map((entry) {
+          final key = entry.$2;
+          final startKey = '${key}_start';
+          final tempKey = '${key}_temp';
+          final effective = _effectiveValueByKey(effectiveAttributes, key);
+          return TableRow(
+            children: [
+              _buildAttributesTableLabelCell(entry.$1),
+              _buildAttributesNumericCell(
+                keyName: startKey,
+                isAdjustable: false,
+              ),
+              _buildAttributesNumericCell(keyName: key, isAdjustable: true),
+              _buildAttributesNumericCell(keyName: tempKey, isAdjustable: true),
+              _buildAttributesComputedCell(
+                keyName: key,
+                value: effective.toString(),
+              ),
+            ],
+          );
+        })
+        .toList(growable: false);
 
     return _SectionCard(
       title: 'Eigenschaften',
@@ -723,28 +718,29 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   Widget _buildAttributesTableHeaderCell(String text) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 0, 4, 6),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.labelMedium,
-      ),
+      child: Text(text, style: Theme.of(context).textTheme.labelMedium),
     );
   }
 
   Widget _buildAttributesTableLabelCell(String text) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.titleSmall,
-      ),
+      child: Text(text, style: Theme.of(context).textTheme.titleSmall),
     );
   }
 
   Widget _buildAttributesNumericCell({
     required String keyName,
-    required bool readOnly,
+    required bool isAdjustable,
   }) {
-    final isReadOnly = readOnly || !_editController.isEditing;
+    if (!isAdjustable) {
+      return _buildAttributesStaticCell(
+        key: ValueKey<String>('overview-field-$keyName'),
+        value: _field(keyName).text,
+      );
+    }
+
+    final isReadOnly = !_editController.isEditing;
     return Padding(
       padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
       child: SizedBox(
@@ -771,19 +767,20 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     required String keyName,
     required String value,
   }) {
+    return _buildAttributesStaticCell(
+      key: ValueKey<String>('overview-effective-$keyName'),
+      value: value,
+    );
+  }
+
+  Widget _buildAttributesStaticCell({required String value, Key? key}) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
+      key: key,
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
       child: SizedBox(
         width: _attributeValueCellWidth,
-        child: InputDecorator(
-          key: ValueKey<String>('overview-effective-$keyName'),
-          decoration: _inputDecoration('').copyWith(
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 8,
-            ),
-          ),
+        child: Align(
+          alignment: Alignment.centerLeft,
           child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
         ),
       ),
@@ -791,22 +788,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   }
 
   Widget _buildDerivedValueCell({required String value}) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
-      child: SizedBox(
-        width: _attributeValueCellWidth,
-        child: InputDecorator(
-          decoration: _inputDecoration('').copyWith(
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 8,
-            ),
-          ),
-          child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
-        ),
-      ),
-    );
+    return _buildAttributesStaticCell(value: value);
   }
 
   Widget _buildDerivedBoughtCell(_DerivedRow entry) {
@@ -878,6 +860,14 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     TextInputType? keyboardType,
     bool? readOnly,
   }) {
+    if (readOnly == true) {
+      return _buildLabeledStaticValueField(
+        key: ValueKey<String>('overview-field-$keyName'),
+        label: label,
+        value: _field(keyName).text,
+      );
+    }
+
     final isReadOnly = readOnly ?? !_editController.isEditing;
     return TextField(
       key: ValueKey<String>('overview-field-$keyName'),
@@ -934,10 +924,22 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     required String value,
     Key? key,
   }) {
-    return InputDecorator(
+    return _buildLabeledStaticValueField(key: key, label: label, value: value);
+  }
+
+  Widget _buildLabeledStaticValueField({
+    required String label,
+    required String value,
+    Key? key,
+  }) {
+    return Column(
       key: key,
-      decoration: _inputDecoration(label),
-      child: Text(value, style: Theme.of(context).textTheme.bodyLarge),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.labelMedium),
+        const SizedBox(height: 6),
+        Text(value, style: Theme.of(context).textTheme.bodyLarge),
+      ],
     );
   }
 
@@ -967,10 +969,7 @@ class _DerivedRow {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.child,
-  });
+  const _SectionCard({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -1014,12 +1013,7 @@ class _ResponsiveFieldGrid extends StatelessWidget {
           spacing: _gridSpacing,
           runSpacing: _gridSpacing,
           children: children
-              .map(
-                (child) => SizedBox(
-                  width: itemWidth,
-                  child: child,
-                ),
-              )
+              .map((child) => SizedBox(width: itemWidth, child: child))
               .toList(growable: false),
         );
       },
