@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 
 void main() {
   test('hero sheet roundtrip with expanded basis fields', () {
@@ -9,7 +10,16 @@ void main() {
       id: 'h1',
       name: 'Test',
       level: 3,
-      attributes: Attributes(mu: 12, kl: 12, inn: 12, ch: 12, ff: 12, ge: 12, ko: 12, kk: 12),
+      attributes: Attributes(
+        mu: 12,
+        kl: 12,
+        inn: 12,
+        ch: 12,
+        ff: 12,
+        ge: 12,
+        ko: 12,
+        kk: 12,
+      ),
       rasse: 'Mensch',
       kultur: 'Mittelreich',
       profession: 'Krieger',
@@ -32,6 +42,13 @@ void main() {
       apTotal: 2000,
       apSpent: 1500,
       apAvailable: 500,
+      talents: {
+        'tal_schwerter': HeroTalentEntry(
+          talentValue: 11,
+          atValue: 8,
+          paValue: 3,
+        ),
+      },
       hiddenTalentIds: ['tal_a', 'tal_a', ' ', 'tal_b'],
       unknownModifierFragments: ['foo'],
     );
@@ -48,6 +65,8 @@ void main() {
     expect(reloaded.unknownModifierFragments, contains('foo'));
     expect(reloaded.startAttributes.mu, 12);
     expect(reloaded.startAttributes.kk, 12);
+    expect(reloaded.talents['tal_schwerter']?.atValue, 8);
+    expect(reloaded.talents['tal_schwerter']?.paValue, 3);
   });
 
   test('hero sheet backwards compatibility for missing new fields', () {
@@ -68,6 +87,9 @@ void main() {
       },
       'persistentMods': {},
       'bought': {},
+      'talents': {
+        'tal_schwerter': {'talentValue': 5},
+      },
     };
 
     final loaded = HeroSheet.fromJson(old);
@@ -77,5 +99,7 @@ void main() {
     expect(loaded.unknownModifierFragments, isEmpty);
     expect(loaded.startAttributes.mu, loaded.attributes.mu);
     expect(loaded.startAttributes.kk, loaded.attributes.kk);
+    expect(loaded.talents['tal_schwerter']?.atValue, 0);
+    expect(loaded.talents['tal_schwerter']?.paValue, 0);
   });
 }

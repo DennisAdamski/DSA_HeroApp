@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -13,7 +14,10 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 void main() {
-  HeroSheet buildHero({List<String> hiddenTalentIds = const <String>[]}) {
+  HeroSheet buildHero({
+    List<String> hiddenTalentIds = const <String>[],
+    Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
+  }) {
     return HeroSheet(
       id: 'demo',
       name: 'Rondra',
@@ -28,6 +32,7 @@ void main() {
         ko: 14,
         kk: 13,
       ),
+      talents: talents,
       hiddenTalentIds: hiddenTalentIds,
     );
   }
@@ -120,9 +125,102 @@ void main() {
     expect(find.text('Dolche'), findsOneWidget);
     expect(find.text('Boegen'), findsOneWidget);
     expect(find.text('Athletik'), findsNothing);
+    expect(find.text('Waffengattung'), findsAtLeastNWidgets(1));
+    expect(find.text('Ersatzweise'), findsAtLeastNWidgets(1));
+    expect(find.text('AT'), findsAtLeastNWidgets(1));
+    expect(find.text('PA'), findsAtLeastNWidgets(1));
+    expect(find.text('Eigenschaften'), findsNothing);
   });
 
-  testWidgets('global edit flow persists combat talent changes', (tester) async {
+  testWidgets('blocks save for invalid Nahkampf AT/PA distribution', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openCombatTab(tester, repo, buildCatalog());
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_nah-talentValue')),
+      '11',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_nah-atValue')),
+      '9',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_nah-paValue')),
+      '1',
+    );
+
+    await actions.save();
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('AT + PA = TaW'), findsOneWidget);
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.talents['tal_nah']?.talentValue ?? 0, 0);
+    expect(hero.talents['tal_nah']?.atValue ?? 0, 0);
+    expect(hero.talents['tal_nah']?.paValue ?? 0, 0);
+  });
+
+  testWidgets('blocks save for invalid Fernkampf distribution', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openCombatTab(tester, repo, buildCatalog());
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_fern-talentValue')),
+      '7',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_fern-atValue')),
+      '6',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_fern-paValue')),
+      '1',
+    );
+
+    await actions.save();
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('AT = TaW und PA = 0'), findsOneWidget);
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.talents['tal_fern']?.talentValue ?? 0, 0);
+    expect(hero.talents['tal_fern']?.atValue ?? 0, 0);
+    expect(hero.talents['tal_fern']?.paValue ?? 0, 0);
+  });
+
+  testWidgets('global edit flow persists valid combat talent changes', (
+    tester,
+  ) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -143,6 +241,26 @@ void main() {
       find.byKey(const ValueKey<String>('talents-field-tal_nah-talentValue')),
       '8',
     );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_nah-atValue')),
+      '5',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_nah-paValue')),
+      '3',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_fern-talentValue')),
+      '7',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_fern-atValue')),
+      '7',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_fern-paValue')),
+      '0',
+    );
     final visibilityToggle = find.byKey(
       const ValueKey<String>('talents-visibility-tal_nah'),
     );
@@ -155,6 +273,11 @@ void main() {
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
     expect(hero.talents['tal_nah']?.talentValue, 8);
+    expect(hero.talents['tal_nah']?.atValue, 5);
+    expect(hero.talents['tal_nah']?.paValue, 3);
+    expect(hero.talents['tal_fern']?.talentValue, 7);
+    expect(hero.talents['tal_fern']?.atValue, 7);
+    expect(hero.talents['tal_fern']?.paValue, 0);
     expect(hero.hiddenTalentIds, contains('tal_nah'));
     expect(find.text('Dolche'), findsNothing);
   });
