@@ -614,21 +614,28 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     required int combatBaseBe,
     required int activeTalentBe,
   }) {
-    return Card(
+    final theme = Theme.of(context);
+    return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-        child: Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          crossAxisAlignment: WrapCrossAlignment.center,
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLowest,
+        border: Border(
+          bottom: BorderSide(color: theme.colorScheme.outlineVariant),
+        ),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
           children: [
-            Chip(
+            Text(
+              'BE (Kampf): ${_formatWholeNumber(combatBaseBe)}',
               key: const ValueKey<String>('talents-be-combat-default'),
-              label: Text('BE (Kampf): $combatBaseBe'),
+              style: theme.textTheme.labelLarge,
             ),
+            const SizedBox(width: 12),
             SizedBox(
-              width: 260,
+              width: 170,
               child: TextField(
                 key: const ValueKey<String>('talents-be-override-field'),
                 controller: _talentBeOverrideController,
@@ -639,7 +646,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                 decoration: const InputDecoration(
                   isDense: true,
                   border: OutlineInputBorder(),
-                  labelText: 'Temporaere BE-Ueberschreibung',
+                  labelText: 'BE Override',
                 ),
                 onChanged: _updateTalentBeOverride,
               ),
@@ -652,9 +659,11 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                   : _clearTalentBeOverride,
               icon: const Icon(Icons.clear),
             ),
-            Chip(
+            const SizedBox(width: 6),
+            Text(
+              'Aktive BE: ${_formatWholeNumber(activeTalentBe)}',
               key: const ValueKey<String>('talents-be-active-value'),
-              label: Text('Aktive BE: $activeTalentBe'),
+              style: theme.textTheme.labelLarge,
             ),
           ],
         ),
@@ -806,7 +815,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       _textCell(_fallback(talent.steigerung)),
       _textCell(_fallback(talent.be)),
       _textCell(
-        ebe.toString(),
+        _formatWholeNumber(ebe),
         key: ValueKey<String>('talents-field-${talent.id}-ebe-display'),
       ),
       _intInputCell(
@@ -823,7 +832,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         isEditing: isEditing,
       ),
       _textCell(
-        _calculateComputedTaw(entry, ebe).toString(),
+        _formatWholeNumber(_calculateComputedTaw(entry, ebe)),
         key: ValueKey<String>('talents-field-${talent.id}-computed-taw'),
       ),
       _intInputCell(
@@ -1147,6 +1156,16 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
 
   int _calculateComputedTaw(HeroTalentEntry entry, int ebe) {
     return entry.talentValue + entry.modifier + ebe;
+  }
+
+  String _formatWholeNumber(num value) {
+    if (value is int) {
+      return value.toString();
+    }
+    if (value == value.roundToDouble()) {
+      return value.toInt().toString();
+    }
+    return value.toString();
   }
 
   String _fallback(String value) {
