@@ -843,7 +843,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
                 children: [
                   _buildAttributesTableHeaderCell('Eigenschaft'),
                   _buildAttributesTableHeaderCell('Start'),
-                  _buildAttributesTableHeaderCell('Attribut'),
+                  _buildAttributesTableHeaderCell('Aktuell'),
                   _buildAttributesTableHeaderCell('Temp-Mod'),
                   _buildAttributesTableHeaderCell('Berechnet'),
                 ],
