@@ -517,91 +517,123 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         : hero.apAvailable;
     final level = isEditing ? computeLevelFromSpentAp(apSpent) : hero.level;
 
+    final rowItems = <Widget>[
+      _buildInputField(
+        label: 'AP Gesamt',
+        keyName: 'ap_total',
+        keyboardType: TextInputType.number,
+      ),
+      if (isEditing)
+        _buildApIncrementField(
+          label: 'AP Gesamt addieren',
+          incrementKey: 'ap_total_add',
+          onPressed: () => _applyApIncrement(
+            targetKey: 'ap_total',
+            incrementKey: 'ap_total_add',
+            label: 'AP Gesamt',
+          ),
+        ),
+      _buildInputField(
+        label: 'AP Ausgegeben',
+        keyName: 'ap_spent',
+        keyboardType: TextInputType.number,
+      ),
+      if (isEditing)
+        _buildApIncrementField(
+          label: 'AP Ausgegeben addieren',
+          incrementKey: 'ap_spent_add',
+          onPressed: () => _applyApIncrement(
+            targetKey: 'ap_spent',
+            incrementKey: 'ap_spent_add',
+            label: 'AP Ausgegeben',
+          ),
+        ),
+      _buildReadOnlyValueField(
+        key: const ValueKey<String>('overview-readonly-ap_available'),
+        label: 'AP Verfuegbar',
+        value: apAvailable.toString(),
+      ),
+      _buildReadOnlyValueField(
+        key: const ValueKey<String>('overview-readonly-level'),
+        label: 'Level',
+        value: level.toString(),
+      ),
+    ];
+
     return _SectionCard(
       title: 'AP und Level',
-      child: _ResponsiveFieldGrid(
-        breakpoint: _standardTwoColumnBreakpoint,
-        children: [
-          _buildApInputWithAddButton(
-            label: 'AP Gesamt',
-            keyName: 'ap_total',
-            incrementKey: 'ap_total_add',
-            keyboardType: TextInputType.number,
-          ),
-          _buildApInputWithAddButton(
-            label: 'AP Ausgegeben',
-            keyName: 'ap_spent',
-            incrementKey: 'ap_spent_add',
-            keyboardType: TextInputType.number,
-          ),
-          _buildReadOnlyValueField(
-            key: const ValueKey<String>('overview-readonly-ap_available'),
-            label: 'AP Verfuegbar',
-            value: apAvailable.toString(),
-          ),
-          _buildReadOnlyValueField(
-            key: const ValueKey<String>('overview-readonly-level'),
-            label: 'Level',
-            value: level.toString(),
-          ),
-        ],
-      ),
+      child: _buildSingleLineFieldsRow(children: rowItems),
     );
   }
 
-  Widget _buildApInputWithAddButton({
+  Widget _buildApIncrementField({
     required String label,
-    required String keyName,
     required String incrementKey,
-    TextInputType? keyboardType,
+    required VoidCallback onPressed,
   }) {
-    final valueField = _buildInputField(
-      label: label,
-      keyName: keyName,
-      keyboardType: keyboardType,
-    );
-    if (!_editController.isEditing) {
-      return valueField;
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        valueField,
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                key: ValueKey<String>('overview-field-$incrementKey'),
-                controller: _field(incrementKey),
-                keyboardType: TextInputType.number,
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                decoration: _inputDecoration('Addieren'),
-              ),
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              key: ValueKey<String>('overview-action-$incrementKey'),
-              tooltip: '$label erhoehen',
-              onPressed: () => _applyApIncrement(
-                targetKey: keyName,
-                incrementKey: incrementKey,
-                label: label,
-              ),
-              icon: const Icon(Icons.add),
-            ),
-          ],
-        ),
+    return TextField(
+      key: ValueKey<String>('overview-field-$incrementKey'),
+      controller: _field(incrementKey),
+      keyboardType: TextInputType.number,
+      inputFormatters: <TextInputFormatter>[
+        FilteringTextInputFormatter.digitsOnly,
       ],
+      decoration: _inputDecoration(label).copyWith(
+        suffixIcon: IconButton(
+          key: ValueKey<String>('overview-action-$incrementKey'),
+          tooltip: '$label anwenden',
+          onPressed: onPressed,
+          icon: const Icon(Icons.add),
+        ),
+      ),
     );
   }
 
   Widget _buildCurrentResourcesSection() {
     return _SectionCard(
       title: 'Aktuelle Ressourcen',
-      child: _numberGrid(['cur_lep', 'cur_au', 'cur_asp', 'cur_kap']),
+      child: _buildSingleLineFieldsRow(
+        children: [
+          _buildInputField(
+            label: 'LeP aktuell',
+            keyName: 'cur_lep',
+            keyboardType: TextInputType.number,
+          ),
+          _buildInputField(
+            label: 'AsP aktuell',
+            keyName: 'cur_asp',
+            keyboardType: TextInputType.number,
+          ),
+          _buildInputField(
+            label: 'Au aktuell',
+            keyName: 'cur_au',
+            keyboardType: TextInputType.number,
+          ),
+          _buildInputField(
+            label: 'KaP aktuell',
+            keyName: 'cur_kap',
+            keyboardType: TextInputType.number,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSingleLineFieldsRow({
+    required List<Widget> children,
+    double itemWidth = 200,
+  }) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < children.length; i++) ...[
+            SizedBox(width: itemWidth, child: children[i]),
+            if (i < children.length - 1) const SizedBox(width: _gridSpacing),
+          ],
+        ],
+      ),
     );
   }
 
@@ -988,44 +1020,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       decoration: _inputDecoration(label),
       onChanged: isReadOnly ? null : _onFieldChanged,
     );
-  }
-
-  Widget _numberGrid(List<String> keys) {
-    return _ResponsiveFieldGrid(
-      breakpoint: _standardTwoColumnBreakpoint,
-      children: keys
-          .map(
-            (key) => _buildInputField(
-              label: _labelForKey(key),
-              keyName: key,
-              keyboardType: TextInputType.number,
-            ),
-          )
-          .toList(growable: false),
-    );
-  }
-
-  String _labelForKey(String key) {
-    const labels = {
-      'b_lep': 'LeP gekauft',
-      'b_au': 'Au gekauft',
-      'b_asp': 'AsP gekauft',
-      'b_kap': 'KaP gekauft',
-      'b_mr': 'MR gekauft',
-      'm_lep': 'Mod LeP',
-      'm_au': 'Mod Au',
-      'm_asp': 'Mod AsP',
-      'm_kap': 'Mod KaP',
-      'm_mr': 'Mod MR',
-      'm_ini': 'Mod Ini',
-      'm_gs': 'Mod GS',
-      'm_ausw': 'Mod Ausweichen',
-      'cur_lep': 'LeP aktuell',
-      'cur_au': 'Au aktuell',
-      'cur_asp': 'AsP aktuell',
-      'cur_kap': 'KaP aktuell',
-    };
-    return labels[key] ?? key;
   }
 
   Widget _buildReadOnlyValueField({

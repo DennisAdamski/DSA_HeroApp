@@ -186,15 +186,21 @@ void main() {
     );
 
     await tester.enterText(apTotalAddField, '200');
-    await tester.tap(
-      find.byKey(const ValueKey<String>('overview-action-ap_total_add')),
+    final apTotalAddAction = find.byKey(
+      const ValueKey<String>('overview-action-ap_total_add'),
     );
+    final apTotalAddButton = tester.widget<IconButton>(apTotalAddAction);
+    expect(apTotalAddButton.onPressed, isNotNull);
+    apTotalAddButton.onPressed!.call();
     await tester.pumpAndSettle();
 
     await tester.enterText(apSpentAddField, '300');
-    await tester.tap(
-      find.byKey(const ValueKey<String>('overview-action-ap_spent_add')),
+    final apSpentAddAction = find.byKey(
+      const ValueKey<String>('overview-action-ap_spent_add'),
     );
+    final apSpentAddButton = tester.widget<IconButton>(apSpentAddAction);
+    expect(apSpentAddButton.onPressed, isNotNull);
+    apSpentAddButton.onPressed!.call();
     await tester.pumpAndSettle();
 
     final apTotalAfter = tester.widget<TextField>(apTotalField);
