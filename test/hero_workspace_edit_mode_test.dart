@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -71,7 +72,9 @@ void main() {
     return find.descendant(of: find.byType(TabBar), matching: find.text(label));
   }
 
-  testWidgets('overview edit/save persists values and derived AP+level', (tester) async {
+  testWidgets('overview edit/save persists values and derived AP+level', (
+    tester,
+  ) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -96,10 +99,15 @@ void main() {
     );
 
     final verticalScrollable = find.byWidgetPredicate(
-      (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      (widget) =>
+          widget is Scrollable && widget.axisDirection == AxisDirection.down,
     );
-    final apTotalField = find.byKey(const ValueKey<String>('overview-field-ap_total'));
-    final apSpentField = find.byKey(const ValueKey<String>('overview-field-ap_spent'));
+    final apTotalField = find.byKey(
+      const ValueKey<String>('overview-field-ap_total'),
+    );
+    final apSpentField = find.byKey(
+      const ValueKey<String>('overview-field-ap_spent'),
+    );
     await tester.scrollUntilVisible(
       apTotalField,
       240,
@@ -121,7 +129,9 @@ void main() {
     expect(hero.level, 1);
   });
 
-  testWidgets('overview edit/save persists attribute changes and temp mods', (tester) async {
+  testWidgets('overview AP add buttons increase values and recalculate level', (
+    tester,
+  ) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -140,10 +150,117 @@ void main() {
     await tester.pumpAndSettle();
 
     final verticalScrollable = find.byWidgetPredicate(
-      (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      (widget) =>
+          widget is Scrollable && widget.axisDirection == AxisDirection.down,
+    );
+    final apTotalField = find.byKey(
+      const ValueKey<String>('overview-field-ap_total'),
+    );
+    final apTotalAddField = find.byKey(
+      const ValueKey<String>('overview-field-ap_total_add'),
+    );
+    final apSpentAddField = find.byKey(
+      const ValueKey<String>('overview-field-ap_spent_add'),
+    );
+    await tester.scrollUntilVisible(
+      apTotalField,
+      240,
+      scrollable: verticalScrollable.first,
+    );
+
+    final totalAddWidget = tester.widget<TextField>(apTotalAddField);
+    final spentAddWidget = tester.widget<TextField>(apSpentAddField);
+    expect(totalAddWidget.controller?.text, isEmpty);
+    expect(spentAddWidget.controller?.text, isEmpty);
+    expect(
+      totalAddWidget.inputFormatters?.any(
+        (formatter) => formatter is FilteringTextInputFormatter,
+      ),
+      isTrue,
+    );
+    expect(
+      spentAddWidget.inputFormatters?.any(
+        (formatter) => formatter is FilteringTextInputFormatter,
+      ),
+      isTrue,
+    );
+
+    await tester.enterText(apTotalAddField, '200');
+    await tester.tap(
+      find.byKey(const ValueKey<String>('overview-action-ap_total_add')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(apSpentAddField, '300');
+    await tester.tap(
+      find.byKey(const ValueKey<String>('overview-action-ap_spent_add')),
+    );
+    await tester.pumpAndSettle();
+
+    final apTotalAfter = tester.widget<TextField>(apTotalField);
+    final apSpentAfter = tester.widget<TextField>(
+      find.byKey(const ValueKey<String>('overview-field-ap_spent')),
+    );
+    expect(apTotalAfter.controller?.text, '1200');
+    expect(apSpentAfter.controller?.text, '800');
+    expect(tester.widget<TextField>(apTotalAddField).controller?.text, isEmpty);
+    expect(tester.widget<TextField>(apSpentAddField).controller?.text, isEmpty);
+
+    final apAvailableField = find.byKey(
+      const ValueKey<String>('overview-readonly-ap_available'),
+    );
+    final levelField = find.byKey(
+      const ValueKey<String>('overview-readonly-level'),
+    );
+    expect(
+      find.descendant(of: apAvailableField, matching: find.text('400')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: levelField, matching: find.text('4')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Speichern').first);
+    await tester.pumpAndSettle();
+
+    final heroes = await repo.listHeroes();
+    final hero = findHeroById(heroes, 'demo');
+    expect(hero, isNotNull);
+    expect(hero!.apTotal, 1200);
+    expect(hero.apSpent, 800);
+    expect(hero.apAvailable, 400);
+    expect(hero.level, 4);
+  });
+
+  testWidgets('overview edit/save persists attribute changes and temp mods', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo);
+
+    await tester.tap(find.text('Bearbeiten').first);
+    await tester.pumpAndSettle();
+
+    final verticalScrollable = find.byWidgetPredicate(
+      (widget) =>
+          widget is Scrollable && widget.axisDirection == AxisDirection.down,
     );
     final muField = find.byKey(const ValueKey<String>('overview-field-mu'));
-    final muTempField = find.byKey(const ValueKey<String>('overview-field-mu_temp'));
+    final muTempField = find.byKey(
+      const ValueKey<String>('overview-field-mu_temp'),
+    );
     await tester.scrollUntilVisible(
       muField,
       240,
@@ -185,12 +302,15 @@ void main() {
       await tester.pumpAndSettle();
 
       final verticalScrollable = find.byWidgetPredicate(
-        (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+        (widget) =>
+            widget is Scrollable && widget.axisDirection == AxisDirection.down,
       );
       final boughtLepField = find.byKey(
         const ValueKey<String>('overview-derived-bought-b_lep'),
       );
-      final currentKapField = find.byKey(const ValueKey<String>('overview-field-cur_kap'));
+      final currentKapField = find.byKey(
+        const ValueKey<String>('overview-field-cur_kap'),
+      );
 
       await tester.scrollUntilVisible(
         currentKapField,
@@ -252,12 +372,15 @@ void main() {
       await tester.pumpAndSettle();
 
       final verticalScrollable = find.byWidgetPredicate(
-        (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+        (widget) =>
+            widget is Scrollable && widget.axisDirection == AxisDirection.down,
       );
       final boughtLepField = find.byKey(
         const ValueKey<String>('overview-derived-bought-b_lep'),
       );
-      final currentLepField = find.byKey(const ValueKey<String>('overview-field-cur_lep'));
+      final currentLepField = find.byKey(
+        const ValueKey<String>('overview-field-cur_lep'),
+      );
       await tester.scrollUntilVisible(
         currentLepField,
         240,
@@ -297,7 +420,8 @@ void main() {
     await tester.pumpAndSettle();
 
     final verticalScrollable = find.byWidgetPredicate(
-      (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      (widget) =>
+          widget is Scrollable && widget.axisDirection == AxisDirection.down,
     );
     final muField = find.byKey(const ValueKey<String>('overview-field-mu'));
     final klField = find.byKey(const ValueKey<String>('overview-field-kl'));
@@ -350,8 +474,9 @@ void main() {
     expect(hero, isNotNull);
     expect(hero!.name, 'Rondra');
 
-    final nameField =
-        tester.widget<TextField>(find.byKey(const ValueKey<String>('overview-field-name')));
+    final nameField = tester.widget<TextField>(
+      find.byKey(const ValueKey<String>('overview-field-name')),
+    );
     expect(nameField.controller?.text, 'Rondra');
   });
 
@@ -372,13 +497,19 @@ void main() {
     await tester.tap(tabText('Magie'));
     await tester.pump(const Duration(milliseconds: 1200));
 
-    expect(find.textContaining('In diesem Tab noch nicht verf'), findsOneWidget);
-    final disabledButton =
-        tester.widget<OutlinedButton>(find.widgetWithText(OutlinedButton, 'Bearbeiten'));
+    expect(
+      find.textContaining('In diesem Tab noch nicht verf'),
+      findsOneWidget,
+    );
+    final disabledButton = tester.widget<OutlinedButton>(
+      find.widgetWithText(OutlinedButton, 'Bearbeiten'),
+    );
     expect(disabledButton.onPressed, isNull);
   });
 
-  testWidgets('dirty tab switch keeps overview values when not discarded', (tester) async {
+  testWidgets('dirty tab switch keeps overview values when not discarded', (
+    tester,
+  ) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -410,8 +541,9 @@ void main() {
     }
 
     expect(find.text('Basisinformationen'), findsOneWidget);
-    final nameField =
-        tester.widget<TextField>(find.byKey(const ValueKey<String>('overview-field-name')));
+    final nameField = tester.widget<TextField>(
+      find.byKey(const ValueKey<String>('overview-field-name')),
+    );
     expect(nameField.controller?.text, 'Nicht speichern');
   });
 
@@ -452,7 +584,9 @@ void main() {
     expect(find.text('DSA Helden'), findsOneWidget);
   });
 
-  testWidgets('overview switches between two and one column layouts', (tester) async {
+  testWidgets('overview switches between two and one column layouts', (
+    tester,
+  ) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -467,15 +601,24 @@ void main() {
 
     await openWorkspace(tester, repo, size: const Size(1024, 1400));
 
-    final nameFinder = find.byKey(const ValueKey<String>('overview-field-name'));
-    final rasseFinder = find.byKey(const ValueKey<String>('overview-field-rasse'));
-    final rasseModFinder = find.byKey(const ValueKey<String>('overview-field-rasse_mod'));
+    final nameFinder = find.byKey(
+      const ValueKey<String>('overview-field-name'),
+    );
+    final rasseFinder = find.byKey(
+      const ValueKey<String>('overview-field-rasse'),
+    );
+    final rasseModFinder = find.byKey(
+      const ValueKey<String>('overview-field-rasse_mod'),
+    );
 
     final nameWide = tester.getTopLeft(nameFinder).dy;
     final rasseWide = tester.getTopLeft(rasseFinder).dy;
     final rasseModWide = tester.getTopLeft(rasseModFinder);
     expect((nameWide - rasseWide).abs(), greaterThan(4));
-    expect((tester.getTopLeft(rasseFinder).dy - rasseModWide.dy).abs(), lessThan(1));
+    expect(
+      (tester.getTopLeft(rasseFinder).dy - rasseModWide.dy).abs(),
+      lessThan(1),
+    );
 
     tester.view.physicalSize = const Size(390, 1400);
     await tester.pumpAndSettle();
@@ -505,7 +648,8 @@ void main() {
     await openWorkspace(tester, repo, size: const Size(1200, 1400));
 
     final verticalScrollable = find.byWidgetPredicate(
-      (widget) => widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      (widget) =>
+          widget is Scrollable && widget.axisDirection == AxisDirection.down,
     );
     final attributesHeader = find.text('Eigenschaften');
     final derivedHeader = find.text('Basiswerte');
@@ -557,10 +701,9 @@ void main() {
       scrollable: verticalScrollable.first,
     );
 
-    final attributesCard = find.ancestor(
-      of: attributesHeader,
-      matching: find.byType(Card),
-    ).first;
+    final attributesCard = find
+        .ancestor(of: attributesHeader, matching: find.byType(Card))
+        .first;
     final horizontalScrollInAttributes = find.descendant(
       of: attributesCard,
       matching: find.byWidgetPredicate(
