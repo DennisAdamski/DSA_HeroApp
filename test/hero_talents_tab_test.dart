@@ -4,8 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -13,11 +15,18 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 void main() {
-  HeroSheet buildHero({List<String> hiddenTalentIds = const <String>[]}) {
+  var tabOpenCounter = 0;
+
+  HeroSheet buildHero({
+    int level = 1,
+    List<String> hiddenTalentIds = const <String>[],
+    Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
+    CombatConfig combatConfig = const CombatConfig(),
+  }) {
     return HeroSheet(
       id: 'demo',
       name: 'Rondra',
-      level: 1,
+      level: level,
       attributes: const Attributes(
         mu: 14,
         kl: 12,
@@ -28,6 +37,8 @@ void main() {
         ko: 14,
         kk: 13,
       ),
+      talents: talents,
+      combatConfig: combatConfig,
       hiddenTalentIds: hiddenTalentIds,
     );
   }
@@ -42,6 +53,7 @@ void main() {
           name: 'Athletik',
           group: 'Koerper',
           steigerung: 'C',
+          be: 'x2',
           attributes: <String>['Mut', 'Gewandheit', 'Koerperkraft'],
         ),
         TalentDef(
@@ -90,6 +102,7 @@ void main() {
         child: MaterialApp(
           home: Scaffold(
             body: HeroTalentsTab(
+              key: ValueKey<String>('talents-tab-${tabOpenCounter++}'),
               heroId: 'demo',
               onDirtyChanged: (_) {},
               onEditingChanged: (_) {},
@@ -110,52 +123,57 @@ void main() {
   testWidgets(
     'grouped table renders with requested column order and hidden talents are excluded in normal mode',
     (tester) async {
-    final repo = FakeRepository(
-      heroes: [buildHero(hiddenTalentIds: const <String>['tal_b'])],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(hiddenTalentIds: const <String>['tal_b']),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
 
-    await openTalentsTab(tester, repo, buildCatalog());
+      await openTalentsTab(tester, repo, buildCatalog());
 
-    expect(find.text('Koerper'), findsOneWidget);
-    expect(find.text('Natur'), findsNothing);
-    expect(find.text('Ohne Gruppe'), findsOneWidget);
-    expect(find.text('Kampftalent'), findsNothing);
-    expect(find.text('Athletik'), findsOneWidget);
-    expect(find.text('Boote Fahren'), findsNothing);
-    expect(find.text('Schatzensuche'), findsOneWidget);
-    expect(find.text('Schwerter'), findsNothing);
-    expect(find.text('MU: 14 | GE: 12 | KK: 13'), findsOneWidget);
+      expect(find.text('Koerper'), findsOneWidget);
+      expect(find.text('Natur'), findsNothing);
+      expect(find.text('Ohne Gruppe'), findsOneWidget);
+      expect(find.text('Kampftalent'), findsNothing);
+      expect(find.text('Athletik'), findsOneWidget);
+      expect(find.text('Boote Fahren'), findsNothing);
+      expect(find.text('Schatzensuche'), findsOneWidget);
+      expect(find.text('Schwerter'), findsNothing);
+      expect(find.text('MU: 14 | GE: 12 | KK: 13'), findsOneWidget);
 
-    final headers = <String>[
-      'Talent-Name',
-      'Eigenschaften',
-      'Kompl.',
-      'BE',
-      'eBE',
-      'TaW',
-      'max TaW',
-      'Mod',
-      'TaW berechnet',
-      'SE',
-      'Spezialisierungen',
-      'Sonderfertigkeiten',
-    ];
-    for (var i = 0; i < headers.length - 1; i++) {
-      final left = tester.getTopLeft(find.text(headers[i]).first).dx;
-      final right = tester.getTopLeft(find.text(headers[i + 1]).first).dx;
-      expect(left, lessThan(right));
-    }
-  });
+      final headers = <String>[
+        'Talent-Name',
+        'Eigenschaften',
+        'Kompl.',
+        'BE',
+        'eBE',
+        'TaW',
+        'max TaW',
+        'Mod',
+        'TaW berechnet',
+        'SE',
+        'Spezialisierungen',
+        'Sonderfertigkeiten',
+      ];
+      for (var i = 0; i < headers.length - 1; i++) {
+        final left = tester.getTopLeft(find.text(headers[i]).first).dx;
+        final right = tester.getTopLeft(find.text(headers[i + 1]).first).dx;
+        expect(left, lessThan(right));
+      }
+    },
+  );
 
-  testWidgets('non-combat groups follow configured custom order', (tester) async {
+  testWidgets('non-combat groups follow configured custom order', (
+    tester,
+  ) async {
     final customCatalog = const RulesCatalog(
       version: 'test_catalog',
       source: 'test',
@@ -222,8 +240,13 @@ void main() {
       'Koerperliche Talente',
       'Gesellschaftliche Talente',
       'Natur Talente',
-      'Wissenstalente',
     ]);
+    await tester.scrollUntilVisible(
+      find.text('Wissenstalente'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Wissenstalente'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Handwerkliche Talente'),
       300,
@@ -236,7 +259,9 @@ void main() {
     tester,
   ) async {
     final repo = FakeRepository(
-      heroes: [buildHero(hiddenTalentIds: const <String>['tal_b'])],
+      heroes: [
+        buildHero(hiddenTalentIds: const <String>['tal_b']),
+      ],
       states: {
         'demo': const HeroState(
           currentLep: 10,
@@ -252,14 +277,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Boote Fahren (ausgeblendet)'), findsOneWidget);
-    expect(find.byKey(const ValueKey<String>('talents-visibility-tal_b')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('talents-visibility-tal_b')),
+      findsOneWidget,
+    );
     final field = tester.widget<TextField>(
       find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
     );
     expect(field.readOnly, isFalse);
   });
 
-  testWidgets('save persists edited values and hidden-state changes', (tester) async {
+  testWidgets('save persists edited values and hidden-state changes', (
+    tester,
+  ) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -332,5 +362,236 @@ void main() {
     expect(hero.hiddenTalentIds, isNot(contains('tal_a')));
     expect(hero.talents['tal_a'], isNull);
     expect(find.text('Athletik'), findsOneWidget);
+  });
+
+  testWidgets('non-combat talents use BE (Kampf) for eBE and computed TaW', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          level: 7,
+          talents: const <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(talentValue: 7, modifier: 1),
+          },
+          combatConfig: const CombatConfig(
+            armor: ArmorConfig(
+              beTotalRaw: 4,
+              armorTrainingLevel: 1,
+              rgIActive: true,
+            ),
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openTalentsTab(tester, repo, buildCatalog());
+
+    expect(
+      find.descendant(
+        of: find.byKey(
+          const ValueKey<String>('talents-field-tal_a-ebe-display'),
+        ),
+        matching: find.text('-6'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(
+          const ValueKey<String>('talents-field-tal_a-computed-taw'),
+        ),
+        matching: find.text('2'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'temporary BE override updates eBE and computed TaW immediately',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            level: 7,
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(talentValue: 7, modifier: 1),
+            },
+            combatConfig: const CombatConfig(
+              armor: ArmorConfig(
+                beTotalRaw: 4,
+                armorTrainingLevel: 1,
+                rgIActive: true,
+              ),
+            ),
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openTalentsTab(tester, repo, buildCatalog());
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talents-be-override-field')),
+        '1',
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(
+          of: find.byKey(
+            const ValueKey<String>('talents-field-tal_a-ebe-display'),
+          ),
+          matching: find.text('-2'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(
+            const ValueKey<String>('talents-field-tal_a-computed-taw'),
+          ),
+          matching: find.text('6'),
+        ),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('clearing temporary BE override falls back to BE (Kampf)', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          level: 7,
+          talents: const <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(talentValue: 7, modifier: 1),
+          },
+          combatConfig: const CombatConfig(
+            armor: ArmorConfig(
+              beTotalRaw: 4,
+              armorTrainingLevel: 1,
+              rgIActive: true,
+            ),
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openTalentsTab(tester, repo, buildCatalog());
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-be-override-field')),
+      '1',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-be-override-clear')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byKey(
+          const ValueKey<String>('talents-field-tal_a-ebe-display'),
+        ),
+        matching: find.text('-6'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(
+          const ValueKey<String>('talents-field-tal_a-computed-taw'),
+        ),
+        matching: find.text('2'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('temporary BE override is not persisted when saving talents', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          level: 7,
+          combatConfig: const CombatConfig(
+            armor: ArmorConfig(
+              beTotalRaw: 3,
+              armorTrainingLevel: 0,
+              rgIActive: false,
+            ),
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openTalentsTab(tester, repo, buildCatalog());
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-be-override-field')),
+      '1',
+    );
+    await tester.pumpAndSettle();
+
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
+      '9',
+    );
+    await actions.save();
+    await tester.pumpAndSettle();
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.combatConfig.armor.beTotalRaw, 3);
+    expect(hero.talents['tal_a']?.talentValue, 9);
+
+    await openTalentsTab(tester, repo, buildCatalog());
+    final overrideField = tester.widget<TextField>(
+      find.byKey(const ValueKey<String>('talents-be-override-field')),
+    );
+    expect(overrideField.controller?.text ?? '', isEmpty);
+    expect(
+      find.descendant(
+        of: find.byKey(
+          const ValueKey<String>('talents-field-tal_a-ebe-display'),
+        ),
+        matching: find.text('-6'),
+      ),
+      findsOneWidget,
+    );
   });
 }

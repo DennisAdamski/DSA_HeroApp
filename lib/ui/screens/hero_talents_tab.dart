@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
@@ -8,7 +9,9 @@ import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/talent_be_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
@@ -89,6 +92,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   Set<String> _draftHiddenTalentIds = <String>{};
   Set<String> _invalidCombatTalentIds = <String>{};
+  int? _talentBeOverride;
+  late final TextEditingController _talentBeOverrideController;
 
   @override
   void initState() {
@@ -102,6 +107,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         }
       },
     );
+    _talentBeOverrideController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _registerWithParent();
@@ -114,6 +120,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     for (final controller in _cellControllers.values) {
       controller.dispose();
     }
+    _talentBeOverrideController.dispose();
     super.dispose();
   }
 
@@ -292,6 +299,27 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   }
 
   bool _isHidden(String talentId) => _draftHiddenTalentIds.contains(talentId);
+
+  void _updateTalentBeOverride(String raw) {
+    final trimmed = raw.trim();
+    final nextValue = trimmed.isEmpty ? null : int.tryParse(trimmed);
+    if (nextValue == _talentBeOverride) {
+      return;
+    }
+    setState(() {
+      _talentBeOverride = nextValue;
+    });
+  }
+
+  void _clearTalentBeOverride() {
+    if (_talentBeOverride == null && _talentBeOverrideController.text.isEmpty) {
+      return;
+    }
+    _talentBeOverrideController.clear();
+    setState(() {
+      _talentBeOverride = null;
+    });
+  }
 
   Set<String> _normalizedHiddenTalentIds(Iterable<String> hiddenTalentIds) {
     final normalized = <String>{};
@@ -494,6 +522,16 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         error: (error, stackTrace) =>
             Center(child: Text('Katalog-Fehler: $error')),
         data: (catalog) {
+          final combatBaseBe = widget.scope == _TalentTabScope.nonCombat
+              ? computeCombatPreviewStats(
+                  hero,
+                  state,
+                  catalogTalents: catalog.talents,
+                ).beKampf
+              : null;
+          final activeTalentBe = combatBaseBe == null
+              ? null
+              : (_talentBeOverride ?? combatBaseBe);
           final relevantTalents = catalog.talents
               .where(_matchesScope)
               .toList(growable: false);
@@ -523,45 +561,103 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
               })
               .toList(growable: false);
 
-          return ListView.builder(
+          return ListView(
             padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
-            itemCount: visibleGroups.length,
-            itemBuilder: (context, index) {
-              final group = visibleGroups[index];
-              final talents = List<TalentDef>.from(grouped[group]!)
-                ..sort(
-                  (a, b) =>
-                      a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-                );
-              final visibleTalents = _editController.isEditing
-                  ? talents
-                  : talents
-                        .where((talent) => !_isHidden(talent.id))
-                        .toList(growable: false);
-
-              return Card(
-                margin: const EdgeInsets.only(bottom: 10),
-                child: ExpansionTile(
-                  initiallyExpanded: true,
-                  tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                  childrenPadding: EdgeInsets.zero,
-                  title: Text(group),
-                  subtitle: Text(
-                    '${visibleTalents.length}/${talents.length} sichtbar',
-                  ),
-                  children: [
-                    widget.scope == _TalentTabScope.combat
-                        ? _buildCombatTalentsTable(talents: visibleTalents)
-                        : _buildTalentsTable(
-                            talents: visibleTalents,
-                            effectiveAttributes: effectiveAttributes!,
-                          ),
-                  ],
+            children: [
+              if (widget.scope == _TalentTabScope.nonCombat)
+                _buildTalentBeInfoCard(
+                  combatBaseBe: combatBaseBe ?? 0,
+                  activeTalentBe: activeTalentBe ?? 0,
                 ),
-              );
-            },
+              ...visibleGroups.map((group) {
+                final talents = List<TalentDef>.from(grouped[group]!)
+                  ..sort(
+                    (a, b) =>
+                        a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+                  );
+                final visibleTalents = _editController.isEditing
+                    ? talents
+                    : talents
+                          .where((talent) => !_isHidden(talent.id))
+                          .toList(growable: false);
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: ExpansionTile(
+                    initiallyExpanded: true,
+                    tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                    childrenPadding: EdgeInsets.zero,
+                    title: Text(group),
+                    subtitle: Text(
+                      '${visibleTalents.length}/${talents.length} sichtbar',
+                    ),
+                    children: [
+                      widget.scope == _TalentTabScope.combat
+                          ? _buildCombatTalentsTable(talents: visibleTalents)
+                          : _buildTalentsTable(
+                              talents: visibleTalents,
+                              effectiveAttributes: effectiveAttributes!,
+                              activeBaseBe: activeTalentBe ?? 0,
+                            ),
+                    ],
+                  ),
+                );
+              }),
+            ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildTalentBeInfoCard({
+    required int combatBaseBe,
+    required int activeTalentBe,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+        child: Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Chip(
+              key: const ValueKey<String>('talents-be-combat-default'),
+              label: Text('BE (Kampf): $combatBaseBe'),
+            ),
+            SizedBox(
+              width: 260,
+              child: TextField(
+                key: const ValueKey<String>('talents-be-override-field'),
+                controller: _talentBeOverrideController,
+                keyboardType: TextInputType.number,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                decoration: const InputDecoration(
+                  isDense: true,
+                  border: OutlineInputBorder(),
+                  labelText: 'Temporaere BE-Ueberschreibung',
+                ),
+                onChanged: _updateTalentBeOverride,
+              ),
+            ),
+            IconButton(
+              key: const ValueKey<String>('talents-be-override-clear'),
+              tooltip: 'Temporaere BE zuruecksetzen',
+              onPressed: _talentBeOverride == null
+                  ? null
+                  : _clearTalentBeOverride,
+              icon: const Icon(Icons.clear),
+            ),
+            Chip(
+              key: const ValueKey<String>('talents-be-active-value'),
+              label: Text('Aktive BE: $activeTalentBe'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -569,6 +665,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   Widget _buildTalentsTable({
     required List<TalentDef> talents,
     required Attributes effectiveAttributes,
+    required int activeBaseBe,
   }) {
     final isEditing = _editController.isEditing;
     final rows = <TableRow>[
@@ -578,6 +675,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
           talent: talent,
           effectiveAttributes: effectiveAttributes,
           isEditing: isEditing,
+          activeBaseBe: activeBaseBe,
         ),
       ),
     ];
@@ -691,8 +789,10 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     required TalentDef talent,
     required Attributes effectiveAttributes,
     required bool isEditing,
+    required int activeBaseBe,
   }) {
     final entry = _entryForTalent(talent.id);
+    final ebe = computeTalentEbe(baseBe: activeBaseBe, talentBeRule: talent.be);
     final isHidden = _isHidden(talent.id);
     final nameLabel = isEditing && isHidden
         ? '${talent.name} (ausgeblendet)'
@@ -705,7 +805,10 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       ),
       _textCell(_fallback(talent.steigerung)),
       _textCell(_fallback(talent.be)),
-      _textCell('-'),
+      _textCell(
+        ebe.toString(),
+        key: ValueKey<String>('talents-field-${talent.id}-ebe-display'),
+      ),
       _intInputCell(
         talentId: talent.id,
         field: 'talentValue',
@@ -719,7 +822,10 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         value: entry.modifier,
         isEditing: isEditing,
       ),
-      _textCell(_calculateComputedTaw(entry).toString()),
+      _textCell(
+        _calculateComputedTaw(entry, ebe).toString(),
+        key: ValueKey<String>('talents-field-${talent.id}-computed-taw'),
+      ),
       _intInputCell(
         talentId: talent.id,
         field: 'specialExperiences',
@@ -1039,8 +1145,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     }
   }
 
-  int _calculateComputedTaw(HeroTalentEntry entry) {
-    return entry.talentValue + entry.modifier;
+  int _calculateComputedTaw(HeroTalentEntry entry, int ebe) {
+    return entry.talentValue + entry.modifier + ebe;
   }
 
   String _fallback(String value) {
