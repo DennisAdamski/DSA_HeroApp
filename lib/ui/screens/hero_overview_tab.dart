@@ -50,14 +50,14 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       <String, TextEditingController>{};
 
   static const List<(String, String)> _attributeEntries = [
-    ('MU', 'mu'),
-    ('KL', 'kl'),
-    ('IN', 'inn'),
-    ('CH', 'ch'),
-    ('FF', 'ff'),
-    ('GE', 'ge'),
-    ('KO', 'ko'),
-    ('KK', 'kk'),
+    ('Mut', 'mu'),
+    ('Klugheit', 'kl'),
+    ('Intuition', 'inn'),
+    ('Charisma', 'ch'),
+    ('Fingerfertigkeit', 'ff'),
+    ('Gewandtheit', 'ge'),
+    ('Konstitution', 'ko'),
+    ('Koerperkraft', 'kk'),
   ];
 
   late final WorkspaceTabEditController _editController;
@@ -563,28 +563,28 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     final totalMods = hero.persistentMods + parsed.statMods + state.tempMods;
     final entries = <_DerivedRow>[
       _DerivedRow(
-        label: 'LeP Max',
+        label: 'LeP',
         current: derived.maxLep,
         modifier: totalMods.lep + _cappedLevel(hero.level),
         bought: hero.bought.lep,
         boughtKey: 'b_lep',
       ),
       _DerivedRow(
-        label: 'Au Max',
+        label: 'Au',
         current: derived.maxAu,
         modifier: totalMods.au + hero.level * 2,
         bought: hero.bought.au,
         boughtKey: 'b_au',
       ),
       _DerivedRow(
-        label: 'AsP Max',
+        label: 'AsP',
         current: derived.maxAsp,
         modifier: totalMods.asp + hero.level * 2,
         bought: hero.bought.asp,
         boughtKey: 'b_asp',
       ),
       _DerivedRow(
-        label: 'KaP Max',
+        label: 'KaP',
         current: derived.maxKap,
         modifier: totalMods.kap,
         bought: hero.bought.kap,
@@ -602,12 +602,22 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         current: derived.iniBase,
         modifier: totalMods.iniBase,
       ),
-      _DerivedRow(label: 'GS', current: derived.gs, modifier: totalMods.gs),
       _DerivedRow(
-        label: 'Ausweichen',
-        current: derived.ausweichen,
-        modifier: totalMods.ausweichen,
+        label: 'AT-Basis',
+        current: derived.atBase,
+        modifier: totalMods.at,
       ),
+      _DerivedRow(
+        label: 'PA-Basis',
+        current: derived.paBase,
+        modifier: totalMods.pa,
+      ),
+      _DerivedRow(
+        label: 'FK-Basis',
+        current: derived.fkBase,
+        modifier: totalMods.fk,
+      ),
+      _DerivedRow(label: 'GS', current: derived.gs, modifier: totalMods.gs),
     ];
 
     return _SectionCard(

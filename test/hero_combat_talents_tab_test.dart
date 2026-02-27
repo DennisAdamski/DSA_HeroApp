@@ -47,7 +47,7 @@ void main() {
           name: 'Dolche',
           group: 'Kampftalent',
           type: 'Nahkampf',
-          weaponCategory: 'Dolch',
+          weaponCategory: 'Dolch, Kurzschwert',
           steigerung: 'D',
           attributes: <String>['Mut', 'Gewandheit', 'Koerperkraft'],
         ),
@@ -280,5 +280,63 @@ void main() {
     expect(hero.talents['tal_fern']?.paValue, 0);
     expect(hero.hiddenTalentIds, contains('tal_nah'));
     expect(find.text('Dolche'), findsNothing);
+  });
+
+  testWidgets('saves multiple combat specializations for a combat talent', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openCombatTab(tester, repo, buildCatalog());
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_nah-talentValue')),
+      '6',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_nah-atValue')),
+      '3',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_nah-paValue')),
+      '3',
+    );
+
+    final specButton = find.byKey(
+      const ValueKey<String>('talents-combat-spec-tal_nah'),
+    );
+    await tester.ensureVisible(specButton);
+    await tester.tap(specButton);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dolch'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kurzschwert'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Uebernehmen'));
+    await tester.pumpAndSettle();
+
+    await actions.save();
+    await tester.pumpAndSettle();
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    final entry = hero.talents['tal_nah'];
+    expect(entry, isNotNull);
+    expect(entry!.combatSpecializations, contains('Dolch'));
+    expect(entry.combatSpecializations, contains('Kurzschwert'));
+    expect(entry.specializations, contains('Dolch'));
+    expect(entry.specializations, contains('Kurzschwert'));
   });
 }

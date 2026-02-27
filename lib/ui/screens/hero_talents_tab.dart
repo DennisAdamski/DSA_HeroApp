@@ -253,11 +253,24 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   void _updateStringField(String talentId, String field, String raw) {
     final current = _entryForTalent(talentId);
     final updated = switch (field) {
-      'specializations' => current.copyWith(specializations: raw),
+      'specializations' => current.copyWith(
+        specializations: raw,
+        combatSpecializations: _splitSpecializationTokens(raw),
+      ),
       'specialAbilities' => current.copyWith(specialAbilities: raw),
       _ => current,
     };
     _draftTalents[talentId] = updated;
+    _markFieldChanged();
+  }
+
+  void _updateCombatSpecializations(String talentId, List<String> values) {
+    final current = _entryForTalent(talentId);
+    final normalized = _normalizeStringList(values);
+    _draftTalents[talentId] = current.copyWith(
+      combatSpecializations: normalized,
+      specializations: normalized.join(', '),
+    );
     _markFieldChanged();
   }
 
@@ -360,6 +373,30 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       grouped.putIfAbsent(group, () => <TalentDef>[]).add(talent);
     }
     return grouped;
+  }
+
+  List<String> _splitSpecializationTokens(String raw) {
+    return _normalizeStringList(raw.split(RegExp(r'[\n,;]+')));
+  }
+
+  List<String> _weaponCategoryOptions(TalentDef talent) {
+    return _normalizeStringList(
+      talent.weaponCategory.split(RegExp(r'[\n,;]+')),
+    );
+  }
+
+  List<String> _normalizeStringList(Iterable<String> values) {
+    final seen = <String>{};
+    final normalized = <String>[];
+    for (final value in values) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty || seen.contains(trimmed)) {
+        continue;
+      }
+      seen.add(trimmed);
+      normalized.add(trimmed);
+    }
+    return List<String>.unmodifiable(normalized);
   }
 
   List<_CombatValidationIssue> _validateCombatTalentDistribution(
@@ -589,7 +626,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
-          constraints: BoxConstraints(minWidth: isEditing ? 1300 : 1210),
+          constraints: BoxConstraints(minWidth: isEditing ? 1530 : 1440),
           child: Table(
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             columnWidths: <int, TableColumnWidth>{
@@ -601,7 +638,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
               5: const FixedColumnWidth(90),
               6: const FixedColumnWidth(90),
               7: const FixedColumnWidth(90),
-              if (isEditing) 8: const FixedColumnWidth(90),
+              8: const FixedColumnWidth(230),
+              if (isEditing) 9: const FixedColumnWidth(90),
             },
             children: rows,
           ),
@@ -641,6 +679,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       _headerCell('TaW'),
       _headerCell('AT'),
       _headerCell('PA'),
+      _headerCell('Spezialisierung'),
     ];
     if (isEditing) {
       cells.add(_headerCell('Sichtbar'));
@@ -752,6 +791,11 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         isEditing: isEditing,
         isError: isInvalid,
       ),
+      _combatSpecializationCell(
+        talent: talent,
+        entry: entry,
+        isEditing: isEditing,
+      ),
     ];
     if (isEditing) {
       cells.add(_visibilityCell(talentId: talent.id, isHidden: isHidden));
@@ -784,6 +828,104 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       key: key,
       padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
       child: Align(alignment: Alignment.centerLeft, child: Text(text)),
+    );
+  }
+
+  Widget _combatSpecializationCell({
+    required TalentDef talent,
+    required HeroTalentEntry entry,
+    required bool isEditing,
+  }) {
+    final options = _weaponCategoryOptions(talent);
+    final selected = entry.combatSpecializations.isEmpty
+        ? _splitSpecializationTokens(entry.specializations)
+        : _normalizeStringList(entry.combatSpecializations);
+    final label = selected.isEmpty ? '-' : selected.join(', ');
+    if (!isEditing) {
+      return _textCell(label);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: OutlinedButton(
+          key: ValueKey<String>('talents-combat-spec-${talent.id}'),
+          onPressed: options.isEmpty
+              ? null
+              : () async {
+                  final result = await _showCombatSpecializationDialog(
+                    title: 'Spezialisierungen: ${talent.name}',
+                    options: options,
+                    initialSelected: selected,
+                  );
+                  if (result == null) {
+                    return;
+                  }
+                  _updateCombatSpecializations(talent.id, result);
+                },
+          child: Text(label, maxLines: 2, overflow: TextOverflow.ellipsis),
+        ),
+      ),
+    );
+  }
+
+  Future<List<String>?> _showCombatSpecializationDialog({
+    required String title,
+    required List<String> options,
+    required List<String> initialSelected,
+  }) {
+    final selected = <String>{...initialSelected};
+    return showDialog<List<String>>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(title),
+              content: SizedBox(
+                width: 420,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: options
+                        .map(
+                          (entry) => CheckboxListTile(
+                            value: selected.contains(entry),
+                            title: Text(entry),
+                            dense: true,
+                            onChanged: (enabled) {
+                              setDialogState(() {
+                                if (enabled == true) {
+                                  selected.add(entry);
+                                } else {
+                                  selected.remove(entry);
+                                }
+                              });
+                            },
+                          ),
+                        )
+                        .toList(growable: false),
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Abbrechen'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final normalized = _normalizeStringList(selected);
+                    Navigator.of(context).pop(normalized);
+                  },
+                  child: const Text('Uebernehmen'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

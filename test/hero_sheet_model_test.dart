@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 
@@ -49,6 +50,37 @@ void main() {
           paValue: 3,
         ),
       },
+      combatConfig: CombatConfig(
+        mainWeapon: MainWeaponSlot(
+          name: 'Kurzschwert',
+          talentId: 'tal_schwerter',
+          tpFlat: 2,
+          wmAt: 1,
+          wmPa: -1,
+          iniMod: 0,
+          beTalentMod: -2,
+        ),
+        offhand: OffhandSlot(
+          mode: OffhandMode.shield,
+          name: 'Holzschild',
+          atMod: -5,
+          paMod: 7,
+          iniMod: -3,
+        ),
+        armor: ArmorConfig(
+          rsTotal: 3,
+          beTotalRaw: 2,
+          armorTrainingLevel: 2,
+          rgIActive: true,
+        ),
+        specialRules: CombatSpecialRules(
+          kampfreflexe: true,
+          ausweichenI: true,
+          schildkampfI: true,
+          activeManeuvers: ['Finte', 'Wuchtschlag'],
+        ),
+        manualMods: CombatManualMods(iniMod: 1, ausweichenMod: 2),
+      ),
       hiddenTalentIds: ['tal_a', 'tal_a', ' ', 'tal_b'],
       unknownModifierFragments: ['foo'],
     );
@@ -67,6 +99,16 @@ void main() {
     expect(reloaded.startAttributes.kk, 12);
     expect(reloaded.talents['tal_schwerter']?.atValue, 8);
     expect(reloaded.talents['tal_schwerter']?.paValue, 3);
+    expect(reloaded.combatConfig.mainWeapon.name, 'Kurzschwert');
+    expect(reloaded.combatConfig.weaponSlots.length, 1);
+    expect(reloaded.combatConfig.selectedWeaponIndex, 0);
+    expect(reloaded.combatConfig.offhand.mode, OffhandMode.shield);
+    expect(reloaded.combatConfig.armor.beTotalRaw, 2);
+    expect(reloaded.combatConfig.specialRules.kampfreflexe, isTrue);
+    expect(reloaded.combatConfig.specialRules.activeManeuvers, [
+      'Finte',
+      'Wuchtschlag',
+    ]);
   });
 
   test('hero sheet backwards compatibility for missing new fields', () {
@@ -101,5 +143,40 @@ void main() {
     expect(loaded.startAttributes.kk, loaded.attributes.kk);
     expect(loaded.talents['tal_schwerter']?.atValue, 0);
     expect(loaded.talents['tal_schwerter']?.paValue, 0);
+    expect(loaded.combatConfig.mainWeapon.name, isEmpty);
+    expect(loaded.combatConfig.weaponSlots.length, 1);
+    expect(loaded.combatConfig.offhand.mode, OffhandMode.none);
+    expect(loaded.combatConfig.specialRules.activeManeuvers, isEmpty);
+  });
+
+  test('combat config roundtrip keeps weapon list and selected slot', () {
+    const hero = HeroSheet(
+      id: 'h2',
+      name: 'Waffenliste',
+      level: 1,
+      attributes: Attributes(
+        mu: 10,
+        kl: 10,
+        inn: 10,
+        ch: 10,
+        ff: 10,
+        ge: 10,
+        ko: 10,
+        kk: 10,
+      ),
+      combatConfig: CombatConfig(
+        weapons: <MainWeaponSlot>[
+          MainWeaponSlot(name: 'Dolch', isOneHanded: true),
+          MainWeaponSlot(name: 'Bidenhaender', isOneHanded: false, wmAt: 2),
+        ],
+        selectedWeaponIndex: 1,
+      ),
+    );
+
+    final reloaded = HeroSheet.fromJson(hero.toJson());
+    expect(reloaded.combatConfig.weaponSlots.length, 2);
+    expect(reloaded.combatConfig.selectedWeaponIndex, 1);
+    expect(reloaded.combatConfig.mainWeapon.name, 'Bidenhaender');
+    expect(reloaded.combatConfig.selectedWeapon.isOneHanded, isFalse);
   });
 }

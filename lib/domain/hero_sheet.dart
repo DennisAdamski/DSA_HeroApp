@@ -1,5 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 
@@ -13,13 +15,14 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 2,
+    this.schemaVersion = 4,
     required this.name,
     required this.level,
     required this.attributes,
     Attributes? startAttributes,
     this.persistentMods = const StatModifiers(),
     this.bought = const BoughtStats(),
+    this.combatConfig = const CombatConfig(),
     this.talents = const <String, HeroTalentEntry>{},
     this.hiddenTalentIds = const <String>[],
     this.rasse = '',
@@ -44,6 +47,8 @@ class HeroSheet {
     this.apTotal = 0,
     this.apSpent = 0,
     this.apAvailable = 0,
+    this.dukaten = '',
+    this.inventoryEntries = const <HeroInventoryEntry>[],
     this.unknownModifierFragments = const <String>[],
   }) : startAttributes = startAttributes ?? attributes;
 
@@ -55,6 +60,7 @@ class HeroSheet {
   final Attributes startAttributes;
   final StatModifiers persistentMods;
   final BoughtStats bought;
+  final CombatConfig combatConfig;
   final Map<String, HeroTalentEntry> talents;
   final List<String> hiddenTalentIds;
 
@@ -80,6 +86,8 @@ class HeroSheet {
   final int apTotal;
   final int apSpent;
   final int apAvailable;
+  final String dukaten;
+  final List<HeroInventoryEntry> inventoryEntries;
   final List<String> unknownModifierFragments;
 
   /// Immutable Update fuer gezielte Feldanpassungen.
@@ -91,6 +99,7 @@ class HeroSheet {
     Attributes? startAttributes,
     StatModifiers? persistentMods,
     BoughtStats? bought,
+    CombatConfig? combatConfig,
     Map<String, HeroTalentEntry>? talents,
     List<String>? hiddenTalentIds,
     String? rasse,
@@ -115,6 +124,8 @@ class HeroSheet {
     int? apTotal,
     int? apSpent,
     int? apAvailable,
+    String? dukaten,
+    List<HeroInventoryEntry>? inventoryEntries,
     List<String>? unknownModifierFragments,
   }) {
     return HeroSheet(
@@ -126,11 +137,11 @@ class HeroSheet {
       startAttributes: startAttributes ?? this.startAttributes,
       persistentMods: persistentMods ?? this.persistentMods,
       bought: bought ?? this.bought,
+      combatConfig: combatConfig ?? this.combatConfig,
       talents: talents ?? this.talents,
-      hiddenTalentIds:
-          hiddenTalentIds == null
-              ? this.hiddenTalentIds
-              : _normalizeHiddenTalentIds(hiddenTalentIds),
+      hiddenTalentIds: hiddenTalentIds == null
+          ? this.hiddenTalentIds
+          : _normalizeHiddenTalentIds(hiddenTalentIds),
       rasse: rasse ?? this.rasse,
       rasseModText: rasseModText ?? this.rasseModText,
       kultur: kultur ?? this.kultur,
@@ -154,6 +165,8 @@ class HeroSheet {
       apTotal: apTotal ?? this.apTotal,
       apSpent: apSpent ?? this.apSpent,
       apAvailable: apAvailable ?? this.apAvailable,
+      dukaten: dukaten ?? this.dukaten,
+      inventoryEntries: inventoryEntries ?? this.inventoryEntries,
       unknownModifierFragments:
           unknownModifierFragments ?? this.unknownModifierFragments,
     );
@@ -170,6 +183,7 @@ class HeroSheet {
       'startAttributes': startAttributes.toJson(),
       'persistentMods': persistentMods.toJson(),
       'bought': bought.toJson(),
+      'combatConfig': combatConfig.toJson(),
       'talents': talents.map((key, value) => MapEntry(key, value.toJson())),
       'hiddenTalentIds': _normalizeHiddenTalentIds(hiddenTalentIds),
       'rasse': rasse,
@@ -194,6 +208,10 @@ class HeroSheet {
       'apTotal': apTotal,
       'apSpent': apSpent,
       'apAvailable': apAvailable,
+      'dukaten': dukaten,
+      'inventoryEntries': inventoryEntries
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
       'unknownModifierFragments': unknownModifierFragments,
     };
   }
@@ -205,6 +223,8 @@ class HeroSheet {
         const <String, dynamic>{};
     final rawUnknown =
         (json['unknownModifierFragments'] as List?) ?? const <dynamic>[];
+    final rawInventoryEntries =
+        (json['inventoryEntries'] as List?) ?? const <dynamic>[];
     final rawHiddenTalentIds =
         (json['hiddenTalentIds'] as List?) ?? const <dynamic>[];
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
@@ -231,6 +251,9 @@ class HeroSheet {
       ),
       bought: BoughtStats.fromJson(
         (json['bought'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      combatConfig: CombatConfig.fromJson(
+        (json['combatConfig'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
       talents: rawTalents.map((key, value) {
         final map = value is Map
@@ -261,6 +284,14 @@ class HeroSheet {
       apTotal: getInt('apTotal'),
       apSpent: getInt('apSpent'),
       apAvailable: getInt('apAvailable'),
+      dukaten: getString('dukaten'),
+      inventoryEntries: rawInventoryEntries
+          .whereType<Map>()
+          .map(
+            (entry) =>
+                HeroInventoryEntry.fromJson(entry.cast<String, dynamic>()),
+          )
+          .toList(growable: false),
       unknownModifierFragments: rawUnknown
           .map((entry) => entry.toString())
           .toList(growable: false),
