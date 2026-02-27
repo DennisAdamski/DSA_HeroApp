@@ -16,6 +16,13 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 enum _TalentTabScope { nonCombat, combat }
 
+class _CombatValidationIssue {
+  const _CombatValidationIssue({required this.talentId, required this.message});
+
+  final String talentId;
+  final String message;
+}
+
 bool isCombatTalent(TalentDef talent) {
   if (talent.group.trim().toLowerCase() == 'kampftalent') {
     return true;
@@ -68,7 +75,8 @@ class _HeroTalentTableTab extends ConsumerStatefulWidget {
   final void Function(WorkspaceTabEditActions actions) onRegisterEditActions;
 
   @override
-  ConsumerState<_HeroTalentTableTab> createState() => _HeroTalentTableTabState();
+  ConsumerState<_HeroTalentTableTab> createState() =>
+      _HeroTalentTableTabState();
 }
 
 class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
@@ -80,6 +88,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   HeroSheet? _latestHero;
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   Set<String> _draftHiddenTalentIds = <String>{};
+  Set<String> _invalidCombatTalentIds = <String>{};
 
   @override
   void initState() {
@@ -122,7 +131,9 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
 
   void _syncDraftFromHero(HeroSheet hero, {bool force = false}) {
     final signature = jsonEncode({
-      'talents': hero.talents.map((key, value) => MapEntry(key, value.toJson())),
+      'talents': hero.talents.map(
+        (key, value) => MapEntry(key, value.toJson()),
+      ),
       'hiddenTalentIds': hero.hiddenTalentIds,
     });
     if (!_editController.shouldSync(signature, force: force)) {
@@ -131,6 +142,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     _resetCellControllers();
     _draftTalents = Map<String, HeroTalentEntry>.from(hero.talents);
     _draftHiddenTalentIds = _normalizedHiddenTalentIds(hero.hiddenTalentIds);
+    _invalidCombatTalentIds = <String>{};
   }
 
   void _resetCellControllers() {
@@ -163,6 +175,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     }
     _editController.clearSyncSignature();
     _syncDraftFromHero(hero, force: true);
+    _invalidCombatTalentIds = <String>{};
     _editController.startEdit();
   }
 
@@ -170,6 +183,24 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     final hero = _latestHero;
     if (hero == null) {
       return;
+    }
+    if (widget.scope == _TalentTabScope.combat) {
+      final catalog = await ref.read(rulesCatalogProvider.future);
+      final issues = _validateCombatTalentDistribution(catalog.talents);
+      if (issues.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            _invalidCombatTalentIds = issues
+                .map((entry) => entry.talentId)
+                .toSet();
+          });
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(issues.first.message)));
+        }
+        return;
+      }
+      _invalidCombatTalentIds = <String>{};
     }
     final updatedHero = hero.copyWith(
       talents: Map<String, HeroTalentEntry>.from(_draftTalents),
@@ -195,6 +226,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       _editController.clearSyncSignature();
       _syncDraftFromHero(hero, force: true);
     }
+    _invalidCombatTalentIds = <String>{};
     _editController.markDiscarded();
   }
 
@@ -207,11 +239,14 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     final current = _entryForTalent(talentId);
     final updated = switch (field) {
       'talentValue' => current.copyWith(talentValue: parsed),
+      'atValue' => current.copyWith(atValue: parsed),
+      'paValue' => current.copyWith(paValue: parsed),
       'modifier' => current.copyWith(modifier: parsed),
       'specialExperiences' => current.copyWith(specialExperiences: parsed),
       _ => current,
     };
     _draftTalents[talentId] = updated;
+    _invalidCombatTalentIds.remove(talentId);
     _markFieldChanged();
   }
 
@@ -279,10 +314,18 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
 
   int _groupPriority(String group) {
     if (widget.scope == _TalentTabScope.combat) {
-      return 0;
+      final normalized = _normalizeGroupToken(group);
+      if (normalized == 'nahkampf') {
+        return 0;
+      }
+      if (normalized == 'fernkampf') {
+        return 1;
+      }
+      return 99;
     }
     final normalized = _normalizeGroupToken(group);
-    if (normalized == 'koerperlichetalente' || normalized == 'korperlichetalente') {
+    if (normalized == 'koerperlichetalente' ||
+        normalized == 'korperlichetalente') {
       return 0;
     }
     if (normalized == 'gesellschaftlichetalente') {
@@ -319,6 +362,79 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     return grouped;
   }
 
+  List<_CombatValidationIssue> _validateCombatTalentDistribution(
+    List<TalentDef> talents,
+  ) {
+    final issues = <_CombatValidationIssue>[];
+    final combatTalents = talents.where(_matchesScope);
+    for (final talent in combatTalents) {
+      final entry = _entryForTalent(talent.id);
+      final taw = entry.talentValue;
+      final at = entry.atValue;
+      final pa = entry.paValue;
+      final type = talent.type.trim().toLowerCase();
+
+      if (taw < 0 || at < 0 || pa < 0) {
+        issues.add(
+          _CombatValidationIssue(
+            talentId: talent.id,
+            message:
+                'Ungueltige Verteilung bei ${talent.name}: TaW, AT und PA muessen >= 0 sein.',
+          ),
+        );
+        continue;
+      }
+
+      if (taw == 0) {
+        if (at != 0 || pa != 0) {
+          issues.add(
+            _CombatValidationIssue(
+              talentId: talent.id,
+              message:
+                  'Ungueltige Verteilung bei ${talent.name}: Bei TaW 0 muessen AT und PA ebenfalls 0 sein.',
+            ),
+          );
+        }
+        continue;
+      }
+
+      if (type == 'nahkampf') {
+        if (at + pa != taw) {
+          issues.add(
+            _CombatValidationIssue(
+              talentId: talent.id,
+              message:
+                  'Ungueltige Verteilung bei ${talent.name}: Bei Nahkampf muss AT + PA = TaW gelten.',
+            ),
+          );
+        }
+        continue;
+      }
+
+      if (type == 'fernkampf') {
+        if (at != taw || pa != 0) {
+          issues.add(
+            _CombatValidationIssue(
+              talentId: talent.id,
+              message:
+                  'Ungueltige Verteilung bei ${talent.name}: Bei Fernkampf muss AT = TaW und PA = 0 sein.',
+            ),
+          );
+        }
+        continue;
+      }
+
+      issues.add(
+        _CombatValidationIssue(
+          talentId: talent.id,
+          message:
+              'Ungueltiger Talenttyp bei ${talent.name}: "${talent.type}" ist weder Nahkampf noch Fernkampf.',
+        ),
+      );
+    }
+    return issues;
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -344,10 +460,12 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
           final relevantTalents = catalog.talents
               .where(_matchesScope)
               .toList(growable: false);
-          final effectiveAttributes = computeEffectiveAttributes(
-            hero,
-            tempAttributeMods: state.tempAttributeMods,
-          );
+          final effectiveAttributes = widget.scope == _TalentTabScope.nonCombat
+              ? computeEffectiveAttributes(
+                  hero,
+                  tempAttributeMods: state.tempAttributeMods,
+                )
+              : null;
           final grouped = _groupTalents(relevantTalents);
           final groups = grouped.keys.toList()
             ..sort((a, b) {
@@ -358,13 +476,15 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
               }
               return a.toLowerCase().compareTo(b.toLowerCase());
             });
-          final visibleGroups = groups.where((group) {
-            if (_editController.isEditing) {
-              return true;
-            }
-            final talents = grouped[group] ?? const <TalentDef>[];
-            return talents.any((talent) => !_isHidden(talent.id));
-          }).toList(growable: false);
+          final visibleGroups = groups
+              .where((group) {
+                if (_editController.isEditing) {
+                  return true;
+                }
+                final talents = grouped[group] ?? const <TalentDef>[];
+                return talents.any((talent) => !_isHidden(talent.id));
+              })
+              .toList(growable: false);
 
           return ListView.builder(
             padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
@@ -372,12 +492,15 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
             itemBuilder: (context, index) {
               final group = visibleGroups[index];
               final talents = List<TalentDef>.from(grouped[group]!)
-                ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+                ..sort(
+                  (a, b) =>
+                      a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+                );
               final visibleTalents = _editController.isEditing
                   ? talents
                   : talents
-                      .where((talent) => !_isHidden(talent.id))
-                      .toList(growable: false);
+                        .where((talent) => !_isHidden(talent.id))
+                        .toList(growable: false);
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 10),
@@ -390,10 +513,12 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                     '${visibleTalents.length}/${talents.length} sichtbar',
                   ),
                   children: [
-                    _buildTalentsTable(
-                      talents: visibleTalents,
-                      effectiveAttributes: effectiveAttributes,
-                    ),
+                    widget.scope == _TalentTabScope.combat
+                        ? _buildCombatTalentsTable(talents: visibleTalents)
+                        : _buildTalentsTable(
+                            talents: visibleTalents,
+                            effectiveAttributes: effectiveAttributes!,
+                          ),
                   ],
                 ),
               );
@@ -450,6 +575,41 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     );
   }
 
+  Widget _buildCombatTalentsTable({required List<TalentDef> talents}) {
+    final isEditing = _editController.isEditing;
+    final rows = <TableRow>[
+      _buildCombatHeaderRow(isEditing: isEditing),
+      ...talents.map(
+        (talent) => _buildCombatTalentRow(talent: talent, isEditing: isEditing),
+      ),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: isEditing ? 1300 : 1210),
+          child: Table(
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            columnWidths: <int, TableColumnWidth>{
+              0: const FixedColumnWidth(220),
+              1: const FixedColumnWidth(300),
+              2: const FixedColumnWidth(220),
+              3: const FixedColumnWidth(70),
+              4: const FixedColumnWidth(60),
+              5: const FixedColumnWidth(90),
+              6: const FixedColumnWidth(90),
+              7: const FixedColumnWidth(90),
+              if (isEditing) 8: const FixedColumnWidth(90),
+            },
+            children: rows,
+          ),
+        ),
+      ),
+    );
+  }
+
   TableRow _buildHeaderRow({required bool isEditing}) {
     final cells = <Widget>[
       _headerCell('Talent-Name'),
@@ -471,6 +631,23 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     return TableRow(children: cells);
   }
 
+  TableRow _buildCombatHeaderRow({required bool isEditing}) {
+    final cells = <Widget>[
+      _headerCell('Talent-Name'),
+      _headerCell('Waffengattung'),
+      _headerCell('Ersatzweise'),
+      _headerCell('Kompl.'),
+      _headerCell('BE'),
+      _headerCell('TaW'),
+      _headerCell('AT'),
+      _headerCell('PA'),
+    ];
+    if (isEditing) {
+      cells.add(_headerCell('Sichtbar'));
+    }
+    return TableRow(children: cells);
+  }
+
   TableRow _buildTalentRow({
     required TalentDef talent,
     required Attributes effectiveAttributes,
@@ -483,11 +660,10 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         : talent.name;
 
     final cells = <Widget>[
+      _textCell(nameLabel, key: ValueKey<String>('talents-row-${talent.id}')),
       _textCell(
-        nameLabel,
-        key: ValueKey<String>('talents-row-${talent.id}'),
+        _buildShortAttributeLabel(effectiveAttributes, talent.attributes),
       ),
-      _textCell(_buildShortAttributeLabel(effectiveAttributes, talent.attributes)),
       _textCell(_fallback(talent.steigerung)),
       _textCell(_fallback(talent.be)),
       _textCell('-'),
@@ -525,12 +701,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       ),
     ];
     if (isEditing) {
-      cells.add(
-        _visibilityCell(
-          talentId: talent.id,
-          isHidden: isHidden,
-        ),
-      );
+      cells.add(_visibilityCell(talentId: talent.id, isHidden: isHidden));
     }
 
     return TableRow(
@@ -543,15 +714,67 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     );
   }
 
+  TableRow _buildCombatTalentRow({
+    required TalentDef talent,
+    required bool isEditing,
+  }) {
+    final entry = _entryForTalent(talent.id);
+    final isHidden = _isHidden(talent.id);
+    final isInvalid = _invalidCombatTalentIds.contains(talent.id);
+    final nameLabel = isEditing && isHidden
+        ? '${talent.name} (ausgeblendet)'
+        : talent.name;
+
+    final cells = <Widget>[
+      _textCell(nameLabel, key: ValueKey<String>('talents-row-${talent.id}')),
+      _textCell(_fallback(talent.weaponCategory)),
+      _textCell(_fallback(talent.alternatives)),
+      _textCell(_fallback(talent.steigerung)),
+      _textCell(_fallback(talent.be)),
+      _intInputCell(
+        talentId: talent.id,
+        field: 'talentValue',
+        value: entry.talentValue,
+        isEditing: isEditing,
+        isError: isInvalid,
+      ),
+      _intInputCell(
+        talentId: talent.id,
+        field: 'atValue',
+        value: entry.atValue,
+        isEditing: isEditing,
+        isError: isInvalid,
+      ),
+      _intInputCell(
+        talentId: talent.id,
+        field: 'paValue',
+        value: entry.paValue,
+        isEditing: isEditing,
+        isError: isInvalid,
+      ),
+    ];
+    if (isEditing) {
+      cells.add(_visibilityCell(talentId: talent.id, isHidden: isHidden));
+    }
+
+    final rowColor = isInvalid
+        ? Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.4)
+        : (isHidden && isEditing
+              ? Theme.of(context).colorScheme.surfaceContainerHighest
+              : null);
+
+    return TableRow(
+      decoration: BoxDecoration(color: rowColor),
+      children: cells,
+    );
+  }
+
   Widget _headerCell(String text) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(6, 4, 6, 8),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(
-          text,
-          style: Theme.of(context).textTheme.labelMedium,
-        ),
+        child: Text(text, style: Theme.of(context).textTheme.labelMedium),
       ),
     );
   }
@@ -560,10 +783,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     return Padding(
       key: key,
       padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(text),
-      ),
+      child: Align(alignment: Alignment.centerLeft, child: Text(text)),
     );
   }
 
@@ -572,6 +792,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     required String field,
     required int value,
     required bool isEditing,
+    bool isError = false,
   }) {
     final controller = _controllerFor(talentId, field, value.toString());
     return Padding(
@@ -581,8 +802,10 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         controller: controller,
         readOnly: !isEditing,
         keyboardType: TextInputType.number,
-        decoration: _cellInputDecoration(),
-        onChanged: isEditing ? (raw) => _updateIntField(talentId, field, raw) : null,
+        decoration: _cellInputDecoration(isError: isError),
+        onChanged: isEditing
+            ? (raw) => _updateIntField(talentId, field, raw)
+            : null,
       ),
     );
   }
@@ -601,16 +824,14 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         controller: controller,
         readOnly: !isEditing,
         decoration: _cellInputDecoration(),
-        onChanged:
-            isEditing ? (raw) => _updateStringField(talentId, field, raw) : null,
+        onChanged: isEditing
+            ? (raw) => _updateStringField(talentId, field, raw)
+            : null,
       ),
     );
   }
 
-  Widget _visibilityCell({
-    required String talentId,
-    required bool isHidden,
-  }) {
+  Widget _visibilityCell({required String talentId, required bool isHidden}) {
     return Align(
       alignment: Alignment.centerLeft,
       child: IconButton(
@@ -622,10 +843,18 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     );
   }
 
-  InputDecoration _cellInputDecoration() {
-    return const InputDecoration(
+  InputDecoration _cellInputDecoration({bool isError = false}) {
+    final theme = Theme.of(context).colorScheme;
+    final borderColor = isError ? theme.error : theme.outline;
+    return InputDecoration(
       isDense: true,
-      border: OutlineInputBorder(),
+      border: OutlineInputBorder(borderSide: BorderSide(color: borderColor)),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: borderColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: isError ? theme.error : theme.primary),
+      ),
       contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
     );
   }

@@ -34,6 +34,12 @@ flutter test
 - `magie.json`:
   - Contains spells only.
 
+## Combat talent UI note
+
+- Combat talents remain sourced from `assets/catalogs/house_rules_v1/waffentalente.json`.
+- The in-app combat talent tab mirrors the Excel `Kampftechniken` layout/validation for editing (`TaW`/`AT`/`PA` rules).
+- This is UI logic only and does not require importing combat talent values from `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`.
+
 ## Loader validation behavior
 
 The catalog loader validates the split structure at runtime:
