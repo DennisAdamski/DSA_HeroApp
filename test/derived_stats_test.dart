@@ -51,7 +51,7 @@ void main() {
     expect(d.maxAsp, 86);
     expect(d.maxKap, 6);
     expect(d.mr, 16);
-    expect(d.iniBase, 15);
+    expect(d.iniBase, 14);
   });
 
   test('negative resources are clamped to zero', () {

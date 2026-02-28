@@ -61,6 +61,8 @@ DerivedStats computeDerivedStats(HeroSheet sheet, HeroState state) {
     paBase: computePa(effectiveSheet, mods),
     fkBase: computeFk(effectiveSheet, mods),
     gs: computeGs(effectiveSheet, mods),
-    ausweichen: computeAusweichen(effectiveSheet, mods),
+    // Ausweichen wird nicht mehr als Basiswertformel aus Attributen berechnet.
+    // Der abgeleitete Wert spiegelt hier nur explizite Modifikatoren wider.
+    ausweichen: mods.ausweichen,
   );
 }
