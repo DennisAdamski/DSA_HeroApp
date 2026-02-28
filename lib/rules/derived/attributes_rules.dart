@@ -17,7 +17,7 @@ int computeMaxLep(HeroSheet sheet, StatModifiers mods) {
 int _baseLep(HeroSheet sheet) {
   final ko = sheet.attributes.ko;
   final kk = sheet.attributes.kk;
-  return excelCeil((ko + ko + kk) / 2);
+  return excelRound((ko + ko + kk) / 2);
 }
 
 // Computes the maximum AU (Ausdauer) for a hero based on their attributes, modifiers, bought attributes, and level.
@@ -31,7 +31,7 @@ int _baseAu(HeroSheet sheet) {
   final mu = sheet.attributes.mu;
   final ko = sheet.attributes.ko;
   final ge = sheet.attributes.ge;
-  return excelCeil((mu + ko + ge) / 2);
+  return excelRound((mu + ko + ge) / 2);
 }
 
 // Computes the maximum ASP (Astralenergie) for a hero based on their attributes, modifiers, bought attributes, and level.
@@ -45,7 +45,7 @@ int _baseAsp(HeroSheet sheet) {
   final mu = sheet.attributes.mu;
   final inn = sheet.attributes.inn;
   final ch = sheet.attributes.ch;
-  return excelCeil((mu + inn + ch) / 2);
+  return excelRound((mu + inn + ch) / 2);
 }
 
 // Computes the maximum KAP (Karma-Punkte) for a hero based on their attributes, modifiers, bought attributes, and level.
@@ -77,7 +77,7 @@ int _baseIni(HeroSheet sheet) {
   final mu = sheet.attributes.mu;
   final inn = sheet.attributes.inn;
   final ge = sheet.attributes.ge;
-  return excelCeil((mu + mu + inn + ge) / 5);
+  return excelRound((mu + mu + inn + ge) / 5);
 }
 
 // Computes the Geschwindigkeits modifier for a hero based on their attributes and modifiers.
@@ -105,7 +105,7 @@ int _baseAt(HeroSheet sheet) {
   final mu = sheet.attributes.mu;
   final ge = sheet.attributes.ge;
   final kk = sheet.attributes.kk;
-  return excelCeil((mu + ge + kk) / 5);
+  return excelRound((mu + ge + kk) / 5);
 }
 
 // Computes the PA (Parade) for a hero based on their attributes and modifiers.
@@ -117,7 +117,7 @@ int _basePa(HeroSheet sheet) {
   final inn = sheet.attributes.inn;
   final ge = sheet.attributes.ge;
   final kk = sheet.attributes.kk;
-  return excelCeil((inn + ge + kk) / 5);
+  return excelRound((inn + ge + kk) / 5);
 }
 
 // Computes the FK (Fernkampf) for a hero based on their attributes and modifiers.
@@ -129,16 +129,5 @@ int _baseFk(HeroSheet sheet) {
   final inn = sheet.attributes.inn;
   final ff = sheet.attributes.ff;
   final kk = sheet.attributes.kk;
-  return excelCeil((inn + ff + kk) / 5);
+  return excelRound((inn + ff + kk) / 5);
 }
-
-// Computes the Ausweichen for a hero based on their attributes and modifiers.
-int computeAusweichen(HeroSheet sheet, StatModifiers mods) {
-  return _baseAusweichen(sheet) + mods.ausweichen;
-}
-
-int _baseAusweichen(HeroSheet sheet) {
-  return 0;
-}
-
-
