@@ -28,6 +28,7 @@ class HeroTalentsTab extends _HeroTalentTableTab {
   const HeroTalentsTab({
     super.key,
     required super.heroId,
+    super.showInlineActions = true,
     required super.onDirtyChanged,
     required super.onEditingChanged,
     required super.onRegisterDiscard,
@@ -39,6 +40,7 @@ class HeroCombatTalentsTab extends _HeroTalentTableTab {
   const HeroCombatTalentsTab({
     super.key,
     required super.heroId,
+    super.showInlineActions = true,
     required super.onDirtyChanged,
     required super.onEditingChanged,
     required super.onRegisterDiscard,
@@ -51,6 +53,7 @@ class _HeroTalentTableTab extends ConsumerStatefulWidget {
     super.key,
     required this.heroId,
     required this.scope,
+    required this.showInlineActions,
     required this.onDirtyChanged,
     required this.onEditingChanged,
     required this.onRegisterDiscard,
@@ -59,6 +62,7 @@ class _HeroTalentTableTab extends ConsumerStatefulWidget {
 
   final String heroId;
   final _TalentTabScope scope;
+  final bool showInlineActions;
   final void Function(bool isDirty) onDirtyChanged;
   final void Function(bool isEditing) onEditingChanged;
   final void Function(WorkspaceAsyncAction discardAction) onRegisterDiscard;
@@ -82,7 +86,6 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   Set<String> _draftHiddenTalentIds = <String>{};
   Set<String> _invalidCombatTalentIds = <String>{};
   String _draftTalentSpecialAbilities = '';
-  bool _visibilityMode = false;
   late final TextEditingController _talentSpecialAbilitiesController;
 
   @override
@@ -146,7 +149,6 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     _draftTalentSpecialAbilities = hero.talentSpecialAbilities;
     _talentSpecialAbilitiesController.text = _draftTalentSpecialAbilities;
     _invalidCombatTalentIds = <String>{};
-    _visibilityMode = false;
   }
 
   void _resetCellControllers() {
@@ -179,6 +181,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     }
     _editController.clearSyncSignature();
     _syncDraftFromHero(hero, force: true);
+    _setVisibilityMode(false);
     _invalidCombatTalentIds = <String>{};
     _editController.startEdit();
   }
@@ -219,6 +222,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     if (!mounted) {
       return;
     }
+    _setVisibilityMode(false);
     _editController.markSaved();
     ScaffoldMessenger.of(
       context,
@@ -235,6 +239,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       _editController.clearSyncSignature();
       _syncDraftFromHero(hero, force: true);
     }
+    _setVisibilityMode(false);
     _invalidCombatTalentIds = <String>{};
     _editController.markDiscarded();
   }
@@ -309,12 +314,10 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   }
 
   void _setVisibilityMode(bool enabled) {
-    if (_visibilityMode == enabled) {
+    if (_readVisibilityMode() == enabled) {
       return;
     }
-    setState(() {
-      _visibilityMode = enabled;
-    });
+    _visibilityNotifier().state = enabled;
   }
 
   void _markFieldChanged() {
@@ -326,6 +329,39 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   }
 
   bool _isHidden(String talentId) => _draftHiddenTalentIds.contains(talentId);
+
+  StateController<bool> _visibilityNotifier() {
+    return switch (widget.scope) {
+      _TalentTabScope.nonCombat => ref.read(
+        talentsVisibilityModeProvider(widget.heroId).notifier,
+      ),
+      _TalentTabScope.combat => ref.read(
+        combatTalentsVisibilityModeProvider(widget.heroId).notifier,
+      ),
+    };
+  }
+
+  bool _readVisibilityMode() {
+    return switch (widget.scope) {
+      _TalentTabScope.nonCombat => ref.read(
+        talentsVisibilityModeProvider(widget.heroId),
+      ),
+      _TalentTabScope.combat => ref.read(
+        combatTalentsVisibilityModeProvider(widget.heroId),
+      ),
+    };
+  }
+
+  bool _watchVisibilityMode() {
+    return switch (widget.scope) {
+      _TalentTabScope.nonCombat => ref.watch(
+        talentsVisibilityModeProvider(widget.heroId),
+      ),
+      _TalentTabScope.combat => ref.watch(
+        combatTalentsVisibilityModeProvider(widget.heroId),
+      ),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -350,6 +386,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         error: (error, stackTrace) =>
             Center(child: Text('Katalog-Fehler: $error')),
         data: (catalog) {
+          final visibilityMode = _watchVisibilityMode();
           final combatBaseBe = widget.scope == _TalentTabScope.nonCombat
               ? computeCombatPreviewStats(
                   hero,
@@ -385,7 +422,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                 });
               final visibleGroups = groups
                   .where((group) {
-                    if (_editController.isEditing || _visibilityMode) {
+                    if (_editController.isEditing || visibilityMode) {
                       return true;
                     }
                     final talents = grouped[group] ?? const <TalentDef>[];
@@ -396,13 +433,15 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
               return ListView(
                 padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                 children: [
-                  if (widget.scope == _TalentTabScope.nonCombat)
+                  if (widget.scope == _TalentTabScope.nonCombat &&
+                      widget.showInlineActions)
                     _buildTopActionBar(
                       heroId: hero.id,
                       combatBaseBe: combatBaseBe ?? 0,
                       activeTalentBe: activeTalentBe,
                     ),
-                  if (widget.scope == _TalentTabScope.combat)
+                  if (widget.scope == _TalentTabScope.combat &&
+                      widget.showInlineActions)
                     _buildCombatVisibilityActionBar(),
                   if (widget.scope == _TalentTabScope.nonCombat)
                     TabBar(
@@ -424,7 +463,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                           b.name.toLowerCase(),
                         ),
                       );
-                    final showAllTalents = _editController.isEditing || _visibilityMode;
+                    final showAllTalents =
+                        _editController.isEditing || visibilityMode;
                     final visibleTalents = showAllTalents
                         ? talents
                         : talents
@@ -445,7 +485,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                               '${visibleTalents.length}/${talents.length} sichtbar',
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
-                            if (_visibilityMode)
+                            if (visibilityMode)
                               Padding(
                                 padding: const EdgeInsets.only(top: 6),
                                 child: SingleChildScrollView(
@@ -483,13 +523,13 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                           widget.scope == _TalentTabScope.combat
                               ? _buildCombatTalentsTable(
                                   talents: visibleTalents,
-                                  showVisibilityControls: _visibilityMode,
+                                  showVisibilityControls: visibilityMode,
                                 )
                               : _buildTalentsTable(
                                   talents: visibleTalents,
                                   effectiveAttributes: effectiveAttributes!,
                                   activeBaseBe: activeTalentBe,
-                                  showVisibilityControls: _visibilityMode,
+                                  showVisibilityControls: visibilityMode,
                                 ),
                         ],
                       ),

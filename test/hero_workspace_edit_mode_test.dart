@@ -504,10 +504,6 @@ void main() {
     await tester.tap(tabText('Magie'));
     await tester.pump(const Duration(milliseconds: 1200));
 
-    expect(
-      find.textContaining('In diesem Tab noch nicht verf'),
-      findsOneWidget,
-    );
     final disabledButton = tester.widget<OutlinedButton>(
       find.widgetWithText(OutlinedButton, 'Bearbeiten'),
     );

@@ -11,7 +11,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_global_action_header.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_import_export_actions.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_navigation_guard.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_registry.dart';
@@ -223,15 +222,11 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
-  Widget _buildGlobalActionHeader() {
+  List<Widget> _buildWorkspaceActions(HeroSheet hero) {
     final activeTabIndex = _tabRegistry.activeTabIndex;
     final isEditing = _tabRegistry.isEditing(activeTabIndex);
-    if ((activeTabIndex == _talentsTabIndex ||
-            activeTabIndex == _combatTabIndex) &&
-        !isEditing) {
-      return const SizedBox.shrink();
-    }
     final tabActions = _tabRegistry.editActionsFor(activeTabIndex);
+
     VoidCallback? onStartEdit;
     VoidCallback? onSave;
     VoidCallback? onCancel;
@@ -241,13 +236,122 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       onCancel = () => _runEditAction(tabActions.cancel);
     }
 
-    return WorkspaceGlobalActionHeader(
-      isEditableTab: _tabRegistry.isEditableTab(activeTabIndex),
-      isEditing: isEditing,
-      onStartEdit: onStartEdit,
-      onSave: onSave,
-      onCancel: onCancel,
-    );
+    final widgets = <Widget>[
+      IconButton(
+        onPressed: () async {
+          final navigator = Navigator.of(context);
+          await ref.read(heroActionsProvider).deleteHero(widget.heroId);
+          if (!context.mounted) {
+            return;
+          }
+          navigator.pushReplacement(
+            MaterialPageRoute(builder: (_) => const HeroesHomeScreen()),
+          );
+        },
+        icon: const Icon(Icons.delete_outline),
+        tooltip: 'Held loeschen',
+      ),
+      IconButton(
+        onPressed: () => _exportHeroData(context, ref, hero),
+        icon: const Icon(Icons.upload_file),
+        tooltip: 'Held exportieren',
+      ),
+      IconButton(
+        onPressed: () => _importHeroData(context, ref),
+        icon: const Icon(Icons.download),
+        tooltip: 'Held importieren',
+      ),
+    ];
+
+    if (activeTabIndex == _talentsTabIndex) {
+      final visibilityMode = ref.watch(
+        talentsVisibilityModeProvider(widget.heroId),
+      );
+      final bePreview = ref.watch(combatPreviewProvider(widget.heroId));
+      final beOverride = ref.watch(talentBeOverrideProvider(widget.heroId));
+      final activeBe = beOverride ?? bePreview.valueOrNull?.beKampf ?? 0;
+      widgets.addAll([
+        OutlinedButton.icon(
+          key: const ValueKey<String>('talents-be-screen-open'),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => TalentBeConfigScreen(
+                  heroId: widget.heroId,
+                  combatBaseBe: bePreview.valueOrNull?.beKampf ?? 0,
+                ),
+              ),
+            );
+          },
+          icon: const Icon(Icons.shield_outlined),
+          label: Text('BE konfigurieren ($activeBe)'),
+        ),
+        FilledButton.icon(
+          key: const ValueKey<String>('talents-visibility-mode-toggle'),
+          onPressed: () {
+            ref.read(talentsVisibilityModeProvider(widget.heroId).notifier).state =
+                !visibilityMode;
+          },
+          icon: Icon(
+            visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
+          ),
+          label: Text(
+            visibilityMode ? 'Sichtbarkeit beenden' : 'Sichtbarkeit bearbeiten',
+          ),
+        ),
+      ]);
+    }
+
+    if (activeTabIndex == _combatTabIndex) {
+      final visibilityMode = ref.watch(
+        combatTechniquesVisibilityModeProvider(widget.heroId),
+      );
+      widgets.add(
+        FilledButton.icon(
+          key: const ValueKey<String>('combat-talents-visibility-mode-toggle'),
+          onPressed: () {
+            ref
+                    .read(
+                      combatTechniquesVisibilityModeProvider(
+                        widget.heroId,
+                      ).notifier,
+                    )
+                    .state =
+                !visibilityMode;
+          },
+          icon: Icon(
+            visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
+          ),
+          label: Text(
+            visibilityMode ? 'Sichtbarkeit beenden' : 'Sichtbarkeit bearbeiten',
+          ),
+        ),
+      );
+    }
+
+    if (isEditing) {
+      widgets.addAll([
+        OutlinedButton(onPressed: onCancel, child: const Text('Abbrechen')),
+        FilledButton(onPressed: onSave, child: const Text('Speichern')),
+      ]);
+    } else if (_tabRegistry.isEditableTab(activeTabIndex)) {
+      widgets.add(
+        FilledButton.icon(
+          onPressed: onStartEdit,
+          icon: const Icon(Icons.edit),
+          label: const Text('Bearbeiten'),
+        ),
+      );
+    } else {
+      widgets.add(
+        OutlinedButton.icon(
+          onPressed: null,
+          icon: const Icon(Icons.edit),
+          label: const Text('Bearbeiten'),
+        ),
+      );
+    }
+    return widgets;
   }
 
   PreferredSizeWidget _buildWorkspaceTabBar() {
@@ -281,6 +385,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         ),
         HeroTalentsTab(
           heroId: widget.heroId,
+          showInlineActions: false,
           onDirtyChanged: (isDirty) => _updateDirty(_talentsTabIndex, isDirty),
           onEditingChanged: (isEditing) =>
               _updateEditing(_talentsTabIndex, isEditing),
@@ -291,6 +396,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         ),
         HeroCombatTab(
           heroId: widget.heroId,
+          showInlineCombatTalentsActions: false,
           onDirtyChanged: (isDirty) => _updateDirty(_combatTabIndex, isDirty),
           onEditingChanged: (isEditing) =>
               _updateEditing(_combatTabIndex, isEditing),
@@ -323,7 +429,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     return Column(
       children: [
         _CoreAttributesHeader(heroId: widget.heroId, hero: hero),
-        _buildGlobalActionHeader(),
         Expanded(child: _buildWorkspaceTabView()),
       ],
     );
@@ -351,7 +456,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           child: Column(
             children: [
               _CoreAttributesHeader(heroId: widget.heroId, hero: hero),
-              _buildGlobalActionHeader(),
               Expanded(child: _buildWorkspaceTabView()),
             ],
           ),
@@ -399,30 +503,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
             onPressed: _navigateToHomeWithGuard,
           ),
           actions: [
-            IconButton(
-              onPressed: () => _exportHeroData(context, ref, hero),
-              icon: const Icon(Icons.upload_file),
-              tooltip: 'Held exportieren',
-            ),
-            IconButton(
-              onPressed: () => _importHeroData(context, ref),
-              icon: const Icon(Icons.download),
-              tooltip: 'Held importieren',
-            ),
-            IconButton(
-              onPressed: () async {
-                final navigator = Navigator.of(context);
-                await ref.read(heroActionsProvider).deleteHero(widget.heroId);
-                if (!context.mounted) {
-                  return;
-                }
-                navigator.pushReplacement(
-                  MaterialPageRoute(builder: (_) => const HeroesHomeScreen()),
-                );
-              },
-              icon: const Icon(Icons.delete_outline),
-              tooltip: 'Held loeschen',
-            ),
+            ..._buildWorkspaceActions(hero),
           ],
           bottom: useCommandDeck ? null : _buildWorkspaceTabBar(),
         ),
