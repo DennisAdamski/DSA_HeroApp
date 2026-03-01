@@ -21,6 +21,42 @@ const int _overviewTabIndex = 0;
 const int _talentsTabIndex = 1;
 const int _combatTabIndex = 2;
 const int _inventoryTabIndex = 4;
+const double _commandDeckBreakpoint = 1280;
+const double _commandDeckNavigationWidth = 240;
+const double _commandDeckInspectorWidth = 300;
+
+const List<_WorkspaceTabSpec> _workspaceTabs = <_WorkspaceTabSpec>[
+  _WorkspaceTabSpec(
+    label: 'Uebersicht',
+    icon: Icons.dashboard_outlined,
+    helper: 'Basisdaten und Ressourcen',
+  ),
+  _WorkspaceTabSpec(
+    label: 'Talente',
+    icon: Icons.auto_stories_outlined,
+    helper: 'Talentwerte und Spezialisierungen',
+  ),
+  _WorkspaceTabSpec(
+    label: 'Kampf',
+    icon: Icons.sports_martial_arts_outlined,
+    helper: 'Kampftechniken, Nahkampf, SF/Manoever',
+  ),
+  _WorkspaceTabSpec(
+    label: 'Magie',
+    icon: Icons.bolt_outlined,
+    helper: 'Katalogansicht fuer Zauber',
+  ),
+  _WorkspaceTabSpec(
+    label: 'Inventar',
+    icon: Icons.inventory_2_outlined,
+    helper: 'Ausrüstung und Gegenstaende',
+  ),
+  _WorkspaceTabSpec(
+    label: 'Notizen',
+    icon: Icons.sticky_note_2_outlined,
+    helper: 'Freier Platzhalterbereich',
+  ),
+];
 
 class HeroWorkspaceScreen extends ConsumerStatefulWidget {
   const HeroWorkspaceScreen({super.key, required this.heroId});
@@ -208,9 +244,131 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
+  PreferredSizeWidget _buildWorkspaceTabBar() {
+    return TabBar(
+      controller: _tabController,
+      isScrollable: true,
+      tabs: const [
+        Tab(text: '\u00dcbersicht'),
+        Tab(text: 'Talente'),
+        Tab(text: 'Kampf'),
+        Tab(text: 'Magie'),
+        Tab(text: 'Inventar'),
+        Tab(text: 'Notizen'),
+      ],
+    );
+  }
+
+  Widget _buildWorkspaceTabView() {
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        HeroOverviewTab(
+          heroId: widget.heroId,
+          onDirtyChanged: (isDirty) => _updateDirty(_overviewTabIndex, isDirty),
+          onEditingChanged: (isEditing) =>
+              _updateEditing(_overviewTabIndex, isEditing),
+          onRegisterDiscard: (discardAction) =>
+              _registerDiscard(_overviewTabIndex, discardAction),
+          onRegisterEditActions: (actions) =>
+              _registerEditActions(_overviewTabIndex, actions),
+        ),
+        HeroTalentsTab(
+          heroId: widget.heroId,
+          onDirtyChanged: (isDirty) => _updateDirty(_talentsTabIndex, isDirty),
+          onEditingChanged: (isEditing) =>
+              _updateEditing(_talentsTabIndex, isEditing),
+          onRegisterDiscard: (discardAction) =>
+              _registerDiscard(_talentsTabIndex, discardAction),
+          onRegisterEditActions: (actions) =>
+              _registerEditActions(_talentsTabIndex, actions),
+        ),
+        HeroCombatTab(
+          heroId: widget.heroId,
+          onDirtyChanged: (isDirty) => _updateDirty(_combatTabIndex, isDirty),
+          onEditingChanged: (isEditing) =>
+              _updateEditing(_combatTabIndex, isEditing),
+          onRegisterDiscard: (discardAction) =>
+              _registerDiscard(_combatTabIndex, discardAction),
+          onRegisterEditActions: (actions) =>
+              _registerEditActions(_combatTabIndex, actions),
+        ),
+        const _CatalogPlaceholderTab(
+          title: 'Magie',
+          section: _CatalogSection.spells,
+        ),
+        HeroInventoryTab(
+          heroId: widget.heroId,
+          onDirtyChanged: (isDirty) =>
+              _updateDirty(_inventoryTabIndex, isDirty),
+          onEditingChanged: (isEditing) =>
+              _updateEditing(_inventoryTabIndex, isEditing),
+          onRegisterDiscard: (discardAction) =>
+              _registerDiscard(_inventoryTabIndex, discardAction),
+          onRegisterEditActions: (actions) =>
+              _registerEditActions(_inventoryTabIndex, actions),
+        ),
+        const _PlaceholderTab(title: 'Notizen'),
+      ],
+    );
+  }
+
+  Widget _buildClassicWorkspaceBody(HeroSheet hero) {
+    return Column(
+      children: [
+        _CoreAttributesHeader(heroId: widget.heroId, hero: hero),
+        _buildGlobalActionHeader(),
+        Expanded(child: _buildWorkspaceTabView()),
+      ],
+    );
+  }
+
+  Widget _buildCommandDeckWorkspaceBody(HeroSheet hero) {
+    final activeTabIndex = _tabRegistry.activeTabIndex;
+    return Row(
+      children: [
+        SizedBox(
+          width: _commandDeckNavigationWidth,
+          child: _CommandDeckNavigationPanel(
+            activeTabIndex: activeTabIndex,
+            isDirty: _tabRegistry.isDirty,
+            onSelectTab: (index) {
+              if (_tabController.index == index) {
+                return;
+              }
+              _tabController.animateTo(index);
+            },
+          ),
+        ),
+        const VerticalDivider(width: 1),
+        Expanded(
+          child: Column(
+            children: [
+              _CoreAttributesHeader(heroId: widget.heroId, hero: hero),
+              _buildGlobalActionHeader(),
+              Expanded(child: _buildWorkspaceTabView()),
+            ],
+          ),
+        ),
+        const VerticalDivider(width: 1),
+        SizedBox(
+          width: _commandDeckInspectorWidth,
+          child: _WorkspaceInspectorPanel(
+            hero: hero,
+            activeTabIndex: activeTabIndex,
+            isEditing: _tabRegistry.isEditing(activeTabIndex),
+            isDirty: _tabRegistry.isDirty(activeTabIndex),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final hero = ref.watch(heroByIdProvider(widget.heroId));
+    final useCommandDeck =
+        MediaQuery.sizeOf(context).width >= _commandDeckBreakpoint;
 
     if (hero == null) {
       return Scaffold(
@@ -260,81 +418,11 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
               tooltip: 'Held loeschen',
             ),
           ],
-          bottom: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabs: const [
-              Tab(text: 'Übersicht'),
-              Tab(text: 'Talente'),
-              Tab(text: 'Kampf'),
-              Tab(text: 'Magie'),
-              Tab(text: 'Inventar'),
-              Tab(text: 'Notizen'),
-            ],
-          ),
+          bottom: useCommandDeck ? null : _buildWorkspaceTabBar(),
         ),
-        body: Column(
-          children: [
-            _CoreAttributesHeader(heroId: widget.heroId, hero: hero),
-            _buildGlobalActionHeader(),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  HeroOverviewTab(
-                    heroId: widget.heroId,
-                    onDirtyChanged: (isDirty) =>
-                        _updateDirty(_overviewTabIndex, isDirty),
-                    onEditingChanged: (isEditing) =>
-                        _updateEditing(_overviewTabIndex, isEditing),
-                    onRegisterDiscard: (discardAction) =>
-                        _registerDiscard(_overviewTabIndex, discardAction),
-                    onRegisterEditActions: (actions) =>
-                        _registerEditActions(_overviewTabIndex, actions),
-                  ),
-                  HeroTalentsTab(
-                    heroId: widget.heroId,
-                    onDirtyChanged: (isDirty) =>
-                        _updateDirty(_talentsTabIndex, isDirty),
-                    onEditingChanged: (isEditing) =>
-                        _updateEditing(_talentsTabIndex, isEditing),
-                    onRegisterDiscard: (discardAction) =>
-                        _registerDiscard(_talentsTabIndex, discardAction),
-                    onRegisterEditActions: (actions) =>
-                        _registerEditActions(_talentsTabIndex, actions),
-                  ),
-                  HeroCombatTab(
-                    heroId: widget.heroId,
-                    onDirtyChanged: (isDirty) =>
-                        _updateDirty(_combatTabIndex, isDirty),
-                    onEditingChanged: (isEditing) =>
-                        _updateEditing(_combatTabIndex, isEditing),
-                    onRegisterDiscard: (discardAction) =>
-                        _registerDiscard(_combatTabIndex, discardAction),
-                    onRegisterEditActions: (actions) =>
-                        _registerEditActions(_combatTabIndex, actions),
-                  ),
-                  const _CatalogPlaceholderTab(
-                    title: 'Magie',
-                    section: _CatalogSection.spells,
-                  ),
-                  HeroInventoryTab(
-                    heroId: widget.heroId,
-                    onDirtyChanged: (isDirty) =>
-                        _updateDirty(_inventoryTabIndex, isDirty),
-                    onEditingChanged: (isEditing) =>
-                        _updateEditing(_inventoryTabIndex, isEditing),
-                    onRegisterDiscard: (discardAction) =>
-                        _registerDiscard(_inventoryTabIndex, discardAction),
-                    onRegisterEditActions: (actions) =>
-                        _registerEditActions(_inventoryTabIndex, actions),
-                  ),
-                  const _PlaceholderTab(title: 'Notizen'),
-                ],
-              ),
-            ),
-          ],
-        ),
+        body: useCommandDeck
+            ? _buildCommandDeckWorkspaceBody(hero)
+            : _buildClassicWorkspaceBody(hero),
       ),
     );
   }
@@ -424,6 +512,189 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         context,
       ).showSnackBar(SnackBar(content: Text('Import fehlgeschlagen: $error')));
     }
+  }
+}
+
+class _WorkspaceTabSpec {
+  const _WorkspaceTabSpec({
+    required this.label,
+    required this.icon,
+    required this.helper,
+  });
+
+  final String label;
+  final IconData icon;
+  final String helper;
+}
+
+class _CommandDeckNavigationPanel extends StatelessWidget {
+  const _CommandDeckNavigationPanel({
+    required this.activeTabIndex,
+    required this.isDirty,
+    required this.onSelectTab,
+  });
+
+  final int activeTabIndex;
+  final bool Function(int tabIndex) isDirty;
+  final ValueChanged<int> onSelectTab;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.surfaceContainerLowest,
+      child: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 16, 12, 10),
+              child: Text(
+                'Command Deck',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _workspaceTabs.length,
+                padding: const EdgeInsets.fromLTRB(8, 2, 8, 12),
+                itemBuilder: (context, index) {
+                  final tab = _workspaceTabs[index];
+                  final selected = index == activeTabIndex;
+                  final dirty = isDirty(index);
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: ListTile(
+                      selected: selected,
+                      selectedTileColor: Theme.of(
+                        context,
+                      ).colorScheme.secondaryContainer,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      leading: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(tab.icon),
+                          if (dirty)
+                            Positioned(
+                              right: -3,
+                              top: -2,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.error,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      title: Text(tab.label),
+                      subtitle: Text(
+                        tab.helper,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      onTap: () => onSelectTab(index),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WorkspaceInspectorPanel extends StatelessWidget {
+  const _WorkspaceInspectorPanel({
+    required this.hero,
+    required this.activeTabIndex,
+    required this.isEditing,
+    required this.isDirty,
+  });
+
+  final HeroSheet hero;
+  final int activeTabIndex;
+  final bool isEditing;
+  final bool isDirty;
+
+  @override
+  Widget build(BuildContext context) {
+    final tab = _workspaceTabs[activeTabIndex];
+    final stateText = isEditing ? 'Bearbeitungsmodus' : 'Lesemodus';
+    final dirtyText = isDirty
+        ? 'Ungespeicherte Aenderungen'
+        : 'Alles gespeichert';
+    final levelText = hero.level.toString();
+    final apAvailableText = hero.apAvailable.toString();
+
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.surfaceContainerLowest,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Inspector', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 10),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tab.label,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(tab.helper),
+                      const SizedBox(height: 10),
+                      Chip(label: Text(stateText)),
+                      const SizedBox(height: 8),
+                      Chip(label: Text(dirtyText)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hero.name,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 6),
+                      Text('Level: $levelText'),
+                      Text('AP verfuegbar: $apAvailableText'),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    'Hinweis: Tab-Wechsel und Zurueck-Navigation behalten den '
+                    'bestehenden Discard-Guard bei.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
