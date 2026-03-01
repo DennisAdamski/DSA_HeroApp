@@ -442,8 +442,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                           '${visibleTalents.length}/${talents.length} sichtbar',
                         ),
                         trailing: _visibilityMode
-                            ? Wrap(
-                                spacing: 4,
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   TextButton(
                                     key: ValueKey<String>(

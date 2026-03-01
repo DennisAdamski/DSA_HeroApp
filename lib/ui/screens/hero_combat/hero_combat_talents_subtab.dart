@@ -57,8 +57,8 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
               '${visibleEntries.length}/${entries.length} sichtbar',
             ),
             trailing: _combatTalentsVisibilityMode
-                ? Wrap(
-                    spacing: 4,
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       TextButton(
                         key: ValueKey<String>('combat-group-show-all-$group'),
