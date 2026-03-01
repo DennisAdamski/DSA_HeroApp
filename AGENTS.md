@@ -51,6 +51,12 @@ Hinweis zu `flutter clean`:
 - Es ist ein Troubleshooting-Schritt und nicht der Default.
 - Reihenfolge bevorzugen: Analyse/Test/Dependency-Refresh zuerst, `flutter clean` nur bei konkreten Build-Problemen.
 
+## Branch-Regel fuer natuerlicheres Git-Workflow
+- Sofern nichts anderes vorgegeben ist, gilt: Wenn der aktuelle Branch `main` ist, wird zu Beginn einer neuen Konversation ein eigener Arbeits-Branch erstellt.
+- Alle zur jeweiligen Konversation gehoerenden Commits werden in diesem Arbeits-Branch erstellt, nicht direkt auf `main`.
+- Der Branch-Name soll kontextbezogen und eindeutig sein, z. B. `task/<datum-zeit>-<kurzthema>`.
+- Befindet sich die Arbeit bereits auf einem Nicht-`main`-Branch, wird dieser Branch weiterverwendet, sofern der Nutzer nichts anderes vorgibt.
+
 ## Commit-Regel nach erfolgreichen Tests
 - Nach jeder abgeschlossenen Aenderung ist bei erfolgreich ausgefuehrten relevanten Tests automatisch ein Commit zu erstellen.
 - Commit-Inhalt: nur die zur Aenderung gehoerenden Dateien (kein Sammel-Commit mit unzusammenhaengenden Aenderungen).
