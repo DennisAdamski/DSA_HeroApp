@@ -67,20 +67,28 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          TextButton(
-                            key: ValueKey<String>('combat-group-show-all-$group'),
-                            onPressed: () => _setHiddenForGroup(
-                              entries,
-                              hidden: false,
+                          SizedBox(
+                            width: 150,
+                            height: 36,
+                            child: TextButton(
+                              key: ValueKey<String>('combat-group-show-all-$group'),
+                              onPressed: () => _setHiddenForGroup(
+                                entries,
+                                hidden: false,
+                              ),
+                              child: const Text('Alle einblenden'),
                             ),
-                            child: const Text('Alle einblenden'),
                           ),
                           const SizedBox(width: 6),
-                          TextButton(
-                            key: ValueKey<String>('combat-group-hide-all-$group'),
-                            onPressed: () =>
-                                _setHiddenForGroup(entries, hidden: true),
-                            child: const Text('Alle ausblenden'),
+                          SizedBox(
+                            width: 150,
+                            height: 36,
+                            child: TextButton(
+                              key: ValueKey<String>('combat-group-hide-all-$group'),
+                              onPressed: () =>
+                                  _setHiddenForGroup(entries, hidden: true),
+                              child: const Text('Alle ausblenden'),
+                            ),
                           ),
                         ],
                       ),
