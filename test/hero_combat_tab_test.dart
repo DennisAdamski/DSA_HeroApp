@@ -115,6 +115,8 @@ void main() {
   }
 
   Future<void> openWeaponEditor(WidgetTester tester, {bool add = false}) async {
+    await tester.tap(find.widgetWithText(Tab, 'Waffen'));
+    await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(
         ValueKey<String>(add ? 'combat-weapon-add' : 'combat-weapon-edit'),
@@ -284,8 +286,55 @@ void main() {
     await openCombatTab(tester, repo);
 
     expect(find.widgetWithText(Tab, 'Kampftechniken'), findsOneWidget);
+    expect(find.widgetWithText(Tab, 'Waffen'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Nahkampf'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'SF/Manoever'), findsOneWidget);
+  });
+
+  testWidgets('keeps weapon management only in Waffen subtab', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-add')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-edit')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-remove')),
+      findsNothing,
+    );
+
+    await tester.tap(find.widgetWithText(Tab, 'Waffen'));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-add')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-edit')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-remove')),
+      findsOneWidget,
+    );
   });
 
   testWidgets(
@@ -493,6 +542,8 @@ void main() {
       weaponType: 'Bidenhaender',
     );
 
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey<String>('combat-main-weapon-select-1-2')),
     );
@@ -715,7 +766,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Waffen'));
     await tester.pumpAndSettle();
 
     final table = find.byKey(

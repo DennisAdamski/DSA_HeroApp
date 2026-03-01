@@ -74,7 +74,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
         }
       },
     );
-    _subTabController = TabController(length: 3, vsync: this);
+    _subTabController = TabController(length: 4, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -575,6 +575,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                     controller: _subTabController,
                     tabs: const [
                       Tab(text: 'Kampftechniken'),
+                      Tab(text: 'Waffen'),
                       Tab(text: 'Nahkampf'),
                       Tab(text: 'SF/Manoever'),
                     ],
@@ -587,12 +588,16 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                           combatTalents,
                           effectiveAttributes: effectiveAttributes,
                         ),
+                        _buildWeaponsSubTab(
+                          combatTalents,
+                          catalog,
+                          hero,
+                          state,
+                        ),
                         _buildMeleeCalculatorSubTab(
                           combatTalents,
                           catalog,
                           preview,
-                          hero,
-                          state,
                         ),
                         _buildSpecialRulesSubTab(catalog),
                       ],
