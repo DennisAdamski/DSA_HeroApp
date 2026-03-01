@@ -14,8 +14,9 @@ class WorkspaceImportExportActions {
     required WidgetRef ref,
     required HeroSheet hero,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 700));
-    final payload = await ref.read(heroActionsProvider).buildExportJson(hero.id);
+    final payload = await ref
+        .read(heroActionsProvider)
+        .buildExportJson(hero.id);
     final gateway = ref.read(heroTransferFileGatewayProvider);
     return gateway.exportJson(fileNameBase: hero.name, jsonPayload: payload);
   }
@@ -48,7 +49,9 @@ class WorkspaceImportExportActions {
     WidgetRef ref,
     HeroTransferBundle bundle,
   ) async {
-    final existing = await ref.read(heroByIdFutureProvider(bundle.hero.id).future);
+    final existing = await ref.read(
+      heroByIdFutureProvider(bundle.hero.id).future,
+    );
     if (existing == null) {
       return ImportConflictResolution.overwriteExisting;
     }

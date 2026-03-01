@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,19 +5,12 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
-
-class _CombatValidationIssue {
-  const _CombatValidationIssue({required this.talentId, required this.message});
-
-  final String talentId;
-  final String message;
-}
 
 enum _ManeuverSupportStatus { supported, notSupported, unverifiable }
 
@@ -100,21 +91,13 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   }
 
   void _syncDraftFromHero(HeroSheet hero, {bool force = false}) {
-    final signature = jsonEncode({
-      'talents': hero.talents.map(
-        (key, value) => MapEntry(key, value.toJson()),
-      ),
-      'hiddenTalentIds': hero.hiddenTalentIds,
-      'combatConfig': hero.combatConfig.toJson(),
-    });
-
-    if (!_editController.shouldSync(signature, force: force)) {
+    if (!_editController.shouldSync(hero, force: force)) {
       return;
     }
 
     _resetControllers();
     _draftTalents = Map<String, HeroTalentEntry>.from(hero.talents);
-    _draftHiddenTalentIds = _normalizedHiddenTalentIds(hero.hiddenTalentIds);
+    _draftHiddenTalentIds = normalizeHiddenTalentIds(hero.hiddenTalentIds);
     _invalidCombatTalentIds = <String>{};
     _draftCombatConfig = hero.combatConfig;
     _seedCombatControllers();
@@ -688,7 +671,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
 
     final catalog = await ref.read(rulesCatalogProvider.future);
     final meleeTalents = _sortedMeleeTalents(
-      catalog.talents.where(isCombatTalent).toList(growable: false),
+      catalog.talents.where(isCombatTalentDef).toList(growable: false),
     );
     final weaponValidation = _validateWeaponSlots(
       catalog: catalog,
@@ -702,7 +685,11 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       }
       return;
     }
-    final issues = _validateCombatTalentDistribution(catalog.talents);
+    final issues = validateCombatTalentDistribution(
+      talents: catalog.talents,
+      talentEntries: _draftTalents,
+      filter: isCombatTalentDef,
+    );
     if (issues.isNotEmpty) {
       if (mounted) {
         setState(() {
@@ -791,18 +778,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
 
   bool _isHidden(String talentId) => _draftHiddenTalentIds.contains(talentId);
 
-  Set<String> _normalizedHiddenTalentIds(Iterable<String> hiddenTalentIds) {
-    final normalized = <String>{};
-    for (final id in hiddenTalentIds) {
-      final trimmed = id.trim();
-      if (trimmed.isEmpty) {
-        continue;
-      }
-      normalized.add(trimmed);
-    }
-    return normalized;
-  }
-
   String? _validateWeaponSlots({
     required RulesCatalog catalog,
     required List<TalentDef> meleeTalents,
@@ -856,79 +831,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     return null;
   }
 
-  List<_CombatValidationIssue> _validateCombatTalentDistribution(
-    List<TalentDef> talents,
-  ) {
-    final issues = <_CombatValidationIssue>[];
-    final combatTalents = talents.where(isCombatTalent);
-    for (final talent in combatTalents) {
-      final entry = _entryForTalent(talent.id);
-      final taw = entry.talentValue;
-      final at = entry.atValue;
-      final pa = entry.paValue;
-      final type = talent.type.trim().toLowerCase();
-
-      if (taw < 0 || at < 0 || pa < 0) {
-        issues.add(
-          _CombatValidationIssue(
-            talentId: talent.id,
-            message:
-                'Ungueltige Verteilung bei ${talent.name}: TaW, AT und PA muessen >= 0 sein.',
-          ),
-        );
-        continue;
-      }
-
-      if (taw == 0) {
-        if (at != 0 || pa != 0) {
-          issues.add(
-            _CombatValidationIssue(
-              talentId: talent.id,
-              message:
-                  'Ungueltige Verteilung bei ${talent.name}: Bei TaW 0 muessen AT und PA ebenfalls 0 sein.',
-            ),
-          );
-        }
-        continue;
-      }
-
-      if (type == 'nahkampf') {
-        if (at + pa != taw) {
-          issues.add(
-            _CombatValidationIssue(
-              talentId: talent.id,
-              message:
-                  'Ungueltige Verteilung bei ${talent.name}: Bei Nahkampf muss AT + PA = TaW gelten.',
-            ),
-          );
-        }
-        continue;
-      }
-
-      if (type == 'fernkampf') {
-        if (at != taw || pa != 0) {
-          issues.add(
-            _CombatValidationIssue(
-              talentId: talent.id,
-              message:
-                  'Ungueltige Verteilung bei ${talent.name}: Bei Fernkampf muss AT = TaW und PA = 0 sein.',
-            ),
-          );
-        }
-        continue;
-      }
-
-      issues.add(
-        _CombatValidationIssue(
-          talentId: talent.id,
-          message:
-              'Ungueltiger Talenttyp bei ${talent.name}: "${talent.type}" ist weder Nahkampf noch Fernkampf.',
-        ),
-      );
-    }
-    return issues;
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -951,7 +853,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
             Center(child: Text('Katalog-Fehler: $error')),
         data: (catalog) {
           final combatTalents = catalog.talents
-              .where(isCombatTalent)
+              .where(isCombatTalentDef)
               .toList(growable: false);
           final preview = computeCombatPreviewStats(
             hero,

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -110,11 +108,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   }
 
   void _syncControllers(HeroSheet hero, HeroState state, {bool force = false}) {
-    final signature = jsonEncode({
-      'hero': hero.toJson(),
-      'state': state.toJson(),
-    });
-    if (!_editController.shouldSync(signature, force: force)) {
+    if (!_editController.shouldSync((hero, state), force: force)) {
       return;
     }
 

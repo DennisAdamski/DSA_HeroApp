@@ -32,7 +32,12 @@ Vollstaendige Anleitung:
 ### Runtime-relevant
 - `lib/main.dart` als Einstiegspunkt
 - `lib/domain/`, `lib/state/`, `lib/data/`, `lib/rules/derived/`, `lib/ui/screens/`
-- `assets/catalogs/house_rules_v1.json`
+- `assets/catalogs/house_rules_v1/` (Split-JSON mit `manifest.json` + Teilkatalogen)
+
+### Architektur-Notiz (Stand: 2026-03-01)
+- State-Layer nutzt einen stream-basierten Heldenindex (`HeroIndexSnapshot`) fuer O(1)-Lookup je ID.
+- Abgeleitete Berechnungen werden zentral ueber `HeroComputedSnapshot` gebuendelt (Modifier, effektive Attribute, Derived, Combat-Preview).
+- Repository-Schnittstelle ist auf inkrementelle Streams erweitert (`watchHeroIndex`, `watchHeroState`, `loadHeroById`).
 
 ### Tooling und Datenaufbereitung
 - `tool/convert_excel_to_catalog.py`: erzeugt Runtime-Katalog aus Excel-Listen
