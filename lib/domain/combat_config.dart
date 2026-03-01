@@ -263,9 +263,7 @@ class ArmorConfig {
     int? globalArmorTrainingLevel,
   }) {
     return ArmorConfig(
-      pieces: List<ArmorPiece>.unmodifiable(
-        pieces ?? this.pieces,
-      ),
+      pieces: List<ArmorPiece>.unmodifiable(pieces ?? this.pieces),
       globalArmorTrainingLevel:
           globalArmorTrainingLevel ?? this.globalArmorTrainingLevel,
     );
@@ -482,9 +480,21 @@ class CombatConfig {
     return List<MainWeaponSlot>.from(weapons, growable: false);
   }
 
-  MainWeaponSlot get selectedWeapon {
+  bool get hasSelectedWeapon {
     final slots = weaponSlots;
-    return slots[_normalizeWeaponIndex(selectedWeaponIndex, slots.length)];
+    final index = selectedWeaponIndex;
+    return index >= 0 && index < slots.length;
+  }
+
+  MainWeaponSlot? get selectedWeaponOrNull {
+    if (!hasSelectedWeapon) {
+      return null;
+    }
+    return weaponSlots[selectedWeaponIndex];
+  }
+
+  MainWeaponSlot get selectedWeapon {
+    return selectedWeaponOrNull ?? const MainWeaponSlot();
   }
 
   CombatConfig copyWith({
@@ -500,13 +510,19 @@ class CombatConfig {
       weapons ?? weaponSlots,
       growable: false,
     );
-    final nextSelectedIndex = _normalizeWeaponIndex(
+    final nextSelectedIndex = _normalizeSelectedWeaponIndex(
       selectedWeaponIndex ?? this.selectedWeaponIndex,
       nextWeapons.length,
     );
-    final nextMain = mainWeapon ?? nextWeapons[nextSelectedIndex];
+    final nextMain =
+        mainWeapon ??
+        (nextSelectedIndex < 0
+            ? this.mainWeapon
+            : nextWeapons[nextSelectedIndex]);
     final normalizedWeapons = List<MainWeaponSlot>.from(nextWeapons);
-    normalizedWeapons[nextSelectedIndex] = nextMain;
+    if (nextSelectedIndex >= 0) {
+      normalizedWeapons[nextSelectedIndex] = nextMain;
+    }
 
     return CombatConfig(
       mainWeapon: nextMain,
@@ -521,8 +537,11 @@ class CombatConfig {
 
   Map<String, dynamic> toJson() {
     final slots = weaponSlots;
-    final index = _normalizeWeaponIndex(selectedWeaponIndex, slots.length);
-    final activeWeapon = slots[index];
+    final index = _normalizeSelectedWeaponIndex(
+      selectedWeaponIndex,
+      slots.length,
+    );
+    final activeWeapon = index < 0 ? mainWeapon : slots[index];
     return {
       'mainWeapon': activeWeapon.toJson(),
       'weapons': slots.map((entry) => entry.toJson()).toList(growable: false),
@@ -555,13 +574,14 @@ class CombatConfig {
     final slots = parsedWeapons.isEmpty
         ? <MainWeaponSlot>[legacyMain]
         : parsedWeapons;
-    final selectedIndex = _normalizeWeaponIndex(
+    final selectedIndex = _normalizeSelectedWeaponIndex(
       (json['selectedWeaponIndex'] as num?)?.toInt() ?? 0,
       slots.length,
     );
+    final selectedMain = selectedIndex < 0 ? legacyMain : slots[selectedIndex];
 
     return CombatConfig(
-      mainWeapon: slots[selectedIndex],
+      mainWeapon: selectedMain,
       weapons: slots,
       selectedWeaponIndex: selectedIndex,
       offhand: OffhandSlot.fromJson(readMap('offhand')),
@@ -572,12 +592,15 @@ class CombatConfig {
   }
 }
 
-int _normalizeWeaponIndex(int value, int length) {
-  if (length <= 1) {
-    return 0;
+int _normalizeSelectedWeaponIndex(int value, int length) {
+  if (value == -1) {
+    return -1;
   }
   if (value < 0) {
-    return 0;
+    return -1;
+  }
+  if (length <= 0) {
+    return -1;
   }
   if (value >= length) {
     return length - 1;

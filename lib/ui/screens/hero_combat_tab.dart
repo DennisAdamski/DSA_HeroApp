@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_area_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
 part 'hero_combat/hero_combat_melee_subtab.dart';
@@ -61,6 +62,9 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   Set<String> _draftHiddenTalentIds = <String>{};
   Set<String> _invalidCombatTalentIds = <String>{};
   CombatConfig _draftCombatConfig = const CombatConfig();
+  String _weaponFilterTalentId = '';
+  String _weaponFilterType = '';
+  String _weaponFilterDistanceClass = '';
 
   @override
   void initState() {
@@ -158,15 +162,9 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
 
   int _selectedWeaponIndex() {
     final slots = _draftCombatConfig.weaponSlots;
-    if (slots.length <= 1) {
-      return 0;
-    }
     final index = _draftCombatConfig.selectedWeaponIndex;
-    if (index < 0) {
-      return 0;
-    }
-    if (index >= slots.length) {
-      return slots.length - 1;
+    if (index < 0 || index >= slots.length) {
+      return -1;
     }
     return index;
   }
@@ -203,44 +201,31 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       return;
     }
     final normalizedIndex = selectedIndex < 0
-        ? 0
+        ? -1
         : (selectedIndex >= slots.length ? slots.length - 1 : selectedIndex);
+    final selectedMainWeapon = normalizedIndex < 0
+        ? _draftCombatConfig.mainWeapon
+        : slots[normalizedIndex];
     _draftCombatConfig = _draftCombatConfig.copyWith(
       weapons: slots,
       selectedWeaponIndex: normalizedIndex,
-      mainWeapon: slots[normalizedIndex],
+      mainWeapon: selectedMainWeapon,
     );
-    _syncSelectedWeaponControllers(slots[normalizedIndex]);
+    if (normalizedIndex >= 0) {
+      _syncSelectedWeaponControllers(slots[normalizedIndex]);
+    }
     if (markChanged) {
       _markFieldChanged();
     }
   }
 
   Future<void> _selectWeaponIndex(
-    int nextIndex, {
+    int? nextIndex, {
     required RulesCatalog catalog,
     required List<TalentDef> meleeTalents,
   }) async {
     final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
-    _setDraftWeapons(slots, selectedIndex: nextIndex, markChanged: true);
-    await _persistCombatConfigIfReadonly(
-      catalog: catalog,
-      meleeTalents: meleeTalents,
-    );
-  }
-
-  Future<void> _removeSelectedWeaponSlot({
-    required RulesCatalog catalog,
-    required List<TalentDef> meleeTalents,
-  }) async {
-    final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
-    if (slots.length <= 1) {
-      return;
-    }
-    final index = _selectedWeaponIndex();
-    slots.removeAt(index);
-    final nextIndex = index >= slots.length ? slots.length - 1 : index;
-    _setDraftWeapons(slots, selectedIndex: nextIndex, markChanged: true);
+    _setDraftWeapons(slots, selectedIndex: nextIndex ?? -1, markChanged: true);
     await _persistCombatConfigIfReadonly(
       catalog: catalog,
       meleeTalents: meleeTalents,
@@ -475,27 +460,23 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       if (!hasAnyData) {
         continue;
       }
-      if (slot.name.trim().isEmpty) {
-        return '$slotLabel: Name ist ein Pflichtfeld.';
-      }
       final talentId = slot.talentId.trim();
-      if (talentId.isEmpty) {
-        return '$slotLabel: Talent ist ein Pflichtfeld.';
-      }
-      final talent = talentById[talentId];
-      if (talent == null) {
+      final talent = talentId.isEmpty ? null : talentById[talentId];
+      if (talentId.isNotEmpty && talent == null) {
         return '$slotLabel: Das gewaehlte Talent ist nicht gueltig fuer Nahkampf.';
       }
       final weaponType = slot.weaponType.trim();
-      if (weaponType.isEmpty) {
-        return '$slotLabel: Waffenart ist ein Pflichtfeld.';
+      if (weaponType.isNotEmpty && talent != null) {
+        final allowedTypes = _weaponTypeOptionsForTalent(
+          talent: talent,
+          catalog: catalog,
+        );
+        if (!allowedTypes.contains(weaponType)) {
+          return '$slotLabel: Waffenart "$weaponType" passt nicht zum Talent "${talent.name}".';
+        }
       }
-      final allowedTypes = _weaponTypeOptionsForTalent(
-        talent: talent,
-        catalog: catalog,
-      );
-      if (!allowedTypes.contains(weaponType)) {
-        return '$slotLabel: Waffenart "$weaponType" passt nicht zum Talent "${talent.name}".';
+      if (weaponType.isNotEmpty && talent == null) {
+        return '$slotLabel: Waffenart "$weaponType" benoetigt ein gueltiges Talent.';
       }
       if (slot.kkThreshold < 1) {
         return '$slotLabel: KK-Schwelle muss > 0 sein.';

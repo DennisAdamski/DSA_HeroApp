@@ -74,360 +74,72 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     return options;
   }
 
-  Future<void> _openWeaponEditor({
+  Future<void> _addWeaponSlot({
     required RulesCatalog catalog,
     required List<TalentDef> meleeTalents,
-    int? slotIndex,
   }) async {
-    final slots = _draftCombatConfig.weaponSlots;
-    final isNew = slotIndex == null;
-    final sourceWeapon = isNew ? const MainWeaponSlot() : slots[slotIndex];
-    final nameController = TextEditingController(
-      text: isNew ? '' : sourceWeapon.name,
+    final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
+    slots.add(const MainWeaponSlot());
+    _setDraftWeapons(
+      slots,
+      selectedIndex: _selectedWeaponIndex(),
+      markChanged: true,
     );
-    final dkController = TextEditingController(
-      text: isNew ? '' : sourceWeapon.distanceClass,
+    await _persistCombatConfigIfReadonly(
+      catalog: catalog,
+      meleeTalents: meleeTalents,
     );
-    final kkBaseController = TextEditingController(
-      text: isNew ? '' : sourceWeapon.kkBase.toString(),
-    );
-    final kkThresholdController = TextEditingController(
-      text: isNew ? '' : sourceWeapon.kkThreshold.toString(),
-    );
-    final iniModController = TextEditingController(
-      text: isNew ? '' : sourceWeapon.iniMod.toString(),
-    );
-    final atModController = TextEditingController(
-      text: isNew ? '' : sourceWeapon.wmAt.toString(),
-    );
-    final paModController = TextEditingController(
-      text: isNew ? '' : sourceWeapon.wmPa.toString(),
-    );
-    final diceController = TextEditingController(
-      text: isNew ? '1' : sourceWeapon.tpDiceCount.toString(),
-    );
-    final tpValueController = TextEditingController(
-      text: isNew ? '' : sourceWeapon.tpFlat.toString(),
-    );
-    final breakFactorController = TextEditingController(
-      text: isNew ? '' : sourceWeapon.breakFactor.toString(),
-    );
-    var selectedTalentId = isNew ? '' : sourceWeapon.talentId.trim();
-    if (_findTalentById(meleeTalents, selectedTalentId) == null) {
-      selectedTalentId = '';
-    }
-    var selectedWeaponType = isNew ? '' : sourceWeapon.weaponType.trim();
-    String? validationMessage;
+  }
 
-    final result = await showDialog<MainWeaponSlot>(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            final selectedTalent = _findTalentById(
-              meleeTalents,
-              selectedTalentId,
-            );
-            final weaponTypeOptions = _weaponTypeOptionsForTalent(
-              talent: selectedTalent,
-              catalog: catalog,
-            );
-            if (selectedWeaponType.isNotEmpty &&
-                !weaponTypeOptions.contains(selectedWeaponType)) {
-              selectedWeaponType = '';
-            }
-
-            return AlertDialog(
-              title: Text(isNew ? 'Waffe hinzufuegen' : 'Waffe bearbeiten'),
-              content: SizedBox(
-                width: 560,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      DropdownButtonFormField<String>(
-                        key: const ValueKey<String>(
-                          'combat-weapon-form-talent',
-                        ),
-                        initialValue: selectedTalentId.isEmpty
-                            ? ''
-                            : selectedTalentId,
-                        decoration: const InputDecoration(
-                          labelText: 'Talent',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: [
-                          const DropdownMenuItem<String>(
-                            value: '',
-                            child: Text('- Talent waehlen -'),
-                          ),
-                          ...meleeTalents.map(
-                            (talent) => DropdownMenuItem<String>(
-                              value: talent.id,
-                              child: Text(talent.name),
-                            ),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          setDialogState(() {
-                            selectedTalentId = value ?? '';
-                            final nextTalent = _findTalentById(
-                              meleeTalents,
-                              selectedTalentId,
-                            );
-                            final nextWeaponOptions =
-                                _weaponTypeOptionsForTalent(
-                                  talent: nextTalent,
-                                  catalog: catalog,
-                                );
-                            if (!nextWeaponOptions.contains(
-                              selectedWeaponType,
-                            )) {
-                              selectedWeaponType = '';
-                            }
-                            validationMessage = null;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        key: const ValueKey<String>(
-                          'combat-weapon-form-weapon-type',
-                        ),
-                        initialValue: selectedWeaponType.isEmpty
-                            ? ''
-                            : selectedWeaponType,
-                        decoration: const InputDecoration(
-                          labelText: 'Waffenart',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: [
-                          const DropdownMenuItem<String>(
-                            value: '',
-                            child: Text('- Waffenart waehlen -'),
-                          ),
-                          ...weaponTypeOptions.map(
-                            (entry) => DropdownMenuItem<String>(
-                              value: entry,
-                              child: Text(entry),
-                            ),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          setDialogState(() {
-                            selectedWeaponType = value ?? '';
-                            if (isNew &&
-                                nameController.text.trim().isEmpty &&
-                                selectedWeaponType.isNotEmpty) {
-                              nameController.text = selectedWeaponType;
-                            }
-                            validationMessage = null;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        key: const ValueKey<String>('combat-weapon-form-name'),
-                        controller: nameController,
-                        enabled:
-                            selectedTalentId.isNotEmpty &&
-                            selectedWeaponType.isNotEmpty,
-                        decoration: const InputDecoration(
-                          labelText: 'Name',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        key: const ValueKey<String>('combat-weapon-form-dk'),
-                        controller: dkController,
-                        decoration: const InputDecoration(
-                          labelText: 'DK (Distanzklasse)',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _dialogNumberField(
-                            controller: kkBaseController,
-                            keyName: 'combat-weapon-form-kk-base',
-                            label: 'KK Basis',
-                          ),
-                          _dialogNumberField(
-                            controller: kkThresholdController,
-                            keyName: 'combat-weapon-form-kk-threshold',
-                            label: 'KK-Schwelle',
-                          ),
-                          _dialogNumberField(
-                            controller: iniModController,
-                            keyName: 'combat-weapon-form-ini-mod',
-                            label: 'INI Mod',
-                          ),
-                          _dialogNumberField(
-                            controller: atModController,
-                            keyName: 'combat-weapon-form-at-mod',
-                            label: 'AT Mod',
-                          ),
-                          _dialogNumberField(
-                            controller: paModController,
-                            keyName: 'combat-weapon-form-pa-mod',
-                            label: 'PA Mod',
-                          ),
-                          _dialogNumberField(
-                            controller: diceController,
-                            keyName: 'combat-weapon-form-dice',
-                            label: 'Wuerfel',
-                          ),
-                          _dialogNumberField(
-                            controller: tpValueController,
-                            keyName: 'combat-weapon-form-tp-value',
-                            label: 'TP-Wert',
-                          ),
-                          _dialogNumberField(
-                            controller: breakFactorController,
-                            keyName: 'combat-weapon-form-bf',
-                            label: 'BF',
-                          ),
-                        ],
-                      ),
-                      if (validationMessage != null &&
-                          validationMessage!.trim().isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            validationMessage!,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Abbrechen'),
-                ),
-                FilledButton(
-                  key: const ValueKey<String>('combat-weapon-form-save'),
-                  onPressed: () {
-                    int parseInt(String raw, int fallback) {
-                      return int.tryParse(raw.trim()) ?? fallback;
-                    }
-
-                    final name = nameController.text.trim();
-                    final distanceClass = dkController.text.trim();
-                    final kkBase = parseInt(kkBaseController.text, 0);
-                    final kkThreshold = parseInt(kkThresholdController.text, 1);
-                    final iniMod = parseInt(iniModController.text, 0);
-                    final atMod = parseInt(atModController.text, 0);
-                    final paMod = parseInt(paModController.text, 0);
-                    final diceCount = parseInt(diceController.text, 1);
-                    final tpValue = parseInt(tpValueController.text, 0);
-                    final breakFactor = parseInt(breakFactorController.text, 0);
-
-                    if (name.isEmpty) {
-                      setDialogState(() {
-                        validationMessage = 'Name ist ein Pflichtfeld.';
-                      });
-                      return;
-                    }
-                    if (selectedTalentId.isEmpty) {
-                      setDialogState(() {
-                        validationMessage = 'Talent ist ein Pflichtfeld.';
-                      });
-                      return;
-                    }
-                    if (selectedWeaponType.isEmpty) {
-                      setDialogState(() {
-                        validationMessage = 'Waffenart ist ein Pflichtfeld.';
-                      });
-                      return;
-                    }
-                    if (kkThreshold < 1) {
-                      setDialogState(() {
-                        validationMessage = 'KK-Schwelle muss > 0 sein.';
-                      });
-                      return;
-                    }
-                    if (diceCount < 1) {
-                      setDialogState(() {
-                        validationMessage = 'Wuerfelanzahl muss >= 1 sein.';
-                      });
-                      return;
-                    }
-                    if (breakFactor < 0) {
-                      setDialogState(() {
-                        validationMessage = 'BF darf nicht negativ sein.';
-                      });
-                      return;
-                    }
-
-                    Navigator.of(context).pop(
-                      sourceWeapon.copyWith(
-                        name: name,
-                        talentId: selectedTalentId,
-                        weaponType: selectedWeaponType,
-                        distanceClass: distanceClass,
-                        kkBase: kkBase,
-                        kkThreshold: kkThreshold,
-                        breakFactor: breakFactor,
-                        iniMod: iniMod,
-                        wmAt: atMod,
-                        wmPa: paMod,
-                        tpDiceCount: diceCount,
-                        tpDiceSides: 6,
-                        tpFlat: tpValue,
-                      ),
-                    );
-                  },
-                  child: const Text('Speichern'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-
-    if (result == null) {
+  Future<void> _removeWeaponSlotAt(
+    int slotIndex, {
+    required RulesCatalog catalog,
+    required List<TalentDef> meleeTalents,
+  }) async {
+    final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
+    if (slotIndex < 0 || slotIndex >= slots.length || slots.length <= 1) {
       return;
     }
-    final updatedSlots = List<MainWeaponSlot>.from(
-      _draftCombatConfig.weaponSlots,
+    final selectedIndex = _selectedWeaponIndex();
+    slots.removeAt(slotIndex);
+    final nextSelectedIndex = selectedIndex < 0
+        ? -1
+        : (selectedIndex == slotIndex
+              ? -1
+              : (selectedIndex > slotIndex
+                    ? selectedIndex - 1
+                    : selectedIndex));
+    _setDraftWeapons(
+      slots,
+      selectedIndex: nextSelectedIndex,
+      markChanged: true,
     );
-    if (isNew) {
-      updatedSlots.add(result);
-      _setDraftWeapons(
-        updatedSlots,
-        selectedIndex: updatedSlots.length - 1,
-        markChanged: true,
-      );
-      await _persistCombatConfigIfReadonly(
-        catalog: catalog,
-        meleeTalents: meleeTalents,
-      );
-    } else {
-      final existingIndex = slotIndex;
-      updatedSlots[existingIndex] = result;
-      _setDraftWeapons(
-        updatedSlots,
-        selectedIndex: existingIndex,
-        markChanged: true,
-      );
-      await _persistCombatConfigIfReadonly(
-        catalog: catalog,
-        meleeTalents: meleeTalents,
-      );
+    await _persistCombatConfigIfReadonly(
+      catalog: catalog,
+      meleeTalents: meleeTalents,
+    );
+  }
+
+  Future<void> _updateWeaponSlot(
+    int slotIndex,
+    MainWeaponSlot Function(MainWeaponSlot current) update, {
+    required RulesCatalog catalog,
+    required List<TalentDef> meleeTalents,
+  }) async {
+    final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
+    if (slotIndex < 0 || slotIndex >= slots.length) {
+      return;
     }
+    slots[slotIndex] = update(slots[slotIndex]);
+    _setDraftWeapons(
+      slots,
+      selectedIndex: _selectedWeaponIndex(),
+      markChanged: true,
+    );
+    await _persistCombatConfigIfReadonly(
+      catalog: catalog,
+      meleeTalents: meleeTalents,
+    );
   }
 
   Future<void> _setArmorPieces(
@@ -619,10 +331,8 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
   ) {
     final weaponSlots = _draftCombatConfig.weaponSlots;
     final selectedWeaponIndex = _selectedWeaponIndex();
-    final mainWeapon = weaponSlots[selectedWeaponIndex];
     final sortedTalents = _sortedMeleeTalents(combatTalents);
-    final selectedTalent = _findTalentById(sortedTalents, mainWeapon.talentId);
-    final weaponOverviewRows = _weaponOverviewRows(
+    final overviewRows = _weaponOverviewRows(
       hero: hero,
       heroState: heroState,
       catalog: catalog,
@@ -630,6 +340,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
       selectedWeaponIndex: selectedWeaponIndex,
       weaponSlots: weaponSlots,
     );
+    final hasVisibleRows = overviewRows.isNotEmpty;
 
     return ListView(
       padding: const EdgeInsets.all(12),
@@ -642,109 +353,33 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               children: [
                 Text('Waffen', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<int>(
-                        key: ValueKey<String>(
-                          'combat-weapons-main-weapon-select-$selectedWeaponIndex-${weaponSlots.length}',
-                        ),
-                        initialValue: selectedWeaponIndex,
-                        decoration: const InputDecoration(
-                          labelText: 'Aktive Waffe',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: [
-                          for (var i = 0; i < weaponSlots.length; i++)
-                            DropdownMenuItem<int>(
-                              value: i,
-                              child: Text(
-                                weaponSlots[i].name.trim().isEmpty
-                                    ? 'Waffe ${i + 1}'
-                                    : weaponSlots[i].name,
-                              ),
-                            ),
-                        ],
-                        onChanged: (value) {
-                          _selectWeaponIndex(
-                            value ?? 0,
-                            catalog: catalog,
-                            meleeTalents: sortedTalents,
-                          );
-                        },
-                      ),
-                    ),
-                    IconButton(
-                      key: const ValueKey<String>('combat-weapon-add'),
-                      tooltip: 'Waffe hinzufuegen',
-                      onPressed: () => _openWeaponEditor(
-                        catalog: catalog,
-                        meleeTalents: sortedTalents,
-                      ),
-                      icon: const Icon(Icons.add),
-                    ),
-                    IconButton(
-                      key: const ValueKey<String>('combat-weapon-edit'),
-                      tooltip: 'Aktive Waffe bearbeiten',
-                      onPressed: () => _openWeaponEditor(
-                        catalog: catalog,
-                        meleeTalents: sortedTalents,
-                        slotIndex: selectedWeaponIndex,
-                      ),
-                      icon: const Icon(Icons.edit),
-                    ),
-                    IconButton(
-                      key: const ValueKey<String>('combat-weapon-remove'),
-                      tooltip: 'Aktive Waffe entfernen',
-                      onPressed: weaponSlots.length <= 1
-                          ? null
-                          : () => _removeSelectedWeaponSlot(
-                              catalog: catalog,
-                              meleeTalents: sortedTalents,
-                            ),
-                      icon: const Icon(Icons.remove),
+                FlexibleTable(
+                  tableKey: const ValueKey<String>(
+                    'combat-weapons-overview-table',
+                  ),
+                  headerCells: _weaponOverviewHeaderCells(
+                    catalog: catalog,
+                    meleeTalents: sortedTalents,
+                  ),
+                  preHeaderRows: [
+                    _weaponOverviewFilterRow(
+                      sortedTalents: sortedTalents,
+                      weaponSlots: weaponSlots,
                     ),
                   ],
+                  rows: overviewRows,
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  'Waffenwerte fuer Slot ${selectedWeaponIndex + 1}',
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    Chip(label: Text('Name: ${_fallback(mainWeapon.name)}')),
-                    Chip(
-                      label: Text(
-                        'Talent: ${selectedTalent == null ? '-' : selectedTalent.name}',
-                      ),
+                if (!hasVisibleRows)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Keine Waffen fuer den aktuellen Filter vorhanden.',
                     ),
-                    Chip(
-                      label: Text(
-                        'Waffenart: ${_fallback(mainWeapon.weaponType)}',
-                      ),
-                    ),
-                    Chip(
-                      label: Text('DK: ${_fallback(mainWeapon.distanceClass)}'),
-                    ),
-                    Chip(label: Text('KK Basis: ${mainWeapon.kkBase}')),
-                    Chip(label: Text('KK-Schwelle: ${mainWeapon.kkThreshold}')),
-                    Chip(label: Text('INI Mod: ${mainWeapon.iniMod}')),
-                    Chip(label: Text('AT Mod: ${mainWeapon.wmAt}')),
-                    Chip(label: Text('PA Mod: ${mainWeapon.wmPa}')),
-                    Chip(label: Text('Wuerfel: ${mainWeapon.tpDiceCount}')),
-                    Chip(label: Text('TP-Wert: ${mainWeapon.tpFlat}')),
-                    Chip(label: Text('BF: ${mainWeapon.breakFactor}')),
-                  ],
-                ),
+                  ),
               ],
             ),
           ),
         ),
-        _buildWeaponOverviewCard(weaponOverviewRows),
       ],
     );
   }
@@ -773,18 +408,24 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               children: [
                 Text('Waffe', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
-                DropdownButtonFormField<int>(
+                DropdownButtonFormField<int?>(
                   key: ValueKey<String>(
-                    'combat-main-weapon-select-$selectedWeaponIndex-${weaponSlots.length}',
+                    'combat-main-weapon-select-${selectedWeaponIndex < 0 ? 'none' : selectedWeaponIndex}-${weaponSlots.length}',
                   ),
-                  initialValue: selectedWeaponIndex,
+                  initialValue: selectedWeaponIndex < 0
+                      ? null
+                      : selectedWeaponIndex,
                   decoration: const InputDecoration(
                     labelText: 'Aktive Waffe',
                     border: OutlineInputBorder(),
                   ),
                   items: [
+                    const DropdownMenuItem<int?>(
+                      value: null,
+                      child: Text('Keine Waffe'),
+                    ),
                     for (var i = 0; i < weaponSlots.length; i++)
-                      DropdownMenuItem<int>(
+                      DropdownMenuItem<int?>(
                         value: i,
                         child: Text(
                           weaponSlots[i].name.trim().isEmpty
@@ -795,7 +436,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   ],
                   onChanged: (value) {
                     _selectWeaponIndex(
-                      value ?? 0,
+                      value,
                       catalog: catalog,
                       meleeTalents: sortedTalents,
                     );
@@ -1160,72 +801,170 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     );
   }
 
-  Widget _buildWeaponOverviewCard(List<TableRow> weaponOverviewRows) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Waffenuebersicht',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            if (weaponOverviewRows.isEmpty)
-              const Text('Keine Waffen mit Daten hinterlegt.')
-            else
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Table(
-                  key: const ValueKey<String>('combat-weapons-overview-table'),
-                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                  defaultColumnWidth: const IntrinsicColumnWidth(),
-                  children: [_weaponOverviewHeaderRow(), ...weaponOverviewRows],
-                ),
-              ),
-          ],
-        ),
+  static const List<String> _weaponOverviewHeaders = <String>[
+    'Name',
+    'Waffentalent',
+    'Waffenart',
+    'DK',
+    'AT',
+    'PA',
+    'TP',
+    'INI',
+    'BF',
+    'KK-Basis',
+    'KK-Schwelle',
+    'INI Mod',
+    'WM AT',
+    'WM PA',
+    'Wuerfel',
+    'TP Wert',
+    'BE Mod',
+    'eBE',
+    'TP/KK',
+    'GE Basis',
+    'GE-Schwelle',
+    'INI/GE',
+    'INI PA Mod',
+    'TP Kalk',
+    'Spezialisierung',
+    'Aktion',
+  ];
+
+  List<Widget> _weaponOverviewHeaderCells({
+    required RulesCatalog catalog,
+    required List<TalentDef> meleeTalents,
+  }) {
+    final cells = <Widget>[
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('Name'),
+          IconButton(
+            key: const ValueKey<String>('combat-weapon-add'),
+            tooltip: 'Waffe hinzufuegen',
+            visualDensity: VisualDensity.compact,
+            constraints: const BoxConstraints.tightFor(width: 30, height: 30),
+            onPressed: () =>
+                _addWeaponSlot(catalog: catalog, meleeTalents: meleeTalents),
+            icon: const Icon(Icons.add, size: 18),
+          ),
+        ],
       ),
-    );
-  }
-
-  TableRow _weaponOverviewHeaderRow() {
-    const headers = <String>[
-      'Name',
-      'Waffentalent',
-      'Waffenart',
-      'DK',
-      'KK-Basis',
-      'KK-Schwelle',
-      'INI Mod',
-      'WM AT',
-      'WM PA',
-      'Wuerfel',
-      'TP Wert',
-      'BE Mod',
-      'eBE',
-      'TP/KK',
-      'GE Basis',
-      'GE-Schwelle',
-      'INI/GE',
-      'INI PA Mod',
-      'TP Kalk',
-      'Spezialisierung',
-      'AT',
-      'PA',
-      'TP',
-      'INI',
-      'BF',
+      for (final header in _weaponOverviewHeaders.skip(1)) Text(header),
     ];
-    return TableRow(
-      children: headers
-          .map((text) => _weaponOverviewCell(text, isHeader: true))
-          .toList(growable: false),
-    );
+    return cells;
   }
 
-  List<TableRow> _weaponOverviewRows({
+  List<Widget> _weaponOverviewFilterRow({
+    required List<TalentDef> sortedTalents,
+    required List<MainWeaponSlot> weaponSlots,
+  }) {
+    final weaponTypeValues =
+        weaponSlots
+            .map((slot) => slot.weaponType.trim())
+            .where((value) => value.isNotEmpty)
+            .toSet()
+            .toList(growable: false)
+          ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    final distanceClassValues =
+        weaponSlots
+            .map((slot) => slot.distanceClass.trim())
+            .where((value) => value.isNotEmpty)
+            .toSet()
+            .toList(growable: false)
+          ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    final filteredTalentValue =
+        sortedTalents.any((talent) => talent.id == _weaponFilterTalentId)
+        ? _weaponFilterTalentId
+        : '';
+    final filteredTypeValue = weaponTypeValues.contains(_weaponFilterType)
+        ? _weaponFilterType
+        : '';
+    final filteredDkValue =
+        distanceClassValues.contains(_weaponFilterDistanceClass)
+        ? _weaponFilterDistanceClass
+        : '';
+    final cells = List<Widget>.filled(
+      _weaponOverviewHeaders.length,
+      const SizedBox.shrink(),
+      growable: false,
+    );
+    cells[1] = DropdownButtonFormField<String>(
+      key: const ValueKey<String>('combat-weapons-filter-talent'),
+      initialValue: filteredTalentValue,
+      decoration: const InputDecoration(
+        labelText: 'Filter Talent',
+        border: OutlineInputBorder(),
+        isDense: true,
+      ),
+      items: [
+        const DropdownMenuItem<String>(value: '', child: Text('Alle')),
+        ...sortedTalents.map(
+          (talent) => DropdownMenuItem<String>(
+            value: talent.id,
+            child: Text(talent.name),
+          ),
+        ),
+      ],
+      onChanged: (value) {
+        _weaponFilterTalentId = value ?? '';
+        if (mounted) {
+          _viewRevision.value++;
+        }
+      },
+    );
+    cells[2] = DropdownButtonFormField<String>(
+      key: const ValueKey<String>('combat-weapons-filter-weapon-type'),
+      initialValue: filteredTypeValue,
+      decoration: const InputDecoration(
+        labelText: 'Filter Waffenart',
+        border: OutlineInputBorder(),
+        isDense: true,
+      ),
+      items: [
+        const DropdownMenuItem<String>(value: '', child: Text('Alle')),
+        ...weaponTypeValues.map(
+          (weaponType) => DropdownMenuItem<String>(
+            value: weaponType,
+            child: Text(weaponType),
+          ),
+        ),
+      ],
+      onChanged: (value) {
+        _weaponFilterType = value ?? '';
+        if (mounted) {
+          _viewRevision.value++;
+        }
+      },
+    );
+    cells[3] = DropdownButtonFormField<String>(
+      key: const ValueKey<String>('combat-weapons-filter-dk'),
+      initialValue: filteredDkValue,
+      decoration: const InputDecoration(
+        labelText: 'Filter DK',
+        border: OutlineInputBorder(),
+        isDense: true,
+      ),
+      items: [
+        const DropdownMenuItem<String>(value: '', child: Text('Alle')),
+        ...distanceClassValues.map(
+          (distanceClass) => DropdownMenuItem<String>(
+            value: distanceClass,
+            child: Text(distanceClass),
+          ),
+        ),
+      ],
+      onChanged: (value) {
+        _weaponFilterDistanceClass = value ?? '';
+        if (mounted) {
+          _viewRevision.value++;
+        }
+      },
+    );
+    return cells;
+  }
+
+  List<FlexibleTableRow> _weaponOverviewRows({
     required HeroSheet hero,
     required HeroState heroState,
     required RulesCatalog catalog,
@@ -1236,29 +975,56 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     final talentById = <String, TalentDef>{
       for (final talent in sortedTalents) talent.id: talent,
     };
+    final availableTypes = weaponSlots
+        .map((slot) => slot.weaponType.trim())
+        .where((value) => value.isNotEmpty)
+        .toSet();
+    final availableDistanceClasses = weaponSlots
+        .map((slot) => slot.distanceClass.trim())
+        .where((value) => value.isNotEmpty)
+        .toSet();
+    final activeTalentFilter =
+        sortedTalents.any((talent) => talent.id == _weaponFilterTalentId)
+        ? _weaponFilterTalentId
+        : '';
+    final activeTypeFilter = availableTypes.contains(_weaponFilterType)
+        ? _weaponFilterType
+        : '';
+    final activeDistanceClassFilter =
+        availableDistanceClasses.contains(_weaponFilterDistanceClass)
+        ? _weaponFilterDistanceClass
+        : '';
     final indexed = <({int index, MainWeaponSlot slot})>[
       for (var i = 0; i < weaponSlots.length; i++)
         (index: i, slot: weaponSlots[i]),
     ];
-    final rowsWithData = indexed
+    final ordered = <({int index, MainWeaponSlot slot})>[
+      ...indexed.where((entry) => entry.index == selectedWeaponIndex),
+      ...indexed.where((entry) => entry.index != selectedWeaponIndex),
+    ];
+    final filtered = ordered
         .where((entry) {
           final slot = entry.slot;
-          return slot.name.trim().isNotEmpty ||
-              slot.talentId.trim().isNotEmpty ||
-              slot.weaponType.trim().isNotEmpty;
+          if (activeTalentFilter.isNotEmpty &&
+              slot.talentId.trim() != activeTalentFilter) {
+            return false;
+          }
+          if (activeTypeFilter.isNotEmpty &&
+              slot.weaponType.trim() != activeTypeFilter) {
+            return false;
+          }
+          if (activeDistanceClassFilter.isNotEmpty &&
+              slot.distanceClass.trim() != activeDistanceClassFilter) {
+            return false;
+          }
+          return true;
         })
         .toList(growable: false);
-    if (rowsWithData.isEmpty) {
-      return const <TableRow>[];
-    }
-    final sortedRows = <({int index, MainWeaponSlot slot})>[
-      ...rowsWithData.where((entry) => entry.index == selectedWeaponIndex),
-      ...rowsWithData.where((entry) => entry.index != selectedWeaponIndex),
-    ];
 
-    return sortedRows
+    return filtered
         .map((entry) {
           final slot = entry.slot;
+          final selectedTalent = _findTalentById(sortedTalents, slot.talentId);
           final preview = computeCombatPreviewStats(
             hero,
             heroState,
@@ -1269,60 +1035,286 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             overrideTalents: _draftTalents,
             catalogTalents: catalog.talents,
           );
-          final talentName = talentById[slot.talentId.trim()]?.name ?? '-';
-          final cells = <String>[
-            _fallback(slot.name),
-            talentName,
-            _fallback(slot.weaponType),
-            _fallback(slot.distanceClass),
-            slot.kkBase.toString(),
-            slot.kkThreshold.toString(),
-            slot.iniMod.toString(),
-            slot.wmAt.toString(),
-            slot.wmPa.toString(),
-            slot.tpDiceCount.toString(),
-            slot.tpFlat.toString(),
-            preview.beMod.toString(),
-            preview.ebe.toString(),
-            preview.tpKk.toString(),
-            preview.geBase.toString(),
-            preview.geThreshold.toString(),
-            preview.iniGe.toString(),
-            preview.iniParadeMod.toString(),
-            preview.tpCalc.toString(),
-            preview.specApplies ? 'Ja' : 'Nein',
-            preview.at.toString(),
-            preview.pa.toString(),
-            preview.tpExpression,
-            preview.initiative.toString(),
-            slot.breakFactor.toString(),
+          final weaponTypeOptions = _weaponTypeOptionsForTalent(
+            talent: selectedTalent,
+            catalog: catalog,
+          ).toList(growable: true);
+          final currentWeaponType = slot.weaponType.trim();
+          if (currentWeaponType.isNotEmpty &&
+              !weaponTypeOptions.contains(currentWeaponType)) {
+            weaponTypeOptions.add(currentWeaponType);
+            weaponTypeOptions.sort(
+              (a, b) => a.toLowerCase().compareTo(b.toLowerCase()),
+            );
+          }
+
+          final cells = <Widget>[
+            FlexibleTableCommitField(
+              key: ValueKey<String>('combat-weapon-cell-name-${entry.index}'),
+              value: slot.name,
+              onCommit: (raw) {
+                _updateWeaponSlot(
+                  entry.index,
+                  (current) => current.copyWith(name: raw.trim()),
+                  catalog: catalog,
+                  meleeTalents: sortedTalents,
+                );
+              },
+            ),
+            DropdownButtonFormField<String>(
+              key: ValueKey<String>('combat-weapon-cell-talent-${entry.index}'),
+              initialValue: talentById.containsKey(slot.talentId.trim())
+                  ? slot.talentId.trim()
+                  : '',
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              items: [
+                const DropdownMenuItem<String>(value: '', child: Text('-')),
+                ...sortedTalents.map(
+                  (talent) => DropdownMenuItem<String>(
+                    value: talent.id,
+                    child: Text(talent.name),
+                  ),
+                ),
+              ],
+              onChanged: (value) {
+                final nextTalentId = value ?? '';
+                final nextTalent = _findTalentById(sortedTalents, nextTalentId);
+                final allowedWeaponTypes = _weaponTypeOptionsForTalent(
+                  talent: nextTalent,
+                  catalog: catalog,
+                );
+                final nextWeaponType =
+                    allowedWeaponTypes.contains(slot.weaponType.trim())
+                    ? slot.weaponType.trim()
+                    : '';
+                final nextName =
+                    slot.name.trim().isEmpty && nextWeaponType.isNotEmpty
+                    ? nextWeaponType
+                    : slot.name;
+                _updateWeaponSlot(
+                  entry.index,
+                  (current) => current.copyWith(
+                    talentId: nextTalentId,
+                    weaponType: nextWeaponType,
+                    name: nextName,
+                  ),
+                  catalog: catalog,
+                  meleeTalents: sortedTalents,
+                );
+              },
+            ),
+            DropdownButtonFormField<String>(
+              key: ValueKey<String>(
+                'combat-weapon-cell-weapon-type-${entry.index}',
+              ),
+              initialValue: weaponTypeOptions.contains(currentWeaponType)
+                  ? currentWeaponType
+                  : '',
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              items: [
+                const DropdownMenuItem<String>(value: '', child: Text('-')),
+                ...weaponTypeOptions.map(
+                  (weaponType) => DropdownMenuItem<String>(
+                    value: weaponType,
+                    child: Text(weaponType),
+                  ),
+                ),
+              ],
+              onChanged: (value) {
+                final nextWeaponType = value ?? '';
+                final nextName =
+                    slot.name.trim().isEmpty && nextWeaponType.isNotEmpty
+                    ? nextWeaponType
+                    : slot.name;
+                _updateWeaponSlot(
+                  entry.index,
+                  (current) => current.copyWith(
+                    weaponType: nextWeaponType,
+                    name: nextName,
+                  ),
+                  catalog: catalog,
+                  meleeTalents: sortedTalents,
+                );
+              },
+            ),
+            FlexibleTableCommitField(
+              key: ValueKey<String>('combat-weapon-cell-dk-${entry.index}'),
+              value: slot.distanceClass,
+              onCommit: (raw) {
+                _updateWeaponSlot(
+                  entry.index,
+                  (current) => current.copyWith(distanceClass: raw.trim()),
+                  catalog: catalog,
+                  meleeTalents: sortedTalents,
+                );
+              },
+            ),
+            Text(preview.at.toString()),
+            Text(preview.pa.toString()),
+            Text(preview.tpExpression),
+            Text(preview.initiative.toString()),
+            FlexibleTableCommitField(
+              key: ValueKey<String>('combat-weapon-cell-bf-${entry.index}'),
+              value: slot.breakFactor.toString(),
+              keyboardType: TextInputType.number,
+              onCommit: (raw) {
+                final parsed = int.tryParse(raw.trim()) ?? slot.breakFactor;
+                _updateWeaponSlot(
+                  entry.index,
+                  (current) =>
+                      current.copyWith(breakFactor: parsed < 0 ? 0 : parsed),
+                  catalog: catalog,
+                  meleeTalents: sortedTalents,
+                );
+              },
+            ),
+            FlexibleTableCommitField(
+              key: ValueKey<String>(
+                'combat-weapon-cell-kk-base-${entry.index}',
+              ),
+              value: slot.kkBase.toString(),
+              keyboardType: TextInputType.number,
+              onCommit: (raw) {
+                final parsed = int.tryParse(raw.trim()) ?? slot.kkBase;
+                _updateWeaponSlot(
+                  entry.index,
+                  (current) => current.copyWith(kkBase: parsed),
+                  catalog: catalog,
+                  meleeTalents: sortedTalents,
+                );
+              },
+            ),
+            FlexibleTableCommitField(
+              key: ValueKey<String>(
+                'combat-weapon-cell-kk-threshold-${entry.index}',
+              ),
+              value: slot.kkThreshold.toString(),
+              keyboardType: TextInputType.number,
+              onCommit: (raw) {
+                final parsed = int.tryParse(raw.trim()) ?? slot.kkThreshold;
+                _updateWeaponSlot(
+                  entry.index,
+                  (current) =>
+                      current.copyWith(kkThreshold: parsed < 1 ? 1 : parsed),
+                  catalog: catalog,
+                  meleeTalents: sortedTalents,
+                );
+              },
+            ),
+            FlexibleTableCommitField(
+              key: ValueKey<String>(
+                'combat-weapon-cell-ini-mod-${entry.index}',
+              ),
+              value: slot.iniMod.toString(),
+              keyboardType: TextInputType.number,
+              onCommit: (raw) {
+                final parsed = int.tryParse(raw.trim()) ?? slot.iniMod;
+                _updateWeaponSlot(
+                  entry.index,
+                  (current) => current.copyWith(iniMod: parsed),
+                  catalog: catalog,
+                  meleeTalents: sortedTalents,
+                );
+              },
+            ),
+            FlexibleTableCommitField(
+              key: ValueKey<String>('combat-weapon-cell-wm-at-${entry.index}'),
+              value: slot.wmAt.toString(),
+              keyboardType: TextInputType.number,
+              onCommit: (raw) {
+                final parsed = int.tryParse(raw.trim()) ?? slot.wmAt;
+                _updateWeaponSlot(
+                  entry.index,
+                  (current) => current.copyWith(wmAt: parsed),
+                  catalog: catalog,
+                  meleeTalents: sortedTalents,
+                );
+              },
+            ),
+            FlexibleTableCommitField(
+              key: ValueKey<String>('combat-weapon-cell-wm-pa-${entry.index}'),
+              value: slot.wmPa.toString(),
+              keyboardType: TextInputType.number,
+              onCommit: (raw) {
+                final parsed = int.tryParse(raw.trim()) ?? slot.wmPa;
+                _updateWeaponSlot(
+                  entry.index,
+                  (current) => current.copyWith(wmPa: parsed),
+                  catalog: catalog,
+                  meleeTalents: sortedTalents,
+                );
+              },
+            ),
+            FlexibleTableCommitField(
+              key: ValueKey<String>('combat-weapon-cell-dice-${entry.index}'),
+              value: slot.tpDiceCount.toString(),
+              keyboardType: TextInputType.number,
+              onCommit: (raw) {
+                final parsed = int.tryParse(raw.trim()) ?? slot.tpDiceCount;
+                _updateWeaponSlot(
+                  entry.index,
+                  (current) =>
+                      current.copyWith(tpDiceCount: parsed < 1 ? 1 : parsed),
+                  catalog: catalog,
+                  meleeTalents: sortedTalents,
+                );
+              },
+            ),
+            FlexibleTableCommitField(
+              key: ValueKey<String>(
+                'combat-weapon-cell-tp-value-${entry.index}',
+              ),
+              value: slot.tpFlat.toString(),
+              keyboardType: TextInputType.number,
+              onCommit: (raw) {
+                final parsed = int.tryParse(raw.trim()) ?? slot.tpFlat;
+                _updateWeaponSlot(
+                  entry.index,
+                  (current) => current.copyWith(tpFlat: parsed),
+                  catalog: catalog,
+                  meleeTalents: sortedTalents,
+                );
+              },
+            ),
+            Text(preview.beMod.toString()),
+            Text(preview.ebe.toString()),
+            Text(preview.tpKk.toString()),
+            Text(preview.geBase.toString()),
+            Text(preview.geThreshold.toString()),
+            Text(preview.iniGe.toString()),
+            Text(preview.iniParadeMod.toString()),
+            Text(preview.tpCalc.toString()),
+            Text(preview.specApplies ? 'Ja' : 'Nein'),
+            IconButton(
+              key: ValueKey<String>('combat-weapon-remove-${entry.index}'),
+              tooltip: 'Waffe entfernen',
+              onPressed: weaponSlots.length <= 1
+                  ? null
+                  : () => _removeWeaponSlotAt(
+                      entry.index,
+                      catalog: catalog,
+                      meleeTalents: sortedTalents,
+                    ),
+              icon: const Icon(Icons.delete),
+            ),
           ];
 
-          final isSelected = entry.index == selectedWeaponIndex;
-          return TableRow(
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? Theme.of(context).colorScheme.secondaryContainer
-                  : null,
-            ),
-            children: cells
-                .map((text) => _weaponOverviewCell(text))
-                .toList(growable: false),
+          final isSelected =
+              selectedWeaponIndex >= 0 && entry.index == selectedWeaponIndex;
+          return FlexibleTableRow(
+            key: ValueKey<String>('combat-weapons-row-${entry.index}'),
+            backgroundColor: isSelected
+                ? Theme.of(context).colorScheme.secondaryContainer
+                : null,
+            cells: cells,
           );
         })
         .toList(growable: false);
-  }
-
-  Widget _weaponOverviewCell(String text, {bool isHeader = false}) {
-    final style = isHeader
-        ? Theme.of(context).textTheme.labelMedium
-        : Theme.of(context).textTheme.bodyMedium;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 36),
-        child: Text(text, style: style),
-      ),
-    );
   }
 }

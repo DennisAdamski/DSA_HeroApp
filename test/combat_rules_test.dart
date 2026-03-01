@@ -234,6 +234,30 @@ void main() {
     expect(withOffhandResult.pa, noOffhandResult.pa + 4);
   });
 
+  test('combat preview stays stable when no active weapon is selected', () {
+    final hero = buildHero(
+      talents: const {'tal_waffe': HeroTalentEntry(atValue: 6, paValue: 6)},
+      combatConfig: const CombatConfig(
+        weapons: <MainWeaponSlot>[
+          MainWeaponSlot(
+            name: 'Kurzschwert',
+            talentId: 'tal_waffe',
+            weaponType: 'Kurzschwert',
+            wmAt: 2,
+            wmPa: 1,
+            tpFlat: 3,
+          ),
+        ],
+        selectedWeaponIndex: -1,
+      ),
+    );
+
+    final result = computeCombatPreviewStats(hero, state);
+    expect(result.at, greaterThanOrEqualTo(0));
+    expect(result.pa, greaterThanOrEqualTo(0));
+    expect(result.tpExpression, isNotEmpty);
+  });
+
   test('eBE modifies AT and PA with excel-compatible sign behavior', () {
     final noArmor = buildHero(
       talents: const {'tal_waffe': HeroTalentEntry(atValue: 0, paValue: 0)},
