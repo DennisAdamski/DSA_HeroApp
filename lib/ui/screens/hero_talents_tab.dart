@@ -14,6 +14,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/talent_be_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_area_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
@@ -28,6 +29,7 @@ class HeroTalentsTab extends _HeroTalentTableTab {
   const HeroTalentsTab({
     super.key,
     required super.heroId,
+    super.showInlineActions = true,
     required super.onDirtyChanged,
     required super.onEditingChanged,
     required super.onRegisterDiscard,
@@ -39,6 +41,7 @@ class HeroCombatTalentsTab extends _HeroTalentTableTab {
   const HeroCombatTalentsTab({
     super.key,
     required super.heroId,
+    super.showInlineActions = true,
     required super.onDirtyChanged,
     required super.onEditingChanged,
     required super.onRegisterDiscard,
@@ -51,6 +54,7 @@ class _HeroTalentTableTab extends ConsumerStatefulWidget {
     super.key,
     required this.heroId,
     required this.scope,
+    required this.showInlineActions,
     required this.onDirtyChanged,
     required this.onEditingChanged,
     required this.onRegisterDiscard,
@@ -59,6 +63,7 @@ class _HeroTalentTableTab extends ConsumerStatefulWidget {
 
   final String heroId;
   final _TalentTabScope scope;
+  final bool showInlineActions;
   final void Function(bool isDirty) onDirtyChanged;
   final void Function(bool isEditing) onEditingChanged;
   final void Function(WorkspaceAsyncAction discardAction) onRegisterDiscard;
@@ -70,8 +75,9 @@ class _HeroTalentTableTab extends ConsumerStatefulWidget {
 }
 
 class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   late final WorkspaceTabEditController _editController;
+  TabController? _subTabController;
   final ValueNotifier<int> _tableRevision = ValueNotifier<int>(0);
   final Map<String, TextEditingController> _cellControllers =
       <String, TextEditingController>{};
@@ -80,8 +86,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   Set<String> _draftHiddenTalentIds = <String>{};
   Set<String> _invalidCombatTalentIds = <String>{};
-  int? _talentBeOverride;
-  late final TextEditingController _talentBeOverrideController;
+  String _draftTalentSpecialAbilities = '';
+  late final TextEditingController _talentSpecialAbilitiesController;
 
   @override
   void initState() {
@@ -95,7 +101,15 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         }
       },
     );
-    _talentBeOverrideController = TextEditingController();
+    if (widget.scope == _TalentTabScope.nonCombat) {
+      _subTabController = TabController(length: 2, vsync: this);
+      _subTabController!.addListener(() {
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    }
+    _talentSpecialAbilitiesController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _registerWithParent();
@@ -108,7 +122,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     for (final controller in _cellControllers.values) {
       controller.dispose();
     }
-    _talentBeOverrideController.dispose();
+    _subTabController?.dispose();
+    _talentSpecialAbilitiesController.dispose();
     _tableRevision.dispose();
     super.dispose();
   }
@@ -132,6 +147,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     _resetCellControllers();
     _draftTalents = Map<String, HeroTalentEntry>.from(hero.talents);
     _draftHiddenTalentIds = normalizeHiddenTalentIds(hero.hiddenTalentIds);
+    _draftTalentSpecialAbilities = hero.talentSpecialAbilities;
+    _talentSpecialAbilitiesController.text = _draftTalentSpecialAbilities;
     _invalidCombatTalentIds = <String>{};
   }
 
@@ -165,6 +182,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     }
     _editController.clearSyncSignature();
     _syncDraftFromHero(hero, force: true);
+    _setVisibilityMode(false);
     _invalidCombatTalentIds = <String>{};
     _editController.startEdit();
   }
@@ -199,11 +217,13 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     final updatedHero = hero.copyWith(
       talents: Map<String, HeroTalentEntry>.from(_draftTalents),
       hiddenTalentIds: _draftHiddenTalentIds.toList(growable: false),
+      talentSpecialAbilities: _draftTalentSpecialAbilities,
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     if (!mounted) {
       return;
     }
+    _setVisibilityMode(false);
     _editController.markSaved();
     ScaffoldMessenger.of(
       context,
@@ -220,6 +240,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       _editController.clearSyncSignature();
       _syncDraftFromHero(hero, force: true);
     }
+    _setVisibilityMode(false);
     _invalidCombatTalentIds = <String>{};
     _editController.markDiscarded();
   }
@@ -251,10 +272,15 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         specializations: raw,
         combatSpecializations: _splitSpecializationTokens(raw),
       ),
-      'specialAbilities' => current.copyWith(specialAbilities: raw),
       _ => current,
     };
     _draftTalents[talentId] = updated;
+    _markFieldChanged();
+  }
+
+  void _updateGifted(String talentId, bool value) {
+    final current = _entryForTalent(talentId);
+    _draftTalents[talentId] = current.copyWith(gifted: value);
     _markFieldChanged();
   }
 
@@ -277,6 +303,24 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     _markFieldChanged();
   }
 
+  void _setHiddenForGroup(List<TalentDef> talents, {required bool hidden}) {
+    for (final talent in talents) {
+      if (hidden) {
+        _draftHiddenTalentIds.add(talent.id);
+      } else {
+        _draftHiddenTalentIds.remove(talent.id);
+      }
+    }
+    _markFieldChanged();
+  }
+
+  void _setVisibilityMode(bool enabled) {
+    if (_readVisibilityMode() == enabled) {
+      return;
+    }
+    _visibilityNotifier().state = enabled;
+  }
+
   void _markFieldChanged() {
     if (!mounted) {
       return;
@@ -287,30 +331,53 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
 
   bool _isHidden(String talentId) => _draftHiddenTalentIds.contains(talentId);
 
-  void _updateTalentBeOverride(String raw) {
-    final trimmed = raw.trim();
-    final nextValue = trimmed.isEmpty ? null : int.tryParse(trimmed);
-    if (nextValue == _talentBeOverride) {
-      return;
-    }
-    setState(() {
-      _talentBeOverride = nextValue;
-    });
+  StateController<bool> _visibilityNotifier() {
+    return switch (widget.scope) {
+      _TalentTabScope.nonCombat => ref.read(
+        talentsVisibilityModeProvider(widget.heroId).notifier,
+      ),
+      _TalentTabScope.combat => ref.read(
+        combatTalentsVisibilityModeProvider(widget.heroId).notifier,
+      ),
+    };
   }
 
-  void _clearTalentBeOverride() {
-    if (_talentBeOverride == null && _talentBeOverrideController.text.isEmpty) {
-      return;
-    }
-    _talentBeOverrideController.clear();
-    setState(() {
-      _talentBeOverride = null;
-    });
+  bool _readVisibilityMode() {
+    return switch (widget.scope) {
+      _TalentTabScope.nonCombat => ref.read(
+        talentsVisibilityModeProvider(widget.heroId),
+      ),
+      _TalentTabScope.combat => ref.read(
+        combatTalentsVisibilityModeProvider(widget.heroId),
+      ),
+    };
+  }
+
+  bool _watchVisibilityMode() {
+    return switch (widget.scope) {
+      _TalentTabScope.nonCombat => ref.watch(
+        talentsVisibilityModeProvider(widget.heroId),
+      ),
+      _TalentTabScope.combat => ref.watch(
+        combatTalentsVisibilityModeProvider(widget.heroId),
+      ),
+    };
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    assert(() {
+      final talentsMeta = workspaceAreaMetaById(WorkspaceAreaId.talentsList);
+      final specialAbilitiesMeta = workspaceAreaMetaById(
+        WorkspaceAreaId.talentsSpecialAbilities,
+      );
+      return talentsMeta.kind == WorkspaceAreaKind.listView &&
+          talentsMeta.supportsVisibilityMode &&
+          talentsMeta.supportsGroupVisibility &&
+          specialAbilitiesMeta.kind == WorkspaceAreaKind.formView &&
+          !specialAbilitiesMeta.supportsVisibilityMode;
+    }());
     UiRebuildObserver.bump('hero_talents_tab');
     final hero = ref.watch(heroByIdProvider(widget.heroId));
     if (hero == null) {
@@ -331,6 +398,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         error: (error, stackTrace) =>
             Center(child: Text('Katalog-Fehler: $error')),
         data: (catalog) {
+          final visibilityMode = _watchVisibilityMode();
           final combatBaseBe = widget.scope == _TalentTabScope.nonCombat
               ? computeCombatPreviewStats(
                   hero,
@@ -338,9 +406,10 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                   catalogTalents: catalog.talents,
                 ).beKampf
               : null;
+          final talentBeOverride = ref.watch(talentBeOverrideProvider(hero.id));
           final activeTalentBe = combatBaseBe == null
-              ? null
-              : (_talentBeOverride ?? combatBaseBe);
+              ? 0
+              : (talentBeOverride ?? combatBaseBe);
           final relevantTalents = catalog.talents
               .where(_matchesScope)
               .toList(growable: false);
@@ -365,7 +434,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                 });
               final visibleGroups = groups
                   .where((group) {
-                    if (_editController.isEditing) {
+                    if (_editController.isEditing || visibilityMode) {
                       return true;
                     }
                     final talents = grouped[group] ?? const <TalentDef>[];
@@ -376,48 +445,108 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
               return ListView(
                 padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                 children: [
-                  if (widget.scope == _TalentTabScope.nonCombat)
-                    _buildTalentBeInfoCard(
+                  if (widget.scope == _TalentTabScope.nonCombat &&
+                      widget.showInlineActions)
+                    _buildTopActionBar(
+                      heroId: hero.id,
                       combatBaseBe: combatBaseBe ?? 0,
-                      activeTalentBe: activeTalentBe ?? 0,
+                      activeTalentBe: activeTalentBe,
                     ),
-                  ...visibleGroups.map((group) {
-                    final talents = List<TalentDef>.from(grouped[group]!)
-                      ..sort(
-                        (a, b) => a.name.toLowerCase().compareTo(
-                          b.name.toLowerCase(),
+                  if (widget.scope == _TalentTabScope.combat &&
+                      widget.showInlineActions)
+                    _buildCombatVisibilityActionBar(),
+                  if (widget.scope == _TalentTabScope.nonCombat)
+                    TabBar(
+                      controller: _subTabController,
+                      tabs: const [
+                        Tab(text: 'Talente'),
+                        Tab(text: 'Sonderfertigkeiten'),
+                      ],
+                    ),
+                  if (widget.scope == _TalentTabScope.nonCombat &&
+                      _subTabController!.index == 1)
+                    _buildSpecialAbilitiesTab(),
+                  if (widget.scope == _TalentTabScope.combat ||
+                      _subTabController?.index == 0)
+                    ...visibleGroups.map((group) {
+                      final talents = List<TalentDef>.from(grouped[group]!)
+                        ..sort(
+                          (a, b) => a.name.toLowerCase().compareTo(
+                            b.name.toLowerCase(),
+                          ),
+                        );
+                      final showAllTalents =
+                          _editController.isEditing || visibilityMode;
+                      final visibleTalents = showAllTalents
+                          ? talents
+                          : talents
+                                .where((talent) => !_isHidden(talent.id))
+                                .toList(growable: false);
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        child: ExpansionTile(
+                          initiallyExpanded: true,
+                          tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                          childrenPadding: EdgeInsets.zero,
+                          title: Text(group),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${visibleTalents.length}/${talents.length} sichtbar',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              if (visibilityMode)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: [
+                                        TextButton(
+                                          key: ValueKey<String>(
+                                            'talents-group-show-all-$group',
+                                          ),
+                                          onPressed: () => _setHiddenForGroup(
+                                            talents,
+                                            hidden: false,
+                                          ),
+                                          child: const Text('Alle einblenden'),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        TextButton(
+                                          key: ValueKey<String>(
+                                            'talents-group-hide-all-$group',
+                                          ),
+                                          onPressed: () => _setHiddenForGroup(
+                                            talents,
+                                            hidden: true,
+                                          ),
+                                          child: const Text('Alle ausblenden'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          children: [
+                            widget.scope == _TalentTabScope.combat
+                                ? _buildCombatTalentsTable(
+                                    talents: visibleTalents,
+                                    showVisibilityControls: visibilityMode,
+                                  )
+                                : _buildTalentsTable(
+                                    talents: visibleTalents,
+                                    effectiveAttributes: effectiveAttributes!,
+                                    activeBaseBe: activeTalentBe,
+                                    showVisibilityControls: visibilityMode,
+                                  ),
+                          ],
                         ),
                       );
-                    final visibleTalents = _editController.isEditing
-                        ? talents
-                        : talents
-                              .where((talent) => !_isHidden(talent.id))
-                              .toList(growable: false);
-
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      child: ExpansionTile(
-                        initiallyExpanded: true,
-                        tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                        childrenPadding: EdgeInsets.zero,
-                        title: Text(group),
-                        subtitle: Text(
-                          '${visibleTalents.length}/${talents.length} sichtbar',
-                        ),
-                        children: [
-                          widget.scope == _TalentTabScope.combat
-                              ? _buildCombatTalentsTable(
-                                  talents: visibleTalents,
-                                )
-                              : _buildTalentsTable(
-                                  talents: visibleTalents,
-                                  effectiveAttributes: effectiveAttributes!,
-                                  activeBaseBe: activeTalentBe ?? 0,
-                                ),
-                        ],
-                      ),
-                    );
-                  }),
+                    }),
                 ],
               );
             },

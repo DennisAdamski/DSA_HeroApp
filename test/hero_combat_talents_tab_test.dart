@@ -105,6 +105,13 @@ void main() {
     return actions!;
   }
 
+  Future<void> enableVisibilityMode(WidgetTester tester) async {
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-visibility-mode-toggle')),
+    );
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('shows only combat talents grouped by type', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
@@ -130,6 +137,33 @@ void main() {
     expect(find.text('AT'), findsAtLeastNWidgets(1));
     expect(find.text('PA'), findsAtLeastNWidgets(1));
     expect(find.text('Eigenschaften'), findsNothing);
+  });
+
+  testWidgets('hides fully hidden groups until visibility mode is active', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(hiddenTalentIds: const <String>['tal_nah']),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo, buildCatalog());
+
+    expect(find.text('Fernkampf'), findsOneWidget);
+    expect(find.text('Nahkampf'), findsNothing);
+
+    await enableVisibilityMode(tester);
+
+    expect(find.text('Nahkampf'), findsOneWidget);
   });
 
   testWidgets('blocks save for invalid Nahkampf AT/PA distribution', (
@@ -261,6 +295,7 @@ void main() {
       find.byKey(const ValueKey<String>('talents-field-tal_fern-paValue')),
       '0',
     );
+    await enableVisibilityMode(tester);
     final visibilityToggle = find.byKey(
       const ValueKey<String>('talents-visibility-tal_nah'),
     );

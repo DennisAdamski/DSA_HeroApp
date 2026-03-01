@@ -88,6 +88,7 @@ void main() {
         manualMods: CombatManualMods(iniMod: 1, ausweichenMod: 2),
       ),
       hiddenTalentIds: ['tal_a', 'tal_a', ' ', 'tal_b'],
+      talentSpecialAbilities: 'Meisterhandwerk, Begabung',
       unknownModifierFragments: ['foo'],
     );
 
@@ -100,6 +101,7 @@ void main() {
     expect(reloaded.apTotal, 2000);
     expect(reloaded.apAvailable, 500);
     expect(reloaded.hiddenTalentIds, ['tal_a', 'tal_b']);
+    expect(reloaded.talentSpecialAbilities, 'Meisterhandwerk, Begabung');
     expect(reloaded.unknownModifierFragments, contains('foo'));
     expect(reloaded.startAttributes.mu, 12);
     expect(reloaded.startAttributes.kk, 12);
@@ -146,6 +148,7 @@ void main() {
     expect(loaded.rasse, '');
     expect(loaded.apTotal, 0);
     expect(loaded.hiddenTalentIds, isEmpty);
+    expect(loaded.talentSpecialAbilities, '');
     expect(loaded.unknownModifierFragments, isEmpty);
     expect(loaded.startAttributes.mu, loaded.attributes.mu);
     expect(loaded.startAttributes.kk, loaded.attributes.kk);
@@ -186,6 +189,21 @@ void main() {
     expect(reloaded.combatConfig.selectedWeaponIndex, 1);
     expect(reloaded.combatConfig.mainWeapon.name, 'Bidenhaender');
     expect(reloaded.combatConfig.selectedWeapon.isOneHanded, isFalse);
+  });
+
+  test('talent entry roundtrip keeps gifted flag', () {
+    const entry = HeroTalentEntry(
+      talentValue: 8,
+      atValue: 5,
+      paValue: 3,
+      gifted: true,
+    );
+
+    final reloaded = HeroTalentEntry.fromJson(entry.toJson());
+    expect(reloaded.gifted, isTrue);
+    expect(reloaded.talentValue, 8);
+    expect(reloaded.atValue, 5);
+    expect(reloaded.paValue, 3);
   });
 
   test('legacy armor fields are ignored and load as empty armor piece list', () {

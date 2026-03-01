@@ -7,7 +7,7 @@ class HeroTalentEntry {
     this.specialExperiences = 0,
     this.specializations = '',
     this.combatSpecializations = const <String>[],
-    this.specialAbilities = '',
+    this.gifted = false,
     this.ebe = 0,
   });
 
@@ -18,7 +18,7 @@ class HeroTalentEntry {
   final int specialExperiences;
   final String specializations;
   final List<String> combatSpecializations;
-  final String specialAbilities;
+  final bool gifted;
   final int ebe;
 
   HeroTalentEntry copyWith({
@@ -29,7 +29,7 @@ class HeroTalentEntry {
     int? specialExperiences,
     String? specializations,
     List<String>? combatSpecializations,
-    String? specialAbilities,
+    bool? gifted,
     int? ebe,
   }) {
     final nextCombatSpecializations = _normalizeStringList(
@@ -49,7 +49,7 @@ class HeroTalentEntry {
       specialExperiences: specialExperiences ?? this.specialExperiences,
       specializations: nextSpecializations,
       combatSpecializations: nextCombatSpecializations,
-      specialAbilities: specialAbilities ?? this.specialAbilities,
+      gifted: gifted ?? this.gifted,
       ebe: ebe ?? this.ebe,
     );
   }
@@ -70,7 +70,7 @@ class HeroTalentEntry {
       'specialExperiences': specialExperiences,
       'specializations': serializedSpecializations,
       'combatSpecializations': normalizedCombatSpecializations,
-      'specialAbilities': specialAbilities,
+      'gifted': gifted,
       'ebe': ebe,
     };
   }
@@ -105,7 +105,7 @@ class HeroTalentEntry {
       specialExperiences: getInt('specialExperiences'),
       specializations: syncedSpecializations,
       combatSpecializations: mergedCombatSpecializations,
-      specialAbilities: getString('specialAbilities'),
+      gifted: json['gifted'] as bool? ?? false,
       ebe: getInt('ebe'),
     );
   }

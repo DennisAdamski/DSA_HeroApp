@@ -1,7 +1,13 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 
 extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
-  Widget _buildCombatTalentsSubTab(List<TalentDef> talents) {
+  Widget _buildCombatTalentsSubTab(
+    List<TalentDef> talents, {
+    required Attributes effectiveAttributes,
+  }) {
+    final visibilityMode = ref.watch(
+      combatTechniquesVisibilityModeProvider(widget.heroId),
+    );
     final grouped = <String, List<TalentDef>>{};
     for (final talent in talents) {
       final group = talent.type.trim().isEmpty
@@ -10,41 +16,150 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       grouped.putIfAbsent(group, () => <TalentDef>[]).add(talent);
     }
     final groups = grouped.keys.toList(growable: false)..sort();
+    final showAllTalents = _editController.isEditing || visibilityMode;
+    final visibleGroups = groups
+        .where((group) {
+          if (showAllTalents) {
+            return true;
+          }
+          final entries = grouped[group] ?? const <TalentDef>[];
+          return entries.any((talent) => !_isHidden(talent.id));
+        })
+        .toList(growable: false);
 
-    return ListView.builder(
+    return ListView(
       padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
-      itemCount: groups.length,
-      itemBuilder: (context, index) {
-        final group = groups[index];
-        final entries = List<TalentDef>.from(
-          grouped[group]!,
-        )..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-        final visibleEntries = _editController.isEditing
-            ? entries
-            : entries
-                  .where((talent) => !_isHidden(talent.id))
-                  .toList(growable: false);
-        return Card(
-          margin: const EdgeInsets.only(bottom: 10),
-          child: ExpansionTile(
-            initiallyExpanded: true,
-            tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-            title: Text(group),
-            subtitle: Text(
-              '${visibleEntries.length}/${entries.length} sichtbar',
+      children: [
+        if (widget.showInlineCombatTalentsActions)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FilledButton.icon(
+                      key: const ValueKey<String>('combat-talents-start-edit'),
+                      onPressed: _editController.isEditing
+                          ? null
+                          : () {
+                              _startEdit();
+                            },
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Bearbeiten'),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton.icon(
+                      key: const ValueKey<String>(
+                        'combat-talents-visibility-mode-toggle',
+                      ),
+                      onPressed: () =>
+                          _setCombatTalentsVisibilityMode(!visibilityMode),
+                      icon: Icon(
+                        visibilityMode
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility,
+                      ),
+                      label: Text(
+                        visibilityMode
+                            ? 'Sichtbarkeit beenden'
+                            : 'Sichtbarkeit bearbeiten',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            children: [_buildCombatTalentsTable(visibleEntries)],
           ),
-        );
-      },
+        ...List<Widget>.generate(visibleGroups.length, (index) {
+          final group = visibleGroups[index];
+          final entries = List<TalentDef>.from(grouped[group]!)
+            ..sort(
+              (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+            );
+          final visibleEntries = showAllTalents
+              ? entries
+              : entries
+                    .where((talent) => !_isHidden(talent.id))
+                    .toList(growable: false);
+          return Card(
+            margin: const EdgeInsets.only(bottom: 10),
+            child: ExpansionTile(
+              initiallyExpanded: true,
+              tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+              title: Text(group),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${visibleEntries.length}/${entries.length} sichtbar',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  if (visibilityMode)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            TextButton(
+                              key: ValueKey<String>(
+                                'combat-group-show-all-$group',
+                              ),
+                              onPressed: () =>
+                                  _setHiddenForGroup(entries, hidden: false),
+                              child: const Text('Alle einblenden'),
+                            ),
+                            const SizedBox(width: 6),
+                            TextButton(
+                              key: ValueKey<String>(
+                                'combat-group-hide-all-$group',
+                              ),
+                              onPressed: () =>
+                                  _setHiddenForGroup(entries, hidden: true),
+                              child: const Text('Alle ausblenden'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              children: [
+                _buildCombatTalentsTable(
+                  visibleEntries,
+                  effectiveAttributes: effectiveAttributes,
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
     );
   }
 
-  Widget _buildCombatTalentsTable(List<TalentDef> talents) {
+  Widget _buildCombatTalentsTable(
+    List<TalentDef> talents, {
+    required Attributes effectiveAttributes,
+  }) {
+    final visibilityMode = ref.watch(
+      combatTechniquesVisibilityModeProvider(widget.heroId),
+    );
     final isEditing = _editController.isEditing;
     final rows = <TableRow>[
-      _buildCombatHeaderRow(isEditing: isEditing),
-      ...talents.map((talent) => _buildCombatTalentRow(talent, isEditing)),
+      _buildCombatHeaderRow(
+        isEditing: isEditing,
+        showVisibilityControls: visibilityMode,
+      ),
+      ...talents.map(
+        (talent) => _buildCombatTalentRow(
+          talent,
+          isEditing,
+          effectiveAttributes: effectiveAttributes,
+        ),
+      ),
     ];
 
     return Padding(
@@ -52,7 +167,9 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
-          constraints: BoxConstraints(minWidth: isEditing ? 1300 : 1210),
+          constraints: BoxConstraints(
+            minWidth: (isEditing || visibilityMode) ? 1485 : 1395,
+          ),
           child: Table(
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             columnWidths: <int, TableColumnWidth>{
@@ -64,7 +181,10 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
               5: const FixedColumnWidth(90),
               6: const FixedColumnWidth(90),
               7: const FixedColumnWidth(90),
-              if (isEditing) 8: const FixedColumnWidth(90),
+              8: const FixedColumnWidth(90),
+              if (isEditing) 9: const FixedColumnWidth(95),
+              if (isEditing || visibilityMode)
+                (isEditing ? 10 : 9): const FixedColumnWidth(90),
             },
             children: rows,
           ),
@@ -73,7 +193,10 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     );
   }
 
-  TableRow _buildCombatHeaderRow({required bool isEditing}) {
+  TableRow _buildCombatHeaderRow({
+    required bool isEditing,
+    required bool showVisibilityControls,
+  }) {
     final cells = <Widget>[
       _headerCell('Talent-Name'),
       _headerCell('Waffengattung'),
@@ -83,17 +206,33 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       _headerCell('TaW'),
       _headerCell('AT'),
       _headerCell('PA'),
+      _headerCell('max TaW'),
     ];
     if (isEditing) {
+      cells.add(_headerCell('Begabung'));
+    }
+    if (isEditing || showVisibilityControls) {
       cells.add(_headerCell('Sichtbar'));
     }
     return TableRow(children: cells);
   }
 
-  TableRow _buildCombatTalentRow(TalentDef talent, bool isEditing) {
+  TableRow _buildCombatTalentRow(
+    TalentDef talent,
+    bool isEditing, {
+    required Attributes effectiveAttributes,
+  }) {
+    final visibilityMode = ref.watch(
+      combatTechniquesVisibilityModeProvider(widget.heroId),
+    );
     final entry = _entryForTalent(talent.id);
     final isHidden = _isHidden(talent.id);
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
+    final maxTaw = _calculateMaxTaw(
+      effectiveAttributes: effectiveAttributes,
+      attributeNames: talent.attributes,
+      gifted: entry.gifted,
+    );
     final nameLabel = isEditing && isHidden
         ? '${talent.name} (ausgeblendet)'
         : talent.name;
@@ -125,16 +264,33 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
         isEditing: isEditing,
         isError: isInvalid,
       ),
+      _textCell(_formatWholeNumber(maxTaw)),
     ];
     if (isEditing) {
+      cells.add(
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Checkbox(
+            key: ValueKey<String>('combat-talents-gifted-${talent.id}'),
+            value: entry.gifted,
+            onChanged: (value) => _updateGifted(talent.id, value ?? false),
+          ),
+        ),
+      );
+    }
+    if (isEditing || visibilityMode) {
       cells.add(_visibilityCell(talent.id, isHidden));
     }
 
     final rowColor = isInvalid
         ? Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.4)
-        : (isHidden && isEditing
+        : (isHidden && (isEditing || visibilityMode)
               ? Theme.of(context).colorScheme.surfaceContainerHighest
-              : null);
+              : (entry.gifted && isEditing
+                    ? Theme.of(
+                        context,
+                      ).colorScheme.tertiaryContainer.withValues(alpha: 0.4)
+                    : null));
 
     return TableRow(
       decoration: BoxDecoration(color: rowColor),
@@ -187,13 +343,16 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
   }
 
   Widget _visibilityCell(String talentId, bool isHidden) {
+    final visibilityMode = ref.watch(
+      combatTechniquesVisibilityModeProvider(widget.heroId),
+    );
     return Align(
       alignment: Alignment.centerLeft,
       child: IconButton(
         key: ValueKey<String>('talents-visibility-$talentId'),
         icon: Icon(isHidden ? Icons.visibility_off : Icons.visibility),
         tooltip: isHidden ? 'Talent einblenden' : 'Talent ausblenden',
-        onPressed: () => _toggleHidden(talentId),
+        onPressed: visibilityMode ? () => _toggleHidden(talentId) : null,
       ),
     );
   }
@@ -212,5 +371,37 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
     );
+  }
+
+  int _calculateMaxTaw({
+    required Attributes effectiveAttributes,
+    required List<String> attributeNames,
+    required bool gifted,
+  }) {
+    var maxValue = 0;
+    for (final name in attributeNames) {
+      final code = parseAttributeCode(name);
+      if (code == null) {
+        continue;
+      }
+      final value = readAttributeValue(effectiveAttributes, code);
+      if (value > maxValue) {
+        maxValue = value;
+      }
+    }
+    return maxValue + (gifted ? 5 : 3);
+  }
+
+  String _formatWholeNumber(num value) {
+    if (value == 0 || value == -0.0) {
+      return '0';
+    }
+    if (value is int) {
+      return value.toString();
+    }
+    if (value == value.roundToDouble()) {
+      return value.toInt().toString();
+    }
+    return value.toString();
   }
 }

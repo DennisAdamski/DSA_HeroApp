@@ -25,6 +25,7 @@ class HeroSheet {
     this.combatConfig = const CombatConfig(),
     this.talents = const <String, HeroTalentEntry>{},
     this.hiddenTalentIds = const <String>[],
+    this.talentSpecialAbilities = '',
     this.rasse = '',
     this.rasseModText = '',
     this.kultur = '',
@@ -63,6 +64,7 @@ class HeroSheet {
   final CombatConfig combatConfig;
   final Map<String, HeroTalentEntry> talents;
   final List<String> hiddenTalentIds;
+  final String talentSpecialAbilities;
 
   final String rasse;
   final String rasseModText;
@@ -102,6 +104,7 @@ class HeroSheet {
     CombatConfig? combatConfig,
     Map<String, HeroTalentEntry>? talents,
     List<String>? hiddenTalentIds,
+    String? talentSpecialAbilities,
     String? rasse,
     String? rasseModText,
     String? kultur,
@@ -142,6 +145,8 @@ class HeroSheet {
       hiddenTalentIds: hiddenTalentIds == null
           ? this.hiddenTalentIds
           : _normalizeHiddenTalentIds(hiddenTalentIds),
+      talentSpecialAbilities:
+          talentSpecialAbilities ?? this.talentSpecialAbilities,
       rasse: rasse ?? this.rasse,
       rasseModText: rasseModText ?? this.rasseModText,
       kultur: kultur ?? this.kultur,
@@ -186,6 +191,7 @@ class HeroSheet {
       'combatConfig': combatConfig.toJson(),
       'talents': talents.map((key, value) => MapEntry(key, value.toJson())),
       'hiddenTalentIds': _normalizeHiddenTalentIds(hiddenTalentIds),
+      'talentSpecialAbilities': talentSpecialAbilities,
       'rasse': rasse,
       'rasseModText': rasseModText,
       'kultur': kultur,
@@ -262,6 +268,7 @@ class HeroSheet {
         return MapEntry(key, HeroTalentEntry.fromJson(map));
       }),
       hiddenTalentIds: _normalizeHiddenTalentIds(rawHiddenTalentIds),
+      talentSpecialAbilities: getString('talentSpecialAbilities'),
       rasse: getString('rasse'),
       rasseModText: getString('rasseModText'),
       kultur: getString('kultur'),

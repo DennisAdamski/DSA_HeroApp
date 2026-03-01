@@ -373,6 +373,7 @@ void main() {
 
       await openWorkspace(tester, repo);
       expect(find.text('LEP: 10/22'), findsOneWidget);
+      expect(find.text('BE: 0'), findsOneWidget);
 
       await tester.tap(find.text('Bearbeiten').first);
       await tester.pumpAndSettle();
@@ -503,15 +504,38 @@ void main() {
     await tester.tap(tabText('Magie'));
     await tester.pump(const Duration(milliseconds: 1200));
 
-    expect(
-      find.textContaining('In diesem Tab noch nicht verf'),
-      findsOneWidget,
-    );
     final disabledButton = tester.widget<OutlinedButton>(
       find.widgetWithText(OutlinedButton, 'Bearbeiten'),
     );
     expect(disabledButton.onPressed, isNull);
   });
+
+  testWidgets(
+    'workspace appbar actions keep right spacing and edit action on the right',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo);
+
+      final appBar = tester.widget<AppBar>(find.byType(AppBar));
+      final actions = appBar.actions ?? const <Widget>[];
+      expect(actions.first, isA<SizedBox>());
+      expect((actions.first as SizedBox).width, 8);
+      expect(actions.last, isA<SizedBox>());
+      expect((actions.last as SizedBox).width, 12);
+      expect(find.text('Bearbeiten'), findsOneWidget);
+    },
+  );
 
   testWidgets('dirty tab switch keeps overview values when not discarded', (
     tester,

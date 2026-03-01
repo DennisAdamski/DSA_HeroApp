@@ -14,8 +14,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 void main() {
-  HeroSheet buildHero() {
-    return const HeroSheet(
+  HeroSheet buildHero({List<String> hiddenTalentIds = const <String>[]}) {
+    return HeroSheet(
       id: 'demo',
       name: 'Rondra',
       level: 7,
@@ -30,6 +30,7 @@ void main() {
         kk: 13,
       ),
       combatConfig: CombatConfig(),
+      hiddenTalentIds: hiddenTalentIds,
     );
   }
 
@@ -46,6 +47,15 @@ void main() {
           weaponCategory: 'Schwert',
           steigerung: 'D',
           attributes: <String>['Mut', 'Gewandheit', 'Koerperkraft'],
+        ),
+        TalentDef(
+          id: 'tal_fern',
+          name: 'Boegen',
+          group: 'Kampftalent',
+          type: 'Fernkampf',
+          weaponCategory: 'Bogen',
+          steigerung: 'D',
+          attributes: <String>['Intuition', 'Fingerfertigkeit', 'Koerperkraft'],
         ),
       ],
       spells: <SpellDef>[],
@@ -261,7 +271,9 @@ void main() {
     await setSwitch('combat-armor-form-active', isActive);
     await setSwitch('combat-armor-form-rg1', rg1Active);
 
-    await tester.tap(find.byKey(const ValueKey<String>('combat-armor-form-save')));
+    await tester.tap(
+      find.byKey(const ValueKey<String>('combat-armor-form-save')),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -284,6 +296,39 @@ void main() {
     expect(find.widgetWithText(Tab, 'Nahkampf'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'SF/Manoever'), findsOneWidget);
   });
+
+  testWidgets(
+    'hides fully hidden combat technique groups outside visibility mode',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(hiddenTalentIds: const <String>['tal_nah']),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo);
+
+      expect(find.widgetWithText(ExpansionTile, 'Fernkampf'), findsOneWidget);
+      expect(find.widgetWithText(ExpansionTile, 'Nahkampf'), findsNothing);
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('combat-talents-visibility-mode-toggle'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(ExpansionTile, 'Nahkampf'), findsOneWidget);
+    },
+  );
 
   testWidgets('shared save persists changes from melee and sf subtabs', (
     tester,
@@ -515,59 +560,68 @@ void main() {
     );
   });
 
-  testWidgets('armor pieces can be added, edited and removed with live preview', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [buildHero()],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
+  testWidgets(
+    'armor pieces can be added, edited and removed with live preview',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
 
-    final actions = await openCombatTab(tester, repo);
-    await actions.startEdit();
-    await tester.pumpAndSettle();
+      final actions = await openCombatTab(tester, repo);
+      await actions.startEdit();
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+      await tester.pumpAndSettle();
 
-    await openArmorEditor(tester);
-    await fillArmorDialog(
-      tester,
-      name: 'Kettenhemd',
-      rs: '3',
-      be: '4',
-      isActive: true,
-      rg1Active: true,
-    );
+      await openArmorEditor(tester);
+      await fillArmorDialog(
+        tester,
+        name: 'Kettenhemd',
+        rs: '3',
+        be: '4',
+        isActive: true,
+        rg1Active: true,
+      );
 
-    expect(find.textContaining('Kettenhemd'), findsOneWidget);
-    expect(find.textContaining('RS 3 | BE 4 | Aktiv Ja | RG I Ja'), findsOneWidget);
+      expect(find.textContaining('Kettenhemd'), findsOneWidget);
+      expect(
+        find.textContaining('RS 3 | BE 4 | Aktiv Ja | RG I Ja'),
+        findsOneWidget,
+      );
 
-    await openArmorEditor(tester, index: 0);
-    await fillArmorDialog(
-      tester,
-      name: 'Kettenhemd',
-      rs: '5',
-      be: '6',
-      isActive: true,
-      rg1Active: true,
-    );
-    expect(find.textContaining('RS 5 | BE 6 | Aktiv Ja | RG I Ja'), findsOneWidget);
+      await openArmorEditor(tester, index: 0);
+      await fillArmorDialog(
+        tester,
+        name: 'Kettenhemd',
+        rs: '5',
+        be: '6',
+        isActive: true,
+        rg1Active: true,
+      );
+      expect(
+        find.textContaining('RS 5 | BE 6 | Aktiv Ja | RG I Ja'),
+        findsOneWidget,
+      );
 
-    await tester.drag(find.byType(ListView).first, const Offset(0, -280));
-    await tester.pumpAndSettle();
-    final removeButton = find.byKey(const ValueKey<String>('combat-armor-remove-0'));
-    await tester.ensureVisible(removeButton);
-    await tester.pumpAndSettle();
-    await tester.tap(removeButton);
-    await tester.pumpAndSettle();
-    expect(find.text('Keine Ruestungsstuecke erfasst.'), findsOneWidget);
-  });
+      await tester.drag(find.byType(ListView).first, const Offset(0, -280));
+      await tester.pumpAndSettle();
+      final removeButton = find.byKey(
+        const ValueKey<String>('combat-armor-remove-0'),
+      );
+      await tester.ensureVisible(removeButton);
+      await tester.pumpAndSettle();
+      await tester.tap(removeButton);
+      await tester.pumpAndSettle();
+      expect(find.text('Keine Ruestungsstuecke erfasst.'), findsOneWidget);
+    },
+  );
 }

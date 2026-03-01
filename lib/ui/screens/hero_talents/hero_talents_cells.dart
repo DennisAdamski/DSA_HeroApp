@@ -161,14 +161,33 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     );
   }
 
-  Widget _visibilityCell({required String talentId, required bool isHidden}) {
+  Widget _visibilityCell({
+    required String talentId,
+    required bool isHidden,
+    required bool enabled,
+  }) {
     return Align(
       alignment: Alignment.centerLeft,
       child: IconButton(
         key: ValueKey<String>('talents-visibility-$talentId'),
         icon: Icon(isHidden ? Icons.visibility_off : Icons.visibility),
         tooltip: isHidden ? 'Talent einblenden' : 'Talent ausblenden',
-        onPressed: () => _toggleHidden(talentId),
+        onPressed: enabled ? () => _toggleHidden(talentId) : null,
+      ),
+    );
+  }
+
+  Widget _giftedCell({
+    required String talentId,
+    required bool value,
+    required bool isEditing,
+  }) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Checkbox(
+        key: ValueKey<String>('talents-gifted-$talentId'),
+        value: value,
+        onChanged: isEditing ? (next) => _updateGifted(talentId, next!) : null,
       ),
     );
   }
@@ -232,6 +251,9 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
   }
 
   String _formatWholeNumber(num value) {
+    if (value == 0 || value == -0.0) {
+      return '0';
+    }
     if (value is int) {
       return value.toString();
     }
@@ -239,6 +261,41 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
       return value.toInt().toString();
     }
     return value.toString();
+  }
+
+  int _calculateMaxTaw({
+    required Attributes effectiveAttributes,
+    required List<String> attributeNames,
+    required bool gifted,
+  }) {
+    var maxValue = 0;
+    for (final name in attributeNames) {
+      final code = parseAttributeCode(name);
+      if (code == null) {
+        continue;
+      }
+      final value = readAttributeValue(effectiveAttributes, code);
+      if (value > maxValue) {
+        maxValue = value;
+      }
+    }
+    return maxValue + (gifted ? 5 : 3);
+  }
+
+  int _calculateMaxTawFromTalent({
+    required TalentDef talent,
+    required bool gifted,
+  }) {
+    final hero = _latestHero;
+    if (hero == null) {
+      return gifted ? 5 : 3;
+    }
+    final effective = computeEffectiveAttributes(hero);
+    return _calculateMaxTaw(
+      effectiveAttributes: effective,
+      attributeNames: talent.attributes,
+      gifted: gifted,
+    );
   }
 
   String _fallback(String value) {
