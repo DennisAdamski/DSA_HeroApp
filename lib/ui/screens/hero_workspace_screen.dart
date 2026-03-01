@@ -239,23 +239,20 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         talentsVisibilityModeProvider(widget.heroId),
       );
       final bePreview = ref.watch(combatPreviewProvider(widget.heroId));
-      final beOverride = ref.watch(talentBeOverrideProvider(widget.heroId));
-      final activeBe = beOverride ?? bePreview.valueOrNull?.beKampf ?? 0;
       widgets.addAll([
         OutlinedButton.icon(
           key: const ValueKey<String>('talents-be-screen-open'),
           onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => TalentBeConfigScreen(
-                  heroId: widget.heroId,
-                  combatBaseBe: bePreview.valueOrNull?.beKampf ?? 0,
-                ),
+            showDialog<void>(
+              context: context,
+              builder: (_) => TalentBeConfigDialog(
+                heroId: widget.heroId,
+                combatBaseBe: bePreview.valueOrNull?.beKampf ?? 0,
               ),
             );
           },
           icon: const Icon(Icons.shield_outlined),
-          label: Text('BE konfigurieren ($activeBe)'),
+          label: const Text('BE konfigurieren'),
         ),
         FilledButton.icon(
           key: const ValueKey<String>('talents-visibility-mode-toggle'),
@@ -268,9 +265,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           icon: Icon(
             visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
           ),
-          label: Text(
-            visibilityMode ? 'Sichtbarkeit beenden' : 'Sichtbarkeit bearbeiten',
-          ),
+          label: Text(visibilityMode ? 'Sichtbarkeit aus' : 'Sichtbarkeit'),
         ),
       ]);
     }
@@ -295,9 +290,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           icon: Icon(
             visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
           ),
-          label: Text(
-            visibilityMode ? 'Sichtbarkeit beenden' : 'Sichtbarkeit bearbeiten',
-          ),
+          label: Text(visibilityMode ? 'Sichtbarkeit aus' : 'Sichtbarkeit'),
         ),
       );
     }
@@ -325,6 +318,21 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       );
     }
     return widgets;
+  }
+
+  List<Widget> _buildSpacedWorkspaceActions(List<Widget> actions) {
+    if (actions.isEmpty) {
+      return const <Widget>[];
+    }
+    final spaced = <Widget>[const SizedBox(width: 8)];
+    for (var index = 0; index < actions.length; index++) {
+      if (index > 0) {
+        spaced.add(const SizedBox(width: 8));
+      }
+      spaced.add(actions[index]);
+    }
+    spaced.add(const SizedBox(width: 12));
+    return spaced;
   }
 
   PreferredSizeWidget _buildWorkspaceTabBar() {
@@ -475,7 +483,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
             tooltip: 'Heldenauswahl',
             onPressed: _navigateToHomeWithGuard,
           ),
-          actions: [..._buildWorkspaceActions()],
+          actions: _buildSpacedWorkspaceActions(_buildWorkspaceActions()),
           bottom: useCommandDeck ? null : _buildWorkspaceTabBar(),
         ),
         body: useCommandDeck
@@ -708,7 +716,7 @@ class _CoreAttributesHeader extends ConsumerWidget {
       'AU: ${resourceText(state?.currentAu, derived?.maxAu)}',
       'ASP: ${resourceText(state?.currentAsp, derived?.maxAsp)}',
       'KAP: ${resourceText(state?.currentKap, derived?.maxKap)}',
-      'BE aktuell: ${activeTalentBe?.toString() ?? '-'}',
+      'BE: ${activeTalentBe?.toString() ?? '-'}',
     ];
 
     return Container(

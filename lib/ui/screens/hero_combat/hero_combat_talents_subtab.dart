@@ -16,6 +16,16 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       grouped.putIfAbsent(group, () => <TalentDef>[]).add(talent);
     }
     final groups = grouped.keys.toList(growable: false)..sort();
+    final showAllTalents = _editController.isEditing || visibilityMode;
+    final visibleGroups = groups
+        .where((group) {
+          if (showAllTalents) {
+            return true;
+          }
+          final entries = grouped[group] ?? const <TalentDef>[];
+          return entries.any((talent) => !_isHidden(talent.id));
+        })
+        .toList(growable: false);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
@@ -63,66 +73,69 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
               ),
             ),
           ),
-        ...List<Widget>.generate(groups.length, (index) {
-        final group = groups[index];
-        final entries = List<TalentDef>.from(
-          grouped[group]!,
-        )..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-        final visibleEntries = _editController.isEditing || visibilityMode
-            ? entries
-            : entries
-                  .where((talent) => !_isHidden(talent.id))
-                  .toList(growable: false);
-        return Card(
-          margin: const EdgeInsets.only(bottom: 10),
-          child: ExpansionTile(
-            initiallyExpanded: true,
-            tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-            title: Text(group),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${visibleEntries.length}/${entries.length} sichtbar',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                if (visibilityMode)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          TextButton(
-                            key: ValueKey<String>('combat-group-show-all-$group'),
-                            onPressed: () => _setHiddenForGroup(
-                              entries,
-                              hidden: false,
+        ...List<Widget>.generate(visibleGroups.length, (index) {
+          final group = visibleGroups[index];
+          final entries = List<TalentDef>.from(grouped[group]!)
+            ..sort(
+              (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+            );
+          final visibleEntries = showAllTalents
+              ? entries
+              : entries
+                    .where((talent) => !_isHidden(talent.id))
+                    .toList(growable: false);
+          return Card(
+            margin: const EdgeInsets.only(bottom: 10),
+            child: ExpansionTile(
+              initiallyExpanded: true,
+              tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+              title: Text(group),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${visibleEntries.length}/${entries.length} sichtbar',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  if (visibilityMode)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            TextButton(
+                              key: ValueKey<String>(
+                                'combat-group-show-all-$group',
+                              ),
+                              onPressed: () =>
+                                  _setHiddenForGroup(entries, hidden: false),
+                              child: const Text('Alle einblenden'),
                             ),
-                            child: const Text('Alle einblenden'),
-                          ),
-                          const SizedBox(width: 6),
-                          TextButton(
-                            key: ValueKey<String>('combat-group-hide-all-$group'),
-                            onPressed: () =>
-                                _setHiddenForGroup(entries, hidden: true),
-                            child: const Text('Alle ausblenden'),
-                          ),
-                        ],
+                            const SizedBox(width: 6),
+                            TextButton(
+                              key: ValueKey<String>(
+                                'combat-group-hide-all-$group',
+                              ),
+                              onPressed: () =>
+                                  _setHiddenForGroup(entries, hidden: true),
+                              child: const Text('Alle ausblenden'),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+                ],
+              ),
+              children: [
+                _buildCombatTalentsTable(
+                  visibleEntries,
+                  effectiveAttributes: effectiveAttributes,
+                ),
               ],
             ),
-            children: [
-              _buildCombatTalentsTable(
-                visibleEntries,
-                effectiveAttributes: effectiveAttributes,
-              ),
-            ],
-          ),
-        );
-      }),
+          );
+        }),
       ],
     );
   }
@@ -339,9 +352,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
         key: ValueKey<String>('talents-visibility-$talentId'),
         icon: Icon(isHidden ? Icons.visibility_off : Icons.visibility),
         tooltip: isHidden ? 'Talent einblenden' : 'Talent ausblenden',
-        onPressed: visibilityMode
-            ? () => _toggleHidden(talentId)
-            : null,
+        onPressed: visibilityMode ? () => _toggleHidden(talentId) : null,
       ),
     );
   }

@@ -14,6 +14,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/talent_be_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_area_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
@@ -366,6 +367,17 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    assert(() {
+      final talentsMeta = workspaceAreaMetaById(WorkspaceAreaId.talentsList);
+      final specialAbilitiesMeta = workspaceAreaMetaById(
+        WorkspaceAreaId.talentsSpecialAbilities,
+      );
+      return talentsMeta.kind == WorkspaceAreaKind.listView &&
+          talentsMeta.supportsVisibilityMode &&
+          talentsMeta.supportsGroupVisibility &&
+          specialAbilitiesMeta.kind == WorkspaceAreaKind.formView &&
+          !specialAbilitiesMeta.supportsVisibilityMode;
+    }());
     UiRebuildObserver.bump('hero_talents_tab');
     final hero = ref.watch(heroByIdProvider(widget.heroId));
     if (hero == null) {
@@ -456,85 +468,85 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                     _buildSpecialAbilitiesTab(),
                   if (widget.scope == _TalentTabScope.combat ||
                       _subTabController?.index == 0)
-                  ...visibleGroups.map((group) {
-                    final talents = List<TalentDef>.from(grouped[group]!)
-                      ..sort(
-                        (a, b) => a.name.toLowerCase().compareTo(
-                          b.name.toLowerCase(),
-                        ),
-                      );
-                    final showAllTalents =
-                        _editController.isEditing || visibilityMode;
-                    final visibleTalents = showAllTalents
-                        ? talents
-                        : talents
-                              .where((talent) => !_isHidden(talent.id))
-                              .toList(growable: false);
+                    ...visibleGroups.map((group) {
+                      final talents = List<TalentDef>.from(grouped[group]!)
+                        ..sort(
+                          (a, b) => a.name.toLowerCase().compareTo(
+                            b.name.toLowerCase(),
+                          ),
+                        );
+                      final showAllTalents =
+                          _editController.isEditing || visibilityMode;
+                      final visibleTalents = showAllTalents
+                          ? talents
+                          : talents
+                                .where((talent) => !_isHidden(talent.id))
+                                .toList(growable: false);
 
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      child: ExpansionTile(
-                        initiallyExpanded: true,
-                        tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                        childrenPadding: EdgeInsets.zero,
-                        title: Text(group),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${visibleTalents.length}/${talents.length} sichtbar',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            if (visibilityMode)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 6),
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    children: [
-                                      TextButton(
-                                        key: ValueKey<String>(
-                                          'talents-group-show-all-$group',
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        child: ExpansionTile(
+                          initiallyExpanded: true,
+                          tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                          childrenPadding: EdgeInsets.zero,
+                          title: Text(group),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${visibleTalents.length}/${talents.length} sichtbar',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              if (visibilityMode)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: [
+                                        TextButton(
+                                          key: ValueKey<String>(
+                                            'talents-group-show-all-$group',
+                                          ),
+                                          onPressed: () => _setHiddenForGroup(
+                                            talents,
+                                            hidden: false,
+                                          ),
+                                          child: const Text('Alle einblenden'),
                                         ),
-                                        onPressed: () => _setHiddenForGroup(
-                                          talents,
-                                          hidden: false,
+                                        const SizedBox(width: 6),
+                                        TextButton(
+                                          key: ValueKey<String>(
+                                            'talents-group-hide-all-$group',
+                                          ),
+                                          onPressed: () => _setHiddenForGroup(
+                                            talents,
+                                            hidden: true,
+                                          ),
+                                          child: const Text('Alle ausblenden'),
                                         ),
-                                        child: const Text('Alle einblenden'),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      TextButton(
-                                        key: ValueKey<String>(
-                                          'talents-group-hide-all-$group',
-                                        ),
-                                        onPressed: () => _setHiddenForGroup(
-                                          talents,
-                                          hidden: true,
-                                        ),
-                                        child: const Text('Alle ausblenden'),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
+                            ],
+                          ),
+                          children: [
+                            widget.scope == _TalentTabScope.combat
+                                ? _buildCombatTalentsTable(
+                                    talents: visibleTalents,
+                                    showVisibilityControls: visibilityMode,
+                                  )
+                                : _buildTalentsTable(
+                                    talents: visibleTalents,
+                                    effectiveAttributes: effectiveAttributes!,
+                                    activeBaseBe: activeTalentBe,
+                                    showVisibilityControls: visibilityMode,
+                                  ),
                           ],
                         ),
-                        children: [
-                          widget.scope == _TalentTabScope.combat
-                              ? _buildCombatTalentsTable(
-                                  talents: visibleTalents,
-                                  showVisibilityControls: visibilityMode,
-                                )
-                              : _buildTalentsTable(
-                                  talents: visibleTalents,
-                                  effectiveAttributes: effectiveAttributes!,
-                                  activeBaseBe: activeTalentBe,
-                                  showVisibilityControls: visibilityMode,
-                                ),
-                        ],
-                      ),
-                    );
-                  }),
+                      );
+                    }),
                 ],
               );
             },
