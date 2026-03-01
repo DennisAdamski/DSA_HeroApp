@@ -114,96 +114,96 @@ void main() {
     return actions!;
   }
 
-  Future<void> openWeaponEditor(WidgetTester tester, {bool add = false}) async {
+  Future<void> openWeaponsTab(WidgetTester tester) async {
     await tester.tap(find.widgetWithText(Tab, 'Waffen'));
     await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(
-        ValueKey<String>(add ? 'combat-weapon-add' : 'combat-weapon-edit'),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const ValueKey<String>('combat-weapon-form-name')),
-      findsOneWidget,
-    );
   }
 
-  Future<void> selectDialogDropdown(
+  Future<void> selectDropdownByKey(
     WidgetTester tester, {
     required String keyName,
     required String valueText,
   }) async {
-    await tester.tap(find.byKey(ValueKey<String>(keyName)));
+    final dropdown = find.byKey(ValueKey<String>(keyName));
+    await tester.ensureVisible(dropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(dropdown);
     await tester.pumpAndSettle();
     await tester.tap(find.text(valueText).last);
     await tester.pumpAndSettle();
   }
 
-  Future<void> fillWeaponDialog(
+  Future<void> commitTextFieldByKey(
     WidgetTester tester, {
-    required String name,
+    required String keyName,
+    required String value,
+  }) async {
+    final field = find.byKey(ValueKey<String>(keyName));
+    await tester.ensureVisible(field);
+    await tester.pumpAndSettle();
+    await tester.tap(field);
+    await tester.pumpAndSettle();
+    await tester.enterText(field, value);
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> fillWeaponRow(
+    WidgetTester tester, {
+    required int rowIndex,
     required String weaponType,
     String talent = 'Schwerter',
-    String kkBase = '12',
-    String kkThreshold = '2',
-    String iniMod = '0',
-    String atMod = '0',
-    String paMod = '0',
-    String dice = '1',
-    String tpValue = '2',
-    String breakFactor = '0',
+    String? dk,
+    String? atMod,
+    String? paMod,
+    String? tpValue,
+    String? breakFactor,
   }) async {
-    await selectDialogDropdown(
+    await selectDropdownByKey(
       tester,
-      keyName: 'combat-weapon-form-talent',
+      keyName: 'combat-weapon-cell-talent-$rowIndex',
       valueText: talent,
     );
-    await selectDialogDropdown(
+    await selectDropdownByKey(
       tester,
-      keyName: 'combat-weapon-form-weapon-type',
+      keyName: 'combat-weapon-cell-weapon-type-$rowIndex',
       valueText: weaponType,
     );
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('combat-weapon-form-name')),
-      name,
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('combat-weapon-form-kk-base')),
-      kkBase,
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('combat-weapon-form-kk-threshold')),
-      kkThreshold,
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('combat-weapon-form-ini-mod')),
-      iniMod,
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('combat-weapon-form-at-mod')),
-      atMod,
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('combat-weapon-form-pa-mod')),
-      paMod,
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('combat-weapon-form-dice')),
-      dice,
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('combat-weapon-form-tp-value')),
-      tpValue,
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('combat-weapon-form-bf')),
-      breakFactor,
-    );
-    await tester.tap(
-      find.byKey(const ValueKey<String>('combat-weapon-form-save')),
-    );
-    await tester.pumpAndSettle();
+    if (dk != null) {
+      await commitTextFieldByKey(
+        tester,
+        keyName: 'combat-weapon-cell-dk-$rowIndex',
+        value: dk,
+      );
+    }
+    if (atMod != null) {
+      await commitTextFieldByKey(
+        tester,
+        keyName: 'combat-weapon-cell-wm-at-$rowIndex',
+        value: atMod,
+      );
+    }
+    if (paMod != null) {
+      await commitTextFieldByKey(
+        tester,
+        keyName: 'combat-weapon-cell-wm-pa-$rowIndex',
+        value: paMod,
+      );
+    }
+    if (tpValue != null) {
+      await commitTextFieldByKey(
+        tester,
+        keyName: 'combat-weapon-cell-tp-value-$rowIndex',
+        value: tpValue,
+      );
+    }
+    if (breakFactor != null) {
+      await commitTextFieldByKey(
+        tester,
+        keyName: 'combat-weapon-cell-bf-$rowIndex',
+        value: breakFactor,
+      );
+    }
   }
 
   Future<void> openArmorEditor(WidgetTester tester, {int? index}) async {
@@ -313,11 +313,11 @@ void main() {
       findsNothing,
     );
     expect(
-      find.byKey(const ValueKey<String>('combat-weapon-edit')),
+      find.byKey(const ValueKey<String>('combat-weapons-overview-table')),
       findsNothing,
     );
     expect(
-      find.byKey(const ValueKey<String>('combat-weapon-remove')),
+      find.byKey(const ValueKey<String>('combat-weapon-remove-0')),
       findsNothing,
     );
 
@@ -328,11 +328,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey<String>('combat-weapon-edit')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey<String>('combat-weapon-remove')),
+      find.byKey(const ValueKey<String>('combat-weapons-overview-table')),
       findsOneWidget,
     );
   });
@@ -389,12 +385,10 @@ void main() {
     await actions.startEdit();
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
-    await tester.pumpAndSettle();
-    await openWeaponEditor(tester);
-    await fillWeaponDialog(
+    await openWeaponsTab(tester);
+    await fillWeaponRow(
       tester,
-      name: 'Kurzschwert',
+      rowIndex: 0,
       weaponType: 'Kurzschwert',
       atMod: '2',
       paMod: '1',
@@ -444,12 +438,10 @@ void main() {
     await actions.startEdit();
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
-    await tester.pumpAndSettle();
-    await openWeaponEditor(tester);
-    await fillWeaponDialog(
+    await openWeaponsTab(tester);
+    await fillWeaponRow(
       tester,
-      name: 'Testwaffe',
+      rowIndex: 0,
       weaponType: 'Kurzschwert',
       tpValue: '3',
     );
@@ -486,31 +478,39 @@ void main() {
 
     await openCombatTab(tester, repo);
 
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await openWeaponsTab(tester);
+    await tester.tap(find.byKey(const ValueKey<String>('combat-weapon-add')));
     await tester.pumpAndSettle();
-
-    await openWeaponEditor(tester, add: true);
-    await fillWeaponDialog(
-      tester,
-      name: 'Bidenhaender',
-      weaponType: 'Bidenhaender',
-      atMod: '3',
-    );
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
     expect(hero.combatConfig.weaponSlots.length, 2);
-    expect(hero.combatConfig.selectedWeaponIndex, 1);
-    expect(hero.combatConfig.mainWeapon.name, 'Bidenhaender');
-    expect(hero.combatConfig.mainWeapon.weaponType, 'Bidenhaender');
-    expect(hero.combatConfig.mainWeapon.wmAt, 3);
+    expect(hero.combatConfig.weaponSlots[1].tpDiceCount, 1);
   });
 
-  testWidgets('shows maneuver support status per active weapon', (
+  testWidgets('removing selected weapon sets active selection to none', (
     tester,
   ) async {
     final repo = FakeRepository(
-      heroes: [buildHero()],
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
+              ),
+              MainWeaponSlot(
+                name: 'Bidenhaender',
+                talentId: 'tal_nah',
+                weaponType: 'Bidenhaender',
+              ),
+            ],
+            selectedWeaponIndex: 1,
+          ),
+        ),
+      ],
       states: {
         'demo': const HeroState(
           currentLep: 10,
@@ -521,31 +521,61 @@ void main() {
       },
     );
 
-    final actions = await openCombatTab(tester, repo);
-    await actions.startEdit();
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+    final removeButton = find.byKey(
+      const ValueKey<String>('combat-weapon-remove-1'),
+    );
+    await tester.ensureVisible(removeButton);
+    await tester.pumpAndSettle();
+    await tester.tap(removeButton, warnIfMissed: false);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
-    await tester.pumpAndSettle();
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.combatConfig.weaponSlots.length, 1);
+    expect(hero.combatConfig.selectedWeaponIndex, -1);
+  });
 
-    await openWeaponEditor(tester);
-    await fillWeaponDialog(
-      tester,
-      name: 'Kurzschwert',
-      weaponType: 'Kurzschwert',
+  testWidgets('shows maneuver support status per active weapon', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
+              ),
+              MainWeaponSlot(
+                name: 'Bidenhaender',
+                talentId: 'tal_nah',
+                weaponType: 'Bidenhaender',
+              ),
+            ],
+            selectedWeaponIndex: 0,
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
     );
 
-    await openWeaponEditor(tester, add: true);
-    await fillWeaponDialog(
-      tester,
-      name: 'Bidenhaender',
-      weaponType: 'Bidenhaender',
-    );
+    await openCombatTab(tester, repo);
 
     await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
     await tester.pumpAndSettle();
     await tester.tap(
-      find.byKey(const ValueKey<String>('combat-main-weapon-select-1-2')),
+      find.byKey(const ValueKey<String>('combat-main-weapon-select-0-2')),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Kurzschwert').last);
@@ -595,7 +625,7 @@ void main() {
     );
   });
 
-  testWidgets('weapon editor unlocks name after talent and weapon type', (
+  testWidgets('weapon type sets default name for a new row in read mode', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -611,44 +641,13 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
-    await tester.pumpAndSettle();
-    await openWeaponEditor(tester, add: true);
+    await openWeaponsTab(tester);
+    await fillWeaponRow(tester, rowIndex: 0, weaponType: 'Kurzschwert');
 
-    final nameField = find.byKey(
-      const ValueKey<String>('combat-weapon-form-name'),
-    );
-    expect(tester.widget<TextField>(nameField).enabled, isFalse);
-    expect(
-      tester
-          .widget<TextField>(
-            find.byKey(const ValueKey<String>('combat-weapon-form-kk-base')),
-          )
-          .controller
-          ?.text,
-      isEmpty,
-    );
-    expect(
-      tester
-          .widget<TextField>(
-            find.byKey(const ValueKey<String>('combat-weapon-form-dice')),
-          )
-          .controller
-          ?.text,
-      '1',
-    );
-
-    await selectDialogDropdown(
-      tester,
-      keyName: 'combat-weapon-form-talent',
-      valueText: 'Schwerter',
-    );
-    await selectDialogDropdown(
-      tester,
-      keyName: 'combat-weapon-form-weapon-type',
-      valueText: 'Kurzschwert',
-    );
-    expect(tester.widget<TextField>(nameField).enabled, isTrue);
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.combatConfig.weaponSlots[0].name, 'Kurzschwert');
+    expect(hero.combatConfig.weaponSlots[0].tpDiceCount, 1);
   });
 
   testWidgets('active weapon selection persists in read mode', (tester) async {
@@ -696,6 +695,65 @@ void main() {
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
     expect(hero.combatConfig.selectedWeaponIndex, 1);
     expect(hero.combatConfig.mainWeapon.name, 'Bidenhaender');
+  });
+
+  testWidgets('active weapon can be set to none and back', (tester) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
+              ),
+              MainWeaponSlot(
+                name: 'Bidenhaender',
+                talentId: 'tal_nah',
+                weaponType: 'Bidenhaender',
+              ),
+            ],
+            selectedWeaponIndex: 1,
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('combat-main-weapon-select-1-2')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Keine Waffe').last);
+    await tester.pumpAndSettle();
+
+    var heroes = await repo.listHeroes();
+    var hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.combatConfig.selectedWeaponIndex, -1);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('combat-main-weapon-select-none-2')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kurzschwert').last);
+    await tester.pumpAndSettle();
+
+    heroes = await repo.listHeroes();
+    hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.combatConfig.selectedWeaponIndex, 0);
+    expect(hero.combatConfig.mainWeapon.name, 'Kurzschwert');
   });
 
   testWidgets('offhand values persist in read mode', (tester) async {
@@ -789,6 +847,44 @@ void main() {
       find.descendant(of: table, matching: find.textContaining('1W6')),
       findsWidgets,
     );
+    final dkHeader = find
+        .descendant(of: table, matching: find.text('DK'))
+        .first;
+    final atHeader = find
+        .descendant(of: table, matching: find.text('AT'))
+        .first;
+    final paHeader = find
+        .descendant(of: table, matching: find.text('PA'))
+        .first;
+    final tpHeader = find
+        .descendant(of: table, matching: find.text('TP'))
+        .first;
+    final iniHeader = find
+        .descendant(of: table, matching: find.text('INI'))
+        .first;
+    final bfHeader = find
+        .descendant(of: table, matching: find.text('BF'))
+        .first;
+    expect(
+      tester.getTopLeft(atHeader).dx,
+      greaterThan(tester.getTopLeft(dkHeader).dx),
+    );
+    expect(
+      tester.getTopLeft(paHeader).dx,
+      greaterThan(tester.getTopLeft(atHeader).dx),
+    );
+    expect(
+      tester.getTopLeft(tpHeader).dx,
+      greaterThan(tester.getTopLeft(paHeader).dx),
+    );
+    expect(
+      tester.getTopLeft(iniHeader).dx,
+      greaterThan(tester.getTopLeft(tpHeader).dx),
+    );
+    expect(
+      tester.getTopLeft(bfHeader).dx,
+      greaterThan(tester.getTopLeft(iniHeader).dx),
+    );
 
     final bidenFinder = find
         .descendant(of: table, matching: find.text('Bidenhaender'))
@@ -799,6 +895,57 @@ void main() {
     expect(
       tester.getTopLeft(bidenFinder).dy,
       lessThan(tester.getTopLeft(kurzFinder).dy),
+    );
+  });
+
+  testWidgets('weapon table filters by DK in read mode', (tester) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
+                distanceClass: 'N',
+              ),
+              MainWeaponSlot(
+                name: 'Bidenhaender',
+                talentId: 'tal_nah',
+                weaponType: 'Bidenhaender',
+                distanceClass: 'S',
+              ),
+            ],
+            selectedWeaponIndex: 0,
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+    await selectDropdownByKey(
+      tester,
+      keyName: 'combat-weapons-filter-dk',
+      valueText: 'S',
+    );
+
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-cell-name-1')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-cell-name-0')),
+      findsNothing,
     );
   });
 

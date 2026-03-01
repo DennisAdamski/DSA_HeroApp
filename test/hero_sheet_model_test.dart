@@ -191,6 +191,39 @@ void main() {
     expect(reloaded.combatConfig.selectedWeapon.isOneHanded, isFalse);
   });
 
+  test('combat config roundtrip keeps selectedWeaponIndex -1', () {
+    const hero = HeroSheet(
+      id: 'h3',
+      name: 'Keine aktive Waffe',
+      level: 1,
+      attributes: Attributes(
+        mu: 10,
+        kl: 10,
+        inn: 10,
+        ch: 10,
+        ff: 10,
+        ge: 10,
+        ko: 10,
+        kk: 10,
+      ),
+      combatConfig: CombatConfig(
+        weapons: <MainWeaponSlot>[
+          MainWeaponSlot(
+            name: 'Dolch',
+            talentId: 'tal_nah',
+            weaponType: 'Dolch',
+          ),
+        ],
+        selectedWeaponIndex: -1,
+      ),
+    );
+
+    final reloaded = HeroSheet.fromJson(hero.toJson());
+    expect(reloaded.combatConfig.selectedWeaponIndex, -1);
+    expect(reloaded.combatConfig.hasSelectedWeapon, isFalse);
+    expect(reloaded.combatConfig.selectedWeaponOrNull, isNull);
+  });
+
   test('talent entry roundtrip keeps gifted flag', () {
     const entry = HeroTalentEntry(
       talentValue: 8,
@@ -206,34 +239,37 @@ void main() {
     expect(reloaded.paValue, 3);
   });
 
-  test('legacy armor fields are ignored and load as empty armor piece list', () {
-    final legacy = {
-      'schemaVersion': 1,
-      'id': 'legacy_armor',
-      'name': 'Alt',
-      'level': 1,
-      'attributes': {
-        'mu': 8,
-        'kl': 8,
-        'inn': 8,
-        'ch': 8,
-        'ff': 8,
-        'ge': 8,
-        'ko': 8,
-        'kk': 8,
-      },
-      'combatConfig': {
-        'armor': {
-          'rsTotal': 5,
-          'beTotalRaw': 4,
-          'armorTrainingLevel': 3,
-          'rgIActive': true,
+  test(
+    'legacy armor fields are ignored and load as empty armor piece list',
+    () {
+      final legacy = {
+        'schemaVersion': 1,
+        'id': 'legacy_armor',
+        'name': 'Alt',
+        'level': 1,
+        'attributes': {
+          'mu': 8,
+          'kl': 8,
+          'inn': 8,
+          'ch': 8,
+          'ff': 8,
+          'ge': 8,
+          'ko': 8,
+          'kk': 8,
         },
-      },
-    };
+        'combatConfig': {
+          'armor': {
+            'rsTotal': 5,
+            'beTotalRaw': 4,
+            'armorTrainingLevel': 3,
+            'rgIActive': true,
+          },
+        },
+      };
 
-    final loaded = HeroSheet.fromJson(legacy);
-    expect(loaded.combatConfig.armor.pieces, isEmpty);
-    expect(loaded.combatConfig.armor.globalArmorTrainingLevel, 0);
-  });
+      final loaded = HeroSheet.fromJson(legacy);
+      expect(loaded.combatConfig.armor.pieces, isEmpty);
+      expect(loaded.combatConfig.armor.globalArmorTrainingLevel, 0);
+    },
+  );
 }
