@@ -21,10 +21,6 @@ const int _overviewTabIndex = 0;
 const int _talentsTabIndex = 1;
 const int _combatTabIndex = 2;
 const int _inventoryTabIndex = 4;
-const double _tacticalBoardBreakpoint = 1280;
-const double _tacticalStatusWidth = 300;
-
-enum _TacticalViewMode { read, edit, validate }
 
 class HeroWorkspaceScreen extends ConsumerStatefulWidget {
   const HeroWorkspaceScreen({super.key, required this.heroId});
@@ -46,7 +42,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   bool _handlingTabChange = false;
   bool _revertingTabChange = false;
   bool _runningEditAction = false;
-  _TacticalViewMode _viewMode = _TacticalViewMode.read;
 
   @override
   void initState() {
@@ -213,181 +208,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
-  Widget _buildWorkspaceTabView() {
-    return TabBarView(
-      controller: _tabController,
-      children: [
-        HeroOverviewTab(
-          heroId: widget.heroId,
-          onDirtyChanged: (isDirty) => _updateDirty(_overviewTabIndex, isDirty),
-          onEditingChanged: (isEditing) =>
-              _updateEditing(_overviewTabIndex, isEditing),
-          onRegisterDiscard: (discardAction) =>
-              _registerDiscard(_overviewTabIndex, discardAction),
-          onRegisterEditActions: (actions) =>
-              _registerEditActions(_overviewTabIndex, actions),
-        ),
-        HeroTalentsTab(
-          heroId: widget.heroId,
-          onDirtyChanged: (isDirty) => _updateDirty(_talentsTabIndex, isDirty),
-          onEditingChanged: (isEditing) =>
-              _updateEditing(_talentsTabIndex, isEditing),
-          onRegisterDiscard: (discardAction) =>
-              _registerDiscard(_talentsTabIndex, discardAction),
-          onRegisterEditActions: (actions) =>
-              _registerEditActions(_talentsTabIndex, actions),
-        ),
-        HeroCombatTab(
-          heroId: widget.heroId,
-          onDirtyChanged: (isDirty) => _updateDirty(_combatTabIndex, isDirty),
-          onEditingChanged: (isEditing) =>
-              _updateEditing(_combatTabIndex, isEditing),
-          onRegisterDiscard: (discardAction) =>
-              _registerDiscard(_combatTabIndex, discardAction),
-          onRegisterEditActions: (actions) =>
-              _registerEditActions(_combatTabIndex, actions),
-        ),
-        const _CatalogPlaceholderTab(
-          title: 'Magie',
-          section: _CatalogSection.spells,
-        ),
-        HeroInventoryTab(
-          heroId: widget.heroId,
-          onDirtyChanged: (isDirty) =>
-              _updateDirty(_inventoryTabIndex, isDirty),
-          onEditingChanged: (isEditing) =>
-              _updateEditing(_inventoryTabIndex, isEditing),
-          onRegisterDiscard: (discardAction) =>
-              _registerDiscard(_inventoryTabIndex, discardAction),
-          onRegisterEditActions: (actions) =>
-              _registerEditActions(_inventoryTabIndex, actions),
-        ),
-        const _PlaceholderTab(title: 'Notizen'),
-      ],
-    );
-  }
-
-  Widget _buildTacticalModeSelector() {
-    return Container(
-      width: double.infinity,
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-      child: Wrap(
-        alignment: WrapAlignment.spaceBetween,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          SegmentedButton<_TacticalViewMode>(
-            showSelectedIcon: false,
-            segments: const [
-              ButtonSegment<_TacticalViewMode>(
-                value: _TacticalViewMode.read,
-                icon: Icon(Icons.visibility_outlined),
-                label: Text('Lesen'),
-              ),
-              ButtonSegment<_TacticalViewMode>(
-                value: _TacticalViewMode.edit,
-                icon: Icon(Icons.edit_outlined),
-                label: Text('Edit-Ansicht'),
-              ),
-              ButtonSegment<_TacticalViewMode>(
-                value: _TacticalViewMode.validate,
-                icon: Icon(Icons.rule_outlined),
-                label: Text('Validieren'),
-              ),
-            ],
-            selected: <_TacticalViewMode>{_viewMode},
-            onSelectionChanged: (next) {
-              if (next.isEmpty) {
-                return;
-              }
-              setState(() {
-                _viewMode = next.first;
-              });
-            },
-          ),
-          Text(switch (_viewMode) {
-            _TacticalViewMode.read => 'Leseansicht mit Fokus auf Uebersicht',
-            _TacticalViewMode.edit => 'Arbeitsansicht mit editierbaren Daten',
-            _TacticalViewMode.validate => 'Pruefansicht mit Statusfokus',
-          }, style: Theme.of(context).textTheme.bodySmall),
-        ],
-      ),
-    );
-  }
-
-  String _tabLabelForIndex(int tabIndex) {
-    switch (tabIndex) {
-      case 0:
-        return 'Uebersicht';
-      case 1:
-        return 'Talente';
-      case 2:
-        return 'Kampf';
-      case 3:
-        return 'Magie';
-      case 4:
-        return 'Inventar';
-      case 5:
-        return 'Notizen';
-      default:
-        return 'Unbekannt';
-    }
-  }
-
-  Widget _buildTacticalStandardBody(HeroSheet hero) {
-    final headerTone = _viewMode == _TacticalViewMode.edit
-        ? Theme.of(context).colorScheme.secondaryContainer
-        : Theme.of(context).colorScheme.surface;
-    return Column(
-      children: [
-        _buildTacticalModeSelector(),
-        _CoreAttributesHeader(heroId: widget.heroId, hero: hero),
-        ColoredBox(color: headerTone, child: _buildGlobalActionHeader()),
-        Expanded(child: _buildWorkspaceTabView()),
-      ],
-    );
-  }
-
-  Widget _buildTacticalWideBody(HeroSheet hero) {
-    final activeTabIndex = _tabRegistry.activeTabIndex;
-    final headerTone = _viewMode == _TacticalViewMode.edit
-        ? Theme.of(context).colorScheme.secondaryContainer
-        : Theme.of(context).colorScheme.surface;
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            children: [
-              _buildTacticalModeSelector(),
-              _CoreAttributesHeader(heroId: widget.heroId, hero: hero),
-              ColoredBox(color: headerTone, child: _buildGlobalActionHeader()),
-              Expanded(child: _buildWorkspaceTabView()),
-            ],
-          ),
-        ),
-        const VerticalDivider(width: 1),
-        SizedBox(
-          width: _tacticalStatusWidth,
-          child: _TacticalStatusPanel(
-            hero: hero,
-            activeTabLabel: _tabLabelForIndex(activeTabIndex),
-            isEditing: _tabRegistry.isEditing(activeTabIndex),
-            isDirty: _tabRegistry.isDirty(activeTabIndex),
-            mode: _viewMode,
-            isEditableTab: _tabRegistry.isEditableTab(activeTabIndex),
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final hero = ref.watch(heroByIdProvider(widget.heroId));
-    final useTacticalWide =
-        MediaQuery.sizeOf(context).width >= _tacticalBoardBreakpoint;
 
     if (hero == null) {
       return Scaffold(
@@ -450,17 +273,67 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
             ],
           ),
         ),
-        body: DecoratedBox(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: <Color>[Color(0xFFF2F7FA), Color(0xFFE8EEF3)],
+        body: Column(
+          children: [
+            _CoreAttributesHeader(heroId: widget.heroId, hero: hero),
+            _buildGlobalActionHeader(),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  HeroOverviewTab(
+                    heroId: widget.heroId,
+                    onDirtyChanged: (isDirty) =>
+                        _updateDirty(_overviewTabIndex, isDirty),
+                    onEditingChanged: (isEditing) =>
+                        _updateEditing(_overviewTabIndex, isEditing),
+                    onRegisterDiscard: (discardAction) =>
+                        _registerDiscard(_overviewTabIndex, discardAction),
+                    onRegisterEditActions: (actions) =>
+                        _registerEditActions(_overviewTabIndex, actions),
+                  ),
+                  HeroTalentsTab(
+                    heroId: widget.heroId,
+                    onDirtyChanged: (isDirty) =>
+                        _updateDirty(_talentsTabIndex, isDirty),
+                    onEditingChanged: (isEditing) =>
+                        _updateEditing(_talentsTabIndex, isEditing),
+                    onRegisterDiscard: (discardAction) =>
+                        _registerDiscard(_talentsTabIndex, discardAction),
+                    onRegisterEditActions: (actions) =>
+                        _registerEditActions(_talentsTabIndex, actions),
+                  ),
+                  HeroCombatTab(
+                    heroId: widget.heroId,
+                    onDirtyChanged: (isDirty) =>
+                        _updateDirty(_combatTabIndex, isDirty),
+                    onEditingChanged: (isEditing) =>
+                        _updateEditing(_combatTabIndex, isEditing),
+                    onRegisterDiscard: (discardAction) =>
+                        _registerDiscard(_combatTabIndex, discardAction),
+                    onRegisterEditActions: (actions) =>
+                        _registerEditActions(_combatTabIndex, actions),
+                  ),
+                  const _CatalogPlaceholderTab(
+                    title: 'Magie',
+                    section: _CatalogSection.spells,
+                  ),
+                  HeroInventoryTab(
+                    heroId: widget.heroId,
+                    onDirtyChanged: (isDirty) =>
+                        _updateDirty(_inventoryTabIndex, isDirty),
+                    onEditingChanged: (isEditing) =>
+                        _updateEditing(_inventoryTabIndex, isEditing),
+                    onRegisterDiscard: (discardAction) =>
+                        _registerDiscard(_inventoryTabIndex, discardAction),
+                    onRegisterEditActions: (actions) =>
+                        _registerEditActions(_inventoryTabIndex, actions),
+                  ),
+                  const _PlaceholderTab(title: 'Notizen'),
+                ],
+              ),
             ),
-          ),
-          child: useTacticalWide
-              ? _buildTacticalWideBody(hero)
-              : _buildTacticalStandardBody(hero),
+          ],
         ),
       ),
     );
@@ -551,115 +424,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         context,
       ).showSnackBar(SnackBar(content: Text('Import fehlgeschlagen: $error')));
     }
-  }
-}
-
-class _TacticalStatusPanel extends StatelessWidget {
-  const _TacticalStatusPanel({
-    required this.hero,
-    required this.activeTabLabel,
-    required this.isEditing,
-    required this.isDirty,
-    required this.mode,
-    required this.isEditableTab,
-  });
-
-  final HeroSheet hero;
-  final String activeTabLabel;
-  final bool isEditing;
-  final bool isDirty;
-  final _TacticalViewMode mode;
-  final bool isEditableTab;
-
-  @override
-  Widget build(BuildContext context) {
-    String modeLabel(_TacticalViewMode current) {
-      switch (current) {
-        case _TacticalViewMode.read:
-          return 'Lesen';
-        case _TacticalViewMode.edit:
-          return 'Bearbeiten';
-        case _TacticalViewMode.validate:
-          return 'Validieren';
-      }
-    }
-
-    final statusText = isDirty
-        ? 'Aenderungen offen'
-        : 'Keine offenen Aenderungen';
-    final tabEditText = isEditableTab ? 'Editierbarer Tab' : 'Read-only Tab';
-
-    return ColoredBox(
-      color: Theme.of(context).colorScheme.surfaceContainerLowest,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Taktikstatus',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 10),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Modus: ${modeLabel(mode)}'),
-                      const SizedBox(height: 6),
-                      Text('Aktiver Bereich: $activeTabLabel'),
-                      const SizedBox(height: 6),
-                      Chip(
-                        label: Text(
-                          isEditing ? 'Im Edit-Modus' : 'Nicht im Edit-Modus',
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Chip(label: Text(statusText)),
-                      const SizedBox(height: 8),
-                      Chip(label: Text(tabEditText)),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        hero.name,
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      const SizedBox(height: 6),
-                      Text('Level: ${hero.level}'),
-                      Text('AP gesamt: ${hero.apTotal}'),
-                      Text('AP verfuegbar: ${hero.apAvailable}'),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Text(
-                    'Hinweis: Die fachliche Validierung bleibt unveraendert; '
-                    'dieses Panel verdichtet nur den aktuellen Bearbeitungsstatus.',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 
