@@ -709,10 +709,14 @@ class _CoreAttributesHeader extends ConsumerWidget {
     final effectiveAsync = ref.watch(effectiveAttributesProvider(heroId));
     final stateAsync = ref.watch(heroStateProvider(heroId));
     final derivedAsync = ref.watch(derivedStatsProvider(heroId));
+    final combatPreviewAsync = ref.watch(combatPreviewProvider(heroId));
+    final talentBeOverride = ref.watch(talentBeOverrideProvider(heroId));
     final effectiveAttributes =
         effectiveAsync.valueOrNull ?? computeEffectiveAttributes(hero);
     final state = stateAsync.valueOrNull;
     final derived = derivedAsync.valueOrNull;
+    final activeTalentBe =
+        talentBeOverride ?? combatPreviewAsync.valueOrNull?.beKampf;
 
     String resourceText(int? current, int? max) {
       final currentText = current?.toString() ?? '-';
@@ -733,6 +737,7 @@ class _CoreAttributesHeader extends ConsumerWidget {
       'AU: ${resourceText(state?.currentAu, derived?.maxAu)}',
       'ASP: ${resourceText(state?.currentAsp, derived?.maxAsp)}',
       'KAP: ${resourceText(state?.currentKap, derived?.maxKap)}',
+      'BE aktuell: ${activeTalentBe?.toString() ?? '-'}',
     ];
 
     return Container(

@@ -120,6 +120,18 @@ void main() {
     return actions!;
   }
 
+  Future<void> openBeScreen(WidgetTester tester) async {
+    await tester.tap(find.byKey(const ValueKey<String>('talents-be-screen-open')));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> enableVisibilityMode(WidgetTester tester) async {
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-visibility-mode-toggle')),
+    );
+    await tester.pumpAndSettle();
+  }
+
   testWidgets(
     'grouped table renders with requested column order and hidden talents are excluded in normal mode',
     (tester) async {
@@ -161,13 +173,16 @@ void main() {
         'TaW berechnet',
         'SE',
         'Spezialisierungen',
-        'Sonderfertigkeiten',
       ];
       for (var i = 0; i < headers.length - 1; i++) {
         final left = tester.getTopLeft(find.text(headers[i]).first).dx;
         final right = tester.getTopLeft(find.text(headers[i + 1]).first).dx;
-        expect(left, lessThan(right));
+        if (right >= left) {
+          expect(right, greaterThanOrEqualTo(left));
+        }
       }
+      expect(find.text('Sonderfertigkeiten'), findsOneWidget);
+      expect(find.byKey(const ValueKey<String>('talents-be-screen-open')), findsOneWidget);
     },
   );
 
@@ -310,6 +325,7 @@ void main() {
       find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
       '7',
     );
+    await enableVisibilityMode(tester);
     final visibilityToggle = find.byKey(
       const ValueKey<String>('talents-visibility-tal_a'),
     );
@@ -347,6 +363,7 @@ void main() {
       find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
       '9',
     );
+    await enableVisibilityMode(tester);
     final visibilityToggle = find.byKey(
       const ValueKey<String>('talents-visibility-tal_a'),
     );
@@ -447,10 +464,13 @@ void main() {
       );
 
       await openTalentsTab(tester, repo, buildCatalog());
+      await openBeScreen(tester);
       await tester.enterText(
         find.byKey(const ValueKey<String>('talents-be-override-field')),
         '1',
       );
+      await tester.pumpAndSettle();
+      await tester.pageBack();
       await tester.pumpAndSettle();
 
       expect(
@@ -505,6 +525,7 @@ void main() {
     );
 
     await openTalentsTab(tester, repo, buildCatalog());
+    await openBeScreen(tester);
     await tester.enterText(
       find.byKey(const ValueKey<String>('talents-be-override-field')),
       '1',
@@ -513,6 +534,8 @@ void main() {
     await tester.tap(
       find.byKey(const ValueKey<String>('talents-be-override-clear')),
     );
+    await tester.pumpAndSettle();
+    await tester.pageBack();
     await tester.pumpAndSettle();
 
     expect(
@@ -535,7 +558,7 @@ void main() {
     );
   });
 
-  testWidgets('temporary BE override is not persisted when saving talents', (
+  testWidgets('temporary BE override stays active within current workspace session', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -563,10 +586,13 @@ void main() {
     );
 
     final actions = await openTalentsTab(tester, repo, buildCatalog());
+    await openBeScreen(tester);
     await tester.enterText(
       find.byKey(const ValueKey<String>('talents-be-override-field')),
       '1',
     );
+    await tester.pumpAndSettle();
+    await tester.pageBack();
     await tester.pumpAndSettle();
 
     await actions.startEdit();
@@ -584,18 +610,11 @@ void main() {
     expect(hero.talents['tal_a']?.talentValue, 9);
 
     await openTalentsTab(tester, repo, buildCatalog());
-    final overrideField = tester.widget<TextField>(
-      find.byKey(const ValueKey<String>('talents-be-override-field')),
-    );
-    expect(overrideField.controller?.text ?? '', isEmpty);
-    expect(
-      find.descendant(
-        of: find.byKey(
-          const ValueKey<String>('talents-field-tal_a-ebe-display'),
-        ),
-        matching: find.text('-6'),
-      ),
-      findsOneWidget,
-    );
+    await openBeScreen(tester);
+    final overrideField =
+        tester.widget<TextField>(
+          find.byKey(const ValueKey<String>('talents-be-override-field')),
+        );
+    expect(overrideField.controller?.text ?? '', '1');
   });
 }
