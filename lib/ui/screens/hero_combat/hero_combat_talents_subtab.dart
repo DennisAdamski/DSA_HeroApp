@@ -19,20 +19,38 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-          child: FilledButton.icon(
-            key: const ValueKey<String>('combat-talents-visibility-mode-toggle'),
-            onPressed: () => _setCombatTalentsVisibilityMode(
-              !_combatTalentsVisibilityMode,
-            ),
-            icon: Icon(
-              _combatTalentsVisibilityMode
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility,
-            ),
-            label: Text(
-              _combatTalentsVisibilityMode
-                  ? 'Sichtbarkeit beenden'
-                  : 'Sichtbarkeit bearbeiten',
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                FilledButton.icon(
+                  key: const ValueKey<String>('combat-talents-start-edit'),
+                  onPressed: _editController.isEditing
+                      ? null
+                      : () {
+                          _startEdit();
+                        },
+                  icon: const Icon(Icons.edit),
+                  label: const Text('Bearbeiten'),
+                ),
+                const SizedBox(width: 8),
+                FilledButton.icon(
+                  key: const ValueKey<String>('combat-talents-visibility-mode-toggle'),
+                  onPressed: () => _setCombatTalentsVisibilityMode(
+                    !_combatTalentsVisibilityMode,
+                  ),
+                  icon: Icon(
+                    _combatTalentsVisibilityMode
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility,
+                  ),
+                  label: Text(
+                    _combatTalentsVisibilityMode
+                        ? 'Sichtbarkeit beenden'
+                        : 'Sichtbarkeit bearbeiten',
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -67,28 +85,20 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          SizedBox(
-                            width: 150,
-                            height: 36,
-                            child: TextButton(
-                              key: ValueKey<String>('combat-group-show-all-$group'),
-                              onPressed: () => _setHiddenForGroup(
-                                entries,
-                                hidden: false,
-                              ),
-                              child: const Text('Alle einblenden'),
+                          TextButton(
+                            key: ValueKey<String>('combat-group-show-all-$group'),
+                            onPressed: () => _setHiddenForGroup(
+                              entries,
+                              hidden: false,
                             ),
+                            child: const Text('Alle einblenden'),
                           ),
                           const SizedBox(width: 6),
-                          SizedBox(
-                            width: 150,
-                            height: 36,
-                            child: TextButton(
-                              key: ValueKey<String>('combat-group-hide-all-$group'),
-                              onPressed: () =>
-                                  _setHiddenForGroup(entries, hidden: true),
-                              child: const Text('Alle ausblenden'),
-                            ),
+                          TextButton(
+                            key: ValueKey<String>('combat-group-hide-all-$group'),
+                            onPressed: () =>
+                                _setHiddenForGroup(entries, hidden: true),
+                            child: const Text('Alle ausblenden'),
                           ),
                         ],
                       ),

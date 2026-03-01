@@ -452,34 +452,26 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                                   scrollDirection: Axis.horizontal,
                                   child: Row(
                                     children: [
-                                      SizedBox(
-                                        width: 150,
-                                        height: 36,
-                                        child: TextButton(
-                                          key: ValueKey<String>(
-                                            'talents-group-show-all-$group',
-                                          ),
-                                          onPressed: () => _setHiddenForGroup(
-                                            talents,
-                                            hidden: false,
-                                          ),
-                                          child: const Text('Alle einblenden'),
+                                      TextButton(
+                                        key: ValueKey<String>(
+                                          'talents-group-show-all-$group',
                                         ),
+                                        onPressed: () => _setHiddenForGroup(
+                                          talents,
+                                          hidden: false,
+                                        ),
+                                        child: const Text('Alle einblenden'),
                                       ),
                                       const SizedBox(width: 6),
-                                      SizedBox(
-                                        width: 150,
-                                        height: 36,
-                                        child: TextButton(
-                                          key: ValueKey<String>(
-                                            'talents-group-hide-all-$group',
-                                          ),
-                                          onPressed: () => _setHiddenForGroup(
-                                            talents,
-                                            hidden: true,
-                                          ),
-                                          child: const Text('Alle ausblenden'),
+                                      TextButton(
+                                        key: ValueKey<String>(
+                                          'talents-group-hide-all-$group',
                                         ),
+                                        onPressed: () => _setHiddenForGroup(
+                                          talents,
+                                          hidden: true,
+                                        ),
+                                        child: const Text('Alle ausblenden'),
                                       ),
                                     ],
                                   ),

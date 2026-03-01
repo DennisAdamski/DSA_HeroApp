@@ -20,10 +20,6 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                   : () {
                       _startEdit();
                     },
-              style: FilledButton.styleFrom(
-                fixedSize: const Size(250, 40),
-                alignment: Alignment.center,
-              ),
               icon: const Icon(Icons.edit),
               label: const Text('Bearbeiten'),
             ),
@@ -34,10 +30,6 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                 heroId: heroId,
                 combatBaseBe: combatBaseBe,
               ),
-              style: OutlinedButton.styleFrom(
-                fixedSize: const Size(250, 40),
-                alignment: Alignment.center,
-              ),
               icon: const Icon(Icons.shield_outlined),
               label: Text('BE konfigurieren ($activeTalentBe)'),
             ),
@@ -45,10 +37,6 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
             FilledButton.icon(
               key: const ValueKey<String>('talents-visibility-mode-toggle'),
               onPressed: () => _setVisibilityMode(!_visibilityMode),
-              style: FilledButton.styleFrom(
-                fixedSize: const Size(250, 40),
-                alignment: Alignment.center,
-              ),
               icon: Icon(
                 _visibilityMode
                     ? Icons.visibility_off_outlined
@@ -72,10 +60,6 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
       child: FilledButton.icon(
         key: const ValueKey<String>('talents-visibility-mode-toggle'),
         onPressed: () => _setVisibilityMode(!_visibilityMode),
-        style: FilledButton.styleFrom(
-          fixedSize: const Size(250, 40),
-          alignment: Alignment.center,
-        ),
         icon: Icon(
           _visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
         ),
