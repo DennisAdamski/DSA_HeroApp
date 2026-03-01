@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_be_rules.dart';
@@ -18,24 +17,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_con
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 enum _TalentTabScope { nonCombat, combat }
-
-class _CombatValidationIssue {
-  const _CombatValidationIssue({required this.talentId, required this.message});
-
-  final String talentId;
-  final String message;
-}
-
-bool isCombatTalent(TalentDef talent) {
-  if (talent.group.trim().toLowerCase() == 'kampftalent') {
-    return true;
-  }
-  if (talent.weaponCategory.trim().isNotEmpty) {
-    return true;
-  }
-  final type = talent.type.trim().toLowerCase();
-  return type == 'nahkampf' || type == 'fernkampf';
-}
 
 class HeroTalentsTab extends _HeroTalentTableTab {
   const HeroTalentsTab({
@@ -137,18 +118,12 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   }
 
   void _syncDraftFromHero(HeroSheet hero, {bool force = false}) {
-    final signature = jsonEncode({
-      'talents': hero.talents.map(
-        (key, value) => MapEntry(key, value.toJson()),
-      ),
-      'hiddenTalentIds': hero.hiddenTalentIds,
-    });
-    if (!_editController.shouldSync(signature, force: force)) {
+    if (!_editController.shouldSync(hero, force: force)) {
       return;
     }
     _resetCellControllers();
     _draftTalents = Map<String, HeroTalentEntry>.from(hero.talents);
-    _draftHiddenTalentIds = _normalizedHiddenTalentIds(hero.hiddenTalentIds);
+    _draftHiddenTalentIds = normalizeHiddenTalentIds(hero.hiddenTalentIds);
     _invalidCombatTalentIds = <String>{};
   }
 
@@ -193,7 +168,11 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     }
     if (widget.scope == _TalentTabScope.combat) {
       final catalog = await ref.read(rulesCatalogProvider.future);
-      final issues = _validateCombatTalentDistribution(catalog.talents);
+      final issues = validateCombatTalentDistribution(
+        talents: catalog.talents,
+        talentEntries: _draftTalents,
+        filter: _matchesScope,
+      );
       if (issues.isNotEmpty) {
         if (mounted) {
           setState(() {
@@ -321,20 +300,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     });
   }
 
-  Set<String> _normalizedHiddenTalentIds(Iterable<String> hiddenTalentIds) {
-    final normalized = <String>{};
-    for (final id in hiddenTalentIds) {
-      final trimmed = id.trim();
-      if (trimmed.isEmpty) {
-        continue;
-      }
-      normalized.add(trimmed);
-    }
-    return normalized;
-  }
-
   bool _matchesScope(TalentDef talent) {
-    final combat = isCombatTalent(talent);
+    final combat = isCombatTalentDef(talent);
     return widget.scope == _TalentTabScope.combat ? combat : !combat;
   }
 
@@ -425,79 +392,6 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       normalized.add(trimmed);
     }
     return List<String>.unmodifiable(normalized);
-  }
-
-  List<_CombatValidationIssue> _validateCombatTalentDistribution(
-    List<TalentDef> talents,
-  ) {
-    final issues = <_CombatValidationIssue>[];
-    final combatTalents = talents.where(_matchesScope);
-    for (final talent in combatTalents) {
-      final entry = _entryForTalent(talent.id);
-      final taw = entry.talentValue;
-      final at = entry.atValue;
-      final pa = entry.paValue;
-      final type = talent.type.trim().toLowerCase();
-
-      if (taw < 0 || at < 0 || pa < 0) {
-        issues.add(
-          _CombatValidationIssue(
-            talentId: talent.id,
-            message:
-                'Ungueltige Verteilung bei ${talent.name}: TaW, AT und PA muessen >= 0 sein.',
-          ),
-        );
-        continue;
-      }
-
-      if (taw == 0) {
-        if (at != 0 || pa != 0) {
-          issues.add(
-            _CombatValidationIssue(
-              talentId: talent.id,
-              message:
-                  'Ungueltige Verteilung bei ${talent.name}: Bei TaW 0 muessen AT und PA ebenfalls 0 sein.',
-            ),
-          );
-        }
-        continue;
-      }
-
-      if (type == 'nahkampf') {
-        if (at + pa != taw) {
-          issues.add(
-            _CombatValidationIssue(
-              talentId: talent.id,
-              message:
-                  'Ungueltige Verteilung bei ${talent.name}: Bei Nahkampf muss AT + PA = TaW gelten.',
-            ),
-          );
-        }
-        continue;
-      }
-
-      if (type == 'fernkampf') {
-        if (at != taw || pa != 0) {
-          issues.add(
-            _CombatValidationIssue(
-              talentId: talent.id,
-              message:
-                  'Ungueltige Verteilung bei ${talent.name}: Bei Fernkampf muss AT = TaW und PA = 0 sein.',
-            ),
-          );
-        }
-        continue;
-      }
-
-      issues.add(
-        _CombatValidationIssue(
-          talentId: talent.id,
-          message:
-              'Ungueltiger Talenttyp bei ${talent.name}: "${talent.type}" ist weder Nahkampf noch Fernkampf.',
-        ),
-      );
-    }
-    return issues;
   }
 
   @override

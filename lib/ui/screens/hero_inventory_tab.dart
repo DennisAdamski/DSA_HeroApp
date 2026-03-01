@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -104,8 +102,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
       'row_${rowIndex}_$columnKey';
 
   void _syncControllers(HeroSheet hero, {bool force = false}) {
-    final signature = jsonEncode(hero.toJson());
-    if (!_editController.shouldSync(signature, force: force)) {
+    if (!_editController.shouldSync(hero, force: force)) {
       return;
     }
 

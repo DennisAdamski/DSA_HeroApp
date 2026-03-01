@@ -1,16 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
-import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
-import '../rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
+import 'package:dsa_heldenverwaltung/state/hero_index_snapshot.dart';
 
 /// Repository-Abstraktion (wird beim App-Start ueberschrieben).
 final heroRepositoryProvider = Provider<HeroRepository>((ref) {
@@ -31,14 +36,20 @@ final heroTransferFileGatewayProvider = Provider<HeroTransferFileGateway>((
   return createHeroTransferFileGateway();
 });
 
-final _heroesRevisionProvider = StateProvider<int>((ref) => 0);
 final selectedHeroIdProvider = StateProvider<String?>((ref) => null);
 
-/// Reaktive Heldenliste aus dem Repository.
-final heroListProvider = FutureProvider<List<HeroSheet>>((ref) async {
-  ref.watch(_heroesRevisionProvider);
+/// Reaktiver, stream-basierter Heldenindex fuer O(1)-Lookup nach ID.
+final heroIndexProvider = StreamProvider<HeroIndexSnapshot>((ref) {
   final repo = ref.watch(heroRepositoryProvider);
-  return repo.listHeroes();
+  return repo.watchHeroIndex().map(HeroIndexSnapshot.fromMap);
+});
+
+/// Reaktive Heldenliste aus dem sortierten Index.
+final heroListProvider = StreamProvider<List<HeroSheet>>((ref) {
+  final repo = ref.watch(heroRepositoryProvider);
+  return repo.watchHeroIndex().map(
+    (index) => HeroIndexSnapshot.fromMap(index).heroes,
+  );
 });
 
 /// Sucht einen Helden in einer bereits geladenen Liste ueber seine ID.
@@ -53,66 +64,126 @@ HeroSheet? findHeroById(List<HeroSheet> heroes, String heroId) {
 
 /// Schneller Zugriff auf den aktuell geladenen Helden je ID.
 final heroByIdProvider = Provider.family<HeroSheet?, String>((ref, heroId) {
+  final snapshot = ref.watch(heroIndexProvider).valueOrNull;
+  if (snapshot != null) {
+    return snapshot.byId[heroId];
+  }
   final heroes = ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
   return findHeroById(heroes, heroId);
 });
 
-/// Asynchrone Variante von `heroByIdProvider`.
+/// Asynchrone Variante fuer direkten Repository-Zugriff je ID.
 final heroByIdFutureProvider = FutureProvider.family<HeroSheet?, String>((
   ref,
   heroId,
 ) async {
-  final heroes = await ref.watch(heroListProvider.future);
-  return findHeroById(heroes, heroId);
+  final repo = ref.watch(heroRepositoryProvider);
+  return repo.loadHeroById(heroId);
 });
 
 /// Ausgewaehlter Held fuer die Startansicht.
 final selectedHeroProvider = Provider<HeroSheet?>((ref) {
-  final heroes = ref.watch(heroListProvider).valueOrNull ?? const <HeroSheet>[];
+  final snapshot = ref.watch(heroIndexProvider).valueOrNull;
+  if (snapshot == null || snapshot.sortedIds.isEmpty) {
+    return null;
+  }
   final selectedId = ref.watch(selectedHeroIdProvider);
   if (selectedId == null) {
-    return heroes.isEmpty ? null : heroes.first;
+    return snapshot.byId[snapshot.sortedIds.first];
   }
-  return findHeroById(heroes, selectedId) ?? (heroes.isEmpty ? null : heroes.first);
+  return snapshot.byId[selectedId] ?? snapshot.byId[snapshot.sortedIds.first];
 });
 
 /// Laufzeitzustand (Ressourcen, temp. Modifikatoren) je Held.
-final heroStateProvider = FutureProvider.family<HeroState, String>((
+final heroStateProvider = StreamProvider.family<HeroState, String>((
   ref,
   heroId,
-) async {
+) {
   final repo = ref.watch(heroRepositoryProvider);
-  return (await repo.loadHeroState(heroId)) ?? const HeroState.empty();
+  return repo.watchHeroState(heroId);
 });
+
+/// Zentraler Compute-Snapshot fuer alle abgeleiteten Werte.
+final heroComputedProvider =
+    Provider.family<AsyncValue<HeroComputedSnapshot>, String>((ref, heroId) {
+      final hero = ref.watch(heroByIdProvider(heroId));
+      if (hero == null) {
+        return AsyncValue<HeroComputedSnapshot>.error(
+          StateError('Held mit ID "$heroId" wurde nicht gefunden.'),
+          StackTrace.current,
+        );
+      }
+
+      final stateAsync = ref.watch(heroStateProvider(heroId));
+      if (stateAsync.hasError) {
+        return AsyncValue<HeroComputedSnapshot>.error(
+          stateAsync.error!,
+          stateAsync.stackTrace ?? StackTrace.current,
+        );
+      }
+
+      final state = stateAsync.valueOrNull;
+      if (state == null) {
+        return const AsyncValue<HeroComputedSnapshot>.loading();
+      }
+      final catalogTalents =
+          ref.watch(rulesCatalogProvider).valueOrNull?.talents ??
+          const <TalentDef>[];
+
+      final parsed = parseModifierTextsForHero(hero);
+      final effective = applyAttributeModifiers(
+        hero.attributes,
+        parsed.attributeMods + state.tempAttributeMods,
+      );
+      final derived = computeDerivedStatsFromInputs(
+        sheet: hero,
+        state: state,
+        parsedModifiers: parsed,
+        effectiveAttributes: effective,
+      );
+      final combat = computeCombatPreviewStats(
+        hero,
+        state,
+        catalogTalents: catalogTalents,
+        parsedModifiers: parsed,
+        effectiveAttributes: effective,
+        derivedStats: derived,
+      );
+
+      return AsyncValue<HeroComputedSnapshot>.data(
+        HeroComputedSnapshot(
+          hero: hero,
+          state: state,
+          modifierParse: parsed,
+          effectiveAttributes: effective,
+          derivedStats: derived,
+          combatPreviewStats: combat,
+        ),
+      );
+    });
 
 /// Effektive Eigenschaften inklusive Text- und Zustand-Modifikatoren.
-final effectiveAttributesProvider = FutureProvider.family<Attributes, String>((
-  ref,
-  heroId,
-) async {
-  final hero = await ref.watch(heroByIdFutureProvider(heroId).future);
-  if (hero == null) {
-    throw StateError('Held mit ID "$heroId" wurde nicht gefunden.');
-  }
-  final state = await ref.watch(heroStateProvider(heroId).future);
-  return computeEffectiveAttributes(
-    hero,
-    tempAttributeMods: state.tempAttributeMods,
-  );
-});
+final effectiveAttributesProvider =
+    Provider.family<AsyncValue<Attributes>, String>((ref, heroId) {
+      final computedAsync = ref.watch(heroComputedProvider(heroId));
+      return computedAsync.whenData((snapshot) => snapshot.effectiveAttributes);
+    });
 
 /// Abgeleitete Werte je Held, berechnet aus Sheet + State.
-final derivedStatsProvider = FutureProvider.family<DerivedStats, String>((
+final derivedStatsProvider = Provider.family<AsyncValue<DerivedStats>, String>((
   ref,
   heroId,
-) async {
-  final hero = await ref.watch(heroByIdFutureProvider(heroId).future);
-  if (hero == null) {
-    throw StateError('Held mit ID "$heroId" wurde nicht gefunden.');
-  }
-  final state = await ref.watch(heroStateProvider(heroId).future);
-  return computeDerivedStats(hero, state);
+) {
+  final computedAsync = ref.watch(heroComputedProvider(heroId));
+  return computedAsync.whenData((snapshot) => snapshot.derivedStats);
 });
+
+/// Kampfvorschau je Held auf Basis des zentralen Compute-Snapshots.
+final combatPreviewProvider =
+    Provider.family<AsyncValue<CombatPreviewStats>, String>((ref, heroId) {
+      final computedAsync = ref.watch(heroComputedProvider(heroId));
+      return computedAsync.whenData((snapshot) => snapshot.combatPreviewStats);
+    });
 
 final heroActionsProvider = Provider<HeroActions>((ref) => HeroActions(ref));
 
@@ -154,7 +225,6 @@ class HeroActions {
       ),
     );
     _ref.read(selectedHeroIdProvider.notifier).state = id;
-    _invalidateHeroes();
     return id;
   }
 
@@ -179,14 +249,11 @@ class HeroActions {
     );
 
     await repo.saveHero(normalizedHero);
-    _invalidateHeroes();
   }
 
   Future<void> saveHeroState(String heroId, HeroState state) async {
     final repo = _ref.read(heroRepositoryProvider);
     await repo.saveHeroState(heroId, state);
-    _ref.invalidate(heroStateProvider(heroId));
-    _ref.invalidate(derivedStatsProvider(heroId));
   }
 
   Future<void> deleteHero(String heroId) async {
@@ -196,7 +263,6 @@ class HeroActions {
     if (selected == heroId) {
       _ref.read(selectedHeroIdProvider.notifier).state = null;
     }
-    _invalidateHeroes();
   }
 
   Future<String> buildExportJson(String heroId) async {
@@ -238,17 +304,10 @@ class HeroActions {
 
   Future<HeroSheet> _loadHeroById(String heroId) async {
     final repo = _ref.read(heroRepositoryProvider);
-    final heroes = await repo.listHeroes();
-    for (final hero in heroes) {
-      if (hero.id == heroId) {
-        return hero;
-      }
+    final hero = await repo.loadHeroById(heroId);
+    if (hero != null) {
+      return hero;
     }
     throw StateError('Held mit ID "$heroId" wurde nicht gefunden.');
-  }
-
-  void _invalidateHeroes() {
-    _ref.read(_heroesRevisionProvider.notifier).state++;
-    _ref.invalidate(heroListProvider);
   }
 }

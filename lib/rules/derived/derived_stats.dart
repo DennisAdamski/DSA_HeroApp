@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 
@@ -42,13 +43,26 @@ class DerivedStats {
 /// 4. Einzelformeln aus `attributes_rules.dart` auswerten
 DerivedStats computeDerivedStats(HeroSheet sheet, HeroState state) {
   final parsed = parseModifierTextsForHero(sheet);
-  final effectiveSheet = sheet.copyWith(
-    attributes: computeEffectiveAttributes(
-      sheet,
-      tempAttributeMods: state.tempAttributeMods,
-    ),
+  final effectiveAttributes = applyAttributeModifiers(
+    sheet.attributes,
+    parsed.attributeMods + state.tempAttributeMods,
   );
-  final mods = sheet.persistentMods + parsed.statMods + state.tempMods;
+  return computeDerivedStatsFromInputs(
+    sheet: sheet,
+    state: state,
+    parsedModifiers: parsed,
+    effectiveAttributes: effectiveAttributes,
+  );
+}
+
+DerivedStats computeDerivedStatsFromInputs({
+  required HeroSheet sheet,
+  required HeroState state,
+  required ModifierParseResult parsedModifiers,
+  required Attributes effectiveAttributes,
+}) {
+  final effectiveSheet = sheet.copyWith(attributes: effectiveAttributes);
+  final mods = sheet.persistentMods + parsedModifiers.statMods + state.tempMods;
 
   return DerivedStats(
     maxLep: computeMaxLep(effectiveSheet, mods),

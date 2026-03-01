@@ -20,15 +20,36 @@ class ModifierParseResult {
   final List<String> unknownFragments;
 }
 
+final Map<String, ModifierParseResult> _modifierParseCache =
+    <String, ModifierParseResult>{};
+const int _modifierParseCacheMaxEntries = 512;
+
 /// Komfortfunktion: parst alle relevanten Modifikatorfelder eines Helden.
 ModifierParseResult parseModifierTextsForHero(HeroSheet hero) {
-  return parseModifierTexts(
+  final key = _buildModifierParseCacheKey(
     rasseModText: hero.rasseModText,
     kulturModText: hero.kulturModText,
     professionModText: hero.professionModText,
     vorteileText: hero.vorteileText,
     nachteileText: hero.nachteileText,
   );
+  final cached = _modifierParseCache[key];
+  if (cached != null) {
+    return cached;
+  }
+
+  final parsed = parseModifierTexts(
+    rasseModText: hero.rasseModText,
+    kulturModText: hero.kulturModText,
+    professionModText: hero.professionModText,
+    vorteileText: hero.vorteileText,
+    nachteileText: hero.nachteileText,
+  );
+  if (_modifierParseCache.length >= _modifierParseCacheMaxEntries) {
+    _modifierParseCache.remove(_modifierParseCache.keys.first);
+  }
+  _modifierParseCache[key] = parsed;
+  return parsed;
 }
 
 /// Berechnet effektive Attribute inklusive Textmodifikatoren.
@@ -44,10 +65,7 @@ Attributes computeEffectiveAttributes(
 }
 
 /// Addiert die Attributmodifikatoren auf den Basiswertesatz.
-Attributes applyAttributeModifiers(
-  Attributes base,
-  AttributeModifiers mods,
-) {
+Attributes applyAttributeModifiers(Attributes base, AttributeModifiers mods) {
   return base.copyWith(
     mu: base.mu + mods.mu,
     kl: base.kl + mods.kl,
@@ -125,8 +143,24 @@ ModifierParseResult parseModifierTexts({
   return ModifierParseResult(
     attributeMods: attrMods,
     statMods: statMods,
-    unknownFragments: unknown,
+    unknownFragments: List<String>.unmodifiable(unknown),
   );
+}
+
+String _buildModifierParseCacheKey({
+  required String rasseModText,
+  required String kulturModText,
+  required String professionModText,
+  required String vorteileText,
+  required String nachteileText,
+}) {
+  return [
+    rasseModText,
+    kulturModText,
+    professionModText,
+    vorteileText,
+    nachteileText,
+  ].join('\u0001');
 }
 
 String _normalizeCode(String input) {

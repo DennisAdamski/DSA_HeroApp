@@ -3,15 +3,15 @@
 /// Die Klasse ist absichtlich UI-neutral und enthaelt nur den Zustand:
 /// - `isEditing`: Tab befindet sich im Bearbeitungsmodus.
 /// - `isDirty`: Seit Edit-Start wurden ungespeicherte Aenderungen gemacht.
-/// - `lastSyncedSignature`: Fingerprint des zuletzt synchronisierten Modells.
+/// - `lastSyncedToken`: Fingerprint des zuletzt synchronisierten Modells.
 class WorkspaceTabEditController {
   WorkspaceTabEditController({
     required void Function(bool isDirty) onDirtyChanged,
     required void Function(bool isEditing) onEditingChanged,
     required void Function() requestRebuild,
-  })  : _onDirtyChanged = onDirtyChanged,
-        _onEditingChanged = onEditingChanged,
-        _requestRebuild = requestRebuild;
+  }) : _onDirtyChanged = onDirtyChanged,
+       _onEditingChanged = onEditingChanged,
+       _requestRebuild = requestRebuild;
 
   final void Function(bool isDirty) _onDirtyChanged;
   final void Function(bool isEditing) _onEditingChanged;
@@ -19,7 +19,7 @@ class WorkspaceTabEditController {
 
   bool _isDirty = false;
   bool _isEditing = false;
-  String _lastSyncedSignature = '';
+  Object? _lastSyncedToken;
 
   bool get isDirty => _isDirty;
   bool get isEditing => _isEditing;
@@ -45,19 +45,19 @@ class WorkspaceTabEditController {
     }
   }
 
-  bool shouldSync(String signature, {bool force = false}) {
+  bool shouldSync(Object token, {bool force = false}) {
     if (_isEditing && !force) {
       return false;
     }
-    if (!force && signature == _lastSyncedSignature) {
+    if (!force && token == _lastSyncedToken) {
       return false;
     }
-    _lastSyncedSignature = signature;
+    _lastSyncedToken = token;
     return true;
   }
 
   void clearSyncSignature() {
-    _lastSyncedSignature = '';
+    _lastSyncedToken = null;
   }
 
   void emitCurrentState() {

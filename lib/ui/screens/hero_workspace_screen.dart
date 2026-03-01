@@ -110,7 +110,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       return true;
     }
 
-    await Future<void>.delayed(const Duration(milliseconds: 150));
     if (!mounted) {
       return false;
     }

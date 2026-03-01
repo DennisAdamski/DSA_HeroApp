@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -65,16 +66,27 @@ CombatPreviewStats computeCombatPreviewStats(
   CombatConfig? overrideConfig,
   Map<String, HeroTalentEntry>? overrideTalents,
   List<TalentDef> catalogTalents = const <TalentDef>[],
+  ModifierParseResult? parsedModifiers,
+  Attributes? effectiveAttributes,
+  DerivedStats? derivedStats,
 }) {
-  final parsed = parseModifierTextsForHero(sheet);
-  final effectiveSheet = sheet.copyWith(
-    attributes: computeEffectiveAttributes(
-      sheet,
-      tempAttributeMods: state.tempAttributeMods,
-    ),
-  );
+  final parsed = parsedModifiers ?? parseModifierTextsForHero(sheet);
+  final effective =
+      effectiveAttributes ??
+      applyAttributeModifiers(
+        sheet.attributes,
+        parsed.attributeMods + state.tempAttributeMods,
+      );
+  final effectiveSheet = sheet.copyWith(attributes: effective);
   final mods = sheet.persistentMods + parsed.statMods + state.tempMods;
-  final derived = computeDerivedStats(sheet, state);
+  final derived =
+      derivedStats ??
+      computeDerivedStatsFromInputs(
+        sheet: sheet,
+        state: state,
+        parsedModifiers: parsed,
+        effectiveAttributes: effective,
+      );
 
   final config = overrideConfig ?? sheet.combatConfig;
   final talents = overrideTalents ?? sheet.talents;
