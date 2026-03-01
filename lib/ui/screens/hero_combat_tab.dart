@@ -27,6 +27,7 @@ class HeroCombatTab extends ConsumerStatefulWidget {
   const HeroCombatTab({
     super.key,
     required this.heroId,
+    this.showInlineCombatTalentsActions = true,
     required this.onDirtyChanged,
     required this.onEditingChanged,
     required this.onRegisterDiscard,
@@ -34,6 +35,7 @@ class HeroCombatTab extends ConsumerStatefulWidget {
   });
 
   final String heroId;
+  final bool showInlineCombatTalentsActions;
   final void Function(bool isDirty) onDirtyChanged;
   final void Function(bool isEditing) onEditingChanged;
   final void Function(WorkspaceAsyncAction discardAction) onRegisterDiscard;
@@ -57,7 +59,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   Set<String> _draftHiddenTalentIds = <String>{};
   Set<String> _invalidCombatTalentIds = <String>{};
   CombatConfig _draftCombatConfig = const CombatConfig();
-  bool _combatTalentsVisibilityMode = false;
 
   @override
   void initState() {
@@ -112,7 +113,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _draftHiddenTalentIds = normalizeHiddenTalentIds(hero.hiddenTalentIds);
     _invalidCombatTalentIds = <String>{};
     _draftCombatConfig = hero.combatConfig;
-    _combatTalentsVisibilityMode = false;
     _seedCombatControllers();
   }
 
@@ -237,6 +237,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     }
     _editController.clearSyncSignature();
     _syncDraftFromHero(hero, force: true);
+    _setCombatTalentsVisibilityMode(false);
     _invalidCombatTalentIds = <String>{};
     _editController.startEdit();
   }
@@ -291,6 +292,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     if (!mounted) {
       return;
     }
+    _setCombatTalentsVisibilityMode(false);
     _invalidCombatTalentIds = <String>{};
     _editController.markSaved();
     ScaffoldMessenger.of(
@@ -308,6 +310,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       _editController.clearSyncSignature();
       _syncDraftFromHero(hero, force: true);
     }
+    _setCombatTalentsVisibilityMode(false);
     _invalidCombatTalentIds = <String>{};
     _editController.markDiscarded();
   }
@@ -358,12 +361,13 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   }
 
   void _setCombatTalentsVisibilityMode(bool enabled) {
-    if (_combatTalentsVisibilityMode == enabled) {
+    final notifier = ref.read(
+      combatTechniquesVisibilityModeProvider(widget.heroId).notifier,
+    );
+    if (notifier.state == enabled) {
       return;
     }
-    setState(() {
-      _combatTalentsVisibilityMode = enabled;
-    });
+    notifier.state = enabled;
   }
 
   void _updateGifted(String talentId, bool value) {

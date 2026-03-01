@@ -6,6 +6,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     required int combatBaseBe,
     required int activeTalentBe,
   }) {
+    final visibilityMode = _readVisibilityMode();
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
       child: Align(
@@ -39,14 +40,14 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
               const SizedBox(width: 8),
               FilledButton.icon(
                 key: const ValueKey<String>('talents-visibility-mode-toggle'),
-                onPressed: () => _setVisibilityMode(!_visibilityMode),
+                onPressed: () => _setVisibilityMode(!visibilityMode),
                 icon: Icon(
-                  _visibilityMode
+                  visibilityMode
                       ? Icons.visibility_off_outlined
                       : Icons.visibility,
                 ),
                 label: Text(
-                  _visibilityMode
+                  visibilityMode
                       ? 'Sichtbarkeit beenden'
                       : 'Sichtbarkeit bearbeiten',
                 ),
@@ -59,18 +60,21 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
   }
 
   Widget _buildCombatVisibilityActionBar() {
+    final visibilityMode = _readVisibilityMode();
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
       child: Align(
         alignment: Alignment.centerRight,
         child: FilledButton.icon(
           key: const ValueKey<String>('talents-visibility-mode-toggle'),
-          onPressed: () => _setVisibilityMode(!_visibilityMode),
+          onPressed: () => _setVisibilityMode(!visibilityMode),
           icon: Icon(
-            _visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
+            visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
           ),
           label: Text(
-            _visibilityMode ? 'Sichtbarkeit beenden' : 'Sichtbarkeit bearbeiten',
+            visibilityMode
+                ? 'Sichtbarkeit beenden'
+                : 'Sichtbarkeit bearbeiten',
           ),
         ),
       ),
@@ -83,7 +87,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
   }) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => _TalentBeConfigScreen(
+        builder: (context) => TalentBeConfigScreen(
           heroId: heroId,
           combatBaseBe: combatBaseBe,
         ),
@@ -116,8 +120,9 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
   }
 }
 
-class _TalentBeConfigScreen extends ConsumerStatefulWidget {
-  const _TalentBeConfigScreen({
+class TalentBeConfigScreen extends ConsumerStatefulWidget {
+  const TalentBeConfigScreen({
+    super.key,
     required this.heroId,
     required this.combatBaseBe,
   });
@@ -126,11 +131,11 @@ class _TalentBeConfigScreen extends ConsumerStatefulWidget {
   final int combatBaseBe;
 
   @override
-  ConsumerState<_TalentBeConfigScreen> createState() =>
+  ConsumerState<TalentBeConfigScreen> createState() =>
       _TalentBeConfigScreenState();
 }
 
-class _TalentBeConfigScreenState extends ConsumerState<_TalentBeConfigScreen> {
+class _TalentBeConfigScreenState extends ConsumerState<TalentBeConfigScreen> {
   late final TextEditingController _overrideController;
 
   @override
