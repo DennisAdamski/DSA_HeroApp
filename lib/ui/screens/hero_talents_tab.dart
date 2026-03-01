@@ -438,36 +438,47 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                         tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                         childrenPadding: EdgeInsets.zero,
                         title: Text(group),
-                        subtitle: Text(
-                          '${visibleTalents.length}/${talents.length} sichtbar',
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${visibleTalents.length}/${talents.length} sichtbar',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            if (_visibilityMode)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: [
+                                      TextButton(
+                                        key: ValueKey<String>(
+                                          'talents-group-show-all-$group',
+                                        ),
+                                        onPressed: () => _setHiddenForGroup(
+                                          talents,
+                                          hidden: false,
+                                        ),
+                                        child: const Text('Alle einblenden'),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      TextButton(
+                                        key: ValueKey<String>(
+                                          'talents-group-hide-all-$group',
+                                        ),
+                                        onPressed: () => _setHiddenForGroup(
+                                          talents,
+                                          hidden: true,
+                                        ),
+                                        child: const Text('Alle ausblenden'),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                        trailing: _visibilityMode
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  TextButton(
-                                    key: ValueKey<String>(
-                                      'talents-group-show-all-$group',
-                                    ),
-                                    onPressed: () => _setHiddenForGroup(
-                                      talents,
-                                      hidden: false,
-                                    ),
-                                    child: const Text('Alle einblenden'),
-                                  ),
-                                  TextButton(
-                                    key: ValueKey<String>(
-                                      'talents-group-hide-all-$group',
-                                    ),
-                                    onPressed: () => _setHiddenForGroup(
-                                      talents,
-                                      hidden: true,
-                                    ),
-                                    child: const Text('Alle ausblenden'),
-                                  ),
-                                ],
-                              )
-                            : null,
                         children: [
                           widget.scope == _TalentTabScope.combat
                               ? _buildCombatTalentsTable(

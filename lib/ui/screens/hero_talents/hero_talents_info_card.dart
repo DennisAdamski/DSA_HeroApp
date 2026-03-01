@@ -11,29 +11,36 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            OutlinedButton.icon(
-              key: const ValueKey<String>('talents-be-screen-open'),
-              onPressed: () => _openTalentBeScreen(
-                heroId: heroId,
-                combatBaseBe: combatBaseBe,
+            SizedBox(
+              height: 40,
+              child: OutlinedButton.icon(
+                key: const ValueKey<String>('talents-be-screen-open'),
+                onPressed: () => _openTalentBeScreen(
+                  heroId: heroId,
+                  combatBaseBe: combatBaseBe,
+                ),
+                icon: const Icon(Icons.shield_outlined),
+                label: Text('BE konfigurieren ($activeTalentBe)'),
               ),
-              icon: const Icon(Icons.shield_outlined),
-              label: Text('BE konfigurieren ($activeTalentBe)'),
             ),
             const SizedBox(width: 8),
-            FilledButton.icon(
-              key: const ValueKey<String>('talents-visibility-mode-toggle'),
-              onPressed: () => _setVisibilityMode(!_visibilityMode),
-              icon: Icon(
-                _visibilityMode
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility,
-              ),
-              label: Text(
-                _visibilityMode
-                    ? 'Sichtbarkeit beenden'
-                    : 'Sichtbarkeit bearbeiten',
+            SizedBox(
+              height: 40,
+              child: FilledButton.icon(
+                key: const ValueKey<String>('talents-visibility-mode-toggle'),
+                onPressed: () => _setVisibilityMode(!_visibilityMode),
+                icon: Icon(
+                  _visibilityMode
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility,
+                ),
+                label: Text(
+                  _visibilityMode
+                      ? 'Sichtbarkeit beenden'
+                      : 'Sichtbarkeit bearbeiten',
+                ),
               ),
             ),
           ],
