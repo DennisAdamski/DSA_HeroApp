@@ -13,6 +13,21 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            FilledButton.icon(
+              key: const ValueKey<String>('talents-local-start-edit'),
+              onPressed: _editController.isEditing
+                  ? null
+                  : () {
+                      _startEdit();
+                    },
+              style: FilledButton.styleFrom(
+                fixedSize: const Size(250, 40),
+                alignment: Alignment.center,
+              ),
+              icon: const Icon(Icons.edit),
+              label: const Text('Bearbeiten'),
+            ),
+            const SizedBox(width: 8),
             OutlinedButton.icon(
               key: const ValueKey<String>('talents-be-screen-open'),
               onPressed: () => _openTalentBeScreen(
