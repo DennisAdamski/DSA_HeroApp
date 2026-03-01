@@ -217,6 +217,11 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                         onChanged: (value) {
                           setDialogState(() {
                             selectedWeaponType = value ?? '';
+                            if (isNew &&
+                                nameController.text.trim().isEmpty &&
+                                selectedWeaponType.isNotEmpty) {
+                              nameController.text = selectedWeaponType;
+                            }
                             validationMessage = null;
                           });
                         },
@@ -606,20 +611,15 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     );
   }
 
-  Widget _buildMeleeCalculatorSubTab(
+  Widget _buildWeaponsSubTab(
     List<TalentDef> combatTalents,
     RulesCatalog catalog,
-    CombatPreviewStats preview,
     HeroSheet hero,
     HeroState heroState,
   ) {
-    final isEditing = _editController.isEditing;
     final weaponSlots = _draftCombatConfig.weaponSlots;
     final selectedWeaponIndex = _selectedWeaponIndex();
     final mainWeapon = weaponSlots[selectedWeaponIndex];
-    final offhand = _draftCombatConfig.offhand;
-    final armor = _draftCombatConfig.armor;
-    final manual = _draftCombatConfig.manualMods;
     final sortedTalents = _sortedMeleeTalents(combatTalents);
     final selectedTalent = _findTalentById(sortedTalents, mainWeapon.talentId);
     final weaponOverviewRows = _weaponOverviewRows(
@@ -647,7 +647,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     Expanded(
                       child: DropdownButtonFormField<int>(
                         key: ValueKey<String>(
-                          'combat-main-weapon-select-$selectedWeaponIndex-${weaponSlots.length}',
+                          'combat-weapons-main-weapon-select-$selectedWeaponIndex-${weaponSlots.length}',
                         ),
                         initialValue: selectedWeaponIndex,
                         decoration: const InputDecoration(
@@ -739,6 +739,67 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     Chip(label: Text('TP-Wert: ${mainWeapon.tpFlat}')),
                     Chip(label: Text('BF: ${mainWeapon.breakFactor}')),
                   ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        _buildWeaponOverviewCard(weaponOverviewRows),
+      ],
+    );
+  }
+
+  Widget _buildMeleeCalculatorSubTab(
+    List<TalentDef> combatTalents,
+    RulesCatalog catalog,
+    CombatPreviewStats preview,
+  ) {
+    final isEditing = _editController.isEditing;
+    final weaponSlots = _draftCombatConfig.weaponSlots;
+    final selectedWeaponIndex = _selectedWeaponIndex();
+    final offhand = _draftCombatConfig.offhand;
+    final armor = _draftCombatConfig.armor;
+    final manual = _draftCombatConfig.manualMods;
+    final sortedTalents = _sortedMeleeTalents(combatTalents);
+
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: [
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Waffe', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<int>(
+                  key: ValueKey<String>(
+                    'combat-main-weapon-select-$selectedWeaponIndex-${weaponSlots.length}',
+                  ),
+                  initialValue: selectedWeaponIndex,
+                  decoration: const InputDecoration(
+                    labelText: 'Aktive Waffe',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    for (var i = 0; i < weaponSlots.length; i++)
+                      DropdownMenuItem<int>(
+                        value: i,
+                        child: Text(
+                          weaponSlots[i].name.trim().isEmpty
+                              ? 'Waffe ${i + 1}'
+                              : weaponSlots[i].name,
+                        ),
+                      ),
+                  ],
+                  onChanged: (value) {
+                    _selectWeaponIndex(
+                      value ?? 0,
+                      catalog: catalog,
+                      meleeTalents: sortedTalents,
+                    );
+                  },
                 ),
               ],
             ),
@@ -994,68 +1055,6 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Waffenuebersicht',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                if (weaponOverviewRows.isEmpty)
-                  const Text('Keine Waffen mit Daten hinterlegt.')
-                else
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(minWidth: 3300),
-                      child: Table(
-                        key: const ValueKey<String>(
-                          'combat-weapons-overview-table',
-                        ),
-                        defaultVerticalAlignment:
-                            TableCellVerticalAlignment.middle,
-                        columnWidths: const <int, TableColumnWidth>{
-                          0: FixedColumnWidth(130),
-                          1: FixedColumnWidth(120),
-                          2: FixedColumnWidth(120),
-                          3: FixedColumnWidth(55),
-                          4: FixedColumnWidth(70),
-                          5: FixedColumnWidth(95),
-                          6: FixedColumnWidth(70),
-                          7: FixedColumnWidth(70),
-                          8: FixedColumnWidth(70),
-                          9: FixedColumnWidth(60),
-                          10: FixedColumnWidth(70),
-                          11: FixedColumnWidth(70),
-                          12: FixedColumnWidth(60),
-                          13: FixedColumnWidth(65),
-                          14: FixedColumnWidth(70),
-                          15: FixedColumnWidth(90),
-                          16: FixedColumnWidth(70),
-                          17: FixedColumnWidth(95),
-                          18: FixedColumnWidth(70),
-                          19: FixedColumnWidth(115),
-                          20: FixedColumnWidth(55),
-                          21: FixedColumnWidth(55),
-                          22: FixedColumnWidth(90),
-                          23: FixedColumnWidth(55),
-                          24: FixedColumnWidth(50),
-                        },
-                        children: [
-                          _weaponOverviewHeaderRow(),
-                          ...weaponOverviewRows,
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
                   'Manuelle Modifikatoren',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
@@ -1158,6 +1157,36 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildWeaponOverviewCard(List<TableRow> weaponOverviewRows) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Waffenuebersicht',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            if (weaponOverviewRows.isEmpty)
+              const Text('Keine Waffen mit Daten hinterlegt.')
+            else
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Table(
+                  key: const ValueKey<String>('combat-weapons-overview-table'),
+                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                  defaultColumnWidth: const IntrinsicColumnWidth(),
+                  children: [_weaponOverviewHeaderRow(), ...weaponOverviewRows],
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1290,7 +1319,10 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         : Theme.of(context).textTheme.bodyMedium;
     return Padding(
       padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
-      child: Text(text, style: style),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 36),
+        child: Text(text, style: style),
+      ),
     );
   }
 }
