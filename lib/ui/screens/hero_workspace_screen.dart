@@ -226,7 +226,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   Widget _buildGlobalActionHeader() {
     final activeTabIndex = _tabRegistry.activeTabIndex;
     final isEditing = _tabRegistry.isEditing(activeTabIndex);
-    if (activeTabIndex == _talentsTabIndex && !isEditing) {
+    if ((activeTabIndex == _talentsTabIndex ||
+            activeTabIndex == _combatTabIndex) &&
+        !isEditing) {
       return const SizedBox.shrink();
     }
     final tabActions = _tabRegistry.editActionsFor(activeTabIndex);
