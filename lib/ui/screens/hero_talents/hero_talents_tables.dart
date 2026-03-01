@@ -5,16 +5,21 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     required List<TalentDef> talents,
     required Attributes effectiveAttributes,
     required int activeBaseBe,
+    required bool showVisibilityControls,
   }) {
     final isEditing = _editController.isEditing;
     final rows = <TableRow>[
-      _buildHeaderRow(isEditing: isEditing),
+      _buildHeaderRow(
+        isEditing: isEditing,
+        showVisibilityControls: showVisibilityControls,
+      ),
       ...talents.map(
         (talent) => _buildTalentRow(
           talent: talent,
           effectiveAttributes: effectiveAttributes,
           isEditing: isEditing,
           activeBaseBe: activeBaseBe,
+          showVisibilityControls: showVisibilityControls,
         ),
       ),
     ];
@@ -24,7 +29,9 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
-          constraints: BoxConstraints(minWidth: isEditing ? 1900 : 1800),
+          constraints: BoxConstraints(
+            minWidth: (isEditing || showVisibilityControls) ? 1870 : 1780,
+          ),
           child: Table(
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             columnWidths: <int, TableColumnWidth>{
@@ -39,8 +46,9 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               8: const FixedColumnWidth(120),
               9: const FixedColumnWidth(70),
               10: const FixedColumnWidth(190),
-              11: const FixedColumnWidth(230),
-              if (isEditing) 12: const FixedColumnWidth(90),
+              if (isEditing) 11: const FixedColumnWidth(95),
+              if (isEditing || showVisibilityControls)
+                (isEditing ? 12 : 11): const FixedColumnWidth(90),
             },
             children: rows,
           ),
@@ -49,12 +57,22 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     );
   }
 
-  Widget _buildCombatTalentsTable({required List<TalentDef> talents}) {
+  Widget _buildCombatTalentsTable({
+    required List<TalentDef> talents,
+    required bool showVisibilityControls,
+  }) {
     final isEditing = _editController.isEditing;
     final rows = <TableRow>[
-      _buildCombatHeaderRow(isEditing: isEditing),
+      _buildCombatHeaderRow(
+        isEditing: isEditing,
+        showVisibilityControls: showVisibilityControls,
+      ),
       ...talents.map(
-        (talent) => _buildCombatTalentRow(talent: talent, isEditing: isEditing),
+        (talent) => _buildCombatTalentRow(
+          talent: talent,
+          isEditing: isEditing,
+          showVisibilityControls: showVisibilityControls,
+        ),
       ),
     ];
 
@@ -63,7 +81,9 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
-          constraints: BoxConstraints(minWidth: isEditing ? 1530 : 1440),
+          constraints: BoxConstraints(
+            minWidth: (isEditing || showVisibilityControls) ? 1660 : 1570,
+          ),
           child: Table(
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             columnWidths: <int, TableColumnWidth>{
@@ -75,8 +95,11 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               5: const FixedColumnWidth(90),
               6: const FixedColumnWidth(90),
               7: const FixedColumnWidth(90),
-              8: const FixedColumnWidth(230),
-              if (isEditing) 9: const FixedColumnWidth(90),
+              8: const FixedColumnWidth(90),
+              if (isEditing) 9: const FixedColumnWidth(95),
+              10: const FixedColumnWidth(230),
+              if (isEditing || showVisibilityControls)
+                (isEditing ? 11 : 10): const FixedColumnWidth(90),
             },
             children: rows,
           ),
@@ -85,7 +108,10 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     );
   }
 
-  TableRow _buildHeaderRow({required bool isEditing}) {
+  TableRow _buildHeaderRow({
+    required bool isEditing,
+    required bool showVisibilityControls,
+  }) {
     final cells = <Widget>[
       _headerCell('Talent-Name'),
       _headerCell('Eigenschaften'),
@@ -98,15 +124,20 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       _headerCell('TaW berechnet'),
       _headerCell('SE'),
       _headerCell('Spezialisierungen'),
-      _headerCell('Sonderfertigkeiten'),
     ];
     if (isEditing) {
+      cells.add(_headerCell('Begabung'));
+    }
+    if (isEditing || showVisibilityControls) {
       cells.add(_headerCell('Sichtbar'));
     }
     return TableRow(children: cells);
   }
 
-  TableRow _buildCombatHeaderRow({required bool isEditing}) {
+  TableRow _buildCombatHeaderRow({
+    required bool isEditing,
+    required bool showVisibilityControls,
+  }) {
     final cells = <Widget>[
       _headerCell('Talent-Name'),
       _headerCell('Waffengattung'),
@@ -116,9 +147,11 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       _headerCell('TaW'),
       _headerCell('AT'),
       _headerCell('PA'),
+      _headerCell('max TaW'),
+      if (isEditing) _headerCell('Begabung'),
       _headerCell('Spezialisierung'),
     ];
-    if (isEditing) {
+    if (isEditing || showVisibilityControls) {
       cells.add(_headerCell('Sichtbar'));
     }
     return TableRow(children: cells);
@@ -129,9 +162,15 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     required Attributes effectiveAttributes,
     required bool isEditing,
     required int activeBaseBe,
+    required bool showVisibilityControls,
   }) {
     final entry = _entryForTalent(talent.id);
     final ebe = computeTalentEbe(baseBe: activeBaseBe, talentBeRule: talent.be);
+    final maxTaw = _calculateMaxTaw(
+      effectiveAttributes: effectiveAttributes,
+      attributeNames: talent.attributes,
+      gifted: entry.gifted,
+    );
     final isHidden = _isHidden(talent.id);
     final nameLabel = isEditing && isHidden
         ? '${talent.name} (ausgeblendet)'
@@ -154,7 +193,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         value: entry.talentValue,
         isEditing: isEditing,
       ),
-      _textCell('-'),
+      _textCell(_formatWholeNumber(maxTaw)),
       _intInputCell(
         talentId: talent.id,
         field: 'modifier',
@@ -177,22 +216,34 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         value: entry.specializations,
         isEditing: isEditing,
       ),
-      _textInputCell(
-        talentId: talent.id,
-        field: 'specialAbilities',
-        value: entry.specialAbilities,
-        isEditing: isEditing,
-      ),
     ];
     if (isEditing) {
-      cells.add(_visibilityCell(talentId: talent.id, isHidden: isHidden));
+      cells.add(
+        _giftedCell(
+          talentId: talent.id,
+          value: entry.gifted,
+          isEditing: isEditing,
+        ),
+      );
+    }
+    if (isEditing || showVisibilityControls) {
+      cells.add(
+        _visibilityCell(
+          talentId: talent.id,
+          isHidden: isHidden,
+          enabled: showVisibilityControls,
+        ),
+      );
     }
 
+    final giftedColor = entry.gifted && isEditing
+        ? Theme.of(context).colorScheme.tertiaryContainer.withValues(alpha: 0.4)
+        : null;
     return TableRow(
       decoration: BoxDecoration(
-        color: isHidden && isEditing
+        color: isHidden && (isEditing || showVisibilityControls)
             ? Theme.of(context).colorScheme.surfaceContainerHighest
-            : null,
+            : giftedColor,
       ),
       children: cells,
     );
@@ -201,10 +252,12 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   TableRow _buildCombatTalentRow({
     required TalentDef talent,
     required bool isEditing,
+    required bool showVisibilityControls,
   }) {
     final entry = _entryForTalent(talent.id);
     final isHidden = _isHidden(talent.id);
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
+    final maxTaw = _calculateMaxTawFromTalent(talent: talent, gifted: entry.gifted);
     final nameLabel = isEditing && isHidden
         ? '${talent.name} (ausgeblendet)'
         : talent.name;
@@ -236,21 +289,38 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         isEditing: isEditing,
         isError: isInvalid,
       ),
+      _textCell(_formatWholeNumber(maxTaw)),
+      if (isEditing)
+        _giftedCell(
+          talentId: talent.id,
+          value: entry.gifted,
+          isEditing: isEditing,
+        ),
       _combatSpecializationCell(
         talent: talent,
         entry: entry,
         isEditing: isEditing,
       ),
     ];
-    if (isEditing) {
-      cells.add(_visibilityCell(talentId: talent.id, isHidden: isHidden));
+    if (isEditing || showVisibilityControls) {
+      cells.add(
+        _visibilityCell(
+          talentId: talent.id,
+          isHidden: isHidden,
+          enabled: showVisibilityControls,
+        ),
+      );
     }
 
     final rowColor = isInvalid
         ? Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.4)
-        : (isHidden && isEditing
+        : (isHidden && (isEditing || showVisibilityControls)
               ? Theme.of(context).colorScheme.surfaceContainerHighest
-              : null);
+              : (entry.gifted && isEditing
+                    ? Theme.of(
+                        context,
+                      ).colorScheme.tertiaryContainer.withValues(alpha: 0.4)
+                    : null));
 
     return TableRow(
       decoration: BoxDecoration(color: rowColor),

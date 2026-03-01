@@ -3,13 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_area_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
@@ -24,6 +28,7 @@ class HeroCombatTab extends ConsumerStatefulWidget {
   const HeroCombatTab({
     super.key,
     required this.heroId,
+    this.showInlineCombatTalentsActions = true,
     required this.onDirtyChanged,
     required this.onEditingChanged,
     required this.onRegisterDiscard,
@@ -31,6 +36,7 @@ class HeroCombatTab extends ConsumerStatefulWidget {
   });
 
   final String heroId;
+  final bool showInlineCombatTalentsActions;
   final void Function(bool isDirty) onDirtyChanged;
   final void Function(bool isEditing) onEditingChanged;
   final void Function(WorkspaceAsyncAction discardAction) onRegisterDiscard;
@@ -232,6 +238,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     }
     _editController.clearSyncSignature();
     _syncDraftFromHero(hero, force: true);
+    _setCombatTalentsVisibilityMode(false);
     _invalidCombatTalentIds = <String>{};
     _editController.startEdit();
   }
@@ -286,6 +293,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     if (!mounted) {
       return;
     }
+    _setCombatTalentsVisibilityMode(false);
     _invalidCombatTalentIds = <String>{};
     _editController.markSaved();
     ScaffoldMessenger.of(
@@ -303,6 +311,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       _editController.clearSyncSignature();
       _syncDraftFromHero(hero, force: true);
     }
+    _setCombatTalentsVisibilityMode(false);
     _invalidCombatTalentIds = <String>{};
     _editController.markDiscarded();
   }
@@ -338,6 +347,33 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     } else {
       _draftHiddenTalentIds.add(talentId);
     }
+    _markFieldChanged();
+  }
+
+  void _setHiddenForGroup(List<TalentDef> talents, {required bool hidden}) {
+    for (final talent in talents) {
+      if (hidden) {
+        _draftHiddenTalentIds.add(talent.id);
+      } else {
+        _draftHiddenTalentIds.remove(talent.id);
+      }
+    }
+    _markFieldChanged();
+  }
+
+  void _setCombatTalentsVisibilityMode(bool enabled) {
+    final notifier = ref.read(
+      combatTechniquesVisibilityModeProvider(widget.heroId).notifier,
+    );
+    if (notifier.state == enabled) {
+      return;
+    }
+    notifier.state = enabled;
+  }
+
+  void _updateGifted(String talentId, bool value) {
+    final current = _entryForTalent(talentId);
+    _draftTalents[talentId] = current.copyWith(gifted: value);
     _markFieldChanged();
   }
 
@@ -407,6 +443,14 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    assert(() {
+      final techniquesMeta = workspaceAreaMetaById(
+        WorkspaceAreaId.combatTechniquesList,
+      );
+      return techniquesMeta.kind == WorkspaceAreaKind.listView &&
+          techniquesMeta.supportsVisibilityMode &&
+          techniquesMeta.supportsGroupVisibility;
+    }());
     UiRebuildObserver.bump('hero_combat_tab');
     final hero = ref.watch(heroByIdProvider(widget.heroId));
     if (hero == null) {
@@ -439,6 +483,10 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                 overrideTalents: _draftTalents,
                 catalogTalents: catalog.talents,
               );
+              final effectiveAttributes = computeEffectiveAttributes(
+                hero,
+                tempAttributeMods: state.tempAttributeMods,
+              );
 
               return Column(
                 children: [
@@ -454,7 +502,10 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                     child: TabBarView(
                       controller: _subTabController,
                       children: [
-                        _buildCombatTalentsSubTab(combatTalents),
+                        _buildCombatTalentsSubTab(
+                          combatTalents,
+                          effectiveAttributes: effectiveAttributes,
+                        ),
                         _buildMeleeCalculatorSubTab(
                           combatTalents,
                           catalog,

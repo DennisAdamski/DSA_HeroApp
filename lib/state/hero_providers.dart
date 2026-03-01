@@ -37,6 +37,17 @@ final heroTransferFileGatewayProvider = Provider<HeroTransferFileGateway>((
 });
 
 final selectedHeroIdProvider = StateProvider<String?>((ref) => null);
+final talentBeOverrideProvider = StateProvider.family<int?, String>(
+  (ref, heroId) => null,
+);
+final talentsVisibilityModeProvider = StateProvider.family<bool, String>(
+  (ref, heroId) => false,
+);
+final combatTalentsVisibilityModeProvider = StateProvider.family<bool, String>(
+  (ref, heroId) => false,
+);
+final combatTechniquesVisibilityModeProvider =
+    StateProvider.family<bool, String>((ref, heroId) => false);
 
 /// Reaktiver, stream-basierter Heldenindex fuer O(1)-Lookup nach ID.
 final heroIndexProvider = StreamProvider<HeroIndexSnapshot>((ref) {

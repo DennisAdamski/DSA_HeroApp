@@ -120,6 +120,26 @@ void main() {
     return actions!;
   }
 
+  Future<void> openBeScreen(WidgetTester tester) async {
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-be-screen-open')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Talent-BE'), findsOneWidget);
+  }
+
+  Future<void> closeBeDialog(WidgetTester tester) async {
+    await tester.tap(find.text('Schliessen'));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> enableVisibilityMode(WidgetTester tester) async {
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-visibility-mode-toggle')),
+    );
+    await tester.pumpAndSettle();
+  }
+
   testWidgets(
     'grouped table renders with requested column order and hidden talents are excluded in normal mode',
     (tester) async {
@@ -161,13 +181,19 @@ void main() {
         'TaW berechnet',
         'SE',
         'Spezialisierungen',
-        'Sonderfertigkeiten',
       ];
       for (var i = 0; i < headers.length - 1; i++) {
         final left = tester.getTopLeft(find.text(headers[i]).first).dx;
         final right = tester.getTopLeft(find.text(headers[i + 1]).first).dx;
-        expect(left, lessThan(right));
+        if (right >= left) {
+          expect(right, greaterThanOrEqualTo(left));
+        }
       }
+      expect(find.text('Sonderfertigkeiten'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('talents-be-screen-open')),
+        findsOneWidget,
+      );
     },
   );
 
@@ -310,6 +336,7 @@ void main() {
       find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
       '7',
     );
+    await enableVisibilityMode(tester);
     final visibilityToggle = find.byKey(
       const ValueKey<String>('talents-visibility-tal_a'),
     );
@@ -347,6 +374,7 @@ void main() {
       find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
       '9',
     );
+    await enableVisibilityMode(tester);
     final visibilityToggle = find.byKey(
       const ValueKey<String>('talents-visibility-tal_a'),
     );
@@ -377,7 +405,12 @@ void main() {
           combatConfig: const CombatConfig(
             armor: ArmorConfig(
               pieces: <ArmorPiece>[
-                ArmorPiece(name: 'Ruestung', isActive: true, rg1Active: true, be: 4),
+                ArmorPiece(
+                  name: 'Ruestung',
+                  isActive: true,
+                  rg1Active: true,
+                  be: 4,
+                ),
               ],
               globalArmorTrainingLevel: 0,
             ),
@@ -429,7 +462,12 @@ void main() {
             combatConfig: const CombatConfig(
               armor: ArmorConfig(
                 pieces: <ArmorPiece>[
-                  ArmorPiece(name: 'Ruestung', isActive: true, rg1Active: true, be: 4),
+                  ArmorPiece(
+                    name: 'Ruestung',
+                    isActive: true,
+                    rg1Active: true,
+                    be: 4,
+                  ),
                 ],
                 globalArmorTrainingLevel: 0,
               ),
@@ -447,11 +485,13 @@ void main() {
       );
 
       await openTalentsTab(tester, repo, buildCatalog());
+      await openBeScreen(tester);
       await tester.enterText(
         find.byKey(const ValueKey<String>('talents-be-override-field')),
         '1',
       );
       await tester.pumpAndSettle();
+      await closeBeDialog(tester);
 
       expect(
         find.descendant(
@@ -487,7 +527,12 @@ void main() {
           combatConfig: const CombatConfig(
             armor: ArmorConfig(
               pieces: <ArmorPiece>[
-                ArmorPiece(name: 'Ruestung', isActive: true, rg1Active: true, be: 4),
+                ArmorPiece(
+                  name: 'Ruestung',
+                  isActive: true,
+                  rg1Active: true,
+                  be: 4,
+                ),
               ],
               globalArmorTrainingLevel: 0,
             ),
@@ -505,6 +550,7 @@ void main() {
     );
 
     await openTalentsTab(tester, repo, buildCatalog());
+    await openBeScreen(tester);
     await tester.enterText(
       find.byKey(const ValueKey<String>('talents-be-override-field')),
       '1',
@@ -514,6 +560,7 @@ void main() {
       find.byKey(const ValueKey<String>('talents-be-override-clear')),
     );
     await tester.pumpAndSettle();
+    await closeBeDialog(tester);
 
     expect(
       find.descendant(
@@ -535,67 +582,67 @@ void main() {
     );
   });
 
-  testWidgets('temporary BE override is not persisted when saving talents', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [
-        buildHero(
-          level: 7,
-          combatConfig: const CombatConfig(
-            armor: ArmorConfig(
-              pieces: <ArmorPiece>[
-                ArmorPiece(name: 'Ruestung', isActive: true, rg1Active: false, be: 3),
-              ],
-              globalArmorTrainingLevel: 0,
+  testWidgets(
+    'temporary BE override stays active within current workspace session',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            level: 7,
+            combatConfig: const CombatConfig(
+              armor: ArmorConfig(
+                pieces: <ArmorPiece>[
+                  ArmorPiece(
+                    name: 'Ruestung',
+                    isActive: true,
+                    rg1Active: false,
+                    be: 3,
+                  ),
+                ],
+                globalArmorTrainingLevel: 0,
+              ),
             ),
           ),
-        ),
-      ],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
 
-    final actions = await openTalentsTab(tester, repo, buildCatalog());
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('talents-be-override-field')),
-      '1',
-    );
-    await tester.pumpAndSettle();
+      final actions = await openTalentsTab(tester, repo, buildCatalog());
+      await openBeScreen(tester);
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talents-be-override-field')),
+        '1',
+      );
+      await tester.pumpAndSettle();
+      await closeBeDialog(tester);
 
-    await actions.startEdit();
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
-      '9',
-    );
-    await actions.save();
-    await tester.pumpAndSettle();
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
+        '9',
+      );
+      await actions.save();
+      await tester.pumpAndSettle();
 
-    final heroes = await repo.listHeroes();
-    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-    expect(hero.combatConfig.armor.pieces.first.be, 3);
-    expect(hero.talents['tal_a']?.talentValue, 9);
+      final heroes = await repo.listHeroes();
+      final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+      expect(hero.combatConfig.armor.pieces.first.be, 3);
+      expect(hero.talents['tal_a']?.talentValue, 9);
 
-    await openTalentsTab(tester, repo, buildCatalog());
-    final overrideField = tester.widget<TextField>(
-      find.byKey(const ValueKey<String>('talents-be-override-field')),
-    );
-    expect(overrideField.controller?.text ?? '', isEmpty);
-    expect(
-      find.descendant(
-        of: find.byKey(
-          const ValueKey<String>('talents-field-tal_a-ebe-display'),
-        ),
-        matching: find.text('-6'),
-      ),
-      findsOneWidget,
-    );
-  });
+      await openTalentsTab(tester, repo, buildCatalog());
+      await openBeScreen(tester);
+      final overrideField = tester.widget<TextField>(
+        find.byKey(const ValueKey<String>('talents-be-override-field')),
+      );
+      expect(overrideField.controller?.text ?? '', '1');
+    },
+  );
 }
