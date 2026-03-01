@@ -139,6 +139,33 @@ void main() {
     expect(find.text('Eigenschaften'), findsNothing);
   });
 
+  testWidgets('hides fully hidden groups until visibility mode is active', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(hiddenTalentIds: const <String>['tal_nah']),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo, buildCatalog());
+
+    expect(find.text('Fernkampf'), findsOneWidget);
+    expect(find.text('Nahkampf'), findsNothing);
+
+    await enableVisibilityMode(tester);
+
+    expect(find.text('Nahkampf'), findsOneWidget);
+  });
+
   testWidgets('blocks save for invalid Nahkampf AT/PA distribution', (
     tester,
   ) async {

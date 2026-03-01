@@ -72,9 +72,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
             visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
           ),
           label: Text(
-            visibilityMode
-                ? 'Sichtbarkeit beenden'
-                : 'Sichtbarkeit bearbeiten',
+            visibilityMode ? 'Sichtbarkeit beenden' : 'Sichtbarkeit bearbeiten',
           ),
         ),
       ),
@@ -85,13 +83,10 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     required String heroId,
     required int combatBaseBe,
   }) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => TalentBeConfigScreen(
-          heroId: heroId,
-          combatBaseBe: combatBaseBe,
-        ),
-      ),
+    await showDialog<void>(
+      context: context,
+      builder: (context) =>
+          TalentBeConfigDialog(heroId: heroId, combatBaseBe: combatBaseBe),
     );
   }
 
@@ -120,8 +115,8 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
   }
 }
 
-class TalentBeConfigScreen extends ConsumerStatefulWidget {
-  const TalentBeConfigScreen({
+class TalentBeConfigDialog extends ConsumerStatefulWidget {
+  const TalentBeConfigDialog({
     super.key,
     required this.heroId,
     required this.combatBaseBe,
@@ -131,11 +126,11 @@ class TalentBeConfigScreen extends ConsumerStatefulWidget {
   final int combatBaseBe;
 
   @override
-  ConsumerState<TalentBeConfigScreen> createState() =>
-      _TalentBeConfigScreenState();
+  ConsumerState<TalentBeConfigDialog> createState() =>
+      _TalentBeConfigDialogState();
 }
 
-class _TalentBeConfigScreenState extends ConsumerState<TalentBeConfigScreen> {
+class _TalentBeConfigDialogState extends ConsumerState<TalentBeConfigDialog> {
   late final TextEditingController _overrideController;
 
   @override
@@ -156,7 +151,8 @@ class _TalentBeConfigScreenState extends ConsumerState<TalentBeConfigScreen> {
   void _updateOverride(String raw) {
     final trimmed = raw.trim();
     final nextValue = trimmed.isEmpty ? null : int.tryParse(trimmed);
-    ref.read(talentBeOverrideProvider(widget.heroId).notifier).state = nextValue;
+    ref.read(talentBeOverrideProvider(widget.heroId).notifier).state =
+        nextValue;
     setState(() {});
   }
 
@@ -170,11 +166,12 @@ class _TalentBeConfigScreenState extends ConsumerState<TalentBeConfigScreen> {
   Widget build(BuildContext context) {
     final overrideValue = ref.watch(talentBeOverrideProvider(widget.heroId));
     final activeTalentBe = overrideValue ?? widget.combatBaseBe;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Talent-BE')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+    return AlertDialog(
+      title: const Text('Talent-BE'),
+      content: SizedBox(
+        width: 480,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -196,7 +193,9 @@ class _TalentBeConfigScreenState extends ConsumerState<TalentBeConfigScreen> {
               onChanged: _updateOverride,
             ),
             const SizedBox(height: 8),
-            Row(
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 OutlinedButton.icon(
                   key: const ValueKey<String>('talents-be-override-clear'),
@@ -204,7 +203,6 @@ class _TalentBeConfigScreenState extends ConsumerState<TalentBeConfigScreen> {
                   icon: const Icon(Icons.clear),
                   label: const Text('Override loeschen'),
                 ),
-                const SizedBox(width: 12),
                 Text(
                   'Aktive BE: $activeTalentBe',
                   key: const ValueKey<String>('talents-be-active-value'),
@@ -214,6 +212,12 @@ class _TalentBeConfigScreenState extends ConsumerState<TalentBeConfigScreen> {
           ],
         ),
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Schliessen'),
+        ),
+      ],
     );
   }
 }
