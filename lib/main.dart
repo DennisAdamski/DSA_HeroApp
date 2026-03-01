@@ -24,12 +24,20 @@ class DsaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseTheme = ThemeData.light(useMaterial3: true);
     return MaterialApp(
       title: 'DSA Heldenverwaltung',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: const Color(0xFF4472C4),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1F4B57)),
+        scaffoldBackgroundColor: const Color(0xFFEFF3F6),
+        textTheme: baseTheme.textTheme.apply(
+          fontFamily: 'Source Serif 4',
+          bodyColor: const Color(0xFF1A252C),
+          displayColor: const Color(0xFF1A252C),
+        ),
+        appBarTheme: const AppBarTheme(centerTitle: false),
       ),
       home: const HeroesHomeScreen(),
     );
