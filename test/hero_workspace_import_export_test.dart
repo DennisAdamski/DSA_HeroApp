@@ -56,7 +56,7 @@ void main() {
   );
 
   testWidgets(
-    'workspace appbar shows export/import actions and export triggers gateway',
+    'home appbar shows export/import actions and export triggers gateway',
     (tester) async {
       final repo = FakeRepository(
         heroes: [baseHero],
@@ -80,8 +80,6 @@ void main() {
           child: const MaterialApp(home: HeroesHomeScreen()),
         ),
       );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Rondra'));
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.upload_file), findsOneWidget);
@@ -133,8 +131,6 @@ void main() {
         child: const MaterialApp(home: HeroesHomeScreen()),
       ),
     );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Rondra'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.download));
@@ -197,8 +193,6 @@ void main() {
         child: const MaterialApp(home: HeroesHomeScreen()),
       ),
     );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Rondra'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.download));

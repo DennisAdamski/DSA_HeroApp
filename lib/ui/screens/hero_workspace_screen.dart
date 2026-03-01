@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -11,7 +10,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_import_export_actions.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_navigation_guard.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
@@ -71,8 +69,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   late final WorkspaceTabRegistry _tabRegistry;
-  final WorkspaceImportExportActions _importExportActions =
-      const WorkspaceImportExportActions();
 
   bool _handlingTabChange = false;
   bool _revertingTabChange = false;
@@ -222,7 +218,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
-  List<Widget> _buildWorkspaceActions(HeroSheet hero) {
+  List<Widget> _buildWorkspaceActions() {
     final activeTabIndex = _tabRegistry.activeTabIndex;
     final isEditing = _tabRegistry.isEditing(activeTabIndex);
     final tabActions = _tabRegistry.editActionsFor(activeTabIndex);
@@ -236,32 +232,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       onCancel = () => _runEditAction(tabActions.cancel);
     }
 
-    final widgets = <Widget>[
-      IconButton(
-        onPressed: () async {
-          final navigator = Navigator.of(context);
-          await ref.read(heroActionsProvider).deleteHero(widget.heroId);
-          if (!context.mounted) {
-            return;
-          }
-          navigator.pushReplacement(
-            MaterialPageRoute(builder: (_) => const HeroesHomeScreen()),
-          );
-        },
-        icon: const Icon(Icons.delete_outline),
-        tooltip: 'Held loeschen',
-      ),
-      IconButton(
-        onPressed: () => _exportHeroData(context, ref, hero),
-        icon: const Icon(Icons.upload_file),
-        tooltip: 'Held exportieren',
-      ),
-      IconButton(
-        onPressed: () => _importHeroData(context, ref),
-        icon: const Icon(Icons.download),
-        tooltip: 'Held importieren',
-      ),
-    ];
+    final widgets = <Widget>[];
 
     if (activeTabIndex == _talentsTabIndex) {
       final visibilityMode = ref.watch(
@@ -289,7 +260,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         FilledButton.icon(
           key: const ValueKey<String>('talents-visibility-mode-toggle'),
           onPressed: () {
-            ref.read(talentsVisibilityModeProvider(widget.heroId).notifier).state =
+            ref
+                    .read(talentsVisibilityModeProvider(widget.heroId).notifier)
+                    .state =
                 !visibilityMode;
           },
           icon: Icon(
@@ -502,9 +475,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
             tooltip: 'Heldenauswahl',
             onPressed: _navigateToHomeWithGuard,
           ),
-          actions: [
-            ..._buildWorkspaceActions(hero),
-          ],
+          actions: [..._buildWorkspaceActions()],
           bottom: useCommandDeck ? null : _buildWorkspaceTabBar(),
         ),
         body: useCommandDeck
@@ -512,93 +483,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
             : _buildClassicWorkspaceBody(hero),
       ),
     );
-  }
-
-  Future<void> _exportHeroData(
-    BuildContext context,
-    WidgetRef ref,
-    HeroSheet hero,
-  ) async {
-    try {
-      final outcome = await _importExportActions.exportHeroData(
-        ref: ref,
-        hero: hero,
-      );
-
-      if (!context.mounted) {
-        return;
-      }
-
-      if (outcome.result == HeroTransferExportResult.canceled) {
-        return;
-      }
-      if (outcome.result == HeroTransferExportResult.savedToFile) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Held exportiert: ${outcome.location ?? 'Datei gespeichert'}',
-            ),
-          ),
-        );
-        return;
-      }
-      if (outcome.result == HeroTransferExportResult.downloaded) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Held exportiert und Download gestartet'),
-          ),
-        );
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Held exportiert und geteilt')),
-      );
-    } on Exception catch (error) {
-      if (!context.mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Export fehlgeschlagen: $error')));
-    }
-  }
-
-  Future<void> _importHeroData(BuildContext context, WidgetRef ref) async {
-    try {
-      final importedId = await _importExportActions.importHeroData(
-        context: context,
-        ref: ref,
-      );
-      if (importedId == null) {
-        return;
-      }
-
-      if (!context.mounted) {
-        return;
-      }
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => HeroWorkspaceScreen(heroId: importedId),
-        ),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Held erfolgreich importiert')),
-      );
-    } on FormatException catch (error) {
-      if (!context.mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Import ungueltig: ${error.message}')),
-      );
-    } on Exception catch (error) {
-      if (!context.mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Import fehlgeschlagen: $error')));
-    }
   }
 }
 
