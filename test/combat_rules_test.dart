@@ -205,6 +205,35 @@ void main() {
     expect(withResult.pa, withoutResult.pa + 1);
   });
 
+  test('offhand bonuses depend on mode and not on one-handed flag', () {
+    final noOffhand = buildHero(
+      talents: const {'tal_waffe': HeroTalentEntry(atValue: 6, paValue: 6)},
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(
+          talentId: 'tal_waffe',
+          name: 'Waffe',
+          weaponType: 'Waffe',
+          isOneHanded: false,
+        ),
+      ),
+    );
+    final withOffhand = noOffhand.copyWith(
+      combatConfig: noOffhand.combatConfig.copyWith(
+        offhand: const OffhandSlot(
+          mode: OffhandMode.linkhand,
+          atMod: 2,
+          paMod: 3,
+        ),
+      ),
+    );
+
+    final noOffhandResult = computeCombatPreviewStats(noOffhand, state);
+    final withOffhandResult = computeCombatPreviewStats(withOffhand, state);
+
+    expect(withOffhandResult.at, noOffhandResult.at + 2);
+    expect(withOffhandResult.pa, noOffhandResult.pa + 4);
+  });
+
   test('eBE modifies AT and PA with excel-compatible sign behavior', () {
     final noArmor = buildHero(
       talents: const {'tal_waffe': HeroTalentEntry(atValue: 0, paValue: 0)},

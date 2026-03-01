@@ -91,7 +91,9 @@ CombatPreviewStats computeCombatPreviewStats(
   final config = overrideConfig ?? sheet.combatConfig;
   final talents = overrideTalents ?? sheet.talents;
   final main = config.selectedWeapon;
-  final offhand = main.isOneHanded ? config.offhand : const OffhandSlot();
+  final offhand = config.offhand.mode == OffhandMode.none
+      ? const OffhandSlot()
+      : config.offhand;
   final armor = config.armor;
   final special = config.specialRules;
   final manualMods = config.manualMods;
@@ -293,8 +295,8 @@ int _computeRgReduction({
   required int globalArmorTrainingLevel,
   required List<ArmorPiece> activePieces,
 }) {
-  final normalizedTraining = globalArmorTrainingLevel == 2 ||
-          globalArmorTrainingLevel == 3
+  final normalizedTraining =
+      globalArmorTrainingLevel == 2 || globalArmorTrainingLevel == 3
       ? globalArmorTrainingLevel
       : 0;
   if (normalizedTraining == 3) {

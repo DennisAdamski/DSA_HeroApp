@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
@@ -215,12 +216,23 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     }
   }
 
-  void _selectWeaponIndex(int nextIndex) {
+  Future<void> _selectWeaponIndex(
+    int nextIndex, {
+    required RulesCatalog catalog,
+    required List<TalentDef> meleeTalents,
+  }) async {
     final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
     _setDraftWeapons(slots, selectedIndex: nextIndex, markChanged: true);
+    await _persistCombatConfigIfReadonly(
+      catalog: catalog,
+      meleeTalents: meleeTalents,
+    );
   }
 
-  void _removeSelectedWeaponSlot() {
+  Future<void> _removeSelectedWeaponSlot({
+    required RulesCatalog catalog,
+    required List<TalentDef> meleeTalents,
+  }) async {
     final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
     if (slots.length <= 1) {
       return;
@@ -229,6 +241,63 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     slots.removeAt(index);
     final nextIndex = index >= slots.length ? slots.length - 1 : index;
     _setDraftWeapons(slots, selectedIndex: nextIndex, markChanged: true);
+    await _persistCombatConfigIfReadonly(
+      catalog: catalog,
+      meleeTalents: meleeTalents,
+    );
+  }
+
+  Future<void> _persistCombatConfigIfReadonly({
+    required RulesCatalog catalog,
+    required List<TalentDef> meleeTalents,
+  }) async {
+    if (_editController.isEditing) {
+      return;
+    }
+    final hero = _latestHero;
+    if (hero == null) {
+      return;
+    }
+    final weaponValidation = _validateWeaponSlotsForConfig(
+      config: _draftCombatConfig,
+      catalog: catalog,
+      meleeTalents: meleeTalents,
+    );
+    if (weaponValidation != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(weaponValidation)));
+      }
+      _editController.clearSyncSignature();
+      _syncDraftFromHero(hero, force: true);
+      return;
+    }
+    try {
+      final updatedHero = hero.copyWith(combatConfig: _draftCombatConfig);
+      await ref.read(heroActionsProvider).saveHero(updatedHero);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Speichern fehlgeschlagen: $error')),
+        );
+      }
+      _editController.clearSyncSignature();
+      _syncDraftFromHero(hero, force: true);
+    }
+  }
+
+  Future<void> _applyCombatConfigChange({
+    required CombatConfig nextConfig,
+    required RulesCatalog catalog,
+    required List<TalentDef> meleeTalents,
+  }) async {
+    _draftCombatConfig = nextConfig;
+    _markFieldChanged();
+    await _persistCombatConfigIfReadonly(
+      catalog: catalog,
+      meleeTalents: meleeTalents,
+    );
   }
 
   Future<void> _startEdit() async {
@@ -387,14 +456,15 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
 
   bool _isHidden(String talentId) => _draftHiddenTalentIds.contains(talentId);
 
-  String? _validateWeaponSlots({
+  String? _validateWeaponSlotsForConfig({
+    required CombatConfig config,
     required RulesCatalog catalog,
     required List<TalentDef> meleeTalents,
   }) {
     final talentById = <String, TalentDef>{
       for (final talent in meleeTalents) talent.id: talent,
     };
-    final slots = _draftCombatConfig.weaponSlots;
+    final slots = config.weaponSlots;
     for (var i = 0; i < slots.length; i++) {
       final slot = slots[i];
       final slotLabel = 'Waffe ${i + 1}';
@@ -438,6 +508,17 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       }
     }
     return null;
+  }
+
+  String? _validateWeaponSlots({
+    required RulesCatalog catalog,
+    required List<TalentDef> meleeTalents,
+  }) {
+    return _validateWeaponSlotsForConfig(
+      config: _draftCombatConfig,
+      catalog: catalog,
+      meleeTalents: meleeTalents,
+    );
   }
 
   @override
@@ -510,6 +591,8 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                           combatTalents,
                           catalog,
                           preview,
+                          hero,
+                          state,
                         ),
                         _buildSpecialRulesSubTab(catalog),
                       ],
