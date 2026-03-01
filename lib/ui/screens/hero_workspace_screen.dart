@@ -225,6 +225,10 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
 
   Widget _buildGlobalActionHeader() {
     final activeTabIndex = _tabRegistry.activeTabIndex;
+    final isEditing = _tabRegistry.isEditing(activeTabIndex);
+    if (activeTabIndex == _talentsTabIndex && !isEditing) {
+      return const SizedBox.shrink();
+    }
     final tabActions = _tabRegistry.editActionsFor(activeTabIndex);
     VoidCallback? onStartEdit;
     VoidCallback? onSave;
@@ -237,7 +241,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
 
     return WorkspaceGlobalActionHeader(
       isEditableTab: _tabRegistry.isEditableTab(activeTabIndex),
-      isEditing: _tabRegistry.isEditing(activeTabIndex),
+      isEditing: isEditing,
       onStartEdit: onStartEdit,
       onSave: onSave,
       onCancel: onCancel,
