@@ -13,8 +13,14 @@ import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_feature_flags.dart';
+import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+
+part 'hero_overview/hero_overview_base_info_section.dart';
+part 'hero_overview/hero_overview_ap_resources_section.dart';
+part 'hero_overview/hero_overview_stats_section.dart';
+part 'hero_overview/hero_overview_form_fields.dart';
 
 const double _pagePadding = 16;
 const double _sectionSpacing = 16;
@@ -48,6 +54,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     with AutomaticKeepAliveClientMixin {
   final Map<String, TextEditingController> _controllers =
       <String, TextEditingController>{};
+  final ValueNotifier<int> _viewRevision = ValueNotifier<int>(0);
 
   static const List<(String, String)> _attributeEntries = [
     ('Mut', 'mu'),
@@ -88,6 +95,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     for (final controller in _controllers.values) {
       controller.dispose();
     }
+    _viewRevision.dispose();
     super.dispose();
   }
 
@@ -307,7 +315,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   void _onFieldChanged(String _) {
     _editController.markFieldChanged();
     if (mounted) {
-      setState(() {});
+      _viewRevision.value++;
     }
   }
 
@@ -345,6 +353,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    UiRebuildObserver.bump('hero_overview_tab');
     final hero = ref.watch(heroByIdProvider(widget.heroId));
 
     if (hero == null) {
@@ -361,692 +370,50 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         _latestHero = hero;
         _latestState = state;
         _syncControllers(hero, state);
-        final effectiveAttributes = computeEffectiveAttributes(
-          hero,
-          tempAttributeMods: state.tempAttributeMods,
-        );
-
-        return ListView(
-          padding: const EdgeInsets.all(_pagePadding),
-          children: [
-            _buildBaseInfoSection(),
-            const SizedBox(height: _sectionSpacing),
-            _buildAdvantagesSection(),
-            const SizedBox(height: _sectionSpacing),
-            _buildApSection(hero),
-            const SizedBox(height: _sectionSpacing),
-            _buildCurrentResourcesSection(),
-            if (kShowParserWarnings &&
-                hero.unknownModifierFragments.isNotEmpty) ...[
-              const SizedBox(height: _sectionSpacing),
-              _buildParserWarningsSection(hero),
-            ],
-            const SizedBox(height: _sectionSpacing),
-            derivedAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stackTrace) => Text('Fehler: $error'),
-              data: (derived) => _buildCombinedStatsAndAttributesSection(
-                hero,
-                state,
-                derived,
-                effectiveAttributes,
-              ),
-            ),
-          ],
+        return ValueListenableBuilder<int>(
+          valueListenable: _viewRevision,
+          builder: (context, revision, child) {
+            final effectiveAttributes = computeEffectiveAttributes(
+              hero,
+              tempAttributeMods: state.tempAttributeMods,
+            );
+            return ListView(
+              padding: const EdgeInsets.all(_pagePadding),
+              children: [
+                _buildBaseInfoSection(),
+                const SizedBox(height: _sectionSpacing),
+                _buildAdvantagesSection(),
+                const SizedBox(height: _sectionSpacing),
+                _buildApSection(hero),
+                const SizedBox(height: _sectionSpacing),
+                _buildCurrentResourcesSection(),
+                if (kShowParserWarnings &&
+                    hero.unknownModifierFragments.isNotEmpty) ...[
+                  const SizedBox(height: _sectionSpacing),
+                  _buildParserWarningsSection(hero),
+                ],
+                const SizedBox(height: _sectionSpacing),
+                derivedAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, stackTrace) => Text('Fehler: $error'),
+                  data: (derived) => _buildCombinedStatsAndAttributesSection(
+                    hero,
+                    state,
+                    derived,
+                    effectiveAttributes,
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
-    );
-  }
-
-  Widget _buildBaseInfoSection() {
-    return _SectionCard(
-      title: 'Basisinformationen',
-      child: Column(
-        children: [
-          _buildInputField(label: 'Name', keyName: 'name'),
-          const SizedBox(height: _gridSpacing),
-          _ResponsiveFieldGrid(
-            breakpoint: _standardTwoColumnBreakpoint,
-            children: [
-              _buildInputField(label: 'Rasse', keyName: 'rasse'),
-              _buildInputField(
-                label: 'Rasse Modifikatoren',
-                keyName: 'rasse_mod',
-              ),
-            ],
-          ),
-          const SizedBox(height: _gridSpacing),
-          _ResponsiveFieldGrid(
-            breakpoint: _standardTwoColumnBreakpoint,
-            children: [
-              _buildInputField(label: 'Kultur', keyName: 'kultur'),
-              _buildInputField(
-                label: 'Kultur Modifikatoren',
-                keyName: 'kultur_mod',
-              ),
-            ],
-          ),
-          const SizedBox(height: _gridSpacing),
-          _ResponsiveFieldGrid(
-            breakpoint: _standardTwoColumnBreakpoint,
-            children: [
-              _buildInputField(label: 'Profession', keyName: 'profession'),
-              _buildInputField(
-                label: 'Profession Modifikatoren',
-                keyName: 'profession_mod',
-              ),
-            ],
-          ),
-          const SizedBox(height: _gridSpacing),
-          _ResponsiveFieldGrid(
-            breakpoint: _standardTwoColumnBreakpoint,
-            children: [
-              _buildInputField(label: 'Geschlecht', keyName: 'geschlecht'),
-              _buildInputField(label: 'Alter', keyName: 'alter'),
-              _buildInputField(label: 'Groesse', keyName: 'groesse'),
-              _buildInputField(label: 'Gewicht', keyName: 'gewicht'),
-              _buildInputField(label: 'Haarfarbe', keyName: 'haarfarbe'),
-              _buildInputField(label: 'Augenfarbe', keyName: 'augenfarbe'),
-              _buildInputField(label: 'Stand', keyName: 'stand'),
-              _buildInputField(label: 'Titel', keyName: 'titel'),
-              _buildInputField(
-                label: 'Sozialstatus',
-                keyName: 'sozialstatus',
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-          const SizedBox(height: _gridSpacing),
-          _ResponsiveFieldGrid(
-            breakpoint: _standardTwoColumnBreakpoint,
-            children: [
-              _buildInputField(
-                label: 'Aussehen',
-                keyName: 'aussehen',
-                minLines: 4,
-                maxLines: 6,
-              ),
-              _buildInputField(
-                label: 'Familie/Herkunft/Hintergrund',
-                keyName: 'familie',
-                minLines: 4,
-                maxLines: 6,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAdvantagesSection() {
-    return _SectionCard(
-      title: 'Vorteile und Nachteile',
-      child: _ResponsiveFieldGrid(
-        breakpoint: _standardTwoColumnBreakpoint,
-        children: [
-          _buildInputField(
-            label: 'Vorteile',
-            keyName: 'vorteile',
-            minLines: 2,
-            maxLines: null,
-          ),
-          _buildInputField(
-            label: 'Nachteile',
-            keyName: 'nachteile',
-            minLines: 2,
-            maxLines: null,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildApSection(HeroSheet hero) {
-    final isEditing = _editController.isEditing;
-    final apTotal = isEditing ? _readInt('ap_total', min: 0) : hero.apTotal;
-    final apSpent = isEditing ? _readInt('ap_spent', min: 0) : hero.apSpent;
-    final apAvailable = isEditing
-        ? computeAvailableAp(apTotal, apSpent)
-        : hero.apAvailable;
-    final level = isEditing ? computeLevelFromSpentAp(apSpent) : hero.level;
-
-    final rowItems = <Widget>[
-      _buildInputField(
-        label: 'AP Gesamt',
-        keyName: 'ap_total',
-        keyboardType: TextInputType.number,
-      ),
-      if (isEditing)
-        _buildApIncrementField(
-          label: 'AP Gesamt addieren',
-          incrementKey: 'ap_total_add',
-          onPressed: () => _applyApIncrement(
-            targetKey: 'ap_total',
-            incrementKey: 'ap_total_add',
-            label: 'AP Gesamt',
-          ),
-        ),
-      _buildInputField(
-        label: 'AP Ausgegeben',
-        keyName: 'ap_spent',
-        keyboardType: TextInputType.number,
-      ),
-      if (isEditing)
-        _buildApIncrementField(
-          label: 'AP Ausgegeben addieren',
-          incrementKey: 'ap_spent_add',
-          onPressed: () => _applyApIncrement(
-            targetKey: 'ap_spent',
-            incrementKey: 'ap_spent_add',
-            label: 'AP Ausgegeben',
-          ),
-        ),
-      _buildReadOnlyValueField(
-        key: const ValueKey<String>('overview-readonly-ap_available'),
-        label: 'AP Verfuegbar',
-        value: apAvailable.toString(),
-      ),
-      _buildReadOnlyValueField(
-        key: const ValueKey<String>('overview-readonly-level'),
-        label: 'Level',
-        value: level.toString(),
-      ),
-    ];
-
-    return _SectionCard(
-      title: 'AP und Level',
-      child: _buildSingleLineFieldsRow(children: rowItems),
-    );
-  }
-
-  Widget _buildApIncrementField({
-    required String label,
-    required String incrementKey,
-    required VoidCallback onPressed,
-  }) {
-    return TextField(
-      key: ValueKey<String>('overview-field-$incrementKey'),
-      controller: _field(incrementKey),
-      keyboardType: TextInputType.number,
-      inputFormatters: <TextInputFormatter>[
-        FilteringTextInputFormatter.digitsOnly,
-      ],
-      decoration: _inputDecoration(label).copyWith(
-        suffixIcon: IconButton(
-          key: ValueKey<String>('overview-action-$incrementKey'),
-          tooltip: '$label anwenden',
-          onPressed: onPressed,
-          icon: const Icon(Icons.add),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCurrentResourcesSection() {
-    return _SectionCard(
-      title: 'Aktuelle Ressourcen',
-      child: _buildSingleLineFieldsRow(
-        children: [
-          _buildInputField(
-            label: 'LeP aktuell',
-            keyName: 'cur_lep',
-            keyboardType: TextInputType.number,
-          ),
-          _buildInputField(
-            label: 'AsP aktuell',
-            keyName: 'cur_asp',
-            keyboardType: TextInputType.number,
-          ),
-          _buildInputField(
-            label: 'Au aktuell',
-            keyName: 'cur_au',
-            keyboardType: TextInputType.number,
-          ),
-          _buildInputField(
-            label: 'KaP aktuell',
-            keyName: 'cur_kap',
-            keyboardType: TextInputType.number,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSingleLineFieldsRow({
-    required List<Widget> children,
-    double itemWidth = 200,
-  }) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (var i = 0; i < children.length; i++) ...[
-            SizedBox(width: itemWidth, child: children[i]),
-            if (i < children.length - 1) const SizedBox(width: _gridSpacing),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildParserWarningsSection(HeroSheet hero) {
-    return _SectionCard(
-      title: 'Parser-Warnungen',
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: hero.unknownModifierFragments
-            .map((entry) => Chip(label: Text(entry)))
-            .toList(growable: false),
-      ),
     );
   }
 
   @override
   bool get wantKeepAlive => true;
-
-  Widget _buildCombinedStatsAndAttributesSection(
-    HeroSheet hero,
-    HeroState state,
-    DerivedStats derived,
-    Attributes effectiveAttributes,
-  ) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final derivedSection = _buildDerivedValuesSection(hero, state, derived);
-        final attributesSection = _buildAttributesSection(effectiveAttributes);
-        if (constraints.maxWidth >= _largeTwoColumnBreakpoint) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: attributesSection),
-              const SizedBox(width: _sectionSpacing),
-              Expanded(child: derivedSection),
-            ],
-          );
-        }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            attributesSection,
-            const SizedBox(height: _sectionSpacing),
-            derivedSection,
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildDerivedValuesSection(
-    HeroSheet hero,
-    HeroState state,
-    DerivedStats derived,
-  ) {
-    final parsed = parseModifierTextsForHero(hero);
-    final totalMods = hero.persistentMods + parsed.statMods + state.tempMods;
-    final entries = <_DerivedRow>[
-      _DerivedRow(
-        label: 'LeP',
-        current: derived.maxLep,
-        modifier: totalMods.lep + _cappedLevel(hero.level),
-        bought: hero.bought.lep,
-        boughtKey: 'b_lep',
-      ),
-      _DerivedRow(
-        label: 'Au',
-        current: derived.maxAu,
-        modifier: totalMods.au + hero.level * 2,
-        bought: hero.bought.au,
-        boughtKey: 'b_au',
-      ),
-      _DerivedRow(
-        label: 'AsP',
-        current: derived.maxAsp,
-        modifier: totalMods.asp + hero.level * 2,
-        bought: hero.bought.asp,
-        boughtKey: 'b_asp',
-      ),
-      _DerivedRow(
-        label: 'KaP',
-        current: derived.maxKap,
-        modifier: totalMods.kap,
-        bought: hero.bought.kap,
-        boughtKey: 'b_kap',
-      ),
-      _DerivedRow(
-        label: 'MR',
-        current: derived.mr,
-        modifier: totalMods.mr,
-        bought: hero.bought.mr,
-        boughtKey: 'b_mr',
-      ),
-      _DerivedRow(
-        label: 'Ini-Basis',
-        current: derived.iniBase,
-        modifier: totalMods.iniBase,
-      ),
-      _DerivedRow(
-        label: 'AT-Basis',
-        current: derived.atBase,
-        modifier: totalMods.at,
-      ),
-      _DerivedRow(
-        label: 'PA-Basis',
-        current: derived.paBase,
-        modifier: totalMods.pa,
-      ),
-      _DerivedRow(
-        label: 'FK-Basis',
-        current: derived.fkBase,
-        modifier: totalMods.fk,
-      ),
-      _DerivedRow(label: 'GS', current: derived.gs, modifier: totalMods.gs),
-    ];
-
-    return _SectionCard(
-      title: 'Basiswerte',
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 560),
-          child: Table(
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            columnWidths: const <int, TableColumnWidth>{
-              0: FixedColumnWidth(112),
-              1: FixedColumnWidth(_attributeValueCellWidth),
-              2: FixedColumnWidth(_attributeValueCellWidth),
-              3: FixedColumnWidth(_attributeValueCellWidth),
-              4: FixedColumnWidth(_attributeValueCellWidth),
-            },
-            children: [
-              TableRow(
-                children: [
-                  _buildAttributesTableHeaderCell('Wert'),
-                  _buildAttributesTableHeaderCell('Start'),
-                  _buildAttributesTableHeaderCell('Modifikator'),
-                  _buildAttributesTableHeaderCell('Aktuell'),
-                  _buildAttributesTableHeaderCell('Zugekauft'),
-                ],
-              ),
-              ...entries.map(
-                (entry) => TableRow(
-                  children: [
-                    _buildAttributesTableLabelCell(entry.label),
-                    _buildDerivedValueCell(
-                      value:
-                          (entry.current - entry.modifier - (entry.bought ?? 0))
-                              .toString(),
-                    ),
-                    _buildDerivedValueCell(value: entry.modifier.toString()),
-                    _buildDerivedValueCell(value: entry.current.toString()),
-                    _buildDerivedBoughtCell(entry),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAttributesSection(Attributes effectiveAttributes) {
-    final rows = _attributeEntries
-        .map((entry) {
-          final key = entry.$2;
-          final startKey = '${key}_start';
-          final tempKey = '${key}_temp';
-          final effective = _effectiveValueByKey(effectiveAttributes, key);
-          return TableRow(
-            children: [
-              _buildAttributesTableLabelCell(entry.$1),
-              _buildAttributesNumericCell(
-                keyName: startKey,
-                isAdjustable: false,
-              ),
-              _buildAttributesNumericCell(keyName: key, isAdjustable: true),
-              _buildAttributesNumericCell(keyName: tempKey, isAdjustable: true),
-              _buildAttributesComputedCell(
-                keyName: key,
-                value: effective.toString(),
-              ),
-            ],
-          );
-        })
-        .toList(growable: false);
-
-    return _SectionCard(
-      title: 'Eigenschaften',
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 520),
-          child: Table(
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            columnWidths: const <int, TableColumnWidth>{
-              0: FixedColumnWidth(96),
-              1: FixedColumnWidth(_attributeValueCellWidth),
-              2: FixedColumnWidth(_attributeValueCellWidth),
-              3: FixedColumnWidth(_attributeValueCellWidth),
-              4: FixedColumnWidth(_attributeValueCellWidth),
-            },
-            children: [
-              TableRow(
-                children: [
-                  _buildAttributesTableHeaderCell('Eigenschaft'),
-                  _buildAttributesTableHeaderCell('Start'),
-                  _buildAttributesTableHeaderCell('Aktuell'),
-                  _buildAttributesTableHeaderCell('Temp-Mod'),
-                  _buildAttributesTableHeaderCell('Berechnet'),
-                ],
-              ),
-              ...rows,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAttributesTableHeaderCell(String text) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 0, 4, 6),
-      child: Text(text, style: Theme.of(context).textTheme.labelMedium),
-    );
-  }
-
-  Widget _buildAttributesTableLabelCell(String text) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
-      child: Text(text, style: Theme.of(context).textTheme.titleSmall),
-    );
-  }
-
-  Widget _buildAttributesNumericCell({
-    required String keyName,
-    required bool isAdjustable,
-  }) {
-    if (!isAdjustable) {
-      return _buildAttributesStaticCell(
-        key: ValueKey<String>('overview-field-$keyName'),
-        value: _field(keyName).text,
-      );
-    }
-
-    final isReadOnly = !_editController.isEditing;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
-      child: SizedBox(
-        width: _attributeValueCellWidth,
-        child: TextField(
-          key: ValueKey<String>('overview-field-$keyName'),
-          controller: _field(keyName),
-          readOnly: isReadOnly,
-          keyboardType: TextInputType.number,
-          decoration: _inputDecoration('').copyWith(
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 8,
-            ),
-          ),
-          onChanged: isReadOnly ? null : _onFieldChanged,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAttributesComputedCell({
-    required String keyName,
-    required String value,
-  }) {
-    return _buildAttributesStaticCell(
-      key: ValueKey<String>('overview-effective-$keyName'),
-      value: value,
-    );
-  }
-
-  Widget _buildAttributesStaticCell({required String value, Key? key}) {
-    return Padding(
-      key: key,
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-      child: SizedBox(
-        width: _attributeValueCellWidth,
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDerivedValueCell({required String value}) {
-    return _buildAttributesStaticCell(value: value);
-  }
-
-  Widget _buildDerivedBoughtCell(_DerivedRow entry) {
-    final keyName = entry.boughtKey;
-    if (keyName == null) {
-      return _buildDerivedValueCell(value: '-');
-    }
-    final isReadOnly = !_editController.isEditing;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
-      child: SizedBox(
-        width: _attributeValueCellWidth,
-        child: TextField(
-          key: ValueKey<String>('overview-derived-bought-$keyName'),
-          controller: _field(keyName),
-          readOnly: isReadOnly,
-          keyboardType: TextInputType.number,
-          decoration: _inputDecoration('').copyWith(
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 8,
-            ),
-          ),
-          onChanged: isReadOnly ? null : _onFieldChanged,
-        ),
-      ),
-    );
-  }
-
-  int _cappedLevel(int level) {
-    if (level < 0) {
-      return 0;
-    }
-    if (level > 21) {
-      return 21;
-    }
-    return level;
-  }
-
-  int _effectiveValueByKey(Attributes effective, String key) {
-    switch (key) {
-      case 'mu':
-        return effective.mu;
-      case 'kl':
-        return effective.kl;
-      case 'inn':
-        return effective.inn;
-      case 'ch':
-        return effective.ch;
-      case 'ff':
-        return effective.ff;
-      case 'ge':
-        return effective.ge;
-      case 'ko':
-        return effective.ko;
-      case 'kk':
-        return effective.kk;
-      default:
-        return 0;
-    }
-  }
-
-  Widget _buildInputField({
-    required String label,
-    required String keyName,
-    int? minLines,
-    int? maxLines = 1,
-    TextInputType? keyboardType,
-    bool? readOnly,
-  }) {
-    if (readOnly == true) {
-      return _buildLabeledStaticValueField(
-        key: ValueKey<String>('overview-field-$keyName'),
-        label: label,
-        value: _field(keyName).text,
-      );
-    }
-
-    final isReadOnly = readOnly ?? !_editController.isEditing;
-    return TextField(
-      key: ValueKey<String>('overview-field-$keyName'),
-      controller: _field(keyName),
-      readOnly: isReadOnly,
-      minLines: minLines,
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      decoration: _inputDecoration(label),
-      onChanged: isReadOnly ? null : _onFieldChanged,
-    );
-  }
-
-  Widget _buildReadOnlyValueField({
-    required String label,
-    required String value,
-    Key? key,
-  }) {
-    return _buildLabeledStaticValueField(key: key, label: label, value: value);
-  }
-
-  Widget _buildLabeledStaticValueField({
-    required String label,
-    required String value,
-    Key? key,
-  }) {
-    return Column(
-      key: key,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: Theme.of(context).textTheme.labelMedium),
-        const SizedBox(height: 6),
-        Text(value, style: Theme.of(context).textTheme.bodyLarge),
-      ],
-    );
-  }
-
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      isDense: true,
-      border: const OutlineInputBorder(),
-    );
-  }
 }
 
 class _DerivedRow {

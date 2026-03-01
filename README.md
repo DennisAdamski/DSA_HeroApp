@@ -38,11 +38,18 @@ Vollstaendige Anleitung:
 - State-Layer nutzt einen stream-basierten Heldenindex (`HeroIndexSnapshot`) fuer O(1)-Lookup je ID.
 - Abgeleitete Berechnungen werden zentral ueber `HeroComputedSnapshot` gebuendelt (Modifier, effektive Attribute, Derived, Combat-Preview).
 - Repository-Schnittstelle ist auf inkrementelle Streams erweitert (`watchHeroIndex`, `watchHeroState`, `loadHeroById`).
+- UI-Tabs (`Combat`, `Talents`, `Overview`) sind in kleinere Part-Dateien zerlegt; Root-Dateien bleiben unter 700 LOC.
+
+### UI-Performance Guardrails (Stand: 2026-03-01)
+- Rebuild-Guardrail (Widget-Test): `flutter test test/ui_rebuild_guardrails_test.dart`
+- FrameTiming-Messung (Integration): `flutter test integration_test/ui_edit_frame_timing_test.dart`
+- LOC-Budget-Check fuer `lib/ui/screens`: `python tool/check_screen_loc_budget.py --max-lines 700`
 
 ### Tooling und Datenaufbereitung
 - `tool/convert_excel_to_catalog.py`: erzeugt Runtime-Katalog aus Excel-Listen
 - `tool/export_rule_cells.py`: Snapshot-Helfer fuer Regelzellen
 - `tool/report_unreferenced_dart.py`: Report fuer unreferenzierte `lib/*.dart`
+- `tool/check_screen_loc_budget.py`: LOC-Gate fuer Screen-Dateien (z. B. CI-Check auf 700 LOC)
 
 ### Derzeit nicht angebundene Dart-Dateien (bewusst behalten)
 - `lib/rules/derived/combat_rules.dart`
@@ -66,3 +73,4 @@ Sie sind **nicht runtime-relevant**. Aktueller Status: nur dokumentiert, kein Cl
 
 - `docs/catalog_import_workflow.md`
 - `docs/rules_mapping_house_rules_v1.md`
+- `docs/ui_performance_measurements.md`
