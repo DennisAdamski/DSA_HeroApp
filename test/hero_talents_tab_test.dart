@@ -376,9 +376,10 @@ void main() {
           },
           combatConfig: const CombatConfig(
             armor: ArmorConfig(
-              beTotalRaw: 4,
-              armorTrainingLevel: 1,
-              rgIActive: true,
+              pieces: <ArmorPiece>[
+                ArmorPiece(name: 'Ruestung', isActive: true, rg1Active: true, be: 4),
+              ],
+              globalArmorTrainingLevel: 0,
             ),
           ),
         ),
@@ -427,9 +428,10 @@ void main() {
             },
             combatConfig: const CombatConfig(
               armor: ArmorConfig(
-                beTotalRaw: 4,
-                armorTrainingLevel: 1,
-                rgIActive: true,
+                pieces: <ArmorPiece>[
+                  ArmorPiece(name: 'Ruestung', isActive: true, rg1Active: true, be: 4),
+                ],
+                globalArmorTrainingLevel: 0,
               ),
             ),
           ),
@@ -484,9 +486,10 @@ void main() {
           },
           combatConfig: const CombatConfig(
             armor: ArmorConfig(
-              beTotalRaw: 4,
-              armorTrainingLevel: 1,
-              rgIActive: true,
+              pieces: <ArmorPiece>[
+                ArmorPiece(name: 'Ruestung', isActive: true, rg1Active: true, be: 4),
+              ],
+              globalArmorTrainingLevel: 0,
             ),
           ),
         ),
@@ -541,9 +544,10 @@ void main() {
           level: 7,
           combatConfig: const CombatConfig(
             armor: ArmorConfig(
-              beTotalRaw: 3,
-              armorTrainingLevel: 0,
-              rgIActive: false,
+              pieces: <ArmorPiece>[
+                ArmorPiece(name: 'Ruestung', isActive: true, rg1Active: false, be: 3),
+              ],
+              globalArmorTrainingLevel: 0,
             ),
           ),
         ),
@@ -576,7 +580,7 @@ void main() {
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-    expect(hero.combatConfig.armor.beTotalRaw, 3);
+    expect(hero.combatConfig.armor.pieces.first.be, 3);
     expect(hero.talents['tal_a']?.talentValue, 9);
 
     await openTalentsTab(tester, repo, buildCatalog());

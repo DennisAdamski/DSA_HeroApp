@@ -95,13 +95,17 @@ CombatPreviewStats computeCombatPreviewStats(
   final armor = config.armor;
   final special = config.specialRules;
   final manualMods = config.manualMods;
+  final activeArmorPieces = armor.pieces
+      .where((piece) => piece.isActive)
+      .toList(growable: false);
+  final rsTotal = _sumArmorRs(activeArmorPieces);
+  final beTotalRaw = _sumArmorBe(activeArmorPieces);
 
   final rgReduction = _computeRgReduction(
-    level: sheet.level,
-    armorTrainingLevel: armor.armorTrainingLevel,
-    rgIActive: armor.rgIActive,
+    globalArmorTrainingLevel: armor.globalArmorTrainingLevel,
+    activePieces: activeArmorPieces,
   );
-  final beKampf = _clampNonNegative(armor.beTotalRaw - rgReduction);
+  final beKampf = _clampNonNegative(beTotalRaw - rgReduction);
   final selectedTalent = _findTalentDefById(catalogTalents, main.talentId);
   final beMod = selectedTalent == null
       ? main.beTalentMod
@@ -180,8 +184,8 @@ CombatPreviewStats computeCombatPreviewStats(
   );
 
   return CombatPreviewStats(
-    rsTotal: _clampNonNegative(armor.rsTotal),
-    beTotalRaw: _clampNonNegative(armor.beTotalRaw),
+    rsTotal: _clampNonNegative(rsTotal),
+    beTotalRaw: _clampNonNegative(beTotalRaw),
     rgReduction: rgReduction,
     beKampf: beKampf,
     beMod: beMod,
@@ -286,28 +290,37 @@ int _computeOffhandPaBonus({
 }
 
 int _computeRgReduction({
-  required int level,
-  required int armorTrainingLevel,
-  required bool rgIActive,
+  required int globalArmorTrainingLevel,
+  required List<ArmorPiece> activePieces,
 }) {
-  if (!rgIActive) {
-    return 0;
+  final normalizedTraining = globalArmorTrainingLevel == 2 ||
+          globalArmorTrainingLevel == 3
+      ? globalArmorTrainingLevel
+      : 0;
+  if (normalizedTraining == 3) {
+    return 2;
   }
-  final normalizedTraining = _clamp(armorTrainingLevel, 0, 4);
-  // TODO: Model RG IV exactly once the final house-rule formula is fixed.
-  final effectiveTraining = normalizedTraining > 3 ? 3 : normalizedTraining;
+  if (normalizedTraining == 2) {
+    return 1;
+  }
+  final hasAnyActiveRg1 = activePieces.any((piece) => piece.rg1Active);
+  return hasAnyActiveRg1 ? 1 : 0;
+}
 
-  var maxByLevel = 0;
-  if (level >= 7) {
-    maxByLevel = 1;
+int _sumArmorRs(List<ArmorPiece> pieces) {
+  var sum = 0;
+  for (final piece in pieces) {
+    sum += _clampNonNegative(piece.rs);
   }
-  if (level >= 14) {
-    maxByLevel = 2;
+  return sum;
+}
+
+int _sumArmorBe(List<ArmorPiece> pieces) {
+  var sum = 0;
+  for (final piece in pieces) {
+    sum += _clampNonNegative(piece.be);
   }
-  if (level >= 21) {
-    maxByLevel = 3;
-  }
-  return _min(effectiveTraining, maxByLevel);
+  return sum;
 }
 
 int _computeAkrobatikBonus(Map<String, HeroTalentEntry> talents) {
@@ -419,6 +432,4 @@ int _roundUpAwayFromZero(num value) {
 
 int _max(int a, int b) => a > b ? a : b;
 int _min(int a, int b) => a < b ? a : b;
-int _clamp(int value, int min, int max) =>
-    value < min ? min : (value > max ? max : value);
 int _clampNonNegative(int value) => value < 0 ? 0 : value;

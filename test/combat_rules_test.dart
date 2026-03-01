@@ -214,19 +214,15 @@ void main() {
           kkBase: 12,
           kkThreshold: 2,
         ),
-        armor: ArmorConfig(
-          beTotalRaw: 0,
-          armorTrainingLevel: 0,
-          rgIActive: false,
-        ),
+        armor: ArmorConfig(pieces: <ArmorPiece>[]),
       ),
     );
     final withArmor = noArmor.copyWith(
       combatConfig: noArmor.combatConfig.copyWith(
         armor: const ArmorConfig(
-          beTotalRaw: 3,
-          armorTrainingLevel: 0,
-          rgIActive: false,
+          pieces: <ArmorPiece>[
+            ArmorPiece(name: 'Ruestung', isActive: true, rs: 2, be: 3),
+          ],
         ),
       ),
     );
@@ -237,5 +233,66 @@ void main() {
     expect(withArmorResult.ebe, -3);
     expect(withArmorResult.at, noArmorResult.at - 1);
     expect(withArmorResult.pa, noArmorResult.pa - 2);
+  });
+
+  test('RG I is capped at 1 even with multiple active armor pieces', () {
+    final hero = buildHero(
+      combatConfig: const CombatConfig(
+        armor: ArmorConfig(
+          globalArmorTrainingLevel: 0,
+          pieces: <ArmorPiece>[
+            ArmorPiece(name: 'Helm', isActive: true, rg1Active: true, be: 2),
+            ArmorPiece(name: 'Brust', isActive: true, rg1Active: true, be: 3),
+          ],
+        ),
+      ),
+    );
+
+    final result = computeCombatPreviewStats(hero, state);
+
+    expect(result.beTotalRaw, 5);
+    expect(result.rgReduction, 1);
+    expect(result.beKampf, 4);
+  });
+
+  test('global RG II and III override RG I', () {
+    final rg2Hero = buildHero(
+      combatConfig: const CombatConfig(
+        armor: ArmorConfig(
+          globalArmorTrainingLevel: 2,
+          pieces: <ArmorPiece>[
+            ArmorPiece(name: 'Helm', isActive: true, rg1Active: true, be: 4),
+          ],
+        ),
+      ),
+    );
+    final rg3Hero = rg2Hero.copyWith(
+      combatConfig: rg2Hero.combatConfig.copyWith(
+        armor: rg2Hero.combatConfig.armor.copyWith(globalArmorTrainingLevel: 3),
+      ),
+    );
+
+    final rg2Result = computeCombatPreviewStats(rg2Hero, state);
+    final rg3Result = computeCombatPreviewStats(rg3Hero, state);
+
+    expect(rg2Result.rgReduction, 1);
+    expect(rg3Result.rgReduction, 2);
+  });
+
+  test('inactive armor pieces are ignored in RS and BE sums', () {
+    final hero = buildHero(
+      combatConfig: const CombatConfig(
+        armor: ArmorConfig(
+          pieces: <ArmorPiece>[
+            ArmorPiece(name: 'Aktiv', isActive: true, rs: 2, be: 2),
+            ArmorPiece(name: 'Inaktiv', isActive: false, rs: 9, be: 9),
+          ],
+        ),
+      ),
+    );
+
+    final result = computeCombatPreviewStats(hero, state);
+    expect(result.rsTotal, 2);
+    expect(result.beTotalRaw, 2);
   });
 }
