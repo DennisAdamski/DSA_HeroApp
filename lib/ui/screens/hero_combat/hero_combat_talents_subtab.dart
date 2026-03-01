@@ -53,29 +53,41 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
             initiallyExpanded: true,
             tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
             title: Text(group),
-            subtitle: Text(
-              '${visibleEntries.length}/${entries.length} sichtbar',
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${visibleEntries.length}/${entries.length} sichtbar',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                if (_combatTalentsVisibilityMode)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          TextButton(
+                            key: ValueKey<String>('combat-group-show-all-$group'),
+                            onPressed: () => _setHiddenForGroup(
+                              entries,
+                              hidden: false,
+                            ),
+                            child: const Text('Alle einblenden'),
+                          ),
+                          const SizedBox(width: 6),
+                          TextButton(
+                            key: ValueKey<String>('combat-group-hide-all-$group'),
+                            onPressed: () =>
+                                _setHiddenForGroup(entries, hidden: true),
+                            child: const Text('Alle ausblenden'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ),
-            trailing: _combatTalentsVisibilityMode
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextButton(
-                        key: ValueKey<String>('combat-group-show-all-$group'),
-                        onPressed: () => _setHiddenForGroup(
-                          entries,
-                          hidden: false,
-                        ),
-                        child: const Text('Alle einblenden'),
-                      ),
-                      TextButton(
-                        key: ValueKey<String>('combat-group-hide-all-$group'),
-                        onPressed: () => _setHiddenForGroup(entries, hidden: true),
-                        child: const Text('Alle ausblenden'),
-                      ),
-                    ],
-                  )
-                : null,
             children: [
               _buildCombatTalentsTable(
                 visibleEntries,
