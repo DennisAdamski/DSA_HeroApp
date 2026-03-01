@@ -14,7 +14,10 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 void main() {
-  HeroSheet buildHero({List<String> hiddenTalentIds = const <String>[]}) {
+  HeroSheet buildHero({
+    List<String> hiddenTalentIds = const <String>[],
+    CombatConfig combatConfig = const CombatConfig(),
+  }) {
     return HeroSheet(
       id: 'demo',
       name: 'Rondra',
@@ -29,7 +32,7 @@ void main() {
         ko: 14,
         kk: 13,
       ),
-      combatConfig: CombatConfig(),
+      combatConfig: combatConfig,
       hiddenTalentIds: hiddenTalentIds,
     );
   }
@@ -148,12 +151,7 @@ void main() {
     String dice = '1',
     String tpValue = '2',
     String breakFactor = '0',
-    bool oneHanded = true,
   }) async {
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('combat-weapon-form-name')),
-      name,
-    );
     await selectDialogDropdown(
       tester,
       keyName: 'combat-weapon-form-talent',
@@ -163,6 +161,10 @@ void main() {
       tester,
       keyName: 'combat-weapon-form-weapon-type',
       valueText: weaponType,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('combat-weapon-form-name')),
+      name,
     );
     await tester.enterText(
       find.byKey(const ValueKey<String>('combat-weapon-form-kk-base')),
@@ -196,17 +198,6 @@ void main() {
       find.byKey(const ValueKey<String>('combat-weapon-form-bf')),
       breakFactor,
     );
-    final switchFinder = find.byType(SwitchListTile);
-    await tester.ensureVisible(switchFinder);
-    final switchWidget = tester.widget<SwitchListTile>(switchFinder);
-    if (switchWidget.value != oneHanded) {
-      final switchControl = find.descendant(
-        of: switchFinder,
-        matching: find.byType(Switch),
-      );
-      await tester.tap(switchControl, warnIfMissed: false);
-      await tester.pumpAndSettle();
-    }
     await tester.tap(
       find.byKey(const ValueKey<String>('combat-weapon-form-save')),
     );
@@ -429,7 +420,7 @@ void main() {
     expect(hero.combatConfig.specialRules.kampfreflexe, isFalse);
   });
 
-  testWidgets('supports multiple weapon slots with one-handed flag', (
+  testWidgets('supports multiple weapon slots in read mode with auto-save', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -444,9 +435,7 @@ void main() {
       },
     );
 
-    final actions = await openCombatTab(tester, repo);
-    await actions.startEdit();
-    await tester.pumpAndSettle();
+    await openCombatTab(tester, repo);
 
     await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
     await tester.pumpAndSettle();
@@ -457,11 +446,7 @@ void main() {
       name: 'Bidenhaender',
       weaponType: 'Bidenhaender',
       atMod: '3',
-      oneHanded: false,
     );
-
-    await actions.save();
-    await tester.pumpAndSettle();
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
@@ -470,7 +455,6 @@ void main() {
     expect(hero.combatConfig.mainWeapon.name, 'Bidenhaender');
     expect(hero.combatConfig.mainWeapon.weaponType, 'Bidenhaender');
     expect(hero.combatConfig.mainWeapon.wmAt, 3);
-    expect(hero.combatConfig.selectedWeapon.isOneHanded, isFalse);
   });
 
   testWidgets('shows maneuver support status per active weapon', (
@@ -560,68 +544,279 @@ void main() {
     );
   });
 
-  testWidgets(
-    'armor pieces can be added, edited and removed with live preview',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero()],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 0,
-            currentKap: 0,
-            currentAu: 10,
+  testWidgets('weapon editor unlocks name after talent and weapon type', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+    await openWeaponEditor(tester, add: true);
+
+    final nameField = find.byKey(
+      const ValueKey<String>('combat-weapon-form-name'),
+    );
+    expect(tester.widget<TextField>(nameField).enabled, isFalse);
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const ValueKey<String>('combat-weapon-form-kk-base')),
+          )
+          .controller
+          ?.text,
+      isEmpty,
+    );
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const ValueKey<String>('combat-weapon-form-dice')),
+          )
+          .controller
+          ?.text,
+      '1',
+    );
+
+    await selectDialogDropdown(
+      tester,
+      keyName: 'combat-weapon-form-talent',
+      valueText: 'Schwerter',
+    );
+    await selectDialogDropdown(
+      tester,
+      keyName: 'combat-weapon-form-weapon-type',
+      valueText: 'Kurzschwert',
+    );
+    expect(tester.widget<TextField>(nameField).enabled, isTrue);
+  });
+
+  testWidgets('active weapon selection persists in read mode', (tester) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
+              ),
+              MainWeaponSlot(
+                name: 'Bidenhaender',
+                talentId: 'tal_nah',
+                weaponType: 'Bidenhaender',
+              ),
+            ],
+            selectedWeaponIndex: 0,
           ),
-        },
-      );
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
 
-      final actions = await openCombatTab(tester, repo);
-      await actions.startEdit();
-      await tester.pumpAndSettle();
+    await openCombatTab(tester, repo);
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('combat-main-weapon-select-0-2')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bidenhaender').last);
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
-      await tester.pumpAndSettle();
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.combatConfig.selectedWeaponIndex, 1);
+    expect(hero.combatConfig.mainWeapon.name, 'Bidenhaender');
+  });
 
-      await openArmorEditor(tester);
-      await fillArmorDialog(
-        tester,
-        name: 'Kettenhemd',
-        rs: '3',
-        be: '4',
-        isActive: true,
-        rg1Active: true,
-      );
+  testWidgets('offhand values persist in read mode', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
 
-      expect(find.textContaining('Kettenhemd'), findsOneWidget);
-      expect(
-        find.textContaining('RS 3 | BE 4 | Aktiv Ja | RG I Ja'),
-        findsOneWidget,
-      );
+    await openCombatTab(tester, repo);
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey<String>('combat-offhand-mode')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Schild').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('combat-offhand-at-mod')),
+      '2',
+    );
+    await tester.pumpAndSettle();
 
-      await openArmorEditor(tester, index: 0);
-      await fillArmorDialog(
-        tester,
-        name: 'Kettenhemd',
-        rs: '5',
-        be: '6',
-        isActive: true,
-        rg1Active: true,
-      );
-      expect(
-        find.textContaining('RS 5 | BE 6 | Aktiv Ja | RG I Ja'),
-        findsOneWidget,
-      );
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.combatConfig.offhand.mode, OffhandMode.shield);
+    expect(hero.combatConfig.offhand.atMod, 2);
+  });
 
+  testWidgets('weapon overview table lists active weapon first', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
+                tpFlat: 2,
+              ),
+              MainWeaponSlot(
+                name: 'Bidenhaender',
+                talentId: 'tal_nah',
+                weaponType: 'Bidenhaender',
+                tpFlat: 3,
+              ),
+            ],
+            selectedWeaponIndex: 1,
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+
+    final table = find.byKey(
+      const ValueKey<String>('combat-weapons-overview-table'),
+    );
+    for (var i = 0; i < 8 && table.evaluate().isEmpty; i++) {
       await tester.drag(find.byType(ListView).first, const Offset(0, -280));
       await tester.pumpAndSettle();
-      final removeButton = find.byKey(
-        const ValueKey<String>('combat-armor-remove-0'),
-      );
-      await tester.ensureVisible(removeButton);
+    }
+    expect(table, findsOneWidget);
+    expect(
+      find.descendant(of: table, matching: find.text('Waffentalent')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: table, matching: find.text('TP Kalk')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: table, matching: find.textContaining('1W6')),
+      findsWidgets,
+    );
+
+    final bidenFinder = find
+        .descendant(of: table, matching: find.text('Bidenhaender'))
+        .first;
+    final kurzFinder = find
+        .descendant(of: table, matching: find.text('Kurzschwert'))
+        .first;
+    expect(
+      tester.getTopLeft(bidenFinder).dy,
+      lessThan(tester.getTopLeft(kurzFinder).dy),
+    );
+  });
+
+  testWidgets('armor pieces can be added, edited and removed in read mode', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+
+    await openArmorEditor(tester);
+    await fillArmorDialog(
+      tester,
+      name: 'Kettenhemd',
+      rs: '3',
+      be: '4',
+      isActive: true,
+      rg1Active: true,
+    );
+
+    expect(find.textContaining('Kettenhemd'), findsOneWidget);
+    expect(
+      find.textContaining('RS 3 | BE 4 | Aktiv Ja | RG I Ja'),
+      findsOneWidget,
+    );
+
+    await openArmorEditor(tester, index: 0);
+    await fillArmorDialog(
+      tester,
+      name: 'Kettenhemd',
+      rs: '5',
+      be: '6',
+      isActive: true,
+      rg1Active: true,
+    );
+    expect(
+      find.textContaining('RS 5 | BE 6 | Aktiv Ja | RG I Ja'),
+      findsOneWidget,
+    );
+
+    final removeButton = find.byKey(
+      const ValueKey<String>('combat-armor-remove-0'),
+    );
+    for (var i = 0; i < 6 && removeButton.evaluate().isEmpty; i++) {
+      await tester.drag(find.byType(ListView).first, const Offset(0, -260));
       await tester.pumpAndSettle();
-      await tester.tap(removeButton);
-      await tester.pumpAndSettle();
-      expect(find.text('Keine Ruestungsstuecke erfasst.'), findsOneWidget);
-    },
-  );
+    }
+    expect(removeButton, findsOneWidget);
+    await tester.ensureVisible(removeButton);
+    await tester.pumpAndSettle();
+    await tester.tap(removeButton);
+    await tester.pumpAndSettle();
+    expect(find.text('Keine Ruestungsstuecke erfasst.'), findsOneWidget);
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.combatConfig.armor.pieces, isEmpty);
+  });
 }
