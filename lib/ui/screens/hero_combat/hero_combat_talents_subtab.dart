@@ -19,38 +19,44 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                FilledButton.icon(
-                  key: const ValueKey<String>('combat-talents-start-edit'),
-                  onPressed: _editController.isEditing
-                      ? null
-                      : () {
-                          _startEdit();
-                        },
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Bearbeiten'),
-                ),
-                const SizedBox(width: 8),
-                FilledButton.icon(
-                  key: const ValueKey<String>('combat-talents-visibility-mode-toggle'),
-                  onPressed: () => _setCombatTalentsVisibilityMode(
-                    !_combatTalentsVisibilityMode,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FilledButton.icon(
+                    key: const ValueKey<String>('combat-talents-start-edit'),
+                    onPressed: _editController.isEditing
+                        ? null
+                        : () {
+                            _startEdit();
+                          },
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Bearbeiten'),
                   ),
-                  icon: Icon(
-                    _combatTalentsVisibilityMode
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility,
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    key: const ValueKey<String>(
+                      'combat-talents-visibility-mode-toggle',
+                    ),
+                    onPressed: () => _setCombatTalentsVisibilityMode(
+                      !_combatTalentsVisibilityMode,
+                    ),
+                    icon: Icon(
+                      _combatTalentsVisibilityMode
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility,
+                    ),
+                    label: Text(
+                      _combatTalentsVisibilityMode
+                          ? 'Sichtbarkeit beenden'
+                          : 'Sichtbarkeit bearbeiten',
+                    ),
                   ),
-                  label: Text(
-                    _combatTalentsVisibilityMode
-                        ? 'Sichtbarkeit beenden'
-                        : 'Sichtbarkeit bearbeiten',
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

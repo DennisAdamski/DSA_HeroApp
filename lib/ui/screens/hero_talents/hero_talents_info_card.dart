@@ -8,47 +8,51 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
   }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            FilledButton.icon(
-              key: const ValueKey<String>('talents-local-start-edit'),
-              onPressed: _editController.isEditing
-                  ? null
-                  : () {
-                      _startEdit();
-                    },
-              icon: const Icon(Icons.edit),
-              label: const Text('Bearbeiten'),
-            ),
-            const SizedBox(width: 8),
-            OutlinedButton.icon(
-              key: const ValueKey<String>('talents-be-screen-open'),
-              onPressed: () => _openTalentBeScreen(
-                heroId: heroId,
-                combatBaseBe: combatBaseBe,
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              FilledButton.icon(
+                key: const ValueKey<String>('talents-local-start-edit'),
+                onPressed: _editController.isEditing
+                    ? null
+                    : () {
+                        _startEdit();
+                      },
+                icon: const Icon(Icons.edit),
+                label: const Text('Bearbeiten'),
               ),
-              icon: const Icon(Icons.shield_outlined),
-              label: Text('BE konfigurieren ($activeTalentBe)'),
-            ),
-            const SizedBox(width: 8),
-            FilledButton.icon(
-              key: const ValueKey<String>('talents-visibility-mode-toggle'),
-              onPressed: () => _setVisibilityMode(!_visibilityMode),
-              icon: Icon(
-                _visibilityMode
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility,
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                key: const ValueKey<String>('talents-be-screen-open'),
+                onPressed: () => _openTalentBeScreen(
+                  heroId: heroId,
+                  combatBaseBe: combatBaseBe,
+                ),
+                icon: const Icon(Icons.shield_outlined),
+                label: Text('BE konfigurieren ($activeTalentBe)'),
               ),
-              label: Text(
-                _visibilityMode
-                    ? 'Sichtbarkeit beenden'
-                    : 'Sichtbarkeit bearbeiten',
+              const SizedBox(width: 8),
+              FilledButton.icon(
+                key: const ValueKey<String>('talents-visibility-mode-toggle'),
+                onPressed: () => _setVisibilityMode(!_visibilityMode),
+                icon: Icon(
+                  _visibilityMode
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility,
+                ),
+                label: Text(
+                  _visibilityMode
+                      ? 'Sichtbarkeit beenden'
+                      : 'Sichtbarkeit bearbeiten',
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -57,14 +61,17 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
   Widget _buildCombatVisibilityActionBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-      child: FilledButton.icon(
-        key: const ValueKey<String>('talents-visibility-mode-toggle'),
-        onPressed: () => _setVisibilityMode(!_visibilityMode),
-        icon: Icon(
-          _visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
-        ),
-        label: Text(
-          _visibilityMode ? 'Sichtbarkeit beenden' : 'Sichtbarkeit bearbeiten',
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: FilledButton.icon(
+          key: const ValueKey<String>('talents-visibility-mode-toggle'),
+          onPressed: () => _setVisibilityMode(!_visibilityMode),
+          icon: Icon(
+            _visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
+          ),
+          label: Text(
+            _visibilityMode ? 'Sichtbarkeit beenden' : 'Sichtbarkeit bearbeiten',
+          ),
         ),
       ),
     );
