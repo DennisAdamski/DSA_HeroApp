@@ -433,6 +433,164 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     }
   }
 
+  void _setArmorPieces(List<ArmorPiece> pieces) {
+    _draftCombatConfig = _draftCombatConfig.copyWith(
+      armor: _draftCombatConfig.armor.copyWith(
+        pieces: List<ArmorPiece>.unmodifiable(pieces),
+      ),
+    );
+    _markFieldChanged();
+  }
+
+  void _removeArmorPiece(int index) {
+    final pieces = List<ArmorPiece>.from(_draftCombatConfig.armor.pieces);
+    if (index < 0 || index >= pieces.length) {
+      return;
+    }
+    pieces.removeAt(index);
+    _setArmorPieces(pieces);
+  }
+
+  Future<void> _openArmorPieceEditor({int? pieceIndex}) async {
+    final pieces = _draftCombatConfig.armor.pieces;
+    final isNew = pieceIndex == null;
+    final sourcePiece = isNew ? const ArmorPiece() : pieces[pieceIndex];
+    final nameController = TextEditingController(text: sourcePiece.name);
+    final rsController = TextEditingController(text: sourcePiece.rs.toString());
+    final beController = TextEditingController(text: sourcePiece.be.toString());
+    var isActive = sourcePiece.isActive;
+    var rg1Active = sourcePiece.rg1Active;
+    String? validationMessage;
+
+    final result = await showDialog<ArmorPiece>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(
+                isNew ? 'Ruestung hinzufuegen' : 'Ruestung bearbeiten',
+              ),
+              content: SizedBox(
+                width: 460,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        key: const ValueKey<String>('combat-armor-form-name'),
+                        controller: nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Name',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _dialogNumberField(
+                            controller: rsController,
+                            keyName: 'combat-armor-form-rs',
+                            label: 'RS',
+                          ),
+                          _dialogNumberField(
+                            controller: beController,
+                            keyName: 'combat-armor-form-be',
+                            label: 'BE',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      SwitchListTile(
+                        key: const ValueKey<String>('combat-armor-form-active'),
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Aktiv'),
+                        value: isActive,
+                        onChanged: (value) {
+                          setDialogState(() {
+                            isActive = value;
+                          });
+                        },
+                      ),
+                      SwitchListTile(
+                        key: const ValueKey<String>('combat-armor-form-rg1'),
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('RG I aktiv'),
+                        value: rg1Active,
+                        onChanged: (value) {
+                          setDialogState(() {
+                            rg1Active = value;
+                          });
+                        },
+                      ),
+                      if (validationMessage != null &&
+                          validationMessage!.trim().isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            validationMessage!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Abbrechen'),
+                ),
+                FilledButton(
+                  key: const ValueKey<String>('combat-armor-form-save'),
+                  onPressed: () {
+                    final name = nameController.text.trim();
+                    final parsedRs = int.tryParse(rsController.text.trim()) ?? 0;
+                    final parsedBe = int.tryParse(beController.text.trim()) ?? 0;
+                    if (name.isEmpty) {
+                      setDialogState(() {
+                        validationMessage = 'Name ist ein Pflichtfeld.';
+                      });
+                      return;
+                    }
+                    Navigator.of(context).pop(
+                      sourcePiece.copyWith(
+                        name: name,
+                        isActive: isActive,
+                        rg1Active: rg1Active,
+                        rs: parsedRs < 0 ? 0 : parsedRs,
+                        be: parsedBe < 0 ? 0 : parsedBe,
+                      ),
+                    );
+                  },
+                  child: const Text('Speichern'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == null) {
+      return;
+    }
+    final updatedPieces = List<ArmorPiece>.from(_draftCombatConfig.armor.pieces);
+    if (isNew) {
+      updatedPieces.add(result);
+    } else {
+      updatedPieces[pieceIndex] = result;
+    }
+    _setArmorPieces(updatedPieces);
+  }
+
   Widget _buildMeleeCalculatorSubTab(
     List<TalentDef> combatTalents,
     RulesCatalog catalog,
@@ -686,79 +844,97 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                Row(
                   children: [
-                    _numberInput(
-                      label: 'RS Gesamt',
-                      keyName: 'combat-armor-rs',
-                      isEditing: isEditing,
-                      onChanged: (parsed) {
-                        _draftCombatConfig = _draftCombatConfig.copyWith(
-                          armor: armor.copyWith(
-                            rsTotal: parsed < 0 ? 0 : parsed,
-                          ),
-                        );
-                        _markFieldChanged();
-                      },
-                    ),
-                    _numberInput(
-                      label: 'BE Roh',
-                      keyName: 'combat-armor-be-raw',
-                      isEditing: isEditing,
-                      onChanged: (parsed) {
-                        _draftCombatConfig = _draftCombatConfig.copyWith(
-                          armor: armor.copyWith(
-                            beTotalRaw: parsed < 0 ? 0 : parsed,
-                          ),
-                        );
-                        _markFieldChanged();
-                      },
+                    Expanded(
+                      child: DropdownButtonFormField<int>(
+                        key: const ValueKey<String>(
+                          'combat-armor-global-training-level',
+                        ),
+                        initialValue: armor.globalArmorTrainingLevel,
+                        decoration: const InputDecoration(
+                          labelText: 'Globale Ruestungsgewoehnung',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 0, child: Text('0')),
+                          DropdownMenuItem(value: 2, child: Text('II')),
+                          DropdownMenuItem(value: 3, child: Text('III')),
+                        ],
+                        onChanged: !isEditing
+                            ? null
+                            : (value) {
+                                _draftCombatConfig = _draftCombatConfig.copyWith(
+                                  armor: armor.copyWith(
+                                    globalArmorTrainingLevel: value ?? 0,
+                                  ),
+                                );
+                                _markFieldChanged();
+                              },
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                DropdownButtonFormField<int>(
-                  key: const ValueKey<String>('combat-armor-training-level'),
-                  initialValue: armor.armorTrainingLevel,
-                  decoration: const InputDecoration(
-                    labelText: 'Ruestungsgewoehnung (0-4)',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 0, child: Text('0')),
-                    DropdownMenuItem(value: 1, child: Text('I')),
-                    DropdownMenuItem(value: 2, child: Text('II')),
-                    DropdownMenuItem(value: 3, child: Text('III')),
-                    DropdownMenuItem(value: 4, child: Text('IV')),
+                Row(
+                  children: [
+                    FilledButton.icon(
+                      key: const ValueKey<String>('combat-armor-add'),
+                      onPressed: !isEditing ? null : () => _openArmorPieceEditor(),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Ruestung hinzufuegen'),
+                    ),
                   ],
-                  onChanged: !isEditing
-                      ? null
-                      : (value) {
-                          _draftCombatConfig = _draftCombatConfig.copyWith(
-                            armor: armor.copyWith(
-                              armorTrainingLevel: value ?? 0,
+                ),
+                const SizedBox(height: 10),
+                if (armor.pieces.isEmpty)
+                  const Text('Keine Ruestungsstuecke erfasst.')
+                else
+                  Column(
+                    children: [
+                      for (var i = 0; i < armor.pieces.length; i++)
+                        Card(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          child: ListTile(
+                            title: Text(armor.pieces[i].name),
+                            subtitle: Text(
+                              'RS ${armor.pieces[i].rs} | BE ${armor.pieces[i].be} | '
+                              'Aktiv ${armor.pieces[i].isActive ? 'Ja' : 'Nein'} | '
+                              'RG I ${armor.pieces[i].rg1Active ? 'Ja' : 'Nein'}',
                             ),
-                          );
-                          _markFieldChanged();
-                        },
-                ),
-                SwitchListTile(
-                  title: const Text('RG I aktiv'),
-                  value: armor.rgIActive,
-                  onChanged: !isEditing
-                      ? null
-                      : (enabled) {
-                          _draftCombatConfig = _draftCombatConfig.copyWith(
-                            armor: armor.copyWith(rgIActive: enabled),
-                          );
-                          _markFieldChanged();
-                        },
-                ),
+                            trailing: Wrap(
+                              spacing: 4,
+                              children: [
+                                IconButton(
+                                  key: ValueKey<String>('combat-armor-edit-$i'),
+                                  tooltip: 'Ruestung bearbeiten',
+                                  onPressed: !isEditing
+                                      ? null
+                                      : () => _openArmorPieceEditor(
+                                            pieceIndex: i,
+                                          ),
+                                  icon: const Icon(Icons.edit),
+                                ),
+                                IconButton(
+                                  key: ValueKey<String>(
+                                    'combat-armor-remove-$i',
+                                  ),
+                                  tooltip: 'Ruestung entfernen',
+                                  onPressed: !isEditing
+                                      ? null
+                                      : () => _removeArmorPiece(i),
+                                  icon: const Icon(Icons.delete),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                const SizedBox(height: 8),
                 const Text(
-                  'Hinweis: RG IV nutzt aktuell den RG-III-Fallback. '
-                  'TODO fuer die exakte Regelableitung ist gesetzt.',
+                  'RG I ist global effektiv auf -1 BE begrenzt. '
+                  'RG II/III ersetzen RG I und werden nicht kombiniert.',
                 ),
               ],
             ),

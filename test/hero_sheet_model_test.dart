@@ -68,10 +68,16 @@ void main() {
           iniMod: -3,
         ),
         armor: ArmorConfig(
-          rsTotal: 3,
-          beTotalRaw: 2,
-          armorTrainingLevel: 2,
-          rgIActive: true,
+          pieces: <ArmorPiece>[
+            ArmorPiece(
+              name: 'Kettenhemd',
+              isActive: true,
+              rg1Active: true,
+              rs: 3,
+              be: 2,
+            ),
+          ],
+          globalArmorTrainingLevel: 2,
         ),
         specialRules: CombatSpecialRules(
           kampfreflexe: true,
@@ -103,7 +109,9 @@ void main() {
     expect(reloaded.combatConfig.weaponSlots.length, 1);
     expect(reloaded.combatConfig.selectedWeaponIndex, 0);
     expect(reloaded.combatConfig.offhand.mode, OffhandMode.shield);
-    expect(reloaded.combatConfig.armor.beTotalRaw, 2);
+    expect(reloaded.combatConfig.armor.pieces.length, 1);
+    expect(reloaded.combatConfig.armor.pieces.first.be, 2);
+    expect(reloaded.combatConfig.armor.globalArmorTrainingLevel, 2);
     expect(reloaded.combatConfig.specialRules.kampfreflexe, isTrue);
     expect(reloaded.combatConfig.specialRules.activeManeuvers, [
       'Finte',
@@ -178,5 +186,36 @@ void main() {
     expect(reloaded.combatConfig.selectedWeaponIndex, 1);
     expect(reloaded.combatConfig.mainWeapon.name, 'Bidenhaender');
     expect(reloaded.combatConfig.selectedWeapon.isOneHanded, isFalse);
+  });
+
+  test('legacy armor fields are ignored and load as empty armor piece list', () {
+    final legacy = {
+      'schemaVersion': 1,
+      'id': 'legacy_armor',
+      'name': 'Alt',
+      'level': 1,
+      'attributes': {
+        'mu': 8,
+        'kl': 8,
+        'inn': 8,
+        'ch': 8,
+        'ff': 8,
+        'ge': 8,
+        'ko': 8,
+        'kk': 8,
+      },
+      'combatConfig': {
+        'armor': {
+          'rsTotal': 5,
+          'beTotalRaw': 4,
+          'armorTrainingLevel': 3,
+          'rgIActive': true,
+        },
+      },
+    };
+
+    final loaded = HeroSheet.fromJson(legacy);
+    expect(loaded.combatConfig.armor.pieces, isEmpty);
+    expect(loaded.combatConfig.armor.globalArmorTrainingLevel, 0);
   });
 }

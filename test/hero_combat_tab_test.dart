@@ -203,6 +203,68 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> openArmorEditor(WidgetTester tester, {int? index}) async {
+    final key = index == null
+        ? const ValueKey<String>('combat-armor-add')
+        : ValueKey<String>('combat-armor-edit-$index');
+    final target = find.byKey(key);
+    for (var i = 0; i < 6 && target.evaluate().isEmpty; i++) {
+      await tester.drag(find.byType(ListView).first, const Offset(0, -280));
+      await tester.pumpAndSettle();
+    }
+    expect(target, findsOneWidget);
+    await tester.ensureVisible(target);
+    await tester.pumpAndSettle();
+    if (index == null) {
+      await tester.tap(target);
+    } else {
+      await tester.tap(target);
+    }
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('combat-armor-form-name')),
+      findsOneWidget,
+    );
+  }
+
+  Future<void> fillArmorDialog(
+    WidgetTester tester, {
+    required String name,
+    required String rs,
+    required String be,
+    required bool isActive,
+    required bool rg1Active,
+  }) async {
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('combat-armor-form-name')),
+      name,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('combat-armor-form-rs')),
+      rs,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('combat-armor-form-be')),
+      be,
+    );
+
+    Future<void> setSwitch(String key, bool value) async {
+      final tile = find.byKey(ValueKey<String>(key));
+      final tileWidget = tester.widget<SwitchListTile>(tile);
+      if (tileWidget.value == value) {
+        return;
+      }
+      await tester.tap(tile, warnIfMissed: false);
+      await tester.pumpAndSettle();
+    }
+
+    await setSwitch('combat-armor-form-active', isActive);
+    await setSwitch('combat-armor-form-rg1', rg1Active);
+
+    await tester.tap(find.byKey(const ValueKey<String>('combat-armor-form-save')));
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('shows combat submenu tabs', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
@@ -451,5 +513,61 @@ void main() {
       find.descendant(of: finteTile, matching: find.text('Nicht unterstuetzt')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('armor pieces can be added, edited and removed with live preview', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openCombatTab(tester, repo);
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+
+    await openArmorEditor(tester);
+    await fillArmorDialog(
+      tester,
+      name: 'Kettenhemd',
+      rs: '3',
+      be: '4',
+      isActive: true,
+      rg1Active: true,
+    );
+
+    expect(find.textContaining('Kettenhemd'), findsOneWidget);
+    expect(find.textContaining('RS 3 | BE 4 | Aktiv Ja | RG I Ja'), findsOneWidget);
+
+    await openArmorEditor(tester, index: 0);
+    await fillArmorDialog(
+      tester,
+      name: 'Kettenhemd',
+      rs: '5',
+      be: '6',
+      isActive: true,
+      rg1Active: true,
+    );
+    expect(find.textContaining('RS 5 | BE 6 | Aktiv Ja | RG I Ja'), findsOneWidget);
+
+    await tester.drag(find.byType(ListView).first, const Offset(0, -280));
+    await tester.pumpAndSettle();
+    final removeButton = find.byKey(const ValueKey<String>('combat-armor-remove-0'));
+    await tester.ensureVisible(removeButton);
+    await tester.pumpAndSettle();
+    await tester.tap(removeButton);
+    await tester.pumpAndSettle();
+    expect(find.text('Keine Ruestungsstuecke erfasst.'), findsOneWidget);
   });
 }

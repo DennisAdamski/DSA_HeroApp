@@ -138,12 +138,9 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _controllerFor('combat-offhand-at-mod', offhand.atMod.toString());
     _controllerFor('combat-offhand-pa-mod', offhand.paMod.toString());
     _controllerFor('combat-offhand-ini-mod', offhand.iniMod.toString());
-
-    _controllerFor('combat-armor-rs', armor.rsTotal.toString());
-    _controllerFor('combat-armor-be-raw', armor.beTotalRaw.toString());
     _controllerFor(
-      'combat-armor-training-level',
-      armor.armorTrainingLevel.toString(),
+      'combat-armor-global-training-level',
+      armor.globalArmorTrainingLevel.toString(),
     );
 
     _controllerFor('combat-manual-ini-mod', manual.iniMod.toString());

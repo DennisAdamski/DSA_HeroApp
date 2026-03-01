@@ -196,49 +196,104 @@ class OffhandSlot {
   }
 }
 
-class ArmorConfig {
-  const ArmorConfig({
-    this.rsTotal = 0,
-    this.beTotalRaw = 0,
-    this.armorTrainingLevel = 0,
-    this.rgIActive = false,
+class ArmorPiece {
+  const ArmorPiece({
+    this.name = '',
+    this.isActive = false,
+    this.rg1Active = false,
+    this.rs = 0,
+    this.be = 0,
   });
 
-  final int rsTotal;
-  final int beTotalRaw;
-  final int armorTrainingLevel;
-  final bool rgIActive;
+  final String name;
+  final bool isActive;
+  final bool rg1Active;
+  final int rs;
+  final int be;
 
-  ArmorConfig copyWith({
-    int? rsTotal,
-    int? beTotalRaw,
-    int? armorTrainingLevel,
-    bool? rgIActive,
+  ArmorPiece copyWith({
+    String? name,
+    bool? isActive,
+    bool? rg1Active,
+    int? rs,
+    int? be,
   }) {
-    return ArmorConfig(
-      rsTotal: rsTotal ?? this.rsTotal,
-      beTotalRaw: beTotalRaw ?? this.beTotalRaw,
-      armorTrainingLevel: armorTrainingLevel ?? this.armorTrainingLevel,
-      rgIActive: rgIActive ?? this.rgIActive,
+    return ArmorPiece(
+      name: name ?? this.name,
+      isActive: isActive ?? this.isActive,
+      rg1Active: rg1Active ?? this.rg1Active,
+      rs: rs ?? this.rs,
+      be: be ?? this.be,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'rsTotal': rsTotal,
-      'beTotalRaw': beTotalRaw,
-      'armorTrainingLevel': armorTrainingLevel,
-      'rgIActive': rgIActive,
+      'name': name,
+      'isActive': isActive,
+      'rg1Active': rg1Active,
+      'rs': rs,
+      'be': be,
+    };
+  }
+
+  static ArmorPiece fromJson(Map<String, dynamic> json) {
+    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
+    return ArmorPiece(
+      name: (json['name'] as String?) ?? '',
+      isActive: (json['isActive'] as bool?) ?? false,
+      rg1Active: (json['rg1Active'] as bool?) ?? false,
+      rs: getInt('rs'),
+      be: getInt('be'),
+    );
+  }
+}
+
+class ArmorConfig {
+  const ArmorConfig({
+    this.pieces = const <ArmorPiece>[],
+    this.globalArmorTrainingLevel = 0,
+  });
+
+  final List<ArmorPiece> pieces;
+  final int globalArmorTrainingLevel;
+
+  ArmorConfig copyWith({
+    List<ArmorPiece>? pieces,
+    int? globalArmorTrainingLevel,
+  }) {
+    return ArmorConfig(
+      pieces: List<ArmorPiece>.unmodifiable(
+        pieces ?? this.pieces,
+      ),
+      globalArmorTrainingLevel:
+          globalArmorTrainingLevel ?? this.globalArmorTrainingLevel,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'pieces': pieces.map((entry) => entry.toJson()).toList(growable: false),
+      'globalArmorTrainingLevel': globalArmorTrainingLevel,
     };
   }
 
   static ArmorConfig fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
+    final rawPieces = (json['pieces'] as List?) ?? const <dynamic>[];
+    final parsedPieces = rawPieces
+        .whereType<Map>()
+        .map((entry) => ArmorPiece.fromJson(entry.cast<String, dynamic>()))
+        .toList(growable: false);
+    var normalizedTraining =
+        (json['globalArmorTrainingLevel'] as num?)?.toInt() ?? 0;
+    if (normalizedTraining != 0 &&
+        normalizedTraining != 2 &&
+        normalizedTraining != 3) {
+      normalizedTraining = 0;
+    }
     return ArmorConfig(
-      rsTotal: getInt('rsTotal'),
-      beTotalRaw: getInt('beTotalRaw'),
-      armorTrainingLevel: getInt('armorTrainingLevel'),
-      rgIActive: (json['rgIActive'] as bool?) ?? false,
+      pieces: parsedPieces,
+      globalArmorTrainingLevel: normalizedTraining,
     );
   }
 }
