@@ -42,7 +42,7 @@ Vollstaendige Anleitung:
 
 ### UI-Performance Guardrails (Stand: 2026-03-01)
 - Rebuild-Guardrail (Widget-Test): `flutter test test/ui_rebuild_guardrails_test.dart`
-- FrameTiming-Messung (Integration): `flutter test integration_test/ui_edit_frame_timing_test.dart`
+- FrameTiming-Messung (Profile, Integration): `flutter drive --profile --driver=test_driver/integration_test.dart --target=integration_test/ui_edit_frame_timing_test.dart -d <deviceId>`
 - LOC-Budget-Check fuer `lib/ui/screens`: `python tool/check_screen_loc_budget.py --max-lines 700`
 
 ### Tooling und Datenaufbereitung
