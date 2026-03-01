@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
@@ -54,6 +57,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   Set<String> _draftHiddenTalentIds = <String>{};
   Set<String> _invalidCombatTalentIds = <String>{};
   CombatConfig _draftCombatConfig = const CombatConfig();
+  bool _combatTalentsVisibilityMode = false;
 
   @override
   void initState() {
@@ -108,6 +112,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _draftHiddenTalentIds = normalizeHiddenTalentIds(hero.hiddenTalentIds);
     _invalidCombatTalentIds = <String>{};
     _draftCombatConfig = hero.combatConfig;
+    _combatTalentsVisibilityMode = false;
     _seedCombatControllers();
   }
 
@@ -341,6 +346,32 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _markFieldChanged();
   }
 
+  void _setHiddenForGroup(List<TalentDef> talents, {required bool hidden}) {
+    for (final talent in talents) {
+      if (hidden) {
+        _draftHiddenTalentIds.add(talent.id);
+      } else {
+        _draftHiddenTalentIds.remove(talent.id);
+      }
+    }
+    _markFieldChanged();
+  }
+
+  void _setCombatTalentsVisibilityMode(bool enabled) {
+    if (_combatTalentsVisibilityMode == enabled) {
+      return;
+    }
+    setState(() {
+      _combatTalentsVisibilityMode = enabled;
+    });
+  }
+
+  void _updateGifted(String talentId, bool value) {
+    final current = _entryForTalent(talentId);
+    _draftTalents[talentId] = current.copyWith(gifted: value);
+    _markFieldChanged();
+  }
+
   void _markFieldChanged() {
     if (!mounted) {
       return;
@@ -439,6 +470,10 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                 overrideTalents: _draftTalents,
                 catalogTalents: catalog.talents,
               );
+              final effectiveAttributes = computeEffectiveAttributes(
+                hero,
+                tempAttributeMods: state.tempAttributeMods,
+              );
 
               return Column(
                 children: [
@@ -454,7 +489,10 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                     child: TabBarView(
                       controller: _subTabController,
                       children: [
-                        _buildCombatTalentsSubTab(combatTalents),
+                        _buildCombatTalentsSubTab(
+                          combatTalents,
+                          effectiveAttributes: effectiveAttributes,
+                        ),
                         _buildMeleeCalculatorSubTab(
                           combatTalents,
                           catalog,

@@ -105,6 +105,13 @@ void main() {
     return actions!;
   }
 
+  Future<void> enableVisibilityMode(WidgetTester tester) async {
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-visibility-mode-toggle')),
+    );
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('shows only combat talents grouped by type', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
@@ -261,6 +268,7 @@ void main() {
       find.byKey(const ValueKey<String>('talents-field-tal_fern-paValue')),
       '0',
     );
+    await enableVisibilityMode(tester);
     final visibilityToggle = find.byKey(
       const ValueKey<String>('talents-visibility-tal_nah'),
     );

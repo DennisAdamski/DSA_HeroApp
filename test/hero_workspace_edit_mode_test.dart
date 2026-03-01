@@ -373,6 +373,7 @@ void main() {
 
       await openWorkspace(tester, repo);
       expect(find.text('LEP: 10/22'), findsOneWidget);
+      expect(find.text('BE aktuell: 0'), findsOneWidget);
 
       await tester.tap(find.text('Bearbeiten').first);
       await tester.pumpAndSettle();
