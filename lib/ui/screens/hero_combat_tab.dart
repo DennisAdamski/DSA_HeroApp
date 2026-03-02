@@ -22,6 +22,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 part 'hero_combat/hero_combat_talents_subtab.dart';
 part 'hero_combat/hero_combat_melee_subtab.dart';
 part 'hero_combat/hero_combat_special_rules_subtab.dart';
+part 'hero_combat/hero_combat_maneuvers_subtab.dart';
 part 'hero_combat/hero_combat_form_fields.dart';
 
 enum _ManeuverSupportStatus { supported, notSupported, unverifiable }
@@ -78,7 +79,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
         }
       },
     );
-    _subTabController = TabController(length: 4, vsync: this);
+    _subTabController = TabController(length: 5, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -569,7 +570,8 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                       Tab(text: 'Kampftechniken'),
                       Tab(text: 'Waffen'),
                       Tab(text: 'Nahkampf'),
-                      Tab(text: 'SF/Manoever'),
+                      Tab(text: 'Sonderfertigkeiten'),
+                      Tab(text: 'Manoever'),
                     ],
                   ),
                   Expanded(
@@ -591,7 +593,8 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                           catalog,
                           preview,
                         ),
-                        _buildSpecialRulesSubTab(catalog),
+                        _buildSpecialRulesSubTab(hero),
+                        _buildManeuversSubTab(catalog),
                       ],
                     ),
                   ),
