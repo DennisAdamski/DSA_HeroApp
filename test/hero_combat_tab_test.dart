@@ -756,6 +756,262 @@ void main() {
     expect(hero.combatConfig.mainWeapon.name, 'Kurzschwert');
   });
 
+  testWidgets(
+    'melee info panel shows active weapon stats and supported active maneuvers',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              weapons: <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzschwert',
+                  talentId: 'tal_nah',
+                  weaponType: 'Kurzschwert',
+                ),
+                MainWeaponSlot(
+                  name: 'Bidenhaender',
+                  talentId: 'tal_nah',
+                  weaponType: 'Bidenhaender',
+                  wmAt: 3,
+                  wmPa: 2,
+                  iniMod: 4,
+                  tpFlat: 5,
+                ),
+              ],
+              selectedWeaponIndex: 0,
+              specialRules: CombatSpecialRules(
+                activeManeuvers: <String>['Finte', 'Wuchtschlag'],
+              ),
+            ),
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo);
+      await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('combat-active-weapon-info-card')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('combat-active-weapon-info-at')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('combat-active-weapon-info-pa')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('combat-active-weapon-info-tp')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('combat-active-weapon-info-ini')),
+        findsOneWidget,
+      );
+
+      final atBefore =
+          (tester
+                      .widget<Chip>(
+                        find.byKey(
+                          const ValueKey<String>(
+                            'combat-active-weapon-info-at',
+                          ),
+                        ),
+                      )
+                      .label
+                  as Text)
+              .data;
+      final paBefore =
+          (tester
+                      .widget<Chip>(
+                        find.byKey(
+                          const ValueKey<String>(
+                            'combat-active-weapon-info-pa',
+                          ),
+                        ),
+                      )
+                      .label
+                  as Text)
+              .data;
+      final tpBefore =
+          (tester
+                      .widget<Chip>(
+                        find.byKey(
+                          const ValueKey<String>(
+                            'combat-active-weapon-info-tp',
+                          ),
+                        ),
+                      )
+                      .label
+                  as Text)
+              .data;
+      final iniBefore =
+          (tester
+                      .widget<Chip>(
+                        find.byKey(
+                          const ValueKey<String>(
+                            'combat-active-weapon-info-ini',
+                          ),
+                        ),
+                      )
+                      .label
+                  as Text)
+              .data;
+
+      final maneuversFinder = find.byKey(
+        const ValueKey<String>('combat-active-weapon-info-maneuvers'),
+      );
+      expect(
+        find.descendant(of: maneuversFinder, matching: find.text('Finte')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: maneuversFinder,
+          matching: find.text('Wuchtschlag'),
+        ),
+        findsNothing,
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('combat-main-weapon-select-0-2')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bidenhaender').last);
+      await tester.pumpAndSettle();
+
+      final atAfter =
+          (tester
+                      .widget<Chip>(
+                        find.byKey(
+                          const ValueKey<String>(
+                            'combat-active-weapon-info-at',
+                          ),
+                        ),
+                      )
+                      .label
+                  as Text)
+              .data;
+      final paAfter =
+          (tester
+                      .widget<Chip>(
+                        find.byKey(
+                          const ValueKey<String>(
+                            'combat-active-weapon-info-pa',
+                          ),
+                        ),
+                      )
+                      .label
+                  as Text)
+              .data;
+      final tpAfter =
+          (tester
+                      .widget<Chip>(
+                        find.byKey(
+                          const ValueKey<String>(
+                            'combat-active-weapon-info-tp',
+                          ),
+                        ),
+                      )
+                      .label
+                  as Text)
+              .data;
+      final iniAfter =
+          (tester
+                      .widget<Chip>(
+                        find.byKey(
+                          const ValueKey<String>(
+                            'combat-active-weapon-info-ini',
+                          ),
+                        ),
+                      )
+                      .label
+                  as Text)
+              .data;
+
+      expect(atAfter, isNot(equals(atBefore)));
+      expect(paAfter, isNot(equals(paBefore)));
+      expect(tpAfter, isNot(equals(tpBefore)));
+      expect(iniAfter, isNot(equals(iniBefore)));
+
+      expect(
+        find.descendant(of: maneuversFinder, matching: find.text('Finte')),
+        findsNothing,
+      );
+      expect(
+        find.descendant(
+          of: maneuversFinder,
+          matching: find.text('Wuchtschlag'),
+        ),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('melee info panel shows empty state when no weapon is selected', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
+              ),
+              MainWeaponSlot(
+                name: 'Bidenhaender',
+                talentId: 'tal_nah',
+                weaponType: 'Bidenhaender',
+              ),
+            ],
+            selectedWeaponIndex: -1,
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('combat-active-weapon-info-card')),
+      findsOneWidget,
+    );
+    expect(find.text('Keine aktive Waffe ausgewaehlt.'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('combat-active-weapon-info-at')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-active-weapon-info-maneuvers')),
+      findsNothing,
+    );
+  });
+
   testWidgets('offhand values persist in read mode', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],

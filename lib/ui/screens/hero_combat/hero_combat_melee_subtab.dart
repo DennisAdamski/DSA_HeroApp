@@ -400,51 +400,33 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final selectionCard = _buildActiveWeaponSelectionCard(
+              catalog: catalog,
+              meleeTalents: sortedTalents,
+              selectedWeaponIndex: selectedWeaponIndex,
+              weaponSlots: weaponSlots,
+            );
+            final infoCard = _buildActiveWeaponInfoCard(
+              selectedWeaponIndex: selectedWeaponIndex,
+              preview: preview,
+              catalog: catalog,
+            );
+            if (constraints.maxWidth < 900) {
+              return Column(
+                children: [selectionCard, const SizedBox(height: 12), infoCard],
+              );
+            }
+            return Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Waffe', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<int?>(
-                  key: ValueKey<String>(
-                    'combat-main-weapon-select-${selectedWeaponIndex < 0 ? 'none' : selectedWeaponIndex}-${weaponSlots.length}',
-                  ),
-                  initialValue: selectedWeaponIndex < 0
-                      ? null
-                      : selectedWeaponIndex,
-                  decoration: const InputDecoration(
-                    labelText: 'Aktive Waffe',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: [
-                    const DropdownMenuItem<int?>(
-                      value: null,
-                      child: Text('Keine Waffe'),
-                    ),
-                    for (var i = 0; i < weaponSlots.length; i++)
-                      DropdownMenuItem<int?>(
-                        value: i,
-                        child: Text(
-                          weaponSlots[i].name.trim().isEmpty
-                              ? 'Waffe ${i + 1}'
-                              : weaponSlots[i].name,
-                        ),
-                      ),
-                  ],
-                  onChanged: (value) {
-                    _selectWeaponIndex(
-                      value,
-                      catalog: catalog,
-                      meleeTalents: sortedTalents,
-                    );
-                  },
-                ),
+                Expanded(child: selectionCard),
+                const SizedBox(width: 12),
+                Expanded(child: infoCard),
               ],
-            ),
-          ),
+            );
+          },
         ),
         Card(
           child: Padding(
@@ -815,6 +797,174 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         ),
       ],
     );
+  }
+
+  Widget _buildActiveWeaponSelectionCard({
+    required RulesCatalog catalog,
+    required List<TalentDef> meleeTalents,
+    required int selectedWeaponIndex,
+    required List<MainWeaponSlot> weaponSlots,
+  }) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Waffe', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<int?>(
+              key: ValueKey<String>(
+                'combat-main-weapon-select-${selectedWeaponIndex < 0 ? 'none' : selectedWeaponIndex}-${weaponSlots.length}',
+              ),
+              initialValue: selectedWeaponIndex < 0
+                  ? null
+                  : selectedWeaponIndex,
+              decoration: const InputDecoration(
+                labelText: 'Aktive Waffe',
+                border: OutlineInputBorder(),
+              ),
+              items: [
+                const DropdownMenuItem<int?>(
+                  value: null,
+                  child: Text('Keine Waffe'),
+                ),
+                for (var i = 0; i < weaponSlots.length; i++)
+                  DropdownMenuItem<int?>(
+                    value: i,
+                    child: Text(
+                      weaponSlots[i].name.trim().isEmpty
+                          ? 'Waffe ${i + 1}'
+                          : weaponSlots[i].name,
+                    ),
+                  ),
+              ],
+              onChanged: (value) {
+                _selectWeaponIndex(
+                  value,
+                  catalog: catalog,
+                  meleeTalents: meleeTalents,
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActiveWeaponInfoCard({
+    required int selectedWeaponIndex,
+    required CombatPreviewStats preview,
+    required RulesCatalog catalog,
+  }) {
+    final hasActiveWeapon =
+        selectedWeaponIndex >= 0 &&
+        selectedWeaponIndex < _draftCombatConfig.weaponSlots.length;
+    final activeSupportedManeuvers = hasActiveWeapon
+        ? _activeSupportedManeuversForSelectedWeapon(catalog)
+        : const <String>[];
+    return Card(
+      key: const ValueKey<String>('combat-active-weapon-info-card'),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Aktive Waffe - Uebersicht',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            if (!hasActiveWeapon)
+              const Text('Keine aktive Waffe ausgewaehlt.')
+            else ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  Chip(
+                    key: const ValueKey<String>('combat-active-weapon-info-at'),
+                    label: Text('AT: ${preview.at}'),
+                  ),
+                  Chip(
+                    key: const ValueKey<String>('combat-active-weapon-info-pa'),
+                    label: Text('PA: ${preview.pa}'),
+                  ),
+                  Chip(
+                    key: const ValueKey<String>('combat-active-weapon-info-tp'),
+                    label: Text('TP: ${preview.tpExpression}'),
+                  ),
+                  Chip(
+                    key: const ValueKey<String>(
+                      'combat-active-weapon-info-ini',
+                    ),
+                    label: Text('INI: ${preview.initiative}'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text('Manoever', style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(height: 4),
+              if (activeSupportedManeuvers.isEmpty)
+                const Text(
+                  'Keine erlernten, waffenkompatiblen Manoever.',
+                  key: ValueKey<String>('combat-active-weapon-info-maneuvers'),
+                )
+              else
+                Wrap(
+                  key: const ValueKey<String>(
+                    'combat-active-weapon-info-maneuvers',
+                  ),
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final maneuver in activeSupportedManeuvers)
+                      Chip(label: Text(maneuver)),
+                  ],
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<String> _activeSupportedManeuversForSelectedWeapon(
+    RulesCatalog catalog,
+  ) {
+    final activeManeuvers = _draftCombatConfig.specialRules.activeManeuvers;
+    if (activeManeuvers.isEmpty) {
+      return const <String>[];
+    }
+    final allCatalogManeuvers = _collectCatalogManeuvers(catalog.weapons);
+    if (allCatalogManeuvers.isEmpty) {
+      return const <String>[];
+    }
+    final supportByManeuver = _buildManeuverSupportMap(
+      catalog,
+      allCatalogManeuvers,
+    );
+    final supportedTokens = supportByManeuver.entries
+        .where((entry) => entry.value == _ManeuverSupportStatus.supported)
+        .map((entry) => _normalizeToken(entry.key))
+        .where((entry) => entry.isNotEmpty)
+        .toSet();
+    final filtered = <String>[];
+    final seen = <String>{};
+    for (final raw in activeManeuvers) {
+      final trimmed = raw.trim();
+      final token = _normalizeToken(trimmed);
+      if (trimmed.isEmpty ||
+          token.isEmpty ||
+          seen.contains(token) ||
+          !supportedTokens.contains(token)) {
+        continue;
+      }
+      seen.add(token);
+      filtered.add(trimmed);
+    }
+    return filtered;
   }
 
   static const List<String> _weaponOverviewHeaders = <String>[
