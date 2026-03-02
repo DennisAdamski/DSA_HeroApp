@@ -311,6 +311,7 @@ class CombatSpecialRules {
     this.flink = false,
     this.behaebig = false,
     this.axxeleratusActive = false,
+    this.klingentaenzer = false,
     this.activeManeuvers = const <String>[],
   });
 
@@ -327,6 +328,8 @@ class CombatSpecialRules {
   final bool flink;
   final bool behaebig;
   final bool axxeleratusActive;
+  // Klingentaenzer: wirft 2W6 statt 1W6 auf Initiative
+  final bool klingentaenzer;
   final List<String> activeManeuvers;
 
   CombatSpecialRules copyWith({
@@ -343,6 +346,7 @@ class CombatSpecialRules {
     bool? flink,
     bool? behaebig,
     bool? axxeleratusActive,
+    bool? klingentaenzer,
     List<String>? activeManeuvers,
   }) {
     return CombatSpecialRules(
@@ -359,6 +363,7 @@ class CombatSpecialRules {
       flink: flink ?? this.flink,
       behaebig: behaebig ?? this.behaebig,
       axxeleratusActive: axxeleratusActive ?? this.axxeleratusActive,
+      klingentaenzer: klingentaenzer ?? this.klingentaenzer,
       activeManeuvers: _normalizeStringList(
         activeManeuvers ?? this.activeManeuvers,
       ),
@@ -380,6 +385,7 @@ class CombatSpecialRules {
       'flink': flink,
       'behaebig': behaebig,
       'axxeleratusActive': axxeleratusActive,
+      'klingentaenzer': klingentaenzer,
       'activeManeuvers': _normalizeStringList(activeManeuvers),
     };
   }
@@ -400,6 +406,7 @@ class CombatSpecialRules {
       flink: getBool('flink'),
       behaebig: getBool('behaebig'),
       axxeleratusActive: getBool('axxeleratusActive'),
+      klingentaenzer: getBool('klingentaenzer'),
       activeManeuvers: _normalizeStringList(
         (json['activeManeuvers'] as List?) ?? const <dynamic>[],
       ),
@@ -413,24 +420,29 @@ class CombatManualMods {
     this.ausweichenMod = 0,
     this.atMod = 0,
     this.paMod = 0,
+    this.iniWurf = 0,
   });
 
   final int iniMod;
   final int ausweichenMod;
   final int atMod;
   final int paMod;
+  // Ergebnis des physischen W6/2W6-Wurfs zu Kampfrundenbeginn
+  final int iniWurf;
 
   CombatManualMods copyWith({
     int? iniMod,
     int? ausweichenMod,
     int? atMod,
     int? paMod,
+    int? iniWurf,
   }) {
     return CombatManualMods(
       iniMod: iniMod ?? this.iniMod,
       ausweichenMod: ausweichenMod ?? this.ausweichenMod,
       atMod: atMod ?? this.atMod,
       paMod: paMod ?? this.paMod,
+      iniWurf: iniWurf ?? this.iniWurf,
     );
   }
 
@@ -440,6 +452,7 @@ class CombatManualMods {
       'ausweichenMod': ausweichenMod,
       'atMod': atMod,
       'paMod': paMod,
+      'iniWurf': iniWurf,
     };
   }
 
@@ -450,6 +463,7 @@ class CombatManualMods {
       ausweichenMod: getInt('ausweichenMod'),
       atMod: getInt('atMod'),
       paMod: getInt('paMod'),
+      iniWurf: getInt('iniWurf'),
     );
   }
 }

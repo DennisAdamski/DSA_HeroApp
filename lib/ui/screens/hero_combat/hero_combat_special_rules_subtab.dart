@@ -152,6 +152,17 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
             _markFieldChanged();
           },
         ),
+        _ruleToggle(
+          label: 'Klingentaenzer (2W6 auf Ini)',
+          value: rules.klingentaenzer,
+          isEditing: isEditing,
+          onChanged: (value) {
+            _draftCombatConfig = _draftCombatConfig.copyWith(
+              specialRules: rules.copyWith(klingentaenzer: value),
+            );
+            _markFieldChanged();
+          },
+        ),
         const SizedBox(height: 12),
         Text('Manoever', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 6),
@@ -164,6 +175,15 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
           final support =
               supportByManeuver[maneuver] ??
               _ManeuverSupportStatus.unverifiable;
+          final maneuverDef = catalog.maneuverByName(maneuver);
+          final erschwernis =
+              maneuverDef != null && maneuverDef.erschwernis.isNotEmpty
+                  ? maneuverDef.erschwernis
+                  : null;
+          final seite =
+              maneuverDef != null && maneuverDef.seite.isNotEmpty
+                  ? maneuverDef.seite
+                  : null;
           return Card(
             child: SwitchListTile(
               title: Text(maneuver),
@@ -184,6 +204,9 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
                           'Nicht verifizierbar',
                       }),
                     ),
+                    if (erschwernis != null)
+                      Chip(label: Text('Erschwernis: $erschwernis')),
+                    if (seite != null) Chip(label: Text('S. $seite')),
                     if (support == _ManeuverSupportStatus.unverifiable)
                       const Text(
                         'Waffenabgleich nicht verifizierbar.',

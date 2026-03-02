@@ -5,6 +5,7 @@ class RulesCatalog {
     required this.talents,
     required this.spells,
     required this.weapons,
+    this.maneuvers = const [],
     this.metadata = const {},
   });
 
@@ -13,7 +14,17 @@ class RulesCatalog {
   final List<TalentDef> talents;
   final List<SpellDef> spells;
   final List<WeaponDef> weapons;
+  final List<ManeuverDef> maneuvers;
   final Map<String, dynamic> metadata;
+
+  /// Sucht ein Manöver anhand des Namens (Groß-/Kleinschreibung wird ignoriert).
+  ManeuverDef? maneuverByName(String name) {
+    final needle = name.trim().toLowerCase();
+    for (final m in maneuvers) {
+      if (m.name.trim().toLowerCase() == needle) return m;
+    }
+    return null;
+  }
 
   factory RulesCatalog.fromJson(Map<String, dynamic> json) {
     final talentsRaw = (json['talents'] as List?) ?? const [];
@@ -47,6 +58,46 @@ class RulesCatalog {
       'talents': talents.map((entry) => entry.toJson()).toList(growable: false),
       'spells': spells.map((entry) => entry.toJson()).toList(growable: false),
       'weapons': weapons.map((entry) => entry.toJson()).toList(growable: false),
+    };
+  }
+}
+
+class ManeuverDef {
+  const ManeuverDef({
+    required this.id,
+    required this.name,
+    this.gruppe = '',
+    this.erschwernis = '',
+    this.seite = '',
+    this.erklarung = '',
+  });
+
+  final String id;
+  final String name;
+  final String gruppe;
+  final String erschwernis;
+  final String seite;
+  final String erklarung;
+
+  factory ManeuverDef.fromJson(Map<String, dynamic> json) {
+    return ManeuverDef(
+      id: _readString(json, 'id', fallback: ''),
+      name: _readString(json, 'name', fallback: ''),
+      gruppe: _readString(json, 'gruppe', fallback: ''),
+      erschwernis: _readString(json, 'erschwernis', fallback: ''),
+      seite: _readString(json, 'seite', fallback: ''),
+      erklarung: _readString(json, 'erklarung', fallback: ''),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'gruppe': gruppe,
+      'erschwernis': erschwernis,
+      'seite': seite,
+      'erklarung': erklarung,
     };
   }
 }

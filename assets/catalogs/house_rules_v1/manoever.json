@@ -1,0 +1,466 @@
+[
+    {
+        "id": "man_ausfall",
+        "name": "Ausfall",
+        "gruppe": "bewaffnet",
+        "erschwernis": "Angriff +4",
+        "seite": "59",
+        "erklarung": "Angreifer wechselt PA in AT um und zwingt Verteidiger AT in PA umzuwandeln. Max. KO/2 Schläge."
+    },
+    {
+        "id": "man_befreiungsschlag",
+        "name": "Befreiungsschlag",
+        "gruppe": "bewaffnet",
+        "erschwernis": "+4 pro Gegner",
+        "seite": "60",
+        "erklarung": "Angreifer zurückdrängen; kann mit Finte oder Wuchtschlag ergänzt werden. Bei Treffer: Gegner zurückgedrängt und verlieren 1W6 INI."
+    },
+    {
+        "id": "man_betaeubungsschlag",
+        "name": "Betäubungsschlag",
+        "gruppe": "bewaffnet",
+        "erschwernis": "Angriff +4",
+        "seite": "61",
+        "erklarung": "Ziel soll betäubt werden, Angriff mit stumpfer Seite. TP(A) über KO/2: KO-Probe; über KO: Bewusstlos."
+    },
+    {
+        "id": "man_binden",
+        "name": "Binden",
+        "gruppe": "bewaffnet",
+        "erschwernis": "Abwehr +4",
+        "seite": "67",
+        "erklarung": "Gegnerische Waffe binden: erleichtert eigenen Folgeangriff, erschwert gegnerische Parade."
+    },
+    {
+        "id": "man_defensiver_kampfstil",
+        "name": "Defensiver Kampfstil",
+        "gruppe": "bewaffnet",
+        "erschwernis": "-",
+        "seite": "67",
+        "erklarung": "Muss vorher angesagt werden; ermöglicht dauerhafte Umwandlung von Angriffen in Paraden."
+    },
+    {
+        "id": "man_doppelangriff",
+        "name": "Doppelangriff",
+        "gruppe": "bewaffnet",
+        "erschwernis": "Manöver +2",
+        "seite": "61",
+        "erklarung": ""
+    },
+    {
+        "id": "man_entwaffnen",
+        "name": "Entwaffnen",
+        "gruppe": "bewaffnet",
+        "erschwernis": "Manöver +8 +Ansage",
+        "seite": "61",
+        "erklarung": "Abwehr- oder Angriffsaktion, um 8 Punkte + Ansage erschwert."
+    },
+    {
+        "id": "man_entwaffnen_meisterlich",
+        "name": "Entwaffnen (Meisterlich)",
+        "gruppe": "bewaffnet",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_festnageln",
+        "name": "Festnageln",
+        "gruppe": "bewaffnet",
+        "erschwernis": "Angriff +Ansage",
+        "seite": "62",
+        "erklarung": "Gegnerische Parade um Ansage erschwert."
+    },
+    {
+        "id": "man_finte",
+        "name": "Finte",
+        "gruppe": "bewaffnet",
+        "erschwernis": "Abwehr +4",
+        "seite": "68",
+        "erklarung": "Verteidiger kann Angriff gegenhalten (AT -4). Beide treffen: besserer Wurf = voller Schaden, schlechterer = halber Schaden."
+    },
+    {
+        "id": "man_formation",
+        "name": "Formation",
+        "gruppe": "bewaffnet",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_formations_parade",
+        "name": "Formations-Parade",
+        "gruppe": "bewaffnet",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_gegenhalten",
+        "name": "Gegenhalten",
+        "gruppe": "bewaffnet",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_gezielter_stich",
+        "name": "Gezielter Stich",
+        "gruppe": "bewaffnet",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_halbschwert",
+        "name": "Halbschwert",
+        "gruppe": "bewaffnet",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_hammerschlag",
+        "name": "Hammerschlag",
+        "gruppe": "bewaffnet",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_klingensturm",
+        "name": "Klingensturm",
+        "gruppe": "bewaffnet",
+        "erschwernis": "-",
+        "seite": "63",
+        "erklarung": "Eine Attacke auf mehrere Gegner aufteilen."
+    },
+    {
+        "id": "man_klingenwand",
+        "name": "Klingenwand",
+        "gruppe": "bewaffnet",
+        "erschwernis": "-",
+        "seite": "69",
+        "erklarung": "Eine Parade auf mehrere Gegner aufteilen."
+    },
+    {
+        "id": "man_meisterparade",
+        "name": "Meisterparade",
+        "gruppe": "bewaffnet",
+        "erschwernis": "Abwehr +Ansage",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_niederwerfen",
+        "name": "Niederwerfen",
+        "gruppe": "bewaffnet",
+        "erschwernis": "Angriff +4 +Ansage",
+        "seite": "63",
+        "erklarung": "KK-Probe bei Treffer. Gelungen: Gegner verliert 1W6 INI; Misslungen: Angreifer verliert 2W6 INI und liegt am Boden."
+    },
+    {
+        "id": "man_offensiver_distanzklassenwechsel",
+        "name": "Offensiver Distanzklassenwechsel",
+        "gruppe": "bewaffnet",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_offensiver_kampfstil",
+        "name": "Offensiver Kampfstil",
+        "gruppe": "bewaffnet",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_schildspalter",
+        "name": "Schildspalter",
+        "gruppe": "bewaffnet",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_seitenwechsel",
+        "name": "Seitenwechsel",
+        "gruppe": "bewaffnet",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_stumpfer_schlag",
+        "name": "Stumpfer Schlag",
+        "gruppe": "bewaffnet",
+        "erschwernis": "Angriff +4",
+        "seite": "64",
+        "erklarung": "Waffe macht TP(A) Schaden."
+    },
+    {
+        "id": "man_sturmangriff",
+        "name": "Sturmangriff",
+        "gruppe": "bewaffnet",
+        "erschwernis": "Angriff +4 +Ansage",
+        "seite": "64",
+        "erklarung": "Mind. 4 m Anlauf; AT +4 +Ansage, TP +4 +Ansage + halbe Geschwindigkeit; verbraucht Abwehrreaktion."
+    },
+    {
+        "id": "man_todesstos",
+        "name": "Todesstoß",
+        "gruppe": "bewaffnet",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_umreissen",
+        "name": "Umreißen",
+        "gruppe": "bewaffnet",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_windmuehle",
+        "name": "Windmühle",
+        "gruppe": "bewaffnet",
+        "erschwernis": "Abwehr +8 oder mehr",
+        "seite": "71",
+        "erklarung": "Abwehrreaktion; leitet Angriff des Gegners auf diesen zurück."
+    },
+    {
+        "id": "man_wuchtschlag",
+        "name": "Wuchtschlag",
+        "gruppe": "bewaffnet",
+        "erschwernis": "Angriff +Ansage",
+        "seite": "65",
+        "erklarung": "Erhöht TP um Ansage."
+    },
+    {
+        "id": "man_auspendeln",
+        "name": "Auspendeln",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_beinarbeit",
+        "name": "Beinarbeit",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_biss",
+        "name": "Biss",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_block",
+        "name": "Block",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_doppelschlag",
+        "name": "Doppelschlag",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_eisenarm",
+        "name": "Eisenarm",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_fussfeger",
+        "name": "Fußfeger",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_gerade",
+        "name": "Gerade",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_griff",
+        "name": "Griff",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_handkante",
+        "name": "Handkante",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_halten",
+        "name": "Halten",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_hoher_tritt",
+        "name": "Hoher Tritt",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_klammer",
+        "name": "Klammer",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_knaufschlag",
+        "name": "Knaufschlag",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_knie",
+        "name": "Knie",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_kopfstoss",
+        "name": "Kopfstoß",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_kreuzblock",
+        "name": "Kreuzblock",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_niederringen",
+        "name": "Niederringen",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_schmetterschlag",
+        "name": "Schmetterschlag",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_schmutzige_tricks",
+        "name": "Schmutzige Tricks",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_schwinger",
+        "name": "Schwinger",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_schwitzkasten",
+        "name": "Schwitzkasten",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_sprung",
+        "name": "Sprung",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_sprungtritt",
+        "name": "Sprungtritt",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_tritt",
+        "name": "Tritt",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_versteckte_klinge",
+        "name": "Versteckte Klinge",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_wurf",
+        "name": "Wurf",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    },
+    {
+        "id": "man_wuergegriff",
+        "name": "Würgegriff",
+        "gruppe": "waffenlos",
+        "erschwernis": "",
+        "seite": "",
+        "erklarung": ""
+    }
+]
