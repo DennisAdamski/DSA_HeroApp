@@ -123,7 +123,9 @@ CombatPreviewStats computeCombatPreviewStats(
     talentId: main.talentId,
     weaponType: main.weaponType.trim().isEmpty ? main.name : main.weaponType,
   );
-  final specBonus = specApplies ? 1 : 0;
+  final isRangedTalent = _isRangedCombatTalent(selectedTalent);
+  final atSpecBonus = specApplies ? (isRangedTalent ? 2 : 1) : 0;
+  final paSpecBonus = specApplies && !isRangedTalent ? 1 : 0;
 
   final sfIniBonus = _computeSfIniBonus(special);
   final sfAusweichenBonus = _computeSfAusweichenBonus(special);
@@ -160,7 +162,7 @@ CombatPreviewStats computeCombatPreviewStats(
       atBase +
       main.wmAt +
       atEbePart +
-      specBonus +
+      atSpecBonus +
       offhand.atMod +
       manualMods.atMod;
   final pa =
@@ -168,7 +170,7 @@ CombatPreviewStats computeCombatPreviewStats(
       paBase +
       main.wmPa +
       paEbePart +
-      specBonus +
+      paSpecBonus +
       offhandPaBonus +
       manualMods.paMod;
 
@@ -212,7 +214,7 @@ CombatPreviewStats computeCombatPreviewStats(
     pa: pa,
     ebe: ebe,
     tpExpression: _tpExpression(main, tpCalc),
-    specBonus: specBonus,
+    specBonus: atSpecBonus,
     akrobatikBonus: _computeAkrobatikBonus(talents),
     sfIniBonus: sfIniBonus,
     sfAusweichenBonus: sfAusweichenBonus,
@@ -378,15 +380,16 @@ bool _hasCombatSpecialization({
     if (token == weaponToken) {
       return true;
     }
-    if (token.length >= 4 && weaponToken.contains(token)) {
-      return true;
-    }
-    if (weaponToken.length >= 4 && token.contains(weaponToken)) {
-      return true;
-    }
   }
 
   return false;
+}
+
+bool _isRangedCombatTalent(TalentDef? talent) {
+  if (talent == null) {
+    return false;
+  }
+  return _normalizeToken(talent.type) == 'fernkampf';
 }
 
 String _normalizeToken(String raw) {
