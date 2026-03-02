@@ -63,10 +63,18 @@ class CatalogLoader {
       ),
     );
 
+    final manoeverRelative = _readOptionalStringFromMap(files, 'manoever');
+    final manoeverAssetPath = manoeverRelative != null
+        ? _resolveAssetPath(manifestAssetPath, manoeverRelative)
+        : null;
+
     final talente = await _loadJsonList(talenteAssetPath);
     final waffentalente = await _loadJsonList(waffentalenteAssetPath);
     final waffen = await _loadJsonList(waffenAssetPath);
     final magie = await _loadJsonList(magieAssetPath);
+    final manoeverRaw = manoeverAssetPath != null
+        ? await _loadJsonList(manoeverAssetPath)
+        : const <Map<String, dynamic>>[];
 
     _validateCombatSplit(
       entries: talente,
@@ -111,6 +119,9 @@ class CatalogLoader {
           .toList(growable: false),
       weapons: waffen
           .map((entry) => WeaponDef.fromJson(entry))
+          .toList(growable: false),
+      maneuvers: manoeverRaw
+          .map((entry) => ManeuverDef.fromJson(entry))
           .toList(growable: false),
     );
   }
@@ -197,6 +208,14 @@ String _readOptionalString(
     return fallback;
   }
   return value.toString();
+}
+
+String? _readOptionalStringFromMap(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  if (value is String && value.trim().isNotEmpty) {
+    return value.trim();
+  }
+  return null;
 }
 
 String _resolveAssetPath(String manifestAssetPath, String relativePath) {
