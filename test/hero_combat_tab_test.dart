@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -17,6 +18,7 @@ void main() {
   HeroSheet buildHero({
     List<String> hiddenTalentIds = const <String>[],
     CombatConfig combatConfig = const CombatConfig(),
+    Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
   }) {
     return HeroSheet(
       id: 'demo',
@@ -32,6 +34,7 @@ void main() {
         ko: 14,
         kk: 13,
       ),
+      talents: talents,
       combatConfig: combatConfig,
       hiddenTalentIds: hiddenTalentIds,
     );
@@ -289,6 +292,114 @@ void main() {
     expect(find.widgetWithText(Tab, 'Waffen'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Nahkampf'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'SF/Manoever'), findsOneWidget);
+  });
+
+  testWidgets(
+    'combat techniques table shows specialization column and edit mode control',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final actions = await openCombatTab(tester, repo);
+
+      expect(find.text('Spezialisierung'), findsAtLeastNWidgets(1));
+      expect(
+        find.byKey(const ValueKey<String>('talents-combat-spec-tal_nah')),
+        findsNothing,
+      );
+
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('talents-combat-spec-tal_nah')),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('combat techniques save multiple specializations in edit mode', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openCombatTab(tester, repo);
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    final specButton = find.byKey(
+      const ValueKey<String>('talents-combat-spec-tal_nah'),
+    );
+    await tester.ensureVisible(specButton);
+    await tester.tap(specButton);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(CheckboxListTile, 'Schwert'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Uebernehmen'));
+    await tester.pumpAndSettle();
+
+    await actions.save();
+    await tester.pumpAndSettle();
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    final entry = hero.talents['tal_nah'];
+    expect(entry, isNotNull);
+    expect(entry!.combatSpecializations, const <String>['Schwert']);
+    expect(entry.specializations, 'Schwert');
+  });
+
+  testWidgets('weapon table specialization uses strict normalized matching', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(
+              combatSpecializations: <String>['Schwert'],
+              specializations: 'Schwert',
+            ),
+          },
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+
+    await fillWeaponRow(tester, rowIndex: 0, weaponType: 'Kurzschwert');
+    expect(find.text('Nein'), findsWidgets);
+
+    await fillWeaponRow(tester, rowIndex: 0, weaponType: 'Schwert');
+    expect(find.text('Ja'), findsWidgets);
   });
 
   testWidgets('keeps weapon management only in Waffen subtab', (tester) async {
