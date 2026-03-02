@@ -36,7 +36,7 @@ const List<_WorkspaceTabSpec> _workspaceTabs = <_WorkspaceTabSpec>[
   _WorkspaceTabSpec(
     label: 'Kampf',
     icon: Icons.sports_martial_arts_outlined,
-    helper: 'Kampftechniken, Nahkampf, SF/Manoever',
+    helper: 'Kampftechniken, Nahkampf, Sonderfertigkeiten, Manoever',
   ),
   _WorkspaceTabSpec(
     label: 'Magie',

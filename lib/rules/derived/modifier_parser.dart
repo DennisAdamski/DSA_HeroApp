@@ -12,11 +12,15 @@ class ModifierParseResult {
   const ModifierParseResult({
     this.attributeMods = const AttributeModifiers(),
     this.statMods = const StatModifiers(),
+    this.hasFlinkFromVorteile = false,
+    this.hasBehaebigFromNachteile = false,
     this.unknownFragments = const <String>[],
   });
 
   final AttributeModifiers attributeMods;
   final StatModifiers statMods;
+  final bool hasFlinkFromVorteile;
+  final bool hasBehaebigFromNachteile;
   final List<String> unknownFragments;
 }
 
@@ -91,6 +95,13 @@ ModifierParseResult parseModifierTexts({
   var attrMods = const AttributeModifiers();
   var statMods = const StatModifiers();
   final unknown = <String>[];
+  final hasFlinkFromVorteile = _containsNamedToken(vorteileText, const {
+    'flink',
+  });
+  final hasBehaebigFromNachteile = _containsNamedToken(nachteileText, const {
+    'behaebig',
+    'behabig',
+  });
 
   final allTexts = [
     rasseModText,
@@ -143,8 +154,34 @@ ModifierParseResult parseModifierTexts({
   return ModifierParseResult(
     attributeMods: attrMods,
     statMods: statMods,
+    hasFlinkFromVorteile: hasFlinkFromVorteile,
+    hasBehaebigFromNachteile: hasBehaebigFromNachteile,
     unknownFragments: List<String>.unmodifiable(unknown),
   );
+}
+
+bool _containsNamedToken(String text, Set<String> targets) {
+  for (final rawFragment in text.split(RegExp(r'[\n,;]+'))) {
+    final fragment = rawFragment.trim();
+    if (fragment.isEmpty) {
+      continue;
+    }
+    final normalizedFragment = fragment
+        .toLowerCase()
+        .replaceAll(String.fromCharCode(228), 'a')
+        .replaceAll(String.fromCharCode(246), 'o')
+        .replaceAll(String.fromCharCode(252), 'u')
+        .replaceAll(String.fromCharCode(223), 'ss');
+    final tokens = normalizedFragment
+        .split(RegExp(r'[^a-z0-9]+'))
+        .where((entry) => entry.isNotEmpty);
+    for (final token in tokens) {
+      if (targets.contains(token)) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 String _buildModifierParseCacheKey({

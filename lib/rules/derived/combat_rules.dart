@@ -127,8 +127,16 @@ CombatPreviewStats computeCombatPreviewStats(
   final atSpecBonus = specApplies ? (isRangedTalent ? 2 : 1) : 0;
   final paSpecBonus = specApplies && !isRangedTalent ? 1 : 0;
 
-  final sfIniBonus = _computeSfIniBonus(special);
-  final sfAusweichenBonus = _computeSfAusweichenBonus(special);
+  final sfIniBonus = _computeSfIniBonus(
+    special,
+    hasFlinkFromVorteile: parsed.hasFlinkFromVorteile,
+    hasBehaebigFromNachteile: parsed.hasBehaebigFromNachteile,
+  );
+  final sfAusweichenBonus = _computeSfAusweichenBonus(
+    special,
+    hasFlinkFromVorteile: parsed.hasFlinkFromVorteile,
+    hasBehaebigFromNachteile: parsed.hasBehaebigFromNachteile,
+  );
   final offhandPaBonus = _computeOffhandPaBonus(
     mode: offhand.mode,
     basePaMod: offhand.paMod,
@@ -228,7 +236,11 @@ int _computeEbe({required int beKampf, required int beMod}) {
   return _min(0, -beKampf - beMod);
 }
 
-int _computeSfIniBonus(CombatSpecialRules special) {
+int _computeSfIniBonus(
+  CombatSpecialRules special, {
+  required bool hasFlinkFromVorteile,
+  required bool hasBehaebigFromNachteile,
+}) {
   var total = 0;
   if (special.kampfreflexe) {
     total += 4;
@@ -236,10 +248,10 @@ int _computeSfIniBonus(CombatSpecialRules special) {
   if (special.kampfgespuer) {
     total += 2;
   }
-  if (special.flink) {
+  if (hasFlinkFromVorteile) {
     total += 1;
   }
-  if (special.behaebig) {
+  if (hasBehaebigFromNachteile) {
     total -= 1;
   }
   if (special.axxeleratusActive) {
@@ -248,7 +260,11 @@ int _computeSfIniBonus(CombatSpecialRules special) {
   return total;
 }
 
-int _computeSfAusweichenBonus(CombatSpecialRules special) {
+int _computeSfAusweichenBonus(
+  CombatSpecialRules special, {
+  required bool hasFlinkFromVorteile,
+  required bool hasBehaebigFromNachteile,
+}) {
   var total = 0;
   if (special.ausweichenI) {
     total += 3;
@@ -259,10 +275,10 @@ int _computeSfAusweichenBonus(CombatSpecialRules special) {
   if (special.ausweichenIII) {
     total += 3;
   }
-  if (special.flink) {
+  if (hasFlinkFromVorteile) {
     total += 1;
   }
-  if (special.behaebig) {
+  if (hasBehaebigFromNachteile) {
     total -= 1;
   }
   return total;
