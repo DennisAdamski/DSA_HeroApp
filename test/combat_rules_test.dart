@@ -30,6 +30,8 @@ void main() {
     ),
     Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
     CombatConfig combatConfig = const CombatConfig(),
+    String vorteileText = '',
+    String nachteileText = '',
   }) {
     return HeroSheet(
       id: 'h',
@@ -38,6 +40,8 @@ void main() {
       attributes: attributes,
       talents: talents,
       combatConfig: combatConfig,
+      vorteileText: vorteileText,
+      nachteileText: nachteileText,
     );
   }
 
@@ -171,6 +175,42 @@ void main() {
 
     expect(withoutResult.tpCalc, 4);
     expect(withResult.tpCalc, 6);
+  });
+
+  test('Flink from Vorteile adds +1 INI and +1 Ausweichen', () {
+    final withoutFlink = buildHero();
+    final withFlink = buildHero(vorteileText: 'Flink');
+
+    final withoutResult = computeCombatPreviewStats(withoutFlink, state);
+    final withResult = computeCombatPreviewStats(withFlink, state);
+
+    expect(withResult.sfIniBonus, withoutResult.sfIniBonus + 1);
+    expect(withResult.sfAusweichenBonus, withoutResult.sfAusweichenBonus + 1);
+  });
+
+  test('Behaebig from Nachteile gives -1 INI and -1 Ausweichen', () {
+    final withoutBehaebig = buildHero();
+    final withBehaebig = buildHero(nachteileText: 'Behaebig');
+
+    final withoutResult = computeCombatPreviewStats(withoutBehaebig, state);
+    final withResult = computeCombatPreviewStats(withBehaebig, state);
+
+    expect(withResult.sfIniBonus, withoutResult.sfIniBonus - 1);
+    expect(withResult.sfAusweichenBonus, withoutResult.sfAusweichenBonus - 1);
+  });
+
+  test('Flink and Behaebig from texts cancel each other', () {
+    final baseline = buildHero();
+    final withBoth = buildHero(
+      vorteileText: 'Flink',
+      nachteileText: 'Behaebig',
+    );
+
+    final baselineResult = computeCombatPreviewStats(baseline, state);
+    final withBothResult = computeCombatPreviewStats(withBoth, state);
+
+    expect(withBothResult.sfIniBonus, baselineResult.sfIniBonus);
+    expect(withBothResult.sfAusweichenBonus, baselineResult.sfAusweichenBonus);
   });
 
   test('Spezialisierung grants +1 AT and +1 PA when weapon type matches', () {
