@@ -811,7 +811,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Waffe', style: Theme.of(context).textTheme.titleMedium),
+            Text('Haupthand', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             DropdownButtonFormField<int?>(
               key: ValueKey<String>(
