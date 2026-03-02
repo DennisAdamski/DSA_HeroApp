@@ -37,13 +37,13 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
             columnWidths: <int, TableColumnWidth>{
               0: const FixedColumnWidth(220),
               1: const FixedColumnWidth(240),
-              2: const FixedColumnWidth(70),
-              3: const FixedColumnWidth(60),
+              2: const FixedColumnWidth(120),
+              3: const FixedColumnWidth(70),
               4: const FixedColumnWidth(60),
-              5: const FixedColumnWidth(90),
+              5: const FixedColumnWidth(60),
               6: const FixedColumnWidth(90),
-              7: const FixedColumnWidth(70),
-              8: const FixedColumnWidth(120),
+              7: const FixedColumnWidth(90),
+              8: const FixedColumnWidth(70),
               9: const FixedColumnWidth(70),
               10: const FixedColumnWidth(190),
               if (isEditing) 11: const FixedColumnWidth(95),
@@ -115,13 +115,13 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final cells = <Widget>[
       _headerCell('Talent-Name'),
       _headerCell('Eigenschaften'),
+      _headerCell('TaW berechnet', highlighted: true),
       _headerCell('Kompl.'),
       _headerCell('BE'),
       _headerCell('eBE'),
       _headerCell('TaW'),
       _headerCell('max TaW'),
       _headerCell('Mod'),
-      _headerCell('TaW berechnet'),
       _headerCell('SE'),
       _headerCell('Spezialisierungen'),
     ];
@@ -181,6 +181,11 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       _textCell(
         _buildShortAttributeLabel(effectiveAttributes, talent.attributes),
       ),
+      _textCell(
+        _formatWholeNumber(_calculateComputedTaw(entry, ebe)),
+        key: ValueKey<String>('talents-field-${talent.id}-computed-taw'),
+        highlighted: true,
+      ),
       _textCell(_fallback(talent.steigerung)),
       _textCell(_fallback(talent.be)),
       _textCell(
@@ -199,10 +204,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         field: 'modifier',
         value: entry.modifier,
         isEditing: isEditing,
-      ),
-      _textCell(
-        _formatWholeNumber(_calculateComputedTaw(entry, ebe)),
-        key: ValueKey<String>('talents-field-${talent.id}-computed-taw'),
       ),
       _intInputCell(
         talentId: talent.id,
