@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -204,6 +205,93 @@ void main() {
     expect(withResult.at, withoutResult.at + 1);
     expect(withResult.pa, withoutResult.pa + 1);
   });
+
+  test('Spezialisierung grants +2 AT and +0 PA for Fernkampf talents', () {
+    const mainWeapon = MainWeaponSlot(
+      talentId: 'tal_boegen',
+      weaponType: 'Kurzbogen',
+      name: 'Kurzbogen',
+      kkBase: 12,
+      kkThreshold: 2,
+    );
+    const catalogTalents = <TalentDef>[
+      TalentDef(
+        id: 'tal_boegen',
+        name: 'Boegen',
+        group: 'Kampftalent',
+        type: 'Fernkampf',
+        steigerung: 'D',
+        attributes: <String>['Intuition', 'Fingerfertigkeit', 'Koerperkraft'],
+      ),
+    ];
+
+    final withSpec = buildHero(
+      talents: const {
+        'tal_boegen': HeroTalentEntry(
+          atValue: 6,
+          paValue: 4,
+          combatSpecializations: <String>['Kurzbogen'],
+        ),
+      },
+      combatConfig: const CombatConfig(mainWeapon: mainWeapon),
+    );
+    final withoutSpec = buildHero(
+      talents: const {'tal_boegen': HeroTalentEntry(atValue: 6, paValue: 4)},
+      combatConfig: const CombatConfig(mainWeapon: mainWeapon),
+    );
+
+    final withResult = computeCombatPreviewStats(
+      withSpec,
+      state,
+      catalogTalents: catalogTalents,
+    );
+    final withoutResult = computeCombatPreviewStats(
+      withoutSpec,
+      state,
+      catalogTalents: catalogTalents,
+    );
+
+    expect(withResult.specApplies, isTrue);
+    expect(withResult.at, withoutResult.at + 2);
+    expect(withResult.pa, withoutResult.pa);
+  });
+
+  test(
+    'Spezialisierung matching is strict and does not allow partial matches',
+    () {
+      const mainWeapon = MainWeaponSlot(
+        talentId: 'tal_schwerter',
+        weaponType: 'Kurzschwert',
+        name: 'Kurzschwert',
+        kkBase: 12,
+        kkThreshold: 2,
+      );
+
+      final withPartialSpec = buildHero(
+        talents: const {
+          'tal_schwerter': HeroTalentEntry(
+            atValue: 6,
+            paValue: 4,
+            combatSpecializations: <String>['Schwert'],
+          ),
+        },
+        combatConfig: const CombatConfig(mainWeapon: mainWeapon),
+      );
+      final withoutSpec = buildHero(
+        talents: const {
+          'tal_schwerter': HeroTalentEntry(atValue: 6, paValue: 4),
+        },
+        combatConfig: const CombatConfig(mainWeapon: mainWeapon),
+      );
+
+      final partialResult = computeCombatPreviewStats(withPartialSpec, state);
+      final withoutResult = computeCombatPreviewStats(withoutSpec, state);
+
+      expect(partialResult.specApplies, isFalse);
+      expect(partialResult.at, withoutResult.at);
+      expect(partialResult.pa, withoutResult.pa);
+    },
+  );
 
   test('offhand bonuses depend on mode and not on one-handed flag', () {
     final noOffhand = buildHero(
