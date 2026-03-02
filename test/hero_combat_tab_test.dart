@@ -291,8 +291,38 @@ void main() {
     expect(find.widgetWithText(Tab, 'Kampftechniken'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Waffen'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Nahkampf'), findsOneWidget);
-    expect(find.widgetWithText(Tab, 'SF/Manoever'), findsOneWidget);
+    expect(find.widgetWithText(Tab, 'Sonderfertigkeiten'), findsOneWidget);
+    expect(find.widgetWithText(Tab, 'Manoever'), findsOneWidget);
   });
+
+  testWidgets(
+    'special rules tab renames Linkhand and removes Axxeleratus toggle',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo);
+      await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Linkhand'), findsOneWidget);
+      expect(find.text('Linkhand aktiv'), findsNothing);
+      expect(find.text('Axxeleratus aktiv'), findsNothing);
+
+      final linkhandTopLeft = tester.getTopLeft(find.text('Linkhand'));
+      final schildkampfTopLeft = tester.getTopLeft(find.text('Schildkampf I'));
+      expect(linkhandTopLeft.dy, lessThan(schildkampfTopLeft.dy));
+    },
+  );
 
   testWidgets(
     'combat techniques table shows specialization column and edit mode control',
@@ -506,9 +536,11 @@ void main() {
       tpValue: '2',
     );
 
-    await tester.tap(find.widgetWithText(Tab, 'SF/Manoever'));
+    await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Kampfreflexe'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(Tab, 'Manoever'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('Finte'),
@@ -557,7 +589,7 @@ void main() {
       tpValue: '3',
     );
 
-    await tester.tap(find.widgetWithText(Tab, 'SF/Manoever'));
+    await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Kampfreflexe'));
     await tester.pumpAndSettle();
@@ -692,7 +724,7 @@ void main() {
     await tester.tap(find.text('Kurzschwert').last);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(Tab, 'SF/Manoever'));
+    await tester.tap(find.widgetWithText(Tab, 'Manoever'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('Finte'),
@@ -722,7 +754,7 @@ void main() {
     await tester.tap(find.text('Bidenhaender').last);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(Tab, 'SF/Manoever'));
+    await tester.tap(find.widgetWithText(Tab, 'Manoever'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('Finte'),

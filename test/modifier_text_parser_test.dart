@@ -38,6 +38,32 @@ void main() {
     expect(parsed.unknownFragments, contains('XYZ-4'));
   });
 
+  test('detects Flink and Behaebig from vorteile/nachteile tokens', () {
+    final parsed = parseModifierTexts(
+      rasseModText: '',
+      kulturModText: '',
+      professionModText: '',
+      vorteileText: 'Flink, KL+1',
+      nachteileText: 'behaebig',
+    );
+
+    expect(parsed.hasFlinkFromVorteile, isTrue);
+    expect(parsed.hasBehaebigFromNachteile, isTrue);
+  });
+
+  test('named token detection is case-insensitive and token-based', () {
+    final parsed = parseModifierTexts(
+      rasseModText: '',
+      kulturModText: '',
+      professionModText: '',
+      vorteileText: 'FLINK',
+      nachteileText: 'unbehaebigkeit',
+    );
+
+    expect(parsed.hasFlinkFromVorteile, isTrue);
+    expect(parsed.hasBehaebigFromNachteile, isFalse);
+  });
+
   test('computes effective attributes from all modifier text fields', () {
     const hero = HeroSheet(
       id: 'h-1',
