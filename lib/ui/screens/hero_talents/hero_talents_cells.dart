@@ -1,21 +1,36 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 
 extension _HeroTalentsCells on _HeroTalentTableTabState {
-  Widget _headerCell(String text) {
+  Widget _headerCell(String text, {bool highlighted = false}) {
+    final theme = Theme.of(context);
+    final baseStyle = theme.textTheme.labelMedium;
+    final style = highlighted
+        ? baseStyle?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.w700,
+          )
+        : baseStyle;
     return Padding(
       padding: const EdgeInsets.fromLTRB(6, 4, 6, 8),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(text, style: Theme.of(context).textTheme.labelMedium),
+        child: Text(text, style: style),
       ),
     );
   }
 
-  Widget _textCell(String text, {Key? key}) {
+  Widget _textCell(String text, {Key? key, bool highlighted = false}) {
+    final theme = Theme.of(context);
+    final style = highlighted
+        ? TextStyle(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.w600,
+          )
+        : null;
     return Padding(
       key: key,
       padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
-      child: Align(alignment: Alignment.centerLeft, child: Text(text)),
+      child: Align(alignment: Alignment.centerLeft, child: Text(text, style: style)),
     );
   }
 
