@@ -748,6 +748,17 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                         _markFieldChanged();
                       },
                     ),
+                    _numberInput(
+                      label: 'INI-Wurf (${preview.iniDiceCount}W6)',
+                      keyName: 'combat-manual-ini-wurf',
+                      isEditing: isEditing,
+                      onChanged: (parsed) {
+                        _draftCombatConfig = _draftCombatConfig.copyWith(
+                          manualMods: manual.copyWith(iniWurf: parsed),
+                        );
+                        _markFieldChanged();
+                      },
+                    ),
                   ],
                 ),
               ],
@@ -769,6 +780,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
+                    _resultChip('FK-Basis', preview.fkBase),
                     _resultChip('RS', preview.rsTotal),
                     _resultChip('BE Roh', preview.beTotalRaw),
                     _resultChip('RG Reduktion', preview.rgReduction),
@@ -785,7 +797,11 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                         'Spezialisierung: ${preview.specApplies ? 'Ja' : 'Nein'}',
                       ),
                     ),
-                    _resultChip('INI', preview.initiative),
+                    Chip(
+                      label: Text(
+                        'INI: ${preview.initiative} + ${preview.iniDiceCount}W6',
+                      ),
+                    ),
                     _resultChip('Ausweichen', preview.ausweichen),
                     _resultChip('AT', preview.at),
                     _resultChip('PA', preview.pa),

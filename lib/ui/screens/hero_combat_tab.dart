@@ -158,6 +158,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _controllerFor('combat-manual-ausw-mod', manual.ausweichenMod.toString());
     _controllerFor('combat-manual-at-mod', manual.atMod.toString());
     _controllerFor('combat-manual-pa-mod', manual.paMod.toString());
+    _controllerFor('combat-manual-ini-wurf', manual.iniWurf.toString());
   }
 
   int _selectedWeaponIndex() {

@@ -9,6 +9,7 @@
                   "talente":  "talente.json",
                   "waffentalente":  "waffentalente.json",
                   "waffen":  "waffen.json",
-                  "magie":  "magie.json"
+                  "magie":  "magie.json",
+                  "manoever":  "manoever.json"
               }
 }

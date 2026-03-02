@@ -33,6 +33,8 @@ class CombatPreviewStats {
     required this.sfIniBonus,
     required this.sfAusweichenBonus,
     required this.offhandPaBonus,
+    required this.iniDiceCount,
+    required this.fkBase,
   });
 
   final int rsTotal;
@@ -58,6 +60,9 @@ class CombatPreviewStats {
   final int sfIniBonus;
   final int sfAusweichenBonus;
   final int offhandPaBonus;
+  // Anzahl Ini-Wuerfel: 1 (normal) oder 2 (Klingentaenzer)
+  final int iniDiceCount;
+  final int fkBase;
 }
 
 CombatPreviewStats computeCombatPreviewStats(
@@ -167,12 +172,15 @@ CombatPreviewStats computeCombatPreviewStats(
       offhandPaBonus +
       manualMods.paMod;
 
+  final iniDiceCount = special.klingentaenzer ? 2 : 1;
   final initiative = _clampNonNegative(
     derived.iniBase +
         iniGe +
         sfIniBonus +
+        ebe +
         main.iniMod +
         offhand.iniMod +
+        manualMods.iniWurf +
         manualMods.iniMod,
   );
   final iniParadeMod = _max(0, _roundDownTowardsZero((initiative - 11) / 10));
@@ -209,6 +217,8 @@ CombatPreviewStats computeCombatPreviewStats(
     sfIniBonus: sfIniBonus,
     sfAusweichenBonus: sfAusweichenBonus,
     offhandPaBonus: offhandPaBonus,
+    iniDiceCount: iniDiceCount,
+    fkBase: derived.fkBase,
   );
 }
 
