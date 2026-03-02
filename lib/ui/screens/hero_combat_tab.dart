@@ -432,6 +432,16 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _markFieldChanged();
   }
 
+  void _updateCombatSpecializations(String talentId, List<String> values) {
+    final current = _entryForTalent(talentId);
+    final normalized = _normalizeStringList(values);
+    _draftTalents[talentId] = current.copyWith(
+      combatSpecializations: normalized,
+      specializations: normalized.join(', '),
+    );
+    _markFieldChanged();
+  }
+
   void _markFieldChanged() {
     if (!mounted) {
       return;
@@ -600,6 +610,30 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       return '-';
     }
     return trimmed;
+  }
+
+  List<String> _splitSpecializationTokens(String raw) {
+    return _normalizeStringList(raw.split(RegExp(r'[\n,;]+')));
+  }
+
+  List<String> _weaponCategoryOptions(TalentDef talent) {
+    return _normalizeStringList(
+      talent.weaponCategory.split(RegExp(r'[\n,;]+')),
+    );
+  }
+
+  List<String> _normalizeStringList(Iterable<dynamic> values) {
+    final seen = <String>{};
+    final normalized = <String>[];
+    for (final value in values) {
+      final trimmed = value.toString().trim();
+      if (trimmed.isEmpty || seen.contains(trimmed)) {
+        continue;
+      }
+      seen.add(trimmed);
+      normalized.add(trimmed);
+    }
+    return List<String>.unmodifiable(normalized);
   }
 
   String _normalizeToken(String raw) {

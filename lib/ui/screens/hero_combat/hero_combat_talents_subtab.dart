@@ -168,7 +168,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            minWidth: (isEditing || visibilityMode) ? 1485 : 1395,
+            minWidth: (isEditing || visibilityMode) ? 1715 : 1625,
           ),
           child: Table(
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
@@ -182,9 +182,10 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
               6: const FixedColumnWidth(90),
               7: const FixedColumnWidth(90),
               8: const FixedColumnWidth(90),
-              if (isEditing) 9: const FixedColumnWidth(95),
+              9: const FixedColumnWidth(230),
+              if (isEditing) 10: const FixedColumnWidth(95),
               if (isEditing || visibilityMode)
-                (isEditing ? 10 : 9): const FixedColumnWidth(90),
+                (isEditing ? 11 : 10): const FixedColumnWidth(90),
             },
             children: rows,
           ),
@@ -207,6 +208,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       _headerCell('AT'),
       _headerCell('PA'),
       _headerCell('max TaW'),
+      _headerCell('Spezialisierung'),
     ];
     if (isEditing) {
       cells.add(_headerCell('Begabung'));
@@ -265,6 +267,11 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
         isError: isInvalid,
       ),
       _textCell(_formatWholeNumber(maxTaw)),
+      _combatSpecializationCell(
+        talent: talent,
+        entry: entry,
+        isEditing: isEditing,
+      ),
     ];
     if (isEditing) {
       cells.add(
@@ -354,6 +361,103 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
         tooltip: isHidden ? 'Talent einblenden' : 'Talent ausblenden',
         onPressed: visibilityMode ? () => _toggleHidden(talentId) : null,
       ),
+    );
+  }
+
+  Widget _combatSpecializationCell({
+    required TalentDef talent,
+    required HeroTalentEntry entry,
+    required bool isEditing,
+  }) {
+    final options = _weaponCategoryOptions(talent);
+    final selected = entry.combatSpecializations.isEmpty
+        ? _splitSpecializationTokens(entry.specializations)
+        : _normalizeStringList(entry.combatSpecializations);
+    final label = selected.isEmpty ? '-' : selected.join(', ');
+    if (!isEditing) {
+      return _textCell(label);
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: OutlinedButton(
+          key: ValueKey<String>('talents-combat-spec-${talent.id}'),
+          onPressed: options.isEmpty
+              ? null
+              : () async {
+                  final result = await _showCombatSpecializationDialog(
+                    title: 'Spezialisierungen: ${talent.name}',
+                    options: options,
+                    initialSelected: selected,
+                  );
+                  if (result == null) {
+                    return;
+                  }
+                  _updateCombatSpecializations(talent.id, result);
+                },
+          child: Text(label, maxLines: 2, overflow: TextOverflow.ellipsis),
+        ),
+      ),
+    );
+  }
+
+  Future<List<String>?> _showCombatSpecializationDialog({
+    required String title,
+    required List<String> options,
+    required List<String> initialSelected,
+  }) {
+    final selected = <String>{...initialSelected};
+    return showDialog<List<String>>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(title),
+              content: SizedBox(
+                width: 420,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: options
+                        .map(
+                          (entry) => CheckboxListTile(
+                            value: selected.contains(entry),
+                            title: Text(entry),
+                            dense: true,
+                            onChanged: (enabled) {
+                              setDialogState(() {
+                                if (enabled == true) {
+                                  selected.add(entry);
+                                } else {
+                                  selected.remove(entry);
+                                }
+                              });
+                            },
+                          ),
+                        )
+                        .toList(growable: false),
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Abbrechen'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final normalized = _normalizeStringList(selected);
+                    Navigator.of(context).pop(normalized);
+                  },
+                  child: const Text('Uebernehmen'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
