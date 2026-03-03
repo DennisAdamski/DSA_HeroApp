@@ -63,6 +63,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   Set<String> _draftHiddenTalentIds = <String>{};
   Set<String> _invalidCombatTalentIds = <String>{};
   CombatConfig _draftCombatConfig = const CombatConfig();
+  int? _temporaryIniRoll;
   String _weaponFilterTalentId = '';
   String _weaponFilterType = '';
   String _weaponFilterDistanceClass = '';
@@ -120,6 +121,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _draftHiddenTalentIds = normalizeHiddenTalentIds(hero.hiddenTalentIds);
     _invalidCombatTalentIds = <String>{};
     _draftCombatConfig = hero.combatConfig;
+    _temporaryIniRoll = null;
     _seedCombatControllers();
   }
 
@@ -159,7 +161,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _controllerFor('combat-manual-ausw-mod', manual.ausweichenMod.toString());
     _controllerFor('combat-manual-at-mod', manual.atMod.toString());
     _controllerFor('combat-manual-pa-mod', manual.paMod.toString());
-    _controllerFor('combat-manual-ini-wurf', manual.iniWurf.toString());
   }
 
   int _selectedWeaponIndex() {
@@ -362,6 +363,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   }
 
   Future<void> _discardChanges() async {
+    _temporaryIniRoll = null;
     final hero = _latestHero;
     if (hero != null) {
       _editController.clearSyncSignature();
@@ -381,6 +383,34 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       key,
       () => TextEditingController(text: initialValue),
     );
+  }
+
+  int _maxIniRollForConfig(CombatConfig config) {
+    return config.specialRules.klingentaenzer ? 12 : 6;
+  }
+
+  int _effectiveIniRollForConfig(CombatConfig config) {
+    final maxRoll = _maxIniRollForConfig(config);
+    if (config.specialRules.aufmerksamkeit) {
+      return maxRoll;
+    }
+    final raw = _temporaryIniRoll ?? 0;
+    if (raw < 0) {
+      return 0;
+    }
+    if (raw > maxRoll) {
+      return maxRoll;
+    }
+    return raw;
+  }
+
+  void _setTemporaryIniRoll(int value) {
+    final maxRoll = _maxIniRollForConfig(_draftCombatConfig);
+    final clamped = value < 0 ? 0 : (value > maxRoll ? maxRoll : value);
+    _temporaryIniRoll = clamped;
+    if (mounted) {
+      _viewRevision.value++;
+    }
   }
 
   void _updateIntField(String talentId, String field, String raw) {
@@ -550,10 +580,18 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
               final combatTalents = catalog.talents
                   .where(isCombatTalentDef)
                   .toList(growable: false);
+              final effectiveIniRoll = _effectiveIniRollForConfig(
+                _draftCombatConfig,
+              );
+              final previewConfig = _draftCombatConfig.copyWith(
+                manualMods: _draftCombatConfig.manualMods.copyWith(
+                  iniWurf: effectiveIniRoll,
+                ),
+              );
               final preview = computeCombatPreviewStats(
                 hero,
                 state,
-                overrideConfig: _draftCombatConfig,
+                overrideConfig: previewConfig,
                 overrideTalents: _draftTalents,
                 catalogTalents: catalog.talents,
               );
