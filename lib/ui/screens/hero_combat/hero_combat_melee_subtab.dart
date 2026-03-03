@@ -730,17 +730,6 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                         _markFieldChanged();
                       },
                     ),
-                    _numberInput(
-                      label: 'INI-Wurf (${preview.iniDiceCount}W6)',
-                      keyName: 'combat-manual-ini-wurf',
-                      isEditing: isEditing,
-                      onChanged: (parsed) {
-                        _draftCombatConfig = _draftCombatConfig.copyWith(
-                          manualMods: manual.copyWith(iniWurf: parsed),
-                        );
-                        _markFieldChanged();
-                      },
-                    ),
                   ],
                 ),
               ],
@@ -772,6 +761,10 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     _resultChip('GE-Basis', preview.geBase),
                     _resultChip('GE-Schwelle', preview.geThreshold),
                     _resultChip('INI/GE', preview.iniGe),
+                    _resultChip(
+                      'Helden+Waffen INI',
+                      preview.kombinierteHeldenWaffenIni,
+                    ),
                     _resultChip('Ini Parade Mod', preview.iniParadeMod),
                     _resultChip('TK-Kalk', preview.tpCalc),
                     Chip(
@@ -779,11 +772,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                         'Spezialisierung: ${preview.specApplies ? 'Ja' : 'Nein'}',
                       ),
                     ),
-                    Chip(
-                      label: Text(
-                        'INI: ${preview.initiative} + ${preview.iniDiceCount}W6',
-                      ),
-                    ),
+                    Chip(label: Text('Kampf INI: ${preview.kampfInitiative}')),
                     _resultChip('Ausweichen', preview.ausweichen),
                     _resultChip('AT', preview.at),
                     _resultChip('PA', preview.pa),
@@ -897,12 +886,26 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   ),
                   Chip(
                     key: const ValueKey<String>(
+                      'combat-active-weapon-info-helden-ini',
+                    ),
+                    label: Text(_heldenIniLabel(preview)),
+                  ),
+                  Chip(
+                    key: const ValueKey<String>(
+                      'combat-active-weapon-info-helden-waffen-ini',
+                    ),
+                    label: Text(_heldenWaffenIniLabel(preview)),
+                  ),
+                  Chip(
+                    key: const ValueKey<String>(
                       'combat-active-weapon-info-ini',
                     ),
-                    label: Text('INI: ${preview.initiative}'),
+                    label: Text(_kampfIniLabel(preview)),
                   ),
                 ],
               ),
+              const SizedBox(height: 8),
+              _activeWeaponIniRollEditor(preview),
               const SizedBox(height: 8),
               Text('Manoever', style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 4),
@@ -967,6 +970,73 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     return filtered;
   }
 
+  String _heldenIniLabel(CombatPreviewStats preview) {
+    final specialRules = _draftCombatConfig.specialRules;
+    final rollToken = specialRules.aufmerksamkeit
+        ? '${preview.iniDiceCount}W6'
+        : preview.iniWurfEffective.toString();
+    final heldenBase = preview.heldenInitiative - preview.iniWurfEffective;
+    return 'Helden INI: $heldenBase + $rollToken = ${preview.heldenInitiative}';
+  }
+
+  String _kampfIniLabel(CombatPreviewStats preview) {
+    final diff = preview.kampfInitiative - preview.kombinierteHeldenWaffenIni;
+    final sign = diff < 0 ? '-' : '+';
+    return 'Kampf INI: ${preview.kombinierteHeldenWaffenIni} $sign ${diff.abs()} = ${preview.kampfInitiative}';
+  }
+
+  String _heldenWaffenIniLabel(CombatPreviewStats preview) {
+    final diff = preview.kombinierteHeldenWaffenIni - preview.heldenInitiative;
+    final sign = diff < 0 ? '-' : '+';
+    return 'Helden+Waffen INI: ${preview.heldenInitiative} $sign ${diff.abs()} = ${preview.kombinierteHeldenWaffenIni}';
+  }
+
+  Widget _activeWeaponIniRollEditor(CombatPreviewStats preview) {
+    final maxRoll = preview.iniDiceCount * 6;
+    final isAuto = _draftCombatConfig.specialRules.aufmerksamkeit;
+    final effectiveRoll = _effectiveIniRollForConfig(_draftCombatConfig);
+    final controller = _controllerFor(
+      'combat-active-weapon-info-ini-roll',
+      effectiveRoll.toString(),
+    );
+    final desiredText = effectiveRoll.toString();
+    if (controller.text != desiredText) {
+      controller.value = TextEditingValue(
+        text: desiredText,
+        selection: TextSelection.collapsed(offset: desiredText.length),
+      );
+    }
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        SizedBox(
+          width: 180,
+          child: TextField(
+            key: const ValueKey<String>('combat-active-weapon-info-ini-roll'),
+            controller: controller,
+            readOnly: isAuto,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'INI-Wurf (0-$maxRoll)',
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+            onChanged: isAuto
+                ? null
+                : (raw) {
+                    final parsed = int.tryParse(raw.trim()) ?? 0;
+                    _setTemporaryIniRoll(parsed);
+                  },
+          ),
+        ),
+        if (isAuto)
+          Chip(label: Text('Aufmerksamkeit aktiv: automatisch $maxRoll')),
+      ],
+    );
+  }
+
   static const List<String> _weaponOverviewHeaders = <String>[
     'Name',
     'Waffentalent',
@@ -975,7 +1045,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     'AT',
     'PA',
     'TP',
-    'INI',
+    'Helden+Waffen INI',
     'BF',
     'KK-Basis',
     'KK-Schwelle',
@@ -1197,6 +1267,9 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             overrideConfig: _draftCombatConfig.copyWith(
               selectedWeaponIndex: entry.index,
               mainWeapon: slot,
+              manualMods: _draftCombatConfig.manualMods.copyWith(
+                iniWurf: _effectiveIniRollForConfig(_draftCombatConfig),
+              ),
             ),
             overrideTalents: _draftTalents,
             catalogTalents: catalog.talents,
@@ -1324,7 +1397,10 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             Text(preview.at.toString()),
             Text(preview.pa.toString()),
             Text(preview.tpExpression),
-            Text(preview.initiative.toString()),
+            Text(
+              preview.kombinierteHeldenWaffenIni.toString(),
+              key: ValueKey<String>('combat-weapon-cell-ini-${entry.index}'),
+            ),
             FlexibleTableCommitField(
               key: ValueKey<String>('combat-weapon-cell-bf-${entry.index}'),
               value: slot.breakFactor.toString(),
@@ -1453,7 +1529,10 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             Text(preview.tpKk.toString()),
             Text(preview.geBase.toString()),
             Text(preview.geThreshold.toString()),
-            Text(preview.iniGe.toString()),
+            Text(
+              preview.iniGe.toString(),
+              key: ValueKey<String>('combat-weapon-cell-ini-ge-${entry.index}'),
+            ),
             Text(preview.iniParadeMod.toString()),
             Text(preview.tpCalc.toString()),
             Text(preview.specApplies ? 'Ja' : 'Nein'),

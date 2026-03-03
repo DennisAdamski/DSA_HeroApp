@@ -312,6 +312,7 @@ class CombatSpecialRules {
     this.behaebig = false,
     this.axxeleratusActive = false,
     this.klingentaenzer = false,
+    this.aufmerksamkeit = false,
     this.activeManeuvers = const <String>[],
   });
 
@@ -330,6 +331,8 @@ class CombatSpecialRules {
   final bool axxeleratusActive;
   // Klingentaenzer: wirft 2W6 statt 1W6 auf Initiative
   final bool klingentaenzer;
+  // Aufmerksamkeit: ersetzt 1W6/2W6-Anzeige durch +6/+12 in der Uebersicht.
+  final bool aufmerksamkeit;
   final List<String> activeManeuvers;
 
   CombatSpecialRules copyWith({
@@ -347,6 +350,7 @@ class CombatSpecialRules {
     bool? behaebig,
     bool? axxeleratusActive,
     bool? klingentaenzer,
+    bool? aufmerksamkeit,
     List<String>? activeManeuvers,
   }) {
     return CombatSpecialRules(
@@ -364,6 +368,7 @@ class CombatSpecialRules {
       behaebig: behaebig ?? this.behaebig,
       axxeleratusActive: axxeleratusActive ?? this.axxeleratusActive,
       klingentaenzer: klingentaenzer ?? this.klingentaenzer,
+      aufmerksamkeit: aufmerksamkeit ?? this.aufmerksamkeit,
       activeManeuvers: _normalizeStringList(
         activeManeuvers ?? this.activeManeuvers,
       ),
@@ -386,6 +391,7 @@ class CombatSpecialRules {
       'behaebig': behaebig,
       'axxeleratusActive': axxeleratusActive,
       'klingentaenzer': klingentaenzer,
+      'aufmerksamkeit': aufmerksamkeit,
       'activeManeuvers': _normalizeStringList(activeManeuvers),
     };
   }
@@ -407,6 +413,7 @@ class CombatSpecialRules {
       behaebig: getBool('behaebig'),
       axxeleratusActive: getBool('axxeleratusActive'),
       klingentaenzer: getBool('klingentaenzer'),
+      aufmerksamkeit: getBool('aufmerksamkeit'),
       activeManeuvers: _normalizeStringList(
         (json['activeManeuvers'] as List?) ?? const <dynamic>[],
       ),

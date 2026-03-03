@@ -155,6 +155,17 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
             _markFieldChanged();
           },
         ),
+        _ruleToggle(
+          label: 'Aufmerksamkeit (fester INI-Zusatz)',
+          value: rules.aufmerksamkeit,
+          isEditing: isEditing,
+          onChanged: (value) {
+            _draftCombatConfig = _draftCombatConfig.copyWith(
+              specialRules: rules.copyWith(aufmerksamkeit: value),
+            );
+            _markFieldChanged();
+          },
+        ),
       ],
     );
   }
