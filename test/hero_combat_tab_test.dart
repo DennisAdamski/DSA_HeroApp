@@ -540,6 +540,14 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Kampfreflexe'));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.textContaining('Aufmerksamkeit'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Aufmerksamkeit'));
+    await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(Tab, 'Manoever'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
@@ -561,6 +569,7 @@ void main() {
     expect(hero.combatConfig.mainWeapon.talentId, 'tal_nah');
     expect(hero.combatConfig.mainWeapon.wmAt, 2);
     expect(hero.combatConfig.specialRules.kampfreflexe, isTrue);
+    expect(hero.combatConfig.specialRules.aufmerksamkeit, isTrue);
     expect(hero.combatConfig.specialRules.activeManeuvers, contains('Finte'));
   });
 
@@ -593,6 +602,14 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Kampfreflexe'));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.textContaining('Aufmerksamkeit'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Aufmerksamkeit'));
+    await tester.pumpAndSettle();
 
     await actions.cancel();
     await tester.pumpAndSettle();
@@ -602,6 +619,7 @@ void main() {
     expect(hero.combatConfig.mainWeapon.name, isEmpty);
     expect(hero.combatConfig.mainWeapon.weaponType, isEmpty);
     expect(hero.combatConfig.specialRules.kampfreflexe, isFalse);
+    expect(hero.combatConfig.specialRules.aufmerksamkeit, isFalse);
   });
 
   testWidgets('supports multiple weapon slots in read mode with auto-save', (
@@ -1084,10 +1102,12 @@ void main() {
                   as Text)
               .data;
 
+      expect(iniBefore, contains('+ 1W6'));
       expect(atAfter, isNot(equals(atBefore)));
       expect(paAfter, isNot(equals(paBefore)));
       expect(tpAfter, isNot(equals(tpBefore)));
       expect(iniAfter, isNot(equals(iniBefore)));
+      expect(iniAfter, contains('+ 1W6'));
 
       expect(
         find.descendant(of: maneuversFinder, matching: find.text('Finte')),
@@ -1100,6 +1120,102 @@ void main() {
         ),
         findsOneWidget,
       );
+    },
+  );
+
+  testWidgets(
+    'active weapon INI formula reflects Klingentaenzer/Aufmerksamkeit',
+    (tester) async {
+      Future<String?> pumpAndReadIni({
+        required bool klingentaenzer,
+        required bool aufmerksamkeit,
+      }) async {
+        final repo = FakeRepository(
+          heroes: [
+            buildHero(
+              combatConfig: CombatConfig(
+                weapons: const <MainWeaponSlot>[
+                  MainWeaponSlot(
+                    name: 'Kurzschwert',
+                    talentId: 'tal_nah',
+                    weaponType: 'Kurzschwert',
+                  ),
+                ],
+                selectedWeaponIndex: 0,
+                specialRules: CombatSpecialRules(
+                  klingentaenzer: klingentaenzer,
+                  aufmerksamkeit: aufmerksamkeit,
+                ),
+              ),
+            ),
+          ],
+          states: {
+            'demo': const HeroState(
+              currentLep: 10,
+              currentAsp: 0,
+              currentKap: 0,
+              currentAu: 10,
+            ),
+          },
+        );
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              heroRepositoryProvider.overrideWithValue(repo),
+              rulesCatalogProvider.overrideWith((ref) async => buildCatalog()),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: HeroCombatTab(
+                  heroId: 'demo',
+                  onDirtyChanged: (_) {},
+                  onEditingChanged: (_) {},
+                  onRegisterDiscard: (_) {},
+                  onRegisterEditActions: (_) {},
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+        await tester.pumpAndSettle();
+        return (tester
+                    .widget<Chip>(
+                      find.byKey(
+                        const ValueKey<String>('combat-active-weapon-info-ini'),
+                      ),
+                    )
+                    .label
+                as Text)
+            .data;
+      }
+
+      final noSf = await pumpAndReadIni(
+        klingentaenzer: false,
+        aufmerksamkeit: false,
+      );
+      expect(noSf, contains('+ 1W6'));
+
+      final klingentaenzerOnly = await pumpAndReadIni(
+        klingentaenzer: true,
+        aufmerksamkeit: false,
+      );
+      expect(klingentaenzerOnly, contains('+ 2W6'));
+
+      final aufmerksamkeitOnly = await pumpAndReadIni(
+        klingentaenzer: false,
+        aufmerksamkeit: true,
+      );
+      expect(aufmerksamkeitOnly, contains('+ 6'));
+      expect(aufmerksamkeitOnly, isNot(contains('W6')));
+
+      final both = await pumpAndReadIni(
+        klingentaenzer: true,
+        aufmerksamkeit: true,
+      );
+      expect(both, contains('+ 12'));
+      expect(both, isNot(contains('W6')));
     },
   );
 

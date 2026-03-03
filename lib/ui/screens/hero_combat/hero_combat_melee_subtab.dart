@@ -899,7 +899,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     key: const ValueKey<String>(
                       'combat-active-weapon-info-ini',
                     ),
-                    label: Text('INI: ${preview.initiative}'),
+                    label: Text(_activeWeaponIniLabel(preview)),
                   ),
                 ],
               ),
@@ -965,6 +965,15 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
       filtered.add(trimmed);
     }
     return filtered;
+  }
+
+  String _activeWeaponIniLabel(CombatPreviewStats preview) {
+    final specialRules = _draftCombatConfig.specialRules;
+    if (specialRules.aufmerksamkeit) {
+      final fixedIniBonus = preview.iniDiceCount * 6;
+      return 'INI: ${preview.initiative} + $fixedIniBonus';
+    }
+    return 'INI: ${preview.initiative} + ${preview.iniDiceCount}W6';
   }
 
   static const List<String> _weaponOverviewHeaders = <String>[
