@@ -216,9 +216,37 @@ void main() {
       );
 
       final result = computeCombatPreviewStats(hero, state);
-      expect(result.kampfInitiative, result.heldenInitiative + 2);
+      expect(
+        result.kombinierteHeldenWaffenIni,
+        result.heldenInitiative + 3 + result.iniGe,
+      );
+      expect(result.kampfInitiative, result.kombinierteHeldenWaffenIni - 1);
     },
   );
+
+  test('kombinierte Helden+Waffen INI includes weapon ini mod and INI/GE', () {
+    final hero = buildHero(
+      attributes: const Attributes(
+        mu: 12,
+        kl: 12,
+        inn: 12,
+        ch: 12,
+        ff: 12,
+        ge: 21,
+        ko: 12,
+        kk: 12,
+      ),
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(iniMod: 3, kkBase: 10, kkThreshold: 3),
+        offhand: OffhandSlot(mode: OffhandMode.linkhand, iniMod: -1),
+      ),
+    );
+    final result = computeCombatPreviewStats(hero, state);
+
+    expect(result.iniGe, 1);
+    expect(result.kombinierteHeldenWaffenIni, result.heldenInitiative + 3 + 1);
+    expect(result.kampfInitiative, result.kombinierteHeldenWaffenIni - 1);
+  });
 
   test('aufmerksamkeit can apply max roll via manual ini input channel', () {
     final hero = buildHero(

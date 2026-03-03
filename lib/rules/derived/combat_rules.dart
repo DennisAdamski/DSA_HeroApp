@@ -26,6 +26,7 @@ class CombatPreviewStats {
     required this.iniWurfEffective,
     required this.axxIniBonus,
     required this.heldenInitiative,
+    required this.kombinierteHeldenWaffenIni,
     required this.kampfInitiative,
     required this.initiative,
     required this.ausweichen,
@@ -58,6 +59,7 @@ class CombatPreviewStats {
   final int iniWurfEffective;
   final int axxIniBonus;
   final int heldenInitiative;
+  final int kombinierteHeldenWaffenIni;
   final int kampfInitiative;
   // Rueckwaertskompatibler Alias auf die Kampf-Ini.
   final int initiative;
@@ -206,8 +208,11 @@ CombatPreviewStats computeCombatPreviewStats(
         axxIniBonus +
         manualMods.iniMod,
   );
+  final kombinierteHeldenWaffenIni = _clampNonNegative(
+    heldenInitiative + main.iniMod + iniGe,
+  );
   final kampfInitiative = _clampNonNegative(
-    heldenInitiative + main.iniMod + offhand.iniMod,
+    kombinierteHeldenWaffenIni + offhand.iniMod,
   );
   final initiative = kampfInitiative;
   final iniParadeMod = _max(
@@ -240,6 +245,7 @@ CombatPreviewStats computeCombatPreviewStats(
     iniWurfEffective: iniWurfEffective,
     axxIniBonus: axxIniBonus,
     heldenInitiative: heldenInitiative,
+    kombinierteHeldenWaffenIni: kombinierteHeldenWaffenIni,
     kampfInitiative: kampfInitiative,
     initiative: initiative,
     ausweichen: ausweichen,
