@@ -761,6 +761,10 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     _resultChip('GE-Basis', preview.geBase),
                     _resultChip('GE-Schwelle', preview.geThreshold),
                     _resultChip('INI/GE', preview.iniGe),
+                    _resultChip(
+                      'Helden+Waffen INI',
+                      preview.kombinierteHeldenWaffenIni,
+                    ),
                     _resultChip('Ini Parade Mod', preview.iniParadeMod),
                     _resultChip('TK-Kalk', preview.tpCalc),
                     Chip(
@@ -888,6 +892,12 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   ),
                   Chip(
                     key: const ValueKey<String>(
+                      'combat-active-weapon-info-helden-waffen-ini',
+                    ),
+                    label: Text(_heldenWaffenIniLabel(preview)),
+                  ),
+                  Chip(
+                    key: const ValueKey<String>(
                       'combat-active-weapon-info-ini',
                     ),
                     label: Text(_kampfIniLabel(preview)),
@@ -970,9 +980,15 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
   }
 
   String _kampfIniLabel(CombatPreviewStats preview) {
-    final diff = preview.kampfInitiative - preview.heldenInitiative;
+    final diff = preview.kampfInitiative - preview.kombinierteHeldenWaffenIni;
     final sign = diff < 0 ? '-' : '+';
-    return 'Kampf INI: ${preview.heldenInitiative} $sign ${diff.abs()} = ${preview.kampfInitiative}';
+    return 'Kampf INI: ${preview.kombinierteHeldenWaffenIni} $sign ${diff.abs()} = ${preview.kampfInitiative}';
+  }
+
+  String _heldenWaffenIniLabel(CombatPreviewStats preview) {
+    final diff = preview.kombinierteHeldenWaffenIni - preview.heldenInitiative;
+    final sign = diff < 0 ? '-' : '+';
+    return 'Helden+Waffen INI: ${preview.heldenInitiative} $sign ${diff.abs()} = ${preview.kombinierteHeldenWaffenIni}';
   }
 
   Widget _activeWeaponIniRollEditor(CombatPreviewStats preview) {
@@ -1029,7 +1045,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     'AT',
     'PA',
     'TP',
-    'INI',
+    'Helden+Waffen INI',
     'BF',
     'KK-Basis',
     'KK-Schwelle',
@@ -1251,6 +1267,9 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             overrideConfig: _draftCombatConfig.copyWith(
               selectedWeaponIndex: entry.index,
               mainWeapon: slot,
+              manualMods: _draftCombatConfig.manualMods.copyWith(
+                iniWurf: _effectiveIniRollForConfig(_draftCombatConfig),
+              ),
             ),
             overrideTalents: _draftTalents,
             catalogTalents: catalog.talents,
@@ -1378,7 +1397,10 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             Text(preview.at.toString()),
             Text(preview.pa.toString()),
             Text(preview.tpExpression),
-            Text(preview.initiative.toString()),
+            Text(
+              preview.kombinierteHeldenWaffenIni.toString(),
+              key: ValueKey<String>('combat-weapon-cell-ini-${entry.index}'),
+            ),
             FlexibleTableCommitField(
               key: ValueKey<String>('combat-weapon-cell-bf-${entry.index}'),
               value: slot.breakFactor.toString(),
@@ -1507,7 +1529,10 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             Text(preview.tpKk.toString()),
             Text(preview.geBase.toString()),
             Text(preview.geThreshold.toString()),
-            Text(preview.iniGe.toString()),
+            Text(
+              preview.iniGe.toString(),
+              key: ValueKey<String>('combat-weapon-cell-ini-ge-${entry.index}'),
+            ),
             Text(preview.iniParadeMod.toString()),
             Text(preview.tpCalc.toString()),
             Text(preview.specApplies ? 'Ja' : 'Nein'),
