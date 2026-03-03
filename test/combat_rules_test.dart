@@ -177,6 +177,61 @@ void main() {
     expect(withResult.tpCalc, 6);
   });
 
+  test('Axxeleratus adds eigenschafts INI to helden initiative', () {
+    final baseHero = buildHero(
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(kkBase: 12, kkThreshold: 2),
+        specialRules: CombatSpecialRules(kampfreflexe: true),
+        manualMods: CombatManualMods(iniWurf: 3),
+      ),
+    );
+    final withAxxeleratus = baseHero.copyWith(
+      combatConfig: baseHero.combatConfig.copyWith(
+        specialRules: baseHero.combatConfig.specialRules.copyWith(
+          axxeleratusActive: true,
+        ),
+      ),
+    );
+
+    final withoutResult = computeCombatPreviewStats(baseHero, state);
+    final withResult = computeCombatPreviewStats(withAxxeleratus, state);
+
+    expect(withoutResult.axxIniBonus, 0);
+    expect(withResult.axxIniBonus, withResult.eigenschaftsIni);
+    expect(
+      withResult.heldenInitiative,
+      withoutResult.heldenInitiative + withResult.eigenschaftsIni,
+    );
+  });
+
+  test(
+    'kampf initiative includes only weapon/offhand ini mods on top of helden initiative',
+    () {
+      final hero = buildHero(
+        combatConfig: const CombatConfig(
+          mainWeapon: MainWeaponSlot(iniMod: 3),
+          offhand: OffhandSlot(mode: OffhandMode.linkhand, iniMod: -1),
+          manualMods: CombatManualMods(iniWurf: 2),
+        ),
+      );
+
+      final result = computeCombatPreviewStats(hero, state);
+      expect(result.kampfInitiative, result.heldenInitiative + 2);
+    },
+  );
+
+  test('aufmerksamkeit can apply max roll via manual ini input channel', () {
+    final hero = buildHero(
+      combatConfig: const CombatConfig(
+        specialRules: CombatSpecialRules(klingentaenzer: true),
+        manualMods: CombatManualMods(iniWurf: 12),
+      ),
+    );
+
+    final result = computeCombatPreviewStats(hero, state);
+    expect(result.iniWurfEffective, 12);
+  });
+
   test('Flink from Vorteile adds +1 INI and +1 Ausweichen', () {
     final withoutFlink = buildHero();
     final withFlink = buildHero(vorteileText: 'Flink');

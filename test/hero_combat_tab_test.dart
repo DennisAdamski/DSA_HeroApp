@@ -1102,12 +1102,12 @@ void main() {
                   as Text)
               .data;
 
-      expect(iniBefore, contains('+ 1W6'));
+      expect(iniBefore, contains('Kampf INI:'));
       expect(atAfter, isNot(equals(atBefore)));
       expect(paAfter, isNot(equals(paBefore)));
       expect(tpAfter, isNot(equals(tpBefore)));
       expect(iniAfter, isNot(equals(iniBefore)));
-      expect(iniAfter, contains('+ 1W6'));
+      expect(iniAfter, contains('Kampf INI:'));
 
       expect(
         find.descendant(of: maneuversFinder, matching: find.text('Finte')),
@@ -1123,101 +1123,245 @@ void main() {
     },
   );
 
-  testWidgets(
-    'active weapon INI formula reflects Klingentaenzer/Aufmerksamkeit',
-    (tester) async {
-      Future<String?> pumpAndReadIni({
-        required bool klingentaenzer,
-        required bool aufmerksamkeit,
-      }) async {
-        final repo = FakeRepository(
-          heroes: [
-            buildHero(
-              combatConfig: CombatConfig(
-                weapons: const <MainWeaponSlot>[
-                  MainWeaponSlot(
-                    name: 'Kurzschwert',
-                    talentId: 'tal_nah',
-                    weaponType: 'Kurzschwert',
-                  ),
-                ],
-                selectedWeaponIndex: 0,
-                specialRules: CombatSpecialRules(
-                  klingentaenzer: klingentaenzer,
-                  aufmerksamkeit: aufmerksamkeit,
+  testWidgets('active weapon INI shows helden/kampf split and roll behavior', (
+    tester,
+  ) async {
+    Future<({String? heldenIni, String? kampfIni})> pumpAndReadIni({
+      required bool klingentaenzer,
+      required bool aufmerksamkeit,
+    }) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: CombatConfig(
+              weapons: const <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzschwert',
+                  talentId: 'tal_nah',
+                  weaponType: 'Kurzschwert',
                 ),
-              ),
-            ),
-          ],
-          states: {
-            'demo': const HeroState(
-              currentLep: 10,
-              currentAsp: 0,
-              currentKap: 0,
-              currentAu: 10,
-            ),
-          },
-        );
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              heroRepositoryProvider.overrideWithValue(repo),
-              rulesCatalogProvider.overrideWith((ref) async => buildCatalog()),
-            ],
-            child: MaterialApp(
-              home: Scaffold(
-                body: HeroCombatTab(
-                  heroId: 'demo',
-                  onDirtyChanged: (_) {},
-                  onEditingChanged: (_) {},
-                  onRegisterDiscard: (_) {},
-                  onRegisterEditActions: (_) {},
-                ),
+              ],
+              selectedWeaponIndex: 0,
+              specialRules: CombatSpecialRules(
+                klingentaenzer: klingentaenzer,
+                aufmerksamkeit: aufmerksamkeit,
               ),
             ),
           ),
-        );
-        await tester.pumpAndSettle();
-        await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
-        await tester.pumpAndSettle();
-        return (tester
-                    .widget<Chip>(
-                      find.byKey(
-                        const ValueKey<String>('combat-active-weapon-info-ini'),
-                      ),
-                    )
-                    .label
-                as Text)
-            .data;
-      }
-
-      final noSf = await pumpAndReadIni(
-        klingentaenzer: false,
-        aufmerksamkeit: false,
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
       );
-      expect(noSf, contains('+ 1W6'));
-
-      final klingentaenzerOnly = await pumpAndReadIni(
-        klingentaenzer: true,
-        aufmerksamkeit: false,
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            heroRepositoryProvider.overrideWithValue(repo),
+            rulesCatalogProvider.overrideWith((ref) async => buildCatalog()),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: HeroCombatTab(
+                heroId: 'demo',
+                onDirtyChanged: (_) {},
+                onEditingChanged: (_) {},
+                onRegisterDiscard: (_) {},
+                onRegisterEditActions: (_) {},
+              ),
+            ),
+          ),
+        ),
       );
-      expect(klingentaenzerOnly, contains('+ 2W6'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+      await tester.pumpAndSettle();
+      final heldenIni =
+          (tester
+                      .widget<Chip>(
+                        find.byKey(
+                          const ValueKey<String>(
+                            'combat-active-weapon-info-helden-ini',
+                          ),
+                        ),
+                      )
+                      .label
+                  as Text)
+              .data;
+      final kampfIni =
+          (tester
+                      .widget<Chip>(
+                        find.byKey(
+                          const ValueKey<String>(
+                            'combat-active-weapon-info-ini',
+                          ),
+                        ),
+                      )
+                      .label
+                  as Text)
+              .data;
+      return (heldenIni: heldenIni, kampfIni: kampfIni);
+    }
 
-      final aufmerksamkeitOnly = await pumpAndReadIni(
-        klingentaenzer: false,
-        aufmerksamkeit: true,
-      );
-      expect(aufmerksamkeitOnly, contains('+ 6'));
-      expect(aufmerksamkeitOnly, isNot(contains('W6')));
+    final noSf = await pumpAndReadIni(
+      klingentaenzer: false,
+      aufmerksamkeit: false,
+    );
+    expect(noSf.heldenIni, contains('Helden INI:'));
+    expect(noSf.heldenIni, contains(' + 0 = '));
+    expect(noSf.kampfIni, contains('Kampf INI:'));
 
-      final both = await pumpAndReadIni(
-        klingentaenzer: true,
-        aufmerksamkeit: true,
+    final klingentaenzerOnly = await pumpAndReadIni(
+      klingentaenzer: true,
+      aufmerksamkeit: false,
+    );
+    expect(klingentaenzerOnly.heldenIni, contains(' + 0 = '));
+    expect(klingentaenzerOnly.kampfIni, contains('Kampf INI:'));
+
+    final aufmerksamkeitOnly = await pumpAndReadIni(
+      klingentaenzer: false,
+      aufmerksamkeit: true,
+    );
+    expect(aufmerksamkeitOnly.heldenIni, contains(' + 1W6 = '));
+
+    final both = await pumpAndReadIni(
+      klingentaenzer: true,
+      aufmerksamkeit: true,
+    );
+    expect(both.heldenIni, contains(' + 2W6 = '));
+    expect(both.kampfIni, contains('Kampf INI:'));
+  });
+
+  testWidgets(
+    'temporary ini roll input clamps and updates ini parade mod without persistence',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              weapons: <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzschwert',
+                  talentId: 'tal_nah',
+                  weaponType: 'Kurzschwert',
+                ),
+              ],
+              selectedWeaponIndex: 0,
+              specialRules: CombatSpecialRules(klingentaenzer: true),
+            ),
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
       );
-      expect(both, contains('+ 12'));
-      expect(both, isNot(contains('W6')));
+
+      await openCombatTab(tester, repo);
+      await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+      await tester.pumpAndSettle();
+
+      final iniBefore =
+          (tester
+                      .widget<Chip>(
+                        find.byKey(
+                          const ValueKey<String>(
+                            'combat-active-weapon-info-ini',
+                          ),
+                        ),
+                      )
+                      .label
+                  as Text)
+              .data;
+
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('combat-active-weapon-info-ini-roll'),
+        ),
+        '13',
+      );
+      await tester.pumpAndSettle();
+
+      final rollController = tester.widget<TextField>(
+        find.byKey(
+          const ValueKey<String>('combat-active-weapon-info-ini-roll'),
+        ),
+      );
+      expect(rollController.controller?.text, '12');
+      final iniAfter =
+          (tester
+                      .widget<Chip>(
+                        find.byKey(
+                          const ValueKey<String>(
+                            'combat-active-weapon-info-ini',
+                          ),
+                        ),
+                      )
+                      .label
+                  as Text)
+              .data;
+      expect(iniAfter, isNot(equals(iniBefore)));
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+      expect(hero.combatConfig.manualMods.iniWurf, 0);
     },
   );
+
+  testWidgets('aufmerksamkeit disables ini roll input and uses max roll', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
+              ),
+            ],
+            selectedWeaponIndex: 0,
+            specialRules: CombatSpecialRules(
+              aufmerksamkeit: true,
+              klingentaenzer: true,
+            ),
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+
+    final rollField = tester.widget<TextField>(
+      find.byKey(const ValueKey<String>('combat-active-weapon-info-ini-roll')),
+    );
+    expect(rollField.readOnly, isTrue);
+    expect(rollField.controller?.text, '12');
+    expect(
+      find.textContaining('Aufmerksamkeit aktiv: automatisch 12'),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('melee info panel shows empty state when no weapon is selected', (
     tester,

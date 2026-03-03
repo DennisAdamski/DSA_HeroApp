@@ -22,6 +22,11 @@ class CombatPreviewStats {
     required this.iniParadeMod,
     required this.tpCalc,
     required this.specApplies,
+    required this.eigenschaftsIni,
+    required this.iniWurfEffective,
+    required this.axxIniBonus,
+    required this.heldenInitiative,
+    required this.kampfInitiative,
     required this.initiative,
     required this.ausweichen,
     required this.at,
@@ -49,6 +54,12 @@ class CombatPreviewStats {
   final int iniParadeMod;
   final int tpCalc;
   final bool specApplies;
+  final int eigenschaftsIni;
+  final int iniWurfEffective;
+  final int axxIniBonus;
+  final int heldenInitiative;
+  final int kampfInitiative;
+  // Rueckwaertskompatibler Alias auf die Kampf-Ini.
   final int initiative;
   final int ausweichen;
   final int at;
@@ -183,17 +194,26 @@ CombatPreviewStats computeCombatPreviewStats(
       manualMods.paMod;
 
   final iniDiceCount = special.klingentaenzer ? 2 : 1;
-  final initiative = _clampNonNegative(
-    derived.iniBase +
-        iniGe +
-        sfIniBonus +
+  final maxIniRoll = iniDiceCount * 6;
+  final iniWurfEffective = _clamp(manualMods.iniWurf, 0, maxIniRoll);
+  final eigenschaftsIni = derived.iniBase;
+  final axxIniBonus = special.axxeleratusActive ? eigenschaftsIni : 0;
+  final heldenInitiative = _clampNonNegative(
+    eigenschaftsIni +
         ebe +
-        main.iniMod +
-        offhand.iniMod +
-        manualMods.iniWurf +
+        sfIniBonus +
+        iniWurfEffective +
+        axxIniBonus +
         manualMods.iniMod,
   );
-  final iniParadeMod = _max(0, _roundDownTowardsZero((initiative - 11) / 10));
+  final kampfInitiative = _clampNonNegative(
+    heldenInitiative + main.iniMod + offhand.iniMod,
+  );
+  final initiative = kampfInitiative;
+  final iniParadeMod = _max(
+    0,
+    _roundDownTowardsZero((kampfInitiative - 11) / 10),
+  );
 
   final ausweichen = _clampNonNegative(
     paBase +
@@ -216,6 +236,11 @@ CombatPreviewStats computeCombatPreviewStats(
     iniParadeMod: iniParadeMod,
     tpCalc: tpCalc,
     specApplies: specApplies,
+    eigenschaftsIni: eigenschaftsIni,
+    iniWurfEffective: iniWurfEffective,
+    axxIniBonus: axxIniBonus,
+    heldenInitiative: heldenInitiative,
+    kampfInitiative: kampfInitiative,
     initiative: initiative,
     ausweichen: ausweichen,
     at: at,
@@ -253,9 +278,6 @@ int _computeSfIniBonus(
   }
   if (hasBehaebigFromNachteile) {
     total -= 1;
-  }
-  if (special.axxeleratusActive) {
-    total += 2;
   }
   return total;
 }
@@ -351,6 +373,16 @@ int _sumArmorBe(List<ArmorPiece> pieces) {
     sum += _clampNonNegative(piece.be);
   }
   return sum;
+}
+
+int _clamp(int value, int min, int max) {
+  if (value < min) {
+    return min;
+  }
+  if (value > max) {
+    return max;
+  }
+  return value;
 }
 
 int _computeAkrobatikBonus(Map<String, HeroTalentEntry> talents) {

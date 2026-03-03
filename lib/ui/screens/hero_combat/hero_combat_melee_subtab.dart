@@ -730,17 +730,6 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                         _markFieldChanged();
                       },
                     ),
-                    _numberInput(
-                      label: 'INI-Wurf (${preview.iniDiceCount}W6)',
-                      keyName: 'combat-manual-ini-wurf',
-                      isEditing: isEditing,
-                      onChanged: (parsed) {
-                        _draftCombatConfig = _draftCombatConfig.copyWith(
-                          manualMods: manual.copyWith(iniWurf: parsed),
-                        );
-                        _markFieldChanged();
-                      },
-                    ),
                   ],
                 ),
               ],
@@ -779,11 +768,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                         'Spezialisierung: ${preview.specApplies ? 'Ja' : 'Nein'}',
                       ),
                     ),
-                    Chip(
-                      label: Text(
-                        'INI: ${preview.initiative} + ${preview.iniDiceCount}W6',
-                      ),
-                    ),
+                    Chip(label: Text('Kampf INI: ${preview.kampfInitiative}')),
                     _resultChip('Ausweichen', preview.ausweichen),
                     _resultChip('AT', preview.at),
                     _resultChip('PA', preview.pa),
@@ -897,12 +882,20 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   ),
                   Chip(
                     key: const ValueKey<String>(
+                      'combat-active-weapon-info-helden-ini',
+                    ),
+                    label: Text(_heldenIniLabel(preview)),
+                  ),
+                  Chip(
+                    key: const ValueKey<String>(
                       'combat-active-weapon-info-ini',
                     ),
-                    label: Text(_activeWeaponIniLabel(preview)),
+                    label: Text(_kampfIniLabel(preview)),
                   ),
                 ],
               ),
+              const SizedBox(height: 8),
+              _activeWeaponIniRollEditor(preview),
               const SizedBox(height: 8),
               Text('Manoever', style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 4),
@@ -967,13 +960,65 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     return filtered;
   }
 
-  String _activeWeaponIniLabel(CombatPreviewStats preview) {
+  String _heldenIniLabel(CombatPreviewStats preview) {
     final specialRules = _draftCombatConfig.specialRules;
-    if (specialRules.aufmerksamkeit) {
-      final fixedIniBonus = preview.iniDiceCount * 6;
-      return 'INI: ${preview.initiative} + $fixedIniBonus';
+    final rollToken = specialRules.aufmerksamkeit
+        ? '${preview.iniDiceCount}W6'
+        : preview.iniWurfEffective.toString();
+    final heldenBase = preview.heldenInitiative - preview.iniWurfEffective;
+    return 'Helden INI: $heldenBase + $rollToken = ${preview.heldenInitiative}';
+  }
+
+  String _kampfIniLabel(CombatPreviewStats preview) {
+    final diff = preview.kampfInitiative - preview.heldenInitiative;
+    final sign = diff < 0 ? '-' : '+';
+    return 'Kampf INI: ${preview.heldenInitiative} $sign ${diff.abs()} = ${preview.kampfInitiative}';
+  }
+
+  Widget _activeWeaponIniRollEditor(CombatPreviewStats preview) {
+    final maxRoll = preview.iniDiceCount * 6;
+    final isAuto = _draftCombatConfig.specialRules.aufmerksamkeit;
+    final effectiveRoll = _effectiveIniRollForConfig(_draftCombatConfig);
+    final controller = _controllerFor(
+      'combat-active-weapon-info-ini-roll',
+      effectiveRoll.toString(),
+    );
+    final desiredText = effectiveRoll.toString();
+    if (controller.text != desiredText) {
+      controller.value = TextEditingValue(
+        text: desiredText,
+        selection: TextSelection.collapsed(offset: desiredText.length),
+      );
     }
-    return 'INI: ${preview.initiative} + ${preview.iniDiceCount}W6';
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        SizedBox(
+          width: 180,
+          child: TextField(
+            key: const ValueKey<String>('combat-active-weapon-info-ini-roll'),
+            controller: controller,
+            readOnly: isAuto,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'INI-Wurf (0-$maxRoll)',
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+            onChanged: isAuto
+                ? null
+                : (raw) {
+                    final parsed = int.tryParse(raw.trim()) ?? 0;
+                    _setTemporaryIniRoll(parsed);
+                  },
+          ),
+        ),
+        if (isAuto)
+          Chip(label: Text('Aufmerksamkeit aktiv: automatisch $maxRoll')),
+      ],
+    );
   }
 
   static const List<String> _weaponOverviewHeaders = <String>[
