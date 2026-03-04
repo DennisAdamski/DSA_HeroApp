@@ -184,6 +184,8 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     final beController = TextEditingController(text: sourcePiece.be.toString());
     var isActive = sourcePiece.isActive;
     var rg1Active = sourcePiece.rg1Active;
+    final canSelectPieceRg1 =
+        _draftCombatConfig.armor.globalArmorTrainingLevel == 1;
     String? validationMessage;
 
     final result = await showDialog<ArmorPiece>(
@@ -239,17 +241,18 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                           });
                         },
                       ),
-                      SwitchListTile(
-                        key: const ValueKey<String>('combat-armor-form-rg1'),
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('RG I aktiv'),
-                        value: rg1Active,
-                        onChanged: (value) {
-                          setDialogState(() {
-                            rg1Active = value;
-                          });
-                        },
-                      ),
+                      if (canSelectPieceRg1)
+                        SwitchListTile(
+                          key: const ValueKey<String>('combat-armor-form-rg1'),
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('RG I aktiv'),
+                          value: rg1Active,
+                          onChanged: (value) {
+                            setDialogState(() {
+                              rg1Active = value;
+                            });
+                          },
+                        ),
                       if (validationMessage != null &&
                           validationMessage!.trim().isNotEmpty)
                         Padding(
@@ -558,118 +561,35 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             ),
           ),
         ),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final armorCard = _buildArmorConfigurationCard(
+              armor: armor,
+              preview: preview,
+              catalog: catalog,
+              sortedTalents: sortedTalents,
+            );
+            final iniAusweichenCard = _buildIniAusweichenOverviewCard(
+              preview: preview,
+            );
+            if (constraints.maxWidth < 900) {
+              return Column(
+                children: [
+                  armorCard,
+                  const SizedBox(height: 12),
+                  iniAusweichenCard,
+                ],
+              );
+            }
+            return Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Ruestung & BE',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<int>(
-                        key: const ValueKey<String>(
-                          'combat-armor-global-training-level',
-                        ),
-                        initialValue: armor.globalArmorTrainingLevel,
-                        decoration: const InputDecoration(
-                          labelText: 'Globale Ruestungsgewoehnung',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: const [
-                          DropdownMenuItem(value: 0, child: Text('0')),
-                          DropdownMenuItem(value: 2, child: Text('II')),
-                          DropdownMenuItem(value: 3, child: Text('III')),
-                        ],
-                        onChanged: (value) {
-                          _applyCombatConfigChange(
-                            nextConfig: _draftCombatConfig.copyWith(
-                              armor: _draftCombatConfig.armor.copyWith(
-                                globalArmorTrainingLevel: value ?? 0,
-                              ),
-                            ),
-                            catalog: catalog,
-                            meleeTalents: sortedTalents,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    FilledButton.icon(
-                      key: const ValueKey<String>('combat-armor-add'),
-                      onPressed: () => _openArmorPieceEditor(
-                        catalog: catalog,
-                        meleeTalents: sortedTalents,
-                      ),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Ruestung hinzufuegen'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                if (armor.pieces.isEmpty)
-                  const Text('Keine Ruestungsstuecke erfasst.')
-                else
-                  Column(
-                    children: [
-                      for (var i = 0; i < armor.pieces.length; i++)
-                        Card(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: ListTile(
-                            title: Text(armor.pieces[i].name),
-                            subtitle: Text(
-                              'RS ${armor.pieces[i].rs} | BE ${armor.pieces[i].be} | '
-                              'Aktiv ${armor.pieces[i].isActive ? 'Ja' : 'Nein'} | '
-                              'RG I ${armor.pieces[i].rg1Active ? 'Ja' : 'Nein'}',
-                            ),
-                            trailing: Wrap(
-                              spacing: 4,
-                              children: [
-                                IconButton(
-                                  key: ValueKey<String>('combat-armor-edit-$i'),
-                                  tooltip: 'Ruestung bearbeiten',
-                                  onPressed: () => _openArmorPieceEditor(
-                                    catalog: catalog,
-                                    meleeTalents: sortedTalents,
-                                    pieceIndex: i,
-                                  ),
-                                  icon: const Icon(Icons.edit),
-                                ),
-                                IconButton(
-                                  key: ValueKey<String>(
-                                    'combat-armor-remove-$i',
-                                  ),
-                                  tooltip: 'Ruestung entfernen',
-                                  onPressed: () => _removeArmorPiece(
-                                    i,
-                                    catalog: catalog,
-                                    meleeTalents: sortedTalents,
-                                  ),
-                                  icon: const Icon(Icons.delete),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                const SizedBox(height: 8),
-                const Text(
-                  'RG I ist global effektiv auf -1 BE begrenzt. '
-                  'RG II/III ersetzen RG I und werden nicht kombiniert.',
-                ),
+                Expanded(child: armorCard),
+                const SizedBox(width: 12),
+                Expanded(child: iniAusweichenCard),
               ],
-            ),
-          ),
+            );
+          },
         ),
         Card(
           child: Padding(
@@ -835,6 +755,155 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   meleeTalents: meleeTalents,
                 );
               },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildArmorConfigurationCard({
+    required ArmorConfig armor,
+    required CombatPreviewStats preview,
+    required RulesCatalog catalog,
+    required List<TalentDef> sortedTalents,
+  }) {
+    final showPieceRg1 = armor.globalArmorTrainingLevel == 1;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Ruestung & BE',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                FilledButton.icon(
+                  key: const ValueKey<String>('combat-armor-add'),
+                  onPressed: () => _openArmorPieceEditor(
+                    catalog: catalog,
+                    meleeTalents: sortedTalents,
+                  ),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Ruestung hinzufuegen'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            if (armor.pieces.isEmpty)
+              const Text('Keine Ruestungsstuecke erfasst.')
+            else
+              Column(
+                children: [
+                  for (var i = 0; i < armor.pieces.length; i++)
+                    Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  Chip(label: Text(armor.pieces[i].name)),
+                                  Chip(label: Text('RS ${armor.pieces[i].rs}')),
+                                  Chip(label: Text('BE ${armor.pieces[i].be}')),
+                                  Chip(
+                                    label: Text(
+                                      'Aktiv ${armor.pieces[i].isActive ? 'Ja' : 'Nein'}',
+                                    ),
+                                  ),
+                                  if (showPieceRg1)
+                                    Chip(
+                                      label: Text(
+                                        'RG I ${armor.pieces[i].rg1Active ? 'Ja' : 'Nein'}',
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            Wrap(
+                              spacing: 4,
+                              children: [
+                                IconButton(
+                                  key: ValueKey<String>('combat-armor-edit-$i'),
+                                  tooltip: 'Ruestung bearbeiten',
+                                  onPressed: () => _openArmorPieceEditor(
+                                    catalog: catalog,
+                                    meleeTalents: sortedTalents,
+                                    pieceIndex: i,
+                                  ),
+                                  icon: const Icon(Icons.edit),
+                                ),
+                                IconButton(
+                                  key: ValueKey<String>(
+                                    'combat-armor-remove-$i',
+                                  ),
+                                  tooltip: 'Ruestung entfernen',
+                                  onPressed: () => _removeArmorPiece(
+                                    i,
+                                    catalog: catalog,
+                                    meleeTalents: sortedTalents,
+                                  ),
+                                  icon: const Icon(Icons.delete),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            const SizedBox(height: 8),
+            Text('RS gesamt = Summe aktiver RS = ${preview.rsTotal}'),
+            Text(
+              'BE (Kampf) = BE Roh (${preview.beTotalRaw}) - RG (${preview.rgReduction}) = ${preview.beKampf}',
+            ),
+            Text(
+              'eBE = min(0, -BE(Kampf) (${preview.beKampf}) - BE Mod (${preview.beMod})) = ${preview.ebe}',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIniAusweichenOverviewCard({
+    required CombatPreviewStats preview,
+  }) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Ini & Ausweichen',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _resultChip('Kampf INI', preview.kampfInitiative),
+                _resultChip('Ini Parade Mod', preview.iniParadeMod),
+                _resultChip('Ausweichen', preview.ausweichen),
+                _resultChip(
+                  'Helden+Waffen INI',
+                  preview.kombinierteHeldenWaffenIni,
+                ),
+              ],
             ),
           ],
         ),

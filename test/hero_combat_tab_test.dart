@@ -256,6 +256,9 @@ void main() {
 
     Future<void> setSwitch(String key, bool value) async {
       final tile = find.byKey(ValueKey<String>(key));
+      if (tile.evaluate().isEmpty) {
+        return;
+      }
       final tileWidget = tester.widget<SwitchListTile>(tile);
       if (tileWidget.value == value) {
         return;
@@ -321,6 +324,13 @@ void main() {
       final linkhandTopLeft = tester.getTopLeft(find.text('Linkhand'));
       final schildkampfTopLeft = tester.getTopLeft(find.text('Schildkampf I'));
       expect(linkhandTopLeft.dy, lessThan(schildkampfTopLeft.dy));
+      expect(
+        find.byKey(
+          const ValueKey<String>('combat-armor-global-training-level'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Ruestungsgewoehnung'), findsOneWidget);
     },
   );
 
@@ -1717,7 +1727,13 @@ void main() {
     tester,
   ) async {
     final repo = FakeRepository(
-      heroes: [buildHero()],
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            armor: ArmorConfig(globalArmorTrainingLevel: 1),
+          ),
+        ),
+      ],
       states: {
         'demo': const HeroState(
           currentLep: 10,
@@ -1743,11 +1759,10 @@ void main() {
       rg1Active: true,
     );
 
-    expect(find.textContaining('Kettenhemd'), findsOneWidget);
-    expect(
-      find.textContaining('RS 3 | BE 4 | Aktiv Ja | RG I Ja'),
-      findsOneWidget,
-    );
+    expect(find.text('Kettenhemd'), findsOneWidget);
+    expect(find.text('RS 3'), findsOneWidget);
+    expect(find.text('BE 4'), findsOneWidget);
+    expect(find.text('RG I Ja'), findsOneWidget);
 
     await openArmorEditor(tester, index: 0);
     await fillArmorDialog(
@@ -1758,10 +1773,9 @@ void main() {
       isActive: true,
       rg1Active: true,
     );
-    expect(
-      find.textContaining('RS 5 | BE 6 | Aktiv Ja | RG I Ja'),
-      findsOneWidget,
-    );
+    expect(find.text('RS 5'), findsOneWidget);
+    expect(find.text('BE 6'), findsOneWidget);
+    expect(find.text('RG I Ja'), findsOneWidget);
 
     final removeButton = find.byKey(
       const ValueKey<String>('combat-armor-remove-0'),
@@ -1780,5 +1794,50 @@ void main() {
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
     expect(hero.combatConfig.armor.pieces, isEmpty);
+  });
+
+  testWidgets('armor dialog shows RG I toggle only when training is I', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    final actions = await openCombatTab(tester, repo);
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+
+    await openArmorEditor(tester);
+    expect(
+      find.byKey(const ValueKey<String>('combat-armor-form-rg1')),
+      findsNothing,
+    );
+    await tester.tap(find.text('Abbrechen'));
+    await tester.pumpAndSettle();
+
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
+    await tester.pumpAndSettle();
+    await selectDropdownByKey(
+      tester,
+      keyName: 'combat-armor-global-training-level',
+      valueText: 'I',
+    );
+
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+    await openArmorEditor(tester);
+    expect(
+      find.byKey(const ValueKey<String>('combat-armor-form-rg1')),
+      findsOneWidget,
+    );
   });
 }

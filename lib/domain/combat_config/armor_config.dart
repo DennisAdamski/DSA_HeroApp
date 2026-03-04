@@ -13,7 +13,7 @@ class ArmorConfig {
   /// Alle Ruestungsstuecke des Helden (ggf. leer).
   final List<ArmorPiece> pieces;
 
-  /// Globale Ruestungsgewoehnung: erlaubte Werte sind 0, 2 oder 3.
+  /// Globale Ruestungsgewoehnung: erlaubte Werte sind 0, 1, 2 oder 3.
   final int globalArmorTrainingLevel;
 
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
@@ -38,7 +38,7 @@ class ArmorConfig {
 
   /// Deserialisiert eine [ArmorConfig] aus einem JSON-Map.
   ///
-  /// Normalisiert [globalArmorTrainingLevel] auf erlaubte Werte (0, 2, 3).
+  /// Normalisiert [globalArmorTrainingLevel] auf erlaubte Werte (0, 1, 2, 3).
   /// Tolerant bei fehlenden Feldern.
   static ArmorConfig fromJson(Map<String, dynamic> json) {
     final rawPieces = (json['pieces'] as List?) ?? const <dynamic>[];
@@ -49,6 +49,7 @@ class ArmorConfig {
     var normalizedTraining =
         (json['globalArmorTrainingLevel'] as num?)?.toInt() ?? 0;
     if (normalizedTraining != 0 &&
+        normalizedTraining != 1 &&
         normalizedTraining != 2 &&
         normalizedTraining != 3) {
       normalizedTraining = 0;
