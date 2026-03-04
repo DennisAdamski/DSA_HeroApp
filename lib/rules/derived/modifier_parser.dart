@@ -160,6 +160,14 @@ ModifierParseResult parseModifierTexts({
   );
 }
 
+// Prueft, ob ein benanntes Token (z. B. 'flink', 'behaebig') im Text vorkommt.
+//
+// Deutsche Umlaute werden vor dem Vergleich normalisiert (ae, oe, ue, ss),
+// weil Nutzer Vorteile unterschiedlich eintippen koennen
+// ('Behäbig', 'Behaebig', 'BEHÄBIG'). Die Zeichencodes sind Unicode-Codepoints
+// der Umlaute: 228=ä, 246=ö, 252=ü, 223=ß.
+// Anschliessend wird der Text an nicht-alphanumerischen Zeichen in Tokens
+// aufgeteilt und jeder Token gegen die Ziel-Menge geprueft.
 bool _containsNamedToken(String text, Set<String> targets) {
   for (final rawFragment in text.split(RegExp(r'[\n,;]+'))) {
     final fragment = rawFragment.trim();
@@ -184,6 +192,10 @@ bool _containsNamedToken(String text, Set<String> targets) {
   return false;
 }
 
+// Erzeugt einen Cache-Schluessel aus den fuenf Modifier-Texten.
+// Als Trennzeichen wird U+0001 (ASCII SOH) verwendet – ein Steuerzeichen,
+// das in normalen Nutzer-Eingaben nicht vorkommt und so falsche Treffer
+// durch zufaellig zusammenpassende Textkonkatenationen verhindert.
 String _buildModifierParseCacheKey({
   required String rasseModText,
   required String kulturModText,
@@ -200,6 +212,11 @@ String _buildModifierParseCacheKey({
   ].join('\u0001');
 }
 
+// Normalisiert einen Modifier-Code auf Grossbuchstaben und loest DSA-Aliase auf:
+//   AE → ASP   (Astralpunkte; AE = Astral-Energie, historische Abkuerzung)
+//   LE → LEP   (Lebenspunkte; LE = Lebens-Energie)
+//   AW → AUSWEICHEN
+// Nicht-Buchstaben werden entfernt, damit z. B. 'Mu' und 'MU' identisch behandelt werden.
 String _normalizeCode(String input) {
   final text = input.toUpperCase().replaceAll(RegExp(r'[^A-Z]'), '');
 
@@ -208,6 +225,9 @@ String _normalizeCode(String input) {
   return aliases[text] ?? text;
 }
 
+// Wendet einen Modifier-Betrag auf die passende Eigenschaft an.
+// Gibt null zurueck, wenn der Code keiner Eigenschaft entspricht,
+// damit der Aufrufer den Stat-Code-Pfad probieren kann.
 AttributeModifiers? _applyAttributeCode(
   String code,
   int amount,
@@ -236,6 +256,9 @@ AttributeModifiers? _applyAttributeCode(
   }
 }
 
+// Wendet einen Modifier-Betrag auf den passenden abgeleiteten Wert an.
+// Gibt null zurueck, wenn der Code unbekannt ist; der Aufrufer sammelt
+// unbekannte Fragmente dann in unknownFragments.
 StatModifiers? _applyStatCode(String code, int amount, StatModifiers current) {
   switch (code) {
     case 'LEP':

@@ -1,3 +1,10 @@
+/// Die acht DSA-Grundeigenschaften eines Helden (unveraenderlich).
+///
+/// Kuerzel und Namen:
+///   mu  = Mut            kl  = Klugheit       inn = Intuition    ch  = Charisma
+///   ff  = Fingerfertigkeit  ge = Gewandtheit  ko  = Konstitution  kk  = Koerperkraft
+///
+/// Alle Felder sind unveraenderlich; Aenderungen erfolgen ueber [copyWith].
 class Attributes {
   const Attributes({
     required this.mu,
@@ -10,14 +17,14 @@ class Attributes {
     required this.kk,
   });
 
-  final int mu;
-  final int kl;
-  final int inn;
-  final int ch;
-  final int ff;
-  final int ge;
-  final int ko;
-  final int kk;
+  final int mu;  // Mut: Tapferkeit, Willenskraft, magische Kraftquelle
+  final int kl;  // Klugheit: Denkvermögen, Lernfähigkeit
+  final int inn; // Intuition: Wahrnehmung, Menschenkenntnis
+  final int ch;  // Charisma: Ausstrahlung, Überzeugungskraft
+  final int ff;  // Fingerfertigkeit: Feinmotorik, Geschick der Hände
+  final int ge;  // Gewandtheit: Körperkoordination, Schnelligkeit
+  final int ko;  // Konstitution: Zähigkeit, Gesundheit
+  final int kk;  // Körperkraft: Muskeln, Hebeln, Tragen
 
   Attributes copyWith({
     int? mu,
@@ -54,6 +61,9 @@ class Attributes {
     };
   }
 
+  // Lenient: fehlende Felder ergeben 0, damit aeltere Schemata
+  // (vor schemaVersion 4) weiterhin lesbar bleiben.
+  // num? → toInt() behandelt auch importierte float-Werte korrekt.
   static Attributes fromJson(Map<String, dynamic> json) {
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return Attributes(

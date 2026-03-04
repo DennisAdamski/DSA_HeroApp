@@ -1,3 +1,9 @@
+/// Haelt alle zur Laufzeit geladenen DSA-Spielregeldaten.
+///
+/// Wird einmalig beim App-Start durch [CatalogLoader] aus den Split-JSON-
+/// Assets befuellt und dann als unveraenderliches Objekt weitergegeben.
+/// Der Katalog ist die zentrale Quelle fuer Talent-, Waffen-, Zauber- und
+/// Manoeuverdefinitionen.
 class RulesCatalog {
   const RulesCatalog({
     required this.version,
@@ -9,13 +15,13 @@ class RulesCatalog {
     this.metadata = const {},
   });
 
-  final String version;
-  final String source;
-  final List<TalentDef> talents;
-  final List<SpellDef> spells;
-  final List<WeaponDef> weapons;
-  final List<ManeuverDef> maneuvers;
-  final Map<String, dynamic> metadata;
+  final String version;                // Katalogversion (z. B. 'house_rules_v1')
+  final String source;                 // Quell-ID (z. B. Dateiname des Manifests)
+  final List<TalentDef> talents;       // Alle Talente (regulaer + Kampftalente)
+  final List<SpellDef> spells;         // Alle Zaubersprueche
+  final List<WeaponDef> weapons;       // Alle Waffendefinitionen
+  final List<ManeuverDef> maneuvers;   // Kampfmanöver (optional, kann leer sein)
+  final Map<String, dynamic> metadata; // Sonstige Metadaten aus dem Manifest
 
   /// Sucht ein Manöver anhand des Namens (Groß-/Kleinschreibung wird ignoriert).
   ManeuverDef? maneuverByName(String name) {
@@ -62,6 +68,10 @@ class RulesCatalog {
   }
 }
 
+/// Definition eines Kampfmanoeuvers aus dem Regelkatalog.
+///
+/// Manoever koennen Waffen ([WeaponDef.possibleManeuvers]) zugeordnet sein.
+/// [erschwernis] enthaelt den Erschwernis-Wert als Freitext (z. B. '-4' oder '+0').
 class ManeuverDef {
   const ManeuverDef({
     required this.id,
@@ -72,12 +82,12 @@ class ManeuverDef {
     this.erklarung = '',
   });
 
-  final String id;
-  final String name;
-  final String gruppe;
-  final String erschwernis;
-  final String seite;
-  final String erklarung;
+  final String id;          // Eindeutige ID (z. B. 'man_hammerschlag')
+  final String name;        // Anzeigename
+  final String gruppe;      // Kategorie (z. B. 'Angriff', 'Abwehr')
+  final String erschwernis; // Erschwernis-Modifikator als Freitext
+  final String seite;       // Seitenreferenz im Regelwerk
+  final String erklarung;   // Regeltext / Beschreibung
 
   factory ManeuverDef.fromJson(Map<String, dynamic> json) {
     return ManeuverDef(
@@ -102,6 +112,16 @@ class ManeuverDef {
   }
 }
 
+/// Definition eines Talents aus dem Regelkatalog.
+///
+/// Unterscheidung normale Talente vs. Kampftalente erfolgt ueber
+/// [group] ('Kampftalent'), [weaponCategory] (nicht-leer) oder
+/// [type] ('nahkampf' / 'fernkampf').
+///
+/// [steigerung] ist der Steigerungsfaktor der DSA-Steigungstabelle
+/// (z. B. 'B', 'C', 'D', 'E', 'F') – bestimmt AP-Kosten pro TaW-Punkt.
+/// [be] beschreibt den Behinderungseinfluss: '-' = keiner, '-2' = feste
+/// Reduktion, 'xBE' = Vielfaches der Ruestungsbehinderung.
 class TalentDef {
   const TalentDef({
     required this.id,
@@ -118,18 +138,18 @@ class TalentDef {
     this.active = true,
   });
 
-  final String id;
-  final String name;
-  final String group;
-  final String steigerung;
-  final List<String> attributes;
-  final String type;
-  final String be;
-  final String weaponCategory;
-  final String alternatives;
-  final String source;
-  final String description;
-  final bool active;
+  final String id;               // Eindeutige ID (z. B. 'tal_empathie')
+  final String name;             // Anzeigename
+  final String group;            // Gruppe ('Kampftalent', 'Gabe', 'Koerper', …)
+  final String steigerung;       // AP-Steigerungskategorie ('B'–'F')
+  final List<String> attributes; // Drei Eigenschaftskuerzel fuer Proben
+  final String type;             // Talenttyp ('nahkampf', 'fernkampf', 'Gabe', …)
+  final String be;               // Behinderungsformel ('-', '-N', 'xN' oder '')
+  final String weaponCategory;   // Waffenkategorie fuer Spezialisierungsabgleich
+  final String alternatives;     // Alternative Kategorienamen (kommagetrennt)
+  final String source;           // Quellreferenz (Seitenzahl o. Ae.)
+  final String description;      // Regelbeschreibung als Freitext
+  final bool active;             // Im App verfuegbar und anzeigbar?
 
   factory TalentDef.fromJson(Map<String, dynamic> json) {
     return TalentDef(
@@ -166,6 +186,12 @@ class TalentDef {
   }
 }
 
+/// Definition eines Zauberspruchs aus dem Regelkatalog.
+///
+/// [steigerung] entspricht dem AP-Steigerungsfaktor (analog zu [TalentDef]).
+/// [aspCost] enthaelt die Kosten in Astralpunkten als Formel-String
+/// (z. B. '4' oder '4W6').
+/// [modifier] beschreibt moegliche Erschwernisse oder Erleichterungen.
 class SpellDef {
   const SpellDef({
     required this.id,
@@ -188,20 +214,20 @@ class SpellDef {
 
   final String id;
   final String name;
-  final String tradition;
-  final String steigerung;
-  final List<String> attributes;
-  final String availability;
-  final String traits;
-  final String modifier;
-  final String castingTime;
-  final String aspCost;
-  final String range;
-  final String duration;
-  final String modifications;
-  final String category;
-  final String source;
-  final bool active;
+  final String tradition;        // Magie-Tradition (z. B. 'Gildenmagie')
+  final String steigerung;       // AP-Steigerungskategorie ('A'–'F')
+  final List<String> attributes; // Eigenschaftskuerzel fuer Zauberprobe
+  final String availability;     // Verfuegbarkeit (Verbreitung)
+  final String traits;           // Zaubereigenschaften (z. B. 'Beruehrung, Blitz')
+  final String modifier;         // Erschwernis/Erleichterung als Freitext
+  final String castingTime;      // Zauberdauer (z. B. '2 Aktionen')
+  final String aspCost;          // AsP-Kosten als Freitext-Formel (z. B. '4W6')
+  final String range;            // Reichweite
+  final String duration;         // Wirkungsdauer
+  final String modifications;    // Modifikationsoptionen fuer den Zauber
+  final String category;         // Zauberkategorie
+  final String source;           // Quellreferenz
+  final bool active;             // Im App verfuegbar und anzeigbar?
 
   factory SpellDef.fromJson(Map<String, dynamic> json) {
     return SpellDef(
@@ -246,6 +272,13 @@ class SpellDef {
   }
 }
 
+/// Definition einer Waffe aus dem Regelkatalog.
+///
+/// [combatSkill] verweist auf den Namen des zugehoerigen Kampftalents.
+/// [tp] enthaelt die Schadens-Formel als Freitext (z. B. '1W6+4').
+/// [tpkk] beschreibt die KK-abhaengige TP-Skalierung im DSA-Format
+/// (z. B. '12/6' bedeutet: ab KK 12, ein TP-Schritt pro 6 KK-Punkte).
+/// [atMod] und [paMod] sind waffenspezifische Angriffs- und Parade-Boni.
 class WeaponDef {
   const WeaponDef({
     required this.id,
@@ -268,20 +301,20 @@ class WeaponDef {
 
   final String id;
   final String name;
-  final String type;
-  final String combatSkill;
-  final String tp;
-  final String complexity;
-  final String weaponCategory;
-  final List<String> possibleManeuvers;
-  final List<String> activeManeuvers;
-  final String tpkk;
-  final int iniMod;
-  final int atMod;
-  final int paMod;
-  final String reach;
-  final String source;
-  final bool active;
+  final String type;                        // 'Nahkampf' oder 'Fernkampf'
+  final String combatSkill;                 // Verknuepftes Kampftalent (Name)
+  final String tp;                          // Schadens-Formel (z. B. '1W6+4')
+  final String complexity;                  // Waffenkomplexitaet
+  final String weaponCategory;              // Kategorie fuer Spezialisierungsabgleich
+  final List<String> possibleManeuvers;     // Alle verfuegbaren Manöver-IDs
+  final List<String> activeManeuvers;       // Standardmaessig aktive Manöver-IDs
+  final String tpkk;                        // KK-Skalierung im Format 'Basis/Schritt'
+  final int iniMod;                         // Waffenspezifischer Initiative-Modifier
+  final int atMod;                          // Waffenspezifischer Angriff-Modifier
+  final int paMod;                          // Waffenspezifischer Parade-Modifier
+  final String reach;                       // Reichweite / Distanzklasse
+  final String source;                      // Quellreferenz
+  final bool active;                        // Im App verfuegbar und anzeigbar?
 
   factory WeaponDef.fromJson(Map<String, dynamic> json) {
     return WeaponDef(
@@ -326,6 +359,8 @@ class WeaponDef {
   }
 }
 
+// Liest einen String-Wert lenient: nicht-String-Werte werden via toString()
+// konvertiert, null ergibt den Fallback. So bleiben alte Schemata lesbar.
 String _readString(Map<String, dynamic> json, String key, {required String fallback}) {
   final value = json[key];
   if (value is String) {
@@ -337,6 +372,8 @@ String _readString(Map<String, dynamic> json, String key, {required String fallb
   return value.toString();
 }
 
+// Liest einen int-Wert lenient: num wird via toInt() konvertiert (kürzt
+// Nachkommastellen). Nützlich, wenn JSON-Dateien Floats statt Ints enthalten.
 int _readInt(Map<String, dynamic> json, String key, {required int fallback}) {
   final value = json[key];
   if (value is int) {
@@ -348,6 +385,7 @@ int _readInt(Map<String, dynamic> json, String key, {required int fallback}) {
   return fallback;
 }
 
+// Liest einen bool-Wert; jeder Nicht-Bool-Wert ergibt den Fallback.
 bool _readBool(Map<String, dynamic> json, String key, {required bool fallback}) {
   final value = json[key];
   if (value is bool) {
@@ -356,6 +394,9 @@ bool _readBool(Map<String, dynamic> json, String key, {required bool fallback}) 
   return fallback;
 }
 
+// Liest eine JSON-Liste als String-Liste. Nicht-Listen ergeben eine leere
+// konstante Liste. Jedes Element wird via toString() konvertiert, um
+// typentolerante JSON-Quellen zu unterstuetzen.
 List<String> _readStringList(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value is! List) {
