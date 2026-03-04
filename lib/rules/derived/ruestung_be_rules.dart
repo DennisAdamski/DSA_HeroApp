@@ -25,7 +25,9 @@ int computeRgReduction({
   required List<ArmorPiece> activePieces,
 }) {
   final normalizedTraining =
-      globalArmorTrainingLevel == 2 || globalArmorTrainingLevel == 3
+      globalArmorTrainingLevel == 1 ||
+          globalArmorTrainingLevel == 2 ||
+          globalArmorTrainingLevel == 3
       ? globalArmorTrainingLevel
       : 0;
   if (normalizedTraining == 3) {
@@ -33,6 +35,9 @@ int computeRgReduction({
   }
   if (normalizedTraining == 2) {
     return 1;
+  }
+  if (normalizedTraining != 1) {
+    return 0;
   }
   final hasAnyActiveRg1 = activePieces.any((piece) => piece.rg1Active);
   return hasAnyActiveRg1 ? 1 : 0;
