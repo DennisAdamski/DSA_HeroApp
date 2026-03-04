@@ -3,6 +3,7 @@ part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
   Widget _buildSpecialRulesSubTab(HeroSheet hero) {
     final rules = _draftCombatConfig.specialRules;
+    final armor = _draftCombatConfig.armor;
     final parsed = parseModifierTextsForHero(hero);
     final hasFlinkFromVorteile = parsed.hasFlinkFromVorteile;
     final hasBehaebigFromNachteile = parsed.hasBehaebigFromNachteile;
@@ -64,6 +65,35 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
             );
             _markFieldChanged();
           },
+        ),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: DropdownButtonFormField<int>(
+              key: const ValueKey<String>('combat-armor-global-training-level'),
+              initialValue: armor.globalArmorTrainingLevel,
+              decoration: const InputDecoration(
+                labelText: 'Ruestungsgewoehnung',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: 0, child: SizedBox.shrink()),
+                DropdownMenuItem(value: 1, child: Text('I')),
+                DropdownMenuItem(value: 2, child: Text('II')),
+                DropdownMenuItem(value: 3, child: Text('III')),
+              ],
+              onChanged: !isEditing
+                  ? null
+                  : (value) {
+                      _draftCombatConfig = _draftCombatConfig.copyWith(
+                        armor: _draftCombatConfig.armor.copyWith(
+                          globalArmorTrainingLevel: value ?? 0,
+                        ),
+                      );
+                      _markFieldChanged();
+                    },
+            ),
+          ),
         ),
         _ruleToggle(
           label: 'Linkhand',
