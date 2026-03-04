@@ -503,7 +503,7 @@ void main() {
     final hero = buildHero(
       combatConfig: const CombatConfig(
         armor: ArmorConfig(
-          globalArmorTrainingLevel: 0,
+          globalArmorTrainingLevel: 1,
           pieces: <ArmorPiece>[
             ArmorPiece(name: 'Helm', isActive: true, rg1Active: true, be: 2),
             ArmorPiece(name: 'Brust', isActive: true, rg1Active: true, be: 3),
@@ -517,6 +517,23 @@ void main() {
     expect(result.beTotalRaw, 5);
     expect(result.rgReduction, 1);
     expect(result.beKampf, 4);
+  });
+
+  test('RG I flags are ignored when training is empty', () {
+    final hero = buildHero(
+      combatConfig: const CombatConfig(
+        armor: ArmorConfig(
+          globalArmorTrainingLevel: 0,
+          pieces: <ArmorPiece>[
+            ArmorPiece(name: 'Helm', isActive: true, rg1Active: true, be: 2),
+          ],
+        ),
+      ),
+    );
+
+    final result = computeCombatPreviewStats(hero, state);
+    expect(result.rgReduction, 0);
+    expect(result.beKampf, 2);
   });
 
   test('global RG II and III override RG I', () {
