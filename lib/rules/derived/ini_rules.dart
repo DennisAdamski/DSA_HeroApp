@@ -34,14 +34,23 @@ int computeSfIniBonus(
 }
 
 // GE-basierter Waffenkomponent der Initiative.
+//
+// Waffen definieren ihre TP-Staerke ueber einen KK-Bereich ([kkBase], [kkThreshold]).
+// Analog dazu gibt es einen GE-Anteil fuer die Initiative: leichte, kurze
+// Waffen bevorzugen GE, schwere Kriegswaffen KK.
+// Die Konstante 26 ist die Spiegelkonstante zur KK-Basis aus der Waffentabelle:
+//   geBase = 26 - kkBase  →  die GE-Skala beginnt am entgegengesetzten Ende.
+// Die Konstante 7 ist die Spiegelkonstante zum KK-Schwellenwert:
+//   geThreshold = 7 - kkThreshold  →  GE-Aequivalent des KK-Stufensprungs.
+// Ist geThreshold == 0 (kkThreshold == 7), ist kein GE-Beitrag moeglich.
 int computeIniGe({
   required int ge,
   required int kkBase,
   required int kkThreshold,
 }) {
   final normalizedThreshold = kkThreshold < 1 ? 1 : kkThreshold;
-  final geBase = 26 - kkBase;
-  final geThreshold = 7 - normalizedThreshold;
+  final geBase = 26 - kkBase;               // Spiegelkonstante zur KK-Basis
+  final geThreshold = 7 - normalizedThreshold; // Spiegelkonstante zum KK-Schwellenwert
   if (geThreshold == 0) {
     return 0;
   }
