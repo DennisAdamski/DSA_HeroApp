@@ -2,62 +2,44 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_command_deck_panel.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_core_attributes_header.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_inspector_panel.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_navigation_guard.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_placeholder_tabs.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
+/// Mindestbreite in logischen Pixeln ab der das Command-Deck-Layout aktiv wird.
+const double _commandDeckBreakpoint = 1280;
+
+/// Breite der Command-Deck-Navigationsleiste in Pixeln.
+const double _commandDeckNavigationWidth = 240;
+
+/// Breite des Command-Deck-Inspectors in Pixeln.
+const double _commandDeckInspectorWidth = 300;
+
+// Tab-Indizes fuer die Workspace-Tabs.
 const int _overviewTabIndex = 0;
 const int _talentsTabIndex = 1;
 const int _combatTabIndex = 2;
 const int _inventoryTabIndex = 4;
-const double _commandDeckBreakpoint = 1280;
-const double _commandDeckNavigationWidth = 240;
-const double _commandDeckInspectorWidth = 300;
 
-const List<_WorkspaceTabSpec> _workspaceTabs = <_WorkspaceTabSpec>[
-  _WorkspaceTabSpec(
-    label: 'Uebersicht',
-    icon: Icons.dashboard_outlined,
-    helper: 'Basisdaten und Ressourcen',
-  ),
-  _WorkspaceTabSpec(
-    label: 'Talente',
-    icon: Icons.auto_stories_outlined,
-    helper: 'Talentwerte und Spezialisierungen',
-  ),
-  _WorkspaceTabSpec(
-    label: 'Kampf',
-    icon: Icons.sports_martial_arts_outlined,
-    helper: 'Kampftechniken, Nahkampf, Sonderfertigkeiten, Manoever',
-  ),
-  _WorkspaceTabSpec(
-    label: 'Magie',
-    icon: Icons.bolt_outlined,
-    helper: 'Katalogansicht fuer Zauber',
-  ),
-  _WorkspaceTabSpec(
-    label: 'Inventar',
-    icon: Icons.inventory_2_outlined,
-    helper: 'Ausrüstung und Gegenstaende',
-  ),
-  _WorkspaceTabSpec(
-    label: 'Notizen',
-    icon: Icons.sticky_note_2_outlined,
-    helper: 'Freier Platzhalterbereich',
-  ),
-];
-
+/// Zentraler Workspace-Screen fuer die Bearbeitung und Anzeige eines Helden.
+///
+/// Hostet sechs Tabs (Uebersicht, Talente, Kampf, Magie, Inventar, Notizen)
+/// und verwaltet Tab-Navigation mit Discard-Guard fuer ungespeicherte Aenderungen.
+/// Auf breiten Bildschirmen (>= 1280 dp) wird das Command-Deck-Layout aktiviert.
 class HeroWorkspaceScreen extends ConsumerStatefulWidget {
   const HeroWorkspaceScreen({super.key, required this.heroId});
 
+  /// ID des darzustellenden Helden.
   final String heroId;
 
   @override
@@ -96,6 +78,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     super.dispose();
   }
 
+  /// Reagiert auf Aenderungen des TabControllers und leitet den Guard ein.
   void _onTabControllerChanged() {
     if (_handlingTabChange || _revertingTabChange) {
       return;
@@ -107,6 +90,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     _handleTabChangeAttempt(nextIndex);
   }
 
+  /// Prueft ob ein Tab-Wechsel erlaubt ist und fuehrt ihn ggf. durch.
   Future<void> _handleTabChangeAttempt(int nextIndex) async {
     if (_handlingTabChange) {
       return;
@@ -136,6 +120,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     _handlingTabChange = false;
   }
 
+  /// Zeigt den Discard-Dialog wenn der Tab ungespeicherte Aenderungen hat.
+  ///
+  /// Gibt `true` zurueck wenn der Tab-Wechsel erlaubt ist.
   Future<bool> _confirmLeaveForTab(int tabIndex) async {
     if (!_tabRegistry.isDirty(tabIndex)) {
       return true;
@@ -165,6 +152,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     return true;
   }
 
+  /// Aktualisiert den Dirty-Zustand eines Tabs und triggert ggf. einen Rebuild.
   void _updateDirty(int tabIndex, bool isDirty) {
     if (!_tabRegistry.updateDirty(tabIndex, isDirty)) {
       return;
@@ -172,6 +160,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     setState(() {});
   }
 
+  /// Aktualisiert den Editing-Zustand eines Tabs und triggert ggf. einen Rebuild.
   void _updateEditing(int tabIndex, bool isEditing) {
     if (!_tabRegistry.updateEditing(tabIndex, isEditing)) {
       return;
@@ -179,10 +168,12 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     setState(() {});
   }
 
+  /// Registriert eine Discard-Aktion fuer einen Tab.
   void _registerDiscard(int tabIndex, WorkspaceAsyncAction discardAction) {
     _tabRegistry.registerDiscard(tabIndex, discardAction);
   }
 
+  /// Registriert die Edit-Aktionen (start/save/cancel) fuer einen Tab.
   void _registerEditActions(int tabIndex, WorkspaceTabEditActions actions) {
     final wasMissing = _tabRegistry.registerEditActions(tabIndex, actions);
     if (wasMissing && _tabRegistry.activeTabIndex == tabIndex) {
@@ -190,6 +181,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     }
   }
 
+  /// Fuehrt eine Edit-Aktion asynchron aus und blockiert doppelte Ausfuehrung.
   Future<void> _runEditAction(WorkspaceAsyncAction? action) async {
     if (_runningEditAction || action == null) {
       return;
@@ -208,6 +200,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     }
   }
 
+  /// Navigiert zur Heldenauswahl — prueft vorher auf ungespeicherte Aenderungen.
   Future<void> _navigateToHomeWithGuard() async {
     final mayLeave = await _confirmLeaveForTab(_tabRegistry.activeTabIndex);
     if (!mounted || !mayLeave) {
@@ -218,6 +211,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
+  /// Baut die Aktionsschaltflaechen fuer die AppBar (Bearbeiten/Speichern/Abbrechen).
   List<Widget> _buildWorkspaceActions() {
     final activeTabIndex = _tabRegistry.activeTabIndex;
     final isEditing = _tabRegistry.isEditing(activeTabIndex);
@@ -290,7 +284,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           icon: Icon(
             visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
           ),
-          label: Text(visibilityMode ? 'Sichtbarkeit aus' : 'Sichtbarkeit'),
+          label: Text(
+            visibilityMode ? 'Sichtbarkeit aus' : 'Sichtbarkeit',
+          ),
         ),
       );
     }
@@ -320,6 +316,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     return widgets;
   }
 
+  /// Fuegt gleichmaessige horizontale Abstaende zwischen Aktions-Widgets ein.
   List<Widget> _buildSpacedWorkspaceActions(List<Widget> actions) {
     if (actions.isEmpty) {
       return const <Widget>[];
@@ -335,6 +332,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     return spaced;
   }
 
+  /// Baut die horizontale TabBar fuer das klassische (schmale) Layout.
   PreferredSizeWidget _buildWorkspaceTabBar() {
     return TabBar(
       controller: _tabController,
@@ -350,6 +348,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
+  /// Baut den TabBarView mit allen sechs Tab-Widgets.
   Widget _buildWorkspaceTabView() {
     return TabBarView(
       controller: _tabController,
@@ -386,9 +385,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           onRegisterEditActions: (actions) =>
               _registerEditActions(_combatTabIndex, actions),
         ),
-        const _CatalogPlaceholderTab(
+        const WorkspaceCatalogPlaceholderTab(
           title: 'Magie',
-          section: _CatalogSection.spells,
+          section: WorkspaceCatalogSection.spells,
         ),
         HeroInventoryTab(
           heroId: widget.heroId,
@@ -401,27 +400,29 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           onRegisterEditActions: (actions) =>
               _registerEditActions(_inventoryTabIndex, actions),
         ),
-        const _PlaceholderTab(title: 'Notizen'),
+        const WorkspacePlaceholderTab(title: 'Notizen'),
       ],
     );
   }
 
+  /// Klassisches Layout: Attribut-Header oben, darunter der Tab-Inhalt.
   Widget _buildClassicWorkspaceBody(HeroSheet hero) {
     return Column(
       children: [
-        _CoreAttributesHeader(heroId: widget.heroId, hero: hero),
+        WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
         Expanded(child: _buildWorkspaceTabView()),
       ],
     );
   }
 
+  /// Command-Deck-Layout: Navigation links, Inhalt mittig, Inspector rechts.
   Widget _buildCommandDeckWorkspaceBody(HeroSheet hero) {
     final activeTabIndex = _tabRegistry.activeTabIndex;
     return Row(
       children: [
         SizedBox(
           width: _commandDeckNavigationWidth,
-          child: _CommandDeckNavigationPanel(
+          child: WorkspaceCommandDeckNavigationPanel(
             activeTabIndex: activeTabIndex,
             isDirty: _tabRegistry.isDirty,
             onSelectTab: (index) {
@@ -436,7 +437,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         Expanded(
           child: Column(
             children: [
-              _CoreAttributesHeader(heroId: widget.heroId, hero: hero),
+              WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
               Expanded(child: _buildWorkspaceTabView()),
             ],
           ),
@@ -444,7 +445,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         const VerticalDivider(width: 1),
         SizedBox(
           width: _commandDeckInspectorWidth,
-          child: _WorkspaceInspectorPanel(
+          child: WorkspaceInspectorPanel(
             hero: hero,
             activeTabIndex: activeTabIndex,
             isEditing: _tabRegistry.isEditing(activeTabIndex),
@@ -490,306 +491,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
             ? _buildCommandDeckWorkspaceBody(hero)
             : _buildClassicWorkspaceBody(hero),
       ),
-    );
-  }
-}
-
-class _WorkspaceTabSpec {
-  const _WorkspaceTabSpec({
-    required this.label,
-    required this.icon,
-    required this.helper,
-  });
-
-  final String label;
-  final IconData icon;
-  final String helper;
-}
-
-class _CommandDeckNavigationPanel extends StatelessWidget {
-  const _CommandDeckNavigationPanel({
-    required this.activeTabIndex,
-    required this.isDirty,
-    required this.onSelectTab,
-  });
-
-  final int activeTabIndex;
-  final bool Function(int tabIndex) isDirty;
-  final ValueChanged<int> onSelectTab;
-
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: Theme.of(context).colorScheme.surfaceContainerLowest,
-      child: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 16, 12, 10),
-              child: Text(
-                'Command Deck',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _workspaceTabs.length,
-                padding: const EdgeInsets.fromLTRB(8, 2, 8, 12),
-                itemBuilder: (context, index) {
-                  final tab = _workspaceTabs[index];
-                  final selected = index == activeTabIndex;
-                  final dirty = isDirty(index);
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: ListTile(
-                      selected: selected,
-                      selectedTileColor: Theme.of(
-                        context,
-                      ).colorScheme.secondaryContainer,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      leading: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Icon(tab.icon),
-                          if (dirty)
-                            Positioned(
-                              right: -3,
-                              top: -2,
-                              child: Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.error,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      title: Text(tab.label),
-                      subtitle: Text(
-                        tab.helper,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      onTap: () => onSelectTab(index),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _WorkspaceInspectorPanel extends StatelessWidget {
-  const _WorkspaceInspectorPanel({
-    required this.hero,
-    required this.activeTabIndex,
-    required this.isEditing,
-    required this.isDirty,
-  });
-
-  final HeroSheet hero;
-  final int activeTabIndex;
-  final bool isEditing;
-  final bool isDirty;
-
-  @override
-  Widget build(BuildContext context) {
-    final tab = _workspaceTabs[activeTabIndex];
-    final stateText = isEditing ? 'Bearbeitungsmodus' : 'Lesemodus';
-    final dirtyText = isDirty
-        ? 'Ungespeicherte Aenderungen'
-        : 'Alles gespeichert';
-    final levelText = hero.level.toString();
-    final apAvailableText = hero.apAvailable.toString();
-
-    return ColoredBox(
-      color: Theme.of(context).colorScheme.surfaceContainerLowest,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text('Inspector', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 10),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        tab.label,
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(tab.helper),
-                      const SizedBox(height: 10),
-                      Chip(label: Text(stateText)),
-                      const SizedBox(height: 8),
-                      Chip(label: Text(dirtyText)),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        hero.name,
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      const SizedBox(height: 6),
-                      Text('Level: $levelText'),
-                      Text('AP verfuegbar: $apAvailableText'),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Text(
-                    'Hinweis: Tab-Wechsel und Zurueck-Navigation behalten den '
-                    'bestehenden Discard-Guard bei.',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CoreAttributesHeader extends ConsumerWidget {
-  const _CoreAttributesHeader({required this.heroId, required this.hero});
-
-  final String heroId;
-  final HeroSheet hero;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final effectiveAsync = ref.watch(effectiveAttributesProvider(heroId));
-    final stateAsync = ref.watch(heroStateProvider(heroId));
-    final derivedAsync = ref.watch(derivedStatsProvider(heroId));
-    final combatPreviewAsync = ref.watch(combatPreviewProvider(heroId));
-    final talentBeOverride = ref.watch(talentBeOverrideProvider(heroId));
-    final effectiveAttributes =
-        effectiveAsync.valueOrNull ?? computeEffectiveAttributes(hero);
-    final state = stateAsync.valueOrNull;
-    final derived = derivedAsync.valueOrNull;
-    final activeTalentBe =
-        talentBeOverride ?? combatPreviewAsync.valueOrNull?.beKampf;
-
-    String resourceText(int? current, int? max) {
-      final currentText = current?.toString() ?? '-';
-      final maxText = max?.toString() ?? '-';
-      return '$currentText/$maxText';
-    }
-
-    final chips = <String>[
-      'MU: ${effectiveAttributes.mu}',
-      'KL: ${effectiveAttributes.kl}',
-      'IN: ${effectiveAttributes.inn}',
-      'CH: ${effectiveAttributes.ch}',
-      'FF: ${effectiveAttributes.ff}',
-      'GE: ${effectiveAttributes.ge}',
-      'KO: ${effectiveAttributes.ko}',
-      'KK: ${effectiveAttributes.kk}',
-      'LEP: ${resourceText(state?.currentLep, derived?.maxLep)}',
-      'AU: ${resourceText(state?.currentAu, derived?.maxAu)}',
-      'ASP: ${resourceText(state?.currentAsp, derived?.maxAsp)}',
-      'KAP: ${resourceText(state?.currentKap, derived?.maxKap)}',
-      'BE: ${activeTalentBe?.toString() ?? '-'}',
-    ];
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        runAlignment: WrapAlignment.center,
-        spacing: 8,
-        runSpacing: 8,
-        children: chips
-            .map(
-              (entry) => Chip(
-                label: Text(entry),
-                visualDensity: VisualDensity.compact,
-              ),
-            )
-            .toList(growable: false),
-      ),
-    );
-  }
-}
-
-class _PlaceholderTab extends StatelessWidget {
-  const _PlaceholderTab({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('$title wird als naechstes ausgearbeitet.'));
-  }
-}
-
-enum _CatalogSection { talents, spells, weapons }
-
-class _CatalogPlaceholderTab extends ConsumerWidget {
-  const _CatalogPlaceholderTab({required this.title, required this.section});
-
-  final String title;
-  final _CatalogSection section;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final catalogAsync = ref.watch(rulesCatalogProvider);
-
-    return catalogAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) =>
-          Center(child: Text('Katalog-Fehler: $error')),
-      data: (catalog) {
-        final count = switch (section) {
-          _CatalogSection.talents => catalog.talents.length,
-          _CatalogSection.spells => catalog.spells.length,
-          _CatalogSection.weapons => catalog.weapons.length,
-        };
-
-        final details = switch (section) {
-          _CatalogSection.talents =>
-            'mit Waffengattung: ${catalog.talents.where((t) => t.weaponCategory.isNotEmpty).length}',
-          _CatalogSection.spells =>
-            'mit Verfuegbarkeit: ${catalog.spells.where((s) => s.availability.isNotEmpty).length}',
-          _CatalogSection.weapons =>
-            'mit Waffengattung: ${catalog.weapons.where((w) => w.weaponCategory.isNotEmpty).length}',
-        };
-
-        return Center(
-          child: Text(
-            '$title: $count Eintraege aus ${catalog.version} geladen ($details).',
-          ),
-        );
-      },
     );
   }
 }
