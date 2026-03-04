@@ -1,480 +1,27 @@
-enum OffhandMode { none, shield, parryWeapon, linkhand }
+// Re-Exporte aller Teilmodelle fuer Rueckwaertskompatibilitaet.
+// Importeure dieser Datei erhalten automatisch Zugriff auf alle Typen.
+export 'package:dsa_heldenverwaltung/domain/combat_config/offhand_mode.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/main_weapon_slot.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/offhand_slot.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/armor_piece.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/armor_config.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/combat_special_rules.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/combat_manual_mods.dart';
 
-OffhandMode _offhandModeFromJson(String value) {
-  switch (value.trim()) {
-    case 'shield':
-      return OffhandMode.shield;
-    case 'parryWeapon':
-      return OffhandMode.parryWeapon;
-    case 'linkhand':
-      return OffhandMode.linkhand;
-    default:
-      return OffhandMode.none;
-  }
-}
+import 'package:dsa_heldenverwaltung/domain/combat_config/armor_config.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/combat_manual_mods.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/combat_special_rules.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/main_weapon_slot.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_slot.dart';
 
-String _offhandModeToJson(OffhandMode value) {
-  switch (value) {
-    case OffhandMode.none:
-      return 'none';
-    case OffhandMode.shield:
-      return 'shield';
-    case OffhandMode.parryWeapon:
-      return 'parryWeapon';
-    case OffhandMode.linkhand:
-      return 'linkhand';
-  }
-}
-
-class MainWeaponSlot {
-  const MainWeaponSlot({
-    this.name = '',
-    this.talentId = '',
-    this.weaponType = '',
-    this.distanceClass = '',
-    this.kkBase = 0,
-    this.kkThreshold = 1,
-    this.breakFactor = 0,
-    this.tpDiceCount = 1,
-    this.tpDiceSides = 6,
-    this.tpFlat = 0,
-    this.wmAt = 0,
-    this.wmPa = 0,
-    this.iniMod = 0,
-    this.beTalentMod = 0,
-    this.isOneHanded = true,
-  });
-
-  final String name;
-  final String talentId;
-  final String weaponType;
-  final String distanceClass;
-  final int kkBase;
-  final int kkThreshold;
-  final int breakFactor;
-  final int tpDiceCount;
-  final int tpDiceSides;
-  final int tpFlat;
-  final int wmAt;
-  final int wmPa;
-  final int iniMod;
-  final int beTalentMod;
-  final bool isOneHanded;
-
-  MainWeaponSlot copyWith({
-    String? name,
-    String? talentId,
-    String? weaponType,
-    String? distanceClass,
-    int? kkBase,
-    int? kkThreshold,
-    int? breakFactor,
-    int? tpDiceCount,
-    int? tpDiceSides,
-    int? tpFlat,
-    int? wmAt,
-    int? wmPa,
-    int? iniMod,
-    int? beTalentMod,
-    bool? isOneHanded,
-  }) {
-    return MainWeaponSlot(
-      name: name ?? this.name,
-      talentId: talentId ?? this.talentId,
-      weaponType: weaponType ?? this.weaponType,
-      distanceClass: distanceClass ?? this.distanceClass,
-      kkBase: kkBase ?? this.kkBase,
-      kkThreshold: kkThreshold ?? this.kkThreshold,
-      breakFactor: breakFactor ?? this.breakFactor,
-      tpDiceCount: tpDiceCount ?? this.tpDiceCount,
-      // W6 is fixed for the current house-rule weapon flow.
-      tpDiceSides: 6,
-      tpFlat: tpFlat ?? this.tpFlat,
-      wmAt: wmAt ?? this.wmAt,
-      wmPa: wmPa ?? this.wmPa,
-      iniMod: iniMod ?? this.iniMod,
-      beTalentMod: beTalentMod ?? this.beTalentMod,
-      isOneHanded: isOneHanded ?? this.isOneHanded,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'talentId': talentId,
-      'weaponType': weaponType,
-      'distanceClass': distanceClass,
-      'kkBase': kkBase,
-      'kkThreshold': kkThreshold,
-      'breakFactor': breakFactor,
-      'tpDiceCount': tpDiceCount,
-      // Persist as W6 for compatibility with existing schema key.
-      'tpDiceSides': 6,
-      'tpFlat': tpFlat,
-      'wmAt': wmAt,
-      'wmPa': wmPa,
-      'iniMod': iniMod,
-      'beTalentMod': beTalentMod,
-      'isOneHanded': isOneHanded,
-    };
-  }
-
-  static MainWeaponSlot fromJson(Map<String, dynamic> json) {
-    int getInt(String key, int fallback) =>
-        (json[key] as num?)?.toInt() ?? fallback;
-    String getString(String key) => (json[key] as String?) ?? '';
-    return MainWeaponSlot(
-      name: getString('name'),
-      talentId: getString('talentId'),
-      weaponType: getString('weaponType'),
-      distanceClass: getString('distanceClass'),
-      kkBase: getInt('kkBase', 0),
-      kkThreshold: getInt('kkThreshold', 1) < 1 ? 1 : getInt('kkThreshold', 1),
-      breakFactor: getInt('breakFactor', 0),
-      tpDiceCount: getInt('tpDiceCount', 1),
-      tpDiceSides: 6,
-      tpFlat: getInt('tpFlat', 0),
-      wmAt: getInt('wmAt', 0),
-      wmPa: getInt('wmPa', 0),
-      iniMod: getInt('iniMod', 0),
-      beTalentMod: getInt('beTalentMod', 0),
-      isOneHanded: (json['isOneHanded'] as bool?) ?? true,
-    );
-  }
-}
-
-class OffhandSlot {
-  const OffhandSlot({
-    this.mode = OffhandMode.none,
-    this.name = '',
-    this.atMod = 0,
-    this.paMod = 0,
-    this.iniMod = 0,
-  });
-
-  final OffhandMode mode;
-  final String name;
-  final int atMod;
-  final int paMod;
-  final int iniMod;
-
-  OffhandSlot copyWith({
-    OffhandMode? mode,
-    String? name,
-    int? atMod,
-    int? paMod,
-    int? iniMod,
-  }) {
-    return OffhandSlot(
-      mode: mode ?? this.mode,
-      name: name ?? this.name,
-      atMod: atMod ?? this.atMod,
-      paMod: paMod ?? this.paMod,
-      iniMod: iniMod ?? this.iniMod,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'mode': _offhandModeToJson(mode),
-      'name': name,
-      'atMod': atMod,
-      'paMod': paMod,
-      'iniMod': iniMod,
-    };
-  }
-
-  static OffhandSlot fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
-    return OffhandSlot(
-      mode: _offhandModeFromJson((json['mode'] as String?) ?? 'none'),
-      name: (json['name'] as String?) ?? '',
-      atMod: getInt('atMod'),
-      paMod: getInt('paMod'),
-      iniMod: getInt('iniMod'),
-    );
-  }
-}
-
-class ArmorPiece {
-  const ArmorPiece({
-    this.name = '',
-    this.isActive = false,
-    this.rg1Active = false,
-    this.rs = 0,
-    this.be = 0,
-  });
-
-  final String name;
-  final bool isActive;
-  final bool rg1Active;
-  final int rs;
-  final int be;
-
-  ArmorPiece copyWith({
-    String? name,
-    bool? isActive,
-    bool? rg1Active,
-    int? rs,
-    int? be,
-  }) {
-    return ArmorPiece(
-      name: name ?? this.name,
-      isActive: isActive ?? this.isActive,
-      rg1Active: rg1Active ?? this.rg1Active,
-      rs: rs ?? this.rs,
-      be: be ?? this.be,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'isActive': isActive,
-      'rg1Active': rg1Active,
-      'rs': rs,
-      'be': be,
-    };
-  }
-
-  static ArmorPiece fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
-    return ArmorPiece(
-      name: (json['name'] as String?) ?? '',
-      isActive: (json['isActive'] as bool?) ?? false,
-      rg1Active: (json['rg1Active'] as bool?) ?? false,
-      rs: getInt('rs'),
-      be: getInt('be'),
-    );
-  }
-}
-
-class ArmorConfig {
-  const ArmorConfig({
-    this.pieces = const <ArmorPiece>[],
-    this.globalArmorTrainingLevel = 0,
-  });
-
-  final List<ArmorPiece> pieces;
-  final int globalArmorTrainingLevel;
-
-  ArmorConfig copyWith({
-    List<ArmorPiece>? pieces,
-    int? globalArmorTrainingLevel,
-  }) {
-    return ArmorConfig(
-      pieces: List<ArmorPiece>.unmodifiable(pieces ?? this.pieces),
-      globalArmorTrainingLevel:
-          globalArmorTrainingLevel ?? this.globalArmorTrainingLevel,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'pieces': pieces.map((entry) => entry.toJson()).toList(growable: false),
-      'globalArmorTrainingLevel': globalArmorTrainingLevel,
-    };
-  }
-
-  static ArmorConfig fromJson(Map<String, dynamic> json) {
-    final rawPieces = (json['pieces'] as List?) ?? const <dynamic>[];
-    final parsedPieces = rawPieces
-        .whereType<Map>()
-        .map((entry) => ArmorPiece.fromJson(entry.cast<String, dynamic>()))
-        .toList(growable: false);
-    var normalizedTraining =
-        (json['globalArmorTrainingLevel'] as num?)?.toInt() ?? 0;
-    if (normalizedTraining != 0 &&
-        normalizedTraining != 2 &&
-        normalizedTraining != 3) {
-      normalizedTraining = 0;
-    }
-    return ArmorConfig(
-      pieces: parsedPieces,
-      globalArmorTrainingLevel: normalizedTraining,
-    );
-  }
-}
-
-class CombatSpecialRules {
-  const CombatSpecialRules({
-    this.kampfreflexe = false,
-    this.kampfgespuer = false,
-    this.ausweichenI = false,
-    this.ausweichenII = false,
-    this.ausweichenIII = false,
-    this.schildkampfI = false,
-    this.schildkampfII = false,
-    this.parierwaffenI = false,
-    this.parierwaffenII = false,
-    this.linkhandActive = false,
-    this.flink = false,
-    this.behaebig = false,
-    this.axxeleratusActive = false,
-    this.klingentaenzer = false,
-    this.aufmerksamkeit = false,
-    this.activeManeuvers = const <String>[],
-  });
-
-  final bool kampfreflexe;
-  final bool kampfgespuer;
-  final bool ausweichenI;
-  final bool ausweichenII;
-  final bool ausweichenIII;
-  final bool schildkampfI;
-  final bool schildkampfII;
-  final bool parierwaffenI;
-  final bool parierwaffenII;
-  final bool linkhandActive;
-  final bool flink;
-  final bool behaebig;
-  final bool axxeleratusActive;
-  // Klingentaenzer: wirft 2W6 statt 1W6 auf Initiative
-  final bool klingentaenzer;
-  // Aufmerksamkeit: ersetzt 1W6/2W6-Anzeige durch +6/+12 in der Uebersicht.
-  final bool aufmerksamkeit;
-  final List<String> activeManeuvers;
-
-  CombatSpecialRules copyWith({
-    bool? kampfreflexe,
-    bool? kampfgespuer,
-    bool? ausweichenI,
-    bool? ausweichenII,
-    bool? ausweichenIII,
-    bool? schildkampfI,
-    bool? schildkampfII,
-    bool? parierwaffenI,
-    bool? parierwaffenII,
-    bool? linkhandActive,
-    bool? flink,
-    bool? behaebig,
-    bool? axxeleratusActive,
-    bool? klingentaenzer,
-    bool? aufmerksamkeit,
-    List<String>? activeManeuvers,
-  }) {
-    return CombatSpecialRules(
-      kampfreflexe: kampfreflexe ?? this.kampfreflexe,
-      kampfgespuer: kampfgespuer ?? this.kampfgespuer,
-      ausweichenI: ausweichenI ?? this.ausweichenI,
-      ausweichenII: ausweichenII ?? this.ausweichenII,
-      ausweichenIII: ausweichenIII ?? this.ausweichenIII,
-      schildkampfI: schildkampfI ?? this.schildkampfI,
-      schildkampfII: schildkampfII ?? this.schildkampfII,
-      parierwaffenI: parierwaffenI ?? this.parierwaffenI,
-      parierwaffenII: parierwaffenII ?? this.parierwaffenII,
-      linkhandActive: linkhandActive ?? this.linkhandActive,
-      flink: flink ?? this.flink,
-      behaebig: behaebig ?? this.behaebig,
-      axxeleratusActive: axxeleratusActive ?? this.axxeleratusActive,
-      klingentaenzer: klingentaenzer ?? this.klingentaenzer,
-      aufmerksamkeit: aufmerksamkeit ?? this.aufmerksamkeit,
-      activeManeuvers: _normalizeStringList(
-        activeManeuvers ?? this.activeManeuvers,
-      ),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'kampfreflexe': kampfreflexe,
-      'kampfgespuer': kampfgespuer,
-      'ausweichenI': ausweichenI,
-      'ausweichenII': ausweichenII,
-      'ausweichenIII': ausweichenIII,
-      'schildkampfI': schildkampfI,
-      'schildkampfII': schildkampfII,
-      'parierwaffenI': parierwaffenI,
-      'parierwaffenII': parierwaffenII,
-      'linkhandActive': linkhandActive,
-      'flink': flink,
-      'behaebig': behaebig,
-      'axxeleratusActive': axxeleratusActive,
-      'klingentaenzer': klingentaenzer,
-      'aufmerksamkeit': aufmerksamkeit,
-      'activeManeuvers': _normalizeStringList(activeManeuvers),
-    };
-  }
-
-  static CombatSpecialRules fromJson(Map<String, dynamic> json) {
-    bool getBool(String key) => (json[key] as bool?) ?? false;
-    return CombatSpecialRules(
-      kampfreflexe: getBool('kampfreflexe'),
-      kampfgespuer: getBool('kampfgespuer'),
-      ausweichenI: getBool('ausweichenI'),
-      ausweichenII: getBool('ausweichenII'),
-      ausweichenIII: getBool('ausweichenIII'),
-      schildkampfI: getBool('schildkampfI'),
-      schildkampfII: getBool('schildkampfII'),
-      parierwaffenI: getBool('parierwaffenI'),
-      parierwaffenII: getBool('parierwaffenII'),
-      linkhandActive: getBool('linkhandActive'),
-      flink: getBool('flink'),
-      behaebig: getBool('behaebig'),
-      axxeleratusActive: getBool('axxeleratusActive'),
-      klingentaenzer: getBool('klingentaenzer'),
-      aufmerksamkeit: getBool('aufmerksamkeit'),
-      activeManeuvers: _normalizeStringList(
-        (json['activeManeuvers'] as List?) ?? const <dynamic>[],
-      ),
-    );
-  }
-}
-
-class CombatManualMods {
-  const CombatManualMods({
-    this.iniMod = 0,
-    this.ausweichenMod = 0,
-    this.atMod = 0,
-    this.paMod = 0,
-    this.iniWurf = 0,
-  });
-
-  final int iniMod;
-  final int ausweichenMod;
-  final int atMod;
-  final int paMod;
-  // Ergebnis des physischen W6/2W6-Wurfs zu Kampfrundenbeginn
-  final int iniWurf;
-
-  CombatManualMods copyWith({
-    int? iniMod,
-    int? ausweichenMod,
-    int? atMod,
-    int? paMod,
-    int? iniWurf,
-  }) {
-    return CombatManualMods(
-      iniMod: iniMod ?? this.iniMod,
-      ausweichenMod: ausweichenMod ?? this.ausweichenMod,
-      atMod: atMod ?? this.atMod,
-      paMod: paMod ?? this.paMod,
-      iniWurf: iniWurf ?? this.iniWurf,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'iniMod': iniMod,
-      'ausweichenMod': ausweichenMod,
-      'atMod': atMod,
-      'paMod': paMod,
-      'iniWurf': iniWurf,
-    };
-  }
-
-  static CombatManualMods fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
-    return CombatManualMods(
-      iniMod: getInt('iniMod'),
-      ausweichenMod: getInt('ausweichenMod'),
-      atMod: getInt('atMod'),
-      paMod: getInt('paMod'),
-      iniWurf: getInt('iniWurf'),
-    );
-  }
-}
-
+/// Aggregiert alle Kampfkonfigurationsdaten eines Helden.
+///
+/// Enthaelt die Waffenliste, den aktiven Waffen-Slot, Nebenhand, Ruestung,
+/// Sonderfertigkeiten und manuelle Modifikatoren.
+/// Unveraenderlich; Aktualisierungen erfolgen ueber [copyWith].
+///
+/// Der aktive Waffenslot wird durch [selectedWeaponIndex] bestimmt.
+/// -1 bedeutet "kein Slot gewaehlt" (Fallback auf Legacy-[mainWeapon]).
 class CombatConfig {
   const CombatConfig({
     this.mainWeapon = const MainWeaponSlot(),
@@ -486,14 +33,30 @@ class CombatConfig {
     this.manualMods = const CombatManualMods(),
   });
 
+  /// Legacy-Hauptwaffe (wird bei [weapons.isEmpty] als einziger Slot verwendet).
   final MainWeaponSlot mainWeapon;
+
+  /// Alle konfigurierten Waffenslots des Helden.
   final List<MainWeaponSlot> weapons;
+
+  /// Index des aktuell aktiven Waffenslots; -1 = kein Slot.
   final int selectedWeaponIndex;
+
+  /// Nebenhand-Konfiguration (Schild, Parierwaffe oder Linkhand).
   final OffhandSlot offhand;
+
+  /// Ruestungskonfiguration mit allen angelegten Stuecken.
   final ArmorConfig armor;
+
+  /// Aktivierungszustaende aller Kampfsonderfertigkeiten.
   final CombatSpecialRules specialRules;
+
+  /// Manuell eingegebene Kampfmodifikatoren (AT, PA, Ini, Ausweichen, IniWurf).
   final CombatManualMods manualMods;
 
+  /// Gibt die normalisierte Waffenliste zurueck.
+  ///
+  /// Ist [weapons] leer, wird [mainWeapon] als einziger Slot zurueckgegeben.
   List<MainWeaponSlot> get weaponSlots {
     if (weapons.isEmpty) {
       return <MainWeaponSlot>[mainWeapon];
@@ -501,12 +64,14 @@ class CombatConfig {
     return List<MainWeaponSlot>.from(weapons, growable: false);
   }
 
+  /// Gibt an, ob [selectedWeaponIndex] auf einen gueltigen Slot zeigt.
   bool get hasSelectedWeapon {
     final slots = weaponSlots;
     final index = selectedWeaponIndex;
     return index >= 0 && index < slots.length;
   }
 
+  /// Gibt den aktuell ausgewaehlten Waffenslot zurueck, oder `null` wenn keiner.
   MainWeaponSlot? get selectedWeaponOrNull {
     if (!hasSelectedWeapon) {
       return null;
@@ -514,10 +79,17 @@ class CombatConfig {
     return weaponSlots[selectedWeaponIndex];
   }
 
+  /// Gibt den aktuell ausgewaehlten Waffenslot zurueck.
+  ///
+  /// Faellt auf einen leeren [MainWeaponSlot] zurueck, wenn kein Slot gewaehlt.
   MainWeaponSlot get selectedWeapon {
     return selectedWeaponOrNull ?? const MainWeaponSlot();
   }
 
+  /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
+  ///
+  /// Normalisiert [selectedWeaponIndex] automatisch auf den gueltigen Bereich.
+  /// Synchronisiert [mainWeapon] mit dem aktiven Slot.
   CombatConfig copyWith({
     MainWeaponSlot? mainWeapon,
     List<MainWeaponSlot>? weapons,
@@ -556,6 +128,7 @@ class CombatConfig {
     );
   }
 
+  /// Serialisiert die Kampfkonfiguration zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
     final slots = weaponSlots;
     final index = _normalizeSelectedWeaponIndex(
@@ -574,6 +147,10 @@ class CombatConfig {
     };
   }
 
+  /// Deserialisiert eine [CombatConfig] aus einem JSON-Map.
+  ///
+  /// Unterstuetzt Legacy-Schema (nur `mainWeapon`, keine `weapons`-Liste).
+  /// Tolerant bei fehlenden Feldern (Standardobjekte werden eingesetzt).
   static CombatConfig fromJson(Map<String, dynamic> json) {
     Map<String, dynamic> readMap(String key) {
       final raw = json[key];
@@ -613,6 +190,10 @@ class CombatConfig {
   }
 }
 
+/// Normalisiert einen Waffenslot-Index auf den gueltigen Bereich.
+///
+/// Gibt -1 zurueck fuer explizit ungueltige Werte oder leere Listen.
+/// Klemmt positive Ueberschreitungen auf den letzten gueltigen Index.
 int _normalizeSelectedWeaponIndex(int value, int length) {
   if (value == -1) {
     return -1;
@@ -627,18 +208,4 @@ int _normalizeSelectedWeaponIndex(int value, int length) {
     return length - 1;
   }
   return value;
-}
-
-List<String> _normalizeStringList(Iterable<dynamic> values) {
-  final seen = <String>{};
-  final normalized = <String>[];
-  for (final value in values) {
-    final text = value.toString().trim();
-    if (text.isEmpty || seen.contains(text)) {
-      continue;
-    }
-    seen.add(text);
-    normalized.add(text);
-  }
-  return List<String>.unmodifiable(normalized);
 }

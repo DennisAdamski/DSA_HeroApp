@@ -2,7 +2,9 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 
-import 'package:dsa_heldenverwaltung/rules/derived/attributes_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_rules.dart';
 import 'modifier_parser.dart';
 
 /// Ergebniscontainer fuer alle zentral berechneten Heldenwerte.
@@ -40,7 +42,7 @@ class DerivedStats {
 /// 1. Textmodifikatoren parsen (`modifier_parser.dart`)
 /// 2. Attributmodifikatoren auf Basisattribute anwenden
 /// 3. Stat-Modifikatoren aus persistent + geparst + temporaer zusammenfuehren
-/// 4. Einzelformeln aus `attributes_rules.dart` auswerten
+/// 4. Einzelformeln aus Ressourcen-/Kampfbasis-/Ini-Regeln auswerten
 DerivedStats computeDerivedStats(HeroSheet sheet, HeroState state) {
   final parsed = parseModifierTextsForHero(sheet);
   final effectiveAttributes = applyAttributeModifiers(

@@ -1,0 +1,54 @@
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
+
+// Sonderfertigkeit-Bonus auf Ausweichen (Ausweichen I/II/III, Flink, Behaebig).
+int computeSfAusweichenBonus(
+  CombatSpecialRules special, {
+  required bool hasFlinkFromVorteile,
+  required bool hasBehaebigFromNachteile,
+}) {
+  var total = 0;
+  if (special.ausweichenI) {
+    total += 3;
+  }
+  if (special.ausweichenII) {
+    total += 3;
+  }
+  if (special.ausweichenIII) {
+    total += 3;
+  }
+  if (hasFlinkFromVorteile) {
+    total += 1;
+  }
+  if (hasBehaebigFromNachteile) {
+    total -= 1;
+  }
+  return total;
+}
+
+// Akrobatik-Bonus auf Ausweichen: max(0, floor((TaW+Mod - 9) / 3)).
+int computeAkrobatikBonus(Map<String, HeroTalentEntry> talents) {
+  var akrobatikTaw = 0;
+  for (final entry in talents.entries) {
+    if (entry.key.toLowerCase().contains('akrobatik')) {
+      akrobatikTaw = entry.value.talentValue + entry.value.modifier;
+      break;
+    }
+  }
+  final raw = ((akrobatikTaw - 9) / 3).floor();
+  return raw > 0 ? raw : 0;
+}
+
+// Endwert Ausweichen: max(0, PA-Basis + SF-Bonus + Akrobatik + manuellerMod - beKampf).
+int computeAusweichen({
+  required int paBase,
+  required int sfAusweichenBonus,
+  required int akrobatikBonus,
+  required int manualAusweichenMod,
+  required int beKampf,
+}) {
+  return clampNonNegative(
+    paBase + sfAusweichenBonus + akrobatikBonus + manualAusweichenMod - beKampf,
+  );
+}
