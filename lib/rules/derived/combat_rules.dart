@@ -4,9 +4,14 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/attributes_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ausweichen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/waffen_rules.dart';
 
 class CombatPreviewStats {
   const CombatPreviewStats({
@@ -115,69 +120,70 @@ CombatPreviewStats computeCombatPreviewStats(
   final armor = config.armor;
   final special = config.specialRules;
   final manualMods = config.manualMods;
+
+  // --- Ruestung & Behinderung (ruestung_be_rules) ---
   final activeArmorPieces = armor.pieces
       .where((piece) => piece.isActive)
       .toList(growable: false);
-  final rsTotal = _sumArmorRs(activeArmorPieces);
-  final beTotalRaw = _sumArmorBe(activeArmorPieces);
-
-  final rgReduction = _computeRgReduction(
+  final rsTotal = computeRsTotal(activeArmorPieces);
+  final beTotalRaw = computeBeTotalRaw(activeArmorPieces);
+  final rgReduction = computeRgReduction(
     globalArmorTrainingLevel: armor.globalArmorTrainingLevel,
     activePieces: activeArmorPieces,
   );
-  final beKampf = _clampNonNegative(beTotalRaw - rgReduction);
+  final beKampf = computeBeKampf(beTotalRaw, rgReduction);
   final selectedTalent = _findTalentDefById(catalogTalents, main.talentId);
   final beMod = selectedTalent == null
       ? main.beTalentMod
-      : _parseBeModifier(selectedTalent.be);
-  final ebe = _computeEbe(beKampf: beKampf, beMod: beMod);
-  final specApplies = _hasCombatSpecialization(
+      : parseBeModifier(selectedTalent.be);
+  final ebe = computeEbe(beKampf: beKampf, beMod: beMod);
+  final atEbePart = computeAtEbePart(ebe);
+  final paEbePart = computePaEbePart(ebe);
+
+  // --- Waffe: Spezialisierung & TP (waffen_rules) ---
+  final specApplies = hasCombatSpecialization(
     talents: talents,
     talentId: main.talentId,
     weaponType: main.weaponType.trim().isEmpty ? main.name : main.weaponType,
   );
-  final isRangedTalent = _isRangedCombatTalent(selectedTalent);
+  final isRangedTalent = isRangedCombatTalent(selectedTalent);
   final atSpecBonus = specApplies ? (isRangedTalent ? 2 : 1) : 0;
   final paSpecBonus = specApplies && !isRangedTalent ? 1 : 0;
+  final kkThreshold = main.kkThreshold < 1 ? 1 : main.kkThreshold;
+  final tpKk = computeTpKk(
+    kk: effectiveSheet.attributes.kk,
+    kkBase: main.kkBase,
+    kkThreshold: kkThreshold,
+  );
+  final tpCalc = main.tpFlat + tpKk + (special.axxeleratusActive ? 2 : 0);
 
-  final sfIniBonus = _computeSfIniBonus(
+  // --- Sonderfertigkeit-Boni (ini_rules, ausweichen_rules, waffen_rules) ---
+  final sfIniBonus = computeSfIniBonus(
     special,
     hasFlinkFromVorteile: parsed.hasFlinkFromVorteile,
     hasBehaebigFromNachteile: parsed.hasBehaebigFromNachteile,
   );
-  final sfAusweichenBonus = _computeSfAusweichenBonus(
+  final sfAusweichenBonus = computeSfAusweichenBonus(
     special,
     hasFlinkFromVorteile: parsed.hasFlinkFromVorteile,
     hasBehaebigFromNachteile: parsed.hasBehaebigFromNachteile,
   );
-  final offhandPaBonus = _computeOffhandPaBonus(
+  final offhandPaBonus = computeOffhandPaBonus(
     mode: offhand.mode,
     basePaMod: offhand.paMod,
     special: special,
   );
 
+  // --- Kampfbasiswerte (kampfbasis_rules) ---
   final atBase = computeAt(effectiveSheet, mods);
   final paBase = computePa(effectiveSheet, mods);
+
+  // --- Endwerte AT & PA ---
   final talentEntry = main.talentId.trim().isEmpty
       ? null
       : talents[main.talentId.trim()];
   final talentAt = talentEntry?.atValue ?? 0;
   final talentPa = talentEntry?.paValue ?? 0;
-  final kkThreshold = main.kkThreshold < 1 ? 1 : main.kkThreshold;
-  final tpKk = _roundDownTowardsZero(
-    (effectiveSheet.attributes.kk - main.kkBase) / kkThreshold,
-  );
-  final geBase = 26 - main.kkBase;
-  final geThreshold = 7 - kkThreshold;
-  final iniGe = geThreshold == 0
-      ? 0
-      : _roundDownTowardsZero(
-          (effectiveSheet.attributes.ge - geBase) / geThreshold,
-        );
-  final tpCalc = main.tpFlat + tpKk + (special.axxeleratusActive ? 2 : 0);
-  final atEbePart = _roundDownTowardsZero(ebe / 2);
-  final paEbePart = _roundUpAwayFromZero(ebe / 2);
-
   final at =
       talentAt +
       atBase +
@@ -195,12 +201,13 @@ CombatPreviewStats computeCombatPreviewStats(
       offhandPaBonus +
       manualMods.paMod;
 
-  final iniDiceCount = special.klingentaenzer ? 2 : 1;
+  // --- Initiative-Kette (ini_rules) ---
+  final iniDiceCount = computeIniDiceCount(special);
   final maxIniRoll = iniDiceCount * 6;
   final iniWurfEffective = _clamp(manualMods.iniWurf, 0, maxIniRoll);
   final eigenschaftsIni = derived.iniBase;
   final axxIniBonus = special.axxeleratusActive ? eigenschaftsIni : 0;
-  final heldenInitiative = _clampNonNegative(
+  final heldenInitiative = clampNonNegative(
     eigenschaftsIni +
         ebe +
         sfIniBonus +
@@ -208,29 +215,35 @@ CombatPreviewStats computeCombatPreviewStats(
         axxIniBonus +
         manualMods.iniMod,
   );
-  final kombinierteHeldenWaffenIni = _clampNonNegative(
+  final geBase = 26 - main.kkBase;
+  final geThreshold = 7 - kkThreshold;
+  final iniGe = computeIniGe(
+    ge: effectiveSheet.attributes.ge,
+    kkBase: main.kkBase,
+    kkThreshold: kkThreshold,
+  );
+  final kombinierteHeldenWaffenIni = clampNonNegative(
     heldenInitiative + main.iniMod + iniGe,
   );
-  final kampfInitiative = _clampNonNegative(
+  final kampfInitiative = clampNonNegative(
     kombinierteHeldenWaffenIni + offhand.iniMod,
   );
   final initiative = kampfInitiative;
-  final iniParadeMod = _max(
-    0,
-    _roundDownTowardsZero((kampfInitiative - 11) / 10),
-  );
+  final iniParadeMod = computeIniParadeMod(kampfInitiative);
 
-  final ausweichen = _clampNonNegative(
-    paBase +
-        sfAusweichenBonus +
-        _computeAkrobatikBonus(talents) +
-        manualMods.ausweichenMod -
-        beKampf,
+  // --- Ausweichen (ausweichen_rules) ---
+  final akrobatikBonusValue = computeAkrobatikBonus(talents);
+  final ausweichen = computeAusweichen(
+    paBase: paBase,
+    sfAusweichenBonus: sfAusweichenBonus,
+    akrobatikBonus: akrobatikBonusValue,
+    manualAusweichenMod: manualMods.ausweichenMod,
+    beKampf: beKampf,
   );
 
   return CombatPreviewStats(
-    rsTotal: _clampNonNegative(rsTotal),
-    beTotalRaw: _clampNonNegative(beTotalRaw),
+    rsTotal: clampNonNegative(rsTotal),
+    beTotalRaw: clampNonNegative(beTotalRaw),
     rgReduction: rgReduction,
     beKampf: beKampf,
     beMod: beMod,
@@ -252,217 +265,15 @@ CombatPreviewStats computeCombatPreviewStats(
     at: at,
     pa: pa,
     ebe: ebe,
-    tpExpression: _tpExpression(main, tpCalc),
+    tpExpression: buildTpExpression(main, tpCalc),
     specBonus: atSpecBonus,
-    akrobatikBonus: _computeAkrobatikBonus(talents),
+    akrobatikBonus: akrobatikBonusValue,
     sfIniBonus: sfIniBonus,
     sfAusweichenBonus: sfAusweichenBonus,
     offhandPaBonus: offhandPaBonus,
     iniDiceCount: iniDiceCount,
     fkBase: derived.fkBase,
   );
-}
-
-int _computeEbe({required int beKampf, required int beMod}) {
-  return _min(0, -beKampf - beMod);
-}
-
-int _computeSfIniBonus(
-  CombatSpecialRules special, {
-  required bool hasFlinkFromVorteile,
-  required bool hasBehaebigFromNachteile,
-}) {
-  var total = 0;
-  if (special.kampfreflexe) {
-    total += 4;
-  }
-  if (special.kampfgespuer) {
-    total += 2;
-  }
-  if (hasFlinkFromVorteile) {
-    total += 1;
-  }
-  if (hasBehaebigFromNachteile) {
-    total -= 1;
-  }
-  return total;
-}
-
-int _computeSfAusweichenBonus(
-  CombatSpecialRules special, {
-  required bool hasFlinkFromVorteile,
-  required bool hasBehaebigFromNachteile,
-}) {
-  var total = 0;
-  if (special.ausweichenI) {
-    total += 3;
-  }
-  if (special.ausweichenII) {
-    total += 3;
-  }
-  if (special.ausweichenIII) {
-    total += 3;
-  }
-  if (hasFlinkFromVorteile) {
-    total += 1;
-  }
-  if (hasBehaebigFromNachteile) {
-    total -= 1;
-  }
-  return total;
-}
-
-int _computeOffhandPaBonus({
-  required OffhandMode mode,
-  required int basePaMod,
-  required CombatSpecialRules special,
-}) {
-  switch (mode) {
-    case OffhandMode.none:
-      return 0;
-    case OffhandMode.linkhand:
-      return basePaMod + 1;
-    case OffhandMode.shield:
-      if (special.schildkampfII) {
-        return basePaMod + 5;
-      }
-      if (special.schildkampfI) {
-        return basePaMod + 3;
-      }
-      if (special.linkhandActive) {
-        return basePaMod + 1;
-      }
-      return basePaMod;
-    case OffhandMode.parryWeapon:
-      if (special.parierwaffenII) {
-        return basePaMod + 2;
-      }
-      if (special.parierwaffenI) {
-        return basePaMod - 1;
-      }
-      if (special.linkhandActive) {
-        return basePaMod - 4;
-      }
-      return basePaMod;
-  }
-}
-
-int _computeRgReduction({
-  required int globalArmorTrainingLevel,
-  required List<ArmorPiece> activePieces,
-}) {
-  final normalizedTraining =
-      globalArmorTrainingLevel == 2 || globalArmorTrainingLevel == 3
-      ? globalArmorTrainingLevel
-      : 0;
-  if (normalizedTraining == 3) {
-    return 2;
-  }
-  if (normalizedTraining == 2) {
-    return 1;
-  }
-  final hasAnyActiveRg1 = activePieces.any((piece) => piece.rg1Active);
-  return hasAnyActiveRg1 ? 1 : 0;
-}
-
-int _sumArmorRs(List<ArmorPiece> pieces) {
-  var sum = 0;
-  for (final piece in pieces) {
-    sum += _clampNonNegative(piece.rs);
-  }
-  return sum;
-}
-
-int _sumArmorBe(List<ArmorPiece> pieces) {
-  var sum = 0;
-  for (final piece in pieces) {
-    sum += _clampNonNegative(piece.be);
-  }
-  return sum;
-}
-
-int _clamp(int value, int min, int max) {
-  if (value < min) {
-    return min;
-  }
-  if (value > max) {
-    return max;
-  }
-  return value;
-}
-
-int _computeAkrobatikBonus(Map<String, HeroTalentEntry> talents) {
-  var akrobatikTaw = 0;
-  for (final entry in talents.entries) {
-    if (entry.key.toLowerCase().contains('akrobatik')) {
-      akrobatikTaw = entry.value.talentValue + entry.value.modifier;
-      break;
-    }
-  }
-  return _max(0, ((akrobatikTaw - 9) / 3).floor());
-}
-
-bool _hasCombatSpecialization({
-  required Map<String, HeroTalentEntry> talents,
-  required String talentId,
-  required String weaponType,
-}) {
-  final id = talentId.trim();
-  final type = weaponType.trim();
-  if (id.isEmpty || type.isEmpty) {
-    return false;
-  }
-
-  final talentEntry = talents[id];
-  if (talentEntry == null) {
-    return false;
-  }
-
-  final weaponToken = _normalizeToken(type);
-  if (weaponToken.isEmpty) {
-    return false;
-  }
-
-  final specs = talentEntry.combatSpecializations.isEmpty
-      ? talentEntry.specializations.split(RegExp(r'[\n,;]+'))
-      : talentEntry.combatSpecializations;
-  for (final raw in specs) {
-    final token = _normalizeToken(raw);
-    if (token.isEmpty) {
-      continue;
-    }
-    if (token == weaponToken) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-bool _isRangedCombatTalent(TalentDef? talent) {
-  if (talent == null) {
-    return false;
-  }
-  return _normalizeToken(talent.type) == 'fernkampf';
-}
-
-String _normalizeToken(String raw) {
-  var value = raw.trim().toLowerCase();
-  value = value
-      .replaceAll(String.fromCharCode(228), 'ae')
-      .replaceAll(String.fromCharCode(246), 'oe')
-      .replaceAll(String.fromCharCode(252), 'ue')
-      .replaceAll(String.fromCharCode(223), 'ss');
-  return value.replaceAll(RegExp(r'[^a-z0-9]+'), '');
-}
-
-String _tpExpression(MainWeaponSlot main, int tpCalc) {
-  final count = main.tpDiceCount < 1 ? 1 : main.tpDiceCount;
-  if (tpCalc == 0) {
-    return '${count}W6';
-  }
-  final sign = tpCalc > 0 ? '+' : '';
-  return '${count}W6$sign$tpCalc';
 }
 
 TalentDef? _findTalentDefById(List<TalentDef> talents, String id) {
@@ -478,27 +289,12 @@ TalentDef? _findTalentDefById(List<TalentDef> talents, String id) {
   return null;
 }
 
-int _parseBeModifier(String raw) {
-  final trimmed = raw.trim();
-  if (trimmed.isEmpty || trimmed == '-') {
-    return 0;
+int _clamp(int value, int min, int max) {
+  if (value < min) {
+    return min;
   }
-  final parsed = int.tryParse(trimmed);
-  return parsed ?? 0;
+  if (value > max) {
+    return max;
+  }
+  return value;
 }
-
-int _roundDownTowardsZero(num value) => value.truncate();
-
-int _roundUpAwayFromZero(num value) {
-  if (value == value.truncateToDouble()) {
-    return value.toInt();
-  }
-  if (value > 0) {
-    return value.ceil();
-  }
-  return value.floor();
-}
-
-int _max(int a, int b) => a > b ? a : b;
-int _min(int a, int b) => a < b ? a : b;
-int _clampNonNegative(int value) => value < 0 ? 0 : value;

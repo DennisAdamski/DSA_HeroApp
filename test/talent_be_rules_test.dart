@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dsa_heldenverwaltung/rules/derived/talent_be_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 
 void main() {
   test('x-rule multiplies BE and applies negative eBE', () {
