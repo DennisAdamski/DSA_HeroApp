@@ -1,9 +1,9 @@
-/// Magie-Regelfunktionen (pure Dart, keine Seiteneffekte).
-///
-/// Enthält Logik fuer:
-/// - Parsing von Zauber-Verfuegbarkeits-Strings
-/// - Filterung nach Held-Repraesentationen
-/// - Berechnung der effektiven Steigerungskategorie
+// Magie-Regelfunktionen (pure Dart, keine Seiteneffekte).
+//
+// Enthält Logik fuer:
+// - Parsing von Zauber-Verfuegbarkeits-Strings
+// - Filterung nach Held-Repraesentationen
+// - Berechnung der effektiven Steigerungskategorie
 
 /// Ein einzelner Eintrag in der Verfuegbarkeitsliste eines Zaubers.
 ///

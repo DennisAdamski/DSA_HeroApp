@@ -4,6 +4,7 @@ export 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 export 'package:dsa_heldenverwaltung/state/hero_actions.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -12,6 +13,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_actions.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
