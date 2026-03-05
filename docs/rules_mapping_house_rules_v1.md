@@ -39,6 +39,35 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - Alle Formeln nutzen Dart-`ceil()`/`round()` entsprechend der aktuell gemappten Excel-Formeln.
 - Negative Endwerte werden auf `0` geklemmt, wo es sich um Ressourcen-Maxima handelt.
 
+## Magie-System
+
+### Datenmodell
+
+- **HeroSpellEntry**: Speichert ZfW (spellValue), Modifikator, Hauszauber-Flag und Spezialisierungen pro aktiviertem Zauber.
+- **MagicSpecialAbility**: Name + optionale Notiz fuer magische Sonderfertigkeiten.
+- **HeroSheet** (schemaVersion 5): Neue Felder `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities`.
+
+### Regelfunktionen (`magic_rules.dart`)
+
+- **Verfuegbarkeit parsen** (`parseSpellAvailability`): Parst Strings wie `"Mag6, Hex3, Dru(Elf)2"` in strukturierte `SpellAvailabilityEntry`-Objekte.
+- **Traditions-Extraktion** (`extractTraditions`): Gibt die Haupttraditions-Kuerzel zurueck (z.B. `['Mag', 'Hex']`).
+- **Verfuegbarkeitspruefung** (`spellAvailabilityForRepresentations`): Prueft, ob ein Zauber fuer die Repraesentationen des Helden verfuegbar ist. Gibt die beste (niedrigste) Verbreitungsstufe zurueck oder `null`. Sub-Traditionen (z.B. `Dru(Elf)`) erfordern, dass der Held beide Repraesentationen besitzt.
+- **Effektive Steigerung** (`effectiveSteigerung`): Reduziert die Steigerungskategorie (A–F) um eine Stufe, wenn der Zauber Hauszauber ist ODER der Held passende Merkmalskenntnisse besitzt. Hauszauber und Merkmalskenntnisse werden nicht kumuliert — maximale Reduktion ist eine Stufe.
+- **Merkmale parsen** (`parseSpellTraits`): Splittet Merkmale-Strings wie `"Eigenschaften, Elementar (Erz)"` in eine Liste.
+
+### UI-Tab (Magie)
+
+- **hero_magic_tab.dart**: Hauptdatei des Magie-Tabs im HeroWorkspaceScreen, aufgeteilt in Part-Files:
+  - `magic_header_section.dart` — Repraesentationen und Merkmalskenntnisse bearbeiten
+  - `magic_special_abilities_section.dart` — Magische Sonderfertigkeiten verwalten
+  - `magic_active_spells_table.dart` — Tabelle aktivierter Zauber (ZfW, Mod, Steigerung)
+  - `magic_spell_catalog_table.dart` — Katalog-Zauber filtern und aktivieren
+
+### Katalog
+
+- Zauber-Definitionen (`SpellDef`) kommen aus `magie.json` im Katalog.
+- Konstanten `kRepresentationen` und `kMerkmale` in `rules_catalog.dart` definieren die verfuegbaren Repraesentationen und Merkmale.
+
 ## Wichtige Hinweise
 
 - Farbmarkierungen (`B4C6E7`, `E7E6E6`) werden nicht allein fuer die Logik genutzt.
