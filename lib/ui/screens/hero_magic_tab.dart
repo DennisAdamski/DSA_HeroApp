@@ -1,0 +1,301 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+
+part 'hero_magic/magic_header_section.dart';
+part 'hero_magic/magic_special_abilities_section.dart';
+part 'hero_magic/magic_active_spells_table.dart';
+part 'hero_magic/magic_spell_catalog_table.dart';
+
+/// Magie-Tab: Repraesentationen, Merkmalskenntnisse, Sonderfertigkeiten
+/// und aktivierte Zauber mit ZfW-Verwaltung.
+class HeroMagicTab extends ConsumerStatefulWidget {
+  const HeroMagicTab({
+    super.key,
+    required this.heroId,
+    required this.onDirtyChanged,
+    required this.onEditingChanged,
+    required this.onRegisterDiscard,
+    required this.onRegisterEditActions,
+  });
+
+  final String heroId;
+  final void Function(bool isDirty) onDirtyChanged;
+  final void Function(bool isEditing) onEditingChanged;
+  final void Function(WorkspaceAsyncAction discardAction) onRegisterDiscard;
+  final void Function(WorkspaceTabEditActions actions) onRegisterEditActions;
+
+  @override
+  ConsumerState<HeroMagicTab> createState() => _HeroMagicTabState();
+}
+
+class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
+    with AutomaticKeepAliveClientMixin {
+  late final WorkspaceTabEditController _editController;
+  final ValueNotifier<int> _tableRevision = ValueNotifier<int>(0);
+  final Map<String, TextEditingController> _cellControllers =
+      <String, TextEditingController>{};
+
+  HeroSheet? _latestHero;
+
+  // Draft-Zustand (wird nur im Edit-Modus veraendert).
+  Map<String, HeroSpellEntry> _draftSpells = <String, HeroSpellEntry>{};
+  List<String> _draftRepresentationen = <String>[];
+  List<String> _draftMerkmalskenntnisse = <String>[];
+  List<MagicSpecialAbility> _draftMagicSpecialAbilities =
+      <MagicSpecialAbility>[];
+
+  @override
+  void initState() {
+    super.initState();
+    _editController = WorkspaceTabEditController(
+      onDirtyChanged: widget.onDirtyChanged,
+      onEditingChanged: widget.onEditingChanged,
+      requestRebuild: () {
+        if (mounted) setState(() {});
+      },
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _registerWithParent();
+    });
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _cellControllers.values) {
+      controller.dispose();
+    }
+    _tableRevision.dispose();
+    super.dispose();
+  }
+
+  void _registerWithParent() {
+    _editController.emitCurrentState();
+    widget.onRegisterDiscard(_discardChanges);
+    widget.onRegisterEditActions(
+      WorkspaceTabEditActions(
+        startEdit: _startEdit,
+        save: _saveChanges,
+        cancel: _cancelChanges,
+      ),
+    );
+  }
+
+  void _syncDraftFromHero(HeroSheet hero, {bool force = false}) {
+    if (!_editController.shouldSync(hero, force: force)) return;
+    _resetCellControllers();
+    _draftSpells = Map<String, HeroSpellEntry>.from(hero.spells);
+    _draftRepresentationen = List<String>.from(hero.representationen);
+    _draftMerkmalskenntnisse = List<String>.from(hero.merkmalskenntnisse);
+    _draftMagicSpecialAbilities =
+        List<MagicSpecialAbility>.from(hero.magicSpecialAbilities);
+  }
+
+  void _resetCellControllers() {
+    for (final controller in _cellControllers.values) {
+      controller.dispose();
+    }
+    _cellControllers.clear();
+  }
+
+  TextEditingController _controllerFor(
+    String spellId,
+    String field,
+    String initialValue,
+  ) {
+    final key = '$spellId::$field';
+    return _cellControllers.putIfAbsent(
+      key,
+      () => TextEditingController(text: initialValue),
+    );
+  }
+
+  Future<void> _startEdit() async {
+    final hero = _latestHero;
+    if (hero == null) return;
+    _editController.clearSyncSignature();
+    _syncDraftFromHero(hero, force: true);
+    _editController.startEdit();
+  }
+
+  Future<void> _saveChanges() async {
+    final hero = _latestHero;
+    if (hero == null) return;
+    final updatedHero = hero.copyWith(
+      spells: Map<String, HeroSpellEntry>.from(_draftSpells),
+      representationen: List<String>.from(_draftRepresentationen),
+      merkmalskenntnisse: List<String>.from(_draftMerkmalskenntnisse),
+      magicSpecialAbilities:
+          List<MagicSpecialAbility>.from(_draftMagicSpecialAbilities),
+    );
+    await ref.read(heroActionsProvider).saveHero(updatedHero);
+    if (!mounted) return;
+    _editController.markSaved();
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Magie gespeichert')));
+  }
+
+  Future<void> _cancelChanges() async {
+    await _discardChanges();
+  }
+
+  Future<void> _discardChanges() async {
+    final hero = _latestHero;
+    if (hero != null) {
+      _editController.clearSyncSignature();
+      _syncDraftFromHero(hero, force: true);
+    }
+    _editController.markDiscarded();
+  }
+
+  void _markFieldChanged() {
+    if (!mounted) return;
+    _tableRevision.value++;
+    _editController.markFieldChanged();
+  }
+
+  // --- Spell-Draft-Updates ---
+
+  void _updateSpellValue(String spellId, String raw) {
+    final parsed = int.tryParse(raw.trim()) ?? 0;
+    final current = _draftSpells[spellId] ?? const HeroSpellEntry();
+    _draftSpells[spellId] = current.copyWith(spellValue: parsed);
+    _markFieldChanged();
+  }
+
+  void _updateSpellModifier(String spellId, String raw) {
+    final parsed = int.tryParse(raw.trim()) ?? 0;
+    final current = _draftSpells[spellId] ?? const HeroSpellEntry();
+    _draftSpells[spellId] = current.copyWith(modifier: parsed);
+    _markFieldChanged();
+  }
+
+  void _updateHauszauber(String spellId, bool value) {
+    final current = _draftSpells[spellId] ?? const HeroSpellEntry();
+    _draftSpells[spellId] = current.copyWith(hauszauber: value);
+    _markFieldChanged();
+  }
+
+  void _updateSpecializations(String spellId, String raw) {
+    final current = _draftSpells[spellId] ?? const HeroSpellEntry();
+    _draftSpells[spellId] = current.copyWith(specializations: raw);
+    _markFieldChanged();
+  }
+
+  void _toggleSpell(String spellId, bool activate) {
+    if (activate) {
+      _draftSpells.putIfAbsent(spellId, () => const HeroSpellEntry());
+    } else {
+      _draftSpells.remove(spellId);
+      // Entferne zugehoerige Controller.
+      _cellControllers.remove('$spellId::spellValue')?.dispose();
+      _cellControllers.remove('$spellId::modifier')?.dispose();
+    }
+    _markFieldChanged();
+  }
+
+  void _removeSpell(String spellId) {
+    _toggleSpell(spellId, false);
+  }
+
+  void _updateRepresentationen(List<String> values) {
+    _draftRepresentationen = values;
+    _markFieldChanged();
+  }
+
+  void _updateMerkmalskenntnisse(List<String> values) {
+    _draftMerkmalskenntnisse = values;
+    _markFieldChanged();
+  }
+
+  void _updateMagicSpecialAbilities(List<MagicSpecialAbility> values) {
+    _draftMagicSpecialAbilities = values;
+    _markFieldChanged();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final hero = ref.watch(heroByIdProvider(widget.heroId));
+    if (hero == null) {
+      return const Center(child: Text('Held nicht gefunden.'));
+    }
+
+    _latestHero = hero;
+    _syncDraftFromHero(hero);
+
+    final catalogAsync = ref.watch(rulesCatalogProvider);
+
+    return catalogAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) =>
+          Center(child: Text('Katalog-Fehler: $error')),
+      data: (catalog) {
+        // Erstelle ID→SpellDef Map fuer schnellen Zugriff.
+        final spellDefsById = <String, SpellDef>{};
+        for (final spell in catalog.spells) {
+          spellDefsById[spell.id] = spell;
+        }
+
+        return ValueListenableBuilder<int>(
+          valueListenable: _tableRevision,
+          builder: (context, revision, child) {
+            final activeSpellIds = _draftSpells.keys.toList(growable: false);
+
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+              children: [
+                _MagicHeaderSection(
+                  representationen: _draftRepresentationen,
+                  merkmalskenntnisse: _draftMerkmalskenntnisse,
+                  isEditing: _editController.isEditing,
+                  onRepresentationenChanged: _updateRepresentationen,
+                  onMerkmalskenntnisseChanged: _updateMerkmalskenntnisse,
+                ),
+                _MagicSpecialAbilitiesSection(
+                  abilities: _draftMagicSpecialAbilities,
+                  isEditing: _editController.isEditing,
+                  onChanged: _updateMagicSpecialAbilities,
+                ),
+                _MagicActiveSpellsTable(
+                  activeSpellIds: activeSpellIds,
+                  spellEntries: _draftSpells,
+                  spellDefs: spellDefsById,
+                  merkmalskenntnisse: _draftMerkmalskenntnisse,
+                  isEditing: _editController.isEditing,
+                  onSpellValueChanged: _updateSpellValue,
+                  onModifierChanged: _updateSpellModifier,
+                  onHauszauberChanged: _updateHauszauber,
+                  onSpecializationsChanged: _updateSpecializations,
+                  onRemoveSpell: _removeSpell,
+                  controllerFor: _controllerFor,
+                ),
+                _MagicSpellCatalogTable(
+                  allSpells: catalog.spells,
+                  activeSpellIds: _draftSpells.keys.toSet(),
+                  heroRepresentationen: _draftRepresentationen,
+                  isEditing: _editController.isEditing,
+                  onToggleSpell: _toggleSpell,
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+}
