@@ -434,7 +434,7 @@ void main() {
         of: find.byKey(
           const ValueKey<String>('talents-field-tal_a-ebe-display'),
         ),
-        matching: find.text('-6'),
+        matching: find.text('-8'),
       ),
       findsOneWidget,
     );
@@ -443,7 +443,7 @@ void main() {
         of: find.byKey(
           const ValueKey<String>('talents-field-tal_a-computed-taw'),
         ),
-        matching: find.text('2'),
+        matching: find.text('0'),
       ),
       findsOneWidget,
     );
@@ -567,7 +567,7 @@ void main() {
         of: find.byKey(
           const ValueKey<String>('talents-field-tal_a-ebe-display'),
         ),
-        matching: find.text('-6'),
+        matching: find.text('-8'),
       ),
       findsOneWidget,
     );
@@ -576,7 +576,7 @@ void main() {
         of: find.byKey(
           const ValueKey<String>('talents-field-tal_a-computed-taw'),
         ),
-        matching: find.text('2'),
+        matching: find.text('0'),
       ),
       findsOneWidget,
     );
