@@ -571,6 +571,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             );
             final iniAusweichenCard = _buildIniAusweichenOverviewCard(
               preview: preview,
+              manualAusweichenMod: manual.ausweichenMod,
             );
             if (constraints.maxWidth < 900) {
               return Column(
@@ -880,6 +881,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
 
   Widget _buildIniAusweichenOverviewCard({
     required CombatPreviewStats preview,
+    required int manualAusweichenMod,
   }) {
     return Card(
       child: Padding(
@@ -898,12 +900,26 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               children: [
                 _resultChip('Kampf INI', preview.kampfInitiative),
                 _resultChip('Ini Parade Mod', preview.iniParadeMod),
-                _resultChip('Ausweichen', preview.ausweichen),
                 _resultChip(
                   'Helden+Waffen INI',
                   preview.kombinierteHeldenWaffenIni,
                 ),
               ],
+            ),
+            const Divider(),
+            Text(
+              'Ausweichen = ${preview.ausweichen}',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'PA-Basis (${preview.paBase})'
+              ' + SF (${preview.sfAusweichenBonus})'
+              ' + Akrobatik (${preview.akrobatikBonus})'
+              ' + Axx (${preview.axxAusweichenBonus})'
+              ' + INI (${preview.iniAusweichenBonus})'
+              ' + Mod ($manualAusweichenMod)'
+              ' - BE (${preview.beKampf})',
             ),
           ],
         ),

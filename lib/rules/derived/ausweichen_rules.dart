@@ -40,15 +40,34 @@ int computeAkrobatikBonus(Map<String, HeroTalentEntry> talents) {
   return raw > 0 ? raw : 0;
 }
 
-// Endwert Ausweichen: max(0, PA-Basis + SF-Bonus + Akrobatik + manuellerMod - beKampf).
+// Axxeleratus-Bonus auf Ausweichen: +2 wenn aktiv.
+int computeAxxAusweichenBonus({required bool axxeleratusActive}) {
+  return axxeleratusActive ? 2 : 0;
+}
+
+// INI-Bonus auf Ausweichen: ab Kampf-INI 21 aufwaerts, ROUNDUP((INI-20)/10).
+int computeIniAusweichenBonus({required int kampfInitiative}) {
+  if (kampfInitiative < 21) return 0;
+  return roundUpAwayFromZero((kampfInitiative - 20) / 10);
+}
+
+// Endwert Ausweichen: max(0, PA-Basis + SF-Bonus + Akrobatik + Axx + INI-Bonus + Mod - beKampf).
 int computeAusweichen({
   required int paBase,
   required int sfAusweichenBonus,
   required int akrobatikBonus,
+  required int axxAusweichenBonus,
+  required int iniAusweichenBonus,
   required int manualAusweichenMod,
   required int beKampf,
 }) {
   return clampNonNegative(
-    paBase + sfAusweichenBonus + akrobatikBonus + manualAusweichenMod - beKampf,
+    paBase +
+        sfAusweichenBonus +
+        akrobatikBonus +
+        axxAusweichenBonus +
+        iniAusweichenBonus +
+        manualAusweichenMod -
+        beKampf,
   );
 }

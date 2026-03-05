@@ -201,7 +201,7 @@ flutter run
 flutter test
 
 # Run a specific guardrail test
-flutter test test/ui_rebuild_guardrails_test.dart
+flutter test test/ui/performance/ui_rebuild_guardrails_test.dart
 
 # Run integration test with frame timing (requires a connected device)
 flutter drive --profile \
@@ -209,6 +209,19 @@ flutter drive --profile \
   --target=integration_test/ui_edit_frame_timing_test.dart \
   -d <deviceId>
 ```
+
+#### Test folder layout (since 2026-03-05)
+
+- `test/rules/`: pure formula/rule tests only (no widget rendering)
+- `test/ui/`: widget/smoke/performance tests, technical behavior only
+- `test/state/`: provider/index/snapshot behavior
+- `test/data/`: loader/repository import-export behavior
+- `test/domain/`: serialization/model roundtrips
+- `test/workspace/`: workspace coordination helpers
+
+See `docs/test_strategy.md` and `test/README.md` for the full matrix and conventions.
+The talent computed-value formula used by Talents UI is centralized in
+`lib/rules/derived/talent_value_rules.dart`.
 
 ### Linting & Static Analysis
 
@@ -296,7 +309,7 @@ The following files are **intentionally kept** but not currently wired into the 
 
 ## UI Performance Guardrails
 
-- **Rebuild guardrail test**: `test/ui_rebuild_guardrails_test.dart` — verifies that widgets do not rebuild excessively. Must pass before every commit that touches providers or widgets.
+- **Rebuild guardrail test**: `test/ui/performance/ui_rebuild_guardrails_test.dart` — verifies that widgets do not rebuild excessively. Must pass before every commit that touches providers or widgets.
 - **Frame timing**: `integration_test/ui_edit_frame_timing_test.dart` — profile-mode integration test measuring jank. Run on device when changing edit flows.
 - **LOC budget**: `tool/check_screen_loc_budget.py` — gates screen files at 700 LOC. Exceeded files must be split into a subdirectory of part files.
 
@@ -322,3 +335,4 @@ The following files are **intentionally kept** but not currently wired into the 
 8. Report any remaining risks or open issues.
 
 > See `AGENTS.md` for the complete binding agent policy, including the list of forbidden commands and safe alternatives.
+
