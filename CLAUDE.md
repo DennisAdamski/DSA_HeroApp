@@ -55,7 +55,9 @@ DSA_HeroApp/
 │   │   ├── attributes.dart
 │   │   ├── combat_config.dart
 │   │   ├── hero_talent_entry.dart
+│   │   ├── hero_spell_entry.dart       # Zauber-Eintrag (ZfW, Hauszauber, …)
 │   │   ├── hero_inventory_entry.dart
+│   │   ├── magic_special_ability.dart  # Magische Sonderfertigkeit (Name+Notiz)
 │   │   ├── stat_modifiers.dart
 │   │   ├── bought_stats.dart
 │   │   └── validation/
@@ -67,7 +69,7 @@ DSA_HeroApp/
 │   │   ├── talent_be_rules.dart
 │   │   ├── ap_level_rules.dart
 │   │   ├── combat_rules.dart        # placeholder — not wired up
-│   │   ├── magic_rules.dart         # placeholder — not wired up
+│   │   ├── magic_rules.dart         # Magie-Regeln (Verfuegbarkeit, Steigerung, Merkmale)
 │   │   └── mods_rules.dart          # placeholder — not wired up
 │   ├── state/                       # Riverpod providers & snapshots
 │   │   ├── hero_providers.dart      # All providers + HeroActions
@@ -89,6 +91,8 @@ DSA_HeroApp/
 │   │       ├── hero_talents/                # Talent part files
 │   │       ├── hero_combat_tab.dart         # Tab: Kampf
 │   │       ├── hero_combat/                 # Combat part files
+│   │       ├── hero_magic_tab.dart           # Tab: Magie
+│   │       ├── hero_magic/                  # Magic part files
 │   │       ├── hero_inventory_tab.dart      # Tab: Inventar
 │   │       └── hero_detail_screen.dart      # legacy placeholder
 │   └── test_support/
@@ -156,6 +160,8 @@ Domain models (lib/domain/) — immutable, pure Dart
 | `HeroState` | `domain/hero_state.dart` | Runtime state (current LeP/AsP/KaP/Au, temp modifiers) |
 | `HeroComputedSnapshot` | `state/hero_computed_snapshot.dart` | All derived values for one hero, computed in one pass |
 | `HeroIndexSnapshot` | `state/hero_index_snapshot.dart` | Sorted hero list + O(1) ID map |
+| `HeroSpellEntry` | `domain/hero_spell_entry.dart` | Persisted spell entry (ZfW, Hauszauber, modifier) |
+| `MagicSpecialAbility` | `domain/magic_special_ability.dart` | Persisted magic special ability (name + note) |
 | `HeroTransferBundle` | `domain/hero_transfer_bundle.dart` | Export/import envelope (hero + state + timestamp) |
 
 ### Providers Cheat-Sheet
@@ -256,7 +262,7 @@ python tool/report_unreferenced_dart.py
 - **Screen size limit**: root screen/tab files must stay under **700 LOC**. Split into sub-files (e.g. `hero_combat/` directory) before exceeding this.
 - **ConsumerWidget vs ConsumerStatefulWidget**: use `ConsumerWidget` (stateless) by default; use `ConsumerStatefulWidget` only when local widget state is genuinely needed.
 - **Provider access in UI**: use `.watch` for reactive reads; use `.read` only inside callbacks (e.g. button presses).
-- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **4**.
+- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **5**.
 - **German comments and identifiers**: code-level comments and domain names follow German (rasse, kultur, Held, Talente, etc.).
 
 ### Catalog
@@ -283,7 +289,6 @@ The following files are **intentionally kept** but not currently wired into the 
 | File | Reason |
 |---|---|
 | `lib/rules/derived/combat_rules.dart` | Placeholder for future combat rule expansion |
-| `lib/rules/derived/magic_rules.dart` | Placeholder for magic rules |
 | `lib/rules/derived/mods_rules.dart` | Placeholder for modifier rules |
 | `lib/ui/screens/hero_detail_screen.dart` | Legacy screen, kept for reference |
 
