@@ -92,9 +92,9 @@ void main() {
   }
 
   test('TP/KK rounds towards zero for positive and negative values', () {
-    // Dieser Test prüft die TP/KK-Regel.
-    // Bei Werten überhalb des Basiswertes und oberhalb der Schwelle, steigt der Wert mit jedem Schwellenwert.
-    // Bei Werten unterhalb des Basiswertes und unterhalb der Schwelle, sinkt der Wert mit jedem Schwellenwert.
+    // Dieser Test prüft die TP/KK-Regel. 
+    // Bei Werten überhalb des Basiswertes und oberhalb der Schwelle, steigt der Wert mit jedem Schwellenwert. 
+    // Bei Werten unterhalb des Basiswertes und unterhalb der Schwelle, sinkt der Wert mit jedem Schwellenwert. 
     // Bei genauem Erreichen des Basiswertes, gibt es keinen Bonus oder Malus.
     const combatConfig = CombatConfig(
       mainWeapon: MainWeaponSlot(kkBase: 10, kkThreshold: 3),
@@ -133,26 +133,16 @@ void main() {
       mainWeapon: MainWeaponSlot(kkBase: 15, kkThreshold: 3),
     );
     final referenceSheet = heroWithAttributes(
-      mu: 14,
-      kl: 14,
-      inn: 14,
-      ch: 14,
-      ff: 14,
-      ge: 14,
-      ko: 14,
-      kk: 14,
       combatConfig: baseCombatConfig,
     );
     final lowIniSheet = referenceSheet.copyWith(
       combatConfig: referenceSheet.combatConfig.copyWith(
-        mainWeapon: referenceSheet.combatConfig.mainWeapon.copyWith(
-          iniMod: -20,
-        ),
+        mainWeapon: referenceSheet.combatConfig.mainWeapon.copyWith(iniMod: -20),
       ),
     );
     final highIniSheet = referenceSheet.copyWith(
       combatConfig: referenceSheet.combatConfig.copyWith(
-        mainWeapon: referenceSheet.combatConfig.mainWeapon.copyWith(iniMod: 20),
+        mainWeapon: referenceSheet.combatConfig.mainWeapon.copyWith(iniMod: 21),
       ),
     );
 
@@ -160,16 +150,16 @@ void main() {
     final lowIniResult = preview(lowIniSheet);
     final highIniResult = preview(highIniSheet);
 
-    expect(referenceResult.eigenschaftsIni, 11);
+    expect(referenceResult.eigenschaftsIni, 10);
     expect(referenceResult.iniGe, 0);
-    expect(referenceResult.heldenInitiative, 11);
-    expect(referenceResult.kampfInitiative, 11);
+    expect(referenceResult.heldenInitiative, 10);
+    expect(referenceResult.kampfInitiative, 10);
     expect(lowIniResult.kampfInitiative, 0);
     expect(lowIniResult.iniParadeMod, 0);
     expect(highIniResult.kampfInitiative, 31);
     expect(highIniResult.iniParadeMod, 2);
   });
-
+// ToDo hier weiter machen
   test('TK-Kalk includes Axxeleratus bonus', () {
     final heroWithoutAxxeleratus = hero(
       combatConfig: const CombatConfig(
