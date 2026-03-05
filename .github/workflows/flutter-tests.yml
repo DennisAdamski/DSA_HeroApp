@@ -1,29 +1,69 @@
-name: Flutter Tests
+name: Flutter CI
 
 on:
   push:
     branches:
       - main
+      - 'claude/**'
+      - 'task/**'
   pull_request:
     branches:
       - main
 
 jobs:
-  test:
-    name: Run Flutter Tests
+  analyze:
+    name: Statische Analyse & Lint
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Repository auschecken
+        uses: actions/checkout@v4
 
-      - name: Set up Flutter
+      - name: Flutter einrichten
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          channel: stable
+          cache: true
 
-      - name: Install dependencies
+      - name: Abhaengigkeiten installieren
         run: flutter pub get
 
-      - name: Run tests
+      - name: Statische Analyse ausfuehren
+        run: flutter analyze
+
+  test:
+    name: Unit- & Widget-Tests
+    runs-on: ubuntu-latest
+    needs: analyze
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Flutter einrichten
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Abhaengigkeiten installieren
+        run: flutter pub get
+
+      - name: Tests ausfuehren
         run: flutter test
+
+  loc-budget:
+    name: LOC-Budget-Pruefung (Screens ≤ 700 Zeilen)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: LOC-Budget pruefen
+        run: python tool/check_screen_loc_budget.py --max-lines 700
