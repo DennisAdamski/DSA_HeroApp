@@ -1,6 +1,6 @@
 part of '../hero_magic_tab.dart';
 
-/// Tabelle der aktivierten Zauber mit editierbaren ZfW-Werten.
+/// Tabelle der aktivierten Zauber mit editierbaren ZfW-Werten und vollstaendigen Infos.
 class _MagicActiveSpellsTable extends StatelessWidget {
   const _MagicActiveSpellsTable({
     required this.activeSpellIds,
@@ -14,6 +14,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     required this.onSpecializationsChanged,
     required this.onRemoveSpell,
     required this.controllerFor,
+    this.onAddSpell,
   });
 
   final List<String> activeSpellIds;
@@ -28,6 +29,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final void Function(String spellId) onRemoveSpell;
   final TextEditingController Function(String id, String field, String initial)
       controllerFor;
+  final VoidCallback? onAddSpell;
 
   @override
   Widget build(BuildContext context) {
@@ -38,10 +40,22 @@ class _MagicActiveSpellsTable extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Text(
-            'Keine Zauber aktiviert. Wechsle in den Bearbeitungsmodus '
-            'und aktiviere Zauber im Katalog unten.',
-            style: theme.textTheme.bodySmall,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Keine Zauber aktiviert.',
+                style: theme.textTheme.bodySmall,
+              ),
+              if (isEditing && onAddSpell != null) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: onAddSpell,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Zauber hinzufügen'),
+                ),
+              ],
+            ],
           ),
         ),
       );
@@ -77,7 +91,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
               horizontalMargin: 12,
               headingRowHeight: 36,
               dataRowMinHeight: 36,
-              dataRowMaxHeight: 48,
+              dataRowMaxHeight: 52,
               columns: [
                 const DataColumn(label: Text('Name')),
                 const DataColumn(label: Text('Probe')),
@@ -85,6 +99,12 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                 const DataColumn(label: Text('Mod'), numeric: true),
                 const DataColumn(label: Text('Stg')),
                 const DataColumn(label: Text('HZ')),
+                const DataColumn(label: Text('Merkmale')),
+                const DataColumn(label: Text('Zauberdauer')),
+                const DataColumn(label: Text('AsP')),
+                const DataColumn(label: Text('Reichweite')),
+                const DataColumn(label: Text('Wirkung')),
+                const DataColumn(label: Text('Spezialisierungen')),
                 if (isEditing) const DataColumn(label: Text('')),
               ],
               rows: sortedIds.map((spellId) {
@@ -98,6 +118,12 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                     const DataCell(Text('0')),
                     const DataCell(Text('0')),
                     const DataCell(Text('?')),
+                    const DataCell(Text('-')),
+                    const DataCell(Text('-')),
+                    const DataCell(Text('-')),
+                    const DataCell(Text('-')),
+                    const DataCell(Text('-')),
+                    const DataCell(Text('-')),
                     const DataCell(Text('-')),
                     if (isEditing)
                       DataCell(
@@ -211,6 +237,72 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                   : theme.disabledColor,
                             ),
                     ),
+                    DataCell(
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 160),
+                        child: Text(
+                          def.traits.isNotEmpty ? def.traits : '-',
+                          style: theme.textTheme.bodySmall,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    DataCell(Text(
+                      def.castingTime.isNotEmpty ? def.castingTime : '-',
+                      style: theme.textTheme.bodySmall,
+                    )),
+                    DataCell(Text(
+                      def.aspCost.isNotEmpty ? def.aspCost : '-',
+                      style: theme.textTheme.bodySmall,
+                    )),
+                    DataCell(Text(
+                      def.range.isNotEmpty ? def.range : '-',
+                      style: theme.textTheme.bodySmall,
+                    )),
+                    DataCell(
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 120),
+                        child: Text(
+                          def.duration.isNotEmpty ? def.duration : '-',
+                          style: theme.textTheme.bodySmall,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    isEditing
+                        ? DataCell(
+                            SizedBox(
+                              width: 120,
+                              child: TextField(
+                                controller: controllerFor(
+                                  spellId,
+                                  'specializations',
+                                  entry.specializations,
+                                ),
+                                onChanged: (raw) =>
+                                    onSpecializationsChanged(spellId, raw),
+                                style: theme.textTheme.bodySmall,
+                                decoration: const InputDecoration(
+                                  isDense: true,
+                                  hintText: 'Spezialisierung…',
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 6),
+                                ),
+                              ),
+                            ),
+                          )
+                        : DataCell(
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 120),
+                              child: Text(
+                                entry.specializations.isNotEmpty
+                                    ? entry.specializations
+                                    : '-',
+                                style: theme.textTheme.bodySmall,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
                     if (isEditing)
                       DataCell(
                         IconButton(
@@ -225,6 +317,15 @@ class _MagicActiveSpellsTable extends StatelessWidget {
               }).toList(growable: false),
             ),
           ),
+          if (isEditing && onAddSpell != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+              child: OutlinedButton.icon(
+                onPressed: onAddSpell,
+                icon: const Icon(Icons.add),
+                label: const Text('Zauber hinzufügen'),
+              ),
+            ),
         ],
       ),
     );

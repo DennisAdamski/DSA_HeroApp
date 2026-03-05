@@ -18,8 +18,7 @@ part 'hero_magic/magic_special_abilities_section.dart';
 part 'hero_magic/magic_active_spells_table.dart';
 part 'hero_magic/magic_spell_catalog_table.dart';
 
-/// Magie-Tab: Repraesentationen, Merkmalskenntnisse, Sonderfertigkeiten
-/// und aktivierte Zauber mit ZfW-Verwaltung.
+/// Magie-Tab: Zwei Sub-Tabs – „Zauber" und „Repräsentation & SF".
 class HeroMagicTab extends ConsumerStatefulWidget {
   const HeroMagicTab({
     super.key,
@@ -41,8 +40,9 @@ class HeroMagicTab extends ConsumerStatefulWidget {
 }
 
 class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   late final WorkspaceTabEditController _editController;
+  late final TabController _innerTabController;
   final ValueNotifier<int> _tableRevision = ValueNotifier<int>(0);
   final Map<String, TextEditingController> _cellControllers =
       <String, TextEditingController>{};
@@ -59,6 +59,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   @override
   void initState() {
     super.initState();
+    _innerTabController = TabController(length: 2, vsync: this);
     _editController = WorkspaceTabEditController(
       onDirtyChanged: widget.onDirtyChanged,
       onEditingChanged: widget.onEditingChanged,
@@ -73,6 +74,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
 
   @override
   void dispose() {
+    _innerTabController.dispose();
     for (final controller in _cellControllers.values) {
       controller.dispose();
     }
@@ -201,6 +203,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       // Entferne zugehoerige Controller.
       _cellControllers.remove('$spellId::spellValue')?.dispose();
       _cellControllers.remove('$spellId::modifier')?.dispose();
+      _cellControllers.remove('$spellId::specializations')?.dispose();
     }
     _markFieldChanged();
   }
@@ -222,6 +225,57 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   void _updateMagicSpecialAbilities(List<MagicSpecialAbility> values) {
     _draftMagicSpecialAbilities = values;
     _markFieldChanged();
+  }
+
+  void _showZauberKatalog(BuildContext context, List<SpellDef> allSpells) {
+    final localActiveIds = _draftSpells.keys.toSet();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            final screenHeight = MediaQuery.of(ctx).size.height;
+            return SizedBox(
+              height: screenHeight * 0.8,
+              child: Column(
+                children: [
+                  // Zieh-Handle
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Theme.of(ctx).colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: _MagicSpellCatalogTable(
+                      allSpells: allSpells,
+                      activeSpellIds: localActiveIds,
+                      heroRepresentationen: _draftRepresentationen,
+                      onToggleSpell: (id, activate) {
+                        _toggleSpell(id, activate);
+                        setSheetState(() {
+                          if (activate) {
+                            localActiveIds.add(id);
+                          } else {
+                            localActiveIds.remove(id);
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -248,49 +302,72 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
           spellDefsById[spell.id] = spell;
         }
 
-        return ValueListenableBuilder<int>(
-          valueListenable: _tableRevision,
-          builder: (context, revision, child) {
-            final activeSpellIds = _draftSpells.keys.toList(growable: false);
-
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
-              children: [
-                _MagicHeaderSection(
-                  representationen: _draftRepresentationen,
-                  merkmalskenntnisse: _draftMerkmalskenntnisse,
-                  isEditing: _editController.isEditing,
-                  onRepresentationenChanged: _updateRepresentationen,
-                  onMerkmalskenntnisseChanged: _updateMerkmalskenntnisse,
-                ),
-                _MagicSpecialAbilitiesSection(
-                  abilities: _draftMagicSpecialAbilities,
-                  isEditing: _editController.isEditing,
-                  onChanged: _updateMagicSpecialAbilities,
-                ),
-                _MagicActiveSpellsTable(
-                  activeSpellIds: activeSpellIds,
-                  spellEntries: _draftSpells,
-                  spellDefs: spellDefsById,
-                  merkmalskenntnisse: _draftMerkmalskenntnisse,
-                  isEditing: _editController.isEditing,
-                  onSpellValueChanged: _updateSpellValue,
-                  onModifierChanged: _updateSpellModifier,
-                  onHauszauberChanged: _updateHauszauber,
-                  onSpecializationsChanged: _updateSpecializations,
-                  onRemoveSpell: _removeSpell,
-                  controllerFor: _controllerFor,
-                ),
-                _MagicSpellCatalogTable(
-                  allSpells: catalog.spells,
-                  activeSpellIds: _draftSpells.keys.toSet(),
-                  heroRepresentationen: _draftRepresentationen,
-                  isEditing: _editController.isEditing,
-                  onToggleSpell: _toggleSpell,
-                ),
+        return Column(
+          children: [
+            TabBar(
+              controller: _innerTabController,
+              tabs: const [
+                Tab(text: 'Zauber'),
+                Tab(text: 'Repr. & SF'),
               ],
-            );
-          },
+            ),
+            Expanded(
+              child: ValueListenableBuilder<int>(
+                valueListenable: _tableRevision,
+                builder: (context, revision, child) {
+                  final activeSpellIds =
+                      _draftSpells.keys.toList(growable: false);
+                  return TabBarView(
+                    controller: _innerTabController,
+                    children: [
+                      // --- Sub-Tab 0: Zauber ---
+                      ListView(
+                        padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+                        children: [
+                          _MagicActiveSpellsTable(
+                            activeSpellIds: activeSpellIds,
+                            spellEntries: _draftSpells,
+                            spellDefs: spellDefsById,
+                            merkmalskenntnisse: _draftMerkmalskenntnisse,
+                            isEditing: _editController.isEditing,
+                            onSpellValueChanged: _updateSpellValue,
+                            onModifierChanged: _updateSpellModifier,
+                            onHauszauberChanged: _updateHauszauber,
+                            onSpecializationsChanged: _updateSpecializations,
+                            onRemoveSpell: _removeSpell,
+                            controllerFor: _controllerFor,
+                            onAddSpell: _editController.isEditing
+                                ? () => _showZauberKatalog(
+                                    context, catalog.spells)
+                                : null,
+                          ),
+                        ],
+                      ),
+                      // --- Sub-Tab 1: Repräsentation & SF ---
+                      ListView(
+                        padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+                        children: [
+                          _MagicHeaderSection(
+                            representationen: _draftRepresentationen,
+                            merkmalskenntnisse: _draftMerkmalskenntnisse,
+                            isEditing: _editController.isEditing,
+                            onRepresentationenChanged: _updateRepresentationen,
+                            onMerkmalskenntnisseChanged:
+                                _updateMerkmalskenntnisse,
+                          ),
+                          _MagicSpecialAbilitiesSection(
+                            abilities: _draftMagicSpecialAbilities,
+                            isEditing: _editController.isEditing,
+                            onChanged: _updateMagicSpecialAbilities,
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
         );
       },
     );
