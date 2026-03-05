@@ -2,7 +2,9 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 
 /// Persistiertes Kernmodell eines Helden (ohne Laufzeitzustand).
@@ -15,7 +17,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 4,
+    this.schemaVersion = 5,
     required this.name,
     required this.level,
     required this.attributes,
@@ -26,6 +28,10 @@ class HeroSheet {
     this.talents = const <String, HeroTalentEntry>{},
     this.hiddenTalentIds = const <String>[],
     this.talentSpecialAbilities = '',
+    this.spells = const <String, HeroSpellEntry>{},
+    this.representationen = const <String>[],
+    this.merkmalskenntnisse = const <String>[],
+    this.magicSpecialAbilities = const <MagicSpecialAbility>[],
     this.rasse = '',
     this.rasseModText = '',
     this.kultur = '',
@@ -65,6 +71,10 @@ class HeroSheet {
   final Map<String, HeroTalentEntry> talents;
   final List<String> hiddenTalentIds;
   final String talentSpecialAbilities;
+  final Map<String, HeroSpellEntry> spells;
+  final List<String> representationen;
+  final List<String> merkmalskenntnisse;
+  final List<MagicSpecialAbility> magicSpecialAbilities;
 
   final String rasse;
   final String rasseModText;
@@ -105,6 +115,10 @@ class HeroSheet {
     Map<String, HeroTalentEntry>? talents,
     List<String>? hiddenTalentIds,
     String? talentSpecialAbilities,
+    Map<String, HeroSpellEntry>? spells,
+    List<String>? representationen,
+    List<String>? merkmalskenntnisse,
+    List<MagicSpecialAbility>? magicSpecialAbilities,
     String? rasse,
     String? rasseModText,
     String? kultur,
@@ -147,6 +161,11 @@ class HeroSheet {
           : _normalizeHiddenTalentIds(hiddenTalentIds),
       talentSpecialAbilities:
           talentSpecialAbilities ?? this.talentSpecialAbilities,
+      spells: spells ?? this.spells,
+      representationen: representationen ?? this.representationen,
+      merkmalskenntnisse: merkmalskenntnisse ?? this.merkmalskenntnisse,
+      magicSpecialAbilities:
+          magicSpecialAbilities ?? this.magicSpecialAbilities,
       rasse: rasse ?? this.rasse,
       rasseModText: rasseModText ?? this.rasseModText,
       kultur: kultur ?? this.kultur,
@@ -192,6 +211,12 @@ class HeroSheet {
       'talents': talents.map((key, value) => MapEntry(key, value.toJson())),
       'hiddenTalentIds': _normalizeHiddenTalentIds(hiddenTalentIds),
       'talentSpecialAbilities': talentSpecialAbilities,
+      'spells': spells.map((key, value) => MapEntry(key, value.toJson())),
+      'representationen': representationen,
+      'merkmalskenntnisse': merkmalskenntnisse,
+      'magicSpecialAbilities': magicSpecialAbilities
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
       'rasse': rasse,
       'rasseModText': rasseModText,
       'kultur': kultur,
@@ -233,6 +258,15 @@ class HeroSheet {
         (json['inventoryEntries'] as List?) ?? const <dynamic>[];
     final rawHiddenTalentIds =
         (json['hiddenTalentIds'] as List?) ?? const <dynamic>[];
+    final rawSpells =
+        (json['spells'] as Map?)?.cast<String, dynamic>() ??
+        const <String, dynamic>{};
+    final rawRepresentationen =
+        (json['representationen'] as List?) ?? const <dynamic>[];
+    final rawMerkmalskenntnisse =
+        (json['merkmalskenntnisse'] as List?) ?? const <dynamic>[];
+    final rawMagicSpecialAbilities =
+        (json['magicSpecialAbilities'] as List?) ?? const <dynamic>[];
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     String getString(String key) => (json[key] as String?) ?? '';
 
@@ -269,6 +303,25 @@ class HeroSheet {
       }),
       hiddenTalentIds: _normalizeHiddenTalentIds(rawHiddenTalentIds),
       talentSpecialAbilities: getString('talentSpecialAbilities'),
+      spells: rawSpells.map((key, value) {
+        final map = value is Map
+            ? value.cast<String, dynamic>()
+            : const <String, dynamic>{};
+        return MapEntry(key, HeroSpellEntry.fromJson(map));
+      }),
+      representationen: rawRepresentationen
+          .map((entry) => entry.toString())
+          .toList(growable: false),
+      merkmalskenntnisse: rawMerkmalskenntnisse
+          .map((entry) => entry.toString())
+          .toList(growable: false),
+      magicSpecialAbilities: rawMagicSpecialAbilities
+          .whereType<Map>()
+          .map(
+            (entry) =>
+                MagicSpecialAbility.fromJson(entry.cast<String, dynamic>()),
+          )
+          .toList(growable: false),
       rasse: getString('rasse'),
       rasseModText: getString('rasseModText'),
       kultur: getString('kultur'),

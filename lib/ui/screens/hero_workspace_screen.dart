@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_magic_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
@@ -29,6 +30,7 @@ const double _commandDeckInspectorWidth = 300;
 const int _overviewTabIndex = 0;
 const int _talentsTabIndex = 1;
 const int _combatTabIndex = 2;
+const int _magicTabIndex = 3;
 const int _inventoryTabIndex = 4;
 
 /// Zentraler Workspace-Screen fuer die Bearbeitung und Anzeige eines Helden.
@@ -65,6 +67,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         _overviewTabIndex,
         _talentsTabIndex,
         _combatTabIndex,
+        _magicTabIndex,
         _inventoryTabIndex,
       },
     );
@@ -385,9 +388,16 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           onRegisterEditActions: (actions) =>
               _registerEditActions(_combatTabIndex, actions),
         ),
-        const WorkspaceCatalogPlaceholderTab(
-          title: 'Magie',
-          section: WorkspaceCatalogSection.spells,
+        HeroMagicTab(
+          heroId: widget.heroId,
+          onDirtyChanged: (isDirty) =>
+              _updateDirty(_magicTabIndex, isDirty),
+          onEditingChanged: (isEditing) =>
+              _updateEditing(_magicTabIndex, isEditing),
+          onRegisterDiscard: (discardAction) =>
+              _registerDiscard(_magicTabIndex, discardAction),
+          onRegisterEditActions: (actions) =>
+              _registerEditActions(_magicTabIndex, actions),
         ),
         HeroInventoryTab(
           heroId: widget.heroId,
