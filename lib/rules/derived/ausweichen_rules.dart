@@ -48,7 +48,7 @@ int computeAxxAusweichenBonus({required bool axxeleratusActive}) {
 // INI-Bonus auf Ausweichen: ab Kampf-INI 21 aufwaerts, ROUNDUP((INI-20)/10).
 int computeIniAusweichenBonus({required int kampfInitiative}) {
   if (kampfInitiative < 21) return 0;
-  return ((kampfInitiative - 20) / 10).ceil();
+  return roundUpAwayFromZero((kampfInitiative - 20) / 10);
 }
 
 // Endwert Ausweichen: max(0, PA-Basis + SF-Bonus + Akrobatik + Axx + INI-Bonus + Mod - beKampf).
