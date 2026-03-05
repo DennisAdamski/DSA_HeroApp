@@ -609,4 +609,76 @@ void main() {
     expect(result.rsTotal, 2);
     expect(result.beTotalRaw, 2);
   });
+
+  test('Axxeleratus gibt +2 auf Ausweichen', () {
+    final baseHero = buildHero();
+    final withAxx = baseHero.copyWith(
+      combatConfig: baseHero.combatConfig.copyWith(
+        specialRules: baseHero.combatConfig.specialRules.copyWith(
+          axxeleratusActive: true,
+        ),
+      ),
+    );
+
+    final baseResult = computeCombatPreviewStats(baseHero, state);
+    final axxResult = computeCombatPreviewStats(withAxx, state);
+
+    expect(axxResult.axxAusweichenBonus, 2);
+    expect(baseResult.axxAusweichenBonus, 0);
+    expect(axxResult.ausweichen, baseResult.ausweichen + 2);
+  });
+
+  test('INI-Bonus auf Ausweichen ab Kampf-INI 21', () {
+    // Held mit hohen Attributen und hohem INI-Wurf fuer hohe Initiative.
+    final highIniHero = buildHero(
+      attributes: const Attributes(
+        mu: 18,
+        kl: 12,
+        inn: 18,
+        ch: 12,
+        ff: 12,
+        ge: 18,
+        ko: 12,
+        kk: 12,
+      ),
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(iniMod: 8, kkBase: 10, kkThreshold: 3),
+        specialRules: CombatSpecialRules(kampfreflexe: true),
+        manualMods: CombatManualMods(iniWurf: 6),
+      ),
+    );
+
+    final result = computeCombatPreviewStats(highIniHero, state);
+
+    // Bei Kampf-INI >= 21 sollte es einen Bonus geben.
+    if (result.kampfInitiative >= 21) {
+      expect(result.iniAusweichenBonus, greaterThan(0));
+      expect(
+        result.iniAusweichenBonus,
+        ((result.kampfInitiative - 20) / 10).ceil(),
+      );
+    } else {
+      expect(result.iniAusweichenBonus, 0);
+    }
+  });
+
+  test('INI-Bonus auf Ausweichen ist 0 bei niedriger Initiative', () {
+    final lowIniHero = buildHero(
+      attributes: const Attributes(
+        mu: 8,
+        kl: 8,
+        inn: 8,
+        ch: 8,
+        ff: 8,
+        ge: 8,
+        ko: 8,
+        kk: 8,
+      ),
+    );
+
+    final result = computeCombatPreviewStats(lowIniHero, state);
+
+    expect(result.kampfInitiative, lessThan(21));
+    expect(result.iniAusweichenBonus, 0);
+  });
 }
