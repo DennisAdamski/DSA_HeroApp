@@ -189,9 +189,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _markFieldChanged();
   }
 
-  void _updateSpecializations(String spellId, String raw) {
+  void _updateSpecializations(String spellId, List<String> value) {
     final current = _draftSpells[spellId] ?? const HeroSpellEntry();
-    _draftSpells[spellId] = current.copyWith(specializations: raw);
+    _draftSpells[spellId] = current.copyWith(specializations: value);
     _markFieldChanged();
   }
 
@@ -203,7 +203,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       // Entferne zugehoerige Controller.
       _cellControllers.remove('$spellId::spellValue')?.dispose();
       _cellControllers.remove('$spellId::modifier')?.dispose();
-      _cellControllers.remove('$spellId::specializations')?.dispose();
+      // Kein Controller fuer Spezialisierungen (wird als Dialog bearbeitet).
     }
     _markFieldChanged();
   }
