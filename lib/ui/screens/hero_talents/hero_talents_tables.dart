@@ -182,7 +182,13 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         _buildShortAttributeLabel(effectiveAttributes, talent.attributes),
       ),
       _textCell(
-        _formatWholeNumber(_calculateComputedTaw(entry, ebe)),
+        _formatWholeNumber(
+          computeTalentComputedTaw(
+            talentValue: entry.talentValue,
+            modifier: entry.modifier,
+            ebe: ebe,
+          ),
+        ),
         key: ValueKey<String>('talents-field-${talent.id}-computed-taw'),
         highlighted: true,
       ),

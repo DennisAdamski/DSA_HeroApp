@@ -260,6 +260,39 @@ void main() {
     expect(result.iniWurfEffective, 12);
   });
 
+  test('manual ini roll input is clamped to max roll', () {
+    final hero = buildHero(
+      combatConfig: const CombatConfig(
+        specialRules: CombatSpecialRules(klingentaenzer: true),
+        manualMods: CombatManualMods(iniWurf: 13),
+      ),
+    );
+
+    final result = computeCombatPreviewStats(hero, state);
+    expect(result.iniWurfEffective, 12);
+  });
+
+  test('weapon ini mod increases combined initiative linearly', () {
+    final baseHero = buildHero(
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(iniMod: 0),
+      ),
+    );
+    final boostedHero = baseHero.copyWith(
+      combatConfig: baseHero.combatConfig.copyWith(
+        mainWeapon: baseHero.combatConfig.mainWeapon.copyWith(iniMod: 2),
+      ),
+    );
+
+    final baseResult = computeCombatPreviewStats(baseHero, state);
+    final boostedResult = computeCombatPreviewStats(boostedHero, state);
+
+    expect(
+      boostedResult.kombinierteHeldenWaffenIni,
+      baseResult.kombinierteHeldenWaffenIni + 2,
+    );
+  });
+
   test('Flink from Vorteile adds +1 INI and +1 Ausweichen', () {
     final withoutFlink = buildHero();
     final withFlink = buildHero(vorteileText: 'Flink');

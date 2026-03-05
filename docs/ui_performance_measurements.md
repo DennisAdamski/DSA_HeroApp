@@ -12,7 +12,7 @@ Messbare Guardrails fuer Edit-Workflows in den grossen Workspace-Tabs:
 Testet, dass ein einzelner Feld-Edit nicht den gesamten Tab-Root neu rendert.
 
 ```bash
-flutter test test/ui_rebuild_guardrails_test.dart
+flutter test test/ui/performance/ui_rebuild_guardrails_test.dart
 ```
 
 Technik:

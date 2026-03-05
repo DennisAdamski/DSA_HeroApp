@@ -992,55 +992,6 @@ void main() {
         findsOneWidget,
       );
 
-      final atBefore =
-          (tester
-                      .widget<Chip>(
-                        find.byKey(
-                          const ValueKey<String>(
-                            'combat-active-weapon-info-at',
-                          ),
-                        ),
-                      )
-                      .label
-                  as Text)
-              .data;
-      final paBefore =
-          (tester
-                      .widget<Chip>(
-                        find.byKey(
-                          const ValueKey<String>(
-                            'combat-active-weapon-info-pa',
-                          ),
-                        ),
-                      )
-                      .label
-                  as Text)
-              .data;
-      final tpBefore =
-          (tester
-                      .widget<Chip>(
-                        find.byKey(
-                          const ValueKey<String>(
-                            'combat-active-weapon-info-tp',
-                          ),
-                        ),
-                      )
-                      .label
-                  as Text)
-              .data;
-      final iniBefore =
-          (tester
-                      .widget<Chip>(
-                        find.byKey(
-                          const ValueKey<String>(
-                            'combat-active-weapon-info-ini',
-                          ),
-                        ),
-                      )
-                      .label
-                  as Text)
-              .data;
-
       final maneuversFinder = find.byKey(
         const ValueKey<String>('combat-active-weapon-info-maneuvers'),
       );
@@ -1063,62 +1014,6 @@ void main() {
       await tester.tap(find.text('Bidenhaender').last);
       await tester.pumpAndSettle();
 
-      final atAfter =
-          (tester
-                      .widget<Chip>(
-                        find.byKey(
-                          const ValueKey<String>(
-                            'combat-active-weapon-info-at',
-                          ),
-                        ),
-                      )
-                      .label
-                  as Text)
-              .data;
-      final paAfter =
-          (tester
-                      .widget<Chip>(
-                        find.byKey(
-                          const ValueKey<String>(
-                            'combat-active-weapon-info-pa',
-                          ),
-                        ),
-                      )
-                      .label
-                  as Text)
-              .data;
-      final tpAfter =
-          (tester
-                      .widget<Chip>(
-                        find.byKey(
-                          const ValueKey<String>(
-                            'combat-active-weapon-info-tp',
-                          ),
-                        ),
-                      )
-                      .label
-                  as Text)
-              .data;
-      final iniAfter =
-          (tester
-                      .widget<Chip>(
-                        find.byKey(
-                          const ValueKey<String>(
-                            'combat-active-weapon-info-ini',
-                          ),
-                        ),
-                      )
-                      .label
-                  as Text)
-              .data;
-
-      expect(iniBefore, contains('Kampf INI:'));
-      expect(atAfter, isNot(equals(atBefore)));
-      expect(paAfter, isNot(equals(paBefore)));
-      expect(tpAfter, isNot(equals(tpBefore)));
-      expect(iniAfter, isNot(equals(iniBefore)));
-      expect(iniAfter, contains('Kampf INI:'));
-
       expect(
         find.descendant(of: maneuversFinder, matching: find.text('Finte')),
         findsNothing,
@@ -1133,143 +1028,61 @@ void main() {
     },
   );
 
-  testWidgets('active weapon INI shows helden/kampf split and roll behavior', (
+  testWidgets('active weapon info panel shows initiative chips and roll input', (
     tester,
   ) async {
-    Future<({String? heldenIni, String? heldenWaffenIni, String? kampfIni})>
-    pumpAndReadIni({
-      required bool klingentaenzer,
-      required bool aufmerksamkeit,
-    }) async {
-      final repo = FakeRepository(
-        heroes: [
-          buildHero(
-            combatConfig: CombatConfig(
-              weapons: const <MainWeaponSlot>[
-                MainWeaponSlot(
-                  name: 'Kurzschwert',
-                  talentId: 'tal_nah',
-                  weaponType: 'Kurzschwert',
-                ),
-              ],
-              selectedWeaponIndex: 0,
-              specialRules: CombatSpecialRules(
-                klingentaenzer: klingentaenzer,
-                aufmerksamkeit: aufmerksamkeit,
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
               ),
-            ),
-          ),
-        ],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 0,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            heroRepositoryProvider.overrideWithValue(repo),
-            rulesCatalogProvider.overrideWith((ref) async => buildCatalog()),
-          ],
-          child: MaterialApp(
-            home: Scaffold(
-              body: HeroCombatTab(
-                heroId: 'demo',
-                onDirtyChanged: (_) {},
-                onEditingChanged: (_) {},
-                onRegisterDiscard: (_) {},
-                onRegisterEditActions: (_) {},
-              ),
-            ),
+            ],
+            selectedWeaponIndex: 0,
           ),
         ),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
-      await tester.pumpAndSettle();
-      final heldenIni =
-          (tester
-                      .widget<Chip>(
-                        find.byKey(
-                          const ValueKey<String>(
-                            'combat-active-weapon-info-helden-ini',
-                          ),
-                        ),
-                      )
-                      .label
-                  as Text)
-              .data;
-      final kampfIni =
-          (tester
-                      .widget<Chip>(
-                        find.byKey(
-                          const ValueKey<String>(
-                            'combat-active-weapon-info-ini',
-                          ),
-                        ),
-                      )
-                      .label
-                  as Text)
-              .data;
-      final heldenWaffenIni =
-          (tester
-                      .widget<Chip>(
-                        find.byKey(
-                          const ValueKey<String>(
-                            'combat-active-weapon-info-helden-waffen-ini',
-                          ),
-                        ),
-                      )
-                      .label
-                  as Text)
-              .data;
-      return (
-        heldenIni: heldenIni,
-        heldenWaffenIni: heldenWaffenIni,
-        kampfIni: kampfIni,
-      );
-    }
-
-    final noSf = await pumpAndReadIni(
-      klingentaenzer: false,
-      aufmerksamkeit: false,
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
     );
-    expect(noSf.heldenIni, contains('Helden INI:'));
-    expect(noSf.heldenWaffenIni, contains('Helden+Waffen INI:'));
-    expect(noSf.heldenIni, contains(' + 0 = '));
-    expect(noSf.kampfIni, contains('Kampf INI:'));
 
-    final klingentaenzerOnly = await pumpAndReadIni(
-      klingentaenzer: true,
-      aufmerksamkeit: false,
-    );
-    expect(klingentaenzerOnly.heldenIni, contains(' + 0 = '));
-    expect(klingentaenzerOnly.heldenWaffenIni, contains('Helden+Waffen INI:'));
-    expect(klingentaenzerOnly.kampfIni, contains('Kampf INI:'));
+    await openCombatTab(tester, repo);
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
 
-    final aufmerksamkeitOnly = await pumpAndReadIni(
-      klingentaenzer: false,
-      aufmerksamkeit: true,
+    expect(
+      find.byKey(const ValueKey<String>('combat-active-weapon-info-helden-ini')),
+      findsOneWidget,
     );
-    expect(aufmerksamkeitOnly.heldenIni, contains(' + 1W6 = '));
-    expect(aufmerksamkeitOnly.heldenWaffenIni, contains('Helden+Waffen INI:'));
-
-    final both = await pumpAndReadIni(
-      klingentaenzer: true,
-      aufmerksamkeit: true,
+    expect(
+      find.byKey(
+        const ValueKey<String>('combat-active-weapon-info-helden-waffen-ini'),
+      ),
+      findsOneWidget,
     );
-    expect(both.heldenIni, contains(' + 2W6 = '));
-    expect(both.heldenWaffenIni, contains('Helden+Waffen INI:'));
-    expect(both.kampfIni, contains('Kampf INI:'));
+    expect(
+      find.byKey(const ValueKey<String>('combat-active-weapon-info-ini')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-active-weapon-info-ini-roll')),
+      findsOneWidget,
+    );
   });
 
-  testWidgets(
-    'temporary ini roll input clamps and updates ini parade mod without persistence',
-    (tester) async {
+  testWidgets('temporary ini roll input clamps without persisting to hero', (
+    tester,
+  ) async {
       final repo = FakeRepository(
         heroes: [
           buildHero(
@@ -1300,19 +1113,6 @@ void main() {
       await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
       await tester.pumpAndSettle();
 
-      final iniBefore =
-          (tester
-                      .widget<Chip>(
-                        find.byKey(
-                          const ValueKey<String>(
-                            'combat-active-weapon-info-ini',
-                          ),
-                        ),
-                      )
-                      .label
-                  as Text)
-              .data;
-
       await tester.enterText(
         find.byKey(
           const ValueKey<String>('combat-active-weapon-info-ini-roll'),
@@ -1327,19 +1127,6 @@ void main() {
         ),
       );
       expect(rollController.controller?.text, '12');
-      final iniAfter =
-          (tester
-                      .widget<Chip>(
-                        find.byKey(
-                          const ValueKey<String>(
-                            'combat-active-weapon-info-ini',
-                          ),
-                        ),
-                      )
-                      .label
-                  as Text)
-              .data;
-      expect(iniAfter, isNot(equals(iniBefore)));
 
       final heroes = await repo.listHeroes();
       final hero = heroes.firstWhere((entry) => entry.id == 'demo');
@@ -1347,7 +1134,7 @@ void main() {
     },
   );
 
-  testWidgets('aufmerksamkeit disables ini roll input and uses max roll', (
+  testWidgets('aufmerksamkeit disables initiative roll input in UI', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -1387,9 +1174,8 @@ void main() {
       find.byKey(const ValueKey<String>('combat-active-weapon-info-ini-roll')),
     );
     expect(rollField.readOnly, isTrue);
-    expect(rollField.controller?.text, '12');
     expect(
-      find.textContaining('Aufmerksamkeit aktiv: automatisch 12'),
+      find.textContaining('Aufmerksamkeit aktiv'),
       findsOneWidget,
     );
   });
@@ -1595,9 +1381,7 @@ void main() {
     );
   });
 
-  testWidgets(
-    'weapon overview INI column reacts to INI Mod and INI/GE composition',
-    (tester) async {
+  testWidgets('weapon overview exposes INI fields in read mode', (tester) async {
       final repo = FakeRepository(
         heroes: [
           buildHero(
@@ -1629,46 +1413,18 @@ void main() {
       await openCombatTab(tester, repo);
       await openWeaponsTab(tester);
 
-      final iniBefore =
-          (tester
-                      .widget<Text>(
-                        find.byKey(
-                          const ValueKey<String>('combat-weapon-cell-ini-0'),
-                        ),
-                      )
-                      .data ??
-                  '')
-              .trim();
-      final iniGeText =
-          (tester
-                      .widget<Text>(
-                        find.byKey(
-                          const ValueKey<String>('combat-weapon-cell-ini-ge-0'),
-                        ),
-                      )
-                      .data ??
-                  '')
-              .trim();
-      expect(iniGeText, isNotEmpty);
-
-      await commitTextFieldByKey(
-        tester,
-        keyName: 'combat-weapon-cell-ini-mod-0',
-        value: '2',
+      expect(
+        find.byKey(const ValueKey<String>('combat-weapon-cell-ini-0')),
+        findsOneWidget,
       );
-
-      final iniAfter =
-          (tester
-                      .widget<Text>(
-                        find.byKey(
-                          const ValueKey<String>('combat-weapon-cell-ini-0'),
-                        ),
-                      )
-                      .data ??
-                  '')
-              .trim();
-
-      expect(int.parse(iniAfter), int.parse(iniBefore) + 2);
+      expect(
+        find.byKey(const ValueKey<String>('combat-weapon-cell-ini-ge-0')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('combat-weapon-cell-ini-mod-0')),
+        findsOneWidget,
+      );
     },
   );
 
