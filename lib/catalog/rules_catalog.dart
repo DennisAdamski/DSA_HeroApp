@@ -207,6 +207,7 @@ class SpellDef {
     this.range = '',
     this.duration = '',
     this.modifications = '',
+    this.wirkung = '',
     this.category = '',
     this.source = '',
     this.active = true,
@@ -225,6 +226,7 @@ class SpellDef {
   final String range;            // Reichweite
   final String duration;         // Wirkungsdauer
   final String modifications;    // Modifikationsoptionen fuer den Zauber
+  final String wirkung;          // Wirkungsbeschreibung (Langtext aus dem Regelwerk)
   final String category;         // Zauberkategorie
   final String source;           // Quellreferenz
   final bool active;             // Im App verfuegbar und anzeigbar?
@@ -244,6 +246,7 @@ class SpellDef {
       range: _readString(json, 'range', fallback: ''),
       duration: _readString(json, 'duration', fallback: ''),
       modifications: _readString(json, 'modifications', fallback: ''),
+      wirkung: _readString(json, 'wirkung', fallback: ''),
       category: _readString(json, 'category', fallback: ''),
       source: _readString(json, 'source', fallback: ''),
       active: _readBool(json, 'active', fallback: true),
@@ -265,6 +268,7 @@ class SpellDef {
       'range': range,
       'duration': duration,
       'modifications': modifications,
+      'wirkung': wirkung,
       'category': category,
       'source': source,
       'active': active,
