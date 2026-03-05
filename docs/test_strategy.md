@@ -26,7 +26,7 @@ technische UI-Aspekte getrennt getestet werden.
 | Testdatei | Gruppe | Zweck |
 |---|---|---|
 | `test/rules/ap_level_rules_test.dart` | rules | AP-Level-Formeln |
-| `test/rules/attribute_codes_test.dart` | rules | Attributcode-Parsing/Mapping |
+| `test/domain/attribute_codes_test.dart` | domain | Attributcode-Parsing/Mapping |
 | `test/rules/combat_rules_test.dart` | rules | Kampfberechnungen |
 | `test/rules/combat_talent_validation_test.dart` | rules | Verteilungsregeln fuer Kampftalente |
 | `test/rules/derived_stats_test.dart` | rules | Abgeleitete Basiswerte |
