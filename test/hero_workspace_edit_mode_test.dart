@@ -487,7 +487,9 @@ void main() {
     expect(nameField.controller?.text, 'Rondra');
   });
 
-  testWidgets('global action is disabled on non-edit tabs', (tester) async {
+  testWidgets(
+    'global action is disabled on non-edit tabs (Notizen)',
+    (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -501,14 +503,15 @@ void main() {
     );
 
     await openWorkspace(tester, repo);
-    await tester.tap(tabText('Magie'));
+    await tester.tap(tabText('Notizen'));
     await tester.pump(const Duration(milliseconds: 1200));
 
     final disabledButton = tester.widget<OutlinedButton>(
       find.widgetWithText(OutlinedButton, 'Bearbeiten'),
     );
     expect(disabledButton.onPressed, isNull);
-  });
+    },
+  );
 
   testWidgets(
     'workspace appbar actions keep right spacing and edit action on the right',
