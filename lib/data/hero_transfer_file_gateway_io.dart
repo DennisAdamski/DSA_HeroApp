@@ -65,10 +65,12 @@ class IoHeroTransferFileGateway implements HeroTransferFileGateway {
     final tempDir = await getTemporaryDirectory();
     final target = File('${tempDir.path}${Platform.pathSeparator}$fileName');
     await target.writeAsString(jsonPayload);
-    await Share.shareXFiles(
-      <XFile>[XFile(target.path)],
-      subject: 'Held exportieren',
-      text: 'Exportdatei fuer Heldendaten',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: <XFile>[XFile(target.path)],
+        subject: 'Held exportieren',
+        text: 'Exportdatei fuer Heldendaten',
+      ),
     );
     return HeroTransferExportOutcome(
       result: HeroTransferExportResult.shared,

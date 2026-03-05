@@ -52,7 +52,19 @@ void main() {
     );
     final container = buildContainer(repo);
 
-    await container.read(heroListProvider.future);
+    final heroListSub = container.listen<AsyncValue<List<HeroSheet>>>(
+      heroListProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(heroListSub.close);
+    for (var attempt = 0; attempt < 20; attempt++) {
+      if (heroListSub.read().hasValue) {
+        break;
+      }
+      await container.pump();
+    }
+    expect(heroListSub.read().hasValue, isTrue);
     final hero = container.read(heroByIdProvider('h-2'));
 
     expect(hero, isNotNull);
@@ -63,7 +75,19 @@ void main() {
     final repo = FakeRepository(heroes: <HeroSheet>[buildHero('h-1', 'A')]);
     final container = buildContainer(repo);
 
-    await container.read(heroListProvider.future);
+    final heroListSub = container.listen<AsyncValue<List<HeroSheet>>>(
+      heroListProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(heroListSub.close);
+    for (var attempt = 0; attempt < 20; attempt++) {
+      if (heroListSub.read().hasValue) {
+        break;
+      }
+      await container.pump();
+    }
+    expect(heroListSub.read().hasValue, isTrue);
     expect(container.read(heroByIdProvider('missing')), isNull);
     expect(await container.read(heroByIdFutureProvider('missing').future), isNull);
   });
