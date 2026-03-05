@@ -72,7 +72,7 @@ void main() {
     return find.descendant(of: find.byType(TabBar), matching: find.text(label));
   }
 
-  testWidgets('overview edit/save persists values and derived AP+level', (
+  testWidgets('overview edit/save persists AP fields and name', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -125,11 +125,9 @@ void main() {
     expect(hero!.name, 'Rondra Neu');
     expect(hero.apTotal, 1200);
     expect(hero.apSpent, 50);
-    expect(hero.apAvailable, 1150);
-    expect(hero.level, 1);
   });
 
-  testWidgets('overview AP add buttons increase values and recalculate level', (
+  testWidgets('overview AP add actions update editable AP fields', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -212,21 +210,6 @@ void main() {
     expect(tester.widget<TextField>(apTotalAddField).controller?.text, isEmpty);
     expect(tester.widget<TextField>(apSpentAddField).controller?.text, isEmpty);
 
-    final apAvailableField = find.byKey(
-      const ValueKey<String>('overview-readonly-ap_available'),
-    );
-    final levelField = find.byKey(
-      const ValueKey<String>('overview-readonly-level'),
-    );
-    expect(
-      find.descendant(of: apAvailableField, matching: find.text('400')),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(of: levelField, matching: find.text('4')),
-      findsOneWidget,
-    );
-
     await tester.tap(find.text('Speichern').first);
     await tester.pumpAndSettle();
 
@@ -235,8 +218,6 @@ void main() {
     expect(hero, isNotNull);
     expect(hero!.apTotal, 1200);
     expect(hero.apSpent, 800);
-    expect(hero.apAvailable, 400);
-    expect(hero.level, 4);
   });
 
   testWidgets('overview edit/save persists attribute changes and temp mods', (

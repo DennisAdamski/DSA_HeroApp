@@ -42,7 +42,7 @@ void main() {
       states: <String, HeroState>{'h-1': state},
     );
     final container = ProviderContainer(
-      overrides: <Override>[
+      overrides: [
         heroRepositoryProvider.overrideWithValue(repo),
         rulesCatalogProvider.overrideWith((ref) async {
           return const RulesCatalog(
@@ -57,13 +57,48 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    await container.read(heroListProvider.future);
-    await container.read(heroStateProvider('h-1').future);
-    await container.read(rulesCatalogProvider.future);
+    final heroListSub = container.listen<AsyncValue<List<HeroSheet>>>(
+      heroListProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    final heroStateSub = container.listen<AsyncValue<HeroState>>(
+      heroStateProvider('h-1'),
+      (_, _) {},
+      fireImmediately: true,
+    );
+    final rulesCatalogSub = container.listen<AsyncValue<RulesCatalog>>(
+      rulesCatalogProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    final computedSub = container.listen(
+      heroComputedProvider('h-1'),
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(heroListSub.close);
+    addTearDown(heroStateSub.close);
+    addTearDown(rulesCatalogSub.close);
+    addTearDown(computedSub.close);
 
-    final computedAsync = container.read(heroComputedProvider('h-1'));
-    expect(computedAsync.hasValue, isTrue);
-    final computed = computedAsync.requireValue;
+    for (var attempt = 0; attempt < 20; attempt++) {
+      final allReady =
+          heroListSub.read().hasValue &&
+          heroStateSub.read().hasValue &&
+          rulesCatalogSub.read().hasValue &&
+          computedSub.read().hasValue;
+      if (allReady) {
+        break;
+      }
+      await container.pump();
+    }
+    expect(heroListSub.read().hasValue, isTrue);
+    expect(heroStateSub.read().hasValue, isTrue);
+    expect(rulesCatalogSub.read().hasValue, isTrue);
+    expect(computedSub.read().hasValue, isTrue);
+
+    final computed = computedSub.read().requireValue;
 
     final parsed = parseModifierTextsForHero(hero);
     final effective = applyAttributeModifiers(

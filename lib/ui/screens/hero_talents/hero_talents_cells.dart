@@ -261,10 +261,6 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     }
   }
 
-  int _calculateComputedTaw(HeroTalentEntry entry, int ebe) {
-    return entry.talentValue + entry.modifier + ebe;
-  }
-
   String _formatWholeNumber(num value) {
     if (value == 0 || value == -0.0) {
       return '0';

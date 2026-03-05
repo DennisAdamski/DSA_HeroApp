@@ -41,7 +41,7 @@ Vollstaendige Anleitung:
 - UI-Tabs (`Combat`, `Talents`, `Overview`) sind in kleinere Part-Dateien zerlegt; Root-Dateien bleiben unter 700 LOC.
 
 ### UI-Performance Guardrails (Stand: 2026-03-01)
-- Rebuild-Guardrail (Widget-Test): `flutter test test/ui_rebuild_guardrails_test.dart`
+- Rebuild-Guardrail (Widget-Test): `flutter test test/ui/performance/ui_rebuild_guardrails_test.dart`
 - FrameTiming-Messung (Profile, Integration): `flutter drive --profile --driver=test_driver/integration_test.dart --target=integration_test/ui_edit_frame_timing_test.dart -d <deviceId>`
 - LOC-Budget-Check fuer `lib/ui/screens`: `python tool/check_screen_loc_budget.py --max-lines 700`
 
@@ -73,4 +73,5 @@ Sie sind **nicht runtime-relevant**. Aktueller Status: nur dokumentiert, kein Cl
 
 - `docs/catalog_import_workflow.md`
 - `docs/rules_mapping_house_rules_v1.md`
+- `docs/test_strategy.md`
 - `docs/ui_performance_measurements.md`
