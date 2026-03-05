@@ -86,6 +86,54 @@ Hinweis zu `flutter clean`:
 7. Bei erfolgreichem Testlauf einen passenden Commit mit praeziser Nachricht erstellen.
 8. Ergebnis und verbleibende Risiken transparent dokumentieren.
 
+## Dokumentationspflicht nach Aenderungen
+- Nach jeder inhaltlichen Aenderung sind betroffene Anleitungen zu pruefen:
+  CLAUDE.md, AGENTS.md, README.md und alle Dateien unter docs/.
+- Wenn eine Aenderung ein dokumentiertes Verhalten, eine Schnittstelle oder
+  einen Workflow betrifft, muss die Dokumentation im selben Commit aktualisiert
+  oder ergaenzt werden.
+- Neue, noch nicht beschriebene Konzepte oder Dateien sind in CLAUDE.md
+  (Verzeichnisstruktur / Architektur) nachzufuehren.
+
+## Kommentarpflicht fuer Funktionen und Methoden
+- Jede oeffentliche Funktion, Methode oder Klasse muss einen erklaerenden
+  Dart-Doc-Kommentar (///) tragen, der Zweck und Verhalten beschreibt.
+- Private Hilfsfunktionen erhalten mindestens einen einzeiligen Kommentar,
+  wenn ihr Zweck nicht trivial ist.
+- Kommentare beschreiben das *Warum* und den *Zweck*, nicht das syntaktische
+  *Was* (kein Rephrasen des Codes).
+
+## Lesbarkeit: keine komplexen oder stark verschachtelten Zeilen
+- Stark verschachtelte Ausdruecke (mehr als zwei Ebenen tief, oder Zeilen
+  ueber ~100 Zeichen) sind in benannte Zwischenvariablen aufzuloesen.
+- Mehrfach verkettete Methodenaufrufe (.foo().bar().baz()) sind in
+  lesbare Schritte zu splitten, wenn sie nicht trivial sind.
+- Unleserlichen Code nicht weiter verschachteln; stattdessen in klar
+  benannte Schritte aufloesen.
+
+## Regellogik in dedizierte Regeldateien
+- Berechnungen und Regellogik gehoeren ausschliesslich in die zustaendigen
+  Dateien unter lib/rules/derived/.
+- Jede thematische Gruppe von Regeln erhaelt eine eigene Datei, z. B.:
+    - Behinderungsberechnungen → lib/rules/derived/behinderung_rules.dart
+    - Initiativeberechnungen  → lib/rules/derived/initiative_rules.dart
+- Keine Regelberechnungen in UI-Widgets, Providern oder Domain-Modellen —
+  diese Schichten duerfen Regelmodule nur aufrufen, nicht selbst rechnen.
+- Neue Regelthemen stets als eigene, klar benannte Datei anlegen, nicht
+  in bestehende Regeldateien einbauen, wenn das Thema abgrenzbar ist.
+
+## Dateigroesse und Lesbarkeit
+- Dateien sollen klein und uebersichtlich bleiben.
+- Wenn eine Datei schwer zu ueberblicken ist oder Verantwortlichkeiten
+  vermischt, ist sie sinnvoll aufzuteilen (z. B. in ein Unterverzeichnis
+  mit Teildateien).
+- Das bestehende LOC-Limit von 700 Zeilen fuer Screen-Dateien
+  (tool/check_screen_loc_budget.py) gilt als konkreter Richtwert;
+  dasselbe Prinzip gilt analog fuer alle anderen Dateien.
+- Neue Hilfsfunktionen oder -klassen, die nur zur Entflechtung einer zu
+  grossen Datei entstehen, koennen in eigenstaendige Dateien ausgelagert
+  werden.
+
 ## Oeffentliche APIs / Interfaces / Types
 - Diese Richtlinie aendert keine Runtime-APIs, Dart-Interfaces oder Datenmodelle.
 - Prozessuale Schnittstelle: verbindliche Agenten-Policy in dieser `AGENTS.md`.
