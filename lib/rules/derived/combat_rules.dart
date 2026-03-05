@@ -43,6 +43,9 @@ class CombatPreviewStats {
     required this.akrobatikBonus,
     required this.sfIniBonus,
     required this.sfAusweichenBonus,
+    required this.axxAusweichenBonus,
+    required this.iniAusweichenBonus,
+    required this.paBase,
     required this.offhandPaBonus,
     required this.iniDiceCount,
     required this.fkBase,
@@ -77,6 +80,9 @@ class CombatPreviewStats {
   final int akrobatikBonus;
   final int sfIniBonus;
   final int sfAusweichenBonus;
+  final int axxAusweichenBonus;
+  final int iniAusweichenBonus;
+  final int paBase;
   final int offhandPaBonus;
   // Anzahl Ini-Wuerfel: 1 (normal) oder 2 (Klingentaenzer)
   final int iniDiceCount;
@@ -233,10 +239,18 @@ CombatPreviewStats computeCombatPreviewStats(
 
   // --- Ausweichen (ausweichen_rules) ---
   final akrobatikBonusValue = computeAkrobatikBonus(talents);
+  final axxAusweichenBonus = computeAxxAusweichenBonus(
+    axxeleratusActive: special.axxeleratusActive,
+  );
+  final iniAusweichenBonus = computeIniAusweichenBonus(
+    kampfInitiative: kampfInitiative,
+  );
   final ausweichen = computeAusweichen(
     paBase: paBase,
     sfAusweichenBonus: sfAusweichenBonus,
     akrobatikBonus: akrobatikBonusValue,
+    axxAusweichenBonus: axxAusweichenBonus,
+    iniAusweichenBonus: iniAusweichenBonus,
     manualAusweichenMod: manualMods.ausweichenMod,
     beKampf: beKampf,
   );
@@ -270,6 +284,9 @@ CombatPreviewStats computeCombatPreviewStats(
     akrobatikBonus: akrobatikBonusValue,
     sfIniBonus: sfIniBonus,
     sfAusweichenBonus: sfAusweichenBonus,
+    axxAusweichenBonus: axxAusweichenBonus,
+    iniAusweichenBonus: iniAusweichenBonus,
+    paBase: paBase,
     offhandPaBonus: offhandPaBonus,
     iniDiceCount: iniDiceCount,
     fkBase: derived.fkBase,

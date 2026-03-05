@@ -77,11 +77,23 @@ void main() {
   test('heroById providers avoid list scan and use index/loadById', () async {
     final repo = _SpyRepository(<String, HeroSheet>{'h-1': buildHero('h-1')});
     final container = ProviderContainer(
-      overrides: <Override>[heroRepositoryProvider.overrideWithValue(repo)],
+      overrides: [heroRepositoryProvider.overrideWithValue(repo)],
     );
     addTearDown(container.dispose);
 
-    await container.read(heroListProvider.future);
+    final heroIndexSub = container.listen(
+      heroIndexProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(heroIndexSub.close);
+    for (var attempt = 0; attempt < 20; attempt++) {
+      if (heroIndexSub.read().hasValue) {
+        break;
+      }
+      await container.pump();
+    }
+    expect(heroIndexSub.read().hasValue, isTrue);
     expect(repo.listHeroesCalls, 0);
 
     final byId = container.read(heroByIdProvider('h-1'));

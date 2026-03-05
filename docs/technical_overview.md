@@ -847,7 +847,7 @@ Jeder Tab verwaltet seinen Draft-State lokal (z. B. `_draftTalents`,
 
 | Art | Datei | Zweck |
 |---|---|---|
-| Widget-Test | `test/ui_rebuild_guardrails_test.dart` | Prüft: kein exzessiver Rebuild bei Einzelfeld-Edits |
+| Widget-Test | `test/ui/performance/ui_rebuild_guardrails_test.dart` | Prüft: kein exzessiver Rebuild bei Einzelfeld-Edits |
 | Integration-Test | `integration_test/ui_edit_frame_timing_test.dart` | Frame-Timing im Profile-Modus (Ziel: ≤ 16 ms p95) |
 | LOC-Budget | `tool/check_screen_loc_budget.py --max-lines 700` | Screen-Dateien max. 700 Zeilen |
 
@@ -856,7 +856,7 @@ Jeder Tab verwaltet seinen Draft-State lokal (z. B. `_draftTalents`,
 flutter test
 
 # Einzelner Guardrail-Test
-flutter test test/ui_rebuild_guardrails_test.dart
+flutter test test/ui/performance/ui_rebuild_guardrails_test.dart
 
 # Integration-Test (benötigt verbundenes Gerät)
 flutter drive --profile \
@@ -911,3 +911,4 @@ Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Da
 ---
 
 *Erzeugt am 2026-03-04 — Bezieht sich auf Codestand `claude/create-technical-documentation-Eawbf`*
+
