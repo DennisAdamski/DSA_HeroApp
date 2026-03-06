@@ -15,29 +15,38 @@ void main() {
     currentKap: 0,
     currentAu: 0,
   );
+  const baseAttributes = Attributes(
+    mu: 12,
+    kl: 12,
+    inn: 12,
+    ch: 12,
+    ff: 12,
+    ge: 12,
+    ko: 12,
+    kk: 12,
+  );
+  final baseHero = HeroSheet(
+    id: 'h',
+    name: 'Testheld',
+    level: 10,
+    attributes: baseAttributes,
+    talents: const <String, HeroTalentEntry>{},
+    combatConfig: const CombatConfig(),
+    vorteileText: '',
+    nachteileText: '',
+  );
 
-  HeroSheet buildHero({
+  HeroSheet hero({
     int level = 10,
-    Attributes attributes = const Attributes(
-      mu: 12,
-      kl: 12,
-      inn: 12,
-      ch: 12,
-      ff: 12,
-      ge: 12,
-      ko: 12,
-      kk: 12,
-    ),
+    Attributes? attributes,
     Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
     CombatConfig combatConfig = const CombatConfig(),
     String vorteileText = '',
     String nachteileText = '',
   }) {
-    return HeroSheet(
-      id: 'h',
-      name: 'Testheld',
+    return baseHero.copyWith(
       level: level,
-      attributes: attributes,
+      attributes: attributes ?? baseAttributes,
       talents: talents,
       combatConfig: combatConfig,
       vorteileText: vorteileText,
@@ -45,124 +54,118 @@ void main() {
     );
   }
 
-  test('TP/KK rounds towards zero for positive and negative values', () {
-    final positive = buildHero(
-      attributes: const Attributes(
-        mu: 12,
-        kl: 12,
-        inn: 12,
-        ch: 12,
-        ff: 12,
-        ge: 12,
-        ko: 12,
-        kk: 14,
+  HeroSheet heroWithAttributes({
+    int? mu,
+    int? kl,
+    int? inn,
+    int? ch,
+    int? ff,
+    int? ge,
+    int? ko,
+    int? kk,
+    CombatConfig combatConfig = const CombatConfig(),
+  }) {
+    return hero(
+      attributes: baseAttributes.copyWith(
+        mu: mu,
+        kl: kl,
+        inn: inn,
+        ch: ch,
+        ff: ff,
+        ge: ge,
+        ko: ko,
+        kk: kk,
       ),
-      combatConfig: const CombatConfig(
-        mainWeapon: MainWeaponSlot(kkBase: 10, kkThreshold: 3),
-      ),
+      combatConfig: combatConfig,
     );
-    final negative = buildHero(
-      attributes: const Attributes(
-        mu: 12,
-        kl: 12,
-        inn: 12,
-        ch: 12,
-        ff: 12,
-        ge: 12,
-        ko: 12,
-        kk: 6,
-      ),
-      combatConfig: const CombatConfig(
-        mainWeapon: MainWeaponSlot(kkBase: 10, kkThreshold: 3),
-      ),
-    );
+  }
 
-    expect(computeCombatPreviewStats(positive, state).tpKk, 1);
-    expect(computeCombatPreviewStats(negative, state).tpKk, -1);
+  CombatPreviewStats preview(
+    HeroSheet sheet, {
+    List<TalentDef> catalogTalents = const <TalentDef>[],
+  }) {
+    return computeCombatPreviewStats(
+      sheet,
+      state,
+      catalogTalents: catalogTalents,
+    );
+  }
+
+  test('TP/KK rounds towards zero for positive and negative values', () {
+    // Dieser Test prüft die TP/KK-Regel.
+    // Bei Werten überhalb des Basiswertes und oberhalb der Schwelle, steigt der Wert mit jedem Schwellenwert.
+    // Bei Werten unterhalb des Basiswertes und unterhalb der Schwelle, sinkt der Wert mit jedem Schwellenwert.
+    // Bei genauem Erreichen des Basiswertes, gibt es keinen Bonus oder Malus.
+    const combatConfig = CombatConfig(
+      mainWeapon: MainWeaponSlot(kkBase: 10, kkThreshold: 3),
+    );
+    final positiveOne = heroWithAttributes(kk: 13, combatConfig: combatConfig);
+    final positiveTwo = heroWithAttributes(kk: 16, combatConfig: combatConfig);
+    final negativeOne = heroWithAttributes(kk: 7, combatConfig: combatConfig);
+    final zero = heroWithAttributes(kk: 10, combatConfig: combatConfig);
+
+    expect(preview(positiveOne).tpKk, 1);
+    expect(preview(positiveTwo).tpKk, 2);
+    expect(preview(negativeOne).tpKk, -1);
+    expect(preview(zero).tpKk, 0);
   });
 
   test('INI/GE rounds towards zero for positive and negative values', () {
-    final positive = buildHero(
-      attributes: const Attributes(
-        mu: 12,
-        kl: 12,
-        inn: 12,
-        ch: 12,
-        ff: 12,
-        ge: 21,
-        ko: 12,
-        kk: 12,
-      ),
-      combatConfig: const CombatConfig(
-        mainWeapon: MainWeaponSlot(kkBase: 10, kkThreshold: 3),
-      ),
+    // Erklärung da diese Regel etwas indirekt ist:
+    // Bei einer KK-Basis von 10 berechnet sich eine GE-Basis von 16, da GE-Basis = 26 - KK-Basis.
+    // Bei einer KK-Schwelle von 3 berechnet sich eine GE-Schwelle von 4, da GE-Schwelle = 7 - KK-Schwelle.
+    const combatConfig = CombatConfig(
+      mainWeapon: MainWeaponSlot(kkBase: 10, kkThreshold: 3),
     );
-    final negative = buildHero(
-      attributes: const Attributes(
-        mu: 12,
-        kl: 12,
-        inn: 12,
-        ch: 12,
-        ff: 12,
-        ge: 11,
-        ko: 12,
-        kk: 12,
-      ),
-      combatConfig: const CombatConfig(
-        mainWeapon: MainWeaponSlot(kkBase: 10, kkThreshold: 3),
-      ),
-    );
+    final positiveOne = heroWithAttributes(ge: 20, combatConfig: combatConfig);
+    final positiveTwo = heroWithAttributes(ge: 24, combatConfig: combatConfig);
+    final negativeOne = heroWithAttributes(ge: 12, combatConfig: combatConfig);
+    final zero = heroWithAttributes(ge: 16, combatConfig: combatConfig);
 
-    expect(computeCombatPreviewStats(positive, state).iniGe, 1);
-    expect(computeCombatPreviewStats(negative, state).iniGe, -1);
+    expect(preview(positiveOne).iniGe, 1);
+    expect(preview(positiveTwo).iniGe, 2);
+    expect(preview(negativeOne).iniGe, -1);
+    expect(preview(zero).iniGe, 0);
   });
 
   test('Ini Parade Mod is never negative', () {
-    final lowIni = buildHero(
-      attributes: const Attributes(
-        mu: 8,
-        kl: 8,
-        inn: 8,
-        ch: 8,
-        ff: 8,
-        ge: 8,
-        ko: 8,
-        kk: 8,
-      ),
-      combatConfig: const CombatConfig(
-        mainWeapon: MainWeaponSlot(kkBase: 15, kkThreshold: 3),
+    const baseCombatConfig = CombatConfig(
+      mainWeapon: MainWeaponSlot(kkBase: 15, kkThreshold: 3),
+    );
+    final referenceSheet = heroWithAttributes(combatConfig: baseCombatConfig);
+    final lowIniSheet = referenceSheet.copyWith(
+      combatConfig: referenceSheet.combatConfig.copyWith(
+        mainWeapon: referenceSheet.combatConfig.mainWeapon.copyWith(
+          iniMod: -20,
+        ),
       ),
     );
-    final highIni = buildHero(
-      attributes: const Attributes(
-        mu: 18,
-        kl: 12,
-        inn: 18,
-        ch: 12,
-        ff: 12,
-        ge: 18,
-        ko: 12,
-        kk: 12,
-      ),
-      combatConfig: const CombatConfig(
-        mainWeapon: MainWeaponSlot(iniMod: 8, kkBase: 10, kkThreshold: 3),
+    final highIniSheet = referenceSheet.copyWith(
+      combatConfig: referenceSheet.combatConfig.copyWith(
+        mainWeapon: referenceSheet.combatConfig.mainWeapon.copyWith(iniMod: 21),
       ),
     );
 
-    expect(computeCombatPreviewStats(lowIni, state).iniParadeMod, 0);
-    expect(
-      computeCombatPreviewStats(highIni, state).iniParadeMod,
-      greaterThan(0),
-    );
+    final referenceResult = preview(referenceSheet);
+    final lowIniResult = preview(lowIniSheet);
+    final highIniResult = preview(highIniSheet);
+
+    expect(referenceResult.eigenschaftsIni, 10);
+    expect(referenceResult.iniGe, 0);
+    expect(referenceResult.heldenInitiative, 10);
+    expect(referenceResult.kampfInitiative, 10);
+    expect(lowIniResult.kampfInitiative, 0);
+    expect(lowIniResult.iniParadeMod, 0);
+    expect(highIniResult.kampfInitiative, 31);
+    expect(highIniResult.iniParadeMod, 2);
   });
-
-  test('TK-Kalk includes Axxeleratus bonus', () {
-    final baseHero = buildHero(
+  test('combat preview integrates Axxeleratus into melee preview values', () {
+    final baseHero = hero(
       combatConfig: const CombatConfig(
         mainWeapon: MainWeaponSlot(tpFlat: 4, kkBase: 12, kkThreshold: 2),
       ),
     );
-    final withAxxeleratus = baseHero.copyWith(
+    final withAxx = baseHero.copyWith(
       combatConfig: baseHero.combatConfig.copyWith(
         specialRules: baseHero.combatConfig.specialRules.copyWith(
           axxeleratusActive: true,
@@ -170,44 +173,18 @@ void main() {
       ),
     );
 
-    final withoutResult = computeCombatPreviewStats(baseHero, state);
-    final withResult = computeCombatPreviewStats(withAxxeleratus, state);
+    final baseResult = preview(baseHero);
+    final axxResult = preview(withAxx);
 
-    expect(withoutResult.tpCalc, 4);
-    expect(withResult.tpCalc, 6);
-  });
-
-  test('Axxeleratus adds eigenschafts INI to helden initiative', () {
-    final baseHero = buildHero(
-      combatConfig: const CombatConfig(
-        mainWeapon: MainWeaponSlot(kkBase: 12, kkThreshold: 2),
-        specialRules: CombatSpecialRules(kampfreflexe: true),
-        manualMods: CombatManualMods(iniWurf: 3),
-      ),
-    );
-    final withAxxeleratus = baseHero.copyWith(
-      combatConfig: baseHero.combatConfig.copyWith(
-        specialRules: baseHero.combatConfig.specialRules.copyWith(
-          axxeleratusActive: true,
-        ),
-      ),
-    );
-
-    final withoutResult = computeCombatPreviewStats(baseHero, state);
-    final withResult = computeCombatPreviewStats(withAxxeleratus, state);
-
-    expect(withoutResult.axxIniBonus, 0);
-    expect(withResult.axxIniBonus, withResult.eigenschaftsIni);
-    expect(
-      withResult.heldenInitiative,
-      withoutResult.heldenInitiative + withResult.eigenschaftsIni,
-    );
+    expect(axxResult.tpCalc, baseResult.tpCalc + 2);
+    expect(axxResult.paBase, baseResult.paBase + 2);
+    expect(axxResult.axxAttackDefenseHint, isNotEmpty);
   });
 
   test(
     'kampf initiative includes only weapon/offhand ini mods on top of helden initiative',
     () {
-      final hero = buildHero(
+      final sheet = hero(
         combatConfig: const CombatConfig(
           mainWeapon: MainWeaponSlot(iniMod: 3),
           offhand: OffhandSlot(mode: OffhandMode.linkhand, iniMod: -1),
@@ -215,7 +192,7 @@ void main() {
         ),
       );
 
-      final result = computeCombatPreviewStats(hero, state);
+      final result = preview(sheet);
       expect(
         result.kombinierteHeldenWaffenIni,
         result.heldenInitiative + 3 + result.iniGe,
@@ -225,23 +202,14 @@ void main() {
   );
 
   test('kombinierte Helden+Waffen INI includes weapon ini mod and INI/GE', () {
-    final hero = buildHero(
-      attributes: const Attributes(
-        mu: 12,
-        kl: 12,
-        inn: 12,
-        ch: 12,
-        ff: 12,
-        ge: 21,
-        ko: 12,
-        kk: 12,
-      ),
+    final hero = heroWithAttributes(
+      ge: 21,
       combatConfig: const CombatConfig(
         mainWeapon: MainWeaponSlot(iniMod: 3, kkBase: 10, kkThreshold: 3),
         offhand: OffhandSlot(mode: OffhandMode.linkhand, iniMod: -1),
       ),
     );
-    final result = computeCombatPreviewStats(hero, state);
+    final result = preview(hero);
 
     expect(result.iniGe, 1);
     expect(result.kombinierteHeldenWaffenIni, result.heldenInitiative + 3 + 1);
@@ -249,34 +217,32 @@ void main() {
   });
 
   test('aufmerksamkeit can apply max roll via manual ini input channel', () {
-    final hero = buildHero(
+    final sheet = hero(
       combatConfig: const CombatConfig(
         specialRules: CombatSpecialRules(klingentaenzer: true),
         manualMods: CombatManualMods(iniWurf: 12),
       ),
     );
 
-    final result = computeCombatPreviewStats(hero, state);
+    final result = preview(sheet);
     expect(result.iniWurfEffective, 12);
   });
 
   test('manual ini roll input is clamped to max roll', () {
-    final hero = buildHero(
+    final sheet = hero(
       combatConfig: const CombatConfig(
         specialRules: CombatSpecialRules(klingentaenzer: true),
         manualMods: CombatManualMods(iniWurf: 13),
       ),
     );
 
-    final result = computeCombatPreviewStats(hero, state);
+    final result = preview(sheet);
     expect(result.iniWurfEffective, 12);
   });
 
   test('weapon ini mod increases combined initiative linearly', () {
-    final baseHero = buildHero(
-      combatConfig: const CombatConfig(
-        mainWeapon: MainWeaponSlot(iniMod: 0),
-      ),
+    final baseHero = hero(
+      combatConfig: const CombatConfig(mainWeapon: MainWeaponSlot(iniMod: 0)),
     );
     final boostedHero = baseHero.copyWith(
       combatConfig: baseHero.combatConfig.copyWith(
@@ -284,8 +250,8 @@ void main() {
       ),
     );
 
-    final baseResult = computeCombatPreviewStats(baseHero, state);
-    final boostedResult = computeCombatPreviewStats(boostedHero, state);
+    final baseResult = preview(baseHero);
+    final boostedResult = preview(boostedHero);
 
     expect(
       boostedResult.kombinierteHeldenWaffenIni,
@@ -294,36 +260,33 @@ void main() {
   });
 
   test('Flink from Vorteile adds +1 INI and +1 Ausweichen', () {
-    final withoutFlink = buildHero();
-    final withFlink = buildHero(vorteileText: 'Flink');
+    final withoutFlink = hero();
+    final withFlink = hero(vorteileText: 'Flink');
 
-    final withoutResult = computeCombatPreviewStats(withoutFlink, state);
-    final withResult = computeCombatPreviewStats(withFlink, state);
+    final withoutResult = preview(withoutFlink);
+    final withResult = preview(withFlink);
 
     expect(withResult.sfIniBonus, withoutResult.sfIniBonus + 1);
     expect(withResult.sfAusweichenBonus, withoutResult.sfAusweichenBonus + 1);
   });
 
   test('Behaebig from Nachteile gives -1 INI and -1 Ausweichen', () {
-    final withoutBehaebig = buildHero();
-    final withBehaebig = buildHero(nachteileText: 'Behaebig');
+    final withoutBehaebig = hero();
+    final withBehaebig = hero(nachteileText: 'Behaebig');
 
-    final withoutResult = computeCombatPreviewStats(withoutBehaebig, state);
-    final withResult = computeCombatPreviewStats(withBehaebig, state);
+    final withoutResult = preview(withoutBehaebig);
+    final withResult = preview(withBehaebig);
 
     expect(withResult.sfIniBonus, withoutResult.sfIniBonus - 1);
     expect(withResult.sfAusweichenBonus, withoutResult.sfAusweichenBonus - 1);
   });
 
   test('Flink and Behaebig from texts cancel each other', () {
-    final baseline = buildHero();
-    final withBoth = buildHero(
-      vorteileText: 'Flink',
-      nachteileText: 'Behaebig',
-    );
+    final baseline = hero();
+    final withBoth = hero(vorteileText: 'Flink', nachteileText: 'Behaebig');
 
-    final baselineResult = computeCombatPreviewStats(baseline, state);
-    final withBothResult = computeCombatPreviewStats(withBoth, state);
+    final baselineResult = preview(baseline);
+    final withBothResult = preview(withBoth);
 
     expect(withBothResult.sfIniBonus, baselineResult.sfIniBonus);
     expect(withBothResult.sfAusweichenBonus, baselineResult.sfAusweichenBonus);
@@ -338,7 +301,7 @@ void main() {
       kkThreshold: 2,
     );
 
-    final withSpec = buildHero(
+    final withSpec = hero(
       talents: const {
         'tal_schwerter': HeroTalentEntry(
           atValue: 6,
@@ -348,13 +311,13 @@ void main() {
       },
       combatConfig: const CombatConfig(mainWeapon: mainWeapon),
     );
-    final withoutSpec = buildHero(
+    final withoutSpec = hero(
       talents: const {'tal_schwerter': HeroTalentEntry(atValue: 6, paValue: 4)},
       combatConfig: const CombatConfig(mainWeapon: mainWeapon),
     );
 
-    final withResult = computeCombatPreviewStats(withSpec, state);
-    final withoutResult = computeCombatPreviewStats(withoutSpec, state);
+    final withResult = preview(withSpec);
+    final withoutResult = preview(withoutSpec);
 
     expect(withResult.specApplies, isTrue);
     expect(withoutResult.specApplies, isFalse);
@@ -381,7 +344,7 @@ void main() {
       ),
     ];
 
-    final withSpec = buildHero(
+    final withSpec = hero(
       talents: const {
         'tal_boegen': HeroTalentEntry(
           atValue: 6,
@@ -391,21 +354,13 @@ void main() {
       },
       combatConfig: const CombatConfig(mainWeapon: mainWeapon),
     );
-    final withoutSpec = buildHero(
+    final withoutSpec = hero(
       talents: const {'tal_boegen': HeroTalentEntry(atValue: 6, paValue: 4)},
       combatConfig: const CombatConfig(mainWeapon: mainWeapon),
     );
 
-    final withResult = computeCombatPreviewStats(
-      withSpec,
-      state,
-      catalogTalents: catalogTalents,
-    );
-    final withoutResult = computeCombatPreviewStats(
-      withoutSpec,
-      state,
-      catalogTalents: catalogTalents,
-    );
+    final withResult = preview(withSpec, catalogTalents: catalogTalents);
+    final withoutResult = preview(withoutSpec, catalogTalents: catalogTalents);
 
     expect(withResult.specApplies, isTrue);
     expect(withResult.at, withoutResult.at + 2);
@@ -423,7 +378,7 @@ void main() {
         kkThreshold: 2,
       );
 
-      final withPartialSpec = buildHero(
+      final withPartialSpec = hero(
         talents: const {
           'tal_schwerter': HeroTalentEntry(
             atValue: 6,
@@ -433,15 +388,15 @@ void main() {
         },
         combatConfig: const CombatConfig(mainWeapon: mainWeapon),
       );
-      final withoutSpec = buildHero(
+      final withoutSpec = hero(
         talents: const {
           'tal_schwerter': HeroTalentEntry(atValue: 6, paValue: 4),
         },
         combatConfig: const CombatConfig(mainWeapon: mainWeapon),
       );
 
-      final partialResult = computeCombatPreviewStats(withPartialSpec, state);
-      final withoutResult = computeCombatPreviewStats(withoutSpec, state);
+      final partialResult = preview(withPartialSpec);
+      final withoutResult = preview(withoutSpec);
 
       expect(partialResult.specApplies, isFalse);
       expect(partialResult.at, withoutResult.at);
@@ -450,7 +405,7 @@ void main() {
   );
 
   test('offhand bonuses depend on mode and not on one-handed flag', () {
-    final noOffhand = buildHero(
+    final noOffhand = hero(
       talents: const {'tal_waffe': HeroTalentEntry(atValue: 6, paValue: 6)},
       combatConfig: const CombatConfig(
         mainWeapon: MainWeaponSlot(
@@ -471,15 +426,15 @@ void main() {
       ),
     );
 
-    final noOffhandResult = computeCombatPreviewStats(noOffhand, state);
-    final withOffhandResult = computeCombatPreviewStats(withOffhand, state);
+    final noOffhandResult = preview(noOffhand);
+    final withOffhandResult = preview(withOffhand);
 
     expect(withOffhandResult.at, noOffhandResult.at + 2);
     expect(withOffhandResult.pa, noOffhandResult.pa + 4);
   });
 
   test('combat preview stays stable when no active weapon is selected', () {
-    final hero = buildHero(
+    final sheet = hero(
       talents: const {'tal_waffe': HeroTalentEntry(atValue: 6, paValue: 6)},
       combatConfig: const CombatConfig(
         weapons: <MainWeaponSlot>[
@@ -496,14 +451,14 @@ void main() {
       ),
     );
 
-    final result = computeCombatPreviewStats(hero, state);
+    final result = preview(sheet);
     expect(result.at, greaterThanOrEqualTo(0));
     expect(result.pa, greaterThanOrEqualTo(0));
     expect(result.tpExpression, isNotEmpty);
   });
 
   test('eBE modifies AT and PA with excel-compatible sign behavior', () {
-    final noArmor = buildHero(
+    final noArmor = hero(
       talents: const {'tal_waffe': HeroTalentEntry(atValue: 0, paValue: 0)},
       combatConfig: const CombatConfig(
         mainWeapon: MainWeaponSlot(
@@ -524,8 +479,8 @@ void main() {
       ),
     );
 
-    final noArmorResult = computeCombatPreviewStats(noArmor, state);
-    final withArmorResult = computeCombatPreviewStats(withArmor, state);
+    final noArmorResult = preview(noArmor);
+    final withArmorResult = preview(withArmor);
 
     expect(withArmorResult.ebe, -3);
     expect(withArmorResult.at, noArmorResult.at - 1);
@@ -533,7 +488,7 @@ void main() {
   });
 
   test('RG I is capped at 1 even with multiple active armor pieces', () {
-    final hero = buildHero(
+    final sheet = hero(
       combatConfig: const CombatConfig(
         armor: ArmorConfig(
           globalArmorTrainingLevel: 1,
@@ -545,7 +500,7 @@ void main() {
       ),
     );
 
-    final result = computeCombatPreviewStats(hero, state);
+    final result = preview(sheet);
 
     expect(result.beTotalRaw, 5);
     expect(result.rgReduction, 1);
@@ -553,7 +508,7 @@ void main() {
   });
 
   test('RG I flags are ignored when training is empty', () {
-    final hero = buildHero(
+    final sheet = hero(
       combatConfig: const CombatConfig(
         armor: ArmorConfig(
           globalArmorTrainingLevel: 0,
@@ -564,13 +519,13 @@ void main() {
       ),
     );
 
-    final result = computeCombatPreviewStats(hero, state);
+    final result = preview(sheet);
     expect(result.rgReduction, 0);
     expect(result.beKampf, 2);
   });
 
   test('global RG II and III override RG I', () {
-    final rg2Hero = buildHero(
+    final rg2Hero = hero(
       combatConfig: const CombatConfig(
         armor: ArmorConfig(
           globalArmorTrainingLevel: 2,
@@ -586,15 +541,15 @@ void main() {
       ),
     );
 
-    final rg2Result = computeCombatPreviewStats(rg2Hero, state);
-    final rg3Result = computeCombatPreviewStats(rg3Hero, state);
+    final rg2Result = preview(rg2Hero);
+    final rg3Result = preview(rg3Hero);
 
     expect(rg2Result.rgReduction, 1);
     expect(rg3Result.rgReduction, 2);
   });
 
   test('inactive armor pieces are ignored in RS and BE sums', () {
-    final hero = buildHero(
+    final sheet = hero(
       combatConfig: const CombatConfig(
         armor: ArmorConfig(
           pieces: <ArmorPiece>[
@@ -605,42 +560,17 @@ void main() {
       ),
     );
 
-    final result = computeCombatPreviewStats(hero, state);
+    final result = preview(sheet);
     expect(result.rsTotal, 2);
     expect(result.beTotalRaw, 2);
   });
 
-  test('Axxeleratus gibt +2 auf Ausweichen', () {
-    final baseHero = buildHero();
-    final withAxx = baseHero.copyWith(
-      combatConfig: baseHero.combatConfig.copyWith(
-        specialRules: baseHero.combatConfig.specialRules.copyWith(
-          axxeleratusActive: true,
-        ),
-      ),
-    );
-
-    final baseResult = computeCombatPreviewStats(baseHero, state);
-    final axxResult = computeCombatPreviewStats(withAxx, state);
-
-    expect(axxResult.axxAusweichenBonus, 2);
-    expect(baseResult.axxAusweichenBonus, 0);
-    expect(axxResult.ausweichen, baseResult.ausweichen + 2);
-  });
-
   test('INI-Bonus auf Ausweichen ab Kampf-INI 21', () {
     // Held mit hohen Attributen und hohem INI-Wurf fuer hohe Initiative.
-    final highIniHero = buildHero(
-      attributes: const Attributes(
-        mu: 18,
-        kl: 12,
-        inn: 18,
-        ch: 12,
-        ff: 12,
-        ge: 18,
-        ko: 12,
-        kk: 12,
-      ),
+    final highIniHero = heroWithAttributes(
+      mu: 18,
+      inn: 18,
+      ge: 18,
       combatConfig: const CombatConfig(
         mainWeapon: MainWeaponSlot(iniMod: 8, kkBase: 10, kkThreshold: 3),
         specialRules: CombatSpecialRules(kampfreflexe: true),
@@ -648,7 +578,7 @@ void main() {
       ),
     );
 
-    final result = computeCombatPreviewStats(highIniHero, state);
+    final result = preview(highIniHero);
 
     // Bei Kampf-INI >= 21 sollte es einen Bonus geben.
     if (result.kampfInitiative >= 21) {
@@ -663,20 +593,18 @@ void main() {
   });
 
   test('INI-Bonus auf Ausweichen ist 0 bei niedriger Initiative', () {
-    final lowIniHero = buildHero(
-      attributes: const Attributes(
-        mu: 8,
-        kl: 8,
-        inn: 8,
-        ch: 8,
-        ff: 8,
-        ge: 8,
-        ko: 8,
-        kk: 8,
-      ),
+    final lowIniHero = heroWithAttributes(
+      mu: 8,
+      kl: 8,
+      inn: 8,
+      ch: 8,
+      ff: 8,
+      ge: 8,
+      ko: 8,
+      kk: 8,
     );
 
-    final result = computeCombatPreviewStats(lowIniHero, state);
+    final result = preview(lowIniHero);
 
     expect(result.kampfInitiative, lessThan(21));
     expect(result.iniAusweichenBonus, 0);

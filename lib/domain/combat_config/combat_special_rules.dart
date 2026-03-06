@@ -60,7 +60,10 @@ class CombatSpecialRules {
   /// Nachteil Behäebig aktiv.
   final bool behaebig;
 
-  /// Axxeleratus-Zauber aktiv (verdoppelt Ini-Wurf-Beitrag).
+  /// Axxeleratus-Zauber aktiv.
+  ///
+  /// Verdoppelt den Ini-Basisanteil und den finalen GS-Wert
+  /// und gewaehrt weitere kampfbezogene Boni.
   final bool axxeleratusActive;
 
   /// Klingentaenzer: wirft 2W6 statt 1W6 auf Initiative.

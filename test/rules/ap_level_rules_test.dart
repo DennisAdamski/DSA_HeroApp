@@ -13,7 +13,9 @@ void main() {
     expect(computeLevelFromSpentAp(2571), 7);
     expect(computeLevelFromSpentAp(2799), 7);
     expect(computeLevelFromSpentAp(2800), 8);
-    expect(computeLevelFromSpentAp(5000), greaterThan(1));
+    expect(computeLevelFromSpentAp(21000), 21);
+    expect(computeLevelFromSpentAp(35100), 27);
+    expect(computeLevelFromSpentAp(56100), greaterThan(33));
   });
 
   test('computeAvailableAp handles normal and overspent values', () {
