@@ -40,6 +40,7 @@ flutter test
 
 Use the importer to enrich `magie.json` with:
 
+- `source` (first Liber Cantiones spell page)
 - `aspCost`
 - `targetObject`
 - `range`
@@ -61,6 +62,8 @@ python tool/import_liber_cantiones.py \
 Notes:
 
 - The importer keeps all existing spell identities and base catalog fields.
+- For multi-page spells, `source` stores the first printed spell page from
+  `Liber Cantiones` (for example `Liber Cantiones S. 153`).
 - Imported long-text fields are whitespace-normalized; PDF line breaks are
   flattened to regular spaces instead of preserving page layout.
 - Ambiguous, unmatched, or PDF-only-reference cases are written to

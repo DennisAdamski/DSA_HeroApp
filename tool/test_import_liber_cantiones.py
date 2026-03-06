@@ -8,6 +8,7 @@ from import_liber_cantiones import (
     SpellBlock,
     TocEntry,
     _build_catalog_indexes,
+    _build_source_reference,
     _match_spell,
     _parse_spell_fields,
     _split_modifications_and_variants,
@@ -125,6 +126,25 @@ Reversalis: Ende.
         self.assertIsNotNone(spell)
         self.assertEqual(spell['id'], 'spell_axxeleratus_blitzgeschwind')
         self.assertEqual(reason, 'stripped_subtitle')
+
+    def test_build_source_reference_uses_first_printed_spell_page(self) -> None:
+        block = SpellBlock(
+            toc=TocEntry(
+                printed_page=153,
+                raw_name='Animatio',
+                probe='kl/in/ch',
+                complexity='D',
+            ),
+            pdf_start_page=154,
+            pdf_end_page=155,
+            title='Animatio stummer Diener',
+            probe='kl/in/ch',
+            text='Wirkung: Test',
+        )
+
+        source = _build_source_reference(block)
+
+        self.assertEqual(source, 'Liber Cantiones S. 153')
 
 
 if __name__ == '__main__':

@@ -460,6 +460,7 @@ Kampftalente erkennt man an: `group == 'Kampftalent'` **oder** `weaponCategory !
 | `wirkung` | Wirkungsbeschreibung |
 | `modifications` | Modifikationen ohne Varianten-Liste |
 | `variants` | Definierte Zauber-Varianten |
+| `source` | Quellenangabe, beim LC-Import die erste Zauberseite |
 | `traits` | Zaubereigenschaften |
 | `active` | Im App verfügbar? |
 
