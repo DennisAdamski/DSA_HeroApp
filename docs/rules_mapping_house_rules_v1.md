@@ -43,9 +43,10 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 
 ### Datenmodell
 
-- **HeroSpellEntry**: Speichert ZfW (spellValue), Modifikator, Hauszauber-Flag und Varianten pro aktiviertem Zauber; technisch bleibt das Listenfeld `specializations` aus Kompatibilitaetsgruenden bestehen.
+- **HeroSpellEntry**: Speichert ZfW (spellValue), Modifikator, Hauszauber-Flag sowie optionale heldenspezifische Text-Overrides pro aktiviertem Zauber; das Listenfeld `specializations` bleibt nur noch als Legacy-Kompatibilitaet bestehen.
+- **HeroSpellTextOverrides**: Optionales Override-Objekt fuer importierte Zauberdetails (`aspCost`, `targetObject`, `range`, `duration`, `castingTime`, `wirkung`, `modifications`, `variants`) pro aktiviertem Zauber.
 - **MagicSpecialAbility**: Name + optionale Notiz fuer magische Sonderfertigkeiten.
-- **HeroSheet** (schemaVersion 5): Neue Felder `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities`.
+- **HeroSheet** (schemaVersion 6): Enthaelt `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities`; Zauber-Eintraege koennen zusaetzlich `textOverrides` speichern.
 
 ### Regelfunktionen (`magic_rules.dart`)
 
@@ -68,6 +69,8 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - Zauber-Definitionen (`SpellDef`) kommen aus `magie.json` im Katalog.
 - `SpellDef` enthaelt neben Grunddaten auch Detailfelder aus `Liber Cantiones` wie `source` (erste Zauberseite), `targetObject`, `wirkung`, `modifications` und `variants`.
 - Die importierten Langtexte werden fuer die Laufzeitdarstellung whitespace-normalisiert; PDF-Zeilenumbrueche werden nicht layoutgetreu uebernommen.
+- Offensichtliche OCR-/Silbentrennungsfehler aus der PDF werden im Importer konservativ bereinigt.
+- Im Magie-Tab zeigt der Detaildialog fuer aktivierte Zauber die effektiven Werte aus `SpellDef` plus optionalen `HeroSpellTextOverrides`; `source` bleibt dabei read-only.
 - Konstanten `kRepresentationen` und `kMerkmale` in `rules_catalog.dart` definieren die verfuegbaren Repraesentationen und Merkmale.
 
 ## Wichtige Hinweise

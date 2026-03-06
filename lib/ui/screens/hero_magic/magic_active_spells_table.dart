@@ -1,6 +1,6 @@
 part of '../hero_magic_tab.dart';
 
-/// Tabelle der aktivierten Zauber mit editierbaren ZfW-Werten und vollstaendigen Infos.
+/// Tabelle der aktivierten Zauber mit editierbaren ZfW-Werten und Detailzugriff.
 class _MagicActiveSpellsTable extends StatelessWidget {
   const _MagicActiveSpellsTable({
     required this.activeSpellIds,
@@ -11,6 +11,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     required this.onSpellValueChanged,
     required this.onModifierChanged,
     required this.onHauszauberChanged,
+    required this.onTextOverridesChanged,
     required this.onRemoveSpell,
     required this.controllerFor,
     this.onAddSpell,
@@ -24,10 +25,30 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final void Function(String spellId, String raw) onSpellValueChanged;
   final void Function(String spellId, String raw) onModifierChanged;
   final void Function(String spellId, bool value) onHauszauberChanged;
+  final void Function(String spellId, HeroSpellTextOverrides? value)
+  onTextOverridesChanged;
   final void Function(String spellId) onRemoveSpell;
   final TextEditingController Function(String id, String field, String initial)
   controllerFor;
   final VoidCallback? onAddSpell;
+
+  Future<void> _openSpellDetails(
+    BuildContext context,
+    String spellId,
+    SpellDef def,
+    HeroSpellEntry entry,
+  ) async {
+    final result = await _showSpellDetailsDialog(
+      context: context,
+      def: def,
+      entry: entry,
+      isEditing: isEditing,
+    );
+    if (result == null) {
+      return;
+    }
+    onTextOverridesChanged(spellId, result.overrides);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,12 +77,13 @@ class _MagicActiveSpellsTable extends StatelessWidget {
       );
     }
 
-    // Sortiere aktive Zauber alphabetisch nach Name.
     final sortedIds = List<String>.from(activeSpellIds)
       ..sort((a, b) {
         final defA = spellDefs[a];
         final defB = spellDefs[b];
-        if (defA == null || defB == null) return 0;
+        if (defA == null || defB == null) {
+          return 0;
+        }
         return defA.name.toLowerCase().compareTo(defB.name.toLowerCase());
       });
 
@@ -138,6 +160,10 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                       );
                     }
 
+                    final resolved = _ResolvedSpellDetails.fromSpell(
+                      def: def,
+                      entry: entry,
+                    );
                     final probeLabel = _shortProbeLabel(def.attributes);
                     final merkmale = parseSpellTraits(def.traits);
                     final effSteigerung = effectiveSteigerung(
@@ -147,14 +173,21 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                       heldMerkmalskenntnisse: merkmalskenntnisse,
                     );
 
+                    void openDetails() {
+                      _openSpellDetails(context, spellId, def, entry);
+                    }
+
                     return DataRow(
                       cells: [
                         DataCell(
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 180),
-                            child: Text(
-                              def.name,
-                              overflow: TextOverflow.ellipsis,
+                          GestureDetector(
+                            onTap: openDetails,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 180),
+                              child: Text(
+                                def.name,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
                         ),
@@ -263,105 +296,42 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                             ),
                           ),
                         ),
-                        DataCell(
-                          Text(
-                            def.castingTime.isNotEmpty ? def.castingTime : '-',
-                            style: theme.textTheme.bodySmall,
-                          ),
+                        _buildDetailCell(
+                          context: context,
+                          text: resolved.castingTime,
+                          maxWidth: 120,
+                          onTap: openDetails,
                         ),
-                        DataCell(
-                          Text(
-                            def.aspCost.isNotEmpty ? def.aspCost : '-',
-                            style: theme.textTheme.bodySmall,
-                          ),
+                        _buildDetailCell(
+                          context: context,
+                          text: resolved.aspCost,
+                          maxWidth: 120,
+                          onTap: openDetails,
                         ),
-                        DataCell(
-                          Text(
-                            def.range.isNotEmpty ? def.range : '-',
-                            style: theme.textTheme.bodySmall,
-                          ),
+                        _buildDetailCell(
+                          context: context,
+                          text: resolved.range,
+                          maxWidth: 140,
+                          onTap: openDetails,
                         ),
-                        DataCell(
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 120),
-                            child: Text(
-                              def.duration.isNotEmpty ? def.duration : '-',
-                              style: theme.textTheme.bodySmall,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
+                        _buildDetailCell(
+                          context: context,
+                          text: resolved.duration,
+                          maxWidth: 120,
+                          onTap: openDetails,
                         ),
-                        // Wirkungsbeschreibung – Kurztext, Tap oeffnet Dialog mit vollstaendigem Text.
-                        DataCell(
-                          GestureDetector(
-                            onTap: def.wirkung.isNotEmpty
-                                ? () => showDialog<void>(
-                                    context: context,
-                                    builder: (_) => AlertDialog(
-                                      title: Text(def.name),
-                                      content: SingleChildScrollView(
-                                        child: Text(def.wirkung),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.of(context).pop(),
-                                          child: const Text('Schließen'),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                : null,
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 120),
-                              child: Text(
-                                def.wirkung.isNotEmpty ? def.wirkung : '–',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  decoration: def.wirkung.isNotEmpty
-                                      ? TextDecoration.underline
-                                      : null,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 2,
-                              ),
-                            ),
-                          ),
+                        _buildDetailCell(
+                          context: context,
+                          text: resolved.wirkung,
+                          maxWidth: 140,
+                          maxLines: 2,
+                          underline: true,
+                          onTap: openDetails,
                         ),
-                        // Varianten – tappbar, oeffnet Dialog mit den Katalog-Varianten.
-                        DataCell(
-                          GestureDetector(
-                            onTap: () => _showVariantenDialog(
-                              context: context,
-                              spellName: def.name,
-                              variants: def.variants,
-                            ),
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 120),
-                              child: def.variants.isEmpty
-                                  ? Text('–', style: theme.textTheme.bodySmall)
-                                  : Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          '${def.variants.length}× ',
-                                          style: theme.textTheme.bodySmall
-                                              ?.copyWith(
-                                                color:
-                                                    theme.colorScheme.primary,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                        ),
-                                        Flexible(
-                                          child: Text(
-                                            def.variants.first,
-                                            style: theme.textTheme.bodySmall,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                            ),
-                          ),
+                        _buildVariantsCell(
+                          context: context,
+                          variants: resolved.variants,
+                          onTap: openDetails,
                         ),
                         if (isEditing)
                           DataCell(
@@ -395,48 +365,71 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   }
 }
 
-/// Oeffnet einen Dialog zum Anzeigen der Katalog-Varianten eines Zaubers.
-Future<void> _showVariantenDialog({
+DataCell _buildDetailCell({
   required BuildContext context,
-  required String spellName,
-  required List<String> variants,
-}) async {
-  await showDialog<void>(
-    context: context,
-    builder: (_) => _VariantenDialog(spellName: spellName, variants: variants),
+  required String text,
+  required double maxWidth,
+  required VoidCallback onTap,
+  int maxLines = 1,
+  bool underline = false,
+}) {
+  final theme = Theme.of(context);
+  final preview = text.isNotEmpty ? text : '-';
+  return DataCell(
+    GestureDetector(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: Text(
+          preview,
+          style: theme.textTheme.bodySmall?.copyWith(
+            decoration: underline && text.isNotEmpty
+                ? TextDecoration.underline
+                : null,
+          ),
+          overflow: TextOverflow.ellipsis,
+          maxLines: maxLines,
+        ),
+      ),
+    ),
   );
 }
 
-/// Dialog zum Anzeigen der Varianten eines Zaubers.
-class _VariantenDialog extends StatelessWidget {
-  const _VariantenDialog({required this.spellName, required this.variants});
-
-  final String spellName;
-  final List<String> variants;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(spellName),
-      content: SizedBox(
-        width: 320,
+DataCell _buildVariantsCell({
+  required BuildContext context,
+  required List<String> variants,
+  required VoidCallback onTap,
+}) {
+  final theme = Theme.of(context);
+  return DataCell(
+    GestureDetector(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 140),
         child: variants.isEmpty
-            ? const Text('Keine Varianten vorhanden.')
-            : ListView.builder(
-                shrinkWrap: true,
-                itemCount: variants.length,
-                itemBuilder: (_, i) =>
-                    ListTile(dense: true, title: Text(variants[i])),
+            ? Text('-', style: theme.textTheme.bodySmall)
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${variants.length}× ',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Flexible(
+                    child: Text(
+                      variants.first,
+                      style: theme.textTheme.bodySmall,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Schließen'),
-        ),
-      ],
-    );
-  }
+    ),
+  );
 }
 
 /// Baut ein kompaktes Probe-Label aus den drei Attributnamen.

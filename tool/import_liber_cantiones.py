@@ -27,6 +27,7 @@ _FIELD_LABELS = {
     'Wirkungsdauer:': 'duration',
     'Zauberdauer:': 'castingTime',
     'Wirkung:': 'wirkung',
+    'Modifikationen:': 'modifications',
     'Modifikationen und Varianten:': 'modifications',
 }
 _SECTION_END_LABELS = (
@@ -38,6 +39,120 @@ _SECTION_END_LABELS = (
     'Repräsentationen und Verbreitung:',
     'Repräsentationen:',
     'Repräsentation und Verbreitung:',
+)
+_OCR_PHRASE_REPLACEMENTS = (
+    ('Modifik ationen und Varianten:', 'Modifikationen und Varianten:'),
+    ('R eversalis:', 'Reversalis:'),
+    ('A ntimagie:', 'Antimagie:'),
+    ('M erkmale:', 'Merkmale:'),
+    ('K omplexität:', 'Komplexität:'),
+    ('K omplexitaet:', 'Komplexitaet:'),
+    ('W irkung:', 'Wirkung:'),
+    ('K osten:', 'Kosten:'),
+    ('Z auberdauer:', 'Zauberdauer:'),
+    ('Z ielobjekt:', 'Zielobjekt:'),
+    ('R eichweite:', 'Reichweite:'),
+    ('W irkungsdauer:', 'Wirkungsdauer:'),
+    ('M odifikationen:', 'Modifikationen:'),
+    ('V arianten:', 'Varianten:'),
+    ('T ier', 'Tier'),
+    ('T iere', 'Tiere'),
+    ('T ieres', 'Tieres'),
+    ('V erstandeskraft', 'Verstandeskraft'),
+    ('Verstandesfunk tionen', 'Verstandesfunktionen'),
+    ('W ahrnehmung', 'Wahrnehmung'),
+    ('wer den', 'werden'),
+    ('wir d', 'wird'),
+    ('ver nichtet', 'vernichtet'),
+    ('verlor en', 'verloren'),
+    ('be sonders', 'besonders'),
+    ('be finden', 'befinden'),
+    ('beob achtet', 'beobachtet'),
+    ('e indringen', 'eindringen'),
+    ('fr emden', 'fremden'),
+    ('Spielr unde', 'Spielrunde'),
+    ('Spielr unden', 'Spielrunden'),
+    ('K ampfrunde', 'Kampfrunde'),
+    ('K ampfrunden', 'Kampfrunden'),
+    ('währ end', 'während'),
+    ('Ak tion', 'Aktion'),
+    ('Währ end', 'Während'),
+    ('Waehr end', 'Waehrend'),
+    ('erfor dert', 'erfordert'),
+    ('hör en', 'hören'),
+    ('mehr ere', 'mehrere'),
+    ('Astralener gie', 'Astralenergie'),
+    ('Beschwör ungs', 'Beschwörungs'),
+    ('entspr echenden', 'entsprechenden'),
+    ('Zauber nde', 'Zaubernde'),
+    ('Zauber nden', 'Zaubernden'),
+    ('beziehunsweise', 'beziehungsweise'),
+    ('Augen blick', 'Augenblick'),
+    ('wur de', 'wurde'),
+    ('Sonnen aufgang', 'Sonnenaufgang'),
+    ('Waffenund', 'Waffen- und'),
+    ('Druidenoder', 'Druiden- oder'),
+    ('Attackeoder', 'Attacke- oder'),
+    ('Heiloder', 'Heil- oder'),
+    ('Hitzeund', 'Hitze- und'),
+    ('Kugeloder', 'Kugel- oder'),
+    ('K osten', 'Kosten'),
+    ('R eversalis', 'Reversalis'),
+    ('W irkung', 'Wirkung'),
+    ('M odifikationen', 'Modifikationen'),
+    ('V ariante', 'Variante'),
+    ('V arianten', 'Varianten'),
+    ('A usgang', 'Ausgang'),
+    ('A uslöser', 'Auslöser'),
+    ('A usloeser', 'Ausloeser'),
+    ('A ttacken', 'Attacken'),
+    ('Pr obe', 'Probe'),
+    ('Kr eis', 'Kreis'),
+    ('Zauber wirker', 'Zauberwirker'),
+    ('Zauber wir kung', 'Zauberwirkung'),
+    ('Zauber er', 'Zauber'),
+    ('ander en', 'anderen'),
+    ('ande r e', 'andere'),
+    ('da raufhin', 'daraufhin'),
+    ('per manent', 'permanent'),
+    ('ge schuppte', 'geschuppte'),
+    ('dir ekte', 'direkte'),
+    ('ein dringen', 'eindringen'),
+    ('be spricht', 'bespricht'),
+    ('insbesonder e', 'insbesondere'),
+    ('insbesonder ealle', 'insbesondere alle'),
+    ('insbesonderealle', 'insbesondere alle'),
+    ('ueberg angslos', 'uebergangslos'),
+    ('über gangslos', 'übergangslos'),
+    ('eventu elle', 'eventuelle'),
+    ('Schadenswirk ung', 'Schadenswirkung'),
+    ('Herbeir ufung', 'Herbeirufung'),
+    ('Eisund', 'Eis- und'),
+    ('Hautund', 'Haut- und'),
+    ('gefor mte', 'geformte'),
+    ('Nebel feld', 'Nebelfeld'),
+    ('pr o', 'pro'),
+    ('Höhen unterschied', 'Höhenunterschied'),
+    ('hoehen unterschied', 'hoehenunterschied'),
+    ('wür de', 'würde'),
+    ('har monisieren', 'harmonisieren'),
+    ('Har monie', 'Harmonie'),
+    ('Mor dauftrag', 'Mordauftrag'),
+    ('Kaska dier ung', 'Kaskadierung'),
+    ('Zauberzeugt', 'Zauber erzeugt'),
+    ('Reitund', 'Reit- und'),
+    ('hier für', 'hierfür'),
+    ('hier fÃ¼r', 'hierfÃ¼r'),
+    ('hinaufbzw.', 'hinauf bzw.'),
+    ('kletter n', 'klettern'),
+    ('veranker n', 'verankern'),
+    ('Opfer ’', 'Opfer’'),
+    ('Opfer â€™', 'Opferâ€™'),
+    ('AsP .', 'AsP.'),
+    (
+        'Akti160 LEIB DES ERZES E Form Elementar (Erz) on',
+        'Aktion',
+    ),
 )
 
 
@@ -135,6 +250,30 @@ def _is_upper_title_line(line: str) -> bool:
     return bool(letters) and all(not char.islower() for char in letters)
 
 
+def _apply_phrase_replacements(text: str) -> str:
+    updated = text
+    for source, target in _OCR_PHRASE_REPLACEMENTS:
+        updated = updated.replace(source, target)
+    return updated
+
+
+def _cleanup_ocr_text(text: str, *, preserve_newlines: bool) -> str:
+    updated = text
+    previous = None
+    while previous != updated:
+        previous = updated
+        updated = re.sub(r'(?<=\w)\s*-\s+(?=\w)', '', updated)
+        updated = re.sub(
+            r'\b([A-Za-zÄÖÜäöüß])\s+(?=[a-zäöüß]{2,}\b)',
+            r'\1',
+            updated,
+        )
+        updated = _apply_phrase_replacements(updated)
+    if not preserve_newlines:
+        updated = re.sub(r'[ \t]+', ' ', updated)
+    return updated
+
+
 def _extract_page_title(page_text: str) -> str:
     lines = [
         line.strip()
@@ -165,6 +304,7 @@ def _clean_block_text(text: str) -> str:
     cleaned = text.replace(_FOOTER, '')
     cleaned = re.sub(r'(\w)-\s*\n\s*(\w)', r'\1\2', cleaned)
     cleaned = re.sub(r'\n+', '\n', cleaned)
+    cleaned = _cleanup_ocr_text(cleaned, preserve_newlines=True)
     return cleaned.strip()
 
 
@@ -186,6 +326,7 @@ def _compact_text(value: str) -> str:
     text = value.replace('\r', '\n')
     text = re.sub(r'(\w)-\s*\n\s*(\w)', r'\1\2', text)
     text = re.sub(r'\s*\n\s*', ' ', text)
+    text = _cleanup_ocr_text(text, preserve_newlines=False)
     text = re.sub(r'[ \t]+', ' ', text)
     return text.strip()
 
@@ -194,21 +335,33 @@ def _split_modifications_and_variants(value: str) -> tuple[str, list[str]]:
     if not value:
         return '', []
 
-    pieces = re.split(r'\s*◆\s*', value)
+    pieces = re.split(r'\s*◆\s*|\s*â—†\s*', value)
     modifications = _compact_text(pieces[0])
-    variants = [
-        _compact_text(piece)
-        for piece in pieces[1:]
-        if _compact_text(piece)
-    ]
+    variants = [_compact_text(piece) for piece in pieces[1:] if _compact_text(piece)]
     return modifications, variants
 
 
+def _repair_inline_modifications(parsed: dict[str, object]) -> None:
+    duration = str(parsed['duration'])
+    if str(parsed['modifications']).strip():
+        return
+    for label in ('Modifikationen und Varianten:', 'Modifikationen:'):
+        if label not in duration:
+            continue
+        duration_text, raw_modifications = duration.split(label, 1)
+        parsed['duration'] = duration_text.strip()
+        parsed['modifications'] = raw_modifications.strip()
+        return
+
+
 def _parse_spell_fields(text: str) -> dict[str, object]:
-    parsed = {
-        target: _extract_field(text, label)
-        for label, target in _FIELD_LABELS.items()
-    }
+    normalized_text = _cleanup_ocr_text(text, preserve_newlines=True)
+    parsed = {target: '' for target in _FIELD_LABELS.values()}
+    for label, target in _FIELD_LABELS.items():
+        if parsed[target]:
+            continue
+        parsed[target] = _extract_field(normalized_text, label)
+    _repair_inline_modifications(parsed)
     modifications, variants = _split_modifications_and_variants(
         str(parsed['modifications']),
     )
@@ -232,7 +385,12 @@ def _parse_toc_entries(reader: PdfReader) -> list[TocEntry]:
     toc_text = toc_text.replace('ÜBERSICHT', ' ')
     toc_text = re.sub(r'\b30[1-4]\b', ' ', toc_text)
     toc_text = re.sub(r'(\w)-\s+(\w)', r'\1\2', toc_text)
-    toc_text = re.sub(r'\b([A-Za-zÄÖÜäöüß])\s+([A-Za-zÄÖÜäöüß])\b', r'\1\2', toc_text)
+    toc_text = re.sub(
+        r'\b([A-Za-zÄÖÜäöüß])\s+([A-Za-zÄÖÜäöüß])\b',
+        r'\1\2',
+        toc_text,
+    )
+    toc_text = _cleanup_ocr_text(toc_text, preserve_newlines=False)
     toc_text = re.sub(r'\s+', ' ', toc_text)
 
     tokens = toc_text.split(' ')
@@ -435,6 +593,31 @@ def _review_entry(
     return entry
 
 
+def _cleanup_catalog_spell_texts(spell: dict[str, object]) -> None:
+    for key in (
+        'aspCost',
+        'targetObject',
+        'range',
+        'duration',
+        'castingTime',
+        'wirkung',
+        'modifications',
+        'source',
+    ):
+        raw_value = str(spell.get(key, '') or '')
+        spell[key] = _compact_text(raw_value) if raw_value else ''
+
+    raw_variants = spell.get('variants', [])
+    if not isinstance(raw_variants, list):
+        spell['variants'] = []
+        return
+    spell['variants'] = [
+        _compact_text(str(entry))
+        for entry in raw_variants
+        if _compact_text(str(entry))
+    ]
+
+
 def import_liber_cantiones(
     *,
     pdf_path: Path,
@@ -505,6 +688,9 @@ def import_liber_cantiones(
                 catalog_spell=spell,
             ),
         )
+
+    for spell in catalog:
+        _cleanup_catalog_spell_texts(spell)
 
     catalog_path.write_text(
         json.dumps(catalog, indent=4, ensure_ascii=False) + '\n',

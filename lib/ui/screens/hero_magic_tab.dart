@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -16,6 +18,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 part 'hero_magic/magic_header_section.dart';
 part 'hero_magic/magic_special_abilities_section.dart';
 part 'hero_magic/magic_active_spells_table.dart';
+part 'hero_magic/magic_spell_details_dialog.dart';
 part 'hero_magic/magic_spell_catalog_table.dart';
 
 /// Magie-Tab: Zwei Sub-Tabs – „Zauber" und „Repräsentation & SF".
@@ -192,6 +195,15 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _markFieldChanged();
   }
 
+  void _updateSpellTextOverrides(
+    String spellId,
+    HeroSpellTextOverrides? value,
+  ) {
+    final current = _draftSpells[spellId] ?? const HeroSpellEntry();
+    _draftSpells[spellId] = current.copyWith(textOverrides: value);
+    _markFieldChanged();
+  }
+
   void _toggleSpell(String spellId, bool activate) {
     if (activate) {
       _draftSpells.putIfAbsent(spellId, () => const HeroSpellEntry());
@@ -331,6 +343,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             onSpellValueChanged: _updateSpellValue,
                             onModifierChanged: _updateSpellModifier,
                             onHauszauberChanged: _updateHauszauber,
+                            onTextOverridesChanged: _updateSpellTextOverrides,
                             onRemoveSpell: _removeSpell,
                             controllerFor: _controllerFor,
                             onAddSpell: _editController.isEditing
