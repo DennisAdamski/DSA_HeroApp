@@ -25,6 +25,7 @@ part 'hero_talents/hero_talents_info_card.dart';
 part 'hero_talents/hero_talents_tables.dart';
 part 'hero_talents/hero_talents_cells.dart';
 part 'hero_talents/talent_catalog_table.dart';
+part 'hero_talents/talent_detail_dialog.dart';
 
 enum _TalentTabScope { nonCombat, combat }
 
