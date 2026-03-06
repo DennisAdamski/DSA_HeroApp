@@ -109,6 +109,7 @@ DSA_HeroApp/
 │   └── heroes/                      # Seed hero JSON files
 ├── tool/                            # Python helper scripts
 │   ├── convert_excel_to_catalog.py
+│   ├── import_liber_cantiones.py
 │   ├── split_house_rules_catalog.py
 │   ├── export_rule_cells.py
 │   ├── report_unreferenced_dart.py
@@ -160,7 +161,8 @@ Domain models (lib/domain/) — immutable, pure Dart
 | `HeroState` | `domain/hero_state.dart` | Runtime state (current LeP/AsP/KaP/Au, temp modifiers) |
 | `HeroComputedSnapshot` | `state/hero_computed_snapshot.dart` | All derived values for one hero, computed in one pass |
 | `HeroIndexSnapshot` | `state/hero_index_snapshot.dart` | Sorted hero list + O(1) ID map |
-| `HeroSpellEntry` | `domain/hero_spell_entry.dart` | Persisted spell entry (ZfW, Hauszauber, modifier) |
+| `HeroSpellEntry` | `domain/hero_spell_entry.dart` | Persisted spell entry (ZfW, Hauszauber, modifier, Legacy-Spezialisierungen, Text-Overrides) |
+| `HeroSpellTextOverrides` | `domain/hero_spell_text_overrides.dart` | Heldenspezifische Korrekturen fuer importierte Zauberdetails |
 | `MagicSpecialAbility` | `domain/magic_special_ability.dart` | Persisted magic special ability (name + note) |
 | `HeroTransferBundle` | `domain/hero_transfer_bundle.dart` | Export/import envelope (hero + state + timestamp) |
 
@@ -252,6 +254,9 @@ bash tool/ios_bootstrap_spm.sh
 # Regenerate runtime catalog from Excel source files
 python tool/convert_excel_to_catalog.py
 
+# Import Liber Cantiones spell details into magie.json
+python tool/import_liber_cantiones.py --pdf "<path-to-pdf>"
+
 # Split a monolithic catalog into the split-JSON structure
 python tool/split_house_rules_catalog.py
 
@@ -275,7 +280,7 @@ python tool/report_unreferenced_dart.py
 - **Screen size limit**: root screen/tab files must stay under **700 LOC**. Split into sub-files (e.g. `hero_combat/` directory) before exceeding this.
 - **ConsumerWidget vs ConsumerStatefulWidget**: use `ConsumerWidget` (stateless) by default; use `ConsumerStatefulWidget` only when local widget state is genuinely needed.
 - **Provider access in UI**: use `.watch` for reactive reads; use `.read` only inside callbacks (e.g. button presses).
-- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **5**.
+- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **6**.
 - **German comments and identifiers**: code-level comments and domain names follow German (rasse, kultur, Held, Talente, etc.).
 
 ### Catalog

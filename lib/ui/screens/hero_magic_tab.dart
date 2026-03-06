@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -16,6 +18,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 part 'hero_magic/magic_header_section.dart';
 part 'hero_magic/magic_special_abilities_section.dart';
 part 'hero_magic/magic_active_spells_table.dart';
+part 'hero_magic/magic_spell_details_dialog.dart';
 part 'hero_magic/magic_spell_catalog_table.dart';
 
 /// Magie-Tab: Zwei Sub-Tabs – „Zauber" und „Repräsentation & SF".
@@ -100,8 +103,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _draftSpells = Map<String, HeroSpellEntry>.from(hero.spells);
     _draftRepresentationen = List<String>.from(hero.representationen);
     _draftMerkmalskenntnisse = List<String>.from(hero.merkmalskenntnisse);
-    _draftMagicSpecialAbilities =
-        List<MagicSpecialAbility>.from(hero.magicSpecialAbilities);
+    _draftMagicSpecialAbilities = List<MagicSpecialAbility>.from(
+      hero.magicSpecialAbilities,
+    );
   }
 
   void _resetCellControllers() {
@@ -138,14 +142,16 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       spells: Map<String, HeroSpellEntry>.from(_draftSpells),
       representationen: List<String>.from(_draftRepresentationen),
       merkmalskenntnisse: List<String>.from(_draftMerkmalskenntnisse),
-      magicSpecialAbilities:
-          List<MagicSpecialAbility>.from(_draftMagicSpecialAbilities),
+      magicSpecialAbilities: List<MagicSpecialAbility>.from(
+        _draftMagicSpecialAbilities,
+      ),
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     if (!mounted) return;
     _editController.markSaved();
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Magie gespeichert')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Magie gespeichert')));
   }
 
   Future<void> _cancelChanges() async {
@@ -189,9 +195,12 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _markFieldChanged();
   }
 
-  void _updateSpecializations(String spellId, List<String> value) {
+  void _updateSpellTextOverrides(
+    String spellId,
+    HeroSpellTextOverrides? value,
+  ) {
     final current = _draftSpells[spellId] ?? const HeroSpellEntry();
-    _draftSpells[spellId] = current.copyWith(specializations: value);
+    _draftSpells[spellId] = current.copyWith(textOverrides: value);
     _markFieldChanged();
   }
 
@@ -203,7 +212,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       // Entferne zugehoerige Controller.
       _cellControllers.remove('$spellId::spellValue')?.dispose();
       _cellControllers.remove('$spellId::modifier')?.dispose();
-      // Kein Controller fuer Spezialisierungen (wird als Dialog bearbeitet).
+      // Varianten kommen aus dem Katalog und nutzen keine Edit-Controller.
     }
     _markFieldChanged();
   }
@@ -315,8 +324,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
               child: ValueListenableBuilder<int>(
                 valueListenable: _tableRevision,
                 builder: (context, revision, child) {
-                  final activeSpellIds =
-                      _draftSpells.keys.toList(growable: false);
+                  final activeSpellIds = _draftSpells.keys.toList(
+                    growable: false,
+                  );
                   return TabBarView(
                     controller: _innerTabController,
                     children: [
@@ -333,12 +343,14 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             onSpellValueChanged: _updateSpellValue,
                             onModifierChanged: _updateSpellModifier,
                             onHauszauberChanged: _updateHauszauber,
-                            onSpecializationsChanged: _updateSpecializations,
+                            onTextOverridesChanged: _updateSpellTextOverrides,
                             onRemoveSpell: _removeSpell,
                             controllerFor: _controllerFor,
                             onAddSpell: _editController.isEditing
                                 ? () => _showZauberKatalog(
-                                    context, catalog.spells)
+                                    context,
+                                    catalog.spells,
+                                  )
                                 : null,
                           ),
                         ],

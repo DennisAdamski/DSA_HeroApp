@@ -87,7 +87,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 4
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 6
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
@@ -97,7 +97,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 4) | Format-Version für Migrationskompatibilität |
+| `schemaVersion` | `int` (= 6) | Format-Version für Migrationskompatibilität |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `attributes` | `Attributes` | Aktuelle Eigenschaftswerte (8 Werte) |
@@ -334,7 +334,7 @@ Speichert die Werte eines Helden in einem einzelnen Talent.
 | `paValue` | `int` | PA-Wert (nur Kampftalente) |
 | `modifier` | `int` | Situativer Modifikator |
 | `specialExperiences` | `int` | Sondererfahrungspunkte |
-| `specializations` | `String` | Spezialisierungen (Freitext) |
+| `specializations` | `String` | Varianten/Spezialisierungen (Legacy-Freitext) |
 | `combatSpecializations` | `List<String>` | Geparste Spezialisierungsliste |
 | `gifted` | `bool` | Talent begabt (kostenlos/verstärkt)? |
 | `ebe` | `int` | Erweiterungspunkte |
@@ -453,9 +453,14 @@ Kampftalente erkennt man an: `group == 'Kampftalent'` **oder** `weaponCategory !
 | `steigerung` | Steigerungskategorie |
 | `attributes` | Eigenschaftskürzel für Proben |
 | `aspCost` | AsP-Kosten |
+| `targetObject` | Zielobjekt |
 | `castingTime` | Zauberdauer |
 | `range` | Reichweite |
 | `duration` | Wirkungsdauer |
+| `wirkung` | Wirkungsbeschreibung |
+| `modifications` | Modifikationen ohne Varianten-Liste |
+| `variants` | Definierte Zauber-Varianten |
+| `source` | Quellenangabe, beim LC-Import die erste Zauberseite |
 | `traits` | Zaubereigenschaften |
 | `active` | Im App verfügbar? |
 
@@ -887,7 +892,7 @@ flutter drive --profile \
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` für `HeroSheet` ist **4**.
+- Die aktuelle `schemaVersion` für `HeroSheet` ist **6**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 1 wird **strikt** validiert.
 
