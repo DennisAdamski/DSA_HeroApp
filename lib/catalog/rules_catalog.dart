@@ -232,7 +232,7 @@ class SpellDef {
   final String wirkung; // Wirkungsbeschreibung (Langtext aus dem Regelwerk)
   final List<String> variants; // Definierte Varianten des Zaubers
   final String category; // Zauberkategorie
-  final String source; // Quellreferenz
+  final String source; // Quellreferenz (z. B. 'Liber Cantiones S. 36')
   final bool active; // Im App verfuegbar und anzeigbar?
 
   factory SpellDef.fromJson(Map<String, dynamic> json) {

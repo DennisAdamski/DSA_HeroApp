@@ -66,7 +66,7 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 ### Katalog
 
 - Zauber-Definitionen (`SpellDef`) kommen aus `magie.json` im Katalog.
-- `SpellDef` enthaelt neben Grunddaten auch Detailfelder aus `Liber Cantiones` wie `targetObject`, `wirkung`, `modifications` und `variants`.
+- `SpellDef` enthaelt neben Grunddaten auch Detailfelder aus `Liber Cantiones` wie `source` (erste Zauberseite), `targetObject`, `wirkung`, `modifications` und `variants`.
 - Die importierten Langtexte werden fuer die Laufzeitdarstellung whitespace-normalisiert; PDF-Zeilenumbrueche werden nicht layoutgetreu uebernommen.
 - Konstanten `kRepresentationen` und `kMerkmale` in `rules_catalog.dart` definieren die verfuegbaren Repraesentationen und Merkmale.
 

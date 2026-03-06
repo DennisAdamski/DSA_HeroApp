@@ -217,6 +217,10 @@ def _parse_spell_fields(text: str) -> dict[str, object]:
     return parsed
 
 
+def _build_source_reference(block: SpellBlock) -> str:
+    return f'Liber Cantiones S. {block.toc.printed_page}'
+
+
 def _parse_toc_entries(reader: PdfReader) -> list[TocEntry]:
     toc_text = ' '.join(
         (reader.pages[page - 1].extract_text() or '')
@@ -453,6 +457,7 @@ def import_liber_cantiones(
         spell.setdefault('wirkung', '')
         spell.setdefault('variants', [])
         spell.setdefault('modifications', '')
+        spell.setdefault('source', '')
 
     for block in blocks:
         parsed_fields = _parse_spell_fields(block.text)
@@ -488,6 +493,7 @@ def import_liber_cantiones(
         spell['wirkung'] = str(parsed_fields['wirkung'])
         spell['modifications'] = str(parsed_fields['modifications'])
         spell['variants'] = list(parsed_fields['variants'])
+        spell['source'] = _build_source_reference(block)
 
     for spell in catalog:
         if str(spell.get('id', '')) in matched_ids:
