@@ -24,8 +24,9 @@ class SpellAvailabilityEntry {
 /// Regex zum Parsen einzelner Verfuegbarkeits-Tokens.
 ///
 /// Erkennt Formate wie: "Mag6", "Dru(Elf)2", "Hex(Mag)3"
-final RegExp _availabilityPattern =
-    RegExp(r'([A-Za-zÄÖÜäöü]+)(?:\(([A-Za-zÄÖÜäöü]+)\))?(\d+)');
+final RegExp _availabilityPattern = RegExp(
+  r'([A-Za-zÄÖÜäöü]+)(?:\(([A-Za-zÄÖÜäöü]+)\))?(\d+)',
+);
 
 /// Parst den availability-String eines Zaubers in strukturierte Eintraege.
 ///
@@ -39,11 +40,13 @@ List<SpellAvailabilityEntry> parseSpellAvailability(String availability) {
     if (trimmed.isEmpty) continue;
     final match = _availabilityPattern.firstMatch(trimmed);
     if (match == null) continue;
-    entries.add(SpellAvailabilityEntry(
-      tradition: match.group(1)!,
-      subTradition: match.group(2),
-      verbreitung: int.parse(match.group(3)!),
-    ));
+    entries.add(
+      SpellAvailabilityEntry(
+        tradition: match.group(1)!,
+        subTradition: match.group(2),
+        verbreitung: int.parse(match.group(3)!),
+      ),
+    );
   }
   return entries;
 }
@@ -120,7 +123,10 @@ String effectiveSteigerung({
   );
 
   if (istHauszauber || hatMerkmalReduktion) {
-    final reducedIndex = (index - 1).clamp(0, _steigerungsKategorien.length - 1);
+    final reducedIndex = (index - 1).clamp(
+      0,
+      _steigerungsKategorien.length - 1,
+    );
     return _steigerungsKategorien[reducedIndex];
   }
   return basisSteigerung;
@@ -137,4 +143,54 @@ List<String> parseSpellTraits(String traits) {
       .map((t) => t.trim())
       .where((t) => t.isNotEmpty)
       .toList(growable: false);
+}
+
+/// Der feste TP-Bonus des Axxeleratus auf Nahkampfangriffe.
+int computeAxxeleratusTpBonus({required bool axxeleratusActive}) {
+  return axxeleratusActive ? 2 : 0;
+}
+
+/// Der feste Bonus des Axxeleratus auf den Parade-Basiswert.
+int computeAxxeleratusPaBaseBonus({required bool axxeleratusActive}) {
+  return axxeleratusActive ? 2 : 0;
+}
+
+/// Der zusaetzliche Axxeleratus-Bonus auf Ausweichen.
+///
+/// Dieser Bonus kommt zusaetzlich zur indirekten Erhoehung durch den
+/// verbesserten Parade-Basiswert hinzu.
+int computeAxxeleratusAusweichenBonus({required bool axxeleratusActive}) {
+  return axxeleratusActive ? 2 : 0;
+}
+
+/// Verdoppelt den Eigenschaftsanteil der Initiative, wenn Axxeleratus aktiv ist.
+int computeAxxeleratusIniBase({
+  required int iniBase,
+  required bool axxeleratusActive,
+}) {
+  return axxeleratusActive ? iniBase * 2 : iniBase;
+}
+
+/// Liefert den Axxeleratus-Zusatz auf die Heldeninitiative.
+///
+/// Das ist genau der zweite Ini-Basisanteil, der bei aktivem Zauber
+/// auf die normale Ini-Basis addiert wird.
+int computeAxxeleratusIniBonus({
+  required int iniBase,
+  required bool axxeleratusActive,
+}) {
+  return axxeleratusActive ? iniBase : 0;
+}
+
+/// Verdoppelt den final berechneten GS-Wert des Helden.
+int computeAxxeleratusGs({required int gs, required bool axxeleratusActive}) {
+  return axxeleratusActive ? gs * 2 : gs;
+}
+
+/// Reiner Anzeigehinweis fuer beschleunigte Nahkampfangriffe.
+String buildAxxeleratusDefenseHint({required bool axxeleratusActive}) {
+  if (!axxeleratusActive) {
+    return '';
+  }
+  return 'Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2';
 }

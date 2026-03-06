@@ -914,6 +914,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             const SizedBox(height: 4),
             Text(
               'PA-Basis (${preview.paBase})'
+              ' [Grundwert + Axx (${preview.axxPaBaseBonus})]'
               ' + SF (${preview.sfAusweichenBonus})'
               ' + Akrobatik (${preview.akrobatikBonus})'
               ' + Axx (${preview.axxAusweichenBonus})'
@@ -921,6 +922,10 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               ' + Mod ($manualAusweichenMod)'
               ' - BE (${preview.beKampf})',
             ),
+            if (preview.axxAttackDefenseHint.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(preview.axxAttackDefenseHint),
+            ],
           ],
         ),
       ),
@@ -1060,8 +1065,18 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     final rollToken = specialRules.aufmerksamkeit
         ? '${preview.iniDiceCount}W6'
         : preview.iniWurfEffective.toString();
-    final heldenBase = preview.heldenInitiative - preview.iniWurfEffective;
-    return 'Helden INI: $heldenBase + $rollToken = ${preview.heldenInitiative}';
+    final heldenBaseWithoutRoll =
+        preview.heldenInitiative - preview.iniWurfEffective;
+    final eigenschaftsIni = preview.eigenschaftsIni;
+    final axxIni = preview.axxIniBonus;
+    final sonstigeIni = heldenBaseWithoutRoll - eigenschaftsIni - axxIni;
+    if (axxIni > 0) {
+      return 'Helden INI: Ini-Basis $eigenschaftsIni + Axx $axxIni + '
+          'sonstige Modifikatoren $sonstigeIni + $rollToken = '
+          '${preview.heldenInitiative}';
+    }
+    return 'Helden INI: $heldenBaseWithoutRoll + $rollToken = '
+        '${preview.heldenInitiative}';
   }
 
   String _kampfIniLabel(CombatPreviewStats preview) {

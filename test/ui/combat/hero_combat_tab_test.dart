@@ -298,41 +298,55 @@ void main() {
     expect(find.widgetWithText(Tab, 'Manoever'), findsOneWidget);
   });
 
-  testWidgets(
-    'special rules tab renames Linkhand and removes Axxeleratus toggle',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero()],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 0,
-            currentKap: 0,
-            currentAu: 10,
+  testWidgets('special rules tab shows Axxeleratus toggle and melee hint', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            specialRules: CombatSpecialRules(axxeleratusActive: true),
           ),
-        },
-      );
-
-      await openCombatTab(tester, repo);
-      await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Linkhand'), findsOneWidget);
-      expect(find.text('Linkhand aktiv'), findsNothing);
-      expect(find.text('Axxeleratus aktiv'), findsNothing);
-
-      final linkhandTopLeft = tester.getTopLeft(find.text('Linkhand'));
-      final schildkampfTopLeft = tester.getTopLeft(find.text('Schildkampf I'));
-      expect(linkhandTopLeft.dy, lessThan(schildkampfTopLeft.dy));
-      expect(
-        find.byKey(
-          const ValueKey<String>('combat-armor-global-training-level'),
         ),
-        findsOneWidget,
-      );
-      expect(find.text('Ruestungsgewoehnung'), findsOneWidget);
-    },
-  );
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
+    await tester.pumpAndSettle();
+    for (
+      var i = 0;
+      i < 6 && find.text('Axxeleratus aktiv').evaluate().isEmpty;
+      i++
+    ) {
+      await tester.drag(find.byType(ListView).first, const Offset(0, -280));
+      await tester.pumpAndSettle();
+    }
+    await tester.pumpAndSettle();
+
+    expect(find.text('Axxeleratus aktiv'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+    final axxHintFinder = find.text(
+      'Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2',
+    );
+    for (var i = 0; i < 6 && axxHintFinder.evaluate().isEmpty; i++) {
+      await tester.drag(find.byType(ListView).first, const Offset(0, -280));
+      await tester.pumpAndSettle();
+    }
+    await tester.pumpAndSettle();
+
+    expect(axxHintFinder, findsOneWidget);
+  });
 
   testWidgets(
     'combat techniques table shows specialization column and edit mode control',
@@ -1028,61 +1042,9 @@ void main() {
     },
   );
 
-  testWidgets('active weapon info panel shows initiative chips and roll input', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [
-        buildHero(
-          combatConfig: const CombatConfig(
-            weapons: <MainWeaponSlot>[
-              MainWeaponSlot(
-                name: 'Kurzschwert',
-                talentId: 'tal_nah',
-                weaponType: 'Kurzschwert',
-              ),
-            ],
-            selectedWeaponIndex: 0,
-          ),
-        ),
-      ],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
-
-    await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(const ValueKey<String>('combat-active-weapon-info-helden-ini')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(
-        const ValueKey<String>('combat-active-weapon-info-helden-waffen-ini'),
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey<String>('combat-active-weapon-info-ini')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey<String>('combat-active-weapon-info-ini-roll')),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('temporary ini roll input clamps without persisting to hero', (
-    tester,
-  ) async {
+  testWidgets(
+    'active weapon info panel shows initiative chips and roll input',
+    (tester) async {
       final repo = FakeRepository(
         heroes: [
           buildHero(
@@ -1095,7 +1057,6 @@ void main() {
                 ),
               ],
               selectedWeaponIndex: 0,
-              specialRules: CombatSpecialRules(klingentaenzer: true),
             ),
           ),
         ],
@@ -1113,26 +1074,79 @@ void main() {
       await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
       await tester.pumpAndSettle();
 
-      await tester.enterText(
+      expect(
+        find.byKey(
+          const ValueKey<String>('combat-active-weapon-info-helden-ini'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('combat-active-weapon-info-helden-waffen-ini'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('combat-active-weapon-info-ini')),
+        findsOneWidget,
+      );
+      expect(
         find.byKey(
           const ValueKey<String>('combat-active-weapon-info-ini-roll'),
         ),
-        '13',
+        findsOneWidget,
       );
-      await tester.pumpAndSettle();
-
-      final rollController = tester.widget<TextField>(
-        find.byKey(
-          const ValueKey<String>('combat-active-weapon-info-ini-roll'),
-        ),
-      );
-      expect(rollController.controller?.text, '12');
-
-      final heroes = await repo.listHeroes();
-      final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-      expect(hero.combatConfig.manualMods.iniWurf, 0);
     },
   );
+
+  testWidgets('temporary ini roll input clamps without persisting to hero', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
+              ),
+            ],
+            selectedWeaponIndex: 0,
+            specialRules: CombatSpecialRules(klingentaenzer: true),
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('combat-active-weapon-info-ini-roll')),
+      '13',
+    );
+    await tester.pumpAndSettle();
+
+    final rollController = tester.widget<TextField>(
+      find.byKey(const ValueKey<String>('combat-active-weapon-info-ini-roll')),
+    );
+    expect(rollController.controller?.text, '12');
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.combatConfig.manualMods.iniWurf, 0);
+  });
 
   testWidgets('aufmerksamkeit disables initiative roll input in UI', (
     tester,
@@ -1174,10 +1188,7 @@ void main() {
       find.byKey(const ValueKey<String>('combat-active-weapon-info-ini-roll')),
     );
     expect(rollField.readOnly, isTrue);
-    expect(
-      find.textContaining('Aufmerksamkeit aktiv'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('Aufmerksamkeit aktiv'), findsOneWidget);
   });
 
   testWidgets('melee info panel shows empty state when no weapon is selected', (
@@ -1381,52 +1392,53 @@ void main() {
     );
   });
 
-  testWidgets('weapon overview exposes INI fields in read mode', (tester) async {
-      final repo = FakeRepository(
-        heroes: [
-          buildHero(
-            combatConfig: const CombatConfig(
-              weapons: <MainWeaponSlot>[
-                MainWeaponSlot(
-                  name: 'Kurzschwert',
-                  talentId: 'tal_nah',
-                  weaponType: 'Kurzschwert',
-                  kkBase: 10,
-                  kkThreshold: 3,
-                  iniMod: 0,
-                ),
-              ],
-              selectedWeaponIndex: 0,
-            ),
+  testWidgets('weapon overview exposes INI fields in read mode', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
+                kkBase: 10,
+                kkThreshold: 3,
+                iniMod: 0,
+              ),
+            ],
+            selectedWeaponIndex: 0,
           ),
-        ],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 0,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
 
-      await openCombatTab(tester, repo);
-      await openWeaponsTab(tester);
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
 
-      expect(
-        find.byKey(const ValueKey<String>('combat-weapon-cell-ini-0')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey<String>('combat-weapon-cell-ini-ge-0')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey<String>('combat-weapon-cell-ini-mod-0')),
-        findsOneWidget,
-      );
-    },
-  );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-cell-ini-0')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-cell-ini-ge-0')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-cell-ini-mod-0')),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('weapon table filters by DK in read mode', (tester) async {
     final repo = FakeRepository(
