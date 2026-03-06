@@ -176,22 +176,6 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     );
   }
 
-  Widget _visibilityCell({
-    required String talentId,
-    required bool isHidden,
-    required bool enabled,
-  }) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: IconButton(
-        key: ValueKey<String>('talents-visibility-$talentId'),
-        icon: Icon(isHidden ? Icons.visibility_off : Icons.visibility),
-        tooltip: isHidden ? 'Talent einblenden' : 'Talent ausblenden',
-        onPressed: enabled ? () => _toggleHidden(talentId) : null,
-      ),
-    );
-  }
-
   Widget _giftedCell({
     required String talentId,
     required bool value,

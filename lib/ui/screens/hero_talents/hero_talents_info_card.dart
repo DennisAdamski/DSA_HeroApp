@@ -5,8 +5,8 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     required String heroId,
     required int combatBaseBe,
     required int activeTalentBe,
+    required List<TalentDef> allTalents,
   }) {
-    final visibilityMode = _readVisibilityMode();
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
       child: Align(
@@ -37,21 +37,15 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                 icon: const Icon(Icons.shield_outlined),
                 label: Text('BE konfigurieren ($activeTalentBe)'),
               ),
-              const SizedBox(width: 8),
-              FilledButton.icon(
-                key: const ValueKey<String>('talents-visibility-mode-toggle'),
-                onPressed: () => _setVisibilityMode(!visibilityMode),
-                icon: Icon(
-                  visibilityMode
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility,
+              if (_editController.isEditing) ...[
+                const SizedBox(width: 8),
+                FilledButton.icon(
+                  key: const ValueKey<String>('talents-catalog-open'),
+                  onPressed: () => _showTalentKatalog(context, allTalents),
+                  icon: const Icon(Icons.library_add),
+                  label: const Text('Talente verwalten'),
                 ),
-                label: Text(
-                  visibilityMode
-                      ? 'Sichtbarkeit beenden'
-                      : 'Sichtbarkeit bearbeiten',
-                ),
-              ),
+              ],
             ],
           ),
         ),
@@ -59,22 +53,19 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     );
   }
 
-  Widget _buildCombatVisibilityActionBar() {
-    final visibilityMode = _readVisibilityMode();
+  Widget _buildCombatActionBar({required List<TalentDef> allTalents}) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
       child: Align(
         alignment: Alignment.centerRight,
-        child: FilledButton.icon(
-          key: const ValueKey<String>('talents-visibility-mode-toggle'),
-          onPressed: () => _setVisibilityMode(!visibilityMode),
-          icon: Icon(
-            visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
-          ),
-          label: Text(
-            visibilityMode ? 'Sichtbarkeit beenden' : 'Sichtbarkeit bearbeiten',
-          ),
-        ),
+        child: _editController.isEditing
+            ? FilledButton.icon(
+                key: const ValueKey<String>('combat-talents-catalog-open'),
+                onPressed: () => _showTalentKatalog(context, allTalents),
+                icon: const Icon(Icons.library_add),
+                label: const Text('Kampftalente verwalten'),
+              )
+            : const SizedBox.shrink(),
       ),
     );
   }
