@@ -1,6 +1,6 @@
 part of '../hero_magic_tab.dart';
 
-/// Tabelle der aktivierten Zauber mit editierbaren ZfW-Werten.
+/// Tabelle der aktivierten Zauber mit editierbaren ZfW-Werten und vollstaendigen Infos.
 class _MagicActiveSpellsTable extends StatelessWidget {
   const _MagicActiveSpellsTable({
     required this.activeSpellIds,
@@ -14,6 +14,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     required this.onSpecializationsChanged,
     required this.onRemoveSpell,
     required this.controllerFor,
+    this.onAddSpell,
   });
 
   final List<String> activeSpellIds;
@@ -24,10 +25,11 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final void Function(String spellId, String raw) onSpellValueChanged;
   final void Function(String spellId, String raw) onModifierChanged;
   final void Function(String spellId, bool value) onHauszauberChanged;
-  final void Function(String spellId, String raw) onSpecializationsChanged;
+  final void Function(String spellId, List<String> value) onSpecializationsChanged;
   final void Function(String spellId) onRemoveSpell;
   final TextEditingController Function(String id, String field, String initial)
       controllerFor;
+  final VoidCallback? onAddSpell;
 
   @override
   Widget build(BuildContext context) {
@@ -38,10 +40,22 @@ class _MagicActiveSpellsTable extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Text(
-            'Keine Zauber aktiviert. Wechsle in den Bearbeitungsmodus '
-            'und aktiviere Zauber im Katalog unten.',
-            style: theme.textTheme.bodySmall,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Keine Zauber aktiviert.',
+                style: theme.textTheme.bodySmall,
+              ),
+              if (isEditing && onAddSpell != null) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: onAddSpell,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Zauber hinzufügen'),
+                ),
+              ],
+            ],
           ),
         ),
       );
@@ -77,14 +91,21 @@ class _MagicActiveSpellsTable extends StatelessWidget {
               horizontalMargin: 12,
               headingRowHeight: 36,
               dataRowMinHeight: 36,
-              dataRowMaxHeight: 48,
+              dataRowMaxHeight: 52,
               columns: [
                 const DataColumn(label: Text('Name')),
                 const DataColumn(label: Text('Probe')),
                 const DataColumn(label: Text('ZfW'), numeric: true),
                 const DataColumn(label: Text('Mod'), numeric: true),
-                const DataColumn(label: Text('Stg')),
+                const DataColumn(label: Text('Kompl.')),
                 const DataColumn(label: Text('HZ')),
+                const DataColumn(label: Text('Merkmale')),
+                const DataColumn(label: Text('Zauberdauer')),
+                const DataColumn(label: Text('Kosten')),
+                const DataColumn(label: Text('Reichweite')),
+                const DataColumn(label: Text('Dauer')),
+                const DataColumn(label: Text('Wirkung')),
+                const DataColumn(label: Text('Spezialisierungen')),
                 if (isEditing) const DataColumn(label: Text('')),
               ],
               rows: sortedIds.map((spellId) {
@@ -98,6 +119,13 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                     const DataCell(Text('0')),
                     const DataCell(Text('0')),
                     const DataCell(Text('?')),
+                    const DataCell(Text('-')),
+                    const DataCell(Text('-')),
+                    const DataCell(Text('-')),
+                    const DataCell(Text('-')),
+                    const DataCell(Text('-')),
+                    const DataCell(Text('-')),
+                    const DataCell(Text('-')),
                     const DataCell(Text('-')),
                     if (isEditing)
                       DataCell(
@@ -211,6 +239,112 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                   : theme.disabledColor,
                             ),
                     ),
+                    DataCell(
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 160),
+                        child: Text(
+                          def.traits.isNotEmpty ? def.traits : '-',
+                          style: theme.textTheme.bodySmall,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    DataCell(Text(
+                      def.castingTime.isNotEmpty ? def.castingTime : '-',
+                      style: theme.textTheme.bodySmall,
+                    )),
+                    DataCell(Text(
+                      def.aspCost.isNotEmpty ? def.aspCost : '-',
+                      style: theme.textTheme.bodySmall,
+                    )),
+                    DataCell(Text(
+                      def.range.isNotEmpty ? def.range : '-',
+                      style: theme.textTheme.bodySmall,
+                    )),
+                    DataCell(
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 120),
+                        child: Text(
+                          def.duration.isNotEmpty ? def.duration : '-',
+                          style: theme.textTheme.bodySmall,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    // Wirkungsbeschreibung – Kurztext, Tap oeffnet Dialog mit vollstaendigem Text.
+                    DataCell(
+                      GestureDetector(
+                        onTap: def.wirkung.isNotEmpty
+                            ? () => showDialog<void>(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                    title: Text(def.name),
+                                    content: SingleChildScrollView(
+                                      child: Text(def.wirkung),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(),
+                                        child: const Text('Schließen'),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                            : null,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 120),
+                          child: Text(
+                            def.wirkung.isNotEmpty ? def.wirkung : '–',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              decoration: def.wirkung.isNotEmpty
+                                  ? TextDecoration.underline
+                                  : null,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Spezialisierungen – tappbar, oeffnet Dialog zum Anzeigen/Bearbeiten.
+                    DataCell(
+                      GestureDetector(
+                        onTap: () => _showSpezializierungDialog(
+                          context: context,
+                          spellId: spellId,
+                          spellName: def.name,
+                          specializations: entry.specializations,
+                          isEditing: isEditing,
+                          onChanged: onSpecializationsChanged,
+                        ),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 120),
+                          child: entry.specializations.isEmpty
+                              ? Text('–', style: theme.textTheme.bodySmall)
+                              : Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '${entry.specializations.length}× ',
+                                      style:
+                                          theme.textTheme.bodySmall?.copyWith(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Flexible(
+                                      child: Text(
+                                        entry.specializations.first,
+                                        style: theme.textTheme.bodySmall,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ),
+                    ),
                     if (isEditing)
                       DataCell(
                         IconButton(
@@ -225,8 +359,153 @@ class _MagicActiveSpellsTable extends StatelessWidget {
               }).toList(growable: false),
             ),
           ),
+          if (isEditing && onAddSpell != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+              child: OutlinedButton.icon(
+                onPressed: onAddSpell,
+                icon: const Icon(Icons.add),
+                label: const Text('Zauber hinzufügen'),
+              ),
+            ),
         ],
       ),
+    );
+  }
+}
+
+/// Oeffnet einen Dialog zum Anzeigen und (im Edit-Modus) Bearbeiten der Spezialisierungsliste.
+Future<void> _showSpezializierungDialog({
+  required BuildContext context,
+  required String spellId,
+  required String spellName,
+  required List<String> specializations,
+  required bool isEditing,
+  required void Function(String, List<String>) onChanged,
+}) async {
+  await showDialog<void>(
+    context: context,
+    builder: (_) => _SpezializierungDialog(
+      spellName: spellName,
+      initial: specializations,
+      isEditing: isEditing,
+      onSave: (updated) => onChanged(spellId, updated),
+    ),
+  );
+}
+
+/// Dialog zum Anzeigen und Bearbeiten der Spezialisierungen eines Zaubers.
+class _SpezializierungDialog extends StatefulWidget {
+  const _SpezializierungDialog({
+    required this.spellName,
+    required this.initial,
+    required this.isEditing,
+    required this.onSave,
+  });
+
+  final String spellName;
+  final List<String> initial;
+  final bool isEditing;
+  final void Function(List<String>) onSave;
+
+  @override
+  State<_SpezializierungDialog> createState() => _SpezializierungDialogState();
+}
+
+class _SpezializierungDialogState extends State<_SpezializierungDialog> {
+  late List<String> _items;
+
+  @override
+  void initState() {
+    super.initState();
+    _items = List<String>.from(widget.initial);
+  }
+
+  void _addItem(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    setState(() => _items.add(trimmed));
+  }
+
+  void _removeItem(int index) {
+    setState(() => _items.removeAt(index));
+  }
+
+  Future<void> _promptAddItem() async {
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Spezialisierung hinzufügen'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Name der Spezialisierung',
+          ),
+          onSubmitted: (v) => Navigator.of(ctx).pop(v),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Abbrechen'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: const Text('Hinzufügen'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (result != null) _addItem(result);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.spellName),
+      content: SizedBox(
+        width: 320,
+        child: _items.isEmpty
+            ? const Text('Keine Spezialisierungen vorhanden.')
+            : ListView.builder(
+                shrinkWrap: true,
+                itemCount: _items.length,
+                itemBuilder: (_, i) => ListTile(
+                  dense: true,
+                  title: Text(_items[i]),
+                  trailing: widget.isEditing
+                      ? IconButton(
+                          icon: const Icon(Icons.delete_outline, size: 18),
+                          tooltip: 'Entfernen',
+                          onPressed: () => _removeItem(i),
+                        )
+                      : null,
+                ),
+              ),
+      ),
+      actions: [
+        if (widget.isEditing)
+          OutlinedButton.icon(
+            onPressed: _promptAddItem,
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Hinzufügen'),
+          ),
+        if (widget.isEditing)
+          TextButton(
+            onPressed: () {
+              widget.onSave(_items);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Speichern'),
+          )
+        else
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Schließen'),
+          ),
+      ],
     );
   }
 }
