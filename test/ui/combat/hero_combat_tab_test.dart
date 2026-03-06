@@ -16,7 +16,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 void main() {
   HeroSheet buildHero({
-    List<String> hiddenTalentIds = const <String>[],
     CombatConfig combatConfig = const CombatConfig(),
     Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
   }) {
@@ -36,7 +35,6 @@ void main() {
       ),
       talents: talents,
       combatConfig: combatConfig,
-      hiddenTalentIds: hiddenTalentIds,
     );
   }
 
@@ -499,11 +497,15 @@ void main() {
   });
 
   testWidgets(
-    'hides fully hidden combat technique groups outside visibility mode',
+    'shows only combat talent groups that have active talents',
     (tester) async {
       final repo = FakeRepository(
         heroes: [
-          buildHero(hiddenTalentIds: const <String>['tal_nah']),
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_fern': HeroTalentEntry(talentValue: 5),
+            },
+          ),
         ],
         states: {
           'demo': const HeroState(
@@ -519,15 +521,6 @@ void main() {
 
       expect(find.widgetWithText(ExpansionTile, 'Fernkampf'), findsOneWidget);
       expect(find.widgetWithText(ExpansionTile, 'Nahkampf'), findsNothing);
-
-      await tester.tap(
-        find.byKey(
-          const ValueKey<String>('combat-talents-visibility-mode-toggle'),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.widgetWithText(ExpansionTile, 'Nahkampf'), findsOneWidget);
     },
   );
 

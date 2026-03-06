@@ -44,8 +44,8 @@ const List<WorkspaceAreaMeta> workspaceAreaRegistry = <WorkspaceAreaMeta>[
     pageId: WorkspacePageId.talents,
     areaId: WorkspaceAreaId.talentsList,
     kind: WorkspaceAreaKind.listView,
-    supportsVisibilityMode: true,
-    supportsGroupVisibility: true,
+    supportsVisibilityMode: false,
+    supportsGroupVisibility: false,
     supportsInlineEdit: true,
   ),
   WorkspaceAreaMeta(
@@ -60,8 +60,8 @@ const List<WorkspaceAreaMeta> workspaceAreaRegistry = <WorkspaceAreaMeta>[
     pageId: WorkspacePageId.combat,
     areaId: WorkspaceAreaId.combatTechniquesList,
     kind: WorkspaceAreaKind.listView,
-    supportsVisibilityMode: true,
-    supportsGroupVisibility: true,
+    supportsVisibilityMode: false,
+    supportsGroupVisibility: false,
     supportsInlineEdit: true,
   ),
   WorkspaceAreaMeta(

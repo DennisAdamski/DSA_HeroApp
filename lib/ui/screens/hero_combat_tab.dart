@@ -20,6 +20,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
+part 'hero_combat/combat_talent_catalog_table.dart';
 part 'hero_combat/hero_combat_melee_subtab.dart';
 part 'hero_combat/hero_combat_special_rules_subtab.dart';
 part 'hero_combat/hero_combat_maneuvers_subtab.dart';
@@ -60,7 +61,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
 
   HeroSheet? _latestHero;
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
-  Set<String> _draftHiddenTalentIds = <String>{};
   Set<String> _invalidCombatTalentIds = <String>{};
   CombatConfig _draftCombatConfig = const CombatConfig();
   int? _temporaryIniRoll;
@@ -118,7 +118,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
 
     _resetControllers();
     _draftTalents = Map<String, HeroTalentEntry>.from(hero.talents);
-    _draftHiddenTalentIds = normalizeHiddenTalentIds(hero.hiddenTalentIds);
     _invalidCombatTalentIds = <String>{};
     _draftCombatConfig = hero.combatConfig;
     _temporaryIniRoll = null;
@@ -295,7 +294,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     }
     _editController.clearSyncSignature();
     _syncDraftFromHero(hero, force: true);
-    _setCombatTalentsVisibilityMode(false);
     _invalidCombatTalentIds = <String>{};
     _editController.startEdit();
   }
@@ -343,14 +341,12 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
 
     final updatedHero = hero.copyWith(
       talents: Map<String, HeroTalentEntry>.from(_draftTalents),
-      hiddenTalentIds: _draftHiddenTalentIds.toList(growable: false),
       combatConfig: _draftCombatConfig,
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     if (!mounted) {
       return;
     }
-    _setCombatTalentsVisibilityMode(false);
     _invalidCombatTalentIds = <String>{};
     _editController.markSaved();
     ScaffoldMessenger.of(
@@ -369,7 +365,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       _editController.clearSyncSignature();
       _syncDraftFromHero(hero, force: true);
     }
-    _setCombatTalentsVisibilityMode(false);
     _invalidCombatTalentIds = <String>{};
     _editController.markDiscarded();
   }
@@ -427,34 +422,68 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _markFieldChanged();
   }
 
-  void _toggleHidden(String talentId) {
-    if (_draftHiddenTalentIds.contains(talentId)) {
-      _draftHiddenTalentIds.remove(talentId);
+  void _toggleCombatTalent(String talentId, bool activate) {
+    if (activate) {
+      _draftTalents.putIfAbsent(talentId, () => const HeroTalentEntry());
     } else {
-      _draftHiddenTalentIds.add(talentId);
+      _draftTalents.remove(talentId);
+      _controllers.remove('talent::$talentId::talentValue')?.dispose();
+      _controllers.remove('talent::$talentId::atValue')?.dispose();
+      _controllers.remove('talent::$talentId::paValue')?.dispose();
     }
     _markFieldChanged();
   }
 
-  void _setHiddenForGroup(List<TalentDef> talents, {required bool hidden}) {
-    for (final talent in talents) {
-      if (hidden) {
-        _draftHiddenTalentIds.add(talent.id);
-      } else {
-        _draftHiddenTalentIds.remove(talent.id);
-      }
-    }
-    _markFieldChanged();
-  }
-
-  void _setCombatTalentsVisibilityMode(bool enabled) {
-    final notifier = ref.read(
-      combatTechniquesVisibilityModeProvider(widget.heroId).notifier,
+  void _showCombatTalentKatalog(
+    BuildContext context,
+    List<TalentDef> allCombatTalents,
+  ) {
+    final localActiveIds = _draftTalents.keys.toSet();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            final screenHeight = MediaQuery.of(ctx).size.height;
+            return SizedBox(
+              height: screenHeight * 0.8,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Theme.of(ctx).colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: _CombatTalentCatalogTable(
+                      allTalents: allCombatTalents,
+                      activeTalentIds: localActiveIds,
+                      onToggleTalent: (id, activate) {
+                        _toggleCombatTalent(id, activate);
+                        setSheetState(() {
+                          if (activate) {
+                            localActiveIds.add(id);
+                          } else {
+                            localActiveIds.remove(id);
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
-    if (notifier.state == enabled) {
-      return;
-    }
-    notifier.state = enabled;
   }
 
   void _updateGifted(String talentId, bool value) {
@@ -480,8 +509,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _viewRevision.value++;
     _editController.markFieldChanged();
   }
-
-  bool _isHidden(String talentId) => _draftHiddenTalentIds.contains(talentId);
 
   String? _validateWeaponSlotsForConfig({
     required CombatConfig config,
@@ -551,9 +578,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       final techniquesMeta = workspaceAreaMetaById(
         WorkspaceAreaId.combatTechniquesList,
       );
-      return techniquesMeta.kind == WorkspaceAreaKind.listView &&
-          techniquesMeta.supportsVisibilityMode &&
-          techniquesMeta.supportsGroupVisibility;
+      return techniquesMeta.kind == WorkspaceAreaKind.listView;
     }());
     UiRebuildObserver.bump('hero_combat_tab');
     final hero = ref.watch(heroByIdProvider(widget.heroId));
