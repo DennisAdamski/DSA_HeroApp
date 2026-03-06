@@ -43,20 +43,66 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     final selected = entry.combatSpecializations.isEmpty
         ? _splitSpecializationTokens(entry.specializations)
         : _normalizeStringList(entry.combatSpecializations);
-    final label = selected.isEmpty ? '-' : selected.join(', ');
+
     if (!isEditing) {
-      return _textCell(label);
+      if (selected.isEmpty) {
+        return _textCell('-');
+      }
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Wrap(
+            spacing: 4,
+            runSpacing: 2,
+            children: selected
+                .map(
+                  (spec) => Chip(
+                    label: Text(spec),
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    padding: EdgeInsets.zero,
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 6),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+        ),
+      );
     }
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: OutlinedButton(
-          key: ValueKey<String>('talents-combat-spec-${talent.id}'),
-          onPressed: options.isEmpty
-              ? null
-              : () async {
+        child: Wrap(
+          spacing: 4,
+          runSpacing: 2,
+          children: [
+            ...selected.map(
+              (spec) => InputChip(
+                key: ValueKey<String>('talents-combat-spec-${talent.id}-$spec'),
+                label: Text(spec),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: EdgeInsets.zero,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 6),
+                onDeleted: () {
+                  final updated = List<String>.from(selected)..remove(spec);
+                  _updateCombatSpecializations(talent.id, updated);
+                },
+              ),
+            ),
+            if (options.isNotEmpty)
+              ActionChip(
+                key: ValueKey<String>('talents-combat-spec-add-${talent.id}'),
+                avatar: const Icon(Icons.add, size: 16),
+                label: const Text('Hinzufuegen'),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: EdgeInsets.zero,
+                labelPadding: const EdgeInsets.only(right: 6),
+                onPressed: () async {
                   final result = await _showCombatSpecializationDialog(
                     title: 'Spezialisierungen: ${talent.name}',
                     options: options,
@@ -67,7 +113,8 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
                   }
                   _updateCombatSpecializations(talent.id, result);
                 },
-          child: Text(label, maxLines: 2, overflow: TextOverflow.ellipsis),
+              ),
+          ],
         ),
       ),
     );
@@ -155,25 +202,117 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     );
   }
 
-  Widget _textInputCell({
+  Widget _specializationBadgesCell({
     required String talentId,
-    required String field,
-    required String value,
+    required HeroTalentEntry entry,
     required bool isEditing,
   }) {
-    final controller = _controllerFor(talentId, field, value);
+    final specs = entry.combatSpecializations.isNotEmpty
+        ? _normalizeStringList(entry.combatSpecializations)
+        : _splitSpecializationTokens(entry.specializations);
+
+    if (!isEditing) {
+      if (specs.isEmpty) {
+        return _textCell('-');
+      }
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Wrap(
+            spacing: 4,
+            runSpacing: 2,
+            children: specs
+                .map(
+                  (spec) => Chip(
+                    label: Text(spec),
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    padding: EdgeInsets.zero,
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 6),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
-      child: TextField(
-        key: ValueKey<String>('talents-field-$talentId-$field'),
-        controller: controller,
-        readOnly: !isEditing,
-        decoration: _cellInputDecoration(),
-        onChanged: isEditing
-            ? (raw) => _updateStringField(talentId, field, raw)
-            : null,
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Wrap(
+          spacing: 4,
+          runSpacing: 2,
+          children: [
+            ...specs.map(
+              (spec) => InputChip(
+                key: ValueKey<String>('talents-spec-$talentId-$spec'),
+                label: Text(spec),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: EdgeInsets.zero,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 6),
+                onDeleted: () {
+                  final updated = List<String>.from(specs)..remove(spec);
+                  _updateSpecializations(talentId, updated);
+                },
+              ),
+            ),
+            ActionChip(
+              key: ValueKey<String>('talents-spec-add-$talentId'),
+              avatar: const Icon(Icons.add, size: 16),
+              label: const Text('Hinzufuegen'),
+              visualDensity: VisualDensity.compact,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              padding: EdgeInsets.zero,
+              labelPadding: const EdgeInsets.only(right: 6),
+              onPressed: () => _showAddSpecializationDialog(talentId, specs),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _showAddSpecializationDialog(
+    String talentId,
+    List<String> currentSpecs,
+  ) async {
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Spezialisierung hinzufuegen'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: 'Name der Spezialisierung',
+            ),
+            onSubmitted: (value) => Navigator.of(ctx).pop(value),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Abbrechen'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(controller.text),
+              child: const Text('Hinzufuegen'),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+    if (result == null || result.trim().isEmpty) {
+      return;
+    }
+    final updated = List<String>.from(currentSpecs)..add(result.trim());
+    _updateSpecializations(talentId, updated);
   }
 
   Widget _giftedCell({
