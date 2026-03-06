@@ -61,6 +61,8 @@ python tool/import_liber_cantiones.py \
 Notes:
 
 - The importer keeps all existing spell identities and base catalog fields.
+- Imported long-text fields are whitespace-normalized; PDF line breaks are
+  flattened to regular spaces instead of preserving page layout.
 - Ambiguous, unmatched, or PDF-only-reference cases are written to
   `tool/generated/liber_cantiones_missing_spells.json` for manual review.
 - The script requires `pypdf` and, for AES-encrypted PDFs, `cryptography`.

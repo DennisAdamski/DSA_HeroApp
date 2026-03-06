@@ -11,7 +11,6 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     required this.onSpellValueChanged,
     required this.onModifierChanged,
     required this.onHauszauberChanged,
-    required this.onSpecializationsChanged,
     required this.onRemoveSpell,
     required this.controllerFor,
     this.onAddSpell,
@@ -25,8 +24,6 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final void Function(String spellId, String raw) onSpellValueChanged;
   final void Function(String spellId, String raw) onModifierChanged;
   final void Function(String spellId, bool value) onHauszauberChanged;
-  final void Function(String spellId, List<String> value)
-  onSpecializationsChanged;
   final void Function(String spellId) onRemoveSpell;
   final TextEditingController Function(String id, String field, String initial)
   controllerFor;
@@ -330,26 +327,23 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                             ),
                           ),
                         ),
-                        // Varianten – tappbar, oeffnet Dialog zum Anzeigen/Bearbeiten.
+                        // Varianten – tappbar, oeffnet Dialog mit den Katalog-Varianten.
                         DataCell(
                           GestureDetector(
-                            onTap: () => _showSpezializierungDialog(
+                            onTap: () => _showVariantenDialog(
                               context: context,
-                              spellId: spellId,
                               spellName: def.name,
-                              specializations: entry.specializations,
-                              isEditing: isEditing,
-                              onChanged: onSpecializationsChanged,
+                              variants: def.variants,
                             ),
                             child: ConstrainedBox(
                               constraints: const BoxConstraints(maxWidth: 120),
-                              child: entry.specializations.isEmpty
+                              child: def.variants.isEmpty
                                   ? Text('–', style: theme.textTheme.bodySmall)
                                   : Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
-                                          '${entry.specializations.length}× ',
+                                          '${def.variants.length}× ',
                                           style: theme.textTheme.bodySmall
                                               ?.copyWith(
                                                 color:
@@ -359,7 +353,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                         ),
                                         Flexible(
                                           child: Text(
-                                            entry.specializations.first,
+                                            def.variants.first,
                                             style: theme.textTheme.bodySmall,
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -401,135 +395,45 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   }
 }
 
-/// Oeffnet einen Dialog zum Anzeigen und Bearbeiten der Variantenliste eines Zaubers.
-Future<void> _showSpezializierungDialog({
+/// Oeffnet einen Dialog zum Anzeigen der Katalog-Varianten eines Zaubers.
+Future<void> _showVariantenDialog({
   required BuildContext context,
-  required String spellId,
   required String spellName,
-  required List<String> specializations,
-  required bool isEditing,
-  required void Function(String, List<String>) onChanged,
+  required List<String> variants,
 }) async {
   await showDialog<void>(
     context: context,
-    builder: (_) => _SpezializierungDialog(
-      spellName: spellName,
-      initial: specializations,
-      isEditing: isEditing,
-      onSave: (updated) => onChanged(spellId, updated),
-    ),
+    builder: (_) => _VariantenDialog(spellName: spellName, variants: variants),
   );
 }
 
-/// Dialog zum Anzeigen und Bearbeiten der Varianten eines Zaubers.
-class _SpezializierungDialog extends StatefulWidget {
-  const _SpezializierungDialog({
-    required this.spellName,
-    required this.initial,
-    required this.isEditing,
-    required this.onSave,
-  });
+/// Dialog zum Anzeigen der Varianten eines Zaubers.
+class _VariantenDialog extends StatelessWidget {
+  const _VariantenDialog({required this.spellName, required this.variants});
 
   final String spellName;
-  final List<String> initial;
-  final bool isEditing;
-  final void Function(List<String>) onSave;
-
-  @override
-  State<_SpezializierungDialog> createState() => _SpezializierungDialogState();
-}
-
-class _SpezializierungDialogState extends State<_SpezializierungDialog> {
-  late List<String> _items;
-
-  @override
-  void initState() {
-    super.initState();
-    _items = List<String>.from(widget.initial);
-  }
-
-  void _addItem(String name) {
-    final trimmed = name.trim();
-    if (trimmed.isEmpty) return;
-    setState(() => _items.add(trimmed));
-  }
-
-  void _removeItem(int index) {
-    setState(() => _items.removeAt(index));
-  }
-
-  Future<void> _promptAddItem() async {
-    final controller = TextEditingController();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Variante hinzufügen'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(hintText: 'Name der Variante'),
-          onSubmitted: (v) => Navigator.of(ctx).pop(v),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Abbrechen'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(controller.text),
-            child: const Text('Hinzufügen'),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (result != null) _addItem(result);
-  }
+  final List<String> variants;
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.spellName),
+      title: Text(spellName),
       content: SizedBox(
         width: 320,
-        child: _items.isEmpty
+        child: variants.isEmpty
             ? const Text('Keine Varianten vorhanden.')
             : ListView.builder(
                 shrinkWrap: true,
-                itemCount: _items.length,
-                itemBuilder: (_, i) => ListTile(
-                  dense: true,
-                  title: Text(_items[i]),
-                  trailing: widget.isEditing
-                      ? IconButton(
-                          icon: const Icon(Icons.delete_outline, size: 18),
-                          tooltip: 'Entfernen',
-                          onPressed: () => _removeItem(i),
-                        )
-                      : null,
-                ),
+                itemCount: variants.length,
+                itemBuilder: (_, i) =>
+                    ListTile(dense: true, title: Text(variants[i])),
               ),
       ),
       actions: [
-        if (widget.isEditing)
-          OutlinedButton.icon(
-            onPressed: _promptAddItem,
-            icon: const Icon(Icons.add, size: 18),
-            label: const Text('Hinzufügen'),
-          ),
-        if (widget.isEditing)
-          TextButton(
-            onPressed: () {
-              widget.onSave(_items);
-              Navigator.of(context).pop();
-            },
-            child: const Text('Speichern'),
-          )
-        else
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Schließen'),
-          ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Schließen'),
+        ),
       ],
     );
   }

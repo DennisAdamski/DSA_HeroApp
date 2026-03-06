@@ -60,13 +60,14 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - **hero_magic_tab.dart**: Hauptdatei des Magie-Tabs im HeroWorkspaceScreen, aufgeteilt in Part-Files:
   - `magic_header_section.dart` — Repraesentationen und Merkmalskenntnisse bearbeiten
   - `magic_special_abilities_section.dart` — Magische Sonderfertigkeiten verwalten
-  - `magic_active_spells_table.dart` — Tabelle aktivierter Zauber (ZfW, Mod, Steigerung)
+  - `magic_active_spells_table.dart` — Tabelle aktivierter Zauber (ZfW, Mod, Steigerung, Katalog-Varianten)
   - `magic_spell_catalog_table.dart` — Katalog-Zauber filtern und aktivieren
 
 ### Katalog
 
 - Zauber-Definitionen (`SpellDef`) kommen aus `magie.json` im Katalog.
 - `SpellDef` enthaelt neben Grunddaten auch Detailfelder aus `Liber Cantiones` wie `targetObject`, `wirkung`, `modifications` und `variants`.
+- Die importierten Langtexte werden fuer die Laufzeitdarstellung whitespace-normalisiert; PDF-Zeilenumbrueche werden nicht layoutgetreu uebernommen.
 - Konstanten `kRepresentationen` und `kMerkmale` in `rules_catalog.dart` definieren die verfuegbaren Repraesentationen und Merkmale.
 
 ## Wichtige Hinweise

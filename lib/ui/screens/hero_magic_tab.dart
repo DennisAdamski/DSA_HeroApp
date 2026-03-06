@@ -192,12 +192,6 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _markFieldChanged();
   }
 
-  void _updateSpecializations(String spellId, List<String> value) {
-    final current = _draftSpells[spellId] ?? const HeroSpellEntry();
-    _draftSpells[spellId] = current.copyWith(specializations: value);
-    _markFieldChanged();
-  }
-
   void _toggleSpell(String spellId, bool activate) {
     if (activate) {
       _draftSpells.putIfAbsent(spellId, () => const HeroSpellEntry());
@@ -206,7 +200,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       // Entferne zugehoerige Controller.
       _cellControllers.remove('$spellId::spellValue')?.dispose();
       _cellControllers.remove('$spellId::modifier')?.dispose();
-      // Kein Controller fuer Varianten (wird als Dialog bearbeitet).
+      // Varianten kommen aus dem Katalog und nutzen keine Edit-Controller.
     }
     _markFieldChanged();
   }
@@ -337,7 +331,6 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             onSpellValueChanged: _updateSpellValue,
                             onModifierChanged: _updateSpellModifier,
                             onHauszauberChanged: _updateHauszauber,
-                            onSpecializationsChanged: _updateSpecializations,
                             onRemoveSpell: _removeSpell,
                             controllerFor: _controllerFor,
                             onAddSpell: _editController.isEditing
