@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
@@ -26,6 +27,7 @@ part 'hero_combat/hero_combat_melee_subtab.dart';
 part 'hero_combat/hero_combat_special_rules_subtab.dart';
 part 'hero_combat/hero_combat_maneuvers_subtab.dart';
 part 'hero_combat/hero_combat_form_fields.dart';
+part 'hero_combat/weapon_detail_expansion.dart';
 
 enum _ManeuverSupportStatus { supported, notSupported, unverifiable }
 
