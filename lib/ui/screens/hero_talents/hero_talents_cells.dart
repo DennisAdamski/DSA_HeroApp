@@ -19,6 +19,28 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     );
   }
 
+  Widget _tappableNameCell(String text, {Key? key, VoidCallback? onTap}) {
+    final theme = Theme.of(context);
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(4),
+          child: Text(
+            text,
+            style: TextStyle(
+              color: theme.colorScheme.primary,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _textCell(String text, {Key? key, bool highlighted = false}) {
     final theme = Theme.of(context);
     final style = highlighted
