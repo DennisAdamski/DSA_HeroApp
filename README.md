@@ -47,6 +47,7 @@ Vollstaendige Anleitung:
 
 ### Tooling und Datenaufbereitung
 - `tool/convert_excel_to_catalog.py`: erzeugt Runtime-Katalog aus Excel-Listen
+- `tool/import_liber_cantiones.py`: reichert `magie.json` mit Liber-Cantiones-Details und Review-Datei an
 - `tool/export_rule_cells.py`: Snapshot-Helfer fuer Regelzellen
 - `tool/report_unreferenced_dart.py`: Report fuer unreferenzierte `lib/*.dart`
 - `tool/check_screen_loc_budget.py`: LOC-Gate fuer Screen-Dateien (z. B. CI-Check auf 700 LOC)

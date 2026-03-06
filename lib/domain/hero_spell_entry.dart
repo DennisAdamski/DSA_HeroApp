@@ -3,7 +3,8 @@
 /// Analog zu [HeroTalentEntry], aber fuer aktivierte Zauber.
 /// [spellValue] entspricht dem ZfW (Zauberferttigkeitswert).
 /// [hauszauber] markiert den Zauber als Hauszauber (reduziert Steigerung).
-/// [specializations] ist eine Liste von Spezialisierungen des Zaubers.
+/// [specializations] speichert aus Kompatibilitaetsgruenden die Varianten
+/// eines Zaubers als Liste von Freitext-Eintraegen.
 class HeroSpellEntry {
   const HeroSpellEntry({
     this.spellValue = 0,

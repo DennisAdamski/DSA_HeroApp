@@ -43,7 +43,7 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 
 ### Datenmodell
 
-- **HeroSpellEntry**: Speichert ZfW (spellValue), Modifikator, Hauszauber-Flag und Spezialisierungen pro aktiviertem Zauber.
+- **HeroSpellEntry**: Speichert ZfW (spellValue), Modifikator, Hauszauber-Flag und Varianten pro aktiviertem Zauber; technisch bleibt das Listenfeld `specializations` aus Kompatibilitaetsgruenden bestehen.
 - **MagicSpecialAbility**: Name + optionale Notiz fuer magische Sonderfertigkeiten.
 - **HeroSheet** (schemaVersion 5): Neue Felder `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities`.
 
@@ -66,6 +66,7 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 ### Katalog
 
 - Zauber-Definitionen (`SpellDef`) kommen aus `magie.json` im Katalog.
+- `SpellDef` enthaelt neben Grunddaten auch Detailfelder aus `Liber Cantiones` wie `targetObject`, `wirkung`, `modifications` und `variants`.
 - Konstanten `kRepresentationen` und `kMerkmale` in `rules_catalog.dart` definieren die verfuegbaren Repraesentationen und Merkmale.
 
 ## Wichtige Hinweise

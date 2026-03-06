@@ -88,6 +88,9 @@ void main() {
           'tradition': 'Gildenmagie',
           'steigerung': 'C',
           'attributes': ['KL', 'IN', 'CH'],
+          'targetObject': 'Lebewesen',
+          'wirkung': 'Heilt LeP.',
+          'variants': ['Selbst'],
           'active': true,
         },
       ]),
@@ -107,6 +110,9 @@ void main() {
       'tal_dolche',
     ]);
     expect(catalog.spells.map((e) => e.id).toList(), ['spell_balsam']);
+    expect(catalog.spells.first.targetObject, 'Lebewesen');
+    expect(catalog.spells.first.wirkung, 'Heilt LeP.');
+    expect(catalog.spells.first.variants, ['Selbst']);
     expect(catalog.weapons.map((e) => e.id).toList(), ['wpn_dolch']);
   });
 

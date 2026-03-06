@@ -109,6 +109,7 @@ DSA_HeroApp/
 │   └── heroes/                      # Seed hero JSON files
 ├── tool/                            # Python helper scripts
 │   ├── convert_excel_to_catalog.py
+│   ├── import_liber_cantiones.py
 │   ├── split_house_rules_catalog.py
 │   ├── export_rule_cells.py
 │   ├── report_unreferenced_dart.py
@@ -160,7 +161,7 @@ Domain models (lib/domain/) — immutable, pure Dart
 | `HeroState` | `domain/hero_state.dart` | Runtime state (current LeP/AsP/KaP/Au, temp modifiers) |
 | `HeroComputedSnapshot` | `state/hero_computed_snapshot.dart` | All derived values for one hero, computed in one pass |
 | `HeroIndexSnapshot` | `state/hero_index_snapshot.dart` | Sorted hero list + O(1) ID map |
-| `HeroSpellEntry` | `domain/hero_spell_entry.dart` | Persisted spell entry (ZfW, Hauszauber, modifier) |
+| `HeroSpellEntry` | `domain/hero_spell_entry.dart` | Persisted spell entry (ZfW, Hauszauber, modifier, Variantenliste) |
 | `MagicSpecialAbility` | `domain/magic_special_ability.dart` | Persisted magic special ability (name + note) |
 | `HeroTransferBundle` | `domain/hero_transfer_bundle.dart` | Export/import envelope (hero + state + timestamp) |
 
@@ -251,6 +252,9 @@ bash tool/ios_bootstrap_spm.sh
 ```bash
 # Regenerate runtime catalog from Excel source files
 python tool/convert_excel_to_catalog.py
+
+# Import Liber Cantiones spell details into magie.json
+python tool/import_liber_cantiones.py --pdf "<path-to-pdf>"
 
 # Split a monolithic catalog into the split-JSON structure
 python tool/split_house_rules_catalog.py

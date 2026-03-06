@@ -100,8 +100,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _draftSpells = Map<String, HeroSpellEntry>.from(hero.spells);
     _draftRepresentationen = List<String>.from(hero.representationen);
     _draftMerkmalskenntnisse = List<String>.from(hero.merkmalskenntnisse);
-    _draftMagicSpecialAbilities =
-        List<MagicSpecialAbility>.from(hero.magicSpecialAbilities);
+    _draftMagicSpecialAbilities = List<MagicSpecialAbility>.from(
+      hero.magicSpecialAbilities,
+    );
   }
 
   void _resetCellControllers() {
@@ -138,14 +139,16 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       spells: Map<String, HeroSpellEntry>.from(_draftSpells),
       representationen: List<String>.from(_draftRepresentationen),
       merkmalskenntnisse: List<String>.from(_draftMerkmalskenntnisse),
-      magicSpecialAbilities:
-          List<MagicSpecialAbility>.from(_draftMagicSpecialAbilities),
+      magicSpecialAbilities: List<MagicSpecialAbility>.from(
+        _draftMagicSpecialAbilities,
+      ),
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     if (!mounted) return;
     _editController.markSaved();
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Magie gespeichert')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Magie gespeichert')));
   }
 
   Future<void> _cancelChanges() async {
@@ -203,7 +206,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       // Entferne zugehoerige Controller.
       _cellControllers.remove('$spellId::spellValue')?.dispose();
       _cellControllers.remove('$spellId::modifier')?.dispose();
-      // Kein Controller fuer Spezialisierungen (wird als Dialog bearbeitet).
+      // Kein Controller fuer Varianten (wird als Dialog bearbeitet).
     }
     _markFieldChanged();
   }
@@ -315,8 +318,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
               child: ValueListenableBuilder<int>(
                 valueListenable: _tableRevision,
                 builder: (context, revision, child) {
-                  final activeSpellIds =
-                      _draftSpells.keys.toList(growable: false);
+                  final activeSpellIds = _draftSpells.keys.toList(
+                    growable: false,
+                  );
                   return TabBarView(
                     controller: _innerTabController,
                     children: [
@@ -338,7 +342,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             controllerFor: _controllerFor,
                             onAddSpell: _editController.isEditing
                                 ? () => _showZauberKatalog(
-                                    context, catalog.spells)
+                                    context,
+                                    catalog.spells,
+                                  )
                                 : null,
                           ),
                         ],
