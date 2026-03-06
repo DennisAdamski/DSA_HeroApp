@@ -231,7 +231,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
 
     final effective = _latestHero != null
         ? computeEffectiveAttributes(_latestHero!)
-        : const Attributes();
+        : const Attributes(mu: 0, kl: 0, inn: 0, ch: 0, ff: 0, ge: 0, ko: 0, kk: 0);
 
     final cells = <Widget>[
       _tappableNameCell(
