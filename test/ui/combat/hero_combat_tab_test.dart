@@ -350,7 +350,13 @@ void main() {
     'combat techniques table shows specialization column and edit mode control',
     (tester) async {
       final repo = FakeRepository(
-        heroes: [buildHero()],
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_nah': HeroTalentEntry(),
+            },
+          ),
+        ],
         states: {
           'demo': const HeroState(
             currentLep: 10,
@@ -365,7 +371,7 @@ void main() {
 
       expect(find.text('Spezialisierung'), findsAtLeastNWidgets(1));
       expect(
-        find.byKey(const ValueKey<String>('talents-combat-spec-tal_nah')),
+        find.byKey(const ValueKey<String>('combat-spec-add-tal_nah')),
         findsNothing,
       );
 
@@ -373,7 +379,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.byKey(const ValueKey<String>('talents-combat-spec-tal_nah')),
+        find.byKey(const ValueKey<String>('combat-spec-add-tal_nah')),
         findsOneWidget,
       );
     },
@@ -383,7 +389,13 @@ void main() {
     tester,
   ) async {
     final repo = FakeRepository(
-      heroes: [buildHero()],
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(),
+          },
+        ),
+      ],
       states: {
         'demo': const HeroState(
           currentLep: 10,
@@ -399,7 +411,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final specButton = find.byKey(
-      const ValueKey<String>('talents-combat-spec-tal_nah'),
+      const ValueKey<String>('combat-spec-add-tal_nah'),
     );
     await tester.ensureVisible(specButton);
     await tester.tap(specButton);
@@ -1255,7 +1267,11 @@ void main() {
     final offhandMode = find.byKey(
       const ValueKey<String>('combat-offhand-mode'),
     );
-    await tester.ensureVisible(offhandMode);
+    for (var i = 0; i < 6 && offhandMode.evaluate().isEmpty; i++) {
+      await tester.drag(find.byType(ListView).first, const Offset(0, -280));
+      await tester.pumpAndSettle();
+    }
+    expect(offhandMode, findsOneWidget);
     await tester.pumpAndSettle();
     await tester.tap(offhandMode);
     await tester.pumpAndSettle();
@@ -1264,7 +1280,11 @@ void main() {
     final offhandAtMod = find.byKey(
       const ValueKey<String>('combat-offhand-at-mod'),
     );
-    await tester.ensureVisible(offhandAtMod);
+    for (var i = 0; i < 3 && offhandAtMod.evaluate().isEmpty; i++) {
+      await tester.drag(find.byType(ListView).first, const Offset(0, -180));
+      await tester.pumpAndSettle();
+    }
+    expect(offhandAtMod, findsOneWidget);
     await tester.pumpAndSettle();
     await tester.enterText(offhandAtMod, '2');
     await tester.pumpAndSettle();
