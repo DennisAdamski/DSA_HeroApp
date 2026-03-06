@@ -262,16 +262,13 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     _markFieldChanged();
   }
 
-  void _updateStringField(String talentId, String field, String raw) {
+  void _updateSpecializations(String talentId, List<String> values) {
     final current = _entryForTalent(talentId);
-    final updated = switch (field) {
-      'specializations' => current.copyWith(
-        specializations: raw,
-        combatSpecializations: _splitSpecializationTokens(raw),
-      ),
-      _ => current,
-    };
-    _draftTalents[talentId] = updated;
+    final normalized = _normalizeStringList(values);
+    _draftTalents[talentId] = current.copyWith(
+      combatSpecializations: normalized,
+      specializations: normalized.join(', '),
+    );
     _markFieldChanged();
   }
 
