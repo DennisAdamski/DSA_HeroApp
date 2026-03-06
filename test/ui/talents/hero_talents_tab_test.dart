@@ -19,7 +19,6 @@ void main() {
 
   HeroSheet buildHero({
     int level = 1,
-    List<String> hiddenTalentIds = const <String>[],
     Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
     CombatConfig combatConfig = const CombatConfig(),
   }) {
@@ -39,7 +38,6 @@ void main() {
       ),
       talents: talents,
       combatConfig: combatConfig,
-      hiddenTalentIds: hiddenTalentIds,
     );
   }
 
@@ -133,19 +131,18 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> enableVisibilityMode(WidgetTester tester) async {
-    await tester.tap(
-      find.byKey(const ValueKey<String>('talents-visibility-mode-toggle')),
-    );
-    await tester.pumpAndSettle();
-  }
-
   testWidgets(
-    'grouped table renders with requested column order and hidden talents are excluded in normal mode',
+    'only talents present in hero.talents are shown, groups render correctly',
     (tester) async {
+      // Held hat nur tal_a und tal_c in talents-Map. tal_b fehlt und wird nicht angezeigt.
       final repo = FakeRepository(
         heroes: [
-          buildHero(hiddenTalentIds: const <String>['tal_b']),
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(),
+              'tal_c': HeroTalentEntry(),
+            },
+          ),
         ],
         states: {
           'demo': const HeroState(
@@ -244,8 +241,19 @@ void main() {
       weapons: <WeaponDef>[],
     );
 
+    // Held hat alle Talente in der Map, damit sie sichtbar sind.
     final repo = FakeRepository(
-      heroes: [buildHero()],
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            't1': HeroTalentEntry(),
+            't2': HeroTalentEntry(),
+            't3': HeroTalentEntry(),
+            't4': HeroTalentEntry(),
+            't5': HeroTalentEntry(),
+          },
+        ),
+      ],
       states: {
         'demo': const HeroState(
           currentLep: 10,
@@ -281,12 +289,17 @@ void main() {
     expect(find.text('Handwerkliche Talente'), findsOneWidget);
   });
 
-  testWidgets('edit mode shows hidden talents and enables visibility toggles', (
+  testWidgets('edit mode allows editing talent values', (
     tester,
   ) async {
     final repo = FakeRepository(
       heroes: [
-        buildHero(hiddenTalentIds: const <String>['tal_b']),
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(),
+            'tal_b': HeroTalentEntry(),
+          },
+        ),
       ],
       states: {
         'demo': const HeroState(
@@ -302,22 +315,30 @@ void main() {
     await actions.startEdit();
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Boote Fahren (ausgeblendet)'), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey<String>('talents-visibility-tal_b')),
-      findsOneWidget,
-    );
+    // Im Edit-Modus sind die Felder bearbeitbar.
     final field = tester.widget<TextField>(
       find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
     );
     expect(field.readOnly, isFalse);
+
+    // Katalog-Button erscheint im Edit-Modus.
+    expect(
+      find.byKey(const ValueKey<String>('talents-catalog-open')),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('save persists edited values and hidden-state changes', (
+  testWidgets('save persists edited talent values', (
     tester,
   ) async {
     final repo = FakeRepository(
-      heroes: [buildHero()],
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(),
+          },
+        ),
+      ],
       states: {
         'demo': const HeroState(
           currentLep: 10,
@@ -336,26 +357,23 @@ void main() {
       find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
       '7',
     );
-    await enableVisibilityMode(tester);
-    final visibilityToggle = find.byKey(
-      const ValueKey<String>('talents-visibility-tal_a'),
-    );
-    await tester.ensureVisible(visibilityToggle);
-    await tester.tap(visibilityToggle);
-    await tester.pumpAndSettle();
     await actions.save();
     await tester.pumpAndSettle();
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-    expect(hero.hiddenTalentIds, contains('tal_a'));
     expect(hero.talents['tal_a']?.talentValue, 7);
-    expect(find.text('Athletik'), findsNothing);
   });
 
   testWidgets('cancel discards local draft changes', (tester) async {
     final repo = FakeRepository(
-      heroes: [buildHero()],
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(),
+          },
+        ),
+      ],
       states: {
         'demo': const HeroState(
           currentLep: 10,
@@ -374,21 +392,13 @@ void main() {
       find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
       '9',
     );
-    await enableVisibilityMode(tester);
-    final visibilityToggle = find.byKey(
-      const ValueKey<String>('talents-visibility-tal_a'),
-    );
-    await tester.ensureVisible(visibilityToggle);
-    await tester.tap(visibilityToggle);
-    await tester.pumpAndSettle();
 
     await actions.cancel();
     await tester.pumpAndSettle();
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-    expect(hero.hiddenTalentIds, isNot(contains('tal_a')));
-    expect(hero.talents['tal_a'], isNull);
+    expect(hero.talents['tal_a']?.talentValue, 0);
     expect(find.text('Athletik'), findsOneWidget);
   });
 
@@ -399,6 +409,9 @@ void main() {
         heroes: [
           buildHero(
             level: 7,
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(),
+            },
             combatConfig: const CombatConfig(
               armor: ArmorConfig(
                 pieces: <ArmorPiece>[

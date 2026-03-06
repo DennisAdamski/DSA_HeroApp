@@ -233,11 +233,8 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     final widgets = <Widget>[];
 
     if (activeTabIndex == _talentsTabIndex) {
-      final visibilityMode = ref.watch(
-        talentsVisibilityModeProvider(widget.heroId),
-      );
       final bePreview = ref.watch(combatPreviewProvider(widget.heroId));
-      widgets.addAll([
+      widgets.add(
         OutlinedButton.icon(
           key: const ValueKey<String>('talents-be-screen-open'),
           onPressed: () {
@@ -252,48 +249,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           icon: const Icon(Icons.shield_outlined),
           label: const Text('BE konfigurieren'),
         ),
-        FilledButton.icon(
-          key: const ValueKey<String>('talents-visibility-mode-toggle'),
-          onPressed: () {
-            ref
-                    .read(talentsVisibilityModeProvider(widget.heroId).notifier)
-                    .state =
-                !visibilityMode;
-          },
-          icon: Icon(
-            visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
-          ),
-          label: Text(visibilityMode ? 'Sichtbarkeit aus' : 'Sichtbarkeit'),
-        ),
-      ]);
+      );
     }
 
-    if (activeTabIndex == _combatTabIndex) {
-      final visibilityMode = ref.watch(
-        combatTechniquesVisibilityModeProvider(widget.heroId),
-      );
-      widgets.add(
-        FilledButton.icon(
-          key: const ValueKey<String>('combat-talents-visibility-mode-toggle'),
-          onPressed: () {
-            ref
-                    .read(
-                      combatTechniquesVisibilityModeProvider(
-                        widget.heroId,
-                      ).notifier,
-                    )
-                    .state =
-                !visibilityMode;
-          },
-          icon: Icon(
-            visibilityMode ? Icons.visibility_off_outlined : Icons.visibility,
-          ),
-          label: Text(
-            visibilityMode ? 'Sichtbarkeit aus' : 'Sichtbarkeit',
-          ),
-        ),
-      );
-    }
 
     if (isEditing) {
       widgets.addAll([

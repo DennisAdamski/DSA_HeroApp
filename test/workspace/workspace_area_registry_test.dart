@@ -4,26 +4,26 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_area_registr
 
 void main() {
   test(
-    'talents list area is registered as list view with visibility support',
+    'talents list area is registered as list view with catalog support',
     () {
       final meta = workspaceAreaMetaById(WorkspaceAreaId.talentsList);
 
       expect(meta.pageId, WorkspacePageId.talents);
       expect(meta.kind, WorkspaceAreaKind.listView);
-      expect(meta.supportsVisibilityMode, isTrue);
-      expect(meta.supportsGroupVisibility, isTrue);
+      expect(meta.supportsVisibilityMode, isFalse);
+      expect(meta.supportsGroupVisibility, isFalse);
     },
   );
 
   test(
-    'combat techniques area is registered as list view with group visibility',
+    'combat techniques area is registered as list view with catalog support',
     () {
       final meta = workspaceAreaMetaById(WorkspaceAreaId.combatTechniquesList);
 
       expect(meta.pageId, WorkspacePageId.combat);
       expect(meta.kind, WorkspaceAreaKind.listView);
-      expect(meta.supportsVisibilityMode, isTrue);
-      expect(meta.supportsGroupVisibility, isTrue);
+      expect(meta.supportsVisibilityMode, isFalse);
+      expect(meta.supportsGroupVisibility, isFalse);
     },
   );
 

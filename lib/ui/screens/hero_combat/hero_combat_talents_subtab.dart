@@ -5,9 +5,6 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     List<TalentDef> talents, {
     required Attributes effectiveAttributes,
   }) {
-    final visibilityMode = ref.watch(
-      combatTechniquesVisibilityModeProvider(widget.heroId),
-    );
     final grouped = <String, List<TalentDef>>{};
     for (final talent in talents) {
       final group = talent.type.trim().isEmpty
@@ -16,14 +13,17 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       grouped.putIfAbsent(group, () => <TalentDef>[]).add(talent);
     }
     final groups = grouped.keys.toList(growable: false)..sort();
-    final showAllTalents = _editController.isEditing || visibilityMode;
+
+    // Nur Talente anzeigen, die in _draftTalents enthalten sind
     final visibleGroups = groups
         .where((group) {
-          if (showAllTalents) {
-            return true;
+          if (_editController.isEditing) {
+            // Im Edit-Modus alle Gruppen zeigen, die aktive Talente haben
+            final entries = grouped[group] ?? const <TalentDef>[];
+            return entries.any((t) => _draftTalents.containsKey(t.id));
           }
           final entries = grouped[group] ?? const <TalentDef>[];
-          return entries.any((talent) => !_isHidden(talent.id));
+          return entries.any((t) => _draftTalents.containsKey(t.id));
         })
         .toList(growable: false);
 
@@ -50,24 +50,18 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                       icon: const Icon(Icons.edit),
                       label: const Text('Bearbeiten'),
                     ),
-                    const SizedBox(width: 8),
-                    FilledButton.icon(
-                      key: const ValueKey<String>(
-                        'combat-talents-visibility-mode-toggle',
+                    if (_editController.isEditing) ...[
+                      const SizedBox(width: 8),
+                      FilledButton.icon(
+                        key: const ValueKey<String>(
+                          'combat-talents-catalog-open',
+                        ),
+                        onPressed: () =>
+                            _showCombatTalentKatalog(context, talents),
+                        icon: const Icon(Icons.library_add),
+                        label: const Text('Kampftalente verwalten'),
                       ),
-                      onPressed: () =>
-                          _setCombatTalentsVisibilityMode(!visibilityMode),
-                      icon: Icon(
-                        visibilityMode
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility,
-                      ),
-                      label: Text(
-                        visibilityMode
-                            ? 'Sichtbarkeit beenden'
-                            : 'Sichtbarkeit bearbeiten',
-                      ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -79,57 +73,22 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
             ..sort(
               (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
             );
-          final visibleEntries = showAllTalents
-              ? entries
-              : entries
-                    .where((talent) => !_isHidden(talent.id))
-                    .toList(growable: false);
+          final activeEntries = entries
+              .where((t) => _draftTalents.containsKey(t.id))
+              .toList(growable: false);
           return Card(
             margin: const EdgeInsets.only(bottom: 10),
             child: ExpansionTile(
               initiallyExpanded: true,
               tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
               title: Text(group),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${visibleEntries.length}/${entries.length} sichtbar',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  if (visibilityMode)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            TextButton(
-                              key: ValueKey<String>(
-                                'combat-group-show-all-$group',
-                              ),
-                              onPressed: () =>
-                                  _setHiddenForGroup(entries, hidden: false),
-                              child: const Text('Alle einblenden'),
-                            ),
-                            const SizedBox(width: 6),
-                            TextButton(
-                              key: ValueKey<String>(
-                                'combat-group-hide-all-$group',
-                              ),
-                              onPressed: () =>
-                                  _setHiddenForGroup(entries, hidden: true),
-                              child: const Text('Alle ausblenden'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
+              subtitle: Text(
+                '${activeEntries.length}/${entries.length} aktiv',
+                style: Theme.of(context).textTheme.bodySmall,
               ),
               children: [
                 _buildCombatTalentsTable(
-                  visibleEntries,
+                  activeEntries,
                   effectiveAttributes: effectiveAttributes,
                 ),
               ],
@@ -144,15 +103,9 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     List<TalentDef> talents, {
     required Attributes effectiveAttributes,
   }) {
-    final visibilityMode = ref.watch(
-      combatTechniquesVisibilityModeProvider(widget.heroId),
-    );
     final isEditing = _editController.isEditing;
     final rows = <TableRow>[
-      _buildCombatHeaderRow(
-        isEditing: isEditing,
-        showVisibilityControls: visibilityMode,
-      ),
+      _buildCombatHeaderRow(isEditing: isEditing),
       ...talents.map(
         (talent) => _buildCombatTalentRow(
           talent,
@@ -168,7 +121,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            minWidth: (isEditing || visibilityMode) ? 1715 : 1625,
+            minWidth: isEditing ? 1625 : 1535,
           ),
           child: Table(
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
@@ -184,8 +137,6 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
               8: const FixedColumnWidth(90),
               9: const FixedColumnWidth(230),
               if (isEditing) 10: const FixedColumnWidth(95),
-              if (isEditing || visibilityMode)
-                (isEditing ? 11 : 10): const FixedColumnWidth(90),
             },
             children: rows,
           ),
@@ -194,10 +145,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     );
   }
 
-  TableRow _buildCombatHeaderRow({
-    required bool isEditing,
-    required bool showVisibilityControls,
-  }) {
+  TableRow _buildCombatHeaderRow({required bool isEditing}) {
     final cells = <Widget>[
       _headerCell('Talent-Name'),
       _headerCell('Waffengattung'),
@@ -213,9 +161,6 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     if (isEditing) {
       cells.add(_headerCell('Begabung'));
     }
-    if (isEditing || showVisibilityControls) {
-      cells.add(_headerCell('Sichtbar'));
-    }
     return TableRow(children: cells);
   }
 
@@ -224,23 +169,16 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     bool isEditing, {
     required Attributes effectiveAttributes,
   }) {
-    final visibilityMode = ref.watch(
-      combatTechniquesVisibilityModeProvider(widget.heroId),
-    );
     final entry = _entryForTalent(talent.id);
-    final isHidden = _isHidden(talent.id);
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
     final maxTaw = _calculateMaxTaw(
       effectiveAttributes: effectiveAttributes,
       attributeNames: talent.attributes,
       gifted: entry.gifted,
     );
-    final nameLabel = isEditing && isHidden
-        ? '${talent.name} (ausgeblendet)'
-        : talent.name;
 
     final cells = <Widget>[
-      _textCell(nameLabel, key: ValueKey<String>('talents-row-${talent.id}')),
+      _textCell(talent.name, key: ValueKey<String>('talents-row-${talent.id}')),
       _textCell(_fallback(talent.weaponCategory)),
       _textCell(_fallback(talent.alternatives)),
       _textCell(_fallback(talent.steigerung)),
@@ -285,19 +223,14 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
         ),
       );
     }
-    if (isEditing || visibilityMode) {
-      cells.add(_visibilityCell(talent.id, isHidden));
-    }
 
     final rowColor = isInvalid
         ? Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.4)
-        : (isHidden && (isEditing || visibilityMode)
-              ? Theme.of(context).colorScheme.surfaceContainerHighest
-              : (entry.gifted && isEditing
-                    ? Theme.of(
-                        context,
-                      ).colorScheme.tertiaryContainer.withValues(alpha: 0.4)
-                    : null));
+        : (entry.gifted && isEditing
+              ? Theme.of(
+                  context,
+                ).colorScheme.tertiaryContainer.withValues(alpha: 0.4)
+              : null);
 
     return TableRow(
       decoration: BoxDecoration(color: rowColor),
@@ -345,21 +278,6 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
         onChanged: isEditing
             ? (raw) => _updateIntField(talentId, field, raw)
             : null,
-      ),
-    );
-  }
-
-  Widget _visibilityCell(String talentId, bool isHidden) {
-    final visibilityMode = ref.watch(
-      combatTechniquesVisibilityModeProvider(widget.heroId),
-    );
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: IconButton(
-        key: ValueKey<String>('talents-visibility-$talentId'),
-        icon: Icon(isHidden ? Icons.visibility_off : Icons.visibility),
-        tooltip: isHidden ? 'Talent einblenden' : 'Talent ausblenden',
-        onPressed: visibilityMode ? () => _toggleHidden(talentId) : null,
       ),
     );
   }

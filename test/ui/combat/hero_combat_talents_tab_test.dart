@@ -15,7 +15,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 void main() {
   HeroSheet buildHero({
-    List<String> hiddenTalentIds = const <String>[],
     Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
   }) {
     return HeroSheet(
@@ -33,7 +32,6 @@ void main() {
         kk: 13,
       ),
       talents: talents,
-      hiddenTalentIds: hiddenTalentIds,
     );
   }
 
@@ -105,16 +103,17 @@ void main() {
     return actions!;
   }
 
-  Future<void> enableVisibilityMode(WidgetTester tester) async {
-    await tester.tap(
-      find.byKey(const ValueKey<String>('talents-visibility-mode-toggle')),
-    );
-    await tester.pumpAndSettle();
-  }
-
   testWidgets('shows only combat talents grouped by type', (tester) async {
+    // Beide Kampftalente im Helden aktiv.
     final repo = FakeRepository(
-      heroes: [buildHero()],
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(),
+            'tal_fern': HeroTalentEntry(),
+          },
+        ),
+      ],
       states: {
         'demo': const HeroState(
           currentLep: 10,
@@ -139,12 +138,17 @@ void main() {
     expect(find.text('Eigenschaften'), findsNothing);
   });
 
-  testWidgets('hides fully hidden groups until visibility mode is active', (
+  testWidgets('only shows combat talents present in hero.talents', (
     tester,
   ) async {
+    // Nur Fernkampf ist im Helden aktiv, Nahkampf fehlt.
     final repo = FakeRepository(
       heroes: [
-        buildHero(hiddenTalentIds: const <String>['tal_nah']),
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_fern': HeroTalentEntry(),
+          },
+        ),
       ],
       states: {
         'demo': const HeroState(
@@ -160,17 +164,22 @@ void main() {
 
     expect(find.text('Fernkampf'), findsOneWidget);
     expect(find.text('Nahkampf'), findsNothing);
-
-    await enableVisibilityMode(tester);
-
-    expect(find.text('Nahkampf'), findsOneWidget);
+    expect(find.text('Dolche'), findsNothing);
+    expect(find.text('Boegen'), findsOneWidget);
   });
 
   testWidgets('blocks save for invalid Nahkampf AT/PA distribution', (
     tester,
   ) async {
     final repo = FakeRepository(
-      heroes: [buildHero()],
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(),
+            'tal_fern': HeroTalentEntry(),
+          },
+        ),
+      ],
       states: {
         'demo': const HeroState(
           currentLep: 10,
@@ -212,7 +221,14 @@ void main() {
 
   testWidgets('blocks save for invalid Fernkampf distribution', (tester) async {
     final repo = FakeRepository(
-      heroes: [buildHero()],
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(),
+            'tal_fern': HeroTalentEntry(),
+          },
+        ),
+      ],
       states: {
         'demo': const HeroState(
           currentLep: 10,
@@ -256,7 +272,14 @@ void main() {
     tester,
   ) async {
     final repo = FakeRepository(
-      heroes: [buildHero()],
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(),
+            'tal_fern': HeroTalentEntry(),
+          },
+        ),
+      ],
       states: {
         'demo': const HeroState(
           currentLep: 10,
@@ -295,13 +318,6 @@ void main() {
       find.byKey(const ValueKey<String>('talents-field-tal_fern-paValue')),
       '0',
     );
-    await enableVisibilityMode(tester);
-    final visibilityToggle = find.byKey(
-      const ValueKey<String>('talents-visibility-tal_nah'),
-    );
-    await tester.ensureVisible(visibilityToggle);
-    await tester.tap(visibilityToggle);
-    await tester.pumpAndSettle();
     await actions.save();
     await tester.pumpAndSettle();
 
@@ -313,15 +329,20 @@ void main() {
     expect(hero.talents['tal_fern']?.talentValue, 7);
     expect(hero.talents['tal_fern']?.atValue, 7);
     expect(hero.talents['tal_fern']?.paValue, 0);
-    expect(hero.hiddenTalentIds, contains('tal_nah'));
-    expect(find.text('Dolche'), findsNothing);
   });
 
   testWidgets('saves multiple combat specializations for a combat talent', (
     tester,
   ) async {
     final repo = FakeRepository(
-      heroes: [buildHero()],
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(),
+            'tal_fern': HeroTalentEntry(),
+          },
+        ),
+      ],
       states: {
         'demo': const HeroState(
           currentLep: 10,
