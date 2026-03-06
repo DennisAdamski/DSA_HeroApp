@@ -81,6 +81,7 @@ class _SpellDetailsDialog extends StatefulWidget {
 }
 
 class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
+  final ScrollController _detailsScrollController = ScrollController();
   late final TextEditingController _aspCostController;
   late final TextEditingController _targetObjectController;
   late final TextEditingController _rangeController;
@@ -98,6 +99,7 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
 
   @override
   void dispose() {
+    _detailsScrollController.dispose();
     _aspCostController.dispose();
     _targetObjectController.dispose();
     _rangeController.dispose();
@@ -474,7 +476,9 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
             const Divider(height: 1),
             Expanded(
               child: Scrollbar(
+                controller: _detailsScrollController,
                 child: SingleChildScrollView(
+                  controller: _detailsScrollController,
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
