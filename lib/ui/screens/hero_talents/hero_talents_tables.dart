@@ -144,7 +144,19 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     );
 
     final cells = <Widget>[
-      _textCell(talent.name, key: ValueKey<String>('talents-row-${talent.id}')),
+      _tappableNameCell(
+        talent.name,
+        key: ValueKey<String>('talents-row-${talent.id}'),
+        onTap: () => showDialog<void>(
+          context: context,
+          builder: (_) => _TalentDetailDialog(
+            talent: talent,
+            entry: entry,
+            effectiveAttributes: effectiveAttributes,
+            activeBaseBe: activeBaseBe,
+          ),
+        ),
+      ),
       _textCell(
         _buildShortAttributeLabel(effectiveAttributes, talent.attributes),
       ),
@@ -217,8 +229,24 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
     final maxTaw = _calculateMaxTawFromTalent(talent: talent, gifted: entry.gifted);
 
+    final effective = _latestHero != null
+        ? computeEffectiveAttributes(_latestHero!)
+        : const Attributes();
+
     final cells = <Widget>[
-      _textCell(talent.name, key: ValueKey<String>('talents-row-${talent.id}')),
+      _tappableNameCell(
+        talent.name,
+        key: ValueKey<String>('talents-row-${talent.id}'),
+        onTap: () => showDialog<void>(
+          context: context,
+          builder: (_) => _TalentDetailDialog(
+            talent: talent,
+            entry: entry,
+            effectiveAttributes: effective,
+            activeBaseBe: 0,
+          ),
+        ),
+      ),
       _textCell(_fallback(talent.weaponCategory)),
       _textCell(_fallback(talent.alternatives)),
       _textCell(_fallback(talent.steigerung)),
