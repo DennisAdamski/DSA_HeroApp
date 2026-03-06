@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
@@ -16,7 +15,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_area_registry.dart';
+
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
@@ -303,10 +302,6 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       _cellControllers.remove('$talentId::specializations')?.dispose();
     }
     _markFieldChanged();
-  }
-
-  void _removeTalent(String talentId) {
-    _toggleTalent(talentId, false);
   }
 
   void _showTalentKatalog(

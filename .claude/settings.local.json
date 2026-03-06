@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze)",
+      "Bash(flutter test)",
+      "Bash(flutter test test/ui/combat/hero_combat_tab_test.dart)",
+      "Bash(flutter test test/ui/performance/ui_rebuild_guardrails_test.dart)"
+    ]
+  }
+}
