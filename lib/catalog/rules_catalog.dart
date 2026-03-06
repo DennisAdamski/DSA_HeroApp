@@ -15,12 +15,12 @@ class RulesCatalog {
     this.metadata = const {},
   });
 
-  final String version;                // Katalogversion (z. B. 'house_rules_v1')
-  final String source;                 // Quell-ID (z. B. Dateiname des Manifests)
-  final List<TalentDef> talents;       // Alle Talente (regulaer + Kampftalente)
-  final List<SpellDef> spells;         // Alle Zaubersprueche
-  final List<WeaponDef> weapons;       // Alle Waffendefinitionen
-  final List<ManeuverDef> maneuvers;   // Kampfmanöver (optional, kann leer sein)
+  final String version; // Katalogversion (z. B. 'house_rules_v1')
+  final String source; // Quell-ID (z. B. Dateiname des Manifests)
+  final List<TalentDef> talents; // Alle Talente (regulaer + Kampftalente)
+  final List<SpellDef> spells; // Alle Zaubersprueche
+  final List<WeaponDef> weapons; // Alle Waffendefinitionen
+  final List<ManeuverDef> maneuvers; // Kampfmanöver (optional, kann leer sein)
   final Map<String, dynamic> metadata; // Sonstige Metadaten aus dem Manifest
 
   /// Sucht ein Manöver anhand des Namens (Groß-/Kleinschreibung wird ignoriert).
@@ -82,12 +82,12 @@ class ManeuverDef {
     this.erklarung = '',
   });
 
-  final String id;          // Eindeutige ID (z. B. 'man_hammerschlag')
-  final String name;        // Anzeigename
-  final String gruppe;      // Kategorie (z. B. 'Angriff', 'Abwehr')
+  final String id; // Eindeutige ID (z. B. 'man_hammerschlag')
+  final String name; // Anzeigename
+  final String gruppe; // Kategorie (z. B. 'Angriff', 'Abwehr')
   final String erschwernis; // Erschwernis-Modifikator als Freitext
-  final String seite;       // Seitenreferenz im Regelwerk
-  final String erklarung;   // Regeltext / Beschreibung
+  final String seite; // Seitenreferenz im Regelwerk
+  final String erklarung; // Regeltext / Beschreibung
 
   factory ManeuverDef.fromJson(Map<String, dynamic> json) {
     return ManeuverDef(
@@ -138,18 +138,18 @@ class TalentDef {
     this.active = true,
   });
 
-  final String id;               // Eindeutige ID (z. B. 'tal_empathie')
-  final String name;             // Anzeigename
-  final String group;            // Gruppe ('Kampftalent', 'Gabe', 'Koerper', …)
-  final String steigerung;       // AP-Steigerungskategorie ('B'–'F')
+  final String id; // Eindeutige ID (z. B. 'tal_empathie')
+  final String name; // Anzeigename
+  final String group; // Gruppe ('Kampftalent', 'Gabe', 'Koerper', …)
+  final String steigerung; // AP-Steigerungskategorie ('B'–'F')
   final List<String> attributes; // Drei Eigenschaftskuerzel fuer Proben
-  final String type;             // Talenttyp ('nahkampf', 'fernkampf', 'Gabe', …)
-  final String be;               // Behinderungsformel ('-', '-N', 'xN' oder '')
-  final String weaponCategory;   // Waffenkategorie fuer Spezialisierungsabgleich
-  final String alternatives;     // Alternative Kategorienamen (kommagetrennt)
-  final String source;           // Quellreferenz (Seitenzahl o. Ae.)
-  final String description;      // Regelbeschreibung als Freitext
-  final bool active;             // Im App verfuegbar und anzeigbar?
+  final String type; // Talenttyp ('nahkampf', 'fernkampf', 'Gabe', …)
+  final String be; // Behinderungsformel ('-', '-N', 'xN' oder '')
+  final String weaponCategory; // Waffenkategorie fuer Spezialisierungsabgleich
+  final String alternatives; // Alternative Kategorienamen (kommagetrennt)
+  final String source; // Quellreferenz (Seitenzahl o. Ae.)
+  final String description; // Regelbeschreibung als Freitext
+  final bool active; // Im App verfuegbar und anzeigbar?
 
   factory TalentDef.fromJson(Map<String, dynamic> json) {
     return TalentDef(
@@ -204,10 +204,12 @@ class SpellDef {
     this.modifier = '',
     this.castingTime = '',
     this.aspCost = '',
+    this.targetObject = '',
     this.range = '',
     this.duration = '',
     this.modifications = '',
     this.wirkung = '',
+    this.variants = const [],
     this.category = '',
     this.source = '',
     this.active = true,
@@ -215,21 +217,23 @@ class SpellDef {
 
   final String id;
   final String name;
-  final String tradition;        // Magie-Tradition (z. B. 'Gildenmagie')
-  final String steigerung;       // AP-Steigerungskategorie ('A'–'F')
+  final String tradition; // Magie-Tradition (z. B. 'Gildenmagie')
+  final String steigerung; // AP-Steigerungskategorie ('A'–'F')
   final List<String> attributes; // Eigenschaftskuerzel fuer Zauberprobe
-  final String availability;     // Verfuegbarkeit (Verbreitung)
-  final String traits;           // Zaubereigenschaften (z. B. 'Beruehrung, Blitz')
-  final String modifier;         // Erschwernis/Erleichterung als Freitext
-  final String castingTime;      // Zauberdauer (z. B. '2 Aktionen')
-  final String aspCost;          // AsP-Kosten als Freitext-Formel (z. B. '4W6')
-  final String range;            // Reichweite
-  final String duration;         // Wirkungsdauer
-  final String modifications;    // Modifikationsoptionen fuer den Zauber
-  final String wirkung;          // Wirkungsbeschreibung (Langtext aus dem Regelwerk)
-  final String category;         // Zauberkategorie
-  final String source;           // Quellreferenz
-  final bool active;             // Im App verfuegbar und anzeigbar?
+  final String availability; // Verfuegbarkeit (Verbreitung)
+  final String traits; // Zaubereigenschaften (z. B. 'Beruehrung, Blitz')
+  final String modifier; // Erschwernis/Erleichterung als Freitext
+  final String castingTime; // Zauberdauer (z. B. '2 Aktionen')
+  final String aspCost; // AsP-Kosten als Freitext-Formel (z. B. '4W6')
+  final String targetObject; // Zielobjekt laut Regelwerk
+  final String range; // Reichweite
+  final String duration; // Wirkungsdauer
+  final String modifications; // Modifikationsoptionen fuer den Zauber
+  final String wirkung; // Wirkungsbeschreibung (Langtext aus dem Regelwerk)
+  final List<String> variants; // Definierte Varianten des Zaubers
+  final String category; // Zauberkategorie
+  final String source; // Quellreferenz (z. B. 'Liber Cantiones S. 36')
+  final bool active; // Im App verfuegbar und anzeigbar?
 
   factory SpellDef.fromJson(Map<String, dynamic> json) {
     return SpellDef(
@@ -243,10 +247,12 @@ class SpellDef {
       modifier: _readString(json, 'modifier', fallback: ''),
       castingTime: _readString(json, 'castingTime', fallback: ''),
       aspCost: _readString(json, 'aspCost', fallback: ''),
+      targetObject: _readString(json, 'targetObject', fallback: ''),
       range: _readString(json, 'range', fallback: ''),
       duration: _readString(json, 'duration', fallback: ''),
       modifications: _readString(json, 'modifications', fallback: ''),
       wirkung: _readString(json, 'wirkung', fallback: ''),
+      variants: _readStringList(json, 'variants'),
       category: _readString(json, 'category', fallback: ''),
       source: _readString(json, 'source', fallback: ''),
       active: _readBool(json, 'active', fallback: true),
@@ -265,10 +271,12 @@ class SpellDef {
       'modifier': modifier,
       'castingTime': castingTime,
       'aspCost': aspCost,
+      'targetObject': targetObject,
       'range': range,
       'duration': duration,
       'modifications': modifications,
       'wirkung': wirkung,
+      'variants': variants,
       'category': category,
       'source': source,
       'active': active,
@@ -305,20 +313,20 @@ class WeaponDef {
 
   final String id;
   final String name;
-  final String type;                        // 'Nahkampf' oder 'Fernkampf'
-  final String combatSkill;                 // Verknuepftes Kampftalent (Name)
-  final String tp;                          // Schadens-Formel (z. B. '1W6+4')
-  final String complexity;                  // Waffenkomplexitaet
-  final String weaponCategory;              // Kategorie fuer Spezialisierungsabgleich
-  final List<String> possibleManeuvers;     // Alle verfuegbaren Manöver-IDs
-  final List<String> activeManeuvers;       // Standardmaessig aktive Manöver-IDs
-  final String tpkk;                        // KK-Skalierung im Format 'Basis/Schritt'
-  final int iniMod;                         // Waffenspezifischer Initiative-Modifier
-  final int atMod;                          // Waffenspezifischer Angriff-Modifier
-  final int paMod;                          // Waffenspezifischer Parade-Modifier
-  final String reach;                       // Reichweite / Distanzklasse
-  final String source;                      // Quellreferenz
-  final bool active;                        // Im App verfuegbar und anzeigbar?
+  final String type; // 'Nahkampf' oder 'Fernkampf'
+  final String combatSkill; // Verknuepftes Kampftalent (Name)
+  final String tp; // Schadens-Formel (z. B. '1W6+4')
+  final String complexity; // Waffenkomplexitaet
+  final String weaponCategory; // Kategorie fuer Spezialisierungsabgleich
+  final List<String> possibleManeuvers; // Alle verfuegbaren Manöver-IDs
+  final List<String> activeManeuvers; // Standardmaessig aktive Manöver-IDs
+  final String tpkk; // KK-Skalierung im Format 'Basis/Schritt'
+  final int iniMod; // Waffenspezifischer Initiative-Modifier
+  final int atMod; // Waffenspezifischer Angriff-Modifier
+  final int paMod; // Waffenspezifischer Parade-Modifier
+  final String reach; // Reichweite / Distanzklasse
+  final String source; // Quellreferenz
+  final bool active; // Im App verfuegbar und anzeigbar?
 
   factory WeaponDef.fromJson(Map<String, dynamic> json) {
     return WeaponDef(
@@ -365,7 +373,11 @@ class WeaponDef {
 
 // Liest einen String-Wert lenient: nicht-String-Werte werden via toString()
 // konvertiert, null ergibt den Fallback. So bleiben alte Schemata lesbar.
-String _readString(Map<String, dynamic> json, String key, {required String fallback}) {
+String _readString(
+  Map<String, dynamic> json,
+  String key, {
+  required String fallback,
+}) {
   final value = json[key];
   if (value is String) {
     return value;
@@ -390,7 +402,11 @@ int _readInt(Map<String, dynamic> json, String key, {required int fallback}) {
 }
 
 // Liest einen bool-Wert; jeder Nicht-Bool-Wert ergibt den Fallback.
-bool _readBool(Map<String, dynamic> json, String key, {required bool fallback}) {
+bool _readBool(
+  Map<String, dynamic> json,
+  String key, {
+  required bool fallback,
+}) {
   final value = json[key];
   if (value is bool) {
     return value;

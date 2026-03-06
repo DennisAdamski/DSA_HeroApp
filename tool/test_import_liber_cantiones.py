@@ -1,0 +1,239 @@
+import unittest
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from import_liber_cantiones import (
+    SpellBlock,
+    TocEntry,
+    _build_catalog_indexes,
+    _build_source_reference,
+    _match_spell,
+    _parse_spell_fields,
+    _split_modifications_and_variants,
+)
+
+
+class LiberCantionesImportTest(unittest.TestCase):
+    def test_split_modifications_and_variants(self) -> None:
+        raw = (
+            'Zauberdauer, Kosten, Reichweite\n'
+            '◆ Blitzgeschwind (+7). Mehr Tempo.\n'
+            '◆ Koboldisch. Nur Sprache.'
+        )
+
+        modifications, variants = _split_modifications_and_variants(raw)
+
+        self.assertEqual(modifications, 'Zauberdauer, Kosten, Reichweite')
+        self.assertEqual(
+            variants,
+            [
+                'Blitzgeschwind (+7). Mehr Tempo.',
+                'Koboldisch. Nur Sprache.',
+            ],
+        )
+
+    def test_parse_spell_fields_extracts_required_sections(self) -> None:
+        block = '''
+Zauberdauer: 2 Aktionen
+Wirkung: Der Zauber beschleunigt das Ziel.
+Kosten: 7 AsP
+Zielobjekt: Einzelperson, freiwillig
+Reichweite: selbst, 7 Schritt
+Wirkungsdauer: ZfP* mal 3 Kampfrunden (A)
+Modifikationen und Varianten: Zauberdauer, Kosten, Zielobjekt
+◆ Blitzgeschwind (+7). Mehr Tempo.
+◆ Koboldisch. Nur Sprache.
+Reversalis: Irgendetwas anderes.
+'''.strip()
+
+        parsed = _parse_spell_fields(block)
+
+        self.assertEqual(parsed['castingTime'], '2 Aktionen')
+        self.assertEqual(parsed['wirkung'], 'Der Zauber beschleunigt das Ziel.')
+        self.assertEqual(parsed['aspCost'], '7 AsP')
+        self.assertEqual(parsed['targetObject'], 'Einzelperson, freiwillig')
+        self.assertEqual(parsed['range'], 'selbst, 7 Schritt')
+        self.assertEqual(parsed['duration'], 'ZfP* mal 3 Kampfrunden (A)')
+        self.assertEqual(parsed['modifications'], 'Zauberdauer, Kosten, Zielobjekt')
+        self.assertEqual(
+            parsed['variants'],
+            [
+                'Blitzgeschwind (+7). Mehr Tempo.',
+                'Koboldisch. Nur Sprache.',
+            ],
+        )
+
+    def test_parse_spell_fields_flattens_pdf_linebreaks_to_spaces(self) -> None:
+        block = '''
+Zauberdauer: 2
+Wirkung: Erste Zeile
+zweite Zeile mit Silben-
+trennung.
+Kosten: 3 AsP
+Zielobjekt: Einzel-
+objekt
+Reichweite: selbst
+Wirkungsdauer: kurz
+Modifikationen und Varianten: Kosten,
+Reichweite
+◆ Erste Vari-
+ante.
+Reversalis: Ende.
+'''.strip()
+
+        parsed = _parse_spell_fields(block)
+
+        self.assertEqual(
+            parsed['wirkung'],
+            'Erste Zeile zweite Zeile mit Silbentrennung.',
+        )
+        self.assertEqual(parsed['targetObject'], 'Einzelobjekt')
+        self.assertEqual(parsed['modifications'], 'Kosten, Reichweite')
+        self.assertEqual(parsed['variants'], ['Erste Variante.'])
+
+    def test_parse_spell_fields_cleans_ocr_word_splits(self) -> None:
+        block = '''
+Zauberdauer: 2 Aktionen
+Wirkung: Mit diesem Zauber wird ein Opfer (Tier oder denkendes Wesen)
+daran gehindert, das Gebiet zu verlassen. Jeweils nach Verstreichen einer
+vollen Spielr unde kann das Opfer versuchen, die Zauberwir - kung
+abzuschütteln. Für T iere ohne MU-Wert gilt dasselbe.
+Kosten: 3 AsP
+Zielobjekt: Einzelperson
+Reichweite: 7 Schritt
+Wirkungsdauer: ZfP* Spielrunden
+Modifik ationen und Varianten: Verstandesfunk - tionen, W ahrnehmung
+Reversalis: Ende.
+'''.strip()
+
+        parsed = _parse_spell_fields(block)
+
+        self.assertIn('Verstreichen einer vollen Spielrunde', parsed['wirkung'])
+        self.assertIn('Zauberwirkung', parsed['wirkung'])
+        self.assertIn('Tiere ohne MU-Wert', parsed['wirkung'])
+        self.assertEqual(
+            parsed['modifications'],
+            'Verstandesfunktionen, Wahrnehmung',
+        )
+
+    def test_parse_spell_fields_cleans_common_remaining_ocr_fragments(self) -> None:
+        block = '''
+Zauberdauer: 1 Ak tion
+Wirkung: Währ end der Wirkungsdauer bleibt die Zauber nde handlungsfähig.
+Dies gilt insbesonder ealle Fälle der Herbeir ufung und wirkt über gangslos.
+Kosten: 4 AsP
+Zielobjekt: Einzelperson
+Reichweite: selbst
+Wirkungsdauer: eventu elle ZfP* Spielr unden
+Modifikationen und Varianten: Eisund Schnee, Hautund Augenfarbe, Nebel feld
+Reversalis: Ende.
+'''.strip()
+
+        parsed = _parse_spell_fields(block)
+
+        self.assertEqual(parsed['castingTime'], '1 Aktion')
+        self.assertIn('Während der Wirkungsdauer bleibt die Zaubernde', parsed['wirkung'])
+        self.assertIn('insbesondere alle Fälle der Herbeirufung', parsed['wirkung'])
+        self.assertIn('wirkt übergangslos', parsed['wirkung'])
+        self.assertEqual(parsed['duration'], 'eventuelle ZfP* Spielrunden')
+        self.assertEqual(
+            parsed['modifications'],
+            'Eis- und Schnee, Haut- und Augenfarbe, Nebelfeld',
+        )
+
+    def test_parse_spell_fields_accepts_plain_modifikationen_label(self) -> None:
+        block = '''
+Zauberdauer: 1 Aktion
+Wirkung: Testwirkung.
+Kosten: 4 AsP
+Zielobjekt: Einzelperson
+Reichweite: selbst
+Wirkungsdauer: ZfP* Spielrunden
+Modifikationen: Zauberdauer, Kosten, Wirkungsdauer
+Reversalis: Ende.
+'''.strip()
+
+        parsed = _parse_spell_fields(block)
+
+        self.assertEqual(parsed['duration'], 'ZfP* Spielrunden')
+        self.assertEqual(
+            parsed['modifications'],
+            'Zauberdauer, Kosten, Wirkungsdauer',
+        )
+        self.assertEqual(parsed['variants'], [])
+
+    def test_parse_spell_fields_repairs_inline_modifications_in_duration(self) -> None:
+        block = '''
+Zauberdauer: 1 Aktion
+Wirkung: Testwirkung.
+Kosten: 4 AsP
+Zielobjekt: Einzelperson
+Reichweite: selbst
+Wirkungsdauer: ZfP* Spielrunden Modifikationen und Varianten: Kosten ◆ Variante.
+Reversalis: Ende.
+'''.strip()
+
+        parsed = _parse_spell_fields(block)
+
+        self.assertEqual(parsed['duration'], 'ZfP* Spielrunden')
+        self.assertEqual(parsed['modifications'], 'Kosten')
+        self.assertEqual(parsed['variants'], ['Variante.'])
+
+    def test_match_spell_uses_prefix_with_probe_for_subtitle_catalog_entries(self) -> None:
+        catalog = [
+            {
+                'id': 'spell_axxeleratus_blitzgeschwind',
+                'name': 'Axxeleratus Blitzgeschwind',
+                'attributes': ['Klugheit', 'Gewandheit', 'Konstitution'],
+            },
+            {
+                'id': 'spell_balsam_salabunde',
+                'name': 'Balsam Salabunde',
+                'attributes': ['Klugheit', 'Intuition', 'Charisma'],
+            },
+        ]
+        indexes = _build_catalog_indexes(catalog)
+        block = SpellBlock(
+            toc=TocEntry(
+                printed_page=36,
+                raw_name='Axxeleratus',
+                probe='kl/ge/ko',
+                complexity='C',
+            ),
+            pdf_start_page=37,
+            pdf_end_page=37,
+            title='',
+            probe='kl/ge/ko',
+            text='Wirkung: Test',
+        )
+
+        spell, reason = _match_spell(block, indexes)
+
+        self.assertIsNotNone(spell)
+        self.assertEqual(spell['id'], 'spell_axxeleratus_blitzgeschwind')
+        self.assertEqual(reason, 'stripped_subtitle')
+
+    def test_build_source_reference_uses_first_printed_spell_page(self) -> None:
+        block = SpellBlock(
+            toc=TocEntry(
+                printed_page=153,
+                raw_name='Animatio',
+                probe='kl/in/ch',
+                complexity='D',
+            ),
+            pdf_start_page=154,
+            pdf_end_page=155,
+            title='Animatio stummer Diener',
+            probe='kl/in/ch',
+            text='Wirkung: Test',
+        )
+
+        source = _build_source_reference(block)
+
+        self.assertEqual(source, 'Liber Cantiones S. 153')
+
+
+if __name__ == '__main__':
+    unittest.main()
