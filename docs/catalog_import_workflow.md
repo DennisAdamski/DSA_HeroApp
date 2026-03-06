@@ -66,6 +66,8 @@ Notes:
   `Liber Cantiones` (for example `Liber Cantiones S. 153`).
 - Imported long-text fields are whitespace-normalized; PDF line breaks are
   flattened to regular spaces instead of preserving page layout.
+- The importer also applies a conservative OCR cleanup pass for obvious split
+  words such as `Verstandesfunk - tionen`, `T iere` or `wer den`.
 - Ambiguous, unmatched, or PDF-only-reference cases are written to
   `tool/generated/liber_cantiones_missing_spells.json` for manual review.
 - The script requires `pypdf` and, for AES-encrypted PDFs, `cryptography`.

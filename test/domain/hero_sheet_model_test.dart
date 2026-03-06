@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 
 void main() {
@@ -48,6 +50,15 @@ void main() {
           talentValue: 11,
           atValue: 8,
           paValue: 3,
+        ),
+      },
+      spells: {
+        'spell_axxeleratus': HeroSpellEntry(
+          spellValue: 8,
+          textOverrides: HeroSpellTextOverrides(
+            wirkung: 'Eigenes Heldendetail',
+            variants: <String>['Nur fuer diesen Helden'],
+          ),
         ),
       },
       combatConfig: CombatConfig(
@@ -96,6 +107,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.rasse, 'Mensch');
+    expect(reloaded.schemaVersion, 6);
     expect(reloaded.kultur, 'Mittelreich');
     expect(reloaded.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -107,6 +119,14 @@ void main() {
     expect(reloaded.startAttributes.kk, 12);
     expect(reloaded.talents['tal_schwerter']?.atValue, 8);
     expect(reloaded.talents['tal_schwerter']?.paValue, 3);
+    expect(
+      reloaded.spells['spell_axxeleratus']?.textOverrides?.wirkung,
+      'Eigenes Heldendetail',
+    );
+    expect(
+      reloaded.spells['spell_axxeleratus']?.textOverrides?.variants,
+      <String>['Nur fuer diesen Helden'],
+    );
     expect(reloaded.combatConfig.mainWeapon.name, 'Kurzschwert');
     expect(reloaded.combatConfig.weaponSlots.length, 1);
     expect(reloaded.combatConfig.selectedWeaponIndex, 0);
