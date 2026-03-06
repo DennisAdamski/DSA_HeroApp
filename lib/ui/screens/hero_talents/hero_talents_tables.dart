@@ -184,10 +184,9 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         value: entry.specialExperiences,
         isEditing: isEditing,
       ),
-      _textInputCell(
+      _specializationBadgesCell(
         talentId: talent.id,
-        field: 'specializations',
-        value: entry.specializations,
+        entry: entry,
         isEditing: isEditing,
       ),
     ];

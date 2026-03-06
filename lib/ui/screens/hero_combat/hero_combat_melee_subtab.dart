@@ -74,6 +74,103 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     return options;
   }
 
+  /// Findet die Talent-ID zu einem Kampftalent-Namen aus dem Katalog.
+  String _findTalentIdByName(
+    String combatSkillName,
+    List<TalentDef> meleeTalents,
+  ) {
+    final needle = _normalizeToken(combatSkillName);
+    if (needle.isEmpty) {
+      return '';
+    }
+    for (final talent in meleeTalents) {
+      if (_normalizeToken(talent.name) == needle) {
+        return talent.id;
+      }
+    }
+    return '';
+  }
+
+  /// Erstellt einen MainWeaponSlot aus einer Katalog-Waffenvorlage.
+  MainWeaponSlot _weaponSlotFromCatalog(
+    WeaponDef weapon,
+    List<TalentDef> meleeTalents,
+  ) {
+    return MainWeaponSlot(
+      name: weapon.name,
+      talentId: _findTalentIdByName(weapon.combatSkill, meleeTalents),
+      weaponType: weapon.name,
+      distanceClass: weapon.reach,
+      wmAt: weapon.atMod,
+      wmPa: weapon.paMod,
+      iniMod: weapon.iniMod,
+    );
+  }
+
+  void _showWeaponKatalog(
+    BuildContext context, {
+    required RulesCatalog catalog,
+    required List<TalentDef> meleeTalents,
+  }) {
+    final meleeWeapons = catalog.weapons
+        .where((w) => w.active && w.type.trim().toLowerCase() == 'nahkampf')
+        .toList(growable: false)
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        final screenHeight = MediaQuery.of(ctx).size.height;
+        return SizedBox(
+          height: screenHeight * 0.8,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(ctx).colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: _WeaponCatalogTable(
+                  weapons: meleeWeapons,
+                  meleeTalents: meleeTalents,
+                  onSelectWeapon: (weapon) {
+                    final slot = _weaponSlotFromCatalog(weapon, meleeTalents);
+                    final slots = List<MainWeaponSlot>.from(
+                      _draftCombatConfig.weaponSlots,
+                    )..add(slot);
+                    _setDraftWeapons(
+                      slots,
+                      selectedIndex: _selectedWeaponIndex(),
+                      markChanged: true,
+                    );
+                    if (mounted) {
+                      Navigator.of(ctx).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Waffe "${weapon.name}" als Vorlage hinzugefuegt',
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _addWeaponSlot({
     required RulesCatalog catalog,
     required List<TalentDef> meleeTalents,
@@ -1177,12 +1274,24 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
           const Text('Name'),
           IconButton(
             key: const ValueKey<String>('combat-weapon-add'),
-            tooltip: 'Waffe hinzufuegen',
+            tooltip: 'Leere Waffe hinzufuegen',
             visualDensity: VisualDensity.compact,
             constraints: const BoxConstraints.tightFor(width: 30, height: 30),
             onPressed: () =>
                 _addWeaponSlot(catalog: catalog, meleeTalents: meleeTalents),
             icon: const Icon(Icons.add, size: 18),
+          ),
+          IconButton(
+            key: const ValueKey<String>('combat-weapon-from-catalog'),
+            tooltip: 'Waffe aus Katalog hinzufuegen',
+            visualDensity: VisualDensity.compact,
+            constraints: const BoxConstraints.tightFor(width: 30, height: 30),
+            onPressed: () => _showWeaponKatalog(
+              context,
+              catalog: catalog,
+              meleeTalents: meleeTalents,
+            ),
+            icon: const Icon(Icons.library_add, size: 18),
           ),
         ],
       ),

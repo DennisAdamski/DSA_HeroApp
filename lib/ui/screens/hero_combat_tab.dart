@@ -21,6 +21,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
 part 'hero_combat/combat_talent_catalog_table.dart';
+part 'hero_combat/weapon_catalog_table.dart';
 part 'hero_combat/hero_combat_melee_subtab.dart';
 part 'hero_combat/hero_combat_special_rules_subtab.dart';
 part 'hero_combat/hero_combat_maneuvers_subtab.dart';
@@ -420,70 +421,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _draftTalents[talentId] = updated;
     _invalidCombatTalentIds.remove(talentId);
     _markFieldChanged();
-  }
-
-  void _toggleCombatTalent(String talentId, bool activate) {
-    if (activate) {
-      _draftTalents.putIfAbsent(talentId, () => const HeroTalentEntry());
-    } else {
-      _draftTalents.remove(talentId);
-      _controllers.remove('talent::$talentId::talentValue')?.dispose();
-      _controllers.remove('talent::$talentId::atValue')?.dispose();
-      _controllers.remove('talent::$talentId::paValue')?.dispose();
-    }
-    _markFieldChanged();
-  }
-
-  void _showCombatTalentKatalog(
-    BuildContext context,
-    List<TalentDef> allCombatTalents,
-  ) {
-    final localActiveIds = _draftTalents.keys.toSet();
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setSheetState) {
-            final screenHeight = MediaQuery.of(ctx).size.height;
-            return SizedBox(
-              height: screenHeight * 0.8,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Theme.of(ctx).colorScheme.outlineVariant,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: _CombatTalentCatalogTable(
-                      allTalents: allCombatTalents,
-                      activeTalentIds: localActiveIds,
-                      onToggleTalent: (id, activate) {
-                        _toggleCombatTalent(id, activate);
-                        setSheetState(() {
-                          if (activate) {
-                            localActiveIds.add(id);
-                          } else {
-                            localActiveIds.remove(id);
-                          }
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
   }
 
   void _updateGifted(String talentId, bool value) {

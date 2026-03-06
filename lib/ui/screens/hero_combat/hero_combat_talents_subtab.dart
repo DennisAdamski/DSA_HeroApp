@@ -1,6 +1,70 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 
 extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
+  void _toggleCombatTalent(String talentId, bool activate) {
+    if (activate) {
+      _draftTalents.putIfAbsent(talentId, () => const HeroTalentEntry());
+    } else {
+      _draftTalents.remove(talentId);
+      _controllers.remove('talent::$talentId::talentValue')?.dispose();
+      _controllers.remove('talent::$talentId::atValue')?.dispose();
+      _controllers.remove('talent::$talentId::paValue')?.dispose();
+    }
+    _markFieldChanged();
+  }
+
+  void _showCombatTalentKatalog(
+    BuildContext context,
+    List<TalentDef> allCombatTalents,
+  ) {
+    final localActiveIds = _draftTalents.keys.toSet();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            final screenHeight = MediaQuery.of(ctx).size.height;
+            return SizedBox(
+              height: screenHeight * 0.8,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Theme.of(ctx).colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: _CombatTalentCatalogTable(
+                      allTalents: allCombatTalents,
+                      activeTalentIds: localActiveIds,
+                      onToggleTalent: (id, activate) {
+                        _toggleCombatTalent(id, activate);
+                        setSheetState(() {
+                          if (activate) {
+                            localActiveIds.add(id);
+                          } else {
+                            localActiveIds.remove(id);
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildCombatTalentsSubTab(
     List<TalentDef> talents, {
     required Attributes effectiveAttributes,
@@ -291,19 +355,66 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     final selected = entry.combatSpecializations.isEmpty
         ? _splitSpecializationTokens(entry.specializations)
         : _normalizeStringList(entry.combatSpecializations);
-    final label = selected.isEmpty ? '-' : selected.join(', ');
+
     if (!isEditing) {
-      return _textCell(label);
+      if (selected.isEmpty) {
+        return _textCell('-');
+      }
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Wrap(
+            spacing: 4,
+            runSpacing: 2,
+            children: selected
+                .map(
+                  (spec) => Chip(
+                    label: Text(spec),
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    padding: EdgeInsets.zero,
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 6),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+        ),
+      );
     }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: OutlinedButton(
-          key: ValueKey<String>('talents-combat-spec-${talent.id}'),
-          onPressed: options.isEmpty
-              ? null
-              : () async {
+        child: Wrap(
+          spacing: 4,
+          runSpacing: 2,
+          children: [
+            ...selected.map(
+              (spec) => InputChip(
+                key: ValueKey<String>('combat-spec-${talent.id}-$spec'),
+                label: Text(spec),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: EdgeInsets.zero,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 6),
+                onDeleted: () {
+                  final updated = List<String>.from(selected)..remove(spec);
+                  _updateCombatSpecializations(talent.id, updated);
+                },
+              ),
+            ),
+            if (options.isNotEmpty)
+              ActionChip(
+                key: ValueKey<String>('combat-spec-add-${talent.id}'),
+                avatar: const Icon(Icons.add, size: 16),
+                label: const Text('Hinzufuegen'),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: EdgeInsets.zero,
+                labelPadding: const EdgeInsets.only(right: 6),
+                onPressed: () async {
                   final result = await _showCombatSpecializationDialog(
                     title: 'Spezialisierungen: ${talent.name}',
                     options: options,
@@ -314,7 +425,8 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                   }
                   _updateCombatSpecializations(talent.id, result);
                 },
-          child: Text(label, maxLines: 2, overflow: TextOverflow.ellipsis),
+              ),
+          ],
         ),
       ),
     );
