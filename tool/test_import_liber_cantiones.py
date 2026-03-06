@@ -64,6 +64,34 @@ Reversalis: Irgendetwas anderes.
             ],
         )
 
+    def test_parse_spell_fields_flattens_pdf_linebreaks_to_spaces(self) -> None:
+        block = '''
+Zauberdauer: 2
+Wirkung: Erste Zeile
+zweite Zeile mit Silben-
+trennung.
+Kosten: 3 AsP
+Zielobjekt: Einzel-
+objekt
+Reichweite: selbst
+Wirkungsdauer: kurz
+Modifikationen und Varianten: Kosten,
+Reichweite
+◆ Erste Vari-
+ante.
+Reversalis: Ende.
+'''.strip()
+
+        parsed = _parse_spell_fields(block)
+
+        self.assertEqual(
+            parsed['wirkung'],
+            'Erste Zeile zweite Zeile mit Silbentrennung.',
+        )
+        self.assertEqual(parsed['targetObject'], 'Einzelobjekt')
+        self.assertEqual(parsed['modifications'], 'Kosten, Reichweite')
+        self.assertEqual(parsed['variants'], ['Erste Variante.'])
+
     def test_match_spell_uses_prefix_with_probe_for_subtitle_catalog_entries(self) -> None:
         catalog = [
             {

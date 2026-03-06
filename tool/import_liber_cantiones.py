@@ -164,7 +164,6 @@ def _extract_page_title(page_text: str) -> str:
 def _clean_block_text(text: str) -> str:
     cleaned = text.replace(_FOOTER, '')
     cleaned = re.sub(r'(\w)-\s*\n\s*(\w)', r'\1\2', cleaned)
-    cleaned = re.sub(r'([A-Za-zÄÖÜäöüß])\n([a-zäöüß])', r'\1\2', cleaned)
     cleaned = re.sub(r'\n+', '\n', cleaned)
     return cleaned.strip()
 
@@ -185,9 +184,9 @@ def _extract_field(text: str, label: str) -> str:
 
 def _compact_text(value: str) -> str:
     text = value.replace('\r', '\n')
+    text = re.sub(r'(\w)-\s*\n\s*(\w)', r'\1\2', text)
+    text = re.sub(r'\s*\n\s*', ' ', text)
     text = re.sub(r'[ \t]+', ' ', text)
-    text = re.sub(r'\s*\n\s*', '\n', text)
-    text = re.sub(r'\n{2,}', '\n', text)
     return text.strip()
 
 
