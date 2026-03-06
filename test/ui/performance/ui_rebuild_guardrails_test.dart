@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -32,6 +33,10 @@ void main() {
         kk: 13,
       ),
       combatConfig: CombatConfig(),
+      talents: <String, HeroTalentEntry>{
+        'tal_a': HeroTalentEntry(),
+        'tal_nah': HeroTalentEntry(),
+      },
     );
   }
 

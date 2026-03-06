@@ -371,7 +371,7 @@ void main() {
     );
 
     final specButton = find.byKey(
-      const ValueKey<String>('talents-combat-spec-tal_nah'),
+      const ValueKey<String>('talents-combat-spec-add-tal_nah'),
     );
     await tester.ensureVisible(specButton);
     await tester.tap(specButton);
