@@ -1093,6 +1093,11 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               ),
               const SizedBox(height: 8),
               _activeWeaponIniRollEditor(preview),
+              const SizedBox(height: 12),
+              buildWeaponCalculationDetails(
+                preview: preview,
+                isEditing: _editController.isEditing,
+              ),
               const SizedBox(height: 8),
               Text('Manoever', style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 4),
