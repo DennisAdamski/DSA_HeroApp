@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_rules.dart';
 import 'modifier_parser.dart';
 
@@ -65,6 +66,11 @@ DerivedStats computeDerivedStatsFromInputs({
 }) {
   final effectiveSheet = sheet.copyWith(attributes: effectiveAttributes);
   final mods = sheet.persistentMods + parsedModifiers.statMods + state.tempMods;
+  final baseGs = computeGs(effectiveSheet, mods);
+  final gs = computeAxxeleratusGs(
+    gs: baseGs,
+    axxeleratusActive: sheet.combatConfig.specialRules.axxeleratusActive,
+  );
 
   return DerivedStats(
     maxLep: computeMaxLep(effectiveSheet, mods),
@@ -76,7 +82,7 @@ DerivedStats computeDerivedStatsFromInputs({
     atBase: computeAt(effectiveSheet, mods),
     paBase: computePa(effectiveSheet, mods),
     fkBase: computeFk(effectiveSheet, mods),
-    gs: computeGs(effectiveSheet, mods),
+    gs: gs,
     // Ausweichen wird nicht mehr als Basiswertformel aus Attributen berechnet.
     // Der abgeleitete Wert spiegelt hier nur explizite Modifikatoren wider.
     ausweichen: mods.ausweichen,

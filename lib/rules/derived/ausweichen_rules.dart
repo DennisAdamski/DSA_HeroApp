@@ -40,11 +40,6 @@ int computeAkrobatikBonus(Map<String, HeroTalentEntry> talents) {
   return raw > 0 ? raw : 0;
 }
 
-// Axxeleratus-Bonus auf Ausweichen: +2 wenn aktiv.
-int computeAxxAusweichenBonus({required bool axxeleratusActive}) {
-  return axxeleratusActive ? 2 : 0;
-}
-
 // INI-Bonus auf Ausweichen: ab Kampf-INI 21 aufwaerts, ROUNDUP((INI-20)/10).
 int computeIniAusweichenBonus({required int kampfInitiative}) {
   if (kampfInitiative < 21) return 0;

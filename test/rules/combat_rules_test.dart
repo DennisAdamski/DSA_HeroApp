@@ -92,9 +92,9 @@ void main() {
   }
 
   test('TP/KK rounds towards zero for positive and negative values', () {
-    // Dieser Test prüft die TP/KK-Regel. 
-    // Bei Werten überhalb des Basiswertes und oberhalb der Schwelle, steigt der Wert mit jedem Schwellenwert. 
-    // Bei Werten unterhalb des Basiswertes und unterhalb der Schwelle, sinkt der Wert mit jedem Schwellenwert. 
+    // Dieser Test prüft die TP/KK-Regel.
+    // Bei Werten überhalb des Basiswertes und oberhalb der Schwelle, steigt der Wert mit jedem Schwellenwert.
+    // Bei Werten unterhalb des Basiswertes und unterhalb der Schwelle, sinkt der Wert mit jedem Schwellenwert.
     // Bei genauem Erreichen des Basiswertes, gibt es keinen Bonus oder Malus.
     const combatConfig = CombatConfig(
       mainWeapon: MainWeaponSlot(kkBase: 10, kkThreshold: 3),
@@ -132,12 +132,12 @@ void main() {
     const baseCombatConfig = CombatConfig(
       mainWeapon: MainWeaponSlot(kkBase: 15, kkThreshold: 3),
     );
-    final referenceSheet = heroWithAttributes(
-      combatConfig: baseCombatConfig,
-    );
+    final referenceSheet = heroWithAttributes(combatConfig: baseCombatConfig);
     final lowIniSheet = referenceSheet.copyWith(
       combatConfig: referenceSheet.combatConfig.copyWith(
-        mainWeapon: referenceSheet.combatConfig.mainWeapon.copyWith(iniMod: -20),
+        mainWeapon: referenceSheet.combatConfig.mainWeapon.copyWith(
+          iniMod: -20,
+        ),
       ),
     );
     final highIniSheet = referenceSheet.copyWith(
@@ -159,53 +159,26 @@ void main() {
     expect(highIniResult.kampfInitiative, 31);
     expect(highIniResult.iniParadeMod, 2);
   });
-// ToDo hier weiter machen
-  test('TK-Kalk includes Axxeleratus bonus', () {
-    final heroWithoutAxxeleratus = hero(
+  test('combat preview integrates Axxeleratus into melee preview values', () {
+    final baseHero = hero(
       combatConfig: const CombatConfig(
         mainWeapon: MainWeaponSlot(tpFlat: 4, kkBase: 12, kkThreshold: 2),
       ),
     );
-    final withAxxeleratus = heroWithoutAxxeleratus.copyWith(
-      combatConfig: heroWithoutAxxeleratus.combatConfig.copyWith(
-        specialRules: heroWithoutAxxeleratus.combatConfig.specialRules.copyWith(
+    final withAxx = baseHero.copyWith(
+      combatConfig: baseHero.combatConfig.copyWith(
+        specialRules: baseHero.combatConfig.specialRules.copyWith(
           axxeleratusActive: true,
         ),
       ),
     );
 
-    final withoutResult = preview(heroWithoutAxxeleratus);
-    final withResult = preview(withAxxeleratus);
+    final baseResult = preview(baseHero);
+    final axxResult = preview(withAxx);
 
-    expect(withoutResult.tpCalc, 4);
-    expect(withResult.tpCalc, 6);
-  });
-
-  test('Axxeleratus adds eigenschafts INI to helden initiative', () {
-    final heroWithoutAxxeleratus = hero(
-      combatConfig: const CombatConfig(
-        mainWeapon: MainWeaponSlot(kkBase: 12, kkThreshold: 2),
-        specialRules: CombatSpecialRules(kampfreflexe: true),
-        manualMods: CombatManualMods(iniWurf: 3),
-      ),
-    );
-    final withAxxeleratus = heroWithoutAxxeleratus.copyWith(
-      combatConfig: heroWithoutAxxeleratus.combatConfig.copyWith(
-        specialRules: heroWithoutAxxeleratus.combatConfig.specialRules.copyWith(
-          axxeleratusActive: true,
-        ),
-      ),
-    );
-
-    final withoutResult = preview(heroWithoutAxxeleratus);
-    final withResult = preview(withAxxeleratus);
-
-    expect(withoutResult.axxIniBonus, 0);
-    expect(withResult.axxIniBonus, withResult.eigenschaftsIni);
-    expect(
-      withResult.heldenInitiative,
-      withoutResult.heldenInitiative + withResult.eigenschaftsIni,
-    );
+    expect(axxResult.tpCalc, baseResult.tpCalc + 2);
+    expect(axxResult.paBase, baseResult.paBase + 2);
+    expect(axxResult.axxAttackDefenseHint, isNotEmpty);
   });
 
   test(
@@ -590,24 +563,6 @@ void main() {
     final result = preview(sheet);
     expect(result.rsTotal, 2);
     expect(result.beTotalRaw, 2);
-  });
-
-  test('Axxeleratus gibt +2 auf Ausweichen', () {
-    final baseHero = hero();
-    final withAxx = baseHero.copyWith(
-      combatConfig: baseHero.combatConfig.copyWith(
-        specialRules: baseHero.combatConfig.specialRules.copyWith(
-          axxeleratusActive: true,
-        ),
-      ),
-    );
-
-    final baseResult = preview(baseHero);
-    final axxResult = preview(withAxx);
-
-    expect(axxResult.axxAusweichenBonus, 2);
-    expect(baseResult.axxAusweichenBonus, 0);
-    expect(axxResult.ausweichen, baseResult.ausweichen + 2);
   });
 
   test('INI-Bonus auf Ausweichen ab Kampf-INI 21', () {

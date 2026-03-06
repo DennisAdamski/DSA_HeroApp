@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffen_rules.dart';
@@ -46,9 +47,11 @@ class CombatPreviewStats {
     required this.axxAusweichenBonus,
     required this.iniAusweichenBonus,
     required this.paBase,
+    required this.axxPaBaseBonus,
     required this.offhandPaBonus,
     required this.iniDiceCount,
     required this.fkBase,
+    required this.axxAttackDefenseHint,
   });
 
   final int rsTotal;
@@ -83,10 +86,12 @@ class CombatPreviewStats {
   final int axxAusweichenBonus;
   final int iniAusweichenBonus;
   final int paBase;
+  final int axxPaBaseBonus;
   final int offhandPaBonus;
   // Anzahl Ini-Wuerfel: 1 (normal) oder 2 (Klingentaenzer)
   final int iniDiceCount;
   final int fkBase;
+  final String axxAttackDefenseHint;
 }
 
 CombatPreviewStats computeCombatPreviewStats(
@@ -161,7 +166,10 @@ CombatPreviewStats computeCombatPreviewStats(
     kkBase: main.kkBase,
     kkThreshold: kkThreshold,
   );
-  final tpCalc = main.tpFlat + tpKk + (special.axxeleratusActive ? 2 : 0);
+  final axxTpBonus = computeAxxeleratusTpBonus(
+    axxeleratusActive: special.axxeleratusActive,
+  );
+  final tpCalc = main.tpFlat + tpKk + axxTpBonus;
 
   // --- Sonderfertigkeit-Boni (ini_rules, ausweichen_rules, waffen_rules) ---
   final sfIniBonus = computeSfIniBonus(
@@ -182,7 +190,11 @@ CombatPreviewStats computeCombatPreviewStats(
 
   // --- Kampfbasiswerte (kampfbasis_rules) ---
   final atBase = computeAt(effectiveSheet, mods);
-  final paBase = computePa(effectiveSheet, mods);
+  final basePa = computePa(effectiveSheet, mods);
+  final axxPaBaseBonus = computeAxxeleratusPaBaseBonus(
+    axxeleratusActive: special.axxeleratusActive,
+  );
+  final paBase = basePa + axxPaBaseBonus;
 
   // --- Endwerte AT & PA ---
   final talentEntry = main.talentId.trim().isEmpty
@@ -212,7 +224,10 @@ CombatPreviewStats computeCombatPreviewStats(
   final maxIniRoll = iniDiceCount * 6;
   final iniWurfEffective = _clamp(manualMods.iniWurf, 0, maxIniRoll);
   final eigenschaftsIni = derived.iniBase;
-  final axxIniBonus = special.axxeleratusActive ? eigenschaftsIni : 0;
+  final axxIniBonus = computeAxxeleratusIniBonus(
+    iniBase: eigenschaftsIni,
+    axxeleratusActive: special.axxeleratusActive,
+  );
   final heldenInitiative = clampNonNegative(
     eigenschaftsIni +
         ebe +
@@ -239,7 +254,7 @@ CombatPreviewStats computeCombatPreviewStats(
 
   // --- Ausweichen (ausweichen_rules) ---
   final akrobatikBonusValue = computeAkrobatikBonus(talents);
-  final axxAusweichenBonus = computeAxxAusweichenBonus(
+  final axxAusweichenBonus = computeAxxeleratusAusweichenBonus(
     axxeleratusActive: special.axxeleratusActive,
   );
   final iniAusweichenBonus = computeIniAusweichenBonus(
@@ -253,6 +268,9 @@ CombatPreviewStats computeCombatPreviewStats(
     iniAusweichenBonus: iniAusweichenBonus,
     manualAusweichenMod: manualMods.ausweichenMod,
     beKampf: beKampf,
+  );
+  final axxAttackDefenseHint = buildAxxeleratusDefenseHint(
+    axxeleratusActive: special.axxeleratusActive,
   );
 
   return CombatPreviewStats(
@@ -287,9 +305,11 @@ CombatPreviewStats computeCombatPreviewStats(
     axxAusweichenBonus: axxAusweichenBonus,
     iniAusweichenBonus: iniAusweichenBonus,
     paBase: paBase,
+    axxPaBaseBonus: axxPaBaseBonus,
     offhandPaBonus: offhandPaBonus,
     iniDiceCount: iniDiceCount,
     fkBase: derived.fkBase,
+    axxAttackDefenseHint: axxAttackDefenseHint,
   );
 }
 

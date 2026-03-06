@@ -300,7 +300,7 @@ Aktivierungsstatus von Kampf-Sonderfertigkeiten (alle `bool`):
 | `linkhandActive` | Linkhand-Modus |
 | `flink` | Vorteil: Flink |
 | `behaebig` | Nachteil: Behäbig |
-| `axxeleratusActive` | Zauber Axxeleratus (verdoppelt Ini-Wurf) |
+| `axxeleratusActive` | Zauber Axxeleratus (verdoppelt Ini-Basisanteil und GS; weitere Kampfboni) |
 | `klingentaenzer` | Klingentänzer (2W6 statt 1W6 für Initiative) |
 | `aufmerksamkeit` | Aufmerksamkeit |
 | `activeManeuvers` | `List<String>` — Aktive Manöver-IDs |
@@ -521,7 +521,7 @@ Alle Regeln sind **pure Dart-Funktionen** ohne Seiteneffekte in `lib/rules/deriv
 | AT (Basis) | `round((MU + GE + KK) / 5) + at-Mod` |
 | PA (Basis) | `round((INN + GE + KK) / 5) + pa-Mod` |
 | FK (Basis) | `round((INN + FF + KK) / 5) + fk-Mod` |
-| GS | `8` (Basis); +1 wenn GE > 15; −1 wenn GE < 11; + gs-Mod |
+| GS | `8` (Basis); +1 wenn GE > 15; −1 wenn GE < 11; + gs-Mod; bei Axxeleratus wird der Endwert verdoppelt |
 
 ### 4.3 Initiative
 
@@ -533,6 +533,9 @@ Alle Regeln sind **pure Dart-Funktionen** ohne Seiteneffekte in `lib/rules/deriv
 | IniGe | `truncate((GE − geBase) / geThreshold)` (Waffen-Komponente) |
 | IniDiceCount | `1` (normal) oder `2` (Klingentänzer) |
 | IniParadeMod | `max(0, truncate((kampfIni − 11) / 10))` |
+
+Bei aktivem Axxeleratus wird der berechnete `IniBase`-Anteil in der
+Heldeninitiative verdoppelt. Der Ini-Wurf selbst bleibt unverändert.
 
 Sonderfertigkeits-Boni auf IniBase:
 
@@ -568,6 +571,22 @@ sfAusweichenBonus = 3×AusweichenI + 3×AusweichenII + 3×AusweichenIII + Flink 
 akrobatikBonus    = max(0, floor((AkrobatikTaW − 9) / 3))
 Ausweichen        = max(0, PABasis + sfBonus + akrobatikBonus + manualMod − beKampf)
 ```
+
+Bei aktivem Axxeleratus erhoeht sich `PABasis` um `+2` und Ausweichen
+zusaetzlich um weitere `+2`.
+
+### 4.5a Axxeleratus
+
+**Datei:** `lib/rules/derived/magic_rules.dart`
+
+| Effekt | Wirkung |
+|---|---|
+| TP | `+2` auf Nahkampfangriffe |
+| PA-Basis | `+2` |
+| Ausweichen | weiterer Bonus `+2` |
+| Helden-INI | `IniBase` wird effektiv verdoppelt |
+| GS | finaler GS-Wert wird verdoppelt |
+| Anzeige | `Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2` |
 
 ### 4.6 Waffe & Schaden
 
