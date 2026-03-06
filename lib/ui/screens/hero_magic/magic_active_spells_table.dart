@@ -25,10 +25,11 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final void Function(String spellId, String raw) onSpellValueChanged;
   final void Function(String spellId, String raw) onModifierChanged;
   final void Function(String spellId, bool value) onHauszauberChanged;
-  final void Function(String spellId, List<String> value) onSpecializationsChanged;
+  final void Function(String spellId, List<String> value)
+  onSpecializationsChanged;
   final void Function(String spellId) onRemoveSpell;
   final TextEditingController Function(String id, String field, String initial)
-      controllerFor;
+  controllerFor;
   final VoidCallback? onAddSpell;
 
   @override
@@ -43,10 +44,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Keine Zauber aktiviert.',
-                style: theme.textTheme.bodySmall,
-              ),
+              Text('Keine Zauber aktiviert.', style: theme.textTheme.bodySmall),
               if (isEditing && onAddSpell != null) ...[
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
@@ -105,258 +103,287 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                 const DataColumn(label: Text('Reichweite')),
                 const DataColumn(label: Text('Dauer')),
                 const DataColumn(label: Text('Wirkung')),
-                const DataColumn(label: Text('Spezialisierungen')),
+                const DataColumn(label: Text('Varianten')),
                 if (isEditing) const DataColumn(label: Text('')),
               ],
-              rows: sortedIds.map((spellId) {
-                final def = spellDefs[spellId];
-                final entry = spellEntries[spellId] ??
-                    const HeroSpellEntry();
-                if (def == null) {
-                  return DataRow(cells: [
-                    DataCell(Text(spellId)),
-                    const DataCell(Text('?')),
-                    const DataCell(Text('0')),
-                    const DataCell(Text('0')),
-                    const DataCell(Text('?')),
-                    const DataCell(Text('-')),
-                    const DataCell(Text('-')),
-                    const DataCell(Text('-')),
-                    const DataCell(Text('-')),
-                    const DataCell(Text('-')),
-                    const DataCell(Text('-')),
-                    const DataCell(Text('-')),
-                    const DataCell(Text('-')),
-                    if (isEditing)
-                      DataCell(
-                        IconButton(
-                          icon: const Icon(Icons.remove_circle_outline,
-                              size: 18),
-                          onPressed: () => onRemoveSpell(spellId),
-                        ),
-                      ),
-                  ]);
-                }
-
-                final probeLabel = _shortProbeLabel(def.attributes);
-                final merkmale = parseSpellTraits(def.traits);
-                final effSteigerung = effectiveSteigerung(
-                  basisSteigerung: def.steigerung,
-                  istHauszauber: entry.hauszauber,
-                  zauberMerkmale: merkmale,
-                  heldMerkmalskenntnisse: merkmalskenntnisse,
-                );
-
-                return DataRow(
-                  cells: [
-                    DataCell(
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 180),
-                        child: Text(def.name, overflow: TextOverflow.ellipsis),
-                      ),
-                    ),
-                    DataCell(Text(probeLabel,
-                        style: theme.textTheme.bodySmall)),
-                    isEditing
-                        ? DataCell(
-                            SizedBox(
-                              width: 48,
-                              child: TextField(
-                                controller: controllerFor(
-                                  spellId,
-                                  'spellValue',
-                                  entry.spellValue.toString(),
+              rows: sortedIds
+                  .map((spellId) {
+                    final def = spellDefs[spellId];
+                    final entry =
+                        spellEntries[spellId] ?? const HeroSpellEntry();
+                    if (def == null) {
+                      return DataRow(
+                        cells: [
+                          DataCell(Text(spellId)),
+                          const DataCell(Text('?')),
+                          const DataCell(Text('0')),
+                          const DataCell(Text('0')),
+                          const DataCell(Text('?')),
+                          const DataCell(Text('-')),
+                          const DataCell(Text('-')),
+                          const DataCell(Text('-')),
+                          const DataCell(Text('-')),
+                          const DataCell(Text('-')),
+                          const DataCell(Text('-')),
+                          const DataCell(Text('-')),
+                          const DataCell(Text('-')),
+                          if (isEditing)
+                            DataCell(
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.remove_circle_outline,
+                                  size: 18,
                                 ),
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                      RegExp(r'-?\d*')),
-                                ],
-                                onChanged: (raw) =>
-                                    onSpellValueChanged(spellId, raw),
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.bodySmall,
-                                decoration: const InputDecoration(
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 4, vertical: 6),
-                                ),
+                                onPressed: () => onRemoveSpell(spellId),
                               ),
                             ),
-                          )
-                        : DataCell(Text(entry.spellValue.toString())),
-                    isEditing
-                        ? DataCell(
-                            SizedBox(
-                              width: 48,
-                              child: TextField(
-                                controller: controllerFor(
-                                  spellId,
-                                  'modifier',
-                                  entry.modifier.toString(),
-                                ),
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                      RegExp(r'-?\d*')),
-                                ],
-                                onChanged: (raw) =>
-                                    onModifierChanged(spellId, raw),
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.bodySmall,
-                                decoration: const InputDecoration(
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 4, vertical: 6),
-                                ),
-                              ),
+                        ],
+                      );
+                    }
+
+                    final probeLabel = _shortProbeLabel(def.attributes);
+                    final merkmale = parseSpellTraits(def.traits);
+                    final effSteigerung = effectiveSteigerung(
+                      basisSteigerung: def.steigerung,
+                      istHauszauber: entry.hauszauber,
+                      zauberMerkmale: merkmale,
+                      heldMerkmalskenntnisse: merkmalskenntnisse,
+                    );
+
+                    return DataRow(
+                      cells: [
+                        DataCell(
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 180),
+                            child: Text(
+                              def.name,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          )
-                        : DataCell(Text(entry.modifier.toString())),
-                    DataCell(Text(
-                      effSteigerung,
-                      style: effSteigerung != def.steigerung
-                          ? theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            )
-                          : theme.textTheme.bodySmall,
-                    )),
-                    DataCell(
-                      isEditing
-                          ? Checkbox(
-                              value: entry.hauszauber,
-                              onChanged: (value) => onHauszauberChanged(
-                                  spellId, value ?? false),
-                            )
-                          : Icon(
-                              entry.hauszauber
-                                  ? Icons.star
-                                  : Icons.star_border,
-                              size: 18,
-                              color: entry.hauszauber
-                                  ? theme.colorScheme.primary
-                                  : theme.disabledColor,
-                            ),
-                    ),
-                    DataCell(
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 160),
-                        child: Text(
-                          def.traits.isNotEmpty ? def.traits : '-',
-                          style: theme.textTheme.bodySmall,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                    DataCell(Text(
-                      def.castingTime.isNotEmpty ? def.castingTime : '-',
-                      style: theme.textTheme.bodySmall,
-                    )),
-                    DataCell(Text(
-                      def.aspCost.isNotEmpty ? def.aspCost : '-',
-                      style: theme.textTheme.bodySmall,
-                    )),
-                    DataCell(Text(
-                      def.range.isNotEmpty ? def.range : '-',
-                      style: theme.textTheme.bodySmall,
-                    )),
-                    DataCell(
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 120),
-                        child: Text(
-                          def.duration.isNotEmpty ? def.duration : '-',
-                          style: theme.textTheme.bodySmall,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                    // Wirkungsbeschreibung – Kurztext, Tap oeffnet Dialog mit vollstaendigem Text.
-                    DataCell(
-                      GestureDetector(
-                        onTap: def.wirkung.isNotEmpty
-                            ? () => showDialog<void>(
-                                  context: context,
-                                  builder: (_) => AlertDialog(
-                                    title: Text(def.name),
-                                    content: SingleChildScrollView(
-                                      child: Text(def.wirkung),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.of(context).pop(),
-                                        child: const Text('Schließen'),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                            : null,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 120),
-                          child: Text(
-                            def.wirkung.isNotEmpty ? def.wirkung : '–',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              decoration: def.wirkung.isNotEmpty
-                                  ? TextDecoration.underline
-                                  : null,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
                           ),
                         ),
-                      ),
-                    ),
-                    // Spezialisierungen – tappbar, oeffnet Dialog zum Anzeigen/Bearbeiten.
-                    DataCell(
-                      GestureDetector(
-                        onTap: () => _showSpezializierungDialog(
-                          context: context,
-                          spellId: spellId,
-                          spellName: def.name,
-                          specializations: entry.specializations,
-                          isEditing: isEditing,
-                          onChanged: onSpecializationsChanged,
+                        DataCell(
+                          Text(probeLabel, style: theme.textTheme.bodySmall),
                         ),
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 120),
-                          child: entry.specializations.isEmpty
-                              ? Text('–', style: theme.textTheme.bodySmall)
-                              : Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '${entry.specializations.length}× ',
-                                      style:
-                                          theme.textTheme.bodySmall?.copyWith(
-                                        color: theme.colorScheme.primary,
-                                        fontWeight: FontWeight.bold,
+                        isEditing
+                            ? DataCell(
+                                SizedBox(
+                                  width: 48,
+                                  child: TextField(
+                                    controller: controllerFor(
+                                      spellId,
+                                      'spellValue',
+                                      entry.spellValue.toString(),
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'-?\d*'),
+                                      ),
+                                    ],
+                                    onChanged: (raw) =>
+                                        onSpellValueChanged(spellId, raw),
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.bodySmall,
+                                    decoration: const InputDecoration(
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                        vertical: 6,
                                       ),
                                     ),
-                                    Flexible(
-                                      child: Text(
-                                        entry.specializations.first,
-                                        style: theme.textTheme.bodySmall,
-                                        overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                            : DataCell(Text(entry.spellValue.toString())),
+                        isEditing
+                            ? DataCell(
+                                SizedBox(
+                                  width: 48,
+                                  child: TextField(
+                                    controller: controllerFor(
+                                      spellId,
+                                      'modifier',
+                                      entry.modifier.toString(),
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'-?\d*'),
+                                      ),
+                                    ],
+                                    onChanged: (raw) =>
+                                        onModifierChanged(spellId, raw),
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.bodySmall,
+                                    decoration: const InputDecoration(
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                        vertical: 6,
                                       ),
                                     ),
-                                  ],
+                                  ),
+                                ),
+                              )
+                            : DataCell(Text(entry.modifier.toString())),
+                        DataCell(
+                          Text(
+                            effSteigerung,
+                            style: effSteigerung != def.steigerung
+                                ? theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                  )
+                                : theme.textTheme.bodySmall,
+                          ),
+                        ),
+                        DataCell(
+                          isEditing
+                              ? Checkbox(
+                                  value: entry.hauszauber,
+                                  onChanged: (value) => onHauszauberChanged(
+                                    spellId,
+                                    value ?? false,
+                                  ),
+                                )
+                              : Icon(
+                                  entry.hauszauber
+                                      ? Icons.star
+                                      : Icons.star_border,
+                                  size: 18,
+                                  color: entry.hauszauber
+                                      ? theme.colorScheme.primary
+                                      : theme.disabledColor,
                                 ),
                         ),
-                      ),
-                    ),
-                    if (isEditing)
-                      DataCell(
-                        IconButton(
-                          icon: const Icon(Icons.remove_circle_outline,
-                              size: 18),
-                          onPressed: () => onRemoveSpell(spellId),
-                          tooltip: 'Deaktivieren',
+                        DataCell(
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 160),
+                            child: Text(
+                              def.traits.isNotEmpty ? def.traits : '-',
+                              style: theme.textTheme.bodySmall,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ),
-                      ),
-                  ],
-                );
-              }).toList(growable: false),
+                        DataCell(
+                          Text(
+                            def.castingTime.isNotEmpty ? def.castingTime : '-',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ),
+                        DataCell(
+                          Text(
+                            def.aspCost.isNotEmpty ? def.aspCost : '-',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ),
+                        DataCell(
+                          Text(
+                            def.range.isNotEmpty ? def.range : '-',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ),
+                        DataCell(
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 120),
+                            child: Text(
+                              def.duration.isNotEmpty ? def.duration : '-',
+                              style: theme.textTheme.bodySmall,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                        // Wirkungsbeschreibung – Kurztext, Tap oeffnet Dialog mit vollstaendigem Text.
+                        DataCell(
+                          GestureDetector(
+                            onTap: def.wirkung.isNotEmpty
+                                ? () => showDialog<void>(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: Text(def.name),
+                                      content: SingleChildScrollView(
+                                        child: Text(def.wirkung),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: const Text('Schließen'),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : null,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 120),
+                              child: Text(
+                                def.wirkung.isNotEmpty ? def.wirkung : '–',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  decoration: def.wirkung.isNotEmpty
+                                      ? TextDecoration.underline
+                                      : null,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Varianten – tappbar, oeffnet Dialog zum Anzeigen/Bearbeiten.
+                        DataCell(
+                          GestureDetector(
+                            onTap: () => _showSpezializierungDialog(
+                              context: context,
+                              spellId: spellId,
+                              spellName: def.name,
+                              specializations: entry.specializations,
+                              isEditing: isEditing,
+                              onChanged: onSpecializationsChanged,
+                            ),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 120),
+                              child: entry.specializations.isEmpty
+                                  ? Text('–', style: theme.textTheme.bodySmall)
+                                  : Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          '${entry.specializations.length}× ',
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                color:
+                                                    theme.colorScheme.primary,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            entry.specializations.first,
+                                            style: theme.textTheme.bodySmall,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                        ),
+                        if (isEditing)
+                          DataCell(
+                            IconButton(
+                              icon: const Icon(
+                                Icons.remove_circle_outline,
+                                size: 18,
+                              ),
+                              onPressed: () => onRemoveSpell(spellId),
+                              tooltip: 'Deaktivieren',
+                            ),
+                          ),
+                      ],
+                    );
+                  })
+                  .toList(growable: false),
             ),
           ),
           if (isEditing && onAddSpell != null)
@@ -374,7 +401,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   }
 }
 
-/// Oeffnet einen Dialog zum Anzeigen und (im Edit-Modus) Bearbeiten der Spezialisierungsliste.
+/// Oeffnet einen Dialog zum Anzeigen und Bearbeiten der Variantenliste eines Zaubers.
 Future<void> _showSpezializierungDialog({
   required BuildContext context,
   required String spellId,
@@ -394,7 +421,7 @@ Future<void> _showSpezializierungDialog({
   );
 }
 
-/// Dialog zum Anzeigen und Bearbeiten der Spezialisierungen eines Zaubers.
+/// Dialog zum Anzeigen und Bearbeiten der Varianten eines Zaubers.
 class _SpezializierungDialog extends StatefulWidget {
   const _SpezializierungDialog({
     required this.spellName,
@@ -436,13 +463,11 @@ class _SpezializierungDialogState extends State<_SpezializierungDialog> {
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Spezialisierung hinzufügen'),
+        title: const Text('Variante hinzufügen'),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Name der Spezialisierung',
-          ),
+          decoration: const InputDecoration(hintText: 'Name der Variante'),
           onSubmitted: (v) => Navigator.of(ctx).pop(v),
         ),
         actions: [
@@ -468,7 +493,7 @@ class _SpezializierungDialogState extends State<_SpezializierungDialog> {
       content: SizedBox(
         width: 320,
         child: _items.isEmpty
-            ? const Text('Keine Spezialisierungen vorhanden.')
+            ? const Text('Keine Varianten vorhanden.')
             : ListView.builder(
                 shrinkWrap: true,
                 itemCount: _items.length,

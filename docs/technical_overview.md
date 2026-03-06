@@ -334,7 +334,7 @@ Speichert die Werte eines Helden in einem einzelnen Talent.
 | `paValue` | `int` | PA-Wert (nur Kampftalente) |
 | `modifier` | `int` | Situativer Modifikator |
 | `specialExperiences` | `int` | Sondererfahrungspunkte |
-| `specializations` | `String` | Spezialisierungen (Freitext) |
+| `specializations` | `String` | Varianten/Spezialisierungen (Legacy-Freitext) |
 | `combatSpecializations` | `List<String>` | Geparste Spezialisierungsliste |
 | `gifted` | `bool` | Talent begabt (kostenlos/verstärkt)? |
 | `ebe` | `int` | Erweiterungspunkte |
@@ -453,9 +453,13 @@ Kampftalente erkennt man an: `group == 'Kampftalent'` **oder** `weaponCategory !
 | `steigerung` | Steigerungskategorie |
 | `attributes` | Eigenschaftskürzel für Proben |
 | `aspCost` | AsP-Kosten |
+| `targetObject` | Zielobjekt |
 | `castingTime` | Zauberdauer |
 | `range` | Reichweite |
 | `duration` | Wirkungsdauer |
+| `wirkung` | Wirkungsbeschreibung |
+| `modifications` | Modifikationen ohne Varianten-Liste |
+| `variants` | Definierte Zauber-Varianten |
 | `traits` | Zaubereigenschaften |
 | `active` | Im App verfügbar? |
 

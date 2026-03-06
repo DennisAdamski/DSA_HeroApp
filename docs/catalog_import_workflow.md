@@ -33,6 +33,37 @@ flutter test
   - Contains weapon catalog entries.
 - `magie.json`:
   - Contains spells only.
+  - Spell detail fields from `Liber Cantiones.pdf` are maintained via
+    `tool/import_liber_cantiones.py`.
+
+## Liber Cantiones import
+
+Use the importer to enrich `magie.json` with:
+
+- `aspCost`
+- `targetObject`
+- `range`
+- `duration`
+- `castingTime`
+- `wirkung`
+- `modifications`
+- `variants`
+
+Command:
+
+```bash
+python tool/import_liber_cantiones.py \
+  --pdf "C:/path/to/Liber Cantiones.pdf" \
+  --catalog assets/catalogs/house_rules_v1/magie.json \
+  --review tool/generated/liber_cantiones_missing_spells.json
+```
+
+Notes:
+
+- The importer keeps all existing spell identities and base catalog fields.
+- Ambiguous, unmatched, or PDF-only-reference cases are written to
+  `tool/generated/liber_cantiones_missing_spells.json` for manual review.
+- The script requires `pypdf` and, for AES-encrypted PDFs, `cryptography`.
 
 ## Combat talent UI note
 

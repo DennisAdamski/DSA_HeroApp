@@ -1,0 +1,232 @@
+[
+  {
+    "reason": "unmatched",
+    "printedPage": 208,
+    "pdfPageStart": 209,
+    "pdfPageEnd": 210,
+    "rawName": "Pfeil des [Elements]",
+    "title": "",
+    "probe": "kl/in/ch",
+    "rawText": "Probe: KL / IN / CH\nTechnik: Der Elf setzt einen Pfeil sechsmal kurz \ndem Element aus (in die Luft werfen, unter Steinen \nbegraben etc.), dessen Kraft er übertragen will, und \nkonzentriert sich auf die Melodie des Elements.\nZauberdauer: 20 Aktionen\nWirkung: Eine Hexalogie der elementaren Verzauberung, \ndie eigentlich aus sechs einzelnen Zaubern besteht, die jede \nfür sich erlernt und gesteigert werden müssen. Sie sind hier \nder Übersichtlichkeit halber ge\n meinsam dargestellt. Die Kraft \ndes vom Zaubernden angerufenen Element fährt in den Pfeil, \nso dass dieser seine Beschaffenheit und sein Aussehen ändert \nund nach dem Abschuss eine zusätzliche Wirkung entfaltet. Wird \nnichts anderes gesagt, dann gelten die Eigenschaften der verzau -\nberten Pfeile zusätzlich zu denen, die das unverzauberte Geschoss \nhat. Pfeile aller Elemente sind in der Lage, Geister, Dämonen und \nähnliche Sphärenwesenheiten zu verletzen. \nPfeil des Feuers: Die roten und gelben Farbtöne des Feuertänzers \nerscheinen dem Betrachter wie züngelnde Flammen. Wird dieser Pfeil \nabgeschossen, erhitzt er sich im Flug immer mehr, bis er nur noch ein \nweißglühendes Geschoss ist. Trifft er auf einen brennbaren Gegenstand, \nflammt dieser sofort auf. Befindet sich entzündliches Material in bis zu \n1 Schritt Entfernung, so fängt es bei einem Wurf von 1 bis ZfP* auf \ndem W20 Feuer, bei bis zu 2 Schritt Entfernung immer noch bei einem \nWürfelergebnis zwischen 1 und ZfP*/2 auf 1W20. Ein lebendes Wesen, \ndas vom Pfeil getroffen wird, erhält jede KR (max. ZfP*/2 KR lang), \nin der das glühende Projektil nicht entfernt werden kann, je 1W6 SP .\nPfeil des Wassers: Der Wasserpfeil oder Efferdspfeil hat einen \ngrünblauen Schaft und eine irisierende Perlmuttspitze. Er schießt \ndurch Wasser, als ob es Luft wäre. Bei strömendem Regen oder Nebel \nund selbst unter Wasser (die Reichweitenbeschränkungen aus WdS \n100 gelten nicht) findet er ebenso sein Ziel wie bei klarer Sicht, \nso dass für den \n Schützen (wenn er das Ziel überhaupt erkennen \nkann) kein Malus anfällt.\nPfeil \ndes Erzes: Der Hämmerer ist ein Pfeil, der so schwer und \nfest wie ein Stein ist. Durch das Gewicht sinkt die Maximal -\nreichweite jeder Schusswaffe auf ein Drittel. Die FernkampfProbe ist um 4 Punkte erschwert. Dafür entwickelt der Pfeil \nwährend des Fluges eine ungeheure Schmetterkraft: Pro 3 \nZfP* verursacht der Hämmerer einen zusätzlichen W6 \nTP bis zu einem Maximalwert von 4W6 + regulärer \nWaffenschaden. Von einem Hämmerer getroffen zu \nwerden, ist ein Angriff zum Niederwerfen.\nPfeil der Luft: Von blassem Blau und leicht wie \neine Feder ist der Windläufer. Er kann nicht \nnur doppelt so weit wie jeder andere Pfeil \ngeschossen werden, sondern wird in \nseiner Flugbahn auch vom stärksten \nRondrikan nicht abgelenkt (keine \nEinschränkungen durch Seiten- oder Gegenwind); die TP-Minderung bei \ngroßen Entfernungen entfällt (keine Reibung). \nDie TP-Wirkung im Ziel ist immer genauso hoch, \nals sei der Pfeil aus nächster Nähe abgeschossen \nworden.\nPfeil des Humus: Der Efeupfeil sieht aus wie ein \nhalbwegs gerader Zweig mit zwei Blättern als Befiederung. \nSchießt man ihn gegen eine Mauer oder eine Felswand (halbe \nReichweite eines normalen Pfeils), so verwurzelt er sich in \nSekundenschnelle in den \n Fugen und überzieht ganze Mauern \nmit schnell wachsenden Ranken, die man leicht erklettern kann. \nNach Ablauf der Wirkungsdauer fällt das ganze Pflanzenwerk \nzusammen und es bleibt nur noch unscheinbarer Staub zurück. \nWird ein Lebewesen von diesem Pfeil getroffen, erhält es nur die \nHälfte der üblichen TP , wird aber ebenso überwuchert: Blitz -\nschnell wird es von Ranken umsponnen, aus denen es sich nur mit \neiner EntfesselnProbe befreien kann, die um die angerichteten TP \nerschwert ist. Das Opfer darf diese Probe einmal pro KR ablegen, \njedoch steigt die Schwierigkeit für jede misslungene Probe um 1. Ein \nAußenstehender kann das Opfer ohne Probe befreien, was jedoch TP \nKR dauert.\nPfeil des Eises: Der Eiszapfen sieht genau so aus, wie er heißt: weiß, \nkalt, spitz. Er fliegt halb so weit wie ein gewöhnlicher Pfeil und verursacht bei einem Treffer normalen Schaden. Dem Opfer wird jedoch \ndurch \nden Eiszapfen langsam die Körperwärme entzogen: Es verliert \njede KR ZfP*/2 Ausdauerpunkte. Sinkt die Ausdauer auf 0, so erleidet \ndas Opfer pro weiterer KR 1 SP , bis der Pfeil aus der Wunde gezogen \nwird. Gegen kälteempfindliche Wesen ist die Wirkung verdoppelt, \ngegen kälteresistente halbiert.\nKosten: 8 AsP\nZielobjekt: Einzelobjekt\nReichweite: Berührung\nWirkungsdauer: Der Pfeil ist für ZfP* x 10 KR verzaubert\nModifikationen: Zauberdauer, Kosten, Wirkungsdauer\n◆ Speer und Bolzen (+3/+7). Die Zauber können auch auf \nandere Fernwaffen gelegt werden, wobei Bolzen um 3 Punkte \nschwieriger zu verzaubern sind und \n Speere 7 ZfP erfordern. \nKugeln oder Schleuderbleie sind hiermit nicht zu verzaubern. \n◆ Permanenz (+7). Der Pfeil wird permanent verzaubert. \nDiese Variante kostet 21 AsP , einen davon permanent. \nPermanenz heißt in diesem Fall, dass der Pfeil seine \nmagische Wirkung so lange behält, bis er das erste \nMal eingesetzt wird.\n◆ Vermutet wird ein siebter, der Kraft zugeordneter Zauber: Angeblich sollen Kraftpfeile \nmagiebegabte Wesen todsicher treffen.\nReversalis: Der Effekt des gegensätzlichen Elements tritt ein.\nAntimagie:\n Die Zauberpfeile \nkönnen durch den OBJEKT \nPFEIL DES \n(ELEMENTS)\n208\nENTZAUBERN oder \nden jeweils passenden ELEMENTARBANN ihre Kräfte \nverlieren; der Zauber ist in der entsprechenden Zone erschwert zu wirken.\nMerkmale:\n Elementar (je nach Zauber), \nObjekt\nKomplexität: C\nRepräsentationen und Verbreitung: Elf 1, \nMag 2 für PFEIL DES FEUERS; Ach 3, Elf 1 (nur \nAu- und Firnelfen) für PFEIL DES WASSERS; Mag \n2 für PFEIL DES ERZES; Elf 5, Mag 3 für PFEIL DER \nLUFT; Elf 4, Ach 3 für PFEIL DES HUMUS; Elf 3 (nur \nFirnelfen) für PFEIL DES EISES \nDiese sechs Zauber stammen vermutlich ursprünglich von \nden artefaktschaffenden und elementbeherrschenden Hochelfen \n(mehrere Hinweise, angeblich auch konkrete Ausformulierungen, \nfinden sich in den kürzlich entdeckten Simyala-Fragmenten), \nsind aber teil\n weise auch – vor allem im tulamidischen Raum – bei \nMagiern bekannt. Die permanent verzauberten Pfeile sind bei reichen Fürsten begehrte \nArtefakte, aber zu teuer\n, \num eine ganze Einheit damit \nausrüsten zu \n können \n(immerhin \n100 – 400 Dukaten pro Stück oder eine \nGe\n fälligkeit des Potentaten für den Zauberer). Ledig lich K alif Malkillah III. konnte die \nneue Bogenschützeneinheit der Murawidun mit \neinigen Dutzend Hämmerern und Windläufern \nder Mherweder Zauberschule bewaffnen. \nDer PFEIL DER LUFT wird in Khunchom für ‘nur’ 333 \nDukaten an Außenstehende weiter\n gegeben, \nin Rash\n dul \nund Mherwed werden die Luft- und die Erzausformung \nlediglich den hauseigenen Scholaren beigebracht. Die übrigen \nelementaren Ausformungen sind meist nur bei einigen Elfen \nzu erlernen, während einige Kristallomanten der Achaz die \nHumus- und die Wasserausformung beherrschen.\nAngeblich existierten für Nahkampfwaffen entsprechende Sprüche, mit denen die Hochelfen in ihren letzten Schlachten ihre Feuerschwerter, Steinschneider und Sturmklingen aufgerüstet haben.\n209\nC\nElementar \nObjekt",
+    "parsedFields": {
+      "aspCost": "8 AsP",
+      "targetObject": "Einzelobjekt",
+      "range": "Berührung",
+      "duration": "Der Pfeil ist für ZfP* x 10 KR verzaubert\nModifikationen: Zauberdauer, Kosten, Wirkungsdauer\n◆ Speer und Bolzen (+3/+7). Die Zauber können auch auf\nandere Fernwaffen gelegt werden, wobei Bolzen um 3 Punkte\nschwieriger zu verzaubern sind und\nSpeere 7 ZfP erfordern.\nKugeln oder Schleuderbleie sind hiermit nicht zu verzaubern.\n◆ Permanenz (+7). Der Pfeil wird permanent verzaubert.\nDiese Variante kostet 21 AsP , einen davon permanent.\nPermanenz heißt in diesem Fall, dass der Pfeil seine\nmagische Wirkung so lange behält, bis er das erste\nMal eingesetzt wird.\n◆ Vermutet wird ein siebter, der Kraft zugeordneter Zauber: Angeblich sollen Kraftpfeile\nmagiebegabte Wesen todsicher treffen.",
+      "castingTime": "20 Aktionen",
+      "wirkung": "Eine Hexalogie der elementaren Verzauberung,\ndie eigentlich aus sechs einzelnen Zaubern besteht, die jede\nfür sich erlernt und gesteigert werden müssen. Sie sind hier\nder Übersichtlichkeit halber ge\nmeinsam dargestellt. Die Kraft\ndes vom Zaubernden angerufenen Element fährt in den Pfeil,\nso dass dieser seine Beschaffenheit und sein Aussehen ändert\nund nach dem Abschuss eine zusätzliche Wirkung entfaltet. Wird\nnichts anderes gesagt, dann gelten die Eigenschaften der verzau -\nberten Pfeile zusätzlich zu denen, die das unverzauberte Geschoss\nhat. Pfeile aller Elemente sind in der Lage, Geister, Dämonen und\nähnliche Sphärenwesenheiten zu verletzen.\nPfeil des Feuers: Die roten und gelben Farbtöne des Feuertänzers\nerscheinen dem Betrachter wie züngelnde Flammen. Wird dieser Pfeil\nabgeschossen, erhitzt er sich im Flug immer mehr, bis er nur noch ein\nweißglühendes Geschoss ist. Trifft er auf einen brennbaren Gegenstand,\nflammt dieser sofort auf. Befindet sich entzündliches Material in bis zu\n1 Schritt Entfernung, so fängt es bei einem Wurf von 1 bis ZfP* auf\ndem W20 Feuer, bei bis zu 2 Schritt Entfernung immer noch bei einem\nWürfelergebnis zwischen 1 und ZfP*/2 auf 1W20. Ein lebendes Wesen,\ndas vom Pfeil getroffen wird, erhält jede KR (max. ZfP*/2 KR lang),\nin der das glühende Projektil nicht entfernt werden kann, je 1W6 SP .\nPfeil des Wassers: Der Wasserpfeil oder Efferdspfeil hat einen\ngrünblauen Schaft und eine irisierende Perlmuttspitze. Er schießt\ndurch Wasser, als ob es Luft wäre. Bei strömendem Regen oder Nebel\nund selbst unter Wasser (die Reichweitenbeschränkungen aus WdS\n100 gelten nicht) findet er ebenso sein Ziel wie bei klarer Sicht,\nso dass für den\nSchützen (wenn er das Ziel überhaupt erkennen\nkann) kein Malus anfällt.\nPfeil\ndes Erzes: Der Hämmerer ist ein Pfeil, der so schwer und\nfest wie ein Stein ist. Durch das Gewicht sinkt die Maximal -\nreichweite jeder Schusswaffe auf ein Drittel. Die FernkampfProbe ist um 4 Punkte erschwert. Dafür entwickelt der Pfeil\nwährend des Fluges eine ungeheure Schmetterkraft: Pro 3\nZfP* verursacht der Hämmerer einen zusätzlichen W6\nTP bis zu einem Maximalwert von 4W6 + regulärer\nWaffenschaden. Von einem Hämmerer getroffen zu\nwerden, ist ein Angriff zum Niederwerfen.\nPfeil der Luft: Von blassem Blau und leicht wie\neine Feder ist der Windläufer. Er kann nicht\nnur doppelt so weit wie jeder andere Pfeil\ngeschossen werden, sondern wird in\nseiner Flugbahn auch vom stärksten\nRondrikan nicht abgelenkt (keine\nEinschränkungen durch Seiten- oder Gegenwind); die TP-Minderung bei\ngroßen Entfernungen entfällt (keine Reibung).\nDie TP-Wirkung im Ziel ist immer genauso hoch,\nals sei der Pfeil aus nächster Nähe abgeschossen\nworden.\nPfeil des Humus: Der Efeupfeil sieht aus wie ein\nhalbwegs gerader Zweig mit zwei Blättern als Befiederung.\nSchießt man ihn gegen eine Mauer oder eine Felswand (halbe\nReichweite eines normalen Pfeils), so verwurzelt er sich in\nSekundenschnelle in den\nFugen und überzieht ganze Mauern\nmit schnell wachsenden Ranken, die man leicht erklettern kann.\nNach Ablauf der Wirkungsdauer fällt das ganze Pflanzenwerk\nzusammen und es bleibt nur noch unscheinbarer Staub zurück.\nWird ein Lebewesen von diesem Pfeil getroffen, erhält es nur die\nHälfte der üblichen TP , wird aber ebenso überwuchert: Blitz -\nschnell wird es von Ranken umsponnen, aus denen es sich nur mit\neiner EntfesselnProbe befreien kann, die um die angerichteten TP\nerschwert ist. Das Opfer darf diese Probe einmal pro KR ablegen,\njedoch steigt die Schwierigkeit für jede misslungene Probe um 1. Ein\nAußenstehender kann das Opfer ohne Probe befreien, was jedoch TP\nKR dauert.\nPfeil des Eises: Der Eiszapfen sieht genau so aus, wie er heißt: weiß,\nkalt, spitz. Er fliegt halb so weit wie ein gewöhnlicher Pfeil und verursacht bei einem Treffer normalen Schaden. Dem Opfer wird jedoch\ndurch\nden Eiszapfen langsam die Körperwärme entzogen: Es verliert\njede KR ZfP*/2 Ausdauerpunkte. Sinkt die Ausdauer auf 0, so erleidet\ndas Opfer pro weiterer KR 1 SP , bis der Pfeil aus der Wunde gezogen\nwird. Gegen kälteempfindliche Wesen ist die Wirkung verdoppelt,\ngegen kälteresistente halbiert.",
+      "modifications": "",
+      "variants": []
+    }
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Aquafaxius",
+    "catalogId": "spell_aquafaxius",
+    "catalogProbe": [
+      "Klugheit",
+      "Fingerfertigkeit",
+      "Konstitution"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Aquasphaero",
+    "catalogId": "spell_aquasphaero",
+    "catalogProbe": [
+      "Mut",
+      "Intuition",
+      "Konstitution"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Archofaxius",
+    "catalogId": "spell_archofaxius",
+    "catalogProbe": [
+      "Klugheit",
+      "Fingerfertigkeit",
+      "Konstitution"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Archosphaero",
+    "catalogId": "spell_archosphaero",
+    "catalogProbe": [
+      "Mut",
+      "Intuition",
+      "Konstitution"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Frigifaxius",
+    "catalogId": "spell_frigifaxius",
+    "catalogProbe": [
+      "Klugheit",
+      "Fingerfertigkeit",
+      "Konstitution"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Frigisphaero",
+    "catalogId": "spell_frigisphaero",
+    "catalogProbe": [
+      "Mut",
+      "Intuition",
+      "Konstitution"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Gletscherwand",
+    "catalogId": "spell_gletscherwand",
+    "catalogProbe": [
+      "Mut",
+      "Klugheit",
+      "Charisma"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Humofaxius",
+    "catalogId": "spell_humofaxius",
+    "catalogProbe": [
+      "Klugheit",
+      "Fingerfertigkeit",
+      "Konstitution"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Humosphaero",
+    "catalogId": "spell_humosphaero",
+    "catalogProbe": [
+      "Mut",
+      "Intuition",
+      "Konstitution"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Orcanofaxius",
+    "catalogId": "spell_orcanofaxius",
+    "catalogProbe": [
+      "Klugheit",
+      "Fingerfertigkeit",
+      "Konstitution"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Orcanosphaero",
+    "catalogId": "spell_orcanosphaero",
+    "catalogProbe": [
+      "Mut",
+      "Intuition",
+      "Konstitution"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Pfeil der Luft",
+    "catalogId": "spell_pfeil_der_luft",
+    "catalogProbe": [
+      "Klugheit",
+      "Intuition",
+      "Charisma"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Pfeil des Eises",
+    "catalogId": "spell_pfeil_des_eises",
+    "catalogProbe": [
+      "Klugheit",
+      "Intuition",
+      "Charisma"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Pfeil des Erzes",
+    "catalogId": "spell_pfeil_des_erzes",
+    "catalogProbe": [
+      "Klugheit",
+      "Intuition",
+      "Charisma"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Pfeil des Feuers",
+    "catalogId": "spell_pfeil_des_feuers",
+    "catalogProbe": [
+      "Klugheit",
+      "Intuition",
+      "Charisma"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Pfeil des Humus",
+    "catalogId": "spell_pfeil_des_humus",
+    "catalogProbe": [
+      "Klugheit",
+      "Intuition",
+      "Charisma"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Pfeil des Wassers",
+    "catalogId": "spell_pfeil_des_wassers",
+    "catalogProbe": [
+      "Klugheit",
+      "Intuition",
+      "Charisma"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Wand aus Flammen",
+    "catalogId": "spell_wand_aus_flammen",
+    "catalogProbe": [
+      "Mut",
+      "Klugheit",
+      "Charisma"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Wand aus Erz",
+    "catalogId": "spell_wand_aus_erz",
+    "catalogProbe": [
+      "Mut",
+      "Klugheit",
+      "Charisma"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Wand aus Luft",
+    "catalogId": "spell_wand_aus_luft",
+    "catalogProbe": [
+      "Mut",
+      "Klugheit",
+      "Charisma"
+    ]
+  },
+  {
+    "reason": "catalog_spell_missing_in_pdf_or_unmatched",
+    "catalogName": "Wand aus Wasser",
+    "catalogId": "spell_wand_aus_wasser",
+    "catalogProbe": [
+      "Mut",
+      "Klugheit",
+      "Charisma"
+    ]
+  }
+]
