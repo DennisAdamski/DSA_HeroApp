@@ -932,6 +932,19 @@ python tool/report_unreferenced_dart.py
 Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Dateien unter
 `assets/catalogs/house_rules_v1/` **nie manuell bearbeiten**.
 
+### Update 2026-03-07: Begabung & Lernkomplexitaet
+
+- `HeroSpellEntry` enthaelt jetzt zusaetzlich ein `gifted`-Flag fuer
+  zauberspezifische Begabung.
+- Die gemeinsame Lernkomplexitaets-Skala lautet
+  `A* < A < B < C < D < E < F < G < H`.
+- `lib/rules/derived/learning_rules.dart` kapselt die gemeinsame Logik fuer
+  Lernkomplexitaet und Talentobergrenzen.
+- Kampftalente nutzen fuer `max TaW` fest `GE/KK` (Nahkampf) bzw. `FF/KK`
+  (Fernkampf); `IN` wird dabei nicht beruecksichtigt.
+- Zauber addieren Hauszauber, passende Merkmalskenntnis und Begabung jeweils
+  als eigene Reduktionsstufe; die Untergrenze ist `A*`.
+
 ---
 
 *Erzeugt am 2026-03-04 — Bezieht sich auf Codestand `claude/create-technical-documentation-Eawbf`*

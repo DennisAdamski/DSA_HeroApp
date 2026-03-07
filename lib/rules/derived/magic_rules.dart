@@ -1,14 +1,16 @@
+import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
+
 // Magie-Regelfunktionen (pure Dart, keine Seiteneffekte).
 //
-// Enthält Logik fuer:
+// Enthaelt Logik fuer:
 // - Parsing von Zauber-Verfuegbarkeits-Strings
 // - Filterung nach Held-Repraesentationen
-// - Berechnung der effektiven Steigerungskategorie
+// - Parsing von Merkmalen
 
 /// Ein einzelner Eintrag in der Verfuegbarkeitsliste eines Zaubers.
 ///
-/// Beispiel: "Mag6" → tradition='Mag', subTradition=null, verbreitung=6
-/// Beispiel: "Dru(Elf)2" → tradition='Dru', subTradition='Elf', verbreitung=2
+/// Beispiel: "Mag6" -> tradition='Mag', subTradition=null, verbreitung=6
+/// Beispiel: "Dru(Elf)2" -> tradition='Dru', subTradition='Elf', verbreitung=2
 class SpellAvailabilityEntry {
   const SpellAvailabilityEntry({
     required this.tradition,
@@ -25,7 +27,7 @@ class SpellAvailabilityEntry {
 ///
 /// Erkennt Formate wie: "Mag6", "Dru(Elf)2", "Hex(Mag)3"
 final RegExp _availabilityPattern = RegExp(
-  r'([A-Za-zÄÖÜäöü]+)(?:\(([A-Za-zÄÖÜäöü]+)\))?(\d+)',
+  r'([A-Za-z\u00c4\u00d6\u00dc\u00e4\u00f6\u00fc]+)(?:\(([A-Za-z\u00c4\u00d6\u00dc\u00e4\u00f6\u00fc]+)\))?(\d+)',
 );
 
 /// Parst den availability-String eines Zaubers in strukturierte Eintraege.
@@ -33,13 +35,19 @@ final RegExp _availabilityPattern = RegExp(
 /// Input: "Mag6, Hex3, Dru(Elf)2"
 /// Output: [SpellAvailabilityEntry('Mag', null, 6), ...]
 List<SpellAvailabilityEntry> parseSpellAvailability(String availability) {
-  if (availability.isEmpty) return const [];
+  if (availability.isEmpty) {
+    return const [];
+  }
   final entries = <SpellAvailabilityEntry>[];
   for (final part in availability.split(',')) {
     final trimmed = part.trim();
-    if (trimmed.isEmpty) continue;
+    if (trimmed.isEmpty) {
+      continue;
+    }
     final match = _availabilityPattern.firstMatch(trimmed);
-    if (match == null) continue;
+    if (match == null) {
+      continue;
+    }
     entries.add(
       SpellAvailabilityEntry(
         tradition: match.group(1)!,
@@ -69,22 +77,22 @@ List<String> extractTraditions(String availability) {
 
 /// Prueft, ob ein Zauber fuer die gewaehlten Repraesentationen verfuegbar ist.
 ///
-/// Gibt die beste (niedrigste) Verbreitungsstufe zurueck oder null,
-/// wenn der Zauber nicht verfuegbar ist.
-///
-/// Beruecksichtigt auch Sub-Traditionen: "Dru(Elf)2" passt, wenn der Held
-/// sowohl "Dru" als auch "Elf" als Repraesentation hat.
+/// Gibt die beste (niedrigste) Verbreitungsstufe zurueck oder `null`, wenn der
+/// Zauber nicht verfuegbar ist.
 int? spellAvailabilityForRepresentations(
   String availability,
   List<String> heroRepresentations,
 ) {
-  if (heroRepresentations.isEmpty) return null;
+  if (heroRepresentations.isEmpty) {
+    return null;
+  }
   final entries = parseSpellAvailability(availability);
   int? bestVerbreitung;
   for (final entry in entries) {
     final matchesTradition = heroRepresentations.contains(entry.tradition);
-    if (!matchesTradition) continue;
-    // Sub-Tradition: Held muss auch die Zweit-Repraesentation haben.
+    if (!matchesTradition) {
+      continue;
+    }
     if (entry.subTradition != null &&
         !heroRepresentations.contains(entry.subTradition)) {
       continue;
@@ -96,40 +104,24 @@ int? spellAvailabilityForRepresentations(
   return bestVerbreitung;
 }
 
-/// Die sechs DSA-Steigerungskategorien in aufsteigender Reihenfolge.
-const List<String> _steigerungsKategorien = ['A', 'B', 'C', 'D', 'E', 'F'];
-
 /// Berechnet die effektive Steigerungskategorie eines Zaubers.
 ///
-/// Die Kategorie wird um eine Stufe reduziert (z.B. C → B) wenn:
-/// - der Zauber als Hauszauber markiert ist, ODER
-/// - der Held Merkmalskenntnisse besitzt, die mindestens ein Merkmal
-///   des Zaubers abdecken.
-///
-/// Hauszauber und Merkmalskenntnisse werden NICHT kumuliert —
-/// die maximale Reduktion betraegt eine Stufe.
-/// Minimum ist 'A', Maximum ist 'F'.
+/// Hauszauber, passende Merkmalskenntnisse und Begabung summieren sich jeweils
+/// um eine Reduktionsstufe. Minimum ist `A*`.
 String effectiveSteigerung({
   required String basisSteigerung,
   required bool istHauszauber,
   required List<String> zauberMerkmale,
   required List<String> heldMerkmalskenntnisse,
+  bool istBegabt = false,
 }) {
-  final index = _steigerungsKategorien.indexOf(basisSteigerung);
-  if (index < 0) return basisSteigerung;
-
-  final hatMerkmalReduktion = zauberMerkmale.any(
-    (merkmal) => heldMerkmalskenntnisse.contains(merkmal),
+  return effectiveSpellLernkomplexitaet(
+    basisKomplexitaet: basisSteigerung,
+    istHauszauber: istHauszauber,
+    zauberMerkmale: zauberMerkmale,
+    heldMerkmalskenntnisse: heldMerkmalskenntnisse,
+    gifted: istBegabt,
   );
-
-  if (istHauszauber || hatMerkmalReduktion) {
-    final reducedIndex = (index - 1).clamp(
-      0,
-      _steigerungsKategorien.length - 1,
-    );
-    return _steigerungsKategorien[reducedIndex];
-  }
-  return basisSteigerung;
 }
 
 /// Parst den Merkmale-String eines Zaubers in eine Liste.
@@ -137,11 +129,13 @@ String effectiveSteigerung({
 /// Input: "Eigenschaften, Elementar (Erz)"
 /// Output: ['Eigenschaften', 'Elementar (Erz)']
 List<String> parseSpellTraits(String traits) {
-  if (traits.isEmpty) return const [];
+  if (traits.isEmpty) {
+    return const [];
+  }
   return traits
       .split(',')
-      .map((t) => t.trim())
-      .where((t) => t.isNotEmpty)
+      .map((trait) => trait.trim())
+      .where((trait) => trait.isNotEmpty)
       .toList(growable: false);
 }
 
