@@ -90,6 +90,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       <String, TextEditingController>{};
 
   HeroSheet? _latestHero;
+  List<TalentDef> _latestCatalogTalents = const <TalentDef>[];
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   List<HeroMetaTalent> _draftMetaTalents = <HeroMetaTalent>[];
   Set<String> _invalidCombatTalentIds = <String>{};
@@ -143,6 +144,36 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         startEdit: _startEdit,
         save: _saveChanges,
         cancel: _cancelChanges,
+        headerActions: widget.showInlineActions
+            ? const <WorkspaceHeaderAction>[]
+            : <WorkspaceHeaderAction>[
+                if (widget.scope == _TalentTabScope.nonCombat)
+                  WorkspaceHeaderAction(
+                    builder: (_) => Tooltip(
+                      message: 'Talente verwalten',
+                      child: IconButton(
+                        key: const ValueKey<String>('talents-catalog-open'),
+                        onPressed: () => _showTalentKatalog(
+                          context,
+                          _latestCatalogTalents,
+                        ),
+                        icon: const Icon(Icons.library_add),
+                      ),
+                    ),
+                  ),
+                if (widget.scope == _TalentTabScope.nonCombat)
+                  WorkspaceHeaderAction(
+                    builder: (_) => Tooltip(
+                      message: 'Meta-Talente verwalten',
+                      child: IconButton(
+                        key: const ValueKey<String>('meta-talents-manage-open'),
+                        onPressed: () =>
+                            _openMetaTalentManager(_latestCatalogTalents),
+                        icon: const Icon(Icons.merge_type),
+                      ),
+                    ),
+                  ),
+              ],
       ),
     );
   }
@@ -412,6 +443,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         error: (error, stackTrace) =>
             Center(child: Text('Katalog-Fehler: $error')),
         data: (catalog) {
+          _latestCatalogTalents = catalog.talents;
           final combatBaseBe = widget.scope == _TalentTabScope.nonCombat
               ? computeCombatPreviewStats(
                   hero,

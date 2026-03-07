@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
@@ -40,6 +42,7 @@ void main() {
     WidgetTester tester,
     FakeRepository repo, {
     Size? size,
+    RulesCatalog? catalog,
   }) async {
     if (size != null) {
       tester.view.devicePixelRatio = 1.0;
@@ -50,7 +53,11 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          if (catalog != null)
+            rulesCatalogProvider.overrideWith((ref) async => catalog),
+        ],
         child: const MaterialApp(home: HeroesHomeScreen()),
       ),
     );
@@ -70,6 +77,24 @@ void main() {
 
   Finder tabText(String label) {
     return find.descendant(of: find.byType(TabBar), matching: find.text(label));
+  }
+
+  RulesCatalog buildCatalog() {
+    return const RulesCatalog(
+      version: 'test_catalog',
+      source: 'test',
+      talents: <TalentDef>[
+        TalentDef(
+          id: 'tal_a',
+          name: 'Athletik',
+          group: 'Koerper',
+          steigerung: 'C',
+          attributes: <String>['Mut', 'Gewandheit', 'Koerperkraft'],
+        ),
+      ],
+      spells: <SpellDef>[],
+      weapons: <WeaponDef>[],
+    );
   }
 
   testWidgets('overview edit/save persists AP fields and name', (
@@ -218,6 +243,42 @@ void main() {
     expect(hero, isNotNull);
     expect(hero!.apTotal, 1200);
     expect(hero.apSpent, 800);
+  });
+
+  testWidgets('talents tab shows catalog actions in upper workspace bar while editing', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo, catalog: buildCatalog());
+    await tester.tap(tabText('Talente'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Bearbeiten').first);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('talents-catalog-open')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('meta-talents-manage-open')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('talents-be-screen-open')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('overview edit/save persists attribute changes and temp mods', (

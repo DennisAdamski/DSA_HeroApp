@@ -387,6 +387,13 @@ void main() {
       find.byKey(const ValueKey<String>('talents-catalog-open')),
       findsOneWidget,
     );
+    final catalogX = tester.getTopLeft(
+      find.byKey(const ValueKey<String>('talents-catalog-open')),
+    ).dx;
+    final beX = tester.getTopLeft(
+      find.byKey(const ValueKey<String>('talents-be-screen-open')),
+    ).dx;
+    expect(catalogX, lessThan(beX));
   });
 
   testWidgets('gifted talents show reduced complexity and higher max TaW', (
