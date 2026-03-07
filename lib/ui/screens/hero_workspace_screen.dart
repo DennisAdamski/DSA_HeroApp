@@ -415,7 +415,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         SizedBox(
           width: _commandDeckInspectorWidth,
           child: WorkspaceInspectorPanel(
-            hero: hero,
+            heroId: widget.heroId,
             activeTabIndex: activeTabIndex,
             isEditing: _tabRegistry.isEditing(activeTabIndex),
             isDirty: _tabRegistry.isDirty(activeTabIndex),
