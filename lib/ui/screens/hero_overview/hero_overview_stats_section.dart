@@ -120,7 +120,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                   _buildAttributesTableHeaderCell('Wert'),
                   _buildAttributesTableHeaderCell('Start'),
                   _buildAttributesTableHeaderCell('Modifikator'),
-                  _buildAttributesTableHeaderCell('Aktuell'),
+                  _buildAttributesTableHeaderCell('Summe'),
                   _buildAttributesTableHeaderCell('Zugekauft'),
                 ],
               ),
