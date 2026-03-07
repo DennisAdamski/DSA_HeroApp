@@ -17,6 +17,7 @@ class StatModifiers {
     this.fk = 0,
     this.gs = 0,
     this.ausweichen = 0,
+    this.rs = 0,
   });
 
   final int lep;
@@ -31,6 +32,9 @@ class StatModifiers {
   final int gs;
   final int ausweichen;
 
+  /// Direkter Ruestungsschutz-Modifikator (z. B. durch Zauber wie Eisenhaut).
+  final int rs;
+
   /// Erstellt eine angepasste Kopie mit selektiv ueberschriebenen Feldern.
   StatModifiers copyWith({
     int? lep,
@@ -44,6 +48,7 @@ class StatModifiers {
     int? fk,
     int? gs,
     int? ausweichen,
+    int? rs,
   }) {
     return StatModifiers(
       lep: lep ?? this.lep,
@@ -57,6 +62,7 @@ class StatModifiers {
       fk: fk ?? this.fk,
       gs: gs ?? this.gs,
       ausweichen: ausweichen ?? this.ausweichen,
+      rs: rs ?? this.rs,
     );
   }
 
@@ -74,6 +80,7 @@ class StatModifiers {
       fk: fk + other.fk,
       gs: gs + other.gs,
       ausweichen: ausweichen + other.ausweichen,
+      rs: rs + other.rs,
     );
   }
 
@@ -91,6 +98,7 @@ class StatModifiers {
       'fk': fk,
       'gs': gs,
       'ausweichen': ausweichen,
+      'rs': rs,
     };
   }
 
@@ -109,6 +117,7 @@ class StatModifiers {
       fk: getInt('fk'),
       gs: getInt('gs'),
       ausweichen: getInt('ausweichen'),
+      rs: getInt('rs'),
     );
   }
 }
