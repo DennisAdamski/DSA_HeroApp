@@ -55,6 +55,7 @@ DSA_HeroApp/
 │   │   ├── attributes.dart
 │   │   ├── combat_config.dart
 │   │   ├── hero_talent_entry.dart
+│   │   ├── hero_meta_talent.dart        # Heldenspezifische Meta-Talent-Definition
 │   │   ├── hero_spell_entry.dart       # Zauber-Eintrag (ZfW, Hauszauber, …)
 │   │   ├── hero_inventory_entry.dart
 │   │   ├── magic_special_ability.dart  # Magische Sonderfertigkeit (Name+Notiz)
@@ -66,6 +67,7 @@ DSA_HeroApp/
 │   │   ├── derived_stats.dart
 │   │   ├── attributes_rules.dart
 │   │   ├── modifier_parser.dart
+│   │   ├── meta_talent_rules.dart
 │   │   ├── talent_be_rules.dart
 │   │   ├── ap_level_rules.dart
 │   │   ├── combat_rules.dart        # placeholder — not wired up
@@ -158,6 +160,7 @@ Domain models (lib/domain/) — immutable, pure Dart
 | Class | File | Purpose |
 |---|---|---|
 | `HeroSheet` | `domain/hero_sheet.dart` | Persisted hero data; immutable, has `copyWith` and `toJson`/`fromJson` |
+| `HeroMetaTalent` | `domain/hero_meta_talent.dart` | Heldenspezifische Meta-Talent-Definition mit Komponenten, Eigenschaften und BE-Regel |
 | `HeroState` | `domain/hero_state.dart` | Runtime state (current LeP/AsP/KaP/Au, temp modifiers) |
 | `HeroComputedSnapshot` | `state/hero_computed_snapshot.dart` | All derived values for one hero, computed in one pass |
 | `HeroIndexSnapshot` | `state/hero_index_snapshot.dart` | Sorted hero list + O(1) ID map |
@@ -223,7 +226,9 @@ flutter drive --profile \
 
 See `docs/test_strategy.md` and `test/README.md` for the full matrix and conventions.
 The talent computed-value formula used by Talents UI is centralized in
-`lib/rules/derived/talent_value_rules.dart`.
+`lib/rules/derived/talent_value_rules.dart`. Meta-talent aggregation,
+validation, and component activation live in
+`lib/rules/derived/meta_talent_rules.dart`.
 
 ### Linting & Static Analysis
 
@@ -280,7 +285,7 @@ python tool/report_unreferenced_dart.py
 - **Screen size limit**: root screen/tab files must stay under **700 LOC**. Split into sub-files (e.g. `hero_combat/` directory) before exceeding this.
 - **ConsumerWidget vs ConsumerStatefulWidget**: use `ConsumerWidget` (stateless) by default; use `ConsumerStatefulWidget` only when local widget state is genuinely needed.
 - **Provider access in UI**: use `.watch` for reactive reads; use `.read` only inside callbacks (e.g. button presses).
-- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **6**.
+- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **7**.
 - **German comments and identifiers**: code-level comments and domain names follow German (rasse, kultur, Held, Talente, etc.).
 
 ### Catalog

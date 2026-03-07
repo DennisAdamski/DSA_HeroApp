@@ -1,6 +1,64 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 
 extension _HeroTalentsTables on _HeroTalentTableTabState {
+  Widget _buildMetaTalentsCard({
+    required List<HeroMetaTalent> metaTalents,
+    required List<TalentDef> catalogTalents,
+    required Attributes effectiveAttributes,
+    required int activeBaseBe,
+  }) {
+    final rows = <TableRow>[
+      _buildMetaHeaderRow(),
+      ...metaTalents.map(
+        (metaTalent) => _buildMetaTalentRow(
+          metaTalent: metaTalent,
+          catalogTalents: catalogTalents,
+          effectiveAttributes: effectiveAttributes,
+          activeBaseBe: activeBaseBe,
+        ),
+      ),
+    ];
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+        childrenPadding: EdgeInsets.zero,
+        title: const Text('Meta-Talente'),
+        subtitle: Text(
+          '${metaTalents.length} Talente',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 1320),
+                child: Table(
+                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                  columnWidths: const <int, TableColumnWidth>{
+                    0: FixedColumnWidth(220),
+                    1: FixedColumnWidth(380),
+                    2: FixedColumnWidth(220),
+                    3: FixedColumnWidth(70),
+                    4: FixedColumnWidth(70),
+                    5: FixedColumnWidth(90),
+                    6: FixedColumnWidth(90),
+                    7: FixedColumnWidth(90),
+                  },
+                  children: rows,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTalentsTable({
     required List<TalentDef> talents,
     required Attributes effectiveAttributes,
@@ -120,6 +178,21 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       _headerCell('Spezialisierung'),
     ];
     return TableRow(children: cells);
+  }
+
+  TableRow _buildMetaHeaderRow() {
+    return TableRow(
+      children: [
+        _headerCell('Talent-Name'),
+        _headerCell('Bestandteile'),
+        _headerCell('Eigenschaften'),
+        _headerCell('BE'),
+        _headerCell('eBE'),
+        _headerCell('TaW'),
+        _headerCell('TaW berechnet', highlighted: true),
+        _headerCell('max TaW'),
+      ],
+    );
   }
 
   TableRow _buildTalentRow({
@@ -317,5 +390,73 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       decoration: BoxDecoration(color: rowColor),
       children: cells,
     );
+  }
+
+  TableRow _buildMetaTalentRow({
+    required HeroMetaTalent metaTalent,
+    required List<TalentDef> catalogTalents,
+    required Attributes effectiveAttributes,
+    required int activeBaseBe,
+  }) {
+    final componentNames = _metaTalentComponentNames(
+      metaTalent: metaTalent,
+      catalogTalents: catalogTalents,
+    );
+    final ebe = computeMetaTalentEbe(
+      baseBe: activeBaseBe,
+      beRule: metaTalent.be,
+    );
+    final rawTaw = computeMetaTalentBaseTaw(
+      talentEntries: _draftTalents,
+      componentTalentIds: metaTalent.componentTalentIds,
+    );
+    final computedTaw = computeMetaTalentComputedTaw(baseTaw: rawTaw, ebe: ebe);
+    final maxTaw = _calculateMaxTaw(
+      effectiveAttributes: effectiveAttributes,
+      attributeNames: metaTalent.attributes,
+      gifted: false,
+    );
+
+    return TableRow(
+      children: [
+        _textCell(
+          metaTalent.name,
+          key: ValueKey<String>('meta-talents-row-${metaTalent.id}'),
+        ),
+        _textCell(componentNames.join(', ')),
+        _textCell(
+          _buildShortAttributeLabel(effectiveAttributes, metaTalent.attributes),
+        ),
+        _textCell(_fallback(metaTalent.be)),
+        _textCell(
+          _formatWholeNumber(ebe),
+          key: ValueKey<String>('meta-talents-field-${metaTalent.id}-ebe'),
+        ),
+        _textCell(
+          _formatWholeNumber(rawTaw),
+          key: ValueKey<String>('meta-talents-field-${metaTalent.id}-raw-taw'),
+        ),
+        _textCell(
+          _formatWholeNumber(computedTaw),
+          key: ValueKey<String>(
+            'meta-talents-field-${metaTalent.id}-computed-taw',
+          ),
+          highlighted: true,
+        ),
+        _textCell(_formatWholeNumber(maxTaw)),
+      ],
+    );
+  }
+
+  List<String> _metaTalentComponentNames({
+    required HeroMetaTalent metaTalent,
+    required List<TalentDef> catalogTalents,
+  }) {
+    final nameById = <String, String>{
+      for (final talent in catalogTalents) talent.id: talent.name,
+    };
+    return metaTalent.componentTalentIds
+        .map((id) => nameById[id] ?? id)
+        .toList(growable: false);
   }
 }

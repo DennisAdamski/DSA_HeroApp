@@ -6,11 +6,13 @@ class _TalentCatalogTable extends StatefulWidget {
   const _TalentCatalogTable({
     required this.allTalents,
     required this.activeTalentIds,
+    required this.lockedTalentIds,
     required this.onToggleTalent,
   });
 
   final List<TalentDef> allTalents;
   final Set<String> activeTalentIds;
+  final Set<String> lockedTalentIds;
   final void Function(String talentId, bool activate) onToggleTalent;
 
   @override
@@ -115,17 +117,35 @@ class _TalentCatalogTableState extends State<_TalentCatalogTable> {
                     DataColumn(label: Text('Eigenschaften')),
                     DataColumn(label: Text('Stg')),
                     DataColumn(label: Text('BE')),
+                    DataColumn(label: Text('Status')),
                   ],
                   rows: filtered.map((talent) {
                     final isActive =
                         widget.activeTalentIds.contains(talent.id);
+                    final isLocked =
+                        isActive && widget.lockedTalentIds.contains(talent.id);
                     return DataRow(
                       cells: [
                         DataCell(
-                          Checkbox(
-                            value: isActive,
-                            onChanged: (value) => widget.onToggleTalent(
-                                talent.id, value ?? false),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Checkbox(
+                                value: isActive,
+                                onChanged: isLocked
+                                    ? null
+                                    : (value) => widget.onToggleTalent(
+                                          talent.id,
+                                          value ?? false,
+                                        ),
+                              ),
+                              if (isLocked)
+                                const Tooltip(
+                                  message:
+                                      'Wird von einem Meta-Talent verwendet',
+                                  child: Icon(Icons.lock, size: 16),
+                                ),
+                            ],
                           ),
                         ),
                         DataCell(
@@ -163,6 +183,12 @@ class _TalentCatalogTableState extends State<_TalentCatalogTable> {
                           talent.be.isEmpty ? '-' : talent.be,
                           style: theme.textTheme.bodySmall,
                         )),
+                        DataCell(
+                          Text(
+                            isLocked ? 'Meta-Referenz' : '-',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ),
                       ],
                     );
                   }).toList(growable: false),

@@ -6,6 +6,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     required int combatBaseBe,
     required int activeTalentBe,
     required List<TalentDef> allTalents,
+    required List<TalentDef> allCatalogTalents,
   }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
@@ -44,6 +45,13 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                   onPressed: () => _showTalentKatalog(context, allTalents),
                   icon: const Icon(Icons.library_add),
                   label: const Text('Talente verwalten'),
+                ),
+                const SizedBox(width: 8),
+                FilledButton.icon(
+                  key: const ValueKey<String>('meta-talents-manage-open'),
+                  onPressed: () => _openMetaTalentManager(allCatalogTalents),
+                  icon: const Icon(Icons.merge_type),
+                  label: const Text('Meta-Talente verwalten'),
                 ),
               ],
             ],

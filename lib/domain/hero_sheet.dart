@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
@@ -17,7 +18,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 6,
+    this.schemaVersion = 7,
     required this.name,
     required this.level,
     required this.attributes,
@@ -26,6 +27,7 @@ class HeroSheet {
     this.bought = const BoughtStats(),
     this.combatConfig = const CombatConfig(),
     this.talents = const <String, HeroTalentEntry>{},
+    this.metaTalents = const <HeroMetaTalent>[],
     this.hiddenTalentIds = const <String>[],
     this.talentSpecialAbilities = '',
     this.spells = const <String, HeroSpellEntry>{},
@@ -69,6 +71,7 @@ class HeroSheet {
   final BoughtStats bought;
   final CombatConfig combatConfig;
   final Map<String, HeroTalentEntry> talents;
+  final List<HeroMetaTalent> metaTalents;
   final List<String> hiddenTalentIds;
   final String talentSpecialAbilities;
   final Map<String, HeroSpellEntry> spells;
@@ -113,6 +116,7 @@ class HeroSheet {
     BoughtStats? bought,
     CombatConfig? combatConfig,
     Map<String, HeroTalentEntry>? talents,
+    List<HeroMetaTalent>? metaTalents,
     List<String>? hiddenTalentIds,
     String? talentSpecialAbilities,
     Map<String, HeroSpellEntry>? spells,
@@ -156,6 +160,7 @@ class HeroSheet {
       bought: bought ?? this.bought,
       combatConfig: combatConfig ?? this.combatConfig,
       talents: talents ?? this.talents,
+      metaTalents: metaTalents ?? this.metaTalents,
       hiddenTalentIds: hiddenTalentIds == null
           ? this.hiddenTalentIds
           : _normalizeHiddenTalentIds(hiddenTalentIds),
@@ -209,6 +214,9 @@ class HeroSheet {
       'bought': bought.toJson(),
       'combatConfig': combatConfig.toJson(),
       'talents': talents.map((key, value) => MapEntry(key, value.toJson())),
+      'metaTalents': metaTalents
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
       'hiddenTalentIds': _normalizeHiddenTalentIds(hiddenTalentIds),
       'talentSpecialAbilities': talentSpecialAbilities,
       'spells': spells.map((key, value) => MapEntry(key, value.toJson())),
@@ -256,6 +264,7 @@ class HeroSheet {
         (json['unknownModifierFragments'] as List?) ?? const <dynamic>[];
     final rawInventoryEntries =
         (json['inventoryEntries'] as List?) ?? const <dynamic>[];
+    final rawMetaTalents = (json['metaTalents'] as List?) ?? const <dynamic>[];
     final rawHiddenTalentIds =
         (json['hiddenTalentIds'] as List?) ?? const <dynamic>[];
     final rawSpells =
@@ -301,6 +310,10 @@ class HeroSheet {
             : const <String, dynamic>{};
         return MapEntry(key, HeroTalentEntry.fromJson(map));
       }),
+      metaTalents: rawMetaTalents
+          .whereType<Map>()
+          .map((entry) => HeroMetaTalent.fromJson(entry.cast<String, dynamic>()))
+          .toList(growable: false),
       hiddenTalentIds: _normalizeHiddenTalentIds(rawHiddenTalentIds),
       talentSpecialAbilities: getString('talentSpecialAbilities'),
       spells: rawSpells.map((key, value) {

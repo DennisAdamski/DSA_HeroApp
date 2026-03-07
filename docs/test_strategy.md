@@ -32,6 +32,7 @@ technische UI-Aspekte getrennt getestet werden.
 | `test/rules/combat_talent_validation_test.dart` | rules | Verteilungsregeln fuer Kampftalente |
 | `test/rules/derived_stats_test.dart` | rules | Abgeleitete Basiswerte |
 | `test/rules/modifier_text_parser_test.dart` | rules | Text-Modifier-Parsing |
+| `test/rules/meta_talent_rules_test.dart` | rules | Meta-Talent-Mittelwerte, Validierung und Aktivierung |
 | `test/rules/talent_be_rules_test.dart` | rules | Talent-BE-Regeln |
 | `test/rules/talent_value_rules_test.dart` | rules | Formel `TaW + Mod + eBE` |
 | `test/ui/combat/hero_combat_tab_test.dart` | ui | Combat-UI-Interaktion/Struktur |
