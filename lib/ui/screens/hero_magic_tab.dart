@@ -195,6 +195,12 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _markFieldChanged();
   }
 
+  void _updateSpellGifted(String spellId, bool value) {
+    final current = _draftSpells[spellId] ?? const HeroSpellEntry();
+    _draftSpells[spellId] = current.copyWith(gifted: value);
+    _markFieldChanged();
+  }
+
   void _updateSpellTextOverrides(
     String spellId,
     HeroSpellTextOverrides? value,
@@ -343,6 +349,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             onSpellValueChanged: _updateSpellValue,
                             onModifierChanged: _updateSpellModifier,
                             onHauszauberChanged: _updateHauszauber,
+                            onGiftedChanged: _updateSpellGifted,
                             onTextOverridesChanged: _updateSpellTextOverrides,
                             onRemoveSpell: _removeSpell,
                             controllerFor: _controllerFor,

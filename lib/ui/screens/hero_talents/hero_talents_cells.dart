@@ -52,7 +52,10 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     return Padding(
       key: key,
       padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
-      child: Align(alignment: Alignment.centerLeft, child: Text(text, style: style)),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(text, style: style),
+      ),
     );
   }
 
@@ -424,18 +427,11 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     required List<String> attributeNames,
     required bool gifted,
   }) {
-    var maxValue = 0;
-    for (final name in attributeNames) {
-      final code = parseAttributeCode(name);
-      if (code == null) {
-        continue;
-      }
-      final value = readAttributeValue(effectiveAttributes, code);
-      if (value > maxValue) {
-        maxValue = value;
-      }
-    }
-    return maxValue + (gifted ? 5 : 3);
+    return computeTalentMaxValue(
+      effectiveAttributes: effectiveAttributes,
+      attributeNames: attributeNames,
+      gifted: gifted,
+    );
   }
 
   int _calculateMaxTawFromTalent({
@@ -447,9 +443,9 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
       return gifted ? 5 : 3;
     }
     final effective = computeEffectiveAttributes(hero);
-    return _calculateMaxTaw(
+    return computeCombatTalentMaxValue(
       effectiveAttributes: effective,
-      attributeNames: talent.attributes,
+      talentType: talent.type,
       gifted: gifted,
     );
   }
