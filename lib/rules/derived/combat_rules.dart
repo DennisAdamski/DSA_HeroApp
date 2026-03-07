@@ -136,7 +136,7 @@ CombatPreviewStats computeCombatPreviewStats(
   final activeArmorPieces = armor.pieces
       .where((piece) => piece.isActive)
       .toList(growable: false);
-  final rsTotal = computeRsTotal(activeArmorPieces);
+  final rsTotal = computeRsTotal(activeArmorPieces) + mods.rs;
   final beTotalRaw = computeBeTotalRaw(activeArmorPieces);
   final rgReduction = computeRgReduction(
     globalArmorTrainingLevel: armor.globalArmorTrainingLevel,
