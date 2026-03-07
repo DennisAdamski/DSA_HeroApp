@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -20,6 +21,7 @@ void main() {
   HeroSheet buildHero({
     int level = 1,
     Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
+    List<HeroMetaTalent> metaTalents = const <HeroMetaTalent>[],
     CombatConfig combatConfig = const CombatConfig(),
   }) {
     return HeroSheet(
@@ -37,6 +39,7 @@ void main() {
         kk: 13,
       ),
       talents: talents,
+      metaTalents: metaTalents,
       combatConfig: combatConfig,
     );
   }
@@ -129,6 +132,66 @@ void main() {
   Future<void> closeBeDialog(WidgetTester tester) async {
     await tester.tap(find.text('Schliessen'));
     await tester.pumpAndSettle();
+  }
+
+  Future<void> createMetaTalent(
+    WidgetTester tester, {
+    required String name,
+    required List<String> componentIds,
+    required List<String> attributes,
+    String be = '',
+  }) async {
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('meta-talents-manage-open')),
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('meta-talents-manage-open')),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('meta-talents-manage-open')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('meta-talents-manager-add')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('meta-talent-name-field')),
+      name,
+    );
+    if (be.isNotEmpty) {
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('meta-talent-be-field')),
+        be,
+      );
+    }
+
+    for (var index = 0; index < attributes.length; index++) {
+      await tester.tap(
+        find.byKey(ValueKey<String>('meta-talent-attribute-$index')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(attributes[index]).last);
+      await tester.pumpAndSettle();
+    }
+
+    for (final componentId in componentIds) {
+      await tester.ensureVisible(
+        find.byKey(ValueKey<String>('meta-talent-component-$componentId')),
+      );
+      await tester.tap(
+        find.byKey(ValueKey<String>('meta-talent-component-$componentId')),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('meta-talent-editor-save')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(name), findsWidgets);
   }
 
   testWidgets(
@@ -485,6 +548,210 @@ void main() {
         find.byKey(const ValueKey<String>('talents-be-override-field')),
       );
       expect(overrideField.controller?.text ?? '', '1');
+    },
+  );
+
+  testWidgets('meta talents can be created and deleted in edit mode', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(),
+            'tal_b': HeroTalentEntry(),
+            'tal_kampf': HeroTalentEntry(),
+          },
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openTalentsTab(tester, repo, buildCatalog());
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    await createMetaTalent(
+      tester,
+      name: 'Pflanzensuchen',
+      componentIds: const <String>['tal_a', 'tal_b', 'tal_kampf'],
+      attributes: const <String>['MU', 'IN', 'FF'],
+      be: 'x2',
+    );
+    await tester.tap(find.text('Schliessen'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Meta-Talente'), findsOneWidget);
+    expect(find.text('Pflanzensuchen'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('meta-talents-manage-open')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.delete_outline).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Schliessen'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pflanzensuchen'), findsNothing);
+    expect(find.text('Meta-Talente'), findsNothing);
+  });
+
+  testWidgets('meta talents update live from draft talent values and be override', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(talentValue: 6),
+            'tal_b': HeroTalentEntry(talentValue: 8),
+            'tal_kampf': HeroTalentEntry(talentValue: 4),
+          },
+          metaTalents: const <HeroMetaTalent>[
+            HeroMetaTalent(
+              id: 'meta_pflanzensuchen',
+              name: 'Pflanzensuchen',
+              componentTalentIds: <String>['tal_a', 'tal_b', 'tal_kampf'],
+              attributes: <String>['MU', 'IN', 'FF'],
+              be: 'x2',
+            ),
+          ],
+          combatConfig: const CombatConfig(
+            armor: ArmorConfig(
+              pieces: <ArmorPiece>[
+                ArmorPiece(
+                  name: 'Ruestung',
+                  isActive: true,
+                  be: 2,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    String textFor(Key key) {
+      final finder = find.descendant(
+        of: find.byKey(key),
+        matching: find.byType(Text),
+      );
+      return tester.widget<Text>(finder.first).data ?? '';
+    }
+
+    final actions = await openTalentsTab(tester, repo, buildCatalog());
+    expect(
+      textFor(
+        const ValueKey<String>(
+          'meta-talents-field-meta_pflanzensuchen-computed-taw',
+        ),
+      ),
+      '2',
+    );
+
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
+      '9',
+    );
+    await tester.pumpAndSettle();
+    expect(
+      textFor(
+        const ValueKey<String>(
+          'meta-talents-field-meta_pflanzensuchen-computed-taw',
+        ),
+      ),
+      '3',
+    );
+
+    await openBeScreen(tester);
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-be-override-field')),
+      '1',
+    );
+    await tester.pumpAndSettle();
+    await closeBeDialog(tester);
+
+    expect(
+      textFor(
+        const ValueKey<String>('meta-talents-field-meta_pflanzensuchen-ebe'),
+      ),
+      '-2',
+    );
+    expect(
+      textFor(
+        const ValueKey<String>(
+          'meta-talents-field-meta_pflanzensuchen-computed-taw',
+        ),
+      ),
+      '5',
+    );
+  });
+
+  testWidgets(
+    'meta talent references lock components in catalog and are activated on save',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(talentValue: 5),
+            },
+            metaTalents: const <HeroMetaTalent>[
+              HeroMetaTalent(
+                id: 'meta_pflanzensuchen',
+                name: 'Pflanzensuchen',
+                componentTalentIds: <String>['tal_a', 'tal_b'],
+                attributes: <String>['MU', 'IN', 'FF'],
+              ),
+            ],
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final actions = await openTalentsTab(tester, repo, buildCatalog());
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('talents-catalog-open')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Meta-Referenz'), findsWidgets);
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+
+      await actions.save();
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+      expect(hero.talents.keys, containsAll(<String>['tal_a', 'tal_b']));
     },
   );
 }

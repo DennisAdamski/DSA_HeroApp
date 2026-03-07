@@ -97,7 +97,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 6) | Format-Version für Migrationskompatibilität |
+| `schemaVersion` | `int` (= 7) | Format-Version für Migrationskompatibilität |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `attributes` | `Attributes` | Aktuelle Eigenschaftswerte (8 Werte) |
@@ -106,6 +106,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `bought` | `BoughtStats` | Gekaufte Ressourcenerhöhungen |
 | `combatConfig` | `CombatConfig` | Gesamte Kampfkonfiguration |
 | `talents` | `Map<String, HeroTalentEntry>` | Alle Talente (Schlüssel: Talent-ID) |
+| `metaTalents` | `List<HeroMetaTalent>` | Heldenspezifische Meta-Talente mit Komponenten, Eigenschaften und BE-Regel |
 | `hiddenTalentIds` | `List<String>` | IDs ausgeblendeter Talente |
 | `talentSpecialAbilities` | `String` | Freitexte für Sonderfertigkeiten |
 | `rasse` / `rasseModText` | `String` | Rasse und Rassenmodifikator-Text |
@@ -143,6 +144,7 @@ HeroSheet
   │     ├── CombatSpecialRules specialRules
   │     └── CombatManualMods manualMods
   ├── Map<String, HeroTalentEntry> talents
+  ├── List<HeroMetaTalent> metaTalents
   └── List<HeroInventoryEntry> inventoryEntries
 ```
 
@@ -347,6 +349,26 @@ Speichert die Werte eines Helden in einem einzelnen Talent.
 | TaW = 0 → AT = 0, PA = 0 | immer |
 | Nahkampf: AT + PA = TaW | wenn `type == 'nahkampf'` |
 | Fernkampf: AT = TaW, PA = 0 | wenn `type == 'fernkampf'` |
+
+---
+
+### 2.6a `HeroMetaTalent`
+
+**Datei:** `lib/domain/hero_meta_talent.dart`
+
+Beschreibt ein heldenspezifisches Meta-Talent. Es wird nicht aus dem
+Regelkatalog geladen, sondern direkt im `HeroSheet` gespeichert.
+
+| Feld | Typ | Bedeutung |
+|---|---|---|
+| `id` | `String` | Stabile ID innerhalb des Helden |
+| `name` | `String` | Anzeigename |
+| `componentTalentIds` | `List<String>` | Referenzierte Talent-IDs fuer die Mittelwert-Berechnung |
+| `attributes` | `List<String>` | Genau 3 Eigenschaftskuerzel fuer Probe und Max-TaW |
+| `be` | `String` | Optionale BE-Regel (`''`, `-`, `-N`, `xN`) |
+
+Der Meta-TaW wird nicht persistiert, sondern aus den referenzierten
+`HeroTalentEntry.talentValue`-Werten dynamisch berechnet.
 
 ---
 
@@ -566,6 +588,20 @@ Sonderfertigkeits-Boni auf IniBase:
 | PA-EBE-Anteil | `ceil(EBE / 2)` (größere Hälfte bei ungeradem EBE) |
 
 BE-Modifikatoren aus Talenten: Notation `"-"`, `"-N"`, `"xN"`.
+
+### 4.4a Meta-Talente
+
+**Datei:** `lib/rules/derived/meta_talent_rules.dart`
+
+| Wert | Berechnung |
+|---|---|
+| Roh-TaW | kaufmaennisch gerundeter Mittelwert aller `HeroTalentEntry.talentValue` der Komponenten |
+| `eBE` | `computeTalentEbe(baseBe, beRule)` mit der BE-Regel des Meta-Talents |
+| `TaW berechnet` | `Roh-TaW + eBE` |
+| `max TaW` | bestehende Talent-Maximum-Logik ueber die drei konfigurierten Eigenschaften |
+
+Kampftalente duerfen als Komponenten referenziert werden; dabei zaehlt nur
+deren `talentValue`, nicht `AT` oder `PA`.
 
 ### 4.5 Ausweichen
 
@@ -892,7 +928,7 @@ flutter drive --profile \
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` für `HeroSheet` ist **6**.
+- Die aktuelle `schemaVersion` für `HeroSheet` ist **7**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 1 wird **strikt** validiert.
 

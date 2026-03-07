@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
@@ -26,6 +28,7 @@ part 'hero_talents/hero_talents_tables.dart';
 part 'hero_talents/hero_talents_cells.dart';
 part 'hero_talents/talent_catalog_table.dart';
 part 'hero_talents/talent_detail_dialog.dart';
+part 'hero_talents/meta_talent_dialogs.dart';
 
 enum _TalentTabScope { nonCombat, combat }
 
@@ -88,6 +91,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
 
   HeroSheet? _latestHero;
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
+  List<HeroMetaTalent> _draftMetaTalents = <HeroMetaTalent>[];
   Set<String> _invalidCombatTalentIds = <String>{};
   String _draftTalentSpecialAbilities = '';
   late final TextEditingController _talentSpecialAbilitiesController;
@@ -148,7 +152,11 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       return;
     }
     _resetCellControllers();
-    _draftTalents = Map<String, HeroTalentEntry>.from(hero.talents);
+    _draftMetaTalents = List<HeroMetaTalent>.from(hero.metaTalents);
+    _draftTalents = activateReferencedMetaTalentComponents(
+      talents: hero.talents,
+      metaTalents: _draftMetaTalents,
+    );
     _draftTalentSpecialAbilities = hero.talentSpecialAbilities;
     _talentSpecialAbilitiesController.text = _draftTalentSpecialAbilities;
     _invalidCombatTalentIds = <String>{};
@@ -216,7 +224,11 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       _invalidCombatTalentIds = <String>{};
     }
     final updatedHero = hero.copyWith(
-      talents: Map<String, HeroTalentEntry>.from(_draftTalents),
+      talents: activateReferencedMetaTalentComponents(
+        talents: _draftTalents,
+        metaTalents: _draftMetaTalents,
+      ),
+      metaTalents: List<HeroMetaTalent>.from(_draftMetaTalents),
       talentSpecialAbilities: _draftTalentSpecialAbilities,
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
@@ -290,6 +302,10 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   }
 
   void _toggleTalent(String talentId, bool activate) {
+    final lockedTalentIds = collectMetaTalentComponentIds(_draftMetaTalents);
+    if (!activate && lockedTalentIds.contains(talentId)) {
+      return;
+    }
     if (activate) {
       _draftTalents.putIfAbsent(talentId, () => const HeroTalentEntry());
     } else {
@@ -307,6 +323,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
 
   void _showTalentKatalog(BuildContext context, List<TalentDef> allTalents) {
     final localActiveIds = _draftTalents.keys.toSet();
+    final lockedTalentIds = collectMetaTalentComponentIds(_draftMetaTalents);
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -333,6 +350,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                     child: _TalentCatalogTable(
                       allTalents: allTalents,
                       activeTalentIds: localActiveIds,
+                      lockedTalentIds: lockedTalentIds,
                       onToggleTalent: (id, activate) {
                         _toggleTalent(id, activate);
                         setSheetState(() {
@@ -352,6 +370,15 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         );
       },
     );
+  }
+
+  void _replaceMetaTalents(List<HeroMetaTalent> metaTalents) {
+    _draftMetaTalents = List<HeroMetaTalent>.unmodifiable(metaTalents);
+    _draftTalents = activateReferencedMetaTalentComponents(
+      talents: _draftTalents,
+      metaTalents: _draftMetaTalents,
+    );
+    _markFieldChanged();
   }
 
   void _markFieldChanged() {
@@ -433,6 +460,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       combatBaseBe: combatBaseBe ?? 0,
                       activeTalentBe: activeTalentBe,
                       allTalents: relevantTalents,
+                      allCatalogTalents: catalog.talents,
                     ),
                   if (widget.scope == _TalentTabScope.combat &&
                       widget.showInlineActions)
@@ -481,6 +509,15 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                         ),
                       );
                     }),
+                  if (widget.scope == _TalentTabScope.nonCombat &&
+                      (_subTabController?.index == 0) &&
+                      _draftMetaTalents.isNotEmpty)
+                    _buildMetaTalentsCard(
+                      metaTalents: _draftMetaTalents,
+                      catalogTalents: catalog.talents,
+                      effectiveAttributes: effectiveAttributes!,
+                      activeBaseBe: activeTalentBe,
+                    ),
                 ],
               );
             },

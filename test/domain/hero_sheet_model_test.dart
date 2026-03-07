@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
@@ -52,6 +53,18 @@ void main() {
           paValue: 3,
         ),
       },
+      metaTalents: [
+        HeroMetaTalent(
+          id: 'meta_pflanzensuchen',
+          name: 'Pflanzensuchen',
+          componentTalentIds: <String>[
+            'tal_schwerter',
+            'tal_pflanzenkunde',
+          ],
+          attributes: <String>['MU', 'IN', 'FF'],
+          be: 'x2',
+        ),
+      ],
       spells: {
         'spell_axxeleratus': HeroSpellEntry(
           spellValue: 8,
@@ -108,7 +121,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 6);
+    expect(reloaded.schemaVersion, 7);
     expect(reloaded.kultur, 'Mittelreich');
     expect(reloaded.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -116,6 +129,13 @@ void main() {
     expect(reloaded.hiddenTalentIds, ['tal_a', 'tal_b']);
     expect(reloaded.talentSpecialAbilities, 'Meisterhandwerk, Begabung');
     expect(reloaded.unknownModifierFragments, contains('foo'));
+    expect(reloaded.metaTalents.single.name, 'Pflanzensuchen');
+    expect(
+      reloaded.metaTalents.single.componentTalentIds,
+      <String>['tal_schwerter', 'tal_pflanzenkunde'],
+    );
+    expect(reloaded.metaTalents.single.attributes, <String>['MU', 'IN', 'FF']);
+    expect(reloaded.metaTalents.single.be, 'x2');
     expect(reloaded.startAttributes.mu, 12);
     expect(reloaded.startAttributes.kk, 12);
     expect(reloaded.talents['tal_schwerter']?.atValue, 8);
@@ -172,6 +192,7 @@ void main() {
     expect(loaded.hiddenTalentIds, isEmpty);
     expect(loaded.talentSpecialAbilities, '');
     expect(loaded.unknownModifierFragments, isEmpty);
+    expect(loaded.metaTalents, isEmpty);
     expect(loaded.startAttributes.mu, loaded.attributes.mu);
     expect(loaded.startAttributes.kk, loaded.attributes.kk);
     expect(loaded.talents['tal_schwerter']?.atValue, 0);
@@ -259,6 +280,26 @@ void main() {
     expect(reloaded.talentValue, 8);
     expect(reloaded.atValue, 5);
     expect(reloaded.paValue, 3);
+  });
+
+  test('meta talent roundtrip keeps components, attributes and be rule', () {
+    const metaTalent = HeroMetaTalent(
+      id: 'meta_1',
+      name: 'Pflanzensuchen',
+      componentTalentIds: <String>['tal_sinne', 'tal_pflanzen', 'tal_wildnis'],
+      attributes: <String>['MU', 'IN', 'FF'],
+      be: 'x2',
+    );
+
+    final reloaded = HeroMetaTalent.fromJson(metaTalent.toJson());
+    expect(reloaded.id, 'meta_1');
+    expect(reloaded.name, 'Pflanzensuchen');
+    expect(
+      reloaded.componentTalentIds,
+      <String>['tal_sinne', 'tal_pflanzen', 'tal_wildnis'],
+    );
+    expect(reloaded.attributes, <String>['MU', 'IN', 'FF']);
+    expect(reloaded.be, 'x2');
   });
 
   test(
