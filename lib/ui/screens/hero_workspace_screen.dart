@@ -422,12 +422,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         const VerticalDivider(width: 1),
         SizedBox(
           width: _commandDeckInspectorWidth,
-          child: WorkspaceInspectorPanel(
-            hero: hero,
-            activeTabIndex: activeTabIndex,
-            isEditing: _tabRegistry.isEditing(activeTabIndex),
-            isDirty: _tabRegistry.isDirty(activeTabIndex),
-          ),
+          child: WorkspaceInspectorPanel(heroId: widget.heroId),
         ),
       ],
     );
