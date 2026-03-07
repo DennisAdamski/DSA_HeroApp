@@ -10,13 +10,15 @@ Aufgaben die notwendig sind für das erreichen des MVP
   - [ ] BE Konfigurieren
   - [ ] Wichtige Zauber aktivieren (Axxeleratus)
 - [ ] Mod-Fields unabhängig vom Bearbeiten-State bearbeitbar machen
-- [ ] Basiswerte Aktuell in Summe umbennennen
+- [x] Basiswerte Aktuell in Summe umbennennen
 - [ ] MetaTalente unter Talente hinzufügen
-- [ ] Lernkomplexität für Begabungen korrekt angeben
+- [x] Lernkomplexität für Begabungen korrekt angeben
+
 
 ## Aufgaben für mich (MVP)
 
 - [ ] Testklasse nur für Logiken prüfen
+- [ ] Eigenschaftsmodifikatoren prüfen
 - [ ] Helden importieren
 
 Folgeaufgaben für den nächsten Schritt
