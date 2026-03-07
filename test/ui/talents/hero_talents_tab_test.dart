@@ -289,9 +289,7 @@ void main() {
     expect(find.text('Handwerkliche Talente'), findsOneWidget);
   });
 
-  testWidgets('edit mode allows editing talent values', (
-    tester,
-  ) async {
+  testWidgets('edit mode allows editing talent values', (tester) async {
     final repo = FakeRepository(
       heroes: [
         buildHero(
@@ -328,15 +326,38 @@ void main() {
     );
   });
 
-  testWidgets('save persists edited talent values', (
+  testWidgets('gifted talents show reduced complexity and higher max TaW', (
     tester,
   ) async {
     final repo = FakeRepository(
       heroes: [
         buildHero(
           talents: const <String, HeroTalentEntry>{
-            'tal_a': HeroTalentEntry(),
+            'tal_a': HeroTalentEntry(gifted: true),
           },
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openTalentsTab(tester, repo, buildCatalog());
+
+    expect(find.text('B'), findsOneWidget);
+    expect(find.text('19'), findsOneWidget);
+  });
+
+  testWidgets('save persists edited talent values', (tester) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{'tal_a': HeroTalentEntry()},
         ),
       ],
       states: {
@@ -369,9 +390,7 @@ void main() {
     final repo = FakeRepository(
       heroes: [
         buildHero(
-          talents: const <String, HeroTalentEntry>{
-            'tal_a': HeroTalentEntry(),
-          },
+          talents: const <String, HeroTalentEntry>{'tal_a': HeroTalentEntry()},
         ),
       ],
       states: {

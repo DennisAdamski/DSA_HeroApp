@@ -15,22 +15,23 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 void main() {
   HeroSheet buildHero({
+    Attributes attributes = const Attributes(
+      mu: 14,
+      kl: 12,
+      inn: 13,
+      ch: 11,
+      ff: 10,
+      ge: 12,
+      ko: 14,
+      kk: 13,
+    ),
     Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
   }) {
     return HeroSheet(
       id: 'demo',
       name: 'Rondra',
       level: 1,
-      attributes: const Attributes(
-        mu: 14,
-        kl: 12,
-        inn: 13,
-        ch: 11,
-        ff: 10,
-        ge: 12,
-        ko: 14,
-        kk: 13,
-      ),
+      attributes: attributes,
       talents: talents,
     );
   }
@@ -137,6 +138,46 @@ void main() {
     expect(find.text('PA'), findsAtLeastNWidgets(1));
     expect(find.text('Eigenschaften'), findsNothing);
   });
+
+  testWidgets(
+    'gifted combat talents use reduced complexity and fixed max TaW rules',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            attributes: const Attributes(
+              mu: 14,
+              kl: 12,
+              inn: 18,
+              ch: 11,
+              ff: 10,
+              ge: 12,
+              ko: 14,
+              kk: 13,
+            ),
+            talents: const <String, HeroTalentEntry>{
+              'tal_nah': HeroTalentEntry(gifted: true),
+              'tal_fern': HeroTalentEntry(gifted: true),
+            },
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo, buildCatalog());
+
+      expect(find.text('C'), findsNWidgets(2));
+      expect(find.text('18'), findsNWidgets(2));
+      expect(find.text('23'), findsNothing);
+    },
+  );
 
   testWidgets('only shows combat talents present in hero.talents', (
     tester,

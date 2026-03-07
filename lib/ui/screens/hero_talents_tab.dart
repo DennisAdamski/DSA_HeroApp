@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
@@ -304,10 +305,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     _markFieldChanged();
   }
 
-  void _showTalentKatalog(
-    BuildContext context,
-    List<TalentDef> allTalents,
-  ) {
+  void _showTalentKatalog(BuildContext context, List<TalentDef> allTalents) {
     final localActiveIds = _draftTalents.keys.toSet();
     showModalBottomSheet<void>(
       context: context,

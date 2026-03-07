@@ -341,3 +341,14 @@ The following files are **intentionally kept** but not currently wired into the 
 
 > See `AGENTS.md` for the complete binding agent policy, including the list of forbidden commands and safe alternatives.
 
+## Update 2026-03-07
+
+- `HeroSpellEntry` stores an additional `gifted` flag for spell-specific
+  aptitude.
+- Shared learning-complexity and talent-cap logic lives in
+  `lib/rules/derived/learning_rules.dart`.
+- Learning categories are handled on the scale
+  `A* < A < B < C < D < E < F < G < H`.
+- Combat talent caps must use `GE/KK` for melee and `FF/KK` for ranged,
+  without using `IN`.
+

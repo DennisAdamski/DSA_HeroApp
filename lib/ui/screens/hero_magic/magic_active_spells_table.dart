@@ -11,6 +11,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     required this.onSpellValueChanged,
     required this.onModifierChanged,
     required this.onHauszauberChanged,
+    required this.onGiftedChanged,
     required this.onTextOverridesChanged,
     required this.onRemoveSpell,
     required this.controllerFor,
@@ -25,6 +26,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final void Function(String spellId, String raw) onSpellValueChanged;
   final void Function(String spellId, String raw) onModifierChanged;
   final void Function(String spellId, bool value) onHauszauberChanged;
+  final void Function(String spellId, bool value) onGiftedChanged;
   final void Function(String spellId, HeroSpellTextOverrides? value)
   onTextOverridesChanged;
   final void Function(String spellId) onRemoveSpell;
@@ -116,6 +118,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                 const DataColumn(label: Text('Mod'), numeric: true),
                 const DataColumn(label: Text('Kompl.')),
                 const DataColumn(label: Text('HZ')),
+                if (isEditing) const DataColumn(label: Text('Beg.')),
                 const DataColumn(label: Text('Merkmale')),
                 const DataColumn(label: Text('Zauberdauer')),
                 const DataColumn(label: Text('Kosten')),
@@ -139,6 +142,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                           const DataCell(Text('0')),
                           const DataCell(Text('?')),
                           const DataCell(Text('-')),
+                          if (isEditing) const DataCell(Text('-')),
                           const DataCell(Text('-')),
                           const DataCell(Text('-')),
                           const DataCell(Text('-')),
@@ -171,6 +175,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                       istHauszauber: entry.hauszauber,
                       zauberMerkmale: merkmale,
                       heldMerkmalskenntnisse: merkmalskenntnisse,
+                      istBegabt: entry.gifted,
                     );
 
                     void openDetails() {
@@ -270,6 +275,9 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                         DataCell(
                           isEditing
                               ? Checkbox(
+                                  key: ValueKey<String>(
+                                    'magic-spells-hauszauber-$spellId',
+                                  ),
                                   value: entry.hauszauber,
                                   onChanged: (value) => onHauszauberChanged(
                                     spellId,
@@ -286,6 +294,17 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                       : theme.disabledColor,
                                 ),
                         ),
+                        if (isEditing)
+                          DataCell(
+                            Checkbox(
+                              key: ValueKey<String>(
+                                'magic-spells-gifted-$spellId',
+                              ),
+                              value: entry.gifted,
+                              onChanged: (value) =>
+                                  onGiftedChanged(spellId, value ?? false),
+                            ),
+                          ),
                         DataCell(
                           ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 160),
