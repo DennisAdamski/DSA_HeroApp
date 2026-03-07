@@ -184,9 +184,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: isEditing ? 1625 : 1535,
-          ),
+          constraints: BoxConstraints(minWidth: isEditing ? 1625 : 1535),
           child: Table(
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             columnWidths: <int, TableColumnWidth>{
@@ -235,9 +233,13 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
   }) {
     final entry = _entryForTalent(talent.id);
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
-    final maxTaw = _calculateMaxTaw(
+    final effectiveKomplexitaet = effectiveTalentLernkomplexitaet(
+      basisKomplexitaet: talent.steigerung,
+      gifted: entry.gifted,
+    );
+    final maxTaw = computeCombatTalentMaxValue(
       effectiveAttributes: effectiveAttributes,
-      attributeNames: talent.attributes,
+      talentType: talent.type,
       gifted: entry.gifted,
     );
 
@@ -245,7 +247,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       _textCell(talent.name, key: ValueKey<String>('talents-row-${talent.id}')),
       _textCell(_fallback(talent.weaponCategory)),
       _textCell(_fallback(talent.alternatives)),
-      _textCell(_fallback(talent.steigerung)),
+      _textCell(_fallback(effectiveKomplexitaet)),
       _textCell(_fallback(talent.be)),
       _intInputCell(
         talentId: talent.id,
@@ -505,25 +507,6 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
     );
-  }
-
-  int _calculateMaxTaw({
-    required Attributes effectiveAttributes,
-    required List<String> attributeNames,
-    required bool gifted,
-  }) {
-    var maxValue = 0;
-    for (final name in attributeNames) {
-      final code = parseAttributeCode(name);
-      if (code == null) {
-        continue;
-      }
-      final value = readAttributeValue(effectiveAttributes, code);
-      if (value > maxValue) {
-        maxValue = value;
-      }
-    }
-    return maxValue + (gifted ? 5 : 3);
   }
 
   String _formatWholeNumber(num value) {

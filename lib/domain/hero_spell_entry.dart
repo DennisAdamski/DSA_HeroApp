@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 /// Analog zu [HeroTalentEntry], aber fuer aktivierte Zauber.
 /// [spellValue] entspricht dem ZfW (Zauberferttigkeitswert).
 /// [hauszauber] markiert den Zauber als Hauszauber (reduziert Steigerung).
+/// [gifted] markiert eine Begabung auf genau diesen Zauber.
 /// [specializations] speichert aus Kompatibilitaetsgruenden die Varianten
 /// eines Zaubers als Liste von Freitext-Eintraegen.
 /// [textOverrides] speichert heldenspezifische Korrekturen fuer importierte
@@ -15,6 +16,7 @@ class HeroSpellEntry {
     this.spellValue = 0,
     this.modifier = 0,
     this.hauszauber = false,
+    this.gifted = false,
     this.specializations = const [],
     this.textOverrides,
   });
@@ -22,6 +24,7 @@ class HeroSpellEntry {
   final int spellValue;
   final int modifier;
   final bool hauszauber;
+  final bool gifted;
   final List<String> specializations;
   final HeroSpellTextOverrides? textOverrides;
 
@@ -30,6 +33,7 @@ class HeroSpellEntry {
     int? spellValue,
     int? modifier,
     bool? hauszauber,
+    bool? gifted,
     List<String>? specializations,
     Object? textOverrides = _keepFieldValue,
   }) {
@@ -37,6 +41,7 @@ class HeroSpellEntry {
       spellValue: spellValue ?? this.spellValue,
       modifier: modifier ?? this.modifier,
       hauszauber: hauszauber ?? this.hauszauber,
+      gifted: gifted ?? this.gifted,
       specializations: specializations ?? this.specializations,
       textOverrides: identical(textOverrides, _keepFieldValue)
           ? this.textOverrides
@@ -50,6 +55,7 @@ class HeroSpellEntry {
       'spellValue': spellValue,
       'modifier': modifier,
       'hauszauber': hauszauber,
+      'gifted': gifted,
       'specializations': specializations,
     };
     final overrides = textOverrides;
@@ -74,6 +80,7 @@ class HeroSpellEntry {
       spellValue: (json['spellValue'] as num?)?.toInt() ?? 0,
       modifier: (json['modifier'] as num?)?.toInt() ?? 0,
       hauszauber: json['hauszauber'] as bool? ?? false,
+      gifted: json['gifted'] as bool? ?? false,
       specializations: specs,
       textOverrides: HeroSpellTextOverrides.fromJsonValue(
         json['textOverrides'],

@@ -36,6 +36,7 @@ void main() {
         ko: 14,
         kk: 13,
       ),
+      merkmalskenntnisse: <String>['Kraft'],
       spells: <String, HeroSpellEntry>{
         'spell_axxeleratus': HeroSpellEntry(
           spellValue: 8,
@@ -57,6 +58,7 @@ void main() {
           tradition: 'Elf',
           steigerung: 'C',
           attributes: <String>['Klugheit', 'Gewandheit', 'Konstitution'],
+          traits: 'Kraft',
           aspCost: '7 AsP',
           targetObject: 'Einzelperson, freiwillig',
           range: '7 Schritt',
@@ -179,6 +181,42 @@ void main() {
         'Eigene Variante.',
         'Koboldisch. Nur Sprache.',
       ]);
+    },
+  );
+
+  testWidgets(
+    'gifted spells stack with house spell and traits for complexity',
+    (tester) async {
+      final opened = await openMagicTab(tester);
+
+      expect(find.text('B'), findsOneWidget);
+
+      await opened.actions.startEdit();
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('magic-spells-gifted-spell_axxeleratus'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('magic-spells-hauszauber-spell_axxeleratus'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('A*'), findsOneWidget);
+
+      await opened.actions.save();
+      await tester.pumpAndSettle();
+
+      final savedHero = await opened.repo.loadHeroById('demo');
+      final entry = savedHero?.spells['spell_axxeleratus'];
+      expect(entry?.gifted, isTrue);
+      expect(entry?.hauszauber, isTrue);
     },
   );
 

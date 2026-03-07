@@ -24,9 +24,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: isEditing ? 1780 : 1780,
-          ),
+          constraints: BoxConstraints(minWidth: isEditing ? 1780 : 1780),
           child: Table(
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             columnWidths: <int, TableColumnWidth>{
@@ -50,17 +48,12 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     );
   }
 
-  Widget _buildCombatTalentsTable({
-    required List<TalentDef> talents,
-  }) {
+  Widget _buildCombatTalentsTable({required List<TalentDef> talents}) {
     final isEditing = _editController.isEditing;
     final rows = <TableRow>[
       _buildCombatHeaderRow(isEditing: isEditing),
       ...talents.map(
-        (talent) => _buildCombatTalentRow(
-          talent: talent,
-          isEditing: isEditing,
-        ),
+        (talent) => _buildCombatTalentRow(talent: talent, isEditing: isEditing),
       ),
     ];
 
@@ -137,6 +130,10 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   }) {
     final entry = _entryForTalent(talent.id);
     final ebe = computeTalentEbe(baseBe: activeBaseBe, talentBeRule: talent.be);
+    final effectiveKomplexitaet = effectiveTalentLernkomplexitaet(
+      basisKomplexitaet: talent.steigerung,
+      gifted: entry.gifted,
+    );
     final maxTaw = _calculateMaxTaw(
       effectiveAttributes: effectiveAttributes,
       attributeNames: talent.attributes,
@@ -171,7 +168,10 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         key: ValueKey<String>('talents-field-${talent.id}-computed-taw'),
         highlighted: true,
       ),
-      _textCell(_fallback(talent.steigerung)),
+      _textCell(
+        _fallback(effectiveKomplexitaet),
+        highlighted: effectiveKomplexitaet != talent.steigerung,
+      ),
       _textCell(_fallback(talent.be)),
       _textCell(
         _formatWholeNumber(ebe),
@@ -227,11 +227,27 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   }) {
     final entry = _entryForTalent(talent.id);
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
-    final maxTaw = _calculateMaxTawFromTalent(talent: talent, gifted: entry.gifted);
+    final effectiveKomplexitaet = effectiveTalentLernkomplexitaet(
+      basisKomplexitaet: talent.steigerung,
+      gifted: entry.gifted,
+    );
+    final maxTaw = _calculateMaxTawFromTalent(
+      talent: talent,
+      gifted: entry.gifted,
+    );
 
     final effective = _latestHero != null
         ? computeEffectiveAttributes(_latestHero!)
-        : const Attributes(mu: 0, kl: 0, inn: 0, ch: 0, ff: 0, ge: 0, ko: 0, kk: 0);
+        : const Attributes(
+            mu: 0,
+            kl: 0,
+            inn: 0,
+            ch: 0,
+            ff: 0,
+            ge: 0,
+            ko: 0,
+            kk: 0,
+          );
 
     final cells = <Widget>[
       _tappableNameCell(
@@ -249,7 +265,10 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       ),
       _textCell(_fallback(talent.weaponCategory)),
       _textCell(_fallback(talent.alternatives)),
-      _textCell(_fallback(talent.steigerung)),
+      _textCell(
+        _fallback(effectiveKomplexitaet),
+        highlighted: effectiveKomplexitaet != talent.steigerung,
+      ),
       _textCell(_fallback(talent.be)),
       _intInputCell(
         talentId: talent.id,

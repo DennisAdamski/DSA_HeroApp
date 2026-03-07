@@ -9,6 +9,7 @@ void main() {
       spellValue: 7,
       modifier: 2,
       hauszauber: true,
+      gifted: true,
       textOverrides: HeroSpellTextOverrides(
         aspCost: '',
         targetObject: 'Eigene Zielwahl',
@@ -22,6 +23,7 @@ void main() {
     expect(reloaded.spellValue, 7);
     expect(reloaded.modifier, 2);
     expect(reloaded.hauszauber, isTrue);
+    expect(reloaded.gifted, isTrue);
     expect(reloaded.textOverrides?.aspCost, '');
     expect(reloaded.textOverrides?.targetObject, 'Eigene Zielwahl');
     expect(reloaded.textOverrides?.wirkung, 'Eigene Wirkung');

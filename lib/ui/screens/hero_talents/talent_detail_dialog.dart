@@ -18,6 +18,10 @@ class _TalentDetailDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isCombat = talent.group.toLowerCase().contains('kampf');
+    final effectiveSteigerung = effectiveTalentLernkomplexitaet(
+      basisKomplexitaet: talent.steigerung,
+      gifted: entry.gifted,
+    );
     final specs = entry.combatSpecializations.isNotEmpty
         ? entry.combatSpecializations
         : entry.specializations
@@ -38,9 +42,10 @@ class _TalentDetailDialog extends StatelessWidget {
               _sectionTitle(theme, 'Katalog-Daten'),
               _detailRow(theme, 'Gruppe', talent.group),
               if (talent.type.isNotEmpty) _detailRow(theme, 'Typ', talent.type),
-              _detailRow(theme, 'Steigerung', talent.steigerung),
+              _detailRow(theme, 'Steigerung', effectiveSteigerung),
               _detailRow(theme, 'Eigenschaften', talent.attributes.join(', ')),
-              if (talent.be.isNotEmpty) _detailRow(theme, 'BE-Regel', talent.be),
+              if (talent.be.isNotEmpty)
+                _detailRow(theme, 'BE-Regel', talent.be),
               if (talent.weaponCategory.isNotEmpty)
                 _detailRow(theme, 'Waffengattung', talent.weaponCategory),
               if (talent.alternatives.isNotEmpty)
@@ -56,8 +61,7 @@ class _TalentDetailDialog extends StatelessWidget {
                 _detailRow(theme, 'Modifikator', '${entry.modifier}'),
               if (entry.specialExperiences > 0)
                 _detailRow(theme, 'SE', '${entry.specialExperiences}'),
-              if (entry.gifted)
-                _detailRow(theme, 'Begabung', 'Ja'),
+              if (entry.gifted) _detailRow(theme, 'Begabung', 'Ja'),
               if (!isCombat) ...[
                 _detailRow(
                   theme,
@@ -70,10 +74,7 @@ class _TalentDetailDialog extends StatelessWidget {
                   '${computeTalentComputedTaw(
                     talentValue: entry.talentValue,
                     modifier: entry.modifier,
-                    ebe: computeTalentEbe(
-                      baseBe: activeBaseBe,
-                      talentBeRule: talent.be,
-                    ),
+                    ebe: computeTalentEbe(baseBe: activeBaseBe, talentBeRule: talent.be),
                   )}',
                 ),
               ],
@@ -91,8 +92,9 @@ class _TalentDetailDialog extends StatelessWidget {
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,
                           padding: EdgeInsets.zero,
-                          labelPadding:
-                              const EdgeInsets.symmetric(horizontal: 6),
+                          labelPadding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                          ),
                         ),
                       )
                       .toList(growable: false),

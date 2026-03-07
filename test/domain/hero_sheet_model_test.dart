@@ -55,6 +55,7 @@ void main() {
       spells: {
         'spell_axxeleratus': HeroSpellEntry(
           spellValue: 8,
+          gifted: true,
           textOverrides: HeroSpellTextOverrides(
             wirkung: 'Eigenes Heldendetail',
             variants: <String>['Nur fuer diesen Helden'],
@@ -123,6 +124,7 @@ void main() {
       reloaded.spells['spell_axxeleratus']?.textOverrides?.wirkung,
       'Eigenes Heldendetail',
     );
+    expect(reloaded.spells['spell_axxeleratus']?.gifted, isTrue);
     expect(
       reloaded.spells['spell_axxeleratus']?.textOverrides?.variants,
       <String>['Nur fuer diesen Helden'],
