@@ -252,6 +252,14 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       );
     }
 
+    final headerActions = tabActions?.headerActions ?? const <WorkspaceHeaderAction>[];
+    for (final action in headerActions) {
+      final shouldShow = isEditing ? action.showWhenEditing : action.showWhenIdle;
+      if (!shouldShow) {
+        continue;
+      }
+      widgets.add(action.builder(context));
+    }
 
     if (isEditing) {
       widgets.addAll([

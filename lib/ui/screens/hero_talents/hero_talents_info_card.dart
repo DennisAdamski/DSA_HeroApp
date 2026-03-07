@@ -28,6 +28,15 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                 icon: const Icon(Icons.edit),
                 label: const Text('Bearbeiten'),
               ),
+              if (_editController.isEditing) ...[
+                const SizedBox(width: 8),
+                FilledButton.icon(
+                  key: const ValueKey<String>('talents-catalog-open'),
+                  onPressed: () => _showTalentKatalog(context, allTalents),
+                  icon: const Icon(Icons.library_add),
+                  label: const Text('Talente verwalten'),
+                ),
+              ],
               const SizedBox(width: 8),
               OutlinedButton.icon(
                 key: const ValueKey<String>('talents-be-screen-open'),
@@ -39,13 +48,6 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                 label: Text('BE konfigurieren ($activeTalentBe)'),
               ),
               if (_editController.isEditing) ...[
-                const SizedBox(width: 8),
-                FilledButton.icon(
-                  key: const ValueKey<String>('talents-catalog-open'),
-                  onPressed: () => _showTalentKatalog(context, allTalents),
-                  icon: const Icon(Icons.library_add),
-                  label: const Text('Talente verwalten'),
-                ),
                 const SizedBox(width: 8),
                 FilledButton.icon(
                   key: const ValueKey<String>('meta-talents-manage-open'),
