@@ -172,7 +172,7 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
             _calcStep('AT-Basis (Fernkampf)', preview.rangedAtBase),
             _calcStep('Talent AT-Anteil', talentEntry.atValue),
             _calcStep('WM AT (Waffe)', weapon.wmAt),
-            _calcStep('eBE AT-Anteil', _atEbePart(preview.ebe)),
+            _calcStep('eBE', preview.ebe),
             if (preview.specBonus != 0)
               _calcStep('Spezialisierung', preview.specBonus),
             if (preview.projectileAtMod != 0)
