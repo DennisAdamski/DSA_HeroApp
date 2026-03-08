@@ -1,11 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 
@@ -15,6 +17,15 @@ void main() {
     currentAsp: 0,
     currentKap: 0,
     currentAu: 0,
+  );
+  const stateWithAxx = HeroState(
+    currentLep: 0,
+    currentAsp: 0,
+    currentKap: 0,
+    currentAu: 0,
+    activeSpellEffects: ActiveSpellEffectsState(
+      activeEffectIds: <String>[activeSpellEffectAxxeleratus],
+    ),
   );
   const baseAttributes = Attributes(
     mu: 12,
@@ -47,22 +58,8 @@ void main() {
     );
   }
 
-  HeroSheet heroWithAxx({
-    Attributes? attributes,
-    CombatConfig combatConfig = const CombatConfig(),
-  }) {
-    final base = hero(attributes: attributes, combatConfig: combatConfig);
-    return base.copyWith(
-      combatConfig: base.combatConfig.copyWith(
-        specialRules: base.combatConfig.specialRules.copyWith(
-          axxeleratusActive: true,
-        ),
-      ),
-    );
-  }
-
-  CombatPreviewStats preview(HeroSheet sheet) {
-    return computeCombatPreviewStats(sheet, state);
+  CombatPreviewStats preview(HeroSheet sheet, {HeroState heroState = state}) {
+    return computeCombatPreviewStats(sheet, heroState);
   }
 
   test('Axxeleratus gibt +2 TP auf Nahkampfangriffe', () {
@@ -71,22 +68,22 @@ void main() {
         mainWeapon: MainWeaponSlot(tpFlat: 4, kkBase: 12, kkThreshold: 2),
       ),
     );
-    final withAxx = heroWithAxx(
+    final withAxx = hero(
       combatConfig: const CombatConfig(
         mainWeapon: MainWeaponSlot(tpFlat: 4, kkBase: 12, kkThreshold: 2),
       ),
     );
 
     expect(preview(withoutAxx).tpCalc, 4);
-    expect(preview(withAxx).tpCalc, 6);
+    expect(preview(withAxx, heroState: stateWithAxx).tpCalc, 6);
   });
 
   test('Axxeleratus erhoeht den Parade-Basiswert um 2', () {
     final withoutAxx = hero();
-    final withAxx = heroWithAxx();
+    final withAxx = hero();
 
     final withoutResult = preview(withoutAxx);
-    final withResult = preview(withAxx);
+    final withResult = preview(withAxx, heroState: stateWithAxx);
 
     expect(withoutResult.axxPaBaseBonus, 0);
     expect(withResult.axxPaBaseBonus, 2);
@@ -96,10 +93,10 @@ void main() {
 
   test('Axxeleratus erhoeht Ausweichen insgesamt um 4', () {
     final withoutAxx = hero();
-    final withAxx = heroWithAxx();
+    final withAxx = hero();
 
     final withoutResult = preview(withoutAxx);
-    final withResult = preview(withAxx);
+    final withResult = preview(withAxx, heroState: stateWithAxx);
 
     expect(withResult.axxAusweichenBonus, 2);
     expect(withResult.ausweichen, withoutResult.ausweichen + 4);
@@ -112,7 +109,7 @@ void main() {
         manualMods: CombatManualMods(iniWurf: 3, iniMod: 1),
       ),
     );
-    final withAxx = heroWithAxx(
+    final withAxx = hero(
       combatConfig: const CombatConfig(
         specialRules: CombatSpecialRules(kampfreflexe: true),
         manualMods: CombatManualMods(iniWurf: 3, iniMod: 1),
@@ -120,7 +117,7 @@ void main() {
     );
 
     final withoutResult = preview(withoutAxx);
-    final withResult = preview(withAxx);
+    final withResult = preview(withAxx, heroState: stateWithAxx);
 
     expect(withoutResult.axxIniBonus, 0);
     expect(withResult.axxIniBonus, withResult.eigenschaftsIni);
@@ -133,10 +130,10 @@ void main() {
 
   test('Axxeleratus verdoppelt den finalen GS-Wert', () {
     final withoutAxx = hero();
-    final withAxx = heroWithAxx();
+    final withAxx = hero();
 
     final withoutGs = computeDerivedStats(withoutAxx, state).gs;
-    final withGs = computeDerivedStats(withAxx, state).gs;
+    final withGs = computeDerivedStats(withAxx, stateWithAxx).gs;
 
     expect(withoutGs, 8);
     expect(withGs, 16);
@@ -148,5 +145,22 @@ void main() {
       buildAxxeleratusDefenseHint(axxeleratusActive: true),
       'Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2',
     );
+  });
+
+  test('legacy combat rule flag remains a fallback for Axxeleratus', () {
+    final withoutAxx = hero(
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(tpFlat: 4, kkBase: 12, kkThreshold: 2),
+      ),
+    );
+    final withLegacyAxx = hero(
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(tpFlat: 4, kkBase: 12, kkThreshold: 2),
+        specialRules: CombatSpecialRules(axxeleratusActive: true),
+      ),
+    );
+
+    expect(preview(withLegacyAxx).tpCalc, preview(withoutAxx).tpCalc + 2);
+    expect(computeDerivedStats(withLegacyAxx, state).gs, 16);
   });
 }

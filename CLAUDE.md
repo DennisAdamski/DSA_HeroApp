@@ -87,7 +87,7 @@ DSA_HeroApp/
 │   │       ├── hero_workspace_screen.dart   # Tab host for one hero
 │   │       ├── workspace_edit_contract.dart
 │   │       ├── workspace/                   # Workspace sub-components
-│   │       ├── hero_overview_tab.dart       # Tab: Uebersicht
+│   │       ├── hero_overview_tab.dart       # Tab: Status
 │   │       ├── hero_overview/               # Overview part files
 │   │       ├── hero_talents_tab.dart        # Tab: Talente
 │   │       ├── hero_talents/                # Talent part files

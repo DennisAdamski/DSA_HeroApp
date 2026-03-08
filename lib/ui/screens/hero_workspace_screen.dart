@@ -42,7 +42,7 @@ const int _inventoryTabIndex = 4;
 
 /// Zentraler Workspace-Screen fuer die Bearbeitung und Anzeige eines Helden.
 ///
-/// Hostet sechs Tabs (Uebersicht, Talente, Kampf, Magie, Inventar, Notizen)
+/// Hostet sechs Tabs (Status, Talente, Kampf, Magie, Inventar, Notizen)
 /// und verwaltet Tab-Navigation mit Discard-Guard fuer ungespeicherte Aenderungen.
 /// Auf breiten Bildschirmen (>= 1280 dp) wird das Helden-Deck-Layout aktiviert.
 class HeroWorkspaceScreen extends ConsumerStatefulWidget {
@@ -319,7 +319,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       controller: _tabController,
       isScrollable: true,
       tabs: const [
-        Tab(text: '\u00dcbersicht'),
+        Tab(text: 'Status'),
         Tab(text: 'Talente'),
         Tab(text: 'Kampf'),
         Tab(text: 'Magie'),
@@ -416,7 +416,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     });
   }
 
-  /// Helden-Deck-Layout: Navigation links, Inhalt mittig, Inspector rechts.
+  /// Helden-Deck-Layout: Navigation links, Inhalt mittig, Detailpanel rechts.
   Widget _buildHeroDeckWorkspaceBody(HeroSheet hero) {
     final activeTabIndex = _tabRegistry.activeTabIndex;
     final navigationWidth = _heroDeckExpanded

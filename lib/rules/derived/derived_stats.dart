@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
@@ -67,9 +68,13 @@ DerivedStats computeDerivedStatsFromInputs({
   final effectiveSheet = sheet.copyWith(attributes: effectiveAttributes);
   final mods = sheet.persistentMods + parsedModifiers.statMods + state.tempMods;
   final baseGs = computeGs(effectiveSheet, mods);
+  final axxeleratusActive = isAxxeleratusEffectActive(
+    sheet: sheet,
+    state: state,
+  );
   final gs = computeAxxeleratusGs(
     gs: baseGs,
-    axxeleratusActive: sheet.combatConfig.specialRules.axxeleratusActive,
+    axxeleratusActive: axxeleratusActive,
   );
 
   return DerivedStats(

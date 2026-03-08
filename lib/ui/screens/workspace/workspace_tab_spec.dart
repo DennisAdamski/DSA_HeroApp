@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// Definiert Metadaten fuer einen einzelnen Workspace-Tab.
 ///
 /// Wird von [workspaceTabs] genutzt, um Label, Icon und Hilfstext
-/// fuer Navigation und Inspector bereitzustellen.
+/// fuer Navigation und Detailpanel bereitzustellen.
 class WorkspaceTabSpec {
   const WorkspaceTabSpec({
     required this.label,
@@ -11,25 +11,25 @@ class WorkspaceTabSpec {
     required this.helper,
   });
 
-  /// Anzeige-Label des Tabs (z. B. 'Uebersicht').
+  /// Anzeige-Label des Tabs (z. B. 'Status').
   final String label;
 
   /// Icon des Tabs in der Navigation.
   final IconData icon;
 
-  /// Kurzbeschreibung des Tabs fuer den Inspector.
+  /// Kurzbeschreibung des Tabs fuer das Detailpanel.
   final String helper;
 }
 
 /// Statische Liste aller Workspace-Tabs in der festen Reihenfolge.
 ///
-/// Index 0 = Uebersicht, 1 = Talente, 2 = Kampf, 3 = Magie,
+/// Index 0 = Status, 1 = Talente, 2 = Kampf, 3 = Magie,
 /// 4 = Inventar, 5 = Notizen.
 const List<WorkspaceTabSpec> workspaceTabs = <WorkspaceTabSpec>[
   WorkspaceTabSpec(
-    label: 'Uebersicht',
+    label: 'Status',
     icon: Icons.dashboard_outlined,
-    helper: 'Basisdaten und Ressourcen',
+    helper: 'Ressourcen, Modifikatoren und aktive Effekte',
   ),
   WorkspaceTabSpec(
     label: 'Talente',

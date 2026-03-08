@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ausweichen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
@@ -133,6 +134,10 @@ CombatPreviewStats computeCombatPreviewStats(
   final armor = config.armor;
   final special = config.specialRules;
   final manualMods = config.manualMods;
+  final axxeleratusActive = isAxxeleratusEffectActive(
+    sheet: sheet,
+    state: state,
+  );
 
   // --- Ruestung & Behinderung (ruestung_be_rules) ---
   final activeArmorPieces = armor.pieces
@@ -169,7 +174,7 @@ CombatPreviewStats computeCombatPreviewStats(
     kkThreshold: kkThreshold,
   );
   final axxTpBonus = computeAxxeleratusTpBonus(
-    axxeleratusActive: special.axxeleratusActive,
+    axxeleratusActive: axxeleratusActive,
   );
   final tpCalc = main.tpFlat + tpKk + axxTpBonus;
 
@@ -194,7 +199,7 @@ CombatPreviewStats computeCombatPreviewStats(
   final atBase = computeAt(effectiveSheet, mods);
   final basePa = computePa(effectiveSheet, mods);
   final axxPaBaseBonus = computeAxxeleratusPaBaseBonus(
-    axxeleratusActive: special.axxeleratusActive,
+    axxeleratusActive: axxeleratusActive,
   );
   final paBase = basePa + axxPaBaseBonus;
 
@@ -228,7 +233,7 @@ CombatPreviewStats computeCombatPreviewStats(
   final eigenschaftsIni = derived.iniBase;
   final axxIniBonus = computeAxxeleratusIniBonus(
     iniBase: eigenschaftsIni,
-    axxeleratusActive: special.axxeleratusActive,
+    axxeleratusActive: axxeleratusActive,
   );
   final heldenInitiative = clampNonNegative(
     eigenschaftsIni +
@@ -258,7 +263,7 @@ CombatPreviewStats computeCombatPreviewStats(
   // --- Ausweichen (ausweichen_rules) ---
   final akrobatikBonusValue = computeAkrobatikBonus(talents);
   final axxAusweichenBonus = computeAxxeleratusAusweichenBonus(
-    axxeleratusActive: special.axxeleratusActive,
+    axxeleratusActive: axxeleratusActive,
   );
   final iniAusweichenBonus = computeIniAusweichenBonus(
     kampfInitiative: kampfInitiative,
@@ -273,7 +278,7 @@ CombatPreviewStats computeCombatPreviewStats(
     beKampf: beKampf,
   );
   final axxAttackDefenseHint = buildAxxeleratusDefenseHint(
-    axxeleratusActive: special.axxeleratusActive,
+    axxeleratusActive: axxeleratusActive,
   );
 
   return CombatPreviewStats(
