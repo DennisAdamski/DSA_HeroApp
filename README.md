@@ -47,6 +47,13 @@ Vollstaendige Anleitung:
 - Repository-Schnittstelle ist auf inkrementelle Streams erweitert (`watchHeroIndex`, `watchHeroState`, `loadHeroById`).
 - UI-Tabs (`Combat`, `Talents`, `Overview`) sind in kleinere Part-Dateien zerlegt; Root-Dateien bleiben unter 700 LOC.
 
+### Kampf-UI (Stand: 2026-03-08)
+- Die Waffen-Tabelle im Kampf-Tab ist kompakt und zeigt nur Kernwerte sowie Artefakt-Status.
+- Waffendetails werden ueber einen Dialog bearbeitet; inline editierbar bleiben nur `Waffentalent` und `BF`.
+- Der Waffen-Dialog gruppiert Stammdaten, berechnete Ausgabewerte sowie TP-/INI-Formelfelder; Formelwerte sind dort read-only sichtbar.
+- Die angezeigte `PA` der aktiven Waffe enthaelt den heldenbezogenen INI-Parade-Bonus; dieser wird nicht mehr als eigener Waffenwert separat angezeigt.
+- Neue Waffen werden ueber denselben Dialog angelegt; der Katalog-Button oeffnet dabei vorbefuellte Vorlagen.
+
 ### UI-Performance Guardrails (Stand: 2026-03-01)
 - Rebuild-Guardrail (Widget-Test): `flutter test test/ui/performance/ui_rebuild_guardrails_test.dart`
 - FrameTiming-Messung (Profile, Integration): `flutter drive --profile --driver=test_driver/integration_test.dart --target=integration_test/ui_edit_frame_timing_test.dart -d <deviceId>`

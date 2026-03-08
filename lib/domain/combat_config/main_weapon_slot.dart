@@ -20,6 +20,8 @@ class MainWeaponSlot {
     this.iniMod = 0,
     this.beTalentMod = 0,
     this.isOneHanded = true,
+    this.isArtifact = false,
+    this.artifactDescription = '',
   });
 
   /// Anzeigename der Waffe.
@@ -64,8 +66,14 @@ class MainWeaponSlot {
   /// BE-Modifikator fuer Talentproben mit dieser Waffe.
   final int beTalentMod;
 
-  /// Gibt an, ob die Waffe eineinhändig gefuehrt wird.
+  /// Gibt an, ob die Waffe einhaendig gefuehrt wird.
   final bool isOneHanded;
+
+  /// Kennzeichnet die Waffe als Artefakt.
+  final bool isArtifact;
+
+  /// Freitext-Beschreibung fuer das Artefakt.
+  final String artifactDescription;
 
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   ///
@@ -86,6 +94,8 @@ class MainWeaponSlot {
     int? iniMod,
     int? beTalentMod,
     bool? isOneHanded,
+    bool? isArtifact,
+    String? artifactDescription,
   }) {
     return MainWeaponSlot(
       name: name ?? this.name,
@@ -104,6 +114,8 @@ class MainWeaponSlot {
       iniMod: iniMod ?? this.iniMod,
       beTalentMod: beTalentMod ?? this.beTalentMod,
       isOneHanded: isOneHanded ?? this.isOneHanded,
+      isArtifact: isArtifact ?? this.isArtifact,
+      artifactDescription: artifactDescription ?? this.artifactDescription,
     );
   }
 
@@ -126,6 +138,8 @@ class MainWeaponSlot {
       'iniMod': iniMod,
       'beTalentMod': beTalentMod,
       'isOneHanded': isOneHanded,
+      'isArtifact': isArtifact,
+      'artifactDescription': artifactDescription,
     };
   }
 
@@ -152,6 +166,8 @@ class MainWeaponSlot {
       iniMod: getInt('iniMod', 0),
       beTalentMod: getInt('beTalentMod', 0),
       isOneHanded: (json['isOneHanded'] as bool?) ?? true,
+      isArtifact: (json['isArtifact'] as bool?) ?? false,
+      artifactDescription: getString('artifactDescription'),
     );
   }
 }
