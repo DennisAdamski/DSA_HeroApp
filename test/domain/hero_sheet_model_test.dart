@@ -201,7 +201,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 11);
+    expect(reloaded.schemaVersion, 13);
     expect(reloaded.kultur, 'Mittelreich');
     expect(reloaded.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -209,7 +209,10 @@ void main() {
     expect(reloaded.hiddenTalentIds, ['tal_a', 'tal_b']);
     expect(reloaded.talentSpecialAbilities, 'Meisterhandwerk, Begabung');
     expect(reloaded.notes.single.title, 'Offene Schuld');
-    expect(reloaded.notes.single.description, 'Noch 20 Dukaten bei Jucho offen.');
+    expect(
+      reloaded.notes.single.description,
+      'Noch 20 Dukaten bei Jucho offen.',
+    );
     expect(reloaded.connections.single.name, 'Jucho');
     expect(reloaded.connections.single.ort, 'Punin');
     expect(reloaded.connections.single.loyalitaet, 'schwankend');
@@ -364,6 +367,116 @@ void main() {
       'Runen auf der Klinge',
     );
     expect(reloaded.combatConfig.selectedWeapon.isOneHanded, isFalse);
+  });
+
+  test('combat config roundtrip keeps ranged weapon profile data', () {
+    const hero = HeroSheet(
+      id: 'h4',
+      name: 'Fernkampf',
+      level: 1,
+      attributes: Attributes(
+        mu: 10,
+        kl: 10,
+        inn: 10,
+        ch: 10,
+        ff: 10,
+        ge: 10,
+        ko: 10,
+        kk: 10,
+      ),
+      combatConfig: CombatConfig(
+        weapons: <MainWeaponSlot>[
+          MainWeaponSlot(
+            name: 'Kurzbogen',
+            talentId: 'tal_bogen',
+            combatType: WeaponCombatType.ranged,
+            weaponType: 'Kurzbogen',
+            wmAt: 2,
+            rangedProfile: RangedWeaponProfile(
+              reloadTime: 3,
+              distanceBands: <RangedDistanceBand>[
+                RangedDistanceBand(label: 'Sehr nah', tpMod: 2),
+                RangedDistanceBand(label: 'Nah', tpMod: 1),
+                RangedDistanceBand(label: 'Mittel', tpMod: 0),
+                RangedDistanceBand(label: 'Weit', tpMod: -1),
+                RangedDistanceBand(label: 'Extrem', tpMod: -2),
+              ],
+              projectiles: <RangedProjectile>[
+                RangedProjectile(
+                  name: 'Jagdspitze',
+                  count: 12,
+                  tpMod: 1,
+                  iniMod: -1,
+                  atMod: 2,
+                  description: 'Breite Pfeilspitze fuer Wild.',
+                ),
+              ],
+              selectedDistanceIndex: 3,
+              selectedProjectileIndex: 0,
+            ),
+          ),
+        ],
+        selectedWeaponIndex: 0,
+      ),
+    );
+
+    final reloaded = HeroSheet.fromJson(hero.toJson());
+    final weapon = reloaded.combatConfig.selectedWeapon;
+    expect(weapon.combatType, WeaponCombatType.ranged);
+    expect(weapon.wmAt, 2);
+    expect(weapon.rangedProfile.reloadTime, 3);
+    expect(weapon.rangedProfile.selectedDistanceBand.label, 'Weit');
+    expect(weapon.rangedProfile.selectedProjectileOrNull?.name, 'Jagdspitze');
+    expect(weapon.rangedProfile.selectedProjectileOrNull?.count, 12);
+  });
+
+  test('legacy ranged modifiers migrate from fk fields to at fields', () {
+    final legacy = {
+      'schemaVersion': 12,
+      'id': 'legacy-ranged',
+      'name': 'Altbogen',
+      'level': 1,
+      'attributes': {
+        'mu': 10,
+        'kl': 10,
+        'inn': 10,
+        'ch': 10,
+        'ff': 10,
+        'ge': 10,
+        'ko': 10,
+        'kk': 10,
+      },
+      'combatConfig': {
+        'mainWeapon': {
+          'name': 'Kurzbogen',
+          'talentId': 'tal_bogen',
+          'combatType': 'ranged',
+          'weaponType': 'Kurzbogen',
+          'wmFk': 3,
+          'rangedProfile': {
+            'projectiles': [
+              {
+                'name': 'Jagdspitze',
+                'count': 12,
+                'tpMod': 1,
+                'iniMod': -1,
+                'fkMod': 2,
+              },
+            ],
+          },
+        },
+        'manualMods': {'fkMod': 4},
+      },
+      'talents': <String, dynamic>{},
+    };
+
+    final reloaded = HeroSheet.fromJson(legacy);
+    final weapon = reloaded.combatConfig.selectedWeapon;
+
+    expect(reloaded.schemaVersion, 12);
+    expect(weapon.wmAt, 3);
+    expect(weapon.rangedProfile.projectiles.single.atMod, 2);
+    expect(reloaded.combatConfig.manualMods.atMod, 4);
   });
 
   test(

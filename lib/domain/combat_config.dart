@@ -2,6 +2,10 @@
 // Importeure dieser Datei erhalten automatisch Zugriff auf alle Typen.
 export 'package:dsa_heldenverwaltung/domain/combat_config/offhand_mode.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/main_weapon_slot.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/ranged_distance_band.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/ranged_projectile.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/ranged_weapon_profile.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/weapon_combat_type.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/offhand_slot.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/armor_piece.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/armor_config.dart';

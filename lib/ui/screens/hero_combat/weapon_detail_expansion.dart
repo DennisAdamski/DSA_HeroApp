@@ -15,111 +15,217 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
     return ExpansionTile(
       key: const ValueKey<String>('combat-weapon-calculation-details'),
       tilePadding: const EdgeInsets.symmetric(horizontal: 4),
-      title: Text(
-        'Berechnungsschritte',
-        style: theme.textTheme.titleSmall,
-      ),
+      title: Text('Berechnungsschritte', style: theme.textTheme.titleSmall),
       initiallyExpanded: false,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _calcSection(
-                title: 'Attacke (AT)',
-                result: preview.at,
-                steps: [
-                  _calcStep('Talent AT-Anteil',
-                      _talentAtValue(weapon.talentId)),
-                  _calcStep('AT-Basis', preview.at - _talentAtValue(weapon.talentId) - weapon.wmAt - (preview.specBonus) - offhand.atMod - manual.atMod - _atEbePart(preview.ebe)),
-                  _calcStep('WM AT (Waffe)', weapon.wmAt),
-                  _calcStep('eBE AT-Anteil', _atEbePart(preview.ebe)),
-                  if (preview.specBonus > 0)
-                    _calcStep('Spezialisierung', preview.specBonus),
-                  if (offhand.atMod != 0)
-                    _calcStep('Nebenhand AT', offhand.atMod),
-                  if (manual.atMod != 0)
-                    _calcStep('Manueller Mod', manual.atMod),
-                ],
+          child: preview.isRangedWeapon
+              ? _buildRangedDetails(
+                  preview: preview,
+                  weapon: weapon,
+                  manual: manual,
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _calcSection(
+                      title: 'Attacke (AT)',
+                      result: preview.at,
+                      steps: [
+                        _calcStep(
+                          'Talent AT-Anteil',
+                          _talentAtValue(weapon.talentId),
+                        ),
+                        _calcStep(
+                          'AT-Basis',
+                          preview.at -
+                              _talentAtValue(weapon.talentId) -
+                              weapon.wmAt -
+                              (preview.specBonus) -
+                              offhand.atMod -
+                              manual.atMod -
+                              _atEbePart(preview.ebe),
+                        ),
+                        _calcStep('WM AT (Waffe)', weapon.wmAt),
+                        _calcStep('eBE AT-Anteil', _atEbePart(preview.ebe)),
+                        if (preview.specBonus > 0)
+                          _calcStep('Spezialisierung', preview.specBonus),
+                        if (offhand.atMod != 0)
+                          _calcStep('Nebenhand AT', offhand.atMod),
+                        if (manual.atMod != 0)
+                          _calcStep('Manueller Mod', manual.atMod),
+                      ],
+                    ),
+                    const Divider(),
+                    _calcSection(
+                      title: 'Parade (PA)',
+                      result: preview.paMitIniParadeMod,
+                      steps: [
+                        _calcStep(
+                          'Talent PA-Anteil',
+                          _talentPaValue(weapon.talentId),
+                        ),
+                        _calcStep('PA-Basis', preview.paBase),
+                        if (preview.axxPaBaseBonus != 0)
+                          _calcStep('Axxeleratus PA', preview.axxPaBaseBonus),
+                        _calcStep('WM PA (Waffe)', weapon.wmPa),
+                        _calcStep('eBE PA-Anteil', _paEbePart(preview.ebe)),
+                        if (preview.offhandPaBonus != 0)
+                          _calcStep('Nebenhand PA', preview.offhandPaBonus),
+                        if (manual.paMod != 0)
+                          _calcStep('Manueller Mod', manual.paMod),
+                        if (preview.iniParadeMod != 0)
+                          _calcStep('INI-Parade-Bonus', preview.iniParadeMod),
+                      ],
+                    ),
+                    const Divider(),
+                    _calcSection(
+                      title: 'Trefferpunkte (TP)',
+                      resultLabel: preview.tpExpression,
+                      steps: [
+                        _calcStep(
+                          'Wuerfel',
+                          null,
+                          label: '${weapon.tpDiceCount}W${weapon.tpDiceSides}',
+                        ),
+                        _calcStep('TP Grundwert', weapon.tpFlat),
+                        _calcStep('TP/KK', preview.tpKk),
+                        _calcStep(
+                          'KK-Basis',
+                          weapon.kkBase,
+                          label: 'Schwelle ${weapon.kkThreshold}',
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    _calcSection(
+                      title: 'Initiative (INI)',
+                      result: preview.initiative,
+                      steps: [
+                        _calcStep('Eigenschafts-INI', preview.eigenschaftsIni),
+                        _calcStep('eBE', preview.ebe),
+                        if (preview.sfIniBonus != 0)
+                          _calcStep('SF-Bonus', preview.sfIniBonus),
+                        _calcStep(
+                          'INI-Wurf',
+                          preview.iniWurfEffective,
+                          label: '${preview.iniDiceCount}W6',
+                        ),
+                        if (preview.axxIniBonus != 0)
+                          _calcStep('Axxeleratus', preview.axxIniBonus),
+                        if (manual.iniMod != 0)
+                          _calcStep('Manueller Mod', manual.iniMod),
+                        _calcStep('= Helden-INI', preview.heldenInitiative),
+                        _calcStep('Waffen-INI Mod', weapon.iniMod),
+                        _calcStep('INI/GE', preview.iniGe),
+                        _calcStep(
+                          '= Helden+Waffen-INI',
+                          preview.kombinierteHeldenWaffenIni,
+                        ),
+                        if (offhand.iniMod != 0)
+                          _calcStep('Nebenhand INI', offhand.iniMod),
+                        _calcStep('= Kampf-INI', preview.kampfInitiative),
+                      ],
+                    ),
+                    const Divider(),
+                    _calcSection(
+                      title: 'Ausweichen',
+                      result: preview.ausweichen,
+                      steps: [
+                        _calcStep(
+                          'PA-Basis',
+                          preview.paBase - preview.axxPaBaseBonus,
+                        ),
+                        if (preview.sfAusweichenBonus != 0)
+                          _calcStep('SF Ausweichen', preview.sfAusweichenBonus),
+                        if (preview.akrobatikBonus != 0)
+                          _calcStep('Akrobatik', preview.akrobatikBonus),
+                        if (preview.axxAusweichenBonus != 0)
+                          _calcStep('Axxeleratus', preview.axxAusweichenBonus),
+                        if (preview.iniAusweichenBonus != 0)
+                          _calcStep('INI-Bonus', preview.iniAusweichenBonus),
+                        _calcStep('BE Kampf', -preview.beKampf),
+                      ],
+                    ),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRangedDetails({
+    required CombatPreviewStats preview,
+    required MainWeaponSlot weapon,
+    required CombatManualMods manual,
+  }) {
+    final talentEntry =
+        _draftTalents[weapon.talentId.trim()] ?? const HeroTalentEntry();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _calcSection(
+          title: 'Fernkampf (AT)',
+          result: preview.at,
+          steps: [
+            _calcStep('AT-Basis (Fernkampf)', preview.rangedAtBase),
+            _calcStep('Talent AT-Anteil', talentEntry.atValue),
+            _calcStep('WM AT (Waffe)', weapon.wmAt),
+            _calcStep('eBE', preview.ebe),
+            if (preview.specBonus != 0)
+              _calcStep('Spezialisierung', preview.specBonus),
+            if (preview.projectileAtMod != 0)
+              _calcStep('Geschoss AT', preview.projectileAtMod),
+            if (manual.atMod != 0) _calcStep('Manueller Mod', manual.atMod),
+          ],
+        ),
+        const Divider(),
+        _calcSection(
+          title: 'Trefferpunkte (TP)',
+          resultLabel: preview.tpExpression,
+          steps: [
+            _calcStep(
+              'Wuerfel',
+              null,
+              label: '${weapon.tpDiceCount}W${weapon.tpDiceSides}',
+            ),
+            _calcStep('TP Grundwert', weapon.tpFlat),
+            _calcStep('TP/KK', preview.tpKk),
+            if (preview.distanceTpMod != 0)
+              _calcStep(
+                'Entfernung',
+                preview.distanceTpMod,
+                label: preview.activeDistanceLabel,
               ),
-              const Divider(),
-              _calcSection(
-                title: 'Parade (PA)',
-                result: preview.paMitIniParadeMod,
-                steps: [
-                  _calcStep('Talent PA-Anteil',
-                      _talentPaValue(weapon.talentId)),
-                  _calcStep('PA-Basis', preview.paBase),
-                  if (preview.axxPaBaseBonus != 0)
-                    _calcStep('Axxeleratus PA', preview.axxPaBaseBonus),
-                  _calcStep('WM PA (Waffe)', weapon.wmPa),
-                  _calcStep('eBE PA-Anteil', _paEbePart(preview.ebe)),
-                  if (preview.offhandPaBonus != 0)
-                    _calcStep('Nebenhand PA', preview.offhandPaBonus),
-                  if (manual.paMod != 0)
-                    _calcStep('Manueller Mod', manual.paMod),
-                  if (preview.iniParadeMod != 0)
-                    _calcStep('INI-Parade-Bonus', preview.iniParadeMod),
-                ],
+            if (preview.projectileTpMod != 0)
+              _calcStep(
+                'Geschoss',
+                preview.projectileTpMod,
+                label: preview.activeProjectileName,
               ),
-              const Divider(),
-              _calcSection(
-                title: 'Trefferpunkte (TP)',
-                resultLabel: preview.tpExpression,
-                steps: [
-                  _calcStep('Wuerfel', null,
-                      label: '${weapon.tpDiceCount}W${weapon.tpDiceSides}'),
-                  _calcStep('TP Grundwert', weapon.tpFlat),
-                  _calcStep('TP/KK', preview.tpKk),
-                  _calcStep('KK-Basis', weapon.kkBase,
-                      label: 'Schwelle ${weapon.kkThreshold}'),
-                ],
-              ),
-              const Divider(),
-              _calcSection(
-                title: 'Initiative (INI)',
-                result: preview.initiative,
-                steps: [
-                  _calcStep('Eigenschafts-INI', preview.eigenschaftsIni),
-                  _calcStep('eBE', preview.ebe),
-                  if (preview.sfIniBonus != 0)
-                    _calcStep('SF-Bonus', preview.sfIniBonus),
-                  _calcStep('INI-Wurf', preview.iniWurfEffective,
-                      label: '${preview.iniDiceCount}W6'),
-                  if (preview.axxIniBonus != 0)
-                    _calcStep('Axxeleratus', preview.axxIniBonus),
-                  if (manual.iniMod != 0)
-                    _calcStep('Manueller Mod', manual.iniMod),
-                  _calcStep('= Helden-INI', preview.heldenInitiative),
-                  _calcStep('Waffen-INI Mod', weapon.iniMod),
-                  _calcStep('INI/GE', preview.iniGe),
-                  _calcStep('= Helden+Waffen-INI',
-                      preview.kombinierteHeldenWaffenIni),
-                  if (offhand.iniMod != 0)
-                    _calcStep('Nebenhand INI', offhand.iniMod),
-                  _calcStep('= Kampf-INI', preview.kampfInitiative),
-                ],
-              ),
-              const Divider(),
-              _calcSection(
-                title: 'Ausweichen',
-                result: preview.ausweichen,
-                steps: [
-                  _calcStep('PA-Basis', preview.paBase - preview.axxPaBaseBonus),
-                  if (preview.sfAusweichenBonus != 0)
-                    _calcStep('SF Ausweichen', preview.sfAusweichenBonus),
-                  if (preview.akrobatikBonus != 0)
-                    _calcStep('Akrobatik', preview.akrobatikBonus),
-                  if (preview.axxAusweichenBonus != 0)
-                    _calcStep('Axxeleratus', preview.axxAusweichenBonus),
-                  if (preview.iniAusweichenBonus != 0)
-                    _calcStep('INI-Bonus', preview.iniAusweichenBonus),
-                  _calcStep('BE Kampf', -preview.beKampf),
-                ],
-              ),
-            ],
-          ),
+          ],
+        ),
+        const Divider(),
+        _calcSection(
+          title: 'Initiative (INI)',
+          result: preview.initiative,
+          steps: [
+            _calcStep('Eigenschafts-INI', preview.eigenschaftsIni),
+            _calcStep('eBE', preview.ebe),
+            if (preview.sfIniBonus != 0)
+              _calcStep('SF-Bonus', preview.sfIniBonus),
+            if (manual.iniMod != 0) _calcStep('Manueller Mod', manual.iniMod),
+            _calcStep('= Helden-INI', preview.heldenInitiative),
+            _calcStep('Waffen-INI Mod', weapon.iniMod),
+            _calcStep('INI/GE', preview.iniGe),
+            if (preview.projectileIniMod != 0)
+              _calcStep('Geschoss INI', preview.projectileIniMod),
+            _calcStep(
+              '= Helden+Waffen-INI',
+              preview.kombinierteHeldenWaffenIni,
+            ),
+          ],
         ),
       ],
     );
@@ -179,9 +285,7 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
           ),
           Text(
             valueStr,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontFamily: 'monospace',
-            ),
+            style: theme.textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
           ),
         ],
       ),

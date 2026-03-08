@@ -70,7 +70,8 @@ DSA_HeroApp/
 │   │   ├── meta_talent_rules.dart
 │   │   ├── talent_be_rules.dart
 │   │   ├── ap_level_rules.dart
-│   │   ├── combat_rules.dart        # placeholder — not wired up
+│   │   ├── combat_rules.dart        # Kampfvorschau und gemeinsame Nah-/Fernkampfwerte
+│   │   ├── fernkampf_rules.dart     # Fernkampf-spezifische AT-/TP-Helfer
 │   │   ├── magic_rules.dart         # Magie-Regeln (Verfuegbarkeit, Steigerung, Merkmale)
 │   │   └── mods_rules.dart          # placeholder — not wired up
 │   ├── state/                       # Riverpod providers & snapshots
@@ -245,7 +246,7 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 - `HeroSheet` verwendet jetzt `rawStartAttributes` fuer Roh-Startwerte und `startAttributes` fuer effektive Startwerte nach Rasse/Kultur/Profession.
 - Neue Start-/Maximum-Logik liegt in `lib/rules/derived/attribute_start_rules.dart`.
 - `HeroComputedSnapshot` enthaelt zusaetzlich effektive Startwerte und Eigenschaftsmaxima.
-- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **11**.
+- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **13**.
 - `HeroSheet` speichert zusaetzlich `ritualCategories` fuer heldenspezifische
   Ritualkategorien und Rituale.
 - `HeroSheet` speichert jetzt auch `notes` und `connections` fuer den
@@ -258,11 +259,18 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
   Ort, Sozialstatus, Loyalitaet und Beschreibung.
 - Die Waffen-Uebersicht im Kampf-Tab ist kompakt; Detailwerte werden ueber
   `lib/ui/screens/hero_combat/weapon_editor_dialog.dart` bearbeitet.
-- Der Waffen-Dialog ist ausgabeorientiert gruppiert und zeigt TP-/INI-
+- Nah- und Fernkampfwaffen werden gemeinsam gepflegt; Fernkampfwaffen speichern
+  zusaetzlich AT, Ladezeit, fuenf Distanzstufen und persistente Geschosse.
+- Der Untertab `Kampf` zeigt je nach aktiver Waffe dynamisch Nahkampfwerte
+  (`AT`/`PA`) oder Fernkampfwerte (`AT`, TP, Ladezeit, Geschosse).
+- Der Waffen-Dialog ist ausgabeorientiert gruppiert und zeigt TP-/INI-/AT-
   Formelfelder als read-only Vorschau.
-- Die sichtbare Parade der aktiven Waffe enthaelt den heldenbezogenen
-  INI-Parade-Bonus; dieser wird nicht mehr als eigener Waffenwert separat
-  ausgewiesen.
+- Die sichtbare Parade der aktiven Nahkampfwaffe enthaelt den
+  heldenbezogenen INI-Parade-Bonus; dieser wird nicht mehr als eigener
+  Waffenwert separat ausgewiesen.
+- `lib/rules/derived/fernkampf_rules.dart` kapselt Fernkampf-AT- und
+  Fernkampf-TP-Helfer; `computeCombatPreviewStats()` liefert fuer Nah- und
+  Fernkampf weiterhin denselben Snapshot-Typ.
 - Der `HeroWorkspaceScreen` nutzt ab `1280 dp` das breite **Helden-Deck**-
   Layout; die linke Navigationsleiste und die rechte Detailleiste koennen
   dort unabhaengig eingeklappt werden.
@@ -314,7 +322,7 @@ python tool/report_unreferenced_dart.py
 - **Screen size limit**: root screen/tab files must stay under **700 LOC**. Split into sub-files (e.g. `hero_combat/` directory) before exceeding this.
 - **ConsumerWidget vs ConsumerStatefulWidget**: use `ConsumerWidget` (stateless) by default; use `ConsumerStatefulWidget` only when local widget state is genuinely needed.
 - **Provider access in UI**: use `.watch` for reactive reads; use `.read` only inside callbacks (e.g. button presses).
-- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **11**.
+- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **13**.
 - **German comments and identifiers**: code-level comments and domain names follow German (rasse, kultur, Held, Talente, etc.).
 
 ### Catalog
@@ -340,7 +348,6 @@ The following files are **intentionally kept** but not currently wired into the 
 
 | File | Reason |
 |---|---|
-| `lib/rules/derived/combat_rules.dart` | Placeholder for future combat rule expansion |
 | `lib/rules/derived/mods_rules.dart` | Placeholder for modifier rules |
 | `lib/ui/screens/hero_detail_screen.dart` | Legacy screen, kept for reference |
 

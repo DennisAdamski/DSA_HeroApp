@@ -34,13 +34,16 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
   late final TextEditingController _tpDiceCountController;
   late final TextEditingController _tpFlatController;
   late final TextEditingController _artifactDescriptionController;
+  late final TextEditingController _reloadTimeController;
+  late final List<TextEditingController> _distanceLabelControllers;
+  late final List<TextEditingController> _distanceTpModControllers;
 
   late MainWeaponSlot _draftSlot;
 
   @override
   void initState() {
     super.initState();
-    _draftSlot = widget.initialSlot;
+    _draftSlot = _normalizedInitialSlot(widget.initialSlot);
     _nameController = TextEditingController(text: _draftSlot.name);
     _distanceClassController = TextEditingController(
       text: _draftSlot.distanceClass,
@@ -68,6 +71,23 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
     _artifactDescriptionController = TextEditingController(
       text: _draftSlot.artifactDescription,
     );
+    _reloadTimeController = TextEditingController(
+      text: _draftSlot.rangedProfile.reloadTime.toString(),
+    );
+    _distanceLabelControllers = _draftSlot.rangedProfile.distanceBands
+        .map((entry) => TextEditingController(text: entry.label))
+        .toList(growable: false);
+    _distanceTpModControllers = _draftSlot.rangedProfile.distanceBands
+        .map((entry) => TextEditingController(text: entry.tpMod.toString()))
+        .toList(growable: false);
+  }
+
+  // Normalisiert Legacy-Fernkampfwaffen auf das aktuelle 5-Distanz-Schema.
+  MainWeaponSlot _normalizedInitialSlot(MainWeaponSlot slot) {
+    if (!slot.isRanged) {
+      return slot;
+    }
+    return slot.copyWith(rangedProfile: slot.rangedProfile.copyWith());
   }
 
   @override
@@ -83,6 +103,13 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
     _tpDiceCountController.dispose();
     _tpFlatController.dispose();
     _artifactDescriptionController.dispose();
+    _reloadTimeController.dispose();
+    for (final controller in _distanceLabelControllers) {
+      controller.dispose();
+    }
+    for (final controller in _distanceTpModControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -96,11 +123,28 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
     return value.replaceAll(RegExp(r'[^a-z0-9]+'), '');
   }
 
+  WeaponCombatType _weaponCombatTypeForCatalogWeapon(WeaponDef weapon) {
+    return weaponCombatTypeFromJson(weapon.type);
+  }
+
+  WeaponCombatType _combatTypeForTalent(TalentDef talent) {
+    return talent.type.trim().toLowerCase() == 'fernkampf'
+        ? WeaponCombatType.ranged
+        : WeaponCombatType.melee;
+  }
+
+  List<TalentDef> _combatTypeTalents(WeaponCombatType combatType) {
+    return widget.meleeTalents
+        .where((talent) => _combatTypeForTalent(talent) == combatType)
+        .toList(growable: false)
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  }
+
   List<String> _allWeaponTypeOptions() {
     final seen = <String>{};
     final options = <String>[];
     for (final weapon in widget.catalog.weapons) {
-      if (weapon.type.trim().toLowerCase() != 'nahkampf') {
+      if (_weaponCombatTypeForCatalogWeapon(weapon) != _draftSlot.combatType) {
         continue;
       }
       final name = weapon.name.trim();
@@ -120,27 +164,28 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
 
   List<TalentDef> _talentOptionsForWeaponType(String weaponType) {
     final token = _normalizeToken(weaponType);
+    final filteredTalents = _combatTypeTalents(_draftSlot.combatType);
     if (token.isEmpty) {
-      return widget.meleeTalents;
+      return filteredTalents;
     }
 
     final allowedById = <String>{};
     for (final weapon in widget.catalog.weapons) {
-      if (weapon.type.trim().toLowerCase() != 'nahkampf') {
+      if (_weaponCombatTypeForCatalogWeapon(weapon) != _draftSlot.combatType) {
         continue;
       }
       if (_normalizeToken(weapon.name) != token) {
         continue;
       }
       final skillToken = _normalizeToken(weapon.combatSkill);
-      for (final talent in widget.meleeTalents) {
+      for (final talent in filteredTalents) {
         if (_normalizeToken(talent.name) == skillToken) {
           allowedById.add(talent.id);
         }
       }
     }
 
-    for (final talent in widget.meleeTalents) {
+    for (final talent in filteredTalents) {
       final categories = talent.weaponCategory.split(RegExp(r'[\n,;]+'));
       for (final category in categories) {
         if (_normalizeToken(category) == token) {
@@ -150,7 +195,7 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
       }
     }
 
-    return widget.meleeTalents
+    return filteredTalents
         .where((talent) => allowedById.contains(talent.id))
         .toList(growable: false)
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
@@ -168,10 +213,82 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
     ).any((talent) => talent.id == talentId.trim());
   }
 
+  RangedWeaponProfile _rangedProfileFromControllers() {
+    final fallbackBands = _draftSlot.rangedProfile.copyWith().distanceBands;
+    return _draftSlot.rangedProfile.copyWith(
+      reloadTime: _readInt(
+        _reloadTimeController,
+        _draftSlot.rangedProfile.reloadTime,
+      ),
+      distanceBands: <RangedDistanceBand>[
+        for (var i = 0; i < 5; i++)
+          RangedDistanceBand(
+            label: i < _distanceLabelControllers.length
+                ? _distanceLabelControllers[i].text.trim()
+                : fallbackBands[i].label,
+            tpMod: i < _distanceTpModControllers.length
+                ? _readInt(_distanceTpModControllers[i], fallbackBands[i].tpMod)
+                : fallbackBands[i].tpMod,
+          ),
+      ],
+    );
+  }
+
   void _setDraftSlot(MainWeaponSlot next) {
     setState(() {
       _draftSlot = next;
     });
+  }
+
+  Future<void> _openProjectileEditor({int? projectileIndex}) async {
+    final projectiles = _draftSlot.rangedProfile.projectiles;
+    final source = projectileIndex == null
+        ? const RangedProjectile()
+        : projectiles[projectileIndex];
+    final result = await showDialog<RangedProjectile>(
+      context: context,
+      builder: (context) => _RangedProjectileEditorDialog(
+        initialProjectile: source,
+        isNew: projectileIndex == null,
+      ),
+    );
+    if (result == null) {
+      return;
+    }
+    final updated = List<RangedProjectile>.from(projectiles);
+    if (projectileIndex == null) {
+      updated.add(result);
+    } else {
+      updated[projectileIndex] = result;
+    }
+    _setDraftSlot(
+      _draftSlot.copyWith(
+        rangedProfile: _rangedProfileFromControllers().copyWith(
+          projectiles: updated,
+          selectedProjectileIndex: updated.isEmpty
+              ? -1
+              : (projectileIndex ?? updated.length - 1),
+        ),
+      ),
+    );
+  }
+
+  void _removeProjectile(int index) {
+    final updated = List<RangedProjectile>.from(
+      _draftSlot.rangedProfile.projectiles,
+    );
+    if (index < 0 || index >= updated.length) {
+      return;
+    }
+    updated.removeAt(index);
+    _setDraftSlot(
+      _draftSlot.copyWith(
+        rangedProfile: _rangedProfileFromControllers().copyWith(
+          projectiles: updated,
+          selectedProjectileIndex: updated.isEmpty ? -1 : 0,
+        ),
+      ),
+    );
   }
 
   int _readInt(TextEditingController controller, int fallback) {
@@ -271,6 +388,7 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final title = widget.isNew ? 'Waffe hinzufuegen' : 'Waffe bearbeiten';
+    final isRanged = _draftSlot.isRanged;
     final currentWeaponType = _draftSlot.weaponType.trim();
     final talentOptions = _talentOptionsForWeaponType(currentWeaponType);
     final currentTalentId =
@@ -282,8 +400,11 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
         : '';
     final preview = widget.previewBuilder(
       currentTalentId == _draftSlot.talentId.trim()
-          ? _draftSlot
-          : _draftSlot.copyWith(talentId: ''),
+          ? _draftSlot.copyWith(rangedProfile: _rangedProfileFromControllers())
+          : _draftSlot.copyWith(
+              talentId: '',
+              rangedProfile: _rangedProfileFromControllers(),
+            ),
     );
 
     return AlertDialog(
@@ -305,7 +426,7 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
         ],
       ),
       content: SizedBox(
-        width: 760,
+        width: 860,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -327,62 +448,105 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                       },
                     ),
                     const SizedBox(height: 10),
-                    DropdownButtonFormField<String>(
-                      key: const ValueKey<String>(
-                        'combat-weapon-form-weapon-type',
-                      ),
-                      initialValue:
-                          _allWeaponTypeOptions().contains(currentWeaponType)
-                          ? currentWeaponType
-                          : '',
-                      isExpanded: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Waffenart',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: [
-                        const DropdownMenuItem<String>(
-                          value: '',
-                          child: Text('-'),
-                        ),
-                        ..._allWeaponTypeOptions().map(
-                          (weaponType) => DropdownMenuItem<String>(
-                            value: weaponType,
-                            child: Text(
-                              weaponType,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        SizedBox(
+                          width: 220,
+                          child: DropdownButtonFormField<WeaponCombatType>(
+                            key: const ValueKey<String>(
+                              'combat-weapon-form-combat-type',
                             ),
+                            initialValue: _draftSlot.combatType,
+                            decoration: const InputDecoration(
+                              labelText: 'Kampftyp',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: WeaponCombatType.melee,
+                                child: Text('Nahkampf'),
+                              ),
+                              DropdownMenuItem(
+                                value: WeaponCombatType.ranged,
+                                child: Text('Fernkampf'),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              _setDraftSlot(
+                                _draftSlot.copyWith(
+                                  combatType: value ?? WeaponCombatType.melee,
+                                  talentId: '',
+                                  weaponType: '',
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        SizedBox(
+                          width: 320,
+                          child: DropdownButtonFormField<String>(
+                            key: const ValueKey<String>(
+                              'combat-weapon-form-weapon-type',
+                            ),
+                            initialValue:
+                                _allWeaponTypeOptions().contains(
+                                  currentWeaponType,
+                                )
+                                ? currentWeaponType
+                                : '',
+                            isExpanded: true,
+                            decoration: const InputDecoration(
+                              labelText: 'Waffenart',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: [
+                              const DropdownMenuItem<String>(
+                                value: '',
+                                child: Text('-'),
+                              ),
+                              ..._allWeaponTypeOptions().map(
+                                (weaponType) => DropdownMenuItem<String>(
+                                  value: weaponType,
+                                  child: Text(
+                                    weaponType,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              final nextWeaponType = value ?? '';
+                              final nextTalentId =
+                                  _isTalentValidForWeaponType(
+                                    talentId: _draftSlot.talentId,
+                                    weaponType: nextWeaponType,
+                                  )
+                                  ? _draftSlot.talentId
+                                  : '';
+                              final nextName =
+                                  _draftSlot.name.trim().isEmpty &&
+                                      nextWeaponType.isNotEmpty
+                                  ? nextWeaponType
+                                  : _draftSlot.name;
+                              if (_draftSlot.name.trim().isEmpty &&
+                                  nextName.isNotEmpty &&
+                                  _nameController.text.trim().isEmpty) {
+                                _nameController.text = nextName;
+                              }
+                              _setDraftSlot(
+                                _draftSlot.copyWith(
+                                  weaponType: nextWeaponType,
+                                  talentId: nextTalentId,
+                                  name: nextName,
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
-                      onChanged: (value) {
-                        final nextWeaponType = value ?? '';
-                        final nextTalentId =
-                            _isTalentValidForWeaponType(
-                              talentId: _draftSlot.talentId,
-                              weaponType: nextWeaponType,
-                            )
-                            ? _draftSlot.talentId
-                            : '';
-                        final nextName =
-                            _draftSlot.name.trim().isEmpty &&
-                                nextWeaponType.isNotEmpty
-                            ? nextWeaponType
-                            : _draftSlot.name;
-                        if (_draftSlot.name.trim().isEmpty &&
-                            nextName.isNotEmpty &&
-                            _nameController.text.trim().isEmpty) {
-                          _nameController.text = nextName;
-                        }
-                        _setDraftSlot(
-                          _draftSlot.copyWith(
-                            weaponType: nextWeaponType,
-                            talentId: nextTalentId,
-                            name: nextName,
-                          ),
-                        );
-                      },
                     ),
                   ],
                 ),
@@ -408,23 +572,24 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                         );
                       },
                     ),
-                    SizedBox(
-                      width: 132,
-                      child: TextField(
-                        key: const ValueKey<String>('combat-weapon-form-dk'),
-                        controller: _distanceClassController,
-                        decoration: const InputDecoration(
-                          labelText: 'DK',
-                          border: OutlineInputBorder(),
-                          isDense: true,
+                    if (!isRanged)
+                      SizedBox(
+                        width: 132,
+                        child: TextField(
+                          key: const ValueKey<String>('combat-weapon-form-dk'),
+                          controller: _distanceClassController,
+                          decoration: const InputDecoration(
+                            labelText: 'DK',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (value) {
+                            _setDraftSlot(
+                              _draftSlot.copyWith(distanceClass: value.trim()),
+                            );
+                          },
                         ),
-                        onChanged: (value) {
-                          _setDraftSlot(
-                            _draftSlot.copyWith(distanceClass: value.trim()),
-                          );
-                        },
                       ),
-                    ),
                     SizedBox(
                       width: 220,
                       child: DropdownButtonFormField<String>(
@@ -466,23 +631,24 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                         },
                       ),
                     ),
-                    SizedBox(
-                      width: 180,
-                      child: SwitchListTile(
-                        key: const ValueKey<String>(
-                          'combat-weapon-form-one-handed',
+                    if (!isRanged)
+                      SizedBox(
+                        width: 180,
+                        child: SwitchListTile(
+                          key: const ValueKey<String>(
+                            'combat-weapon-form-one-handed',
+                          ),
+                          contentPadding: EdgeInsets.zero,
+                          dense: true,
+                          title: const Text('Einhaendig'),
+                          value: _draftSlot.isOneHanded,
+                          onChanged: (value) {
+                            _setDraftSlot(
+                              _draftSlot.copyWith(isOneHanded: value),
+                            );
+                          },
                         ),
-                        contentPadding: EdgeInsets.zero,
-                        dense: true,
-                        title: const Text('Einhaendig'),
-                        value: _draftSlot.isOneHanded,
-                        onChanged: (value) {
-                          _setDraftSlot(
-                            _draftSlot.copyWith(isOneHanded: value),
-                          );
-                        },
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -493,16 +659,24 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                   spacing: 10,
                   runSpacing: 10,
                   children: [
-                    _readOnlyField(
-                      'AT',
-                      preview.at.toString(),
-                      keyName: 'combat-weapon-form-preview-at',
-                    ),
-                    _readOnlyField(
-                      'PA',
-                      preview.paMitIniParadeMod.toString(),
-                      keyName: 'combat-weapon-form-preview-pa',
-                    ),
+                    if (isRanged)
+                      _readOnlyField(
+                        'AT',
+                        preview.at.toString(),
+                        keyName: 'combat-weapon-form-preview-at',
+                      )
+                    else ...[
+                      _readOnlyField(
+                        'AT',
+                        preview.at.toString(),
+                        keyName: 'combat-weapon-form-preview-at',
+                      ),
+                      _readOnlyField(
+                        'PA',
+                        preview.paMitIniParadeMod.toString(),
+                        keyName: 'combat-weapon-form-preview-pa',
+                      ),
+                    ],
                     _readOnlyField(
                       'TP',
                       preview.tpExpression,
@@ -513,6 +687,12 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                       preview.kombinierteHeldenWaffenIni.toString(),
                       keyName: 'combat-weapon-form-preview-ini',
                     ),
+                    if (isRanged)
+                      _readOnlyField(
+                        'Ladezeit',
+                        preview.reloadTime.toString(),
+                        keyName: 'combat-weapon-form-preview-reload-time',
+                      ),
                   ],
                 ),
               ),
@@ -531,14 +711,15 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                         _setDraftSlot(_draftSlot.copyWith(wmAt: parsed));
                       },
                     ),
-                    _numberField(
-                      keyName: 'combat-weapon-form-wm-pa',
-                      label: 'WM PA',
-                      controller: _wmPaController,
-                      onChanged: (parsed) {
-                        _setDraftSlot(_draftSlot.copyWith(wmPa: parsed));
-                      },
-                    ),
+                    if (!isRanged)
+                      _numberField(
+                        keyName: 'combat-weapon-form-wm-pa',
+                        label: 'WM PA',
+                        controller: _wmPaController,
+                        onChanged: (parsed) {
+                          _setDraftSlot(_draftSlot.copyWith(wmPa: parsed));
+                        },
+                      ),
                     _numberField(
                       keyName: 'combat-weapon-form-ini-mod',
                       label: 'WM Ini',
@@ -567,6 +748,22 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                         _setDraftSlot(_draftSlot.copyWith(tpFlat: parsed));
                       },
                     ),
+                    if (isRanged)
+                      _numberField(
+                        keyName: 'combat-weapon-form-reload-time',
+                        label: 'Ladezeit',
+                        controller: _reloadTimeController,
+                        onChanged: (parsed) {
+                          _setDraftSlot(
+                            _draftSlot.copyWith(
+                              rangedProfile: _rangedProfileFromControllers()
+                                  .copyWith(
+                                    reloadTime: parsed < 0 ? 0 : parsed,
+                                  ),
+                            ),
+                          );
+                        },
+                      ),
                   ],
                 ),
               ),
@@ -605,6 +802,138 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                   ],
                 ),
               ),
+              if (isRanged) ...[
+                const SizedBox(height: 12),
+                _sectionCard(
+                  title: 'Distanzen',
+                  subtitle:
+                      'Genau fuenf Distanzstufen mit frei editierbaren Namen und TP-Modifikatoren.',
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < 5; i++)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: [
+                              SizedBox(
+                                width: 260,
+                                child: TextField(
+                                  key: ValueKey<String>(
+                                    'combat-weapon-form-distance-label-$i',
+                                  ),
+                                  controller: _distanceLabelControllers[i],
+                                  decoration: InputDecoration(
+                                    labelText: 'Distanz ${i + 1}',
+                                    border: const OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                  onChanged: (_) {
+                                    _setDraftSlot(
+                                      _draftSlot.copyWith(
+                                        rangedProfile:
+                                            _rangedProfileFromControllers(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              _numberField(
+                                keyName:
+                                    'combat-weapon-form-distance-tp-mod-$i',
+                                label: 'TP Mod',
+                                controller: _distanceTpModControllers[i],
+                                onChanged: (_) {
+                                  _setDraftSlot(
+                                    _draftSlot.copyWith(
+                                      rangedProfile:
+                                          _rangedProfileFromControllers(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _sectionCard(
+                  title: 'Geschosse',
+                  subtitle:
+                      'Geschosse speichern Namen, Bestand, Modifikatoren und Beschreibung.',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FilledButton.icon(
+                        key: const ValueKey<String>(
+                          'combat-weapon-form-projectile-add',
+                        ),
+                        onPressed: _openProjectileEditor,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Geschoss hinzufuegen'),
+                      ),
+                      const SizedBox(height: 10),
+                      if (_draftSlot.rangedProfile.projectiles.isEmpty)
+                        const Text('Keine Geschosse hinterlegt.')
+                      else
+                        Column(
+                          children: [
+                            for (
+                              var i = 0;
+                              i < _draftSlot.rangedProfile.projectiles.length;
+                              i++
+                            )
+                              Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                child: ListTile(
+                                  title: Text(
+                                    _draftSlot.rangedProfile.projectiles[i].name
+                                            .trim()
+                                            .isEmpty
+                                        ? 'Geschoss ${i + 1}'
+                                        : _draftSlot
+                                              .rangedProfile
+                                              .projectiles[i]
+                                              .name,
+                                  ),
+                                  subtitle: Text(
+                                    'Anzahl ${_draftSlot.rangedProfile.projectiles[i].count}, '
+                                    'TP ${_draftSlot.rangedProfile.projectiles[i].tpMod >= 0 ? '+' : ''}${_draftSlot.rangedProfile.projectiles[i].tpMod}, '
+                                    'INI ${_draftSlot.rangedProfile.projectiles[i].iniMod >= 0 ? '+' : ''}${_draftSlot.rangedProfile.projectiles[i].iniMod}, '
+                                    'AT ${_draftSlot.rangedProfile.projectiles[i].atMod >= 0 ? '+' : ''}${_draftSlot.rangedProfile.projectiles[i].atMod}',
+                                  ),
+                                  trailing: Wrap(
+                                    spacing: 4,
+                                    children: [
+                                      IconButton(
+                                        key: ValueKey<String>(
+                                          'combat-weapon-form-projectile-edit-$i',
+                                        ),
+                                        onPressed: () => _openProjectileEditor(
+                                          projectileIndex: i,
+                                        ),
+                                        icon: const Icon(Icons.edit),
+                                      ),
+                                      IconButton(
+                                        key: ValueKey<String>(
+                                          'combat-weapon-form-projectile-remove-$i',
+                                        ),
+                                        onPressed: () => _removeProjectile(i),
+                                        icon: const Icon(Icons.delete),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               _sectionCard(
                 title: 'INI-Modifikatoren',
@@ -723,12 +1052,187 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                   : _readInt(_tpDiceCountController, _draftSlot.tpDiceCount),
               tpFlat: _readInt(_tpFlatController, _draftSlot.tpFlat),
               artifactDescription: _artifactDescriptionController.text.trim(),
+              rangedProfile: _rangedProfileFromControllers(),
             );
             Navigator.of(context).pop(normalized);
           },
           child: const Text('Speichern'),
         ),
       ],
+    );
+  }
+}
+
+/// Dialog zum Bearbeiten eines einzelnen Geschosstyps.
+class _RangedProjectileEditorDialog extends StatefulWidget {
+  const _RangedProjectileEditorDialog({
+    required this.initialProjectile,
+    required this.isNew,
+  });
+
+  final RangedProjectile initialProjectile;
+  final bool isNew;
+
+  @override
+  State<_RangedProjectileEditorDialog> createState() =>
+      _RangedProjectileEditorDialogState();
+}
+
+class _RangedProjectileEditorDialogState
+    extends State<_RangedProjectileEditorDialog> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _countController;
+  late final TextEditingController _tpModController;
+  late final TextEditingController _iniModController;
+  late final TextEditingController _atModController;
+  late final TextEditingController _descriptionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(
+      text: widget.initialProjectile.name,
+    );
+    _countController = TextEditingController(
+      text: widget.initialProjectile.count.toString(),
+    );
+    _tpModController = TextEditingController(
+      text: widget.initialProjectile.tpMod.toString(),
+    );
+    _iniModController = TextEditingController(
+      text: widget.initialProjectile.iniMod.toString(),
+    );
+    _atModController = TextEditingController(
+      text: widget.initialProjectile.atMod.toString(),
+    );
+    _descriptionController = TextEditingController(
+      text: widget.initialProjectile.description,
+    );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _countController.dispose();
+    _tpModController.dispose();
+    _iniModController.dispose();
+    _atModController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  int _readInt(TextEditingController controller) {
+    return int.tryParse(controller.text.trim()) ?? 0;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(
+        widget.isNew ? 'Geschoss hinzufuegen' : 'Geschoss bearbeiten',
+      ),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                key: const ValueKey<String>('combat-projectile-form-name'),
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _projectileNumberField(
+                    keyName: 'combat-projectile-form-count',
+                    label: 'Anzahl',
+                    controller: _countController,
+                  ),
+                  _projectileNumberField(
+                    keyName: 'combat-projectile-form-tp-mod',
+                    label: 'TP Mod',
+                    controller: _tpModController,
+                  ),
+                  _projectileNumberField(
+                    keyName: 'combat-projectile-form-ini-mod',
+                    label: 'INI Mod',
+                    controller: _iniModController,
+                  ),
+                  _projectileNumberField(
+                    keyName: 'combat-projectile-form-at-mod',
+                    label: 'AT Mod',
+                    controller: _atModController,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                key: const ValueKey<String>(
+                  'combat-projectile-form-description',
+                ),
+                controller: _descriptionController,
+                minLines: 2,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'Beschreibung',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        FilledButton(
+          key: const ValueKey<String>('combat-projectile-form-save'),
+          onPressed: () {
+            Navigator.of(context).pop(
+              RangedProjectile(
+                name: _nameController.text.trim(),
+                count: _readInt(_countController) < 0
+                    ? 0
+                    : _readInt(_countController),
+                tpMod: _readInt(_tpModController),
+                iniMod: _readInt(_iniModController),
+                atMod: _readInt(_atModController),
+                description: _descriptionController.text.trim(),
+              ),
+            );
+          },
+          child: const Text('Speichern'),
+        ),
+      ],
+    );
+  }
+
+  Widget _projectileNumberField({
+    required String keyName,
+    required String label,
+    required TextEditingController controller,
+  }) {
+    return SizedBox(
+      width: 120,
+      child: TextField(
+        key: ValueKey<String>(keyName),
+        controller: controller,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+          isDense: true,
+        ),
+      ),
     );
   }
 }
