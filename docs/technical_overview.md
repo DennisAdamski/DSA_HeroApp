@@ -779,7 +779,7 @@ heroComputedProvider(heroId):
 
 | Methode | Beschreibung |
 |---|---|
-| `createHero({name, rawStartAttributes})` | Neuen Helden mit Name, Roh-Startwerten und leerem State anlegen |
+| `createHero({name, rawStartAttributes})` | Neuen Helden mit Name, Roh-Startwerten, vordefinierten Standard-Talenten, festem Meta-Talent `Kraeutersuchen` und leerem State anlegen |
 | `saveHero(HeroSheet)` | AP normalisieren, Level neu berechnen, Modifier parsen, persistieren |
 | `saveHeroState(id, HeroState)` | Laufzeitzustand persistieren |
 | `deleteHero(id)` | Held und State löschen, Auswahl aktualisieren |
@@ -998,6 +998,7 @@ Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Da
 - `startAttributes` werden nur aus `rawStartAttributes` plus Rasse-, Kultur- und Professions-Attributmods abgeleitet.
 - `HeroComputedSnapshot` enthaelt zusaetzlich `effectiveStartAttributes` und `attributeMaximums`.
 - Neue Helden werden ueber `createHero({name, rawStartAttributes})` angelegt.
+- Beim Anlegen werden Standard-Talente sowie das feste Meta-Talent `Kraeutersuchen` (`MU/IN/FF` aus `Sinnesschaerfe`, `Wildnisleben`, `Pflanzenkunde`) direkt in `HeroSheet` gespeichert.
 - Das Eigenschaftsmaximum ist ein Anzeigewert und wird als `ceil(start * 1.5)` berechnet.
 
 ---
