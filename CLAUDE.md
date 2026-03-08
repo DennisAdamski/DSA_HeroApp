@@ -160,6 +160,7 @@ Domain models (lib/domain/) — immutable, pure Dart
 | Class | File | Purpose |
 |---|---|---|
 | `HeroSheet` | `domain/hero_sheet.dart` | Persisted hero data; immutable, has `copyWith` and `toJson`/`fromJson` |
+| `HeroTalentModifier` | `domain/hero_talent_entry.dart` | Einzelner Modifikatorbaustein fuer Nicht-Kampftalente (Wert + Beschreibung) |
 | `HeroMetaTalent` | `domain/hero_meta_talent.dart` | Heldenspezifische Meta-Talent-Definition mit Komponenten, Eigenschaften und BE-Regel |
 | `HeroState` | `domain/hero_state.dart` | Runtime state (current LeP/AsP/KaP/Au, temp modifiers) |
 | `HeroComputedSnapshot` | `state/hero_computed_snapshot.dart` | All derived values for one hero, computed in one pass |

@@ -28,6 +28,7 @@ part 'hero_talents/hero_talents_tables.dart';
 part 'hero_talents/hero_talents_cells.dart';
 part 'hero_talents/talent_catalog_table.dart';
 part 'hero_talents/talent_detail_dialog.dart';
+part 'hero_talents/talent_modifiers_dialog.dart';
 part 'hero_talents/meta_talent_dialogs.dart';
 
 enum _TalentTabScope { nonCombat, combat }
@@ -297,11 +298,23 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       'talentValue' => current.copyWith(talentValue: parsed),
       'atValue' => current.copyWith(atValue: parsed),
       'paValue' => current.copyWith(paValue: parsed),
-      'modifier' => current.copyWith(modifier: parsed),
       'specialExperiences' => current.copyWith(specialExperiences: parsed),
       _ => current,
     };
     _draftTalents[talentId] = updated;
+    _invalidCombatTalentIds.remove(talentId);
+    _markFieldChanged();
+  }
+
+  void _updateTalentModifiers(
+    String talentId,
+    List<HeroTalentModifier> talentModifiers,
+  ) {
+    final current = _entryForTalent(talentId);
+    _draftTalents[talentId] = current.copyWith(
+      modifier: 0,
+      talentModifiers: talentModifiers,
+    );
     _invalidCombatTalentIds.remove(talentId);
     _markFieldChanged();
   }
@@ -343,7 +356,6 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       _draftTalents.remove(talentId);
       // Entferne zugehoerige Controller.
       _cellControllers.remove('$talentId::talentValue')?.dispose();
-      _cellControllers.remove('$talentId::modifier')?.dispose();
       _cellControllers.remove('$talentId::specialExperiences')?.dispose();
       _cellControllers.remove('$talentId::atValue')?.dispose();
       _cellControllers.remove('$talentId::paValue')?.dispose();

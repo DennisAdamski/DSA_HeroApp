@@ -246,7 +246,8 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       );
     }
 
-    final isReadOnly = !_editController.isEditing;
+    final isTempModifier = _isTempAttributeKey(keyName);
+    final isReadOnly = isTempModifier ? false : !_editController.isEditing;
     return Padding(
       padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
       child: SizedBox(
@@ -254,8 +255,10 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
         child: TextField(
           key: ValueKey<String>('overview-field-$keyName'),
           controller: _field(keyName),
+          focusNode: isTempModifier ? _focusNode(keyName) : null,
           readOnly: isReadOnly,
           keyboardType: TextInputType.number,
+          textInputAction: isTempModifier ? TextInputAction.done : null,
           decoration: _inputDecoration('').copyWith(
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(
@@ -263,7 +266,16 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               vertical: 8,
             ),
           ),
-          onChanged: isReadOnly ? null : _onFieldChanged,
+          onChanged: isTempModifier
+              ? (_) {
+                  if (mounted) {
+                    _viewRevision.value++;
+                  }
+                }
+              : (isReadOnly ? null : _onFieldChanged),
+          onSubmitted: isTempModifier
+              ? (_) => _commitTempAttributeField(keyName)
+              : null,
         ),
       ),
     );
