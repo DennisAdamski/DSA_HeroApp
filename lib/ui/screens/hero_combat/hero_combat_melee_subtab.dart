@@ -96,11 +96,29 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     WeaponDef weapon,
     List<TalentDef> meleeTalents,
   ) {
+    final tpMatch = RegExp(
+      r'^\s*(\d+)\s*[wW]\s*6\s*([+-]\s*\d+)?\s*$',
+    ).firstMatch(weapon.tp);
+    final tpkkMatch = RegExp(r'^\s*(\d+)\s*/\s*(\d+)\s*$').firstMatch(
+      weapon.tpkk,
+    );
+    final tpDiceCount = tpMatch == null ? 1 : int.parse(tpMatch.group(1)!);
+    final tpFlat = tpMatch == null
+        ? 0
+        : int.parse((tpMatch.group(2) ?? '0').replaceAll(' ', ''));
+    final kkBase = tpkkMatch == null ? 0 : int.parse(tpkkMatch.group(1)!);
+    final kkThreshold = tpkkMatch == null
+        ? 1
+        : int.parse(tpkkMatch.group(2)!);
     return MainWeaponSlot(
       name: weapon.name,
       talentId: _findTalentIdByName(weapon.combatSkill, meleeTalents),
       weaponType: weapon.name,
       distanceClass: weapon.reach,
+      kkBase: kkBase,
+      kkThreshold: kkThreshold < 1 ? 1 : kkThreshold,
+      tpDiceCount: tpDiceCount < 1 ? 1 : tpDiceCount,
+      tpFlat: tpFlat,
       wmAt: weapon.atMod,
       wmPa: weapon.paMod,
       iniMod: weapon.iniMod,
@@ -110,6 +128,8 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
   void _showWeaponKatalog(
     BuildContext context, {
     required RulesCatalog catalog,
+    required HeroSheet hero,
+    required HeroState heroState,
     required List<TalentDef> meleeTalents,
   }) {
     final meleeWeapons = catalog.weapons
@@ -141,26 +161,27 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                 child: _WeaponCatalogTable(
                   weapons: meleeWeapons,
                   meleeTalents: meleeTalents,
-                  onSelectWeapon: (weapon) {
+                  onSelectWeapon: (weapon) async {
                     final slot = _weaponSlotFromCatalog(weapon, meleeTalents);
-                    final slots = List<MainWeaponSlot>.from(
-                      _draftCombatConfig.weaponSlots,
-                    )..add(slot);
-                    _setDraftWeapons(
-                      slots,
-                      selectedIndex: _selectedWeaponIndex(),
-                      markChanged: true,
+                    Navigator.of(ctx).pop();
+                    await _openWeaponEditor(
+                      catalog: catalog,
+                      hero: hero,
+                      heroState: heroState,
+                      meleeTalents: meleeTalents,
+                      initialSlot: slot,
+                      catalogWeaponName: weapon.name,
                     );
-                    if (mounted) {
-                      Navigator.of(ctx).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Waffe "${weapon.name}" als Vorlage hinzugefuegt',
-                          ),
-                        ),
-                      );
+                    if (!mounted) {
+                      return;
                     }
+                    ScaffoldMessenger.of(this.context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Waffenvorlage "${weapon.name}" geoeffnet',
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),
@@ -173,17 +194,14 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
 
   Future<void> _addWeaponSlot({
     required RulesCatalog catalog,
+    required HeroSheet hero,
+    required HeroState heroState,
     required List<TalentDef> meleeTalents,
   }) async {
-    final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
-    slots.add(const MainWeaponSlot());
-    _setDraftWeapons(
-      slots,
-      selectedIndex: _selectedWeaponIndex(),
-      markChanged: true,
-    );
-    await _persistCombatConfigIfReadonly(
+    await _openWeaponEditor(
       catalog: catalog,
+      hero: hero,
+      heroState: heroState,
       meleeTalents: meleeTalents,
     );
   }
@@ -236,6 +254,106 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     await _persistCombatConfigIfReadonly(
       catalog: catalog,
       meleeTalents: meleeTalents,
+    );
+  }
+
+  CombatPreviewStats _previewForWeaponSlot({
+    required HeroSheet hero,
+    required HeroState heroState,
+    required RulesCatalog catalog,
+    required MainWeaponSlot slot,
+    int? slotIndex,
+  }) {
+    final tempSlots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
+    final previewIndex = slotIndex ?? tempSlots.length;
+    if (slotIndex == null) {
+      tempSlots.add(slot);
+    } else if (slotIndex >= 0 && slotIndex < tempSlots.length) {
+      tempSlots[slotIndex] = slot;
+    }
+    final previewConfig = _draftCombatConfig.copyWith(
+      weapons: tempSlots,
+      selectedWeaponIndex: previewIndex,
+      mainWeapon: tempSlots[previewIndex],
+      manualMods: _draftCombatConfig.manualMods.copyWith(
+        iniWurf: _effectiveIniRollForConfig(_draftCombatConfig),
+      ),
+    );
+    return computeCombatPreviewStats(
+      hero,
+      heroState,
+      overrideConfig: previewConfig,
+      overrideTalents: _draftTalents,
+      catalogTalents: catalog.talents,
+    );
+  }
+
+  Future<void> _saveWeaponSlot({
+    required MainWeaponSlot slot,
+    required RulesCatalog catalog,
+    required List<TalentDef> meleeTalents,
+    int? slotIndex,
+  }) async {
+    final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
+    if (slotIndex == null) {
+      slots.add(slot);
+    } else if (slotIndex >= 0 && slotIndex < slots.length) {
+      slots[slotIndex] = slot;
+    } else {
+      return;
+    }
+    _setDraftWeapons(
+      slots,
+      selectedIndex: _selectedWeaponIndex(),
+      markChanged: true,
+    );
+    await _persistCombatConfigIfReadonly(
+      catalog: catalog,
+      meleeTalents: meleeTalents,
+    );
+  }
+
+  Future<void> _openWeaponEditor({
+    required RulesCatalog catalog,
+    required HeroSheet hero,
+    required HeroState heroState,
+    required List<TalentDef> meleeTalents,
+    int? slotIndex,
+    MainWeaponSlot? initialSlot,
+    String? catalogWeaponName,
+  }) async {
+    final slots = _draftCombatConfig.weaponSlots;
+    final sourceSlot = initialSlot ??
+        (slotIndex == null || slotIndex < 0 || slotIndex >= slots.length
+            ? const MainWeaponSlot()
+            : slots[slotIndex]);
+    final result = await showDialog<MainWeaponSlot>(
+      context: context,
+      builder: (context) {
+        return _WeaponEditorDialog(
+          isNew: slotIndex == null,
+          initialSlot: sourceSlot,
+          meleeTalents: meleeTalents,
+          catalog: catalog,
+          catalogWeaponName: catalogWeaponName,
+          previewBuilder: (slot) => _previewForWeaponSlot(
+            hero: hero,
+            heroState: heroState,
+            catalog: catalog,
+            slot: slot,
+            slotIndex: slotIndex,
+          ),
+        );
+      },
+    );
+    if (result == null) {
+      return;
+    }
+    await _saveWeaponSlot(
+      slot: result,
+      catalog: catalog,
+      meleeTalents: meleeTalents,
+      slotIndex: slotIndex,
     );
   }
 
@@ -459,6 +577,8 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   ),
                   headerCells: _weaponOverviewHeaderCells(
                     catalog: catalog,
+                    hero: hero,
+                    heroState: heroState,
                     meleeTalents: sortedTalents,
                   ),
                   preHeaderRows: [
@@ -1247,29 +1367,18 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     'AT',
     'PA',
     'TP',
-    'Helden+Waffen INI',
+    'INI',
     'BF',
-    'KK-Basis',
-    'KK-Schwelle',
-    'INI Mod',
-    'WM AT',
-    'WM PA',
-    'Wuerfel',
-    'TP Wert',
-    'BE Mod',
     'eBE',
-    'TP/KK',
-    'GE Basis',
-    'GE-Schwelle',
-    'INI/GE',
-    'INI PA Mod',
-    'TP Kalk',
-    'Spezialisierung',
+    'Artefakt',
+    'Artefaktbeschreibung',
     'Aktion',
   ];
 
   List<Widget> _weaponOverviewHeaderCells({
     required RulesCatalog catalog,
+    required HeroSheet hero,
+    required HeroState heroState,
     required List<TalentDef> meleeTalents,
   }) {
     final cells = <Widget>[
@@ -1282,8 +1391,12 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             tooltip: 'Leere Waffe hinzufuegen',
             visualDensity: VisualDensity.compact,
             constraints: const BoxConstraints.tightFor(width: 30, height: 30),
-            onPressed: () =>
-                _addWeaponSlot(catalog: catalog, meleeTalents: meleeTalents),
+            onPressed: () => _addWeaponSlot(
+              catalog: catalog,
+              hero: hero,
+              heroState: heroState,
+              meleeTalents: meleeTalents,
+            ),
             icon: const Icon(Icons.add, size: 18),
           ),
           IconButton(
@@ -1294,6 +1407,8 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             onPressed: () => _showWeaponKatalog(
               context,
               catalog: catalog,
+              hero: hero,
+              heroState: heroState,
               meleeTalents: meleeTalents,
             ),
             icon: const Icon(Icons.library_add, size: 18),
@@ -1303,6 +1418,22 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
       for (final header in _weaponOverviewHeaders.skip(1)) Text(header),
     ];
     return cells;
+  }
+
+  Widget _tappableWeaponNameCell(String text, {required VoidCallback onTap}) {
+    final theme = Theme.of(context);
+    final display = text.trim().isEmpty ? '-' : text.trim();
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(4),
+      child: Text(
+        display,
+        style: TextStyle(
+          color: theme.colorScheme.primary,
+          decoration: TextDecoration.underline,
+        ),
+      ),
+    );
   }
 
   List<Widget> _weaponOverviewFilterRow({
@@ -1474,7 +1605,6 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     return filtered
         .map((entry) {
           final slot = entry.slot;
-          final selectedTalent = _findTalentById(sortedTalents, slot.talentId);
           final preview = computeCombatPreviewStats(
             hero,
             heroState,
@@ -1488,31 +1618,21 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             overrideTalents: _draftTalents,
             catalogTalents: catalog.talents,
           );
-          final weaponTypeOptions = _weaponTypeOptionsForTalent(
-            talent: selectedTalent,
-            catalog: catalog,
-          ).toList(growable: true);
-          final currentWeaponType = slot.weaponType.trim();
-          if (currentWeaponType.isNotEmpty &&
-              !weaponTypeOptions.contains(currentWeaponType)) {
-            weaponTypeOptions.add(currentWeaponType);
-            weaponTypeOptions.sort(
-              (a, b) => a.toLowerCase().compareTo(b.toLowerCase()),
-            );
-          }
-
+          final artifactDescription = slot.isArtifact
+              ? (slot.artifactDescription.trim().isEmpty
+                    ? '-'
+                    : slot.artifactDescription.trim())
+              : '-';
           final cells = <Widget>[
-            FlexibleTableCommitField(
-              key: ValueKey<String>('combat-weapon-cell-name-${entry.index}'),
-              value: slot.name,
-              onCommit: (raw) {
-                _updateWeaponSlot(
-                  entry.index,
-                  (current) => current.copyWith(name: raw.trim()),
-                  catalog: catalog,
-                  meleeTalents: sortedTalents,
-                );
-              },
+            _tappableWeaponNameCell(
+              slot.name,
+              onTap: () => _openWeaponEditor(
+                catalog: catalog,
+                hero: hero,
+                heroState: heroState,
+                meleeTalents: sortedTalents,
+                slotIndex: entry.index,
+              ),
             ),
             DropdownButtonFormField<String>(
               key: ValueKey<String>('combat-weapon-cell-talent-${entry.index}'),
@@ -1559,54 +1679,9 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                 );
               },
             ),
-            DropdownButtonFormField<String>(
-              key: ValueKey<String>(
-                'combat-weapon-cell-weapon-type-${entry.index}',
-              ),
-              initialValue: weaponTypeOptions.contains(currentWeaponType)
-                  ? currentWeaponType
-                  : '',
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                isDense: true,
-              ),
-              items: [
-                const DropdownMenuItem<String>(value: '', child: Text('-')),
-                ...weaponTypeOptions.map(
-                  (weaponType) => DropdownMenuItem<String>(
-                    value: weaponType,
-                    child: Text(weaponType),
-                  ),
-                ),
-              ],
-              onChanged: (value) {
-                final nextWeaponType = value ?? '';
-                final nextName =
-                    slot.name.trim().isEmpty && nextWeaponType.isNotEmpty
-                    ? nextWeaponType
-                    : slot.name;
-                _updateWeaponSlot(
-                  entry.index,
-                  (current) => current.copyWith(
-                    weaponType: nextWeaponType,
-                    name: nextName,
-                  ),
-                  catalog: catalog,
-                  meleeTalents: sortedTalents,
-                );
-              },
-            ),
-            FlexibleTableCommitField(
-              key: ValueKey<String>('combat-weapon-cell-dk-${entry.index}'),
-              value: slot.distanceClass,
-              onCommit: (raw) {
-                _updateWeaponSlot(
-                  entry.index,
-                  (current) => current.copyWith(distanceClass: raw.trim()),
-                  catalog: catalog,
-                  meleeTalents: sortedTalents,
-                );
-              },
+            Text(slot.weaponType.trim().isEmpty ? '-' : slot.weaponType.trim()),
+            Text(
+              slot.distanceClass.trim().isEmpty ? '-' : slot.distanceClass.trim(),
             ),
             Text(preview.at.toString()),
             Text(preview.pa.toString()),
@@ -1630,126 +1705,14 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                 );
               },
             ),
-            FlexibleTableCommitField(
-              key: ValueKey<String>(
-                'combat-weapon-cell-kk-base-${entry.index}',
-              ),
-              value: slot.kkBase.toString(),
-              keyboardType: TextInputType.number,
-              onCommit: (raw) {
-                final parsed = int.tryParse(raw.trim()) ?? slot.kkBase;
-                _updateWeaponSlot(
-                  entry.index,
-                  (current) => current.copyWith(kkBase: parsed),
-                  catalog: catalog,
-                  meleeTalents: sortedTalents,
-                );
-              },
-            ),
-            FlexibleTableCommitField(
-              key: ValueKey<String>(
-                'combat-weapon-cell-kk-threshold-${entry.index}',
-              ),
-              value: slot.kkThreshold.toString(),
-              keyboardType: TextInputType.number,
-              onCommit: (raw) {
-                final parsed = int.tryParse(raw.trim()) ?? slot.kkThreshold;
-                _updateWeaponSlot(
-                  entry.index,
-                  (current) =>
-                      current.copyWith(kkThreshold: parsed < 1 ? 1 : parsed),
-                  catalog: catalog,
-                  meleeTalents: sortedTalents,
-                );
-              },
-            ),
-            FlexibleTableCommitField(
-              key: ValueKey<String>(
-                'combat-weapon-cell-ini-mod-${entry.index}',
-              ),
-              value: slot.iniMod.toString(),
-              keyboardType: TextInputType.number,
-              onCommit: (raw) {
-                final parsed = int.tryParse(raw.trim()) ?? slot.iniMod;
-                _updateWeaponSlot(
-                  entry.index,
-                  (current) => current.copyWith(iniMod: parsed),
-                  catalog: catalog,
-                  meleeTalents: sortedTalents,
-                );
-              },
-            ),
-            FlexibleTableCommitField(
-              key: ValueKey<String>('combat-weapon-cell-wm-at-${entry.index}'),
-              value: slot.wmAt.toString(),
-              keyboardType: TextInputType.number,
-              onCommit: (raw) {
-                final parsed = int.tryParse(raw.trim()) ?? slot.wmAt;
-                _updateWeaponSlot(
-                  entry.index,
-                  (current) => current.copyWith(wmAt: parsed),
-                  catalog: catalog,
-                  meleeTalents: sortedTalents,
-                );
-              },
-            ),
-            FlexibleTableCommitField(
-              key: ValueKey<String>('combat-weapon-cell-wm-pa-${entry.index}'),
-              value: slot.wmPa.toString(),
-              keyboardType: TextInputType.number,
-              onCommit: (raw) {
-                final parsed = int.tryParse(raw.trim()) ?? slot.wmPa;
-                _updateWeaponSlot(
-                  entry.index,
-                  (current) => current.copyWith(wmPa: parsed),
-                  catalog: catalog,
-                  meleeTalents: sortedTalents,
-                );
-              },
-            ),
-            FlexibleTableCommitField(
-              key: ValueKey<String>('combat-weapon-cell-dice-${entry.index}'),
-              value: slot.tpDiceCount.toString(),
-              keyboardType: TextInputType.number,
-              onCommit: (raw) {
-                final parsed = int.tryParse(raw.trim()) ?? slot.tpDiceCount;
-                _updateWeaponSlot(
-                  entry.index,
-                  (current) =>
-                      current.copyWith(tpDiceCount: parsed < 1 ? 1 : parsed),
-                  catalog: catalog,
-                  meleeTalents: sortedTalents,
-                );
-              },
-            ),
-            FlexibleTableCommitField(
-              key: ValueKey<String>(
-                'combat-weapon-cell-tp-value-${entry.index}',
-              ),
-              value: slot.tpFlat.toString(),
-              keyboardType: TextInputType.number,
-              onCommit: (raw) {
-                final parsed = int.tryParse(raw.trim()) ?? slot.tpFlat;
-                _updateWeaponSlot(
-                  entry.index,
-                  (current) => current.copyWith(tpFlat: parsed),
-                  catalog: catalog,
-                  meleeTalents: sortedTalents,
-                );
-              },
-            ),
-            Text(preview.beMod.toString()),
             Text(preview.ebe.toString()),
-            Text(preview.tpKk.toString()),
-            Text(preview.geBase.toString()),
-            Text(preview.geThreshold.toString()),
+            Text(slot.isArtifact ? 'Ja' : 'Nein'),
             Text(
-              preview.iniGe.toString(),
-              key: ValueKey<String>('combat-weapon-cell-ini-ge-${entry.index}'),
+              artifactDescription,
+              key: ValueKey<String>(
+                'combat-weapon-cell-artifact-description-${entry.index}',
+              ),
             ),
-            Text(preview.iniParadeMod.toString()),
-            Text(preview.tpCalc.toString()),
-            Text(preview.specApplies ? 'Ja' : 'Nein'),
             IconButton(
               key: ValueKey<String>('combat-weapon-remove-${entry.index}'),
               tooltip: 'Waffe entfernen',
