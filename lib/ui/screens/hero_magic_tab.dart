@@ -5,25 +5,33 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:uuid/uuid.dart';
 
-part 'hero_magic/magic_header_section.dart';
-part 'hero_magic/magic_special_abilities_section.dart';
 part 'hero_magic/magic_active_spells_table.dart';
-part 'hero_magic/magic_spell_details_dialog.dart';
+part 'hero_magic/magic_header_section.dart';
+part 'hero_magic/magic_ritual_category_dialog.dart';
+part 'hero_magic/magic_ritual_entry_dialog.dart';
+part 'hero_magic/magic_rituals_section.dart';
+part 'hero_magic/magic_special_abilities_section.dart';
 part 'hero_magic/magic_spell_catalog_table.dart';
+part 'hero_magic/magic_spell_details_dialog.dart';
 
-/// Magie-Tab: Zwei Sub-Tabs – „Zauber" und „Repräsentation & SF".
+/// Magie-Tab mit Sub-Tabs fuer Zauber, Rituale und Magie-Stammdaten.
 class HeroMagicTab extends ConsumerStatefulWidget {
+  /// Erzeugt den Magie-Tab fuer einen einzelnen Helden.
   const HeroMagicTab({
     super.key,
     required this.heroId,
@@ -53,8 +61,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
 
   HeroSheet? _latestHero;
 
-  // Draft-Zustand (wird nur im Edit-Modus veraendert).
+  // Draft-Zustand wird nur im Edit-Modus veraendert.
   Map<String, HeroSpellEntry> _draftSpells = <String, HeroSpellEntry>{};
+  List<HeroRitualCategory> _draftRitualCategories = <HeroRitualCategory>[];
   List<String> _draftRepresentationen = <String>[];
   List<String> _draftMerkmalskenntnisse = <String>[];
   List<MagicSpecialAbility> _draftMagicSpecialAbilities =
@@ -63,16 +72,20 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   @override
   void initState() {
     super.initState();
-    _innerTabController = TabController(length: 2, vsync: this);
+    _innerTabController = TabController(length: 3, vsync: this);
     _editController = WorkspaceTabEditController(
       onDirtyChanged: widget.onDirtyChanged,
       onEditingChanged: widget.onEditingChanged,
       requestRebuild: () {
-        if (mounted) setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
       },
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _registerWithParent();
+      if (mounted) {
+        _registerWithParent();
+      }
     });
   }
 
@@ -99,9 +112,14 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   }
 
   void _syncDraftFromHero(HeroSheet hero, {bool force = false}) {
-    if (!_editController.shouldSync(hero, force: force)) return;
+    if (!_editController.shouldSync(hero, force: force)) {
+      return;
+    }
     _resetCellControllers();
     _draftSpells = Map<String, HeroSpellEntry>.from(hero.spells);
+    _draftRitualCategories = List<HeroRitualCategory>.from(
+      hero.ritualCategories,
+    );
     _draftRepresentationen = List<String>.from(hero.representationen);
     _draftMerkmalskenntnisse = List<String>.from(hero.merkmalskenntnisse);
     _draftMagicSpecialAbilities = List<MagicSpecialAbility>.from(
@@ -130,7 +148,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
 
   Future<void> _startEdit() async {
     final hero = _latestHero;
-    if (hero == null) return;
+    if (hero == null) {
+      return;
+    }
     _editController.clearSyncSignature();
     _syncDraftFromHero(hero, force: true);
     _editController.startEdit();
@@ -138,9 +158,12 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
 
   Future<void> _saveChanges() async {
     final hero = _latestHero;
-    if (hero == null) return;
+    if (hero == null) {
+      return;
+    }
     final updatedHero = hero.copyWith(
       spells: Map<String, HeroSpellEntry>.from(_draftSpells),
+      ritualCategories: List<HeroRitualCategory>.from(_draftRitualCategories),
       representationen: List<String>.from(_draftRepresentationen),
       merkmalskenntnisse: List<String>.from(_draftMerkmalskenntnisse),
       magicSpecialAbilities: List<MagicSpecialAbility>.from(
@@ -148,7 +171,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       ),
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     _editController.markSaved();
     ScaffoldMessenger.of(
       context,
@@ -169,12 +194,12 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   }
 
   void _markFieldChanged() {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     _tableRevision.value++;
     _editController.markFieldChanged();
   }
-
-  // --- Spell-Draft-Updates ---
 
   void _updateSpellValue(String spellId, String raw) {
     final parsed = int.tryParse(raw.trim()) ?? 0;
@@ -216,10 +241,8 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       _draftSpells.putIfAbsent(spellId, () => const HeroSpellEntry());
     } else {
       _draftSpells.remove(spellId);
-      // Entferne zugehoerige Controller.
       _cellControllers.remove('$spellId::spellValue')?.dispose();
       _cellControllers.remove('$spellId::modifier')?.dispose();
-      // Varianten kommen aus dem Katalog und nutzen keine Edit-Controller.
     }
     _markFieldChanged();
   }
@@ -230,6 +253,11 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
 
   void _updateRepresentationen(List<String> values) {
     _draftRepresentationen = values;
+    _markFieldChanged();
+  }
+
+  void _updateRitualCategories(List<HeroRitualCategory> values) {
+    _draftRitualCategories = values;
     _markFieldChanged();
   }
 
@@ -256,7 +284,6 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
               height: screenHeight * 0.8,
               child: Column(
                 children: [
-                  // Zieh-Handle
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Container(
@@ -312,7 +339,6 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       error: (error, stackTrace) =>
           Center(child: Text('Katalog-Fehler: $error')),
       data: (catalog) {
-        // Erstelle ID→SpellDef Map fuer schnellen Zugriff.
         final spellDefsById = <String, SpellDef>{};
         for (final spell in catalog.spells) {
           spellDefsById[spell.id] = spell;
@@ -324,6 +350,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
               controller: _innerTabController,
               tabs: const [
                 Tab(text: 'Zauber'),
+                Tab(text: 'Rituale'),
                 Tab(text: 'Repr. & SF'),
               ],
             ),
@@ -337,7 +364,6 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                   return TabBarView(
                     controller: _innerTabController,
                     children: [
-                      // --- Sub-Tab 0: Zauber ---
                       ListView(
                         padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                         children: [
@@ -382,7 +408,18 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                           ),
                         ],
                       ),
-                      // --- Sub-Tab 1: Repräsentation & SF ---
+                      ListView(
+                        padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+                        children: [
+                          _MagicRitualsSection(
+                            ritualCategories: _draftRitualCategories,
+                            catalogTalents: catalog.talents,
+                            heroTalents: hero.talents,
+                            isEditing: _editController.isEditing,
+                            onChanged: _updateRitualCategories,
+                          ),
+                        ],
+                      ),
                       ListView(
                         padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                         children: [

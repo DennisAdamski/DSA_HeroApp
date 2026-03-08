@@ -12,6 +12,7 @@ Flutter-App zur Verwaltung von DSA-Helden mit:
 - `rawStartAttributes` speichern die eingegebenen Rohwerte.
 - `startAttributes` speichern die effektiven Startwerte nach Rasse/Kultur/Profession.
 - Das Eigenschaftsmaximum wird aus dem effektiven Startwert berechnet: `ceil(Start * 1.5)`.
+- Der Magie-Tab verwaltet neben Zaubern jetzt auch heldenspezifische Ritualkategorien und Rituale.
 
 ## Schnellstart
 
