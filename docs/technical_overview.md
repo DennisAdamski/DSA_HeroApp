@@ -756,6 +756,8 @@ at = fkBasis
 Dabei gilt:
 - `spezialisierung = +2`, wenn eine passende Fernkampf-Spezialisierung auf den
   aktuellen Waffentyp greift.
+- `eBE` geht bei Fernkampf voll auf `AT`, nicht nur mit dem halben
+  Nahkampf-AT-Anteil.
 - Die aktive Distanzstufe beeinflusst nur `TP`.
 - Das aktive Geschoss beeinflusst `TP`, `INI` und `AT`.
 - `reloadTime` wird direkt aus `RangedWeaponProfile` gelesen und im Preview

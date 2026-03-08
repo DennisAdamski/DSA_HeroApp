@@ -487,6 +487,43 @@ void main() {
     expect(modifiedResult.pa, 0);
   });
 
+  test('ranged AT uses full eBE instead of split AT share', () {
+    const catalogTalents = <TalentDef>[
+      TalentDef(
+        id: 'tal_boegen',
+        name: 'Boegen',
+        group: 'Kampftalent',
+        type: 'Fernkampf',
+        steigerung: 'D',
+        attributes: <String>['Intuition', 'Fingerfertigkeit', 'Koerperkraft'],
+        be: '0',
+      ),
+    ];
+    final sheet = hero(
+      talents: const {
+        'tal_boegen': HeroTalentEntry(talentValue: 8, atValue: 8),
+      },
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(
+          name: 'Kurzbogen',
+          talentId: 'tal_boegen',
+          combatType: WeaponCombatType.ranged,
+          weaponType: 'Kurzbogen',
+        ),
+        armor: ArmorConfig(
+          pieces: <ArmorPiece>[
+            ArmorPiece(name: 'Kettenhemd', isActive: true, rs: 3, be: 3),
+          ],
+        ),
+      ),
+    );
+
+    final result = preview(sheet, catalogTalents: catalogTalents);
+
+    expect(result.ebe, -3);
+    expect(result.at, result.rangedAtBase + 8 - 3);
+  });
+
   test(
     'Spezialisierung matching is strict and does not allow partial matches',
     () {

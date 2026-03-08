@@ -180,6 +180,7 @@ CombatPreviewStats computeCombatPreviewStats(
   final ebe = computeEbe(beKampf: beKampf, beMod: beMod);
   final atEbePart = computeAtEbePart(ebe);
   final paEbePart = computePaEbePart(ebe);
+  final rangedAtEbePart = isRangedWeapon ? ebe : atEbePart;
 
   // --- Waffe: Spezialisierung & TP (waffen_rules) ---
   final specApplies = hasCombatSpecialization(
@@ -250,7 +251,7 @@ CombatPreviewStats computeCombatPreviewStats(
           rangedAtBase: rangedAtBase,
           talentAtValue: talentAt,
           weaponAtMod: main.wmAt,
-          ebeAttackPart: atEbePart,
+          ebeAttackPart: rangedAtEbePart,
           specializationBonus: atSpecBonus,
           projectileAtMod: projectileAtMod,
           manualAtMod: manualMods.atMod,
