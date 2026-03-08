@@ -149,61 +149,142 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> fillWeaponRow(
+  Future<void> openWeaponDialogByText(
     WidgetTester tester, {
-    required int rowIndex,
-    required String weaponType,
-    String talent = 'Schwerter',
-    String? dk,
-    String? atMod,
-    String? paMod,
-    String? tpValue,
-    String? breakFactor,
+    required String text,
   }) async {
-    await selectDropdownByKey(
-      tester,
-      keyName: 'combat-weapon-cell-talent-$rowIndex',
-      valueText: talent,
+    final target = find.text(text).first;
+    await tester.ensureVisible(target);
+    await tester.pumpAndSettle();
+    await tester.tap(target);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-form-save')),
+      findsOneWidget,
     );
-    await selectDropdownByKey(
-      tester,
-      keyName: 'combat-weapon-cell-weapon-type-$rowIndex',
-      valueText: weaponType,
+  }
+
+  Future<void> openAddWeaponDialog(WidgetTester tester) async {
+    await tester.tap(find.byKey(const ValueKey<String>('combat-weapon-add')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-form-save')),
+      findsOneWidget,
     );
+  }
+
+  Future<void> saveWeaponDialog(WidgetTester tester) async {
+    await tester.tap(find.byKey(const ValueKey<String>('combat-weapon-form-save')));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> cancelWeaponDialog(WidgetTester tester) async {
+    await tester.tap(find.text('Abbrechen'));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> setSwitchByKey(
+    WidgetTester tester, {
+    required String keyName,
+    required bool value,
+  }) async {
+    final tile = find.byKey(ValueKey<String>(keyName));
+    expect(tile, findsOneWidget);
+    final tileWidget = tester.widget<SwitchListTile>(tile);
+    if (tileWidget.value == value) {
+      return;
+    }
+    await tester.tap(tile, warnIfMissed: false);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> fillWeaponDialog(
+    WidgetTester tester, {
+    String? name,
+    String? talent,
+    String? weaponType,
+    String? dk,
+    String? breakFactor,
+    String? kkBase,
+    String? kkThreshold,
+    String? iniMod,
+    String? wmAt,
+    String? wmPa,
+    String? tpDiceCount,
+    String? tpFlat,
+    String? beMod,
+    bool? oneHanded,
+    bool? artifact,
+    String? artifactDescription,
+  }) async {
+    if (name != null) {
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('combat-weapon-form-name')),
+        name,
+      );
+      await tester.pumpAndSettle();
+    }
+    if (talent != null) {
+      await selectDropdownByKey(
+        tester,
+        keyName: 'combat-weapon-form-talent',
+        valueText: talent,
+      );
+    }
+    if (weaponType != null) {
+      await selectDropdownByKey(
+        tester,
+        keyName: 'combat-weapon-form-weapon-type',
+        valueText: weaponType,
+      );
+    }
     if (dk != null) {
-      await commitTextFieldByKey(
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('combat-weapon-form-dk')),
+        dk,
+      );
+      await tester.pumpAndSettle();
+    }
+    final fieldValues = <String, String>{
+      'combat-weapon-form-bf': breakFactor ?? '',
+      'combat-weapon-form-kk-base': kkBase ?? '',
+      'combat-weapon-form-kk-threshold': kkThreshold ?? '',
+      'combat-weapon-form-ini-mod': iniMod ?? '',
+      'combat-weapon-form-wm-at': wmAt ?? '',
+      'combat-weapon-form-wm-pa': wmPa ?? '',
+      'combat-weapon-form-dice-count': tpDiceCount ?? '',
+      'combat-weapon-form-tp-flat': tpFlat ?? '',
+      'combat-weapon-form-be-mod': beMod ?? '',
+    };
+    for (final entry in fieldValues.entries) {
+      if (entry.value.isEmpty) {
+        continue;
+      }
+      await tester.enterText(find.byKey(ValueKey<String>(entry.key)), entry.value);
+      await tester.pumpAndSettle();
+    }
+    if (oneHanded != null) {
+      await setSwitchByKey(
         tester,
-        keyName: 'combat-weapon-cell-dk-$rowIndex',
-        value: dk,
+        keyName: 'combat-weapon-form-one-handed',
+        value: oneHanded,
       );
     }
-    if (atMod != null) {
-      await commitTextFieldByKey(
+    if (artifact != null) {
+      await setSwitchByKey(
         tester,
-        keyName: 'combat-weapon-cell-wm-at-$rowIndex',
-        value: atMod,
+        keyName: 'combat-weapon-form-artifact',
+        value: artifact,
       );
     }
-    if (paMod != null) {
-      await commitTextFieldByKey(
-        tester,
-        keyName: 'combat-weapon-cell-wm-pa-$rowIndex',
-        value: paMod,
+    if (artifactDescription != null) {
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('combat-weapon-form-artifact-description'),
+        ),
+        artifactDescription,
       );
-    }
-    if (tpValue != null) {
-      await commitTextFieldByKey(
-        tester,
-        keyName: 'combat-weapon-cell-tp-value-$rowIndex',
-        value: tpValue,
-      );
-    }
-    if (breakFactor != null) {
-      await commitTextFieldByKey(
-        tester,
-        keyName: 'combat-weapon-cell-bf-$rowIndex',
-        value: breakFactor,
-      );
+      await tester.pumpAndSettle();
     }
   }
 
@@ -432,18 +513,45 @@ void main() {
     expect(entry.specializations, 'Schwert');
   });
 
-  testWidgets('weapon table specialization uses strict normalized matching', (
-    tester,
-  ) async {
+  testWidgets('weapon table shows reduced columns', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+
+    expect(find.text('Artefakt'), findsOneWidget);
+    expect(find.text('Artefaktbeschreibung'), findsOneWidget);
+    expect(find.text('INI'), findsAtLeastNWidgets(1));
+    expect(find.text('KK-Basis'), findsNothing);
+    expect(find.text('WM AT'), findsNothing);
+    expect(find.text('Spezialisierung'), findsNothing);
+  });
+
+  testWidgets('clicking weapon name opens editable weapon dialog', (tester) async {
     final repo = FakeRepository(
       heroes: [
         buildHero(
-          talents: const <String, HeroTalentEntry>{
-            'tal_nah': HeroTalentEntry(
-              combatSpecializations: <String>['Schwert'],
-              specializations: 'Schwert',
-            ),
-          },
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
+                distanceClass: 'N',
+              ),
+            ],
+            selectedWeaponIndex: 0,
+          ),
         ),
       ],
       states: {
@@ -458,12 +566,198 @@ void main() {
 
     await openCombatTab(tester, repo);
     await openWeaponsTab(tester);
+    await openWeaponDialogByText(tester, text: 'Kurzschwert');
 
-    await fillWeaponRow(tester, rowIndex: 0, weaponType: 'Kurzschwert');
-    expect(find.text('Nein'), findsWidgets);
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-form-dk')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-form-wm-at')),
+      findsOneWidget,
+    );
+  });
 
-    await fillWeaponRow(tester, rowIndex: 0, weaponType: 'Schwert');
+  testWidgets('weapon dialog saves hidden weapon fields in read mode', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+    await openWeaponDialogByText(tester, text: '-');
+    await fillWeaponDialog(
+      tester,
+      talent: 'Schwerter',
+      weaponType: 'Kurzschwert',
+      dk: 'N',
+      kkBase: '12',
+      kkThreshold: '2',
+      iniMod: '3',
+      wmAt: '2',
+      wmPa: '1',
+      tpDiceCount: '2',
+      tpFlat: '4',
+      beMod: '-1',
+    );
+    await saveWeaponDialog(tester);
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    final weapon = hero.combatConfig.weaponSlots.first;
+    expect(weapon.weaponType, 'Kurzschwert');
+    expect(weapon.distanceClass, 'N');
+    expect(weapon.kkBase, 12);
+    expect(weapon.kkThreshold, 2);
+    expect(weapon.iniMod, 3);
+    expect(weapon.wmAt, 2);
+    expect(weapon.wmPa, 1);
+    expect(weapon.tpDiceCount, 2);
+    expect(weapon.tpFlat, 4);
+    expect(weapon.beTalentMod, -1);
+  });
+
+  testWidgets('add weapon dialog cancels without creating new slot', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+    await openAddWeaponDialog(tester);
+    await cancelWeaponDialog(tester);
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.combatConfig.weaponSlots.length, 1);
+    expect(hero.combatConfig.weaponSlots.first.name, isEmpty);
+  });
+
+  testWidgets('catalog flow opens editor with prefilled values', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+    await tester.tap(
+      find.byKey(const ValueKey<String>('combat-weapon-from-catalog')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.add_circle_outline).first);
+    await tester.pumpAndSettle();
+
+    await saveWeaponDialog(tester);
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    final weapon = hero.combatConfig.weaponSlots[1];
+    expect(weapon.name, 'Bidenhaender');
+    expect(weapon.weaponType, 'Bidenhaender');
+    expect(weapon.tpDiceCount, 2);
+    expect(weapon.tpFlat, 2);
+  });
+
+  testWidgets('weapon table keeps talent and BF inline editable', (tester) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(name: 'Kurzschwert'),
+            ],
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+    await selectDropdownByKey(
+      tester,
+      keyName: 'combat-weapon-cell-talent-0',
+      valueText: 'Schwerter',
+    );
+    await commitTextFieldByKey(
+      tester,
+      keyName: 'combat-weapon-cell-bf-0',
+      value: '5',
+    );
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    final weapon = hero.combatConfig.weaponSlots.first;
+    expect(weapon.talentId, 'tal_nah');
+    expect(weapon.breakFactor, 5);
+  });
+
+  testWidgets('artifact fields are shown in table and persisted', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+    await openWeaponDialogByText(tester, text: '-');
+    await fillWeaponDialog(
+      tester,
+      talent: 'Schwerter',
+      weaponType: 'Kurzschwert',
+      artifact: true,
+      artifactDescription: 'Gebundener Dschinn',
+    );
+    await saveWeaponDialog(tester);
+
     expect(find.text('Ja'), findsWidgets);
+    expect(find.text('Gebundener Dschinn'), findsOneWidget);
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    final weapon = hero.combatConfig.weaponSlots.first;
+    expect(weapon.isArtifact, isTrue);
+    expect(weapon.artifactDescription, 'Gebundener Dschinn');
   });
 
   testWidgets('keeps weapon management only in Waffen subtab', (tester) async {
@@ -556,14 +850,16 @@ void main() {
     await tester.pumpAndSettle();
 
     await openWeaponsTab(tester);
-    await fillWeaponRow(
+    await openWeaponDialogByText(tester, text: '-');
+    await fillWeaponDialog(
       tester,
-      rowIndex: 0,
+      talent: 'Schwerter',
       weaponType: 'Kurzschwert',
-      atMod: '2',
-      paMod: '1',
-      tpValue: '2',
+      wmAt: '2',
+      wmPa: '1',
+      tpFlat: '2',
     );
+    await saveWeaponDialog(tester);
 
     await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
     await tester.pumpAndSettle();
@@ -620,12 +916,14 @@ void main() {
     await tester.pumpAndSettle();
 
     await openWeaponsTab(tester);
-    await fillWeaponRow(
+    await openWeaponDialogByText(tester, text: '-');
+    await fillWeaponDialog(
       tester,
-      rowIndex: 0,
+      talent: 'Schwerter',
       weaponType: 'Kurzschwert',
-      tpValue: '3',
+      tpFlat: '3',
     );
+    await saveWeaponDialog(tester);
 
     await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
     await tester.pumpAndSettle();
@@ -669,8 +967,9 @@ void main() {
     await openCombatTab(tester, repo);
 
     await openWeaponsTab(tester);
-    await tester.tap(find.byKey(const ValueKey<String>('combat-weapon-add')));
-    await tester.pumpAndSettle();
+    await openAddWeaponDialog(tester);
+    await fillWeaponDialog(tester, talent: 'Schwerter', weaponType: 'Kurzschwert');
+    await saveWeaponDialog(tester);
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
@@ -832,7 +1131,9 @@ void main() {
 
     await openCombatTab(tester, repo);
     await openWeaponsTab(tester);
-    await fillWeaponRow(tester, rowIndex: 0, weaponType: 'Kurzschwert');
+    await openWeaponDialogByText(tester, text: '-');
+    await fillWeaponDialog(tester, talent: 'Schwerter', weaponType: 'Kurzschwert');
+    await saveWeaponDialog(tester);
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
@@ -1347,11 +1648,11 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.descendant(of: table, matching: find.text('TP Kalk')),
+      find.descendant(of: table, matching: find.text('Artefakt')),
       findsOneWidget,
     );
     expect(
-      find.descendant(of: table, matching: find.textContaining('1W6')),
+      find.descendant(of: table, matching: find.text('Artefaktbeschreibung')),
       findsWidgets,
     );
     final dkHeader = find
@@ -1367,7 +1668,7 @@ void main() {
         .descendant(of: table, matching: find.text('TP'))
         .first;
     final iniHeader = find
-        .descendant(of: table, matching: find.text('Helden+Waffen INI'))
+        .descendant(of: table, matching: find.text('INI'))
         .first;
     final bfHeader = find
         .descendant(of: table, matching: find.text('BF'))
@@ -1444,11 +1745,11 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey<String>('combat-weapon-cell-ini-ge-0')),
-      findsOneWidget,
+      find.text('INI'),
+      findsAtLeastNWidgets(1),
     );
     expect(
-      find.byKey(const ValueKey<String>('combat-weapon-cell-ini-mod-0')),
+      find.text('Artefaktbeschreibung'),
       findsOneWidget,
     );
   });
@@ -1495,11 +1796,11 @@ void main() {
     );
 
     expect(
-      find.byKey(const ValueKey<String>('combat-weapon-cell-name-1')),
-      findsOneWidget,
+      find.text('Bidenhaender'),
+      findsAtLeastNWidgets(1),
     );
     expect(
-      find.byKey(const ValueKey<String>('combat-weapon-cell-name-0')),
+      find.text('Kurzschwert'),
       findsNothing,
     );
   });

@@ -244,7 +244,9 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 - `HeroSheet` verwendet jetzt `rawStartAttributes` fuer Roh-Startwerte und `startAttributes` fuer effektive Startwerte nach Rasse/Kultur/Profession.
 - Neue Start-/Maximum-Logik liegt in `lib/rules/derived/attribute_start_rules.dart`.
 - `HeroComputedSnapshot` enthaelt zusaetzlich effektive Startwerte und Eigenschaftsmaxima.
-- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **8**.
+- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **9**.
+- Die Waffen-Uebersicht im Kampf-Tab ist kompakt; Detailwerte werden ueber
+  `lib/ui/screens/hero_combat/weapon_editor_dialog.dart` bearbeitet.
 
 ### LOC Budget Check (screens)
 
@@ -293,7 +295,7 @@ python tool/report_unreferenced_dart.py
 - **Screen size limit**: root screen/tab files must stay under **700 LOC**. Split into sub-files (e.g. `hero_combat/` directory) before exceeding this.
 - **ConsumerWidget vs ConsumerStatefulWidget**: use `ConsumerWidget` (stateless) by default; use `ConsumerStatefulWidget` only when local widget state is genuinely needed.
 - **Provider access in UI**: use `.watch` for reactive reads; use `.read` only inside callbacks (e.g. button presses).
-- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **7**.
+- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **9**.
 - **German comments and identifiers**: code-level comments and domain names follow German (rasse, kultur, Held, Talente, etc.).
 
 ### Catalog

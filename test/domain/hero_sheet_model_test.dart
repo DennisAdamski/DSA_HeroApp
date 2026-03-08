@@ -94,6 +94,8 @@ void main() {
           wmPa: -1,
           iniMod: 0,
           beTalentMod: -2,
+          isArtifact: true,
+          artifactDescription: 'Gebundene Flammenklinge',
         ),
         offhand: OffhandSlot(
           mode: OffhandMode.shield,
@@ -131,7 +133,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 8);
+    expect(reloaded.schemaVersion, 9);
     expect(reloaded.kultur, 'Mittelreich');
     expect(reloaded.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -167,6 +169,11 @@ void main() {
       <String>['Nur fuer diesen Helden'],
     );
     expect(reloaded.combatConfig.mainWeapon.name, 'Kurzschwert');
+    expect(reloaded.combatConfig.mainWeapon.isArtifact, isTrue);
+    expect(
+      reloaded.combatConfig.mainWeapon.artifactDescription,
+      'Gebundene Flammenklinge',
+    );
     expect(reloaded.combatConfig.weaponSlots.length, 1);
     expect(reloaded.combatConfig.selectedWeaponIndex, 0);
     expect(reloaded.combatConfig.offhand.mode, OffhandMode.shield);
@@ -217,6 +224,8 @@ void main() {
     expect(loaded.talents['tal_schwerter']?.atValue, 0);
     expect(loaded.talents['tal_schwerter']?.paValue, 0);
     expect(loaded.combatConfig.mainWeapon.name, isEmpty);
+    expect(loaded.combatConfig.mainWeapon.isArtifact, isFalse);
+    expect(loaded.combatConfig.mainWeapon.artifactDescription, isEmpty);
     expect(loaded.combatConfig.weaponSlots.length, 1);
     expect(loaded.combatConfig.offhand.mode, OffhandMode.none);
     expect(loaded.combatConfig.specialRules.activeManeuvers, isEmpty);
@@ -239,7 +248,12 @@ void main() {
       ),
       combatConfig: CombatConfig(
         weapons: <MainWeaponSlot>[
-          MainWeaponSlot(name: 'Dolch', isOneHanded: true),
+          MainWeaponSlot(
+            name: 'Dolch',
+            isOneHanded: true,
+            isArtifact: true,
+            artifactDescription: 'Runen auf der Klinge',
+          ),
           MainWeaponSlot(name: 'Bidenhaender', isOneHanded: false, wmAt: 2),
         ],
         selectedWeaponIndex: 1,
@@ -250,6 +264,11 @@ void main() {
     expect(reloaded.combatConfig.weaponSlots.length, 2);
     expect(reloaded.combatConfig.selectedWeaponIndex, 1);
     expect(reloaded.combatConfig.mainWeapon.name, 'Bidenhaender');
+    expect(reloaded.combatConfig.weaponSlots.first.isArtifact, isTrue);
+    expect(
+      reloaded.combatConfig.weaponSlots.first.artifactDescription,
+      'Runen auf der Klinge',
+    );
     expect(reloaded.combatConfig.selectedWeapon.isOneHanded, isFalse);
   });
 
