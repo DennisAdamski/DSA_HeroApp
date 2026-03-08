@@ -256,9 +256,15 @@ In `HeroSheet` werden `persistentMods` (aus geparsten Vor-/Nachteilen, dauerhaft
 | `iniMod` | `int` | Initiative-Modifikator |
 | `beTalentMod` | `int` | BE-Modifikator für diese Waffe |
 | `isOneHanded` | `bool` | Einhändig vs. zweihändig |
+| `isArtifact` | `bool` | Markiert die Waffe als Artefakt |
+| `artifactDescription` | `String` | Freitext-Beschreibung des Artefakts |
 
 `CombatConfig.weaponSlots` gibt `[mainWeapon]` zurück falls `weapons` leer ist (Legacy-
 Kompatibilität), sonst `weapons`.
+
+In der Kampf-UI bleiben nur `Waffentalent` und `BF` inline editierbar. Weitere
+Waffenbasiswerte werden im gruppierten Waffen-Dialog bearbeitet; berechnete
+TP-/INI-Zwischenwerte sind dort als read-only Vorschau sichtbar.
 
 #### `OffhandSlot` & `OffhandMode`
 

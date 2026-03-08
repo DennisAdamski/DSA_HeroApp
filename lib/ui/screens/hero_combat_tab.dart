@@ -28,6 +28,7 @@ part 'hero_combat/hero_combat_special_rules_subtab.dart';
 part 'hero_combat/hero_combat_maneuvers_subtab.dart';
 part 'hero_combat/hero_combat_form_fields.dart';
 part 'hero_combat/weapon_detail_expansion.dart';
+part 'hero_combat/weapon_editor_dialog.dart';
 
 enum _ManeuverSupportStatus { supported, notSupported, unverifiable }
 

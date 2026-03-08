@@ -38,6 +38,7 @@ class CombatPreviewStats {
     required this.ausweichen,
     required this.at,
     required this.pa,
+    required this.paMitIniParadeMod,
     required this.ebe,
     required this.tpExpression,
     required this.specBonus,
@@ -77,6 +78,7 @@ class CombatPreviewStats {
   final int ausweichen;
   final int at;
   final int pa;
+  final int paMitIniParadeMod;
   final int ebe;
   final String tpExpression;
   final int specBonus;
@@ -251,6 +253,7 @@ CombatPreviewStats computeCombatPreviewStats(
   );
   final initiative = kampfInitiative;
   final iniParadeMod = computeIniParadeMod(kampfInitiative);
+  final paMitIniParadeMod = pa + iniParadeMod;
 
   // --- Ausweichen (ausweichen_rules) ---
   final akrobatikBonusValue = computeAkrobatikBonus(talents);
@@ -296,6 +299,7 @@ CombatPreviewStats computeCombatPreviewStats(
     ausweichen: ausweichen,
     at: at,
     pa: pa,
+    paMitIniParadeMod: paMitIniParadeMod,
     ebe: ebe,
     tpExpression: buildTpExpression(main, tpCalc),
     specBonus: atSpecBonus,

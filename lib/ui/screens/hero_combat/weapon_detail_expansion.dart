@@ -46,7 +46,7 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
               const Divider(),
               _calcSection(
                 title: 'Parade (PA)',
-                result: preview.pa,
+                result: preview.paMitIniParadeMod,
                 steps: [
                   _calcStep('Talent PA-Anteil',
                       _talentPaValue(weapon.talentId)),
@@ -59,6 +59,8 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                     _calcStep('Nebenhand PA', preview.offhandPaBonus),
                   if (manual.paMod != 0)
                     _calcStep('Manueller Mod', manual.paMod),
+                  if (preview.iniParadeMod != 0)
+                    _calcStep('INI-Parade-Bonus', preview.iniParadeMod),
                 ],
               ),
               const Divider(),

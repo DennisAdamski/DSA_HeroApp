@@ -156,8 +156,13 @@ void main() {
     expect(referenceResult.kampfInitiative, 10);
     expect(lowIniResult.kampfInitiative, 0);
     expect(lowIniResult.iniParadeMod, 0);
+    expect(lowIniResult.paMitIniParadeMod, lowIniResult.pa);
     expect(highIniResult.kampfInitiative, 31);
     expect(highIniResult.iniParadeMod, 2);
+    expect(
+      highIniResult.paMitIniParadeMod,
+      highIniResult.pa + highIniResult.iniParadeMod,
+    );
   });
   test('combat preview integrates Axxeleratus into melee preview values', () {
     final baseHero = hero(
