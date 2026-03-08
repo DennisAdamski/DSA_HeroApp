@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -23,8 +25,11 @@ class _OpenedMagicTab {
 }
 
 void main() {
-  HeroSheet buildHero() {
-    return const HeroSheet(
+  HeroSheet buildHero({
+    Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
+    List<HeroRitualCategory> ritualCategories = const <HeroRitualCategory>[],
+  }) {
+    return HeroSheet(
       id: 'demo',
       name: 'Rondra',
       level: 1,
@@ -39,6 +44,8 @@ void main() {
         kk: 13,
       ),
       merkmalskenntnisse: <String>['Kraft'],
+      talents: talents,
+      ritualCategories: ritualCategories,
       spells: <String, HeroSpellEntry>{
         'spell_axxeleratus': HeroSpellEntry(
           spellValue: 8,
@@ -52,7 +59,22 @@ void main() {
     return const RulesCatalog(
       version: 'test_catalog',
       source: 'test',
-      talents: <TalentDef>[],
+      talents: <TalentDef>[
+        TalentDef(
+          id: 'tal_singen',
+          name: 'Singen',
+          group: 'Koerper',
+          steigerung: 'B',
+          attributes: <String>['Mut', 'Charisma', 'Charisma'],
+        ),
+        TalentDef(
+          id: 'tal_musizieren',
+          name: 'Musizieren',
+          group: 'Koerper',
+          steigerung: 'B',
+          attributes: <String>['Klugheit', 'Charisma', 'Fingerfertigkeit'],
+        ),
+      ],
       spells: <SpellDef>[
         SpellDef(
           id: 'spell_axxeleratus',
@@ -125,6 +147,12 @@ void main() {
     return _OpenedMagicTab(repo: effectiveRepo, actions: actions!);
   }
 
+  testWidgets('magic tab exposes rituals sub tab', (tester) async {
+    await openMagicTab(tester);
+
+    expect(find.text('Rituale'), findsOneWidget);
+  });
+
   testWidgets(
     'detail dialog is read-only outside edit mode and uses catalog variants',
     (tester) async {
@@ -182,6 +210,318 @@ void main() {
       expect(entry?.textOverrides?.variants, <String>[
         'Eigene Variante.',
         'Koboldisch. Nur Sprache.',
+      ]);
+    },
+  );
+
+  testWidgets('ritual detail dialog is read-only outside edit mode', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: <HeroSheet>[
+        buildHero(
+          ritualCategories: <HeroRitualCategory>[
+            HeroRitualCategory(
+              id: 'ritual_cat_1',
+              name: 'Flueche',
+              knowledgeMode: HeroRitualKnowledgeMode.ownKnowledge,
+              ownKnowledge: const HeroRitualKnowledge(
+                name: 'Flueche',
+                value: 3,
+                learningComplexity: 'E',
+              ),
+              rituals: const <HeroRitualEntry>[
+                HeroRitualEntry(
+                  name: 'Hexenfluch',
+                  wirkung: 'Verhaengt Unheil.',
+                  kosten: '7 AsP',
+                  wirkungsdauer: '7 Tage',
+                  merkmale: 'Einfluss',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    await openMagicTab(tester, repo: repo);
+
+    await tester.tap(find.text('Rituale'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hexenfluch'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('magic-ritual-entry-dialog')),
+      findsOneWidget,
+    );
+    expect(find.byType(TextField), findsNothing);
+    expect(find.text('Verhaengt Unheil.'), findsOneWidget);
+  });
+
+  testWidgets(
+    'edit mode creates own knowledge ritual category with default taw and selected complexity',
+    (tester) async {
+      final opened = await openMagicTab(tester);
+
+      await opened.actions.startEdit();
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Rituale'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-rituals-add-category')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('magic-ritual-category-name-field')),
+        'Flueche',
+      );
+      expect(find.widgetWithText(TextField, '3'), findsOneWidget);
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('magic-ritual-category-complexity-field'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('F').last);
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-ritual-category-save')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Flueche'), findsOneWidget);
+      expect(find.textContaining('Kompl. F'), findsOneWidget);
+
+      await opened.actions.save();
+      await tester.pumpAndSettle();
+
+      final savedHero = await opened.repo.loadHeroById('demo');
+      final category = savedHero?.ritualCategories.single;
+      expect(category?.name, 'Flueche');
+      expect(category?.ownKnowledge?.value, 3);
+      expect(category?.ownKnowledge?.learningComplexity, 'F');
+    },
+  );
+
+  testWidgets(
+    'edit mode creates talent based ritual category and shows taw from linked talents',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_singen': HeroTalentEntry(talentValue: 7),
+              'tal_musizieren': HeroTalentEntry(talentValue: 9),
+            },
+          ),
+        ],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+      final opened = await openMagicTab(tester, repo: repo);
+
+      await opened.actions.startEdit();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Rituale'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-rituals-add-category')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('magic-ritual-category-name-field')),
+        'Elfenlieder',
+      );
+      await tester.tap(find.text('Talent'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('magic-ritual-category-talent-tal_singen'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('magic-ritual-category-talent-tal_musizieren'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-ritual-category-save')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Singen: TaW 7'), findsOneWidget);
+      expect(find.text('Musizieren: TaW 9'), findsOneWidget);
+
+      await opened.actions.save();
+      await tester.pumpAndSettle();
+
+      final savedHero = await opened.repo.loadHeroById('demo');
+      expect(savedHero?.ritualCategories.single.derivedTalentIds, <String>[
+        'tal_singen',
+        'tal_musizieren',
+      ]);
+    },
+  );
+
+  testWidgets(
+    'edit mode creates ritual with dynamic text and attribute fields',
+    (tester) async {
+      final opened = await openMagicTab(tester);
+
+      await opened.actions.startEdit();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Rituale'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-rituals-add-category')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('magic-ritual-category-name-field')),
+        'Flueche',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-ritual-category-add-field')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('magic-ritual-category-field-label-0'),
+        ),
+        'Ausloeser',
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-ritual-category-add-field')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('magic-ritual-category-field-label-1'),
+        ),
+        'Probe',
+      );
+      await tester.ensureVisible(
+        find.byKey(
+          const ValueKey<String>('magic-ritual-category-field-type-1'),
+        ),
+      );
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('magic-ritual-category-field-type-1'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('3 Eigenschaften').last);
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-ritual-category-save')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-ritual-add-ritual-0')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('magic-ritual-entry-name-field')),
+        'Hexenfluch',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('magic-ritual-entry-wirkung-field')),
+        'Verhaengt Unheil.',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('magic-ritual-entry-kosten-field')),
+        '7 AsP',
+      );
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('magic-ritual-entry-wirkungsdauer-field'),
+        ),
+        '7 Tage',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('magic-ritual-entry-merkmale-field')),
+        'Einfluss',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('magic-ritual-entry-extra-text-0')),
+        'Bei Vollmond',
+      );
+
+      await tester.ensureVisible(
+        find.byKey(const ValueKey<String>('magic-ritual-entry-extra-attr-1-0')),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-ritual-entry-extra-attr-1-0')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('MU').last);
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(
+        find.byKey(const ValueKey<String>('magic-ritual-entry-extra-attr-1-1')),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-ritual-entry-extra-attr-1-1')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('CH').last);
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(
+        find.byKey(const ValueKey<String>('magic-ritual-entry-extra-attr-1-2')),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-ritual-entry-extra-attr-1-2')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('IN').last);
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-ritual-entry-save')),
+      );
+      await tester.pumpAndSettle();
+
+      await opened.actions.save();
+      await tester.pumpAndSettle();
+
+      final savedHero = await opened.repo.loadHeroById('demo');
+      final ritual = savedHero?.ritualCategories.single.rituals.single;
+      expect(ritual?.name, 'Hexenfluch');
+      expect(ritual?.wirkung, 'Verhaengt Unheil.');
+      expect(ritual?.additionalFieldValues.first.textValue, 'Bei Vollmond');
+      expect(ritual?.additionalFieldValues.last.attributeCodes, <String>[
+        'MU',
+        'CH',
+        'IN',
       ]);
     },
   );
@@ -269,14 +609,10 @@ void main() {
 
       final state = await opened.repo.loadHeroState('demo');
       expect(state, isNotNull);
-      expect(
-        state!.activeSpellEffects,
-        isA<ActiveSpellEffectsState>(),
-      );
-      expect(
-        state.activeSpellEffects.activeEffectIds,
-        <String>[activeSpellEffectAxxeleratus],
-      );
+      expect(state!.activeSpellEffects, isA<ActiveSpellEffectsState>());
+      expect(state.activeSpellEffects.activeEffectIds, <String>[
+        activeSpellEffectAxxeleratus,
+      ]);
     },
   );
 }

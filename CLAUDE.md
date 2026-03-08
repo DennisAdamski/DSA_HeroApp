@@ -167,6 +167,7 @@ Domain models (lib/domain/) — immutable, pure Dart
 | `HeroIndexSnapshot` | `state/hero_index_snapshot.dart` | Sorted hero list + O(1) ID map |
 | `HeroSpellEntry` | `domain/hero_spell_entry.dart` | Persisted spell entry (ZfW, Hauszauber, modifier, Legacy-Spezialisierungen, Text-Overrides) |
 | `HeroSpellTextOverrides` | `domain/hero_spell_text_overrides.dart` | Heldenspezifische Korrekturen fuer importierte Zauberdetails |
+| `HeroRitualCategory` | `domain/hero_rituals.dart` | Heldenspezifische Ritualkategorie mit Ritualkenntnis oder Talentbezug |
 | `MagicSpecialAbility` | `domain/magic_special_ability.dart` | Persisted magic special ability (name + note) |
 | `HeroTransferBundle` | `domain/hero_transfer_bundle.dart` | Export/import envelope (hero + state + timestamp) |
 
@@ -244,7 +245,13 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 - `HeroSheet` verwendet jetzt `rawStartAttributes` fuer Roh-Startwerte und `startAttributes` fuer effektive Startwerte nach Rasse/Kultur/Profession.
 - Neue Start-/Maximum-Logik liegt in `lib/rules/derived/attribute_start_rules.dart`.
 - `HeroComputedSnapshot` enthaelt zusaetzlich effektive Startwerte und Eigenschaftsmaxima.
-- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **9**.
+- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **10**.
+- `HeroSheet` speichert zusaetzlich `ritualCategories` fuer heldenspezifische
+  Ritualkategorien und Rituale.
+- Die Ritual-Domain liegt in `lib/domain/hero_rituals.dart`; pure Helfer dafuer
+  liegen in `lib/rules/derived/ritual_rules.dart`.
+- Der Magie-Tab besitzt jetzt einen eigenen Ritual-Sub-Tab mit Dialogen fuer
+  Kategorien, Zusatzfelder und Rituale.
 - Die Waffen-Uebersicht im Kampf-Tab ist kompakt; Detailwerte werden ueber
   `lib/ui/screens/hero_combat/weapon_editor_dialog.dart` bearbeitet.
 - Der Waffen-Dialog ist ausgabeorientiert gruppiert und zeigt TP-/INI-
@@ -303,7 +310,7 @@ python tool/report_unreferenced_dart.py
 - **Screen size limit**: root screen/tab files must stay under **700 LOC**. Split into sub-files (e.g. `hero_combat/` directory) before exceeding this.
 - **ConsumerWidget vs ConsumerStatefulWidget**: use `ConsumerWidget` (stateless) by default; use `ConsumerStatefulWidget` only when local widget state is genuinely needed.
 - **Provider access in UI**: use `.watch` for reactive reads; use `.read` only inside callbacks (e.g. button presses).
-- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **9**.
+- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **10**.
 - **German comments and identifiers**: code-level comments and domain names follow German (rasse, kultur, Held, Talente, etc.).
 
 ### Catalog
