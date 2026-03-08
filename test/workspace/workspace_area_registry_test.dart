@@ -40,4 +40,14 @@ void main() {
       expect(meta.supportsGroupVisibility, isFalse);
     },
   );
+
+  test('notes connections area is registered as editable notes view', () {
+    final meta = workspaceAreaMetaById(WorkspaceAreaId.notesConnections);
+
+    expect(meta.pageId, WorkspacePageId.notes);
+    expect(meta.kind, WorkspaceAreaKind.notesView);
+    expect(meta.supportsInlineEdit, isTrue);
+    expect(meta.supportsVisibilityMode, isFalse);
+    expect(meta.supportsGroupVisibility, isFalse);
+  });
 }

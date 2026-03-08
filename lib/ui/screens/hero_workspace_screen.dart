@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_magic_tab.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_notes_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
@@ -14,7 +15,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_command_deck
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_core_attributes_header.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_inspector_panel.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_navigation_guard.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_placeholder_tabs.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
@@ -39,6 +39,7 @@ const int _talentsTabIndex = 1;
 const int _combatTabIndex = 2;
 const int _magicTabIndex = 3;
 const int _inventoryTabIndex = 4;
+const int _notesTabIndex = 5;
 
 /// Zentraler Workspace-Screen fuer die Bearbeitung und Anzeige eines Helden.
 ///
@@ -78,6 +79,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         _combatTabIndex,
         _magicTabIndex,
         _inventoryTabIndex,
+        _notesTabIndex,
       },
     );
     _tabController.addListener(_onTabControllerChanged);
@@ -387,7 +389,16 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           onRegisterEditActions: (actions) =>
               _registerEditActions(_inventoryTabIndex, actions),
         ),
-        const WorkspacePlaceholderTab(title: 'Notizen'),
+        HeroNotesTab(
+          heroId: widget.heroId,
+          onDirtyChanged: (isDirty) => _updateDirty(_notesTabIndex, isDirty),
+          onEditingChanged: (isEditing) =>
+              _updateEditing(_notesTabIndex, isEditing),
+          onRegisterDiscard: (discardAction) =>
+              _registerDiscard(_notesTabIndex, discardAction),
+          onRegisterEditActions: (actions) =>
+              _registerEditActions(_notesTabIndex, actions),
+        ),
       ],
     );
   }
