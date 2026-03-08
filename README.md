@@ -54,6 +54,11 @@ Vollstaendige Anleitung:
 - Die angezeigte `PA` der aktiven Waffe enthaelt den heldenbezogenen INI-Parade-Bonus; dieser wird nicht mehr als eigener Waffenwert separat angezeigt.
 - Neue Waffen werden ueber denselben Dialog angelegt; der Katalog-Button oeffnet dabei vorbefuellte Vorlagen.
 
+### Workspace-Layout (Stand: 2026-03-08)
+- Ab `1280 dp` nutzt der Hero-Workspace das **Helden Deck** statt der klassischen TabBar.
+- Die linke Navigationsleiste des Helden Decks ist per Button ein- und ausfahrbar.
+- Die rechte Detailleiste ist ebenfalls ein- und ausfahrbar; im offenen Zustand startet sie ohne sichtbare Ueberschrift.
+
 ### UI-Performance Guardrails (Stand: 2026-03-01)
 - Rebuild-Guardrail (Widget-Test): `flutter test test/ui/performance/ui_rebuild_guardrails_test.dart`
 - FrameTiming-Messung (Profile, Integration): `flutter drive --profile --driver=test_driver/integration_test.dart --target=integration_test/ui_edit_frame_timing_test.dart -d <deviceId>`

@@ -10,16 +10,23 @@ import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
-/// Inspector-Seitenleiste fuer den Desktop-Command-Deck-Modus.
+/// Inspector-Seitenleiste fuer den Desktop-Helden-Deck-Modus.
 ///
 /// Zeigt bearbeitbare Ressourcen (LeP, Au, AsP, KaP), einen manuellen
 /// BE-Override, direkte Modifikationen (Ini, GS, Ausweichen, PA, AT, RS)
 /// sowie eine Ruestungszusammenfassung. Wird nur im breiten Layout
 /// (>= 1280dp) neben dem Tab-Inhalt angezeigt.
 class WorkspaceInspectorPanel extends ConsumerWidget {
-  const WorkspaceInspectorPanel({super.key, required this.heroId});
+  const WorkspaceInspectorPanel({
+    super.key,
+    required this.heroId,
+    required this.isExpanded,
+    required this.onToggleExpanded,
+  });
 
   final String heroId;
+  final bool isExpanded;
+  final VoidCallback onToggleExpanded;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,46 +37,67 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
     final heroState = heroStateAsync.valueOrNull;
     final derived = computedAsync.valueOrNull?.derivedStats;
     final combat = computedAsync.valueOrNull?.combatPreviewStats;
+    final toggleTooltip = isExpanded
+        ? 'Details ausblenden'
+        : 'Details einblenden';
+    final toggleIcon = isExpanded
+        ? Icons.keyboard_double_arrow_right
+        : Icons.keyboard_double_arrow_left;
 
     return ColoredBox(
       color: Theme.of(context).colorScheme.surfaceContainerLowest,
       child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text('Inspector', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 10),
-              // --- Held ---
-              if (hero != null)
-                _HeldCard(hero: hero),
-              const SizedBox(height: 10),
-              // --- Ressourcen ---
-              if (heroState != null && derived != null)
-                _ResourcenCard(
-                  heroId: heroId,
-                  heroState: heroState,
-                  derived: derived,
+        child: isExpanded
+            ? SingleChildScrollView(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        key: const ValueKey<String>('workspace-details-toggle'),
+                        tooltip: toggleTooltip,
+                        onPressed: onToggleExpanded,
+                        icon: Icon(toggleIcon),
+                      ),
+                    ),
+                    // --- Held ---
+                    if (hero != null) _HeldCard(hero: hero),
+                    const SizedBox(height: 10),
+                    // --- Ressourcen ---
+                    if (heroState != null && derived != null)
+                      _ResourcenCard(
+                        heroId: heroId,
+                        heroState: heroState,
+                        derived: derived,
+                      ),
+                    const SizedBox(height: 10),
+                    // --- Manueller BE ---
+                    _ManuellerBeCard(heroId: heroId, combat: combat),
+                    const SizedBox(height: 10),
+                    // --- Modifikationen ---
+                    if (hero != null)
+                      _ModifikationenCard(heroId: heroId, hero: hero),
+                    const SizedBox(height: 10),
+                    // --- Kampfwerte (berechnet) ---
+                    if (derived != null && combat != null)
+                      _KampfwerteCard(derived: derived, combat: combat),
+                    const SizedBox(height: 10),
+                    // --- Ruestung ---
+                    if (hero != null && combat != null)
+                      _RuestungCard(hero: hero, combat: combat),
+                  ],
                 ),
-              const SizedBox(height: 10),
-              // --- Manueller BE ---
-              _ManuellerBeCard(heroId: heroId, combat: combat),
-              const SizedBox(height: 10),
-              // --- Modifikationen ---
-              if (hero != null)
-                _ModifikationenCard(heroId: heroId, hero: hero),
-              const SizedBox(height: 10),
-              // --- Kampfwerte (berechnet) ---
-              if (derived != null && combat != null)
-                _KampfwerteCard(derived: derived, combat: combat),
-              const SizedBox(height: 10),
-              // --- Ruestung ---
-              if (hero != null && combat != null)
-                _RuestungCard(hero: hero, combat: combat),
-            ],
-          ),
-        ),
+              )
+            : Center(
+                child: IconButton(
+                  key: const ValueKey<String>('workspace-details-toggle'),
+                  tooltip: toggleTooltip,
+                  onPressed: onToggleExpanded,
+                  icon: Icon(toggleIcon),
+                ),
+              ),
       ),
     );
   }
@@ -224,7 +252,11 @@ class _ResourceRow extends StatelessWidget {
             ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
-        _StepButton(icon: Icons.remove, tooltip: '$label verringern', onPressed: onDecrement),
+        _StepButton(
+          icon: Icons.remove,
+          tooltip: '$label verringern',
+          onPressed: onDecrement,
+        ),
         const SizedBox(width: 4),
         SizedBox(
           width: 44,
@@ -275,12 +307,12 @@ class _ManuellerBeCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Manueller BE',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
+            Text('Manueller BE', style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
-            Row(
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 4,
+              runSpacing: 6,
               children: [
                 _StepButton(
                   icon: Icons.remove,
@@ -290,18 +322,16 @@ class _ManuellerBeCard extends ConsumerWidget {
                         displayed - 1;
                   },
                 ),
-                const SizedBox(width: 4),
                 SizedBox(
                   width: 44,
                   child: Text(
                     '$displayed',
                     textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 4),
                 _StepButton(
                   icon: Icons.add,
                   tooltip: 'BE erhoehen',
@@ -310,13 +340,13 @@ class _ManuellerBeCard extends ConsumerWidget {
                         displayed + 1;
                   },
                 ),
-                const SizedBox(width: 8),
                 if (override != null)
                   TextButton.icon(
                     onPressed: () {
                       ref
-                          .read(talentBeOverrideProvider(heroId).notifier)
-                          .state = null;
+                              .read(talentBeOverrideProvider(heroId).notifier)
+                              .state =
+                          null;
                     },
                     icon: const Icon(Icons.clear, size: 14),
                     label: const Text('Entfernen'),
@@ -377,23 +407,17 @@ class _ModifikationenCard extends ConsumerWidget {
             _ModRow(
               label: 'Ini',
               value: mods.iniBase,
-              onDecrement: () => _saveMods(
-                ref,
-                mods.copyWith(iniBase: mods.iniBase - 1),
-              ),
-              onIncrement: () => _saveMods(
-                ref,
-                mods.copyWith(iniBase: mods.iniBase + 1),
-              ),
+              onDecrement: () =>
+                  _saveMods(ref, mods.copyWith(iniBase: mods.iniBase - 1)),
+              onIncrement: () =>
+                  _saveMods(ref, mods.copyWith(iniBase: mods.iniBase + 1)),
             ),
             const SizedBox(height: 6),
             _ModRow(
               label: 'GS',
               value: mods.gs,
-              onDecrement: () =>
-                  _saveMods(ref, mods.copyWith(gs: mods.gs - 1)),
-              onIncrement: () =>
-                  _saveMods(ref, mods.copyWith(gs: mods.gs + 1)),
+              onDecrement: () => _saveMods(ref, mods.copyWith(gs: mods.gs - 1)),
+              onIncrement: () => _saveMods(ref, mods.copyWith(gs: mods.gs + 1)),
             ),
             const SizedBox(height: 6),
             _ModRow(
@@ -412,28 +436,22 @@ class _ModifikationenCard extends ConsumerWidget {
             _ModRow(
               label: 'PA',
               value: mods.pa,
-              onDecrement: () =>
-                  _saveMods(ref, mods.copyWith(pa: mods.pa - 1)),
-              onIncrement: () =>
-                  _saveMods(ref, mods.copyWith(pa: mods.pa + 1)),
+              onDecrement: () => _saveMods(ref, mods.copyWith(pa: mods.pa - 1)),
+              onIncrement: () => _saveMods(ref, mods.copyWith(pa: mods.pa + 1)),
             ),
             const SizedBox(height: 6),
             _ModRow(
               label: 'AT',
               value: mods.at,
-              onDecrement: () =>
-                  _saveMods(ref, mods.copyWith(at: mods.at - 1)),
-              onIncrement: () =>
-                  _saveMods(ref, mods.copyWith(at: mods.at + 1)),
+              onDecrement: () => _saveMods(ref, mods.copyWith(at: mods.at - 1)),
+              onIncrement: () => _saveMods(ref, mods.copyWith(at: mods.at + 1)),
             ),
             const SizedBox(height: 6),
             _ModRow(
               label: 'RS',
               value: mods.rs,
-              onDecrement: () =>
-                  _saveMods(ref, mods.copyWith(rs: mods.rs - 1)),
-              onIncrement: () =>
-                  _saveMods(ref, mods.copyWith(rs: mods.rs + 1)),
+              onDecrement: () => _saveMods(ref, mods.copyWith(rs: mods.rs - 1)),
+              onIncrement: () => _saveMods(ref, mods.copyWith(rs: mods.rs + 1)),
             ),
           ],
         ),
@@ -462,8 +480,8 @@ class _ModRow extends StatelessWidget {
     final color = value > 0
         ? Theme.of(context).colorScheme.primary
         : value < 0
-            ? Theme.of(context).colorScheme.error
-            : null;
+        ? Theme.of(context).colorScheme.error
+        : null;
     return Row(
       children: [
         SizedBox(
@@ -475,7 +493,11 @@ class _ModRow extends StatelessWidget {
             ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
-        _StepButton(icon: Icons.remove, tooltip: '$label verringern', onPressed: onDecrement),
+        _StepButton(
+          icon: Icons.remove,
+          tooltip: '$label verringern',
+          onPressed: onDecrement,
+        ),
         const SizedBox(width: 4),
         SizedBox(
           width: 44,
@@ -489,7 +511,11 @@ class _ModRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        _StepButton(icon: Icons.add, tooltip: '$label erhoehen', onPressed: onIncrement),
+        _StepButton(
+          icon: Icons.add,
+          tooltip: '$label erhoehen',
+          onPressed: onIncrement,
+        ),
       ],
     );
   }
@@ -578,9 +604,7 @@ class _RuestungCard extends StatelessWidget {
                       Text(
                         'RS ${piece.rs}  BE ${piece.be}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -650,9 +674,9 @@ class _StatRow extends StatelessWidget {
           ),
           Text(
             value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
         ],
       ),
