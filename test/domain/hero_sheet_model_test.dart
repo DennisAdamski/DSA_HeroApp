@@ -10,7 +10,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 
 void main() {
   test('hero sheet roundtrip with expanded basis fields', () {
-    const hero = HeroSheet(
+    final hero = HeroSheet(
       id: 'h1',
       name: 'Test',
       level: 3,
@@ -56,11 +56,14 @@ void main() {
       apTotal: 2000,
       apSpent: 1500,
       apAvailable: 500,
-      talents: {
+      talents: <String, HeroTalentEntry>{
         'tal_schwerter': HeroTalentEntry(
           talentValue: 11,
           atValue: 8,
           paValue: 3,
+          talentModifiers: <HeroTalentModifier>[
+            HeroTalentModifier(modifier: 2, description: 'Meisterliche Haltung'),
+          ],
         ),
       },
       metaTalents: [
@@ -149,6 +152,11 @@ void main() {
     expect(reloaded.startAttributes.kk, 12);
     expect(reloaded.talents['tal_schwerter']?.atValue, 8);
     expect(reloaded.talents['tal_schwerter']?.paValue, 3);
+    expect(reloaded.talents['tal_schwerter']?.modifier, 2);
+    expect(
+      reloaded.talents['tal_schwerter']?.talentModifiers.single.description,
+      'Meisterliche Haltung',
+    );
     expect(
       reloaded.spells['spell_axxeleratus']?.textOverrides?.wirkung,
       'Eigenes Heldendetail',

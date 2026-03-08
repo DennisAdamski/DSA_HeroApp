@@ -227,6 +227,56 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     );
   }
 
+  Widget _talentModifierCell({
+    required TalentDef talent,
+    required HeroTalentEntry entry,
+    required bool isEditing,
+  }) {
+    if (!isEditing) {
+      return _textCell(
+        _formatWholeNumber(entry.modifier),
+        key: ValueKey<String>('talents-field-${talent.id}-modifier-total'),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              _formatWholeNumber(entry.modifier),
+              key: ValueKey<String>('talents-field-${talent.id}-modifier-total'),
+            ),
+          ),
+          IconButton(
+            key: ValueKey<String>('talents-modifiers-edit-${talent.id}'),
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            tooltip: 'Modifikatoren bearbeiten',
+            onPressed: () => _openTalentModifiersDialog(talent: talent, entry: entry),
+            icon: const Icon(Icons.tune),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openTalentModifiersDialog({
+    required TalentDef talent,
+    required HeroTalentEntry entry,
+  }) async {
+    final result = await _showTalentModifiersDialog(
+      context: context,
+      talentName: talent.name,
+      initialModifiers: entry.talentModifiers,
+    );
+    if (result == null) {
+      return;
+    }
+    _updateTalentModifiers(talent.id, result);
+  }
+
   Widget _specializationBadgesCell({
     required String talentId,
     required HeroTalentEntry entry,

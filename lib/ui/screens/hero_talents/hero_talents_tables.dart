@@ -94,7 +94,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               5: const FixedColumnWidth(60),
               6: const FixedColumnWidth(90),
               7: const FixedColumnWidth(90),
-              8: const FixedColumnWidth(70),
+              8: const FixedColumnWidth(120),
               9: const FixedColumnWidth(70),
               10: const FixedColumnWidth(190),
               if (isEditing) 11: const FixedColumnWidth(95),
@@ -257,10 +257,9 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         isEditing: isEditing,
       ),
       _textCell(_formatWholeNumber(maxTaw)),
-      _intInputCell(
-        talentId: talent.id,
-        field: 'modifier',
-        value: entry.modifier,
+      _talentModifierCell(
+        talent: talent,
+        entry: entry,
         isEditing: isEditing,
       ),
       _intInputCell(
