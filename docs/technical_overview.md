@@ -87,7 +87,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 11
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 12
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
@@ -97,7 +97,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 11) | Format-Version für Migrationskompatibilität |
+| `schemaVersion` | `int` (= 12) | Format-Version für Migrationskompatibilität |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
@@ -249,8 +249,9 @@ In `HeroSheet` werden `persistentMods` (aus geparsten Vor-/Nachteilen, dauerhaft
 |---|---|---|
 | `name` | `String` | Anzeigename |
 | `talentId` | `String` | Zugehöriges Kampftalent (ID aus Katalog) |
+| `combatType` | `WeaponCombatType` | Explizite Einordnung als Nah- oder Fernkampfwaffe |
 | `weaponType` | `String` | Waffenkategorie |
-| `distanceClass` | `String` | Distanzklasse |
+| `distanceClass` | `String` | Distanzklasse der Nahkampfwaffe (Legacy-kompatibel) |
 | `kkBase` | `int` | KK-Basis für TP-Bonus-Berechnung |
 | `kkThreshold` | `int` | KK-Schwelle für TP-Schritte |
 | `breakFactor` | `int` | Bruchfaktor der Waffe |
@@ -259,18 +260,67 @@ In `HeroSheet` werden `persistentMods` (aus geparsten Vor-/Nachteilen, dauerhaft
 | `tpFlat` | `int` | Flacher TP-Bonus |
 | `wmAt` | `int` | Waffenmodifikator Angriff |
 | `wmPa` | `int` | Waffenmodifikator Parade |
+| `wmFk` | `int` | Waffenmodifikator Fernkampf |
 | `iniMod` | `int` | Initiative-Modifikator |
 | `beTalentMod` | `int` | BE-Modifikator für diese Waffe |
 | `isOneHanded` | `bool` | Einhändig vs. zweihändig |
 | `isArtifact` | `bool` | Markiert die Waffe als Artefakt |
 | `artifactDescription` | `String` | Freitext-Beschreibung des Artefakts |
+| `rangedProfile` | `RangedWeaponProfile?` | Zusatzdaten für Distanzstufen, Ladezeit und Geschosse |
 
 `CombatConfig.weaponSlots` gibt `[mainWeapon]` zurück falls `weapons` leer ist (Legacy-
 Kompatibilität), sonst `weapons`.
 
+Legacy-Waffen ohne `combatType` werden tolerant als Nahkampfwaffen geladen.
+Fernkampfwaffen persistieren ihre aktive Distanzstufe und den aktuell gewählten
+Geschosstyp direkt im Waffenslot.
+
 In der Kampf-UI bleiben nur `Waffentalent` und `BF` inline editierbar. Weitere
 Waffenbasiswerte werden im gruppierten Waffen-Dialog bearbeitet; berechnete
-TP-/INI-Zwischenwerte sind dort als read-only Vorschau sichtbar.
+TP-/INI-/FK-Zwischenwerte sind dort als read-only Vorschau sichtbar.
+
+#### `WeaponCombatType`
+
+**Datei:** `lib/domain/combat_config/weapon_combat_type.dart`
+
+| Wert | Bedeutung |
+|---|---|
+| `melee` | Nahkampfwaffe |
+| `ranged` | Fernkampfwaffe |
+
+#### `RangedDistanceBand`
+
+**Datei:** `lib/domain/combat_config/ranged_distance_band.dart`
+
+| Feld | Typ | Bedeutung |
+|---|---|---|
+| `label` | `String` | Frei benennbare Entfernungsstufe |
+| `tpMod` | `int` | TP-Modifikator dieser Distanz |
+
+#### `RangedProjectile`
+
+**Datei:** `lib/domain/combat_config/ranged_projectile.dart`
+
+| Feld | Typ | Bedeutung |
+|---|---|---|
+| `name` | `String` | Anzeigename des Geschosses |
+| `count` | `int` | Persistenter Bestand |
+| `tpMod` | `int` | TP-Modifikator des Geschosses |
+| `iniMod` | `int` | INI-Modifikator des Geschosses |
+| `fkMod` | `int` | FK-Modifikator des Geschosses |
+| `description` | `String` | Beschreibung / Notiz |
+
+#### `RangedWeaponProfile`
+
+**Datei:** `lib/domain/combat_config/ranged_weapon_profile.dart`
+
+| Feld | Typ | Bedeutung |
+|---|---|---|
+| `reloadTime` | `int` | Feste Ladezeit der Waffe |
+| `distanceBands` | `List<RangedDistanceBand>` | Genau fünf editierbare Distanzstufen |
+| `projectiles` | `List<RangedProjectile>` | Frei pflegbare Geschossarten |
+| `selectedDistanceIndex` | `int` | Aktive Distanzstufe im Kampf-Tab |
+| `selectedProjectileIndex` | `int` | Aktives Geschoss im Kampf-Tab |
 
 #### `OffhandSlot` & `OffhandMode`
 
@@ -333,6 +383,7 @@ Manuell eingetragene Kampfmodifikatoren (situativ):
 | `ausweichenMod` | Ausweichen-Modifikator |
 | `atMod` | Angriff-Modifikator |
 | `paMod` | Parade-Modifikator |
+| `fkMod` | Fernkampf-Modifikator |
 | `iniWurf` | Gewürfeltes Ini-Ergebnis (1W6 oder 2W6) |
 
 ---
@@ -511,8 +562,11 @@ Kampftalente erkennt man an: `group == 'Kampftalent'` **oder** `weaponCategory !
 | `possibleManeuvers` | Alle verfügbaren Manöver |
 | `activeManeuvers` | Standardmäßig aktivierte Manöver |
 | `tpkk` | TP/KK-Skalierungsnotation |
-| `iniMod`, `atMod`, `paMod` | Waffenmodifikatoren |
+| `iniMod`, `atMod`, `paMod`, `fkMod` | Waffenmodifikatoren |
 | `reach` | Reichweite |
+| `reloadTime` | Feste Ladezeit von Fernkampfwaffen |
+| `rangedDistanceBands` | Optionale Vorlage für die 5 Distanzstufen einer Fernkampfwaffe |
+| `rangedProjectiles` | Optionale Geschoss-Vorlagen |
 | `active` | Im App verfügbar? |
 
 ### `SpellDef`
@@ -679,14 +733,35 @@ zusaetzlich um weitere `+2`.
 | GS | finaler GS-Wert wird verdoppelt |
 | Anzeige | `Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2` |
 
-### 4.6 Waffe & Schaden
+### 4.6 Waffe, FK & Schaden
 
-**Datei:** `lib/rules/derived/waffen_rules.dart`
+**Dateien:** `lib/rules/derived/combat_rules.dart`,
+`lib/rules/derived/fernkampf_rules.dart`
 
 ```
 tpKk = truncate((KK − kkBase) / kkThreshold)   # Kraftbonus auf TP
 tpExpression = "NW6" oder "NW6±M"
 ```
+
+**Fernkampf-Formel:**
+
+```
+fk = fkBasis
+   + talentValue
+   + wmFk
+   + atEbePart
+   + spezialisierung
+   + projectileFkMod
+   + manualFkMod
+```
+
+Dabei gilt:
+- `spezialisierung = +2`, wenn eine passende Fernkampf-Spezialisierung auf den
+  aktuellen Waffentyp greift.
+- Die aktive Distanzstufe beeinflusst nur `TP`.
+- Das aktive Geschoss beeinflusst `TP`, `INI` und `FK`.
+- `reloadTime` wird direkt aus `RangedWeaponProfile` gelesen und im Preview
+  unverändert angezeigt.
 
 **Spezialisierungs-Boni:**
 
@@ -704,6 +779,11 @@ tpExpression = "NW6" oder "NW6±M"
 | Schild + Schildkampf I | — | `basePaMod + 3` |
 | Parierwaffe + PW II | — | `basePaMod + 2` |
 | Parierwaffe + PW I | — | `basePaMod − 1` |
+
+`CombatPreviewStats` liefert für Nahkampf weiterhin `AT`/`PA`; bei
+Fernkampfwaffen enthält derselbe Snapshot stattdessen `FK`, die aktive
+Distanzbezeichnung, Ladezeit sowie den selektierten Geschossnamen,
+Geschossbestand und dessen Beschreibung.
 
 ### 4.7 Modifier-Parser
 
@@ -925,7 +1005,7 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 | `hero_workspace_screen.dart` | `HeroWorkspaceScreen` | Tab-Host für einen Helden (6 Tabs) |
 | `hero_overview_tab.dart` | `HeroOverviewTab` | Status-Tab fuer Eigenschaften, AP, Ressourcen, Biografie |
 | `hero_talents_tab.dart` | `HeroTalentsTab` | Talente + Sonderfertigkeiten-Sub-Tab |
-| `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Nahkampf, SF, Manöver |
+| `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Kampf (Nah- oder Fernkampf), SF, Manöver |
 | `hero_magic_tab.dart` | `HeroMagicTab` | Zauber, Ritualkategorien/Rituale sowie Repräsentationen und magische SF |
 | `hero_inventory_tab.dart` | `HeroInventoryTab` | 12-spaltige editierbare Inventartabelle |
 | `hero_notes_tab.dart` | `HeroNotesTab` | Untertabs für freie Notizen und Verbindungen |
@@ -983,7 +1063,7 @@ flutter drive --profile \
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` für `HeroSheet` ist **11**.
+- Die aktuelle `schemaVersion` für `HeroSheet` ist **12**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 1 wird **strikt** validiert.
 

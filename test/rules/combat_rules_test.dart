@@ -378,6 +378,113 @@ void main() {
     expect(withResult.pa, withoutResult.pa);
   });
 
+  test('ranged FK uses talentValue instead of AT value', () {
+    const catalogTalents = <TalentDef>[
+      TalentDef(
+        id: 'tal_boegen',
+        name: 'Boegen',
+        group: 'Kampftalent',
+        type: 'Fernkampf',
+        steigerung: 'D',
+        attributes: <String>['Intuition', 'Fingerfertigkeit', 'Koerperkraft'],
+      ),
+    ];
+    final sheet = hero(
+      talents: const {
+        'tal_boegen': HeroTalentEntry(
+          talentValue: 7,
+          atValue: 1,
+          combatSpecializations: <String>['Kurzbogen'],
+        ),
+      },
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(
+          name: 'Kurzbogen',
+          talentId: 'tal_boegen',
+          combatType: WeaponCombatType.ranged,
+          weaponType: 'Kurzbogen',
+          wmFk: 2,
+        ),
+        manualMods: CombatManualMods(fkMod: 1),
+      ),
+    );
+
+    final result = preview(sheet, catalogTalents: catalogTalents);
+
+    expect(result.isRangedWeapon, isTrue);
+    expect(result.fk, result.fkBase + 7 + 2 + result.specBonus + 1);
+  });
+
+  test('ranged distance and projectile modify TP, FK and INI as intended', () {
+    const catalogTalents = <TalentDef>[
+      TalentDef(
+        id: 'tal_boegen',
+        name: 'Boegen',
+        group: 'Kampftalent',
+        type: 'Fernkampf',
+        steigerung: 'D',
+        attributes: <String>['Intuition', 'Fingerfertigkeit', 'Koerperkraft'],
+      ),
+    ];
+    final base = hero(
+      talents: const {'tal_boegen': HeroTalentEntry(talentValue: 6)},
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(
+          name: 'Kurzbogen',
+          talentId: 'tal_boegen',
+          combatType: WeaponCombatType.ranged,
+          weaponType: 'Kurzbogen',
+          tpFlat: 4,
+          rangedProfile: RangedWeaponProfile(
+            distanceBands: <RangedDistanceBand>[
+              RangedDistanceBand(label: 'Nah', tpMod: 0),
+              RangedDistanceBand(label: 'Mittel', tpMod: 0),
+              RangedDistanceBand(label: 'Weit', tpMod: 0),
+              RangedDistanceBand(label: 'Sehr weit', tpMod: 0),
+              RangedDistanceBand(label: 'Extrem', tpMod: 0),
+            ],
+          ),
+        ),
+      ),
+    );
+    final modified = base.copyWith(
+      combatConfig: base.combatConfig.copyWith(
+        mainWeapon: base.combatConfig.mainWeapon.copyWith(
+          rangedProfile: const RangedWeaponProfile(
+            distanceBands: <RangedDistanceBand>[
+              RangedDistanceBand(label: 'Nah', tpMod: 2),
+              RangedDistanceBand(label: 'Mittel', tpMod: 0),
+              RangedDistanceBand(label: 'Weit', tpMod: 0),
+              RangedDistanceBand(label: 'Sehr weit', tpMod: 0),
+              RangedDistanceBand(label: 'Extrem', tpMod: 0),
+            ],
+            projectiles: <RangedProjectile>[
+              RangedProjectile(
+                name: 'Kriegspfeil',
+                count: 6,
+                tpMod: 1,
+                iniMod: -2,
+                fkMod: 3,
+              ),
+            ],
+            selectedDistanceIndex: 0,
+            selectedProjectileIndex: 0,
+          ),
+        ),
+      ),
+    );
+
+    final baseResult = preview(base, catalogTalents: catalogTalents);
+    final modifiedResult = preview(modified, catalogTalents: catalogTalents);
+
+    expect(modifiedResult.tpCalc, baseResult.tpCalc + 3);
+    expect(modifiedResult.fk, baseResult.fk + 3);
+    expect(
+      modifiedResult.kombinierteHeldenWaffenIni,
+      baseResult.kombinierteHeldenWaffenIni - 2,
+    );
+  });
+
   test(
     'Spezialisierung matching is strict and does not allow partial matches',
     () {

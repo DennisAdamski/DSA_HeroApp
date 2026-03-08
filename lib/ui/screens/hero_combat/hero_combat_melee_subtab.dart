@@ -1,15 +1,29 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 
 extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
-  List<TalentDef> _sortedMeleeTalents(List<TalentDef> combatTalents) {
-    final talents =
-        combatTalents
-            .where((talent) => talent.type.trim().toLowerCase() == 'nahkampf')
-            .toList(growable: false)
-          ..sort(
-            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-          );
+  List<TalentDef> _sortedCombatTalents(List<TalentDef> combatTalents) {
+    final talents = List<TalentDef>.from(combatTalents, growable: false)
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     return talents;
+  }
+
+  List<TalentDef> _sortedCombatTalentsForType(
+    List<TalentDef> combatTalents,
+    WeaponCombatType combatType,
+  ) {
+    return _sortedCombatTalents(combatTalents)
+        .where((talent) => _combatTypeFromTalent(talent) == combatType)
+        .toList(growable: false);
+  }
+
+  WeaponCombatType _combatTypeFromTalent(TalentDef talent) {
+    return talent.type.trim().toLowerCase() == 'fernkampf'
+        ? WeaponCombatType.ranged
+        : WeaponCombatType.melee;
+  }
+
+  String _combatTypeLabel(WeaponCombatType combatType) {
+    return combatType == WeaponCombatType.ranged ? 'Fernkampf' : 'Nahkampf';
   }
 
   TalentDef? _findTalentById(List<TalentDef> talents, String talentId) {
@@ -42,6 +56,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
   List<String> _weaponTypeOptionsForTalent({
     required TalentDef? talent,
     required RulesCatalog catalog,
+    required WeaponCombatType combatType,
   }) {
     if (talent == null) {
       return const <String>[];
@@ -50,7 +65,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     final options = <String>[];
     final talentNameToken = _normalizeToken(talent.name);
     for (final weapon in catalog.weapons) {
-      if (weapon.type.trim().toLowerCase() != 'nahkampf') {
+      if (weaponCombatTypeFromJson(weapon.type) != combatType) {
         continue;
       }
       if (_normalizeToken(weapon.combatSkill) != talentNameToken) {
@@ -77,13 +92,13 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
   /// Findet die Talent-ID zu einem Kampftalent-Namen aus dem Katalog.
   String _findTalentIdByName(
     String combatSkillName,
-    List<TalentDef> meleeTalents,
+    List<TalentDef> combatTalents,
   ) {
     final needle = _normalizeToken(combatSkillName);
     if (needle.isEmpty) {
       return '';
     }
-    for (final talent in meleeTalents) {
+    for (final talent in combatTalents) {
       if (_normalizeToken(talent.name) == needle) {
         return talent.id;
       }
@@ -94,7 +109,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
   /// Erstellt einen MainWeaponSlot aus einer Katalog-Waffenvorlage.
   MainWeaponSlot _weaponSlotFromCatalog(
     WeaponDef weapon,
-    List<TalentDef> meleeTalents,
+    List<TalentDef> combatTalents,
   ) {
     final tpMatch = RegExp(
       r'^\s*(\d+)\s*[wW]\s*6\s*([+-]\s*\d+)?\s*$',
@@ -108,9 +123,18 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         : int.parse((tpMatch.group(2) ?? '0').replaceAll(' ', ''));
     final kkBase = tpkkMatch == null ? 0 : int.parse(tpkkMatch.group(1)!);
     final kkThreshold = tpkkMatch == null ? 1 : int.parse(tpkkMatch.group(2)!);
+    final combatType = weaponCombatTypeFromJson(weapon.type);
+    final rangedProfile = combatType == WeaponCombatType.ranged
+        ? RangedWeaponProfile(
+            reloadTime: weapon.reloadTime,
+            distanceBands: weapon.rangedDistanceBands,
+            projectiles: weapon.rangedProjectiles,
+          )
+        : const RangedWeaponProfile();
     return MainWeaponSlot(
       name: weapon.name,
-      talentId: _findTalentIdByName(weapon.combatSkill, meleeTalents),
+      talentId: _findTalentIdByName(weapon.combatSkill, combatTalents),
+      combatType: combatType,
       weaponType: weapon.name,
       distanceClass: weapon.reach,
       kkBase: kkBase,
@@ -119,7 +143,9 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
       tpFlat: tpFlat,
       wmAt: weapon.atMod,
       wmPa: weapon.paMod,
+      wmFk: weapon.fkMod,
       iniMod: weapon.iniMod,
+      rangedProfile: rangedProfile,
     );
   }
 
@@ -128,15 +154,12 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     required RulesCatalog catalog,
     required HeroSheet hero,
     required HeroState heroState,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
   }) {
-    final meleeWeapons =
-        catalog.weapons
-            .where((w) => w.active && w.type.trim().toLowerCase() == 'nahkampf')
-            .toList(growable: false)
-          ..sort(
-            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-          );
+    final catalogWeapons =
+        catalog.weapons.where((w) => w.active).toList(growable: false)..sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
 
     showModalBottomSheet<void>(
       context: context,
@@ -160,16 +183,16 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               ),
               Expanded(
                 child: _WeaponCatalogTable(
-                  weapons: meleeWeapons,
-                  meleeTalents: meleeTalents,
+                  weapons: catalogWeapons,
+                  meleeTalents: combatTalents,
                   onSelectWeapon: (weapon) async {
-                    final slot = _weaponSlotFromCatalog(weapon, meleeTalents);
+                    final slot = _weaponSlotFromCatalog(weapon, combatTalents);
                     Navigator.of(ctx).pop();
                     await _openWeaponEditor(
                       catalog: catalog,
                       hero: hero,
                       heroState: heroState,
-                      meleeTalents: meleeTalents,
+                      combatTalents: combatTalents,
                       initialSlot: slot,
                       catalogWeaponName: weapon.name,
                     );
@@ -197,20 +220,20 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     required RulesCatalog catalog,
     required HeroSheet hero,
     required HeroState heroState,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
   }) async {
     await _openWeaponEditor(
       catalog: catalog,
       hero: hero,
       heroState: heroState,
-      meleeTalents: meleeTalents,
+      combatTalents: combatTalents,
     );
   }
 
   Future<void> _removeWeaponSlotAt(
     int slotIndex, {
     required RulesCatalog catalog,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
   }) async {
     final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
     if (slotIndex < 0 || slotIndex >= slots.length || slots.length <= 1) {
@@ -232,7 +255,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     );
     await _persistCombatConfigIfReadonly(
       catalog: catalog,
-      meleeTalents: meleeTalents,
+      combatTalents: combatTalents,
     );
   }
 
@@ -240,7 +263,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     int slotIndex,
     MainWeaponSlot Function(MainWeaponSlot current) update, {
     required RulesCatalog catalog,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
   }) async {
     final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
     if (slotIndex < 0 || slotIndex >= slots.length) {
@@ -254,7 +277,86 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     );
     await _persistCombatConfigIfReadonly(
       catalog: catalog,
-      meleeTalents: meleeTalents,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _updateSelectedRangedDistance(
+    int nextDistanceIndex, {
+    required RulesCatalog catalog,
+  }) async {
+    final selectedIndex = _selectedWeaponIndex();
+    final combatTalents = _sortedCombatTalents(
+      catalog.talents.where(isCombatTalentDef).toList(growable: false),
+    );
+    await _updateWeaponSlot(
+      selectedIndex,
+      (current) => current.copyWith(
+        rangedProfile: current.rangedProfile.copyWith(
+          selectedDistanceIndex: nextDistanceIndex,
+        ),
+      ),
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _updateSelectedRangedProjectile(
+    int nextProjectileIndex, {
+    required RulesCatalog catalog,
+  }) async {
+    final selectedIndex = _selectedWeaponIndex();
+    final combatTalents = _sortedCombatTalents(
+      catalog.talents.where(isCombatTalentDef).toList(growable: false),
+    );
+    await _updateWeaponSlot(
+      selectedIndex,
+      (current) => current.copyWith(
+        rangedProfile: current.rangedProfile.copyWith(
+          selectedProjectileIndex: nextProjectileIndex,
+        ),
+      ),
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _adjustSelectedProjectileCount(
+    int delta, {
+    required RulesCatalog catalog,
+  }) async {
+    final selectedIndex = _selectedWeaponIndex();
+    final activeWeapon = _draftCombatConfig.selectedWeaponOrNull;
+    if (selectedIndex < 0 || activeWeapon == null) {
+      return;
+    }
+    final projectileIndex = activeWeapon.rangedProfile.selectedProjectileIndex;
+    if (projectileIndex < 0 ||
+        projectileIndex >= activeWeapon.rangedProfile.projectiles.length) {
+      return;
+    }
+    final combatTalents = _sortedCombatTalents(
+      catalog.talents.where(isCombatTalentDef).toList(growable: false),
+    );
+    await _updateWeaponSlot(
+      selectedIndex,
+      (current) {
+        final updatedProjectiles = List<RangedProjectile>.from(
+          current.rangedProfile.projectiles,
+        );
+        final currentProjectile = updatedProjectiles[projectileIndex];
+        final nextCount = (currentProjectile.count + delta).clamp(0, 9999);
+        updatedProjectiles[projectileIndex] = currentProjectile.copyWith(
+          count: nextCount,
+        );
+        return current.copyWith(
+          rangedProfile: current.rangedProfile.copyWith(
+            projectiles: updatedProjectiles,
+          ),
+        );
+      },
+      catalog: catalog,
+      combatTalents: combatTalents,
     );
   }
 
@@ -292,7 +394,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
   Future<void> _saveWeaponSlot({
     required MainWeaponSlot slot,
     required RulesCatalog catalog,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
     int? slotIndex,
   }) async {
     final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
@@ -310,7 +412,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     );
     await _persistCombatConfigIfReadonly(
       catalog: catalog,
-      meleeTalents: meleeTalents,
+      combatTalents: combatTalents,
     );
   }
 
@@ -318,7 +420,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     required RulesCatalog catalog,
     required HeroSheet hero,
     required HeroState heroState,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
     int? slotIndex,
     MainWeaponSlot? initialSlot,
     String? catalogWeaponName,
@@ -335,7 +437,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         return _WeaponEditorDialog(
           isNew: slotIndex == null,
           initialSlot: sourceSlot,
-          meleeTalents: meleeTalents,
+          meleeTalents: combatTalents,
           catalog: catalog,
           catalogWeaponName: catalogWeaponName,
           previewBuilder: (slot) => _previewForWeaponSlot(
@@ -354,7 +456,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     await _saveWeaponSlot(
       slot: result,
       catalog: catalog,
-      meleeTalents: meleeTalents,
+      combatTalents: combatTalents,
       slotIndex: slotIndex,
     );
   }
@@ -362,7 +464,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
   Future<void> _setArmorPieces(
     List<ArmorPiece> pieces, {
     required RulesCatalog catalog,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
   }) async {
     await _applyCombatConfigChange(
       nextConfig: _draftCombatConfig.copyWith(
@@ -371,26 +473,30 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         ),
       ),
       catalog: catalog,
-      meleeTalents: meleeTalents,
+      combatTalents: combatTalents,
     );
   }
 
   Future<void> _removeArmorPiece(
     int index, {
     required RulesCatalog catalog,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
   }) async {
     final pieces = List<ArmorPiece>.from(_draftCombatConfig.armor.pieces);
     if (index < 0 || index >= pieces.length) {
       return;
     }
     pieces.removeAt(index);
-    await _setArmorPieces(pieces, catalog: catalog, meleeTalents: meleeTalents);
+    await _setArmorPieces(
+      pieces,
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
   }
 
   Future<void> _openArmorPieceEditor({
     required RulesCatalog catalog,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
     int? pieceIndex,
   }) async {
     final pieces = _draftCombatConfig.armor.pieces;
@@ -539,7 +645,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     await _setArmorPieces(
       updatedPieces,
       catalog: catalog,
-      meleeTalents: meleeTalents,
+      combatTalents: combatTalents,
     );
   }
 
@@ -551,7 +657,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
   ) {
     final weaponSlots = _draftCombatConfig.weaponSlots;
     final selectedWeaponIndex = _selectedWeaponIndex();
-    final sortedTalents = _sortedMeleeTalents(combatTalents);
+    final sortedTalents = _sortedCombatTalents(combatTalents);
     final overviewRows = _weaponOverviewRows(
       hero: hero,
       heroState: heroState,
@@ -581,7 +687,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     catalog: catalog,
                     hero: hero,
                     heroState: heroState,
-                    meleeTalents: sortedTalents,
+                    combatTalents: sortedTalents,
                   ),
                   preHeaderRows: [
                     _weaponOverviewFilterRow(
@@ -617,7 +723,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     final offhand = _draftCombatConfig.offhand;
     final armor = _draftCombatConfig.armor;
     final manual = _draftCombatConfig.manualMods;
-    final sortedTalents = _sortedMeleeTalents(combatTalents);
+    final sortedTalents = _sortedCombatTalents(combatTalents);
 
     return ListView(
       padding: const EdgeInsets.all(12),
@@ -626,7 +732,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
           builder: (context, constraints) {
             final selectionCard = _buildActiveWeaponSelectionCard(
               catalog: catalog,
-              meleeTalents: sortedTalents,
+              combatTalents: sortedTalents,
               selectedWeaponIndex: selectedWeaponIndex,
               weaponSlots: weaponSlots,
             );
@@ -700,7 +806,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                         ),
                       ),
                       catalog: catalog,
-                      meleeTalents: sortedTalents,
+                      combatTalents: sortedTalents,
                     );
                   },
                 ),
@@ -717,7 +823,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                         ),
                       ),
                       catalog: catalog,
-                      meleeTalents: sortedTalents,
+                      combatTalents: sortedTalents,
                     );
                   },
                 ),
@@ -738,7 +844,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                             ),
                           ),
                           catalog: catalog,
-                          meleeTalents: sortedTalents,
+                          combatTalents: sortedTalents,
                         );
                       },
                     ),
@@ -754,7 +860,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                             ),
                           ),
                           catalog: catalog,
-                          meleeTalents: sortedTalents,
+                          combatTalents: sortedTalents,
                         );
                       },
                     ),
@@ -770,7 +876,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                             ),
                           ),
                           catalog: catalog,
-                          meleeTalents: sortedTalents,
+                          combatTalents: sortedTalents,
                         );
                       },
                     ),
@@ -860,6 +966,17 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                       },
                     ),
                     _numberInput(
+                      label: 'FK Mod',
+                      keyName: 'combat-manual-fk-mod',
+                      isEditing: isEditing,
+                      onChanged: (parsed) {
+                        _draftCombatConfig = _draftCombatConfig.copyWith(
+                          manualMods: manual.copyWith(fkMod: parsed),
+                        );
+                        _markFieldChanged();
+                      },
+                    ),
+                    _numberInput(
                       label: 'PA Mod',
                       keyName: 'combat-manual-pa-mod',
                       isEditing: isEditing,
@@ -913,8 +1030,12 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     ),
                     Chip(label: Text('Kampf INI: ${preview.kampfInitiative}')),
                     _resultChip('Ausweichen', preview.ausweichen),
-                    _resultChip('AT', preview.at),
-                    _resultChip('PA', preview.paMitIniParadeMod),
+                    _resultChip(
+                      preview.isRangedWeapon ? 'FK' : 'AT',
+                      preview.isRangedWeapon ? preview.fk : preview.at,
+                    ),
+                    if (!preview.isRangedWeapon)
+                      _resultChip('PA', preview.paMitIniParadeMod),
                     _resultChip('eBE', preview.ebe),
                     Chip(label: Text('TP: ${preview.tpExpression}')),
                   ],
@@ -929,7 +1050,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
 
   Widget _buildActiveWeaponSelectionCard({
     required RulesCatalog catalog,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
     required int selectedWeaponIndex,
     required List<MainWeaponSlot> weaponSlots,
   }) {
@@ -971,7 +1092,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                 _selectWeaponIndex(
                   value,
                   catalog: catalog,
-                  meleeTalents: meleeTalents,
+                  combatTalents: combatTalents,
                 );
               },
             ),
@@ -1005,7 +1126,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   key: const ValueKey<String>('combat-armor-add'),
                   onPressed: () => _openArmorPieceEditor(
                     catalog: catalog,
-                    meleeTalents: sortedTalents,
+                    combatTalents: sortedTalents,
                   ),
                   icon: const Icon(Icons.add),
                   label: const Text('Ruestung hinzufuegen'),
@@ -1058,7 +1179,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                                   tooltip: 'Ruestung bearbeiten',
                                   onPressed: () => _openArmorPieceEditor(
                                     catalog: catalog,
-                                    meleeTalents: sortedTalents,
+                                    combatTalents: sortedTalents,
                                     pieceIndex: i,
                                   ),
                                   icon: const Icon(Icons.edit),
@@ -1071,7 +1192,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                                   onPressed: () => _removeArmorPiece(
                                     i,
                                     catalog: catalog,
-                                    meleeTalents: sortedTalents,
+                                    combatTalents: sortedTalents,
                                   ),
                                   icon: const Icon(Icons.delete),
                                 ),
@@ -1164,6 +1285,9 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     final hasActiveWeapon =
         selectedWeaponIndex >= 0 &&
         selectedWeaponIndex < _draftCombatConfig.weaponSlots.length;
+    final activeWeapon = hasActiveWeapon
+        ? _draftCombatConfig.weaponSlots[selectedWeaponIndex]
+        : const MainWeaponSlot();
     final activeSupportedManeuvers = hasActiveWeapon
         ? _activeSupportedManeuversForSelectedWeapon(catalog)
         : const <String>[];
@@ -1186,65 +1310,214 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  Chip(
-                    key: const ValueKey<String>('combat-active-weapon-info-at'),
-                    label: Text('AT: ${preview.at}'),
-                  ),
-                  Chip(
-                    key: const ValueKey<String>('combat-active-weapon-info-pa'),
-                    label: Text('PA: ${preview.paMitIniParadeMod}'),
-                  ),
+                  if (preview.isRangedWeapon)
+                    Chip(
+                      key: const ValueKey<String>(
+                        'combat-active-weapon-info-fk',
+                      ),
+                      label: Text('FK: ${preview.fk}'),
+                    )
+                  else ...[
+                    Chip(
+                      key: const ValueKey<String>(
+                        'combat-active-weapon-info-at',
+                      ),
+                      label: Text('AT: ${preview.at}'),
+                    ),
+                    Chip(
+                      key: const ValueKey<String>(
+                        'combat-active-weapon-info-pa',
+                      ),
+                      label: Text('PA: ${preview.paMitIniParadeMod}'),
+                    ),
+                  ],
                   Chip(
                     key: const ValueKey<String>('combat-active-weapon-info-tp'),
                     label: Text('TP: ${preview.tpExpression}'),
                   ),
-                  Chip(
-                    key: const ValueKey<String>(
-                      'combat-active-weapon-info-helden-ini',
+                  if (preview.isRangedWeapon) ...[
+                    Chip(
+                      key: const ValueKey<String>(
+                        'combat-active-weapon-info-reload-time',
+                      ),
+                      label: Text('Ladezeit: ${preview.reloadTime}'),
                     ),
-                    label: Text(_heldenIniLabel(preview)),
-                  ),
-                  Chip(
-                    key: const ValueKey<String>(
-                      'combat-active-weapon-info-helden-waffen-ini',
+                    Chip(
+                      key: const ValueKey<String>(
+                        'combat-active-weapon-info-projectile-count',
+                      ),
+                      label: Text(
+                        'Geschosse: ${preview.activeProjectileCount}',
+                      ),
                     ),
-                    label: Text(_heldenWaffenIniLabel(preview)),
-                  ),
-                  Chip(
-                    key: const ValueKey<String>(
-                      'combat-active-weapon-info-ini',
+                  ] else ...[
+                    Chip(
+                      key: const ValueKey<String>(
+                        'combat-active-weapon-info-helden-ini',
+                      ),
+                      label: Text(_heldenIniLabel(preview)),
                     ),
-                    label: Text(_kampfIniLabel(preview)),
-                  ),
+                    Chip(
+                      key: const ValueKey<String>(
+                        'combat-active-weapon-info-helden-waffen-ini',
+                      ),
+                      label: Text(_heldenWaffenIniLabel(preview)),
+                    ),
+                    Chip(
+                      key: const ValueKey<String>(
+                        'combat-active-weapon-info-ini',
+                      ),
+                      label: Text(_kampfIniLabel(preview)),
+                    ),
+                  ],
                 ],
               ),
-              const SizedBox(height: 8),
-              _activeWeaponIniRollEditor(preview),
-              const SizedBox(height: 12),
+              if (preview.isRangedWeapon) ...[
+                const SizedBox(height: 8),
+                DropdownButtonFormField<int>(
+                  key: const ValueKey<String>(
+                    'combat-active-weapon-distance-select',
+                  ),
+                  initialValue:
+                      activeWeapon.rangedProfile.selectedDistanceIndex,
+                  decoration: const InputDecoration(
+                    labelText: 'Entfernung',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    for (
+                      var i = 0;
+                      i < activeWeapon.rangedProfile.distanceBands.length;
+                      i++
+                    )
+                      DropdownMenuItem<int>(
+                        value: i,
+                        child: Text(
+                          activeWeapon.rangedProfile.distanceBands[i].label
+                                  .trim()
+                                  .isEmpty
+                              ? 'Distanz ${i + 1}'
+                              : activeWeapon
+                                    .rangedProfile
+                                    .distanceBands[i]
+                                    .label,
+                        ),
+                      ),
+                  ],
+                  onChanged: (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    _updateSelectedRangedDistance(value, catalog: catalog);
+                  },
+                ),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<int?>(
+                  key: const ValueKey<String>(
+                    'combat-active-weapon-projectile-select',
+                  ),
+                  initialValue:
+                      activeWeapon.rangedProfile.selectedProjectileIndex < 0
+                      ? null
+                      : activeWeapon.rangedProfile.selectedProjectileIndex,
+                  decoration: const InputDecoration(
+                    labelText: 'Geschoss',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    const DropdownMenuItem<int?>(
+                      value: null,
+                      child: Text('Kein Geschoss'),
+                    ),
+                    for (
+                      var i = 0;
+                      i < activeWeapon.rangedProfile.projectiles.length;
+                      i++
+                    )
+                      DropdownMenuItem<int?>(
+                        value: i,
+                        child: Text(
+                          activeWeapon.rangedProfile.projectiles[i].name
+                                  .trim()
+                                  .isEmpty
+                              ? 'Geschoss ${i + 1}'
+                              : activeWeapon.rangedProfile.projectiles[i].name,
+                        ),
+                      ),
+                  ],
+                  onChanged: (value) {
+                    _updateSelectedRangedProjectile(
+                      value ?? -1,
+                      catalog: catalog,
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    IconButton(
+                      key: const ValueKey<String>(
+                        'combat-active-weapon-projectile-count-decrement',
+                      ),
+                      onPressed: () =>
+                          _adjustSelectedProjectileCount(-1, catalog: catalog),
+                      icon: const Icon(Icons.remove),
+                    ),
+                    IconButton(
+                      key: const ValueKey<String>(
+                        'combat-active-weapon-projectile-count-increment',
+                      ),
+                      onPressed: () =>
+                          _adjustSelectedProjectileCount(1, catalog: catalog),
+                      icon: const Icon(Icons.add),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        preview.activeProjectileDescription.trim().isEmpty
+                            ? 'Keine Geschossbeschreibung vorhanden.'
+                            : preview.activeProjectileDescription,
+                        key: const ValueKey<String>(
+                          'combat-active-weapon-info-projectile-description',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ] else ...[
+                const SizedBox(height: 8),
+                _activeWeaponIniRollEditor(preview),
+                const SizedBox(height: 12),
+              ],
               buildWeaponCalculationDetails(
                 preview: preview,
                 isEditing: _editController.isEditing,
               ),
-              const SizedBox(height: 8),
-              Text('Manoever', style: Theme.of(context).textTheme.titleSmall),
-              const SizedBox(height: 4),
-              if (activeSupportedManeuvers.isEmpty)
-                const Text(
-                  'Keine erlernten, waffenkompatiblen Manoever.',
-                  key: ValueKey<String>('combat-active-weapon-info-maneuvers'),
-                )
-              else
-                Wrap(
-                  key: const ValueKey<String>(
-                    'combat-active-weapon-info-maneuvers',
+              if (!preview.isRangedWeapon) ...[
+                const SizedBox(height: 8),
+                Text('Manoever', style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 4),
+                if (activeSupportedManeuvers.isEmpty)
+                  const Text(
+                    'Keine erlernten, waffenkompatiblen Manoever.',
+                    key: ValueKey<String>(
+                      'combat-active-weapon-info-maneuvers',
+                    ),
+                  )
+                else
+                  Wrap(
+                    key: const ValueKey<String>(
+                      'combat-active-weapon-info-maneuvers',
+                    ),
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final maneuver in activeSupportedManeuvers)
+                        Chip(label: Text(maneuver)),
+                    ],
                   ),
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final maneuver in activeSupportedManeuvers)
-                      Chip(label: Text(maneuver)),
-                  ],
-                ),
+              ],
             ],
           ],
         ),
@@ -1368,6 +1641,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
 
   static const List<String> _weaponOverviewHeaders = <String>[
     'Name',
+    'Typ',
     'Waffentalent',
     'Waffenart',
     'DK',
@@ -1386,7 +1660,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     required RulesCatalog catalog,
     required HeroSheet hero,
     required HeroState heroState,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
   }) {
     final cells = <Widget>[
       Row(
@@ -1402,7 +1676,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               catalog: catalog,
               hero: hero,
               heroState: heroState,
-              meleeTalents: meleeTalents,
+              combatTalents: combatTalents,
             ),
             icon: const Icon(Icons.add, size: 18),
           ),
@@ -1416,7 +1690,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               catalog: catalog,
               hero: hero,
               heroState: heroState,
-              meleeTalents: meleeTalents,
+              combatTalents: combatTalents,
             ),
             icon: const Icon(Icons.library_add, size: 18),
           ),
@@ -1447,6 +1721,10 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     required List<TalentDef> sortedTalents,
     required List<MainWeaponSlot> weaponSlots,
   }) {
+    final combatTypeValues = weaponSlots
+        .map((slot) => slot.combatType)
+        .toSet()
+        .toList(growable: false);
     final weaponTypeValues =
         weaponSlots
             .map((slot) => slot.weaponType.trim())
@@ -1465,6 +1743,12 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         sortedTalents.any((talent) => talent.id == _weaponFilterTalentId)
         ? _weaponFilterTalentId
         : '';
+    final filteredCombatTypeValue =
+        combatTypeValues.any(
+          (value) => weaponCombatTypeToJson(value) == _weaponFilterCombatType,
+        )
+        ? _weaponFilterCombatType
+        : '';
     final filteredTypeValue = weaponTypeValues.contains(_weaponFilterType)
         ? _weaponFilterType
         : '';
@@ -1478,6 +1762,31 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
       growable: false,
     );
     cells[1] = DropdownButtonFormField<String>(
+      key: const ValueKey<String>('combat-weapons-filter-combat-type'),
+      initialValue: filteredCombatTypeValue,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: 'Filter Typ',
+        border: OutlineInputBorder(),
+        isDense: true,
+      ),
+      items: [
+        const DropdownMenuItem<String>(value: '', child: Text('Alle')),
+        ...combatTypeValues.map(
+          (combatType) => DropdownMenuItem<String>(
+            value: weaponCombatTypeToJson(combatType),
+            child: Text(_combatTypeLabel(combatType)),
+          ),
+        ),
+      ],
+      onChanged: (value) {
+        _weaponFilterCombatType = value ?? '';
+        if (mounted) {
+          _viewRevision.value++;
+        }
+      },
+    );
+    cells[2] = DropdownButtonFormField<String>(
       key: const ValueKey<String>('combat-weapons-filter-talent'),
       initialValue: filteredTalentValue,
       isExpanded: true,
@@ -1506,7 +1815,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         }
       },
     );
-    cells[2] = DropdownButtonFormField<String>(
+    cells[3] = DropdownButtonFormField<String>(
       key: const ValueKey<String>('combat-weapons-filter-weapon-type'),
       initialValue: filteredTypeValue,
       isExpanded: true,
@@ -1535,7 +1844,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         }
       },
     );
-    cells[3] = DropdownButtonFormField<String>(
+    cells[4] = DropdownButtonFormField<String>(
       key: const ValueKey<String>('combat-weapons-filter-dk'),
       initialValue: filteredDkValue,
       isExpanded: true,
@@ -1582,6 +1891,9 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         .map((slot) => slot.weaponType.trim())
         .where((value) => value.isNotEmpty)
         .toSet();
+    final availableCombatTypes = weaponSlots
+        .map((slot) => weaponCombatTypeToJson(slot.combatType))
+        .toSet();
     final availableDistanceClasses = weaponSlots
         .map((slot) => slot.distanceClass.trim())
         .where((value) => value.isNotEmpty)
@@ -1589,6 +1901,10 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     final activeTalentFilter =
         sortedTalents.any((talent) => talent.id == _weaponFilterTalentId)
         ? _weaponFilterTalentId
+        : '';
+    final activeCombatTypeFilter =
+        availableCombatTypes.contains(_weaponFilterCombatType)
+        ? _weaponFilterCombatType
         : '';
     final activeTypeFilter = availableTypes.contains(_weaponFilterType)
         ? _weaponFilterType
@@ -1608,6 +1924,11 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     final filtered = ordered
         .where((entry) {
           final slot = entry.slot;
+          if (activeCombatTypeFilter.isNotEmpty &&
+              weaponCombatTypeToJson(slot.combatType) !=
+                  activeCombatTypeFilter) {
+            return false;
+          }
           if (activeTalentFilter.isNotEmpty &&
               slot.talentId.trim() != activeTalentFilter) {
             return false;
@@ -1627,6 +1948,10 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     return filtered
         .map((entry) {
           final slot = entry.slot;
+          final talentOptions = _sortedCombatTalentsForType(
+            sortedTalents,
+            slot.combatType,
+          );
           final preview = computeCombatPreviewStats(
             hero,
             heroState,
@@ -1652,13 +1977,18 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                 catalog: catalog,
                 hero: hero,
                 heroState: heroState,
-                meleeTalents: sortedTalents,
+                combatTalents: sortedTalents,
                 slotIndex: entry.index,
               ),
             ),
+            Text(_combatTypeLabel(slot.combatType)),
             DropdownButtonFormField<String>(
               key: ValueKey<String>('combat-weapon-cell-talent-${entry.index}'),
-              initialValue: talentById.containsKey(slot.talentId.trim())
+              initialValue:
+                  talentById.containsKey(slot.talentId.trim()) &&
+                      talentOptions.any(
+                        (talent) => talent.id == slot.talentId.trim(),
+                      )
                   ? slot.talentId.trim()
                   : '',
               isExpanded: true,
@@ -1668,7 +1998,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               ),
               items: [
                 const DropdownMenuItem<String>(value: '', child: Text('-')),
-                ...sortedTalents.map(
+                ...talentOptions.map(
                   (talent) => DropdownMenuItem<String>(
                     value: talent.id,
                     child: Text(
@@ -1681,10 +2011,11 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               ],
               onChanged: (value) {
                 final nextTalentId = value ?? '';
-                final nextTalent = _findTalentById(sortedTalents, nextTalentId);
+                final nextTalent = _findTalentById(talentOptions, nextTalentId);
                 final allowedWeaponTypes = _weaponTypeOptionsForTalent(
                   talent: nextTalent,
                   catalog: catalog,
+                  combatType: slot.combatType,
                 );
                 final nextWeaponType =
                     allowedWeaponTypes.contains(slot.weaponType.trim())
@@ -1702,18 +2033,24 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     name: nextName,
                   ),
                   catalog: catalog,
-                  meleeTalents: sortedTalents,
+                  combatTalents: sortedTalents,
                 );
               },
             ),
             Text(slot.weaponType.trim().isEmpty ? '-' : slot.weaponType.trim()),
             Text(
-              slot.distanceClass.trim().isEmpty
-                  ? '-'
-                  : slot.distanceClass.trim(),
+              slot.isRanged
+                  ? (slot.rangedProfile.selectedDistanceBand.label
+                            .trim()
+                            .isEmpty
+                        ? '-'
+                        : slot.rangedProfile.selectedDistanceBand.label.trim())
+                  : (slot.distanceClass.trim().isEmpty
+                        ? '-'
+                        : slot.distanceClass.trim()),
             ),
-            Text(preview.at.toString()),
-            Text(preview.pa.toString()),
+            Text(slot.isRanged ? preview.fk.toString() : preview.at.toString()),
+            Text(slot.isRanged ? '-' : preview.pa.toString()),
             Text(preview.tpExpression),
             Text(
               preview.kombinierteHeldenWaffenIni.toString(),
@@ -1730,7 +2067,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   (current) =>
                       current.copyWith(breakFactor: parsed < 0 ? 0 : parsed),
                   catalog: catalog,
-                  meleeTalents: sortedTalents,
+                  combatTalents: sortedTalents,
                 );
               },
             ),
@@ -1750,7 +2087,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   : () => _removeWeaponSlotAt(
                       entry.index,
                       catalog: catalog,
-                      meleeTalents: sortedTalents,
+                      combatTalents: sortedTalents,
                     ),
               icon: const Icon(Icons.delete),
             ),
