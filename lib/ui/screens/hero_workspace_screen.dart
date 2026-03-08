@@ -18,14 +18,20 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_placeholder_
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
-/// Mindestbreite in logischen Pixeln ab der das Command-Deck-Layout aktiv wird.
-const double _commandDeckBreakpoint = 1280;
+/// Mindestbreite in logischen Pixeln ab der das Helden-Deck-Layout aktiv wird.
+const double _heroDeckBreakpoint = 1280;
 
-/// Breite der Command-Deck-Navigationsleiste in Pixeln.
-const double _commandDeckNavigationWidth = 240;
+/// Breite der ausgefahrenen Helden-Deck-Navigationsleiste in Pixeln.
+const double _heroDeckNavigationWidth = 240;
 
-/// Breite des Command-Deck-Inspectors in Pixeln.
-const double _commandDeckInspectorWidth = 300;
+/// Breite der eingeklappten Helden-Deck-Umschaltleiste in Pixeln.
+const double _heroDeckCollapsedWidth = 56;
+
+/// Breite des ausgefahrenen rechten Workspace-Panels in Pixeln.
+const double _heroDeckInspectorWidth = 300;
+
+/// Breite der eingeklappten rechten Workspace-Umschaltleiste in Pixeln.
+const double _heroDeckInspectorCollapsedWidth = 56;
 
 // Tab-Indizes fuer die Workspace-Tabs.
 const int _overviewTabIndex = 0;
@@ -38,7 +44,7 @@ const int _inventoryTabIndex = 4;
 ///
 /// Hostet sechs Tabs (Uebersicht, Talente, Kampf, Magie, Inventar, Notizen)
 /// und verwaltet Tab-Navigation mit Discard-Guard fuer ungespeicherte Aenderungen.
-/// Auf breiten Bildschirmen (>= 1280 dp) wird das Command-Deck-Layout aktiviert.
+/// Auf breiten Bildschirmen (>= 1280 dp) wird das Helden-Deck-Layout aktiviert.
 class HeroWorkspaceScreen extends ConsumerStatefulWidget {
   const HeroWorkspaceScreen({super.key, required this.heroId});
 
@@ -58,6 +64,8 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   bool _handlingTabChange = false;
   bool _revertingTabChange = false;
   bool _runningEditAction = false;
+  bool _heroDeckExpanded = true;
+  bool _workspaceDetailsExpanded = true;
 
   @override
   void initState() {
@@ -252,9 +260,12 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       );
     }
 
-    final headerActions = tabActions?.headerActions ?? const <WorkspaceHeaderAction>[];
+    final headerActions =
+        tabActions?.headerActions ?? const <WorkspaceHeaderAction>[];
     for (final action in headerActions) {
-      final shouldShow = isEditing ? action.showWhenEditing : action.showWhenIdle;
+      final shouldShow = isEditing
+          ? action.showWhenEditing
+          : action.showWhenIdle;
       if (!shouldShow) {
         continue;
       }
@@ -357,8 +368,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         ),
         HeroMagicTab(
           heroId: widget.heroId,
-          onDirtyChanged: (isDirty) =>
-              _updateDirty(_magicTabIndex, isDirty),
+          onDirtyChanged: (isDirty) => _updateDirty(_magicTabIndex, isDirty),
           onEditingChanged: (isEditing) =>
               _updateEditing(_magicTabIndex, isEditing),
           onRegisterDiscard: (discardAction) =>
@@ -392,16 +402,38 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
-  /// Command-Deck-Layout: Navigation links, Inhalt mittig, Inspector rechts.
-  Widget _buildCommandDeckWorkspaceBody(HeroSheet hero) {
+  /// Schaltet das linke Helden-Deck zwischen ein- und ausgefahren um.
+  void _toggleHeroDeckExpanded() {
+    setState(() {
+      _heroDeckExpanded = !_heroDeckExpanded;
+    });
+  }
+
+  /// Schaltet das rechte Workspace-Detailpanel zwischen ein- und ausgefahren um.
+  void _toggleWorkspaceDetailsExpanded() {
+    setState(() {
+      _workspaceDetailsExpanded = !_workspaceDetailsExpanded;
+    });
+  }
+
+  /// Helden-Deck-Layout: Navigation links, Inhalt mittig, Inspector rechts.
+  Widget _buildHeroDeckWorkspaceBody(HeroSheet hero) {
     final activeTabIndex = _tabRegistry.activeTabIndex;
+    final navigationWidth = _heroDeckExpanded
+        ? _heroDeckNavigationWidth
+        : _heroDeckCollapsedWidth;
+    final detailsWidth = _workspaceDetailsExpanded
+        ? _heroDeckInspectorWidth
+        : _heroDeckInspectorCollapsedWidth;
     return Row(
       children: [
         SizedBox(
-          width: _commandDeckNavigationWidth,
+          width: navigationWidth,
           child: WorkspaceCommandDeckNavigationPanel(
             activeTabIndex: activeTabIndex,
+            isExpanded: _heroDeckExpanded,
             isDirty: _tabRegistry.isDirty,
+            onToggleExpanded: _toggleHeroDeckExpanded,
             onSelectTab: (index) {
               if (_tabController.index == index) {
                 return;
@@ -421,8 +453,12 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         ),
         const VerticalDivider(width: 1),
         SizedBox(
-          width: _commandDeckInspectorWidth,
-          child: WorkspaceInspectorPanel(heroId: widget.heroId),
+          width: detailsWidth,
+          child: WorkspaceInspectorPanel(
+            heroId: widget.heroId,
+            isExpanded: _workspaceDetailsExpanded,
+            onToggleExpanded: _toggleWorkspaceDetailsExpanded,
+          ),
         ),
       ],
     );
@@ -431,8 +467,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   @override
   Widget build(BuildContext context) {
     final hero = ref.watch(heroByIdProvider(widget.heroId));
-    final useCommandDeck =
-        MediaQuery.sizeOf(context).width >= _commandDeckBreakpoint;
+    final useHeroDeck = MediaQuery.sizeOf(context).width >= _heroDeckBreakpoint;
 
     if (hero == null) {
       return Scaffold(
@@ -457,10 +492,10 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
             onPressed: _navigateToHomeWithGuard,
           ),
           actions: _buildSpacedWorkspaceActions(_buildWorkspaceActions()),
-          bottom: useCommandDeck ? null : _buildWorkspaceTabBar(),
+          bottom: useHeroDeck ? null : _buildWorkspaceTabBar(),
         ),
-        body: useCommandDeck
-            ? _buildCommandDeckWorkspaceBody(hero)
+        body: useHeroDeck
+            ? _buildHeroDeckWorkspaceBody(hero)
             : _buildClassicWorkspaceBody(hero),
       ),
     );

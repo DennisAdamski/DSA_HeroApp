@@ -89,6 +89,14 @@ void main() {
     return find.descendant(of: find.byType(TabBar), matching: find.text(label));
   }
 
+  Finder heroDeckToggleButton() {
+    return find.byKey(const ValueKey<String>('hero-deck-toggle'));
+  }
+
+  Finder workspaceDetailsToggleButton() {
+    return find.byKey(const ValueKey<String>('workspace-details-toggle'));
+  }
+
   RulesCatalog buildCatalog() {
     return const RulesCatalog(
       version: 'test_catalog',
@@ -386,11 +394,11 @@ void main() {
       final state = await repo.loadHeroState('demo');
       expect(state, isNotNull);
       expect(state!.tempAttributeMods.mu, 3);
+      expect(tester.widget<TextField>(muTempField).controller?.text, '3');
       expect(
-        tester.widget<TextField>(muTempField).controller?.text,
-        '3',
+        find.descendant(of: muEffective, matching: find.text('17')),
+        findsOne,
       );
-      expect(find.descendant(of: muEffective, matching: find.text('17')), findsOne);
       expect(find.text('Bearbeiten'), findsOneWidget);
       expect(find.text('Speichern'), findsNothing);
       expect(find.text('Abbrechen'), findsNothing);
@@ -439,11 +447,11 @@ void main() {
       var state = await repo.loadHeroState('demo');
       expect(state, isNotNull);
       expect(state!.tempAttributeMods.mu, 99);
+      expect(tester.widget<TextField>(muTempField).controller?.text, '99');
       expect(
-        tester.widget<TextField>(muTempField).controller?.text,
-        '99',
+        find.descendant(of: muEffective, matching: find.text('113')),
+        findsOne,
       );
-      expect(find.descendant(of: muEffective, matching: find.text('113')), findsOne);
       expect(find.text('Speichern'), findsNothing);
 
       await tester.tap(muTempField);
@@ -455,11 +463,11 @@ void main() {
       state = await repo.loadHeroState('demo');
       expect(state, isNotNull);
       expect(state!.tempAttributeMods.mu, -99);
+      expect(tester.widget<TextField>(muTempField).controller?.text, '-99');
       expect(
-        tester.widget<TextField>(muTempField).controller?.text,
-        '-99',
+        find.descendant(of: muEffective, matching: find.text('-85')),
+        findsOne,
       );
-      expect(find.descendant(of: muEffective, matching: find.text('-85')), findsOne);
 
       await tester.tap(muTempField);
       await tester.pump();
@@ -470,11 +478,11 @@ void main() {
       state = await repo.loadHeroState('demo');
       expect(state, isNotNull);
       expect(state!.tempAttributeMods.mu, 0);
+      expect(tester.widget<TextField>(muTempField).controller?.text, '0');
       expect(
-        tester.widget<TextField>(muTempField).controller?.text,
-        '0',
+        find.descendant(of: muEffective, matching: find.text('14')),
+        findsOne,
       );
-      expect(find.descendant(of: muEffective, matching: find.text('14')), findsOne);
       expect(find.text('Speichern'), findsNothing);
       expect(find.text('Abbrechen'), findsNothing);
     },
@@ -918,6 +926,107 @@ void main() {
     final rasseModNarrow = tester.getTopLeft(rasseModFinder).dy;
     expect((nameNarrow - rasseNarrow).abs(), greaterThan(4));
     expect((rasseNarrow - rasseModNarrow).abs(), greaterThan(4));
+  });
+
+  testWidgets('wide workspace shows Helden Deck instead of TabBar', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+    expect(find.text('Helden Deck'), findsOneWidget);
+    expect(find.byType(TabBar), findsNothing);
+    expect(find.text('Inspector'), findsNothing);
+    expect(find.text('Ressourcen'), findsOneWidget);
+    expect(heroDeckToggleButton(), findsOneWidget);
+    expect(workspaceDetailsToggleButton(), findsOneWidget);
+  });
+
+  testWidgets('wide workspace can collapse and expand Helden Deck', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+    expect(find.text('Helden Deck'), findsOneWidget);
+    expect(find.text('Uebersicht'), findsWidgets);
+    expect(find.text('Ressourcen'), findsOneWidget);
+
+    await tester.tap(heroDeckToggleButton());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Helden Deck'), findsNothing);
+    expect(find.byTooltip('Helden-Deck einblenden'), findsOneWidget);
+    expect(find.text('Uebersicht'), findsNothing);
+    expect(find.text('Ressourcen'), findsOneWidget);
+    expect(find.text('Basisinformationen'), findsOneWidget);
+
+    await tester.tap(heroDeckToggleButton());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Helden Deck'), findsOneWidget);
+    expect(find.byTooltip('Helden-Deck ausblenden'), findsOneWidget);
+    expect(find.text('Uebersicht'), findsWidgets);
+  });
+
+  testWidgets('wide workspace can collapse and expand right details panel', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+    expect(find.text('Inspector'), findsNothing);
+    expect(find.text('Ressourcen'), findsOneWidget);
+    expect(workspaceDetailsToggleButton(), findsOneWidget);
+
+    await tester.tap(workspaceDetailsToggleButton());
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Details einblenden'), findsOneWidget);
+    expect(find.text('Ressourcen'), findsNothing);
+    expect(find.text('Kampfwerte'), findsNothing);
+    expect(find.text('Basisinformationen'), findsOneWidget);
+    expect(find.text('Helden Deck'), findsOneWidget);
+
+    await tester.tap(workspaceDetailsToggleButton());
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Details ausblenden'), findsOneWidget);
+    expect(find.text('Ressourcen'), findsOneWidget);
+    expect(find.text('Kampfwerte'), findsOneWidget);
   });
 
   testWidgets('overview shows attributes and derived in responsive section', (
