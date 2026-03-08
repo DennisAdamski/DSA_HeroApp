@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
@@ -62,7 +63,10 @@ void main() {
           atValue: 8,
           paValue: 3,
           talentModifiers: <HeroTalentModifier>[
-            HeroTalentModifier(modifier: 2, description: 'Meisterliche Haltung'),
+            HeroTalentModifier(
+              modifier: 2,
+              description: 'Meisterliche Haltung',
+            ),
           ],
         ),
       },
@@ -85,6 +89,53 @@ void main() {
           ),
         ),
       },
+      ritualCategories: <HeroRitualCategory>[
+        HeroRitualCategory(
+          id: 'ritual_cat_1',
+          name: 'Flueche',
+          knowledgeMode: HeroRitualKnowledgeMode.ownKnowledge,
+          ownKnowledge: HeroRitualKnowledge(
+            name: 'Flueche',
+            value: 5,
+            learningComplexity: 'E',
+          ),
+          additionalFieldDefs: <HeroRitualFieldDef>[
+            HeroRitualFieldDef(
+              id: 'field_probe',
+              label: 'Probe',
+              type: HeroRitualFieldType.threeAttributes,
+            ),
+            HeroRitualFieldDef(
+              id: 'field_ausloeser',
+              label: 'Ausloeser',
+              type: HeroRitualFieldType.text,
+            ),
+          ],
+          rituals: <HeroRitualEntry>[
+            HeroRitualEntry(
+              name: 'Hexenfluch',
+              wirkung: 'Verhaengt grosses Unheil.',
+              kosten: '7 AsP',
+              wirkungsdauer: '7 Tage',
+              merkmale: 'Einfluss',
+              zauberdauer: '30 Minuten',
+              zielobjekt: 'Einzelperson',
+              reichweite: '7 Schritt',
+              technik: 'Blickkontakt',
+              additionalFieldValues: <HeroRitualFieldValue>[
+                HeroRitualFieldValue(
+                  fieldDefId: 'field_probe',
+                  attributeCodes: <String>['MU', 'CH', 'IN'],
+                ),
+                HeroRitualFieldValue(
+                  fieldDefId: 'field_ausloeser',
+                  textValue: 'Beim Vollmond',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
       combatConfig: CombatConfig(
         mainWeapon: MainWeaponSlot(
           name: 'Kurzschwert',
@@ -133,7 +184,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 9);
+    expect(reloaded.schemaVersion, 10);
     expect(reloaded.kultur, 'Mittelreich');
     expect(reloaded.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -167,6 +218,24 @@ void main() {
     expect(
       reloaded.spells['spell_axxeleratus']?.textOverrides?.variants,
       <String>['Nur fuer diesen Helden'],
+    );
+    expect(reloaded.ritualCategories.single.name, 'Flueche');
+    expect(
+      reloaded.ritualCategories.single.ownKnowledge?.learningComplexity,
+      'E',
+    );
+    expect(reloaded.ritualCategories.single.additionalFieldDefs.length, 2);
+    expect(reloaded.ritualCategories.single.rituals.single.name, 'Hexenfluch');
+    expect(
+      reloaded
+          .ritualCategories
+          .single
+          .rituals
+          .single
+          .additionalFieldValues
+          .first
+          .attributeCodes,
+      <String>['MU', 'CH', 'IN'],
     );
     expect(reloaded.combatConfig.mainWeapon.name, 'Kurzschwert');
     expect(reloaded.combatConfig.mainWeapon.isArtifact, isTrue);
@@ -217,6 +286,7 @@ void main() {
     expect(loaded.talentSpecialAbilities, '');
     expect(loaded.unknownModifierFragments, isEmpty);
     expect(loaded.metaTalents, isEmpty);
+    expect(loaded.ritualCategories, isEmpty);
     expect(loaded.rawStartAttributes.mu, loaded.attributes.mu);
     expect(loaded.rawStartAttributes.kk, loaded.attributes.kk);
     expect(loaded.startAttributes.mu, loaded.attributes.mu);
