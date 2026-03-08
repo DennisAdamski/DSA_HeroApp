@@ -48,17 +48,23 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
     _breakFactorController = TextEditingController(
       text: _draftSlot.breakFactor.toString(),
     );
-    _kkBaseController = TextEditingController(text: _draftSlot.kkBase.toString());
+    _kkBaseController = TextEditingController(
+      text: _draftSlot.kkBase.toString(),
+    );
     _kkThresholdController = TextEditingController(
       text: _draftSlot.kkThreshold.toString(),
     );
-    _iniModController = TextEditingController(text: _draftSlot.iniMod.toString());
+    _iniModController = TextEditingController(
+      text: _draftSlot.iniMod.toString(),
+    );
     _wmAtController = TextEditingController(text: _draftSlot.wmAt.toString());
     _wmPaController = TextEditingController(text: _draftSlot.wmPa.toString());
     _tpDiceCountController = TextEditingController(
       text: _draftSlot.tpDiceCount.toString(),
     );
-    _tpFlatController = TextEditingController(text: _draftSlot.tpFlat.toString());
+    _tpFlatController = TextEditingController(
+      text: _draftSlot.tpFlat.toString(),
+    );
     _artifactDescriptionController = TextEditingController(
       text: _draftSlot.artifactDescription,
     );
@@ -157,9 +163,9 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
     if (talentId.trim().isEmpty) {
       return true;
     }
-    return _talentOptionsForWeaponType(weaponType).any(
-      (talent) => talent.id == talentId.trim(),
-    );
+    return _talentOptionsForWeaponType(
+      weaponType,
+    ).any((talent) => talent.id == talentId.trim());
   }
 
   void _setDraftSlot(MainWeaponSlot next) {
@@ -267,7 +273,8 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
     final title = widget.isNew ? 'Waffe hinzufuegen' : 'Waffe bearbeiten';
     final currentWeaponType = _draftSlot.weaponType.trim();
     final talentOptions = _talentOptionsForWeaponType(currentWeaponType);
-    final currentTalentId = _isTalentValidForWeaponType(
+    final currentTalentId =
+        _isTalentValidForWeaponType(
           talentId: _draftSlot.talentId,
           weaponType: currentWeaponType,
         )
@@ -324,9 +331,11 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                       key: const ValueKey<String>(
                         'combat-weapon-form-weapon-type',
                       ),
-                      initialValue: _allWeaponTypeOptions().contains(currentWeaponType)
+                      initialValue:
+                          _allWeaponTypeOptions().contains(currentWeaponType)
                           ? currentWeaponType
                           : '',
+                      isExpanded: true,
                       decoration: const InputDecoration(
                         labelText: 'Waffenart',
                         border: OutlineInputBorder(),
@@ -339,13 +348,18 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                         ..._allWeaponTypeOptions().map(
                           (weaponType) => DropdownMenuItem<String>(
                             value: weaponType,
-                            child: Text(weaponType),
+                            child: Text(
+                              weaponType,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
                       ],
                       onChanged: (value) {
                         final nextWeaponType = value ?? '';
-                        final nextTalentId = _isTalentValidForWeaponType(
+                        final nextTalentId =
+                            _isTalentValidForWeaponType(
                               talentId: _draftSlot.talentId,
                               weaponType: nextWeaponType,
                             )
@@ -414,12 +428,16 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                     SizedBox(
                       width: 220,
                       child: DropdownButtonFormField<String>(
-                        key: const ValueKey<String>('combat-weapon-form-talent'),
-                        initialValue: talentOptions.any(
+                        key: const ValueKey<String>(
+                          'combat-weapon-form-talent',
+                        ),
+                        initialValue:
+                            talentOptions.any(
                               (talent) => talent.id == currentTalentId,
                             )
                             ? currentTalentId
                             : '',
+                        isExpanded: true,
                         decoration: const InputDecoration(
                           labelText: 'Waffentalent',
                           border: OutlineInputBorder(),
@@ -433,7 +451,11 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                           ...talentOptions.map(
                             (talent) => DropdownMenuItem<String>(
                               value: talent.id,
-                              child: Text(talent.name),
+                              child: Text(
+                                talent.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
                         ],
@@ -455,7 +477,9 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                         title: const Text('Einhaendig'),
                         value: _draftSlot.isOneHanded,
                         onChanged: (value) {
-                          _setDraftSlot(_draftSlot.copyWith(isOneHanded: value));
+                          _setDraftSlot(
+                            _draftSlot.copyWith(isOneHanded: value),
+                          );
                         },
                       ),
                     ),
@@ -529,7 +553,9 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                       controller: _tpDiceCountController,
                       onChanged: (parsed) {
                         _setDraftSlot(
-                          _draftSlot.copyWith(tpDiceCount: parsed < 1 ? 1 : parsed),
+                          _draftSlot.copyWith(
+                            tpDiceCount: parsed < 1 ? 1 : parsed,
+                          ),
                         );
                       },
                     ),
@@ -565,7 +591,9 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                       controller: _kkThresholdController,
                       onChanged: (parsed) {
                         _setDraftSlot(
-                          _draftSlot.copyWith(kkThreshold: parsed < 1 ? 1 : parsed),
+                          _draftSlot.copyWith(
+                            kkThreshold: parsed < 1 ? 1 : parsed,
+                          ),
                         );
                       },
                     ),
@@ -619,7 +647,9 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SwitchListTile(
-                      key: const ValueKey<String>('combat-weapon-form-artifact'),
+                      key: const ValueKey<String>(
+                        'combat-weapon-form-artifact',
+                      ),
                       contentPadding: EdgeInsets.zero,
                       title: const Text('Artefakt'),
                       value: _draftSlot.isArtifact,
@@ -663,7 +693,8 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
           key: const ValueKey<String>('combat-weapon-form-save'),
           onPressed: () {
             final normalizedWeaponType = _draftSlot.weaponType.trim();
-            final normalizedTalentId = _isTalentValidForWeaponType(
+            final normalizedTalentId =
+                _isTalentValidForWeaponType(
                   talentId: _draftSlot.talentId,
                   weaponType: normalizedWeaponType,
                 )
@@ -679,19 +710,15 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                 _draftSlot.breakFactor,
               ).clamp(0, 9999).toInt(),
               kkBase: _readInt(_kkBaseController, _draftSlot.kkBase),
-              kkThreshold: _readInt(
-                _kkThresholdController,
-                _draftSlot.kkThreshold,
-              ) < 1
+              kkThreshold:
+                  _readInt(_kkThresholdController, _draftSlot.kkThreshold) < 1
                   ? 1
                   : _readInt(_kkThresholdController, _draftSlot.kkThreshold),
               iniMod: _readInt(_iniModController, _draftSlot.iniMod),
               wmAt: _readInt(_wmAtController, _draftSlot.wmAt),
               wmPa: _readInt(_wmPaController, _draftSlot.wmPa),
-              tpDiceCount: _readInt(
-                _tpDiceCountController,
-                _draftSlot.tpDiceCount,
-              ) < 1
+              tpDiceCount:
+                  _readInt(_tpDiceCountController, _draftSlot.tpDiceCount) < 1
                   ? 1
                   : _readInt(_tpDiceCountController, _draftSlot.tpDiceCount),
               tpFlat: _readInt(_tpFlatController, _draftSlot.tpFlat),
