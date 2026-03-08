@@ -98,6 +98,32 @@ void main() {
           tp: '1W6',
           possibleManeuvers: <String>['Finte'],
         ),
+        WeaponDef(
+          id: 'wpn_kurzbogen',
+          name: 'Kurzbogen',
+          type: 'Fernkampf',
+          combatSkill: 'Boegen',
+          tp: '1W6+4',
+          fkMod: 1,
+          reloadTime: 3,
+          rangedDistanceBands: <RangedDistanceBand>[
+            RangedDistanceBand(label: 'Nah', tpMod: 2),
+            RangedDistanceBand(label: 'Mittel', tpMod: 0),
+            RangedDistanceBand(label: 'Weit', tpMod: -1),
+            RangedDistanceBand(label: 'Sehr weit', tpMod: -2),
+            RangedDistanceBand(label: 'Extrem', tpMod: -4),
+          ],
+          rangedProjectiles: <RangedProjectile>[
+            RangedProjectile(
+              name: 'Jagdspitze',
+              count: 8,
+              tpMod: 1,
+              iniMod: -1,
+              fkMod: 2,
+              description: 'Breite Spitze fuer Wild.',
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -397,7 +423,7 @@ void main() {
 
     expect(find.widgetWithText(Tab, 'Kampftechniken'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Waffen'), findsOneWidget);
-    expect(find.widgetWithText(Tab, 'Nahkampf'), findsOneWidget);
+    expect(find.widgetWithText(Tab, 'Kampf'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Sonderfertigkeiten'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Manoever'), findsOneWidget);
   });
@@ -424,7 +450,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
     final axxHintFinder = find.text(
       'Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2',
@@ -953,7 +979,7 @@ void main() {
 
     await openCombatTab(tester, repo);
 
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey<String>('combat-weapon-add')),
@@ -1242,7 +1268,7 @@ void main() {
 
     await openCombatTab(tester, repo);
 
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey<String>('combat-main-weapon-select-0-2')),
@@ -1272,7 +1298,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey<String>('combat-main-weapon-select-0-2')),
@@ -1358,7 +1384,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey<String>('combat-main-weapon-select-0-2')),
@@ -1405,7 +1431,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
 
     await tester.tap(
@@ -1473,7 +1499,7 @@ void main() {
       );
 
       await openCombatTab(tester, repo);
-      await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+      await tester.tap(find.widgetWithText(Tab, 'Kampf'));
       await tester.pumpAndSettle();
 
       expect(
@@ -1576,7 +1602,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
 
     expect(
@@ -1615,7 +1641,7 @@ void main() {
       );
 
       await openCombatTab(tester, repo);
-      await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+      await tester.tap(find.widgetWithText(Tab, 'Kampf'));
       await tester.pumpAndSettle();
 
       expect(
@@ -1673,7 +1699,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -1725,7 +1751,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
 
     final rollField = tester.widget<TextField>(
@@ -1769,7 +1795,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
 
     expect(
@@ -1787,6 +1813,134 @@ void main() {
     );
   });
 
+  testWidgets(
+    'ranged info panel shows FK, distance, projectile data and updates ammo count',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              weapons: <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzbogen',
+                  talentId: 'tal_fern',
+                  combatType: WeaponCombatType.ranged,
+                  weaponType: 'Kurzbogen',
+                  tpFlat: 4,
+                  wmFk: 1,
+                  rangedProfile: RangedWeaponProfile(
+                    reloadTime: 3,
+                    distanceBands: <RangedDistanceBand>[
+                      RangedDistanceBand(label: 'Nah', tpMod: 2),
+                      RangedDistanceBand(label: 'Mittel', tpMod: 0),
+                      RangedDistanceBand(label: 'Weit', tpMod: -1),
+                      RangedDistanceBand(label: 'Sehr weit', tpMod: -2),
+                      RangedDistanceBand(label: 'Extrem', tpMod: -4),
+                    ],
+                    projectiles: <RangedProjectile>[
+                      RangedProjectile(
+                        name: 'Jagdspitze',
+                        count: 8,
+                        tpMod: 1,
+                        iniMod: -1,
+                        fkMod: 2,
+                        description: 'Breite Spitze fuer Wild.',
+                      ),
+                    ],
+                    selectedDistanceIndex: 1,
+                    selectedProjectileIndex: 0,
+                  ),
+                ),
+              ],
+              selectedWeaponIndex: 0,
+            ),
+            talents: const <String, HeroTalentEntry>{
+              'tal_fern': HeroTalentEntry(talentValue: 8, atValue: 8),
+            },
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo);
+      await tester.tap(find.widgetWithText(Tab, 'Kampf'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('combat-active-weapon-info-fk')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('combat-active-weapon-info-reload-time'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('combat-active-weapon-projectile-select'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('combat-active-weapon-distance-select'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Breite Spitze fuer Wild.'), findsOneWidget);
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>(
+            'combat-active-weapon-projectile-count-decrement',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      var heroes = await repo.listHeroes();
+      var hero = heroes.firstWhere((entry) => entry.id == 'demo');
+      expect(
+        hero
+            .combatConfig
+            .selectedWeapon
+            .rangedProfile
+            .selectedProjectileOrNull
+            ?.count,
+        7,
+      );
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>(
+            'combat-active-weapon-projectile-count-increment',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      heroes = await repo.listHeroes();
+      hero = heroes.firstWhere((entry) => entry.id == 'demo');
+      expect(
+        hero
+            .combatConfig
+            .selectedWeapon
+            .rangedProfile
+            .selectedProjectileOrNull
+            ?.count,
+        8,
+      );
+    },
+  );
+
   testWidgets('offhand values persist in read mode', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
@@ -1801,7 +1955,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
     final offhandMode = find.byKey(
       const ValueKey<String>('combat-offhand-mode'),
@@ -2054,7 +2208,7 @@ void main() {
 
     await openCombatTab(tester, repo);
 
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
 
     await openArmorEditor(tester);
@@ -2119,7 +2273,7 @@ void main() {
       },
     );
     final actions = await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
 
     await openArmorEditor(tester);
@@ -2140,7 +2294,7 @@ void main() {
       valueText: 'I',
     );
 
-    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
     await openArmorEditor(tester);
     expect(

@@ -9,6 +9,7 @@ class CombatManualMods {
     this.ausweichenMod = 0,
     this.atMod = 0,
     this.paMod = 0,
+    this.fkMod = 0,
     this.iniWurf = 0,
   });
 
@@ -24,6 +25,9 @@ class CombatManualMods {
   /// Manueller Parade-Modifikator.
   final int paMod;
 
+  /// Manueller Fernkampf-Modifikator.
+  final int fkMod;
+
   /// Ergebnis des physischen W6/2W6-Wurfs zu Kampfrundenbeginn.
   final int iniWurf;
 
@@ -33,6 +37,7 @@ class CombatManualMods {
     int? ausweichenMod,
     int? atMod,
     int? paMod,
+    int? fkMod,
     int? iniWurf,
   }) {
     return CombatManualMods(
@@ -40,6 +45,7 @@ class CombatManualMods {
       ausweichenMod: ausweichenMod ?? this.ausweichenMod,
       atMod: atMod ?? this.atMod,
       paMod: paMod ?? this.paMod,
+      fkMod: fkMod ?? this.fkMod,
       iniWurf: iniWurf ?? this.iniWurf,
     );
   }
@@ -51,6 +57,7 @@ class CombatManualMods {
       'ausweichenMod': ausweichenMod,
       'atMod': atMod,
       'paMod': paMod,
+      'fkMod': fkMod,
       'iniWurf': iniWurf,
     };
   }
@@ -65,6 +72,7 @@ class CombatManualMods {
       ausweichenMod: getInt('ausweichenMod'),
       atMod: getInt('atMod'),
       paMod: getInt('paMod'),
+      fkMod: getInt('fkMod'),
       iniWurf: getInt('iniWurf'),
     );
   }

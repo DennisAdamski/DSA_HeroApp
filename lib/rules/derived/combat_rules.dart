@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ausweichen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/fernkampf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
@@ -54,6 +55,18 @@ class CombatPreviewStats {
     required this.iniDiceCount,
     required this.fkBase,
     required this.axxAttackDefenseHint,
+    required this.isRangedWeapon,
+    required this.fk,
+    required this.weaponFkMod,
+    required this.distanceTpMod,
+    required this.projectileTpMod,
+    required this.projectileIniMod,
+    required this.projectileFkMod,
+    required this.reloadTime,
+    required this.activeDistanceLabel,
+    required this.activeProjectileName,
+    required this.activeProjectileCount,
+    required this.activeProjectileDescription,
   });
 
   final int rsTotal;
@@ -95,6 +108,18 @@ class CombatPreviewStats {
   final int iniDiceCount;
   final int fkBase;
   final String axxAttackDefenseHint;
+  final bool isRangedWeapon;
+  final int fk;
+  final int weaponFkMod;
+  final int distanceTpMod;
+  final int projectileTpMod;
+  final int projectileIniMod;
+  final int projectileFkMod;
+  final int reloadTime;
+  final String activeDistanceLabel;
+  final String activeProjectileName;
+  final int activeProjectileCount;
+  final String activeProjectileDescription;
 }
 
 CombatPreviewStats computeCombatPreviewStats(
@@ -151,6 +176,8 @@ CombatPreviewStats computeCombatPreviewStats(
   );
   final beKampf = computeBeKampf(beTotalRaw, rgReduction);
   final selectedTalent = _findTalentDefById(catalogTalents, main.talentId);
+  final legacyRanged = isRangedCombatTalent(selectedTalent);
+  final isRangedWeapon = main.isRanged || legacyRanged;
   final beMod = selectedTalent == null
       ? main.beTalentMod
       : parseBeModifier(selectedTalent.be);
@@ -164,19 +191,31 @@ CombatPreviewStats computeCombatPreviewStats(
     talentId: main.talentId,
     weaponType: main.weaponType.trim().isEmpty ? main.name : main.weaponType,
   );
-  final isRangedTalent = isRangedCombatTalent(selectedTalent);
-  final atSpecBonus = specApplies ? (isRangedTalent ? 2 : 1) : 0;
-  final paSpecBonus = specApplies && !isRangedTalent ? 1 : 0;
+  final atSpecBonus = specApplies ? (isRangedWeapon ? 2 : 1) : 0;
+  final paSpecBonus = specApplies && !isRangedWeapon ? 1 : 0;
   final kkThreshold = main.kkThreshold < 1 ? 1 : main.kkThreshold;
   final tpKk = computeTpKk(
     kk: effectiveSheet.attributes.kk,
     kkBase: main.kkBase,
     kkThreshold: kkThreshold,
   );
-  final axxTpBonus = computeAxxeleratusTpBonus(
-    axxeleratusActive: axxeleratusActive,
-  );
-  final tpCalc = main.tpFlat + tpKk + axxTpBonus;
+  final axxTpBonus = isRangedWeapon
+      ? 0
+      : computeAxxeleratusTpBonus(axxeleratusActive: axxeleratusActive);
+  final activeDistanceBand = main.rangedProfile.selectedDistanceBand;
+  final activeProjectile = main.rangedProfile.selectedProjectileOrNull;
+  final distanceTpMod = isRangedWeapon ? activeDistanceBand.tpMod : 0;
+  final projectileTpMod = isRangedWeapon ? (activeProjectile?.tpMod ?? 0) : 0;
+  final projectileIniMod = isRangedWeapon ? (activeProjectile?.iniMod ?? 0) : 0;
+  final projectileFkMod = isRangedWeapon ? (activeProjectile?.fkMod ?? 0) : 0;
+  final baseTpCalc = main.tpFlat + tpKk + axxTpBonus;
+  final tpCalc = isRangedWeapon
+      ? computeRangedTpCalc(
+          baseTpCalc: baseTpCalc,
+          distanceTpMod: distanceTpMod,
+          projectileTpMod: projectileTpMod,
+        )
+      : baseTpCalc;
 
   // --- Sonderfertigkeit-Boni (ini_rules, ausweichen_rules, waffen_rules) ---
   final sfIniBonus = computeSfIniBonus(
@@ -209,6 +248,7 @@ CombatPreviewStats computeCombatPreviewStats(
       : talents[main.talentId.trim()];
   final talentAt = talentEntry?.atValue ?? 0;
   final talentPa = talentEntry?.paValue ?? 0;
+  final talentValue = talentEntry?.talentValue ?? 0;
   final at =
       talentAt +
       atBase +
@@ -225,6 +265,18 @@ CombatPreviewStats computeCombatPreviewStats(
       paSpecBonus +
       offhandPaBonus +
       manualMods.paMod;
+  final weaponFkMod = isRangedWeapon ? main.wmFk : 0;
+  final fk = isRangedWeapon
+      ? computeFkValue(
+          fkBase: derived.fkBase,
+          talentValue: talentValue,
+          weaponFkMod: weaponFkMod,
+          ebeAttackPart: atEbePart,
+          specializationBonus: atSpecBonus,
+          projectileFkMod: projectileFkMod,
+          manualFkMod: manualMods.fkMod,
+        )
+      : 0;
 
   // --- Initiative-Kette (ini_rules) ---
   final iniDiceCount = computeIniDiceCount(special);
@@ -251,7 +303,7 @@ CombatPreviewStats computeCombatPreviewStats(
     kkThreshold: kkThreshold,
   );
   final kombinierteHeldenWaffenIni = clampNonNegative(
-    heldenInitiative + main.iniMod + iniGe,
+    heldenInitiative + main.iniMod + iniGe + projectileIniMod,
   );
   final kampfInitiative = clampNonNegative(
     kombinierteHeldenWaffenIni + offhand.iniMod,
@@ -319,6 +371,20 @@ CombatPreviewStats computeCombatPreviewStats(
     iniDiceCount: iniDiceCount,
     fkBase: derived.fkBase,
     axxAttackDefenseHint: axxAttackDefenseHint,
+    isRangedWeapon: isRangedWeapon,
+    fk: fk,
+    weaponFkMod: weaponFkMod,
+    distanceTpMod: distanceTpMod,
+    projectileTpMod: projectileTpMod,
+    projectileIniMod: projectileIniMod,
+    projectileFkMod: projectileFkMod,
+    reloadTime: isRangedWeapon ? main.rangedProfile.reloadTime : 0,
+    activeDistanceLabel: isRangedWeapon ? activeDistanceBand.label : '',
+    activeProjectileName: isRangedWeapon ? (activeProjectile?.name ?? '') : '',
+    activeProjectileCount: isRangedWeapon ? (activeProjectile?.count ?? 0) : 0,
+    activeProjectileDescription: isRangedWeapon
+        ? (activeProjectile?.description ?? '')
+        : '',
   );
 }
 
