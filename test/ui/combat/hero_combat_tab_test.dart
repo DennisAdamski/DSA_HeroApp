@@ -1941,6 +1941,51 @@ void main() {
     },
   );
 
+  testWidgets('editing ranged weapon survives legacy empty distance bands', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Leerbogen',
+                talentId: 'tal_fern',
+                combatType: WeaponCombatType.ranged,
+                weaponType: 'Bogen',
+                rangedProfile: RangedWeaponProfile(
+                  distanceBands: <RangedDistanceBand>[],
+                ),
+              ),
+            ],
+          ),
+          talents: const <String, HeroTalentEntry>{
+            'tal_fern': HeroTalentEntry(talentValue: 8, atValue: 8),
+          },
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+    await openWeaponDialogByText(tester, text: 'Leerbogen');
+
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-form-distance-label-0')),
+      findsOneWidget,
+    );
+    expect(find.text('Distanz 1'), findsWidgets);
+  });
+
   testWidgets('offhand values persist in read mode', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],

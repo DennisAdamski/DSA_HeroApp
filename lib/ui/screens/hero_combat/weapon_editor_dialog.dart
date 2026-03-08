@@ -44,7 +44,7 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
   @override
   void initState() {
     super.initState();
-    _draftSlot = widget.initialSlot;
+    _draftSlot = _normalizedInitialSlot(widget.initialSlot);
     _nameController = TextEditingController(text: _draftSlot.name);
     _distanceClassController = TextEditingController(
       text: _draftSlot.distanceClass,
@@ -82,6 +82,14 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
     _distanceTpModControllers = _draftSlot.rangedProfile.distanceBands
         .map((entry) => TextEditingController(text: entry.tpMod.toString()))
         .toList(growable: false);
+  }
+
+  // Normalisiert Legacy-Fernkampfwaffen auf das aktuelle 5-Distanz-Schema.
+  MainWeaponSlot _normalizedInitialSlot(MainWeaponSlot slot) {
+    if (!slot.isRanged) {
+      return slot;
+    }
+    return slot.copyWith(rangedProfile: slot.rangedProfile.copyWith());
   }
 
   @override
@@ -209,6 +217,7 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
   }
 
   RangedWeaponProfile _rangedProfileFromControllers() {
+    final fallbackBands = _draftSlot.rangedProfile.copyWith().distanceBands;
     return _draftSlot.rangedProfile.copyWith(
       reloadTime: _readInt(
         _reloadTimeController,
@@ -217,8 +226,12 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
       distanceBands: <RangedDistanceBand>[
         for (var i = 0; i < 5; i++)
           RangedDistanceBand(
-            label: _distanceLabelControllers[i].text.trim(),
-            tpMod: _readInt(_distanceTpModControllers[i], 0),
+            label: i < _distanceLabelControllers.length
+                ? _distanceLabelControllers[i].text.trim()
+                : fallbackBands[i].label,
+            tpMod: i < _distanceTpModControllers.length
+                ? _readInt(_distanceTpModControllers[i], fallbackBands[i].tpMod)
+                : fallbackBands[i].tpMod,
           ),
       ],
     );
