@@ -1,11 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 
 void main() {
@@ -14,6 +16,15 @@ void main() {
     currentAsp: 0,
     currentKap: 0,
     currentAu: 0,
+  );
+  const stateWithAxx = HeroState(
+    currentLep: 0,
+    currentAsp: 0,
+    currentKap: 0,
+    currentAu: 0,
+    activeSpellEffects: ActiveSpellEffectsState(
+      activeEffectIds: <String>[activeSpellEffectAxxeleratus],
+    ),
   );
   const baseAttributes = Attributes(
     mu: 12,
@@ -83,10 +94,11 @@ void main() {
   CombatPreviewStats preview(
     HeroSheet sheet, {
     List<TalentDef> catalogTalents = const <TalentDef>[],
+    HeroState heroState = state,
   }) {
     return computeCombatPreviewStats(
       sheet,
-      state,
+      heroState,
       catalogTalents: catalogTalents,
     );
   }
@@ -170,16 +182,10 @@ void main() {
         mainWeapon: MainWeaponSlot(tpFlat: 4, kkBase: 12, kkThreshold: 2),
       ),
     );
-    final withAxx = baseHero.copyWith(
-      combatConfig: baseHero.combatConfig.copyWith(
-        specialRules: baseHero.combatConfig.specialRules.copyWith(
-          axxeleratusActive: true,
-        ),
-      ),
-    );
+    final withAxx = baseHero;
 
     final baseResult = preview(baseHero);
-    final axxResult = preview(withAxx);
+    final axxResult = preview(withAxx, heroState: stateWithAxx);
 
     expect(axxResult.tpCalc, baseResult.tpCalc + 2);
     expect(axxResult.paBase, baseResult.paBase + 2);

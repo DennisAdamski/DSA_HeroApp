@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -674,6 +675,64 @@ void main() {
     },
   );
 
+  testWidgets(
+    'status tab opens active spell popup and saves Axxeleratus outside edit mode',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo);
+
+      final verticalScrollable = find.byWidgetPredicate(
+        (widget) =>
+            widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      );
+      final openButton = find.byKey(
+        const ValueKey<String>('status-active-spells-open'),
+      );
+      await tester.scrollUntilVisible(
+        openButton,
+        240,
+        scrollable: verticalScrollable.first,
+      );
+      await tester.ensureVisible(openButton);
+      await tester.pumpAndSettle();
+
+      await tester.tap(openButton);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('active-spell-effects-dialog')),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>(
+            'active-spell-toggle-effect_spell_axxeleratus',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final state = await repo.loadHeroState('demo');
+      expect(state, isNotNull);
+      expect(
+        state!.activeSpellEffects.activeEffectIds,
+        <String>[activeSpellEffectAxxeleratus],
+      );
+    },
+  );
+
   testWidgets('overview clamps attribute values to 0..99', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
@@ -971,7 +1030,7 @@ void main() {
     await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
     expect(find.text('Helden Deck'), findsOneWidget);
-    expect(find.text('Uebersicht'), findsWidgets);
+    expect(find.text('Status'), findsWidgets);
     expect(find.text('Ressourcen'), findsOneWidget);
 
     await tester.tap(heroDeckToggleButton());
@@ -979,7 +1038,7 @@ void main() {
 
     expect(find.text('Helden Deck'), findsNothing);
     expect(find.byTooltip('Helden-Deck einblenden'), findsOneWidget);
-    expect(find.text('Uebersicht'), findsNothing);
+    expect(find.text('Status'), findsNothing);
     expect(find.text('Ressourcen'), findsOneWidget);
     expect(find.text('Basisinformationen'), findsOneWidget);
 
@@ -988,7 +1047,7 @@ void main() {
 
     expect(find.text('Helden Deck'), findsOneWidget);
     expect(find.byTooltip('Helden-Deck ausblenden'), findsOneWidget);
-    expect(find.text('Uebersicht'), findsWidgets);
+    expect(find.text('Status'), findsWidgets);
   });
 
   testWidgets('wide workspace can collapse and expand right details panel', (

@@ -85,27 +85,47 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
   Widget _buildCurrentResourcesSection() {
     return _SectionCard(
       title: 'Aktuelle Ressourcen',
-      child: _buildSingleLineFieldsRow(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInputField(
-            label: 'LeP aktuell',
-            keyName: 'cur_lep',
-            keyboardType: TextInputType.number,
+          _buildSingleLineFieldsRow(
+            children: [
+              _buildInputField(
+                label: 'LeP aktuell',
+                keyName: 'cur_lep',
+                keyboardType: TextInputType.number,
+              ),
+              _buildInputField(
+                label: 'AsP aktuell',
+                keyName: 'cur_asp',
+                keyboardType: TextInputType.number,
+              ),
+              _buildInputField(
+                label: 'Au aktuell',
+                keyName: 'cur_au',
+                keyboardType: TextInputType.number,
+              ),
+              _buildInputField(
+                label: 'KaP aktuell',
+                keyName: 'cur_kap',
+                keyboardType: TextInputType.number,
+              ),
+            ],
           ),
-          _buildInputField(
-            label: 'AsP aktuell',
-            keyName: 'cur_asp',
-            keyboardType: TextInputType.number,
-          ),
-          _buildInputField(
-            label: 'Au aktuell',
-            keyName: 'cur_au',
-            keyboardType: TextInputType.number,
-          ),
-          _buildInputField(
-            label: 'KaP aktuell',
-            keyName: 'cur_kap',
-            keyboardType: TextInputType.number,
+          const SizedBox(height: _gridSpacing),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              key: const ValueKey<String>('status-active-spells-open'),
+              onPressed: () {
+                showActiveSpellEffectsDialog(
+                  context: context,
+                  heroId: widget.heroId,
+                );
+              },
+              icon: const Icon(Icons.auto_awesome_outlined),
+              label: const Text('Zauber aktivieren'),
+            ),
           ),
         ],
       ),
