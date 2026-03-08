@@ -205,25 +205,25 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
 
   Widget _readOnlyField(String label, String value, {String? keyName}) {
     final theme = Theme.of(context);
-    return Container(
-      width: 140,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: theme.textTheme.labelSmall),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            key: keyName == null ? null : ValueKey<String>(keyName),
-            style: theme.textTheme.titleMedium,
+    return SizedBox(
+      width: 132,
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+          isDense: true,
+          filled: true,
+          fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.4,
           ),
-        ],
+        ),
+        child: Text(
+          value,
+          key: keyName == null ? null : ValueKey<String>(keyName),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.bodyLarge,
+        ),
       ),
     );
   }
