@@ -11,6 +11,8 @@ class HeroComputedSnapshot {
     required this.hero,
     required this.state,
     required this.modifierParse,
+    required this.effectiveStartAttributes,
+    required this.attributeMaximums,
     required this.effectiveAttributes,
     required this.derivedStats,
     required this.combatPreviewStats,
@@ -19,6 +21,8 @@ class HeroComputedSnapshot {
   final HeroSheet hero;
   final HeroState state;
   final ModifierParseResult modifierParse;
+  final Attributes effectiveStartAttributes;
+  final Attributes attributeMaximums;
   final Attributes effectiveAttributes;
   final DerivedStats derivedStats;
   final CombatPreviewStats combatPreviewStats;

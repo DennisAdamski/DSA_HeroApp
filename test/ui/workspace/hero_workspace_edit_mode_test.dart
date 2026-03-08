@@ -18,6 +18,16 @@ void main() {
       id: 'demo',
       name: 'Rondra',
       level: 1,
+      rawStartAttributes: Attributes(
+        mu: 14,
+        kl: 12,
+        inn: 13,
+        ch: 11,
+        ff: 10,
+        ge: 12,
+        ko: 14,
+        kk: 13,
+      ),
       attributes: Attributes(
         mu: 14,
         kl: 12,
@@ -97,9 +107,7 @@ void main() {
     );
   }
 
-  testWidgets('overview edit/save persists AP fields and name', (
-    tester,
-  ) async {
+  testWidgets('overview edit/save persists AP fields and name', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -245,41 +253,42 @@ void main() {
     expect(hero.apSpent, 800);
   });
 
-  testWidgets('talents tab shows catalog actions in upper workspace bar while editing', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [buildHero()],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 10,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
+  testWidgets(
+    'talents tab shows catalog actions in upper workspace bar while editing',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
 
-    await openWorkspace(tester, repo, catalog: buildCatalog());
-    await tester.tap(tabText('Talente'));
-    await tester.pumpAndSettle();
+      await openWorkspace(tester, repo, catalog: buildCatalog());
+      await tester.tap(tabText('Talente'));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Bearbeiten').first);
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Bearbeiten').first);
+      await tester.pumpAndSettle();
 
-    expect(
-      find.byKey(const ValueKey<String>('talents-catalog-open')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey<String>('meta-talents-manage-open')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey<String>('talents-be-screen-open')),
-      findsOneWidget,
-    );
-  });
+      expect(
+        find.byKey(const ValueKey<String>('talents-catalog-open')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('meta-talents-manage-open')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('talents-be-screen-open')),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('overview edit/save persists attribute changes and temp mods', (
     tester,
@@ -328,6 +337,71 @@ void main() {
     expect(state, isNotNull);
     expect(state!.tempAttributeMods.mu, 2);
   });
+
+  testWidgets(
+    'overview shows start and max values and recomputes them from origin mods',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo);
+
+      final verticalScrollable = find.byWidgetPredicate(
+        (widget) =>
+            widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      );
+      final startKl = find.byKey(
+        const ValueKey<String>('overview-effective-kl_start'),
+      );
+      final maxKl = find.byKey(
+        const ValueKey<String>('overview-effective-kl_max'),
+      );
+      await tester.scrollUntilVisible(
+        startKl,
+        240,
+        scrollable: verticalScrollable.first,
+      );
+
+      expect(find.descendant(of: startKl, matching: find.text('12')), findsOne);
+      expect(find.descendant(of: maxKl, matching: find.text('18')), findsOne);
+
+      await tester.tap(find.text('Bearbeiten').first);
+      await tester.pumpAndSettle();
+      await tester.drag(verticalScrollable.first, const Offset(0, 1200));
+      await tester.pumpAndSettle();
+
+      final rasseModField = find.byKey(
+        const ValueKey<String>('overview-field-rasse_mod'),
+      );
+      expect(rasseModField, findsOneWidget);
+      await tester.enterText(rasseModField, 'KL+1');
+      await tester.tap(find.text('Speichern').first);
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = findHeroById(heroes, 'demo');
+      expect(hero, isNotNull);
+      expect(hero!.attributes.kl, 12);
+      expect(hero.startAttributes.kl, 13);
+
+      await tester.scrollUntilVisible(
+        startKl,
+        240,
+        scrollable: verticalScrollable.first,
+      );
+      expect(find.descendant(of: startKl, matching: find.text('13')), findsOne);
+      expect(find.descendant(of: maxKl, matching: find.text('20')), findsOne);
+    },
+  );
 
   testWidgets(
     'overview edit/save persists bought values and current resources',
@@ -529,9 +603,9 @@ void main() {
     expect(nameField.controller?.text, 'Rondra');
   });
 
-  testWidgets(
-    'global action is disabled on non-edit tabs (Notizen)',
-    (tester) async {
+  testWidgets('global action is disabled on non-edit tabs (Notizen)', (
+    tester,
+  ) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -552,8 +626,7 @@ void main() {
       find.widgetWithText(OutlinedButton, 'Bearbeiten'),
     );
     expect(disabledButton.onPressed, isNull);
-    },
-  );
+  });
 
   testWidgets(
     'workspace appbar actions keep right spacing and edit action on the right',

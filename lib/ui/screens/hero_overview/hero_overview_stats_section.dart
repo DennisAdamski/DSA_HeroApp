@@ -5,12 +5,18 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     HeroSheet hero,
     HeroState state,
     DerivedStats derived,
+    Attributes effectiveStartAttributes,
+    Attributes attributeMaximums,
     Attributes effectiveAttributes,
   ) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final derivedSection = _buildDerivedValuesSection(hero, state, derived);
-        final attributesSection = _buildAttributesSection(effectiveAttributes);
+        final attributesSection = _buildAttributesSection(
+          effectiveStartAttributes,
+          attributeMaximums,
+          effectiveAttributes,
+        );
         if (constraints.maxWidth >= _largeTwoColumnBreakpoint) {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,19 +152,28 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     );
   }
 
-  Widget _buildAttributesSection(Attributes effectiveAttributes) {
+  Widget _buildAttributesSection(
+    Attributes effectiveStartAttributes,
+    Attributes attributeMaximums,
+    Attributes effectiveAttributes,
+  ) {
     final rows = _HeroOverviewTabState._attributeEntries
         .map((entry) {
           final key = entry.$2;
-          final startKey = '${key}_start';
           final tempKey = '${key}_temp';
+          final startValue = _valueByKey(effectiveStartAttributes, key);
+          final maximumValue = _valueByKey(attributeMaximums, key);
           final effective = _effectiveValueByKey(effectiveAttributes, key);
           return TableRow(
             children: [
               _buildAttributesTableLabelCell(entry.$1),
-              _buildAttributesNumericCell(
-                keyName: startKey,
-                isAdjustable: false,
+              _buildAttributesComputedCell(
+                keyName: '${key}_start',
+                value: startValue.toString(),
+              ),
+              _buildAttributesComputedCell(
+                keyName: '${key}_max',
+                value: maximumValue.toString(),
               ),
               _buildAttributesNumericCell(keyName: key, isAdjustable: true),
               _buildAttributesNumericCell(keyName: tempKey, isAdjustable: true),
@@ -185,12 +200,14 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               2: FixedColumnWidth(_attributeValueCellWidth),
               3: FixedColumnWidth(_attributeValueCellWidth),
               4: FixedColumnWidth(_attributeValueCellWidth),
+              5: FixedColumnWidth(_attributeValueCellWidth),
             },
             children: [
               TableRow(
                 children: [
                   _buildAttributesTableHeaderCell('Eigenschaft'),
                   _buildAttributesTableHeaderCell('Start'),
+                  _buildAttributesTableHeaderCell('Max'),
                   _buildAttributesTableHeaderCell('Aktuell'),
                   _buildAttributesTableHeaderCell('Temp-Mod'),
                   _buildAttributesTableHeaderCell('Berechnet'),
@@ -319,23 +336,27 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
   }
 
   int _effectiveValueByKey(Attributes effective, String key) {
+    return _valueByKey(effective, key);
+  }
+
+  int _valueByKey(Attributes attributes, String key) {
     switch (key) {
       case 'mu':
-        return effective.mu;
+        return attributes.mu;
       case 'kl':
-        return effective.kl;
+        return attributes.kl;
       case 'inn':
-        return effective.inn;
+        return attributes.inn;
       case 'ch':
-        return effective.ch;
+        return attributes.ch;
       case 'ff':
-        return effective.ff;
+        return attributes.ff;
       case 'ge':
-        return effective.ge;
+        return attributes.ge;
       case 'ko':
-        return effective.ko;
+        return attributes.ko;
       case 'kk':
-        return effective.kk;
+        return attributes.kk;
       default:
         return 0;
     }

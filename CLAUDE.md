@@ -238,6 +238,13 @@ flutter analyze
 
 Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter.yaml`). The only project-specific rule enabled is `prefer_single_quotes: true`.
 
+### Update 2026-03-08
+
+- `HeroSheet` verwendet jetzt `rawStartAttributes` fuer Roh-Startwerte und `startAttributes` fuer effektive Startwerte nach Rasse/Kultur/Profession.
+- Neue Start-/Maximum-Logik liegt in `lib/rules/derived/attribute_start_rules.dart`.
+- `HeroComputedSnapshot` enthaelt zusaetzlich effektive Startwerte und Eigenschaftsmaxima.
+- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **8**.
+
 ### LOC Budget Check (screens)
 
 Screen files in `lib/ui/screens/` must stay under 700 lines:
