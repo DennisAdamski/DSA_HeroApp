@@ -52,6 +52,53 @@ void main() {
     expect(find.text('Neuer Held'), findsOneWidget);
   });
 
+  testWidgets('create dialog captures raw start attributes and creates hero', (
+    tester,
+  ) async {
+    final repo = FakeRepository.empty();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+        child: const MaterialApp(home: HeroesHomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final createButton = tester.widget<FloatingActionButton>(
+      find.byType(FloatingActionButton),
+    );
+    createButton.onPressed!.call();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Neuen Helden anlegen'), findsOneWidget);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const ValueKey('create-hero-kl')))
+          .controller
+          ?.text,
+      '8',
+    );
+
+    await tester.enterText(
+      find.byKey(const ValueKey('create-hero-name')),
+      'Alrik',
+    );
+    await tester.enterText(find.byKey(const ValueKey('create-hero-kl')), '13');
+    tester
+        .widget<FilledButton>(find.widgetWithText(FilledButton, 'Anlegen'))
+        .onPressed!
+        .call();
+    await tester.pumpAndSettle();
+
+    final heroes = await repo.listHeroes();
+    expect(heroes, hasLength(1));
+    expect(heroes.single.name, 'Alrik');
+    expect(heroes.single.rawStartAttributes.kl, 13);
+    expect(heroes.single.startAttributes.kl, 13);
+    expect(find.text('Basisinformationen'), findsOneWidget);
+  });
+
   testWidgets(
     'opens hero workspace with tabs and read-only core attributes header',
     (tester) async {
@@ -75,7 +122,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Rondra'));
+      tester.widget<ListTile>(find.widgetWithText(ListTile, 'Rondra')).onTap!();
       await tester.pumpAndSettle();
 
       final tabLabels = tester
@@ -98,5 +145,4 @@ void main() {
       expect(find.text('KAP: 0/0'), findsOneWidget);
     },
   );
-
 }

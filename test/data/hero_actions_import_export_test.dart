@@ -64,6 +64,33 @@ void main() {
     expect(map['state'], isA<Map>());
   });
 
+  test('createHero stores raw and effective start attributes', () async {
+    final repo = FakeRepository.empty();
+    final container = buildContainer(repo);
+    final actions = container.read(heroActionsProvider);
+
+    final heroId = await actions.createHero(
+      name: 'Startheld',
+      rawStartAttributes: const Attributes(
+        mu: 12,
+        kl: 13,
+        inn: 11,
+        ch: 10,
+        ff: 9,
+        ge: 8,
+        ko: 7,
+        kk: 6,
+      ),
+    );
+
+    final hero = await repo.loadHeroById(heroId);
+    expect(hero, isNotNull);
+    expect(hero!.name, 'Startheld');
+    expect(hero.rawStartAttributes.kl, 13);
+    expect(hero.startAttributes.kl, 13);
+    expect(hero.attributes.kl, 13);
+  });
+
   test('import non-conflicting hero creates hero and state', () async {
     final repo = FakeRepository.empty();
     final container = buildContainer(repo);

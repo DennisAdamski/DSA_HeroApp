@@ -18,10 +18,11 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 7,
+    this.schemaVersion = 8,
     required this.name,
     required this.level,
     required this.attributes,
+    Attributes? rawStartAttributes,
     Attributes? startAttributes,
     this.persistentMods = const StatModifiers(),
     this.bought = const BoughtStats(),
@@ -59,13 +60,15 @@ class HeroSheet {
     this.dukaten = '',
     this.inventoryEntries = const <HeroInventoryEntry>[],
     this.unknownModifierFragments = const <String>[],
-  }) : startAttributes = startAttributes ?? attributes;
+  }) : rawStartAttributes = rawStartAttributes ?? startAttributes ?? attributes,
+       startAttributes = startAttributes ?? attributes;
 
   final String id;
   final int schemaVersion;
   final String name;
   final int level;
   final Attributes attributes;
+  final Attributes rawStartAttributes;
   final Attributes startAttributes;
   final StatModifiers persistentMods;
   final BoughtStats bought;
@@ -111,6 +114,7 @@ class HeroSheet {
     String? name,
     int? level,
     Attributes? attributes,
+    Attributes? rawStartAttributes,
     Attributes? startAttributes,
     StatModifiers? persistentMods,
     BoughtStats? bought,
@@ -155,6 +159,7 @@ class HeroSheet {
       name: name ?? this.name,
       level: level ?? this.level,
       attributes: attributes ?? this.attributes,
+      rawStartAttributes: rawStartAttributes ?? this.rawStartAttributes,
       startAttributes: startAttributes ?? this.startAttributes,
       persistentMods: persistentMods ?? this.persistentMods,
       bought: bought ?? this.bought,
@@ -209,6 +214,7 @@ class HeroSheet {
       'name': name,
       'level': level,
       'attributes': attributes.toJson(),
+      'rawStartAttributes': rawStartAttributes.toJson(),
       'startAttributes': startAttributes.toJson(),
       'persistentMods': persistentMods.toJson(),
       'bought': bought.toJson(),
@@ -282,6 +288,12 @@ class HeroSheet {
     final parsedAttributes = Attributes.fromJson(
       (json['attributes'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
+    final parsedRawStartAttributes = Attributes.fromJson(
+      (json['rawStartAttributes'] as Map?)?.cast<String, dynamic>() ??
+          (json['startAttributes'] as Map?)?.cast<String, dynamic>() ??
+          (json['attributes'] as Map?)?.cast<String, dynamic>() ??
+          const {},
+    );
     final parsedStartAttributes = Attributes.fromJson(
       (json['startAttributes'] as Map?)?.cast<String, dynamic>() ??
           (json['attributes'] as Map?)?.cast<String, dynamic>() ??
@@ -294,6 +306,7 @@ class HeroSheet {
       name: json['name'] as String? ?? 'Unbenannter Held',
       level: getInt('level') == 0 ? 1 : getInt('level'),
       attributes: parsedAttributes,
+      rawStartAttributes: parsedRawStartAttributes,
       startAttributes: parsedStartAttributes,
       persistentMods: StatModifiers.fromJson(
         (json['persistentMods'] as Map?)?.cast<String, dynamic>() ?? const {},
@@ -312,7 +325,9 @@ class HeroSheet {
       }),
       metaTalents: rawMetaTalents
           .whereType<Map>()
-          .map((entry) => HeroMetaTalent.fromJson(entry.cast<String, dynamic>()))
+          .map(
+            (entry) => HeroMetaTalent.fromJson(entry.cast<String, dynamic>()),
+          )
           .toList(growable: false),
       hiddenTalentIds: _normalizeHiddenTalentIds(rawHiddenTalentIds),
       talentSpecialAbilities: getString('talentSpecialAbilities'),

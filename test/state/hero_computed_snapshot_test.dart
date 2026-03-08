@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
@@ -18,6 +19,16 @@ void main() {
       id: 'h-1',
       name: 'Test',
       level: 3,
+      rawStartAttributes: const Attributes(
+        mu: 11,
+        kl: 13,
+        inn: 10,
+        ch: 9,
+        ff: 8,
+        ge: 10,
+        ko: 11,
+        kk: 12,
+      ),
       attributes: const Attributes(
         mu: 12,
         kl: 11,
@@ -101,6 +112,13 @@ void main() {
     final computed = computedSub.read().requireValue;
 
     final parsed = parseModifierTextsForHero(hero);
+    final effectiveStartAttributes = computeEffectiveStartAttributes(
+      hero.rawStartAttributes,
+      parseOriginAttributeModifiers(hero),
+    );
+    final attributeMaximums = computeAttributeMaximums(
+      effectiveStartAttributes,
+    );
     final effective = applyAttributeModifiers(
       hero.attributes,
       parsed.attributeMods + state.tempAttributeMods,
@@ -120,6 +138,8 @@ void main() {
     );
 
     expect(computed.effectiveAttributes.mu, effective.mu);
+    expect(computed.effectiveStartAttributes.kl, effectiveStartAttributes.kl);
+    expect(computed.attributeMaximums.kl, attributeMaximums.kl);
     expect(computed.derivedStats.maxLep, derived.maxLep);
     expect(computed.combatPreviewStats.at, combat.at);
     expect(computed.modifierParse.unknownFragments, parsed.unknownFragments);
