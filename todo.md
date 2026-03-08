@@ -13,7 +13,7 @@ Aufgaben die notwendig sind für das erreichen des MVP
 - [x] Basiswerte Aktuell in Summe umbennennen
 - [x] MetaTalente unter Talente hinzufügen
 - [x] Lernkomplexität für Begabungen korrekt angeben
-
+- [ ] Zauberrituale
 
 ## Aufgaben für mich (MVP)
 
@@ -26,6 +26,10 @@ Folgeaufgaben für den nächsten Schritt
 ## Aufgaben für die KI
 
 - [x] Max TaW für Kampftalente korrekt berechnen
+- [ ] Mod Felder auf dem Talent aufteilen
+- [ ] Waffenmeister
+- [ ] Aufteilung Manöver in Waffe/Waffenlos
+  - [ ] Waffenlose Kampfstyle
 - [ ] Steigern implementieren für Talente und Eigenschaften
 - [ ] Klären woher die Verbreitung kommt
 - [ ] Einblenden von einem Sonderfertigkeiten-Tab, in dem alle Sonderfertigkeiten gebündelt werden
