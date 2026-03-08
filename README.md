@@ -6,6 +6,13 @@ Flutter-App zur Verwaltung von DSA-Helden mit:
 - Import/Export von Helden als JSON
 - Katalogdaten aus Excel-Quellen
 
+## Aktuelle Fachlogik
+
+- Neue Helden werden ueber einen Dialog mit Name und 8 Roh-Startwerten angelegt.
+- `rawStartAttributes` speichern die eingegebenen Rohwerte.
+- `startAttributes` speichern die effektiven Startwerte nach Rasse/Kultur/Profession.
+- Das Eigenschaftsmaximum wird aus dem effektiven Startwert berechnet: `ceil(Start * 1.5)`.
+
 ## Schnellstart
 
 ```bash

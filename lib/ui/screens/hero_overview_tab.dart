@@ -355,28 +355,23 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     super.build(context);
     UiRebuildObserver.bump('hero_overview_tab');
     final hero = ref.watch(heroByIdProvider(widget.heroId));
+    final computedAsync = ref.watch(heroComputedProvider(widget.heroId));
 
     if (hero == null) {
       return const Center(child: Text('Held nicht gefunden.'));
     }
 
-    final stateAsync = ref.watch(heroStateProvider(widget.heroId));
-    final derivedAsync = ref.watch(derivedStatsProvider(widget.heroId));
-
-    return stateAsync.when(
+    return computedAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) => Center(child: Text('Fehler: $error')),
-      data: (state) {
+      data: (snapshot) {
+        final state = snapshot.state;
         _latestHero = hero;
         _latestState = state;
         _syncControllers(hero, state);
         return ValueListenableBuilder<int>(
           valueListenable: _viewRevision,
           builder: (context, revision, child) {
-            final effectiveAttributes = computeEffectiveAttributes(
-              hero,
-              tempAttributeMods: state.tempAttributeMods,
-            );
             return ListView(
               padding: const EdgeInsets.all(_pagePadding),
               children: [
@@ -393,16 +388,13 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
                   _buildParserWarningsSection(hero),
                 ],
                 const SizedBox(height: _sectionSpacing),
-                derivedAsync.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (error, stackTrace) => Text('Fehler: $error'),
-                  data: (derived) => _buildCombinedStatsAndAttributesSection(
-                    hero,
-                    state,
-                    derived,
-                    effectiveAttributes,
-                  ),
+                _buildCombinedStatsAndAttributesSection(
+                  hero,
+                  state,
+                  snapshot.derivedStats,
+                  snapshot.effectiveStartAttributes,
+                  snapshot.attributeMaximums,
+                  snapshot.effectiveAttributes,
                 ),
               ],
             );
