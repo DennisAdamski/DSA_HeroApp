@@ -1,3 +1,6 @@
+import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_distance_band.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_projectile.dart';
+
 /// Haelt alle zur Laufzeit geladenen DSA-Spielregeldaten.
 ///
 /// Wird einmalig beim App-Start durch [CatalogLoader] aus den Split-JSON-
@@ -306,6 +309,9 @@ class WeaponDef {
     this.iniMod = 0,
     this.atMod = 0,
     this.paMod = 0,
+    this.reloadTime = 0,
+    this.rangedDistanceBands = const <RangedDistanceBand>[],
+    this.rangedProjectiles = const <RangedProjectile>[],
     this.reach = '',
     this.source = '',
     this.active = true,
@@ -324,15 +330,26 @@ class WeaponDef {
   final int iniMod; // Waffenspezifischer Initiative-Modifier
   final int atMod; // Waffenspezifischer Angriff-Modifier
   final int paMod; // Waffenspezifischer Parade-Modifier
+  final int reloadTime; // Feste Ladezeit fuer Fernkampfwaffen
+  final List<RangedDistanceBand> rangedDistanceBands; // Distanzstufen
+  final List<RangedProjectile> rangedProjectiles; // Geschossvorlagen
   final String reach; // Reichweite / Distanzklasse
   final String source; // Quellreferenz
   final bool active; // Im App verfuegbar und anzeigbar?
 
   factory WeaponDef.fromJson(Map<String, dynamic> json) {
+    final type = _readString(json, 'type', fallback: '');
+    final rawDistanceBands =
+        (json['rangedDistanceBands'] as List?) ?? const <dynamic>[];
+    final rawProjectiles =
+        (json['rangedProjectiles'] as List?) ??
+        (json['projectiles'] as List?) ??
+        const <dynamic>[];
+    final hasAtMod = json.containsKey('atMod') && json['atMod'] != null;
     return WeaponDef(
       id: _readString(json, 'id', fallback: ''),
       name: _readString(json, 'name', fallback: ''),
-      type: _readString(json, 'type', fallback: ''),
+      type: type,
       combatSkill: _readString(json, 'combatSkill', fallback: ''),
       tp: _readString(json, 'tp', fallback: ''),
       complexity: _readString(json, 'complexity', fallback: ''),
@@ -341,8 +358,30 @@ class WeaponDef {
       activeManeuvers: _readStringList(json, 'activeManeuvers'),
       tpkk: _readString(json, 'tpkk', fallback: ''),
       iniMod: _readInt(json, 'iniMod', fallback: 0),
-      atMod: _readInt(json, 'atMod', fallback: 0),
+      atMod: hasAtMod
+          ? _readInt(json, 'atMod', fallback: 0)
+          : _readInt(
+              json,
+              'fkMod',
+              fallback: type.trim().toLowerCase() == 'fernkampf'
+                  ? 0
+                  : _readInt(json, 'atMod', fallback: 0),
+            ),
       paMod: _readInt(json, 'paMod', fallback: 0),
+      reloadTime: _readInt(json, 'reloadTime', fallback: 0),
+      rangedDistanceBands: rawDistanceBands
+          .whereType<Map>()
+          .map(
+            (entry) =>
+                RangedDistanceBand.fromJson(entry.cast<String, dynamic>()),
+          )
+          .toList(growable: false),
+      rangedProjectiles: rawProjectiles
+          .whereType<Map>()
+          .map(
+            (entry) => RangedProjectile.fromJson(entry.cast<String, dynamic>()),
+          )
+          .toList(growable: false),
       reach: _readString(json, 'reach', fallback: ''),
       source: _readString(json, 'source', fallback: ''),
       active: _readBool(json, 'active', fallback: true),
@@ -364,6 +403,13 @@ class WeaponDef {
       'iniMod': iniMod,
       'atMod': atMod,
       'paMod': paMod,
+      'reloadTime': reloadTime,
+      'rangedDistanceBands': rangedDistanceBands
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
+      'rangedProjectiles': rangedProjectiles
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
       'reach': reach,
       'source': source,
       'active': active,

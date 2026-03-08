@@ -69,6 +69,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   CombatConfig _draftCombatConfig = const CombatConfig();
   int? _temporaryIniRoll;
   String _weaponFilterTalentId = '';
+  String _weaponFilterCombatType = '';
   String _weaponFilterType = '';
   String _weaponFilterDistanceClass = '';
 
@@ -228,19 +229,19 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   Future<void> _selectWeaponIndex(
     int? nextIndex, {
     required RulesCatalog catalog,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
   }) async {
     final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
     _setDraftWeapons(slots, selectedIndex: nextIndex ?? -1, markChanged: true);
     await _persistCombatConfigIfReadonly(
       catalog: catalog,
-      meleeTalents: meleeTalents,
+      combatTalents: combatTalents,
     );
   }
 
   Future<void> _persistCombatConfigIfReadonly({
     required RulesCatalog catalog,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
   }) async {
     if (_editController.isEditing) {
       return;
@@ -252,7 +253,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     final weaponValidation = _validateWeaponSlotsForConfig(
       config: _draftCombatConfig,
       catalog: catalog,
-      meleeTalents: meleeTalents,
+      combatTalents: combatTalents,
     );
     if (weaponValidation != null) {
       if (mounted) {
@@ -281,13 +282,13 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   Future<void> _applyCombatConfigChange({
     required CombatConfig nextConfig,
     required RulesCatalog catalog,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
   }) async {
     _draftCombatConfig = nextConfig;
     _markFieldChanged();
     await _persistCombatConfigIfReadonly(
       catalog: catalog,
-      meleeTalents: meleeTalents,
+      combatTalents: combatTalents,
     );
   }
 
@@ -309,12 +310,12 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     }
 
     final catalog = await ref.read(rulesCatalogProvider.future);
-    final meleeTalents = _sortedMeleeTalents(
+    final combatTalents = _sortedCombatTalents(
       catalog.talents.where(isCombatTalentDef).toList(growable: false),
     );
     final weaponValidation = _validateWeaponSlots(
       catalog: catalog,
-      meleeTalents: meleeTalents,
+      combatTalents: combatTalents,
     );
     if (weaponValidation != null) {
       if (mounted) {
@@ -453,10 +454,10 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   String? _validateWeaponSlotsForConfig({
     required CombatConfig config,
     required RulesCatalog catalog,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
   }) {
     final talentById = <String, TalentDef>{
-      for (final talent in meleeTalents) talent.id: talent,
+      for (final talent in combatTalents) talent.id: talent,
     };
     final slots = config.weaponSlots;
     for (var i = 0; i < slots.length; i++) {
@@ -472,13 +473,17 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       final talentId = slot.talentId.trim();
       final talent = talentId.isEmpty ? null : talentById[talentId];
       if (talentId.isNotEmpty && talent == null) {
-        return '$slotLabel: Das gewaehlte Talent ist nicht gueltig fuer Nahkampf.';
+        return '$slotLabel: Das gewaehlte Talent ist kein gueltiges Kampftalent.';
+      }
+      if (talent != null && _combatTypeFromTalent(talent) != slot.combatType) {
+        return '$slotLabel: Talent "${talent.name}" passt nicht zum Waffenkampftyp.';
       }
       final weaponType = slot.weaponType.trim();
       if (weaponType.isNotEmpty && talent != null) {
         final allowedTypes = _weaponTypeOptionsForTalent(
           talent: talent,
           catalog: catalog,
+          combatType: slot.combatType,
         );
         if (!allowedTypes.contains(weaponType)) {
           return '$slotLabel: Waffenart "$weaponType" passt nicht zum Talent "${talent.name}".';
@@ -496,18 +501,28 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       if (slot.breakFactor < 0) {
         return '$slotLabel: BF darf nicht negativ sein.';
       }
+      if (slot.isRanged && slot.rangedProfile.reloadTime < 0) {
+        return '$slotLabel: Ladezeit darf nicht negativ sein.';
+      }
+      if (slot.isRanged) {
+        for (final projectile in slot.rangedProfile.projectiles) {
+          if (projectile.count < 0) {
+            return '$slotLabel: Geschossbestaende duerfen nicht negativ sein.';
+          }
+        }
+      }
     }
     return null;
   }
 
   String? _validateWeaponSlots({
     required RulesCatalog catalog,
-    required List<TalentDef> meleeTalents,
+    required List<TalentDef> combatTalents,
   }) {
     return _validateWeaponSlotsForConfig(
       config: _draftCombatConfig,
       catalog: catalog,
-      meleeTalents: meleeTalents,
+      combatTalents: combatTalents,
     );
   }
 
@@ -572,7 +587,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                     tabs: const [
                       Tab(text: 'Kampftechniken'),
                       Tab(text: 'Waffen'),
-                      Tab(text: 'Nahkampf'),
+                      Tab(text: 'Kampf'),
                       Tab(text: 'Sonderfertigkeiten'),
                       Tab(text: 'Manoever'),
                     ],

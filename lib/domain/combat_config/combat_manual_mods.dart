@@ -60,10 +60,11 @@ class CombatManualMods {
   /// Tolerant bei fehlenden Feldern (Standardwert 0).
   static CombatManualMods fromJson(Map<String, dynamic> json) {
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
+    final hasAtMod = json.containsKey('atMod') && json['atMod'] != null;
     return CombatManualMods(
       iniMod: getInt('iniMod'),
       ausweichenMod: getInt('ausweichenMod'),
-      atMod: getInt('atMod'),
+      atMod: hasAtMod ? getInt('atMod') : getInt('fkMod'),
       paMod: getInt('paMod'),
       iniWurf: getInt('iniWurf'),
     );
