@@ -33,6 +33,25 @@ String reduceLernkomplexitaet({
   return kLernkomplexitaeten[reducedIndex];
 }
 
+/// Erhoeht eine Lernkomplexitaet um [increaseSteps] Stufen.
+///
+/// Unbekannte Kategorien werden unveraendert zurueckgegeben. Die Obergrenze
+/// ist immer `H`.
+String increaseLernkomplexitaet({
+  required String basisKomplexitaet,
+  required int increaseSteps,
+}) {
+  final index = kLernkomplexitaeten.indexOf(basisKomplexitaet.trim());
+  if (index < 0 || increaseSteps <= 0) {
+    return basisKomplexitaet;
+  }
+  final increasedIndex = (index + increaseSteps).clamp(
+    0,
+    kLernkomplexitaeten.length - 1,
+  );
+  return kLernkomplexitaeten[increasedIndex];
+}
+
 /// Berechnet die effektive Lernkomplexitaet eines Talents.
 String effectiveTalentLernkomplexitaet({
   required String basisKomplexitaet,
@@ -54,6 +73,7 @@ String effectiveSpellLernkomplexitaet({
   required List<String> zauberMerkmale,
   required List<String> heldMerkmalskenntnisse,
   required bool gifted,
+  int penaltySteps = 0,
 }) {
   final hatMerkmalReduktion = zauberMerkmale.any(
     heldMerkmalskenntnisse.contains,
@@ -62,8 +82,12 @@ String effectiveSpellLernkomplexitaet({
       (istHauszauber ? 1 : 0) +
       (hatMerkmalReduktion ? 1 : 0) +
       (gifted ? 1 : 0);
-  return reduceLernkomplexitaet(
+  final penalizedKomplexitaet = increaseLernkomplexitaet(
     basisKomplexitaet: basisKomplexitaet,
+    increaseSteps: penaltySteps,
+  );
+  return reduceLernkomplexitaet(
+    basisKomplexitaet: penalizedKomplexitaet,
     reductionSteps: reductionSteps,
   );
 }

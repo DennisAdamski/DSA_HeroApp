@@ -576,6 +576,7 @@ Kampftalente erkennt man an: `group == 'Kampftalent'` **oder** `weaponCategory !
 | `tradition` | Magie-Tradition |
 | `steigerung` | Steigerungskategorie |
 | `attributes` | Eigenschaftskürzel für Proben |
+| `availability` | Alle Verbreitungs-Eintraege, z. B. `Elf6` oder `Dru(Elf)2` |
 | `aspCost` | AsP-Kosten |
 | `targetObject` | Zielobjekt |
 | `castingTime` | Zauberdauer |
@@ -1115,6 +1116,20 @@ Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Da
   (Fernkampf); `IN` wird dabei nicht beruecksichtigt.
 - Zauber addieren Hauszauber, passende Merkmalskenntnis und Begabung jeweils
   als eigene Reduktionsstufe; die Untergrenze ist `A*`.
+
+### Update 2026-03-08: Zauber-Repraesentation und Verbreitung
+
+- `HeroSpellEntry` speichert jetzt zusaetzlich `learnedRepresentation` und
+  `learnedTradition`, damit die konkret gelernte Zauber-Repraesentation pro
+  Zauber eindeutig bleibt.
+- `magic_rules.dart` modelliert Availability nicht mehr als eine einzige
+  "beste" Zahl, sondern als Liste von `SpellAvailabilityEntry`.
+- Ein Eintrag wie `Dru(Elf)2` bedeutet: Haupttradition `Dru`, gelernte
+  Repraesentation `Elf`, Verbreitung `2`.
+- Der Magie-Katalog zeigt alle Availability-Eintraege an; beim Aktivieren eines
+  Zaubers wird bei mehreren Optionen eine Repraesentation ausgewaehlt.
+- Fremdrepraesentation erhoeht die Lernkomplexitaet eines Zaubers um `+2`
+  Stufen, bevor Hauszauber, Merkmalskenntnis und Begabung angewendet werden.
 
 ### Update 2026-03-08: Rohstart, Startwerte und Eigenschaftsmaximum
 

@@ -163,4 +163,78 @@ void main() {
     expect(preview(withLegacyAxx).tpCalc, preview(withoutAxx).tpCalc + 2);
     expect(computeDerivedStats(withLegacyAxx, state).gs, 16);
   });
+
+  test('parse spell availability keeps learned representation and origin', () {
+    final entries = parseSpellAvailability('Mag6, Hex3, Dru(Elf)2');
+
+    expect(entries.length, 3);
+    expect(entries[0].tradition, 'Mag');
+    expect(entries[0].learnedRepresentation, 'Mag');
+    expect(entries[0].verbreitung, 6);
+    expect(entries[2].tradition, 'Dru');
+    expect(entries[2].learnedRepresentation, 'Elf');
+    expect(entries[2].verbreitung, 2);
+    expect(entries[2].isForeignRepresentation, isTrue);
+  });
+
+  test('available spell entries only require matching origin tradition', () {
+    final entries = availableSpellEntriesForRepresentations(
+      'Elf6, Dru(Elf)2',
+      const <String>['Dru'],
+    );
+
+    expect(entries.length, 1);
+    expect(entries.single.tradition, 'Dru');
+    expect(entries.single.learnedRepresentation, 'Elf');
+  });
+
+  test('spell availability is unavailable without matching origin tradition', () {
+    final entries = availableSpellEntriesForRepresentations(
+      'Elf6, Dru(Elf)2',
+      const <String>['Elf'],
+    );
+
+    expect(entries.length, 1);
+    expect(entries.single.tradition, 'Elf');
+    expect(entries.single.learnedRepresentation, 'Elf');
+    expect(
+      availableSpellEntriesForRepresentations(
+        'Dru(Elf)2',
+        const <String>['Elf'],
+      ),
+      isEmpty,
+    );
+  });
+
+  test('effective steigerung applies +2 for foreign representation first', () {
+    final result = effectiveSteigerung(
+      basisSteigerung: 'C',
+      istHauszauber: false,
+      zauberMerkmale: const <String>[],
+      heldMerkmalskenntnisse: const <String>[],
+      fremdReprPenaltySteps: 2,
+    );
+
+    expect(result, 'E');
+  });
+
+  test('foreign representation penalty and reductions combine in order', () {
+    final result = effectiveSteigerung(
+      basisSteigerung: 'C',
+      istHauszauber: true,
+      zauberMerkmale: const <String>['Kraft'],
+      heldMerkmalskenntnisse: const <String>['Kraft'],
+      istBegabt: true,
+      fremdReprPenaltySteps: 2,
+    );
+
+    expect(result, 'B');
+  });
+
+  test('format availability entries shows all origins and representations', () {
+    expect(
+      formatAvailabilityEntries('Elf6, Ach3, Mag3, Dru(Elf)2, Hex(Elf)2'),
+      'Elf 6; Ach 3; Mag 3; Dru -> Elf 2; Hex -> Elf 2',
+    );
+  });
 }
