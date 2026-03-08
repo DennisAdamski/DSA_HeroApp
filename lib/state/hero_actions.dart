@@ -4,8 +4,10 @@ import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
@@ -34,8 +36,9 @@ class HeroActions {
   /// Legt einen neuen Helden mit Standardattributen an.
   ///
   /// Der Held erhaelt den uebergebenen Namen, Roh-Startwerte und einen initialen
-  /// leeren [HeroState]. Die effektiven Startwerte werden aus Herkunftsmods
-  /// normalisiert gespeichert. Gibt die neue ID zurueck.
+  /// leeren [HeroState]. Standard-Talente und feste Meta-Talente werden direkt
+  /// im Heldenmodell vorbelegt. Die effektiven Startwerte werden aus
+  /// Herkunftsmods normalisiert gespeichert. Gibt die neue ID zurueck.
   Future<String> createHero({
     required String name,
     required Attributes rawStartAttributes,
@@ -50,6 +53,8 @@ class HeroActions {
       attributes: rawStartAttributes,
       rawStartAttributes: rawStartAttributes,
       startAttributes: rawStartAttributes,
+      talents: _buildDefaultTalents(),
+      metaTalents: _buildDefaultMetaTalents(),
     );
     await saveHero(hero);
     await repo.saveHeroState(
@@ -178,3 +183,60 @@ class HeroActions {
     throw StateError('Held mit ID "$heroId" wurde nicht gefunden.');
   }
 }
+
+Map<String, HeroTalentEntry> _buildDefaultTalents() {
+  return Map<String, HeroTalentEntry>.unmodifiable({
+    for (final talentId in _defaultTalentIds) talentId: const HeroTalentEntry(),
+  });
+}
+
+List<HeroMetaTalent> _buildDefaultMetaTalents() {
+  return List<HeroMetaTalent>.unmodifiable(const <HeroMetaTalent>[
+    HeroMetaTalent(
+      id: 'meta_kraeutersuchen',
+      name: 'Kräutersuchen',
+      componentTalentIds: <String>[
+        'tal_sinnesschaerfe',
+        'tal_wildnisleben',
+        'tal_pflanzenkunde',
+      ],
+      attributes: <String>['MU', 'IN', 'FF'],
+      be: '',
+    ),
+  ]);
+}
+
+const Set<String> _defaultTalentIds = <String>{
+  'tal_dolche',
+  'tal_hiebwaffen',
+  'tal_raufen',
+  'tal_ringen',
+  'tal_saebel',
+  'tal_wurfmesser',
+  'tal_athletik',
+  'tal_klettern',
+  'tal_koerperbeherrschung',
+  'tal_schleichen',
+  'tal_schwimmen',
+  'tal_selbstbeherrschung',
+  'tal_sich_verstecken',
+  'tal_singen',
+  'tal_sinnesschaerfe',
+  'tal_tanzen',
+  'tal_zechen',
+  'tal_menschenkenntnis',
+  'tal_ueberreden',
+  'tal_faehrtensuchen',
+  'tal_orientierung',
+  'tal_wildnisleben',
+  'tal_goetter_kulte',
+  'tal_rechnen',
+  'tal_sagen_legenden',
+  'tal_heilkunde_wunden',
+  'tal_holzbearbeitung',
+  'tal_kochen',
+  'tal_lederarbeiten',
+  'tal_malen_zeichnen',
+  'tal_schneidern',
+  'tal_pflanzenkunde',
+};
