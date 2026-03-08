@@ -6,18 +6,19 @@ Aufgaben die notwendig sind für das erreichen des MVP
 
 - [x] Inspector ändern zu einem Reiter für Aktuelles
   - [x] LeP, AsP & Au auf Kampf und Magie-Tab anzeigen und bearbeitbar machen.
-  - [ ] Modifikatoren eintragen
+  - [x] Modifikatoren eintragen
   - [x] BE Konfigurieren
-  - [ ] Wichtige Zauber aktivieren (Axxeleratus)
-- [ ] Mod-Fields unabhängig vom Bearbeiten-State bearbeitbar machen
+  - [x] Wichtige Zauber aktivieren (Axxeleratus)
+- [x] Mod-Fields unabhängig vom Bearbeiten-State bearbeitbar machen
 - [x] Basiswerte Aktuell in Summe umbennennen
 - [x] MetaTalente unter Talente hinzufügen
 - [x] Lernkomplexität für Begabungen korrekt angeben
-- [ ] Zauberrituale
+- [x] Zauberrituale
 
 ## Aufgaben für mich (MVP)
 
 - [ ] Testklasse nur für Logiken prüfen
+- [x] Standardtalente definieren
 - [ ] Eigenschaftsmodifikatoren prüfen
 - [ ] Helden importieren
 

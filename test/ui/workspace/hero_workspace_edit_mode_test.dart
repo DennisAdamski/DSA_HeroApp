@@ -87,7 +87,10 @@ void main() {
   }
 
   Finder tabText(String label) {
-    return find.descendant(of: find.byType(TabBar), matching: find.text(label));
+    return find.descendant(
+      of: find.byType(TabBar).first,
+      matching: find.text(label),
+    );
   }
 
   Finder heroDeckToggleButton() {
@@ -726,10 +729,9 @@ void main() {
 
       final state = await repo.loadHeroState('demo');
       expect(state, isNotNull);
-      expect(
-        state!.activeSpellEffects.activeEffectIds,
-        <String>[activeSpellEffectAxxeleratus],
-      );
+      expect(state!.activeSpellEffects.activeEffectIds, <String>[
+        activeSpellEffectAxxeleratus,
+      ]);
     },
   );
 
@@ -812,7 +814,7 @@ void main() {
     expect(nameField.controller?.text, 'Rondra');
   });
 
-  testWidgets('global action is disabled on non-edit tabs (Notizen)', (
+  testWidgets('notes tab can enter edit mode via global action', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -829,13 +831,103 @@ void main() {
 
     await openWorkspace(tester, repo);
     await tester.tap(tabText('Notizen'));
-    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pumpAndSettle();
 
-    final disabledButton = tester.widget<OutlinedButton>(
-      find.widgetWithText(OutlinedButton, 'Bearbeiten'),
-    );
-    expect(disabledButton.onPressed, isNull);
+    await tester.tap(find.text('Bearbeiten').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Speichern'), findsOneWidget);
   });
+
+  testWidgets(
+    'notes tab saves notes and connections and reveals descriptions by title click',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo);
+      await tester.tap(tabText('Notizen'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Bearbeiten').first);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey<String>('notes-add-note')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-note-title-0')),
+        'Offene Schuld',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-note-description-0')),
+        'Noch 20 Dukaten offen.',
+      );
+
+      await tester.tap(find.text('Verbindungen'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('notes-add-connection')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-connection-name-0')),
+        'Jucho',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-connection-ort-0')),
+        'Punin',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-connection-sozialstatus-0')),
+        '5',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-connection-loyalitaet-0')),
+        'schwankend',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-connection-description-0')),
+        'Informant aus dem Hafenviertel.',
+      );
+
+      await tester.tap(find.text('Speichern').first);
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = findHeroById(heroes, 'demo');
+      expect(hero, isNotNull);
+      expect(hero!.notes, hasLength(1));
+      expect(hero.notes.single.title, 'Offene Schuld');
+      expect(hero.notes.single.description, 'Noch 20 Dukaten offen.');
+      expect(hero.connections, hasLength(1));
+      expect(hero.connections.single.name, 'Jucho');
+      expect(hero.connections.single.ort, 'Punin');
+      expect(hero.connections.single.sozialstatus, '5');
+      expect(hero.connections.single.loyalitaet, 'schwankend');
+      expect(
+        hero.connections.single.beschreibung,
+        'Informant aus dem Hafenviertel.',
+      );
+
+      await openWorkspace(tester, repo);
+      await tester.tap(tabText('Notizen'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Noch 20 Dukaten offen.'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey<String>('notes-note-tile-0')));
+      await tester.pumpAndSettle();
+      expect(find.text('Noch 20 Dukaten offen.'), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'workspace appbar actions keep right spacing and edit action on the right',
