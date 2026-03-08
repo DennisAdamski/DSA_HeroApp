@@ -687,6 +687,21 @@ void main() {
       find.byKey(const ValueKey<String>('combat-weapon-form-preview-ebe')),
       findsOneWidget,
     );
+
+    final editableHeight = tester
+        .getSize(find.byKey(const ValueKey<String>('combat-weapon-form-bf')))
+        .height;
+    final readOnlyHeight = tester
+        .getSize(
+          find.ancestor(
+            of: find.byKey(
+              const ValueKey<String>('combat-weapon-form-preview-tpkk'),
+            ),
+            matching: find.byType(InputDecorator),
+          ),
+        )
+        .height;
+    expect(readOnlyHeight, closeTo(editableHeight, 1));
   });
 
   testWidgets('weapon type filters talent selection without auto-selecting', (
