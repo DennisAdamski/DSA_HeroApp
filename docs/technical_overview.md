@@ -891,7 +891,7 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 | Breakpoint | Layout |
 |---|---|
 | < 1280 dp | **Classic**: Eigenschaften-Header + horizontale TabBar + Inhalt |
-| ≥ 1280 dp | **Command-Deck**: Linkes Nav-Panel (240 px) + zentraler Inhalt + rechter Inspektor (300 px) |
+| ≥ 1280 dp | **Helden-Deck**: Linkes Nav-Panel (240 px, einklappbar auf Toggle-Leiste) + zentraler Inhalt + rechter Inspektor (300 px) |
 
 ### Edit-Zyklus
 
