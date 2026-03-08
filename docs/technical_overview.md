@@ -87,7 +87,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 8
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 10
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
@@ -97,7 +97,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 8) | Format-Version für Migrationskompatibilität |
+| `schemaVersion` | `int` (= 10) | Format-Version für Migrationskompatibilität |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
@@ -110,6 +110,8 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `metaTalents` | `List<HeroMetaTalent>` | Heldenspezifische Meta-Talente mit Komponenten, Eigenschaften und BE-Regel |
 | `hiddenTalentIds` | `List<String>` | IDs ausgeblendeter Talente |
 | `talentSpecialAbilities` | `String` | Freitexte für Sonderfertigkeiten |
+| `spells` | `Map<String, HeroSpellEntry>` | Aktivierte oder gelernte Zauber des Helden |
+| `ritualCategories` | `List<HeroRitualCategory>` | Heldenspezifische Ritualkategorien mit Ritualkenntnis oder Talentbezug |
 | `rasse` / `rasseModText` | `String` | Rasse und Rassenmodifikator-Text |
 | `kultur` / `kulturModText` | `String` | Kultur und Kulturmodifikator-Text |
 | `profession` / `professionModText` | `String` | Profession und Professions-Mod-Text |
@@ -377,6 +379,29 @@ Regelkatalog geladen, sondern direkt im `HeroSheet` gespeichert.
 
 Der Meta-TaW wird nicht persistiert, sondern aus den referenzierten
 `HeroTalentEntry.talentValue`-Werten dynamisch berechnet.
+
+---
+
+### 2.6b `HeroRitualCategory`, `HeroRitualKnowledge` und `HeroRitualEntry`
+
+**Dateien:** `lib/domain/hero_rituals.dart`, `lib/rules/derived/ritual_rules.dart`
+
+Rituale werden nicht aus dem globalen Regelkatalog geladen, sondern pro Held
+direkt in `HeroSheet.ritualCategories` gespeichert. Eine Ritualkategorie
+enthaelt entweder eine eigene Ritualkenntnis mit TaW und Lernkomplexitaet oder
+eine Liste referenzierter Talent-IDs, deren TaWs im Magie-Tab angezeigt werden.
+
+| Typ | Kernfelder |
+|---|---|
+| `HeroRitualCategory` | `id`, `name`, `knowledgeMode`, `ownKnowledge`, `derivedTalentIds`, `additionalFieldDefs`, `rituals` |
+| `HeroRitualKnowledge` | `name`, `value`, `learningComplexity` |
+| `HeroRitualFieldDef` | `id`, `label`, `type` (`text`, `threeAttributes`) |
+| `HeroRitualFieldValue` | `fieldDefId`, `textValue`, `attributeCodes` |
+| `HeroRitualEntry` | `name`, `wirkung`, `kosten`, `wirkungsdauer`, `merkmale`, optionale Felder wie `zauberdauer`, `zielobjekt`, `reichweite`, `technik` |
+
+`ritual_rules.dart` normalisiert Zusatzfelder, entfernt verwaiste Feldwerte,
+kanonisiert `threeAttributes`-Eingaben auf `MU/KL/IN/CH/FF/GE/KO/KK` und loest
+talentbasierte Ritualkategorien fuer die UI auf.
 
 ---
 
@@ -780,7 +805,7 @@ heroComputedProvider(heroId):
 | Methode | Beschreibung |
 |---|---|
 | `createHero({name, rawStartAttributes})` | Neuen Helden mit Name, Roh-Startwerten, vordefinierten Standard-Talenten, festem Meta-Talent `Kraeutersuchen` und leerem State anlegen |
-| `saveHero(HeroSheet)` | AP normalisieren, Level neu berechnen, Modifier parsen, persistieren |
+| `saveHero(HeroSheet)` | AP normalisieren, Level neu berechnen, Modifier parsen, Ritualkategorien normalisieren und persistieren |
 | `saveHeroState(id, HeroState)` | Laufzeitzustand persistieren |
 | `deleteHero(id)` | Held und State löschen, Auswahl aktualisieren |
 | `buildExportJson(id)` | `HeroTransferBundle` (Held + State + Zeitstempel) als JSON |
@@ -796,6 +821,7 @@ heroComputedProvider(heroId):
 - `level` aus `apSpent` neu berechnen
 - `apAvailable = apTotal − apSpent`
 - Modifier-Fragmente parsen und in `unknownModifierFragments` speichern
+- Ritualkategorien, Zusatzfelder und Ritualwerte bereinigen und synchronisieren
 
 ### 5.4 Reaktivität
 
@@ -883,6 +909,7 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 | `hero_overview_tab.dart` | `HeroOverviewTab` | Status-Tab fuer Eigenschaften, AP, Ressourcen, Biografie |
 | `hero_talents_tab.dart` | `HeroTalentsTab` | Talente + Sonderfertigkeiten-Sub-Tab |
 | `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Nahkampf, SF, Manöver |
+| `hero_magic_tab.dart` | `HeroMagicTab` | Zauber, Ritualkategorien/Rituale sowie Repräsentationen und magische SF |
 | `hero_inventory_tab.dart` | `HeroInventoryTab` | 12-spaltige editierbare Inventartabelle |
 | `hero_detail_screen.dart` | `HeroDetailScreen` | Legacy-Platzhalter (nicht eingebunden) |
 
@@ -938,7 +965,7 @@ flutter drive --profile \
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` für `HeroSheet` ist **8**.
+- Die aktuelle `schemaVersion` für `HeroSheet` ist **10**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 1 wird **strikt** validiert.
 
@@ -1000,6 +1027,17 @@ Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Da
 - Neue Helden werden ueber `createHero({name, rawStartAttributes})` angelegt.
 - Beim Anlegen werden Standard-Talente sowie das feste Meta-Talent `Kraeutersuchen` (`MU/IN/FF` aus `Sinnesschaerfe`, `Wildnisleben`, `Pflanzenkunde`) direkt in `HeroSheet` gespeichert.
 - Das Eigenschaftsmaximum ist ein Anzeigewert und wird als `ceil(start * 1.5)` berechnet.
+
+### Update 2026-03-08: Zauberrituale
+
+- `HeroSheet` speichert jetzt zusaetzlich `ritualCategories`.
+- Neue Ritualmodelle liegen in `lib/domain/hero_rituals.dart`.
+- `lib/rules/derived/ritual_rules.dart` normalisiert Ritualkategorien,
+  Zusatzfelder und talentbasierte Anzeigen.
+- Der Magie-Tab hat jetzt einen eigenen Ritual-Sub-Tab fuer Kategorien,
+  Ritualkenntnisse, Zusatzfelder und einzelne Rituale.
+- Eigenstaendige Ritualkenntnisse bleiben heldenspezifisch und werden nicht in
+  den regulaeren Talente-Tab gespiegelt.
 
 ---
 

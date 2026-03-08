@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 
 /// Steuert, wie beim Import eines bereits vorhandenen Helden verfahren wird.
@@ -99,6 +100,7 @@ class HeroActions {
       apAvailable: calculatedAvailable,
       level: calculatedLevel,
       startAttributes: effectiveStartAttributes,
+      ritualCategories: normalizeRitualCategories(hero.ritualCategories),
       unknownModifierFragments: parsed.unknownFragments,
     );
 
