@@ -8,7 +8,8 @@ enum WorkspaceAreaId {
   combatMeleeCalculator,
   combatSpecialRules,
   inventoryMain,
-  notesMain,
+  notesEntries,
+  notesConnections,
 }
 
 enum WorkspaceAreaKind { listView, formView, calculatorView, notesView }
@@ -90,11 +91,19 @@ const List<WorkspaceAreaMeta> workspaceAreaRegistry = <WorkspaceAreaMeta>[
   ),
   WorkspaceAreaMeta(
     pageId: WorkspacePageId.notes,
-    areaId: WorkspaceAreaId.notesMain,
+    areaId: WorkspaceAreaId.notesEntries,
     kind: WorkspaceAreaKind.notesView,
     supportsVisibilityMode: false,
     supportsGroupVisibility: false,
-    supportsInlineEdit: false,
+    supportsInlineEdit: true,
+  ),
+  WorkspaceAreaMeta(
+    pageId: WorkspacePageId.notes,
+    areaId: WorkspaceAreaId.notesConnections,
+    kind: WorkspaceAreaKind.notesView,
+    supportsVisibilityMode: false,
+    supportsGroupVisibility: false,
+    supportsInlineEdit: true,
   ),
 ];
 

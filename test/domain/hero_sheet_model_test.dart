@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
@@ -177,6 +179,21 @@ void main() {
       ),
       hiddenTalentIds: ['tal_a', 'tal_a', ' ', 'tal_b'],
       talentSpecialAbilities: 'Meisterhandwerk, Begabung',
+      notes: const <HeroNoteEntry>[
+        HeroNoteEntry(
+          title: 'Offene Schuld',
+          description: 'Noch 20 Dukaten bei Jucho offen.',
+        ),
+      ],
+      connections: const <HeroConnectionEntry>[
+        HeroConnectionEntry(
+          name: 'Jucho',
+          ort: 'Punin',
+          sozialstatus: '5',
+          loyalitaet: 'schwankend',
+          beschreibung: 'Informant aus dem Hafenviertel.',
+        ),
+      ],
       unknownModifierFragments: ['foo'],
     );
 
@@ -184,13 +201,18 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 10);
+    expect(reloaded.schemaVersion, 11);
     expect(reloaded.kultur, 'Mittelreich');
     expect(reloaded.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
     expect(reloaded.apAvailable, 500);
     expect(reloaded.hiddenTalentIds, ['tal_a', 'tal_b']);
     expect(reloaded.talentSpecialAbilities, 'Meisterhandwerk, Begabung');
+    expect(reloaded.notes.single.title, 'Offene Schuld');
+    expect(reloaded.notes.single.description, 'Noch 20 Dukaten bei Jucho offen.');
+    expect(reloaded.connections.single.name, 'Jucho');
+    expect(reloaded.connections.single.ort, 'Punin');
+    expect(reloaded.connections.single.loyalitaet, 'schwankend');
     expect(reloaded.unknownModifierFragments, contains('foo'));
     expect(reloaded.metaTalents.single.name, 'Pflanzensuchen');
     expect(reloaded.metaTalents.single.componentTalentIds, <String>[
@@ -287,6 +309,8 @@ void main() {
     expect(loaded.unknownModifierFragments, isEmpty);
     expect(loaded.metaTalents, isEmpty);
     expect(loaded.ritualCategories, isEmpty);
+    expect(loaded.notes, isEmpty);
+    expect(loaded.connections, isEmpty);
     expect(loaded.rawStartAttributes.mu, loaded.attributes.mu);
     expect(loaded.rawStartAttributes.kk, loaded.attributes.kk);
     expect(loaded.startAttributes.mu, loaded.attributes.mu);

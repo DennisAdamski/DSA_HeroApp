@@ -87,7 +87,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 10
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 11
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
@@ -97,7 +97,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 10) | Format-Version für Migrationskompatibilität |
+| `schemaVersion` | `int` (= 11) | Format-Version für Migrationskompatibilität |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
@@ -126,6 +126,8 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `apAvailable` | `int` | Verfügbare AP (= apTotal − apSpent) |
 | `dukaten` | `String` | Geldmenge (Freitext) |
 | `inventoryEntries` | `List<HeroInventoryEntry>` | Ausrüstung/Inventar |
+| `notes` | `List<HeroNoteEntry>` | Freie Notizen mit Titel und Beschreibung |
+| `connections` | `List<HeroConnectionEntry>` | Kontakte/Verbindungen mit Ort, Sozialstatus, Loyalität und Beschreibung |
 | `unknownModifierFragments` | `List<String>` | Unparsbare Modifier-Fragmente (UI-Hinweis) |
 
 #### Kompositions-Baum
@@ -149,7 +151,9 @@ HeroSheet
   │     └── CombatManualMods manualMods
   ├── Map<String, HeroTalentEntry> talents
   ├── List<HeroMetaTalent> metaTalents
-  └── List<HeroInventoryEntry> inventoryEntries
+  ├── List<HeroInventoryEntry> inventoryEntries
+  ├── List<HeroNoteEntry> notes
+  └── List<HeroConnectionEntry> connections
 ```
 
 ---
@@ -428,7 +432,20 @@ Repräsentiert einen Inventargegenstand (alle Felder `String`, Standard `''`):
 
 ---
 
-### 2.8 `HeroTransferBundle` — Export-/Import-Hülle
+### 2.8 `HeroNoteEntry` und `HeroConnectionEntry`
+
+**Dateien:** `lib/domain/hero_note_entry.dart`, `lib/domain/hero_connection_entry.dart`
+
+Heldenspezifische Freitexteinträge für den Notizen-Tab.
+
+| Typ | Kernfelder |
+|---|---|
+| `HeroNoteEntry` | `title`, `description` |
+| `HeroConnectionEntry` | `name`, `ort`, `sozialstatus`, `loyalitaet`, `beschreibung` |
+
+---
+
+### 2.9 `HeroTransferBundle` — Export-/Import-Hülle
 
 **Datei:** `lib/domain/hero_transfer_bundle.dart`
 
@@ -911,6 +928,7 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 | `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Nahkampf, SF, Manöver |
 | `hero_magic_tab.dart` | `HeroMagicTab` | Zauber, Ritualkategorien/Rituale sowie Repräsentationen und magische SF |
 | `hero_inventory_tab.dart` | `HeroInventoryTab` | 12-spaltige editierbare Inventartabelle |
+| `hero_notes_tab.dart` | `HeroNotesTab` | Untertabs für freie Notizen und Verbindungen |
 | `hero_detail_screen.dart` | `HeroDetailScreen` | Legacy-Platzhalter (nicht eingebunden) |
 
 ### Responsive Layout
@@ -965,7 +983,7 @@ flutter drive --profile \
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` für `HeroSheet` ist **10**.
+- Die aktuelle `schemaVersion` für `HeroSheet` ist **11**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 1 wird **strikt** validiert.
 
@@ -1038,6 +1056,14 @@ Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Da
   Ritualkenntnisse, Zusatzfelder und einzelne Rituale.
 - Eigenstaendige Ritualkenntnisse bleiben heldenspezifisch und werden nicht in
   den regulaeren Talente-Tab gespiegelt.
+
+### Update 2026-03-08: Notizen und Verbindungen
+
+- `HeroSheet` speichert jetzt zusaetzlich `notes` und `connections`.
+- `HeroNoteEntry` kapselt freie Notizen mit klickbarem Titel und Langtext.
+- `HeroConnectionEntry` speichert Name, Ort, Sozialstatus, Loyalitaet und Beschreibung.
+- `HeroNotesTab` teilt den Workspace-Bereich in die Untertabs `Notizen` und
+  `Verbindungen`.
 
 ---
 
