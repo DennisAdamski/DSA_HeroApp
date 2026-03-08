@@ -53,15 +53,13 @@ class CombatPreviewStats {
     required this.axxPaBaseBonus,
     required this.offhandPaBonus,
     required this.iniDiceCount,
-    required this.fkBase,
     required this.axxAttackDefenseHint,
     required this.isRangedWeapon,
-    required this.fk,
-    required this.weaponFkMod,
+    required this.rangedAtBase,
+    required this.projectileAtMod,
     required this.distanceTpMod,
     required this.projectileTpMod,
     required this.projectileIniMod,
-    required this.projectileFkMod,
     required this.reloadTime,
     required this.activeDistanceLabel,
     required this.activeProjectileName,
@@ -106,15 +104,13 @@ class CombatPreviewStats {
   final int offhandPaBonus;
   // Anzahl Ini-Wuerfel: 1 (normal) oder 2 (Klingentaenzer)
   final int iniDiceCount;
-  final int fkBase;
   final String axxAttackDefenseHint;
   final bool isRangedWeapon;
-  final int fk;
-  final int weaponFkMod;
+  final int rangedAtBase;
+  final int projectileAtMod;
   final int distanceTpMod;
   final int projectileTpMod;
   final int projectileIniMod;
-  final int projectileFkMod;
   final int reloadTime;
   final String activeDistanceLabel;
   final String activeProjectileName;
@@ -207,7 +203,7 @@ CombatPreviewStats computeCombatPreviewStats(
   final distanceTpMod = isRangedWeapon ? activeDistanceBand.tpMod : 0;
   final projectileTpMod = isRangedWeapon ? (activeProjectile?.tpMod ?? 0) : 0;
   final projectileIniMod = isRangedWeapon ? (activeProjectile?.iniMod ?? 0) : 0;
-  final projectileFkMod = isRangedWeapon ? (activeProjectile?.fkMod ?? 0) : 0;
+  final projectileAtMod = isRangedWeapon ? (activeProjectile?.atMod ?? 0) : 0;
   final baseTpCalc = main.tpFlat + tpKk + axxTpBonus;
   final tpCalc = isRangedWeapon
       ? computeRangedTpCalc(
@@ -248,35 +244,33 @@ CombatPreviewStats computeCombatPreviewStats(
       : talents[main.talentId.trim()];
   final talentAt = talentEntry?.atValue ?? 0;
   final talentPa = talentEntry?.paValue ?? 0;
-  final talentValue = talentEntry?.talentValue ?? 0;
-  final at =
-      talentAt +
-      atBase +
-      main.wmAt +
-      atEbePart +
-      atSpecBonus +
-      offhand.atMod +
-      manualMods.atMod;
-  final pa =
-      talentPa +
-      paBase +
-      main.wmPa +
-      paEbePart +
-      paSpecBonus +
-      offhandPaBonus +
-      manualMods.paMod;
-  final weaponFkMod = isRangedWeapon ? main.wmFk : 0;
-  final fk = isRangedWeapon
-      ? computeFkValue(
-          fkBase: derived.fkBase,
-          talentValue: talentValue,
-          weaponFkMod: weaponFkMod,
+  final rangedAtBase = isRangedWeapon ? derived.fkBase : 0;
+  final at = isRangedWeapon
+      ? computeRangedAtValue(
+          rangedAtBase: rangedAtBase,
+          talentAtValue: talentAt,
+          weaponAtMod: main.wmAt,
           ebeAttackPart: atEbePart,
           specializationBonus: atSpecBonus,
-          projectileFkMod: projectileFkMod,
-          manualFkMod: manualMods.fkMod,
+          projectileAtMod: projectileAtMod,
+          manualAtMod: manualMods.atMod,
         )
-      : 0;
+      : talentAt +
+            atBase +
+            main.wmAt +
+            atEbePart +
+            atSpecBonus +
+            offhand.atMod +
+            manualMods.atMod;
+  final pa = isRangedWeapon
+      ? 0
+      : talentPa +
+            paBase +
+            main.wmPa +
+            paEbePart +
+            paSpecBonus +
+            offhandPaBonus +
+            manualMods.paMod;
 
   // --- Initiative-Kette (ini_rules) ---
   final iniDiceCount = computeIniDiceCount(special);
@@ -310,7 +304,7 @@ CombatPreviewStats computeCombatPreviewStats(
   );
   final initiative = kampfInitiative;
   final iniParadeMod = computeIniParadeMod(kampfInitiative);
-  final paMitIniParadeMod = pa + iniParadeMod;
+  final paMitIniParadeMod = isRangedWeapon ? 0 : pa + iniParadeMod;
 
   // --- Ausweichen (ausweichen_rules) ---
   final akrobatikBonusValue = computeAkrobatikBonus(talents);
@@ -369,15 +363,13 @@ CombatPreviewStats computeCombatPreviewStats(
     axxPaBaseBonus: axxPaBaseBonus,
     offhandPaBonus: offhandPaBonus,
     iniDiceCount: iniDiceCount,
-    fkBase: derived.fkBase,
     axxAttackDefenseHint: axxAttackDefenseHint,
     isRangedWeapon: isRangedWeapon,
-    fk: fk,
-    weaponFkMod: weaponFkMod,
+    rangedAtBase: rangedAtBase,
+    projectileAtMod: projectileAtMod,
     distanceTpMod: distanceTpMod,
     projectileTpMod: projectileTpMod,
     projectileIniMod: projectileIniMod,
-    projectileFkMod: projectileFkMod,
     reloadTime: isRangedWeapon ? main.rangedProfile.reloadTime : 0,
     activeDistanceLabel: isRangedWeapon ? activeDistanceBand.label : '',
     activeProjectileName: isRangedWeapon ? (activeProjectile?.name ?? '') : '',

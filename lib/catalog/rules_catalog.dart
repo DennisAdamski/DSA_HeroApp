@@ -309,7 +309,6 @@ class WeaponDef {
     this.iniMod = 0,
     this.atMod = 0,
     this.paMod = 0,
-    this.fkMod = 0,
     this.reloadTime = 0,
     this.rangedDistanceBands = const <RangedDistanceBand>[],
     this.rangedProjectiles = const <RangedProjectile>[],
@@ -331,7 +330,6 @@ class WeaponDef {
   final int iniMod; // Waffenspezifischer Initiative-Modifier
   final int atMod; // Waffenspezifischer Angriff-Modifier
   final int paMod; // Waffenspezifischer Parade-Modifier
-  final int fkMod; // Waffenspezifischer Fernkampf-Modifier
   final int reloadTime; // Feste Ladezeit fuer Fernkampfwaffen
   final List<RangedDistanceBand> rangedDistanceBands; // Distanzstufen
   final List<RangedProjectile> rangedProjectiles; // Geschossvorlagen
@@ -347,6 +345,7 @@ class WeaponDef {
         (json['rangedProjectiles'] as List?) ??
         (json['projectiles'] as List?) ??
         const <dynamic>[];
+    final hasAtMod = json.containsKey('atMod') && json['atMod'] != null;
     return WeaponDef(
       id: _readString(json, 'id', fallback: ''),
       name: _readString(json, 'name', fallback: ''),
@@ -359,15 +358,16 @@ class WeaponDef {
       activeManeuvers: _readStringList(json, 'activeManeuvers'),
       tpkk: _readString(json, 'tpkk', fallback: ''),
       iniMod: _readInt(json, 'iniMod', fallback: 0),
-      atMod: _readInt(json, 'atMod', fallback: 0),
+      atMod: hasAtMod
+          ? _readInt(json, 'atMod', fallback: 0)
+          : _readInt(
+              json,
+              'fkMod',
+              fallback: type.trim().toLowerCase() == 'fernkampf'
+                  ? 0
+                  : _readInt(json, 'atMod', fallback: 0),
+            ),
       paMod: _readInt(json, 'paMod', fallback: 0),
-      fkMod: _readInt(
-        json,
-        'fkMod',
-        fallback: type.trim().toLowerCase() == 'fernkampf'
-            ? _readInt(json, 'atMod', fallback: 0)
-            : 0,
-      ),
       reloadTime: _readInt(json, 'reloadTime', fallback: 0),
       rangedDistanceBands: rawDistanceBands
           .whereType<Map>()
@@ -403,7 +403,6 @@ class WeaponDef {
       'iniMod': iniMod,
       'atMod': atMod,
       'paMod': paMod,
-      'fkMod': fkMod,
       'reloadTime': reloadTime,
       'rangedDistanceBands': rangedDistanceBands
           .map((entry) => entry.toJson())

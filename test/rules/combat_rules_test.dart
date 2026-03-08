@@ -378,7 +378,7 @@ void main() {
     expect(withResult.pa, withoutResult.pa);
   });
 
-  test('ranged FK uses talentValue instead of AT value', () {
+  test('ranged AT uses AT value instead of talentValue', () {
     const catalogTalents = <TalentDef>[
       TalentDef(
         id: 'tal_boegen',
@@ -403,19 +403,20 @@ void main() {
           talentId: 'tal_boegen',
           combatType: WeaponCombatType.ranged,
           weaponType: 'Kurzbogen',
-          wmFk: 2,
+          wmAt: 2,
         ),
-        manualMods: CombatManualMods(fkMod: 1),
+        manualMods: CombatManualMods(atMod: 1),
       ),
     );
 
     final result = preview(sheet, catalogTalents: catalogTalents);
 
     expect(result.isRangedWeapon, isTrue);
-    expect(result.fk, result.fkBase + 7 + 2 + result.specBonus + 1);
+    expect(result.at, result.rangedAtBase + 1 + 2 + result.specBonus + 1);
+    expect(result.pa, 0);
   });
 
-  test('ranged distance and projectile modify TP, FK and INI as intended', () {
+  test('ranged distance and projectile modify TP, AT and INI as intended', () {
     const catalogTalents = <TalentDef>[
       TalentDef(
         id: 'tal_boegen',
@@ -464,7 +465,7 @@ void main() {
                 count: 6,
                 tpMod: 1,
                 iniMod: -2,
-                fkMod: 3,
+                atMod: 3,
               ),
             ],
             selectedDistanceIndex: 0,
@@ -478,11 +479,12 @@ void main() {
     final modifiedResult = preview(modified, catalogTalents: catalogTalents);
 
     expect(modifiedResult.tpCalc, baseResult.tpCalc + 3);
-    expect(modifiedResult.fk, baseResult.fk + 3);
+    expect(modifiedResult.at, baseResult.at + 3);
     expect(
       modifiedResult.kombinierteHeldenWaffenIni,
       baseResult.kombinierteHeldenWaffenIni - 2,
     );
+    expect(modifiedResult.pa, 0);
   });
 
   test(

@@ -52,9 +52,9 @@ Vollstaendige Anleitung:
 ### Kampf-UI (Stand: 2026-03-08)
 - Die Waffen-Tabelle im Kampf-Tab ist kompakt und zeigt nur Kernwerte sowie Artefakt-Status.
 - Waffendetails werden ueber einen Dialog bearbeitet; inline editierbar bleiben nur `Waffentalent` und `BF`.
-- Nah- und Fernkampfwaffen werden gemeinsam gepflegt; Fernkampfwaffen bringen FK, Ladezeit, 5 Distanzstufen und persistente Geschossbestaende mit.
+- Nah- und Fernkampfwaffen werden gemeinsam gepflegt; Fernkampfwaffen bringen AT, Ladezeit, 5 Distanzstufen und persistente Geschossbestaende mit.
 - Der Sub-Tab `Kampf` wechselt seine Anzeige automatisch je nach aktiver Waffe zwischen Nahkampfwerten und Fernkampfwerten.
-- Der Waffen-Dialog gruppiert Stammdaten, berechnete Ausgabewerte sowie TP-/INI-/FK-Formelfelder; Formelwerte sind dort read-only sichtbar.
+- Der Waffen-Dialog gruppiert Stammdaten, berechnete Ausgabewerte sowie TP-/INI-/AT-Formelfelder; Formelwerte sind dort read-only sichtbar.
 - Die angezeigte `PA` der aktiven Nahkampfwaffe enthaelt den heldenbezogenen INI-Parade-Bonus; dieser wird nicht mehr als eigener Waffenwert separat angezeigt.
 - Neue Waffen werden ueber denselben Dialog angelegt; der Katalog-Button oeffnet dabei vorbefuellte Vorlagen.
 

@@ -166,18 +166,18 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _calcSection(
-          title: 'Fernkampf (FK)',
-          result: preview.fk,
+          title: 'Fernkampf (AT)',
+          result: preview.at,
           steps: [
-            _calcStep('FK-Basis', preview.fkBase),
-            _calcStep('Talentwert', talentEntry.talentValue),
-            _calcStep('WM FK (Waffe)', preview.weaponFkMod),
+            _calcStep('AT-Basis (Fernkampf)', preview.rangedAtBase),
+            _calcStep('Talent AT-Anteil', talentEntry.atValue),
+            _calcStep('WM AT (Waffe)', weapon.wmAt),
             _calcStep('eBE AT-Anteil', _atEbePart(preview.ebe)),
             if (preview.specBonus != 0)
               _calcStep('Spezialisierung', preview.specBonus),
-            if (preview.projectileFkMod != 0)
-              _calcStep('Geschoss FK', preview.projectileFkMod),
-            if (manual.fkMod != 0) _calcStep('Manueller Mod', manual.fkMod),
+            if (preview.projectileAtMod != 0)
+              _calcStep('Geschoss AT', preview.projectileAtMod),
+            if (manual.atMod != 0) _calcStep('Manueller Mod', manual.atMod),
           ],
         ),
         const Divider(),

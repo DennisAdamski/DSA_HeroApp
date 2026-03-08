@@ -4,7 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config/weapon_combat_type.dar
 /// Konfiguriert eine einzelne Hauptwaffenposition des Helden.
 ///
 /// Unveraenderlich; Aktualisierungen erfolgen ueber [copyWith].
-/// Serialisierung ist abwaertskompatibel (Schema v4).
+/// Serialisierung ist abwaertskompatibel (Schema v5).
 /// Die Wuerfelseiten sind im aktuellen Hausregel-Fluss fest auf W6 gesetzt.
 class MainWeaponSlot {
   const MainWeaponSlot({
@@ -21,7 +21,6 @@ class MainWeaponSlot {
     this.tpFlat = 0,
     this.wmAt = 0,
     this.wmPa = 0,
-    this.wmFk = 0,
     this.iniMod = 0,
     this.beTalentMod = 0,
     this.isOneHanded = true,
@@ -69,9 +68,6 @@ class MainWeaponSlot {
   /// Waffenmodifikator auf Parade.
   final int wmPa;
 
-  /// Waffenmodifikator auf Fernkampf.
-  final int wmFk;
-
   /// Initiativmodifikator der Waffe.
   final int iniMod;
 
@@ -110,7 +106,6 @@ class MainWeaponSlot {
     int? tpFlat,
     int? wmAt,
     int? wmPa,
-    int? wmFk,
     int? iniMod,
     int? beTalentMod,
     bool? isOneHanded,
@@ -133,7 +128,6 @@ class MainWeaponSlot {
       tpFlat: tpFlat ?? this.tpFlat,
       wmAt: wmAt ?? this.wmAt,
       wmPa: wmPa ?? this.wmPa,
-      wmFk: wmFk ?? this.wmFk,
       iniMod: iniMod ?? this.iniMod,
       beTalentMod: beTalentMod ?? this.beTalentMod,
       isOneHanded: isOneHanded ?? this.isOneHanded,
@@ -160,7 +154,6 @@ class MainWeaponSlot {
       'tpFlat': tpFlat,
       'wmAt': wmAt,
       'wmPa': wmPa,
-      'wmFk': wmFk,
       'iniMod': iniMod,
       'beTalentMod': beTalentMod,
       'isOneHanded': isOneHanded,
@@ -189,6 +182,7 @@ class MainWeaponSlot {
     }
 
     final combatType = weaponCombatTypeFromJson(getString('combatType'));
+    final hasWmAt = json.containsKey('wmAt') && json['wmAt'] != null;
     return MainWeaponSlot(
       name: getString('name'),
       talentId: getString('talentId'),
@@ -201,12 +195,13 @@ class MainWeaponSlot {
       tpDiceCount: getInt('tpDiceCount', 1),
       tpDiceSides: 6,
       tpFlat: getInt('tpFlat', 0),
-      wmAt: getInt('wmAt', 0),
+      wmAt: hasWmAt
+          ? getInt('wmAt', 0)
+          : getInt(
+              'wmFk',
+              combatType == WeaponCombatType.ranged ? 0 : getInt('wmAt', 0),
+            ),
       wmPa: getInt('wmPa', 0),
-      wmFk: getInt(
-        'wmFk',
-        combatType == WeaponCombatType.ranged ? getInt('wmAt', 0) : 0,
-      ),
       iniMod: getInt('iniMod', 0),
       beTalentMod: getInt('beTalentMod', 0),
       isOneHanded: (json['isOneHanded'] as bool?) ?? true,

@@ -143,7 +143,6 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
       tpFlat: tpFlat,
       wmAt: weapon.atMod,
       wmPa: weapon.paMod,
-      wmFk: weapon.fkMod,
       iniMod: weapon.iniMod,
       rangedProfile: rangedProfile,
     );
@@ -966,17 +965,6 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                       },
                     ),
                     _numberInput(
-                      label: 'FK Mod',
-                      keyName: 'combat-manual-fk-mod',
-                      isEditing: isEditing,
-                      onChanged: (parsed) {
-                        _draftCombatConfig = _draftCombatConfig.copyWith(
-                          manualMods: manual.copyWith(fkMod: parsed),
-                        );
-                        _markFieldChanged();
-                      },
-                    ),
-                    _numberInput(
                       label: 'PA Mod',
                       keyName: 'combat-manual-pa-mod',
                       isEditing: isEditing,
@@ -1008,7 +996,8 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _resultChip('FK-Basis', preview.fkBase),
+                    if (preview.isRangedWeapon)
+                      _resultChip('AT-Basis (Fernkampf)', preview.rangedAtBase),
                     _resultChip('RS', preview.rsTotal),
                     _resultChip('BE Roh', preview.beTotalRaw),
                     _resultChip('RG Reduktion', preview.rgReduction),
@@ -1030,10 +1019,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     ),
                     Chip(label: Text('Kampf INI: ${preview.kampfInitiative}')),
                     _resultChip('Ausweichen', preview.ausweichen),
-                    _resultChip(
-                      preview.isRangedWeapon ? 'FK' : 'AT',
-                      preview.isRangedWeapon ? preview.fk : preview.at,
-                    ),
+                    _resultChip('AT', preview.at),
                     if (!preview.isRangedWeapon)
                       _resultChip('PA', preview.paMitIniParadeMod),
                     _resultChip('eBE', preview.ebe),
@@ -1313,9 +1299,9 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   if (preview.isRangedWeapon)
                     Chip(
                       key: const ValueKey<String>(
-                        'combat-active-weapon-info-fk',
+                        'combat-active-weapon-info-at',
                       ),
-                      label: Text('FK: ${preview.fk}'),
+                      label: Text('AT: ${preview.at}'),
                     )
                   else ...[
                     Chip(
@@ -2049,7 +2035,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                         ? '-'
                         : slot.distanceClass.trim()),
             ),
-            Text(slot.isRanged ? preview.fk.toString() : preview.at.toString()),
+            Text(preview.at.toString()),
             Text(slot.isRanged ? '-' : preview.pa.toString()),
             Text(preview.tpExpression),
             Text(
