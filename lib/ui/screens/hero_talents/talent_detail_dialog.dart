@@ -57,7 +57,18 @@ class _TalentDetailDialog extends StatelessWidget {
                 _detailRow(theme, 'AT', '${entry.atValue}'),
                 _detailRow(theme, 'PA', '${entry.paValue}'),
               ],
-              if (entry.modifier != 0)
+              if (entry.talentModifiers.isNotEmpty) ...[
+                _detailRow(theme, 'Gesamt-Mod', '${entry.modifier}'),
+                const SizedBox(height: 4),
+                _sectionTitle(theme, 'Modifikatoren'),
+                ...entry.talentModifiers.map(
+                  (modifier) => _detailRow(
+                    theme,
+                    modifier.description,
+                    '${modifier.modifier}',
+                  ),
+                ),
+              ] else if (entry.modifier != 0)
                 _detailRow(theme, 'Modifikator', '${entry.modifier}'),
               if (entry.specialExperiences > 0)
                 _detailRow(theme, 'SE', '${entry.specialExperiences}'),
