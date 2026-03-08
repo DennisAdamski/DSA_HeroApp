@@ -99,17 +99,15 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     final tpMatch = RegExp(
       r'^\s*(\d+)\s*[wW]\s*6\s*([+-]\s*\d+)?\s*$',
     ).firstMatch(weapon.tp);
-    final tpkkMatch = RegExp(r'^\s*(\d+)\s*/\s*(\d+)\s*$').firstMatch(
-      weapon.tpkk,
-    );
+    final tpkkMatch = RegExp(
+      r'^\s*(\d+)\s*/\s*(\d+)\s*$',
+    ).firstMatch(weapon.tpkk);
     final tpDiceCount = tpMatch == null ? 1 : int.parse(tpMatch.group(1)!);
     final tpFlat = tpMatch == null
         ? 0
         : int.parse((tpMatch.group(2) ?? '0').replaceAll(' ', ''));
     final kkBase = tpkkMatch == null ? 0 : int.parse(tpkkMatch.group(1)!);
-    final kkThreshold = tpkkMatch == null
-        ? 1
-        : int.parse(tpkkMatch.group(2)!);
+    final kkThreshold = tpkkMatch == null ? 1 : int.parse(tpkkMatch.group(2)!);
     return MainWeaponSlot(
       name: weapon.name,
       talentId: _findTalentIdByName(weapon.combatSkill, meleeTalents),
@@ -132,10 +130,13 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     required HeroState heroState,
     required List<TalentDef> meleeTalents,
   }) {
-    final meleeWeapons = catalog.weapons
-        .where((w) => w.active && w.type.trim().toLowerCase() == 'nahkampf')
-        .toList(growable: false)
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final meleeWeapons =
+        catalog.weapons
+            .where((w) => w.active && w.type.trim().toLowerCase() == 'nahkampf')
+            .toList(growable: false)
+          ..sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
 
     showModalBottomSheet<void>(
       context: context,
@@ -323,7 +324,8 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     String? catalogWeaponName,
   }) async {
     final slots = _draftCombatConfig.weaponSlots;
-    final sourceSlot = initialSlot ??
+    final sourceSlot =
+        initialSlot ??
         (slotIndex == null || slotIndex < 0 || slotIndex >= slots.length
             ? const MainWeaponSlot()
             : slots[slotIndex]);
@@ -1478,6 +1480,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     cells[1] = DropdownButtonFormField<String>(
       key: const ValueKey<String>('combat-weapons-filter-talent'),
       initialValue: filteredTalentValue,
+      isExpanded: true,
       decoration: const InputDecoration(
         labelText: 'Filter Talent',
         border: OutlineInputBorder(),
@@ -1488,7 +1491,11 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         ...sortedTalents.map(
           (talent) => DropdownMenuItem<String>(
             value: talent.id,
-            child: Text(talent.name),
+            child: Text(
+              talent.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ),
       ],
@@ -1502,6 +1509,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     cells[2] = DropdownButtonFormField<String>(
       key: const ValueKey<String>('combat-weapons-filter-weapon-type'),
       initialValue: filteredTypeValue,
+      isExpanded: true,
       decoration: const InputDecoration(
         labelText: 'Filter Waffenart',
         border: OutlineInputBorder(),
@@ -1512,7 +1520,11 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         ...weaponTypeValues.map(
           (weaponType) => DropdownMenuItem<String>(
             value: weaponType,
-            child: Text(weaponType),
+            child: Text(
+              weaponType,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ),
       ],
@@ -1526,6 +1538,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     cells[3] = DropdownButtonFormField<String>(
       key: const ValueKey<String>('combat-weapons-filter-dk'),
       initialValue: filteredDkValue,
+      isExpanded: true,
       decoration: const InputDecoration(
         labelText: 'Filter DK',
         border: OutlineInputBorder(),
@@ -1536,7 +1549,11 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         ...distanceClassValues.map(
           (distanceClass) => DropdownMenuItem<String>(
             value: distanceClass,
-            child: Text(distanceClass),
+            child: Text(
+              distanceClass,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ),
       ],
@@ -1644,6 +1661,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               initialValue: talentById.containsKey(slot.talentId.trim())
                   ? slot.talentId.trim()
                   : '',
+              isExpanded: true,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 isDense: true,
@@ -1653,7 +1671,11 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                 ...sortedTalents.map(
                   (talent) => DropdownMenuItem<String>(
                     value: talent.id,
-                    child: Text(talent.name),
+                    child: Text(
+                      talent.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ],
@@ -1686,7 +1708,9 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             ),
             Text(slot.weaponType.trim().isEmpty ? '-' : slot.weaponType.trim()),
             Text(
-              slot.distanceClass.trim().isEmpty ? '-' : slot.distanceClass.trim(),
+              slot.distanceClass.trim().isEmpty
+                  ? '-'
+                  : slot.distanceClass.trim(),
             ),
             Text(preview.at.toString()),
             Text(preview.pa.toString()),
