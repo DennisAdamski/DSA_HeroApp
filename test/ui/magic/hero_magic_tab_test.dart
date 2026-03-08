@@ -3,10 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -239,4 +241,42 @@ void main() {
     expect(dialogSize.width, greaterThan(500));
     expect(dialogSize.height, greaterThan(560));
   });
+
+  testWidgets(
+    'active spell effects popup opens in magic tab and persists toggles without edit mode',
+    (tester) async {
+      final opened = await openMagicTab(tester);
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-active-spells-open')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('active-spell-effects-dialog')),
+        findsOneWidget,
+      );
+      expect(find.text('Axxeleratus'), findsOneWidget);
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>(
+            'active-spell-toggle-effect_spell_axxeleratus',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final state = await opened.repo.loadHeroState('demo');
+      expect(state, isNotNull);
+      expect(
+        state!.activeSpellEffects,
+        isA<ActiveSpellEffectsState>(),
+      );
+      expect(
+        state.activeSpellEffects.activeEffectIds,
+        <String>[activeSpellEffectAxxeleratus],
+      );
+    },
+  );
 }

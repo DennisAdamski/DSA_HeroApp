@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 
 void main() {
   HeroTransferBundle buildBundle() {
@@ -30,6 +32,9 @@ void main() {
       currentKap: 0,
       currentAu: 26,
       tempAttributeMods: AttributeModifiers(mu: 2),
+      activeSpellEffects: ActiveSpellEffectsState(
+        activeEffectIds: <String>[activeSpellEffectAxxeleratus],
+      ),
     );
     return HeroTransferBundle(
       exportedAt: DateTime.utc(2026, 2, 22, 12, 0, 0),
@@ -49,6 +54,10 @@ void main() {
     expect(reloaded.state.currentLep, bundle.state.currentLep);
     expect(reloaded.state.currentAu, bundle.state.currentAu);
     expect(reloaded.state.tempAttributeMods.mu, 2);
+    expect(
+      reloaded.state.activeSpellEffects.activeEffectIds,
+      <String>[activeSpellEffectAxxeleratus],
+    );
     expect(reloaded.exportedAt.toUtc(), bundle.exportedAt.toUtc());
   });
 

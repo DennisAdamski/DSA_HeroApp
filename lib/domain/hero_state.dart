@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 
 /// Laufzeitzustand eines Helden, getrennt von den Stammdaten (`HeroSheet`).
@@ -7,23 +8,25 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 /// Modifikatoren, die nicht dauerhaft ins Heldenblatt geschrieben werden.
 class HeroState {
   const HeroState({
-    this.schemaVersion = 2,
+    this.schemaVersion = 3,
     required this.currentLep,
     required this.currentAsp,
     required this.currentKap,
     required this.currentAu,
     this.tempMods = const StatModifiers(),
     this.tempAttributeMods = const AttributeModifiers(),
+    this.activeSpellEffects = const ActiveSpellEffectsState(),
   });
 
   const HeroState.empty()
-      : schemaVersion = 2,
+      : schemaVersion = 3,
         currentLep = 0,
         currentAsp = 0,
         currentKap = 0,
         currentAu = 0,
         tempMods = const StatModifiers(),
-        tempAttributeMods = const AttributeModifiers();
+        tempAttributeMods = const AttributeModifiers(),
+        activeSpellEffects = const ActiveSpellEffectsState();
 
   final int schemaVersion;
   final int currentLep;
@@ -32,6 +35,7 @@ class HeroState {
   final int currentAu;
   final StatModifiers tempMods;
   final AttributeModifiers tempAttributeMods;
+  final ActiveSpellEffectsState activeSpellEffects;
 
   /// Immutable Update fuer Teilmengen des Laufzeitzustands.
   HeroState copyWith({
@@ -41,6 +45,7 @@ class HeroState {
     int? currentAu,
     StatModifiers? tempMods,
     AttributeModifiers? tempAttributeMods,
+    ActiveSpellEffectsState? activeSpellEffects,
   }) {
     return HeroState(
       schemaVersion: schemaVersion,
@@ -50,6 +55,7 @@ class HeroState {
       currentAu: currentAu ?? this.currentAu,
       tempMods: tempMods ?? this.tempMods,
       tempAttributeMods: tempAttributeMods ?? this.tempAttributeMods,
+      activeSpellEffects: activeSpellEffects ?? this.activeSpellEffects,
     );
   }
 
@@ -63,6 +69,7 @@ class HeroState {
       'currentAu': currentAu,
       'tempMods': tempMods.toJson(),
       'tempAttributeMods': tempAttributeMods.toJson(),
+      'activeSpellEffects': activeSpellEffects.toJson(),
     };
   }
 
@@ -80,6 +87,10 @@ class HeroState {
       ),
       tempAttributeMods: AttributeModifiers.fromJson(
         (json['tempAttributeMods'] as Map?)?.cast<String, dynamic>() ??
+            const {},
+      ),
+      activeSpellEffects: ActiveSpellEffectsState.fromJson(
+        (json['activeSpellEffects'] as Map?)?.cast<String, dynamic>() ??
             const {},
       ),
     );
