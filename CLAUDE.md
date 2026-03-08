@@ -247,6 +247,11 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 - Die aktuelle `schemaVersion` fuer `HeroSheet` ist **9**.
 - Die Waffen-Uebersicht im Kampf-Tab ist kompakt; Detailwerte werden ueber
   `lib/ui/screens/hero_combat/weapon_editor_dialog.dart` bearbeitet.
+- Der Waffen-Dialog ist ausgabeorientiert gruppiert und zeigt TP-/INI-
+  Formelfelder als read-only Vorschau.
+- Die sichtbare Parade der aktiven Waffe enthaelt den heldenbezogenen
+  INI-Parade-Bonus; dieser wird nicht mehr als eigener Waffenwert separat
+  ausgewiesen.
 
 ### LOC Budget Check (screens)
 

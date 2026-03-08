@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -61,6 +62,15 @@ void main() {
           steigerung: 'D',
           attributes: <String>['Intuition', 'Fingerfertigkeit', 'Koerperkraft'],
         ),
+        TalentDef(
+          id: 'tal_dolch',
+          name: 'Dolche',
+          group: 'Kampftalent',
+          type: 'Nahkampf',
+          weaponCategory: 'Dolch',
+          steigerung: 'C',
+          attributes: <String>['Mut', 'Gewandheit', 'Koerperkraft'],
+        ),
       ],
       spells: <SpellDef>[],
       weapons: <WeaponDef>[
@@ -79,6 +89,14 @@ void main() {
           combatSkill: 'Schwerter',
           tp: '2W6+2',
           possibleManeuvers: <String>['Wuchtschlag'],
+        ),
+        WeaponDef(
+          id: 'wpn_dolch',
+          name: 'Dolch',
+          type: 'Nahkampf',
+          combatSkill: 'Dolche',
+          tp: '1W6',
+          possibleManeuvers: <String>['Finte'],
         ),
       ],
     );
@@ -190,6 +208,8 @@ void main() {
   }) async {
     final tile = find.byKey(ValueKey<String>(keyName));
     expect(tile, findsOneWidget);
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
     final tileWidget = tester.widget<SwitchListTile>(tile);
     if (tileWidget.value == value) {
       return;
@@ -212,7 +232,6 @@ void main() {
     String? wmPa,
     String? tpDiceCount,
     String? tpFlat,
-    String? beMod,
     bool? oneHanded,
     bool? artifact,
     String? artifactDescription,
@@ -224,18 +243,18 @@ void main() {
       );
       await tester.pumpAndSettle();
     }
-    if (talent != null) {
-      await selectDropdownByKey(
-        tester,
-        keyName: 'combat-weapon-form-talent',
-        valueText: talent,
-      );
-    }
     if (weaponType != null) {
       await selectDropdownByKey(
         tester,
         keyName: 'combat-weapon-form-weapon-type',
         valueText: weaponType,
+      );
+    }
+    if (talent != null) {
+      await selectDropdownByKey(
+        tester,
+        keyName: 'combat-weapon-form-talent',
+        valueText: talent,
       );
     }
     if (dk != null) {
@@ -254,7 +273,6 @@ void main() {
       'combat-weapon-form-wm-pa': wmPa ?? '',
       'combat-weapon-form-dice-count': tpDiceCount ?? '',
       'combat-weapon-form-tp-flat': tpFlat ?? '',
-      'combat-weapon-form-be-mod': beMod ?? '',
     };
     for (final entry in fieldValues.entries) {
       if (entry.value.isEmpty) {
@@ -278,10 +296,13 @@ void main() {
       );
     }
     if (artifactDescription != null) {
+      final field = find.byKey(
+        const ValueKey<String>('combat-weapon-form-artifact-description'),
+      );
+      await tester.ensureVisible(field);
+      await tester.pumpAndSettle();
       await tester.enterText(
-        find.byKey(
-          const ValueKey<String>('combat-weapon-form-artifact-description'),
-        ),
+        field,
         artifactDescription,
       );
       await tester.pumpAndSettle();
@@ -568,14 +589,12 @@ void main() {
     await openWeaponsTab(tester);
     await openWeaponDialogByText(tester, text: 'Kurzschwert');
 
-    expect(
-      find.byKey(const ValueKey<String>('combat-weapon-form-dk')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey<String>('combat-weapon-form-wm-at')),
-      findsOneWidget,
-    );
+    expect(find.text('Stammdaten'), findsOneWidget);
+    expect(find.text('Waffenwerte'), findsOneWidget);
+    expect(find.text('Errechnete Werte'), findsOneWidget);
+    expect(find.text('Waffenmodifikatoren'), findsOneWidget);
+    expect(find.text('TP-Modifikatoren'), findsOneWidget);
+    expect(find.text('INI-Modifikatoren'), findsOneWidget);
   });
 
   testWidgets('weapon dialog saves hidden weapon fields in read mode', (
@@ -608,7 +627,6 @@ void main() {
       wmPa: '1',
       tpDiceCount: '2',
       tpFlat: '4',
-      beMod: '-1',
     );
     await saveWeaponDialog(tester);
 
@@ -624,7 +642,94 @@ void main() {
     expect(weapon.wmPa, 1);
     expect(weapon.tpDiceCount, 2);
     expect(weapon.tpFlat, 4);
-    expect(weapon.beTalentMod, -1);
+  });
+
+  testWidgets('weapon dialog shows read-only formula fields', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+    await openWeaponDialogByText(tester, text: '-');
+
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-form-preview-tpkk')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-form-preview-ge-base')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(
+        const ValueKey<String>('combat-weapon-form-preview-ge-threshold'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-form-preview-ini-ge')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-form-preview-be-mod')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-form-preview-ebe')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('weapon type filters talent selection without auto-selecting', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+    await openWeaponDialogByText(tester, text: '-');
+    await fillWeaponDialog(tester, weaponType: 'Dolch');
+
+    await tester.tap(find.byKey(const ValueKey<String>('combat-weapon-form-talent')));
+    await tester.pumpAndSettle();
+    expect(find.text('Dolche').last, findsOneWidget);
+    expect(find.text('Schwerter'), findsNothing);
+    await tester.tap(find.text('-').last);
+    await tester.pumpAndSettle();
+
+    await cancelWeaponDialog(tester);
+
+    await openWeaponDialogByText(tester, text: '-');
+    await fillWeaponDialog(
+      tester,
+      name: 'Testdolch',
+      weaponType: 'Dolch',
+    );
+
+    await saveWeaponDialog(tester);
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.combatConfig.weaponSlots.first.talentId, isEmpty);
   });
 
   testWidgets('add weapon dialog cancels without creating new slot', (tester) async {
@@ -750,14 +855,17 @@ void main() {
     );
     await saveWeaponDialog(tester);
 
-    expect(find.text('Ja'), findsWidgets);
-    expect(find.text('Gebundener Dschinn'), findsOneWidget);
-
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
     final weapon = hero.combatConfig.weaponSlots.first;
     expect(weapon.isArtifact, isTrue);
     expect(weapon.artifactDescription, 'Gebundener Dschinn');
+    expect(
+      find.byKey(
+        const ValueKey<String>('combat-weapon-cell-artifact-description-0'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('keeps weapon management only in Waffen subtab', (tester) async {
@@ -1347,6 +1455,62 @@ void main() {
       );
     },
   );
+
+  testWidgets('active weapon overview PA includes initiative parade bonus', (
+    tester,
+  ) async {
+    final configuredHero = buildHero(
+      combatConfig: const CombatConfig(
+        weapons: <MainWeaponSlot>[
+          MainWeaponSlot(
+            name: 'Kurzschwert',
+            talentId: 'tal_nah',
+            weaponType: 'Kurzschwert',
+            iniMod: 21,
+          ),
+        ],
+        selectedWeaponIndex: 0,
+      ),
+      talents: const <String, HeroTalentEntry>{
+        'tal_nah': HeroTalentEntry(paValue: 4),
+      },
+    );
+    final repo = FakeRepository(
+      heroes: [configuredHero],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final expectedPreview = computeCombatPreviewStats(
+      configuredHero,
+      const HeroState(
+        currentLep: 10,
+        currentAsp: 0,
+        currentKap: 0,
+        currentAu: 10,
+      ),
+      catalogTalents: buildCatalog().talents,
+    );
+
+    await openCombatTab(tester, repo);
+    await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.widgetWithText(
+        Chip,
+        'PA: ${expectedPreview.paMitIniParadeMod}',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Ini Parade Mod'), findsNothing);
+  });
 
   testWidgets(
     'active weapon info panel shows initiative chips and roll input',
