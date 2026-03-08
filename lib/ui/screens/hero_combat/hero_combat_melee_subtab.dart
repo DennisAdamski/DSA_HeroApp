@@ -903,7 +903,6 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                       'Helden+Waffen INI',
                       preview.kombinierteHeldenWaffenIni,
                     ),
-                    _resultChip('Ini Parade Mod', preview.iniParadeMod),
                     _resultChip('TK-Kalk', preview.tpCalc),
                     Chip(
                       label: Text(
@@ -913,7 +912,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     Chip(label: Text('Kampf INI: ${preview.kampfInitiative}')),
                     _resultChip('Ausweichen', preview.ausweichen),
                     _resultChip('AT', preview.at),
-                    _resultChip('PA', preview.pa),
+                    _resultChip('PA', preview.paMitIniParadeMod),
                     _resultChip('eBE', preview.ebe),
                     Chip(label: Text('TP: ${preview.tpExpression}')),
                   ],
@@ -1116,17 +1115,23 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               runSpacing: 8,
               children: [
                 _resultChip('Kampf INI', preview.kampfInitiative),
-                _resultChip('Ini Parade Mod', preview.iniParadeMod),
                 _resultChip(
                   'Helden+Waffen INI',
                   preview.kombinierteHeldenWaffenIni,
                 ),
+                _resultChip('PA inkl. INI-Bonus', preview.paMitIniParadeMod),
               ],
             ),
             const Divider(),
             Text(
               'Ausweichen = ${preview.ausweichen}',
               style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'PA Anzeige = Waffen-PA (${preview.pa})'
+              ' + INI-Parade-Bonus (${preview.iniParadeMod})'
+              ' = ${preview.paMitIniParadeMod}',
             ),
             const SizedBox(height: 4),
             Text(
@@ -1185,7 +1190,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   ),
                   Chip(
                     key: const ValueKey<String>('combat-active-weapon-info-pa'),
-                    label: Text('PA: ${preview.pa}'),
+                    label: Text('PA: ${preview.paMitIniParadeMod}'),
                   ),
                   Chip(
                     key: const ValueKey<String>('combat-active-weapon-info-tp'),
