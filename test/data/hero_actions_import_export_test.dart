@@ -89,6 +89,52 @@ void main() {
     expect(hero.rawStartAttributes.kl, 13);
     expect(hero.startAttributes.kl, 13);
     expect(hero.attributes.kl, 13);
+    expect(
+      hero.talents.keys,
+      containsAll(const <String>[
+        'tal_dolche',
+        'tal_hiebwaffen',
+        'tal_raufen',
+        'tal_ringen',
+        'tal_saebel',
+        'tal_wurfmesser',
+        'tal_athletik',
+        'tal_klettern',
+        'tal_koerperbeherrschung',
+        'tal_schleichen',
+        'tal_schwimmen',
+        'tal_selbstbeherrschung',
+        'tal_sich_verstecken',
+        'tal_singen',
+        'tal_sinnesschaerfe',
+        'tal_tanzen',
+        'tal_zechen',
+        'tal_menschenkenntnis',
+        'tal_ueberreden',
+        'tal_faehrtensuchen',
+        'tal_orientierung',
+        'tal_wildnisleben',
+        'tal_goetter_kulte',
+        'tal_rechnen',
+        'tal_sagen_legenden',
+        'tal_heilkunde_wunden',
+        'tal_holzbearbeitung',
+        'tal_kochen',
+        'tal_lederarbeiten',
+        'tal_malen_zeichnen',
+        'tal_schneidern',
+        'tal_pflanzenkunde',
+      ]),
+    );
+    expect(hero.metaTalents, hasLength(1));
+    expect(hero.metaTalents.single.id, 'meta_kraeutersuchen');
+    expect(hero.metaTalents.single.name, 'Kräutersuchen');
+    expect(hero.metaTalents.single.componentTalentIds, <String>[
+      'tal_sinnesschaerfe',
+      'tal_wildnisleben',
+      'tal_pflanzenkunde',
+    ]);
+    expect(hero.metaTalents.single.attributes, <String>['MU', 'IN', 'FF']);
   });
 
   test('import non-conflicting hero creates hero and state', () async {

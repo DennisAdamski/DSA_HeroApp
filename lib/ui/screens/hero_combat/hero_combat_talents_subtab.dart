@@ -94,7 +94,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     return ListView(
       padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
       children: [
-        if (widget.showInlineCombatTalentsActions)
+        if (widget.showInlineCombatTalentsActions || _editController.isEditing)
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
             child: Align(
@@ -104,18 +104,22 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    FilledButton.icon(
-                      key: const ValueKey<String>('combat-talents-start-edit'),
-                      onPressed: _editController.isEditing
-                          ? null
-                          : () {
-                              _startEdit();
-                            },
-                      icon: const Icon(Icons.edit),
-                      label: const Text('Bearbeiten'),
-                    ),
+                    if (widget.showInlineCombatTalentsActions)
+                      FilledButton.icon(
+                        key: const ValueKey<String>(
+                          'combat-talents-start-edit',
+                        ),
+                        onPressed: _editController.isEditing
+                            ? null
+                            : () {
+                                _startEdit();
+                              },
+                        icon: const Icon(Icons.edit),
+                        label: const Text('Bearbeiten'),
+                      ),
                     if (_editController.isEditing) ...[
-                      const SizedBox(width: 8),
+                      if (widget.showInlineCombatTalentsActions)
+                        const SizedBox(width: 8),
                       FilledButton.icon(
                         key: const ValueKey<String>(
                           'combat-talents-catalog-open',
