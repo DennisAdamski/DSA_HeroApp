@@ -201,7 +201,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 12);
+    expect(reloaded.schemaVersion, 13);
     expect(reloaded.kultur, 'Mittelreich');
     expect(reloaded.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -391,7 +391,7 @@ void main() {
             talentId: 'tal_bogen',
             combatType: WeaponCombatType.ranged,
             weaponType: 'Kurzbogen',
-            wmFk: 2,
+            wmAt: 2,
             rangedProfile: RangedWeaponProfile(
               reloadTime: 3,
               distanceBands: <RangedDistanceBand>[
@@ -407,7 +407,7 @@ void main() {
                   count: 12,
                   tpMod: 1,
                   iniMod: -1,
-                  fkMod: 2,
+                  atMod: 2,
                   description: 'Breite Pfeilspitze fuer Wild.',
                 ),
               ],
@@ -423,11 +423,60 @@ void main() {
     final reloaded = HeroSheet.fromJson(hero.toJson());
     final weapon = reloaded.combatConfig.selectedWeapon;
     expect(weapon.combatType, WeaponCombatType.ranged);
-    expect(weapon.wmFk, 2);
+    expect(weapon.wmAt, 2);
     expect(weapon.rangedProfile.reloadTime, 3);
     expect(weapon.rangedProfile.selectedDistanceBand.label, 'Weit');
     expect(weapon.rangedProfile.selectedProjectileOrNull?.name, 'Jagdspitze');
     expect(weapon.rangedProfile.selectedProjectileOrNull?.count, 12);
+  });
+
+  test('legacy ranged modifiers migrate from fk fields to at fields', () {
+    final legacy = {
+      'schemaVersion': 12,
+      'id': 'legacy-ranged',
+      'name': 'Altbogen',
+      'level': 1,
+      'attributes': {
+        'mu': 10,
+        'kl': 10,
+        'inn': 10,
+        'ch': 10,
+        'ff': 10,
+        'ge': 10,
+        'ko': 10,
+        'kk': 10,
+      },
+      'combatConfig': {
+        'mainWeapon': {
+          'name': 'Kurzbogen',
+          'talentId': 'tal_bogen',
+          'combatType': 'ranged',
+          'weaponType': 'Kurzbogen',
+          'wmFk': 3,
+          'rangedProfile': {
+            'projectiles': [
+              {
+                'name': 'Jagdspitze',
+                'count': 12,
+                'tpMod': 1,
+                'iniMod': -1,
+                'fkMod': 2,
+              },
+            ],
+          },
+        },
+        'manualMods': {'fkMod': 4},
+      },
+      'talents': <String, dynamic>{},
+    };
+
+    final reloaded = HeroSheet.fromJson(legacy);
+    final weapon = reloaded.combatConfig.selectedWeapon;
+
+    expect(reloaded.schemaVersion, 12);
+    expect(weapon.wmAt, 3);
+    expect(weapon.rangedProfile.projectiles.single.atMod, 2);
+    expect(reloaded.combatConfig.manualMods.atMod, 4);
   });
 
   test(

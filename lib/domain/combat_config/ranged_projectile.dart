@@ -5,7 +5,7 @@ class RangedProjectile {
     this.count = 0,
     this.tpMod = 0,
     this.iniMod = 0,
-    this.fkMod = 0,
+    this.atMod = 0,
     this.description = '',
   });
 
@@ -21,8 +21,8 @@ class RangedProjectile {
   /// INI-Modifikator dieses Geschosses.
   final int iniMod;
 
-  /// FK-Modifikator dieses Geschosses.
-  final int fkMod;
+  /// AT-Modifikator dieses Geschosses.
+  final int atMod;
 
   /// Freitextbeschreibung des Geschosses.
   final String description;
@@ -33,7 +33,7 @@ class RangedProjectile {
     int? count,
     int? tpMod,
     int? iniMod,
-    int? fkMod,
+    int? atMod,
     String? description,
   }) {
     return RangedProjectile(
@@ -41,7 +41,7 @@ class RangedProjectile {
       count: count ?? this.count,
       tpMod: tpMod ?? this.tpMod,
       iniMod: iniMod ?? this.iniMod,
-      fkMod: fkMod ?? this.fkMod,
+      atMod: atMod ?? this.atMod,
       description: description ?? this.description,
     );
   }
@@ -53,19 +53,22 @@ class RangedProjectile {
       'count': count,
       'tpMod': tpMod,
       'iniMod': iniMod,
-      'fkMod': fkMod,
+      'atMod': atMod,
       'description': description,
     };
   }
 
   /// Liest ein Geschoss tolerant aus JSON.
   static RangedProjectile fromJson(Map<String, dynamic> json) {
+    final hasAtMod = json.containsKey('atMod') && json['atMod'] != null;
     return RangedProjectile(
       name: (json['name'] as String?) ?? '',
       count: (json['count'] as num?)?.toInt() ?? 0,
       tpMod: (json['tpMod'] as num?)?.toInt() ?? 0,
       iniMod: (json['iniMod'] as num?)?.toInt() ?? 0,
-      fkMod: (json['fkMod'] as num?)?.toInt() ?? 0,
+      atMod: hasAtMod
+          ? (json['atMod'] as num?)?.toInt() ?? 0
+          : (json['fkMod'] as num?)?.toInt() ?? 0,
       description: (json['description'] as String?) ?? '',
     );
   }

@@ -104,7 +104,7 @@ void main() {
           type: 'Fernkampf',
           combatSkill: 'Boegen',
           tp: '1W6+4',
-          fkMod: 1,
+          atMod: 1,
           reloadTime: 3,
           rangedDistanceBands: <RangedDistanceBand>[
             RangedDistanceBand(label: 'Nah', tpMod: 2),
@@ -119,7 +119,7 @@ void main() {
               count: 8,
               tpMod: 1,
               iniMod: -1,
-              fkMod: 2,
+              atMod: 2,
               description: 'Breite Spitze fuer Wild.',
             ),
           ],
@@ -1814,7 +1814,7 @@ void main() {
   });
 
   testWidgets(
-    'ranged info panel shows FK, distance, projectile data and updates ammo count',
+    'ranged info panel shows AT, distance, projectile data and updates ammo count',
     (tester) async {
       final repo = FakeRepository(
         heroes: [
@@ -1827,7 +1827,7 @@ void main() {
                   combatType: WeaponCombatType.ranged,
                   weaponType: 'Kurzbogen',
                   tpFlat: 4,
-                  wmFk: 1,
+                  wmAt: 1,
                   rangedProfile: RangedWeaponProfile(
                     reloadTime: 3,
                     distanceBands: <RangedDistanceBand>[
@@ -1843,7 +1843,7 @@ void main() {
                         count: 8,
                         tpMod: 1,
                         iniMod: -1,
-                        fkMod: 2,
+                        atMod: 2,
                         description: 'Breite Spitze fuer Wild.',
                       ),
                     ],
@@ -1874,7 +1874,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.byKey(const ValueKey<String>('combat-active-weapon-info-fk')),
+        find.byKey(const ValueKey<String>('combat-active-weapon-info-at')),
         findsOneWidget,
       );
       expect(

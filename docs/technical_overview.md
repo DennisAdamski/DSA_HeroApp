@@ -87,7 +87,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 12
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 13
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
@@ -97,7 +97,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 12) | Format-Version für Migrationskompatibilität |
+| `schemaVersion` | `int` (= 13) | Format-Version für Migrationskompatibilität |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
@@ -260,7 +260,6 @@ In `HeroSheet` werden `persistentMods` (aus geparsten Vor-/Nachteilen, dauerhaft
 | `tpFlat` | `int` | Flacher TP-Bonus |
 | `wmAt` | `int` | Waffenmodifikator Angriff |
 | `wmPa` | `int` | Waffenmodifikator Parade |
-| `wmFk` | `int` | Waffenmodifikator Fernkampf |
 | `iniMod` | `int` | Initiative-Modifikator |
 | `beTalentMod` | `int` | BE-Modifikator für diese Waffe |
 | `isOneHanded` | `bool` | Einhändig vs. zweihändig |
@@ -277,7 +276,7 @@ Geschosstyp direkt im Waffenslot.
 
 In der Kampf-UI bleiben nur `Waffentalent` und `BF` inline editierbar. Weitere
 Waffenbasiswerte werden im gruppierten Waffen-Dialog bearbeitet; berechnete
-TP-/INI-/FK-Zwischenwerte sind dort als read-only Vorschau sichtbar.
+TP-/INI-/AT-Zwischenwerte sind dort als read-only Vorschau sichtbar.
 
 #### `WeaponCombatType`
 
@@ -307,7 +306,7 @@ TP-/INI-/FK-Zwischenwerte sind dort als read-only Vorschau sichtbar.
 | `count` | `int` | Persistenter Bestand |
 | `tpMod` | `int` | TP-Modifikator des Geschosses |
 | `iniMod` | `int` | INI-Modifikator des Geschosses |
-| `fkMod` | `int` | FK-Modifikator des Geschosses |
+| `atMod` | `int` | AT-Modifikator des Geschosses |
 | `description` | `String` | Beschreibung / Notiz |
 
 #### `RangedWeaponProfile`
@@ -383,7 +382,6 @@ Manuell eingetragene Kampfmodifikatoren (situativ):
 | `ausweichenMod` | Ausweichen-Modifikator |
 | `atMod` | Angriff-Modifikator |
 | `paMod` | Parade-Modifikator |
-| `fkMod` | Fernkampf-Modifikator |
 | `iniWurf` | Gewürfeltes Ini-Ergebnis (1W6 oder 2W6) |
 
 ---
@@ -562,7 +560,7 @@ Kampftalente erkennt man an: `group == 'Kampftalent'` **oder** `weaponCategory !
 | `possibleManeuvers` | Alle verfügbaren Manöver |
 | `activeManeuvers` | Standardmäßig aktivierte Manöver |
 | `tpkk` | TP/KK-Skalierungsnotation |
-| `iniMod`, `atMod`, `paMod`, `fkMod` | Waffenmodifikatoren |
+| `iniMod`, `atMod`, `paMod` | Waffenmodifikatoren |
 | `reach` | Reichweite |
 | `reloadTime` | Feste Ladezeit von Fernkampfwaffen |
 | `rangedDistanceBands` | Optionale Vorlage für die 5 Distanzstufen einer Fernkampfwaffe |
@@ -733,7 +731,7 @@ zusaetzlich um weitere `+2`.
 | GS | finaler GS-Wert wird verdoppelt |
 | Anzeige | `Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2` |
 
-### 4.6 Waffe, FK & Schaden
+### 4.6 Waffe, Fernkampf-AT & Schaden
 
 **Dateien:** `lib/rules/derived/combat_rules.dart`,
 `lib/rules/derived/fernkampf_rules.dart`
@@ -746,20 +744,20 @@ tpExpression = "NW6" oder "NW6±M"
 **Fernkampf-Formel:**
 
 ```
-fk = fkBasis
-   + talentValue
-   + wmFk
+at = fkBasis
+   + talentAt
+   + wmAt
    + atEbePart
    + spezialisierung
-   + projectileFkMod
-   + manualFkMod
+   + projectileAtMod
+   + manualAtMod
 ```
 
 Dabei gilt:
 - `spezialisierung = +2`, wenn eine passende Fernkampf-Spezialisierung auf den
   aktuellen Waffentyp greift.
 - Die aktive Distanzstufe beeinflusst nur `TP`.
-- Das aktive Geschoss beeinflusst `TP`, `INI` und `FK`.
+- Das aktive Geschoss beeinflusst `TP`, `INI` und `AT`.
 - `reloadTime` wird direkt aus `RangedWeaponProfile` gelesen und im Preview
   unverändert angezeigt.
 
@@ -781,7 +779,7 @@ Dabei gilt:
 | Parierwaffe + PW I | — | `basePaMod − 1` |
 
 `CombatPreviewStats` liefert für Nahkampf weiterhin `AT`/`PA`; bei
-Fernkampfwaffen enthält derselbe Snapshot stattdessen `FK`, die aktive
+Fernkampfwaffen enthält derselbe Snapshot einen gemeinsamen `AT`, die aktive
 Distanzbezeichnung, Ladezeit sowie den selektierten Geschossnamen,
 Geschossbestand und dessen Beschreibung.
 
@@ -1063,7 +1061,7 @@ flutter drive --profile \
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` für `HeroSheet` ist **12**.
+- Die aktuelle `schemaVersion` für `HeroSheet` ist **13**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 1 wird **strikt** validiert.
 

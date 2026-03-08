@@ -31,7 +31,6 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
   late final TextEditingController _iniModController;
   late final TextEditingController _wmAtController;
   late final TextEditingController _wmPaController;
-  late final TextEditingController _wmFkController;
   late final TextEditingController _tpDiceCountController;
   late final TextEditingController _tpFlatController;
   late final TextEditingController _artifactDescriptionController;
@@ -63,7 +62,6 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
     );
     _wmAtController = TextEditingController(text: _draftSlot.wmAt.toString());
     _wmPaController = TextEditingController(text: _draftSlot.wmPa.toString());
-    _wmFkController = TextEditingController(text: _draftSlot.wmFk.toString());
     _tpDiceCountController = TextEditingController(
       text: _draftSlot.tpDiceCount.toString(),
     );
@@ -102,7 +100,6 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
     _iniModController.dispose();
     _wmAtController.dispose();
     _wmPaController.dispose();
-    _wmFkController.dispose();
     _tpDiceCountController.dispose();
     _tpFlatController.dispose();
     _artifactDescriptionController.dispose();
@@ -664,9 +661,9 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                   children: [
                     if (isRanged)
                       _readOnlyField(
-                        'FK',
-                        preview.fk.toString(),
-                        keyName: 'combat-weapon-form-preview-fk',
+                        'AT',
+                        preview.at.toString(),
+                        keyName: 'combat-weapon-form-preview-at',
                       )
                     else ...[
                       _readOnlyField(
@@ -706,15 +703,14 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                   spacing: 10,
                   runSpacing: 10,
                   children: [
-                    if (!isRanged)
-                      _numberField(
-                        keyName: 'combat-weapon-form-wm-at',
-                        label: 'WM AT',
-                        controller: _wmAtController,
-                        onChanged: (parsed) {
-                          _setDraftSlot(_draftSlot.copyWith(wmAt: parsed));
-                        },
-                      ),
+                    _numberField(
+                      keyName: 'combat-weapon-form-wm-at',
+                      label: 'WM AT',
+                      controller: _wmAtController,
+                      onChanged: (parsed) {
+                        _setDraftSlot(_draftSlot.copyWith(wmAt: parsed));
+                      },
+                    ),
                     if (!isRanged)
                       _numberField(
                         keyName: 'combat-weapon-form-wm-pa',
@@ -722,15 +718,6 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                         controller: _wmPaController,
                         onChanged: (parsed) {
                           _setDraftSlot(_draftSlot.copyWith(wmPa: parsed));
-                        },
-                      ),
-                    if (isRanged)
-                      _numberField(
-                        keyName: 'combat-weapon-form-wm-fk',
-                        label: 'WM FK',
-                        controller: _wmFkController,
-                        onChanged: (parsed) {
-                          _setDraftSlot(_draftSlot.copyWith(wmFk: parsed));
                         },
                       ),
                     _numberField(
@@ -916,7 +903,7 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                                     'Anzahl ${_draftSlot.rangedProfile.projectiles[i].count}, '
                                     'TP ${_draftSlot.rangedProfile.projectiles[i].tpMod >= 0 ? '+' : ''}${_draftSlot.rangedProfile.projectiles[i].tpMod}, '
                                     'INI ${_draftSlot.rangedProfile.projectiles[i].iniMod >= 0 ? '+' : ''}${_draftSlot.rangedProfile.projectiles[i].iniMod}, '
-                                    'FK ${_draftSlot.rangedProfile.projectiles[i].fkMod >= 0 ? '+' : ''}${_draftSlot.rangedProfile.projectiles[i].fkMod}',
+                                    'AT ${_draftSlot.rangedProfile.projectiles[i].atMod >= 0 ? '+' : ''}${_draftSlot.rangedProfile.projectiles[i].atMod}',
                                   ),
                                   trailing: Wrap(
                                     spacing: 4,
@@ -1059,7 +1046,6 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
               iniMod: _readInt(_iniModController, _draftSlot.iniMod),
               wmAt: _readInt(_wmAtController, _draftSlot.wmAt),
               wmPa: _readInt(_wmPaController, _draftSlot.wmPa),
-              wmFk: _readInt(_wmFkController, _draftSlot.wmFk),
               tpDiceCount:
                   _readInt(_tpDiceCountController, _draftSlot.tpDiceCount) < 1
                   ? 1
@@ -1098,7 +1084,7 @@ class _RangedProjectileEditorDialogState
   late final TextEditingController _countController;
   late final TextEditingController _tpModController;
   late final TextEditingController _iniModController;
-  late final TextEditingController _fkModController;
+  late final TextEditingController _atModController;
   late final TextEditingController _descriptionController;
 
   @override
@@ -1116,8 +1102,8 @@ class _RangedProjectileEditorDialogState
     _iniModController = TextEditingController(
       text: widget.initialProjectile.iniMod.toString(),
     );
-    _fkModController = TextEditingController(
-      text: widget.initialProjectile.fkMod.toString(),
+    _atModController = TextEditingController(
+      text: widget.initialProjectile.atMod.toString(),
     );
     _descriptionController = TextEditingController(
       text: widget.initialProjectile.description,
@@ -1130,7 +1116,7 @@ class _RangedProjectileEditorDialogState
     _countController.dispose();
     _tpModController.dispose();
     _iniModController.dispose();
-    _fkModController.dispose();
+    _atModController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -1180,9 +1166,9 @@ class _RangedProjectileEditorDialogState
                     controller: _iniModController,
                   ),
                   _projectileNumberField(
-                    keyName: 'combat-projectile-form-fk-mod',
-                    label: 'FK Mod',
-                    controller: _fkModController,
+                    keyName: 'combat-projectile-form-at-mod',
+                    label: 'AT Mod',
+                    controller: _atModController,
                   ),
                 ],
               ),
@@ -1219,7 +1205,7 @@ class _RangedProjectileEditorDialogState
                     : _readInt(_countController),
                 tpMod: _readInt(_tpModController),
                 iniMod: _readInt(_iniModController),
-                fkMod: _readInt(_fkModController),
+                atMod: _readInt(_atModController),
                 description: _descriptionController.text.trim(),
               ),
             );

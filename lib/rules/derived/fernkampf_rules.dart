@@ -1,20 +1,20 @@
-/// Berechnet den finalen FK-Wert einer Fernkampfwaffe.
-int computeFkValue({
-  required int fkBase,
-  required int talentValue,
-  required int weaponFkMod,
+/// Berechnet den finalen AT-Wert einer Fernkampfwaffe.
+int computeRangedAtValue({
+  required int rangedAtBase,
+  required int talentAtValue,
+  required int weaponAtMod,
   required int ebeAttackPart,
   required int specializationBonus,
-  required int projectileFkMod,
-  required int manualFkMod,
+  required int projectileAtMod,
+  required int manualAtMod,
 }) {
-  return fkBase +
-      talentValue +
-      weaponFkMod +
+  return rangedAtBase +
+      talentAtValue +
+      weaponAtMod +
       ebeAttackPart +
       specializationBonus +
-      projectileFkMod +
-      manualFkMod;
+      projectileAtMod +
+      manualAtMod;
 }
 
 /// Addiert Distanz- und Geschossmodifikator auf den TP-Gesamtwert.
