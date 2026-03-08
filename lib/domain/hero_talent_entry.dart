@@ -1,6 +1,49 @@
+/// Einzelner Modifikatorbaustein eines Talents.
+///
+/// Die Beschreibung wird beim Erzeugen normalisiert und auf 60 Zeichen
+/// begrenzt. Leere Beschreibungen werden bei der Listen-Normalisierung
+/// verworfen.
+class HeroTalentModifier {
+  HeroTalentModifier({
+    required this.modifier,
+    required String description,
+  }) : description = _normalizeModifierDescription(description);
+
+  final int modifier;
+  final String description;
+
+  /// Erstellt eine Kopie mit geaendertem Wert oder Text.
+  HeroTalentModifier copyWith({int? modifier, String? description}) {
+    return HeroTalentModifier(
+      modifier: modifier ?? this.modifier,
+      description: description ?? this.description,
+    );
+  }
+
+  /// Serialisiert den Modifikator fuer Persistenz und Export.
+  Map<String, dynamic> toJson() {
+    return {'modifier': modifier, 'description': description};
+  }
+
+  /// Liest einen Modifikator robust aus JSON.
+  static HeroTalentModifier? fromJson(Map<String, dynamic> json) {
+    final description = _normalizeModifierDescription(
+      (json['description'] as String?) ?? '',
+    );
+    if (description.isEmpty) {
+      return null;
+    }
+    return HeroTalentModifier(
+      modifier: (json['modifier'] as num?)?.toInt() ?? 0,
+      description: description,
+    );
+  }
+}
+
 /// Speichert den Heldenwert in einem einzelnen Talent (unveraenderlich).
 ///
-/// Fuer normale Talente werden nur [talentValue] und [modifier] genutzt.
+/// Fuer normale Talente werden [talentValue] und [talentModifiers] genutzt.
+/// Die Gesamtsumme der Modifikatorbausteine ist ueber [modifier] verfuegbar.
 /// Fuer Kampftalente kommen [atValue] und [paValue] hinzu.
 ///
 /// [specializations] und [combatSpecializations] sind redundant gespeichert:
@@ -13,23 +56,33 @@ class HeroTalentEntry {
     this.talentValue = 0,
     this.atValue = 0,
     this.paValue = 0,
-    this.modifier = 0,
+    int modifier = 0,
+    this.talentModifiers = const <HeroTalentModifier>[],
     this.specialExperiences = 0,
     this.specializations = '',
     this.combatSpecializations = const <String>[],
     this.gifted = false,
     this.ebe = 0,
-  });
+  }) : _legacyModifier = modifier;
 
   final int talentValue;
   final int atValue;
   final int paValue;
-  final int modifier;
+  final int _legacyModifier;
+  final List<HeroTalentModifier> talentModifiers;
   final int specialExperiences;
   final String specializations;
   final List<String> combatSpecializations;
   final bool gifted;
   final int ebe;
+
+  /// Aggregierter Talentmodifikator aus allen Modifikatorbausteinen.
+  int get modifier {
+    if (talentModifiers.isEmpty) {
+      return _legacyModifier;
+    }
+    return _sumTalentModifiers(talentModifiers);
+  }
 
   /// Erstellt eine Kopie mit geaenderten Feldern.
   ///
@@ -42,12 +95,16 @@ class HeroTalentEntry {
     int? atValue,
     int? paValue,
     int? modifier,
+    List<HeroTalentModifier>? talentModifiers,
     int? specialExperiences,
     String? specializations,
     List<String>? combatSpecializations,
     bool? gifted,
     int? ebe,
   }) {
+    final nextTalentModifiers = _normalizeTalentModifiers(
+      talentModifiers ?? this.talentModifiers,
+    );
     final nextCombatSpecializations = _normalizeStringList(
       combatSpecializations ?? this.combatSpecializations,
     );
@@ -58,12 +115,16 @@ class HeroTalentEntry {
         (combatSpecializations != null
             ? nextCombatSpecializations.join(', ')
             : this.specializations);
+    final nextLegacyModifier = talentModifiers != null
+        ? (modifier ?? 0)
+        : (modifier ?? _legacyModifier);
 
     return HeroTalentEntry(
       talentValue: talentValue ?? this.talentValue,
       atValue: atValue ?? this.atValue,
       paValue: paValue ?? this.paValue,
-      modifier: modifier ?? this.modifier,
+      modifier: nextLegacyModifier,
+      talentModifiers: nextTalentModifiers,
       specialExperiences: specialExperiences ?? this.specialExperiences,
       specializations: nextSpecializations,
       combatSpecializations: nextCombatSpecializations,
@@ -82,6 +143,7 @@ class HeroTalentEntry {
     final normalizedCombatSpecializations = combatSpecializations.isEmpty
         ? _parseSpecializations(specializations)
         : _normalizeStringList(combatSpecializations);
+    final normalizedTalentModifiers = _normalizeTalentModifiers(talentModifiers);
     final serializedSpecializations = normalizedCombatSpecializations.isEmpty
         ? specializations
         : normalizedCombatSpecializations.join(', ');
@@ -90,7 +152,10 @@ class HeroTalentEntry {
       'talentValue': talentValue,
       'atValue': atValue,
       'paValue': paValue,
-      'modifier': modifier,
+      'modifier': _sumTalentModifiers(normalizedTalentModifiers),
+      'talentModifiers': normalizedTalentModifiers
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
       'specialExperiences': specialExperiences,
       'specializations': serializedSpecializations,
       'combatSpecializations': normalizedCombatSpecializations,
@@ -115,11 +180,31 @@ class HeroTalentEntry {
       }
       return raw.map((entry) => entry.toString()).toList(growable: false);
     }
+    List<HeroTalentModifier> getTalentModifiers(String key) {
+      final raw = json[key];
+      if (raw is! List) {
+        return const <HeroTalentModifier>[];
+      }
+      final entries = <HeroTalentModifier>[];
+      for (final value in raw) {
+        if (value is! Map) {
+          continue;
+        }
+        final parsed = HeroTalentModifier.fromJson(
+          value.cast<String, dynamic>(),
+        );
+        if (parsed != null) {
+          entries.add(parsed);
+        }
+      }
+      return _normalizeTalentModifiers(entries);
+    }
 
     final legacySpecializations = getString('specializations');
     final parsedCombatSpecializations = _normalizeStringList(
       getStringList('combatSpecializations'),
     );
+    final talentModifiers = getTalentModifiers('talentModifiers');
     // Legacy-Fallback: combatSpecializations fehlt in Altschemata → aus
     // specializations-String parsen. Ziel: beide Felder immer synchron.
     final mergedCombatSpecializations = parsedCombatSpecializations.isEmpty
@@ -133,7 +218,7 @@ class HeroTalentEntry {
       talentValue: getInt('talentValue'),
       atValue: getInt('atValue'),
       paValue: getInt('paValue'),
-      modifier: getInt('modifier'),
+      talentModifiers: talentModifiers,
       specialExperiences: getInt('specialExperiences'),
       specializations: syncedSpecializations,
       combatSpecializations: mergedCombatSpecializations,
@@ -141,6 +226,41 @@ class HeroTalentEntry {
       ebe: getInt('ebe'),
     );
   }
+}
+
+String _normalizeModifierDescription(String raw) {
+  final trimmed = raw.trim();
+  if (trimmed.isEmpty) {
+    return '';
+  }
+  if (trimmed.length <= 60) {
+    return trimmed;
+  }
+  return trimmed.substring(0, 60);
+}
+
+List<HeroTalentModifier> _normalizeTalentModifiers(
+  Iterable<HeroTalentModifier> values,
+) {
+  final normalized = <HeroTalentModifier>[];
+  for (final value in values) {
+    final description = _normalizeModifierDescription(value.description);
+    if (description.isEmpty) {
+      continue;
+    }
+    normalized.add(
+      HeroTalentModifier(modifier: value.modifier, description: description),
+    );
+  }
+  return List<HeroTalentModifier>.unmodifiable(normalized);
+}
+
+int _sumTalentModifiers(Iterable<HeroTalentModifier> values) {
+  var sum = 0;
+  for (final value in values) {
+    sum += value.modifier;
+  }
+  return sum;
 }
 
 // Teilt einen Freitext-Spezialisierungsstring an Newlines, Kommas und

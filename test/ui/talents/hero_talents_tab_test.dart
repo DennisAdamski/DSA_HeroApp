@@ -456,6 +456,175 @@ void main() {
     expect(hero.talents['tal_a']?.talentValue, 7);
   });
 
+  testWidgets(
+    'modifier dialog persists summed talent modifiers and updates computed taw',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(talentValue: 5),
+            },
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final actions = await openTalentsTab(tester, repo, buildCatalog());
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(
+        find.byKey(const ValueKey<String>('talents-modifiers-edit-tal_a')),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('talents-modifiers-edit-tal_a')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey<String>('talent-modifiers-add')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey<String>('talent-modifiers-add')));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talent-modifier-value-0')),
+        '2',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talent-modifier-description-0')),
+        'Sichtbonus',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talent-modifier-value-1')),
+        '-1',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talent-modifier-description-1')),
+        'Nebel',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('talent-modifiers-save')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
+        findsOneWidget,
+      );
+      expect(find.text('1'), findsWidgets);
+      expect(
+        find.descendant(
+          of: find.byKey(
+            const ValueKey<String>('talents-field-tal_a-computed-taw'),
+          ),
+          matching: find.text('6'),
+        ),
+        findsOneWidget,
+      );
+
+      await actions.save();
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+      expect(hero.talents['tal_a']?.modifier, 1);
+      expect(hero.talents['tal_a']?.talentModifiers.length, 2);
+    },
+  );
+
+  testWidgets(
+    'modifier dialog truncates descriptions, skips empty entries and shows details',
+    (tester) async {
+      const longDescription =
+          '123456789012345678901234567890123456789012345678901234567890XYZ';
+      const truncatedDescription =
+          '123456789012345678901234567890123456789012345678901234567890';
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(talentValue: 4),
+            },
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final actions = await openTalentsTab(tester, repo, buildCatalog());
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(
+        find.byKey(const ValueKey<String>('talents-modifiers-edit-tal_a')),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('talents-modifiers-edit-tal_a')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey<String>('talent-modifiers-add')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey<String>('talent-modifiers-add')));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talent-modifier-value-0')),
+        '5',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talent-modifier-description-0')),
+        longDescription,
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talent-modifier-value-1')),
+        '3',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talent-modifier-description-1')),
+        '',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('talent-modifiers-save')),
+      );
+      await tester.pumpAndSettle();
+
+      await actions.save();
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+      expect(hero.talents['tal_a']?.modifier, 5);
+      expect(hero.talents['tal_a']?.talentModifiers.length, 1);
+      expect(
+        hero.talents['tal_a']?.talentModifiers.single.description,
+        truncatedDescription,
+      );
+
+      await tester.ensureVisible(find.text('Athletik').first);
+      await tester.tap(find.text('Athletik').first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Gesamt-Mod'), findsOneWidget);
+      expect(find.text(truncatedDescription), findsOneWidget);
+      expect(find.text('5'), findsWidgets);
+    },
+  );
+
   testWidgets('cancel discards local draft changes', (tester) async {
     final repo = FakeRepository(
       heroes: [
