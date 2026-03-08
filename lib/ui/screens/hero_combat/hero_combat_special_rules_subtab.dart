@@ -175,17 +175,6 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
           ),
         ),
         _ruleToggle(
-          label: 'Axxeleratus aktiv',
-          value: rules.axxeleratusActive,
-          isEditing: isEditing,
-          onChanged: (value) {
-            _draftCombatConfig = _draftCombatConfig.copyWith(
-              specialRules: rules.copyWith(axxeleratusActive: value),
-            );
-            _markFieldChanged();
-          },
-        ),
-        _ruleToggle(
           label: 'Klingentaenzer (2W6 auf Ini)',
           value: rules.klingentaenzer,
           isEditing: isEditing,

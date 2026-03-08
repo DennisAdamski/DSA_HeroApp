@@ -880,7 +880,7 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 |---|---|---|
 | `heroes_home_screen.dart` | `HeroesHomeScreen` | Heldenliste; Import/Export/Löschen |
 | `hero_workspace_screen.dart` | `HeroWorkspaceScreen` | Tab-Host für einen Helden (6 Tabs) |
-| `hero_overview_tab.dart` | `HeroOverviewTab` | Eigenschaften, AP, Ressourcen, Biografie |
+| `hero_overview_tab.dart` | `HeroOverviewTab` | Status-Tab fuer Eigenschaften, AP, Ressourcen, Biografie |
 | `hero_talents_tab.dart` | `HeroTalentsTab` | Talente + Sonderfertigkeiten-Sub-Tab |
 | `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Nahkampf, SF, Manöver |
 | `hero_inventory_tab.dart` | `HeroInventoryTab` | 12-spaltige editierbare Inventartabelle |

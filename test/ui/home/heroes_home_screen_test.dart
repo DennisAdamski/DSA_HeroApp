@@ -130,7 +130,7 @@ void main() {
           .map((tab) => (tab.text ?? '').trim())
           .toList(growable: false);
       expect(tabLabels, [
-        'Übersicht',
+        'Status',
         'Talente',
         'Kampf',
         'Magie',

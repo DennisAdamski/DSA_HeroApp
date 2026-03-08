@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
@@ -340,6 +341,25 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                       ListView(
                         padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                         children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: OutlinedButton.icon(
+                                key: const ValueKey<String>(
+                                  'magic-active-spells-open',
+                                ),
+                                onPressed: () {
+                                  showActiveSpellEffectsDialog(
+                                    context: context,
+                                    heroId: widget.heroId,
+                                  );
+                                },
+                                icon: const Icon(Icons.auto_awesome_outlined),
+                                label: const Text('Zauber aktivieren'),
+                              ),
+                            ),
+                          ),
                           _MagicActiveSpellsTable(
                             activeSpellIds: activeSpellIds,
                             spellEntries: _draftSpells,

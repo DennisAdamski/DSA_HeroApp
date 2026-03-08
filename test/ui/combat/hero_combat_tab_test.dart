@@ -402,7 +402,7 @@ void main() {
     expect(find.widgetWithText(Tab, 'Manoever'), findsOneWidget);
   });
 
-  testWidgets('special rules tab shows Axxeleratus toggle and melee hint', (
+  testWidgets('legacy Axxeleratus state still shows melee hint in combat tab', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -424,20 +424,6 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
-    await tester.pumpAndSettle();
-    for (
-      var i = 0;
-      i < 6 && find.text('Axxeleratus aktiv').evaluate().isEmpty;
-      i++
-    ) {
-      await tester.drag(find.byType(ListView).first, const Offset(0, -280));
-      await tester.pumpAndSettle();
-    }
-    await tester.pumpAndSettle();
-
-    expect(find.text('Axxeleratus aktiv'), findsOneWidget);
-
     await tester.tap(find.widgetWithText(Tab, 'Nahkampf'));
     await tester.pumpAndSettle();
     final axxHintFinder = find.text(
