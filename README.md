@@ -56,7 +56,8 @@ Vollstaendige Anleitung:
 
 ### Workspace-Layout (Stand: 2026-03-08)
 - Ab `1280 dp` nutzt der Hero-Workspace das **Helden Deck** statt der klassischen TabBar.
-- Die linke Navigationsleiste des Helden Decks ist per Button ein- und ausfahrbar; Inhalt und Inspector bleiben dabei sichtbar.
+- Die linke Navigationsleiste des Helden Decks ist per Button ein- und ausfahrbar.
+- Die rechte Detailleiste ist ebenfalls ein- und ausfahrbar; im offenen Zustand startet sie ohne sichtbare Ueberschrift.
 
 ### UI-Performance Guardrails (Stand: 2026-03-01)
 - Rebuild-Guardrail (Widget-Test): `flutter test test/ui/performance/ui_rebuild_guardrails_test.dart`

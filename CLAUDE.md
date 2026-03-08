@@ -253,8 +253,8 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
   INI-Parade-Bonus; dieser wird nicht mehr als eigener Waffenwert separat
   ausgewiesen.
 - Der `HeroWorkspaceScreen` nutzt ab `1280 dp` das breite **Helden-Deck**-
-  Layout; die linke Navigationsleiste kann dort eingeklappt werden, der
-  rechte Inspector bleibt sichtbar.
+  Layout; die linke Navigationsleiste und die rechte Detailleiste koennen
+  dort unabhaengig eingeklappt werden.
 
 ### LOC Budget Check (screens)
 

@@ -27,8 +27,11 @@ const double _heroDeckNavigationWidth = 240;
 /// Breite der eingeklappten Helden-Deck-Umschaltleiste in Pixeln.
 const double _heroDeckCollapsedWidth = 56;
 
-/// Breite des Helden-Deck-Inspectors in Pixeln.
+/// Breite des ausgefahrenen rechten Workspace-Panels in Pixeln.
 const double _heroDeckInspectorWidth = 300;
+
+/// Breite der eingeklappten rechten Workspace-Umschaltleiste in Pixeln.
+const double _heroDeckInspectorCollapsedWidth = 56;
 
 // Tab-Indizes fuer die Workspace-Tabs.
 const int _overviewTabIndex = 0;
@@ -62,6 +65,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   bool _revertingTabChange = false;
   bool _runningEditAction = false;
   bool _heroDeckExpanded = true;
+  bool _workspaceDetailsExpanded = true;
 
   @override
   void initState() {
@@ -405,12 +409,22 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     });
   }
 
+  /// Schaltet das rechte Workspace-Detailpanel zwischen ein- und ausgefahren um.
+  void _toggleWorkspaceDetailsExpanded() {
+    setState(() {
+      _workspaceDetailsExpanded = !_workspaceDetailsExpanded;
+    });
+  }
+
   /// Helden-Deck-Layout: Navigation links, Inhalt mittig, Inspector rechts.
   Widget _buildHeroDeckWorkspaceBody(HeroSheet hero) {
     final activeTabIndex = _tabRegistry.activeTabIndex;
     final navigationWidth = _heroDeckExpanded
         ? _heroDeckNavigationWidth
         : _heroDeckCollapsedWidth;
+    final detailsWidth = _workspaceDetailsExpanded
+        ? _heroDeckInspectorWidth
+        : _heroDeckInspectorCollapsedWidth;
     return Row(
       children: [
         SizedBox(
@@ -439,8 +453,12 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         ),
         const VerticalDivider(width: 1),
         SizedBox(
-          width: _heroDeckInspectorWidth,
-          child: WorkspaceInspectorPanel(heroId: widget.heroId),
+          width: detailsWidth,
+          child: WorkspaceInspectorPanel(
+            heroId: widget.heroId,
+            isExpanded: _workspaceDetailsExpanded,
+            onToggleExpanded: _toggleWorkspaceDetailsExpanded,
+          ),
         ),
       ],
     );
