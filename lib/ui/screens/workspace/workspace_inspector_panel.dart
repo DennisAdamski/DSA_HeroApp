@@ -17,9 +17,16 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 /// sowie eine Ruestungszusammenfassung. Wird nur im breiten Layout
 /// (>= 1280dp) neben dem Tab-Inhalt angezeigt.
 class WorkspaceInspectorPanel extends ConsumerWidget {
-  const WorkspaceInspectorPanel({super.key, required this.heroId});
+  const WorkspaceInspectorPanel({
+    super.key,
+    required this.heroId,
+    required this.isExpanded,
+    required this.onToggleExpanded,
+  });
 
   final String heroId;
+  final bool isExpanded;
+  final VoidCallback onToggleExpanded;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,44 +37,67 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
     final heroState = heroStateAsync.valueOrNull;
     final derived = computedAsync.valueOrNull?.derivedStats;
     final combat = computedAsync.valueOrNull?.combatPreviewStats;
+    final toggleTooltip = isExpanded
+        ? 'Details ausblenden'
+        : 'Details einblenden';
+    final toggleIcon = isExpanded
+        ? Icons.keyboard_double_arrow_right
+        : Icons.keyboard_double_arrow_left;
 
     return ColoredBox(
       color: Theme.of(context).colorScheme.surfaceContainerLowest,
       child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text('Inspector', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 10),
-              // --- Held ---
-              if (hero != null) _HeldCard(hero: hero),
-              const SizedBox(height: 10),
-              // --- Ressourcen ---
-              if (heroState != null && derived != null)
-                _ResourcenCard(
-                  heroId: heroId,
-                  heroState: heroState,
-                  derived: derived,
+        child: isExpanded
+            ? SingleChildScrollView(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        key: const ValueKey<String>('workspace-details-toggle'),
+                        tooltip: toggleTooltip,
+                        onPressed: onToggleExpanded,
+                        icon: Icon(toggleIcon),
+                      ),
+                    ),
+                    // --- Held ---
+                    if (hero != null) _HeldCard(hero: hero),
+                    const SizedBox(height: 10),
+                    // --- Ressourcen ---
+                    if (heroState != null && derived != null)
+                      _ResourcenCard(
+                        heroId: heroId,
+                        heroState: heroState,
+                        derived: derived,
+                      ),
+                    const SizedBox(height: 10),
+                    // --- Manueller BE ---
+                    _ManuellerBeCard(heroId: heroId, combat: combat),
+                    const SizedBox(height: 10),
+                    // --- Modifikationen ---
+                    if (hero != null)
+                      _ModifikationenCard(heroId: heroId, hero: hero),
+                    const SizedBox(height: 10),
+                    // --- Kampfwerte (berechnet) ---
+                    if (derived != null && combat != null)
+                      _KampfwerteCard(derived: derived, combat: combat),
+                    const SizedBox(height: 10),
+                    // --- Ruestung ---
+                    if (hero != null && combat != null)
+                      _RuestungCard(hero: hero, combat: combat),
+                  ],
                 ),
-              const SizedBox(height: 10),
-              // --- Manueller BE ---
-              _ManuellerBeCard(heroId: heroId, combat: combat),
-              const SizedBox(height: 10),
-              // --- Modifikationen ---
-              if (hero != null) _ModifikationenCard(heroId: heroId, hero: hero),
-              const SizedBox(height: 10),
-              // --- Kampfwerte (berechnet) ---
-              if (derived != null && combat != null)
-                _KampfwerteCard(derived: derived, combat: combat),
-              const SizedBox(height: 10),
-              // --- Ruestung ---
-              if (hero != null && combat != null)
-                _RuestungCard(hero: hero, combat: combat),
-            ],
-          ),
-        ),
+              )
+            : Center(
+                child: IconButton(
+                  key: const ValueKey<String>('workspace-details-toggle'),
+                  tooltip: toggleTooltip,
+                  onPressed: onToggleExpanded,
+                  icon: Icon(toggleIcon),
+                ),
+              ),
       ),
     );
   }
