@@ -14,6 +14,16 @@ void main() {
       id: 'h1',
       name: 'Test',
       level: 3,
+      rawStartAttributes: Attributes(
+        mu: 11,
+        kl: 11,
+        inn: 11,
+        ch: 11,
+        ff: 11,
+        ge: 11,
+        ko: 11,
+        kk: 11,
+      ),
       attributes: Attributes(
         mu: 12,
         kl: 12,
@@ -57,10 +67,7 @@ void main() {
         HeroMetaTalent(
           id: 'meta_pflanzensuchen',
           name: 'Pflanzensuchen',
-          componentTalentIds: <String>[
-            'tal_schwerter',
-            'tal_pflanzenkunde',
-          ],
+          componentTalentIds: <String>['tal_schwerter', 'tal_pflanzenkunde'],
           attributes: <String>['MU', 'IN', 'FF'],
           be: 'x2',
         ),
@@ -121,7 +128,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 7);
+    expect(reloaded.schemaVersion, 8);
     expect(reloaded.kultur, 'Mittelreich');
     expect(reloaded.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -130,12 +137,14 @@ void main() {
     expect(reloaded.talentSpecialAbilities, 'Meisterhandwerk, Begabung');
     expect(reloaded.unknownModifierFragments, contains('foo'));
     expect(reloaded.metaTalents.single.name, 'Pflanzensuchen');
-    expect(
-      reloaded.metaTalents.single.componentTalentIds,
-      <String>['tal_schwerter', 'tal_pflanzenkunde'],
-    );
+    expect(reloaded.metaTalents.single.componentTalentIds, <String>[
+      'tal_schwerter',
+      'tal_pflanzenkunde',
+    ]);
     expect(reloaded.metaTalents.single.attributes, <String>['MU', 'IN', 'FF']);
     expect(reloaded.metaTalents.single.be, 'x2');
+    expect(reloaded.rawStartAttributes.mu, 11);
+    expect(reloaded.rawStartAttributes.kk, 11);
     expect(reloaded.startAttributes.mu, 12);
     expect(reloaded.startAttributes.kk, 12);
     expect(reloaded.talents['tal_schwerter']?.atValue, 8);
@@ -193,6 +202,8 @@ void main() {
     expect(loaded.talentSpecialAbilities, '');
     expect(loaded.unknownModifierFragments, isEmpty);
     expect(loaded.metaTalents, isEmpty);
+    expect(loaded.rawStartAttributes.mu, loaded.attributes.mu);
+    expect(loaded.rawStartAttributes.kk, loaded.attributes.kk);
     expect(loaded.startAttributes.mu, loaded.attributes.mu);
     expect(loaded.startAttributes.kk, loaded.attributes.kk);
     expect(loaded.talents['tal_schwerter']?.atValue, 0);
@@ -233,6 +244,44 @@ void main() {
     expect(reloaded.combatConfig.mainWeapon.name, 'Bidenhaender');
     expect(reloaded.combatConfig.selectedWeapon.isOneHanded, isFalse);
   });
+
+  test(
+    'hero sheet falls back to start attributes when raw start is missing',
+    () {
+      final old = {
+        'schemaVersion': 7,
+        'id': 'legacy-start',
+        'name': 'Altstart',
+        'level': 1,
+        'attributes': {
+          'mu': 13,
+          'kl': 13,
+          'inn': 13,
+          'ch': 13,
+          'ff': 13,
+          'ge': 13,
+          'ko': 13,
+          'kk': 13,
+        },
+        'startAttributes': {
+          'mu': 10,
+          'kl': 11,
+          'inn': 12,
+          'ch': 13,
+          'ff': 14,
+          'ge': 15,
+          'ko': 16,
+          'kk': 17,
+        },
+      };
+
+      final loaded = HeroSheet.fromJson(old);
+      expect(loaded.rawStartAttributes.mu, 10);
+      expect(loaded.rawStartAttributes.kk, 17);
+      expect(loaded.startAttributes.mu, 10);
+      expect(loaded.startAttributes.kk, 17);
+    },
+  );
 
   test('combat config roundtrip keeps selectedWeaponIndex -1', () {
     const hero = HeroSheet(
@@ -294,10 +343,11 @@ void main() {
     final reloaded = HeroMetaTalent.fromJson(metaTalent.toJson());
     expect(reloaded.id, 'meta_1');
     expect(reloaded.name, 'Pflanzensuchen');
-    expect(
-      reloaded.componentTalentIds,
-      <String>['tal_sinne', 'tal_pflanzen', 'tal_wildnis'],
-    );
+    expect(reloaded.componentTalentIds, <String>[
+      'tal_sinne',
+      'tal_pflanzen',
+      'tal_wildnis',
+    ]);
     expect(reloaded.attributes, <String>['MU', 'IN', 'FF']);
     expect(reloaded.be, 'x2');
   });

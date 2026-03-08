@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 
@@ -32,28 +33,25 @@ class HeroActions {
 
   /// Legt einen neuen Helden mit Standardattributen an.
   ///
-  /// Der Held erhaelt den Namen 'Neuer Held', alle Eigenschaften auf 8,
-  /// sowie einen initialen leeren [HeroState]. Gibt die neue ID zurueck.
-  Future<String> createHero() async {
+  /// Der Held erhaelt den uebergebenen Namen, Roh-Startwerte und einen initialen
+  /// leeren [HeroState]. Die effektiven Startwerte werden aus Herkunftsmods
+  /// normalisiert gespeichert. Gibt die neue ID zurueck.
+  Future<String> createHero({
+    required String name,
+    required Attributes rawStartAttributes,
+  }) async {
     final repo = _ref.read(heroRepositoryProvider);
     const uuid = Uuid();
     final id = uuid.v4();
     final hero = HeroSheet(
       id: id,
-      name: 'Neuer Held',
+      name: name.trim().isEmpty ? 'Neuer Held' : name.trim(),
       level: 1,
-      attributes: const Attributes(
-        mu: 8,
-        kl: 8,
-        inn: 8,
-        ch: 8,
-        ff: 8,
-        ge: 8,
-        ko: 8,
-        kk: 8,
-      ),
+      attributes: rawStartAttributes,
+      rawStartAttributes: rawStartAttributes,
+      startAttributes: rawStartAttributes,
     );
-    await repo.saveHero(hero);
+    await saveHero(hero);
     await repo.saveHeroState(
       id,
       const HeroState(
@@ -84,12 +82,18 @@ class HeroActions {
       normalizedApSpent,
     );
     final parsed = parseModifierTextsForHero(hero);
+    final originAttributeModifiers = parseOriginAttributeModifiers(hero);
+    final effectiveStartAttributes = computeEffectiveStartAttributes(
+      hero.rawStartAttributes,
+      originAttributeModifiers,
+    );
 
     final normalizedHero = hero.copyWith(
       apTotal: normalizedApTotal,
       apSpent: normalizedApSpent,
       apAvailable: calculatedAvailable,
       level: calculatedLevel,
+      startAttributes: effectiveStartAttributes,
       unknownModifierFragments: parsed.unknownFragments,
     );
 

@@ -87,7 +87,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 6
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 8
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
@@ -97,11 +97,12 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 7) | Format-Version für Migrationskompatibilität |
+| `schemaVersion` | `int` (= 8) | Format-Version für Migrationskompatibilität |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
+| `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
 | `attributes` | `Attributes` | Aktuelle Eigenschaftswerte (8 Werte) |
-| `startAttributes` | `Attributes` | Starteigenschaften (unveränderlich) |
+| `startAttributes` | `Attributes` | Effektive Starteigenschaften nach Rasse/Kultur/Profession |
 | `persistentMods` | `StatModifiers` | Dauerhafte Modifikatoren (aus Vor-/Nachteilen) |
 | `bought` | `BoughtStats` | Gekaufte Ressourcenerhöhungen |
 | `combatConfig` | `CombatConfig` | Gesamte Kampfkonfiguration |
@@ -129,6 +130,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ```
 HeroSheet
+  ├── Attributes rawStartAttributes
   ├── Attributes attributes
   ├── Attributes startAttributes
   ├── StatModifiers persistentMods
@@ -759,6 +761,8 @@ heroComputedProvider(heroId):
 | `hero` | `HeroSheet` |
 | `state` | `HeroState` |
 | `modifierParse` | `ModifierParseResult` |
+| `effectiveStartAttributes` | `Attributes` |
+| `attributeMaximums` | `Attributes` |
 | `effectiveAttributes` | `Attributes` |
 | `derivedStats` | `DerivedStats` |
 | `combatPreviewStats` | `CombatPreviewStats` |
@@ -769,7 +773,7 @@ heroComputedProvider(heroId):
 
 | Methode | Beschreibung |
 |---|---|
-| `createHero()` | Neuen Helden anlegen (neue UUID, Standardattribute, leerer State) |
+| `createHero({name, rawStartAttributes})` | Neuen Helden mit Name, Roh-Startwerten und leerem State anlegen |
 | `saveHero(HeroSheet)` | AP normalisieren, Level neu berechnen, Modifier parsen, persistieren |
 | `saveHeroState(id, HeroState)` | Laufzeitzustand persistieren |
 | `deleteHero(id)` | Held und State löschen, Auswahl aktualisieren |
@@ -928,7 +932,7 @@ flutter drive --profile \
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` für `HeroSheet` ist **7**.
+- Die aktuelle `schemaVersion` für `HeroSheet` ist **8**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 1 wird **strikt** validiert.
 
@@ -980,6 +984,15 @@ Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Da
   (Fernkampf); `IN` wird dabei nicht beruecksichtigt.
 - Zauber addieren Hauszauber, passende Merkmalskenntnis und Begabung jeweils
   als eigene Reduktionsstufe; die Untergrenze ist `A*`.
+
+### Update 2026-03-08: Rohstart, Startwerte und Eigenschaftsmaximum
+
+- `HeroSheet` speichert jetzt sowohl `rawStartAttributes` als auch `startAttributes`.
+- `rawStartAttributes` sind die beim Anlegen eingegebenen Rohwerte.
+- `startAttributes` werden nur aus `rawStartAttributes` plus Rasse-, Kultur- und Professions-Attributmods abgeleitet.
+- `HeroComputedSnapshot` enthaelt zusaetzlich `effectiveStartAttributes` und `attributeMaximums`.
+- Neue Helden werden ueber `createHero({name, rawStartAttributes})` angelegt.
+- Das Eigenschaftsmaximum ist ein Anzeigewert und wird als `ceil(start * 1.5)` berechnet.
 
 ---
 

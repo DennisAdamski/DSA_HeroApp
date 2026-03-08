@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_workspace_screen.dart';
@@ -70,8 +72,17 @@ class HeroesHomeScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
+          final draft = await _showCreateHeroDialog(context);
+          if (draft == null || !context.mounted) {
+            return;
+          }
           final navigator = Navigator.of(context);
-          final id = await ref.read(heroActionsProvider).createHero();
+          final id = await ref
+              .read(heroActionsProvider)
+              .createHero(
+                name: draft.name,
+                rawStartAttributes: draft.rawStartAttributes,
+              );
           if (!context.mounted) {
             return;
           }
@@ -259,4 +270,163 @@ class HeroesHomeScreen extends ConsumerWidget {
       ).showSnackBar(SnackBar(content: Text('Import fehlgeschlagen: $error')));
     }
   }
+
+  Future<_CreateHeroDraft?> _showCreateHeroDialog(BuildContext context) async {
+    return showDialog<_CreateHeroDraft>(
+      context: context,
+      builder: (dialogContext) => const _CreateHeroDialog(),
+    );
+  }
+}
+
+class _CreateHeroDialog extends StatefulWidget {
+  const _CreateHeroDialog();
+
+  @override
+  State<_CreateHeroDialog> createState() => _CreateHeroDialogState();
+}
+
+class _CreateHeroDialogState extends State<_CreateHeroDialog> {
+  late final TextEditingController _nameController;
+  late final Map<String, TextEditingController> _attributeControllers;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+    _attributeControllers = <String, TextEditingController>{
+      'mu': TextEditingController(text: '8'),
+      'kl': TextEditingController(text: '8'),
+      'inn': TextEditingController(text: '8'),
+      'ch': TextEditingController(text: '8'),
+      'ff': TextEditingController(text: '8'),
+      'ge': TextEditingController(text: '8'),
+      'ko': TextEditingController(text: '8'),
+      'kk': TextEditingController(text: '8'),
+    };
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    for (final controller in _attributeControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Neuen Helden anlegen'),
+      content: SingleChildScrollView(
+        child: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                key: const ValueKey<String>('create-hero-name'),
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: _attributeFields(_attributeControllers),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        FilledButton(
+          onPressed: () {
+            Navigator.of(context).pop(
+              _CreateHeroDraft(
+                name: _nameController.text.trim(),
+                rawStartAttributes: Attributes(
+                  mu: _readCreateAttributeValue(_attributeControllers, 'mu'),
+                  kl: _readCreateAttributeValue(_attributeControllers, 'kl'),
+                  inn: _readCreateAttributeValue(_attributeControllers, 'inn'),
+                  ch: _readCreateAttributeValue(_attributeControllers, 'ch'),
+                  ff: _readCreateAttributeValue(_attributeControllers, 'ff'),
+                  ge: _readCreateAttributeValue(_attributeControllers, 'ge'),
+                  ko: _readCreateAttributeValue(_attributeControllers, 'ko'),
+                  kk: _readCreateAttributeValue(_attributeControllers, 'kk'),
+                ),
+              ),
+            );
+          },
+          child: const Text('Anlegen'),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _attributeFields(
+    Map<String, TextEditingController> attributeControllers,
+  ) {
+    final labels = <(String, String)>[
+      ('MU', 'mu'),
+      ('KL', 'kl'),
+      ('IN', 'inn'),
+      ('CH', 'ch'),
+      ('FF', 'ff'),
+      ('GE', 'ge'),
+      ('KO', 'ko'),
+      ('KK', 'kk'),
+    ];
+
+    return labels
+        .map(
+          (entry) => SizedBox(
+            width: 88,
+            child: TextField(
+              key: ValueKey<String>('create-hero-${entry.$2}'),
+              controller: attributeControllers[entry.$2],
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: InputDecoration(
+                labelText: entry.$1,
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+            ),
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  int _readCreateAttributeValue(
+    Map<String, TextEditingController> attributeControllers,
+    String key,
+  ) {
+    final value = int.tryParse(attributeControllers[key]!.text.trim()) ?? 8;
+    if (value < 0) {
+      return 0;
+    }
+    if (value > 99) {
+      return 99;
+    }
+    return value;
+  }
+}
+
+class _CreateHeroDraft {
+  const _CreateHeroDraft({
+    required this.name,
+    required this.rawStartAttributes,
+  });
+
+  final String name;
+  final Attributes rawStartAttributes;
 }
