@@ -10,6 +10,8 @@ void main() {
       modifier: 2,
       hauszauber: true,
       gifted: true,
+      learnedRepresentation: 'Elf',
+      learnedTradition: 'Dru',
       textOverrides: HeroSpellTextOverrides(
         aspCost: '',
         targetObject: 'Eigene Zielwahl',
@@ -24,6 +26,8 @@ void main() {
     expect(reloaded.modifier, 2);
     expect(reloaded.hauszauber, isTrue);
     expect(reloaded.gifted, isTrue);
+    expect(reloaded.learnedRepresentation, 'Elf');
+    expect(reloaded.learnedTradition, 'Dru');
     expect(reloaded.textOverrides?.aspCost, '');
     expect(reloaded.textOverrides?.targetObject, 'Eigene Zielwahl');
     expect(reloaded.textOverrides?.wirkung, 'Eigene Wirkung');
@@ -36,5 +40,15 @@ void main() {
     final reloaded = HeroSpellEntry.fromJson(entry.toJson());
 
     expect(reloaded.textOverrides, isNull);
+  });
+
+  test('hero spell entry keeps missing learned representation nullable', () {
+    final reloaded = HeroSpellEntry.fromJson(const <String, dynamic>{
+      'spellValue': 4,
+      'modifier': 1,
+    });
+
+    expect(reloaded.learnedRepresentation, isNull);
+    expect(reloaded.learnedTradition, isNull);
   });
 }

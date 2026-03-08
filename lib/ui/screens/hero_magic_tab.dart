@@ -236,19 +236,65 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _markFieldChanged();
   }
 
-  void _toggleSpell(String spellId, bool activate) {
-    if (activate) {
-      _draftSpells.putIfAbsent(spellId, () => const HeroSpellEntry());
-    } else {
-      _draftSpells.remove(spellId);
-      _cellControllers.remove('$spellId::spellValue')?.dispose();
-      _cellControllers.remove('$spellId::modifier')?.dispose();
+  void _updateSpellLearnedRepresentation(
+    String spellId,
+    SpellAvailabilityEntry entry,
+  ) {
+    final current = _draftSpells[spellId] ?? const HeroSpellEntry();
+    _draftSpells[spellId] = current.copyWith(
+      learnedRepresentation: entry.learnedRepresentation,
+      learnedTradition: entry.tradition,
+    );
+    _markFieldChanged();
+  }
+
+  Future<SpellAvailabilityEntry?> _chooseAvailabilityEntryForSpell(
+    BuildContext context,
+    SpellDef spell,
+  ) async {
+    final availableEntries = availableSpellEntriesForRepresentations(
+      spell.availability,
+      _draftRepresentationen,
+    );
+    if (availableEntries.isEmpty) {
+      return null;
     }
+    if (availableEntries.length == 1) {
+      return availableEntries.single;
+    }
+    return _showSpellRepresentationDialog(
+      context: context,
+      spellName: spell.name,
+      entries: availableEntries,
+    );
+  }
+
+  Future<bool> _activateSpell(
+    BuildContext context,
+    SpellDef spell,
+  ) async {
+    final chosenEntry = await _chooseAvailabilityEntryForSpell(context, spell);
+    if (chosenEntry == null) {
+      return false;
+    }
+    final current = _draftSpells[spell.id] ?? const HeroSpellEntry();
+    _draftSpells[spell.id] = current.copyWith(
+      learnedRepresentation: chosenEntry.learnedRepresentation,
+      learnedTradition: chosenEntry.tradition,
+    );
+    _markFieldChanged();
+    return true;
+  }
+
+  void _deactivateSpell(String spellId) {
+    _draftSpells.remove(spellId);
+    _cellControllers.remove('$spellId::spellValue')?.dispose();
+    _cellControllers.remove('$spellId::modifier')?.dispose();
     _markFieldChanged();
   }
 
   void _removeSpell(String spellId) {
-    _toggleSpell(spellId, false);
+    _deactivateSpell(spellId);
   }
 
   void _updateRepresentationen(List<String> values) {
@@ -296,22 +342,28 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                     ),
                   ),
                   Expanded(
-                    child: _MagicSpellCatalogTable(
-                      allSpells: allSpells,
-                      activeSpellIds: localActiveIds,
-                      heroRepresentationen: _draftRepresentationen,
-                      onToggleSpell: (id, activate) {
-                        _toggleSpell(id, activate);
-                        setSheetState(() {
-                          if (activate) {
-                            localActiveIds.add(id);
-                          } else {
-                            localActiveIds.remove(id);
-                          }
-                        });
-                      },
-                    ),
-                  ),
+                     child: _MagicSpellCatalogTable(
+                       allSpells: allSpells,
+                       activeSpellIds: localActiveIds,
+                       heroRepresentationen: _draftRepresentationen,
+                       onActivateSpell: (spell) async {
+                         final activated = await _activateSpell(ctx, spell);
+                         if (!activated) {
+                           return false;
+                         }
+                         setSheetState(() {
+                           localActiveIds.add(spell.id);
+                         });
+                         return true;
+                       },
+                       onDeactivateSpell: (spellId) {
+                         _deactivateSpell(spellId);
+                         setSheetState(() {
+                           localActiveIds.remove(spellId);
+                         });
+                       },
+                     ),
+                   ),
                 ],
               ),
             );
@@ -391,11 +443,14 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             spellEntries: _draftSpells,
                             spellDefs: spellDefsById,
                             merkmalskenntnisse: _draftMerkmalskenntnisse,
+                            heroRepresentationen: _draftRepresentationen,
                             isEditing: _editController.isEditing,
                             onSpellValueChanged: _updateSpellValue,
                             onModifierChanged: _updateSpellModifier,
                             onHauszauberChanged: _updateHauszauber,
                             onGiftedChanged: _updateSpellGifted,
+                            onLearnedRepresentationChanged:
+                                _updateSpellLearnedRepresentation,
                             onTextOverridesChanged: _updateSpellTextOverrides,
                             onRemoveSpell: _removeSpell,
                             controllerFor: _controllerFor,
@@ -451,4 +506,99 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
 
   @override
   bool get wantKeepAlive => true;
+}
+
+Future<SpellAvailabilityEntry?> _showSpellRepresentationDialog({
+  required BuildContext context,
+  required String spellName,
+  required List<SpellAvailabilityEntry> entries,
+}) {
+  return showDialog<SpellAvailabilityEntry>(
+    context: context,
+    builder: (dialogContext) {
+      return _SpellRepresentationDialog(
+        spellName: spellName,
+        entries: entries,
+      );
+    },
+  );
+}
+
+class _SpellRepresentationDialog extends StatefulWidget {
+  const _SpellRepresentationDialog({
+    required this.spellName,
+    required this.entries,
+  });
+
+  final String spellName;
+  final List<SpellAvailabilityEntry> entries;
+
+  @override
+  State<_SpellRepresentationDialog> createState() =>
+      _SpellRepresentationDialogState();
+}
+
+class _SpellRepresentationDialogState extends State<_SpellRepresentationDialog> {
+  SpellAvailabilityEntry? _selectedEntry;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.entries.isNotEmpty) {
+      _selectedEntry = widget.entries.first;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      key: const ValueKey<String>('magic-spell-representation-dialog'),
+      title: const Text('Zauber-Repraesentation waehlen'),
+      content: SizedBox(
+        width: 480,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(widget.spellName),
+            const SizedBox(height: 12),
+            for (final entry in widget.entries)
+              ListTile(
+                key: ValueKey<String>(
+                  'magic-spell-representation-option-${entry.storageKey}',
+                ),
+                contentPadding: EdgeInsets.zero,
+                title: Text(entry.displayLabel),
+                subtitle: entry.isForeignRepresentation
+                    ? const Text('Fremdrepr. (+2 Komplexitaet)')
+                    : const Text('Eigenrepr.'),
+                leading: Icon(
+                  _selectedEntry?.storageKey == entry.storageKey
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+                ),
+                onTap: () {
+                  setState(() {
+                    _selectedEntry = entry;
+                  });
+                },
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        FilledButton(
+          key: const ValueKey<String>('magic-spell-representation-save'),
+          onPressed: _selectedEntry == null
+              ? null
+              : () => Navigator.of(context).pop(_selectedEntry),
+          child: const Text('Uebernehmen'),
+        ),
+      ],
+    );
+  }
 }
