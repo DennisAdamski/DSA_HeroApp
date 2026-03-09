@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -642,9 +643,10 @@ class _StepButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = adaptiveMinTouchTarget(context);
     return SizedBox(
-      width: 28,
-      height: 28,
+      width: size,
+      height: size,
       child: IconButton.outlined(
         padding: EdgeInsets.zero,
         iconSize: 14,

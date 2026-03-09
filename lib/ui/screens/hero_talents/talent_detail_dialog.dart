@@ -101,7 +101,7 @@ class _TalentDetailDialog extends StatelessWidget {
                           label: Text(s),
                           visualDensity: VisualDensity.compact,
                           materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
+                              adaptiveTapTargetSize(context),
                           padding: EdgeInsets.zero,
                           labelPadding: const EdgeInsets.symmetric(
                             horizontal: 6,
