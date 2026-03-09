@@ -166,7 +166,7 @@ Domain models (lib/domain/) — immutable, pure Dart
 | `HeroState` | `domain/hero_state.dart` | Runtime state (current LeP/AsP/KaP/Au, temp modifiers) |
 | `HeroComputedSnapshot` | `state/hero_computed_snapshot.dart` | All derived values for one hero, computed in one pass |
 | `HeroIndexSnapshot` | `state/hero_index_snapshot.dart` | Sorted hero list + O(1) ID map |
-| `HeroSpellEntry` | `domain/hero_spell_entry.dart` | Persisted spell entry (ZfW, Hauszauber, modifier, Legacy-Spezialisierungen, Text-Overrides) |
+| `HeroSpellEntry` | `domain/hero_spell_entry.dart` | Persisted spell entry (ZfW, Hauszauber, modifier, learnedRepresentation, learnedTradition, Legacy-Spezialisierungen, Text-Overrides) |
 | `HeroSpellTextOverrides` | `domain/hero_spell_text_overrides.dart` | Heldenspezifische Korrekturen fuer importierte Zauberdetails |
 | `HeroRitualCategory` | `domain/hero_rituals.dart` | Heldenspezifische Ritualkategorie mit Ritualkenntnis oder Talentbezug |
 | `MagicSpecialAbility` | `domain/magic_special_ability.dart` | Persisted magic special ability (name + note) |
@@ -390,6 +390,11 @@ The following files are **intentionally kept** but not currently wired into the 
   `lib/rules/derived/learning_rules.dart`.
 - Learning categories are handled on the scale
   `A* < A < B < C < D < E < F < G < H`.
+- Availability parsing and display now keep all spell-representation entries
+  instead of collapsing to one "best" value.
+- `HeroSpellEntry` also stores `learnedRepresentation` and
+  `learnedTradition`, so a learned spell stays tied to its concrete
+  representation/origin pair.
 - Combat talent caps must use `GE/KK` for melee and `FF/KK` for ranged,
   without using `IN`.
 

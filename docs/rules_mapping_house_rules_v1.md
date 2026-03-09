@@ -43,18 +43,19 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 
 ### Datenmodell
 
-- **HeroSpellEntry**: Speichert ZfW (spellValue), Modifikator, Hauszauber-Flag, Begabungs-Flag sowie optionale heldenspezifische Text-Overrides pro aktiviertem Zauber; das Listenfeld `specializations` bleibt nur noch als Legacy-Kompatibilitaet bestehen.
+- **HeroSpellEntry**: Speichert ZfW (spellValue), Modifikator, Hauszauber-Flag, Begabungs-Flag, die konkret gelernte Zauber-Repräsentation (`learnedRepresentation`) samt Herkunftstradition (`learnedTradition`) sowie optionale heldenspezifische Text-Overrides pro aktiviertem Zauber; das Listenfeld `specializations` bleibt nur noch als Legacy-Kompatibilitaet bestehen.
 - **HeroSpellTextOverrides**: Optionales Override-Objekt fuer importierte Zauberdetails (`aspCost`, `targetObject`, `range`, `duration`, `castingTime`, `wirkung`, `modifications`, `variants`) pro aktiviertem Zauber.
 - **MagicSpecialAbility**: Name + optionale Notiz fuer magische Sonderfertigkeiten.
-- **HeroSheet** (schemaVersion 7): Enthaelt `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities` und `metaTalents`; Zauber-Eintraege koennen zusaetzlich `gifted` und `textOverrides` speichern.
+- **HeroSheet** (schemaVersion 14): Enthaelt `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities` und `metaTalents`; Zauber-Eintraege koennen zusaetzlich `gifted`, `learnedRepresentation`, `learnedTradition` und `textOverrides` speichern.
 
 ### Regelfunktionen (`magic_rules.dart`, `learning_rules.dart`)
 
 - **Verfuegbarkeit parsen** (`parseSpellAvailability`): Parst Strings wie `"Mag6, Hex3, Dru(Elf)2"` in strukturierte `SpellAvailabilityEntry`-Objekte.
 - **Traditions-Extraktion** (`extractTraditions`): Gibt die Haupttraditions-Kuerzel zurueck (z.B. `['Mag', 'Hex']`).
-- **Verfuegbarkeitspruefung** (`spellAvailabilityForRepresentations`): Prueft, ob ein Zauber fuer die Repraesentationen des Helden verfuegbar ist. Gibt die beste (niedrigste) Verbreitungsstufe zurueck oder `null`. Sub-Traditionen (z.B. `Dru(Elf)`) erfordern, dass der Held beide Repraesentationen besitzt.
+- **Verfuegbarkeitsliste pro Held** (`availableSpellEntriesForRepresentations`): Liefert alle Availability-Eintraege, deren Haupttradition der Held besitzt. `Dru(Elf)2` bedeutet: ein Druide kann den Zauber in elfischer Repräsentation lernen; die Ziel-Repräsentation ist `Elf`, die Herkunftstradition `Dru`.
+- **Availability-Formatierung** (`formatAvailabilityEntries`): Zeigt alle Verbreitungen eines Zaubers lesbar an, z.B. `"Elf 6; Dru -> Elf 2"`.
 - **Lernkomplexitaeten** (`reduceLernkomplexitaet`, `effectiveTalentLernkomplexitaet`, `effectiveSpellLernkomplexitaet`): Nutzen die geordnete Skala `A* < A < B < C < D < E < F < G < H` und klemmen Reduktionen auf `A*`.
-- **Effektive Steigerung** (`effectiveSteigerung`): Reduziert die Steigerungskategorie eines Zaubers additiv um je eine Stufe fuer Hauszauber, passende Merkmalskenntnisse und Begabung.
+- **Effektive Steigerung** (`effectiveSteigerung`): Erhoeht die Basis zuerst um `+2`, wenn der Zauber in Fremdrepräsentation gelernt wurde, und reduziert danach additiv um je eine Stufe fuer Hauszauber, passende Merkmalskenntnisse und Begabung.
 - **Merkmale parsen** (`parseSpellTraits`): Splittet Merkmale-Strings wie `"Eigenschaften, Elementar (Erz)"` in eine Liste.
 - **Talent-Maxima** (`computeTalentMaxValue`, `computeCombatTalentMaxValue`): Normale Talente nutzen die hoechste Probe-Eigenschaft, Kampftalente die feste Sonderregel `GE/KK` bzw. `FF/KK` plus `+3` oder `+5` bei Begabung.
 
@@ -63,8 +64,8 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - **hero_magic_tab.dart**: Hauptdatei des Magie-Tabs im HeroWorkspaceScreen, aufgeteilt in Part-Files:
   - `magic_header_section.dart` — Repraesentationen und Merkmalskenntnisse bearbeiten
   - `magic_special_abilities_section.dart` — Magische Sonderfertigkeiten verwalten
-  - `magic_active_spells_table.dart` — Tabelle aktivierter Zauber (ZfW, Mod, effektive Steigerung, Hauszauber, Begabung, Katalog-Varianten)
-  - `magic_spell_catalog_table.dart` — Katalog-Zauber filtern und aktivieren
+  - `magic_active_spells_table.dart` — Tabelle aktivierter Zauber (ZfW, Mod, gelernte Repräsentation, effektive Steigerung, Hauszauber, Begabung, Katalog-Varianten)
+  - `magic_spell_catalog_table.dart` — Katalog-Zauber filtern, alle Verbreitungen anzeigen und mit Repräsentationswahl aktivieren
 
 ### Katalog
 
