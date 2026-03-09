@@ -1326,7 +1326,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                       key: const ValueKey<String>(
                         'combat-active-weapon-info-reload-time',
                       ),
-                      label: Text('Ladezeit: ${preview.reloadTime}'),
+                      label: Text('Ladezeit: ${preview.reloadTimeDisplay}'),
                     ),
                     Chip(
                       key: const ValueKey<String>(

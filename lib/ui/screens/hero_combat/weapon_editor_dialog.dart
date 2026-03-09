@@ -690,7 +690,7 @@ class _WeaponEditorDialogState extends State<_WeaponEditorDialog> {
                     if (isRanged)
                       _readOnlyField(
                         'Ladezeit',
-                        preview.reloadTime.toString(),
+                        preview.reloadTimeDisplay,
                         keyName: 'combat-weapon-form-preview-reload-time',
                       ),
                   ],

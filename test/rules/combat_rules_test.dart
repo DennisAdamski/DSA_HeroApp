@@ -487,6 +487,146 @@ void main() {
     expect(modifiedResult.pa, 0);
   });
 
+  test('bogen reload time uses Schnellladen and Axxeleratus correctly', () {
+    const catalogTalents = <TalentDef>[
+      TalentDef(
+        id: 'tal_boegen',
+        name: 'Boegen',
+        group: 'Kampftalent',
+        type: 'Fernkampf',
+        steigerung: 'D',
+        attributes: <String>['Intuition', 'Fingerfertigkeit', 'Koerperkraft'],
+      ),
+    ];
+    final base = hero(
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(
+          name: 'Elfenbogen',
+          talentId: 'tal_boegen',
+          combatType: WeaponCombatType.ranged,
+          weaponType: 'Elfenbogen',
+          rangedProfile: RangedWeaponProfile(reloadTime: 3),
+        ),
+      ),
+    );
+    final withOwnedAbility = base.copyWith(
+      combatConfig: base.combatConfig.copyWith(
+        specialRules: const CombatSpecialRules(schnellladenBogen: true),
+      ),
+    );
+
+    expect(preview(base, catalogTalents: catalogTalents).reloadTime, 3);
+    expect(
+      preview(withOwnedAbility, catalogTalents: catalogTalents).reloadTime,
+      2,
+    );
+    expect(
+      preview(
+        base,
+        catalogTalents: catalogTalents,
+        heroState: stateWithAxx,
+      ).reloadTime,
+      2,
+    );
+    expect(
+      preview(
+        withOwnedAbility,
+        catalogTalents: catalogTalents,
+        heroState: stateWithAxx,
+      ).reloadTime,
+      1,
+    );
+  });
+
+  test('armbrust reload time uses rounded Schnellladen and Axxeleratus', () {
+    const catalogTalents = <TalentDef>[
+      TalentDef(
+        id: 'tal_armbrust',
+        name: 'Armbrust',
+        group: 'Kampftalent',
+        type: 'Fernkampf',
+        steigerung: 'D',
+        attributes: <String>['Intuition', 'Fingerfertigkeit', 'Koerperkraft'],
+      ),
+    ];
+    final base = hero(
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(
+          name: 'Schwere Armbrust',
+          talentId: 'tal_armbrust',
+          combatType: WeaponCombatType.ranged,
+          weaponType: 'Schwere Armbrust',
+          rangedProfile: RangedWeaponProfile(reloadTime: 4),
+        ),
+      ),
+    );
+    final withOwnedAbility = base.copyWith(
+      combatConfig: base.combatConfig.copyWith(
+        specialRules: const CombatSpecialRules(schnellladenArmbrust: true),
+      ),
+    );
+
+    expect(preview(base, catalogTalents: catalogTalents).reloadTime, 4);
+    expect(
+      preview(withOwnedAbility, catalogTalents: catalogTalents).reloadTime,
+      1,
+    );
+    expect(
+      preview(
+        base,
+        catalogTalents: catalogTalents,
+        heroState: stateWithAxx,
+      ).reloadTime,
+      1,
+    );
+    expect(
+      preview(
+        withOwnedAbility,
+        catalogTalents: catalogTalents,
+        heroState: stateWithAxx,
+      ).reloadTime,
+      1,
+    );
+  });
+
+  test('reload time display uses Aktionen label', () {
+    const catalogTalents = <TalentDef>[
+      TalentDef(
+        id: 'tal_boegen',
+        name: 'Boegen',
+        group: 'Kampftalent',
+        type: 'Fernkampf',
+        steigerung: 'D',
+        attributes: <String>['Intuition', 'Fingerfertigkeit', 'Koerperkraft'],
+      ),
+    ];
+    final base = hero(
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(
+          name: 'Kurzbogen',
+          talentId: 'tal_boegen',
+          combatType: WeaponCombatType.ranged,
+          weaponType: 'Kurzbogen',
+          rangedProfile: RangedWeaponProfile(reloadTime: 2),
+        ),
+      ),
+    );
+    final reduced = base.copyWith(
+      combatConfig: base.combatConfig.copyWith(
+        specialRules: const CombatSpecialRules(schnellladenBogen: true),
+      ),
+    );
+
+    expect(
+      preview(base, catalogTalents: catalogTalents).reloadTimeDisplay,
+      '2 Aktionen',
+    );
+    expect(
+      preview(reduced, catalogTalents: catalogTalents).reloadTimeDisplay,
+      '1 Aktion',
+    );
+  });
+
   test('ranged AT uses full eBE instead of split AT share', () {
     const catalogTalents = <TalentDef>[
       TalentDef(

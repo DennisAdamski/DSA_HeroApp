@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
@@ -612,7 +613,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                           catalog,
                           preview,
                         ),
-                        _buildSpecialRulesSubTab(hero),
+                        _buildSpecialRulesSubTab(hero, state),
                         _buildManeuversSubTab(catalog),
                       ],
                     ),

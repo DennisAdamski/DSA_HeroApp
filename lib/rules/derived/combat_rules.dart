@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ausweichen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/fernkampf_ladezeit_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/fernkampf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
@@ -60,11 +61,19 @@ class CombatPreviewStats {
     required this.distanceTpMod,
     required this.projectileTpMod,
     required this.projectileIniMod,
+    required this.baseReloadTime,
     required this.reloadTime,
+    required this.reloadTimeDisplay,
     required this.activeDistanceLabel,
     required this.activeProjectileName,
     required this.activeProjectileCount,
     required this.activeProjectileDescription,
+    required this.schnellziehenActive,
+    required this.schnellziehenTemporary,
+    required this.schnellladenBogenActive,
+    required this.schnellladenBogenTemporary,
+    required this.schnellladenArmbrustActive,
+    required this.schnellladenArmbrustTemporary,
   });
 
   final int rsTotal;
@@ -111,11 +120,19 @@ class CombatPreviewStats {
   final int distanceTpMod;
   final int projectileTpMod;
   final int projectileIniMod;
+  final int baseReloadTime;
   final int reloadTime;
+  final String reloadTimeDisplay;
   final String activeDistanceLabel;
   final String activeProjectileName;
   final int activeProjectileCount;
   final String activeProjectileDescription;
+  final bool schnellziehenActive;
+  final bool schnellziehenTemporary;
+  final bool schnellladenBogenActive;
+  final bool schnellladenBogenTemporary;
+  final bool schnellladenArmbrustActive;
+  final bool schnellladenArmbrustTemporary;
 }
 
 CombatPreviewStats computeCombatPreviewStats(
@@ -201,6 +218,12 @@ CombatPreviewStats computeCombatPreviewStats(
       : computeAxxeleratusTpBonus(axxeleratusActive: axxeleratusActive);
   final activeDistanceBand = main.rangedProfile.selectedDistanceBand;
   final activeProjectile = main.rangedProfile.selectedProjectileOrNull;
+  final reloadTimeResult = computeRangedReloadTime(
+    weapon: main,
+    specialRules: special,
+    axxeleratusActive: axxeleratusActive,
+    talentName: selectedTalent?.name,
+  );
   final distanceTpMod = isRangedWeapon ? activeDistanceBand.tpMod : 0;
   final projectileTpMod = isRangedWeapon ? (activeProjectile?.tpMod ?? 0) : 0;
   final projectileIniMod = isRangedWeapon ? (activeProjectile?.iniMod ?? 0) : 0;
@@ -371,13 +394,24 @@ CombatPreviewStats computeCombatPreviewStats(
     distanceTpMod: distanceTpMod,
     projectileTpMod: projectileTpMod,
     projectileIniMod: projectileIniMod,
-    reloadTime: isRangedWeapon ? main.rangedProfile.reloadTime : 0,
+    baseReloadTime: isRangedWeapon ? reloadTimeResult.baseReloadTime : 0,
+    reloadTime: isRangedWeapon ? reloadTimeResult.effectiveReloadTime : 0,
+    reloadTimeDisplay: isRangedWeapon
+        ? reloadTimeResult.displayLabel
+        : formatReloadTimeActions(0),
     activeDistanceLabel: isRangedWeapon ? activeDistanceBand.label : '',
     activeProjectileName: isRangedWeapon ? (activeProjectile?.name ?? '') : '',
     activeProjectileCount: isRangedWeapon ? (activeProjectile?.count ?? 0) : 0,
     activeProjectileDescription: isRangedWeapon
         ? (activeProjectile?.description ?? '')
         : '',
+    schnellziehenActive: reloadTimeResult.schnellziehen.isActive,
+    schnellziehenTemporary: reloadTimeResult.schnellziehen.isTemporary,
+    schnellladenBogenActive: reloadTimeResult.schnellladenBogen.isActive,
+    schnellladenBogenTemporary: reloadTimeResult.schnellladenBogen.isTemporary,
+    schnellladenArmbrustActive: reloadTimeResult.schnellladenArmbrust.isActive,
+    schnellladenArmbrustTemporary:
+        reloadTimeResult.schnellladenArmbrust.isTemporary,
   );
 }
 

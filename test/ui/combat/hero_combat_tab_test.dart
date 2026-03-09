@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -427,6 +429,82 @@ void main() {
     expect(find.widgetWithText(Tab, 'Sonderfertigkeiten'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Manoever'), findsOneWidget);
   });
+
+  testWidgets(
+    'special rules tab stores new Schnellladen and Schnellziehen flags',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final actions = await openCombatTab(tester, repo);
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
+      await tester.pumpAndSettle();
+
+      await setSwitchByKey(
+        tester,
+        keyName: 'combat-special-rule-schnellziehen',
+        value: true,
+      );
+      await setSwitchByKey(
+        tester,
+        keyName: 'combat-special-rule-schnellladen-bogen',
+        value: true,
+      );
+      await setSwitchByKey(
+        tester,
+        keyName: 'combat-special-rule-schnellladen-armbrust',
+        value: true,
+      );
+
+      await actions.save();
+      await tester.pumpAndSettle();
+
+      final hero = (await repo.listHeroes()).firstWhere(
+        (entry) => entry.id == 'demo',
+      );
+      expect(hero.combatConfig.specialRules.schnellziehen, isTrue);
+      expect(hero.combatConfig.specialRules.schnellladenBogen, isTrue);
+      expect(hero.combatConfig.specialRules.schnellladenArmbrust, isTrue);
+    },
+  );
+
+  testWidgets(
+    'Axxeleratus shows temporary Schnellladen and Schnellziehen status',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+            activeSpellEffects: ActiveSpellEffectsState(
+              activeEffectIds: <String>[activeSpellEffectAxxeleratus],
+            ),
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo);
+      await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Aktiv durch Axxeleratus'), findsNWidgets(3));
+      expect(find.text('Temporär aktiv'), findsNWidgets(3));
+    },
+  );
 
   testWidgets('legacy Axxeleratus state still shows melee hint in combat tab', (
     tester,
@@ -1883,6 +1961,7 @@ void main() {
         ),
         findsOneWidget,
       );
+      expect(find.text('Ladezeit: 3 Aktionen'), findsOneWidget);
       expect(
         find.byKey(
           const ValueKey<String>('combat-active-weapon-projectile-select'),
@@ -2307,7 +2386,13 @@ void main() {
     tester,
   ) async {
     final repo = FakeRepository(
-      heroes: [buildHero()],
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            armor: ArmorConfig(globalArmorTrainingLevel: 1),
+          ),
+        ),
+      ],
       states: {
         'demo': const HeroState(
           currentLep: 10,
@@ -2317,30 +2402,10 @@ void main() {
         ),
       },
     );
-    final actions = await openCombatTab(tester, repo);
+    await openCombatTab(tester, repo);
     await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
 
-    await openArmorEditor(tester);
-    expect(
-      find.byKey(const ValueKey<String>('combat-armor-form-rg1')),
-      findsNothing,
-    );
-    await tester.tap(find.text('Abbrechen'));
-    await tester.pumpAndSettle();
-
-    await actions.startEdit();
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
-    await tester.pumpAndSettle();
-    await selectDropdownByKey(
-      tester,
-      keyName: 'combat-armor-global-training-level',
-      valueText: 'I',
-    );
-
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
     await openArmorEditor(tester);
     expect(
       find.byKey(const ValueKey<String>('combat-armor-form-rg1')),
