@@ -28,6 +28,7 @@ void main() {
   HeroSheet buildHero({
     Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
     List<HeroRitualCategory> ritualCategories = const <HeroRitualCategory>[],
+    List<String> representationen = const <String>['Mag', 'Dru', 'Elf'],
   }) {
     return HeroSheet(
       id: 'demo',
@@ -44,11 +45,14 @@ void main() {
         kk: 13,
       ),
       merkmalskenntnisse: <String>['Kraft'],
+      representationen: representationen,
       talents: talents,
       ritualCategories: ritualCategories,
       spells: <String, HeroSpellEntry>{
         'spell_axxeleratus': HeroSpellEntry(
           spellValue: 8,
+          learnedRepresentation: 'Mag',
+          learnedTradition: 'Mag',
           specializations: <String>['Heldeneintrag'],
         ),
       },
@@ -82,6 +86,7 @@ void main() {
           tradition: 'Elf',
           steigerung: 'C',
           attributes: <String>['Klugheit', 'Gewandheit', 'Konstitution'],
+          availability: 'Mag3, Elf2, Dru(Elf)2',
           traits: 'Kraft',
           aspCost: '7 AsP',
           targetObject: 'Einzelperson, freiwillig',
@@ -95,6 +100,15 @@ void main() {
             'Blitzgeschwind (+7). Mehr Tempo.',
             'Koboldisch. Nur Sprache.',
           ],
+        ),
+        SpellDef(
+          id: 'spell_adlerschwinge',
+          name: 'Adlerschwinge Wolfsgestalt',
+          tradition: 'Elf',
+          steigerung: 'D',
+          attributes: <String>['Mut', 'Intuition', 'Gewandheit'],
+          availability: 'Elf6, Dru(Elf)2',
+          traits: 'Form',
         ),
       ],
       weapons: <WeaponDef>[],
@@ -169,6 +183,79 @@ void main() {
       expect(find.text('Heldeneintrag'), findsNothing);
       expect(find.text('Koboldisch. Nur Sprache.'), findsOneWidget);
       expect(find.text('Liber Cantiones S. 36'), findsOneWidget);
+    },
+  );
+
+  testWidgets('spell catalog shows all availability entries', (tester) async {
+    final opened = await openMagicTab(tester);
+
+    await opened.actions.startEdit();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey<String>('magic-spells-add')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mag 3; Elf 2; Dru -> Elf 2'), findsOneWidget);
+    expect(find.text('Elf 6; Dru -> Elf 2'), findsOneWidget);
+  });
+
+  testWidgets(
+    'activating spell with multiple representations stores selected entry',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          buildHero(
+            representationen: const <String>['Dru', 'Elf'],
+          ).copyWith(spells: const <String, HeroSpellEntry>{}),
+        ],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+      final opened = await openMagicTab(tester, repo: repo);
+
+      await opened.actions.startEdit();
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey<String>('magic-spells-add')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>(
+            'magic-spell-catalog-toggle-spell_adlerschwinge',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('magic-spell-representation-dialog')),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>(
+            'magic-spell-representation-option-Dru->Elf',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-spell-representation-save')),
+      );
+      await tester.pumpAndSettle();
+
+      await opened.actions.save();
+      await tester.pumpAndSettle();
+
+      final savedHero = await opened.repo.loadHeroById('demo');
+      final entry = savedHero?.spells['spell_adlerschwinge'];
+      expect(entry?.learnedRepresentation, 'Elf');
+      expect(entry?.learnedTradition, 'Dru');
     },
   );
 

@@ -9,18 +9,36 @@ import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 
 /// Ein einzelner Eintrag in der Verfuegbarkeitsliste eines Zaubers.
 ///
-/// Beispiel: "Mag6" -> tradition='Mag', subTradition=null, verbreitung=6
-/// Beispiel: "Dru(Elf)2" -> tradition='Dru', subTradition='Elf', verbreitung=2
+/// Beispiel: "Mag6" -> tradition='Mag', learnedRepresentation='Mag'
+/// Beispiel: "Dru(Elf)2" -> tradition='Dru', learnedRepresentation='Elf'
 class SpellAvailabilityEntry {
   const SpellAvailabilityEntry({
     required this.tradition,
-    this.subTradition,
+    required this.learnedRepresentation,
     required this.verbreitung,
   });
 
+  /// Haupttradition, die den Zugang zu diesem Availability-Eintrag erlaubt.
   final String tradition;
-  final String? subTradition;
+
+  /// Die konkrete Repraesentation, in der der Zauber gelernt wird.
+  final String learnedRepresentation;
+
   final int verbreitung;
+
+  /// Kennzeichnet Eintraege wie `Dru(Elf)2`, also Lernen in Fremdrepr.
+  bool get isForeignRepresentation => learnedRepresentation != tradition;
+
+  /// Liefert ein stabiles Label zur Persistenz und fuer Dropdowns.
+  String get storageKey => '$tradition->$learnedRepresentation';
+
+  /// Liefert ein kompaktes Anzeigenlabel fuer Katalogtabellen und Auswahl-UI.
+  String get displayLabel {
+    if (isForeignRepresentation) {
+      return '$tradition -> $learnedRepresentation $verbreitung';
+    }
+    return '$learnedRepresentation $verbreitung';
+  }
 }
 
 /// Regex zum Parsen einzelner Verfuegbarkeits-Tokens.
@@ -51,7 +69,7 @@ List<SpellAvailabilityEntry> parseSpellAvailability(String availability) {
     entries.add(
       SpellAvailabilityEntry(
         tradition: match.group(1)!,
-        subTradition: match.group(2),
+        learnedRepresentation: match.group(2) ?? match.group(1)!,
         verbreitung: int.parse(match.group(3)!),
       ),
     );
@@ -59,9 +77,23 @@ List<SpellAvailabilityEntry> parseSpellAvailability(String availability) {
   return entries;
 }
 
-/// Extrahiert die Traditions-Kuerzel aus einem availability-String.
+/// Extrahiert die gelernten Repraesentationen aus einem availability-String.
 ///
-/// Gibt nur die Haupttradition jedes Eintrags zurueck (z.B. "Mag", "Hex").
+/// Duplikate werden entfernt, die Reihenfolge bleibt stabil.
+List<String> extractLearnedRepresentations(String availability) {
+  final entries = parseSpellAvailability(availability);
+  final seen = <String>{};
+  final result = <String>[];
+  for (final entry in entries) {
+    if (seen.add(entry.learnedRepresentation)) {
+      result.add(entry.learnedRepresentation);
+    }
+  }
+  return result;
+}
+
+/// Extrahiert die Haupttraditions-Kuerzel aus einem availability-String.
+///
 /// Duplikate werden entfernt.
 List<String> extractTraditions(String availability) {
   final entries = parseSpellAvailability(availability);
@@ -75,28 +107,75 @@ List<String> extractTraditions(String availability) {
   return result;
 }
 
-/// Prueft, ob ein Zauber fuer die gewaehlten Repraesentationen verfuegbar ist.
+/// Filtert Availability-Eintraege auf die Haupttraditionen des Helden.
 ///
-/// Gibt die beste (niedrigste) Verbreitungsstufe zurueck oder `null`, wenn der
-/// Zauber nicht verfuegbar ist.
-int? spellAvailabilityForRepresentations(
+/// Fuer `Dru(Elf)2` reicht also ein Held mit `Dru`, auch wenn `Elf` selbst
+/// keine Helden-Repr. ist.
+List<SpellAvailabilityEntry> availableSpellEntriesForRepresentations(
   String availability,
   List<String> heroRepresentations,
 ) {
   if (heroRepresentations.isEmpty) {
-    return null;
+    return const [];
   }
   final entries = parseSpellAvailability(availability);
+  return entries
+      .where((entry) => heroRepresentations.contains(entry.tradition))
+      .toList(growable: false);
+}
+
+/// Prueft, ob ein Held genau diesen Availability-Eintrag lernen darf.
+bool canLearnSpellFromEntry(
+  SpellAvailabilityEntry entry,
+  List<String> heroRepresentations,
+) {
+  return heroRepresentations.contains(entry.tradition);
+}
+
+/// Sucht einen Availability-Eintrag ueber gelernte Repr. und Herkunft.
+///
+/// [originTradition] ist optional, sollte fuer persistierte Zauber aber
+/// mitgegeben werden, damit mehrdeutige Faelle eindeutig bleiben.
+SpellAvailabilityEntry? findSpellAvailabilityEntry({
+  required String availability,
+  required String learnedRepresentation,
+  String? originTradition,
+}) {
+  for (final entry in parseSpellAvailability(availability)) {
+    if (entry.learnedRepresentation != learnedRepresentation) {
+      continue;
+    }
+    if (originTradition != null && entry.tradition != originTradition) {
+      continue;
+    }
+    return entry;
+  }
+  return null;
+}
+
+/// Formatiert alle Verbreitungs-Eintraege fuer die Kataloganzeige.
+String formatAvailabilityEntries(String availability) {
+  final entries = parseSpellAvailability(availability);
+  if (entries.isEmpty) {
+    return '-';
+  }
+  return entries.map((entry) => entry.displayLabel).join('; ');
+}
+
+/// Legacy-Helfer fuer Altpfade, die noch eine einzelne Verbreitungszahl erwarten.
+///
+/// Neue Anzeige- und Auswahlpfade sollen stattdessen mit
+/// [availableSpellEntriesForRepresentations] arbeiten.
+int? spellAvailabilityForRepresentations(
+  String availability,
+  List<String> heroRepresentations,
+) {
+  final entries = availableSpellEntriesForRepresentations(
+    availability,
+    heroRepresentations,
+  );
   int? bestVerbreitung;
   for (final entry in entries) {
-    final matchesTradition = heroRepresentations.contains(entry.tradition);
-    if (!matchesTradition) {
-      continue;
-    }
-    if (entry.subTradition != null &&
-        !heroRepresentations.contains(entry.subTradition)) {
-      continue;
-    }
     if (bestVerbreitung == null || entry.verbreitung < bestVerbreitung) {
       bestVerbreitung = entry.verbreitung;
     }
@@ -104,16 +183,35 @@ int? spellAvailabilityForRepresentations(
   return bestVerbreitung;
 }
 
+/// Kennzeichnet eine gespeicherte Zauber-Repr. als Fremdrepr. des Eintrags.
+bool isForeignSpellRepresentation({
+  required String availability,
+  required String learnedRepresentation,
+  String? originTradition,
+}) {
+  final entry = findSpellAvailabilityEntry(
+    availability: availability,
+    learnedRepresentation: learnedRepresentation,
+    originTradition: originTradition,
+  );
+  if (entry == null) {
+    return false;
+  }
+  return entry.isForeignRepresentation;
+}
+
 /// Berechnet die effektive Steigerungskategorie eines Zaubers.
 ///
 /// Hauszauber, passende Merkmalskenntnisse und Begabung summieren sich jeweils
-/// um eine Reduktionsstufe. Minimum ist `A*`.
+/// um eine Reduktionsstufe. Fremdrepr. erhoeht die Basis vorher um 2 Stufen.
+/// Minimum ist `A*`.
 String effectiveSteigerung({
   required String basisSteigerung,
   required bool istHauszauber,
   required List<String> zauberMerkmale,
   required List<String> heldMerkmalskenntnisse,
   bool istBegabt = false,
+  int fremdReprPenaltySteps = 0,
 }) {
   return effectiveSpellLernkomplexitaet(
     basisKomplexitaet: basisSteigerung,
@@ -121,6 +219,7 @@ String effectiveSteigerung({
     zauberMerkmale: zauberMerkmale,
     heldMerkmalskenntnisse: heldMerkmalskenntnisse,
     gifted: istBegabt,
+    penaltySteps: fremdReprPenaltySteps,
   );
 }
 

@@ -7,13 +7,15 @@ class _MagicSpellCatalogTable extends StatefulWidget {
     required this.allSpells,
     required this.activeSpellIds,
     required this.heroRepresentationen,
-    required this.onToggleSpell,
+    required this.onActivateSpell,
+    required this.onDeactivateSpell,
   });
 
   final List<SpellDef> allSpells;
   final Set<String> activeSpellIds;
   final List<String> heroRepresentationen;
-  final void Function(String spellId, bool activate) onToggleSpell;
+  final Future<bool> Function(SpellDef spell) onActivateSpell;
+  final void Function(String spellId) onDeactivateSpell;
 
   @override
   State<_MagicSpellCatalogTable> createState() =>
@@ -37,11 +39,10 @@ class _MagicSpellCatalogTableState extends State<_MagicSpellCatalogTable> {
     // Filter nach Repraesentation wenn nicht "alle" angezeigt werden.
     if (!_showAll && widget.heroRepresentationen.isNotEmpty) {
       spells = spells.where((spell) {
-        return spellAvailabilityForRepresentations(
+        return availableSpellEntriesForRepresentations(
               spell.availability,
               widget.heroRepresentationen,
-            ) !=
-            null;
+            ).isNotEmpty;
       }).toList(growable: false);
     }
 
@@ -146,31 +147,37 @@ class _MagicSpellCatalogTableState extends State<_MagicSpellCatalogTable> {
                   columns: const [
                     DataColumn(label: SizedBox(width: 36)),
                     DataColumn(label: Text('Name')),
-                    DataColumn(label: Text('Repr.')),
-                    DataColumn(label: Text('Verbr.'), numeric: true),
+                    DataColumn(label: Text('Verbreitungen')),
                     DataColumn(label: Text('Merkmale')),
                     DataColumn(label: Text('Stg')),
                   ],
                   rows: filtered.map((spell) {
                     final isActive =
                         widget.activeSpellIds.contains(spell.id);
-                    final verbreitung =
-                        widget.heroRepresentationen.isNotEmpty
-                            ? spellAvailabilityForRepresentations(
-                                spell.availability,
-                                widget.heroRepresentationen,
-                              )
-                            : null;
-                    final traditions = extractTraditions(spell.availability);
+                    final heroEntries = availableSpellEntriesForRepresentations(
+                      spell.availability,
+                      widget.heroRepresentationen,
+                    );
+                    final canActivate = heroEntries.isNotEmpty;
+                    final availabilityLabel = formatAvailabilityEntries(
+                      spell.availability,
+                    );
 
                     return DataRow(
                       cells: [
                         DataCell(
                           Checkbox(
+                            key: ValueKey<String>(
+                              'magic-spell-catalog-toggle-${spell.id}',
+                            ),
                             value: isActive,
-                            onChanged: (value) =>
-                                widget.onToggleSpell(
-                                    spell.id, value ?? false),
+                            onChanged: isActive
+                                ? (_) => widget.onDeactivateSpell(spell.id)
+                                : canActivate
+                                ? (_) async {
+                                    await widget.onActivateSpell(spell);
+                                  }
+                                : null,
                           ),
                         ),
                         DataCell(
@@ -184,18 +191,14 @@ class _MagicSpellCatalogTableState extends State<_MagicSpellCatalogTable> {
                         DataCell(
                           ConstrainedBox(
                             constraints:
-                                const BoxConstraints(maxWidth: 120),
+                                const BoxConstraints(maxWidth: 260),
                             child: Text(
-                              traditions.join(', '),
+                              availabilityLabel,
                               style: theme.textTheme.bodySmall,
-                              overflow: TextOverflow.ellipsis,
+                              softWrap: true,
                             ),
                           ),
                         ),
-                        DataCell(Text(
-                          verbreitung?.toString() ?? '-',
-                          style: theme.textTheme.bodySmall,
-                        )),
                         DataCell(
                           ConstrainedBox(
                             constraints:

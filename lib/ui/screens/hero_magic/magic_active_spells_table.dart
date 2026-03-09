@@ -7,11 +7,13 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     required this.spellEntries,
     required this.spellDefs,
     required this.merkmalskenntnisse,
+    required this.heroRepresentationen,
     required this.isEditing,
     required this.onSpellValueChanged,
     required this.onModifierChanged,
     required this.onHauszauberChanged,
     required this.onGiftedChanged,
+    required this.onLearnedRepresentationChanged,
     required this.onTextOverridesChanged,
     required this.onRemoveSpell,
     required this.controllerFor,
@@ -22,11 +24,14 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final Map<String, HeroSpellEntry> spellEntries;
   final Map<String, SpellDef> spellDefs;
   final List<String> merkmalskenntnisse;
+  final List<String> heroRepresentationen;
   final bool isEditing;
   final void Function(String spellId, String raw) onSpellValueChanged;
   final void Function(String spellId, String raw) onModifierChanged;
   final void Function(String spellId, bool value) onHauszauberChanged;
   final void Function(String spellId, bool value) onGiftedChanged;
+  final void Function(String spellId, SpellAvailabilityEntry entry)
+  onLearnedRepresentationChanged;
   final void Function(String spellId, HeroSpellTextOverrides? value)
   onTextOverridesChanged;
   final void Function(String spellId) onRemoveSpell;
@@ -68,6 +73,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
               if (isEditing && onAddSpell != null) ...[
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
+                  key: const ValueKey<String>('magic-spells-add'),
                   onPressed: onAddSpell,
                   icon: const Icon(Icons.add),
                   label: const Text('Zauber hinzufügen'),
@@ -116,6 +122,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                 const DataColumn(label: Text('Probe')),
                 const DataColumn(label: Text('ZfW'), numeric: true),
                 const DataColumn(label: Text('Mod'), numeric: true),
+                const DataColumn(label: Text('Repr.')),
                 const DataColumn(label: Text('Kompl.')),
                 const DataColumn(label: Text('HZ')),
                 if (isEditing) const DataColumn(label: Text('Beg.')),
@@ -141,6 +148,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                           const DataCell(Text('0')),
                           const DataCell(Text('0')),
                           const DataCell(Text('?')),
+                          const DataCell(Text('-')),
                           const DataCell(Text('-')),
                           if (isEditing) const DataCell(Text('-')),
                           const DataCell(Text('-')),
@@ -168,6 +176,20 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                       def: def,
                       entry: entry,
                     );
+                    final currentAvailabilityEntry =
+                        entry.learnedRepresentation == null
+                        ? null
+                        : findSpellAvailabilityEntry(
+                            availability: def.availability,
+                            learnedRepresentation:
+                                entry.learnedRepresentation!,
+                            originTradition: entry.learnedTradition,
+                          );
+                    final fremdReprPenaltySteps =
+                        currentAvailabilityEntry?.isForeignRepresentation ==
+                            true
+                        ? 2
+                        : 0;
                     final probeLabel = _shortProbeLabel(def.attributes);
                     final merkmale = parseSpellTraits(def.traits);
                     final effSteigerung = effectiveSteigerung(
@@ -176,7 +198,29 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                       zauberMerkmale: merkmale,
                       heldMerkmalskenntnisse: merkmalskenntnisse,
                       istBegabt: entry.gifted,
+                      fremdReprPenaltySteps: fremdReprPenaltySteps,
                     );
+                    final representationLabel = currentAvailabilityEntry == null
+                        ? (entry.learnedRepresentation == null
+                              ? 'Auswahl fehlt'
+                              : entry.learnedRepresentation!)
+                        : _compactRepresentationLabel(currentAvailabilityEntry);
+                    final availableEntriesForHero =
+                        availableSpellEntriesForRepresentations(
+                          def.availability,
+                          heroRepresentationen,
+                        );
+                    final dropdownEntries = <SpellAvailabilityEntry>[
+                      ...availableEntriesForHero,
+                    ];
+                    if (currentAvailabilityEntry != null &&
+                        !dropdownEntries.any(
+                          (candidate) =>
+                              candidate.storageKey ==
+                              currentAvailabilityEntry.storageKey,
+                        )) {
+                      dropdownEntries.add(currentAvailabilityEntry);
+                    }
 
                     void openDetails() {
                       _openSpellDetails(context, spellId, def, entry);
@@ -262,11 +306,80 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                               )
                             : DataCell(Text(entry.modifier.toString())),
                         DataCell(
+                          isEditing
+                              ? SizedBox(
+                                  width: 140,
+                                  child: DropdownButtonFormField<String>(
+                                    key: ValueKey<String>(
+                                      'magic-spells-repr-$spellId-${currentAvailabilityEntry?.storageKey ?? 'none'}',
+                                    ),
+                                    initialValue:
+                                        currentAvailabilityEntry?.storageKey,
+                                    isExpanded: true,
+                                    isDense: true,
+                                    decoration: const InputDecoration(
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 6,
+                                      ),
+                                    ),
+                                    items: dropdownEntries.map((candidate) {
+                                      return DropdownMenuItem<String>(
+                                        value: candidate.storageKey,
+                                        child: Text(candidate.displayLabel),
+                                      );
+                                    }).toList(growable: false),
+                                    selectedItemBuilder: (context) {
+                                      return dropdownEntries.map((candidate) {
+                                        return Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            _compactRepresentationLabel(
+                                              candidate,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        );
+                                      }).toList(growable: false);
+                                    },
+                                    onChanged: dropdownEntries.isEmpty
+                                        ? null
+                                        : (value) {
+                                            if (value == null) {
+                                              return;
+                                            }
+                                            final selected = dropdownEntries
+                                                .firstWhere(
+                                                  (candidate) =>
+                                                      candidate.storageKey ==
+                                                      value,
+                                                );
+                                            onLearnedRepresentationChanged(
+                                              spellId,
+                                              selected,
+                                            );
+                                          },
+                                  ),
+                                )
+                              : Text(
+                                  representationLabel,
+                                  style: currentAvailabilityEntry == null
+                                      ? theme.textTheme.bodySmall?.copyWith(
+                                          color: theme.colorScheme.error,
+                                        )
+                                      : theme.textTheme.bodySmall,
+                                ),
+                        ),
+                        DataCell(
                           Text(
                             effSteigerung,
-                            style: effSteigerung != def.steigerung
+                            style: effSteigerung != def.steigerung ||
+                                    currentAvailabilityEntry == null
                                 ? theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.primary,
+                                    color: currentAvailabilityEntry == null
+                                        ? theme.colorScheme.error
+                                        : theme.colorScheme.primary,
                                     fontWeight: FontWeight.bold,
                                   )
                                 : theme.textTheme.bodySmall,
@@ -373,6 +486,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
               child: OutlinedButton.icon(
+                key: const ValueKey<String>('magic-spells-add'),
                 onPressed: onAddSpell,
                 icon: const Icon(Icons.add),
                 label: const Text('Zauber hinzufügen'),
@@ -382,6 +496,13 @@ class _MagicActiveSpellsTable extends StatelessWidget {
       ),
     );
   }
+}
+
+String _compactRepresentationLabel(SpellAvailabilityEntry entry) {
+  if (!entry.isForeignRepresentation) {
+    return entry.learnedRepresentation;
+  }
+  return '${entry.learnedRepresentation} via ${entry.tradition}';
 }
 
 DataCell _buildDetailCell({

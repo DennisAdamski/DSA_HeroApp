@@ -17,6 +17,8 @@ class HeroSpellEntry {
     this.modifier = 0,
     this.hauszauber = false,
     this.gifted = false,
+    this.learnedRepresentation,
+    this.learnedTradition,
     this.specializations = const [],
     this.textOverrides,
   });
@@ -25,6 +27,8 @@ class HeroSpellEntry {
   final int modifier;
   final bool hauszauber;
   final bool gifted;
+  final String? learnedRepresentation;
+  final String? learnedTradition;
   final List<String> specializations;
   final HeroSpellTextOverrides? textOverrides;
 
@@ -34,6 +38,8 @@ class HeroSpellEntry {
     int? modifier,
     bool? hauszauber,
     bool? gifted,
+    Object? learnedRepresentation = _keepFieldValue,
+    Object? learnedTradition = _keepFieldValue,
     List<String>? specializations,
     Object? textOverrides = _keepFieldValue,
   }) {
@@ -42,6 +48,12 @@ class HeroSpellEntry {
       modifier: modifier ?? this.modifier,
       hauszauber: hauszauber ?? this.hauszauber,
       gifted: gifted ?? this.gifted,
+      learnedRepresentation: identical(learnedRepresentation, _keepFieldValue)
+          ? this.learnedRepresentation
+          : learnedRepresentation as String?,
+      learnedTradition: identical(learnedTradition, _keepFieldValue)
+          ? this.learnedTradition
+          : learnedTradition as String?,
       specializations: specializations ?? this.specializations,
       textOverrides: identical(textOverrides, _keepFieldValue)
           ? this.textOverrides
@@ -58,6 +70,12 @@ class HeroSpellEntry {
       'gifted': gifted,
       'specializations': specializations,
     };
+    if (learnedRepresentation != null && learnedRepresentation!.isNotEmpty) {
+      json['learnedRepresentation'] = learnedRepresentation;
+    }
+    if (learnedTradition != null && learnedTradition!.isNotEmpty) {
+      json['learnedTradition'] = learnedTradition;
+    }
     final overrides = textOverrides;
     if (overrides != null && !overrides.isEmpty) {
       json['textOverrides'] = overrides.toJson();
@@ -81,6 +99,10 @@ class HeroSpellEntry {
       modifier: (json['modifier'] as num?)?.toInt() ?? 0,
       hauszauber: json['hauszauber'] as bool? ?? false,
       gifted: json['gifted'] as bool? ?? false,
+      learnedRepresentation: _readNullableString(
+        json['learnedRepresentation'],
+      ),
+      learnedTradition: _readNullableString(json['learnedTradition']),
       specializations: specs,
       textOverrides: HeroSpellTextOverrides.fromJsonValue(
         json['textOverrides'],
@@ -90,3 +112,11 @@ class HeroSpellEntry {
 }
 
 const Object _keepFieldValue = Object();
+
+String? _readNullableString(Object? value) {
+  if (value == null) {
+    return null;
+  }
+  final text = value.toString().trim();
+  return text.isEmpty ? null : text;
+}
