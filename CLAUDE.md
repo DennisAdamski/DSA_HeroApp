@@ -259,8 +259,13 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
   Ort, Sozialstatus, Loyalitaet und Beschreibung.
 - Die Waffen-Uebersicht im Kampf-Tab ist kompakt; Detailwerte werden ueber
   `lib/ui/screens/hero_combat/weapon_editor_dialog.dart` bearbeitet.
+- Der Sub-Tab `Ausrüstung` ist die zentrale Kampf-Inventaransicht fuer Waffen,
+  Parierwaffen, Schilde und Ruestungen; Haupt- und Nebenhand referenzieren
+  konkrete Eintraege aus diesem Inventar.
 - Nah- und Fernkampfwaffen werden gemeinsam gepflegt; Fernkampfwaffen speichern
   zusaetzlich AT, Ladezeit, fuenf Distanzstufen und persistente Geschosse.
+- Parierwaffen modifizieren nur die Hauptwaffe; Schilde liefern eine eigene
+  `Schild-PA` auf Basis von `PA-Basiswert + Schildmod + SF-Bonus`.
 - Der Untertab `Kampf` zeigt je nach aktiver Waffe dynamisch Nahkampfwerte
   (`AT`/`PA`) oder Fernkampfwerte (`AT`, TP, Ladezeit, Geschosse).
 - Der Waffen-Dialog ist ausgabeorientiert gruppiert und zeigt TP-/INI-/AT-
