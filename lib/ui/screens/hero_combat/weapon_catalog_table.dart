@@ -69,7 +69,7 @@ class _WeaponCatalogTableState extends State<_WeaponCatalogTable> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
           child: Text(
-            'Waffe als Vorlage hinzufuegen — Werte sind danach frei editierbar.',
+            'Waffe aus Vorlage hinzufügen — Werte sind danach frei editierbar.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -140,7 +140,7 @@ class _WeaponCatalogTableState extends State<_WeaponCatalogTable> {
                         DataCell(
                           IconButton(
                             icon: const Icon(Icons.add_circle_outline, size: 20),
-                            tooltip: 'Als Vorlage hinzufuegen',
+                            tooltip: 'Als Vorlage hinzufügen',
                             onPressed: () => widget.onSelectWeapon(weapon),
                           ),
                         ),

@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 
+/// Rueckgabewerte fuer adaptive Bestaetigungsdialoge.
+enum AdaptiveConfirmResult {
+  /// Der Nutzer hat den Vorgang abgebrochen.
+  cancel,
+
+  /// Der Nutzer hat den Vorgang bestaetigt.
+  confirm,
+
+  /// Der Nutzer moechte vorher speichern.
+  save,
+}
+
 /// Zeigt einen Detail-/Editor-Dialog plattformadaptiv an.
 ///
 /// Auf Apple-Plattformen wird ein [DraggableScrollableSheet] als BottomSheet
@@ -38,26 +50,35 @@ Future<T?> showAdaptiveDetailSheet<T>({
 /// Zeigt einen Bestaetigungsdialog plattformadaptiv an.
 ///
 /// Nutzt [AlertDialog.adaptive] fuer automatische Cupertino-Optik auf iOS.
-Future<bool> showAdaptiveConfirmDialog({
+Future<AdaptiveConfirmResult> showAdaptiveConfirmDialog({
   required BuildContext context,
   required String title,
   required String content,
   String cancelLabel = 'Abbrechen',
   required String confirmLabel,
+  String? saveLabel,
   bool isDestructive = false,
 }) async {
-  final result = await showDialog<bool>(
+  final result = await showDialog<AdaptiveConfirmResult>(
     context: context,
     builder: (dialogContext) => AlertDialog.adaptive(
       title: Text(title),
       content: Text(content),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(false),
+          onPressed: () =>
+              Navigator.of(dialogContext).pop(AdaptiveConfirmResult.cancel),
           child: Text(cancelLabel),
         ),
+        if (saveLabel != null)
+          TextButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(AdaptiveConfirmResult.save),
+            child: Text(saveLabel),
+          ),
         TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(true),
+          onPressed: () =>
+              Navigator.of(dialogContext).pop(AdaptiveConfirmResult.confirm),
           style: isDestructive
               ? TextButton.styleFrom(
                   foregroundColor: Theme.of(dialogContext).colorScheme.error,
@@ -68,5 +89,5 @@ Future<bool> showAdaptiveConfirmDialog({
       ],
     ),
   );
-  return result ?? false;
+  return result ?? AdaptiveConfirmResult.cancel;
 }

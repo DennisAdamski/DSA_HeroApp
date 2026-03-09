@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
@@ -75,7 +76,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   bool _handlingTabChange = false;
   bool _revertingTabChange = false;
   bool _runningEditAction = false;
-  bool _heroDeckExpanded = true;
+  bool _heroDeckExpanded = false;
   bool _workspaceDetailsExpanded = true;
 
   @override
@@ -156,14 +157,22 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       return false;
     }
 
-    final discard = await showWorkspaceDiscardDialog(context);
-    if (!discard) {
+    final result = await showWorkspaceDiscardDialog(context);
+    if (result == AdaptiveConfirmResult.cancel) {
       return false;
     }
 
-    final discardAction = _tabRegistry.discardActionFor(tabIndex);
-    if (discardAction != null) {
-      await discardAction();
+    if (result == AdaptiveConfirmResult.save) {
+      final saveAction = _tabRegistry.editActionsFor(tabIndex)?.save;
+      if (saveAction == null) {
+        return false;
+      }
+      await saveAction();
+    } else {
+      final discardAction = _tabRegistry.discardActionFor(tabIndex);
+      if (discardAction != null) {
+        await discardAction();
+      }
     }
 
     if (!mounted) {

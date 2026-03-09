@@ -496,7 +496,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       final talentId = slot.talentId.trim();
       final talent = talentId.isEmpty ? null : talentById[talentId];
       if (talentId.isNotEmpty && talent == null) {
-        return '$slotLabel: Das gewaehlte Talent ist kein gueltiges Kampftalent.';
+        return '$slotLabel: Das gewählte Talent ist kein gültiges Kampftalent.';
       }
       if (talent != null && _combatTypeFromTalent(talent) != slot.combatType) {
         return '$slotLabel: Talent "${talent.name}" passt nicht zum Waffenkampftyp.';
@@ -513,13 +513,13 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
         }
       }
       if (weaponType.isNotEmpty && talent == null) {
-        return '$slotLabel: Waffenart "$weaponType" benoetigt ein gueltiges Talent.';
+        return '$slotLabel: Waffenart "$weaponType" benötigt ein gültiges Talent.';
       }
       if (slot.kkThreshold < 1) {
         return '$slotLabel: KK-Schwelle muss > 0 sein.';
       }
       if (slot.tpDiceCount < 1) {
-        return '$slotLabel: Wuerfelanzahl muss >= 1 sein.';
+        return '$slotLabel: Würfelanzahl muss >= 1 sein.';
       }
       if (slot.breakFactor < 0) {
         return '$slotLabel: BF darf nicht negativ sein.';
@@ -530,7 +530,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       if (slot.isRanged) {
         for (final projectile in slot.rangedProfile.projectiles) {
           if (projectile.count < 0) {
-            return '$slotLabel: Geschossbestaende duerfen nicht negativ sein.';
+            return '$slotLabel: Geschossbestände dürfen nicht negativ sein.';
           }
         }
       }
@@ -538,7 +538,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     final assignment = config.offhandAssignment;
     if (assignment.weaponIndex >= 0 &&
         assignment.weaponIndex == config.selectedWeaponIndex) {
-      return 'Nebenhand: Haupthand und Nebenhand duerfen nicht dieselbe Waffe nutzen.';
+      return 'Nebenhand: Haupthand und Nebenhand dürfen nicht dieselbe Waffe nutzen.';
     }
     if (assignment.usesEquipment &&
         assignment.equipmentIndex >= 0 &&
@@ -629,7 +629,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                       Tab(text: 'Ausrüstung'),
                       Tab(text: 'Kampf'),
                       Tab(text: 'Sonderfertigkeiten'),
-                      Tab(text: 'Manoever'),
+                      Tab(text: 'Manöver'),
                     ],
                   ),
                   Expanded(

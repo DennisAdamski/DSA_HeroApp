@@ -27,7 +27,7 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
           },
         ),
         _ruleToggle(
-          label: 'Kampfgespuer',
+          label: 'Kampfgespür',
           value: rules.kampfgespuer,
           isEditing: isEditing,
           onChanged: (value) {
@@ -209,7 +209,7 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
         ),
         Card(
           child: ListTile(
-            title: const Text('Behaebig'),
+            title: const Text('Behäbig'),
             subtitle: Text(
               hasBehaebigFromNachteile
                   ? 'Aus Nachteile erkannt'
@@ -221,7 +221,7 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
           ),
         ),
         _ruleToggle(
-          label: 'Klingentaenzer (2W6 auf Ini)',
+          label: 'Klingentänzer',
           value: rules.klingentaenzer,
           isEditing: isEditing,
           onChanged: (value) {
@@ -232,7 +232,7 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
           },
         ),
         _ruleToggle(
-          label: 'Aufmerksamkeit (fester INI-Zusatz)',
+          label: 'Aufmerksamkeit',
           value: rules.aufmerksamkeit,
           isEditing: isEditing,
           onChanged: (value) {
