@@ -49,11 +49,15 @@ Vollstaendige Anleitung:
 - Repository-Schnittstelle ist auf inkrementelle Streams erweitert (`watchHeroIndex`, `watchHeroState`, `loadHeroById`).
 - UI-Tabs (`Combat`, `Talents`, `Overview`) sind in kleinere Part-Dateien zerlegt; Root-Dateien bleiben unter 700 LOC.
 
-### Kampf-UI (Stand: 2026-03-08)
+### Kampf-UI (Stand: 2026-03-09)
+- Der Sub-Tab `Ausrüstung` ist die zentrale Kampf-Inventaransicht fuer Waffen, Parierwaffen, Schilde und Ruestungen.
+- Haupt- und Nebenhand referenzieren konkrete Eintraege aus diesem Kampf-Inventar.
 - Die Waffen-Tabelle im Kampf-Tab ist kompakt und zeigt nur Kernwerte sowie Artefakt-Status.
 - Waffendetails werden ueber einen Dialog bearbeitet; inline editierbar bleiben nur `Waffentalent` und `BF`.
 - Nah- und Fernkampfwaffen werden gemeinsam gepflegt; Fernkampfwaffen bringen AT, Ladezeit, 5 Distanzstufen und persistente Geschossbestaende mit.
+- Parierwaffen und Schilde werden als eigene Kampf-Inventargruppe erfasst; Schilde erzeugen eine eigene `Schild-PA`, Parierwaffen modifizieren nur die Hauptwaffe.
 - Der Sub-Tab `Kampf` wechselt seine Anzeige automatisch je nach aktiver Waffe zwischen Nahkampfwerten und Fernkampfwerten.
+- Fuehrt die Nebenhand eine normale Waffe, zeigt die UI deren eigene Werte in einer separaten Nebenhand-Karte; die Initiative bleibt von der Haupthand bestimmt.
 - Der Waffen-Dialog gruppiert Stammdaten, berechnete Ausgabewerte sowie TP-/INI-/AT-Formelfelder; Formelwerte sind dort read-only sichtbar.
 - Die angezeigte `PA` der aktiven Nahkampfwaffe enthaelt den heldenbezogenen INI-Parade-Bonus; dieser wird nicht mehr als eigener Waffenwert separat angezeigt.
 - Neue Waffen werden ueber denselben Dialog angelegt; der Katalog-Button oeffnet dabei vorbefuellte Vorlagen.

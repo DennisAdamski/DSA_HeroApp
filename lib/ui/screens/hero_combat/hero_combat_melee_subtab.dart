@@ -476,6 +476,230 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     );
   }
 
+  Future<void> _setOffhandEquipmentEntries(
+    List<OffhandEquipmentEntry> entries, {
+    required RulesCatalog catalog,
+    required List<TalentDef> combatTalents,
+  }) async {
+    await _applyCombatConfigChange(
+      nextConfig: _draftCombatConfig.copyWith(
+        offhandEquipment: List<OffhandEquipmentEntry>.unmodifiable(entries),
+      ),
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _removeOffhandEquipmentEntry(
+    int index, {
+    required RulesCatalog catalog,
+    required List<TalentDef> combatTalents,
+  }) async {
+    final entries = List<OffhandEquipmentEntry>.from(
+      _draftCombatConfig.offhandEquipment,
+    );
+    if (index < 0 || index >= entries.length) {
+      return;
+    }
+    entries.removeAt(index);
+    final assignment = _draftCombatConfig.offhandAssignment;
+    final nextAssignment = assignment.usesEquipment
+        ? (assignment.equipmentIndex == index
+              ? const OffhandAssignment()
+              : (assignment.equipmentIndex > index
+                    ? assignment.copyWith(
+                        equipmentIndex: assignment.equipmentIndex - 1,
+                      )
+                    : assignment))
+        : assignment;
+    await _applyCombatConfigChange(
+      nextConfig: _draftCombatConfig.copyWith(
+        offhandEquipment: List<OffhandEquipmentEntry>.unmodifiable(entries),
+        offhandAssignment: nextAssignment,
+      ),
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _openOffhandEquipmentEditor({
+    required RulesCatalog catalog,
+    required List<TalentDef> combatTalents,
+    int? entryIndex,
+  }) async {
+    final entries = _draftCombatConfig.offhandEquipment;
+    final isNew = entryIndex == null;
+    final source = isNew ? const OffhandEquipmentEntry() : entries[entryIndex];
+    final nameController = TextEditingController(text: source.name);
+    final bfController = TextEditingController(text: source.breakFactor.toString());
+    final iniController = TextEditingController(text: source.iniMod.toString());
+    final atController = TextEditingController(text: source.atMod.toString());
+    final paController = TextEditingController(text: source.paMod.toString());
+    var type = source.type;
+    var shieldSize = source.shieldSize;
+
+    final result = await showDialog<OffhandEquipmentEntry>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(
+                isNew
+                    ? 'Nebenhand-Ausrüstung hinzufuegen'
+                    : 'Nebenhand-Ausrüstung bearbeiten',
+              ),
+              content: SizedBox(
+                width: 520,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        key: const ValueKey<String>('combat-offhand-form-name'),
+                        controller: nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Ausrüstungsname',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<OffhandEquipmentType>(
+                        key: const ValueKey<String>('combat-offhand-form-type'),
+                        initialValue: type,
+                        decoration: const InputDecoration(
+                          labelText: 'Waffentalent',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: OffhandEquipmentType.parryWeapon,
+                            child: Text('Parierwaffe'),
+                          ),
+                          DropdownMenuItem(
+                            value: OffhandEquipmentType.shield,
+                            child: Text('Schild'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setDialogState(() {
+                            type = value ?? OffhandEquipmentType.parryWeapon;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _dialogNumberField(
+                            controller: bfController,
+                            keyName: 'combat-offhand-form-bf',
+                            label: 'BF',
+                          ),
+                          _dialogNumberField(
+                            controller: iniController,
+                            keyName: 'combat-offhand-form-ini-mod',
+                            label: 'INI Mod',
+                          ),
+                          _dialogNumberField(
+                            controller: atController,
+                            keyName: 'combat-offhand-form-at-mod',
+                            label: 'AT Mod',
+                          ),
+                          _dialogNumberField(
+                            controller: paController,
+                            keyName: 'combat-offhand-form-pa-mod',
+                            label: 'PA Mod',
+                          ),
+                        ],
+                      ),
+                      if (type == OffhandEquipmentType.shield) ...[
+                        const SizedBox(height: 10),
+                        DropdownButtonFormField<ShieldSize>(
+                          key: const ValueKey<String>(
+                            'combat-offhand-form-shield-size',
+                          ),
+                          initialValue: shieldSize,
+                          decoration: const InputDecoration(
+                            labelText: 'Groesse',
+                            border: OutlineInputBorder(),
+                          ),
+                          items: const [
+                            DropdownMenuItem(
+                              value: ShieldSize.small,
+                              child: Text('Klein'),
+                            ),
+                            DropdownMenuItem(
+                              value: ShieldSize.large,
+                              child: Text('Gross'),
+                            ),
+                            DropdownMenuItem(
+                              value: ShieldSize.veryLarge,
+                              child: Text('Sehr gross'),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            setDialogState(() {
+                              shieldSize = value ?? ShieldSize.small;
+                            });
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Abbrechen'),
+                ),
+                FilledButton(
+                  key: const ValueKey<String>('combat-offhand-form-save'),
+                  onPressed: () {
+                    final parsedBreakFactor =
+                        int.tryParse(bfController.text.trim()) ?? 0;
+                    final parsedIni = int.tryParse(iniController.text.trim()) ?? 0;
+                    final parsedAt = int.tryParse(atController.text.trim()) ?? 0;
+                    final parsedPa = int.tryParse(paController.text.trim()) ?? 0;
+                    Navigator.of(context).pop(
+                      OffhandEquipmentEntry(
+                        name: nameController.text.trim(),
+                        type: type,
+                        breakFactor: parsedBreakFactor < 0 ? 0 : parsedBreakFactor,
+                        shieldSize: shieldSize,
+                        iniMod: parsedIni,
+                        atMod: parsedAt,
+                        paMod: parsedPa,
+                      ),
+                    );
+                  },
+                  child: const Text('Speichern'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    if (result == null) {
+      return;
+    }
+    final nextEntries = List<OffhandEquipmentEntry>.from(entries);
+    if (isNew) {
+      nextEntries.add(result);
+    } else {
+      nextEntries[entryIndex] = result;
+    }
+    await _setOffhandEquipmentEntries(
+      nextEntries,
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
   Future<void> _removeArmorPiece(
     int index, {
     required RulesCatalog catalog,
@@ -653,6 +877,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     RulesCatalog catalog,
     HeroSheet hero,
     HeroState heroState,
+    CombatPreviewStats preview,
   ) {
     final weaponSlots = _draftCombatConfig.weaponSlots;
     final selectedWeaponIndex = _selectedWeaponIndex();
@@ -707,6 +932,18 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             ),
           ),
         ),
+        const SizedBox(height: 12),
+        _buildOffhandEquipmentCard(
+          catalog: catalog,
+          combatTalents: sortedTalents,
+        ),
+        const SizedBox(height: 12),
+        _buildArmorConfigurationCard(
+          armor: _draftCombatConfig.armor,
+          preview: preview,
+          catalog: catalog,
+          sortedTalents: sortedTalents,
+        ),
       ],
     );
   }
@@ -714,15 +951,17 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
   Widget _buildMeleeCalculatorSubTab(
     List<TalentDef> combatTalents,
     RulesCatalog catalog,
+    HeroSheet hero,
+    HeroState heroState,
     CombatPreviewStats preview,
   ) {
     final isEditing = _editController.isEditing;
     final weaponSlots = _draftCombatConfig.weaponSlots;
     final selectedWeaponIndex = _selectedWeaponIndex();
-    final offhand = _draftCombatConfig.offhand;
     final armor = _draftCombatConfig.armor;
     final manual = _draftCombatConfig.manualMods;
     final sortedTalents = _sortedCombatTalents(combatTalents);
+    final offhandWeapon = _offhandWeaponOrNull();
 
     return ListView(
       padding: const EdgeInsets.all(12),
@@ -740,9 +979,23 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               preview: preview,
               catalog: catalog,
             );
+            final offhandCard = _buildOffhandSelectionAndInfoCard(
+              catalog: catalog,
+              combatTalents: sortedTalents,
+              mainPreview: preview,
+              hero: hero,
+              heroState: heroState,
+              offhandWeapon: offhandWeapon,
+            );
             if (constraints.maxWidth < 900) {
               return Column(
-                children: [selectionCard, const SizedBox(height: 12), infoCard],
+                children: [
+                  selectionCard,
+                  const SizedBox(height: 12),
+                  infoCard,
+                  const SizedBox(height: 12),
+                  offhandCard,
+                ],
               );
             }
             return Row(
@@ -751,139 +1004,11 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                 Expanded(child: selectionCard),
                 const SizedBox(width: 12),
                 Expanded(child: infoCard),
+                const SizedBox(width: 12),
+                Expanded(child: offhandCard),
               ],
             );
           },
-        ),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Nebenhand',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(top: 4, bottom: 6),
-                  child: Text(
-                    'Nebenhand-Boni greifen nur bei aktivem Nebenhand-Modus (nicht "Keine").',
-                  ),
-                ),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<OffhandMode>(
-                  key: const ValueKey<String>('combat-offhand-mode'),
-                  initialValue: offhand.mode,
-                  decoration: const InputDecoration(
-                    labelText: 'Modus',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: OffhandMode.none,
-                      child: Text('Keine'),
-                    ),
-                    DropdownMenuItem(
-                      value: OffhandMode.shield,
-                      child: Text('Schild'),
-                    ),
-                    DropdownMenuItem(
-                      value: OffhandMode.parryWeapon,
-                      child: Text('Parierwaffe'),
-                    ),
-                    DropdownMenuItem(
-                      value: OffhandMode.linkhand,
-                      child: Text('Linkhand'),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    _applyCombatConfigChange(
-                      nextConfig: _draftCombatConfig.copyWith(
-                        offhand: _draftCombatConfig.offhand.copyWith(
-                          mode: value ?? OffhandMode.none,
-                        ),
-                      ),
-                      catalog: catalog,
-                      combatTalents: sortedTalents,
-                    );
-                  },
-                ),
-                const SizedBox(height: 10),
-                _textInput(
-                  label: 'Name',
-                  keyName: 'combat-offhand-name',
-                  isEditing: true,
-                  onChanged: (value) {
-                    _applyCombatConfigChange(
-                      nextConfig: _draftCombatConfig.copyWith(
-                        offhand: _draftCombatConfig.offhand.copyWith(
-                          name: value,
-                        ),
-                      ),
-                      catalog: catalog,
-                      combatTalents: sortedTalents,
-                    );
-                  },
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _numberInput(
-                      label: 'AT Mod',
-                      keyName: 'combat-offhand-at-mod',
-                      isEditing: true,
-                      onChanged: (parsed) {
-                        _applyCombatConfigChange(
-                          nextConfig: _draftCombatConfig.copyWith(
-                            offhand: _draftCombatConfig.offhand.copyWith(
-                              atMod: parsed,
-                            ),
-                          ),
-                          catalog: catalog,
-                          combatTalents: sortedTalents,
-                        );
-                      },
-                    ),
-                    _numberInput(
-                      label: 'PA Mod',
-                      keyName: 'combat-offhand-pa-mod',
-                      isEditing: true,
-                      onChanged: (parsed) {
-                        _applyCombatConfigChange(
-                          nextConfig: _draftCombatConfig.copyWith(
-                            offhand: _draftCombatConfig.offhand.copyWith(
-                              paMod: parsed,
-                            ),
-                          ),
-                          catalog: catalog,
-                          combatTalents: sortedTalents,
-                        );
-                      },
-                    ),
-                    _numberInput(
-                      label: 'INI Mod',
-                      keyName: 'combat-offhand-ini-mod',
-                      isEditing: true,
-                      onChanged: (parsed) {
-                        _applyCombatConfigChange(
-                          nextConfig: _draftCombatConfig.copyWith(
-                            offhand: _draftCombatConfig.offhand.copyWith(
-                              iniMod: parsed,
-                            ),
-                          ),
-                          catalog: catalog,
-                          combatTalents: sortedTalents,
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
         ),
         LayoutBuilder(
           builder: (context, constraints) {
@@ -1086,6 +1211,255 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         ),
       ),
     );
+  }
+
+  Widget _buildOffhandSelectionAndInfoCard({
+    required RulesCatalog catalog,
+    required List<TalentDef> combatTalents,
+    required CombatPreviewStats mainPreview,
+    required HeroSheet hero,
+    required HeroState heroState,
+    required MainWeaponSlot? offhandWeapon,
+  }) {
+    final assignment = _draftCombatConfig.offhandAssignment;
+    final offhandEquipment = _offhandEquipmentOrNull();
+    final selectedValue = assignment.usesWeapon
+        ? 'weapon:${assignment.weaponIndex}'
+        : (assignment.usesEquipment
+              ? 'equipment:${assignment.equipmentIndex}'
+              : 'none');
+    final selectedWeaponIndex = _selectedWeaponIndex();
+    final offhandWeaponPreview = assignment.usesWeapon &&
+            assignment.weaponIndex >= 0 &&
+            assignment.weaponIndex < _draftCombatConfig.weaponSlots.length
+        ? computeCombatPreviewStats(
+            hero,
+            heroState,
+            overrideConfig: _draftCombatConfig.copyWith(
+              selectedWeaponIndex: assignment.weaponIndex,
+              mainWeapon: _draftCombatConfig.weaponSlots[assignment.weaponIndex],
+              offhandAssignment: const OffhandAssignment(),
+              manualMods: _draftCombatConfig.manualMods.copyWith(
+                iniWurf: _effectiveIniRollForConfig(_draftCombatConfig),
+              ),
+            ),
+            overrideTalents: _draftTalents,
+            catalogTalents: catalog.talents,
+          )
+        : null;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Nebenhand', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              key: const ValueKey<String>('combat-offhand-selection'),
+              initialValue: selectedValue,
+              decoration: const InputDecoration(
+                labelText: 'Nebenhand',
+                border: OutlineInputBorder(),
+              ),
+              items: [
+                const DropdownMenuItem<String>(
+                  value: 'none',
+                  child: Text('Keine'),
+                ),
+                for (var i = 0; i < _draftCombatConfig.weaponSlots.length; i++)
+                  if (i != selectedWeaponIndex)
+                    DropdownMenuItem<String>(
+                      value: 'weapon:$i',
+                      child: Text(
+                        'Waffe: ${_draftCombatConfig.weaponSlots[i].name.trim().isEmpty ? 'Waffe ${i + 1}' : _draftCombatConfig.weaponSlots[i].name}',
+                      ),
+                    ),
+                for (var i = 0; i < _draftCombatConfig.offhandEquipment.length; i++)
+                  DropdownMenuItem<String>(
+                    value: 'equipment:$i',
+                    child: Text(
+                      '${_draftCombatConfig.offhandEquipment[i].isShield ? 'Schild' : 'Parierwaffe'}: '
+                      '${_draftCombatConfig.offhandEquipment[i].name.trim().isEmpty ? 'Eintrag ${i + 1}' : _draftCombatConfig.offhandEquipment[i].name}',
+                    ),
+                  ),
+              ],
+              onChanged: (value) {
+                final nextAssignment = switch (value ?? 'none') {
+                  'none' => const OffhandAssignment(),
+                  final raw when raw.startsWith('weapon:') => OffhandAssignment(
+                      weaponIndex:
+                          int.tryParse(raw.substring('weapon:'.length)) ?? -1,
+                    ),
+                  final raw when raw.startsWith('equipment:') =>
+                    OffhandAssignment(
+                      equipmentIndex:
+                          int.tryParse(raw.substring('equipment:'.length)) ?? -1,
+                    ),
+                  _ => const OffhandAssignment(),
+                };
+                _applyCombatConfigChange(
+                  nextConfig: _draftCombatConfig.copyWith(
+                    offhandAssignment: nextAssignment,
+                  ),
+                  catalog: catalog,
+                  combatTalents: combatTalents,
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            if (offhandWeaponPreview != null && offhandWeapon != null) ...[
+              Text(
+                'Nebenhand-Waffe',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  Chip(label: Text(offhandWeapon.name.trim().isEmpty ? 'Waffe' : offhandWeapon.name)),
+                  Chip(label: Text('AT: ${offhandWeaponPreview.at}')),
+                  if (!offhandWeaponPreview.isRangedWeapon)
+                    Chip(label: Text('PA: ${offhandWeaponPreview.paMitIniParadeMod}')),
+                  Chip(label: Text('TP: ${offhandWeaponPreview.tpExpression}')),
+                  Chip(label: Text('INI: ${mainPreview.kampfInitiative}')),
+                ],
+              ),
+            ] else if (offhandEquipment != null) ...[
+              Text(
+                offhandEquipment.isShield ? 'Schild' : 'Parierwaffe',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  Chip(
+                    label: Text(
+                      offhandEquipment.name.trim().isEmpty
+                          ? 'Unbenannt'
+                          : offhandEquipment.name,
+                    ),
+                  ),
+                  Chip(label: Text('AT Mod: ${offhandEquipment.atMod}')),
+                  Chip(label: Text('INI Mod: ${offhandEquipment.iniMod}')),
+                  Chip(label: Text('PA Mod: ${offhandEquipment.paMod}')),
+                  if (offhandEquipment.isShield)
+                    Chip(
+                      key: const ValueKey<String>('combat-offhand-shield-pa'),
+                      label: Text('Schild-PA: ${mainPreview.shieldPa}'),
+                    ),
+                  if (mainPreview.offhandRequiresLinkhand)
+                    const Chip(label: Text('Linkhand erforderlich')),
+                ],
+              ),
+            ] else
+              const Text('Keine Nebenhand belegt.'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOffhandEquipmentCard({
+    required RulesCatalog catalog,
+    required List<TalentDef> combatTalents,
+  }) {
+    final entries = _draftCombatConfig.offhandEquipment;
+    final rows = <FlexibleTableRow>[
+      for (var i = 0; i < entries.length; i++)
+        FlexibleTableRow(
+          cells: [
+            Text(entries[i].name.trim().isEmpty ? 'Eintrag ${i + 1}' : entries[i].name),
+            Text(entries[i].isShield ? 'Schild' : 'Parierwaffe'),
+            Text(entries[i].breakFactor.toString()),
+            Text(entries[i].isShield ? _shieldSizeLabel(entries[i].shieldSize) : '-'),
+            Text(entries[i].iniMod.toString()),
+            Text(entries[i].atMod.toString()),
+            Text(entries[i].paMod.toString()),
+            Wrap(
+              spacing: 4,
+              children: [
+                IconButton(
+                  key: ValueKey<String>('combat-offhand-edit-$i'),
+                  tooltip: 'Nebenhand-Ausrüstung bearbeiten',
+                  onPressed: () => _openOffhandEquipmentEditor(
+                    catalog: catalog,
+                    combatTalents: combatTalents,
+                    entryIndex: i,
+                  ),
+                  icon: const Icon(Icons.edit),
+                ),
+                IconButton(
+                  key: ValueKey<String>('combat-offhand-remove-$i'),
+                  tooltip: 'Nebenhand-Ausrüstung entfernen',
+                  onPressed: () => _removeOffhandEquipmentEntry(
+                    i,
+                    catalog: catalog,
+                    combatTalents: combatTalents,
+                  ),
+                  icon: const Icon(Icons.delete),
+                ),
+              ],
+            ),
+          ],
+        ),
+    ];
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Parierwaffen & Schilde',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            FilledButton.icon(
+              key: const ValueKey<String>('combat-offhand-add'),
+              onPressed: () => _openOffhandEquipmentEditor(
+                catalog: catalog,
+                combatTalents: combatTalents,
+              ),
+              icon: const Icon(Icons.add),
+              label: const Text('Eintrag hinzufuegen'),
+            ),
+            const SizedBox(height: 10),
+            FlexibleTable(
+              tableKey: const ValueKey<String>('combat-offhand-table'),
+              headerCells: const [
+                Text('Ausrüstungsname'),
+                Text('Waffentalent'),
+                Text('BF'),
+                Text('Groesse'),
+                Text('INI Mod'),
+                Text('AT Mod'),
+                Text('PA Mod'),
+                Text('Aktion'),
+              ],
+              rows: rows,
+            ),
+            if (rows.isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text('Keine Parierwaffen oder Schilde erfasst.'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _shieldSizeLabel(ShieldSize size) {
+    return switch (size) {
+      ShieldSize.small => 'Klein',
+      ShieldSize.large => 'Gross',
+      ShieldSize.veryLarge => 'Sehr gross',
+    };
   }
 
   Widget _buildArmorConfigurationCard({

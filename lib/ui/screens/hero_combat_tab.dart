@@ -140,7 +140,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
 
   void _seedCombatControllers() {
     final main = _draftCombatConfig.selectedWeapon;
-    final offhand = _draftCombatConfig.offhand;
     final armor = _draftCombatConfig.armor;
     final manual = _draftCombatConfig.manualMods;
 
@@ -154,10 +153,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _controllerFor('combat-main-ini-mod', main.iniMod.toString());
     _controllerFor('combat-main-be-mod', main.beTalentMod.toString());
 
-    _controllerFor('combat-offhand-name', offhand.name);
-    _controllerFor('combat-offhand-at-mod', offhand.atMod.toString());
-    _controllerFor('combat-offhand-pa-mod', offhand.paMod.toString());
-    _controllerFor('combat-offhand-ini-mod', offhand.iniMod.toString());
     _controllerFor(
       'combat-armor-global-training-level',
       armor.globalArmorTrainingLevel.toString(),
@@ -176,6 +171,32 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       return -1;
     }
     return index;
+  }
+
+  MainWeaponSlot? _offhandWeaponOrNull() {
+    final assignment = _draftCombatConfig.offhandAssignment;
+    if (!assignment.usesWeapon) {
+      return null;
+    }
+    final index = assignment.weaponIndex;
+    final slots = _draftCombatConfig.weaponSlots;
+    if (index < 0 || index >= slots.length) {
+      return null;
+    }
+    return slots[index];
+  }
+
+  OffhandEquipmentEntry? _offhandEquipmentOrNull() {
+    final assignment = _draftCombatConfig.offhandAssignment;
+    if (!assignment.usesEquipment) {
+      return null;
+    }
+    final index = assignment.equipmentIndex;
+    final entries = _draftCombatConfig.offhandEquipment;
+    if (index < 0 || index >= entries.length) {
+      return null;
+    }
+    return entries[index];
   }
 
   void _setControllerText(String key, String value) {
@@ -514,6 +535,23 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
         }
       }
     }
+    final assignment = config.offhandAssignment;
+    if (assignment.weaponIndex >= 0 &&
+        assignment.weaponIndex == config.selectedWeaponIndex) {
+      return 'Nebenhand: Haupthand und Nebenhand duerfen nicht dieselbe Waffe nutzen.';
+    }
+    if (assignment.usesEquipment &&
+        assignment.equipmentIndex >= 0 &&
+        assignment.equipmentIndex < config.offhandEquipment.length) {
+      final offhandEntry = config.offhandEquipment[assignment.equipmentIndex];
+      if (offhandEntry.type == OffhandEquipmentType.parryWeapon &&
+          !config.specialRules.linkhandActive) {
+        return 'Nebenhand: Parierwaffen erfordern die Sonderfertigkeit Linkhand.';
+      }
+      if (offhandEntry.breakFactor < 0) {
+        return 'Nebenhand: BF darf nicht negativ sein.';
+      }
+    }
     return null;
   }
 
@@ -588,7 +626,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                     controller: _subTabController,
                     tabs: const [
                       Tab(text: 'Kampftechniken'),
-                      Tab(text: 'Waffen'),
+                      Tab(text: 'Ausrüstung'),
                       Tab(text: 'Kampf'),
                       Tab(text: 'Sonderfertigkeiten'),
                       Tab(text: 'Manoever'),
@@ -607,10 +645,13 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                           catalog,
                           hero,
                           state,
+                          preview,
                         ),
                         _buildMeleeCalculatorSubTab(
                           combatTalents,
                           catalog,
+                          hero,
+                          state,
                           preview,
                         ),
                         _buildSpecialRulesSubTab(hero, state),

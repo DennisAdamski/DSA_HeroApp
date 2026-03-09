@@ -6,16 +6,24 @@ export 'package:dsa_heldenverwaltung/domain/combat_config/ranged_distance_band.d
 export 'package:dsa_heldenverwaltung/domain/combat_config/ranged_projectile.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/ranged_weapon_profile.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/weapon_combat_type.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/offhand_assignment.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_entry.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_type.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/offhand_slot.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/armor_piece.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/armor_config.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/combat_special_rules.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/combat_manual_mods.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/shield_size.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config/armor_config.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/combat_manual_mods.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/combat_special_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/main_weapon_slot.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_assignment.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_type.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_mode.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_slot.dart';
 
 /// Aggregiert alle Kampfkonfigurationsdaten eines Helden.
@@ -31,7 +39,8 @@ class CombatConfig {
     this.mainWeapon = const MainWeaponSlot(),
     this.weapons = const <MainWeaponSlot>[],
     this.selectedWeaponIndex = 0,
-    this.offhand = const OffhandSlot(),
+    this.offhandAssignment = const OffhandAssignment(),
+    this.offhandEquipment = const <OffhandEquipmentEntry>[],
     this.armor = const ArmorConfig(),
     this.specialRules = const CombatSpecialRules(),
     this.manualMods = const CombatManualMods(),
@@ -46,8 +55,11 @@ class CombatConfig {
   /// Index des aktuell aktiven Waffenslots; -1 = kein Slot.
   final int selectedWeaponIndex;
 
-  /// Nebenhand-Konfiguration (Schild, Parierwaffe oder Linkhand).
-  final OffhandSlot offhand;
+  /// Referenz auf den aktiven Nebenhand-Eintrag.
+  final OffhandAssignment offhandAssignment;
+
+  /// Alle Schild-/Parierwaffen-Eintraege des Kampf-Inventars.
+  final List<OffhandEquipmentEntry> offhandEquipment;
 
   /// Ruestungskonfiguration mit allen angelegten Stuecken.
   final ArmorConfig armor;
@@ -98,7 +110,8 @@ class CombatConfig {
     MainWeaponSlot? mainWeapon,
     List<MainWeaponSlot>? weapons,
     int? selectedWeaponIndex,
-    OffhandSlot? offhand,
+    OffhandAssignment? offhandAssignment,
+    List<OffhandEquipmentEntry>? offhandEquipment,
     ArmorConfig? armor,
     CombatSpecialRules? specialRules,
     CombatManualMods? manualMods,
@@ -125,7 +138,15 @@ class CombatConfig {
       mainWeapon: nextMain,
       weapons: List<MainWeaponSlot>.unmodifiable(normalizedWeapons),
       selectedWeaponIndex: nextSelectedIndex,
-      offhand: offhand ?? this.offhand,
+      offhandAssignment: _normalizeOffhandAssignment(
+        offhandAssignment ?? this.offhandAssignment,
+        normalizedWeapons.length,
+        (offhandEquipment ?? this.offhandEquipment).length,
+        nextSelectedIndex,
+      ),
+      offhandEquipment: List<OffhandEquipmentEntry>.unmodifiable(
+        offhandEquipment ?? this.offhandEquipment,
+      ),
       armor: armor ?? this.armor,
       specialRules: specialRules ?? this.specialRules,
       manualMods: manualMods ?? this.manualMods,
@@ -144,7 +165,15 @@ class CombatConfig {
       'mainWeapon': activeWeapon.toJson(),
       'weapons': slots.map((entry) => entry.toJson()).toList(growable: false),
       'selectedWeaponIndex': index,
-      'offhand': offhand.toJson(),
+      'offhandAssignment': _normalizeOffhandAssignment(
+        offhandAssignment,
+        slots.length,
+        offhandEquipment.length,
+        index,
+      ).toJson(),
+      'offhandEquipment': offhandEquipment
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
       'armor': armor.toJson(),
       'specialRules': specialRules.toJson(),
       'manualMods': manualMods.toJson(),
@@ -181,12 +210,41 @@ class CombatConfig {
       slots.length,
     );
     final selectedMain = selectedIndex < 0 ? legacyMain : slots[selectedIndex];
+    final rawOffhandEquipment =
+        (json['offhandEquipment'] as List?) ?? const <dynamic>[];
+    final parsedOffhandEquipment = rawOffhandEquipment
+        .whereType<Map>()
+        .map(
+          (entry) => OffhandEquipmentEntry.fromJson(
+            entry.cast<String, dynamic>(),
+          ),
+        )
+        .toList(growable: false);
+    final legacyOffhand = OffhandSlot.fromJson(readMap('offhand'));
+    final migrated = _migrateLegacyOffhand(
+      legacy: legacyOffhand,
+      selectedWeaponIndex: selectedIndex,
+      weaponCount: slots.length,
+      existingEntries: parsedOffhandEquipment,
+    );
+    final assignment = json.containsKey('offhandAssignment')
+        ? OffhandAssignment.fromJson(readMap('offhandAssignment'))
+        : migrated.assignment;
+    final equipment = parsedOffhandEquipment.isEmpty
+        ? migrated.equipment
+        : parsedOffhandEquipment;
 
     return CombatConfig(
       mainWeapon: selectedMain,
       weapons: slots,
       selectedWeaponIndex: selectedIndex,
-      offhand: OffhandSlot.fromJson(readMap('offhand')),
+      offhandAssignment: _normalizeOffhandAssignment(
+        assignment,
+        slots.length,
+        equipment.length,
+        selectedIndex,
+      ),
+      offhandEquipment: equipment,
       armor: ArmorConfig.fromJson(readMap('armor')),
       specialRules: CombatSpecialRules.fromJson(readMap('specialRules')),
       manualMods: CombatManualMods.fromJson(readMap('manualMods')),
@@ -212,4 +270,63 @@ int _normalizeSelectedWeaponIndex(int value, int length) {
     return length - 1;
   }
   return value;
+}
+
+OffhandAssignment _normalizeOffhandAssignment(
+  OffhandAssignment value,
+  int weaponCount,
+  int equipmentCount,
+  int selectedWeaponIndex,
+) {
+  final normalizedWeaponIndex =
+      value.weaponIndex >= 0 && value.weaponIndex < weaponCount
+      ? value.weaponIndex
+      : -1;
+  final normalizedEquipmentIndex =
+      value.equipmentIndex >= 0 && value.equipmentIndex < equipmentCount
+      ? value.equipmentIndex
+      : -1;
+  if (normalizedWeaponIndex == selectedWeaponIndex) {
+    return const OffhandAssignment();
+  }
+  if (normalizedWeaponIndex >= 0) {
+    return OffhandAssignment(weaponIndex: normalizedWeaponIndex);
+  }
+  if (normalizedEquipmentIndex >= 0) {
+    return OffhandAssignment(equipmentIndex: normalizedEquipmentIndex);
+  }
+  return const OffhandAssignment();
+}
+
+({OffhandAssignment assignment, List<OffhandEquipmentEntry> equipment})
+_migrateLegacyOffhand({
+  required OffhandSlot legacy,
+  required int selectedWeaponIndex,
+  required int weaponCount,
+  required List<OffhandEquipmentEntry> existingEntries,
+}) {
+  if (legacy.mode == OffhandMode.none || legacy.mode == OffhandMode.linkhand) {
+    return (
+      assignment: const OffhandAssignment(),
+      equipment: existingEntries,
+    );
+  }
+  final migratedEntry = OffhandEquipmentEntry(
+    name: legacy.name,
+    type: legacy.mode == OffhandMode.shield
+        ? OffhandEquipmentType.shield
+        : OffhandEquipmentType.parryWeapon,
+    breakFactor: 0,
+    iniMod: legacy.iniMod,
+    atMod: legacy.atMod,
+    paMod: legacy.paMod,
+  );
+  final nextEquipment = List<OffhandEquipmentEntry>.from(existingEntries)
+    ..add(migratedEntry);
+  return (
+    assignment: OffhandAssignment(
+      equipmentIndex: nextEquipment.isEmpty ? -1 : nextEquipment.length - 1,
+    ),
+    equipment: List<OffhandEquipmentEntry>.unmodifiable(nextEquipment),
+  );
 }

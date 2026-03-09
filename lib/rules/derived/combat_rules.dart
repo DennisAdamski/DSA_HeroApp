@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/shield_parry_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffen_rules.dart';
 
 class CombatPreviewStats {
@@ -53,6 +54,14 @@ class CombatPreviewStats {
     required this.paBase,
     required this.axxPaBaseBonus,
     required this.offhandPaBonus,
+    required this.offhandAtMod,
+    required this.offhandIniMod,
+    required this.shieldPa,
+    required this.shieldPaBonus,
+    required this.offhandIsShield,
+    required this.offhandIsParryWeapon,
+    required this.offhandRequiresLinkhand,
+    required this.offhandName,
     required this.iniDiceCount,
     required this.axxAttackDefenseHint,
     required this.isRangedWeapon,
@@ -111,6 +120,14 @@ class CombatPreviewStats {
   final int paBase;
   final int axxPaBaseBonus;
   final int offhandPaBonus;
+  final int offhandAtMod;
+  final int offhandIniMod;
+  final int shieldPa;
+  final int shieldPaBonus;
+  final bool offhandIsShield;
+  final bool offhandIsParryWeapon;
+  final bool offhandRequiresLinkhand;
+  final String offhandName;
   // Anzahl Ini-Wuerfel: 1 (normal) oder 2 (Klingentaenzer)
   final int iniDiceCount;
   final String axxAttackDefenseHint;
@@ -166,9 +183,12 @@ CombatPreviewStats computeCombatPreviewStats(
   final config = overrideConfig ?? sheet.combatConfig;
   final talents = overrideTalents ?? sheet.talents;
   final main = config.selectedWeapon;
-  final offhand = config.offhand.mode == OffhandMode.none
-      ? const OffhandSlot()
-      : config.offhand;
+  final offhandEquipment =
+      config.offhandAssignment.usesEquipment &&
+          config.offhandAssignment.equipmentIndex >= 0 &&
+          config.offhandAssignment.equipmentIndex < config.offhandEquipment.length
+      ? config.offhandEquipment[config.offhandAssignment.equipmentIndex]
+      : null;
   final armor = config.armor;
   final special = config.specialRules;
   final manualMods = config.manualMods;
@@ -248,10 +268,11 @@ CombatPreviewStats computeCombatPreviewStats(
     hasFlinkFromVorteile: parsed.hasFlinkFromVorteile,
     hasBehaebigFromNachteile: parsed.hasBehaebigFromNachteile,
   );
-  final offhandPaBonus = computeOffhandPaBonus(
-    mode: offhand.mode,
-    basePaMod: offhand.paMod,
-    special: special,
+  final offhandModifiers = computeOffhandModifierSnapshot(
+    equipment: offhandEquipment,
+    specialRules: special,
+    paBase: computePa(effectiveSheet, mods) +
+        computeAxxeleratusPaBaseBonus(axxeleratusActive: axxeleratusActive),
   );
 
   // --- Kampfbasiswerte (kampfbasis_rules) ---
@@ -284,7 +305,7 @@ CombatPreviewStats computeCombatPreviewStats(
             main.wmAt +
             atEbePart +
             atSpecBonus +
-            offhand.atMod +
+            offhandModifiers.atMod +
             manualMods.atMod;
   final pa = isRangedWeapon
       ? 0
@@ -293,7 +314,7 @@ CombatPreviewStats computeCombatPreviewStats(
             main.wmPa +
             paEbePart +
             paSpecBonus +
-            offhandPaBonus +
+            offhandModifiers.mainPaMod +
             manualMods.paMod;
 
   // --- Initiative-Kette (ini_rules) ---
@@ -324,7 +345,7 @@ CombatPreviewStats computeCombatPreviewStats(
     heldenInitiative + main.iniMod + iniGe + projectileIniMod,
   );
   final kampfInitiative = clampNonNegative(
-    kombinierteHeldenWaffenIni + offhand.iniMod,
+    kombinierteHeldenWaffenIni + offhandModifiers.iniMod,
   );
   final initiative = kampfInitiative;
   final iniParadeMod = computeIniParadeMod(kampfInitiative);
@@ -385,7 +406,15 @@ CombatPreviewStats computeCombatPreviewStats(
     iniAusweichenBonus: iniAusweichenBonus,
     paBase: paBase,
     axxPaBaseBonus: axxPaBaseBonus,
-    offhandPaBonus: offhandPaBonus,
+    offhandPaBonus: offhandModifiers.mainPaMod,
+    offhandAtMod: offhandModifiers.atMod,
+    offhandIniMod: offhandModifiers.iniMod,
+    shieldPa: offhandModifiers.shieldPa,
+    shieldPaBonus: offhandModifiers.shieldPaBonus,
+    offhandIsShield: offhandModifiers.isShield,
+    offhandIsParryWeapon: offhandModifiers.isParryWeapon,
+    offhandRequiresLinkhand: offhandModifiers.requiresLinkhandViolation,
+    offhandName: offhandModifiers.displayName,
     iniDiceCount: iniDiceCount,
     axxAttackDefenseHint: axxAttackDefenseHint,
     isRangedWeapon: isRangedWeapon,
