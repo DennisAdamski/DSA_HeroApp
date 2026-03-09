@@ -489,6 +489,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
           valueListenable: _viewRevision,
           builder: (context, revision, child) {
             return ListView(
+              key: const ValueKey<String>('hero-overview-scroll'),
               padding: const EdgeInsets.all(_pagePadding),
               children: [
                 _buildBaseInfoSection(),

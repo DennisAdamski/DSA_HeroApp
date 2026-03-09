@@ -238,6 +238,11 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     final activeTabIndex = _tabRegistry.activeTabIndex;
     final isEditing = _tabRegistry.isEditing(activeTabIndex);
     final tabActions = _tabRegistry.editActionsFor(activeTabIndex);
+    final isCompactLayout =
+        _layoutForWidth(MediaQuery.sizeOf(context).width) ==
+        WorkspaceLayout.compact;
+    final useCompactIconOnlyEditActions =
+        isCompactLayout && activeTabIndex == _talentsTabIndex;
 
     VoidCallback? onStartEdit;
     VoidCallback? onSave;
@@ -252,21 +257,31 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
 
     if (activeTabIndex == _talentsTabIndex) {
       final bePreview = ref.watch(combatPreviewProvider(widget.heroId));
+      void openBeDialog() {
+        showDialog<void>(
+          context: context,
+          builder: (_) => TalentBeConfigDialog(
+            heroId: widget.heroId,
+            combatBaseBe: bePreview.valueOrNull?.beKampf ?? 0,
+          ),
+        );
+      }
       widgets.add(
-        OutlinedButton.icon(
-          key: const ValueKey<String>('talents-be-screen-open'),
-          onPressed: () {
-            showDialog<void>(
-              context: context,
-              builder: (_) => TalentBeConfigDialog(
-                heroId: widget.heroId,
-                combatBaseBe: bePreview.valueOrNull?.beKampf ?? 0,
+        isCompactLayout
+            ? Tooltip(
+                message: 'BE konfigurieren',
+                child: IconButton(
+                  key: const ValueKey<String>('talents-be-screen-open'),
+                  onPressed: openBeDialog,
+                  icon: const Icon(Icons.shield_outlined),
+                ),
+              )
+            : OutlinedButton.icon(
+                key: const ValueKey<String>('talents-be-screen-open'),
+                onPressed: openBeDialog,
+                icon: const Icon(Icons.shield_outlined),
+                label: const Text('BE konfigurieren'),
               ),
-            );
-          },
-          icon: const Icon(Icons.shield_outlined),
-          label: const Text('BE konfigurieren'),
-        ),
       );
     }
 
@@ -283,10 +298,29 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     }
 
     if (isEditing) {
-      widgets.addAll([
-        OutlinedButton(onPressed: onCancel, child: const Text('Abbrechen')),
-        FilledButton(onPressed: onSave, child: const Text('Speichern')),
-      ]);
+      if (useCompactIconOnlyEditActions) {
+        widgets.addAll([
+          Tooltip(
+            message: 'Abbrechen',
+            child: IconButton(
+              onPressed: onCancel,
+              icon: const Icon(Icons.close),
+            ),
+          ),
+          Tooltip(
+            message: 'Speichern',
+            child: IconButton(
+              onPressed: onSave,
+              icon: const Icon(Icons.check),
+            ),
+          ),
+        ]);
+      } else {
+        widgets.addAll([
+          OutlinedButton(onPressed: onCancel, child: const Text('Abbrechen')),
+          FilledButton(onPressed: onSave, child: const Text('Speichern')),
+        ]);
+      }
     } else if (_tabRegistry.isEditableTab(activeTabIndex)) {
       widgets.add(
         FilledButton.icon(
@@ -608,6 +642,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         appBar: AppBar(
           title: Text(hero.name),
           leading: IconButton(
+            key: const ValueKey<String>('workspace-back-button'),
             icon: Icon(apple ? Icons.arrow_back_ios : Icons.arrow_back),
             tooltip: 'Heldenauswahl',
             onPressed: _navigateToHomeWithGuard,
