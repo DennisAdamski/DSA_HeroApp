@@ -102,6 +102,11 @@ void main() {
   testWidgets(
     'opens hero workspace with tabs and read-only core attributes header',
     (tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(700, 900);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       final repo = FakeRepository(
         heroes: [hero],
         states: {

@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 
+/// Startet die Anwendung und initialisiert die persistenten Heldendaten.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final repository = await HiveHeroRepository.create();
@@ -20,6 +21,7 @@ Future<void> main() async {
   );
 }
 
+/// Wurzel-Widget der DSA-Heldenverwaltung mit plattformspezifischem Theme.
 class DsaApp extends StatelessWidget {
   const DsaApp({super.key});
 
@@ -38,6 +40,8 @@ class DsaApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
+          materialTapTargetSize:
+              apple ? MaterialTapTargetSize.padded : null,
           colorScheme:
               ColorScheme.fromSeed(seedColor: const Color(0xFF2A5A73)),
           scaffoldBackgroundColor: const Color(0xFFF2F5F7),
@@ -54,11 +58,6 @@ class DsaApp extends StatelessWidget {
               TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
             },
           ),
-          chipTheme: apple
-              ? const ChipThemeData(
-                  materialTapTargetSize: MaterialTapTargetSize.padded,
-                )
-              : null,
         ),
         home: const HeroesHomeScreen(),
       ),
