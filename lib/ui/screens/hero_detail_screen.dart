@@ -241,7 +241,7 @@ class _HeroDetailScreenState extends ConsumerState<HeroDetailScreen> {
                     navigator.pop();
                   },
                   icon: const Icon(Icons.delete),
-                  label: const Text('Loeschen'),
+                  label: const Text('Löschen'),
                 ),
               ],
             ),

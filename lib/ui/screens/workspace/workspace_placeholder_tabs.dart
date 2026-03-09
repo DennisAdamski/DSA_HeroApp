@@ -26,7 +26,7 @@ class WorkspacePlaceholderTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('$title wird als naechstes ausgearbeitet.'));
+    return Center(child: Text('$title wird als nächstes ausgearbeitet.'));
   }
 }
 
@@ -73,7 +73,7 @@ class WorkspaceCatalogPlaceholderTab extends ConsumerWidget {
 
         return Center(
           child: Text(
-            '$title: $count Eintraege aus ${catalog.version} geladen ($details).',
+            '$title: $count Einträge aus ${catalog.version} geladen ($details).',
           ),
         );
       },

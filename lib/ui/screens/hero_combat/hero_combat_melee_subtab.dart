@@ -201,7 +201,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     ScaffoldMessenger.of(this.context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          'Waffenvorlage "${weapon.name}" geoeffnet',
+                          'Waffenvorlage "${weapon.name}" geöffnet',
                         ),
                       ),
                     );
@@ -546,7 +546,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             return AlertDialog(
               title: Text(
                 isNew
-                    ? 'Nebenhand-Ausrüstung hinzufuegen'
+                    ? 'Nebenhand-Ausrüstung hinzufügen'
                     : 'Nebenhand-Ausrüstung bearbeiten',
               ),
               content: SizedBox(
@@ -623,7 +623,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                           ),
                           initialValue: shieldSize,
                           decoration: const InputDecoration(
-                            labelText: 'Groesse',
+                            labelText: 'Größe',
                             border: OutlineInputBorder(),
                           ),
                           items: const [
@@ -633,11 +633,11 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                             ),
                             DropdownMenuItem(
                               value: ShieldSize.large,
-                              child: Text('Gross'),
+                              child: Text('Groß'),
                             ),
                             DropdownMenuItem(
                               value: ShieldSize.veryLarge,
-                              child: Text('Sehr gross'),
+                              child: Text('Sehr groß'),
                             ),
                           ],
                           onChanged: (value) {
@@ -741,7 +741,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
           builder: (context, setDialogState) {
             return AlertDialog(
               title: Text(
-                isNew ? 'Ruestung hinzufuegen' : 'Ruestung bearbeiten',
+                isNew ? 'Rüstung hinzufügen' : 'Rüstung bearbeiten',
               ),
               content: SizedBox(
                 width: 460,
@@ -925,7 +925,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   const Padding(
                     padding: EdgeInsets.only(top: 8),
                     child: Text(
-                      'Keine Waffen fuer den aktuellen Filter vorhanden.',
+                      'Keine Waffen für den aktuellen Filter vorhanden.',
                     ),
                   ),
               ],
@@ -1132,10 +1132,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     _resultChip('GE-Basis', preview.geBase),
                     _resultChip('GE-Schwelle', preview.geThreshold),
                     _resultChip('INI/GE', preview.iniGe),
-                    _resultChip(
-                      'Helden+Waffen INI',
-                      preview.kombinierteHeldenWaffenIni,
-                    ),
+                    _resultChip('Helden+Waffen INI',preview.kombinierteHeldenWaffenIni),
                     _resultChip('TK-Kalk', preview.tpCalc),
                     Chip(
                       label: Text(
@@ -1457,8 +1454,8 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
   String _shieldSizeLabel(ShieldSize size) {
     return switch (size) {
       ShieldSize.small => 'Klein',
-      ShieldSize.large => 'Gross',
-      ShieldSize.veryLarge => 'Sehr gross',
+      ShieldSize.large => 'Groß',
+      ShieldSize.veryLarge => 'Sehr groß',
     };
   }
 
@@ -1489,13 +1486,13 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     combatTalents: sortedTalents,
                   ),
                   icon: const Icon(Icons.add),
-                  label: const Text('Ruestung hinzufuegen'),
+                  label: const Text('Rüstung hinzufügen'),
                 ),
               ],
             ),
             const SizedBox(height: 10),
             if (armor.pieces.isEmpty)
-              const Text('Keine Ruestungsstuecke erfasst.')
+              const Text('Keine Rüstungsstücke erfasst.')
             else
               Column(
                 children: [
@@ -1536,7 +1533,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                               children: [
                                 IconButton(
                                   key: ValueKey<String>('combat-armor-edit-$i'),
-                                  tooltip: 'Ruestung bearbeiten',
+                                  tooltip: 'Rüstung bearbeiten',
                                   onPressed: () => _openArmorPieceEditor(
                                     catalog: catalog,
                                     combatTalents: sortedTalents,
@@ -1548,7 +1545,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                                   key: ValueKey<String>(
                                     'combat-armor-remove-$i',
                                   ),
-                                  tooltip: 'Ruestung entfernen',
+                                  tooltip: 'Rüstung entfernen',
                                   onPressed: () => _removeArmorPiece(
                                     i,
                                     catalog: catalog,
@@ -1659,12 +1656,12 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Aktive Waffe - Uebersicht',
+              'Aktive Waffe - Übersicht',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             if (!hasActiveWeapon)
-              const Text('Keine aktive Waffe ausgewaehlt.')
+              const Text('Keine aktive Waffe ausgewählt.')
             else ...[
               Wrap(
                 spacing: 8,
@@ -1860,7 +1857,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                 const SizedBox(height: 4),
                 if (activeSupportedManeuvers.isEmpty)
                   const Text(
-                    'Keine erlernten, waffenkompatiblen Manoever.',
+                    'Keine erlernten, waffenkompatiblen Manöver.',
                     key: ValueKey<String>(
                       'combat-active-weapon-info-maneuvers',
                     ),

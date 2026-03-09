@@ -49,7 +49,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     _InventoryColumn('Wert', 'wert', 110),
     _InventoryColumn('Artefakt', 'artefakt', 110),
     _InventoryColumn('Anzahl', 'anzahl', 90),
-    _InventoryColumn('am Koerper', 'am_koerper', 110),
+    _InventoryColumn('am Körper', 'am_koerper', 110),
     _InventoryColumn('wo dann?', 'wo_dann', 110),
     _InventoryColumn('Gruppe', 'gruppe', 120),
     _InventoryColumn('Beschreibung', 'beschreibung', 280),
