@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 
 /// Inspector-Seitenleiste fuer den Desktop-Helden-Deck-Modus.
 ///
@@ -73,6 +74,8 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
                         heroState: heroState,
                         derived: derived,
                       ),
+                    const SizedBox(height: 10),
+                    _ZauberAktivierenCard(heroId: heroId),
                     const SizedBox(height: 10),
                     // --- Manueller BE ---
                     _ManuellerBeCard(heroId: heroId, combat: combat),
@@ -283,6 +286,32 @@ class _ResourceRow extends StatelessWidget {
           onPressed: current < max ? onIncrement : null,
         ),
       ],
+    );
+  }
+}
+
+class _ZauberAktivierenCard extends StatelessWidget {
+  const _ZauberAktivierenCard({required this.heroId});
+
+  final String heroId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: OutlinedButton.icon(
+            key: const ValueKey<String>('workspace-active-spells-open'),
+            onPressed: () {
+              showActiveSpellEffectsDialog(context: context, heroId: heroId);
+            },
+            icon: const Icon(Icons.auto_awesome_outlined),
+            label: const Text('Zauber aktivieren'),
+          ),
+        ),
+      ),
     );
   }
 }
