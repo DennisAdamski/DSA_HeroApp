@@ -427,7 +427,7 @@ void main() {
     expect(find.widgetWithText(Tab, 'Ausrüstung'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Kampf'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Sonderfertigkeiten'), findsOneWidget);
-    expect(find.widgetWithText(Tab, 'Manoever'), findsOneWidget);
+    expect(find.widgetWithText(Tab, 'Manöver'), findsOneWidget);
   });
 
   testWidgets(
@@ -673,7 +673,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(CheckboxListTile, 'Schwert'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Uebernehmen'));
+    await tester.tap(find.text('Übernehmen'));
     await tester.pumpAndSettle();
 
     await actions.save();
@@ -1154,7 +1154,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.textContaining('Aufmerksamkeit'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(Tab, 'Manoever'));
+    await tester.tap(find.widgetWithText(Tab, 'Manöver'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('Finte'),
@@ -1355,7 +1355,7 @@ void main() {
     await tester.tap(find.text('Kurzschwert').last);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(Tab, 'Manoever'));
+    await tester.tap(find.widgetWithText(Tab, 'Manöver'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('Finte'),
@@ -1371,7 +1371,7 @@ void main() {
     expect(
       find.descendant(
         of: finteTile,
-        matching: find.text('Von aktiver Waffe unterstuetzt'),
+        matching: find.text('Von aktiver Waffe unterstützt'),
       ),
       findsOneWidget,
     );
@@ -1385,7 +1385,7 @@ void main() {
     await tester.tap(find.text('Bidenhaender').last);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(Tab, 'Manoever'));
+    await tester.tap(find.widgetWithText(Tab, 'Manöver'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('Finte'),
@@ -1394,7 +1394,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(
-      find.descendant(of: finteTile, matching: find.text('Nicht unterstuetzt')),
+      find.descendant(of: finteTile, matching: find.text('Nicht unterstützt')),
       findsOneWidget,
     );
   });
@@ -1880,7 +1880,7 @@ void main() {
       find.byKey(const ValueKey<String>('combat-active-weapon-info-card')),
       findsOneWidget,
     );
-    expect(find.text('Keine aktive Waffe ausgewaehlt.'), findsOneWidget);
+    expect(find.text('Keine aktive Waffe ausgewählt.'), findsOneWidget);
     expect(
       find.byKey(const ValueKey<String>('combat-active-weapon-info-at')),
       findsNothing,
@@ -2393,7 +2393,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(removeButton);
     await tester.pumpAndSettle();
-    expect(find.text('Keine Ruestungsstuecke erfasst.'), findsOneWidget);
+    expect(find.text('Keine Rüstungsstücke erfasst.'), findsOneWidget);
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');

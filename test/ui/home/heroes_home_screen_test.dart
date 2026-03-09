@@ -77,7 +77,7 @@ void main() {
           .widget<TextField>(find.byKey(const ValueKey('create-hero-kl')))
           .controller
           ?.text,
-      '8',
+      '11',
     );
 
     await tester.enterText(

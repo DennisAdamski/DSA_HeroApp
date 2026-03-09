@@ -137,7 +137,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Held bereits vorhanden'), findsOneWidget);
-    expect(find.text('Ueberschreiben'), findsOneWidget);
+    expect(find.text('Überschreiben'), findsOneWidget);
     expect(find.text('Als neu erstellen'), findsOneWidget);
   });
 
