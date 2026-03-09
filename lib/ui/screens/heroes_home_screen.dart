@@ -6,6 +6,8 @@ import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_workspace_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_import_export_actions.dart';
 
@@ -18,6 +20,28 @@ class HeroesHomeScreen extends ConsumerWidget {
     final selectedHeroId = ref.watch(selectedHeroIdProvider);
     const importExportActions = WorkspaceImportExportActions();
 
+    final apple = isApplePlatform(context);
+
+    Future<void> createHero() async {
+      final draft = await _showCreateHeroDialog(context);
+      if (draft == null || !context.mounted) {
+        return;
+      }
+      final navigator = Navigator.of(context);
+      final id = await ref
+          .read(heroActionsProvider)
+          .createHero(
+            name: draft.name,
+            rawStartAttributes: draft.rawStartAttributes,
+          );
+      if (!context.mounted) {
+        return;
+      }
+      navigator.push(
+        MaterialPageRoute(builder: (_) => HeroWorkspaceScreen(heroId: id)),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('DSA Helden'),
@@ -28,6 +52,12 @@ class HeroesHomeScreen extends ConsumerWidget {
               selectedHeroId: selectedHeroId,
             );
             return [
+              if (apple)
+                IconButton(
+                  tooltip: 'Neuer Held',
+                  onPressed: createHero,
+                  icon: const Icon(Icons.add),
+                ),
               const SizedBox(width: 8),
               IconButton(
                 tooltip: 'Held loeschen',
@@ -70,29 +100,13 @@ class HeroesHomeScreen extends ConsumerWidget {
           error: (error, stackTrace) => const <Widget>[SizedBox(width: 12)],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final draft = await _showCreateHeroDialog(context);
-          if (draft == null || !context.mounted) {
-            return;
-          }
-          final navigator = Navigator.of(context);
-          final id = await ref
-              .read(heroActionsProvider)
-              .createHero(
-                name: draft.name,
-                rawStartAttributes: draft.rawStartAttributes,
-              );
-          if (!context.mounted) {
-            return;
-          }
-          navigator.pushReplacement(
-            MaterialPageRoute(builder: (_) => HeroWorkspaceScreen(heroId: id)),
-          );
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Neuer Held'),
-      ),
+      floatingActionButton: apple
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: createHero,
+              icon: const Icon(Icons.add),
+              label: const Text('Neuer Held'),
+            ),
       body: heroesAsync.when(
         data: (heroes) {
           if (heroes.isEmpty) {
@@ -115,7 +129,7 @@ class HeroesHomeScreen extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
                   ref.read(selectedHeroIdProvider.notifier).state = hero.id;
-                  Navigator.of(context).pushReplacement(
+                  Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => HeroWorkspaceScreen(heroId: hero.id),
                     ),
@@ -154,26 +168,14 @@ class HeroesHomeScreen extends ConsumerWidget {
     required WidgetRef ref,
     required HeroSheet hero,
   }) async {
-    final shouldDelete = await showDialog<bool>(
+    final shouldDelete = await showAdaptiveConfirmDialog(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Held loeschen'),
-          content: Text('Soll "${hero.name}" wirklich geloescht werden?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Abbrechen'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Loeschen'),
-            ),
-          ],
-        );
-      },
+      title: 'Held loeschen',
+      content: 'Soll "${hero.name}" wirklich geloescht werden?',
+      confirmLabel: 'Loeschen',
+      isDestructive: true,
     );
-    if (shouldDelete != true) {
+    if (!shouldDelete) {
       return;
     }
     await ref.read(heroActionsProvider).deleteHero(hero.id);
@@ -246,7 +248,7 @@ class HeroesHomeScreen extends ConsumerWidget {
       if (importedId == null || !context.mounted) {
         return;
       }
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => HeroWorkspaceScreen(heroId: importedId),
         ),
@@ -272,7 +274,7 @@ class HeroesHomeScreen extends ConsumerWidget {
   }
 
   Future<_CreateHeroDraft?> _showCreateHeroDialog(BuildContext context) async {
-    return showDialog<_CreateHeroDraft>(
+    return showAdaptiveDetailSheet<_CreateHeroDraft>(
       context: context,
       builder: (dialogContext) => const _CreateHeroDialog(),
     );

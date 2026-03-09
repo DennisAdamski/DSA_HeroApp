@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,24 +23,57 @@ Future<void> main() async {
 class DsaApp extends StatelessWidget {
   const DsaApp({super.key});
 
+  static bool _isApple() =>
+      defaultTargetPlatform == TargetPlatform.iOS ||
+      defaultTargetPlatform == TargetPlatform.macOS;
+
   @override
   Widget build(BuildContext context) {
     final baseTheme = ThemeData.light(useMaterial3: true);
-    return MaterialApp(
-      title: 'DSA Heldenverwaltung',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2A5A73)),
-        scaffoldBackgroundColor: const Color(0xFFF2F5F7),
-        textTheme: baseTheme.textTheme.apply(
-          fontFamily: 'Merriweather',
-          bodyColor: const Color(0xFF1D2830),
-          displayColor: const Color(0xFF1D2830),
+    final apple = _isApple();
+    return ScrollConfiguration(
+      behavior: _AdaptiveScrollBehavior(),
+      child: MaterialApp(
+        title: 'DSA Heldenverwaltung',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme:
+              ColorScheme.fromSeed(seedColor: const Color(0xFF2A5A73)),
+          scaffoldBackgroundColor: const Color(0xFFF2F5F7),
+          textTheme: baseTheme.textTheme.apply(
+            fontFamily: 'Merriweather',
+            bodyColor: const Color(0xFF1D2830),
+            displayColor: const Color(0xFF1D2830),
+          ),
+          appBarTheme: AppBarTheme(centerTitle: apple),
+          pageTransitionsTheme: const PageTransitionsTheme(
+            builders: {
+              TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+              TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+              TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+            },
+          ),
+          chipTheme: apple
+              ? const ChipThemeData(
+                  materialTapTargetSize: MaterialTapTargetSize.padded,
+                )
+              : null,
         ),
-        appBarTheme: const AppBarTheme(centerTitle: false),
+        home: const HeroesHomeScreen(),
       ),
-      home: const HeroesHomeScreen(),
     );
+  }
+}
+
+/// Gibt auf Apple-Plattformen BouncingScrollPhysics zurueck.
+class _AdaptiveScrollBehavior extends MaterialScrollBehavior {
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    if (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
+      return const BouncingScrollPhysics();
+    }
+    return super.getScrollPhysics(context);
   }
 }

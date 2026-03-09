@@ -378,7 +378,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                   (spec) => Chip(
                     label: Text(spec),
                     visualDensity: VisualDensity.compact,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    materialTapTargetSize: adaptiveTapTargetSize(context),
                     padding: EdgeInsets.zero,
                     labelPadding: const EdgeInsets.symmetric(horizontal: 6),
                   ),
@@ -402,7 +402,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                 key: ValueKey<String>('combat-spec-${talent.id}-$spec'),
                 label: Text(spec),
                 visualDensity: VisualDensity.compact,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                materialTapTargetSize: adaptiveTapTargetSize(context),
                 padding: EdgeInsets.zero,
                 labelPadding: const EdgeInsets.symmetric(horizontal: 6),
                 onDeleted: () {
@@ -417,7 +417,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                 avatar: const Icon(Icons.add, size: 16),
                 label: const Text('Hinzufuegen'),
                 visualDensity: VisualDensity.compact,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                materialTapTargetSize: adaptiveTapTargetSize(context),
                 padding: EdgeInsets.zero,
                 labelPadding: const EdgeInsets.only(right: 6),
                 onPressed: () async {

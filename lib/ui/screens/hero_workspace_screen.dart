@@ -4,13 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_magic_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_notes_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_bottom_navigation.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_command_deck_panel.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_core_attributes_header.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_inspector_panel.dart';
@@ -18,8 +19,17 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_navigation_g
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
-/// Mindestbreite in logischen Pixeln ab der das Helden-Deck-Layout aktiv wird.
-const double _heroDeckBreakpoint = 1280;
+/// Layout-Stufen fuer den Workspace je nach verfuegbarer Breite.
+enum WorkspaceLayout {
+  /// iPhone / schmales Fenster (< 744dp): TabBar oder Bottom Nav.
+  compact,
+  /// iPad Portrait / mittelbreit (744–1023dp): Collapsed Sidebar + Content.
+  medium,
+  /// iPad Landscape / breit (1024–1279dp): Ausgeklappte Sidebar + Content.
+  expanded,
+  /// Desktop / sehr breit (>= 1280dp): Drei-Spalten Helden-Deck.
+  heroDeck,
+}
 
 /// Breite der ausgefahrenen Helden-Deck-Navigationsleiste in Pixeln.
 const double _heroDeckNavigationWidth = 240;
@@ -220,9 +230,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     if (!mounted || !mayLeave) {
       return;
     }
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HeroesHomeScreen()),
-    );
+    Navigator.of(context).pop();
   }
 
   /// Baut die Aktionsschaltflaechen fuer die AppBar (Bearbeiten/Speichern/Abbrechen).
@@ -475,10 +483,105 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
+  /// Ermittelt das passende Layout anhand der verfuegbaren Breite.
+  WorkspaceLayout _layoutForWidth(double width) {
+    if (width >= kHeroDeckBreakpoint) return WorkspaceLayout.heroDeck;
+    if (width >= kTabletBreakpoint) return WorkspaceLayout.expanded;
+    if (width >= kMediumBreakpoint) return WorkspaceLayout.medium;
+    return WorkspaceLayout.compact;
+  }
+
+  /// Medium-Layout: Collapsed Sidebar (Icon-only) + Content-Bereich.
+  Widget _buildMediumWorkspaceBody(HeroSheet hero) {
+    final activeTabIndex = _tabRegistry.activeTabIndex;
+    return Row(
+      children: [
+        SizedBox(
+          width: _heroDeckCollapsedWidth,
+          child: WorkspaceCommandDeckNavigationPanel(
+            activeTabIndex: activeTabIndex,
+            isExpanded: false,
+            isDirty: _tabRegistry.isDirty,
+            onToggleExpanded: () {},
+            onSelectTab: (index) {
+              if (_tabController.index == index) return;
+              _tabController.animateTo(index);
+            },
+          ),
+        ),
+        const VerticalDivider(width: 1),
+        Expanded(
+          child: Column(
+            children: [
+              WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
+              Expanded(child: _buildWorkspaceTabView()),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Expanded-Layout: Ausgeklappte Sidebar + Content, kein Inspector.
+  Widget _buildExpandedWorkspaceBody(HeroSheet hero) {
+    final activeTabIndex = _tabRegistry.activeTabIndex;
+    final navigationWidth = _heroDeckExpanded
+        ? _heroDeckNavigationWidth
+        : _heroDeckCollapsedWidth;
+    return Row(
+      children: [
+        SizedBox(
+          width: navigationWidth,
+          child: WorkspaceCommandDeckNavigationPanel(
+            activeTabIndex: activeTabIndex,
+            isExpanded: _heroDeckExpanded,
+            isDirty: _tabRegistry.isDirty,
+            onToggleExpanded: _toggleHeroDeckExpanded,
+            onSelectTab: (index) {
+              if (_tabController.index == index) return;
+              _tabController.animateTo(index);
+            },
+          ),
+        ),
+        const VerticalDivider(width: 1),
+        Expanded(
+          child: Column(
+            children: [
+              WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
+              Expanded(child: _buildWorkspaceTabView()),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Zeigt den Inspector als BottomSheet (fuer Medium/Expanded ohne Inspector-Spalte).
+  void _showInspectorSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.7,
+        minChildSize: 0.3,
+        maxChildSize: 0.95,
+        builder: (sheetContext, scrollController) =>
+            WorkspaceInspectorPanel(
+          heroId: widget.heroId,
+          isExpanded: true,
+          onToggleExpanded: () => Navigator.of(sheetContext).pop(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final hero = ref.watch(heroByIdProvider(widget.heroId));
-    final useHeroDeck = MediaQuery.sizeOf(context).width >= _heroDeckBreakpoint;
+    final width = MediaQuery.sizeOf(context).width;
+    final layout = _layoutForWidth(width);
 
     if (hero == null) {
       return Scaffold(
@@ -486,6 +589,13 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         body: const Center(child: Text('Held nicht gefunden.')),
       );
     }
+
+    final apple = isApplePlatform(context);
+    final useBottomNav = layout == WorkspaceLayout.compact && apple;
+    final showTabBar = layout == WorkspaceLayout.compact && !apple;
+    final showInspectorAction =
+        layout == WorkspaceLayout.medium ||
+        layout == WorkspaceLayout.expanded;
 
     return PopScope(
       canPop: false,
@@ -498,16 +608,36 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         appBar: AppBar(
           title: Text(hero.name),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: Icon(apple ? Icons.arrow_back_ios : Icons.arrow_back),
             tooltip: 'Heldenauswahl',
             onPressed: _navigateToHomeWithGuard,
           ),
-          actions: _buildSpacedWorkspaceActions(_buildWorkspaceActions()),
-          bottom: useHeroDeck ? null : _buildWorkspaceTabBar(),
+          actions: [
+            if (showInspectorAction)
+              IconButton(
+                tooltip: 'Detailpanel',
+                icon: const Icon(Icons.info_outline),
+                onPressed: _showInspectorSheet,
+              ),
+            ..._buildSpacedWorkspaceActions(_buildWorkspaceActions()),
+          ],
+          bottom: showTabBar ? _buildWorkspaceTabBar() : null,
         ),
-        body: useHeroDeck
-            ? _buildHeroDeckWorkspaceBody(hero)
-            : _buildClassicWorkspaceBody(hero),
+        bottomNavigationBar: useBottomNav
+            ? WorkspaceBottomNavigation(
+                activeTabIndex: _tabRegistry.activeTabIndex,
+                onSelectTab: (index) {
+                  if (_tabController.index == index) return;
+                  _tabController.animateTo(index);
+                },
+              )
+            : null,
+        body: switch (layout) {
+          WorkspaceLayout.compact => _buildClassicWorkspaceBody(hero),
+          WorkspaceLayout.medium => _buildMediumWorkspaceBody(hero),
+          WorkspaceLayout.expanded => _buildExpandedWorkspaceBody(hero),
+          WorkspaceLayout.heroDeck => _buildHeroDeckWorkspaceBody(hero),
+        },
       ),
     );
   }
