@@ -164,6 +164,26 @@ void main() {
     expect(computeDerivedStats(withLegacyAxx, state).gs, 16);
   });
 
+  test('Axxeleratus activates Schnellziehen temporarily', () {
+    final withoutOwnedAbility = hero();
+    final withOwnedAbility = hero(
+      combatConfig: const CombatConfig(
+        specialRules: CombatSpecialRules(schnellziehen: true),
+      ),
+    );
+
+    final temporaryResult = preview(
+      withoutOwnedAbility,
+      heroState: stateWithAxx,
+    );
+    final ownedResult = preview(withOwnedAbility);
+
+    expect(temporaryResult.schnellziehenActive, isTrue);
+    expect(temporaryResult.schnellziehenTemporary, isTrue);
+    expect(ownedResult.schnellziehenActive, isTrue);
+    expect(ownedResult.schnellziehenTemporary, isFalse);
+  });
+
   test('parse spell availability keeps learned representation and origin', () {
     final entries = parseSpellAvailability('Mag6, Hex3, Dru(Elf)2');
 
@@ -188,23 +208,25 @@ void main() {
     expect(entries.single.learnedRepresentation, 'Elf');
   });
 
-  test('spell availability is unavailable without matching origin tradition', () {
-    final entries = availableSpellEntriesForRepresentations(
-      'Elf6, Dru(Elf)2',
-      const <String>['Elf'],
-    );
-
-    expect(entries.length, 1);
-    expect(entries.single.tradition, 'Elf');
-    expect(entries.single.learnedRepresentation, 'Elf');
-    expect(
-      availableSpellEntriesForRepresentations(
-        'Dru(Elf)2',
+  test(
+    'spell availability is unavailable without matching origin tradition',
+    () {
+      final entries = availableSpellEntriesForRepresentations(
+        'Elf6, Dru(Elf)2',
         const <String>['Elf'],
-      ),
-      isEmpty,
-    );
-  });
+      );
+
+      expect(entries.length, 1);
+      expect(entries.single.tradition, 'Elf');
+      expect(entries.single.learnedRepresentation, 'Elf');
+      expect(
+        availableSpellEntriesForRepresentations('Dru(Elf)2', const <String>[
+          'Elf',
+        ]),
+        isEmpty,
+      );
+    },
+  );
 
   test('effective steigerung applies +2 for foreign representation first', () {
     final result = effectiveSteigerung(

@@ -8,6 +8,9 @@ class CombatSpecialRules {
   const CombatSpecialRules({
     this.kampfreflexe = false,
     this.kampfgespuer = false,
+    this.schnellziehen = false,
+    this.schnellladenBogen = false,
+    this.schnellladenArmbrust = false,
     this.ausweichenI = false,
     this.ausweichenII = false,
     this.ausweichenIII = false,
@@ -29,6 +32,15 @@ class CombatSpecialRules {
 
   /// Sonderfertigkeit Kampfgespuer aktiv.
   final bool kampfgespuer;
+
+  /// Sonderfertigkeit Schnellziehen aktiv.
+  final bool schnellziehen;
+
+  /// Sonderfertigkeit Schnellladen (Bogen) aktiv.
+  final bool schnellladenBogen;
+
+  /// Sonderfertigkeit Schnellladen (Armbrust) aktiv.
+  final bool schnellladenArmbrust;
 
   /// Ausweichen I aktiv.
   final bool ausweichenI;
@@ -81,6 +93,9 @@ class CombatSpecialRules {
   CombatSpecialRules copyWith({
     bool? kampfreflexe,
     bool? kampfgespuer,
+    bool? schnellziehen,
+    bool? schnellladenBogen,
+    bool? schnellladenArmbrust,
     bool? ausweichenI,
     bool? ausweichenII,
     bool? ausweichenIII,
@@ -99,6 +114,9 @@ class CombatSpecialRules {
     return CombatSpecialRules(
       kampfreflexe: kampfreflexe ?? this.kampfreflexe,
       kampfgespuer: kampfgespuer ?? this.kampfgespuer,
+      schnellziehen: schnellziehen ?? this.schnellziehen,
+      schnellladenBogen: schnellladenBogen ?? this.schnellladenBogen,
+      schnellladenArmbrust: schnellladenArmbrust ?? this.schnellladenArmbrust,
       ausweichenI: ausweichenI ?? this.ausweichenI,
       ausweichenII: ausweichenII ?? this.ausweichenII,
       ausweichenIII: ausweichenIII ?? this.ausweichenIII,
@@ -123,6 +141,9 @@ class CombatSpecialRules {
     return {
       'kampfreflexe': kampfreflexe,
       'kampfgespuer': kampfgespuer,
+      'schnellziehen': schnellziehen,
+      'schnellladenBogen': schnellladenBogen,
+      'schnellladenArmbrust': schnellladenArmbrust,
       'ausweichenI': ausweichenI,
       'ausweichenII': ausweichenII,
       'ausweichenIII': ausweichenIII,
@@ -148,6 +169,9 @@ class CombatSpecialRules {
     return CombatSpecialRules(
       kampfreflexe: getBool('kampfreflexe'),
       kampfgespuer: getBool('kampfgespuer'),
+      schnellziehen: getBool('schnellziehen'),
+      schnellladenBogen: getBool('schnellladenBogen'),
+      schnellladenArmbrust: getBool('schnellladenArmbrust'),
       ausweichenI: getBool('ausweichenI'),
       ausweichenII: getBool('ausweichenII'),
       ausweichenIII: getBool('ausweichenIII'),
