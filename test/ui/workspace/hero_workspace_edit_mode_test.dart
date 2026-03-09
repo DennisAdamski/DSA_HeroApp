@@ -55,12 +55,11 @@ void main() {
     Size? size,
     RulesCatalog? catalog,
   }) async {
-    if (size != null) {
-      tester.view.devicePixelRatio = 1.0;
-      tester.view.physicalSize = size;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-    }
+    final resolvedSize = size ?? const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = resolvedSize;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
       ProviderScope(
@@ -91,6 +90,20 @@ void main() {
       of: find.byType(TabBar).first,
       matching: find.text(label),
     );
+  }
+
+  Finder activeTabVerticalScrollable() {
+    return find.descendant(
+      of: find.byKey(const ValueKey<String>('hero-overview-scroll')),
+      matching: find.byType(Scrollable),
+    ).first;
+  }
+
+  Future<void> selectWorkspaceTab(WidgetTester tester, String label) async {
+    final tab = tabText(label);
+    await tester.ensureVisible(tab);
+    await tester.tap(tab);
+    await tester.pumpAndSettle();
   }
 
   Finder heroDeckToggleButton() {
@@ -143,10 +156,7 @@ void main() {
       'Rondra Neu',
     );
 
-    final verticalScrollable = find.byWidgetPredicate(
-      (widget) =>
-          widget is Scrollable && widget.axisDirection == AxisDirection.down,
-    );
+    final verticalScrollable = activeTabVerticalScrollable();
     final apTotalField = find.byKey(
       const ValueKey<String>('overview-field-ap_total'),
     );
@@ -156,7 +166,7 @@ void main() {
     await tester.scrollUntilVisible(
       apTotalField,
       240,
-      scrollable: verticalScrollable.first,
+      scrollable: verticalScrollable,
     );
     await tester.enterText(apTotalField, '1200');
     await tester.enterText(apSpentField, '50');
@@ -192,10 +202,7 @@ void main() {
     await tester.tap(find.text('Bearbeiten').first);
     await tester.pumpAndSettle();
 
-    final verticalScrollable = find.byWidgetPredicate(
-      (widget) =>
-          widget is Scrollable && widget.axisDirection == AxisDirection.down,
-    );
+    final verticalScrollable = activeTabVerticalScrollable();
     final apTotalField = find.byKey(
       const ValueKey<String>('overview-field-ap_total'),
     );
@@ -208,7 +215,7 @@ void main() {
     await tester.scrollUntilVisible(
       apTotalField,
       240,
-      scrollable: verticalScrollable.first,
+      scrollable: verticalScrollable,
     );
 
     final totalAddWidget = tester.widget<TextField>(apTotalAddField);
@@ -281,8 +288,7 @@ void main() {
       );
 
       await openWorkspace(tester, repo, catalog: buildCatalog());
-      await tester.tap(tabText('Talente'));
-      await tester.pumpAndSettle();
+      await selectWorkspaceTab(tester, 'Talente');
 
       await tester.tap(find.text('Bearbeiten').first);
       await tester.pumpAndSettle();
@@ -322,10 +328,7 @@ void main() {
     await tester.tap(find.text('Bearbeiten').first);
     await tester.pumpAndSettle();
 
-    final verticalScrollable = find.byWidgetPredicate(
-      (widget) =>
-          widget is Scrollable && widget.axisDirection == AxisDirection.down,
-    );
+    final verticalScrollable = activeTabVerticalScrollable();
     final muField = find.byKey(const ValueKey<String>('overview-field-mu'));
     final muTempField = find.byKey(
       const ValueKey<String>('overview-field-mu_temp'),
@@ -333,7 +336,7 @@ void main() {
     await tester.scrollUntilVisible(
       muField,
       240,
-      scrollable: verticalScrollable.first,
+      scrollable: verticalScrollable,
     );
     await tester.enterText(muField, '16');
     await tester.enterText(muTempField, '2');
@@ -367,10 +370,7 @@ void main() {
 
       await openWorkspace(tester, repo);
 
-      final verticalScrollable = find.byWidgetPredicate(
-        (widget) =>
-            widget is Scrollable && widget.axisDirection == AxisDirection.down,
-      );
+      final verticalScrollable = activeTabVerticalScrollable();
       final muTempField = find.byKey(
         const ValueKey<String>('overview-field-mu_temp'),
       );
@@ -380,7 +380,7 @@ void main() {
       await tester.scrollUntilVisible(
         muTempField,
         240,
-        scrollable: verticalScrollable.first,
+        scrollable: verticalScrollable,
       );
 
       final before = tester.widget<TextField>(muTempField);
@@ -426,10 +426,7 @@ void main() {
 
       await openWorkspace(tester, repo);
 
-      final verticalScrollable = find.byWidgetPredicate(
-        (widget) =>
-            widget is Scrollable && widget.axisDirection == AxisDirection.down,
-      );
+      final verticalScrollable = activeTabVerticalScrollable();
       final muTempField = find.byKey(
         const ValueKey<String>('overview-field-mu_temp'),
       );
@@ -439,7 +436,7 @@ void main() {
       await tester.scrollUntilVisible(
         muTempField,
         240,
-        scrollable: verticalScrollable.first,
+        scrollable: verticalScrollable,
       );
 
       await tester.tap(muTempField);
@@ -509,10 +506,7 @@ void main() {
 
       await openWorkspace(tester, repo);
 
-      final verticalScrollable = find.byWidgetPredicate(
-        (widget) =>
-            widget is Scrollable && widget.axisDirection == AxisDirection.down,
-      );
+      final verticalScrollable = activeTabVerticalScrollable();
       final startKl = find.byKey(
         const ValueKey<String>('overview-effective-kl_start'),
       );
@@ -522,7 +516,7 @@ void main() {
       await tester.scrollUntilVisible(
         startKl,
         240,
-        scrollable: verticalScrollable.first,
+        scrollable: verticalScrollable,
       );
 
       expect(find.descendant(of: startKl, matching: find.text('12')), findsOne);
@@ -530,7 +524,7 @@ void main() {
 
       await tester.tap(find.text('Bearbeiten').first);
       await tester.pumpAndSettle();
-      await tester.drag(verticalScrollable.first, const Offset(0, 1200));
+      await tester.drag(verticalScrollable, const Offset(0, 1200));
       await tester.pumpAndSettle();
 
       final rasseModField = find.byKey(
@@ -550,7 +544,7 @@ void main() {
       await tester.scrollUntilVisible(
         startKl,
         240,
-        scrollable: verticalScrollable.first,
+        scrollable: verticalScrollable,
       );
       expect(find.descendant(of: startKl, matching: find.text('13')), findsOne);
       expect(find.descendant(of: maxKl, matching: find.text('20')), findsOne);
@@ -577,10 +571,7 @@ void main() {
       await tester.tap(find.text('Bearbeiten').first);
       await tester.pumpAndSettle();
 
-      final verticalScrollable = find.byWidgetPredicate(
-        (widget) =>
-            widget is Scrollable && widget.axisDirection == AxisDirection.down,
-      );
+      final verticalScrollable = activeTabVerticalScrollable();
       final boughtLepField = find.byKey(
         const ValueKey<String>('overview-derived-bought-b_lep'),
       );
@@ -591,7 +582,7 @@ void main() {
       await tester.scrollUntilVisible(
         currentKapField,
         240,
-        scrollable: verticalScrollable.first,
+        scrollable: verticalScrollable,
       );
       await tester.enterText(
         find.byKey(const ValueKey<String>('overview-field-cur_lep')),
@@ -602,7 +593,7 @@ void main() {
       await tester.scrollUntilVisible(
         boughtLepField,
         240,
-        scrollable: verticalScrollable.first,
+        scrollable: verticalScrollable,
       );
       await tester.enterText(boughtLepField, '3');
       await tester.enterText(
@@ -648,10 +639,7 @@ void main() {
       await tester.tap(find.text('Bearbeiten').first);
       await tester.pumpAndSettle();
 
-      final verticalScrollable = find.byWidgetPredicate(
-        (widget) =>
-            widget is Scrollable && widget.axisDirection == AxisDirection.down,
-      );
+      final verticalScrollable = activeTabVerticalScrollable();
       final boughtLepField = find.byKey(
         const ValueKey<String>('overview-derived-bought-b_lep'),
       );
@@ -661,13 +649,13 @@ void main() {
       await tester.scrollUntilVisible(
         currentLepField,
         240,
-        scrollable: verticalScrollable.first,
+        scrollable: verticalScrollable,
       );
       await tester.enterText(currentLepField, '15');
       await tester.scrollUntilVisible(
         boughtLepField,
         240,
-        scrollable: verticalScrollable.first,
+        scrollable: verticalScrollable,
       );
       await tester.enterText(boughtLepField, '2');
 
@@ -695,17 +683,14 @@ void main() {
 
       await openWorkspace(tester, repo);
 
-      final verticalScrollable = find.byWidgetPredicate(
-        (widget) =>
-            widget is Scrollable && widget.axisDirection == AxisDirection.down,
-      );
+      final verticalScrollable = activeTabVerticalScrollable();
       final openButton = find.byKey(
         const ValueKey<String>('status-active-spells-open'),
       );
       await tester.scrollUntilVisible(
         openButton,
         240,
-        scrollable: verticalScrollable.first,
+        scrollable: verticalScrollable,
       );
       await tester.ensureVisible(openButton);
       await tester.pumpAndSettle();
@@ -753,16 +738,13 @@ void main() {
     await tester.tap(find.text('Bearbeiten').first);
     await tester.pumpAndSettle();
 
-    final verticalScrollable = find.byWidgetPredicate(
-      (widget) =>
-          widget is Scrollable && widget.axisDirection == AxisDirection.down,
-    );
+    final verticalScrollable = activeTabVerticalScrollable();
     final muField = find.byKey(const ValueKey<String>('overview-field-mu'));
     final klField = find.byKey(const ValueKey<String>('overview-field-kl'));
     await tester.scrollUntilVisible(
       muField,
       240,
-      scrollable: verticalScrollable.first,
+      scrollable: verticalScrollable,
     );
     await tester.enterText(muField, '-5');
     await tester.enterText(klField, '120');
@@ -830,8 +812,7 @@ void main() {
     );
 
     await openWorkspace(tester, repo);
-    await tester.tap(tabText('Notizen'));
-    await tester.pumpAndSettle();
+    await selectWorkspaceTab(tester, 'Notizen');
 
     await tester.tap(find.text('Bearbeiten').first);
     await tester.pumpAndSettle();
@@ -855,8 +836,7 @@ void main() {
       );
 
       await openWorkspace(tester, repo);
-      await tester.tap(tabText('Notizen'));
-      await tester.pumpAndSettle();
+      await selectWorkspaceTab(tester, 'Notizen');
 
       await tester.tap(find.text('Bearbeiten').first);
       await tester.pumpAndSettle();
@@ -1018,15 +998,15 @@ void main() {
       'Nicht speichern',
     );
 
-    await tester.tap(find.byTooltip('Heldenauswahl'));
+    await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(find.textContaining('Ungespeicherte'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Nein'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(TextButton, 'Nein'));
     await tester.pumpAndSettle();
     expect(find.text('Basisinformationen'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Heldenauswahl'));
+    await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     await tester.tap(find.text('Ja').first);
     await tester.pumpAndSettle();
@@ -1197,22 +1177,19 @@ void main() {
 
     await openWorkspace(tester, repo, size: const Size(1200, 1400));
 
-    final verticalScrollable = find.byWidgetPredicate(
-      (widget) =>
-          widget is Scrollable && widget.axisDirection == AxisDirection.down,
-    );
+    final verticalScrollable = activeTabVerticalScrollable();
     final attributesHeader = find.text('Eigenschaften');
     final derivedHeader = find.text('Basiswerte');
 
     await tester.scrollUntilVisible(
       attributesHeader,
       240,
-      scrollable: verticalScrollable.first,
+      scrollable: verticalScrollable,
     );
     await tester.scrollUntilVisible(
       derivedHeader,
       240,
-      scrollable: verticalScrollable.first,
+      scrollable: verticalScrollable,
     );
 
     final muField = find.byKey(const ValueKey<String>('overview-field-mu'));
@@ -1220,12 +1197,12 @@ void main() {
     await tester.scrollUntilVisible(
       muField,
       240,
-      scrollable: verticalScrollable.first,
+      scrollable: verticalScrollable,
     );
     await tester.scrollUntilVisible(
       klField,
       240,
-      scrollable: verticalScrollable.first,
+      scrollable: verticalScrollable,
     );
     final muPosWide = tester.getTopLeft(muField);
     final klPosWide = tester.getTopLeft(klField);
@@ -1243,12 +1220,12 @@ void main() {
     await tester.scrollUntilVisible(
       attributesHeader,
       240,
-      scrollable: verticalScrollable.first,
+      scrollable: verticalScrollable,
     );
     await tester.scrollUntilVisible(
       derivedHeader,
       240,
-      scrollable: verticalScrollable.first,
+      scrollable: verticalScrollable,
     );
 
     final attributesCard = find

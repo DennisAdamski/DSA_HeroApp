@@ -7,7 +7,7 @@ Future<HeroRitualCategory?> _showRitualCategoryDialog({
   required List<TalentDef> catalogTalents,
   HeroRitualCategory? existing,
 }) {
-  return showDialog<HeroRitualCategory>(
+  return showAdaptiveDetailSheet<HeroRitualCategory>(
     context: context,
     builder: (dialogContext) {
       return _RitualCategoryDialog(

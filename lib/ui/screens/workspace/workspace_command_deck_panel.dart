@@ -129,7 +129,62 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
                 ),
               )
             else
-              const Spacer(),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: workspaceTabs.length,
+                  padding: const EdgeInsets.fromLTRB(4, 2, 4, 12),
+                  itemBuilder: (context, index) {
+                    final tab = workspaceTabs[index];
+                    final selected = index == activeTabIndex;
+                    final dirty = isDirty(index);
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Tooltip(
+                        message: tab.label,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(10),
+                          onTap: () => onSelectTab(index),
+                          child: Container(
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? colorScheme.secondaryContainer
+                                  : null,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Icon(
+                                    tab.icon,
+                                    color: selected
+                                        ? colorScheme.onSecondaryContainer
+                                        : null,
+                                  ),
+                                  if (dirty)
+                                    Positioned(
+                                      right: -3,
+                                      top: -2,
+                                      child: Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          color: colorScheme.error,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),
