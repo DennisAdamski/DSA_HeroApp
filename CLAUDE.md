@@ -271,6 +271,9 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 - `lib/rules/derived/fernkampf_rules.dart` kapselt Fernkampf-AT- und
   Fernkampf-TP-Helfer; `computeCombatPreviewStats()` liefert fuer Nah- und
   Fernkampf weiterhin denselben Snapshot-Typ.
+- `lib/rules/derived/fernkampf_ladezeit_rules.dart` kapselt die effektive
+  Ladezeit von Boegen und Armbruesten inklusive Axxeleratus-/Schnellladen-
+  Ableitung fuer das Kampf-Preview.
 - Der `HeroWorkspaceScreen` nutzt ab `1280 dp` das breite **Helden-Deck**-
   Layout; die linke Navigationsleiste und die rechte Detailleiste koennen
   dort unabhaengig eingeklappt werden.

@@ -1,10 +1,14 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 
 extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
-  Widget _buildSpecialRulesSubTab(HeroSheet hero) {
+  Widget _buildSpecialRulesSubTab(HeroSheet hero, HeroState state) {
     final rules = _draftCombatConfig.specialRules;
     final armor = _draftCombatConfig.armor;
     final parsed = parseModifierTextsForHero(hero);
+    final axxeleratusActive = isAxxeleratusEffectActive(
+      sheet: hero,
+      state: state,
+    );
     final hasFlinkFromVorteile = parsed.hasFlinkFromVorteile;
     final hasBehaebigFromNachteile = parsed.hasBehaebigFromNachteile;
     final isEditing = _editController.isEditing;
@@ -29,6 +33,48 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
           onChanged: (value) {
             _draftCombatConfig = _draftCombatConfig.copyWith(
               specialRules: rules.copyWith(kampfgespuer: value),
+            );
+            _markFieldChanged();
+          },
+        ),
+        _specialAbilityCard(
+          title: 'Schnellziehen',
+          value: rules.schnellziehen,
+          isEditing: isEditing,
+          isActive: rules.schnellziehen || axxeleratusActive,
+          isTemporaryFromAxx: axxeleratusActive && !rules.schnellziehen,
+          keyName: 'combat-special-rule-schnellziehen',
+          onChanged: (value) {
+            _draftCombatConfig = _draftCombatConfig.copyWith(
+              specialRules: rules.copyWith(schnellziehen: value),
+            );
+            _markFieldChanged();
+          },
+        ),
+        _specialAbilityCard(
+          title: 'Schnellladen (Bogen)',
+          value: rules.schnellladenBogen,
+          isEditing: isEditing,
+          isActive: rules.schnellladenBogen || axxeleratusActive,
+          isTemporaryFromAxx: axxeleratusActive && !rules.schnellladenBogen,
+          keyName: 'combat-special-rule-schnellladen-bogen',
+          onChanged: (value) {
+            _draftCombatConfig = _draftCombatConfig.copyWith(
+              specialRules: rules.copyWith(schnellladenBogen: value),
+            );
+            _markFieldChanged();
+          },
+        ),
+        _specialAbilityCard(
+          title: 'Schnellladen (Armbrust)',
+          value: rules.schnellladenArmbrust,
+          isEditing: isEditing,
+          isActive: rules.schnellladenArmbrust || axxeleratusActive,
+          isTemporaryFromAxx: axxeleratusActive && !rules.schnellladenArmbrust,
+          keyName: 'combat-special-rule-schnellladen-armbrust',
+          onChanged: (value) {
+            _draftCombatConfig = _draftCombatConfig.copyWith(
+              specialRules: rules.copyWith(schnellladenArmbrust: value),
             );
             _markFieldChanged();
           },
@@ -215,6 +261,41 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
         title: Text(label),
         value: value,
         onChanged: isEditing ? onChanged : null,
+      ),
+    );
+  }
+
+  Widget _specialAbilityCard({
+    required String title,
+    required bool value,
+    required bool isEditing,
+    required bool isActive,
+    required bool isTemporaryFromAxx,
+    required String keyName,
+    required void Function(bool value) onChanged,
+  }) {
+    final activeLabel = isTemporaryFromAxx
+        ? 'Aktiv durch Axxeleratus'
+        : 'Aktiv';
+    final inactiveLabel = value ? 'Erlernt' : 'Inaktiv';
+    return Card(
+      child: Column(
+        children: [
+          SwitchListTile(
+            key: ValueKey<String>(keyName),
+            title: Text(title),
+            subtitle: Text(
+              isTemporaryFromAxx ? 'Temporär aktiv' : 'Dauerhaft erlernbar',
+            ),
+            value: value,
+            onChanged: isEditing ? onChanged : null,
+          ),
+          ListTile(
+            dense: true,
+            title: const Text('Status'),
+            trailing: Chip(label: Text(isActive ? activeLabel : inactiveLabel)),
+          ),
+        ],
       ),
     );
   }
