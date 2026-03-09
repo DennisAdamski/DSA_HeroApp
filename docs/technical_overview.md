@@ -359,6 +359,9 @@ Aktivierungsstatus von Kampf-Sonderfertigkeiten (alle `bool`):
 |---|---|
 | `kampfreflexe` | Kampfreflexe |
 | `kampfgespuer` | Kampfgespür |
+| `schnellziehen` | Schnellziehen |
+| `schnellladenBogen` | Schnellladen (Bogen) |
+| `schnellladenArmbrust` | Schnellladen (Armbrust) |
 | `ausweichenI/II/III` | Ausweichen I/II/III |
 | `schildkampfI/II` | Schildkampf I/II |
 | `parierwaffenI/II` | Parierwaffe I/II |
@@ -730,6 +733,7 @@ zusaetzlich um weitere `+2`.
 | Ausweichen | weiterer Bonus `+2` |
 | Helden-INI | `IniBase` wird effektiv verdoppelt |
 | GS | finaler GS-Wert wird verdoppelt |
+| Kampf-SF | aktiviert temporaer `Schnellziehen`, `Schnellladen (Bogen)` und `Schnellladen (Armbrust)` |
 | Anzeige | `Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2` |
 
 ### 4.6 Waffe, Fernkampf-AT & Schaden
@@ -761,8 +765,14 @@ Dabei gilt:
   Nahkampf-AT-Anteil.
 - Die aktive Distanzstufe beeinflusst nur `TP`.
 - Das aktive Geschoss beeinflusst `TP`, `INI` und `AT`.
-- `reloadTime` wird direkt aus `RangedWeaponProfile` gelesen und im Preview
-  unverändert angezeigt.
+- `reloadTime` wird fuer Boegen und Armbrueste ueber
+  `lib/rules/derived/fernkampf_ladezeit_rules.dart` als effektive Ladezeit
+  berechnet und als `1 Aktion` / `N Aktionen` angezeigt.
+- `Schnellladen (Bogen)` verkuerzt die Ladezeit um `1`; bei bereits besessener
+  SF reduziert Axxeleratus die Ladezeit um einen weiteren Punkt.
+- `Schnellladen (Armbrust)` reduziert die Ladezeit um `3/4` der Basis-
+  Ladezeit, echt gerundet; bei bereits besessener SF reduziert Axxeleratus
+  anschliessend um einen weiteren Punkt.
 
 **Spezialisierungs-Boni:**
 

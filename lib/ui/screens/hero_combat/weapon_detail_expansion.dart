@@ -227,6 +227,30 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
             ),
           ],
         ),
+        const Divider(),
+        _calcSection(
+          title: 'Ladezeit',
+          resultLabel: preview.reloadTimeDisplay,
+          steps: [
+            _calcStep('Basis', preview.baseReloadTime),
+            if (preview.schnellladenBogenActive)
+              _calcStep(
+                preview.schnellladenBogenTemporary
+                    ? 'Schnellladen (Bogen) via Axxeleratus'
+                    : 'Schnellladen (Bogen)',
+                null,
+                label: 'aktiv',
+              ),
+            if (preview.schnellladenArmbrustActive)
+              _calcStep(
+                preview.schnellladenArmbrustTemporary
+                    ? 'Schnellladen (Armbrust) via Axxeleratus'
+                    : 'Schnellladen (Armbrust)',
+                null,
+                label: 'aktiv',
+              ),
+          ],
+        ),
       ],
     );
   }
