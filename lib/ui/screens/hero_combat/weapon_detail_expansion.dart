@@ -8,7 +8,6 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
     required bool isEditing,
   }) {
     final weapon = _draftCombatConfig.selectedWeapon;
-    final offhand = _draftCombatConfig.offhand;
     final manual = _draftCombatConfig.manualMods;
     final theme = Theme.of(context);
 
@@ -43,7 +42,7 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                               _talentAtValue(weapon.talentId) -
                               weapon.wmAt -
                               (preview.specBonus) -
-                              offhand.atMod -
+                              preview.offhandAtMod -
                               manual.atMod -
                               _atEbePart(preview.ebe),
                         ),
@@ -51,8 +50,8 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                         _calcStep('eBE AT-Anteil', _atEbePart(preview.ebe)),
                         if (preview.specBonus > 0)
                           _calcStep('Spezialisierung', preview.specBonus),
-                        if (offhand.atMod != 0)
-                          _calcStep('Nebenhand AT', offhand.atMod),
+                        if (preview.offhandAtMod != 0)
+                          _calcStep('Nebenhand AT', preview.offhandAtMod),
                         if (manual.atMod != 0)
                           _calcStep('Manueller Mod', manual.atMod),
                       ],
@@ -123,8 +122,8 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                           '= Helden+Waffen-INI',
                           preview.kombinierteHeldenWaffenIni,
                         ),
-                        if (offhand.iniMod != 0)
-                          _calcStep('Nebenhand INI', offhand.iniMod),
+                        if (preview.offhandIniMod != 0)
+                          _calcStep('Nebenhand INI', preview.offhandIniMod),
                         _calcStep('= Kampf-INI', preview.kampfInitiative),
                       ],
                     ),

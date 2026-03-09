@@ -164,7 +164,7 @@ void main() {
   }
 
   Future<void> openWeaponsTab(WidgetTester tester) async {
-    await tester.tap(find.widgetWithText(Tab, 'Waffen'));
+    await tester.tap(find.widgetWithText(Tab, 'Ausrüstung'));
     await tester.pumpAndSettle();
   }
 
@@ -424,7 +424,7 @@ void main() {
     await openCombatTab(tester, repo);
 
     expect(find.widgetWithText(Tab, 'Kampftechniken'), findsOneWidget);
-    expect(find.widgetWithText(Tab, 'Waffen'), findsOneWidget);
+    expect(find.widgetWithText(Tab, 'Ausrüstung'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Kampf'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Sonderfertigkeiten'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Manoever'), findsOneWidget);
@@ -1042,7 +1042,7 @@ void main() {
     );
   });
 
-  testWidgets('keeps weapon management only in Waffen subtab', (tester) async {
+  testWidgets('keeps weapon management only in Ausrüstung subtab', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -1072,7 +1072,7 @@ void main() {
       findsNothing,
     );
 
-    await tester.tap(find.widgetWithText(Tab, 'Waffen'));
+    await tester.tap(find.widgetWithText(Tab, 'Ausrüstung'));
     await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey<String>('combat-weapon-add')),
@@ -2065,7 +2065,7 @@ void main() {
     expect(find.text('Distanz 1'), findsWidgets);
   });
 
-  testWidgets('offhand values persist in read mode', (tester) async {
+  testWidgets('offhand values persist via referenced equipment', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -2081,35 +2081,53 @@ void main() {
     await openCombatTab(tester, repo);
     await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
-    final offhandMode = find.byKey(
-      const ValueKey<String>('combat-offhand-mode'),
-    );
-    for (var i = 0; i < 6 && offhandMode.evaluate().isEmpty; i++) {
+    final addEquipment = find.byKey(const ValueKey<String>('combat-offhand-add'));
+    await openWeaponsTab(tester);
+    for (var i = 0; i < 6 && addEquipment.evaluate().isEmpty; i++) {
       await tester.drag(find.byType(ListView).first, const Offset(0, -280));
       await tester.pumpAndSettle();
     }
-    expect(offhandMode, findsOneWidget);
+    expect(addEquipment, findsOneWidget);
+    await tester.tap(addEquipment);
     await tester.pumpAndSettle();
-    await tester.tap(offhandMode);
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('combat-offhand-form-name')),
+      'Holzschild',
+    );
+    await tester.tap(find.byKey(const ValueKey<String>('combat-offhand-form-type')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Schild').last);
     await tester.pumpAndSettle();
-    final offhandAtMod = find.byKey(
-      const ValueKey<String>('combat-offhand-at-mod'),
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('combat-offhand-form-at-mod')),
+      '2',
     );
-    for (var i = 0; i < 3 && offhandAtMod.evaluate().isEmpty; i++) {
-      await tester.drag(find.byType(ListView).first, const Offset(0, -180));
+    await tester.tap(find.byKey(const ValueKey<String>('combat-offhand-form-save')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
+    await tester.pumpAndSettle();
+    final offhandSelection = find.byKey(
+      const ValueKey<String>('combat-offhand-selection'),
+    );
+    for (var i = 0; i < 6 && offhandSelection.evaluate().isEmpty; i++) {
+      await tester.drag(find.byType(ListView).first, const Offset(0, -280));
       await tester.pumpAndSettle();
     }
-    expect(offhandAtMod, findsOneWidget);
+    expect(offhandSelection, findsOneWidget);
+    await tester.ensureVisible(offhandSelection);
     await tester.pumpAndSettle();
-    await tester.enterText(offhandAtMod, '2');
+    await tester.tap(offhandSelection, warnIfMissed: false);
+    await tester.pumpAndSettle();
+    final shieldOption = find.textContaining('Schild: Holzschild');
+    expect(shieldOption, findsWidgets);
+    await tester.tap(shieldOption.last);
     await tester.pumpAndSettle();
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-    expect(hero.combatConfig.offhand.mode, OffhandMode.shield);
-    expect(hero.combatConfig.offhand.atMod, 2);
+    expect(hero.combatConfig.offhandAssignment.equipmentIndex, 0);
+    expect(hero.combatConfig.offhandEquipment.single.atMod, 2);
   });
 
   testWidgets('weapon overview table lists active weapon first', (
@@ -2148,7 +2166,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Waffen'));
+    await tester.tap(find.widgetWithText(Tab, 'Ausrüstung'));
     await tester.pumpAndSettle();
 
     final table = find.byKey(

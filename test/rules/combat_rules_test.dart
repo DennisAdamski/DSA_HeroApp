@@ -198,7 +198,13 @@ void main() {
       final sheet = hero(
         combatConfig: const CombatConfig(
           mainWeapon: MainWeaponSlot(iniMod: 3),
-          offhand: OffhandSlot(mode: OffhandMode.linkhand, iniMod: -1),
+          offhandAssignment: OffhandAssignment(equipmentIndex: 0),
+          offhandEquipment: <OffhandEquipmentEntry>[
+            OffhandEquipmentEntry(
+              type: OffhandEquipmentType.shield,
+              iniMod: -1,
+            ),
+          ],
           manualMods: CombatManualMods(iniWurf: 2),
         ),
       );
@@ -217,7 +223,13 @@ void main() {
       ge: 21,
       combatConfig: const CombatConfig(
         mainWeapon: MainWeaponSlot(iniMod: 3, kkBase: 10, kkThreshold: 3),
-        offhand: OffhandSlot(mode: OffhandMode.linkhand, iniMod: -1),
+        offhandAssignment: OffhandAssignment(equipmentIndex: 0),
+        offhandEquipment: <OffhandEquipmentEntry>[
+          OffhandEquipmentEntry(
+            type: OffhandEquipmentType.shield,
+            iniMod: -1,
+          ),
+        ],
       ),
     );
     final result = preview(hero);
@@ -701,7 +713,7 @@ void main() {
     },
   );
 
-  test('offhand bonuses depend on mode and not on one-handed flag', () {
+  test('parry weapon applies only its new main-hand modifiers', () {
     final noOffhand = hero(
       talents: const {'tal_waffe': HeroTalentEntry(atValue: 6, paValue: 6)},
       combatConfig: const CombatConfig(
@@ -715,11 +727,15 @@ void main() {
     );
     final withOffhand = noOffhand.copyWith(
       combatConfig: noOffhand.combatConfig.copyWith(
-        offhand: const OffhandSlot(
-          mode: OffhandMode.linkhand,
-          atMod: 2,
-          paMod: 3,
-        ),
+        offhandAssignment: const OffhandAssignment(equipmentIndex: 0),
+        offhandEquipment: const <OffhandEquipmentEntry>[
+          OffhandEquipmentEntry(
+            type: OffhandEquipmentType.parryWeapon,
+            atMod: 2,
+            paMod: 3,
+          ),
+        ],
+        specialRules: const CombatSpecialRules(linkhandActive: true),
       ),
     );
 
@@ -727,7 +743,104 @@ void main() {
     final withOffhandResult = preview(withOffhand);
 
     expect(withOffhandResult.at, noOffhandResult.at + 2);
-    expect(withOffhandResult.pa, noOffhandResult.pa + 4);
+    expect(withOffhandResult.pa, noOffhandResult.pa - 1);
+  });
+
+  test('parry weapon requires Linkhand and scales with parry abilities', () {
+    final baseHero = hero(
+      talents: const {'tal_waffe': HeroTalentEntry(atValue: 6, paValue: 6)},
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(
+          talentId: 'tal_waffe',
+          name: 'Waffe',
+          weaponType: 'Waffe',
+        ),
+        offhandAssignment: OffhandAssignment(equipmentIndex: 0),
+        offhandEquipment: <OffhandEquipmentEntry>[
+          OffhandEquipmentEntry(
+            name: 'Parierdolch',
+            type: OffhandEquipmentType.parryWeapon,
+            paMod: 2,
+          ),
+        ],
+      ),
+    );
+
+    final withoutLinkhand = preview(baseHero);
+    final withLinkhand = preview(
+      baseHero.copyWith(
+        combatConfig: baseHero.combatConfig.copyWith(
+          specialRules: const CombatSpecialRules(linkhandActive: true),
+        ),
+      ),
+    );
+    final withPw1 = preview(
+      baseHero.copyWith(
+        combatConfig: baseHero.combatConfig.copyWith(
+          specialRules: const CombatSpecialRules(
+            linkhandActive: true,
+            parierwaffenI: true,
+          ),
+        ),
+      ),
+    );
+    final withPw2 = preview(
+      baseHero.copyWith(
+        combatConfig: baseHero.combatConfig.copyWith(
+          specialRules: const CombatSpecialRules(
+            linkhandActive: true,
+            parierwaffenII: true,
+          ),
+        ),
+      ),
+    );
+
+    expect(withoutLinkhand.offhandRequiresLinkhand, isTrue);
+    expect(withLinkhand.offhandPaBonus, -2);
+    expect(withPw1.offhandPaBonus, 1);
+    expect(withPw2.offhandPaBonus, 4);
+  });
+
+  test('shield creates its own shield parade and does not change main PA', () {
+    final baseHero = hero(
+      talents: const {'tal_waffe': HeroTalentEntry(atValue: 6, paValue: 6)},
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(
+          talentId: 'tal_waffe',
+          name: 'Waffe',
+          weaponType: 'Waffe',
+        ),
+        offhandAssignment: OffhandAssignment(equipmentIndex: 0),
+        offhandEquipment: <OffhandEquipmentEntry>[
+          OffhandEquipmentEntry(
+            name: 'Turmschild',
+            type: OffhandEquipmentType.shield,
+            paMod: 2,
+            atMod: -1,
+            iniMod: -2,
+          ),
+        ],
+      ),
+    );
+
+    final noSf = preview(baseHero);
+    final withShield2 = preview(
+      baseHero.copyWith(
+        combatConfig: baseHero.combatConfig.copyWith(
+          specialRules: const CombatSpecialRules(
+            linkhandActive: true,
+            schildkampfII: true,
+          ),
+        ),
+      ),
+    );
+
+    expect(noSf.offhandIsShield, isTrue);
+    expect(noSf.shieldPa, noSf.paBase + 2);
+    expect(withShield2.shieldPa, withShield2.paBase + 7);
+    expect(withShield2.offhandPaBonus, 0);
+    expect(withShield2.offhandAtMod, -1);
+    expect(withShield2.offhandIniMod, -2);
   });
 
   test('combat preview stays stable when no active weapon is selected', () {

@@ -150,13 +150,16 @@ void main() {
           isArtifact: true,
           artifactDescription: 'Gebundene Flammenklinge',
         ),
-        offhand: OffhandSlot(
-          mode: OffhandMode.shield,
-          name: 'Holzschild',
-          atMod: -5,
-          paMod: 7,
-          iniMod: -3,
-        ),
+        offhandAssignment: OffhandAssignment(equipmentIndex: 0),
+        offhandEquipment: <OffhandEquipmentEntry>[
+          OffhandEquipmentEntry(
+            name: 'Holzschild',
+            type: OffhandEquipmentType.shield,
+            atMod: -5,
+            paMod: 7,
+            iniMod: -3,
+          ),
+        ],
         armor: ArmorConfig(
           pieces: <ArmorPiece>[
             ArmorPiece(
@@ -201,7 +204,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 13);
+    expect(reloaded.schemaVersion, 14);
     expect(reloaded.kultur, 'Mittelreich');
     expect(reloaded.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -270,7 +273,11 @@ void main() {
     );
     expect(reloaded.combatConfig.weaponSlots.length, 1);
     expect(reloaded.combatConfig.selectedWeaponIndex, 0);
-    expect(reloaded.combatConfig.offhand.mode, OffhandMode.shield);
+    expect(reloaded.combatConfig.offhandAssignment.equipmentIndex, 0);
+    expect(
+      reloaded.combatConfig.offhandEquipment.single.type,
+      OffhandEquipmentType.shield,
+    );
     expect(reloaded.combatConfig.armor.pieces.length, 1);
     expect(reloaded.combatConfig.armor.pieces.first.be, 2);
     expect(reloaded.combatConfig.armor.globalArmorTrainingLevel, 2);
@@ -324,7 +331,7 @@ void main() {
     expect(loaded.combatConfig.mainWeapon.isArtifact, isFalse);
     expect(loaded.combatConfig.mainWeapon.artifactDescription, isEmpty);
     expect(loaded.combatConfig.weaponSlots.length, 1);
-    expect(loaded.combatConfig.offhand.mode, OffhandMode.none);
+    expect(loaded.combatConfig.offhandAssignment.isNone, isTrue);
     expect(loaded.combatConfig.specialRules.activeManeuvers, isEmpty);
   });
 
@@ -619,4 +626,41 @@ void main() {
       expect(loaded.combatConfig.armor.globalArmorTrainingLevel, 0);
     },
   );
+
+  test('legacy offhand entries migrate into referenced offhand equipment', () {
+    final loaded = HeroSheet.fromJson({
+      'schemaVersion': 14,
+      'id': 'legacy_offhand',
+      'name': 'Alt',
+      'level': 1,
+      'attributes': {
+        'mu': 8,
+        'kl': 8,
+        'inn': 8,
+        'ch': 8,
+        'ff': 8,
+        'ge': 8,
+        'ko': 8,
+        'kk': 8,
+      },
+      'combatConfig': {
+        'mainWeapon': {'name': 'Kurzschwert'},
+        'offhand': {
+          'mode': 'shield',
+          'name': 'Holzschild',
+          'atMod': -1,
+          'paMod': 2,
+          'iniMod': -2,
+        },
+      },
+    });
+
+    expect(loaded.combatConfig.offhandAssignment.equipmentIndex, 0);
+    expect(loaded.combatConfig.offhandEquipment.single.name, 'Holzschild');
+    expect(
+      loaded.combatConfig.offhandEquipment.single.type,
+      OffhandEquipmentType.shield,
+    );
+    expect(loaded.combatConfig.offhandEquipment.single.paMod, 2);
+  });
 }

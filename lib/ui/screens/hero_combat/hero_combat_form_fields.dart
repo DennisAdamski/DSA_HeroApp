@@ -49,23 +49,4 @@ extension _HeroCombatFormFields on _HeroCombatTabState {
       ),
     );
   }
-
-  Widget _textInput({
-    required String label,
-    required String keyName,
-    required bool isEditing,
-    required void Function(String value) onChanged,
-  }) {
-    final controller = _controllerFor(keyName, '');
-    return TextField(
-      key: ValueKey<String>(keyName),
-      controller: controller,
-      readOnly: !isEditing,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
-      onChanged: !isEditing ? null : onChanged,
-    );
-  }
 }
