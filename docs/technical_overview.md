@@ -241,6 +241,10 @@ In `HeroSheet` werden `persistentMods` (aus geparsten Vor-/Nachteilen, dauerhaft
 
 ### 2.5 Combat-Konfiguration
 
+`CombatConfig` verwaltet neben `mainWeapon`/`weapons` jetzt auch
+`offhandAssignment` (Referenz auf die aktuelle Nebenhand-Belegung) und
+`offhandEquipment` (inventarisierte Schilde und Parierwaffen).
+
 **`CombatConfig`** (`lib/domain/combat_config.dart`) ist der Hub für alle Kampfdaten.
 
 #### `MainWeaponSlot` (`lib/domain/combat_config/main_weapon_slot.dart`)
@@ -321,17 +325,22 @@ TP-/INI-/AT-Zwischenwerte sind dort als read-only Vorschau sichtbar.
 | `selectedDistanceIndex` | `int` | Aktive Distanzstufe im Kampf-Tab |
 | `selectedProjectileIndex` | `int` | Aktives Geschoss im Kampf-Tab |
 
-#### `OffhandSlot` & `OffhandMode`
+#### `OffhandAssignment` & `OffhandEquipmentEntry`
 
-**Datei:** `lib/domain/combat_config/offhand_slot.dart`
+**Datei:** `lib/domain/combat_config/offhand_assignment.dart`,
+`lib/domain/combat_config/offhand_equipment_entry.dart`
 
-| Feld | Bedeutung |
+| Typ / Feld | Bedeutung |
 |---|---|
-| `mode` | `OffhandMode` (none/shield/parryWeapon/linkhand) |
-| `name` | Anzeigename |
-| `atMod` | Angriff-Modifikator |
-| `paMod` | Parade-Modifikator |
-| `iniMod` | Initiative-Modifikator |
+| `OffhandAssignment.weaponIndex` | Referenz auf eine Nebenhand-Waffe oder `-1` |
+| `OffhandAssignment.equipmentIndex` | Referenz auf Schild/Parierwaffe oder `-1` |
+| `OffhandEquipmentEntry.name` | Anzeigename |
+| `OffhandEquipmentEntry.type` | `parryWeapon` oder `shield` |
+| `OffhandEquipmentEntry.breakFactor` | BF des Eintrags |
+| `OffhandEquipmentEntry.shieldSize` | Schildgroesse (`small`, `large`, `veryLarge`) |
+| `OffhandEquipmentEntry.iniMod` | INI-Modifikator auf die Hauptwaffe |
+| `OffhandEquipmentEntry.atMod` | AT-Modifikator auf die Hauptwaffe |
+| `OffhandEquipmentEntry.paMod` | PA-Modifikator fuer Parierwaffe oder Schild-Parade |
 
 #### `ArmorConfig` & `ArmorPiece`
 
@@ -365,7 +374,7 @@ Aktivierungsstatus von Kampf-Sonderfertigkeiten (alle `bool`):
 | `ausweichenI/II/III` | Ausweichen I/II/III |
 | `schildkampfI/II` | Schildkampf I/II |
 | `parierwaffenI/II` | Parierwaffe I/II |
-| `linkhandActive` | Linkhand-Modus |
+| `linkhandActive` | Sonderfertigkeit Linkhand |
 | `flink` | Vorteil: Flink |
 | `behaebig` | Nachteil: Behäbig |
 | `axxeleratusActive` | Zauber Axxeleratus (verdoppelt Ini-Basisanteil und GS; weitere Kampfboni) |
