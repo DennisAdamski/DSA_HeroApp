@@ -6,7 +6,7 @@ Future<List<HeroTalentModifier>?> _showTalentModifiersDialog({
   required String talentName,
   required List<HeroTalentModifier> initialModifiers,
 }) {
-  return showDialog<List<HeroTalentModifier>>(
+  return showAdaptiveDetailSheet<List<HeroTalentModifier>>(
     context: context,
     builder: (_) => _TalentModifiersDialog(
       talentName: talentName,

@@ -4,13 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 
 /// Oeffnet den gemeinsamen Dialog fuer wichtige aktive Zaubereffekte.
 Future<void> showActiveSpellEffectsDialog({
   required BuildContext context,
   required String heroId,
 }) {
-  return showDialog<void>(
+  return showAdaptiveDetailSheet<void>(
     context: context,
     builder: (dialogContext) {
       return _ActiveSpellEffectsDialog(heroId: heroId);

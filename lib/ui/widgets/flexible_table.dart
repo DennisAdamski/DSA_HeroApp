@@ -8,7 +8,7 @@ class FlexibleTableRow {
   final LocalKey? key;
 }
 
-class FlexibleTable extends StatelessWidget {
+class FlexibleTable extends StatefulWidget {
   const FlexibleTable({
     super.key,
     required this.headerCells,
@@ -27,14 +27,49 @@ class FlexibleTable extends StatelessWidget {
   final EdgeInsets horizontalPadding;
 
   @override
+  State<FlexibleTable> createState() => _FlexibleTableState();
+}
+
+class _FlexibleTableState extends State<FlexibleTable> {
+  final ScrollController _scrollController = ScrollController();
+  bool _canScrollRight = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_updateScrollIndicator);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateScrollIndicator();
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_updateScrollIndicator);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _updateScrollIndicator() {
+    if (!_scrollController.hasClients) return;
+    final canScroll = _scrollController.position.maxScrollExtent >
+        _scrollController.position.pixels + 1;
+    if (canScroll != _canScrollRight) {
+      setState(() {
+        _canScrollRight = canScroll;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final minWidth = (minChars <= 0 ? 3 : minChars) * 12.0;
+    final minWidth = (widget.minChars <= 0 ? 3 : widget.minChars) * 12.0;
     final allRows = <TableRow>[
-      ...preHeaderRows.map(
+      ...widget.preHeaderRows.map(
         (cells) => _buildRow(cells: cells, minWidth: minWidth),
       ),
-      _buildRow(cells: headerCells, minWidth: minWidth, isHeader: true),
-      ...rows.map(
+      _buildRow(cells: widget.headerCells, minWidth: minWidth, isHeader: true),
+      ...widget.rows.map(
         (row) => _buildRow(
           key: row.key,
           cells: row.cells,
@@ -44,14 +79,46 @@ class FlexibleTable extends StatelessWidget {
       ),
     ];
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Table(
-        key: tableKey,
-        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-        defaultColumnWidth: const IntrinsicColumnWidth(),
-        children: allRows,
-      ),
+    return Stack(
+      children: [
+        NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            _updateScrollIndicator();
+            return false;
+          },
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            scrollDirection: Axis.horizontal,
+            child: Table(
+              key: widget.tableKey,
+              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+              defaultColumnWidth: const IntrinsicColumnWidth(),
+              children: allRows,
+            ),
+          ),
+        ),
+        if (_canScrollRight)
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: 24,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Theme.of(context).scaffoldBackgroundColor.withAlpha(0),
+                      Theme.of(context).scaffoldBackgroundColor,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -70,7 +137,7 @@ class FlexibleTable extends StatelessWidget {
       children: cells
           .map(
             (cell) => Padding(
-              padding: horizontalPadding,
+              padding: widget.horizontalPadding,
               child: ConstrainedBox(
                 constraints: BoxConstraints(minWidth: minWidth),
                 child: isHeader

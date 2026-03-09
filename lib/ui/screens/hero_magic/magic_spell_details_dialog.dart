@@ -7,7 +7,7 @@ Future<_SpellDetailsDialogResult?> _showSpellDetailsDialog({
   required HeroSpellEntry entry,
   required bool isEditing,
 }) {
-  return showDialog<_SpellDetailsDialogResult>(
+  return showAdaptiveDetailSheet<_SpellDetailsDialogResult>(
     context: context,
     builder: (_) =>
         _SpellDetailsDialog(def: def, entry: entry, isEditing: isEditing),

@@ -5,7 +5,7 @@ extension _HeroMetaTalentDialogs on _HeroTalentTableTabState {
     final sortedTalents = List<TalentDef>.from(allTalents)
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
-    await showDialog<void>(
+    await showAdaptiveDetailSheet<void>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
@@ -157,7 +157,7 @@ extension _HeroMetaTalentDialogs on _HeroTalentTableTabState {
         .toSet();
     String? validationMessage;
 
-    return showDialog<HeroMetaTalent>(
+    return showAdaptiveDetailSheet<HeroMetaTalent>(
       context: context,
       builder: (context) {
         return StatefulBuilder(

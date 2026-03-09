@@ -17,7 +17,7 @@ Future<HeroRitualEntry?> _showRitualEntryDialog({
   HeroRitualEntry? existing,
   required bool isEditing,
 }) {
-  return showDialog<HeroRitualEntry>(
+  return showAdaptiveDetailSheet<HeroRitualEntry>(
     context: context,
     builder: (dialogContext) {
       return _RitualEntryDialog(

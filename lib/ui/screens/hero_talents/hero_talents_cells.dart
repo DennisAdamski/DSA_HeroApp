@@ -85,7 +85,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
                   (spec) => Chip(
                     label: Text(spec),
                     visualDensity: VisualDensity.compact,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    materialTapTargetSize: adaptiveTapTargetSize(context),
                     padding: EdgeInsets.zero,
                     labelPadding: const EdgeInsets.symmetric(horizontal: 6),
                   ),
@@ -109,7 +109,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
                 key: ValueKey<String>('talents-combat-spec-${talent.id}-$spec'),
                 label: Text(spec),
                 visualDensity: VisualDensity.compact,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                materialTapTargetSize: adaptiveTapTargetSize(context),
                 padding: EdgeInsets.zero,
                 labelPadding: const EdgeInsets.symmetric(horizontal: 6),
                 onDeleted: () {
@@ -124,7 +124,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
                 avatar: const Icon(Icons.add, size: 16),
                 label: const Text('Hinzufuegen'),
                 visualDensity: VisualDensity.compact,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                materialTapTargetSize: adaptiveTapTargetSize(context),
                 padding: EdgeInsets.zero,
                 labelPadding: const EdgeInsets.only(right: 6),
                 onPressed: () async {
@@ -302,7 +302,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
                   (spec) => Chip(
                     label: Text(spec),
                     visualDensity: VisualDensity.compact,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    materialTapTargetSize: adaptiveTapTargetSize(context),
                     padding: EdgeInsets.zero,
                     labelPadding: const EdgeInsets.symmetric(horizontal: 6),
                   ),
@@ -326,7 +326,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
                 key: ValueKey<String>('talents-spec-$talentId-$spec'),
                 label: Text(spec),
                 visualDensity: VisualDensity.compact,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                materialTapTargetSize: adaptiveTapTargetSize(context),
                 padding: EdgeInsets.zero,
                 labelPadding: const EdgeInsets.symmetric(horizontal: 6),
                 onDeleted: () {
