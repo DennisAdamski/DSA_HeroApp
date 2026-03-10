@@ -1232,6 +1232,7 @@ void main() {
     expect(find.text('Ruestung'), findsNothing);
     expect(find.text('Kampfwerte'), findsNothing);
     expect(find.text('Manueller BE'), findsNothing);
+    expect(find.text('Entfernen'), findsNothing);
   });
 
   testWidgets(
@@ -1263,6 +1264,8 @@ void main() {
         find.byKey(const ValueKey<String>('workspace-status-be-clear')),
         findsOneWidget,
       );
+      expect(find.byTooltip('BE auf berechnet zuruecksetzen'), findsOneWidget);
+      expect(find.text('Entfernen'), findsNothing);
 
       await tester.tap(
         find.byKey(const ValueKey<String>('workspace-status-be-clear')),
