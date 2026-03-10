@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 
 const double _pagePadding = 16;
 const double _sectionSpacing = 16;
@@ -41,18 +42,62 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
   int _rowCount = _minimumRows;
 
   static const List<_InventoryColumn> _columns = <_InventoryColumn>[
-    _InventoryColumn('Gegenstand', 'gegenstand', 180),
-    _InventoryColumn('Wo getragen', 'wo_getragen', 130),
-    _InventoryColumn('Typ', 'typ', 120),
-    _InventoryColumn('Welches Abenteuer', 'welches_abenteuer', 170),
-    _InventoryColumn('Gewicht', 'gewicht', 110),
-    _InventoryColumn('Wert', 'wert', 110),
-    _InventoryColumn('Artefakt', 'artefakt', 110),
-    _InventoryColumn('Anzahl', 'anzahl', 90),
+    _InventoryColumn(
+      'Gegenstand',
+      'gegenstand',
+      AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220),
+    ),
+    _InventoryColumn(
+      'Wo getragen',
+      'wo_getragen',
+      AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 160),
+    ),
+    _InventoryColumn(
+      'Typ',
+      'typ',
+      AdaptiveTableColumnSpec(minWidth: 90, maxWidth: 140),
+    ),
+    _InventoryColumn(
+      'Welches Abenteuer',
+      'welches_abenteuer',
+      AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 210),
+    ),
+    _InventoryColumn(
+      'Gewicht',
+      'gewicht',
+      AdaptiveTableColumnSpec(minWidth: 90, maxWidth: 130),
+    ),
+    _InventoryColumn(
+      'Wert',
+      'wert',
+      AdaptiveTableColumnSpec(minWidth: 90, maxWidth: 130),
+    ),
+    _InventoryColumn(
+      'Artefakt',
+      'artefakt',
+      AdaptiveTableColumnSpec(minWidth: 90, maxWidth: 130),
+    ),
+    _InventoryColumn(
+      'Anzahl',
+      'anzahl',
+      AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 110),
+    ),
     _InventoryColumn('am Körper', 'am_koerper', 110),
-    _InventoryColumn('wo dann?', 'wo_dann', 110),
-    _InventoryColumn('Gruppe', 'gruppe', 120),
-    _InventoryColumn('Beschreibung', 'beschreibung', 280),
+    _InventoryColumn(
+      'wo dann?',
+      'wo_dann',
+      AdaptiveTableColumnSpec(minWidth: 100, maxWidth: 140),
+    ),
+    _InventoryColumn(
+      'Gruppe',
+      'gruppe',
+      AdaptiveTableColumnSpec(minWidth: 100, maxWidth: 140),
+    ),
+    _InventoryColumn(
+      'Beschreibung',
+      'beschreibung',
+      AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320),
+    ),
   ];
 
   @override
@@ -282,17 +327,21 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
               const SizedBox(height: _fieldSpacing),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: _columns.fold<double>(
-                    0,
-                    (sum, column) => sum + column.width,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: adaptiveTableMinWidth(
+                      _columns
+                          .map((column) => column.spec)
+                          .toList(growable: false),
+                    ),
                   ),
                   child: Table(
                     defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                    columnWidths: <int, TableColumnWidth>{
-                      for (var i = 0; i < _columns.length; i++)
-                        i: FixedColumnWidth(_columns[i].width),
-                    },
+                    columnWidths: buildAdaptiveTableColumnWidths(
+                      _columns
+                          .map((column) => column.spec)
+                          .toList(growable: false),
+                    ),
                     children: [
                       TableRow(
                         children: _columns
@@ -353,11 +402,19 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
 }
 
 class _InventoryColumn {
-  const _InventoryColumn(this.label, this.key, this.width);
+  const _InventoryColumn(this.label, this.key, this.widthOrSpec);
 
   final String label;
   final String key;
-  final double width;
+  final Object widthOrSpec;
+
+  AdaptiveTableColumnSpec get spec {
+    if (widthOrSpec is AdaptiveTableColumnSpec) {
+      return widthOrSpec as AdaptiveTableColumnSpec;
+    }
+    final width = (widthOrSpec as num).toDouble();
+    return AdaptiveTableColumnSpec.fixed(width);
+  }
 }
 
 class _SectionCard extends StatelessWidget {

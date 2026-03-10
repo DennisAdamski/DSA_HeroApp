@@ -1,6 +1,24 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 
 extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
+  List<AdaptiveTableColumnSpec> _combatSubtabColumnSpecs({
+    required bool isEditing,
+  }) {
+    return <AdaptiveTableColumnSpec>[
+      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
+      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2),
+      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
+      const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 100),
+      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 3),
+      if (isEditing) const AdaptiveTableColumnSpec.fixed(90),
+    ];
+  }
+
   void _toggleCombatTalent(String talentId, bool activate) {
     if (activate) {
       _draftTalents.putIfAbsent(talentId, () => const HeroTalentEntry());
@@ -172,6 +190,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     required Attributes effectiveAttributes,
   }) {
     final isEditing = _editController.isEditing;
+    final columnSpecs = _combatSubtabColumnSpecs(isEditing: isEditing);
     final rows = <TableRow>[
       _buildCombatHeaderRow(isEditing: isEditing),
       ...talents.map(
@@ -185,28 +204,24 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minWidth: isEditing ? 1625 : 1535),
-          child: Table(
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            columnWidths: <int, TableColumnWidth>{
-              0: const FixedColumnWidth(220),
-              1: const FixedColumnWidth(300),
-              2: const FixedColumnWidth(220),
-              3: const FixedColumnWidth(70),
-              4: const FixedColumnWidth(60),
-              5: const FixedColumnWidth(90),
-              6: const FixedColumnWidth(90),
-              7: const FixedColumnWidth(90),
-              8: const FixedColumnWidth(90),
-              9: const FixedColumnWidth(230),
-              if (isEditing) 10: const FixedColumnWidth(95),
-            },
-            children: rows,
-          ),
-        ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final layout = resolveAdaptiveTableLayout(
+            columnSpecs,
+            availableWidth: constraints.maxWidth,
+          );
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: layout.tableWidth,
+              child: Table(
+                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                columnWidths: layout.toColumnWidthMap(),
+                children: rows,
+              ),
+            ),
+          );
+        },
       ),
     );
   }

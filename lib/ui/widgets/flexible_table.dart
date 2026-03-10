@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
+
+/// Beschreibt eine einzelne Zeile fuer [FlexibleTable].
 class FlexibleTableRow {
   const FlexibleTableRow({required this.cells, this.backgroundColor, this.key});
 
@@ -8,6 +11,7 @@ class FlexibleTableRow {
   final LocalKey? key;
 }
 
+/// Horizontale Tabelle mit optional adaptiven Spaltenbreiten.
 class FlexibleTable extends StatefulWidget {
   const FlexibleTable({
     super.key,
@@ -16,14 +20,19 @@ class FlexibleTable extends StatefulWidget {
     this.preHeaderRows = const <List<Widget>>[],
     this.tableKey,
     this.minChars = 3,
+    this.columnSpecs,
     this.horizontalPadding = const EdgeInsets.fromLTRB(6, 4, 6, 6),
-  });
+  }) : assert(
+         columnSpecs == null || columnSpecs.length == headerCells.length,
+         'columnSpecs must match headerCells length',
+       );
 
   final List<Widget> headerCells;
   final List<FlexibleTableRow> rows;
   final List<List<Widget>> preHeaderRows;
   final Key? tableKey;
   final int minChars;
+  final List<AdaptiveTableColumnSpec>? columnSpecs;
   final EdgeInsets horizontalPadding;
 
   @override
@@ -52,7 +61,8 @@ class _FlexibleTableState extends State<FlexibleTable> {
 
   void _updateScrollIndicator() {
     if (!_scrollController.hasClients) return;
-    final canScroll = _scrollController.position.maxScrollExtent >
+    final canScroll =
+        _scrollController.position.maxScrollExtent >
         _scrollController.position.pixels + 1;
     if (canScroll != _canScrollRight) {
       setState(() {
@@ -64,21 +74,31 @@ class _FlexibleTableState extends State<FlexibleTable> {
   @override
   Widget build(BuildContext context) {
     final minWidth = (widget.minChars <= 0 ? 3 : widget.minChars) * 12.0;
+    final useLegacyCellMinWidth = widget.columnSpecs == null;
     final allRows = <TableRow>[
       ...widget.preHeaderRows.map(
-        (cells) => _buildRow(cells: cells, minWidth: minWidth),
+        (cells) => _buildRow(
+          cells: cells,
+          minWidth: minWidth,
+          useLegacyCellMinWidth: useLegacyCellMinWidth,
+        ),
       ),
-      _buildRow(cells: widget.headerCells, minWidth: minWidth, isHeader: true),
+      _buildRow(
+        cells: widget.headerCells,
+        minWidth: minWidth,
+        isHeader: true,
+        useLegacyCellMinWidth: useLegacyCellMinWidth,
+      ),
       ...widget.rows.map(
         (row) => _buildRow(
           key: row.key,
           cells: row.cells,
           minWidth: minWidth,
+          useLegacyCellMinWidth: useLegacyCellMinWidth,
           backgroundColor: row.backgroundColor,
         ),
       ),
     ];
-
     return Stack(
       children: [
         NotificationListener<ScrollNotification>(
@@ -86,15 +106,32 @@ class _FlexibleTableState extends State<FlexibleTable> {
             _updateScrollIndicator();
             return false;
           },
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            scrollDirection: Axis.horizontal,
-            child: Table(
-              key: widget.tableKey,
-              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-              defaultColumnWidth: const IntrinsicColumnWidth(),
-              children: allRows,
-            ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final responsiveLayout =
+                  widget.columnSpecs == null || !constraints.maxWidth.isFinite
+                  ? null
+                  : resolveAdaptiveTableLayout(
+                      widget.columnSpecs!,
+                      availableWidth: constraints.maxWidth,
+                    );
+              final columnWidths = widget.columnSpecs == null
+                  ? null
+                  : (responsiveLayout?.toColumnWidthMap() ??
+                        buildAdaptiveTableColumnWidths(widget.columnSpecs!));
+
+              return SingleChildScrollView(
+                controller: _scrollController,
+                scrollDirection: Axis.horizontal,
+                child: Table(
+                  key: widget.tableKey,
+                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                  columnWidths: columnWidths,
+                  defaultColumnWidth: const IntrinsicColumnWidth(),
+                  children: allRows,
+                ),
+              );
+            },
           ),
         ),
         if (_canScrollRight)
@@ -126,6 +163,7 @@ class _FlexibleTableState extends State<FlexibleTable> {
     LocalKey? key,
     required List<Widget> cells,
     required double minWidth,
+    required bool useLegacyCellMinWidth,
     bool isHeader = false,
     Color? backgroundColor,
   }) {
@@ -138,15 +176,24 @@ class _FlexibleTableState extends State<FlexibleTable> {
           .map(
             (cell) => Padding(
               padding: widget.horizontalPadding,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minWidth: minWidth),
-                child: isHeader
-                    ? DefaultTextStyle.merge(
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                        child: cell,
-                      )
-                    : cell,
-              ),
+              child: useLegacyCellMinWidth
+                  ? ConstrainedBox(
+                      constraints: BoxConstraints(minWidth: minWidth),
+                      child: isHeader
+                          ? DefaultTextStyle.merge(
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                              child: cell,
+                            )
+                          : cell,
+                    )
+                  : (isHeader
+                        ? DefaultTextStyle.merge(
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            child: cell,
+                          )
+                        : cell),
             ),
           )
           .toList(growable: false),
@@ -154,6 +201,7 @@ class _FlexibleTableState extends State<FlexibleTable> {
   }
 }
 
+/// Textfeld fuer [FlexibleTable], das Aenderungen beim Verlassen commitet.
 class FlexibleTableCommitField extends StatefulWidget {
   const FlexibleTableCommitField({
     super.key,

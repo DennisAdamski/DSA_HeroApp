@@ -20,6 +20,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
@@ -156,10 +157,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       message: 'Talente verwalten',
                       child: IconButton(
                         key: const ValueKey<String>('talents-catalog-open'),
-                        onPressed: () => _showTalentKatalog(
-                          context,
-                          _latestCatalogTalents,
-                        ),
+                        onPressed: () =>
+                            _showTalentKatalog(context, _latestCatalogTalents),
                         icon: const Icon(Icons.library_add),
                       ),
                     ),
