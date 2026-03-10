@@ -2,61 +2,74 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 /// Haltet tab-spezifischen Workspace-Zustand fuer Edit- und Dirty-Handling.
 class WorkspaceTabRegistry {
-  WorkspaceTabRegistry({
-    required Iterable<int> editableTabs,
-    this.activeTabIndex = 0,
-  }) : _editableTabs = Set<int>.from(editableTabs) {
-    for (final tabIndex in _editableTabs) {
-      _dirtyByTab[tabIndex] = false;
-      _editingByTab[tabIndex] = false;
+  WorkspaceTabRegistry({this.activeTabId});
+
+  final Set<String> _editableTabs = <String>{};
+
+  final Map<String, bool> _dirtyByTab = <String, bool>{};
+  final Map<String, bool> _editingByTab = <String, bool>{};
+  final Map<String, WorkspaceAsyncAction> _discardByTab =
+      <String, WorkspaceAsyncAction>{};
+  final Map<String, WorkspaceTabEditActions> _editActionsByTab =
+      <String, WorkspaceTabEditActions>{};
+
+  /// Aktive Tab-ID in der sichtbaren Workspace-Liste.
+  String? activeTabId;
+
+  /// Synchronisiert die editierbaren Tabs mit der aktuellen Definition.
+  void setEditableTabs(Iterable<String> editableTabs) {
+    _editableTabs
+      ..clear()
+      ..addAll(editableTabs);
+    for (final tabId in _editableTabs) {
+      _dirtyByTab.putIfAbsent(tabId, () => false);
+      _editingByTab.putIfAbsent(tabId, () => false);
     }
   }
 
-  final Set<int> _editableTabs;
+  /// Gibt zurueck, ob ein Tab editierbar ist.
+  bool isEditableTab(String tabId) => _editableTabs.contains(tabId);
 
-  final Map<int, bool> _dirtyByTab = <int, bool>{};
-  final Map<int, bool> _editingByTab = <int, bool>{};
-  final Map<int, WorkspaceAsyncAction> _discardByTab =
-      <int, WorkspaceAsyncAction>{};
-  final Map<int, WorkspaceTabEditActions> _editActionsByTab =
-      <int, WorkspaceTabEditActions>{};
+  /// Gibt zurueck, ob ein Tab ungespeicherte Aenderungen besitzt.
+  bool isDirty(String tabId) => _dirtyByTab[tabId] ?? false;
 
-  int activeTabIndex;
+  /// Gibt zurueck, ob ein Tab aktuell im Editiermodus ist.
+  bool isEditing(String tabId) => _editingByTab[tabId] ?? false;
 
-  bool isEditableTab(int tabIndex) => _editableTabs.contains(tabIndex);
+  /// Liefert die registrierte Verwerfen-Aktion eines Tabs.
+  WorkspaceAsyncAction? discardActionFor(String tabId) => _discardByTab[tabId];
 
-  bool isDirty(int tabIndex) => _dirtyByTab[tabIndex] ?? false;
+  /// Liefert die registrierten Edit-Aktionen eines Tabs.
+  WorkspaceTabEditActions? editActionsFor(String tabId) =>
+      _editActionsByTab[tabId];
 
-  bool isEditing(int tabIndex) => _editingByTab[tabIndex] ?? false;
-
-  WorkspaceAsyncAction? discardActionFor(int tabIndex) => _discardByTab[tabIndex];
-
-  WorkspaceTabEditActions? editActionsFor(int tabIndex) =>
-      _editActionsByTab[tabIndex];
-
-  bool updateDirty(int tabIndex, bool isDirty) {
-    if ((_dirtyByTab[tabIndex] ?? false) == isDirty) {
+  /// Aktualisiert den Dirty-Zustand eines Tabs.
+  bool updateDirty(String tabId, bool isDirty) {
+    if ((_dirtyByTab[tabId] ?? false) == isDirty) {
       return false;
     }
-    _dirtyByTab[tabIndex] = isDirty;
+    _dirtyByTab[tabId] = isDirty;
     return true;
   }
 
-  bool updateEditing(int tabIndex, bool isEditing) {
-    if ((_editingByTab[tabIndex] ?? false) == isEditing) {
+  /// Aktualisiert den Editierzustand eines Tabs.
+  bool updateEditing(String tabId, bool isEditing) {
+    if ((_editingByTab[tabId] ?? false) == isEditing) {
       return false;
     }
-    _editingByTab[tabIndex] = isEditing;
+    _editingByTab[tabId] = isEditing;
     return true;
   }
 
-  void registerDiscard(int tabIndex, WorkspaceAsyncAction discardAction) {
-    _discardByTab[tabIndex] = discardAction;
+  /// Registriert die Verwerfen-Aktion eines Tabs.
+  void registerDiscard(String tabId, WorkspaceAsyncAction discardAction) {
+    _discardByTab[tabId] = discardAction;
   }
 
-  bool registerEditActions(int tabIndex, WorkspaceTabEditActions actions) {
-    final wasMissing = !_editActionsByTab.containsKey(tabIndex);
-    _editActionsByTab[tabIndex] = actions;
+  /// Registriert die Edit-Aktionen eines Tabs.
+  bool registerEditActions(String tabId, WorkspaceTabEditActions actions) {
+    final wasMissing = !_editActionsByTab.containsKey(tabId);
+    _editActionsByTab[tabId] = actions;
     return wasMissing;
   }
 }

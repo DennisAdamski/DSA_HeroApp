@@ -85,10 +85,12 @@ DSA_HeroApp/
 │   │   ├── widgets/flexible_table.dart
 │   │   └── screens/
 │   │       ├── heroes_home_screen.dart      # Hero list / selection
-│   │       ├── hero_workspace_screen.dart   # Tab host for one hero
+│   │       ├── hero_workspace_screen.dart   # Dynamischer Workspace-Host fuer einen Helden
 │   │       ├── workspace_edit_contract.dart
-│   │       ├── workspace/                   # Workspace sub-components
-│   │       ├── hero_overview_tab.dart       # Tab: Status
+│   │       ├── workspace/                   # Workspace-Registry + Sub-Komponenten
+│   │       │   ├── workspace_tab_spec.dart  # Zentrale Workspace-Tab-Definition mit Content-/Visibility-Buildern
+│   │       │   └── workspace_tab_registry.dart # Dirty-/Edit-Zustand pro stabiler Tab-ID
+│   │       ├── hero_overview_tab.dart       # Tab: Uebersicht
 │   │       ├── hero_overview/               # Overview part files
 │   │       ├── hero_talents_tab.dart        # Tab: Talente
 │   │       ├── hero_talents/                # Talent part files
