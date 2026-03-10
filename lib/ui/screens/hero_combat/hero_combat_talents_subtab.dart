@@ -415,7 +415,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
               ActionChip(
                 key: ValueKey<String>('combat-spec-add-${talent.id}'),
                 avatar: const Icon(Icons.add, size: 16),
-                label: const Text('Hinzufuegen'),
+                label: const Text('Hinzufügen'),
                 visualDensity: VisualDensity.compact,
                 materialTapTargetSize: adaptiveTapTargetSize(context),
                 padding: EdgeInsets.zero,
@@ -487,7 +487,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                     final normalized = _normalizeStringList(selected);
                     Navigator.of(context).pop(normalized);
                   },
-                  child: const Text('Uebernehmen'),
+                  child: const Text('Übernehmen'),
                 ),
               ],
             );

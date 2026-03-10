@@ -60,7 +60,7 @@ class HeroesHomeScreen extends ConsumerWidget {
                 ),
               const SizedBox(width: 8),
               IconButton(
-                tooltip: 'Held loeschen',
+                tooltip: 'Held löschen',
                 onPressed: selectedHero == null
                     ? null
                     : () => _deleteSelectedHero(
@@ -168,14 +168,15 @@ class HeroesHomeScreen extends ConsumerWidget {
     required WidgetRef ref,
     required HeroSheet hero,
   }) async {
-    final shouldDelete = await showAdaptiveConfirmDialog(
+    final result = await showAdaptiveConfirmDialog(
       context: context,
-      title: 'Held loeschen',
-      content: 'Soll "${hero.name}" wirklich geloescht werden?',
-      confirmLabel: 'Loeschen',
+      title: 'Held löschen',
+      content: 'Soll "${hero.name}" wirklich gelöscht werden?',
+      confirmLabel: 'Löschen',
+      cancelLabel: 'Abbrechen',
       isDestructive: true,
     );
-    if (!shouldDelete) {
+    if (result != AdaptiveConfirmResult.confirm) {
       return;
     }
     await ref.read(heroActionsProvider).deleteHero(hero.id);
@@ -184,7 +185,7 @@ class HeroesHomeScreen extends ConsumerWidget {
     }
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text('Held geloescht: ${hero.name}')));
+    ).showSnackBar(SnackBar(content: Text('Held gelöscht: ${hero.name}')));
   }
 
   Future<void> _exportSelectedHero({
@@ -261,7 +262,7 @@ class HeroesHomeScreen extends ConsumerWidget {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Import ungueltig: ${error.message}')),
+        SnackBar(content: Text('Import ungültig: ${error.message}')),
       );
     } on Exception catch (error) {
       if (!context.mounted) {
@@ -297,14 +298,14 @@ class _CreateHeroDialogState extends State<_CreateHeroDialog> {
     super.initState();
     _nameController = TextEditingController();
     _attributeControllers = <String, TextEditingController>{
-      'mu': TextEditingController(text: '8'),
-      'kl': TextEditingController(text: '8'),
-      'inn': TextEditingController(text: '8'),
-      'ch': TextEditingController(text: '8'),
-      'ff': TextEditingController(text: '8'),
-      'ge': TextEditingController(text: '8'),
-      'ko': TextEditingController(text: '8'),
-      'kk': TextEditingController(text: '8'),
+      'mu': TextEditingController(text: '11'),
+      'kl': TextEditingController(text: '11'),
+      'inn': TextEditingController(text: '11'),
+      'ch': TextEditingController(text: '11'),
+      'ff': TextEditingController(text: '11'),
+      'ge': TextEditingController(text: '11'),
+      'ko': TextEditingController(text: '11'),
+      'kk': TextEditingController(text: '11'),
     };
   }
 

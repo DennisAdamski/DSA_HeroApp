@@ -83,7 +83,7 @@ class WorkspaceImportExportActions {
               onPressed: () => Navigator.of(
                 dialogContext,
               ).pop(ImportConflictResolution.overwriteExisting),
-              child: const Text('Ueberschreiben'),
+              child: const Text('Überschreiben'),
             ),
           ],
         );
