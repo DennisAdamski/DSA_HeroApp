@@ -1,6 +1,53 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 
 extension _HeroTalentsTables on _HeroTalentTableTabState {
+  static const List<AdaptiveTableColumnSpec> _metaTalentColumnSpecs =
+      <AdaptiveTableColumnSpec>[
+        AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
+        AdaptiveTableColumnSpec(minWidth: 220, maxWidth: 420, flex: 3),
+        AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
+        AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 120),
+        AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 120),
+      ];
+
+  List<AdaptiveTableColumnSpec> _talentColumnSpecs({required bool isEditing}) {
+    return <AdaptiveTableColumnSpec>[
+      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
+      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 280, flex: 2),
+      const AdaptiveTableColumnSpec(minWidth: 84, maxWidth: 132),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
+      const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 110),
+      const AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 140),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 76),
+      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 280, flex: 3),
+      if (isEditing) const AdaptiveTableColumnSpec.fixed(90),
+    ];
+  }
+
+  List<AdaptiveTableColumnSpec> _combatTalentColumnSpecs({
+    required bool isEditing,
+  }) {
+    return <AdaptiveTableColumnSpec>[
+      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
+      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2),
+      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
+      const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 100),
+      if (isEditing) const AdaptiveTableColumnSpec.fixed(90),
+      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 3),
+    ];
+  }
+
   Widget _buildMetaTalentsCard({
     required List<HeroMetaTalent> metaTalents,
     required List<TalentDef> catalogTalents,
@@ -33,25 +80,25 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 1320),
-                child: Table(
-                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                  columnWidths: const <int, TableColumnWidth>{
-                    0: FixedColumnWidth(220),
-                    1: FixedColumnWidth(380),
-                    2: FixedColumnWidth(220),
-                    3: FixedColumnWidth(70),
-                    4: FixedColumnWidth(70),
-                    5: FixedColumnWidth(90),
-                    6: FixedColumnWidth(90),
-                    7: FixedColumnWidth(90),
-                  },
-                  children: rows,
-                ),
-              ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final layout = resolveAdaptiveTableLayout(
+                  _metaTalentColumnSpecs,
+                  availableWidth: constraints.maxWidth,
+                );
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: layout.tableWidth,
+                    child: Table(
+                      defaultVerticalAlignment:
+                          TableCellVerticalAlignment.middle,
+                      columnWidths: layout.toColumnWidthMap(),
+                      children: rows,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -65,6 +112,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     required int activeBaseBe,
   }) {
     final isEditing = _editController.isEditing;
+    final columnSpecs = _talentColumnSpecs(isEditing: isEditing);
     final rows = <TableRow>[
       _buildHeaderRow(isEditing: isEditing),
       ...talents.map(
@@ -79,35 +127,31 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minWidth: isEditing ? 1780 : 1780),
-          child: Table(
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            columnWidths: <int, TableColumnWidth>{
-              0: const FixedColumnWidth(220),
-              1: const FixedColumnWidth(240),
-              2: const FixedColumnWidth(120),
-              3: const FixedColumnWidth(70),
-              4: const FixedColumnWidth(60),
-              5: const FixedColumnWidth(60),
-              6: const FixedColumnWidth(90),
-              7: const FixedColumnWidth(90),
-              8: const FixedColumnWidth(120),
-              9: const FixedColumnWidth(70),
-              10: const FixedColumnWidth(190),
-              if (isEditing) 11: const FixedColumnWidth(95),
-            },
-            children: rows,
-          ),
-        ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final layout = resolveAdaptiveTableLayout(
+            columnSpecs,
+            availableWidth: constraints.maxWidth,
+          );
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: layout.tableWidth,
+              child: Table(
+                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                columnWidths: layout.toColumnWidthMap(),
+                children: rows,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildCombatTalentsTable({required List<TalentDef> talents}) {
     final isEditing = _editController.isEditing;
+    final columnSpecs = _combatTalentColumnSpecs(isEditing: isEditing);
     final rows = <TableRow>[
       _buildCombatHeaderRow(isEditing: isEditing),
       ...talents.map(
@@ -117,28 +161,24 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 1570),
-          child: Table(
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            columnWidths: <int, TableColumnWidth>{
-              0: const FixedColumnWidth(220),
-              1: const FixedColumnWidth(300),
-              2: const FixedColumnWidth(220),
-              3: const FixedColumnWidth(70),
-              4: const FixedColumnWidth(60),
-              5: const FixedColumnWidth(90),
-              6: const FixedColumnWidth(90),
-              7: const FixedColumnWidth(90),
-              8: const FixedColumnWidth(90),
-              if (isEditing) 9: const FixedColumnWidth(95),
-              10: const FixedColumnWidth(230),
-            },
-            children: rows,
-          ),
-        ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final layout = resolveAdaptiveTableLayout(
+            columnSpecs,
+            availableWidth: constraints.maxWidth,
+          );
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: layout.tableWidth,
+              child: Table(
+                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                columnWidths: layout.toColumnWidthMap(),
+                children: rows,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -257,11 +297,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         isEditing: isEditing,
       ),
       _textCell(_formatWholeNumber(maxTaw)),
-      _talentModifierCell(
-        talent: talent,
-        entry: entry,
-        isEditing: isEditing,
-      ),
+      _talentModifierCell(talent: talent, entry: entry, isEditing: isEditing),
       _intInputCell(
         talentId: talent.id,
         field: 'specialExperiences',

@@ -43,6 +43,28 @@ class _CombatTalentCatalogTableState extends State<_CombatTalentCatalogTable> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final filtered = _filteredTalents();
+    final columns = <AdaptiveDataColumnSpec>[
+      const AdaptiveDataColumnSpec(
+        label: SizedBox(width: 36),
+        width: AdaptiveTableColumnSpec.fixed(72),
+      ),
+      const AdaptiveDataColumnSpec(
+        label: Text('Name'),
+        width: AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 2),
+      ),
+      const AdaptiveDataColumnSpec(
+        label: Text('Typ'),
+        width: AdaptiveTableColumnSpec(minWidth: 90, maxWidth: 160, flex: 1),
+      ),
+      const AdaptiveDataColumnSpec(
+        label: Text('Waffengattung'),
+        width: AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 300, flex: 2),
+      ),
+      const AdaptiveDataColumnSpec(
+        label: Text('Stg'),
+        width: AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
+      ),
+    ];
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -80,8 +102,10 @@ class _CombatTalentCatalogTableState extends State<_CombatTalentCatalogTable> {
                       },
                     )
                   : null,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
             ),
             onChanged: (value) {
               setState(() {
@@ -100,66 +124,88 @@ class _CombatTalentCatalogTableState extends State<_CombatTalentCatalogTable> {
           )
         else
           Flexible(
-            child: SingleChildScrollView(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columnSpacing: 12,
-                  horizontalMargin: 12,
-                  headingRowHeight: 36,
-                  dataRowMinHeight: 32,
-                  dataRowMaxHeight: 40,
-                  columns: const [
-                    DataColumn(label: SizedBox(width: 36)),
-                    DataColumn(label: Text('Name')),
-                    DataColumn(label: Text('Typ')),
-                    DataColumn(label: Text('Waffengattung')),
-                    DataColumn(label: Text('Stg')),
-                  ],
-                  rows: filtered.map((talent) {
-                    final isActive =
-                        widget.activeTalentIds.contains(talent.id);
-                    return DataRow(
-                      cells: [
-                        DataCell(
-                          Checkbox(
-                            value: isActive,
-                            onChanged: (value) => widget.onToggleTalent(
-                                talent.id, value ?? false),
-                          ),
-                        ),
-                        DataCell(
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 200),
-                            child: Text(talent.name,
-                                overflow: TextOverflow.ellipsis),
-                          ),
-                        ),
-                        DataCell(Text(
-                          talent.type.isEmpty ? '-' : talent.type,
-                          style: theme.textTheme.bodySmall,
-                        )),
-                        DataCell(
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 250),
-                            child: Text(
-                              talent.weaponCategory.isEmpty
-                                  ? '-'
-                                  : talent.weaponCategory,
-                              style: theme.textTheme.bodySmall,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                        DataCell(Text(
-                          talent.steigerung,
-                          style: theme.textTheme.bodySmall,
-                        )),
-                      ],
-                    );
-                  }).toList(growable: false),
-                ),
-              ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const columnSpacing = 12.0;
+                const horizontalMargin = 12.0;
+                final layout = resolveAdaptiveDataTableLayout(
+                  columns,
+                  availableWidth: constraints.maxWidth,
+                  columnSpacing: columnSpacing,
+                  horizontalMargin: horizontalMargin,
+                );
+
+                return SingleChildScrollView(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      columnSpacing: columnSpacing,
+                      horizontalMargin: horizontalMargin,
+                      headingRowHeight: 36,
+                      dataRowMinHeight: 32,
+                      dataRowMaxHeight: 40,
+                      columns: layout.columns,
+                      rows: filtered
+                          .map((talent) {
+                            final isActive = widget.activeTalentIds.contains(
+                              talent.id,
+                            );
+                            return DataRow(
+                              cells: [
+                                DataCell(
+                                  Checkbox(
+                                    value: isActive,
+                                    onChanged: (value) => widget.onToggleTalent(
+                                      talent.id,
+                                      value ?? false,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: layout.contentWidthFor(1),
+                                    child: Text(
+                                      talent.name,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: layout.contentWidthFor(2),
+                                    child: Text(
+                                      talent.type.isEmpty ? '-' : talent.type,
+                                      style: theme.textTheme.bodySmall,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: layout.contentWidthFor(3),
+                                    child: Text(
+                                      talent.weaponCategory.isEmpty
+                                          ? '-'
+                                          : talent.weaponCategory,
+                                      style: theme.textTheme.bodySmall,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    talent.steigerung,
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ),
+                              ],
+                            );
+                          })
+                          .toList(growable: false),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
       ],

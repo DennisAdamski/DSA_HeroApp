@@ -1,6 +1,50 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 
 extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
+  static const List<AdaptiveTableColumnSpec> _weaponOverviewColumnSpecs =
+      <AdaptiveTableColumnSpec>[
+        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 300, flex: 3),
+        AdaptiveTableColumnSpec(minWidth: 100, maxWidth: 180, flex: 2),
+        AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 260, flex: 2),
+        AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 220, flex: 2),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 96),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 120),
+        AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 320, flex: 3),
+        AdaptiveTableColumnSpec.fixed(56),
+      ];
+
+  static const List<AdaptiveTableColumnSpec> _offhandColumnSpecs =
+      <AdaptiveTableColumnSpec>[
+        AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 260, flex: 2),
+        AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 180, flex: 1),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec(minWidth: 90, maxWidth: 150, flex: 1),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec.fixed(56),
+      ];
+
+  List<AdaptiveTableColumnSpec> _armorColumnSpecs({
+    required bool showPieceRg1,
+  }) {
+    return <AdaptiveTableColumnSpec>[
+      const AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 260, flex: 2),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
+      const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100),
+      if (showPieceRg1)
+        const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100),
+      const AdaptiveTableColumnSpec.fixed(56),
+    ];
+  }
+
   List<TalentDef> _sortedCombatTalents(List<TalentDef> combatTalents) {
     final talents = List<TalentDef>.from(combatTalents, growable: false)
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
@@ -912,6 +956,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   tableKey: const ValueKey<String>(
                     'combat-weapons-overview-table',
                   ),
+                  columnSpecs: _weaponOverviewColumnSpecs,
                   headerCells: _weaponOverviewHeaderCells(
                     catalog: catalog,
                     hero: hero,
@@ -1441,6 +1486,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             const SizedBox(height: 8),
             FlexibleTable(
               tableKey: const ValueKey<String>('combat-offhand-table'),
+              columnSpecs: _offhandColumnSpecs,
               headerCells: [
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -1546,6 +1592,9 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   children: [
                     FlexibleTable(
                       tableKey: const ValueKey<String>('combat-armor-table'),
+                      columnSpecs: _armorColumnSpecs(
+                        showPieceRg1: showPieceRg1,
+                      ),
                       headerCells: [
                         Row(
                           mainAxisSize: MainAxisSize.min,
