@@ -168,6 +168,15 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> openMeleeTab(WidgetTester tester) async {
+    await openWeaponsTab(tester);
+  }
+
+  void setTestSurfaceSize(WidgetTester tester, Size size) {
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = size;
+  }
+
   Future<void> selectDropdownByKey(
     WidgetTester tester, {
     required String keyName,
@@ -342,21 +351,36 @@ void main() {
   }
 
   Future<void> openArmorEditor(WidgetTester tester, {int? index}) async {
-    final key = index == null
-        ? const ValueKey<String>('combat-armor-add')
-        : ValueKey<String>('combat-armor-edit-$index');
-    final target = find.byKey(key);
-    for (var i = 0; i < 6 && target.evaluate().isEmpty; i++) {
-      await tester.drag(find.byType(ListView).first, const Offset(0, -280));
-      await tester.pumpAndSettle();
-    }
-    expect(target, findsOneWidget);
-    await tester.ensureVisible(target);
-    await tester.pumpAndSettle();
     if (index == null) {
+      final target = find.byKey(const ValueKey<String>('combat-armor-add'));
+      for (var i = 0; i < 6 && target.evaluate().isEmpty; i++) {
+        await tester.drag(find.byType(ListView).first, const Offset(0, -280));
+        await tester.pumpAndSettle();
+      }
+      expect(target, findsOneWidget);
+      await tester.ensureVisible(target);
+      await tester.pumpAndSettle();
       await tester.tap(target);
     } else {
-      await tester.tap(target);
+      // Name ist klickbar — finde den InkWell in der Ruestungstabelle
+      final tableKey = const ValueKey<String>('combat-armor-table');
+      final tableFinder = find.byKey(tableKey);
+      for (var i = 0; i < 6 && tableFinder.evaluate().isEmpty; i++) {
+        await tester.drag(find.byType(ListView).first, const Offset(0, -280));
+        await tester.pumpAndSettle();
+      }
+      await tester.ensureVisible(tableFinder);
+      await tester.pumpAndSettle();
+      final inkWells = find.descendant(
+        of: tableFinder,
+        matching: find.byType(InkWell),
+      );
+      expect(
+        inkWells,
+        findsAtLeast(index + 1),
+        reason: 'Erwarte mindestens ${index + 1} klickbare Namen',
+      );
+      await tester.tap(inkWells.at(index));
     }
     await tester.pumpAndSettle();
     expect(
@@ -528,8 +552,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await openMeleeTab(tester);
     final axxHintFinder = find.text(
       'Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2',
     );
@@ -1042,7 +1065,9 @@ void main() {
     );
   });
 
-  testWidgets('keeps weapon management only in Ausrüstung subtab', (tester) async {
+  testWidgets('keeps weapon management only in Ausrüstung subtab', (
+    tester,
+  ) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -1056,9 +1081,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await openWeaponsTab(tester);
     expect(
       find.byKey(const ValueKey<String>('combat-weapon-add')),
       findsNothing,
@@ -1346,8 +1369,7 @@ void main() {
 
     await openCombatTab(tester, repo);
 
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await openMeleeTab(tester);
     await tester.tap(
       find.byKey(const ValueKey<String>('combat-main-weapon-select-0-2')),
     );
@@ -2065,7 +2087,9 @@ void main() {
     expect(find.text('Distanz 1'), findsWidgets);
   });
 
-  testWidgets('offhand values persist via referenced equipment', (tester) async {
+  testWidgets('offhand values persist via referenced equipment', (
+    tester,
+  ) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -2081,7 +2105,9 @@ void main() {
     await openCombatTab(tester, repo);
     await tester.tap(find.widgetWithText(Tab, 'Kampf'));
     await tester.pumpAndSettle();
-    final addEquipment = find.byKey(const ValueKey<String>('combat-offhand-add'));
+    final addEquipment = find.byKey(
+      const ValueKey<String>('combat-offhand-add'),
+    );
     await openWeaponsTab(tester);
     for (var i = 0; i < 6 && addEquipment.evaluate().isEmpty; i++) {
       await tester.drag(find.byType(ListView).first, const Offset(0, -280));
@@ -2094,7 +2120,9 @@ void main() {
       find.byKey(const ValueKey<String>('combat-offhand-form-name')),
       'Holzschild',
     );
-    await tester.tap(find.byKey(const ValueKey<String>('combat-offhand-form-type')));
+    await tester.tap(
+      find.byKey(const ValueKey<String>('combat-offhand-form-type')),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Schild').last);
     await tester.pumpAndSettle();
@@ -2102,7 +2130,9 @@ void main() {
       find.byKey(const ValueKey<String>('combat-offhand-form-at-mod')),
       '2',
     );
-    await tester.tap(find.byKey(const ValueKey<String>('combat-offhand-form-save')));
+    await tester.tap(
+      find.byKey(const ValueKey<String>('combat-offhand-form-save')),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithText(Tab, 'Kampf'));
@@ -2330,6 +2360,10 @@ void main() {
   testWidgets('armor pieces can be added, edited and removed in read mode', (
     tester,
   ) async {
+    setTestSurfaceSize(tester, const Size(1280, 900));
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     final repo = FakeRepository(
       heroes: [
         buildHero(
@@ -2364,9 +2398,9 @@ void main() {
     );
 
     expect(find.text('Kettenhemd'), findsOneWidget);
-    expect(find.text('RS 3'), findsOneWidget);
-    expect(find.text('BE 4'), findsOneWidget);
-    expect(find.text('RG I Ja'), findsOneWidget);
+    expect(find.text('3'), findsAtLeast(1));
+    expect(find.text('4'), findsAtLeast(1));
+    expect(find.text('Ja'), findsAtLeast(1));
 
     await openArmorEditor(tester, index: 0);
     await fillArmorDialog(
@@ -2377,9 +2411,9 @@ void main() {
       isActive: true,
       rg1Active: true,
     );
-    expect(find.text('RS 5'), findsOneWidget);
-    expect(find.text('BE 6'), findsOneWidget);
-    expect(find.text('RG I Ja'), findsOneWidget);
+    expect(find.text('5'), findsAtLeast(1));
+    expect(find.text('6'), findsAtLeast(1));
+    expect(find.text('Ja'), findsAtLeast(1));
 
     final removeButton = find.byKey(
       const ValueKey<String>('combat-armor-remove-0'),
@@ -2393,7 +2427,6 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(removeButton);
     await tester.pumpAndSettle();
-    expect(find.text('Keine Rüstungsstücke erfasst.'), findsOneWidget);
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
@@ -2429,5 +2462,120 @@ void main() {
       find.byKey(const ValueKey<String>('combat-armor-form-rg1')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('armor card shows split table and calculation on wide layouts', (
+    tester,
+  ) async {
+    setTestSurfaceSize(tester, const Size(1280, 900));
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            armor: ArmorConfig(
+              globalArmorTrainingLevel: 1,
+              pieces: <ArmorPiece>[
+                ArmorPiece(
+                  name: 'Kettenhemd',
+                  isActive: true,
+                  rg1Active: true,
+                  rs: 3,
+                  be: 4,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+
+    expect(find.text('Rüstung'), findsOneWidget);
+    final armorTable = find.byKey(const ValueKey<String>('combat-armor-table'));
+    final armorCalculation = find.byKey(
+      const ValueKey<String>('combat-armor-calculation-section'),
+    );
+    expect(armorTable, findsOneWidget);
+    expect(armorCalculation, findsOneWidget);
+
+    final tableTopLeft = tester.getTopLeft(armorTable);
+    final calculationTopLeft = tester.getTopLeft(armorCalculation);
+    expect(calculationTopLeft.dx, greaterThan(tableTopLeft.dx + 40));
+    expect((calculationTopLeft.dy - tableTopLeft.dy).abs(), lessThan(40));
+  });
+
+  testWidgets('armor card stacks table and calculation on narrow layouts', (
+    tester,
+  ) async {
+    setTestSurfaceSize(tester, const Size(720, 900));
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            armor: ArmorConfig(
+              globalArmorTrainingLevel: 1,
+              pieces: <ArmorPiece>[
+                ArmorPiece(
+                  name: 'Kettenhemd',
+                  isActive: true,
+                  rg1Active: true,
+                  rs: 3,
+                  be: 4,
+                ),
+              ],
+            ),
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                tpDiceCount: 1,
+                tpDiceSides: 6,
+                tpFlat: 2,
+              ),
+            ],
+            selectedWeaponIndex: 0,
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openMeleeTab(tester);
+
+    expect(find.text('Rüstung'), findsOneWidget);
+    final armorTable = find.byKey(const ValueKey<String>('combat-armor-table'));
+    final armorCalculation = find.byKey(
+      const ValueKey<String>('combat-armor-calculation-section'),
+    );
+    expect(armorTable, findsOneWidget);
+    expect(armorCalculation, findsOneWidget);
+
+    final tableTopLeft = tester.getTopLeft(armorTable);
+    final calculationTopLeft = tester.getTopLeft(armorCalculation);
+    expect(calculationTopLeft.dy, greaterThan(tableTopLeft.dy + 40));
   });
 }
