@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/domain/combat_config/armor_piece.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
-import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
+
+const double _statusLabelWidth = 32;
+const double _statusValueWidth = 28;
+const double _statusModifierWidth = 28;
+const double _statusFinalWidth = 28;
 
 /// Inspector-Seitenleiste fuer den Desktop-Helden-Deck-Modus.
 ///
-/// Zeigt bearbeitbare Ressourcen (LeP, Au, AsP, KaP), einen manuellen
-/// BE-Override, direkte Modifikationen (Ini, GS, Ausweichen, PA, AT, RS)
-/// sowie eine Ruestungszusammenfassung. Wird nur im breiten Layout
+/// Zeigt den Heldenkopf, bearbeitbare Vitalwerte sowie eine kompakte
+/// Statusliste fuer Kampf- und Abwehrwerte. Wird nur im breiten Layout
 /// (>= 1280dp) neben dem Tab-Inhalt angezeigt.
 class WorkspaceInspectorPanel extends ConsumerWidget {
   const WorkspaceInspectorPanel({
@@ -64,12 +67,10 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
                         icon: Icon(toggleIcon),
                       ),
                     ),
-                    // --- Held ---
                     if (hero != null) _HeldCard(hero: hero),
                     const SizedBox(height: 10),
-                    // --- Ressourcen ---
                     if (heroState != null && derived != null)
-                      _ResourcenCard(
+                      _VitalwerteCard(
                         heroId: heroId,
                         heroState: heroState,
                         derived: derived,
@@ -77,20 +78,13 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
                     const SizedBox(height: 10),
                     _ZauberAktivierenCard(heroId: heroId),
                     const SizedBox(height: 10),
-                    // --- Manueller BE ---
-                    _ManuellerBeCard(heroId: heroId, combat: combat),
-                    const SizedBox(height: 10),
-                    // --- Modifikationen ---
-                    if (hero != null)
-                      _ModifikationenCard(heroId: heroId, hero: hero),
-                    const SizedBox(height: 10),
-                    // --- Kampfwerte (berechnet) ---
-                    if (derived != null && combat != null)
-                      _KampfwerteCard(derived: derived, combat: combat),
-                    const SizedBox(height: 10),
-                    // --- Ruestung ---
-                    if (hero != null && combat != null)
-                      _RuestungCard(hero: hero, combat: combat),
+                    if (hero != null && derived != null && combat != null)
+                      _StatuswerteCard(
+                        heroId: heroId,
+                        hero: hero,
+                        derived: derived,
+                        combat: combat,
+                      ),
                   ],
                 ),
               )
@@ -106,10 +100,6 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Held-Karte
-// ---------------------------------------------------------------------------
 
 class _HeldCard extends StatelessWidget {
   const _HeldCard({required this.hero});
@@ -127,7 +117,6 @@ class _HeldCard extends StatelessWidget {
             Text(hero.name, style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 6),
             Text('Level: ${hero.level}'),
-            Text('AP verfuegbar: ${hero.apAvailable}'),
           ],
         ),
       ),
@@ -135,12 +124,8 @@ class _HeldCard extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Ressourcen-Karte: LeP, Au, AsP, KaP (bearbeitbar mit +/-)
-// ---------------------------------------------------------------------------
-
-class _ResourcenCard extends ConsumerWidget {
-  const _ResourcenCard({
+class _VitalwerteCard extends ConsumerWidget {
+  const _VitalwerteCard({
     required this.heroId,
     required this.heroState,
     required this.derived,
@@ -162,7 +147,7 @@ class _ResourcenCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Ressourcen', style: Theme.of(context).textTheme.titleSmall),
+            Text('Vitalwerte', style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 10),
             _ResourceRow(
               label: 'LeP',
@@ -316,103 +301,18 @@ class _ZauberAktivierenCard extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Manueller BE-Override (laufzeitseitig, nicht persistiert)
-// ---------------------------------------------------------------------------
-
-class _ManuellerBeCard extends ConsumerWidget {
-  const _ManuellerBeCard({required this.heroId, required this.combat});
-
-  final String heroId;
-  final CombatPreviewStats? combat;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final override = ref.watch(talentBeOverrideProvider(heroId));
-    final displayed = override ?? (combat?.beKampf ?? 0);
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Manueller BE', style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 4,
-              runSpacing: 6,
-              children: [
-                _StepButton(
-                  icon: Icons.remove,
-                  tooltip: 'BE verringern',
-                  onPressed: () {
-                    ref.read(talentBeOverrideProvider(heroId).notifier).state =
-                        displayed - 1;
-                  },
-                ),
-                SizedBox(
-                  width: 44,
-                  child: Text(
-                    '$displayed',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                _StepButton(
-                  icon: Icons.add,
-                  tooltip: 'BE erhoehen',
-                  onPressed: () {
-                    ref.read(talentBeOverrideProvider(heroId).notifier).state =
-                        displayed + 1;
-                  },
-                ),
-                if (override != null)
-                  TextButton.icon(
-                    onPressed: () {
-                      ref
-                              .read(talentBeOverrideProvider(heroId).notifier)
-                              .state =
-                          null;
-                    },
-                    icon: const Icon(Icons.clear, size: 14),
-                    label: const Text('Entfernen'),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                    ),
-                  ),
-                if (override == null)
-                  Text(
-                    '(berechnet)',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Modifikationen: Ini, GS, Ausweichen, PA, AT, RS (aus persistentMods)
-// ---------------------------------------------------------------------------
-
-class _ModifikationenCard extends ConsumerWidget {
-  const _ModifikationenCard({required this.heroId, required this.hero});
+class _StatuswerteCard extends ConsumerWidget {
+  const _StatuswerteCard({
+    required this.heroId,
+    required this.hero,
+    required this.derived,
+    required this.combat,
+  });
 
   final String heroId;
   final HeroSheet hero;
+  final DerivedStats derived;
+  final CombatPreviewStats combat;
 
   Future<void> _saveMods(WidgetRef ref, StatModifiers mods) async {
     await ref
@@ -429,30 +329,33 @@ class _ModifikationenCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Modifikationen',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
+            Text('Statuswerte', style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 10),
-            _ModRow(
+            _EditableStatusRow(
               label: 'Ini',
-              value: mods.iniBase,
+              baseValue: combat.initiative - mods.iniBase,
+              modifierValue: mods.iniBase,
+              finalValue: combat.initiative,
               onDecrement: () =>
                   _saveMods(ref, mods.copyWith(iniBase: mods.iniBase - 1)),
               onIncrement: () =>
                   _saveMods(ref, mods.copyWith(iniBase: mods.iniBase + 1)),
             ),
             const SizedBox(height: 6),
-            _ModRow(
+            _EditableStatusRow(
               label: 'GS',
-              value: mods.gs,
+              baseValue: derived.gs - mods.gs,
+              modifierValue: mods.gs,
+              finalValue: derived.gs,
               onDecrement: () => _saveMods(ref, mods.copyWith(gs: mods.gs - 1)),
               onIncrement: () => _saveMods(ref, mods.copyWith(gs: mods.gs + 1)),
             ),
             const SizedBox(height: 6),
-            _ModRow(
+            _EditableStatusRow(
               label: 'AW',
-              value: mods.ausweichen,
+              baseValue: combat.ausweichen - mods.ausweichen,
+              modifierValue: mods.ausweichen,
+              finalValue: combat.ausweichen,
               onDecrement: () => _saveMods(
                 ref,
                 mods.copyWith(ausweichen: mods.ausweichen - 1),
@@ -463,26 +366,36 @@ class _ModifikationenCard extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 6),
-            _ModRow(
+            _EditableStatusRow(
               label: 'PA',
-              value: mods.pa,
+              baseValue: combat.pa - mods.pa,
+              modifierValue: mods.pa,
+              finalValue: combat.pa,
               onDecrement: () => _saveMods(ref, mods.copyWith(pa: mods.pa - 1)),
               onIncrement: () => _saveMods(ref, mods.copyWith(pa: mods.pa + 1)),
             ),
             const SizedBox(height: 6),
-            _ModRow(
+            _EditableStatusRow(
               label: 'AT',
-              value: mods.at,
+              baseValue: combat.at - mods.at,
+              modifierValue: mods.at,
+              finalValue: combat.at,
               onDecrement: () => _saveMods(ref, mods.copyWith(at: mods.at - 1)),
               onIncrement: () => _saveMods(ref, mods.copyWith(at: mods.at + 1)),
             ),
             const SizedBox(height: 6),
-            _ModRow(
+            _ReadOnlyStatusRow(label: 'MR', finalValue: derived.mr),
+            const SizedBox(height: 6),
+            _EditableStatusRow(
               label: 'RS',
-              value: mods.rs,
+              baseValue: combat.rsTotal - mods.rs,
+              modifierValue: mods.rs,
+              finalValue: combat.rsTotal,
               onDecrement: () => _saveMods(ref, mods.copyWith(rs: mods.rs - 1)),
               onIncrement: () => _saveMods(ref, mods.copyWith(rs: mods.rs + 1)),
             ),
+            const SizedBox(height: 6),
+            _BeStatusRow(heroId: heroId, combat: combat),
           ],
         ),
       ),
@@ -490,37 +403,177 @@ class _ModifikationenCard extends ConsumerWidget {
   }
 }
 
-/// Modifikatorzeile: Label | – | Wert (vorzeichenbehaftet) | +
-class _ModRow extends StatelessWidget {
-  const _ModRow({
+/// Spezielle BE-Zeile mit temporaerem Override fuer Talentproben.
+class _BeStatusRow extends ConsumerWidget {
+  const _BeStatusRow({required this.heroId, required this.combat});
+
+  final String heroId;
+  final CombatPreviewStats combat;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final override = ref.watch(talentBeOverrideProvider(heroId));
+    final displayed = override ?? combat.beKampf;
+    final isManual = override != null;
+    final stateText = isManual ? '(manuell)' : '(berechnet)';
+
+    return Row(
+      key: const ValueKey<String>('workspace-status-row-be'),
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: _statusLabelWidth,
+          child: Text(
+            'BE',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        SizedBox(
+          width: _statusValueWidth,
+          child: Text(
+            '${combat.beKampf}',
+            textAlign: TextAlign.right,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        _StepButton(
+          icon: Icons.remove,
+          tooltip: 'BE verringern',
+          onPressed: () {
+            ref.read(talentBeOverrideProvider(heroId).notifier).state =
+                displayed - 1;
+          },
+        ),
+        const SizedBox(width: 4),
+        SizedBox(
+          width: _statusModifierWidth,
+          child: Text(
+            '$displayed',
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        const SizedBox(width: 4),
+        _StepButton(
+          icon: Icons.add,
+          tooltip: 'BE erhoehen',
+          onPressed: () {
+            ref.read(talentBeOverrideProvider(heroId).notifier).state =
+                displayed + 1;
+          },
+        ),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: _statusFinalWidth,
+          child: Text(
+            '$displayed',
+            textAlign: TextAlign.right,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    stateText,
+                    textAlign: TextAlign.right,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ),
+              if (isManual) ...[
+                const SizedBox(width: 2),
+                SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: IconButton(
+                    key: const ValueKey<String>('workspace-status-be-clear'),
+                    tooltip: 'BE auf berechnet zuruecksetzen',
+                    padding: EdgeInsets.zero,
+                    iconSize: 16,
+                    onPressed: () {
+                      ref
+                              .read(talentBeOverrideProvider(heroId).notifier)
+                              .state =
+                          null;
+                    },
+                    icon: const Icon(Icons.replay),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Einheitliche Zeile fuer bearbeitbare Statuswerte mit Basis, Modifikator
+/// und Endwert.
+class _EditableStatusRow extends StatelessWidget {
+  const _EditableStatusRow({
     required this.label,
-    required this.value,
+    required this.baseValue,
+    required this.modifierValue,
+    required this.finalValue,
     required this.onDecrement,
     required this.onIncrement,
   });
 
   final String label;
-  final int value;
+  final int baseValue;
+  final int modifierValue;
+  final int finalValue;
   final VoidCallback onDecrement;
   final VoidCallback onIncrement;
 
   @override
   Widget build(BuildContext context) {
-    final sign = value > 0 ? '+' : '';
-    final color = value > 0
+    final sign = modifierValue > 0 ? '+' : '';
+    final color = modifierValue > 0
         ? Theme.of(context).colorScheme.primary
-        : value < 0
+        : modifierValue < 0
         ? Theme.of(context).colorScheme.error
         : null;
     return Row(
+      key: ValueKey<String>('workspace-status-row-$label'),
       children: [
         SizedBox(
-          width: 36,
+          width: _statusLabelWidth,
           child: Text(
             label,
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        SizedBox(
+          width: _statusValueWidth,
+          child: Text(
+            '$baseValue',
+            textAlign: TextAlign.right,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
         _StepButton(
@@ -530,9 +583,9 @@ class _ModRow extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         SizedBox(
-          width: 44,
+          width: _statusModifierWidth,
           child: Text(
-            '$sign$value',
+            '$sign$modifierValue',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.bold,
@@ -546,117 +599,58 @@ class _ModRow extends StatelessWidget {
           tooltip: '$label erhoehen',
           onPressed: onIncrement,
         ),
+        const SizedBox(width: 12),
+        const Spacer(),
+        SizedBox(
+          width: _statusFinalWidth,
+          child: Text(
+            '$finalValue',
+            textAlign: TextAlign.right,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
       ],
     );
   }
 }
 
-// ---------------------------------------------------------------------------
-// Kampfwerte-Karte: berechnete Endwerte (nur Anzeige)
-// ---------------------------------------------------------------------------
+class _ReadOnlyStatusRow extends StatelessWidget {
+  const _ReadOnlyStatusRow({required this.label, required this.finalValue});
 
-class _KampfwerteCard extends StatelessWidget {
-  const _KampfwerteCard({required this.derived, required this.combat});
-
-  final DerivedStats derived;
-  final CombatPreviewStats combat;
+  final String label;
+  final int finalValue;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Kampfwerte', style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 10),
-            _StatRow(label: 'Initiative', value: combat.initiative.toString()),
-            _StatRow(label: 'Ausweichen', value: combat.ausweichen.toString()),
-            _StatRow(label: 'AT', value: combat.at.toString()),
-            _StatRow(label: 'PA', value: combat.pa.toString()),
-            _StatRow(label: 'MR', value: derived.mr.toString()),
-            _StatRow(label: 'GS', value: derived.gs.toString()),
-          ],
+    return Row(
+      key: ValueKey<String>('workspace-status-row-$label'),
+      children: [
+        SizedBox(
+          width: _statusLabelWidth,
+          child: Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
         ),
-      ),
+        const Spacer(),
+        SizedBox(
+          width: _statusFinalWidth,
+          child: Text(
+            '$finalValue',
+            textAlign: TextAlign.right,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Ruestungs-Karte: RS, BE, aktive Stuecke (nur Anzeige)
-// ---------------------------------------------------------------------------
-
-class _RuestungCard extends StatelessWidget {
-  const _RuestungCard({required this.hero, required this.combat});
-
-  final HeroSheet hero;
-  final CombatPreviewStats combat;
-
-  @override
-  Widget build(BuildContext context) {
-    final armorPieces = hero.combatConfig.armor.pieces
-        .where((ArmorPiece p) => p.isActive)
-        .toList(growable: false);
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Ruestung', style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 10),
-            _StatRow(label: 'RS gesamt', value: combat.rsTotal.toString()),
-            _StatRow(label: 'BE (Kampf)', value: combat.beKampf.toString()),
-            if (armorPieces.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Angelegte Stuecke:',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 4),
-              for (final ArmorPiece piece in armorPieces)
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          piece.name,
-                          style: Theme.of(context).textTheme.bodySmall,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text(
-                        'RS ${piece.rs}  BE ${piece.be}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ] else
-              Text(
-                'Keine Ruestung angelegt',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Hilfswidgets
-// ---------------------------------------------------------------------------
 
 /// Kompakter Schaltknopf fuer Stepper-Interaktionen.
 class _StepButton extends StatelessWidget {
@@ -682,34 +676,6 @@ class _StepButton extends StatelessWidget {
         icon: Icon(icon),
         tooltip: tooltip,
         onPressed: onPressed,
-      ),
-    );
-  }
-}
-
-/// Bezeichnung + berechneter Wert in einer Zeile (Lesemodus).
-class _StatRow extends StatelessWidget {
-  const _StatRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(label, style: Theme.of(context).textTheme.bodySmall),
-          ),
-          Text(
-            value,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ],
       ),
     );
   }

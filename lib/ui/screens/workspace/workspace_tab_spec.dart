@@ -128,7 +128,7 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       id: WorkspaceTabIds.overview,
       label: 'Übersicht',
       icon: Icons.dashboard_outlined,
-      helper: 'Ressourcen, Modifikatoren und aktive Effekte',
+      helper: 'Vitalwerte, Statuswerte und aktive Effekte',
       buildContent: ({required heroId, required callbacks}) => HeroOverviewTab(
         heroId: heroId,
         onDirtyChanged: callbacks.onDirtyChanged,
