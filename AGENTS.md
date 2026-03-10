@@ -1,5 +1,9 @@
 # Agentenrichtlinie fuer `flutter_application_1`
 
+## Ziel dieser App
+Ziel dieser App ist eine möglichst umfangreiche Heldenverwaltung für das Pen and Paper "Das schwarze Auge".
+Das Spiel beinhaltet eine vielzahl von Regeln und ist für sein detailreichtum bekannt. Mache dich ggfs. mit dem Spiel vertraut und recherchiere. 
+
 ## Zweck und Geltungsbereich
 Diese Regeln gelten fuer alle agentischen Arbeiten in diesem Repository.  
 Sie sind verbindlich und haben Vorrang vor impliziten Standardannahmen.
@@ -11,6 +15,9 @@ Sie sind verbindlich und haben Vorrang vor impliziten Standardannahmen.
 - Keine ungefragte Umschreibung von Historie oder grossflaechige Bereinigung des Worktrees.
 - Nur den fuer den Task noetigen Scope aendern.
 - Architektur, Schichten, Abhaengigkeiten und Projektaufbau aktiv und kritisch hinterfragen, statt bestehende Muster ungeprueft zu uebernehmen.
+- Erstelle möglichst generische Funktionen, sodass Erweiterungen und Skalierungen möglich sind.
+- Nutze Umlaute in Strings, die in der UI Anwendung finden. Ä, ö ,ü, ß sind nicht verboten.
+- Hinterfrage die Anforderung im Prompt. Gibt es eine bessere Lösung? Dann schlag diese vor.
 
 ## Verbotene Befehle
 Die folgenden Befehle sind in normalen Agent-Workflows untersagt:
