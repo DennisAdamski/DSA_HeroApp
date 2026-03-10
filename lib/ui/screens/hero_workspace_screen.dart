@@ -1,33 +1,31 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
-import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_magic_tab.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_notes_tab.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_bottom_navigation.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_command_deck_panel.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_core_attributes_header.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_inspector_panel.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_navigation_guard.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_registry.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
 /// Layout-Stufen fuer den Workspace je nach verfuegbarer Breite.
 enum WorkspaceLayout {
   /// iPhone / schmales Fenster (< 744dp): TabBar oder Bottom Nav.
   compact,
-  /// iPad Portrait / mittelbreit (744–1023dp): Collapsed Sidebar + Content.
+
+  /// iPad Portrait / mittelbreit (744-1023dp): Collapsed Sidebar + Content.
   medium,
-  /// iPad Landscape / breit (1024–1279dp): Ausgeklappte Sidebar + Content.
+
+  /// iPad Landscape / breit (1024-1279dp): Ausgeklappte Sidebar + Content.
   expanded,
+
   /// Desktop / sehr breit (>= 1280dp): Drei-Spalten Helden-Deck.
   heroDeck,
 }
@@ -44,20 +42,13 @@ const double _heroDeckInspectorWidth = 300;
 /// Breite der eingeklappten rechten Workspace-Umschaltleiste in Pixeln.
 const double _heroDeckInspectorCollapsedWidth = 56;
 
-// Tab-Indizes fuer die Workspace-Tabs.
-const int _overviewTabIndex = 0;
-const int _talentsTabIndex = 1;
-const int _combatTabIndex = 2;
-const int _magicTabIndex = 3;
-const int _inventoryTabIndex = 4;
-const int _notesTabIndex = 5;
-
 /// Zentraler Workspace-Screen fuer die Bearbeitung und Anzeige eines Helden.
 ///
-/// Hostet sechs Tabs (Status, Talente, Kampf, Magie, Inventar, Notizen)
-/// und verwaltet Tab-Navigation mit Discard-Guard fuer ungespeicherte Aenderungen.
+/// Hostet die sichtbaren Workspace-Tabs eines Helden und verwaltet
+/// Tab-Navigation mit Discard-Guard fuer ungespeicherte Aenderungen.
 /// Auf breiten Bildschirmen (>= 1280 dp) wird das Helden-Deck-Layout aktiviert.
 class HeroWorkspaceScreen extends ConsumerStatefulWidget {
+  /// Erstellt den Workspace-Screen fuer einen einzelnen Helden.
   const HeroWorkspaceScreen({super.key, required this.heroId});
 
   /// ID des darzustellenden Helden.
@@ -69,9 +60,10 @@ class HeroWorkspaceScreen extends ConsumerStatefulWidget {
 }
 
 class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+    with TickerProviderStateMixin {
+  late TabController _tabController;
   late final WorkspaceTabRegistry _tabRegistry;
+  List<WorkspaceTabSpec> _visibleTabs = const <WorkspaceTabSpec>[];
 
   bool _handlingTabChange = false;
   bool _revertingTabChange = false;
@@ -82,17 +74,8 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
-    _tabRegistry = WorkspaceTabRegistry(
-      editableTabs: const <int>{
-        _overviewTabIndex,
-        _talentsTabIndex,
-        _combatTabIndex,
-        _magicTabIndex,
-        _inventoryTabIndex,
-        _notesTabIndex,
-      },
-    );
+    _tabController = TabController(length: 1, vsync: this);
+    _tabRegistry = WorkspaceTabRegistry();
     _tabController.addListener(_onTabControllerChanged);
   }
 
@@ -103,53 +86,141 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     super.dispose();
   }
 
+  /// Erstellt die Host-Callbacks fuer einen einzelnen Workspace-Tab.
+  WorkspaceTabCallbacks _callbacksForTab(String tabId) {
+    return WorkspaceTabCallbacks(
+      onDirtyChanged: (isDirty) => _updateDirty(tabId, isDirty),
+      onEditingChanged: (isEditing) => _updateEditing(tabId, isEditing),
+      onRegisterDiscard: (discardAction) =>
+          _registerDiscard(tabId, discardAction),
+      onRegisterEditActions: (actions) => _registerEditActions(tabId, actions),
+    );
+  }
+
+  /// Synchronisiert sichtbare Tabs und TabController mit der aktuellen Registry.
+  void _syncVisibleTabs(List<WorkspaceTabSpec> tabs) {
+    final nextTabIds = tabs.map((tab) => tab.id).toList(growable: false);
+    final currentTabIds = _visibleTabs
+        .map((tab) => tab.id)
+        .toList(growable: false);
+    if (listEquals(nextTabIds, currentTabIds)) {
+      return;
+    }
+
+    _visibleTabs = List<WorkspaceTabSpec>.unmodifiable(tabs);
+    if (_visibleTabs.isEmpty) {
+      _replaceTabController(length: 1, initialIndex: 0);
+      _tabRegistry.activeTabId = null;
+      return;
+    }
+
+    final previousActiveTabId = _tabRegistry.activeTabId;
+    final hasPreviousActiveTab =
+        previousActiveTabId != null &&
+        _visibleTabs.any((tab) => tab.id == previousActiveTabId);
+    final resolvedActiveTabId = hasPreviousActiveTab
+        ? previousActiveTabId
+        : _visibleTabs.first.id;
+    final initialIndex = _visibleTabs.indexWhere(
+      (tab) => tab.id == resolvedActiveTabId,
+    );
+
+    _replaceTabController(
+      length: _visibleTabs.length,
+      initialIndex: initialIndex < 0 ? 0 : initialIndex,
+    );
+    _tabRegistry.activeTabId = resolvedActiveTabId;
+  }
+
+  /// Erstellt den TabController neu fuer eine geaenderte sichtbare Tab-Liste.
+  void _replaceTabController({required int length, required int initialIndex}) {
+    _tabController.removeListener(_onTabControllerChanged);
+    _tabController.dispose();
+    _tabController = TabController(
+      length: length,
+      vsync: this,
+      initialIndex: initialIndex,
+    );
+    _tabController.addListener(_onTabControllerChanged);
+  }
+
+  /// Liefert den aktiven sichtbaren Tab-Index.
+  int _activeTabIndex() {
+    if (_visibleTabs.isEmpty) {
+      return 0;
+    }
+    final activeTabId = _tabRegistry.activeTabId;
+    if (activeTabId == null) {
+      return 0;
+    }
+    final index = _visibleTabs.indexWhere((tab) => tab.id == activeTabId);
+    return index < 0 ? 0 : index;
+  }
+
+  /// Liefert die aktuell aktive sichtbare Tab-Definition.
+  WorkspaceTabSpec? _activeTabSpec() {
+    if (_visibleTabs.isEmpty) {
+      return null;
+    }
+    return _visibleTabs[_activeTabIndex()];
+  }
+
   /// Reagiert auf Aenderungen des TabControllers und leitet den Guard ein.
   void _onTabControllerChanged() {
-    if (_handlingTabChange || _revertingTabChange) {
+    if (_handlingTabChange || _revertingTabChange || _visibleTabs.isEmpty) {
       return;
     }
     final nextIndex = _tabController.index;
-    if (nextIndex == _tabRegistry.activeTabIndex) {
+    final nextTabId = _visibleTabs[nextIndex].id;
+    if (nextTabId == _tabRegistry.activeTabId) {
       return;
     }
     _handleTabChangeAttempt(nextIndex);
   }
 
-  /// Prueft ob ein Tab-Wechsel erlaubt ist und fuehrt ihn ggf. durch.
+  /// Prueft, ob ein Tab-Wechsel erlaubt ist und fuehrt ihn ggf. durch.
   Future<void> _handleTabChangeAttempt(int nextIndex) async {
-    if (_handlingTabChange) {
-      return;
-    }
-    _handlingTabChange = true;
-    final fromIndex = _tabRegistry.activeTabIndex;
-    final mayLeave = await _confirmLeaveForTab(fromIndex);
-    if (!mounted) {
+    if (_handlingTabChange || _visibleTabs.isEmpty) {
       return;
     }
 
-    if (mayLeave) {
-      setState(() {
-        _tabRegistry.activeTabIndex = nextIndex;
-      });
-    } else {
+    _handlingTabChange = true;
+    try {
+      final fromTabId = _tabRegistry.activeTabId;
+      final nextTabId = _visibleTabs[nextIndex].id;
+      final mayLeave = fromTabId == null
+          ? true
+          : await _confirmLeaveForTab(fromTabId);
+      if (!mounted) {
+        return;
+      }
+
+      if (mayLeave) {
+        setState(() {
+          _tabRegistry.activeTabId = nextTabId;
+        });
+        return;
+      }
+
+      final fromIndex = _visibleTabs.indexWhere((tab) => tab.id == fromTabId);
       _revertingTabChange = true;
-      _tabController.animateTo(fromIndex);
+      _tabController.animateTo(fromIndex < 0 ? 0 : fromIndex);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) {
           return;
         }
         _revertingTabChange = false;
       });
+    } finally {
+      _handlingTabChange = false;
     }
-
-    _handlingTabChange = false;
   }
 
-  /// Zeigt den Discard-Dialog wenn der Tab ungespeicherte Aenderungen hat.
+  /// Zeigt den Discard-Dialog, wenn der Tab ungespeicherte Aenderungen hat.
   ///
-  /// Gibt `true` zurueck wenn der Tab-Wechsel erlaubt ist.
-  Future<bool> _confirmLeaveForTab(int tabIndex) async {
-    if (!_tabRegistry.isDirty(tabIndex)) {
+  /// Gibt `true` zurueck, wenn der Tab-Wechsel erlaubt ist.
+  Future<bool> _confirmLeaveForTab(String tabId) async {
+    if (!_tabRegistry.isDirty(tabId)) {
       return true;
     }
 
@@ -163,13 +234,13 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     }
 
     if (result == AdaptiveConfirmResult.save) {
-      final saveAction = _tabRegistry.editActionsFor(tabIndex)?.save;
+      final saveAction = _tabRegistry.editActionsFor(tabId)?.save;
       if (saveAction == null) {
         return false;
       }
       await saveAction();
     } else {
-      final discardAction = _tabRegistry.discardActionFor(tabIndex);
+      final discardAction = _tabRegistry.discardActionFor(tabId);
       if (discardAction != null) {
         await discardAction();
       }
@@ -179,37 +250,37 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       return false;
     }
 
-    if (_tabRegistry.updateDirty(tabIndex, false)) {
+    if (_tabRegistry.updateDirty(tabId, false)) {
       setState(() {});
     }
     return true;
   }
 
   /// Aktualisiert den Dirty-Zustand eines Tabs und triggert ggf. einen Rebuild.
-  void _updateDirty(int tabIndex, bool isDirty) {
-    if (!_tabRegistry.updateDirty(tabIndex, isDirty)) {
+  void _updateDirty(String tabId, bool isDirty) {
+    if (!_tabRegistry.updateDirty(tabId, isDirty)) {
       return;
     }
     setState(() {});
   }
 
   /// Aktualisiert den Editing-Zustand eines Tabs und triggert ggf. einen Rebuild.
-  void _updateEditing(int tabIndex, bool isEditing) {
-    if (!_tabRegistry.updateEditing(tabIndex, isEditing)) {
+  void _updateEditing(String tabId, bool isEditing) {
+    if (!_tabRegistry.updateEditing(tabId, isEditing)) {
       return;
     }
     setState(() {});
   }
 
   /// Registriert eine Discard-Aktion fuer einen Tab.
-  void _registerDiscard(int tabIndex, WorkspaceAsyncAction discardAction) {
-    _tabRegistry.registerDiscard(tabIndex, discardAction);
+  void _registerDiscard(String tabId, WorkspaceAsyncAction discardAction) {
+    _tabRegistry.registerDiscard(tabId, discardAction);
   }
 
-  /// Registriert die Edit-Aktionen (start/save/cancel) fuer einen Tab.
-  void _registerEditActions(int tabIndex, WorkspaceTabEditActions actions) {
-    final wasMissing = _tabRegistry.registerEditActions(tabIndex, actions);
-    if (wasMissing && _tabRegistry.activeTabIndex == tabIndex) {
+  /// Registriert die Edit-Aktionen eines Tabs.
+  void _registerEditActions(String tabId, WorkspaceTabEditActions actions) {
+    final wasMissing = _tabRegistry.registerEditActions(tabId, actions);
+    if (wasMissing && _tabRegistry.activeTabId == tabId) {
       setState(() {});
     }
   }
@@ -219,6 +290,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     if (_runningEditAction || action == null) {
       return;
     }
+
     setState(() {
       _runningEditAction = true;
     });
@@ -233,25 +305,30 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     }
   }
 
-  /// Navigiert zur Heldenauswahl — prueft vorher auf ungespeicherte Aenderungen.
+  /// Navigiert zur Heldenauswahl und prueft vorher auf ungespeicherte Aenderungen.
   Future<void> _navigateToHomeWithGuard() async {
-    final mayLeave = await _confirmLeaveForTab(_tabRegistry.activeTabIndex);
+    final activeTabId = _tabRegistry.activeTabId;
+    final mayLeave = activeTabId == null
+        ? true
+        : await _confirmLeaveForTab(activeTabId);
     if (!mounted || !mayLeave) {
       return;
     }
     Navigator.of(context).pop();
   }
 
-  /// Baut die Aktionsschaltflaechen fuer die AppBar (Bearbeiten/Speichern/Abbrechen).
-  List<Widget> _buildWorkspaceActions() {
-    final activeTabIndex = _tabRegistry.activeTabIndex;
-    final isEditing = _tabRegistry.isEditing(activeTabIndex);
-    final tabActions = _tabRegistry.editActionsFor(activeTabIndex);
-    final isCompactLayout =
-        _layoutForWidth(MediaQuery.sizeOf(context).width) ==
-        WorkspaceLayout.compact;
+  /// Baut die Aktionsschaltflaechen fuer die AppBar.
+  List<Widget> _buildWorkspaceActions({required bool isCompactLayout}) {
+    final activeTab = _activeTabSpec();
+    if (activeTab == null) {
+      return const <Widget>[];
+    }
+
+    final activeTabId = activeTab.id;
+    final isEditing = _tabRegistry.isEditing(activeTabId);
+    final tabActions = _tabRegistry.editActionsFor(activeTabId);
     final useCompactIconOnlyEditActions =
-        isCompactLayout && activeTabIndex == _talentsTabIndex;
+        isCompactLayout && activeTab.useCompactIconOnlyEditActions;
 
     VoidCallback? onStartEdit;
     VoidCallback? onSave;
@@ -263,39 +340,15 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     }
 
     final widgets = <Widget>[];
-
-    if (activeTabIndex == _talentsTabIndex) {
-      final bePreview = ref.watch(combatPreviewProvider(widget.heroId));
-      void openBeDialog() {
-        showDialog<void>(
-          context: context,
-          builder: (_) => TalentBeConfigDialog(
-            heroId: widget.heroId,
-            combatBaseBe: bePreview.valueOrNull?.beKampf ?? 0,
-          ),
-        );
-      }
-      widgets.add(
-        isCompactLayout
-            ? Tooltip(
-                message: 'BE konfigurieren',
-                child: IconButton(
-                  key: const ValueKey<String>('talents-be-screen-open'),
-                  onPressed: openBeDialog,
-                  icon: const Icon(Icons.shield_outlined),
-                ),
-              )
-            : OutlinedButton.icon(
-                key: const ValueKey<String>('talents-be-screen-open'),
-                onPressed: openBeDialog,
-                icon: const Icon(Icons.shield_outlined),
-                label: const Text('BE konfigurieren'),
-              ),
-      );
-    }
-
-    final headerActions =
-        tabActions?.headerActions ?? const <WorkspaceHeaderAction>[];
+    final headerActions = <WorkspaceHeaderAction>[
+      ...activeTab.buildHeaderActions(
+        context: context,
+        ref: ref,
+        heroId: widget.heroId,
+        isCompactLayout: isCompactLayout,
+      ),
+      ...(tabActions?.headerActions ?? const <WorkspaceHeaderAction>[]),
+    ];
     for (final action in headerActions) {
       final shouldShow = isEditing
           ? action.showWhenEditing
@@ -318,10 +371,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           ),
           Tooltip(
             message: 'Speichern',
-            child: IconButton(
-              onPressed: onSave,
-              icon: const Icon(Icons.check),
-            ),
+            child: IconButton(onPressed: onSave, icon: const Icon(Icons.check)),
           ),
         ]);
       } else {
@@ -330,7 +380,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           FilledButton(onPressed: onSave, child: const Text('Speichern')),
         ]);
       }
-    } else if (_tabRegistry.isEditableTab(activeTabIndex)) {
+    } else if (_tabRegistry.isEditableTab(activeTabId)) {
       widgets.add(
         FilledButton.icon(
           onPressed: onStartEdit,
@@ -366,91 +416,33 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     return spaced;
   }
 
-  /// Baut die horizontale TabBar fuer das klassische (schmale) Layout.
+  /// Baut die horizontale TabBar fuer das klassische Layout.
   PreferredSizeWidget _buildWorkspaceTabBar() {
     return TabBar(
       controller: _tabController,
       isScrollable: true,
-      tabs: const [
-        Tab(text: 'Status'),
-        Tab(text: 'Talente'),
-        Tab(text: 'Kampf'),
-        Tab(text: 'Magie'),
-        Tab(text: 'Inventar'),
-        Tab(text: 'Notizen'),
-      ],
+      tabs: _visibleTabs
+          .map((tab) => Tab(text: tab.label))
+          .toList(growable: false),
     );
   }
 
-  /// Baut den TabBarView mit allen sechs Tab-Widgets.
+  /// Baut den TabBarView mit allen aktuell sichtbaren Tab-Widgets.
   Widget _buildWorkspaceTabView() {
+    if (_visibleTabs.isEmpty) {
+      return const Center(child: Text('Keine Bereiche verfuegbar.'));
+    }
+
     return TabBarView(
       controller: _tabController,
-      children: [
-        HeroOverviewTab(
-          heroId: widget.heroId,
-          onDirtyChanged: (isDirty) => _updateDirty(_overviewTabIndex, isDirty),
-          onEditingChanged: (isEditing) =>
-              _updateEditing(_overviewTabIndex, isEditing),
-          onRegisterDiscard: (discardAction) =>
-              _registerDiscard(_overviewTabIndex, discardAction),
-          onRegisterEditActions: (actions) =>
-              _registerEditActions(_overviewTabIndex, actions),
-        ),
-        HeroTalentsTab(
-          heroId: widget.heroId,
-          showInlineActions: false,
-          onDirtyChanged: (isDirty) => _updateDirty(_talentsTabIndex, isDirty),
-          onEditingChanged: (isEditing) =>
-              _updateEditing(_talentsTabIndex, isEditing),
-          onRegisterDiscard: (discardAction) =>
-              _registerDiscard(_talentsTabIndex, discardAction),
-          onRegisterEditActions: (actions) =>
-              _registerEditActions(_talentsTabIndex, actions),
-        ),
-        HeroCombatTab(
-          heroId: widget.heroId,
-          showInlineCombatTalentsActions: false,
-          onDirtyChanged: (isDirty) => _updateDirty(_combatTabIndex, isDirty),
-          onEditingChanged: (isEditing) =>
-              _updateEditing(_combatTabIndex, isEditing),
-          onRegisterDiscard: (discardAction) =>
-              _registerDiscard(_combatTabIndex, discardAction),
-          onRegisterEditActions: (actions) =>
-              _registerEditActions(_combatTabIndex, actions),
-        ),
-        HeroMagicTab(
-          heroId: widget.heroId,
-          onDirtyChanged: (isDirty) => _updateDirty(_magicTabIndex, isDirty),
-          onEditingChanged: (isEditing) =>
-              _updateEditing(_magicTabIndex, isEditing),
-          onRegisterDiscard: (discardAction) =>
-              _registerDiscard(_magicTabIndex, discardAction),
-          onRegisterEditActions: (actions) =>
-              _registerEditActions(_magicTabIndex, actions),
-        ),
-        HeroInventoryTab(
-          heroId: widget.heroId,
-          onDirtyChanged: (isDirty) =>
-              _updateDirty(_inventoryTabIndex, isDirty),
-          onEditingChanged: (isEditing) =>
-              _updateEditing(_inventoryTabIndex, isEditing),
-          onRegisterDiscard: (discardAction) =>
-              _registerDiscard(_inventoryTabIndex, discardAction),
-          onRegisterEditActions: (actions) =>
-              _registerEditActions(_inventoryTabIndex, actions),
-        ),
-        HeroNotesTab(
-          heroId: widget.heroId,
-          onDirtyChanged: (isDirty) => _updateDirty(_notesTabIndex, isDirty),
-          onEditingChanged: (isEditing) =>
-              _updateEditing(_notesTabIndex, isEditing),
-          onRegisterDiscard: (discardAction) =>
-              _registerDiscard(_notesTabIndex, discardAction),
-          onRegisterEditActions: (actions) =>
-              _registerEditActions(_notesTabIndex, actions),
-        ),
-      ],
+      children: _visibleTabs
+          .map(
+            (tab) => tab.buildContent(
+              heroId: widget.heroId,
+              callbacks: _callbacksForTab(tab.id),
+            ),
+          )
+          .toList(growable: false),
     );
   }
 
@@ -480,7 +472,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
 
   /// Helden-Deck-Layout: Navigation links, Inhalt mittig, Detailpanel rechts.
   Widget _buildHeroDeckWorkspaceBody(HeroSheet hero) {
-    final activeTabIndex = _tabRegistry.activeTabIndex;
+    final activeTabIndex = _activeTabIndex();
     final navigationWidth = _heroDeckExpanded
         ? _heroDeckNavigationWidth
         : _heroDeckCollapsedWidth;
@@ -492,6 +484,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         SizedBox(
           width: navigationWidth,
           child: WorkspaceCommandDeckNavigationPanel(
+            tabs: _visibleTabs,
             activeTabIndex: activeTabIndex,
             isExpanded: _heroDeckExpanded,
             isDirty: _tabRegistry.isDirty,
@@ -528,26 +521,35 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
 
   /// Ermittelt das passende Layout anhand der verfuegbaren Breite.
   WorkspaceLayout _layoutForWidth(double width) {
-    if (width >= kHeroDeckBreakpoint) return WorkspaceLayout.heroDeck;
-    if (width >= kTabletBreakpoint) return WorkspaceLayout.expanded;
-    if (width >= kMediumBreakpoint) return WorkspaceLayout.medium;
+    if (width >= kHeroDeckBreakpoint) {
+      return WorkspaceLayout.heroDeck;
+    }
+    if (width >= kTabletBreakpoint) {
+      return WorkspaceLayout.expanded;
+    }
+    if (width >= kMediumBreakpoint) {
+      return WorkspaceLayout.medium;
+    }
     return WorkspaceLayout.compact;
   }
 
   /// Medium-Layout: Collapsed Sidebar (Icon-only) + Content-Bereich.
   Widget _buildMediumWorkspaceBody(HeroSheet hero) {
-    final activeTabIndex = _tabRegistry.activeTabIndex;
+    final activeTabIndex = _activeTabIndex();
     return Row(
       children: [
         SizedBox(
           width: _heroDeckCollapsedWidth,
           child: WorkspaceCommandDeckNavigationPanel(
+            tabs: _visibleTabs,
             activeTabIndex: activeTabIndex,
             isExpanded: false,
             isDirty: _tabRegistry.isDirty,
             onToggleExpanded: () {},
             onSelectTab: (index) {
-              if (_tabController.index == index) return;
+              if (_tabController.index == index) {
+                return;
+              }
               _tabController.animateTo(index);
             },
           ),
@@ -565,9 +567,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
-  /// Expanded-Layout: Ausgeklappte Sidebar + Content, kein Inspector.
+  /// Expanded-Layout: ausgeklappte Sidebar + Content, kein Inspector.
   Widget _buildExpandedWorkspaceBody(HeroSheet hero) {
-    final activeTabIndex = _tabRegistry.activeTabIndex;
+    final activeTabIndex = _activeTabIndex();
     final navigationWidth = _heroDeckExpanded
         ? _heroDeckNavigationWidth
         : _heroDeckCollapsedWidth;
@@ -576,12 +578,15 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         SizedBox(
           width: navigationWidth,
           child: WorkspaceCommandDeckNavigationPanel(
+            tabs: _visibleTabs,
             activeTabIndex: activeTabIndex,
             isExpanded: _heroDeckExpanded,
             isDirty: _tabRegistry.isDirty,
             onToggleExpanded: _toggleHeroDeckExpanded,
             onSelectTab: (index) {
-              if (_tabController.index == index) return;
+              if (_tabController.index == index) {
+                return;
+              }
               _tabController.animateTo(index);
             },
           ),
@@ -599,7 +604,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
-  /// Zeigt den Inspector als BottomSheet (fuer Medium/Expanded ohne Inspector-Spalte).
+  /// Zeigt den Inspector als BottomSheet fuer Medium/Expanded ohne Spalte.
   void _showInspectorSheet() {
     showModalBottomSheet<void>(
       context: context,
@@ -610,8 +615,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         initialChildSize: 0.7,
         minChildSize: 0.3,
         maxChildSize: 0.95,
-        builder: (sheetContext, scrollController) =>
-            WorkspaceInspectorPanel(
+        builder: (sheetContext, scrollController) => WorkspaceInspectorPanel(
           heroId: widget.heroId,
           isExpanded: true,
           onToggleExpanded: () => Navigator.of(sheetContext).pop(),
@@ -633,12 +637,22 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       );
     }
 
+    final allTabs = buildWorkspaceTabs(
+      heroId: widget.heroId,
+      callbacksForTab: _callbacksForTab,
+    );
+    _tabRegistry.setEditableTabs(
+      allTabs.where((tab) => tab.isEditable).map((tab) => tab.id),
+    );
+    _syncVisibleTabs(visibleWorkspaceTabsForHero(hero: hero, tabs: allTabs));
+
     final apple = isApplePlatform(context);
-    final useBottomNav = layout == WorkspaceLayout.compact && apple;
-    final showTabBar = layout == WorkspaceLayout.compact && !apple;
+    final hasVisibleTabs = _visibleTabs.isNotEmpty;
+    final isCompactLayout = layout == WorkspaceLayout.compact;
+    final useBottomNav = isCompactLayout && apple && hasVisibleTabs;
+    final showTabBar = isCompactLayout && !apple && hasVisibleTabs;
     final showInspectorAction =
-        layout == WorkspaceLayout.medium ||
-        layout == WorkspaceLayout.expanded;
+        layout == WorkspaceLayout.medium || layout == WorkspaceLayout.expanded;
 
     return PopScope(
       canPop: false,
@@ -663,15 +677,20 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
                 icon: const Icon(Icons.info_outline),
                 onPressed: _showInspectorSheet,
               ),
-            ..._buildSpacedWorkspaceActions(_buildWorkspaceActions()),
+            ..._buildSpacedWorkspaceActions(
+              _buildWorkspaceActions(isCompactLayout: isCompactLayout),
+            ),
           ],
           bottom: showTabBar ? _buildWorkspaceTabBar() : null,
         ),
         bottomNavigationBar: useBottomNav
             ? WorkspaceBottomNavigation(
-                activeTabIndex: _tabRegistry.activeTabIndex,
+                tabs: _visibleTabs,
+                activeTabIndex: _activeTabIndex(),
                 onSelectTab: (index) {
-                  if (_tabController.index == index) return;
+                  if (_tabController.index == index) {
+                    return;
+                  }
                   _tabController.animateTo(index);
                 },
               )
