@@ -11,6 +11,11 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 
+const double _statusLabelWidth = 32;
+const double _statusValueWidth = 28;
+const double _statusModifierWidth = 28;
+const double _statusFinalWidth = 28;
+
 /// Inspector-Seitenleiste fuer den Desktop-Helden-Deck-Modus.
 ///
 /// Zeigt den Heldenkopf, bearbeitbare Vitalwerte sowie eine kompakte
@@ -417,7 +422,7 @@ class _BeStatusRow extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(
-          width: 56,
+          width: _statusLabelWidth,
           child: Text(
             'BE',
             style: Theme.of(
@@ -425,9 +430,11 @@ class _BeStatusRow extends ConsumerWidget {
             ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
-        Expanded(
+        SizedBox(
+          width: _statusValueWidth,
           child: Text(
             '${combat.beKampf}',
+            textAlign: TextAlign.right,
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -443,7 +450,7 @@ class _BeStatusRow extends ConsumerWidget {
         ),
         const SizedBox(width: 4),
         SizedBox(
-          width: 40,
+          width: _statusModifierWidth,
           child: Text(
             '$displayed',
             textAlign: TextAlign.center,
@@ -462,37 +469,56 @@ class _BeStatusRow extends ConsumerWidget {
           },
         ),
         const SizedBox(width: 8),
-        Expanded(
-          flex: 2,
-          child: Wrap(
-            alignment: WrapAlignment.end,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 6,
-            runSpacing: 4,
+        SizedBox(
+          width: _statusFinalWidth,
+          child: Text(
+            '$displayed',
+            textAlign: TextAlign.right,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                stateText,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-              if (isManual)
-                TextButton.icon(
-                  key: const ValueKey<String>('workspace-status-be-clear'),
-                  onPressed: () {
-                    ref.read(talentBeOverrideProvider(heroId).notifier).state =
-                        null;
-                  },
-                  icon: const Icon(Icons.clear, size: 14),
-                  label: const Text('Entfernen'),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    stateText,
+                    textAlign: TextAlign.right,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontStyle: FontStyle.italic,
                     ),
                   ),
                 ),
+              ),
+              if (isManual) ...[
+                const SizedBox(width: 2),
+                SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: IconButton(
+                    key: const ValueKey<String>('workspace-status-be-clear'),
+                    tooltip: 'BE auf berechnet zuruecksetzen',
+                    padding: EdgeInsets.zero,
+                    iconSize: 16,
+                    onPressed: () {
+                      ref
+                              .read(talentBeOverrideProvider(heroId).notifier)
+                              .state =
+                          null;
+                    },
+                    icon: const Icon(Icons.replay),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -532,7 +558,7 @@ class _EditableStatusRow extends StatelessWidget {
       key: ValueKey<String>('workspace-status-row-$label'),
       children: [
         SizedBox(
-          width: 56,
+          width: _statusLabelWidth,
           child: Text(
             label,
             style: Theme.of(
@@ -540,9 +566,11 @@ class _EditableStatusRow extends StatelessWidget {
             ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
-        Expanded(
+        SizedBox(
+          width: _statusValueWidth,
           child: Text(
             '$baseValue',
+            textAlign: TextAlign.right,
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -555,7 +583,7 @@ class _EditableStatusRow extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         SizedBox(
-          width: 40,
+          width: _statusModifierWidth,
           child: Text(
             '$sign$modifierValue',
             textAlign: TextAlign.center,
@@ -572,8 +600,9 @@ class _EditableStatusRow extends StatelessWidget {
           onPressed: onIncrement,
         ),
         const SizedBox(width: 12),
+        const Spacer(),
         SizedBox(
-          width: 40,
+          width: _statusFinalWidth,
           child: Text(
             '$finalValue',
             textAlign: TextAlign.right,
@@ -599,7 +628,7 @@ class _ReadOnlyStatusRow extends StatelessWidget {
       key: ValueKey<String>('workspace-status-row-$label'),
       children: [
         SizedBox(
-          width: 56,
+          width: _statusLabelWidth,
           child: Text(
             label,
             style: Theme.of(
@@ -609,7 +638,7 @@ class _ReadOnlyStatusRow extends StatelessWidget {
         ),
         const Spacer(),
         SizedBox(
-          width: 40,
+          width: _statusFinalWidth,
           child: Text(
             '$finalValue',
             textAlign: TextAlign.right,
