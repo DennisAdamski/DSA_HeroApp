@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 
 part 'hero_overview/hero_overview_base_info_section.dart';
 part 'hero_overview/hero_overview_ap_resources_section.dart';
@@ -29,7 +30,6 @@ const double _fieldSpacing = 12;
 const double _gridSpacing = 12;
 const double _standardTwoColumnBreakpoint = 700;
 const double _largeTwoColumnBreakpoint = 900;
-const double _attributeValueCellWidth = 86;
 
 class HeroOverviewTab extends ConsumerStatefulWidget {
   const HeroOverviewTab({
@@ -224,8 +224,14 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
 
   bool _isTempAttributeKey(String key) {
     return switch (key) {
-      'mu_temp' || 'kl_temp' || 'inn_temp' || 'ch_temp' || 'ff_temp' ||
-      'ge_temp' || 'ko_temp' || 'kk_temp' => true,
+      'mu_temp' ||
+      'kl_temp' ||
+      'inn_temp' ||
+      'ch_temp' ||
+      'ff_temp' ||
+      'ge_temp' ||
+      'ko_temp' ||
+      'kk_temp' => true,
       _ => false,
     };
   }
@@ -310,9 +316,9 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Speichern fehlgeschlagen: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Speichern fehlgeschlagen: $error')),
+      );
       _editController.clearSyncSignature();
       _syncControllers(hero, state, force: true);
       _viewRevision.value++;

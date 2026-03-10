@@ -1,6 +1,25 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 
 extension _HeroOverviewStatsSection on _HeroOverviewTabState {
+  static const List<AdaptiveTableColumnSpec> _derivedValueColumnSpecs =
+      <AdaptiveTableColumnSpec>[
+        AdaptiveTableColumnSpec(minWidth: 96, maxWidth: 136),
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120),
+        AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 132),
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120),
+        AdaptiveTableColumnSpec(minWidth: 82, maxWidth: 120),
+      ];
+
+  static const List<AdaptiveTableColumnSpec> _attributeColumnSpecs =
+      <AdaptiveTableColumnSpec>[
+        AdaptiveTableColumnSpec(minWidth: 96, maxWidth: 136),
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120),
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120),
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120),
+        AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 132),
+        AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 132),
+      ];
+
   Widget _buildCombinedStatsAndAttributesSection(
     HeroSheet hero,
     HeroState state,
@@ -110,16 +129,14 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 560),
+          constraints: BoxConstraints(
+            minWidth: adaptiveTableMinWidth(_derivedValueColumnSpecs),
+          ),
           child: Table(
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            columnWidths: const <int, TableColumnWidth>{
-              0: FixedColumnWidth(112),
-              1: FixedColumnWidth(_attributeValueCellWidth),
-              2: FixedColumnWidth(_attributeValueCellWidth),
-              3: FixedColumnWidth(_attributeValueCellWidth),
-              4: FixedColumnWidth(_attributeValueCellWidth),
-            },
+            columnWidths: buildAdaptiveTableColumnWidths(
+              _derivedValueColumnSpecs,
+            ),
             children: [
               TableRow(
                 children: [
@@ -191,17 +208,12 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 520),
+          constraints: BoxConstraints(
+            minWidth: adaptiveTableMinWidth(_attributeColumnSpecs),
+          ),
           child: Table(
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            columnWidths: const <int, TableColumnWidth>{
-              0: FixedColumnWidth(96),
-              1: FixedColumnWidth(_attributeValueCellWidth),
-              2: FixedColumnWidth(_attributeValueCellWidth),
-              3: FixedColumnWidth(_attributeValueCellWidth),
-              4: FixedColumnWidth(_attributeValueCellWidth),
-              5: FixedColumnWidth(_attributeValueCellWidth),
-            },
+            columnWidths: buildAdaptiveTableColumnWidths(_attributeColumnSpecs),
             children: [
               TableRow(
                 children: [
@@ -250,33 +262,30 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     final isReadOnly = isTempModifier ? false : !_editController.isEditing;
     return Padding(
       padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
-      child: SizedBox(
-        width: _attributeValueCellWidth,
-        child: TextField(
-          key: ValueKey<String>('overview-field-$keyName'),
-          controller: _field(keyName),
-          focusNode: isTempModifier ? _focusNode(keyName) : null,
-          readOnly: isReadOnly,
-          keyboardType: TextInputType.number,
-          textInputAction: isTempModifier ? TextInputAction.done : null,
-          decoration: _inputDecoration('').copyWith(
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 8,
-            ),
+      child: TextField(
+        key: ValueKey<String>('overview-field-$keyName'),
+        controller: _field(keyName),
+        focusNode: isTempModifier ? _focusNode(keyName) : null,
+        readOnly: isReadOnly,
+        keyboardType: TextInputType.number,
+        textInputAction: isTempModifier ? TextInputAction.done : null,
+        decoration: _inputDecoration('').copyWith(
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 8,
           ),
-          onChanged: isTempModifier
-              ? (_) {
-                  if (mounted) {
-                    _viewRevision.value++;
-                  }
-                }
-              : (isReadOnly ? null : _onFieldChanged),
-          onSubmitted: isTempModifier
-              ? (_) => _commitTempAttributeField(keyName)
-              : null,
         ),
+        onChanged: isTempModifier
+            ? (_) {
+                if (mounted) {
+                  _viewRevision.value++;
+                }
+              }
+            : (isReadOnly ? null : _onFieldChanged),
+        onSubmitted: isTempModifier
+            ? (_) => _commitTempAttributeField(keyName)
+            : null,
       ),
     );
   }
@@ -295,12 +304,9 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     return Padding(
       key: key,
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-      child: SizedBox(
-        width: _attributeValueCellWidth,
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
-        ),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
       ),
     );
   }
@@ -317,22 +323,19 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     final isReadOnly = !_editController.isEditing;
     return Padding(
       padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
-      child: SizedBox(
-        width: _attributeValueCellWidth,
-        child: TextField(
-          key: ValueKey<String>('overview-derived-bought-$keyName'),
-          controller: _field(keyName),
-          readOnly: isReadOnly,
-          keyboardType: TextInputType.number,
-          decoration: _inputDecoration('').copyWith(
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 8,
-            ),
+      child: TextField(
+        key: ValueKey<String>('overview-derived-bought-$keyName'),
+        controller: _field(keyName),
+        readOnly: isReadOnly,
+        keyboardType: TextInputType.number,
+        decoration: _inputDecoration('').copyWith(
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 8,
           ),
-          onChanged: isReadOnly ? null : _onFieldChanged,
         ),
+        onChanged: isReadOnly ? null : _onFieldChanged,
       ),
     );
   }
