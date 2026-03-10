@@ -65,9 +65,11 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
   ) {
     final parsed = parseModifierTextsForHero(hero);
     final totalMods = hero.persistentMods + parsed.statMods + state.tempMods;
+    final debugModus = ref.read(debugModusProvider);
     final entries = <_DerivedRow>[
       _DerivedRow(
         label: 'LeP',
+        variableName: 'maxLep',
         current: derived.maxLep,
         modifier: totalMods.lep + _cappedLevel(hero.level),
         bought: hero.bought.lep,
@@ -75,6 +77,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       ),
       _DerivedRow(
         label: 'Au',
+        variableName: 'maxAu',
         current: derived.maxAu,
         modifier: totalMods.au + hero.level * 2,
         bought: hero.bought.au,
@@ -82,6 +85,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       ),
       _DerivedRow(
         label: 'AsP',
+        variableName: 'maxAsp',
         current: derived.maxAsp,
         modifier: totalMods.asp + hero.level * 2,
         bought: hero.bought.asp,
@@ -89,6 +93,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       ),
       _DerivedRow(
         label: 'KaP',
+        variableName: 'maxKap',
         current: derived.maxKap,
         modifier: totalMods.kap,
         bought: hero.bought.kap,
@@ -96,6 +101,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       ),
       _DerivedRow(
         label: 'MR',
+        variableName: 'mr',
         current: derived.mr,
         modifier: totalMods.mr,
         bought: hero.bought.mr,
@@ -103,25 +109,34 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       ),
       _DerivedRow(
         label: 'Ini-Basis',
+        variableName: 'iniBase',
         current: derived.iniBase,
         modifier: totalMods.iniBase,
       ),
       _DerivedRow(
         label: 'AT-Basis',
+        variableName: 'atBase',
         current: derived.atBase,
         modifier: totalMods.at,
       ),
       _DerivedRow(
         label: 'PA-Basis',
+        variableName: 'paBase',
         current: derived.paBase,
         modifier: totalMods.pa,
       ),
       _DerivedRow(
         label: 'FK-Basis',
+        variableName: 'fkBase',
         current: derived.fkBase,
         modifier: totalMods.fk,
       ),
-      _DerivedRow(label: 'GS', current: derived.gs, modifier: totalMods.gs),
+      _DerivedRow(
+        label: 'GS',
+        variableName: 'gs',
+        current: derived.gs,
+        modifier: totalMods.gs,
+      ),
     ];
 
     return _SectionCard(
@@ -150,7 +165,9 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               ...entries.map(
                 (entry) => TableRow(
                   children: [
-                    _buildAttributesTableLabelCell(entry.label),
+                    _buildAttributesTableLabelCell(
+                      debugModus ? entry.variableName : entry.label,
+                    ),
                     _buildDerivedValueCell(
                       value:
                           (entry.current - entry.modifier - (entry.bought ?? 0))
@@ -174,6 +191,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     Attributes attributeMaximums,
     Attributes effectiveAttributes,
   ) {
+    final attrDebugModus = ref.read(debugModusProvider);
     final rows = _HeroOverviewTabState._attributeEntries
         .map((entry) {
           final key = entry.$2;
@@ -183,7 +201,9 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
           final effective = _effectiveValueByKey(effectiveAttributes, key);
           return TableRow(
             children: [
-              _buildAttributesTableLabelCell(entry.$1),
+              _buildAttributesTableLabelCell(
+                attrDebugModus ? entry.$2 : entry.$1,
+              ),
               _buildAttributesComputedCell(
                 keyName: '${key}_start',
                 value: startValue.toString(),
