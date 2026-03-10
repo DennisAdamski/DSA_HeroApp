@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_workspace_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_import_export_actions.dart';
 
 class HeroesHomeScreen extends ConsumerWidget {
@@ -92,6 +93,16 @@ class HeroesHomeScreen extends ConsumerWidget {
                   importExportActions: importExportActions,
                 ),
                 icon: const Icon(Icons.download),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                tooltip: 'Einstellungen',
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const SettingsScreen(),
+                  ),
+                ),
+                icon: const Icon(Icons.settings),
               ),
               const SizedBox(width: 12),
             ];

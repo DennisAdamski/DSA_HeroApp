@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_feature_flags.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
@@ -534,6 +535,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
 class _DerivedRow {
   const _DerivedRow({
     required this.label,
+    required this.variableName,
     required this.current,
     required this.modifier,
     this.bought,
@@ -541,6 +543,7 @@ class _DerivedRow {
   });
 
   final String label;
+  final String variableName;
   final int current;
   final int modifier;
   final int? bought;

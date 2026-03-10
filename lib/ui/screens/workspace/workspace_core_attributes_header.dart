@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 
 /// Persistenter Attribut-Header ueber dem Tab-Inhalt im Workspace.
 ///
@@ -45,20 +46,21 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
       return '$currentText/$maxText';
     }
 
+    final debugModus = ref.watch(debugModusProvider);
     final chips = <String>[
-      'MU: ${effectiveAttributes.mu}',
-      'KL: ${effectiveAttributes.kl}',
-      'IN: ${effectiveAttributes.inn}',
-      'CH: ${effectiveAttributes.ch}',
-      'FF: ${effectiveAttributes.ff}',
-      'GE: ${effectiveAttributes.ge}',
-      'KO: ${effectiveAttributes.ko}',
-      'KK: ${effectiveAttributes.kk}',
-      'LEP: ${resourceText(state?.currentLep, derived?.maxLep)}',
-      'AU: ${resourceText(state?.currentAu, derived?.maxAu)}',
-      'ASP: ${resourceText(state?.currentAsp, derived?.maxAsp)}',
-      'KAP: ${resourceText(state?.currentKap, derived?.maxKap)}',
-      'BE: ${activeTalentBe?.toString() ?? '-'}',
+      '${debugModus ? 'mu' : 'MU'}: ${effectiveAttributes.mu}',
+      '${debugModus ? 'kl' : 'KL'}: ${effectiveAttributes.kl}',
+      '${debugModus ? 'inn' : 'IN'}: ${effectiveAttributes.inn}',
+      '${debugModus ? 'ch' : 'CH'}: ${effectiveAttributes.ch}',
+      '${debugModus ? 'ff' : 'FF'}: ${effectiveAttributes.ff}',
+      '${debugModus ? 'ge' : 'GE'}: ${effectiveAttributes.ge}',
+      '${debugModus ? 'ko' : 'KO'}: ${effectiveAttributes.ko}',
+      '${debugModus ? 'kk' : 'KK'}: ${effectiveAttributes.kk}',
+      '${debugModus ? 'currentLep/maxLep' : 'LEP'}: ${resourceText(state?.currentLep, derived?.maxLep)}',
+      '${debugModus ? 'currentAu/maxAu' : 'AU'}: ${resourceText(state?.currentAu, derived?.maxAu)}',
+      '${debugModus ? 'currentAsp/maxAsp' : 'ASP'}: ${resourceText(state?.currentAsp, derived?.maxAsp)}',
+      '${debugModus ? 'currentKap/maxKap' : 'KAP'}: ${resourceText(state?.currentKap, derived?.maxKap)}',
+      '${debugModus ? 'beKampf' : 'BE'}: ${activeTalentBe?.toString() ?? '-'}',
     ];
 
     return Container(

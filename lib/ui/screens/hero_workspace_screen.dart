@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_inspector_pa
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_navigation_guard.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
@@ -680,6 +681,17 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
             ..._buildSpacedWorkspaceActions(
               _buildWorkspaceActions(isCompactLayout: isCompactLayout),
             ),
+            if (!(_tabRegistry.activeTabId != null &&
+                _tabRegistry.isEditing(_tabRegistry.activeTabId!)))
+              IconButton(
+                tooltip: 'Einstellungen',
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const SettingsScreen(),
+                  ),
+                ),
+                icon: const Icon(Icons.settings),
+              ),
           ],
           bottom: showTabBar ? _buildWorkspaceTabBar() : null,
         ),
