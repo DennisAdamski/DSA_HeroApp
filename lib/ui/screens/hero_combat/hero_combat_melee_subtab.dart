@@ -531,7 +531,9 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     final isNew = entryIndex == null;
     final source = isNew ? const OffhandEquipmentEntry() : entries[entryIndex];
     final nameController = TextEditingController(text: source.name);
-    final bfController = TextEditingController(text: source.breakFactor.toString());
+    final bfController = TextEditingController(
+      text: source.breakFactor.toString(),
+    );
     final iniController = TextEditingController(text: source.iniMod.toString());
     final atController = TextEditingController(text: source.atMod.toString());
     final paController = TextEditingController(text: source.paMod.toString());
@@ -661,14 +663,19 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                   onPressed: () {
                     final parsedBreakFactor =
                         int.tryParse(bfController.text.trim()) ?? 0;
-                    final parsedIni = int.tryParse(iniController.text.trim()) ?? 0;
-                    final parsedAt = int.tryParse(atController.text.trim()) ?? 0;
-                    final parsedPa = int.tryParse(paController.text.trim()) ?? 0;
+                    final parsedIni =
+                        int.tryParse(iniController.text.trim()) ?? 0;
+                    final parsedAt =
+                        int.tryParse(atController.text.trim()) ?? 0;
+                    final parsedPa =
+                        int.tryParse(paController.text.trim()) ?? 0;
                     Navigator.of(context).pop(
                       OffhandEquipmentEntry(
                         name: nameController.text.trim(),
                         type: type,
-                        breakFactor: parsedBreakFactor < 0 ? 0 : parsedBreakFactor,
+                        breakFactor: parsedBreakFactor < 0
+                            ? 0
+                            : parsedBreakFactor,
                         shieldSize: shieldSize,
                         iniMod: parsedIni,
                         atMod: parsedAt,
@@ -740,9 +747,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: Text(
-                isNew ? 'Rüstung hinzufügen' : 'Rüstung bearbeiten',
-              ),
+              title: Text(isNew ? 'Rüstung hinzufügen' : 'Rüstung bearbeiten'),
               content: SizedBox(
                 width: 460,
                 child: SingleChildScrollView(
@@ -1022,7 +1027,7 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               preview: preview,
               manualAusweichenMod: manual.ausweichenMod,
             );
-            if (constraints.maxWidth < 900) {
+            if (constraints.maxWidth < 1100) {
               return Column(
                 children: [
                   armorCard,
@@ -1132,7 +1137,10 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                     _resultChip('GE-Basis', preview.geBase),
                     _resultChip('GE-Schwelle', preview.geThreshold),
                     _resultChip('INI/GE', preview.iniGe),
-                    _resultChip('Helden+Waffen INI',preview.kombinierteHeldenWaffenIni),
+                    _resultChip(
+                      'Helden+Waffen INI',
+                      preview.kombinierteHeldenWaffenIni,
+                    ),
                     _resultChip('TK-Kalk', preview.tpCalc),
                     Chip(
                       label: Text(
@@ -1226,7 +1234,8 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               ? 'equipment:${assignment.equipmentIndex}'
               : 'none');
     final selectedWeaponIndex = _selectedWeaponIndex();
-    final offhandWeaponPreview = assignment.usesWeapon &&
+    final offhandWeaponPreview =
+        assignment.usesWeapon &&
             assignment.weaponIndex >= 0 &&
             assignment.weaponIndex < _draftCombatConfig.weaponSlots.length
         ? computeCombatPreviewStats(
@@ -1234,7 +1243,8 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
             heroState,
             overrideConfig: _draftCombatConfig.copyWith(
               selectedWeaponIndex: assignment.weaponIndex,
-              mainWeapon: _draftCombatConfig.weaponSlots[assignment.weaponIndex],
+              mainWeapon:
+                  _draftCombatConfig.weaponSlots[assignment.weaponIndex],
               offhandAssignment: const OffhandAssignment(),
               manualMods: _draftCombatConfig.manualMods.copyWith(
                 iniWurf: _effectiveIniRollForConfig(_draftCombatConfig),
@@ -1273,7 +1283,11 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                         'Waffe: ${_draftCombatConfig.weaponSlots[i].name.trim().isEmpty ? 'Waffe ${i + 1}' : _draftCombatConfig.weaponSlots[i].name}',
                       ),
                     ),
-                for (var i = 0; i < _draftCombatConfig.offhandEquipment.length; i++)
+                for (
+                  var i = 0;
+                  i < _draftCombatConfig.offhandEquipment.length;
+                  i++
+                )
                   DropdownMenuItem<String>(
                     value: 'equipment:$i',
                     child: Text(
@@ -1286,13 +1300,14 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                 final nextAssignment = switch (value ?? 'none') {
                   'none' => const OffhandAssignment(),
                   final raw when raw.startsWith('weapon:') => OffhandAssignment(
-                      weaponIndex:
-                          int.tryParse(raw.substring('weapon:'.length)) ?? -1,
-                    ),
+                    weaponIndex:
+                        int.tryParse(raw.substring('weapon:'.length)) ?? -1,
+                  ),
                   final raw when raw.startsWith('equipment:') =>
                     OffhandAssignment(
                       equipmentIndex:
-                          int.tryParse(raw.substring('equipment:'.length)) ?? -1,
+                          int.tryParse(raw.substring('equipment:'.length)) ??
+                          -1,
                     ),
                   _ => const OffhandAssignment(),
                 };
@@ -1316,10 +1331,20 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  Chip(label: Text(offhandWeapon.name.trim().isEmpty ? 'Waffe' : offhandWeapon.name)),
+                  Chip(
+                    label: Text(
+                      offhandWeapon.name.trim().isEmpty
+                          ? 'Waffe'
+                          : offhandWeapon.name,
+                    ),
+                  ),
                   Chip(label: Text('AT: ${offhandWeaponPreview.at}')),
                   if (!offhandWeaponPreview.isRangedWeapon)
-                    Chip(label: Text('PA: ${offhandWeaponPreview.paMitIniParadeMod}')),
+                    Chip(
+                      label: Text(
+                        'PA: ${offhandWeaponPreview.paMitIniParadeMod}',
+                      ),
+                    ),
                   Chip(label: Text('TP: ${offhandWeaponPreview.tpExpression}')),
                   Chip(label: Text('INI: ${mainPreview.kampfInitiative}')),
                 ],
@@ -1370,37 +1395,35 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
       for (var i = 0; i < entries.length; i++)
         FlexibleTableRow(
           cells: [
-            Text(entries[i].name.trim().isEmpty ? 'Eintrag ${i + 1}' : entries[i].name),
+            _tappableWeaponNameCell(
+              entries[i].name.trim().isEmpty
+                  ? 'Eintrag ${i + 1}'
+                  : entries[i].name,
+              onTap: () => _openOffhandEquipmentEditor(
+                catalog: catalog,
+                combatTalents: combatTalents,
+                entryIndex: i,
+              ),
+            ),
             Text(entries[i].isShield ? 'Schild' : 'Parierwaffe'),
             Text(entries[i].breakFactor.toString()),
-            Text(entries[i].isShield ? _shieldSizeLabel(entries[i].shieldSize) : '-'),
+            Text(
+              entries[i].isShield
+                  ? _shieldSizeLabel(entries[i].shieldSize)
+                  : '-',
+            ),
             Text(entries[i].iniMod.toString()),
             Text(entries[i].atMod.toString()),
             Text(entries[i].paMod.toString()),
-            Wrap(
-              spacing: 4,
-              children: [
-                IconButton(
-                  key: ValueKey<String>('combat-offhand-edit-$i'),
-                  tooltip: 'Nebenhand-Ausrüstung bearbeiten',
-                  onPressed: () => _openOffhandEquipmentEditor(
-                    catalog: catalog,
-                    combatTalents: combatTalents,
-                    entryIndex: i,
-                  ),
-                  icon: const Icon(Icons.edit),
-                ),
-                IconButton(
-                  key: ValueKey<String>('combat-offhand-remove-$i'),
-                  tooltip: 'Nebenhand-Ausrüstung entfernen',
-                  onPressed: () => _removeOffhandEquipmentEntry(
-                    i,
-                    catalog: catalog,
-                    combatTalents: combatTalents,
-                  ),
-                  icon: const Icon(Icons.delete),
-                ),
-              ],
+            IconButton(
+              key: ValueKey<String>('combat-offhand-remove-$i'),
+              tooltip: 'Nebenhand-Ausrüstung entfernen',
+              onPressed: () => _removeOffhandEquipmentEntry(
+                i,
+                catalog: catalog,
+                combatTalents: combatTalents,
+              ),
+              icon: const Icon(Icons.delete),
             ),
           ],
         ),
@@ -1416,27 +1439,36 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            FilledButton.icon(
-              key: const ValueKey<String>('combat-offhand-add'),
-              onPressed: () => _openOffhandEquipmentEditor(
-                catalog: catalog,
-                combatTalents: combatTalents,
-              ),
-              icon: const Icon(Icons.add),
-              label: const Text('Eintrag hinzufuegen'),
-            ),
-            const SizedBox(height: 10),
             FlexibleTable(
               tableKey: const ValueKey<String>('combat-offhand-table'),
-              headerCells: const [
-                Text('Ausrüstungsname'),
-                Text('Waffentalent'),
-                Text('BF'),
-                Text('Groesse'),
-                Text('INI Mod'),
-                Text('AT Mod'),
-                Text('PA Mod'),
-                Text('Aktion'),
+              headerCells: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Name'),
+                    IconButton(
+                      key: const ValueKey<String>('combat-offhand-add'),
+                      tooltip: 'Nebenhand-Ausrüstung hinzufügen',
+                      visualDensity: VisualDensity.compact,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 30,
+                        height: 30,
+                      ),
+                      onPressed: () => _openOffhandEquipmentEditor(
+                        catalog: catalog,
+                        combatTalents: combatTalents,
+                      ),
+                      icon: const Icon(Icons.add, size: 18),
+                    ),
+                  ],
+                ),
+                const Text('Typ'),
+                const Text('BF'),
+                const Text('Groesse'),
+                const Text('INI Mod'),
+                const Text('AT Mod'),
+                const Text('PA Mod'),
+                const Text('Aktion'),
               ],
               rows: rows,
             ),
@@ -1465,109 +1497,125 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     required RulesCatalog catalog,
     required List<TalentDef> sortedTalents,
   }) {
+    const armorDetailsBreakpoint = 760.0;
     final showPieceRg1 = armor.globalArmorTrainingLevel == 1;
+    final armorRows = <FlexibleTableRow>[
+      for (var i = 0; i < armor.pieces.length; i++)
+        FlexibleTableRow(
+          cells: [
+            _tappableWeaponNameCell(
+              armor.pieces[i].name.trim().isEmpty
+                  ? 'Rüstung ${i + 1}'
+                  : armor.pieces[i].name,
+              onTap: () => _openArmorPieceEditor(
+                catalog: catalog,
+                combatTalents: sortedTalents,
+                pieceIndex: i,
+              ),
+            ),
+            Text(armor.pieces[i].rs.toString()),
+            Text(armor.pieces[i].be.toString()),
+            Text(armor.pieces[i].isActive ? 'Ja' : 'Nein'),
+            if (showPieceRg1) Text(armor.pieces[i].rg1Active ? 'Ja' : 'Nein'),
+            IconButton(
+              key: ValueKey<String>('combat-armor-remove-$i'),
+              tooltip: 'Rüstung entfernen',
+              onPressed: () => _removeArmorPiece(
+                i,
+                catalog: catalog,
+                combatTalents: sortedTalents,
+              ),
+              icon: const Icon(Icons.delete),
+            ),
+          ],
+        ),
+    ];
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Ruestung & BE',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('Rüstung', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                FilledButton.icon(
-                  key: const ValueKey<String>('combat-armor-add'),
-                  onPressed: () => _openArmorPieceEditor(
-                    catalog: catalog,
-                    combatTalents: sortedTalents,
-                  ),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Rüstung hinzufügen'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            if (armor.pieces.isEmpty)
-              const Text('Keine Rüstungsstücke erfasst.')
-            else
-              Column(
-                children: [
-                  for (var i = 0; i < armor.pieces.length; i++)
-                    Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
-                        ),
-                        child: Row(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final armorTableSection = Column(
+                  key: const ValueKey<String>('combat-armor-table-section'),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FlexibleTable(
+                      tableKey: const ValueKey<String>('combat-armor-table'),
+                      headerCells: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Expanded(
-                              child: Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: [
-                                  Chip(label: Text(armor.pieces[i].name)),
-                                  Chip(label: Text('RS ${armor.pieces[i].rs}')),
-                                  Chip(label: Text('BE ${armor.pieces[i].be}')),
-                                  Chip(
-                                    label: Text(
-                                      'Aktiv ${armor.pieces[i].isActive ? 'Ja' : 'Nein'}',
-                                    ),
-                                  ),
-                                  if (showPieceRg1)
-                                    Chip(
-                                      label: Text(
-                                        'RG I ${armor.pieces[i].rg1Active ? 'Ja' : 'Nein'}',
-                                      ),
-                                    ),
-                                ],
+                            const Text('Name'),
+                            IconButton(
+                              key: const ValueKey<String>('combat-armor-add'),
+                              tooltip: 'Rüstung hinzufügen',
+                              visualDensity: VisualDensity.compact,
+                              constraints: const BoxConstraints.tightFor(
+                                width: 30,
+                                height: 30,
                               ),
-                            ),
-                            Wrap(
-                              spacing: 4,
-                              children: [
-                                IconButton(
-                                  key: ValueKey<String>('combat-armor-edit-$i'),
-                                  tooltip: 'Rüstung bearbeiten',
-                                  onPressed: () => _openArmorPieceEditor(
-                                    catalog: catalog,
-                                    combatTalents: sortedTalents,
-                                    pieceIndex: i,
-                                  ),
-                                  icon: const Icon(Icons.edit),
-                                ),
-                                IconButton(
-                                  key: ValueKey<String>(
-                                    'combat-armor-remove-$i',
-                                  ),
-                                  tooltip: 'Rüstung entfernen',
-                                  onPressed: () => _removeArmorPiece(
-                                    i,
-                                    catalog: catalog,
-                                    combatTalents: sortedTalents,
-                                  ),
-                                  icon: const Icon(Icons.delete),
-                                ),
-                              ],
+                              onPressed: () => _openArmorPieceEditor(
+                                catalog: catalog,
+                                combatTalents: sortedTalents,
+                              ),
+                              icon: const Icon(Icons.add, size: 18),
                             ),
                           ],
                         ),
-                      ),
+                        const Text('RS'),
+                        const Text('BE'),
+                        const Text('Aktiv'),
+                        if (showPieceRg1) const Text('RG I'),
+                        const Text('Aktion'),
+                      ],
+                      rows: armorRows,
                     ),
-                ],
-              ),
-            const SizedBox(height: 8),
-            Text('RS gesamt = Summe aktiver RS = ${preview.rsTotal}'),
-            Text(
-              'BE (Kampf) = BE Roh (${preview.beTotalRaw}) - RG (${preview.rgReduction}) = ${preview.beKampf}',
-            ),
-            Text(
-              'eBE = min(0, -BE(Kampf) (${preview.beKampf}) - BE Mod (${preview.beMod})) = ${preview.ebe}',
+                    if (armorRows.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: Text('Keine Rüstungsstücke erfasst.'),
+                      ),
+                  ],
+                );
+                final armorCalculationSection = Column(
+                  key: const ValueKey<String>(
+                    'combat-armor-calculation-section',
+                  ),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('RS gesamt = Summe aktiver RS = ${preview.rsTotal}'),
+                    Text(
+                      'BE (Kampf) = BE Roh (${preview.beTotalRaw}) - RG (${preview.rgReduction}) = ${preview.beKampf}',
+                    ),
+                    Text(
+                      'eBE = min(0, -BE(Kampf) (${preview.beKampf}) - BE Mod (${preview.beMod})) = ${preview.ebe}',
+                    ),
+                  ],
+                );
+                if (constraints.maxWidth < armorDetailsBreakpoint) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      armorTableSection,
+                      const SizedBox(height: 8),
+                      armorCalculationSection,
+                    ],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: armorTableSection),
+                    const SizedBox(width: 16),
+                    Expanded(child: armorCalculationSection),
+                  ],
+                );
+              },
             ),
           ],
         ),
