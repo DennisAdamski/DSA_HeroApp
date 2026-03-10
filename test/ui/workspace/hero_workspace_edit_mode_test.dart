@@ -8,14 +8,15 @@ import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 
 void main() {
-  HeroSheet buildHero() {
-    return const HeroSheet(
+  HeroSheet buildHero({StatModifiers persistentMods = const StatModifiers()}) {
+    return HeroSheet(
       id: 'demo',
       name: 'Rondra',
       level: 1,
@@ -46,6 +47,7 @@ void main() {
       apTotal: 1000,
       apSpent: 500,
       apAvailable: 500,
+      persistentMods: persistentMods,
     );
   }
 
@@ -93,10 +95,12 @@ void main() {
   }
 
   Finder activeTabVerticalScrollable() {
-    return find.descendant(
-      of: find.byKey(const ValueKey<String>('hero-overview-scroll')),
-      matching: find.byType(Scrollable),
-    ).first;
+    return find
+        .descendant(
+          of: find.byKey(const ValueKey<String>('hero-overview-scroll')),
+          matching: find.byType(Scrollable),
+        )
+        .first;
   }
 
   Future<void> selectWorkspaceTab(WidgetTester tester, String label) async {
@@ -1079,7 +1083,7 @@ void main() {
     expect(find.text('Helden Deck'), findsNothing);
     expect(find.byType(TabBar), findsNothing);
     expect(find.text('Inspector'), findsNothing);
-    expect(find.text('Ressourcen'), findsOneWidget);
+    expect(find.text('Vitalwerte'), findsOneWidget);
     expect(heroDeckToggleButton(), findsOneWidget);
     expect(find.byTooltip('Helden-Deck einblenden'), findsOneWidget);
     expect(find.text('Übersicht'), findsNothing);
@@ -1105,7 +1109,7 @@ void main() {
 
     expect(find.text('Helden Deck'), findsNothing);
     expect(find.text('Übersicht'), findsNothing);
-    expect(find.text('Ressourcen'), findsOneWidget);
+    expect(find.text('Vitalwerte'), findsOneWidget);
 
     await tester.tap(heroDeckToggleButton());
     await tester.pumpAndSettle();
@@ -1113,7 +1117,7 @@ void main() {
     expect(find.text('Helden Deck'), findsOneWidget);
     expect(find.byTooltip('Helden-Deck ausblenden'), findsOneWidget);
     expect(find.text('Übersicht'), findsWidgets);
-    expect(find.text('Ressourcen'), findsOneWidget);
+    expect(find.text('Vitalwerte'), findsOneWidget);
     expect(find.text('Basisinformationen'), findsOneWidget);
 
     await tester.tap(heroDeckToggleButton());
@@ -1142,15 +1146,15 @@ void main() {
     await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
     expect(find.text('Inspector'), findsNothing);
-    expect(find.text('Ressourcen'), findsOneWidget);
+    expect(find.text('Vitalwerte'), findsOneWidget);
     expect(workspaceDetailsToggleButton(), findsOneWidget);
 
     await tester.tap(workspaceDetailsToggleButton());
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Details einblenden'), findsOneWidget);
-    expect(find.text('Ressourcen'), findsNothing);
-    expect(find.text('Kampfwerte'), findsNothing);
+    expect(find.text('Vitalwerte'), findsNothing);
+    expect(find.text('Statuswerte'), findsNothing);
     expect(find.text('Basisinformationen'), findsOneWidget);
     expect(find.text('Helden Deck'), findsNothing);
 
@@ -1158,9 +1162,120 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Details ausblenden'), findsOneWidget);
-    expect(find.text('Ressourcen'), findsOneWidget);
-    expect(find.text('Kampfwerte'), findsOneWidget);
+    expect(find.text('Vitalwerte'), findsOneWidget);
+    expect(find.text('Statuswerte'), findsOneWidget);
   });
+
+  testWidgets('wide workspace shows merged status rows with BE and MR', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          persistentMods: const StatModifiers(
+            iniBase: 1,
+            gs: 2,
+            ausweichen: -1,
+            pa: 1,
+            at: -2,
+            rs: 1,
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+    expect(find.text('Statuswerte'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('workspace-status-row-Ini')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('workspace-status-row-GS')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('workspace-status-row-AW')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('workspace-status-row-PA')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('workspace-status-row-AT')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('workspace-status-row-RS')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('workspace-status-row-MR')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('workspace-status-row-be')),
+      findsOneWidget,
+    );
+    expect(find.text('(berechnet)'), findsOneWidget);
+    expect(find.text('AP verfuegbar: 500'), findsNothing);
+    expect(find.text('Ruestung'), findsNothing);
+    expect(find.text('Kampfwerte'), findsNothing);
+    expect(find.text('Manueller BE'), findsNothing);
+    expect(find.text('Entfernen'), findsNothing);
+  });
+
+  testWidgets(
+    'workspace status BE row switches to manual override and clears',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+      expect(find.text('(berechnet)'), findsOneWidget);
+      expect(find.text('(manuell)'), findsNothing);
+
+      await tester.tap(find.byTooltip('BE erhoehen'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('(berechnet)'), findsNothing);
+      expect(find.text('(manuell)'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('workspace-status-be-clear')),
+        findsOneWidget,
+      );
+      expect(find.byTooltip('BE auf berechnet zuruecksetzen'), findsOneWidget);
+      expect(find.text('Entfernen'), findsNothing);
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('workspace-status-be-clear')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('(berechnet)'), findsOneWidget);
+      expect(find.text('(manuell)'), findsNothing);
+    },
+  );
 
   testWidgets('overview shows attributes and derived in responsive section', (
     tester,
