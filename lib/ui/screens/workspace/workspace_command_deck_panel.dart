@@ -9,12 +9,16 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dar
 class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
   const WorkspaceCommandDeckNavigationPanel({
     super.key,
+    required this.tabs,
     required this.activeTabIndex,
     required this.isExpanded,
     required this.isDirty,
     required this.onToggleExpanded,
     required this.onSelectTab,
   });
+
+  /// Sichtbare Tabs in ihrer aktuellen Reihenfolge.
+  final List<WorkspaceTabSpec> tabs;
 
   /// Index des aktuell sichtbaren Tabs.
   final int activeTabIndex;
@@ -23,7 +27,7 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
   final bool isExpanded;
 
   /// Gibt zurueck, ob ein Tab ungespeicherte Aenderungen hat.
-  final bool Function(int tabIndex) isDirty;
+  final bool Function(String tabId) isDirty;
 
   /// Schaltet den Ein-/Ausfahrzustand des Helden-Decks um.
   final VoidCallback onToggleExpanded;
@@ -83,12 +87,12 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
             if (isExpanded)
               Expanded(
                 child: ListView.builder(
-                  itemCount: workspaceTabs.length,
+                  itemCount: tabs.length,
                   padding: const EdgeInsets.fromLTRB(8, 2, 8, 12),
                   itemBuilder: (context, index) {
-                    final tab = workspaceTabs[index];
+                    final tab = tabs[index];
                     final selected = index == activeTabIndex;
-                    final dirty = isDirty(index);
+                    final dirty = isDirty(tab.id);
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 6),
                       child: ListTile(
@@ -131,12 +135,12 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
             else
               Expanded(
                 child: ListView.builder(
-                  itemCount: workspaceTabs.length,
+                  itemCount: tabs.length,
                   padding: const EdgeInsets.fromLTRB(4, 2, 4, 12),
                   itemBuilder: (context, index) {
-                    final tab = workspaceTabs[index];
+                    final tab = tabs[index];
                     final selected = index == activeTabIndex;
-                    final dirty = isDirty(index);
+                    final dirty = isDirty(tab.id);
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Tooltip(

@@ -1082,7 +1082,7 @@ void main() {
     expect(find.text('Ressourcen'), findsOneWidget);
     expect(heroDeckToggleButton(), findsOneWidget);
     expect(find.byTooltip('Helden-Deck einblenden'), findsOneWidget);
-    expect(find.text('Status'), findsNothing);
+    expect(find.text('Übersicht'), findsNothing);
     expect(workspaceDetailsToggleButton(), findsOneWidget);
   });
 
@@ -1104,7 +1104,7 @@ void main() {
     await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
     expect(find.text('Helden Deck'), findsNothing);
-    expect(find.text('Status'), findsNothing);
+    expect(find.text('Übersicht'), findsNothing);
     expect(find.text('Ressourcen'), findsOneWidget);
 
     await tester.tap(heroDeckToggleButton());
@@ -1112,7 +1112,7 @@ void main() {
 
     expect(find.text('Helden Deck'), findsOneWidget);
     expect(find.byTooltip('Helden-Deck ausblenden'), findsOneWidget);
-    expect(find.text('Status'), findsWidgets);
+    expect(find.text('Übersicht'), findsWidgets);
     expect(find.text('Ressourcen'), findsOneWidget);
     expect(find.text('Basisinformationen'), findsOneWidget);
 
@@ -1121,7 +1121,7 @@ void main() {
 
     expect(find.text('Helden Deck'), findsNothing);
     expect(find.byTooltip('Helden-Deck einblenden'), findsOneWidget);
-    expect(find.text('Status'), findsNothing);
+    expect(find.text('Übersicht'), findsNothing);
   });
 
   testWidgets('wide workspace can collapse and expand right details panel', (

@@ -8,8 +8,22 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 void main() {
+  List<String> expectedWorkspaceTabLabels() {
+    return buildWorkspaceTabs(
+      heroId: 'demo',
+      callbacksForTab: (_) => const WorkspaceTabCallbacks(
+        onDirtyChanged: _noopBool,
+        onEditingChanged: _noopBool,
+        onRegisterDiscard: _noopDiscard,
+        onRegisterEditActions: _noopEditActions,
+      ),
+    ).map((tab) => tab.label).toList(growable: false);
+  }
+
   final hero = HeroSheet(
     id: 'demo',
     name: 'Rondra',
@@ -134,14 +148,7 @@ void main() {
           .widgetList<Tab>(find.byType(Tab))
           .map((tab) => (tab.text ?? '').trim())
           .toList(growable: false);
-      expect(tabLabels, [
-        'Status',
-        'Talente',
-        'Kampf',
-        'Magie',
-        'Inventar',
-        'Notizen',
-      ]);
+      expect(tabLabels, expectedWorkspaceTabLabels());
       expect(find.text('MU: 14'), findsOneWidget);
       expect(find.text('KO: 14'), findsOneWidget);
       expect(find.text('LEP: 10/22'), findsOneWidget);
@@ -151,3 +158,9 @@ void main() {
     },
   );
 }
+
+void _noopBool(bool value) {}
+
+void _noopDiscard(WorkspaceAsyncAction action) {}
+
+void _noopEditActions(WorkspaceTabEditActions actions) {}
