@@ -19,6 +19,7 @@ import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:uuid/uuid.dart';
 
 part 'hero_magic/magic_active_spells_table.dart';
@@ -270,10 +271,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     );
   }
 
-  Future<bool> _activateSpell(
-    BuildContext context,
-    SpellDef spell,
-  ) async {
+  Future<bool> _activateSpell(BuildContext context, SpellDef spell) async {
     final chosenEntry = await _chooseAvailabilityEntryForSpell(context, spell);
     if (chosenEntry == null) {
       return false;
@@ -343,28 +341,28 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                     ),
                   ),
                   Expanded(
-                     child: _MagicSpellCatalogTable(
-                       allSpells: allSpells,
-                       activeSpellIds: localActiveIds,
-                       heroRepresentationen: _draftRepresentationen,
-                       onActivateSpell: (spell) async {
-                         final activated = await _activateSpell(ctx, spell);
-                         if (!activated) {
-                           return false;
-                         }
-                         setSheetState(() {
-                           localActiveIds.add(spell.id);
-                         });
-                         return true;
-                       },
-                       onDeactivateSpell: (spellId) {
-                         _deactivateSpell(spellId);
-                         setSheetState(() {
-                           localActiveIds.remove(spellId);
-                         });
-                       },
-                     ),
-                   ),
+                    child: _MagicSpellCatalogTable(
+                      allSpells: allSpells,
+                      activeSpellIds: localActiveIds,
+                      heroRepresentationen: _draftRepresentationen,
+                      onActivateSpell: (spell) async {
+                        final activated = await _activateSpell(ctx, spell);
+                        if (!activated) {
+                          return false;
+                        }
+                        setSheetState(() {
+                          localActiveIds.add(spell.id);
+                        });
+                        return true;
+                      },
+                      onDeactivateSpell: (spellId) {
+                        _deactivateSpell(spellId);
+                        setSheetState(() {
+                          localActiveIds.remove(spellId);
+                        });
+                      },
+                    ),
+                  ),
                 ],
               ),
             );
@@ -517,10 +515,7 @@ Future<SpellAvailabilityEntry?> _showSpellRepresentationDialog({
   return showDialog<SpellAvailabilityEntry>(
     context: context,
     builder: (dialogContext) {
-      return _SpellRepresentationDialog(
-        spellName: spellName,
-        entries: entries,
-      );
+      return _SpellRepresentationDialog(spellName: spellName, entries: entries);
     },
   );
 }
@@ -539,7 +534,8 @@ class _SpellRepresentationDialog extends StatefulWidget {
       _SpellRepresentationDialogState();
 }
 
-class _SpellRepresentationDialogState extends State<_SpellRepresentationDialog> {
+class _SpellRepresentationDialogState
+    extends State<_SpellRepresentationDialog> {
   SpellAvailabilityEntry? _selectedEntry;
 
   @override

@@ -48,6 +48,47 @@ class _WeaponCatalogTableState extends State<_WeaponCatalogTable> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final filtered = _filteredWeapons();
+    final columns = <AdaptiveDataColumnSpec>[
+      const AdaptiveDataColumnSpec(
+        label: SizedBox(width: 36),
+        width: AdaptiveTableColumnSpec.fixed(80),
+      ),
+      const AdaptiveDataColumnSpec(
+        label: Text('Name'),
+        width: AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 2),
+      ),
+      const AdaptiveDataColumnSpec(
+        label: Text('Talent'),
+        width: AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 180, flex: 1),
+      ),
+      const AdaptiveDataColumnSpec(
+        label: Text('Typ'),
+        width: AdaptiveTableColumnSpec(minWidth: 90, maxWidth: 140),
+      ),
+      const AdaptiveDataColumnSpec(
+        label: Text('Kategorie'),
+        width: AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 240, flex: 2),
+      ),
+      const AdaptiveDataColumnSpec(
+        label: Text('INI'),
+        width: AdaptiveTableColumnSpec(minWidth: 64, maxWidth: 92),
+        numeric: true,
+      ),
+      const AdaptiveDataColumnSpec(
+        label: Text('WM AT'),
+        width: AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 96),
+        numeric: true,
+      ),
+      const AdaptiveDataColumnSpec(
+        label: Text('WM PA'),
+        width: AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 96),
+        numeric: true,
+      ),
+      const AdaptiveDataColumnSpec(
+        label: Text('DK'),
+        width: AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 96),
+      ),
+    ];
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -94,8 +135,10 @@ class _WeaponCatalogTableState extends State<_WeaponCatalogTable> {
                       },
                     )
                   : null,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
             ),
             onChanged: (value) {
               setState(() {
@@ -114,88 +157,122 @@ class _WeaponCatalogTableState extends State<_WeaponCatalogTable> {
           )
         else
           Flexible(
-            child: SingleChildScrollView(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columnSpacing: 12,
-                  horizontalMargin: 12,
-                  headingRowHeight: 36,
-                  dataRowMinHeight: 32,
-                  dataRowMaxHeight: 40,
-                  columns: const [
-                    DataColumn(label: SizedBox(width: 36)),
-                    DataColumn(label: Text('Name')),
-                    DataColumn(label: Text('Talent')),
-                    DataColumn(label: Text('Typ')),
-                    DataColumn(label: Text('Kategorie')),
-                    DataColumn(label: Text('INI')),
-                    DataColumn(label: Text('WM AT')),
-                    DataColumn(label: Text('WM PA')),
-                    DataColumn(label: Text('DK')),
-                  ],
-                  rows: filtered.map((weapon) {
-                    return DataRow(
-                      cells: [
-                        DataCell(
-                          IconButton(
-                            icon: const Icon(Icons.add_circle_outline, size: 20),
-                            tooltip: 'Als Vorlage hinzufügen',
-                            onPressed: () => widget.onSelectWeapon(weapon),
-                          ),
-                        ),
-                        DataCell(
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 200),
-                            child: Text(
-                              weapon.name,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                        DataCell(Text(
-                          weapon.combatSkill.isEmpty
-                              ? '-'
-                              : weapon.combatSkill,
-                          style: theme.textTheme.bodySmall,
-                        )),
-                        DataCell(Text(
-                          weapon.type.isEmpty ? '-' : weapon.type,
-                          style: theme.textTheme.bodySmall,
-                        )),
-                        DataCell(
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 200),
-                            child: Text(
-                              weapon.weaponCategory.isEmpty
-                                  ? '-'
-                                  : weapon.weaponCategory,
-                              style: theme.textTheme.bodySmall,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                        DataCell(Text(
-                          weapon.iniMod.toString(),
-                          style: theme.textTheme.bodySmall,
-                        )),
-                        DataCell(Text(
-                          weapon.atMod.toString(),
-                          style: theme.textTheme.bodySmall,
-                        )),
-                        DataCell(Text(
-                          weapon.paMod.toString(),
-                          style: theme.textTheme.bodySmall,
-                        )),
-                        DataCell(Text(
-                          weapon.reach.isEmpty ? '-' : weapon.reach,
-                          style: theme.textTheme.bodySmall,
-                        )),
-                      ],
-                    );
-                  }).toList(growable: false),
-                ),
-              ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const columnSpacing = 12.0;
+                const horizontalMargin = 12.0;
+                final layout = resolveAdaptiveDataTableLayout(
+                  columns,
+                  availableWidth: constraints.maxWidth,
+                  columnSpacing: columnSpacing,
+                  horizontalMargin: horizontalMargin,
+                );
+
+                return SingleChildScrollView(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      columnSpacing: columnSpacing,
+                      horizontalMargin: horizontalMargin,
+                      headingRowHeight: 36,
+                      dataRowMinHeight: 32,
+                      dataRowMaxHeight: 40,
+                      columns: layout.columns,
+                      rows: filtered
+                          .map((weapon) {
+                            return DataRow(
+                              cells: [
+                                DataCell(
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.add_circle_outline,
+                                      size: 20,
+                                    ),
+                                    tooltip: 'Als Vorlage hinzufügen',
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints.tightFor(
+                                      width: 24,
+                                      height: 24,
+                                    ),
+                                    onPressed: () =>
+                                        widget.onSelectWeapon(weapon),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: layout.contentWidthFor(1),
+                                    child: Text(
+                                      weapon.name,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: layout.contentWidthFor(2),
+                                    child: Text(
+                                      weapon.combatSkill.isEmpty
+                                          ? '-'
+                                          : weapon.combatSkill,
+                                      style: theme.textTheme.bodySmall,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: layout.contentWidthFor(3),
+                                    child: Text(
+                                      weapon.type.isEmpty ? '-' : weapon.type,
+                                      style: theme.textTheme.bodySmall,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: layout.contentWidthFor(4),
+                                    child: Text(
+                                      weapon.weaponCategory.isEmpty
+                                          ? '-'
+                                          : weapon.weaponCategory,
+                                      style: theme.textTheme.bodySmall,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    weapon.iniMod.toString(),
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    weapon.atMod.toString(),
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    weapon.paMod.toString(),
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    weapon.reach.isEmpty ? '-' : weapon.reach,
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ),
+                              ],
+                            );
+                          })
+                          .toList(growable: false),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
       ],

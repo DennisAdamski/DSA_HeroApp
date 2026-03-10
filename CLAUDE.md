@@ -82,6 +82,7 @@ DSA_HeroApp/
 │   ├── ui/
 │   │   ├── config/ui_feature_flags.dart
 │   │   ├── debug/ui_rebuild_observer.dart
+│   │   ├── widgets/adaptive_table_columns.dart
 │   │   ├── widgets/flexible_table.dart
 │   │   └── screens/
 │   │       ├── heroes_home_screen.dart      # Hero list / selection

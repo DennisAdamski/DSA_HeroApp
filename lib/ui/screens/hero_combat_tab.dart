@@ -20,6 +20,7 @@ import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_area_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
