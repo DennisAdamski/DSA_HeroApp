@@ -554,7 +554,7 @@ class _SpellRepresentationDialogState extends State<_SpellRepresentationDialog> 
   Widget build(BuildContext context) {
     return AlertDialog(
       key: const ValueKey<String>('magic-spell-representation-dialog'),
-      title: const Text('Zauber-Repraesentation waehlen'),
+      title: const Text('Zauber-Repräsentation wählen'),
       content: SizedBox(
         width: 480,
         child: Column(
@@ -597,7 +597,7 @@ class _SpellRepresentationDialogState extends State<_SpellRepresentationDialog> 
           onPressed: _selectedEntry == null
               ? null
               : () => Navigator.of(context).pop(_selectedEntry),
-          child: const Text('Uebernehmen'),
+          child: const Text('Übernehmen'),
         ),
       ],
     );

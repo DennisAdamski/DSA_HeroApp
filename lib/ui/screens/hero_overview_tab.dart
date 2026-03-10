@@ -451,7 +451,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     if (increment == null || increment <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Fuer $label ist nur eine positive Ganzzahl erlaubt.'),
+          content: Text('Für $label ist nur eine positive Ganzzahl erlaubt.'),
         ),
       );
       return;

@@ -40,9 +40,9 @@ extension _HeroCombatManeuversSubtab on _HeroCombatTabState {
                     Chip(
                       label: Text(switch (support) {
                         _ManeuverSupportStatus.supported =>
-                          'Von aktiver Waffe unterstuetzt',
+                          'Von aktiver Waffe unterstützt',
                         _ManeuverSupportStatus.notSupported =>
-                          'Nicht unterstuetzt',
+                          'Nicht unterstützt',
                         _ManeuverSupportStatus.unverifiable =>
                           'Nicht verifizierbar',
                       }),
