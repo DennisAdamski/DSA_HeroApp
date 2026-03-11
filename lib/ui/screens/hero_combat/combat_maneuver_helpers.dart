@@ -1,6 +1,7 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 
-extension _HeroCombatManeuversSubtab on _HeroCombatTabState {
+/// Kapselt Katalogabgleich und Support-Analyse fuer Kampfmanoever.
+extension _CombatManeuverHelpers on _HeroCombatTabState {
   List<String> _collectCatalogManeuvers(List<WeaponDef> weapons) {
     final seen = <String>{};
     final maneuvers = <String>[];
@@ -53,9 +54,7 @@ extension _HeroCombatManeuversSubtab on _HeroCombatTabState {
 
     final talentToken = _normalizeToken(talent.name);
     final candidates = catalog.weapons
-        .where((weapon) {
-          return _normalizeToken(weapon.combatSkill) == talentToken;
-        })
+        .where((weapon) => _normalizeToken(weapon.combatSkill) == talentToken)
         .toList(growable: false);
     if (candidates.isEmpty) {
       for (final maneuver in maneuvers) {
@@ -65,9 +64,7 @@ extension _HeroCombatManeuversSubtab on _HeroCombatTabState {
     }
 
     final matched = candidates
-        .where((weapon) {
-          return _normalizeToken(weapon.name) == weaponTypeToken;
-        })
+        .where((weapon) => _normalizeToken(weapon.name) == weaponTypeToken)
         .toList(growable: false);
     if (matched.length != 1) {
       for (final maneuver in maneuvers) {

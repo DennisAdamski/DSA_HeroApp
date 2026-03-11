@@ -139,6 +139,14 @@ void main() {
     return actions!;
   }
 
+  Future<void> openCombatSubTab(WidgetTester tester, String label) async {
+    final tab = find.widgetWithText(Tab, label);
+    await tester.ensureVisible(tab);
+    await tester.pumpAndSettle();
+    await tester.tap(tab);
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('editing a talent row does not rebuild the full talents tab', (
     tester,
   ) async {
@@ -185,11 +193,7 @@ void main() {
 
     final actions = await openCombatTab(tester, repo);
     // Kampftechniken ist jetzt Tab 3 — muss erst navigiert werden
-    final ktTab = find.widgetWithText(Tab, 'Kampftechniken');
-    await tester.ensureVisible(ktTab);
-    await tester.pumpAndSettle();
-    await tester.tap(ktTab);
-    await tester.pumpAndSettle();
+    await openCombatSubTab(tester, 'Kampftechniken');
 
     await actions.startEdit();
     await tester.pumpAndSettle();
@@ -202,5 +206,100 @@ void main() {
     await tester.pump();
 
     expect(UiRebuildObserver.count('hero_combat_tab'), lessThanOrEqualTo(1));
+  });
+
+  testWidgets('hero name changes do not fan out to combat quick stats', (
+    tester,
+  ) async {
+    final baseHero = buildHero();
+    final repo = FakeRepository(
+      heroes: [baseHero],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+
+    UiRebuildObserver.reset('combat_quick_stats');
+    await repo.saveHero(baseHero.copyWith(name: 'Rondrigo'));
+    await tester.pumpAndSettle();
+
+    expect(UiRebuildObserver.count('combat_quick_stats'), lessThanOrEqualTo(1));
+  });
+
+  testWidgets('manual mod changes do not fan out to combat weapons section', (
+    tester,
+  ) async {
+    final baseHero = buildHero();
+    final repo = FakeRepository(
+      heroes: [baseHero],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openCombatSubTab(tester, 'Waffen');
+
+    UiRebuildObserver.reset('combat_weapons_section');
+    await repo.saveHero(
+      baseHero.copyWith(
+        combatConfig: const CombatConfig(
+          manualMods: CombatManualMods(atMod: 2, iniMod: 1),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      UiRebuildObserver.count('combat_weapons_section'),
+      lessThanOrEqualTo(1),
+    );
+  });
+
+  testWidgets('weapon changes do not fan out to combat armor section', (
+    tester,
+  ) async {
+    final baseHero = buildHero();
+    final repo = FakeRepository(
+      heroes: [baseHero],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openCombatSubTab(tester, 'Rüstung & Verteidigung');
+
+    UiRebuildObserver.reset('combat_armor_section');
+    await repo.saveHero(
+      baseHero.copyWith(
+        combatConfig: const CombatConfig(
+          weapons: <MainWeaponSlot>[
+            MainWeaponSlot(name: 'Langschwert', talentId: 'tal_nah'),
+          ],
+          selectedWeaponIndex: 0,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(UiRebuildObserver.count('combat_armor_section'), lessThanOrEqualTo(1));
   });
 }

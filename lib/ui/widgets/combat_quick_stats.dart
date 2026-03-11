@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
+
 /// Kompakte Chip-Reihe mit den wichtigsten Kampfwerten.
 ///
 /// Rein read-only, kein Provider-Zugriff — nimmt pure Werte entgegen.
@@ -50,6 +52,7 @@ class CombatQuickStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    UiRebuildObserver.bump('combat_quick_stats');
     return Wrap(
       spacing: 8,
       runSpacing: 8,

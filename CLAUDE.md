@@ -132,6 +132,15 @@ DSA_HeroApp/
 └── README.md
 ```
 
+Ergaenzungen zur aktuellen Struktur:
+
+- `lib/ui/widgets/combat_quick_stats.dart` enthaelt die kompakte Kampfwerte-Quickview.
+- `lib/ui/screens/hero_combat/` enthaelt die aufgeteilten Kampf-Subtabs sowie
+  Helper fuer Regeln, Preview und Weapon-Editor.
+- `lib/ui/screens/hero_combat/weapon_editor/` enthaelt die Sektionen und
+  Hilfsdialoge des Waffen-Editors.
+- `lib/ui/screens/hero_notes/` enthaelt die ausgelagerten Notizen-Teilwidgets.
+
 ---
 
 ## Architecture
@@ -243,6 +252,16 @@ flutter analyze
 ```
 
 Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter.yaml`). The only project-specific rule enabled is `prefer_single_quotes: true`.
+
+### Update 2026-03-10
+
+- Der Kampf-Tab ist jetzt in die Bereiche Kampfwerte, Waffen,
+  Ruestung & Verteidigung, Kampftechniken und Kampfregeln gegliedert.
+- Der Waffen-Editor oeffnet als eigenstaendiger Screen oder breites Inline-Panel
+  statt als Dialog.
+- `CombatQuickStats` ist als wiederverwendbares Widget unter
+  `lib/ui/widgets/combat_quick_stats.dart` ausgelagert.
+- Die Ruestungsanzeige wird nur noch an einer Stelle im Kampf-Tab gepflegt.
 
 ### Update 2026-03-08
 
