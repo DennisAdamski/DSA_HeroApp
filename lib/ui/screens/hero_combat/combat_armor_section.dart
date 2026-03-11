@@ -1,7 +1,7 @@
 // Ruestungstabelle als eigenstaendiges Widget.
 //
 // Zeigt Ruestungsstuecke in einer FlexibleTable an, bietet einen
-// Editor-Dialog und eine Berechnungsvorschau (RS, BE, eBE).
+// responsiven Editor und eine Berechnungsvorschau (RS, BE, eBE).
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
@@ -9,7 +9,9 @@ import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 
-class CombatArmorSection extends StatelessWidget {
+/// Verwaltet Ruestungsstuecke und oeffnet den Editor auf breiten Layouts rechts.
+class CombatArmorSection extends StatefulWidget {
+  /// Erstellt die Ruestungs-Sektion fuer den Kampf-Tab.
   const CombatArmorSection({
     super.key,
     required this.armor,
@@ -36,30 +38,84 @@ class CombatArmorSection extends StatelessWidget {
   final int previewBeMod;
   final int previewEbe;
 
-  // ---------------------------------------------------------------------------
-  // Build
-  // ---------------------------------------------------------------------------
+  @override
+  State<CombatArmorSection> createState() => _CombatArmorSectionState();
+}
+
+class _CombatArmorSectionState extends State<CombatArmorSection> {
+  static const double _wideLayoutBreakpoint = 1280;
+  int? _editingPieceIndex;
+  ArmorPiece? _editorSeedPiece;
+
+  bool get _isWideLayout =>
+      MediaQuery.sizeOf(context).width >= _wideLayoutBreakpoint;
+
+  @override
+  void didUpdateWidget(covariant CombatArmorSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final editingIndex = _editingPieceIndex;
+    if (editingIndex == null) {
+      return;
+    }
+    if (editingIndex >= widget.armor.pieces.length) {
+      _closeWideEditor();
+      return;
+    }
+    _editorSeedPiece ??= widget.armor.pieces[editingIndex];
+  }
 
   @override
   Widget build(BuildContext context) {
     UiRebuildObserver.bump('combat_armor_section');
+    final sectionContent = _buildSectionContent(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: _isWideLayout && _editorSeedPiece != null
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: sectionContent),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 360,
+                    child: _ArmorPieceEditorPanel(
+                      key: ValueKey<String>(
+                        'combat-armor-editor-${_editingPieceIndex ?? 'new'}',
+                      ),
+                      initialPiece: _editorSeedPiece!,
+                      showRg1Toggle: widget.armor.globalArmorTrainingLevel == 1,
+                      isNew: _editingPieceIndex == null,
+                      onCancel: _closeWideEditor,
+                      onSave: _savePiece,
+                    ),
+                  ),
+                ],
+              )
+            : sectionContent,
+      ),
+    );
+  }
+
+  Widget _buildSectionContent(BuildContext context) {
     const armorDetailsBreakpoint = 760.0;
-    final showPieceRg1 = armor.globalArmorTrainingLevel == 1;
+    final showPieceRg1 = widget.armor.globalArmorTrainingLevel == 1;
     final armorRows = <FlexibleTableRow>[
-      for (var i = 0; i < armor.pieces.length; i++)
+      for (var i = 0; i < widget.armor.pieces.length; i++)
         FlexibleTableRow(
           cells: [
             _tappableNameCell(
               context,
-              armor.pieces[i].name.trim().isEmpty
+              widget.armor.pieces[i].name.trim().isEmpty
                   ? 'Rüstung ${i + 1}'
-                  : armor.pieces[i].name,
-              onTap: () => _openEditor(context, pieceIndex: i),
+                  : widget.armor.pieces[i].name,
+              onTap: () => _openEditor(pieceIndex: i),
             ),
-            Text(armor.pieces[i].rs.toString()),
-            Text(armor.pieces[i].be.toString()),
-            Text(armor.pieces[i].isActive ? 'Ja' : 'Nein'),
-            if (showPieceRg1) Text(armor.pieces[i].rg1Active ? 'Ja' : 'Nein'),
+            Text(widget.armor.pieces[i].rs.toString()),
+            Text(widget.armor.pieces[i].be.toString()),
+            Text(widget.armor.pieces[i].isActive ? 'Ja' : 'Nein'),
+            if (showPieceRg1)
+              Text(widget.armor.pieces[i].rg1Active ? 'Ja' : 'Nein'),
             IconButton(
               key: ValueKey<String>('combat-armor-remove-$i'),
               tooltip: 'Rüstung entfernen',
@@ -70,100 +126,89 @@ class CombatArmorSection extends StatelessWidget {
         ),
     ];
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Rüstung', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final armorTableSection = Column(
-                  key: const ValueKey<String>('combat-armor-table-section'),
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FlexibleTable(
-                      tableKey: const ValueKey<String>('combat-armor-table'),
-                      columnSpecs: _columnSpecs(showPieceRg1: showPieceRg1),
-                      headerCells: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('Name'),
-                            IconButton(
-                              key: const ValueKey<String>('combat-armor-add'),
-                              tooltip: 'Rüstung hinzufügen',
-                              visualDensity: VisualDensity.compact,
-                              constraints: const BoxConstraints.tightFor(
-                                width: 30,
-                                height: 30,
-                              ),
-                              onPressed: () => _openEditor(context),
-                              icon: const Icon(Icons.add, size: 18),
-                            ),
-                          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Rüstung', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final armorTableSection = Column(
+              key: const ValueKey<String>('combat-armor-table-section'),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FlexibleTable(
+                  tableKey: const ValueKey<String>('combat-armor-table'),
+                  columnSpecs: _columnSpecs(showPieceRg1: showPieceRg1),
+                  headerCells: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Name'),
+                        IconButton(
+                          key: const ValueKey<String>('combat-armor-add'),
+                          tooltip: 'Rüstung hinzufügen',
+                          visualDensity: VisualDensity.compact,
+                          constraints: const BoxConstraints.tightFor(
+                            width: 30,
+                            height: 30,
+                          ),
+                          onPressed: () => _openEditor(),
+                          icon: const Icon(Icons.add, size: 18),
                         ),
-                        const Text('RS'),
-                        const Text('BE'),
-                        const Text('Aktiv'),
-                        if (showPieceRg1) const Text('RG I'),
-                        const Text('Aktion'),
                       ],
-                      rows: armorRows,
                     ),
-                    if (armorRows.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8),
-                        child: Text('Keine Rüstungsstücke erfasst.'),
-                      ),
+                    const Text('RS'),
+                    const Text('BE'),
+                    const Text('Aktiv'),
+                    if (showPieceRg1) const Text('RG I'),
+                    const Text('Aktion'),
                   ],
-                );
-                final armorCalculationSection = Column(
-                  key: const ValueKey<String>(
-                    'combat-armor-calculation-section',
+                  rows: armorRows,
+                ),
+                if (armorRows.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text('Keine Rüstungsstücke erfasst.'),
                   ),
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('RS gesamt = Summe aktiver RS = $previewRsTotal'),
-                    Text(
-                      'BE (Kampf) = BE Roh ($previewBeTotalRaw) - RG ($previewRgReduction) = $previewBeKampf',
-                    ),
-                    Text(
-                      'eBE = min(0, -BE(Kampf) ($previewBeKampf) - BE Mod ($previewBeMod)) = $previewEbe',
-                    ),
-                  ],
-                );
-                if (constraints.maxWidth < armorDetailsBreakpoint) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      armorTableSection,
-                      const SizedBox(height: 8),
-                      armorCalculationSection,
-                    ],
-                  );
-                }
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: armorTableSection),
-                    const SizedBox(width: 16),
-                    Expanded(child: armorCalculationSection),
-                  ],
-                );
-              },
-            ),
-          ],
+              ],
+            );
+            final armorCalculationSection = Column(
+              key: const ValueKey<String>('combat-armor-calculation-section'),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('RS gesamt = Summe aktiver RS = ${widget.previewRsTotal}'),
+                Text(
+                  'BE (Kampf) = BE Roh (${widget.previewBeTotalRaw}) - RG (${widget.previewRgReduction}) = ${widget.previewBeKampf}',
+                ),
+                Text(
+                  'eBE = min(0, -BE(Kampf) (${widget.previewBeKampf}) - BE Mod (${widget.previewBeMod})) = ${widget.previewEbe}',
+                ),
+              ],
+            );
+            if (constraints.maxWidth < armorDetailsBreakpoint) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  armorTableSection,
+                  const SizedBox(height: 8),
+                  armorCalculationSection,
+                ],
+              );
+            }
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: armorTableSection),
+                const SizedBox(width: 16),
+                Expanded(child: armorCalculationSection),
+              ],
+            );
+          },
         ),
-      ),
+      ],
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Spalten-Specs
-  // ---------------------------------------------------------------------------
 
   static List<AdaptiveTableColumnSpec> _columnSpecs({
     required bool showPieceRg1,
@@ -179,170 +224,92 @@ class CombatArmorSection extends StatelessWidget {
     ];
   }
 
-  // ---------------------------------------------------------------------------
-  // Aktionen
-  // ---------------------------------------------------------------------------
-
   void _removePiece(int index) {
-    final pieces = List<ArmorPiece>.from(armor.pieces);
+    final pieces = List<ArmorPiece>.from(widget.armor.pieces);
     if (index < 0 || index >= pieces.length) {
       return;
     }
     pieces.removeAt(index);
-    onArmorChanged(armor.copyWith(
-      pieces: List<ArmorPiece>.unmodifiable(pieces),
-    ));
+    widget.onArmorChanged(
+      widget.armor.copyWith(pieces: List<ArmorPiece>.unmodifiable(pieces)),
+    );
+    if (_editingPieceIndex == null) {
+      return;
+    }
+    if (_editingPieceIndex == index) {
+      _closeWideEditor();
+      return;
+    }
+    if (_editingPieceIndex! > index) {
+      setState(() {
+        _editingPieceIndex = _editingPieceIndex! - 1;
+      });
+    }
   }
 
-  Future<void> _openEditor(
-    BuildContext context, {
-    int? pieceIndex,
-  }) async {
-    final isNew = pieceIndex == null;
-    final sourcePiece = isNew ? const ArmorPiece() : armor.pieces[pieceIndex];
-    final nameController = TextEditingController(text: sourcePiece.name);
-    final rsController = TextEditingController(text: sourcePiece.rs.toString());
-    final beController = TextEditingController(text: sourcePiece.be.toString());
-    var isActive = sourcePiece.isActive;
-    var rg1Active = sourcePiece.rg1Active;
-    final canSelectPieceRg1 = armor.globalArmorTrainingLevel == 1;
-    String? validationMessage;
+  Future<void> _openEditor({int? pieceIndex}) async {
+    final sourcePiece = pieceIndex == null
+        ? const ArmorPiece()
+        : widget.armor.pieces[pieceIndex];
+    if (_isWideLayout) {
+      setState(() {
+        _editingPieceIndex = pieceIndex;
+        _editorSeedPiece = sourcePiece;
+      });
+      return;
+    }
 
     final result = await showDialog<ArmorPiece>(
       context: context,
       builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (dialogContext, setDialogState) {
-            return AlertDialog(
-              title: Text(isNew ? 'Rüstung hinzufügen' : 'Rüstung bearbeiten'),
-              content: SizedBox(
-                width: 460,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextField(
-                        key: const ValueKey<String>('combat-armor-form-name'),
-                        controller: nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Name',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _numberField(
-                            controller: rsController,
-                            keyName: 'combat-armor-form-rs',
-                            label: 'RS',
-                          ),
-                          _numberField(
-                            controller: beController,
-                            keyName: 'combat-armor-form-be',
-                            label: 'BE',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      SwitchListTile(
-                        key: const ValueKey<String>('combat-armor-form-active'),
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Aktiv'),
-                        value: isActive,
-                        onChanged: (value) {
-                          setDialogState(() {
-                            isActive = value;
-                          });
-                        },
-                      ),
-                      if (canSelectPieceRg1)
-                        SwitchListTile(
-                          key: const ValueKey<String>('combat-armor-form-rg1'),
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('RG I aktiv'),
-                          value: rg1Active,
-                          onChanged: (value) {
-                            setDialogState(() {
-                              rg1Active = value;
-                            });
-                          },
-                        ),
-                      if (validationMessage != null &&
-                          validationMessage!.trim().isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            validationMessage!,
-                            style: TextStyle(
-                              color: Theme.of(dialogContext).colorScheme.error,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+        return Dialog(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: _ArmorPieceEditorPanel(
+                initialPiece: sourcePiece,
+                showRg1Toggle: widget.armor.globalArmorTrainingLevel == 1,
+                isNew: pieceIndex == null,
+                onCancel: () => Navigator.of(dialogContext).pop(),
+                onSave: (piece) => Navigator.of(dialogContext).pop(piece),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                  },
-                  child: const Text('Abbrechen'),
-                ),
-                FilledButton(
-                  key: const ValueKey<String>('combat-armor-form-save'),
-                  onPressed: () {
-                    final name = nameController.text.trim();
-                    final parsedRs =
-                        int.tryParse(rsController.text.trim()) ?? 0;
-                    final parsedBe =
-                        int.tryParse(beController.text.trim()) ?? 0;
-                    if (name.isEmpty) {
-                      setDialogState(() {
-                        validationMessage = 'Name ist ein Pflichtfeld.';
-                      });
-                      return;
-                    }
-                    Navigator.of(dialogContext).pop(
-                      sourcePiece.copyWith(
-                        name: name,
-                        isActive: isActive,
-                        rg1Active: rg1Active,
-                        rs: parsedRs < 0 ? 0 : parsedRs,
-                        be: parsedBe < 0 ? 0 : parsedBe,
-                      ),
-                    );
-                  },
-                  child: const Text('Speichern'),
-                ),
-              ],
-            );
-          },
+            ),
+          ),
         );
       },
     );
-
     if (result == null) {
       return;
     }
-    final updatedPieces = List<ArmorPiece>.from(armor.pieces);
-    if (isNew) {
-      updatedPieces.add(result);
-    } else {
-      updatedPieces[pieceIndex] = result;
-    }
-    onArmorChanged(armor.copyWith(
-      pieces: List<ArmorPiece>.unmodifiable(updatedPieces),
-    ));
+    _applyPiece(result, pieceIndex: pieceIndex);
   }
 
-  // ---------------------------------------------------------------------------
-  // Helfer
-  // ---------------------------------------------------------------------------
+  void _closeWideEditor() {
+    setState(() {
+      _editingPieceIndex = null;
+      _editorSeedPiece = null;
+    });
+  }
+
+  void _savePiece(ArmorPiece piece) {
+    _applyPiece(piece, pieceIndex: _editingPieceIndex);
+    _closeWideEditor();
+  }
+
+  void _applyPiece(ArmorPiece piece, {required int? pieceIndex}) {
+    final updatedPieces = List<ArmorPiece>.from(widget.armor.pieces);
+    if (pieceIndex == null) {
+      updatedPieces.add(piece);
+    } else if (pieceIndex >= 0 && pieceIndex < updatedPieces.length) {
+      updatedPieces[pieceIndex] = piece;
+    }
+    widget.onArmorChanged(
+      widget.armor.copyWith(
+        pieces: List<ArmorPiece>.unmodifiable(updatedPieces),
+      ),
+    );
+  }
 
   Widget _tappableNameCell(
     BuildContext context,
@@ -360,6 +327,180 @@ class CombatArmorSection extends StatelessWidget {
           color: theme.colorScheme.primary,
           decoration: TextDecoration.underline,
         ),
+      ),
+    );
+  }
+}
+
+/// Bearbeitet ein einzelnes Ruestungsstueck fuer Dialog- und Split-Ansichten.
+class _ArmorPieceEditorPanel extends StatefulWidget {
+  /// Erstellt das Editor-Panel fuer ein Ruestungsstueck.
+  const _ArmorPieceEditorPanel({
+    super.key,
+    required this.initialPiece,
+    required this.showRg1Toggle,
+    required this.isNew,
+    required this.onCancel,
+    required this.onSave,
+  });
+
+  final ArmorPiece initialPiece;
+  final bool showRg1Toggle;
+  final bool isNew;
+  final VoidCallback onCancel;
+  final void Function(ArmorPiece piece) onSave;
+
+  @override
+  State<_ArmorPieceEditorPanel> createState() => _ArmorPieceEditorPanelState();
+}
+
+class _ArmorPieceEditorPanelState extends State<_ArmorPieceEditorPanel> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _rsController;
+  late final TextEditingController _beController;
+  late bool _isActive;
+  late bool _rg1Active;
+  String? _validationMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialPiece.name);
+    _rsController = TextEditingController(
+      text: widget.initialPiece.rs.toString(),
+    );
+    _beController = TextEditingController(
+      text: widget.initialPiece.be.toString(),
+    );
+    _isActive = widget.initialPiece.isActive;
+    _rg1Active = widget.initialPiece.rg1Active;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _rsController.dispose();
+    _beController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      key: const ValueKey<String>('combat-armor-editor-panel'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                widget.isNew ? 'Rüstung hinzufügen' : 'Rüstung bearbeiten',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            IconButton(
+              key: const ValueKey<String>('combat-armor-panel-close'),
+              tooltip: 'Editor schließen',
+              onPressed: widget.onCancel,
+              icon: const Icon(Icons.close),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          key: const ValueKey<String>('combat-armor-form-name'),
+          controller: _nameController,
+          decoration: const InputDecoration(
+            labelText: 'Name',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _numberField(
+              controller: _rsController,
+              keyName: 'combat-armor-form-rs',
+              label: 'RS',
+            ),
+            _numberField(
+              controller: _beController,
+              keyName: 'combat-armor-form-be',
+              label: 'BE',
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SwitchListTile(
+          key: const ValueKey<String>('combat-armor-form-active'),
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Aktiv'),
+          value: _isActive,
+          onChanged: (value) {
+            setState(() {
+              _isActive = value;
+            });
+          },
+        ),
+        if (widget.showRg1Toggle)
+          SwitchListTile(
+            key: const ValueKey<String>('combat-armor-form-rg1'),
+            contentPadding: EdgeInsets.zero,
+            title: const Text('RG I aktiv'),
+            value: _rg1Active,
+            onChanged: (value) {
+              setState(() {
+                _rg1Active = value;
+              });
+            },
+          ),
+        if (_validationMessage != null && _validationMessage!.trim().isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              _validationMessage!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            TextButton(
+              onPressed: widget.onCancel,
+              child: const Text('Abbrechen'),
+            ),
+            const SizedBox(width: 8),
+            FilledButton(
+              key: const ValueKey<String>('combat-armor-form-save'),
+              onPressed: _submit,
+              child: const Text('Speichern'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _submit() {
+    final name = _nameController.text.trim();
+    final parsedRs = int.tryParse(_rsController.text.trim()) ?? 0;
+    final parsedBe = int.tryParse(_beController.text.trim()) ?? 0;
+    if (name.isEmpty) {
+      setState(() {
+        _validationMessage = 'Name ist ein Pflichtfeld.';
+      });
+      return;
+    }
+    widget.onSave(
+      widget.initialPiece.copyWith(
+        name: name,
+        isActive: _isActive,
+        rg1Active: _rg1Active,
+        rs: parsedRs < 0 ? 0 : parsedRs,
+        be: parsedBe < 0 ? 0 : parsedBe,
       ),
     );
   }

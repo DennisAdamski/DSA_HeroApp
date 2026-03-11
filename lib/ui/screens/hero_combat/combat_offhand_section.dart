@@ -1,7 +1,7 @@
 // Nebenhand-Ausruestungstabelle als eigenstaendiges Widget.
 //
 // Zeigt Parierwaffen und Schilde in einer FlexibleTable an
-// und bietet einen Inline-Editor-Dialog fuer neue/bestehende Eintraege.
+// und bietet einen responsiven Editor fuer neue/bestehende Eintraege.
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
@@ -9,7 +9,9 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart'
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 
-class CombatOffhandSection extends StatelessWidget {
+/// Verwaltet Nebenhand-Eintraege und oeffnet den Editor auf breiten Layouts rechts.
+class CombatOffhandSection extends StatefulWidget {
+  /// Erstellt die Nebenhand-Sektion fuer den Kampf-Tab.
   const CombatOffhandSection({
     super.key,
     required this.offhandEquipment,
@@ -22,49 +24,69 @@ class CombatOffhandSection extends StatelessWidget {
   /// Callback: gesamte Liste wurde geaendert (hinzufuegen/bearbeiten/entfernen).
   final void Function(List<OffhandEquipmentEntry>) onOffhandEquipmentChanged;
 
-  // ---------------------------------------------------------------------------
-  // Konstanten
-  // ---------------------------------------------------------------------------
+  @override
+  State<CombatOffhandSection> createState() => _CombatOffhandSectionState();
+}
 
+class _CombatOffhandSectionState extends State<CombatOffhandSection> {
+  static const double _wideLayoutBreakpoint = 1280;
   static const List<AdaptiveTableColumnSpec> _columnSpecs =
       <AdaptiveTableColumnSpec>[
-    AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 260, flex: 2),
-    AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 180, flex: 1),
-    AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
-    AdaptiveTableColumnSpec(minWidth: 90, maxWidth: 150, flex: 1),
-    AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
-    AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
-    AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
-    AdaptiveTableColumnSpec.fixed(56),
-  ];
+        AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 260, flex: 2),
+        AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 180, flex: 1),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec(minWidth: 90, maxWidth: 150, flex: 1),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec.fixed(56),
+      ];
 
-  // ---------------------------------------------------------------------------
-  // Build
-  // ---------------------------------------------------------------------------
+  int? _editingEntryIndex;
+  OffhandEquipmentEntry? _editorSeedEntry;
+
+  bool get _isWideLayout =>
+      MediaQuery.sizeOf(context).width >= _wideLayoutBreakpoint;
+
+  @override
+  void didUpdateWidget(covariant CombatOffhandSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final editingIndex = _editingEntryIndex;
+    if (editingIndex == null) {
+      return;
+    }
+    if (editingIndex >= widget.offhandEquipment.length) {
+      _closeWideEditor();
+      return;
+    }
+    _editorSeedEntry ??= widget.offhandEquipment[editingIndex];
+  }
 
   @override
   Widget build(BuildContext context) {
     final rows = <FlexibleTableRow>[
-      for (var i = 0; i < offhandEquipment.length; i++)
+      for (var i = 0; i < widget.offhandEquipment.length; i++)
         FlexibleTableRow(
           cells: [
             _tappableNameCell(
               context,
-              offhandEquipment[i].name.trim().isEmpty
+              widget.offhandEquipment[i].name.trim().isEmpty
                   ? 'Eintrag ${i + 1}'
-                  : offhandEquipment[i].name,
-              onTap: () => _openEditor(context, entryIndex: i),
+                  : widget.offhandEquipment[i].name,
+              onTap: () => _openEditor(entryIndex: i),
             ),
-            Text(offhandEquipment[i].isShield ? 'Schild' : 'Parierwaffe'),
-            Text(offhandEquipment[i].breakFactor.toString()),
             Text(
-              offhandEquipment[i].isShield
-                  ? shieldSizeLabel(offhandEquipment[i].shieldSize)
+              widget.offhandEquipment[i].isShield ? 'Schild' : 'Parierwaffe',
+            ),
+            Text(widget.offhandEquipment[i].breakFactor.toString()),
+            Text(
+              widget.offhandEquipment[i].isShield
+                  ? shieldSizeLabel(widget.offhandEquipment[i].shieldSize)
                   : '-',
             ),
-            Text(offhandEquipment[i].iniMod.toString()),
-            Text(offhandEquipment[i].atMod.toString()),
-            Text(offhandEquipment[i].paMod.toString()),
+            Text(widget.offhandEquipment[i].iniMod.toString()),
+            Text(widget.offhandEquipment[i].atMod.toString()),
+            Text(widget.offhandEquipment[i].paMod.toString()),
             IconButton(
               key: ValueKey<String>('combat-offhand-remove-$i'),
               tooltip: 'Nebenhand-Ausrüstung entfernen',
@@ -75,260 +97,162 @@ class CombatOffhandSection extends StatelessWidget {
         ),
     ];
 
+    final tableSection = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Parierwaffen & Schilde',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        FlexibleTable(
+          tableKey: const ValueKey<String>('combat-offhand-table'),
+          columnSpecs: _columnSpecs,
+          headerCells: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Name'),
+                IconButton(
+                  key: const ValueKey<String>('combat-offhand-add'),
+                  tooltip: 'Nebenhand-Ausrüstung hinzufügen',
+                  visualDensity: VisualDensity.compact,
+                  constraints: const BoxConstraints.tightFor(
+                    width: 30,
+                    height: 30,
+                  ),
+                  onPressed: () => _openEditor(),
+                  icon: const Icon(Icons.add, size: 18),
+                ),
+              ],
+            ),
+            const Text('Typ'),
+            const Text('BF'),
+            const Text('Größe'),
+            const Text('INI Mod'),
+            const Text('AT Mod'),
+            const Text('PA Mod'),
+            const Text('Aktion'),
+          ],
+          rows: rows,
+        ),
+        if (rows.isEmpty)
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text('Keine Parierwaffen oder Schilde erfasst.'),
+          ),
+      ],
+    );
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Parierwaffen & Schilde',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            FlexibleTable(
-              tableKey: const ValueKey<String>('combat-offhand-table'),
-              columnSpecs: _columnSpecs,
-              headerCells: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('Name'),
-                    IconButton(
-                      key: const ValueKey<String>('combat-offhand-add'),
-                      tooltip: 'Nebenhand-Ausrüstung hinzufügen',
-                      visualDensity: VisualDensity.compact,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 30,
-                        height: 30,
+        child: _isWideLayout && _editorSeedEntry != null
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: tableSection),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 380,
+                    child: _OffhandEditorPanel(
+                      key: ValueKey<String>(
+                        'combat-offhand-editor-${_editingEntryIndex ?? 'new'}',
                       ),
-                      onPressed: () => _openEditor(context),
-                      icon: const Icon(Icons.add, size: 18),
+                      initialEntry: _editorSeedEntry!,
+                      isNew: _editingEntryIndex == null,
+                      onCancel: _closeWideEditor,
+                      onSave: _saveEntry,
                     ),
-                  ],
-                ),
-                const Text('Typ'),
-                const Text('BF'),
-                const Text('Groesse'),
-                const Text('INI Mod'),
-                const Text('AT Mod'),
-                const Text('PA Mod'),
-                const Text('Aktion'),
-              ],
-              rows: rows,
-            ),
-            if (rows.isEmpty)
-              const Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: Text('Keine Parierwaffen oder Schilde erfasst.'),
-              ),
-          ],
-        ),
+                  ),
+                ],
+              )
+            : tableSection,
       ),
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Aktionen
-  // ---------------------------------------------------------------------------
-
   void _removeEntry(int index) {
-    final entries = List<OffhandEquipmentEntry>.from(offhandEquipment);
+    final entries = List<OffhandEquipmentEntry>.from(widget.offhandEquipment);
     if (index < 0 || index >= entries.length) {
       return;
     }
     entries.removeAt(index);
-    onOffhandEquipmentChanged(entries);
+    widget.onOffhandEquipmentChanged(entries);
+    if (_editingEntryIndex == null) {
+      return;
+    }
+    if (_editingEntryIndex == index) {
+      _closeWideEditor();
+      return;
+    }
+    if (_editingEntryIndex! > index) {
+      setState(() {
+        _editingEntryIndex = _editingEntryIndex! - 1;
+      });
+    }
   }
 
-  Future<void> _openEditor(
-    BuildContext context, {
-    int? entryIndex,
-  }) async {
-    final isNew = entryIndex == null;
-    final source = isNew
+  Future<void> _openEditor({int? entryIndex}) async {
+    final source = entryIndex == null
         ? const OffhandEquipmentEntry()
-        : offhandEquipment[entryIndex];
-    final nameController = TextEditingController(text: source.name);
-    final bfController = TextEditingController(
-      text: source.breakFactor.toString(),
-    );
-    final iniController = TextEditingController(text: source.iniMod.toString());
-    final atController = TextEditingController(text: source.atMod.toString());
-    final paController = TextEditingController(text: source.paMod.toString());
-    var type = source.type;
-    var shieldSize = source.shieldSize;
+        : widget.offhandEquipment[entryIndex];
+    if (_isWideLayout) {
+      setState(() {
+        _editingEntryIndex = entryIndex;
+        _editorSeedEntry = source;
+      });
+      return;
+    }
 
     final result = await showDialog<OffhandEquipmentEntry>(
       context: context,
       builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (dialogContext, setDialogState) {
-            return AlertDialog(
-              title: Text(
-                isNew
-                    ? 'Nebenhand-Ausrüstung hinzufügen'
-                    : 'Nebenhand-Ausrüstung bearbeiten',
+        return Dialog(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: _OffhandEditorPanel(
+                initialEntry: source,
+                isNew: entryIndex == null,
+                onCancel: () => Navigator.of(dialogContext).pop(),
+                onSave: (entry) => Navigator.of(dialogContext).pop(entry),
               ),
-              content: SizedBox(
-                width: 520,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextField(
-                        key: const ValueKey<String>(
-                          'combat-offhand-form-name',
-                        ),
-                        controller: nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Ausrüstungsname',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<OffhandEquipmentType>(
-                        key: const ValueKey<String>(
-                          'combat-offhand-form-type',
-                        ),
-                        initialValue: type,
-                        decoration: const InputDecoration(
-                          labelText: 'Waffentalent',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: OffhandEquipmentType.parryWeapon,
-                            child: Text('Parierwaffe'),
-                          ),
-                          DropdownMenuItem(
-                            value: OffhandEquipmentType.shield,
-                            child: Text('Schild'),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          setDialogState(() {
-                            type = value ?? OffhandEquipmentType.parryWeapon;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _numberField(
-                            controller: bfController,
-                            keyName: 'combat-offhand-form-bf',
-                            label: 'BF',
-                          ),
-                          _numberField(
-                            controller: iniController,
-                            keyName: 'combat-offhand-form-ini-mod',
-                            label: 'INI Mod',
-                          ),
-                          _numberField(
-                            controller: atController,
-                            keyName: 'combat-offhand-form-at-mod',
-                            label: 'AT Mod',
-                          ),
-                          _numberField(
-                            controller: paController,
-                            keyName: 'combat-offhand-form-pa-mod',
-                            label: 'PA Mod',
-                          ),
-                        ],
-                      ),
-                      if (type == OffhandEquipmentType.shield) ...[
-                        const SizedBox(height: 10),
-                        DropdownButtonFormField<ShieldSize>(
-                          key: const ValueKey<String>(
-                            'combat-offhand-form-shield-size',
-                          ),
-                          initialValue: shieldSize,
-                          decoration: const InputDecoration(
-                            labelText: 'Größe',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: const [
-                            DropdownMenuItem(
-                              value: ShieldSize.small,
-                              child: Text('Klein'),
-                            ),
-                            DropdownMenuItem(
-                              value: ShieldSize.large,
-                              child: Text('Groß'),
-                            ),
-                            DropdownMenuItem(
-                              value: ShieldSize.veryLarge,
-                              child: Text('Sehr groß'),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            setDialogState(() {
-                              shieldSize = value ?? ShieldSize.small;
-                            });
-                          },
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Abbrechen'),
-                ),
-                FilledButton(
-                  key: const ValueKey<String>('combat-offhand-form-save'),
-                  onPressed: () {
-                    final parsedBreakFactor =
-                        int.tryParse(bfController.text.trim()) ?? 0;
-                    final parsedIni =
-                        int.tryParse(iniController.text.trim()) ?? 0;
-                    final parsedAt =
-                        int.tryParse(atController.text.trim()) ?? 0;
-                    final parsedPa =
-                        int.tryParse(paController.text.trim()) ?? 0;
-                    Navigator.of(dialogContext).pop(
-                      OffhandEquipmentEntry(
-                        name: nameController.text.trim(),
-                        type: type,
-                        breakFactor: parsedBreakFactor < 0
-                            ? 0
-                            : parsedBreakFactor,
-                        shieldSize: shieldSize,
-                        iniMod: parsedIni,
-                        atMod: parsedAt,
-                        paMod: parsedPa,
-                      ),
-                    );
-                  },
-                  child: const Text('Speichern'),
-                ),
-              ],
-            );
-          },
+            ),
+          ),
         );
       },
     );
     if (result == null) {
       return;
     }
-    final nextEntries = List<OffhandEquipmentEntry>.from(offhandEquipment);
-    if (isNew) {
-      nextEntries.add(result);
-    } else {
-      nextEntries[entryIndex] = result;
-    }
-    onOffhandEquipmentChanged(nextEntries);
+    _applyEntry(result, entryIndex: entryIndex);
   }
 
-  // ---------------------------------------------------------------------------
-  // Helfer
-  // ---------------------------------------------------------------------------
+  void _closeWideEditor() {
+    setState(() {
+      _editingEntryIndex = null;
+      _editorSeedEntry = null;
+    });
+  }
+
+  void _saveEntry(OffhandEquipmentEntry entry) {
+    _applyEntry(entry, entryIndex: _editingEntryIndex);
+    _closeWideEditor();
+  }
+
+  void _applyEntry(OffhandEquipmentEntry entry, {required int? entryIndex}) {
+    final nextEntries = List<OffhandEquipmentEntry>.from(
+      widget.offhandEquipment,
+    );
+    if (entryIndex == null) {
+      nextEntries.add(entry);
+    } else if (entryIndex >= 0 && entryIndex < nextEntries.length) {
+      nextEntries[entryIndex] = entry;
+    }
+    widget.onOffhandEquipmentChanged(nextEntries);
+  }
 
   Widget _tappableNameCell(
     BuildContext context,
@@ -346,6 +270,212 @@ class CombatOffhandSection extends StatelessWidget {
           color: theme.colorScheme.primary,
           decoration: TextDecoration.underline,
         ),
+      ),
+    );
+  }
+}
+
+/// Bearbeitet ein Schild oder eine Parierwaffe fuer Dialog- und Split-Ansichten.
+class _OffhandEditorPanel extends StatefulWidget {
+  /// Erstellt das Editor-Panel fuer Nebenhand-Ausrüstung.
+  const _OffhandEditorPanel({
+    super.key,
+    required this.initialEntry,
+    required this.isNew,
+    required this.onCancel,
+    required this.onSave,
+  });
+
+  final OffhandEquipmentEntry initialEntry;
+  final bool isNew;
+  final VoidCallback onCancel;
+  final void Function(OffhandEquipmentEntry entry) onSave;
+
+  @override
+  State<_OffhandEditorPanel> createState() => _OffhandEditorPanelState();
+}
+
+class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _bfController;
+  late final TextEditingController _iniController;
+  late final TextEditingController _atController;
+  late final TextEditingController _paController;
+  late OffhandEquipmentType _type;
+  late ShieldSize _shieldSize;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialEntry.name);
+    _bfController = TextEditingController(
+      text: widget.initialEntry.breakFactor.toString(),
+    );
+    _iniController = TextEditingController(
+      text: widget.initialEntry.iniMod.toString(),
+    );
+    _atController = TextEditingController(
+      text: widget.initialEntry.atMod.toString(),
+    );
+    _paController = TextEditingController(
+      text: widget.initialEntry.paMod.toString(),
+    );
+    _type = widget.initialEntry.type;
+    _shieldSize = widget.initialEntry.shieldSize;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _bfController.dispose();
+    _iniController.dispose();
+    _atController.dispose();
+    _paController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      key: const ValueKey<String>('combat-offhand-editor-panel'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                widget.isNew
+                    ? 'Nebenhand-Ausrüstung hinzufügen'
+                    : 'Nebenhand-Ausrüstung bearbeiten',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            IconButton(
+              key: const ValueKey<String>('combat-offhand-panel-close'),
+              tooltip: 'Editor schließen',
+              onPressed: widget.onCancel,
+              icon: const Icon(Icons.close),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          key: const ValueKey<String>('combat-offhand-form-name'),
+          controller: _nameController,
+          decoration: const InputDecoration(
+            labelText: 'Ausrüstungsname',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 10),
+        DropdownButtonFormField<OffhandEquipmentType>(
+          key: const ValueKey<String>('combat-offhand-form-type'),
+          initialValue: _type,
+          decoration: const InputDecoration(
+            labelText: 'Typ',
+            border: OutlineInputBorder(),
+          ),
+          items: const [
+            DropdownMenuItem(
+              value: OffhandEquipmentType.parryWeapon,
+              child: Text('Parierwaffe'),
+            ),
+            DropdownMenuItem(
+              value: OffhandEquipmentType.shield,
+              child: Text('Schild'),
+            ),
+          ],
+          onChanged: (value) {
+            setState(() {
+              _type = value ?? OffhandEquipmentType.parryWeapon;
+            });
+          },
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _numberField(
+              controller: _bfController,
+              keyName: 'combat-offhand-form-bf',
+              label: 'BF',
+            ),
+            _numberField(
+              controller: _iniController,
+              keyName: 'combat-offhand-form-ini-mod',
+              label: 'INI Mod',
+            ),
+            _numberField(
+              controller: _atController,
+              keyName: 'combat-offhand-form-at-mod',
+              label: 'AT Mod',
+            ),
+            _numberField(
+              controller: _paController,
+              keyName: 'combat-offhand-form-pa-mod',
+              label: 'PA Mod',
+            ),
+          ],
+        ),
+        if (_type == OffhandEquipmentType.shield) ...[
+          const SizedBox(height: 10),
+          DropdownButtonFormField<ShieldSize>(
+            key: const ValueKey<String>('combat-offhand-form-shield-size'),
+            initialValue: _shieldSize,
+            decoration: const InputDecoration(
+              labelText: 'Größe',
+              border: OutlineInputBorder(),
+            ),
+            items: const [
+              DropdownMenuItem(value: ShieldSize.small, child: Text('Klein')),
+              DropdownMenuItem(value: ShieldSize.large, child: Text('Groß')),
+              DropdownMenuItem(
+                value: ShieldSize.veryLarge,
+                child: Text('Sehr groß'),
+              ),
+            ],
+            onChanged: (value) {
+              setState(() {
+                _shieldSize = value ?? ShieldSize.small;
+              });
+            },
+          ),
+        ],
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            TextButton(
+              onPressed: widget.onCancel,
+              child: const Text('Abbrechen'),
+            ),
+            const SizedBox(width: 8),
+            FilledButton(
+              key: const ValueKey<String>('combat-offhand-form-save'),
+              onPressed: _submit,
+              child: const Text('Speichern'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _submit() {
+    final parsedBreakFactor = int.tryParse(_bfController.text.trim()) ?? 0;
+    final parsedIni = int.tryParse(_iniController.text.trim()) ?? 0;
+    final parsedAt = int.tryParse(_atController.text.trim()) ?? 0;
+    final parsedPa = int.tryParse(_paController.text.trim()) ?? 0;
+    widget.onSave(
+      OffhandEquipmentEntry(
+        name: _nameController.text.trim(),
+        type: _type,
+        breakFactor: parsedBreakFactor < 0 ? 0 : parsedBreakFactor,
+        shieldSize: _shieldSize,
+        iniMod: parsedIni,
+        atMod: parsedAt,
+        paMod: parsedPa,
       ),
     );
   }
