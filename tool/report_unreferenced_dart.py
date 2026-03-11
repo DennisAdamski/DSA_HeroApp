@@ -6,6 +6,10 @@ from pathlib import Path
 # Greift bewusst breit auf alle '.dart'-Stringliterale, damit auch
 # conditional imports mit mehreren Pfaden erkannt werden.
 IMPORT_RE = re.compile(r"'([^']+\.dart)'")
+INTENTIONAL_LEGACY_FILES = {
+    Path("lib/rules/derived/mods_rules.dart"),
+    Path("lib/ui/screens/hero_detail_screen.dart"),
+}
 
 
 def resolve_target(repo_root: Path, source: Path, uri: str) -> Path | None:
@@ -62,14 +66,16 @@ def main() -> None:
                 referenced.add(target.resolve())
 
     entrypoint = (root / args.entrypoint).resolve()
+    ignored = {(root / rel).resolve() for rel in INTENTIONAL_LEGACY_FILES}
     unreferenced = [
         p for p in sorted((f.resolve() for f in lib_files))
-        if p not in referenced and p != entrypoint
+        if p not in referenced and p != entrypoint and p not in ignored
     ]
 
     print(f"Repo root: {root}")
     print(f"Referenced lib files: {len(referenced)}")
     print(f"Total lib files: {len(lib_files)}")
+    print(f"Ignored legacy files: {len(ignored)}")
     print(f"Unreferenced lib files: {len(unreferenced)}")
     for file in unreferenced:
         print(file.relative_to(root).as_posix())
