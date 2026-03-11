@@ -20,10 +20,12 @@ import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_area_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_armor_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/hero_combat_melee_subtab.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_offhand_section.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_weapons_section.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
-import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/combat_quick_stats.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
 part 'hero_combat/combat_talent_catalog_table.dart';
@@ -34,6 +36,8 @@ part 'hero_combat/hero_combat_maneuvers_subtab.dart';
 part 'hero_combat/hero_combat_form_fields.dart';
 part 'hero_combat/weapon_detail_expansion.dart';
 part 'hero_combat/weapon_editor_dialog.dart';
+part 'hero_combat/combat_preview_subtab.dart';
+part 'hero_combat/combat_rules_subtab.dart';
 
 enum _ManeuverSupportStatus { supported, notSupported, unverifiable }
 
@@ -957,191 +961,9 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     );
   }
 
-  Future<void> _setArmorPieces(
-    List<ArmorPiece> pieces, {
-    required RulesCatalog catalog,
-    required List<TalentDef> combatTalents,
-  }) async {
-    await _applyCombatConfigChange(
-      nextConfig: _draftCombatConfig.copyWith(
-        armor: _draftCombatConfig.armor.copyWith(
-          pieces: List<ArmorPiece>.unmodifiable(pieces),
-        ),
-      ),
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
 
-  Future<void> _removeArmorPiece(
-    int index, {
-    required RulesCatalog catalog,
-    required List<TalentDef> combatTalents,
-  }) async {
-    final pieces = List<ArmorPiece>.from(_draftCombatConfig.armor.pieces);
-    if (index < 0 || index >= pieces.length) {
-      return;
-    }
-    pieces.removeAt(index);
-    await _setArmorPieces(
-      pieces,
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
 
-  Future<void> _openArmorPieceEditor({
-    required RulesCatalog catalog,
-    required List<TalentDef> combatTalents,
-    int? pieceIndex,
-  }) async {
-    final pieces = _draftCombatConfig.armor.pieces;
-    final isNew = pieceIndex == null;
-    final sourcePiece = isNew ? const ArmorPiece() : pieces[pieceIndex];
-    final nameController = TextEditingController(text: sourcePiece.name);
-    final rsController = TextEditingController(text: sourcePiece.rs.toString());
-    final beController = TextEditingController(text: sourcePiece.be.toString());
-    var isActive = sourcePiece.isActive;
-    var rg1Active = sourcePiece.rg1Active;
-    final canSelectPieceRg1 =
-        _draftCombatConfig.armor.globalArmorTrainingLevel == 1;
-    String? validationMessage;
 
-    final result = await showDialog<ArmorPiece>(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(isNew ? 'Rüstung hinzufügen' : 'Rüstung bearbeiten'),
-              content: SizedBox(
-                width: 460,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextField(
-                        key: const ValueKey<String>('combat-armor-form-name'),
-                        controller: nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Name',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _dialogNumberField(
-                            controller: rsController,
-                            keyName: 'combat-armor-form-rs',
-                            label: 'RS',
-                          ),
-                          _dialogNumberField(
-                            controller: beController,
-                            keyName: 'combat-armor-form-be',
-                            label: 'BE',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      SwitchListTile(
-                        key: const ValueKey<String>('combat-armor-form-active'),
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Aktiv'),
-                        value: isActive,
-                        onChanged: (value) {
-                          setDialogState(() {
-                            isActive = value;
-                          });
-                        },
-                      ),
-                      if (canSelectPieceRg1)
-                        SwitchListTile(
-                          key: const ValueKey<String>('combat-armor-form-rg1'),
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('RG I aktiv'),
-                          value: rg1Active,
-                          onChanged: (value) {
-                            setDialogState(() {
-                              rg1Active = value;
-                            });
-                          },
-                        ),
-                      if (validationMessage != null &&
-                          validationMessage!.trim().isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            validationMessage!,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Abbrechen'),
-                ),
-                FilledButton(
-                  key: const ValueKey<String>('combat-armor-form-save'),
-                  onPressed: () {
-                    final name = nameController.text.trim();
-                    final parsedRs =
-                        int.tryParse(rsController.text.trim()) ?? 0;
-                    final parsedBe =
-                        int.tryParse(beController.text.trim()) ?? 0;
-                    if (name.isEmpty) {
-                      setDialogState(() {
-                        validationMessage = 'Name ist ein Pflichtfeld.';
-                      });
-                      return;
-                    }
-                    Navigator.of(context).pop(
-                      sourcePiece.copyWith(
-                        name: name,
-                        isActive: isActive,
-                        rg1Active: rg1Active,
-                        rs: parsedRs < 0 ? 0 : parsedRs,
-                        be: parsedBe < 0 ? 0 : parsedBe,
-                      ),
-                    );
-                  },
-                  child: const Text('Speichern'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-
-    if (result == null) {
-      return;
-    }
-    final updatedPieces = List<ArmorPiece>.from(
-      _draftCombatConfig.armor.pieces,
-    );
-    if (isNew) {
-      updatedPieces.add(result);
-    } else {
-      updatedPieces[pieceIndex] = result;
-    }
-    await _setArmorPieces(
-      updatedPieces,
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -1201,109 +1023,152 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                 children: [
                   TabBar(
                     controller: _subTabController,
+                    isScrollable: true,
                     tabs: const [
+                      Tab(text: 'Kampfwerte'),
+                      Tab(text: 'Waffen'),
+                      Tab(text: 'Rüstung & Verteidigung'),
                       Tab(text: 'Kampftechniken'),
-                      Tab(text: 'Ausrüstung'),
-                      Tab(text: 'Kampf'),
-                      Tab(text: 'Sonderfertigkeiten'),
-                      Tab(text: 'Manöver'),
+                      Tab(text: 'Kampfregeln'),
                     ],
                   ),
                   Expanded(
                     child: TabBarView(
                       controller: _subTabController,
                       children: [
-                        _buildCombatTalentsSubTab(
-                          combatTalents,
-                          effectiveAttributes: effectiveAttributes,
-                        ),
-                        CombatEquipmentSubtab(
+                        // Tab 0: Kampfwerte (Spieltisch-Schnellansicht)
+                        _buildCombatPreviewSubTab(
                           combatTalents: combatTalents,
                           catalog: catalog,
                           hero: hero,
                           heroState: state,
                           preview: preview,
-                          draftCombatConfig: _draftCombatConfig,
-                          draftTalents: _draftTalents,
-                          weaponFilterTalentId: _weaponFilterTalentId,
-                          weaponFilterCombatType: _weaponFilterCombatType,
-                          weaponFilterType: _weaponFilterType,
-                          weaponFilterDistanceClass: _weaponFilterDistanceClass,
-                          onWeaponEdit: (index) => _openWeaponEditor(
-                            catalog: catalog,
-                            hero: hero,
-                            heroState: state,
-                            combatTalents: sortedCombatTalents(combatTalents),
-                            slotIndex: index,
-                          ),
-                          onWeaponAdd: () => _addWeaponSlot(
-                            catalog: catalog,
-                            hero: hero,
-                            heroState: state,
-                            combatTalents: sortedCombatTalents(combatTalents),
-                          ),
-                          onWeaponCatalog: () => _showWeaponKatalog(
-                            context,
-                            catalog: catalog,
-                            hero: hero,
-                            heroState: state,
-                            combatTalents: sortedCombatTalents(combatTalents),
-                          ),
-                          onWeaponRemove: (index) => _removeWeaponSlotAt(
-                            index,
-                            catalog: catalog,
-                            combatTalents: sortedCombatTalents(combatTalents),
-                          ),
-                          onWeaponSlotUpdate: (index, update) =>
-                              _updateWeaponSlot(
-                            index,
-                            update,
-                            catalog: catalog,
-                            combatTalents: sortedCombatTalents(combatTalents),
-                          ),
-                          onFilterChanged: ({
-                            String? talentId,
-                            String? combatType,
-                            String? weaponType,
-                            String? distanceClass,
-                          }) {
-                            if (talentId != null) {
-                              _weaponFilterTalentId = talentId;
-                            }
-                            if (combatType != null) {
-                              _weaponFilterCombatType = combatType;
-                            }
-                            if (weaponType != null) {
-                              _weaponFilterType = weaponType;
-                            }
-                            if (distanceClass != null) {
-                              _weaponFilterDistanceClass = distanceClass;
-                            }
-                            if (mounted) {
-                              _viewRevision.value++;
-                            }
-                          },
-                          onOffhandEquipmentChanged: (entries) =>
-                              _setOffhandEquipmentEntries(
-                            entries,
-                            catalog: catalog,
-                            combatTalents: sortedCombatTalents(combatTalents),
-                          ),
-                          onArmorChanged: (armor) => _setArmorConfig(
-                            armor,
-                            catalog: catalog,
-                            combatTalents: sortedCombatTalents(combatTalents),
-                          ),
                         ),
-                        _buildMeleeCalculatorSubTab(
+                        // Tab 1: Waffen (nur Waffentabelle)
+                        ListView(
+                          padding: const EdgeInsets.all(12),
+                          children: [
+                            CombatWeaponsSection(
+                              weapons: _draftCombatConfig.weaponSlots,
+                              selectedWeaponIndex:
+                                  _draftCombatConfig.selectedWeaponIndex,
+                              combatTalents: combatTalents,
+                              catalog: catalog,
+                              hero: hero,
+                              heroState: state,
+                              draftCombatConfig: _draftCombatConfig,
+                              draftTalents: _draftTalents,
+                              weaponFilterTalentId: _weaponFilterTalentId,
+                              weaponFilterCombatType: _weaponFilterCombatType,
+                              weaponFilterType: _weaponFilterType,
+                              weaponFilterDistanceClass:
+                                  _weaponFilterDistanceClass,
+                              onWeaponEdit: (index) => _openWeaponEditor(
+                                catalog: catalog,
+                                hero: hero,
+                                heroState: state,
+                                combatTalents:
+                                    sortedCombatTalents(combatTalents),
+                                slotIndex: index,
+                              ),
+                              onWeaponAdd: () => _addWeaponSlot(
+                                catalog: catalog,
+                                hero: hero,
+                                heroState: state,
+                                combatTalents:
+                                    sortedCombatTalents(combatTalents),
+                              ),
+                              onWeaponCatalog: () => _showWeaponKatalog(
+                                context,
+                                catalog: catalog,
+                                hero: hero,
+                                heroState: state,
+                                combatTalents:
+                                    sortedCombatTalents(combatTalents),
+                              ),
+                              onWeaponRemove: (index) => _removeWeaponSlotAt(
+                                index,
+                                catalog: catalog,
+                                combatTalents:
+                                    sortedCombatTalents(combatTalents),
+                              ),
+                              onWeaponSlotUpdate: (index, update) =>
+                                  _updateWeaponSlot(
+                                index,
+                                update,
+                                catalog: catalog,
+                                combatTalents:
+                                    sortedCombatTalents(combatTalents),
+                              ),
+                              onFilterChanged: ({
+                                String? talentId,
+                                String? combatType,
+                                String? weaponType,
+                                String? distanceClass,
+                              }) {
+                                if (talentId != null) {
+                                  _weaponFilterTalentId = talentId;
+                                }
+                                if (combatType != null) {
+                                  _weaponFilterCombatType = combatType;
+                                }
+                                if (weaponType != null) {
+                                  _weaponFilterType = weaponType;
+                                }
+                                if (distanceClass != null) {
+                                  _weaponFilterDistanceClass = distanceClass;
+                                }
+                                if (mounted) {
+                                  _viewRevision.value++;
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                        // Tab 2: Ruestung & Verteidigung
+                        ListView(
+                          padding: const EdgeInsets.all(12),
+                          children: [
+                            CombatArmorSection(
+                              armor: _draftCombatConfig.armor,
+                              onArmorChanged: (armor) => _setArmorConfig(
+                                armor,
+                                catalog: catalog,
+                                combatTalents:
+                                    sortedCombatTalents(combatTalents),
+                              ),
+                              previewRsTotal: preview.rsTotal,
+                              previewBeTotalRaw: preview.beTotalRaw,
+                              previewRgReduction: preview.rgReduction,
+                              previewBeKampf: preview.beKampf,
+                              previewBeMod: preview.beMod,
+                              previewEbe: preview.ebe,
+                            ),
+                            const SizedBox(height: 12),
+                            CombatOffhandSection(
+                              offhandEquipment:
+                                  _draftCombatConfig.offhandEquipment,
+                              onOffhandEquipmentChanged: (entries) =>
+                                  _setOffhandEquipmentEntries(
+                                entries,
+                                catalog: catalog,
+                                combatTalents:
+                                    sortedCombatTalents(combatTalents),
+                              ),
+                            ),
+                          ],
+                        ),
+                        // Tab 3: Kampftechniken
+                        _buildCombatTalentsSubTab(
                           combatTalents,
-                          catalog,
-                          hero,
-                          state,
-                          preview,
+                          effectiveAttributes: effectiveAttributes,
                         ),
-                        _buildSpecialRulesSubTab(hero, state),
-                        _buildManeuversSubTab(catalog),
+                        // Tab 4: Kampfregeln (SF + Manoever)
+                        _buildCombatRulesSubTab(
+                          hero: hero,
+                          heroState: state,
+                          catalog: catalog,
+                        ),
                       ],
                     ),
                   ),
