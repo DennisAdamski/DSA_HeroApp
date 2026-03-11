@@ -1,24 +1,31 @@
-part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
+import 'package:flutter/material.dart';
+
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 
 /// Durchsuchbare Katalog-Tabelle aller Waffen.
+///
 /// Wird als Inhalt eines Modal Bottom Sheets verwendet.
-/// Waffen werden als Vorlage hinzugefuegt — gleiche Waffe kann mehrfach gewaehlt werden.
-class _WeaponCatalogTable extends StatefulWidget {
-  const _WeaponCatalogTable({
+/// Waffen werden als Vorlage hinzugefuegt und bleiben danach frei editierbar.
+class WeaponCatalogTable extends StatefulWidget {
+  /// Erstellt die Katalog-Tabelle mit auswählbaren Waffenvorlagen.
+  const WeaponCatalogTable({
+    super.key,
     required this.weapons,
-    required this.meleeTalents,
     required this.onSelectWeapon,
   });
 
+  /// Alle aktiven Waffen aus dem Regelkatalog.
   final List<WeaponDef> weapons;
-  final List<TalentDef> meleeTalents;
+
+  /// Callback fuer das Auswaehlen einer Vorlage.
   final void Function(WeaponDef weapon) onSelectWeapon;
 
   @override
-  State<_WeaponCatalogTable> createState() => _WeaponCatalogTableState();
+  State<WeaponCatalogTable> createState() => _WeaponCatalogTableState();
 }
 
-class _WeaponCatalogTableState extends State<_WeaponCatalogTable> {
+class _WeaponCatalogTableState extends State<WeaponCatalogTable> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -30,18 +37,19 @@ class _WeaponCatalogTableState extends State<_WeaponCatalogTable> {
 
   List<WeaponDef> _filteredWeapons() {
     var weapons = widget.weapons;
-    if (_searchQuery.isNotEmpty) {
-      final needle = _searchQuery.toLowerCase();
-      weapons = weapons
-          .where(
-            (w) =>
-                w.name.toLowerCase().contains(needle) ||
-                w.combatSkill.toLowerCase().contains(needle) ||
-                w.weaponCategory.toLowerCase().contains(needle),
-          )
-          .toList(growable: false);
+    if (_searchQuery.isEmpty) {
+      return weapons;
     }
-    return weapons;
+
+    final needle = _searchQuery.toLowerCase();
+    return weapons
+        .where(
+          (weapon) =>
+              weapon.name.toLowerCase().contains(needle) ||
+              weapon.combatSkill.toLowerCase().contains(needle) ||
+              weapon.weaponCategory.toLowerCase().contains(needle),
+        )
+        .toList(growable: false);
   }
 
   @override
@@ -110,7 +118,7 @@ class _WeaponCatalogTableState extends State<_WeaponCatalogTable> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
           child: Text(
-            'Waffe aus Vorlage hinzufügen — Werte sind danach frei editierbar.',
+            'Waffe aus Vorlage hinzufuegen, Werte sind danach frei editierbar.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -188,7 +196,7 @@ class _WeaponCatalogTableState extends State<_WeaponCatalogTable> {
                                       Icons.add_circle_outline,
                                       size: 20,
                                     ),
-                                    tooltip: 'Als Vorlage hinzufügen',
+                                    tooltip: 'Als Vorlage hinzufuegen',
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints.tightFor(
                                       width: 24,
