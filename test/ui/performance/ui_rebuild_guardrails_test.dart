@@ -184,6 +184,13 @@ void main() {
     );
 
     final actions = await openCombatTab(tester, repo);
+    // Kampftechniken ist jetzt Tab 3 — muss erst navigiert werden
+    final ktTab = find.widgetWithText(Tab, 'Kampftechniken');
+    await tester.ensureVisible(ktTab);
+    await tester.pumpAndSettle();
+    await tester.tap(ktTab);
+    await tester.pumpAndSettle();
+
     await actions.startEdit();
     await tester.pumpAndSettle();
 
