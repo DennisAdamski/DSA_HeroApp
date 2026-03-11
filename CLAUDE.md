@@ -261,7 +261,7 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 - Der Notizen-Tab besitzt zwei Untertabs: freie Notizen sowie Verbindungen mit
   Ort, Sozialstatus, Loyalitaet und Beschreibung.
 - Die Waffen-Uebersicht im Kampf-Tab ist kompakt; Detailwerte werden ueber
-  `lib/ui/screens/hero_combat/weapon_editor_dialog.dart` bearbeitet.
+  `lib/ui/screens/hero_combat/weapon_editor_screen.dart` bearbeitet.
 - Der Sub-Tab `Ausrüstung` ist die zentrale Kampf-Inventaransicht fuer Waffen,
   Parierwaffen, Schilde und Ruestungen; Haupt- und Nebenhand referenzieren
   konkrete Eintraege aus diesem Inventar.
@@ -271,8 +271,9 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
   `Schild-PA` auf Basis von `PA-Basiswert + Schildmod + SF-Bonus`.
 - Der Untertab `Kampf` zeigt je nach aktiver Waffe dynamisch Nahkampfwerte
   (`AT`/`PA`) oder Fernkampfwerte (`AT`, TP, Ladezeit, Geschosse).
-- Der Waffen-Dialog ist ausgabeorientiert gruppiert und zeigt TP-/INI-/AT-
-  Formelfelder als read-only Vorschau.
+- Der Waffen-Editor ist in Stammdaten-, Schaden-, Modifikatoren-, Fernkampf-
+  und Vorschau-Sektionen gegliedert; auf breiten Screens erscheint er als
+  Inline-Panel, sonst als eigene Seite.
 - Die sichtbare Parade der aktiven Nahkampfwaffe enthaelt den
   heldenbezogenen INI-Parade-Bonus; dieser wird nicht mehr als eigener
   Waffenwert separat ausgewiesen.

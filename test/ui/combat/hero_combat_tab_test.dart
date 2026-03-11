@@ -224,7 +224,7 @@ void main() {
     final target = find.text(text).first;
     await tester.ensureVisible(target);
     await tester.pumpAndSettle();
-    await tester.tap(target);
+    await tester.tap(target, warnIfMissed: false);
     await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey<String>('combat-weapon-form-save')),
@@ -746,7 +746,7 @@ void main() {
     expect(find.text('Spezialisierung'), findsNothing);
   });
 
-  testWidgets('clicking weapon name opens editable weapon dialog', (
+  testWidgets('clicking weapon name opens editable weapon editor', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -780,11 +780,56 @@ void main() {
     await openWeaponDialogByText(tester, text: 'Kurzschwert');
 
     expect(find.text('Stammdaten'), findsOneWidget);
-    expect(find.text('Waffenwerte'), findsOneWidget);
-    expect(find.text('Errechnete Werte'), findsOneWidget);
-    expect(find.text('Waffenmodifikatoren'), findsOneWidget);
-    expect(find.text('TP-Modifikatoren'), findsOneWidget);
-    expect(find.text('INI-Modifikatoren'), findsOneWidget);
+    expect(find.text('Schadensprofil'), findsOneWidget);
+    expect(find.text('Modifikatoren'), findsOneWidget);
+    expect(find.text('Vorschau'), findsOneWidget);
+  });
+
+  testWidgets('wide layout opens weapon editor as inline panel', (
+    tester,
+  ) async {
+    setTestSurfaceSize(tester, const Size(1400, 1000));
+    addTearDown(() => setTestSurfaceSize(tester, const Size(800, 600)));
+
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
+                distanceClass: 'N',
+              ),
+            ],
+            selectedWeaponIndex: 0,
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+    await tester.tap(find.text('Kurzschwert').first);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-panel-close')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-form-save')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('weapon dialog saves hidden weapon fields in read mode', (
@@ -1619,8 +1664,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // CombatQuickStats aktualisiert sich
-      expect(find.textContaining('AT:'), findsAtLeastNWidgets(1),
-      );
+      expect(find.textContaining('AT:'), findsAtLeastNWidgets(1));
     },
   );
 
