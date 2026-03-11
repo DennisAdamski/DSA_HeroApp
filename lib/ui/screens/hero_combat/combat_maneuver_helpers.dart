@@ -26,20 +26,6 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
     final ids = <String>[];
     final weapon = _findMatchedCatalogWeapon(catalog);
     if (weapon == null) {
-      for (final raw in preview.masteryAdditionalManeuverIds) {
-        _appendManeuverId(ids, seen, raw, catalog);
-      }
-      ids.sort((a, b) {
-        final left = displayNameForManeuverId(
-          a,
-          catalogManeuvers: catalog.maneuvers,
-        );
-        final right = displayNameForManeuverId(
-          b,
-          catalogManeuvers: catalog.maneuvers,
-        );
-        return left.toLowerCase().compareTo(right.toLowerCase());
-      });
       return ids;
     }
 
@@ -62,23 +48,26 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
         supportedIds.add(id);
       }
     }
+    for (final raw in preview.masteryAdditionalManeuverIds) {
+      final id = canonicalManeuverIdFromName(
+        raw,
+        catalogManeuvers: catalog.maneuvers,
+      );
+      if (id.isNotEmpty) {
+        supportedIds.add(id);
+      }
+    }
     for (final raw in _draftCombatConfig.specialRules.activeManeuvers) {
       final id = canonicalManeuverIdFromName(
         raw,
         catalogManeuvers: catalog.maneuvers,
       );
-      if (id.isEmpty) {
-        continue;
-      }
-      if (supportedIds.isNotEmpty && !supportedIds.contains(id)) {
+      if (id.isEmpty || !supportedIds.contains(id)) {
         continue;
       }
       if (seen.add(id)) {
         ids.add(id);
       }
-    }
-    for (final raw in preview.masteryAdditionalManeuverIds) {
-      _appendManeuverId(ids, seen, raw, catalog);
     }
     ids.sort((a, b) {
       final left = displayNameForManeuverId(
@@ -92,24 +81,6 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
       return left.toLowerCase().compareTo(right.toLowerCase());
     });
     return ids;
-  }
-
-  /// Fuegt eine Manöver-ID normalisiert und dedupliziert an.
-  void _appendManeuverId(
-    List<String> target,
-    Set<String> seen,
-    String raw,
-    RulesCatalog catalog,
-  ) {
-    final id = canonicalManeuverIdFromName(
-      raw,
-      catalogManeuvers: catalog.maneuvers,
-    );
-    if (id.isEmpty || seen.contains(id)) {
-      return;
-    }
-    seen.add(id);
-    target.add(id);
   }
 
   /// Liefert das Manöver aus dem Katalog anhand seiner stabilen ID.

@@ -2816,4 +2816,59 @@ void main() {
     expect(find.text('Lange Erklärung'), findsOneWidget);
     expect(find.text('Lange Finte-Erklärung.'), findsOneWidget);
   });
+
+  testWidgets(
+    'combat preview hides additional maneuvers when hero has none active',
+    (tester) async {
+      setTestSurfaceSize(tester, const Size(1280, 900));
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              weapons: <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzschwert',
+                  weaponType: 'Kurzschwert',
+                  talentId: 'tal_nah',
+                  tpDiceCount: 1,
+                  tpDiceSides: 6,
+                  tpFlat: 2,
+                ),
+              ],
+              selectedWeaponIndex: 0,
+            ),
+            combatMasteries: const <CombatMastery>[
+              CombatMastery(
+                id: 'wm_1',
+                name: 'Waffenmeister',
+                effects: <CombatMasteryEffect>[
+                  CombatMasteryEffect(
+                    type: CombatMasteryEffectType.allowedAdditionalManeuver,
+                    maneuverId: 'man_finte',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo);
+      await openMeleeTab(tester);
+
+      expect(find.text('Nutzbare Manöver'), findsOneWidget);
+      expect(find.text('Finte'), findsNothing);
+    },
+  );
 }
