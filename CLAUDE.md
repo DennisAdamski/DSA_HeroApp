@@ -12,7 +12,7 @@ Read this before making any changes.
 - Local persistence using the Hive key-value database
 - DSA rule calculations (attributes, derived stats, talents, combat)
 - Hero import/export as JSON
-- Catalog data (talents, weapons, spells) loaded from split JSON assets
+- Catalog data (talents, weapons, spells, maneuvers, combat special abilities) loaded from split JSON assets
 
 The primary language of comments, variable names, UI strings, and commit messages is **German**.
 
@@ -140,6 +140,8 @@ Ergaenzungen zur aktuellen Struktur:
   Validierung, Zielauflösung und ableitbare Kampfmodifikatoren.
 - `lib/rules/derived/maneuver_rules.dart` normalisiert Manoever-Namen auf
   stabile IDs fuer Regel- und UI-Verweise.
+- `assets/catalogs/house_rules_v1/kampf_sonderfertigkeiten.json` enthaelt
+  strukturierte Kampf-Sonderfertigkeiten mit Voraussetzungen, Verbreitung und Kosten.
 - `lib/ui/widgets/combat_quick_stats.dart` enthaelt die kompakte Kampfwerte-Quickview.
 - `lib/ui/screens/hero_combat/` enthaelt die aufgeteilten Kampf-Subtabs sowie
   Helper fuer Regeln, Preview und Weapon-Editor.

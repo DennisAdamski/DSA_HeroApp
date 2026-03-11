@@ -3,92 +3,144 @@
         "id": "man_ausfall",
         "name": "Ausfall",
         "gruppe": "bewaffnet",
-        "typ":"Angriffsmanöver",
-        "erschwernis": "Angriff +4 zum Einleien",
+        "typ": "Angriffsmanöver",
+        "erschwernis": "Angriff +4 zum Einleiten",
         "seite": "59",
-        "erklarung": "Angreifer wechselt PA in AT um und zwingt Verteidiger AT in PA umzuwandeln. Max. KO/2 Schläge.",
-        "erklarung_lang": "In vielen Kämpfen ist es nicht so, dass ein Kämpfer einen Schlag ausführt, in Grundstellung zurückgeht und den Schlag seines Gegenübers erwartet, sondern vielmehr so, dass er versucht, seinen Gegner mit möglichst vielen Hieben oder Stichen einzudecken und ihn zur reinen Parade zu zwingen, um dann vielleicht aus dieser Schlagfolge heraus mit einer Finte oder einem ähnlichen Manöver den entscheidenden Schlag zu führen. Spieltechnisch heißt dies, dass der Angreifer Runde für Runde seine Abwehraktion in eine Angriffsaktion umwandelt und dabei nach vorne drängt (also jede Aktion mit einer Freien Aktion Schritt verbindet) und durch den so energisch vorgetragenen Angriff den Gegner dazu zwingt, seinen Angriff Runde für Runde in eine Abwehr umzuwandeln und einen Schritt zurückzuweichen, also eine Freie Aktion Schritt zu tun, selbst wenn die eigentliche AT misslingt. Steht ihm diese Freie Aktion nicht mehr zur Verfügung, wird er trotzdem zurückgedrängt, erleidet aber zusätzliche Parade-Einbußen von 4 Punkten. Für den Verteidiger gilt der übliche Zuschlag von 4 Punkten für das Umwandeln von Aktionen; wenn der Verteidiger eine Waffe führt, mit der Umwandeln normalerweise verboten ist, darf er zwar zur Abwehr eines Ausfalls umwandeln, erleidet aber einen Zuschlag von +8. Kenntnis der Sonderfertigkeit Defensiver Kampfstil senkt die genannten Mali um jeweils 4 Punkte. Die erste Attacke eines Ausfalls ist immer um 4 Punkte erschwert (zusätzlich zu allen eventuellen sonstigen Erschwernissen), um den Gegner überhaupt in die Defensive zu bringen, aus der heraus er selbst nicht mehr attackieren kann. Ein Ausfall kann mit Anderthalbhändern, Dolchen, Fechtwaffen, Infanteriewaffen, Kettenstäben, Säbeln, Schwertern, Speeren und Stäben durchgeführt werden; der Angreifer muss die Sonderfertigkeit Ausfall beherrschen und darf maximal mit BE 4 belastet sein. Außerdem muss er eine höhere INI als sein Gegner besitzen. Ein Ausfall ist nur möglich, wenn der Angreifer eine gewisse Bewegungsfreiheit hat – also z.B. nicht in beengter Umgebung (Seite 58). Im Gegensatz zu anderen Manövern muss der Ausfall nicht aus der optimalen Distanzklasse der Angriffswaffe heraus begonnen werden, sondern kann eine DK weiter beginnen (und die erste Attacke der Distanzverkürzung dienen). In einem Ausfall sind grundsätzlich auch Wuchtschläge und Finten (jeweils bis zu einer Ansage von +4) möglich; sie treten an die Stelle der gewöhnlichen Attacken. Ein Ausfall kann mit den Manövern Angriff zum Niederwerfen, Hammerschlag, Gezielter Stich oder Todesstoß beendet werden. Weitere Manöver lassen sich nicht in einen Ausfall einbauen, jedoch können die vorgetragenen Attacken auch solche zur Veränderung der Distanzklasse sein. Kämpfer mit einem Schild sind in ihren Attacken zusätzlich zum AT-Abzug des Schildes mit 2 Punkten bei jeder Attacke behindert. Ein Kämpfer kann maximal so viele Hiebe in Folge setzen, wie seine halbe KO beträgt.\nEine Attacke-Serie endet:\n- wenn eine AT des Angreifers misslingt.\n- wenn dem Verteidiger ein angesagtes Manöver Gezieltes Ausweichen (Seite 66) gelingt, das zusätzlich zu den Erschwernissen nach Distanzklasse um weitere 2 Punkte erschwert ist.\n- wenn dem Verteidiger eine glückliche Parade (Seite 84) gelingt.\n- wenn der Angreifer die Höchstzahl möglicher Attacken aufgebraucht hat (siehe oben).\n- wenn der Angreifer den Ausfall freiwillig abbricht.\n- wenn der Verteidiger nicht weiter zurückgedrängt werden kann (weil er z.B. mit dem Rücken zu einer Mauer steht); die letzte PA des Verteidigers ist um 4 Punkte erschwert.\n- wenn der Verteidiger einfach stehen bleibt. Dies schafft er nur, wenn ihm eine MU-Probe +4 gelingt, erschwert um die Zahl der bereits erlittenen Treffer in diesem Ausfall. Seine Parade ist, egal ob bei Ge- oder Misslingen der MU-Probe allerdings um 4 Punkte erschwert.\nIn allen vier erstgenannten Fällen ist die AT-Serie sofort beendet und der Angreifer verliert 1W6 Punkte INI. Wenn der Angreifer den Ausfall nicht freiwillig abgebrochen hat (also eine der ersten vier Möglichkeiten eingetreten ist), darf der Verteidiger sofort einen Passierschlag ausführen (Seite 83). Wenn der Verteidiger nicht weiter zurückweichen kann oder will, endet der Ausfall mit einer abschließenden AT des Angreifers (oben genannte Manöver möglich; PA wie oben genannt um 4 erschwert); die Kämpfer befinden sich dann in einer vom Angreifer gewünschten Distanzklasse."
+        "erklarung": "Drängt den Gegner mit einer Serie von Attacken in die reine Defensive zurück.",
+        "erklarung_lang": "In vielen Kämpfen ist es nicht so, dass ein Kämpfer einen Schlag ausführt, in Grundstellung zurückgeht und den Schlag seines Gegenübers erwartet, sondern vielmehr so, dass er versucht, seinen Gegner mit möglichst vielen Hieben oder Stichen einzudecken und ihn zur reinen Parade zu zwingen, um dann vielleicht aus dieser Schlagfolge heraus mit einer Finte oder einem ähnlichen Manöver den entscheidenden Schlag zu führen. Spieltechnisch heißt dies, dass der Angreifer Runde für Runde seine Abwehraktion in eine Angriffsaktion umwandelt und dabei nach vorne drängt (also jede Aktion mit einer Freien Aktion Schritt verbindet) und durch den so energisch vorgetragenen Angriff den Gegner dazu zwingt, seinen Angriff Runde für Runde in eine Abwehr umzuwandeln und einen Schritt zurückzuweichen, also eine Freie Aktion Schritt zu tun, selbst wenn die eigentliche AT misslingt. Steht ihm diese Freie Aktion nicht mehr zur Verfügung, wird er trotzdem zurückgedrängt, erleidet aber zusätzliche Parade-Einbußen von 4 Punkten. Für den Verteidiger gilt der übliche Zuschlag von 4 Punkten für das Umwandeln von Aktionen; wenn der Verteidiger eine Waffe führt, mit der Umwandeln normalerweise verboten ist, darf er zwar zur Abwehr eines Ausfalls umwandeln, erleidet aber einen Zuschlag von +8. Kenntnis der Sonderfertigkeit Defensiver Kampfstil senkt die genannten Mali um jeweils 4 Punkte. Die erste Attacke eines Ausfalls ist immer um 4 Punkte erschwert (zusätzlich zu allen eventuellen sonstigen Erschwernissen), um den Gegner überhaupt in die Defensive zu bringen, aus der heraus er selbst nicht mehr attackieren kann. Ein Ausfall kann mit Anderthalbhändern, Dolchen, Fechtwaffen, Infanteriewaffen, Kettenstäben, Säbeln, Schwertern, Speeren und Stäben durchgeführt werden; der Angreifer muss die Sonderfertigkeit Ausfall beherrschen und darf maximal mit BE 4 belastet sein. Außerdem muss er eine höhere INI als sein Gegner besitzen. Ein Ausfall ist nur möglich, wenn der Angreifer eine gewisse Bewegungsfreiheit hat – also z.B. nicht in beengter Umgebung (Seite 58). Im Gegensatz zu anderen Manövern muss der Ausfall nicht aus der optimalen Distanzklasse der Angriffswaffe heraus begonnen werden, sondern kann eine DK weiter beginnen (und die erste Attacke der Distanzverkürzung dienen). In einem Ausfall sind grundsätzlich auch Wuchtschläge und Finten (jeweils bis zu einer Ansage von +4) möglich; sie treten an die Stelle der gewöhnlichen Attacken. Ein Ausfall kann mit den Manövern Angriff zum Niederwerfen, Hammerschlag, Gezielter Stich oder Todesstoß beendet werden. Weitere Manöver lassen sich nicht in einen Ausfall einbauen, jedoch können die vorgetragenen Attacken auch solche zur Veränderung der Distanzklasse sein. Kämpfer mit einem Schild sind in ihren Attacken zusätzlich zum AT-Abzug des Schildes mit 2 Punkten bei jeder Attacke behindert. Ein Kämpfer kann maximal so viele Hiebe in Folge setzen, wie seine halbe KO beträgt.\nEine Attacke-Serie endet:\n- wenn eine AT des Angreifers misslingt.\n- wenn dem Verteidiger ein angesagtes Manöver Gezieltes Ausweichen (Seite 66) gelingt, das zusätzlich zu den Erschwernissen nach Distanzklasse um weitere 2 Punkte erschwert ist.\n- wenn dem Verteidiger eine glückliche Parade (Seite 84) gelingt.\n- wenn der Angreifer die Höchstzahl möglicher Attacken aufgebraucht hat (siehe oben).\n- wenn der Angreifer den Ausfall freiwillig abbricht.\n- wenn der Verteidiger nicht weiter zurückgedrängt werden kann (weil er z.B. mit dem Rücken zu einer Mauer steht); die letzte PA des Verteidigers ist um 4 Punkte erschwert.\n- wenn der Verteidiger einfach stehen bleibt. Dies schafft er nur, wenn ihm eine MU-Probe +4 gelingt, erschwert um die Zahl der bereits erlittenen Treffer in diesem Ausfall. Seine Parade ist, egal ob bei Ge- oder Misslingen der MU-Probe allerdings um 4 Punkte erschwert.\nIn allen vier erstgenannten Fällen ist die AT-Serie sofort beendet und der Angreifer verliert 1W6 Punkte INI. Wenn der Angreifer den Ausfall nicht freiwillig abgebrochen hat (also eine der ersten vier Möglichkeiten eingetreten ist), darf der Verteidiger sofort einen Passierschlag ausführen (Seite 83). Wenn der Verteidiger nicht weiter zurückweichen kann oder will, endet der Ausfall mit einer abschließenden AT des Angreifers (oben genannte Manöver möglich; PA wie oben genannt um 4 erschwert); die Kämpfer befinden sich dann in einer vom Angreifer gewünschten Distanzklasse.",
+        "voraussetzungen": "KO 12; SF Finte",
+        "kosten": "200 AP",
+        "verbreitung": "4, professionelle Kämpfer"
     },
     {
         "id": "man_befreiungsschlag",
         "name": "Befreiungsschlag",
         "gruppe": "bewaffnet",
-        "typ":"Angriffsmanöver",
-        "erschwernis": "+4 pro Gegner (Verbraucht auch die Abwehrreaktion)",
+        "typ": "Angriffsmanöver",
+        "erschwernis": "Angriff +4 pro Gegner (verbraucht auch die Abwehraktion)",
         "seite": "60",
-        "erklarung": "Angreifer zurückdrängen; kann mit Finte oder Wuchtschlag ergänzt werden. Bei Treffer: Gegner zurückgedrängt und verlieren 1W6 INI.",
-        "erklarung_lang":"Ein Kämpfer, der sich von mehreren Gegnern bedrängt sieht, kann sich auf Glück, überlegene Kampftechnik oder einen stabilen Schild verlassen – oder auf einen mörderischen Halbkreis aus schnellem, scharfem Stahl. Ein Befreiungsschlag ist ein kraftvoller Angriff in Verbindung mit einer Drehung, durch den nacheinander bis zu drei Gegner mit ein und demselben Hieb angegriffen werden. Da dies mehr Zeit benötigt als ein gewöhnlicher Angriff, muss der Kämpfer hierfür seine Abwehraktion aufgeben (und der Angriff ist dementsprechend nicht möglich, wenn der Kämpfer seine Reaktion schon anderweitig verbraucht hat). Ein Befreiungsschlag erfordert die Kenntnis der gleichnamigen Sonderfertigkeit und kann mit folgenden Kampftalenten durchgeführt werden: Anderthalbhänder, Hiebwaffen, Infanteriewaffen, Kettenstäbe, Kettenwaffen, Säbel, Schwerter, Stäbe, Zweihandflegel, Zweihand- Hiebwaffen, Zweihandschwerter/-säbel. Für einen erfolgreichen Befreiungsschlag muss dem Kämpfer eine AT gelingen, die pro Gegner um 4 Punkte erschwert ist. Da dies eine Variante des Wuchtschlags ist (Seite 65), kann er sich die Attacke auch noch um eine Ansage zur TP-Erhöhung erschweren. Wenn die Attacke gelingt, wird diese Ansage bei jedem einzelnen getroffenen Gegner auf die Trefferpunkte addiert. Wenn der Kämpfer außerdem noch die Sonderfertigkeit Finte beherrscht, kann er die Ansage stattdessen dafür benutzen, alle gegnerischen Paraden bzw. Ausweichen- Proben zu erschweren. Er kann sich auch dafür entscheiden, die Ansage aufzuspalten und einen Teil für die Schadenserhöhung, den Rest für die Parade-Erschwernis zu benutzen. Wenn Maline mit der Streitaxt (TP 1W6+5) also gegen zwei Schurken antritt und diese zurücktreiben will, muss ihr mindestens eine AT+8 gelingen. Sagt sie einen ‘Befreiungsschlag +4, davon 2 auf Schaden’ an, dann muss sie sogar eine AT+12 schlagen, allerdings sind die Paraden für beide Gegner um je 2 Punkte erschwert und jeder Gegner muss sich mit einem Hieb von 1W6+7 TP auseinandersetzen. Gelingt der Angriff, so müssen alle Verteidiger Paraden würfeln. Jeder Angegriffene, dem seine Parade nicht gelingt, erleidet einen Treffer (und eventuell Wunden), wird außerdem um eine Distanzklasse vom Angreifer weg getrieben und verliert 1W6 Punkte Initiative. Zudem ist ein Befreiungsschlag stets automatisch ein Angriff zum Niederwerfen. Können die Gegner aus irgendwelchen Gründen nicht zurückweichen, erleiden sie 1W6 Punkte zusätzlichen Schaden."},
+        "erklarung": "Rundumschlag gegen bis zu drei Gegner, der zurückdrängt und Niederwerfen einschließt.",
+        "erklarung_lang": "Ein Kämpfer, der sich von mehreren Gegnern bedrängt sieht, kann sich auf Glück, überlegene Kampftechnik oder einen stabilen Schild verlassen – oder auf einen mörderischen Halbkreis aus schnellem, scharfem Stahl. Ein Befreiungsschlag ist ein kraftvoller Angriff in Verbindung mit einer Drehung, durch den nacheinander bis zu drei Gegner mit ein und demselben Hieb angegriffen werden. Da dies mehr Zeit benötigt als ein gewöhnlicher Angriff, muss der Kämpfer hierfür seine Abwehraktion aufgeben (und der Angriff ist dementsprechend nicht möglich, wenn der Kämpfer seine Reaktion schon anderweitig verbraucht hat). Ein Befreiungsschlag erfordert die Kenntnis der gleichnamigen Sonderfertigkeit und kann mit folgenden Kampftalenten durchgeführt werden: Anderthalbhänder, Hiebwaffen, Infanteriewaffen, Kettenstäbe, Kettenwaffen, Säbel, Schwerter, Stäbe, Zweihandflegel, Zweihand- Hiebwaffen, Zweihandschwerter/-säbel. Für einen erfolgreichen Befreiungsschlag muss dem Kämpfer eine AT gelingen, die pro Gegner um 4 Punkte erschwert ist. Da dies eine Variante des Wuchtschlags ist (Seite 65), kann er sich die Attacke auch noch um eine Ansage zur TP-Erhöhung erschweren. Wenn die Attacke gelingt, wird diese Ansage bei jedem einzelnen getroffenen Gegner auf die Trefferpunkte addiert. Wenn der Kämpfer außerdem noch die Sonderfertigkeit Finte beherrscht, kann er die Ansage stattdessen dafür benutzen, alle gegnerischen Paraden bzw. Ausweichen- Proben zu erschweren. Er kann sich auch dafür entscheiden, die Ansage aufzuspalten und einen Teil für die Schadenserhöhung, den Rest für die Parade-Erschwernis zu benutzen. Wenn Maline mit der Streitaxt (TP 1W6+5) also gegen zwei Schurken antritt und diese zurücktreiben will, muss ihr mindestens eine AT+8 gelingen. Sagt sie einen ‘Befreiungsschlag +4, davon 2 auf Schaden’ an, dann muss sie sogar eine AT+12 schlagen, allerdings sind die Paraden für beide Gegner um je 2 Punkte erschwert und jeder Gegner muss sich mit einem Hieb von 1W6+7 TP auseinandersetzen. Gelingt der Angriff, so müssen alle Verteidiger Paraden würfeln. Jeder Angegriffene, dem seine Parade nicht gelingt, erleidet einen Treffer (und eventuell Wunden), wird außerdem um eine Distanzklasse vom Angreifer weg getrieben und verliert 1W6 Punkte Initiative. Zudem ist ein Befreiungsschlag stets automatisch ein Angriff zum Niederwerfen. Können die Gegner aus irgendwelchen Gründen nicht zurückweichen, erleiden sie 1W6 Punkte zusätzlichen Schaden.",
+        "voraussetzungen": "KK 15, MU 12; SF Niederwerfen",
+        "kosten": "100 AP",
+        "verbreitung": "3, vor allem bei Axtkämpfern (Zwerge, Thorwaler)"
+    },
     {
         "id": "man_betaeubungsschlag",
         "name": "Betäubungsschlag",
         "gruppe": "bewaffnet",
-        "erschwernis": "Angriff +4",
+        "typ": "Angriffsmanöver",
+        "erschwernis": "Angriff +2/+4/+8 +Ansage",
         "seite": "61",
-        "erklarung": "Ziel soll betäubt werden, Angriff mit stumpfer Seite. TP(A) über KO/2: KO-Probe; über KO: Bewusstlos."
+        "erklarung": "Zielt mit der stumpfen Waffenseite auf Betäubung; bei hohem TP(A)-Verlust drohen Bewusstlosigkeit und Wunden.",
+        "erklarung_lang": "Dieses Manöver ist eine Kombination aus dem Stumpfen Schlag und dem Wuchtschlag. Es ist nur mit der Kenntnis der Sonderfertigkeit Betäubungsschlag möglich, nur mit Waffen, die eine stumpfe Seite aufweisen, und nur mit folgenden Talenten: Anderthalbhänder, Hiebwaffen, Kettenstäbe, Raufen (nur Handgemengewaffen oder der Knauf einer Waffe), Säbel, Schwerter und Stäbe. Ähnlich wie beim Stumpfen Schlag sind die Erschwernisse auf die Attacke von der Waffe abhängig: mit Kampfstäben und stumpfen Hiebwaffen um 2 Punkte, mit der stumpfen Seite anderer Hiebwaffen um 4 Punkte und mit allen anderen möglichen Waffen um 8 Punkte. Der entstehende Schaden wird wie beim Stumpfen Schlag in TP(A) nachgehalten. Ein Betäubungsschlag kann mit einem Wuchtschlag oder einer Finte kombiniert werden und auch Bonuspunkte aus einer Meisterparade oder dem Manöver Binden verwenden. Wer die genannte Sonderfertigkeit beherrscht und mittels Raufen angreift, kann versuchen, einen Gegner mit dem Knauf einer Waffe mit einem Schlag außer Gefecht zu setzen; dies gilt als um 4 Punkte erschwerte Raufen-Attacke und setzt ausreichende Nähe voraus. Erzeugt der Angriff in einem Schlag einen Ausdauerverlust, der die Wundschwelle des Opfers übersteigt, muss dem Opfer eine einfache KO-Probe gelingen, ansonsten ist es für 1W6 SR bewusstlos; bei einem AU-Verlust von mehr als der KO des Opfers verliert es ohne Probe das Bewusstsein. Es ist möglich, dass ein solcher Schlag zusätzlich eine Wunde erzeugt, wenn die realen Schadenspunkte die Wundschwelle des Opfers übersteigen. Betäubungsschläge sind nur gegen Wesen sinnvoll, die überhaupt zu betäuben sind. Gegen Tiere ist außerdem eine gelungene Tierkunde-Probe erforderlich, um die Anatomie korrekt einzuschätzen.",
+        "voraussetzungen": "SF Finte und Wuchtschlag",
+        "verbreitung": "3, bei Wundärzten, Tierfängern oder zwielichtigen Personen",
+        "kosten": "200 AP"
     },
     {
         "id": "man_binden",
         "name": "Binden",
         "gruppe": "bewaffnet",
+        "typ": "Abwehraktion",
         "erschwernis": "Abwehr +4",
         "seite": "67",
-        "erklarung": "Gegnerische Waffe binden: erleichtert eigenen Folgeangriff, erschwert gegnerische Parade."
+        "erklarung": "Bindet die gegnerische Waffe und erleichtert den eigenen Folgeangriff bei erschwerter gegnerischer Reaktion.",
+        "erklarung_lang": "Eines der zentralen Manöver der modernen Fechtkunst ist das sogenannte ‘Binden’ der gegnerischen Waffe, d.h., mit der eigenen Waffe den Kontakt zur gegnerischen Waffe aufnehmen und halten und durch Kraft und Geschicklichkeit so die Führung zu übernehmen, dass man die eigene Position für den nächsten Schlag verbessert, die gegnerische aber verschlechtert. Mit den folgenden Kampftalenten ist es möglich, die gegnerische Waffe zu binden: Anderthalbhänder, Dolche, Fechtwaffen, Infanteriewaffen, Kettenstäbe, Säbel, Schwerter, Speere, Stäbe; dazu mit Parierwaffen. Der Verteidiger muss die SF Binden und zusätzlich entweder Parierwaffen I oder Meisterparade beherrschen. Gebunden werden können keine Hiebwaffen, Kettenstäbe, Kettenwaffen, Peitschen, Zweihandflegel, Zweihand-Hiebwaffen und Zweihandschwerter/-säbel. Binden wirkt jedoch gegen Schildkämpfer. Um eine gegnerische Waffe zu binden, muss dem Verteidiger eine Parade +4 gelingen. Sollte der zu konternde Angriff eine Attacke sein, die irgendeine Ansage hat (Wuchtschlag, Finte o.ä.) und diese Ansage höher als 4 ist, so ist die Parade statt dessen um diese gegnerische Ansage erschwert. (Das heißt auch, dass eine gegnerische Finte schwerer zu binden ist, da in diesem Fall die Parade ja sowieso schon um die gegnerische Ansage erschwert ist.) Wir unterscheiden die beiden Möglichkeiten, dass die gegnerische Waffe entweder mit der eigenen Hauptwaffe oder einer links geführten Parierwaffe gebunden wird: Wenn der Kämpfer mit der Hauptwaffe bindet und über die Sonderfertigkeit Meisterparade verfügt, kann er sich seine Parade zusätzlich zu den geforderten 4 Punkten noch mit einer Ansage erschweren. Bindet er jedoch mit einer Parierwaffe (und der Sonderfertigkeit Parierwaffen I), dann gilt automatisch oben genannte fixe Erschwernis (also in der Regel die 4 Punkte) als Ansage, ohne dass die Parade-Probe dadurch noch weiter erschwert wird. Wenn der Kämpfer beide genannten Sonderfertigkeiten beherrscht und mit beiden Waffen gemeinsam bindet, dann kann er auch beide Effekte benutzen: Die geforderte Erschwernis von 4 und die zusätzliche freiwillige Ansage addieren sich zu einer Gesamt-Ansage. Wenn das Binden-Manöver gelingt, so kann der bindende Held die gegnerische Waffe lenken und behindern und dadurch sowohl die nächste eigene Attacke um die Gesamt-Ansage erleichtern als auch die darauf folgende Reaktion des Gegners um die Gesamt-Ansage erschweren.",
+        "kosten": "200 AP",
+        "voraussetzungen": "IN und GE je 12; SF Meisterparade oder Parierwaffen I",
+        "verbreitung": "4, vor allem bei Schwert- und Fechtwaffenkämpfern"
     },
     {
         "id": "man_defensiver_kampfstil",
         "name": "Defensiver Kampfstil",
         "gruppe": "bewaffnet",
+        "typ": "Abwehrmanöver",
         "erschwernis": "-",
         "seite": "67",
-        "erklarung": "Muss vorher angesagt werden; ermöglicht dauerhafte Umwandlung von Angriffen in Paraden."
+        "erklarung": "Verzichtet auf eigene Angriffe, um ohne Umwandlungsmalus zusätzliche Paraden zu erhalten.",
+        "erklarung_lang": "Es kann durchaus die beste Wahl sein, sich in einem Kampf ganz auf die Paraden zu konzentrieren, zum Beispiel, weil Hilfe unterwegs ist oder weil das Gegenüber von der eigenen Waffe sowieso nicht zu verletzen ist und man gerade keine Gelegenheit für einen überhasteten Rückzug hat. Der Verteidiger führt dabei keine eigenen Angriffe aus, sondern konzentriert sich ganz auf seine Paraden. Um dieses Manöver ausführen zu können, benötigt der Kämpfer die gleichnamige Sonderfertigkeit; es kann mit allen bewaffneten Nahkampftalenten außer Kettenwaffen, Peitschen und Zweihandflegeln eingesetzt werden (also auch mit Zweihand-Hiebwaffen, -Schwertern und -Säbeln), nicht jedoch mit improvisierten Waffen und solchen von mehr als zwei Schritt Länge. Wer die SF Defensiver Kampfstil beherrscht, der kann seine Attacke ohne Malus in eine Parade umwandeln, also zweimal pro Runde regulär parieren (oder zweimal gezielt ausweichen oder einmal parieren und einmal meisterlich ausweichen, jedoch jeweils nur eine Abwehraktion gegen einen Angriff; ein Doppelangriff zählt hierbei als zwei Angriffe). Für einen Kämpfer, der im Defensiven Kampfstil kämpft, sind Ausweichmanöver zum Lösen vom Gegner (Seite 79) um 2 Punkte erleichtert. Es ist möglich, die erste der beiden Paraden als Meisterparade auszuführen. Defensiver Kampfstil (auch für Kämpfer mit der SF Aufmerksamkeit) muss zu Beginn der Kampfrunde angesagt werden. Eine eventuelle zusätzliche Abwehraktion (wegen einer Waffe oder einem Schild in der linken Hand) kann ebenfalls nach den üblichen Regeln genutzt werden, eine eventuelle zusätzliche Attacke verfällt jedoch und kann auch nicht umgewandelt werden.",
+        "kosten": "100 AP",
+        "voraussetzungen": "GE 12, SF Meisterparade",
+        "verbreitung": "4, bei vielen professionellen Kämpfern"
     },
     {
         "id": "man_doppelangriff",
         "name": "Doppelangriff",
         "gruppe": "bewaffnet",
+        "typ": "Aktionsmanöver",
         "erschwernis": "Manöver +2",
         "seite": "61",
-        "erklarung": ""
+        "erklarung": "Führt mit zwei Waffen gleichzeitig zwei Attacken gegen denselben Gegner aus.",
+        "erklarung_lang": "Dieses Manöver bedeutet, dass der Kämpfer zwei Attacken (mit möglichst gleichen Waffen) gleichzeitig ausführt, um einen Gegner an zwei verschiedenen Stellen gleichzeitig zu treffen, um ihn so zu erschwerten Paraden zu zwingen. Doppelangriffe sind mit allen einhändig geführten Waffen außer Kettenwaffen, Peitschen und Speeren möglich, der Kämpfer muss die SF Doppelangriff (und demzufolge auch Beidhändiger Kampf I) erlernt haben. Beide verwendeten Waffen müssen in derselben Distanzklasse ohne Abzüge verwendbar sein. Beide Attacken sind prinzipiell um 2 Punkte erschwert, dazu kommen 4 Punkte Erschwernis für den Angriff mit der ‘falschen’ Hand, wenn es sich nicht um identische Waffen handelt. Der Linkhand-Modifikator von –3 gilt auch im Rahmen dieses Manövers (es sei denn, der Kämpfer beherrscht bereits Beidhändiger Kampf II). Ein Doppelangriff richtet sich immer gegen einen einzigen Gegner und findet in einer Initiativphase statt – die Schläge von rechts und links kommen also quasi gleichzeitig. Eine umgewandelte Abwehraktion kann nicht zu einem Doppelangriff verwendet werden; ein Doppelangriff kann nicht in einer Kampfrunde ausgeführt werden, in der der Kämpfer eine Zusatzaktion aus Beidhändiger Kampf II oder Parierwaffen II oder das Manöver Tod von Links nutzt – er muss sich entscheiden, welches der Manöver er einsetzen will. Beide Attacken werden einzeln ausgewürfelt. Keiner der beiden Angriffe kann ein Manöver irgendeiner Art sein, der Doppelangriff kann jedoch als Abschluss eines Ausfalls genutzt werden und auch aus vorangegangenen Meisterparaden profitieren. Ist einer der beiden Teilangriffe ein Patzer (Seite 84), so ist auch der andere Angriff automatisch misslungen. Der Verteidiger muss zwei Paraden aufwenden, um die Schläge des Doppelangriffs abzuwehren (aus Vorahnung bereits umgewandelt, per Defensivem Kampfstil, durch eine Klingenwand oder durch Zusatzaktionen durch eine Waffe in der linken Hand) oder sich mit Gezieltem Ausweichen außer Reichweite beider Schläge begeben. Gelingt der Doppelangriff und misslingt die Parade, so wird der Schaden aus den beiden Angriffen separat ausgewürfelt und angewendet.",
+        "kosten": "100 AP; für Helden mit dem Vorteil Beidhändig verbilligt (75 AP)",
+        "voraussetzungen": "SF Beidhändiger Kampf I",
+        "verbreitung": "3, bei Kämpfern, die beidhändigen Kampfstil pflegen"
     },
     {
         "id": "man_entwaffnen",
         "name": "Entwaffnen",
         "gruppe": "bewaffnet",
-        "erschwernis": "Manöver +8 +Ansage",
+        "typ": "Angriffsaktion",
+        "erschwernis": "Angriff +8 +Ansage",
         "seite": "61",
-        "erklarung": "Abwehr- oder Angriffsaktion, um 8 Punkte + Ansage erschwert."
+        "erklarung": "Schlägt dem Gegner die Waffe aus der Hand und verursacht dabei keinen regulären Schaden.",
+        "erklarung_lang": "Es ist mit einer speziellen Angriffstechnik möglich, einen Gegner zu entwaffnen; und zwar mit einer um 8 Punkte erschwerten Attacke auf den Waffenarm, den Griff oder einen speziellen angreifbaren Teil der Waffe. Misslingt die (nicht weiter erschwerte) Parade des Verteidigers, so kann er noch mit einer KK-Probe+8 verhindern, dass ihm die Waffe aus der Hand geprellt oder gerissen wird. Beim Entwaffnen entsteht dem Getroffenen kein Schaden. Mit einem Kampfstab ist ein Entwaffnungs-Angriff um 2 Punkte erleichtert, mit einem Kettenstab oder einer Zweililien um 4 Punkte. Das Entwaffnen ist mit folgenden Kampftalenten ausführbar: Anderthalbhänder, Dolche (nur gegen andere Dolche oder Fechtwaffen oder Säbel), Fechtwaffen (nur gegen andere Fechtwaffen oder Dolche oder Säbel), Infanteriewaffen, Kettenstäbe, Peitsche, Säbel, Schwerter, Speere, Stäbe, Zweihandschwerter/-säbel (bei Kenntnis und Verwendung der SF Halbschwert). Der Kämpfer darf keinen Schild führen, weil er bei etlichen Entwaffnungstechniken die zweite Hand benötigt. Es erfordert Kenntnis der Sonderfertigkeiten Finte und Entwaffnen. Entwaffnen kann mit einer Finte kombiniert werden, wenn der Angreifer sich die Attacke freiwillig um eine weitere Ansage erschwert. Die Punkte können sowohl zur Erschwerung der gegnerischen Parade als auch der KK-Probe eingesetzt werden. Es kann Punkte aus einer vorangegangenen Meisterparade oder einem Binden-Manöver nutzen. Um einen Gegner zu entwaffnen, der mit einer zweihändig geführten Waffe mit Ausnahme von Anderthalbhändern kämpft, ist die Sonderfertigkeit Meisterliches Entwaffnen notwendig; außerdem können hierfür keine Säbel benutzt werden.",
+        "verbreitung": "3, vor allem bei Schwertgesellen",
+        "kosten": "200 AP",
+        "voraussetzungen": "KK 12; SF Binden"
     },
     {
         "id": "man_entwaffnen_meisterlich",
         "name": "Entwaffnen (Meisterlich)",
         "gruppe": "bewaffnet",
-        "erschwernis": "",
-        "seite": "",
-        "erklarung": ""
+        "typ": "Angriffsaktion",
+        "erschwernis": "Angriff +8 +Ansage",
+        "seite": "61",
+        "erklarung": "Erweitert Entwaffnen auf Gegner mit Zweihandwaffen und erschwert deren KK-Probe zusätzlich.",
+        "erklarung_lang": "Wie Entwaffnen, nur dass die KK-Probe des Gegners um 10 erschwert ist und auch Zweihandwaffen entwaffnet werden können.",
+        "verbreitung": "2, bei Duellkämpfern, Schwertgesellen, Rondra-Geweihten",
+        "kosten": "100 AP",
+        "voraussetzungen": "GE 15; SF Entwaffnen"
     },
     {
         "id": "man_festnageln",
         "name": "Festnageln",
         "gruppe": "bewaffnet",
-        "erschwernis": "Angriff +Ansage",
+        "erschwernis": "Angriff +4 +Ansage (verbraucht auch die Abwehraktion)",
         "seite": "62",
-        "erklarung": "Gegnerische Parade um Ansage erschwert."
+        "erklarung": "Bringt einen Gegner mit geeigneter Stangenwaffe zu Boden und hält ihn dort fest.",
+        "verbreitung": "4, vor allem bei Großwildjägern",
+        "kosten": "200 AP",
+        "voraussetzungen": "GE 13, KK 13",
+        "typ": "Angriffsmanöver",
+        "erklarung_lang": "Eine Stangenwaffe mit gerader Klinge und Knebel kann als Hebel verwendet werden, um ein getroffenes Opfer von den Füßen zu reißen, zu Boden zu schleudern und dort zu binden. Das Manöver ist besonders für die Jagd auf große Gegner gedacht. Es ist ein Angriffsmanöver mit 4 Punkten Erschwernis plus Ansage und verbraucht zusätzlich die eigene Abwehraktion."
     },
     {
         "id": "man_finte",
         "name": "Finte",
         "gruppe": "bewaffnet",
-        "erschwernis": "Abwehr +4",
-        "seite": "68",
-        "erklarung": "Verteidiger kann Angriff gegenhalten (AT -4). Beide treffen: besserer Wurf = voller Schaden, schlechterer = halber Schaden."
+        "erschwernis": "Angriff +Ansage",
+        "seite": "62",
+        "erklarung": "Erschwert die gegnerische Parade um die eigene Ansage.",
+        "kosten": "200 AP",
+        "verbreitung": "6, fast überall außer bei Barbaren-Kulturen",
+        "voraussetzungen": "GE 12; AT-Basiswert mindestens 8",
+        "typ": "Angriffsaktion",
+        "erklarung_lang": "Die Finte verschleiert die eigentliche Angriffslinie und verleitet den Gegner zu einer falschen Parade. Regeltechnisch erschwert sich der Kämpfer seinen AT-Wurf um einen frei gewählten Wert und erschwert dem Gegner bei Gelingen die Parade um denselben Betrag. Finten sind auch ohne Kenntnis der gleichnamigen Sonderfertigkeit möglich, dann jedoch weniger effektiv. Bei der Benutzung eines Schildes ist das Manöver zusätzlich erschwert."
     },
     {
         "id": "man_formation",
         "name": "Formation",
         "gruppe": "bewaffnet",
-        "erschwernis": "",
-        "seite": "",
-        "erklarung": ""
+        "erschwernis": "-",
+        "seite": "68",
+        "erklarung": "Erlaubt koordinierte Formationsparaden mit benachbarten Kämpfern derselben Formation.",
+        "kosten": "100 AP",
+        "verbreitung": "5, bei allen Heeren, die mit Speeren oder Infanteriewaffen ausgestattet sind",
+        "voraussetzungen": "SF Aufmerksamkeit",
+        "typ": "Abwehrmanöver",
+        "erklarung_lang": "Eine eingespielte Gruppe von Kämpfern kann als Einheit agieren und eine Formationsparade entgegensetzen. Das Manöver ist mit Infanteriewaffen, Speeren, Zweihandschwertern/-säbeln und Schilden möglich; alle Beteiligten müssen die Sonderfertigkeit Formation besitzen. Ein Mitglied der Formation kann auch für einen benachbarten Kämpfer parieren, sodass ein Angriff bis zu drei Paraden durchdringen muss."
     },
     {
         "id": "man_formations_parade",
@@ -102,33 +154,53 @@
         "id": "man_gegenhalten",
         "name": "Gegenhalten",
         "gruppe": "bewaffnet",
-        "erschwernis": "",
-        "seite": "",
-        "erklarung": ""
+        "erschwernis": "Abwehr +4",
+        "seite": "68",
+        "erklarung": "Führt einen Gegenangriff in den feindlichen Angriff hinein aus.",
+        "kosten": "200 AP",
+        "verbreitung": "3, typischerweise bei eher Duell-orientierten Kämpfern",
+        "voraussetzungen": "MU 15, GE 12; SF Meisterparade",
+        "typ": "Abwehraktion",
+        "erklarung_lang": "Gegenhalten ist ein Angriff, der als Abwehraktion ausgeführt wird und daher einen gegnerischen Angriff voraussetzt. Beide Kämpfer würfeln gleichzeitig eine Attacke, die des Verteidigers ist um 4 Punkte erschwert. Gelingt nur eine der Attacken, verursacht sie normalen Schaden. Gelingen beide, entscheidet der besser gelungene Angriff, welcher Treffer vollen und welcher nur halben Schaden verursacht."
     },
     {
         "id": "man_gezielter_stich",
         "name": "Gezielter Stich",
         "gruppe": "bewaffnet",
-        "erschwernis": "",
-        "seite": "",
-        "erklarung": ""
+        "erschwernis": "Angriff +4 + halber gegnerischer RS +Ansage",
+        "seite": "62",
+        "erklarung": "Zielt auf wenig geschützte Körperstellen, um Rüstung zu umgehen und leichter Wunden zu erzeugen.",
+        "kosten": "100 AP",
+        "verbreitung": "4, bei vielen Speer- und Fechtwaffen-Kämpfern",
+        "voraussetzungen": "SF Finte",
+        "typ": "Angriffsaktion",
+        "erklarung_lang": "Der Gezielte Stich ist ein Angriffsmanöver mit 4 Punkten Grunderschwernis plus halbem gegnerischen Rüstungsschutz und optionaler Ansage. Gelingt der Angriff und misslingt die Abwehr, wird die Rüstung weitgehend umgangen, Wunden treten leichter auf und mindestens eine Wunde wird angerichtet."
     },
     {
         "id": "man_halbschwert",
         "name": "Halbschwert",
         "gruppe": "bewaffnet",
-        "erschwernis": "",
-        "seite": "",
-        "erklarung": ""
+        "erschwernis": "-",
+        "seite": "72",
+        "erklarung": "Erlaubt es, lange Waffen eine Distanzklasse kürzer mit reduzierten Abzügen zu führen.",
+        "kosten": "150 AP",
+        "verbreitung": "5, bei professionellen Zweihandschwert- und Infanteriewaffen-Kämpfern",
+        "voraussetzungen": "SF Aufmerksamkeit",
+        "typ": "Positions-Aktion",
+        "erklarung_lang": "Kämpfer mit der Sonderfertigkeit Halbschwert können geeignete lange Waffen auch eine Distanzklasse kürzer einsetzen und nehmen dabei nur 2 Punkte Abzug auf AT und PA hin. Die TP sinken um 2. Dafür werden in dieser Stellung einige andere Manöver möglich oder erleichtert, während besonders wuchtige Manöver ausfallen."
     },
     {
         "id": "man_hammerschlag",
         "name": "Hammerschlag",
         "gruppe": "bewaffnet",
-        "erschwernis": "",
-        "seite": "",
-        "erklarung": ""
+        "erschwernis": "Angriff +8 +Ansage (verbraucht alle Aktionen der KR)",
+        "seite": "63",
+        "erklarung": "Alles-oder-Nichts-Schlag mit stark erhöhtem Schaden bei gelungener Attacke.",
+        "kosten": "200 AP",
+        "verbreitung": "3, bei Axt- und Zweihandschwertkämpfern, bei Elitegarden mit Infanteriewaffen",
+        "voraussetzungen": "MU 15; SF Niederwerfen",
+        "typ": "Angriffsaktion",
+        "erklarung_lang": "Der Hammerschlag ist ein besonders brutaler Schlag, der alle Aktionen der Kampfrunde verbraucht. Bei einer um 8 Punkte erschwerten Attacke und misslungener gegnerischer Abwehr werden die Trefferpunkte deutlich erhöht."
     },
     {
         "id": "man_klingensturm",
@@ -136,7 +208,12 @@
         "gruppe": "bewaffnet",
         "erschwernis": "-",
         "seite": "63",
-        "erklarung": "Eine Attacke auf mehrere Gegner aufteilen."
+        "erklarung": "Teilt den verbesserten Attackewert auf mehrere Gegner auf.",
+        "verbreitung": "3, typisch für Schwert-, Säbel- und Fechtwaffenkämpfer",
+        "kosten": "100 AP",
+        "voraussetzungen": "AT-Basiswert 9; SF Ausfall und Kampfreflexe",
+        "typ": "Angriffsaktion",
+        "erklarung_lang": "Ein Kämpfer mit der Sonderfertigkeit Klingensturm kann seinen verbesserten AT-Wert auf mehrere Angriffe verteilen, statt nur einmal zuzuschlagen. Mit Kampfgespür ist eine freie Verteilung möglich, mit Klingentänzer sogar gegen bis zu drei Gegner."
     },
     {
         "id": "man_klingenwand",
@@ -144,15 +221,25 @@
         "gruppe": "bewaffnet",
         "erschwernis": "-",
         "seite": "69",
-        "erklarung": "Eine Parade auf mehrere Gegner aufteilen."
+        "erklarung": "Spaltet die Parade auf mehrere Angriffe auf und ignoriert den üblichen Überzahlabzug.",
+        "verbreitung": "3, typisch für Schwert-, Säbel- und Fechtwaffenkämpfer",
+        "kosten": "100 AP",
+        "voraussetzungen": "PA-Basiswert 9; SF Defensiver Kampfstil und Kampfreflexe",
+        "typ": "Abwehraktion",
+        "erklarung_lang": "Ein Kämpfer mit Klingenwand kann seine Verteidigung auf zwei Angriffe aufteilen. Regeltechnisch setzt er in beiden Paraden jeweils die Hälfte seines PA-Werts plus 2 ein. Mit Kampfgespür darf der verbesserte PA-Wert frei aufgeteilt werden, mit Klingentänzer sogar auf bis zu drei Gegner."
     },
     {
         "id": "man_meisterparade",
         "name": "Meisterparade",
         "gruppe": "bewaffnet",
         "erschwernis": "Abwehr +Ansage",
-        "seite": "",
-        "erklarung": ""
+        "seite": "69",
+        "erklarung": "Erschwert die eigene Parade, um die nächste eigene Angriffs- oder Abwehraktion zu verbessern.",
+        "verbreitung": "5, bei vielen Kämpfern mit Einhandwaffe (und Schild)",
+        "kosten": "200 AP",
+        "voraussetzungen": "PA-Basiswert mindestens 8",
+        "typ": "Abwehraktion",
+        "erklarung_lang": "Die Meisterparade ist eine Abwehraktion mit frei wählbarer Ansage. Gelingt sie, so erhält der Kämpfer für seine nächste Angriffs- oder Abwehraktion einen um die Ansage erhöhten AT- oder PA-Wert und kann so weitere Manöver vorbereiten."
     },
     {
         "id": "man_niederwerfen",
@@ -160,7 +247,11 @@
         "gruppe": "bewaffnet",
         "erschwernis": "Angriff +4 +Ansage",
         "seite": "63",
-        "erklarung": "KK-Probe bei Treffer. Gelungen: Gegner verliert 1W6 INI; Misslungen: Angreifer verliert 2W6 INI und liegt am Boden."
+        "erklarung": "Zwingt den Gegner mit einem schweren Schlag zu einer KK-Probe, um auf den Beinen zu bleiben.",
+        "kosten": "100 AP",
+        "erklarung_lang": "Beim Angriff zum Niederwerfen führt der Kämpfer eine um 4 Punkte erschwerte Attacke aus. Mit einer zusätzlichen Ansage kann er die KK-Probe des Gegners zum Stehenbleiben erschweren. Misslingt die gegnerische Probe, wird der Gegner niedergeschlagen und verliert Initiative.",
+        "voraussetzungen": "SF Wuchtschlag",
+        "verbreitung": "4, vor allem bei Kämpfern mit Äxten oder Hämmern"
     },
     {
         "id": "man_offensiver_distanzklassenwechsel",
@@ -182,9 +273,14 @@
         "id": "man_schildspalter",
         "name": "Schildspalter",
         "gruppe": "bewaffnet",
-        "erschwernis": "",
-        "seite": "",
-        "erklarung": ""
+        "erschwernis": "Angriff +8 - PA-WM des Schildes",
+        "seite": "64",
+        "erklarung": "Zielt gezielt auf einen gegnerischen Schild, um ihn unbrauchbar zu machen.",
+        "kosten": "100 AP",
+        "verbreitung": "3, vor allem bei Axtkämpfern",
+        "voraussetzungen": "KK 15; SF Niederwerfen",
+        "typ": "Angriffsaktion",
+        "erklarung_lang": "Schildspalter ist eine um 8 Punkte erschwerte Angriffsaktion, die den PA-WM des gegnerischen Schildes als Erleichterung berücksichtigt. Statt den Träger direkt zu verletzen, richtet sich der Schlag gegen den Schild und kann ihn stark beschädigen oder zerstören."
     },
     {
         "id": "man_seitenwechsel",
@@ -198,33 +294,50 @@
         "id": "man_stumpfer_schlag",
         "name": "Stumpfer Schlag",
         "gruppe": "bewaffnet",
-        "erschwernis": "Angriff +4",
+        "erschwernis": "Angriff +2/+4/+8",
         "seite": "64",
-        "erklarung": "Waffe macht TP(A) Schaden."
+        "erklarung": "Führt mit stumpfer Waffenseite TP(A) zu, statt normalen Schaden zu verursachen.",
+        "typ": "Angriffsaktion",
+        "erklarung_lang": "Der Stumpfe Schlag nutzt die stumpfe Seite oder den Knauf einer Waffe und verursacht statt normaler Trefferpunkte Ausdauer-Schaden in Form von TP(A). Die Erschwernis hängt von der verwendeten Waffe ab. Das Manöver ist die Grundlage für Betäubungsschläge."
     },
     {
         "id": "man_sturmangriff",
         "name": "Sturmangriff",
         "gruppe": "bewaffnet",
-        "erschwernis": "Angriff +4 +Ansage",
+        "erschwernis": "Angriff +4 (verbraucht auch die Abwehraktion)",
         "seite": "64",
-        "erklarung": "Mind. 4 m Anlauf; AT +4 +Ansage, TP +4 +Ansage + halbe Geschwindigkeit; verbraucht Abwehrreaktion."
+        "erklarung": "Angriff aus vollem Lauf mit zusätzlichem Schaden abhängig von Geschwindigkeit und Ansage.",
+        "verbreitung": "3, vor allem bei Kulturen, die mit Äxten oder Speeren kämpfen",
+        "kosten": "100 AP",
+        "voraussetzungen": "MU 12; SF Wuchtschlag",
+        "typ": "Angriffsmanöver",
+        "erklarung_lang": "Ein Sturmangriff ist ein Angriff aus vollem Lauf, der die Wucht der Anlaufbewegung in zusätzlichen Schaden umsetzt und deshalb die eigene Abwehraktion verbraucht. Bei einem mindestens vier Schritt langen Anlauf ist die Attacke um 4 Punkte erschwert und verursacht zusätzliche Trefferpunkte in Höhe von 4 plus halber Geschwindigkeit; weitere Ansagen zur TP-Erhöhung sind möglich."
     },
     {
         "id": "man_todesstos",
         "name": "Todesstoß",
         "gruppe": "bewaffnet",
-        "erschwernis": "",
-        "seite": "",
-        "erklarung": ""
+        "erschwernis": "Angriff +8 + halber gegnerischer RS +Ansage (verbraucht auch die Abwehraktion)",
+        "seite": "65",
+        "erklarung": "Alles-oder-nichts-Stich, der Rüstung weitgehend ignoriert und zusätzliche Wunden verursacht.",
+        "typ": "Angriffsmanöver",
+        "erklarung_lang": "Was bei Hiebwaffen der Hammerschlag ist, ist bei Stichwaffen der Todesstoß: ein höchst riskantes Manöver, das einen Gegner mit einer einzigen Attacke möglichst kampfunfähig machen soll. Dazu muss der Kämpfer seine Abwehraktion aufgeben, was er spätestens in seiner Initiativphase erklären muss; wurde vorher bereits eine Abwehraktion verbraucht, ist in dieser Kampfrunde kein Todesstoß mehr möglich. Anschließend muss ihm eine Attacke +8 gelingen, die zusätzlich noch um den halben Rüstungsschutz des Gegners erschwert ist und die er sich selbst mit weiteren Ansagen als Finte erschweren kann, um die gegnerische Parade zu behindern. Beherrscht der Angreifer auch den Wuchtschlag, darf er Punkte aus der Ansage zusätzlich auf eine TP-Erhöhung verteilen, auch wenn die Waffe eigentlich keinen Wuchtschlag erlaubt. Führt der Gegner einen Schild, muss der PA-WM des Schildes noch zur Erschwernis der Attacke hinzugerechnet werden. Gelingt dieser Angriff und kann der Verteidiger nicht parieren, dann ist dem Angreifer ein potentiell kampfentscheidender Stoß gelungen: Bei der Ermittlung der Schadenspunkte wird die Rüstung, nicht jedoch natürlicher RS, ignoriert; die Wundschwelle des Verteidigers ist um zwei Punkte reduziert und es werden automatisch zwei zusätzliche Wunden verursacht. Misslingt der Todesstoß, so steht dem Verteidiger auf jeden Fall ein Passierschlag zu und der Angreifer erleidet alle Nachteile einer misslungenen Ansage. Todesstöße können mit Dolchen, Fechtwaffen, Schwertern bei Kenntnis von Halbschwert und Speeren durchgeführt werden, wenn der Angreifer die gleichnamige Sonderfertigkeit beherrscht. Gegen sehr große Wesen ist das Manöver nicht möglich.",
+        "voraussetzungen": "MU 15; SF Gezielter Stich",
+        "verbreitung": "3, für Speerkämpfer bei erfahrenen Jägern, für Fechter bei Duellisten und Klingenmeistern im Horasreich und Almada",
+        "kosten": "200 AP"
     },
     {
         "id": "man_umreissen",
         "name": "Umreißen",
         "gruppe": "bewaffnet",
-        "erschwernis": "",
-        "seite": "",
-        "erklarung": ""
+        "erschwernis": "Angriff +8 +Ansage",
+        "seite": "65",
+        "erklarung": "Bringt den Gegner mit Technik statt Schaden zu Fall und zwingt ihn zu einer erschwerten GE-Probe.",
+        "typ": "Angriffsaktion",
+        "erklarung_lang": "Manchmal reicht es schon, wenn man einem Gegner eine Lektion erteilen kann, indem man ihm die Füße unter dem Leib wegzieht und ihn auf den Hosenboden setzt. Das Umreißen-Manöver ist mit Infanteriewaffen, Peitschen, Speeren, Stäben sowie Zweihandschwertern oder -säbeln bei gleichzeitiger Kenntnis und Verwendung der Sonderfertigkeit Halbschwert ausführbar. Es erfordert Kenntnis der Sonderfertigkeit Umreißen und einen zweihändigen Griff um die Waffe; Schild oder Parier- beziehungsweise Zweitwaffe sind nicht erlaubt. Ein Angriff zum Umreißen erfordert eine um 8 Punkte erschwerte Attacke, die mit einer Finte kombiniert werden kann. Bei Gelingen des Angriffs entsteht kein Schaden; stattdessen wird der Gegner aus dem Gleichgewicht gebracht. Dem Angegriffenen stehen Gezieltes Ausweichen, eine um 8 Punkte erschwerte Waffenparade oder eine Raufen- beziehungsweise Ringen-Parade mit dem Manöver Beinarbeit offen. Misslingt die Verteidigung, so steht dem Angegriffenen noch eine GE-Probe zu, um auf den Beinen zu bleiben; diese ist jedoch um die Anzahl der erwürfelten Trefferpunkte erschwert. Misslingt auch diese Probe, verliert er 2W6 Punkte Initiative und liegt am Boden.",
+        "voraussetzungen": "KK 12; SF Finte",
+        "verbreitung": "3, vor allem bei Hellebardieren und klassischen Doppelsöldnern",
+        "kosten": "100 AP"
     },
     {
         "id": "man_windmuehle",
@@ -232,7 +345,12 @@
         "gruppe": "bewaffnet",
         "erschwernis": "Abwehr +8 oder mehr",
         "seite": "71",
-        "erklarung": "Abwehrreaktion; leitet Angriff des Gegners auf diesen zurück."
+        "erklarung": "Fängt einen besonders wuchtigen Angriff ab und führt seine Energie als eigenen Wuchtschlag zurück.",
+        "typ": "Abwehrmanöver",
+        "erklarung_lang": "Dieses gewagte Kampfmanöver setzt die Wucht eines gegnerischen Hiebes in eine eigene, noch heftigere Angriffsaktion um, indem es den Schlag auffängt, große Teile der Wucht aufnimmt und in einer fast kreisförmigen Bewegung mit der eigenen Waffe auf den Angreifer zurückführt. Die Windmühle ist ein Angriff, der aus einer Abwehraktion heraus eingeleitet wird und kein Umwandeln von Aktionen erfordert; sie findet immer in der Initiativphase des Angreifers statt und wird auf den PA-Wert gewürfelt. Eine Windmühle ist mit Anderthalbhändern, Hiebwaffen, Infanteriewaffen, Kettenstäben, Kettenwaffen, Säbeln, Schwertern, Stäben, Zweihandflegeln, Zweihand-Hiebwaffen und Zweihandschwertern oder -säbeln ausführbar und erfordert die gleichnamige Sonderfertigkeit. Ein Schildkämpfer mit großem oder sehr großem Schild kann keine Windmühle ansagen. Um die Windmühle zu initiieren, muss der Kämpfer mit einem Wuchtschlag, Sturmangriff, Hammerschlag oder Befreiungsschlag angegriffen werden, den er mit einer angesagten Parade kontert, die um genauso viele Punkte erschwert ist wie der entsprechende Angriff, mindestens jedoch um 8 Punkte; die nötigen Stellungsänderungen verbrauchen eine freie Aktion Schritt. Gelingt diese Parade, so gilt sie gleichzeitig als gelungener Wuchtschlag mit einer Ansage in Höhe der vollen eigenen Erschwernis, und der ursprüngliche Angreifer erleidet einen Parade-Nachteil in Höhe seiner eigenen Ansage. Misslingt die angesagte Parade, erleidet der Kämpfer den vollen Schaden und die üblichen Folgen einer misslungenen Ansage. Zu Abwehraktionen umgewandelte Angriffsaktionen, Teilparaden einer Klingenwand oder Paraden mit einer Parierwaffe können keine Windmühlen sein; ebenso wenig eine der möglichen Paraden beim Einsatz von zwei Waffen. Da die Windmühle im Prinzip eine Parade ist, gelten auch die Bruchtest-Regeln bei hohen Ansagen aus Wuchtschlägen.",
+        "voraussetzungen": "SF Gegenhalten und Wuchtschlag",
+        "verbreitung": "2, bei erfahrenen Kämpfern mit Schwert, Anderthalbhänder und Zweihänder",
+        "kosten": "200 AP"
     },
     {
         "id": "man_wuchtschlag",
@@ -240,7 +358,12 @@
         "gruppe": "bewaffnet",
         "erschwernis": "Angriff +Ansage",
         "seite": "65",
-        "erklarung": "Erhöht TP um Ansage."
+        "erklarung": "Erhöht die Trefferpunkte um die Höhe der angesagten Erschwernis.",
+        "verbreitung": "7, durch Praxis",
+        "kosten": "200 AP",
+        "voraussetzungen": "KK 12",
+        "typ": "Angriffsaktion",
+        "erklarung_lang": "Bei einem Wuchtschlag erschwert sich der Angreifer seinen AT-Wurf um eine bestimmte Anzahl von Punkten, um dieselbe Zahl zu seinen Trefferpunkten zu addieren. Wuchtschläge sind auch ohne Kenntnis der Sonderfertigkeit möglich, dann jedoch weniger effektiv."
     },
     {
         "id": "man_auspendeln",

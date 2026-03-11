@@ -15,6 +15,7 @@ class RulesCatalog {
     required this.spells,
     required this.weapons,
     this.maneuvers = const [],
+    this.combatSpecialAbilities = const [],
     this.metadata = const {},
   });
 
@@ -24,6 +25,8 @@ class RulesCatalog {
   final List<SpellDef> spells; // Alle Zaubersprueche
   final List<WeaponDef> weapons; // Alle Waffendefinitionen
   final List<ManeuverDef> maneuvers; // Kampfmanöver (optional, kann leer sein)
+  final List<CombatSpecialAbilityDef>
+  combatSpecialAbilities; // Kampf-Sonderfertigkeiten
   final Map<String, dynamic> metadata; // Sonstige Metadaten aus dem Manifest
 
   /// Sucht ein Manöver anhand des Namens (Groß-/Kleinschreibung wird ignoriert).
@@ -39,6 +42,9 @@ class RulesCatalog {
     final talentsRaw = (json['talents'] as List?) ?? const [];
     final spellsRaw = (json['spells'] as List?) ?? const [];
     final weaponsRaw = (json['weapons'] as List?) ?? const [];
+    final maneuversRaw = (json['maneuvers'] as List?) ?? const [];
+    final combatSpecialAbilitiesRaw =
+        (json['combatSpecialAbilities'] as List?) ?? const [];
 
     return RulesCatalog(
       version: _readString(json, 'version', fallback: 'unknown'),
@@ -55,6 +61,18 @@ class RulesCatalog {
           .whereType<Map>()
           .map((entry) => WeaponDef.fromJson(entry.cast<String, dynamic>()))
           .toList(growable: false),
+      maneuvers: maneuversRaw
+          .whereType<Map>()
+          .map((entry) => ManeuverDef.fromJson(entry.cast<String, dynamic>()))
+          .toList(growable: false),
+      combatSpecialAbilities: combatSpecialAbilitiesRaw
+          .whereType<Map>()
+          .map(
+            (entry) => CombatSpecialAbilityDef.fromJson(
+              entry.cast<String, dynamic>(),
+            ),
+          )
+          .toList(growable: false),
       metadata: (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
@@ -67,6 +85,12 @@ class RulesCatalog {
       'talents': talents.map((entry) => entry.toJson()).toList(growable: false),
       'spells': spells.map((entry) => entry.toJson()).toList(growable: false),
       'weapons': weapons.map((entry) => entry.toJson()).toList(growable: false),
+      'maneuvers': maneuvers.map((entry) => entry.toJson()).toList(
+        growable: false,
+      ),
+      'combatSpecialAbilities': combatSpecialAbilities
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
     };
   }
 }
@@ -85,6 +109,9 @@ class ManeuverDef {
     this.seite = '',
     this.erklarung = '',
     this.erklarungLang = '',
+    this.voraussetzungen = '',
+    this.verbreitung = '',
+    this.kosten = '',
   });
 
   final String id; // Eindeutige ID (z. B. 'man_hammerschlag')
@@ -96,6 +123,9 @@ class ManeuverDef {
   final String seite; // Seitenreferenz im Regelwerk
   final String erklarung; // Regeltext / Beschreibung
   final String erklarungLang; // Ausfuehrliche Regelbeschreibung
+  final String voraussetzungen; // Erwerbs- oder Einsatzvoraussetzungen
+  final String verbreitung; // Verbreitungsangabe laut Regelwerk
+  final String kosten; // AP-Kosten laut Regelwerk
 
   factory ManeuverDef.fromJson(Map<String, dynamic> json) {
     return ManeuverDef(
@@ -107,6 +137,9 @@ class ManeuverDef {
       seite: _readString(json, 'seite', fallback: ''),
       erklarung: _readString(json, 'erklarung', fallback: ''),
       erklarungLang: _readString(json, 'erklarung_lang', fallback: ''),
+      voraussetzungen: _readString(json, 'voraussetzungen', fallback: ''),
+      verbreitung: _readString(json, 'verbreitung', fallback: ''),
+      kosten: _readString(json, 'kosten', fallback: ''),
     );
   }
 
@@ -120,6 +153,72 @@ class ManeuverDef {
       'seite': seite,
       'erklarung': erklarung,
       'erklarung_lang': erklarungLang,
+      'voraussetzungen': voraussetzungen,
+      'verbreitung': verbreitung,
+      'kosten': kosten,
+    };
+  }
+}
+
+/// Definition einer Kampf-Sonderfertigkeit aus dem Regelkatalog.
+///
+/// Diese Eintraege werden aktuell als strukturierter Nachschlage-Katalog
+/// geladen und koennen spaeter enger mit UI und Regelberechnungen
+/// verknuepft werden.
+class CombatSpecialAbilityDef {
+  const CombatSpecialAbilityDef({
+    required this.id,
+    required this.name,
+    this.gruppe = 'kampf',
+    this.typ = 'sonderfertigkeit',
+    this.seite = '',
+    this.beschreibung = '',
+    this.erklarungLang = '',
+    this.voraussetzungen = '',
+    this.verbreitung = '',
+    this.kosten = '',
+  });
+
+  final String id; // Eindeutige ID (z. B. 'ksf_aufmerksamkeit')
+  final String name; // Anzeigename
+  final String gruppe; // Obergruppe, aktuell meist 'kampf'
+  final String typ; // Typisierung, aktuell 'sonderfertigkeit'
+  final String seite; // Seitenreferenz im Regelwerk
+  final String beschreibung; // Kurze Beschreibung
+  final String erklarungLang; // Ausfuehrliche Regelbeschreibung
+  final String voraussetzungen; // Erwerbsvoraussetzungen
+  final String verbreitung; // Verbreitungsangabe laut Regelwerk
+  final String kosten; // AP-Kosten laut Regelwerk
+
+  /// Deserialisiert die Sonderfertigkeit tolerant aus JSON.
+  factory CombatSpecialAbilityDef.fromJson(Map<String, dynamic> json) {
+    return CombatSpecialAbilityDef(
+      id: _readString(json, 'id', fallback: ''),
+      name: _readString(json, 'name', fallback: ''),
+      gruppe: _readString(json, 'gruppe', fallback: 'kampf'),
+      typ: _readString(json, 'typ', fallback: 'sonderfertigkeit'),
+      seite: _readString(json, 'seite', fallback: ''),
+      beschreibung: _readString(json, 'beschreibung', fallback: ''),
+      erklarungLang: _readString(json, 'erklarung_lang', fallback: ''),
+      voraussetzungen: _readString(json, 'voraussetzungen', fallback: ''),
+      verbreitung: _readString(json, 'verbreitung', fallback: ''),
+      kosten: _readString(json, 'kosten', fallback: ''),
+    );
+  }
+
+  /// Serialisiert die Sonderfertigkeit in ein JSON-kompatibles Map.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'gruppe': gruppe,
+      'typ': typ,
+      'seite': seite,
+      'beschreibung': beschreibung,
+      'erklarung_lang': erklarungLang,
+      'voraussetzungen': voraussetzungen,
+      'verbreitung': verbreitung,
+      'kosten': kosten,
     };
   }
 }
