@@ -1,11 +1,13 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_mastery.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ausweichen_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/combat_mastery_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/fernkampf_ladezeit_rules.dart';
@@ -83,6 +85,19 @@ class CombatPreviewStats {
     required this.schnellladenBogenTemporary,
     required this.schnellladenArmbrustActive,
     required this.schnellladenArmbrustTemporary,
+    required this.masteryAttackModifier,
+    required this.masteryParryModifier,
+    required this.masteryInitiativeBonus,
+    required this.masteryShieldParryModifier,
+    required this.masteryTpkkBaseShift,
+    required this.masteryTpkkThresholdShift,
+    required this.masteryReloadModifier,
+    required this.masteryReloadDivisor,
+    required this.masteryRangedRangePercent,
+    required this.masteryTargetedShotDiscount,
+    required this.masteryManeuverDiscounts,
+    required this.masteryAdditionalManeuverIds,
+    required this.applicableMasteries,
   });
 
   final int rsTotal;
@@ -150,6 +165,19 @@ class CombatPreviewStats {
   final bool schnellladenBogenTemporary;
   final bool schnellladenArmbrustActive;
   final bool schnellladenArmbrustTemporary;
+  final int masteryAttackModifier;
+  final int masteryParryModifier;
+  final int masteryInitiativeBonus;
+  final int masteryShieldParryModifier;
+  final int masteryTpkkBaseShift;
+  final int masteryTpkkThresholdShift;
+  final int masteryReloadModifier;
+  final int masteryReloadDivisor;
+  final int masteryRangedRangePercent;
+  final int masteryTargetedShotDiscount;
+  final Map<String, int> masteryManeuverDiscounts;
+  final List<String> masteryAdditionalManeuverIds;
+  final List<CombatMasteryApplicationSummary> applicableMasteries;
 }
 
 CombatPreviewStats computeCombatPreviewStats(
@@ -158,6 +186,8 @@ CombatPreviewStats computeCombatPreviewStats(
   CombatConfig? overrideConfig,
   Map<String, HeroTalentEntry>? overrideTalents,
   List<TalentDef> catalogTalents = const <TalentDef>[],
+  List<ManeuverDef> catalogManeuvers = const <ManeuverDef>[],
+  List<CombatMastery>? overrideCombatMasteries,
   ModifierParseResult? parsedModifiers,
   Attributes? effectiveAttributes,
   DerivedStats? derivedStats,
@@ -196,6 +226,7 @@ CombatPreviewStats computeCombatPreviewStats(
     sheet: sheet,
     state: state,
   );
+  final combatMasteries = overrideCombatMasteries ?? sheet.combatMasteries;
 
   // --- Ruestung & Behinderung (ruestung_be_rules) ---
   final activeArmorPieces = armor.pieces
@@ -228,10 +259,19 @@ CombatPreviewStats computeCombatPreviewStats(
   final atSpecBonus = specApplies ? (isRangedWeapon ? 2 : 1) : 0;
   final paSpecBonus = specApplies && !isRangedWeapon ? 1 : 0;
   final kkThreshold = main.kkThreshold < 1 ? 1 : main.kkThreshold;
+  final masteryModifiers = deriveCombatMasteryModifiers(
+    masteries: combatMasteries,
+    hero: sheet,
+    effectiveAttributes: effective,
+    selectedWeapon: main,
+    offhandEquipment: offhandEquipment,
+    catalogTalents: catalogTalents,
+    catalogManeuvers: catalogManeuvers,
+  );
   final tpKk = computeTpKk(
     kk: effectiveSheet.attributes.kk,
-    kkBase: main.kkBase,
-    kkThreshold: kkThreshold,
+    kkBase: main.kkBase + masteryModifiers.tpkkBaseShift,
+    kkThreshold: kkThreshold + masteryModifiers.tpkkThresholdShift,
   );
   final axxTpBonus = isRangedWeapon
       ? 0
@@ -243,6 +283,8 @@ CombatPreviewStats computeCombatPreviewStats(
     specialRules: special,
     axxeleratusActive: axxeleratusActive,
     talentName: selectedTalent?.name,
+    reloadModifier: masteryModifiers.reloadModifier,
+    reloadDivisor: masteryModifiers.reloadDivisor,
   );
   final distanceTpMod = isRangedWeapon ? activeDistanceBand.tpMod : 0;
   final projectileTpMod = isRangedWeapon ? (activeProjectile?.tpMod ?? 0) : 0;
@@ -305,6 +347,7 @@ CombatPreviewStats computeCombatPreviewStats(
             main.wmAt +
             atEbePart +
             atSpecBonus +
+            masteryModifiers.attackModifier +
             offhandModifiers.atMod +
             manualMods.atMod;
   final pa = isRangedWeapon
@@ -314,6 +357,7 @@ CombatPreviewStats computeCombatPreviewStats(
             main.wmPa +
             paEbePart +
             paSpecBonus +
+            masteryModifiers.parryModifier +
             offhandModifiers.mainPaMod +
             manualMods.paMod;
 
@@ -330,6 +374,7 @@ CombatPreviewStats computeCombatPreviewStats(
     eigenschaftsIni +
         ebe +
         sfIniBonus +
+        masteryModifiers.initiativeBonus +
         iniWurfEffective +
         axxIniBonus +
         manualMods.iniMod,
@@ -409,8 +454,9 @@ CombatPreviewStats computeCombatPreviewStats(
     offhandPaBonus: offhandModifiers.mainPaMod,
     offhandAtMod: offhandModifiers.atMod,
     offhandIniMod: offhandModifiers.iniMod,
-    shieldPa: offhandModifiers.shieldPa,
-    shieldPaBonus: offhandModifiers.shieldPaBonus,
+    shieldPa: offhandModifiers.shieldPa + masteryModifiers.shieldParryModifier,
+    shieldPaBonus:
+        offhandModifiers.shieldPaBonus + masteryModifiers.shieldParryModifier,
     offhandIsShield: offhandModifiers.isShield,
     offhandIsParryWeapon: offhandModifiers.isParryWeapon,
     offhandRequiresLinkhand: offhandModifiers.requiresLinkhandViolation,
@@ -441,6 +487,19 @@ CombatPreviewStats computeCombatPreviewStats(
     schnellladenArmbrustActive: reloadTimeResult.schnellladenArmbrust.isActive,
     schnellladenArmbrustTemporary:
         reloadTimeResult.schnellladenArmbrust.isTemporary,
+    masteryAttackModifier: masteryModifiers.attackModifier,
+    masteryParryModifier: masteryModifiers.parryModifier,
+    masteryInitiativeBonus: masteryModifiers.initiativeBonus,
+    masteryShieldParryModifier: masteryModifiers.shieldParryModifier,
+    masteryTpkkBaseShift: masteryModifiers.tpkkBaseShift,
+    masteryTpkkThresholdShift: masteryModifiers.tpkkThresholdShift,
+    masteryReloadModifier: masteryModifiers.reloadModifier,
+    masteryReloadDivisor: masteryModifiers.reloadDivisor,
+    masteryRangedRangePercent: masteryModifiers.rangedRangePercent,
+    masteryTargetedShotDiscount: masteryModifiers.targetedShotDiscount,
+    masteryManeuverDiscounts: masteryModifiers.maneuverDiscounts,
+    masteryAdditionalManeuverIds: masteryModifiers.additionalManeuverIds,
+    applicableMasteries: masteryModifiers.applicableMasteries,
   );
 }
 
