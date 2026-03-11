@@ -20,13 +20,15 @@ import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_area_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/hero_combat_melee_subtab.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
 part 'hero_combat/combat_talent_catalog_table.dart';
 part 'hero_combat/weapon_catalog_table.dart';
-part 'hero_combat/hero_combat_melee_subtab.dart';
+part 'hero_combat/hero_combat_calculator_subtab.dart';
 part 'hero_combat/hero_combat_special_rules_subtab.dart';
 part 'hero_combat/hero_combat_maneuvers_subtab.dart';
 part 'hero_combat/hero_combat_form_fields.dart';
@@ -334,7 +336,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     }
 
     final catalog = await ref.read(rulesCatalogProvider.future);
-    final combatTalents = _sortedCombatTalents(
+    final combatTalents = sortedCombatTalents(
       catalog.talents.where(isCombatTalentDef).toList(growable: false),
     );
     final weaponValidation = _validateWeaponSlots(
@@ -499,12 +501,12 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       if (talentId.isNotEmpty && talent == null) {
         return '$slotLabel: Das gewählte Talent ist kein gültiges Kampftalent.';
       }
-      if (talent != null && _combatTypeFromTalent(talent) != slot.combatType) {
+      if (talent != null && combatTypeFromTalent(talent) != slot.combatType) {
         return '$slotLabel: Talent "${talent.name}" passt nicht zum Waffenkampftyp.';
       }
       final weaponType = slot.weaponType.trim();
       if (weaponType.isNotEmpty && talent != null) {
-        final allowedTypes = _weaponTypeOptionsForTalent(
+        final allowedTypes = weaponTypeOptionsForTalent(
           talent: talent,
           catalog: catalog,
           combatType: slot.combatType,
@@ -562,6 +564,580 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   }) {
     return _validateWeaponSlotsForConfig(
       config: _draftCombatConfig,
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Waffen-Slot-Verwaltung (frueher in melee-subtab-Extension)
+  // ---------------------------------------------------------------------------
+
+  /// Erstellt einen MainWeaponSlot aus einer Katalog-Waffenvorlage.
+  MainWeaponSlot _weaponSlotFromCatalog(
+    WeaponDef weapon,
+    List<TalentDef> combatTalents,
+  ) {
+    final tpMatch = RegExp(
+      r'^\s*(\d+)\s*[wW]\s*6\s*([+-]\s*\d+)?\s*$',
+    ).firstMatch(weapon.tp);
+    final tpkkMatch = RegExp(
+      r'^\s*(\d+)\s*/\s*(\d+)\s*$',
+    ).firstMatch(weapon.tpkk);
+    final tpDiceCount = tpMatch == null ? 1 : int.parse(tpMatch.group(1)!);
+    final tpFlat = tpMatch == null
+        ? 0
+        : int.parse((tpMatch.group(2) ?? '0').replaceAll(' ', ''));
+    final kkBase = tpkkMatch == null ? 0 : int.parse(tpkkMatch.group(1)!);
+    final kkThreshold = tpkkMatch == null ? 1 : int.parse(tpkkMatch.group(2)!);
+    final ct = weaponCombatTypeFromJson(weapon.type);
+    final rangedProfile = ct == WeaponCombatType.ranged
+        ? RangedWeaponProfile(
+            reloadTime: weapon.reloadTime,
+            distanceBands: weapon.rangedDistanceBands,
+            projectiles: weapon.rangedProjectiles,
+          )
+        : const RangedWeaponProfile();
+    return MainWeaponSlot(
+      name: weapon.name,
+      talentId: findTalentIdByName(weapon.combatSkill, combatTalents),
+      combatType: ct,
+      weaponType: weapon.name,
+      distanceClass: weapon.reach,
+      kkBase: kkBase,
+      kkThreshold: kkThreshold < 1 ? 1 : kkThreshold,
+      tpDiceCount: tpDiceCount < 1 ? 1 : tpDiceCount,
+      tpFlat: tpFlat,
+      wmAt: weapon.atMod,
+      wmPa: weapon.paMod,
+      iniMod: weapon.iniMod,
+      rangedProfile: rangedProfile,
+    );
+  }
+
+  void _showWeaponKatalog(
+    BuildContext context, {
+    required RulesCatalog catalog,
+    required HeroSheet hero,
+    required HeroState heroState,
+    required List<TalentDef> combatTalents,
+  }) {
+    final catalogWeapons =
+        catalog.weapons.where((w) => w.active).toList(growable: false)..sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        final screenHeight = MediaQuery.of(ctx).size.height;
+        return SizedBox(
+          height: screenHeight * 0.8,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(ctx).colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: _WeaponCatalogTable(
+                  weapons: catalogWeapons,
+                  meleeTalents: combatTalents,
+                  onSelectWeapon: (weapon) async {
+                    final slot = _weaponSlotFromCatalog(weapon, combatTalents);
+                    Navigator.of(ctx).pop();
+                    await _openWeaponEditor(
+                      catalog: catalog,
+                      hero: hero,
+                      heroState: heroState,
+                      combatTalents: combatTalents,
+                      initialSlot: slot,
+                      catalogWeaponName: weapon.name,
+                    );
+                    if (!mounted) {
+                      return;
+                    }
+                    ScaffoldMessenger.of(this.context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Waffenvorlage "${weapon.name}" geöffnet',
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _addWeaponSlot({
+    required RulesCatalog catalog,
+    required HeroSheet hero,
+    required HeroState heroState,
+    required List<TalentDef> combatTalents,
+  }) async {
+    await _openWeaponEditor(
+      catalog: catalog,
+      hero: hero,
+      heroState: heroState,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _removeWeaponSlotAt(
+    int slotIndex, {
+    required RulesCatalog catalog,
+    required List<TalentDef> combatTalents,
+  }) async {
+    final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
+    if (slotIndex < 0 || slotIndex >= slots.length || slots.length <= 1) {
+      return;
+    }
+    final selectedIndex = _selectedWeaponIndex();
+    slots.removeAt(slotIndex);
+    final nextSelectedIndex = selectedIndex < 0
+        ? -1
+        : (selectedIndex == slotIndex
+              ? -1
+              : (selectedIndex > slotIndex
+                    ? selectedIndex - 1
+                    : selectedIndex));
+    _setDraftWeapons(
+      slots,
+      selectedIndex: nextSelectedIndex,
+      markChanged: true,
+    );
+    await _persistCombatConfigIfReadonly(
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _updateWeaponSlot(
+    int slotIndex,
+    MainWeaponSlot Function(MainWeaponSlot current) update, {
+    required RulesCatalog catalog,
+    required List<TalentDef> combatTalents,
+  }) async {
+    final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
+    if (slotIndex < 0 || slotIndex >= slots.length) {
+      return;
+    }
+    slots[slotIndex] = update(slots[slotIndex]);
+    _setDraftWeapons(
+      slots,
+      selectedIndex: _selectedWeaponIndex(),
+      markChanged: true,
+    );
+    await _persistCombatConfigIfReadonly(
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _updateSelectedRangedDistance(
+    int nextDistanceIndex, {
+    required RulesCatalog catalog,
+  }) async {
+    final selectedIndex = _selectedWeaponIndex();
+    final combatTalents = sortedCombatTalents(
+      catalog.talents.where(isCombatTalentDef).toList(growable: false),
+    );
+    await _updateWeaponSlot(
+      selectedIndex,
+      (current) => current.copyWith(
+        rangedProfile: current.rangedProfile.copyWith(
+          selectedDistanceIndex: nextDistanceIndex,
+        ),
+      ),
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _updateSelectedRangedProjectile(
+    int nextProjectileIndex, {
+    required RulesCatalog catalog,
+  }) async {
+    final selectedIndex = _selectedWeaponIndex();
+    final combatTalents = sortedCombatTalents(
+      catalog.talents.where(isCombatTalentDef).toList(growable: false),
+    );
+    await _updateWeaponSlot(
+      selectedIndex,
+      (current) => current.copyWith(
+        rangedProfile: current.rangedProfile.copyWith(
+          selectedProjectileIndex: nextProjectileIndex,
+        ),
+      ),
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _adjustSelectedProjectileCount(
+    int delta, {
+    required RulesCatalog catalog,
+  }) async {
+    final selectedIndex = _selectedWeaponIndex();
+    final activeWeapon = _draftCombatConfig.selectedWeaponOrNull;
+    if (selectedIndex < 0 || activeWeapon == null) {
+      return;
+    }
+    final projectileIndex = activeWeapon.rangedProfile.selectedProjectileIndex;
+    if (projectileIndex < 0 ||
+        projectileIndex >= activeWeapon.rangedProfile.projectiles.length) {
+      return;
+    }
+    final combatTalents = sortedCombatTalents(
+      catalog.talents.where(isCombatTalentDef).toList(growable: false),
+    );
+    await _updateWeaponSlot(
+      selectedIndex,
+      (current) {
+        final updatedProjectiles = List<RangedProjectile>.from(
+          current.rangedProfile.projectiles,
+        );
+        final currentProjectile = updatedProjectiles[projectileIndex];
+        final nextCount = (currentProjectile.count + delta).clamp(0, 9999);
+        updatedProjectiles[projectileIndex] = currentProjectile.copyWith(
+          count: nextCount,
+        );
+        return current.copyWith(
+          rangedProfile: current.rangedProfile.copyWith(
+            projectiles: updatedProjectiles,
+          ),
+        );
+      },
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  CombatPreviewStats _previewForWeaponSlot({
+    required HeroSheet hero,
+    required HeroState heroState,
+    required RulesCatalog catalog,
+    required MainWeaponSlot slot,
+    int? slotIndex,
+  }) {
+    final tempSlots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
+    final previewIndex = slotIndex ?? tempSlots.length;
+    if (slotIndex == null) {
+      tempSlots.add(slot);
+    } else if (slotIndex >= 0 && slotIndex < tempSlots.length) {
+      tempSlots[slotIndex] = slot;
+    }
+    final previewConfig = _draftCombatConfig.copyWith(
+      weapons: tempSlots,
+      selectedWeaponIndex: previewIndex,
+      mainWeapon: tempSlots[previewIndex],
+      manualMods: _draftCombatConfig.manualMods.copyWith(
+        iniWurf: _effectiveIniRollForConfig(_draftCombatConfig),
+      ),
+    );
+    return computeCombatPreviewStats(
+      hero,
+      heroState,
+      overrideConfig: previewConfig,
+      overrideTalents: _draftTalents,
+      catalogTalents: catalog.talents,
+    );
+  }
+
+  Future<void> _saveWeaponSlot({
+    required MainWeaponSlot slot,
+    required RulesCatalog catalog,
+    required List<TalentDef> combatTalents,
+    int? slotIndex,
+  }) async {
+    final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
+    if (slotIndex == null) {
+      slots.add(slot);
+    } else if (slotIndex >= 0 && slotIndex < slots.length) {
+      slots[slotIndex] = slot;
+    } else {
+      return;
+    }
+    _setDraftWeapons(
+      slots,
+      selectedIndex: _selectedWeaponIndex(),
+      markChanged: true,
+    );
+    await _persistCombatConfigIfReadonly(
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _openWeaponEditor({
+    required RulesCatalog catalog,
+    required HeroSheet hero,
+    required HeroState heroState,
+    required List<TalentDef> combatTalents,
+    int? slotIndex,
+    MainWeaponSlot? initialSlot,
+    String? catalogWeaponName,
+  }) async {
+    final slots = _draftCombatConfig.weaponSlots;
+    final sourceSlot =
+        initialSlot ??
+        (slotIndex == null || slotIndex < 0 || slotIndex >= slots.length
+            ? const MainWeaponSlot()
+            : slots[slotIndex]);
+    final result = await showDialog<MainWeaponSlot>(
+      context: context,
+      builder: (context) {
+        return _WeaponEditorDialog(
+          isNew: slotIndex == null,
+          initialSlot: sourceSlot,
+          meleeTalents: combatTalents,
+          catalog: catalog,
+          catalogWeaponName: catalogWeaponName,
+          previewBuilder: (slot) => _previewForWeaponSlot(
+            hero: hero,
+            heroState: heroState,
+            catalog: catalog,
+            slot: slot,
+            slotIndex: slotIndex,
+          ),
+        );
+      },
+    );
+    if (result == null) {
+      return;
+    }
+    await _saveWeaponSlot(
+      slot: result,
+      catalog: catalog,
+      combatTalents: combatTalents,
+      slotIndex: slotIndex,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Nebenhand / Ruestung - State-Verwaltung
+  // ---------------------------------------------------------------------------
+
+  Future<void> _setOffhandEquipmentEntries(
+    List<OffhandEquipmentEntry> entries, {
+    required RulesCatalog catalog,
+    required List<TalentDef> combatTalents,
+  }) async {
+    await _applyCombatConfigChange(
+      nextConfig: _draftCombatConfig.copyWith(
+        offhandEquipment: List<OffhandEquipmentEntry>.unmodifiable(entries),
+      ),
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _setArmorConfig(
+    ArmorConfig armor, {
+    required RulesCatalog catalog,
+    required List<TalentDef> combatTalents,
+  }) async {
+    await _applyCombatConfigChange(
+      nextConfig: _draftCombatConfig.copyWith(armor: armor),
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _setArmorPieces(
+    List<ArmorPiece> pieces, {
+    required RulesCatalog catalog,
+    required List<TalentDef> combatTalents,
+  }) async {
+    await _applyCombatConfigChange(
+      nextConfig: _draftCombatConfig.copyWith(
+        armor: _draftCombatConfig.armor.copyWith(
+          pieces: List<ArmorPiece>.unmodifiable(pieces),
+        ),
+      ),
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _removeArmorPiece(
+    int index, {
+    required RulesCatalog catalog,
+    required List<TalentDef> combatTalents,
+  }) async {
+    final pieces = List<ArmorPiece>.from(_draftCombatConfig.armor.pieces);
+    if (index < 0 || index >= pieces.length) {
+      return;
+    }
+    pieces.removeAt(index);
+    await _setArmorPieces(
+      pieces,
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _openArmorPieceEditor({
+    required RulesCatalog catalog,
+    required List<TalentDef> combatTalents,
+    int? pieceIndex,
+  }) async {
+    final pieces = _draftCombatConfig.armor.pieces;
+    final isNew = pieceIndex == null;
+    final sourcePiece = isNew ? const ArmorPiece() : pieces[pieceIndex];
+    final nameController = TextEditingController(text: sourcePiece.name);
+    final rsController = TextEditingController(text: sourcePiece.rs.toString());
+    final beController = TextEditingController(text: sourcePiece.be.toString());
+    var isActive = sourcePiece.isActive;
+    var rg1Active = sourcePiece.rg1Active;
+    final canSelectPieceRg1 =
+        _draftCombatConfig.armor.globalArmorTrainingLevel == 1;
+    String? validationMessage;
+
+    final result = await showDialog<ArmorPiece>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(isNew ? 'Rüstung hinzufügen' : 'Rüstung bearbeiten'),
+              content: SizedBox(
+                width: 460,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        key: const ValueKey<String>('combat-armor-form-name'),
+                        controller: nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Name',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _dialogNumberField(
+                            controller: rsController,
+                            keyName: 'combat-armor-form-rs',
+                            label: 'RS',
+                          ),
+                          _dialogNumberField(
+                            controller: beController,
+                            keyName: 'combat-armor-form-be',
+                            label: 'BE',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      SwitchListTile(
+                        key: const ValueKey<String>('combat-armor-form-active'),
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Aktiv'),
+                        value: isActive,
+                        onChanged: (value) {
+                          setDialogState(() {
+                            isActive = value;
+                          });
+                        },
+                      ),
+                      if (canSelectPieceRg1)
+                        SwitchListTile(
+                          key: const ValueKey<String>('combat-armor-form-rg1'),
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('RG I aktiv'),
+                          value: rg1Active,
+                          onChanged: (value) {
+                            setDialogState(() {
+                              rg1Active = value;
+                            });
+                          },
+                        ),
+                      if (validationMessage != null &&
+                          validationMessage!.trim().isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            validationMessage!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Abbrechen'),
+                ),
+                FilledButton(
+                  key: const ValueKey<String>('combat-armor-form-save'),
+                  onPressed: () {
+                    final name = nameController.text.trim();
+                    final parsedRs =
+                        int.tryParse(rsController.text.trim()) ?? 0;
+                    final parsedBe =
+                        int.tryParse(beController.text.trim()) ?? 0;
+                    if (name.isEmpty) {
+                      setDialogState(() {
+                        validationMessage = 'Name ist ein Pflichtfeld.';
+                      });
+                      return;
+                    }
+                    Navigator.of(context).pop(
+                      sourcePiece.copyWith(
+                        name: name,
+                        isActive: isActive,
+                        rg1Active: rg1Active,
+                        rs: parsedRs < 0 ? 0 : parsedRs,
+                        be: parsedBe < 0 ? 0 : parsedBe,
+                      ),
+                    );
+                  },
+                  child: const Text('Speichern'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == null) {
+      return;
+    }
+    final updatedPieces = List<ArmorPiece>.from(
+      _draftCombatConfig.armor.pieces,
+    );
+    if (isNew) {
+      updatedPieces.add(result);
+    } else {
+      updatedPieces[pieceIndex] = result;
+    }
+    await _setArmorPieces(
+      updatedPieces,
       catalog: catalog,
       combatTalents: combatTalents,
     );
@@ -641,12 +1217,83 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                           combatTalents,
                           effectiveAttributes: effectiveAttributes,
                         ),
-                        _buildWeaponsSubTab(
-                          combatTalents,
-                          catalog,
-                          hero,
-                          state,
-                          preview,
+                        CombatEquipmentSubtab(
+                          combatTalents: combatTalents,
+                          catalog: catalog,
+                          hero: hero,
+                          heroState: state,
+                          preview: preview,
+                          draftCombatConfig: _draftCombatConfig,
+                          draftTalents: _draftTalents,
+                          weaponFilterTalentId: _weaponFilterTalentId,
+                          weaponFilterCombatType: _weaponFilterCombatType,
+                          weaponFilterType: _weaponFilterType,
+                          weaponFilterDistanceClass: _weaponFilterDistanceClass,
+                          onWeaponEdit: (index) => _openWeaponEditor(
+                            catalog: catalog,
+                            hero: hero,
+                            heroState: state,
+                            combatTalents: sortedCombatTalents(combatTalents),
+                            slotIndex: index,
+                          ),
+                          onWeaponAdd: () => _addWeaponSlot(
+                            catalog: catalog,
+                            hero: hero,
+                            heroState: state,
+                            combatTalents: sortedCombatTalents(combatTalents),
+                          ),
+                          onWeaponCatalog: () => _showWeaponKatalog(
+                            context,
+                            catalog: catalog,
+                            hero: hero,
+                            heroState: state,
+                            combatTalents: sortedCombatTalents(combatTalents),
+                          ),
+                          onWeaponRemove: (index) => _removeWeaponSlotAt(
+                            index,
+                            catalog: catalog,
+                            combatTalents: sortedCombatTalents(combatTalents),
+                          ),
+                          onWeaponSlotUpdate: (index, update) =>
+                              _updateWeaponSlot(
+                            index,
+                            update,
+                            catalog: catalog,
+                            combatTalents: sortedCombatTalents(combatTalents),
+                          ),
+                          onFilterChanged: ({
+                            String? talentId,
+                            String? combatType,
+                            String? weaponType,
+                            String? distanceClass,
+                          }) {
+                            if (talentId != null) {
+                              _weaponFilterTalentId = talentId;
+                            }
+                            if (combatType != null) {
+                              _weaponFilterCombatType = combatType;
+                            }
+                            if (weaponType != null) {
+                              _weaponFilterType = weaponType;
+                            }
+                            if (distanceClass != null) {
+                              _weaponFilterDistanceClass = distanceClass;
+                            }
+                            if (mounted) {
+                              _viewRevision.value++;
+                            }
+                          },
+                          onOffhandEquipmentChanged: (entries) =>
+                              _setOffhandEquipmentEntries(
+                            entries,
+                            catalog: catalog,
+                            combatTalents: sortedCombatTalents(combatTalents),
+                          ),
+                          onArmorChanged: (armor) => _setArmorConfig(
+                            armor,
+                            catalog: catalog,
+                            combatTalents: sortedCombatTalents(combatTalents),
+                          ),
                         ),
                         _buildMeleeCalculatorSubTab(
                           combatTalents,
