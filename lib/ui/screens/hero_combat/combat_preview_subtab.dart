@@ -166,7 +166,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
     required CombatPreviewStats preview,
   }) {
     final rules = _draftCombatConfig.specialRules;
-    final maneuverIds = _possibleActiveWeaponManeuverIds(catalog, preview);
+    final maneuverIds = _activePreviewManeuverIds(catalog, preview);
     final supportByManeuver = _buildManeuverSupportMap(catalog, maneuverIds);
 
     return Card(

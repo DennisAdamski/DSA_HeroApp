@@ -17,24 +17,49 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
     return grouped;
   }
 
-  /// Ermittelt die moeglichen Manöver der aktiven Hauptwaffe inklusive Meisterschaften.
-  List<String> _possibleActiveWeaponManeuverIds(
+  /// Ermittelt die im Kampf-Preview sichtbaren aktiven Manöver.
+  List<String> _activePreviewManeuverIds(
     RulesCatalog catalog,
     CombatPreviewStats preview,
   ) {
     final seen = <String>{};
     final ids = <String>[];
     final weapon = _findMatchedCatalogWeapon(catalog);
+    final supportedIds = <String>{};
     if (weapon != null) {
-      for (final raw in weapon.activeManeuvers) {
-        _appendManeuverId(ids, seen, raw, catalog);
-      }
       for (final raw in weapon.possibleManeuvers) {
-        _appendManeuverId(ids, seen, raw, catalog);
+        final id = canonicalManeuverIdFromName(
+          raw,
+          catalogManeuvers: catalog.maneuvers,
+        );
+        if (id.isNotEmpty) {
+          supportedIds.add(id);
+        }
+      }
+      for (final raw in weapon.activeManeuvers) {
+        final id = canonicalManeuverIdFromName(
+          raw,
+          catalogManeuvers: catalog.maneuvers,
+        );
+        if (id.isNotEmpty) {
+          supportedIds.add(id);
+        }
       }
     }
     for (final raw in _draftCombatConfig.specialRules.activeManeuvers) {
-      _appendManeuverId(ids, seen, raw, catalog);
+      final id = canonicalManeuverIdFromName(
+        raw,
+        catalogManeuvers: catalog.maneuvers,
+      );
+      if (id.isEmpty) {
+        continue;
+      }
+      if (supportedIds.isNotEmpty && !supportedIds.contains(id)) {
+        continue;
+      }
+      if (seen.add(id)) {
+        ids.add(id);
+      }
     }
     for (final raw in preview.masteryAdditionalManeuverIds) {
       _appendManeuverId(ids, seen, raw, catalog);

@@ -2722,6 +2722,9 @@ void main() {
                 ),
               ],
               selectedWeaponIndex: 0,
+              specialRules: CombatSpecialRules(
+                activeManeuvers: <String>['man_finte'],
+              ),
             ),
           ),
         ],
@@ -2763,6 +2766,9 @@ void main() {
               ),
             ],
             selectedWeaponIndex: 0,
+            specialRules: CombatSpecialRules(
+              activeManeuvers: <String>['man_finte'],
+            ),
           ),
         ),
       ],
