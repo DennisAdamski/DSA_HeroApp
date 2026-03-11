@@ -5,6 +5,7 @@ Flutter-App zur Verwaltung von DSA-Helden mit:
 - Regeln/abgeleiteten Werten
 - Import/Export von Helden als JSON
 - Katalogdaten aus Excel-Quellen
+- Kampfmanöver und Kampf-Sonderfertigkeiten aus Split-JSON-Katalogen
 
 ## Aktuelle Fachlogik
 
@@ -43,6 +44,7 @@ Vollstaendige Anleitung:
 - `lib/main.dart` als Einstiegspunkt
 - `lib/domain/`, `lib/state/`, `lib/data/`, `lib/rules/derived/`, `lib/ui/screens/`
 - `assets/catalogs/house_rules_v1/` (Split-JSON mit `manifest.json` + Teilkatalogen)
+- Der Kampf-Katalog umfasst jetzt auch `manoever.json` und `kampf_sonderfertigkeiten.json`.
 
 ### Architektur-Notiz (Stand: 2026-03-01)
 - State-Layer nutzt einen stream-basierten Heldenindex (`HeroIndexSnapshot`) fuer O(1)-Lookup je ID.

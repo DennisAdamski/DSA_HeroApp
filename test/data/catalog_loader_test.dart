@@ -49,6 +49,7 @@ void main() {
           'waffen': 'waffen.json',
           'magie': 'magie.json',
           'manoever': 'manoever.json',
+          'kampf_sonderfertigkeiten': 'kampf_sonderfertigkeiten.json',
         },
       }),
       '$basePath/talente.json': jsonEncode([
@@ -100,11 +101,28 @@ void main() {
           'id': 'man_finte',
           'name': 'Finte',
           'gruppe': 'bewaffnet',
-          'typ': 'Angriffsmanöver',
-          'erschwernis': 'Attacke +1',
-          'seite': '62',
-          'erklarung': 'Kurze Erklärung',
-          'erklarung_lang': 'Lange Erklärung',
+          'typ': 'Angriffsmanoever',
+          'erschwernis': 'Angriff +Ansage',
+          'seite': '63',
+          'erklarung': 'Kurze Erklaerung',
+          'erklarung_lang': 'Lange Erklaerung',
+          'voraussetzungen': 'GE 12',
+          'verbreitung': '6, fast ueberall',
+          'kosten': '200 AP',
+        },
+      ]),
+      '$basePath/kampf_sonderfertigkeiten.json': jsonEncode([
+        {
+          'id': 'ksf_aufmerksamkeit',
+          'name': 'Aufmerksamkeit',
+          'gruppe': 'kampf',
+          'typ': 'sonderfertigkeit',
+          'seite': '73',
+          'beschreibung': 'Beschleunigt Orientierung und verbessert Reaktionen.',
+          'erklarung_lang': 'Lange Sonderfertigkeitsbeschreibung',
+          'voraussetzungen': 'IN 12',
+          'verbreitung': '4, durch Praxis',
+          'kosten': '200 AP',
         },
       ]),
     };
@@ -128,8 +146,15 @@ void main() {
     expect(catalog.spells.first.variants, ['Selbst']);
     expect(catalog.weapons.map((e) => e.id).toList(), ['wpn_dolch']);
     expect(catalog.maneuvers.map((e) => e.id).toList(), ['man_finte']);
-    expect(catalog.maneuvers.first.typ, 'Angriffsmanöver');
-    expect(catalog.maneuvers.first.erklarungLang, 'Lange Erklärung');
+    expect(catalog.maneuvers.first.typ, 'Angriffsmanoever');
+    expect(catalog.maneuvers.first.erklarungLang, 'Lange Erklaerung');
+    expect(catalog.maneuvers.first.voraussetzungen, 'GE 12');
+    expect(catalog.maneuvers.first.kosten, '200 AP');
+    expect(
+      catalog.combatSpecialAbilities.map((e) => e.id).toList(),
+      ['ksf_aufmerksamkeit'],
+    );
+    expect(catalog.combatSpecialAbilities.first.verbreitung, '4, durch Praxis');
   });
 
   test('throws when section JSON top-level is not a list', () async {
@@ -290,6 +315,32 @@ void main() {
           (e) => e.message,
           'message',
           contains('Duplicate weapons id'),
+        ),
+      ),
+    );
+  });
+
+  test('throws on duplicate combat special ability ids', () async {
+    assets = buildValidAssets();
+    assets['$basePath/kampf_sonderfertigkeiten.json'] = jsonEncode([
+      {
+        'id': 'ksf_aufmerksamkeit',
+        'name': 'Aufmerksamkeit',
+      },
+      {
+        'id': 'ksf_aufmerksamkeit',
+        'name': 'Kampfreflexe',
+      },
+    ]);
+
+    final loader = const CatalogLoader();
+    await expectLater(
+      loader.loadFromAsset(manifestPath),
+      throwsA(
+        isA<FormatException>().having(
+          (e) => e.message,
+          'message',
+          contains('Duplicate combat special abilities id'),
         ),
       ),
     );

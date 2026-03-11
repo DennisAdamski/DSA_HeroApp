@@ -28,7 +28,7 @@ Helden im Pen-&-Paper-Rollenspiel *Das Schwarze Auge* (DSA). Die App bietet:
 - Lokale Persistenz mit der Hive-Datenbank
 - DSA-Regelberechnungen (Eigenschaften, abgeleitete Werte, Talente, Kampf)
 - Heldenimport/-export als JSON
-- Katalogdaten (Talente, Waffen, Zauber) aus aufgesplitteten JSON-Assets
+- Katalogdaten (Talente, Waffen, Zauber, Manöver, Kampf-Sonderfertigkeiten) aus aufgesplitteten JSON-Assets
 
 ### Technologie-Stack
 
@@ -655,6 +655,7 @@ waffentalente.json     ← Kampftalente (group == 'Kampftalent')
 waffen.json            ← Waffen
 magie.json             ← Zaubersprüche
 manoever.json          ← Manöver (optional)
+kampf_sonderfertigkeiten.json ← Kampf-Sonderfertigkeiten (optional)
 ```
 
 **`CatalogLoader.loadFromAsset()`** (`lib/catalog/catalog_loader.dart`):
