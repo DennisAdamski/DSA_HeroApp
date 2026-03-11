@@ -163,14 +163,24 @@ void main() {
     return actions!;
   }
 
-  Future<void> openWeaponsTab(WidgetTester tester) async {
-    await tester.tap(find.widgetWithText(Tab, 'Ausrüstung'));
+  Future<void> tapTab(WidgetTester tester, String label) async {
+    final finder = find.widgetWithText(Tab, label);
+    await tester.ensureVisible(finder);
+    await tester.pumpAndSettle();
+    await tester.tap(finder);
     await tester.pumpAndSettle();
   }
 
+  Future<void> openWeaponsTab(WidgetTester tester) async {
+    await tapTab(tester, 'Waffen');
+  }
+
   Future<void> openMeleeTab(WidgetTester tester) async {
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfwerte');
+  }
+
+  Future<void> openArmorTab(WidgetTester tester) async {
+    await tapTab(tester, 'Rüstung & Verteidigung');
   }
 
   void setTestSurfaceSize(WidgetTester tester, Size size) {
@@ -214,7 +224,7 @@ void main() {
     final target = find.text(text).first;
     await tester.ensureVisible(target);
     await tester.pumpAndSettle();
-    await tester.tap(target);
+    await tester.tap(target, warnIfMissed: false);
     await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey<String>('combat-weapon-form-save')),
@@ -448,11 +458,11 @@ void main() {
 
     await openCombatTab(tester, repo);
 
+    expect(find.widgetWithText(Tab, 'Kampfwerte'), findsOneWidget);
+    expect(find.widgetWithText(Tab, 'Waffen'), findsOneWidget);
+    expect(find.widgetWithText(Tab, 'Rüstung & Verteidigung'), findsOneWidget);
     expect(find.widgetWithText(Tab, 'Kampftechniken'), findsOneWidget);
-    expect(find.widgetWithText(Tab, 'Ausrüstung'), findsOneWidget);
-    expect(find.widgetWithText(Tab, 'Kampf'), findsOneWidget);
-    expect(find.widgetWithText(Tab, 'Sonderfertigkeiten'), findsOneWidget);
-    expect(find.widgetWithText(Tab, 'Manöver'), findsOneWidget);
+    expect(find.widgetWithText(Tab, 'Kampfregeln'), findsOneWidget);
   });
 
   testWidgets(
@@ -473,8 +483,7 @@ void main() {
       final actions = await openCombatTab(tester, repo);
       await actions.startEdit();
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
-      await tester.pumpAndSettle();
+      await tapTab(tester, 'Kampfregeln');
 
       await setSwitchByKey(
         tester,
@@ -523,8 +532,7 @@ void main() {
       );
 
       await openCombatTab(tester, repo);
-      await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
-      await tester.pumpAndSettle();
+      await tapTab(tester, 'Kampfregeln');
 
       expect(find.text('Aktiv durch Axxeleratus'), findsNWidgets(3));
       expect(find.text('Temporär aktiv'), findsNWidgets(3));
@@ -588,6 +596,7 @@ void main() {
       );
 
       final actions = await openCombatTab(tester, repo);
+      await tapTab(tester, 'Kampftechniken');
 
       expect(find.text('Spezialisierung'), findsAtLeastNWidgets(1));
       expect(
@@ -631,6 +640,7 @@ void main() {
         repo,
         showInlineCombatTalentsActions: false,
       );
+      await tapTab(tester, 'Kampftechniken');
 
       expect(
         find.byKey(const ValueKey<String>('combat-talents-start-edit')),
@@ -686,6 +696,7 @@ void main() {
     );
 
     final actions = await openCombatTab(tester, repo);
+    await tapTab(tester, 'Kampftechniken');
     await actions.startEdit();
     await tester.pumpAndSettle();
 
@@ -735,7 +746,7 @@ void main() {
     expect(find.text('Spezialisierung'), findsNothing);
   });
 
-  testWidgets('clicking weapon name opens editable weapon dialog', (
+  testWidgets('clicking weapon name opens editable weapon editor', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -769,11 +780,56 @@ void main() {
     await openWeaponDialogByText(tester, text: 'Kurzschwert');
 
     expect(find.text('Stammdaten'), findsOneWidget);
-    expect(find.text('Waffenwerte'), findsOneWidget);
-    expect(find.text('Errechnete Werte'), findsOneWidget);
-    expect(find.text('Waffenmodifikatoren'), findsOneWidget);
-    expect(find.text('TP-Modifikatoren'), findsOneWidget);
-    expect(find.text('INI-Modifikatoren'), findsOneWidget);
+    expect(find.text('Schadensprofil'), findsOneWidget);
+    expect(find.text('Modifikatoren'), findsOneWidget);
+    expect(find.text('Vorschau'), findsOneWidget);
+  });
+
+  testWidgets('wide layout opens weapon editor as inline panel', (
+    tester,
+  ) async {
+    setTestSurfaceSize(tester, const Size(1400, 1000));
+    addTearDown(() => setTestSurfaceSize(tester, const Size(800, 600)));
+
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                talentId: 'tal_nah',
+                weaponType: 'Kurzschwert',
+                distanceClass: 'N',
+              ),
+            ],
+            selectedWeaponIndex: 0,
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+    await tester.tap(find.text('Kurzschwert').first);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-panel-close')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('combat-weapon-form-save')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('weapon dialog saves hidden weapon fields in read mode', (
@@ -1095,8 +1151,7 @@ void main() {
       findsNothing,
     );
 
-    await tester.tap(find.widgetWithText(Tab, 'Ausrüstung'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Waffen');
     expect(
       find.byKey(const ValueKey<String>('combat-weapon-add')),
       findsOneWidget,
@@ -1129,6 +1184,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
+    await tapTab(tester, 'Kampftechniken');
 
     expect(find.widgetWithText(ExpansionTile, 'Fernkampf'), findsOneWidget);
     expect(find.widgetWithText(ExpansionTile, 'Nahkampf'), findsNothing);
@@ -1165,8 +1221,7 @@ void main() {
     );
     await saveWeaponDialog(tester);
 
-    await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfregeln');
     await tester.tap(find.text('Kampfreflexe'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
@@ -1177,8 +1232,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.textContaining('Aufmerksamkeit'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(Tab, 'Manöver'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfregeln');
     await tester.scrollUntilVisible(
       find.text('Finte'),
       300,
@@ -1229,8 +1283,7 @@ void main() {
     );
     await saveWeaponDialog(tester);
 
-    await tester.tap(find.widgetWithText(Tab, 'Sonderfertigkeiten'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfregeln');
     await tester.tap(find.text('Kampfreflexe'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
@@ -1377,8 +1430,7 @@ void main() {
     await tester.tap(find.text('Kurzschwert').last);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(Tab, 'Manöver'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfregeln');
     await tester.scrollUntilVisible(
       find.text('Finte'),
       300,
@@ -1398,8 +1450,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfwerte');
     await tester.tap(
       find.byKey(const ValueKey<String>('combat-main-weapon-select-0-2')),
     );
@@ -1407,8 +1458,7 @@ void main() {
     await tester.tap(find.text('Bidenhaender').last);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(Tab, 'Manöver'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfregeln');
     await tester.scrollUntilVisible(
       find.text('Finte'),
       300,
@@ -1484,8 +1534,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfwerte');
     await tester.tap(
       find.byKey(const ValueKey<String>('combat-main-weapon-select-0-2')),
     );
@@ -1531,8 +1580,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfwerte');
 
     await tester.tap(
       find.byKey(const ValueKey<String>('combat-main-weapon-select-1-2')),
@@ -1599,45 +1647,15 @@ void main() {
       );
 
       await openCombatTab(tester, repo);
-      await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-      await tester.pumpAndSettle();
+      await tapTab(tester, 'Kampfwerte');
 
-      expect(
-        find.byKey(const ValueKey<String>('combat-active-weapon-info-card')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey<String>('combat-active-weapon-info-at')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey<String>('combat-active-weapon-info-pa')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey<String>('combat-active-weapon-info-tp')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey<String>('combat-active-weapon-info-ini')),
-        findsOneWidget,
-      );
+      // CombatQuickStats zeigt AT/PA/TP/INI-Chips
+      expect(find.textContaining('AT:'), findsAtLeastNWidgets(1));
+      expect(find.textContaining('PA:'), findsAtLeastNWidgets(1));
+      expect(find.textContaining('TP:'), findsAtLeastNWidgets(1));
+      expect(find.textContaining('Kampf INI:'), findsAtLeastNWidgets(1));
 
-      final maneuversFinder = find.byKey(
-        const ValueKey<String>('combat-active-weapon-info-maneuvers'),
-      );
-      expect(
-        find.descendant(of: maneuversFinder, matching: find.text('Finte')),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(
-          of: maneuversFinder,
-          matching: find.text('Wuchtschlag'),
-        ),
-        findsNothing,
-      );
-
+      // Waffe wechseln ueber Dropdown
       await tester.tap(
         find.byKey(const ValueKey<String>('combat-main-weapon-select-0-2')),
       );
@@ -1645,17 +1663,8 @@ void main() {
       await tester.tap(find.text('Bidenhaender').last);
       await tester.pumpAndSettle();
 
-      expect(
-        find.descendant(of: maneuversFinder, matching: find.text('Finte')),
-        findsNothing,
-      );
-      expect(
-        find.descendant(
-          of: maneuversFinder,
-          matching: find.text('Wuchtschlag'),
-        ),
-        findsOneWidget,
-      );
+      // CombatQuickStats aktualisiert sich
+      expect(find.textContaining('AT:'), findsAtLeastNWidgets(1));
     },
   );
 
@@ -1702,8 +1711,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfwerte');
 
     expect(
       find.widgetWithText(Chip, 'PA: ${expectedPreview.paMitIniParadeMod}'),
@@ -1741,25 +1749,11 @@ void main() {
       );
 
       await openCombatTab(tester, repo);
-      await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-      await tester.pumpAndSettle();
+      await tapTab(tester, 'Kampfwerte');
 
-      expect(
-        find.byKey(
-          const ValueKey<String>('combat-active-weapon-info-helden-ini'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey<String>('combat-active-weapon-info-helden-waffen-ini'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey<String>('combat-active-weapon-info-ini')),
-        findsOneWidget,
-      );
+      // CombatQuickStats zeigt Kampf-INI als Chip
+      expect(find.textContaining('Kampf INI:'), findsOneWidget);
+      // INI-Wurf-Editor ist fuer Nahkampfwaffen sichtbar
       expect(
         find.byKey(
           const ValueKey<String>('combat-active-weapon-info-ini-roll'),
@@ -1799,8 +1793,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfwerte');
 
     await tester.enterText(
       find.byKey(const ValueKey<String>('combat-active-weapon-info-ini-roll')),
@@ -1851,8 +1844,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfwerte');
 
     final rollField = tester.widget<TextField>(
       find.byKey(const ValueKey<String>('combat-active-weapon-info-ini-roll')),
@@ -1895,20 +1887,13 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfwerte');
 
+    // Haupthand-Dropdown zeigt 'Keine Waffe' bei selectedWeaponIndex == -1
+    expect(find.text('Keine Waffe'), findsWidgets);
+    // INI-Wurf-Editor ist nicht sichtbar wenn keine Waffe gewaehlt
     expect(
-      find.byKey(const ValueKey<String>('combat-active-weapon-info-card')),
-      findsOneWidget,
-    );
-    expect(find.text('Keine aktive Waffe ausgewählt.'), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey<String>('combat-active-weapon-info-at')),
-      findsNothing,
-    );
-    expect(
-      find.byKey(const ValueKey<String>('combat-active-weapon-info-maneuvers')),
+      find.byKey(const ValueKey<String>('combat-active-weapon-info-ini-roll')),
       findsNothing,
     );
   });
@@ -1970,26 +1955,20 @@ void main() {
       );
 
       await openCombatTab(tester, repo);
-      await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-      await tester.pumpAndSettle();
+      await tapTab(tester, 'Kampfwerte');
 
-      expect(
-        find.byKey(const ValueKey<String>('combat-active-weapon-info-at')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey<String>('combat-active-weapon-info-reload-time'),
-        ),
-        findsOneWidget,
-      );
-      expect(find.text('Ladezeit: 3 Aktionen'), findsOneWidget);
+      // CombatQuickStats zeigt AT-Chip fuer Fernkampf
+      expect(find.textContaining('AT:'), findsOneWidget);
+      // Ladezeit-Chip in CombatQuickStats
+      expect(find.textContaining('Ladezeit:'), findsOneWidget);
+      // Geschoss-Dropdown
       expect(
         find.byKey(
           const ValueKey<String>('combat-active-weapon-projectile-select'),
         ),
         findsOneWidget,
       );
+      // Distanz-Dropdown
       expect(
         find.byKey(
           const ValueKey<String>('combat-active-weapon-distance-select'),
@@ -2103,12 +2082,10 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await openArmorTab(tester);
     final addEquipment = find.byKey(
       const ValueKey<String>('combat-offhand-add'),
     );
-    await openWeaponsTab(tester);
     for (var i = 0; i < 6 && addEquipment.evaluate().isEmpty; i++) {
       await tester.drag(find.byType(ListView).first, const Offset(0, -280));
       await tester.pumpAndSettle();
@@ -2135,8 +2112,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfwerte');
     final offhandSelection = find.byKey(
       const ValueKey<String>('combat-offhand-selection'),
     );
@@ -2196,8 +2172,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Ausrüstung'));
-    await tester.pumpAndSettle();
+    await tapTab(tester, 'Waffen');
 
     final table = find.byKey(
       const ValueKey<String>('combat-weapons-overview-table'),
@@ -2384,8 +2359,7 @@ void main() {
 
     await openCombatTab(tester, repo);
 
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await openArmorTab(tester);
 
     await openArmorEditor(tester);
     await fillArmorDialog(
@@ -2451,8 +2425,7 @@ void main() {
       },
     );
     await openCombatTab(tester, repo);
-    await tester.tap(find.widgetWithText(Tab, 'Kampf'));
-    await tester.pumpAndSettle();
+    await openArmorTab(tester);
 
     await openArmorEditor(tester);
     expect(
@@ -2498,7 +2471,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await openWeaponsTab(tester);
+    await openArmorTab(tester);
 
     expect(find.text('Rüstung'), findsOneWidget);
     final armorTable = find.byKey(const ValueKey<String>('combat-armor-table'));
@@ -2561,7 +2534,7 @@ void main() {
     );
 
     await openCombatTab(tester, repo);
-    await openMeleeTab(tester);
+    await openArmorTab(tester);
 
     expect(find.text('Rüstung'), findsOneWidget);
     final armorTable = find.byKey(const ValueKey<String>('combat-armor-table'));

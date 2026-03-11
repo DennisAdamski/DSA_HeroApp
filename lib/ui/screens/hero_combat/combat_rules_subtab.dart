@@ -1,7 +1,29 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 
-extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
-  Widget _buildSpecialRulesSubTab(HeroSheet hero, HeroState state) {
+/// Kampfregeln-Subtab: Sonderfertigkeiten und Manoever zusammengefasst.
+extension _CombatRulesSubtab on _HeroCombatTabState {
+  Widget _buildCombatRulesSubTab({
+    required HeroSheet hero,
+    required HeroState heroState,
+    required RulesCatalog catalog,
+  }) {
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: [
+        // Obere Sektion: Sonderfertigkeiten
+        _buildSpecialRulesSection(hero, heroState),
+        const Divider(height: 32),
+        // Untere Sektion: Manoever
+        _buildManeuversSection(catalog),
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Sonderfertigkeiten
+  // ---------------------------------------------------------------------------
+
+  Widget _buildSpecialRulesSection(HeroSheet hero, HeroState state) {
     final rules = _draftCombatConfig.specialRules;
     final armor = _draftCombatConfig.armor;
     final parsed = parseModifierTextsForHero(hero);
@@ -12,9 +34,15 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
     final hasFlinkFromVorteile = parsed.hasFlinkFromVorteile;
     final hasBehaebigFromNachteile = parsed.hasBehaebigFromNachteile;
     final isEditing = _editController.isEditing;
-    return ListView(
-      padding: const EdgeInsets.all(12),
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          'Sonderfertigkeiten',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
         _ruleToggle(
           label: 'Kampfreflexe',
           value: rules.kampfreflexe,
@@ -116,7 +144,9 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: DropdownButtonFormField<int>(
-              key: const ValueKey<String>('combat-armor-global-training-level'),
+              key: const ValueKey<String>(
+                'combat-armor-global-training-level',
+              ),
               initialValue: armor.globalArmorTrainingLevel,
               decoration: const InputDecoration(
                 labelText: 'Ruestungsgewoehnung',
@@ -246,57 +276,90 @@ extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
     );
   }
 
-  Widget _resultChip(String label, int value) {
-    return Chip(label: Text('$label: $value'));
-  }
+  // ---------------------------------------------------------------------------
+  // Manoever
+  // ---------------------------------------------------------------------------
 
-  Widget _ruleToggle({
-    required String label,
-    required bool value,
-    required bool isEditing,
-    required void Function(bool value) onChanged,
-  }) {
-    return Card(
-      child: SwitchListTile(
-        title: Text(label),
-        value: value,
-        onChanged: isEditing ? onChanged : null,
-      ),
-    );
-  }
+  Widget _buildManeuversSection(RulesCatalog catalog) {
+    final rules = _draftCombatConfig.specialRules;
+    final isEditing = _editController.isEditing;
+    final allManeuvers = _collectCatalogManeuvers(catalog.weapons);
+    final supportByManeuver = _buildManeuverSupportMap(catalog, allManeuvers);
 
-  Widget _specialAbilityCard({
-    required String title,
-    required bool value,
-    required bool isEditing,
-    required bool isActive,
-    required bool isTemporaryFromAxx,
-    required String keyName,
-    required void Function(bool value) onChanged,
-  }) {
-    final activeLabel = isTemporaryFromAxx
-        ? 'Aktiv durch Axxeleratus'
-        : 'Aktiv';
-    final inactiveLabel = value ? 'Erlernt' : 'Inaktiv';
-    return Card(
-      child: Column(
-        children: [
-          SwitchListTile(
-            key: ValueKey<String>(keyName),
-            title: Text(title),
-            subtitle: Text(
-              isTemporaryFromAxx ? 'Temporär aktiv' : 'Dauerhaft erlernbar',
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Manöver', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        if (allManeuvers.isEmpty)
+          const Card(
+            child: ListTile(
+              title: Text('Keine Manoever im Katalog gefunden.'),
             ),
-            value: value,
-            onChanged: isEditing ? onChanged : null,
           ),
-          ListTile(
-            dense: true,
-            title: const Text('Status'),
-            trailing: Chip(label: Text(isActive ? activeLabel : inactiveLabel)),
-          ),
-        ],
-      ),
+        ...allManeuvers.map((maneuver) {
+          final isActive = rules.activeManeuvers.contains(maneuver);
+          final support =
+              supportByManeuver[maneuver] ??
+              _ManeuverSupportStatus.unverifiable;
+          final maneuverDef = catalog.maneuverByName(maneuver);
+          final erschwernis =
+              maneuverDef != null && maneuverDef.erschwernis.isNotEmpty
+              ? maneuverDef.erschwernis
+              : null;
+          final seite = maneuverDef != null && maneuverDef.seite.isNotEmpty
+              ? maneuverDef.seite
+              : null;
+          return Card(
+            child: SwitchListTile(
+              title: Text(maneuver),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    Chip(label: Text(isActive ? 'Aktiv' : 'Inaktiv')),
+                    Chip(
+                      label: Text(switch (support) {
+                        _ManeuverSupportStatus.supported =>
+                          'Von aktiver Waffe unterstützt',
+                        _ManeuverSupportStatus.notSupported =>
+                          'Nicht unterstützt',
+                        _ManeuverSupportStatus.unverifiable =>
+                          'Nicht verifizierbar',
+                      }),
+                    ),
+                    if (erschwernis != null)
+                      Chip(label: Text('Erschwernis: $erschwernis')),
+                    if (seite != null) Chip(label: Text('S. $seite')),
+                    if (support == _ManeuverSupportStatus.unverifiable)
+                      const Text(
+                        'Waffenabgleich nicht verifizierbar.',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                  ],
+                ),
+              ),
+              value: isActive,
+              onChanged: !isEditing
+                  ? null
+                  : (value) {
+                      final active = List<String>.from(rules.activeManeuvers);
+                      if (value) {
+                        active.add(maneuver);
+                      } else {
+                        active.removeWhere((entry) => entry == maneuver);
+                      }
+                      _draftCombatConfig = _draftCombatConfig.copyWith(
+                        specialRules: rules.copyWith(activeManeuvers: active),
+                      );
+                      _markFieldChanged();
+                    },
+            ),
+          );
+        }),
+      ],
     );
   }
 }
