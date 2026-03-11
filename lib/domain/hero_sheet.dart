@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_mastery.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
@@ -21,7 +22,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 14,
+    this.schemaVersion = 15,
     required this.name,
     required this.level,
     required this.attributes,
@@ -30,6 +31,7 @@ class HeroSheet {
     this.persistentMods = const StatModifiers(),
     this.bought = const BoughtStats(),
     this.combatConfig = const CombatConfig(),
+    this.combatMasteries = const <CombatMastery>[],
     this.talents = const <String, HeroTalentEntry>{},
     this.metaTalents = const <HeroMetaTalent>[],
     this.hiddenTalentIds = const <String>[],
@@ -79,6 +81,7 @@ class HeroSheet {
   final StatModifiers persistentMods;
   final BoughtStats bought;
   final CombatConfig combatConfig;
+  final List<CombatMastery> combatMasteries;
   final Map<String, HeroTalentEntry> talents;
   final List<HeroMetaTalent> metaTalents;
   final List<String> hiddenTalentIds;
@@ -128,6 +131,7 @@ class HeroSheet {
     StatModifiers? persistentMods,
     BoughtStats? bought,
     CombatConfig? combatConfig,
+    List<CombatMastery>? combatMasteries,
     Map<String, HeroTalentEntry>? talents,
     List<HeroMetaTalent>? metaTalents,
     List<String>? hiddenTalentIds,
@@ -176,6 +180,7 @@ class HeroSheet {
       persistentMods: persistentMods ?? this.persistentMods,
       bought: bought ?? this.bought,
       combatConfig: combatConfig ?? this.combatConfig,
+      combatMasteries: combatMasteries ?? this.combatMasteries,
       talents: talents ?? this.talents,
       metaTalents: metaTalents ?? this.metaTalents,
       hiddenTalentIds: hiddenTalentIds == null
@@ -234,6 +239,9 @@ class HeroSheet {
       'persistentMods': persistentMods.toJson(),
       'bought': bought.toJson(),
       'combatConfig': combatConfig.toJson(),
+      'combatMasteries': combatMasteries
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
       'talents': talents.map((key, value) => MapEntry(key, value.toJson())),
       'metaTalents': metaTalents
           .map((entry) => entry.toJson())
@@ -288,6 +296,8 @@ class HeroSheet {
     final rawTalents =
         (json['talents'] as Map?)?.cast<String, dynamic>() ??
         const <String, dynamic>{};
+    final rawCombatMasteries =
+        (json['combatMasteries'] as List?) ?? const <dynamic>[];
     final rawUnknown =
         (json['unknownModifierFragments'] as List?) ?? const <dynamic>[];
     final rawInventoryEntries =
@@ -343,6 +353,11 @@ class HeroSheet {
       combatConfig: CombatConfig.fromJson(
         (json['combatConfig'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
+      combatMasteries: rawCombatMasteries
+          .whereType<Map>()
+          .map((entry) => CombatMastery.fromJson(entry.cast<String, dynamic>()))
+          .whereType<CombatMastery>()
+          .toList(growable: false),
       talents: rawTalents.map((key, value) {
         final map = value is Map
             ? value.cast<String, dynamic>()

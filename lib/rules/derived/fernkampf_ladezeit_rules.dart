@@ -58,6 +58,8 @@ RangedReloadTimeResult computeRangedReloadTime({
   required CombatSpecialRules specialRules,
   required bool axxeleratusActive,
   required String? talentName,
+  int reloadModifier = 0,
+  int reloadDivisor = 1,
 }) {
   final baseReloadTime = weapon.rangedProfile.reloadTime;
   final weaponKind = _resolveWeaponReloadKind(
@@ -80,7 +82,7 @@ RangedReloadTimeResult computeRangedReloadTime({
     isTemporary: axxeleratusActive && !specialRules.schnellladenArmbrust,
   );
 
-  final effectiveReloadTime = switch (weaponKind) {
+  var effectiveReloadTime = switch (weaponKind) {
     _RangedReloadKind.bogen => _computeBogenReloadTime(
       baseReloadTime: baseReloadTime,
       hasOwnedAbility: specialRules.schnellladenBogen,
@@ -95,6 +97,16 @@ RangedReloadTimeResult computeRangedReloadTime({
     ),
     _RangedReloadKind.none => clampNonNegative(baseReloadTime),
   };
+  final normalizedReloadDivisor = reloadDivisor < 1 ? 1 : reloadDivisor;
+  if (normalizedReloadDivisor > 1) {
+    effectiveReloadTime = excelRound(
+      effectiveReloadTime / normalizedReloadDivisor,
+    );
+  }
+  effectiveReloadTime = clampNonNegative(effectiveReloadTime + reloadModifier);
+  if (baseReloadTime > 0 && effectiveReloadTime < 1) {
+    effectiveReloadTime = 1;
+  }
 
   return RangedReloadTimeResult(
     baseReloadTime: clampNonNegative(baseReloadTime),
