@@ -25,25 +25,41 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
     final seen = <String>{};
     final ids = <String>[];
     final weapon = _findMatchedCatalogWeapon(catalog);
-    final supportedIds = <String>{};
-    if (weapon != null) {
-      for (final raw in weapon.possibleManeuvers) {
-        final id = canonicalManeuverIdFromName(
-          raw,
-          catalogManeuvers: catalog.maneuvers,
-        );
-        if (id.isNotEmpty) {
-          supportedIds.add(id);
-        }
+    if (weapon == null) {
+      for (final raw in preview.masteryAdditionalManeuverIds) {
+        _appendManeuverId(ids, seen, raw, catalog);
       }
-      for (final raw in weapon.activeManeuvers) {
-        final id = canonicalManeuverIdFromName(
-          raw,
+      ids.sort((a, b) {
+        final left = displayNameForManeuverId(
+          a,
           catalogManeuvers: catalog.maneuvers,
         );
-        if (id.isNotEmpty) {
-          supportedIds.add(id);
-        }
+        final right = displayNameForManeuverId(
+          b,
+          catalogManeuvers: catalog.maneuvers,
+        );
+        return left.toLowerCase().compareTo(right.toLowerCase());
+      });
+      return ids;
+    }
+
+    final supportedIds = <String>{};
+    for (final raw in weapon.possibleManeuvers) {
+      final id = canonicalManeuverIdFromName(
+        raw,
+        catalogManeuvers: catalog.maneuvers,
+      );
+      if (id.isNotEmpty) {
+        supportedIds.add(id);
+      }
+    }
+    for (final raw in weapon.activeManeuvers) {
+      final id = canonicalManeuverIdFromName(
+        raw,
+        catalogManeuvers: catalog.maneuvers,
+      );
+      if (id.isNotEmpty) {
+        supportedIds.add(id);
       }
     }
     for (final raw in _draftCombatConfig.specialRules.activeManeuvers) {
@@ -202,6 +218,25 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
         ),
       );
     }
+    if (maneuverDef != null && maneuverDef.typ.trim().isNotEmpty) {
+      chips.add(Chip(label: Text('Typ: ${maneuverDef.typ.trim()}')));
+    }
+    if (maneuverDef != null && maneuverDef.erschwernis.trim().isNotEmpty) {
+      chips.add(
+        Chip(label: Text('Erschwernis: ${maneuverDef.erschwernis.trim()}')),
+      );
+    }
+    if (maneuverDef != null && maneuverDef.seite.trim().isNotEmpty) {
+      chips.add(Chip(label: Text('S. ${maneuverDef.seite.trim()}')));
+    }
+    return chips;
+  }
+
+  /// Liefert reduzierte Metadatenchips fuer die Kampfwert-Vorschau.
+  List<Widget> _buildPreviewManeuverMetaChips({
+    required ManeuverDef? maneuverDef,
+  }) {
+    final chips = <Widget>[];
     if (maneuverDef != null && maneuverDef.typ.trim().isNotEmpty) {
       chips.add(Chip(label: Text('Typ: ${maneuverDef.typ.trim()}')));
     }

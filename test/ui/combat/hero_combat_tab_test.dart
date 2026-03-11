@@ -2742,7 +2742,7 @@ void main() {
       await openMeleeTab(tester);
 
       expect(find.text('Aktuelle Kampfwerte'), findsOneWidget);
-      expect(find.text('Mögliche Manöver'), findsOneWidget);
+      expect(find.text('Nutzbare Manöver'), findsOneWidget);
       expect(find.text('Finte'), findsOneWidget);
       expect(find.textContaining('Typ: Angriffsmanöver'), findsOneWidget);
     },

@@ -165,9 +165,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
     required RulesCatalog catalog,
     required CombatPreviewStats preview,
   }) {
-    final rules = _draftCombatConfig.specialRules;
     final maneuverIds = _activePreviewManeuverIds(catalog, preview);
-    final supportByManeuver = _buildManeuverSupportMap(catalog, maneuverIds);
 
     return Card(
       child: Padding(
@@ -176,20 +174,16 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Mögliche Manöver',
+              'Nutzbare Manöver',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             if (maneuverIds.isEmpty)
               const Text(
-                'Für die aktive Waffe sind aktuell keine möglichen Manöver hinterlegt.',
+                'Für die aktive Waffe sind aktuell keine nutzbaren Manöver hinterlegt.',
               ),
             ...maneuverIds.map((maneuverId) {
               final maneuver = _maneuverById(catalog, maneuverId);
-              final isActive = rules.activeManeuvers.contains(maneuverId);
-              final support =
-                  supportByManeuver[maneuverId] ??
-                  _ManeuverSupportStatus.unverifiable;
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
@@ -205,10 +199,8 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                     child: Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: _buildManeuverMetaChips(
+                      children: _buildPreviewManeuverMetaChips(
                         maneuverDef: maneuver,
-                        isActive: isActive,
-                        support: support,
                       ),
                     ),
                   ),
