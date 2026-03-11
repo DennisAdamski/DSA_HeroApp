@@ -85,7 +85,7 @@ void main() {
           type: 'Nahkampf',
           combatSkill: 'Schwerter',
           tp: '1W6+2',
-          possibleManeuvers: <String>['Finte'],
+          possibleManeuvers: <String>['man_finte'],
         ),
         WeaponDef(
           id: 'wpn_bidenhaender',
@@ -93,7 +93,7 @@ void main() {
           type: 'Nahkampf',
           combatSkill: 'Schwerter',
           tp: '2W6+2',
-          possibleManeuvers: <String>['Wuchtschlag'],
+          possibleManeuvers: <String>['man_wuchtschlag'],
         ),
         WeaponDef(
           id: 'wpn_dolch',
@@ -101,7 +101,7 @@ void main() {
           type: 'Nahkampf',
           combatSkill: 'Dolche',
           tp: '1W6',
-          possibleManeuvers: <String>['Finte'],
+          possibleManeuvers: <String>['man_finte'],
         ),
         WeaponDef(
           id: 'wpn_kurzbogen',
@@ -128,6 +128,33 @@ void main() {
               description: 'Breite Spitze fuer Wild.',
             ),
           ],
+        ),
+      ],
+      maneuvers: <ManeuverDef>[
+        ManeuverDef(
+          id: 'man_finte',
+          name: 'Finte',
+          gruppe: 'bewaffnet',
+          typ: 'Angriffsmanöver',
+          erschwernis: 'Attacke +1',
+          erklarung: 'Kurze Finte.',
+          erklarungLang: 'Lange Finte-Erklärung.',
+        ),
+        ManeuverDef(
+          id: 'man_wuchtschlag',
+          name: 'Wuchtschlag',
+          gruppe: 'bewaffnet',
+          typ: 'Angriffsmanöver',
+          erschwernis: 'Attacke +X',
+          erklarung: 'Mehr Schaden.',
+        ),
+        ManeuverDef(
+          id: 'man_sprungtritt',
+          name: 'Sprungtritt',
+          gruppe: 'waffenlos',
+          typ: 'Waffenloses Manöver',
+          erschwernis: 'Attacke +4',
+          erklarung: 'Waffenloser Angriff.',
         ),
       ],
     );
@@ -180,6 +207,10 @@ void main() {
 
   Future<void> openMeleeTab(WidgetTester tester) async {
     await tapTab(tester, 'Kampfwerte');
+  }
+
+  Future<void> openRulesTab(WidgetTester tester) async {
+    await tapTab(tester, 'Kampfregeln');
   }
 
   Future<void> openArmorTab(WidgetTester tester) async {
@@ -1242,7 +1273,12 @@ void main() {
       scrollable: find.byType(Scrollable).last,
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Finte'));
+    final finteCard = find
+        .ancestor(of: find.text('Finte'), matching: find.byType(Card))
+        .first;
+    await tester.tap(
+      find.descendant(of: finteCard, matching: find.byType(Switch)),
+    );
     await tester.pumpAndSettle();
 
     await actions.save();
@@ -1256,7 +1292,10 @@ void main() {
     expect(hero.combatConfig.mainWeapon.wmAt, 2);
     expect(hero.combatConfig.specialRules.kampfreflexe, isTrue);
     expect(hero.combatConfig.specialRules.aufmerksamkeit, isTrue);
-    expect(hero.combatConfig.specialRules.activeManeuvers, contains('Finte'));
+    expect(
+      hero.combatConfig.specialRules.activeManeuvers,
+      contains('man_finte'),
+    );
   });
 
   testWidgets('cancel discards draft across combat subtabs', (tester) async {
@@ -1548,14 +1587,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final finteTile = find.ancestor(
-      of: find.text('Finte'),
-      matching: find.byType(SwitchListTile),
-    );
+    final finteCard = find
+        .ancestor(of: find.text('Finte'), matching: find.byType(Card))
+        .first;
     expect(
       find.descendant(
-        of: finteTile,
-        matching: find.text('Von aktiver Waffe unterstützt'),
+        of: finteCard,
+        matching: find.textContaining('Unterstützt'),
       ),
       findsOneWidget,
     );
@@ -1576,7 +1614,10 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(
-      find.descendant(of: finteTile, matching: find.text('Nicht unterstützt')),
+      find.descendant(
+        of: finteCard,
+        matching: find.textContaining('Nicht unterstützt'),
+      ),
       findsOneWidget,
     );
   });
@@ -2657,5 +2698,116 @@ void main() {
     final tableTopLeft = tester.getTopLeft(armorTable);
     final calculationTopLeft = tester.getTopLeft(armorCalculation);
     expect(calculationTopLeft.dy, greaterThan(tableTopLeft.dy + 40));
+  });
+
+  testWidgets(
+    'combat preview shows current values and possible maneuvers on wide layouts',
+    (tester) async {
+      setTestSurfaceSize(tester, const Size(1280, 900));
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              weapons: <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzschwert',
+                  weaponType: 'Kurzschwert',
+                  talentId: 'tal_nah',
+                  tpDiceCount: 1,
+                  tpDiceSides: 6,
+                  tpFlat: 2,
+                ),
+              ],
+              selectedWeaponIndex: 0,
+            ),
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo);
+      await openMeleeTab(tester);
+
+      expect(find.text('Aktuelle Kampfwerte'), findsOneWidget);
+      expect(find.text('Mögliche Manöver'), findsOneWidget);
+      expect(find.text('Finte'), findsOneWidget);
+      expect(find.textContaining('Typ: Angriffsmanöver'), findsOneWidget);
+    },
+  );
+
+  testWidgets('combat rules groups maneuvers and opens details dialog', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                weaponType: 'Kurzschwert',
+                talentId: 'tal_nah',
+                tpDiceCount: 1,
+                tpDiceSides: 6,
+                tpFlat: 2,
+              ),
+            ],
+            selectedWeaponIndex: 0,
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openRulesTab(tester);
+
+    await tester.scrollUntilVisible(
+      find.text('Finte'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Sprungtritt'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Finte'), findsOneWidget);
+    expect(find.text('Sprungtritt'), findsOneWidget);
+
+    final finteCard = find
+        .ancestor(of: find.text('Finte'), matching: find.byType(Card))
+        .first;
+    final detailButton = find.descendant(
+      of: finteCard,
+      matching: find.byIcon(Icons.info_outline),
+    );
+    await tester.ensureVisible(detailButton);
+    await tester.pumpAndSettle();
+    await tester.tap(detailButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lange Erklärung'), findsOneWidget);
+    expect(find.text('Lange Finte-Erklärung.'), findsOneWidget);
   });
 }

@@ -69,4 +69,29 @@ void main() {
     expect(roundtrip.spells.first.source, 'Liber Cantiones S. 12');
     expect(roundtrip.spells.first.variants, ['Selbst', 'Fremdheilung']);
   });
+
+  test('maneuver fields typ and erklarung_lang roundtrip correctly', () {
+    const raw = '''
+{
+  "id": "man_finte",
+  "name": "Finte",
+  "gruppe": "bewaffnet",
+  "typ": "Angriffsmanöver",
+  "erschwernis": "Attacke +1",
+  "seite": "62",
+  "erklarung": "Erschwert die gegnerische Parade.",
+  "erklarung_lang": "Lange Regelerklärung."
+}
+''';
+
+    final map = jsonDecode(raw) as Map<String, dynamic>;
+    final maneuver = ManeuverDef.fromJson(map);
+
+    expect(maneuver.typ, 'Angriffsmanöver');
+    expect(maneuver.erklarungLang, 'Lange Regelerklärung.');
+
+    final roundtrip = ManeuverDef.fromJson(maneuver.toJson());
+    expect(roundtrip.typ, 'Angriffsmanöver');
+    expect(roundtrip.erklarungLang, 'Lange Regelerklärung.');
+  });
 }
