@@ -87,7 +87,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 13
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 15
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
@@ -97,7 +97,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 13) | Format-Version für Migrationskompatibilität |
+| `schemaVersion` | `int` (= 15) | Format-Version für Migrationskompatibilität |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
@@ -106,6 +106,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `persistentMods` | `StatModifiers` | Dauerhafte Modifikatoren (aus Vor-/Nachteilen) |
 | `bought` | `BoughtStats` | Gekaufte Ressourcenerhöhungen |
 | `combatConfig` | `CombatConfig` | Gesamte Kampfkonfiguration |
+| `combatMasteries` | `List<CombatMastery>` | Frei definierte Kampfmeisterschaften mit Zielbereich, Anforderungen und Effekten |
 | `talents` | `Map<String, HeroTalentEntry>` | Alle Talente (Schlüssel: Talent-ID) |
 | `metaTalents` | `List<HeroMetaTalent>` | Heldenspezifische Meta-Talente mit Komponenten, Eigenschaften und BE-Regel |
 | `hiddenTalentIds` | `List<String>` | IDs ausgeblendeter Talente |
@@ -149,6 +150,7 @@ HeroSheet
   │     │     └── List<ArmorPiece> pieces
   │     ├── CombatSpecialRules specialRules
   │     └── CombatManualMods manualMods
+  ├── List<CombatMastery> combatMasteries
   ├── Map<String, HeroTalentEntry> talents
   ├── List<HeroMetaTalent> metaTalents
   ├── List<HeroInventoryEntry> inventoryEntries
@@ -382,6 +384,9 @@ Aktivierungsstatus von Kampf-Sonderfertigkeiten (alle `bool`):
 | `aufmerksamkeit` | Aufmerksamkeit |
 | `activeManeuvers` | `List<String>` — Aktive Manöver-IDs |
 
+Kampfmeisterschaften sind bewusst **nicht** Teil von `CombatSpecialRules`,
+sondern liegen als eigene strukturierte Liste in `HeroSheet.combatMasteries`.
+
 #### `CombatManualMods`
 
 **Datei:** `lib/domain/combat_config/combat_manual_mods.dart`
@@ -395,6 +400,33 @@ Manuell eingetragene Kampfmodifikatoren (situativ):
 | `atMod` | Angriff-Modifikator |
 | `paMod` | Parade-Modifikator |
 | `iniWurf` | Gewürfeltes Ini-Ergebnis (1W6 oder 2W6) |
+
+---
+
+### 2.5a `CombatMastery`
+
+**Datei:** `lib/domain/combat_mastery.dart`
+
+Eine `CombatMastery` beschreibt eine freie Kampfmeisterschaft wie
+Waffenmeister, Schildmeister oder spaetere Parierwaffen-Meisterschaften. Die
+Eintraege werden direkt im Held gespeichert und nicht aus dem Katalog geladen.
+
+| Feld | Typ | Bedeutung |
+|---|---|---|
+| `id` | `String` | Stabile ID innerhalb des Helden |
+| `name` | `String` | Anzeigename der Meisterschaft |
+| `targetScope` | `CombatMasteryTargetScope` | Zieltyp wie `singleWeapon`, `weaponSet`, `shield`, `parryWeapon`, `customGroup` |
+| `targetRefs` | `List<String>` | Konkrete Waffen-, Talent- oder Gruppenschluessel fuer die Zielaufloesung |
+| `effects` | `List<CombatMasteryEffect>` | Strukturierte Effekte mit Typ, Wert und optionalen Manoever-Referenzen |
+| `requirements` | `CombatMasteryRequirements` | Formale Voraussetzungen wie Talentwert, Spezialisierung oder Attribute |
+| `apCost` | `int` | Dokumentierter AP-Wert; wird in V1 validiert, aber nicht hart erzwungen |
+| `buildPoints` | `int` | Punktbudget fuer den Baukasten |
+| `notes` | `String` | Freitext fuer Sonderfaelle oder nicht automatisierte Wirkung |
+
+Die Effekt-Taxonomie trennt automatische Boni (`attackModifier`,
+`parryModifier`, `initiativeBonus`, `shieldParryModifier`, `tpkkShift`,
+`reloadModifier`, `rangedRangePercent`) von strukturierten, aber nicht voll
+automatisierten Eintraegen (`specialRuleNote`, `conditionalToggle`).
 
 ---
 
@@ -745,10 +777,13 @@ zusaetzlich um weitere `+2`.
 | Kampf-SF | aktiviert temporaer `Schnellziehen`, `Schnellladen (Bogen)` und `Schnellladen (Armbrust)` |
 | Anzeige | `Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2` |
 
-### 4.6 Waffe, Fernkampf-AT & Schaden
+### 4.6 Waffe, Fernkampf-AT, Schaden und Kampfmeisterschaften
 
 **Dateien:** `lib/rules/derived/combat_rules.dart`,
-`lib/rules/derived/fernkampf_rules.dart`
+`lib/rules/derived/fernkampf_rules.dart`,
+`lib/rules/derived/fernkampf_ladezeit_rules.dart`,
+`lib/rules/derived/combat_mastery_rules.dart`,
+`lib/rules/derived/maneuver_rules.dart`
 
 ```
 tpKk = truncate((KK − kkBase) / kkThreshold)   # Kraftbonus auf TP
@@ -782,6 +817,12 @@ Dabei gilt:
 - `Schnellladen (Armbrust)` reduziert die Ladezeit um `3/4` der Basis-
   Ladezeit, echt gerundet; bei bereits besessener SF reduziert Axxeleratus
   anschliessend um einen weiteren Punkt.
+- `maneuver_rules.dart` normalisiert Manoever-Namen und UI-Texte auf stabile
+  IDs, damit Kampfmeisterschaften dieselben Referenzen wie Katalog und UI
+  nutzen koennen.
+- `combat_mastery_rules.dart` bewertet Punktbudget und Voraussetzungen,
+  prueft die Anwendbarkeit fuer Hauptwaffe, Schild oder Parierwaffe und leitet
+  automatisch wirksame Modifikatoren fuer die Kampfvorschau ab.
 
 **Spezialisierungs-Boni:**
 
@@ -803,7 +844,9 @@ Dabei gilt:
 `CombatPreviewStats` liefert für Nahkampf weiterhin `AT`/`PA`; bei
 Fernkampfwaffen enthält derselbe Snapshot einen gemeinsamen `AT`, die aktive
 Distanzbezeichnung, Ladezeit sowie den selektierten Geschossnamen,
-Geschossbestand und dessen Beschreibung.
+Geschossbestand und dessen Beschreibung. Zusaetzlich enthaelt der Snapshot
+die automatisch eingerechneten Kampfmeisterschafts-Modifikatoren, anwendbare
+Meisterschaften und strukturierte Manoever-Erleichterungen fuer die UI.
 
 ### 4.7 Modifier-Parser
 
@@ -1025,7 +1068,7 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 | `hero_workspace_screen.dart` | `HeroWorkspaceScreen` | Dynamischer Workspace-Host fuer einen Helden |
 | `hero_overview_tab.dart` | `HeroOverviewTab` | Uebersicht-Tab fuer Eigenschaften, AP, Ressourcen, Biografie |
 | `hero_talents_tab.dart` | `HeroTalentsTab` | Talente + Sonderfertigkeiten-Sub-Tab |
-| `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Kampf (Nah- oder Fernkampf), SF, Manöver |
+| `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Kampf (Nah- oder Fernkampf), SF, Manöver und Kampfmeisterschaften |
 | `hero_magic_tab.dart` | `HeroMagicTab` | Zauber, Ritualkategorien/Rituale sowie Repräsentationen und magische SF |
 | `hero_inventory_tab.dart` | `HeroInventoryTab` | 12-spaltige editierbare Inventartabelle |
 | `hero_notes_tab.dart` | `HeroNotesTab` | Untertabs für freie Notizen und Verbindungen |
@@ -1083,7 +1126,7 @@ flutter drive --profile \
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` für `HeroSheet` ist **13**.
+- Die aktuelle `schemaVersion` für `HeroSheet` ist **15**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 1 wird **strikt** validiert.
 

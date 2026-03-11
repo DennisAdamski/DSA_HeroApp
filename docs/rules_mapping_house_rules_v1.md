@@ -46,7 +46,7 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - **HeroSpellEntry**: Speichert ZfW (spellValue), Modifikator, Hauszauber-Flag, Begabungs-Flag, die konkret gelernte Zauber-Repräsentation (`learnedRepresentation`) samt Herkunftstradition (`learnedTradition`) sowie optionale heldenspezifische Text-Overrides pro aktiviertem Zauber; das Listenfeld `specializations` bleibt nur noch als Legacy-Kompatibilitaet bestehen.
 - **HeroSpellTextOverrides**: Optionales Override-Objekt fuer importierte Zauberdetails (`aspCost`, `targetObject`, `range`, `duration`, `castingTime`, `wirkung`, `modifications`, `variants`) pro aktiviertem Zauber.
 - **MagicSpecialAbility**: Name + optionale Notiz fuer magische Sonderfertigkeiten.
-- **HeroSheet** (schemaVersion 14): Enthaelt `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities` und `metaTalents`; Zauber-Eintraege koennen zusaetzlich `gifted`, `learnedRepresentation`, `learnedTradition` und `textOverrides` speichern.
+- **HeroSheet** (schemaVersion 15): Enthaelt `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities`, `metaTalents` und `combatMasteries`; Zauber-Eintraege koennen zusaetzlich `gifted`, `learnedRepresentation`, `learnedTradition` und `textOverrides` speichern.
 
 ### Regelfunktionen (`magic_rules.dart`, `learning_rules.dart`)
 

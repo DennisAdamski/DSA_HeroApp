@@ -13,6 +13,12 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
         // Obere Sektion: Sonderfertigkeiten
         _buildSpecialRulesSection(hero, heroState),
         const Divider(height: 32),
+        _buildCombatMasteriesSection(
+          hero: hero,
+          heroState: heroState,
+          catalog: catalog,
+        ),
+        const Divider(height: 32),
         // Untere Sektion: Manoever
         _buildManeuversSection(catalog),
       ],
