@@ -48,6 +48,7 @@ void main() {
           'waffentalente': 'waffentalente.json',
           'waffen': 'waffen.json',
           'magie': 'magie.json',
+          'manoever': 'manoever.json',
         },
       }),
       '$basePath/talente.json': jsonEncode([
@@ -94,6 +95,18 @@ void main() {
           'active': true,
         },
       ]),
+      '$basePath/manoever.json': jsonEncode([
+        {
+          'id': 'man_finte',
+          'name': 'Finte',
+          'gruppe': 'bewaffnet',
+          'typ': 'Angriffsmanöver',
+          'erschwernis': 'Attacke +1',
+          'seite': '62',
+          'erklarung': 'Kurze Erklärung',
+          'erklarung_lang': 'Lange Erklärung',
+        },
+      ]),
     };
   }
 
@@ -114,6 +127,9 @@ void main() {
     expect(catalog.spells.first.wirkung, 'Heilt LeP.');
     expect(catalog.spells.first.variants, ['Selbst']);
     expect(catalog.weapons.map((e) => e.id).toList(), ['wpn_dolch']);
+    expect(catalog.maneuvers.map((e) => e.id).toList(), ['man_finte']);
+    expect(catalog.maneuvers.first.typ, 'Angriffsmanöver');
+    expect(catalog.maneuvers.first.erklarungLang, 'Lange Erklärung');
   });
 
   test('throws when section JSON top-level is not a list', () async {

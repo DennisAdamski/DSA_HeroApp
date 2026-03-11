@@ -80,26 +80,33 @@ class ManeuverDef {
     required this.id,
     required this.name,
     this.gruppe = '',
+    this.typ = '',
     this.erschwernis = '',
     this.seite = '',
     this.erklarung = '',
+    this.erklarungLang = '',
   });
 
   final String id; // Eindeutige ID (z. B. 'man_hammerschlag')
   final String name; // Anzeigename
   final String gruppe; // Kategorie (z. B. 'Angriff', 'Abwehr')
+  final String
+  typ; // Feinere Typisierung fuer die UI (z. B. 'Angriffsmanoever')
   final String erschwernis; // Erschwernis-Modifikator als Freitext
   final String seite; // Seitenreferenz im Regelwerk
   final String erklarung; // Regeltext / Beschreibung
+  final String erklarungLang; // Ausfuehrliche Regelbeschreibung
 
   factory ManeuverDef.fromJson(Map<String, dynamic> json) {
     return ManeuverDef(
       id: _readString(json, 'id', fallback: ''),
       name: _readString(json, 'name', fallback: ''),
       gruppe: _readString(json, 'gruppe', fallback: ''),
+      typ: _readString(json, 'typ', fallback: ''),
       erschwernis: _readString(json, 'erschwernis', fallback: ''),
       seite: _readString(json, 'seite', fallback: ''),
       erklarung: _readString(json, 'erklarung', fallback: ''),
+      erklarungLang: _readString(json, 'erklarung_lang', fallback: ''),
     );
   }
 
@@ -108,9 +115,11 @@ class ManeuverDef {
       'id': id,
       'name': name,
       'gruppe': gruppe,
+      'typ': typ,
       'erschwernis': erschwernis,
       'seite': seite,
       'erklarung': erklarung,
+      'erklarung_lang': erklarungLang,
     };
   }
 }
