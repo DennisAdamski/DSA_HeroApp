@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_weapons_overview_table.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_catalog_table.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor/helpers_catalog_slot.dart';
@@ -229,6 +230,7 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
 
   @override
   Widget build(BuildContext context) {
+    UiRebuildObserver.bump('combat_weapons_section');
     final table = CombatWeaponsOverviewTable(
       weapons: widget.weapons,
       selectedWeaponIndex: widget.selectedWeaponIndex,

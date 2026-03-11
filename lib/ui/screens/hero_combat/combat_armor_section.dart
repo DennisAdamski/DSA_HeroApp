@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 
@@ -41,6 +42,7 @@ class CombatArmorSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    UiRebuildObserver.bump('combat_armor_section');
     const armorDetailsBreakpoint = 760.0;
     final showPieceRg1 = armor.globalArmorTrainingLevel == 1;
     final armorRows = <FlexibleTableRow>[

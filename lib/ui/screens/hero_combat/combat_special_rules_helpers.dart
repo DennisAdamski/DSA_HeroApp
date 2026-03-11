@@ -1,6 +1,7 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 
-extension _HeroCombatSpecialRulesSubtab on _HeroCombatTabState {
+/// Gemeinsame UI-Helfer fuer die Sonderfertigkeiten im Kampfregeln-Tab.
+extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
   Widget _ruleToggle({
     required String label,
     required bool value,
