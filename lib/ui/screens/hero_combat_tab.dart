@@ -25,6 +25,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart'
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_offhand_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_weapons_section.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/waffenmeister_editor_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/combat_quick_stats.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
