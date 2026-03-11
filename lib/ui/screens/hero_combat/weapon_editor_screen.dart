@@ -75,48 +75,51 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
   @override
   void initState() {
     super.initState();
-    _draftWeapon = normalizeWeaponEditorSlot(
-      widget.initialWeapon ?? const MainWeaponSlot(),
+    _draftWeapon = _normalizedInitialWeapon();
+    _nameController = TextEditingController();
+    _distanceClassController = TextEditingController();
+    _breakFactorController = TextEditingController();
+    _kkBaseController = TextEditingController();
+    _kkThresholdController = TextEditingController();
+    _iniModController = TextEditingController();
+    _wmAtController = TextEditingController();
+    _wmPaController = TextEditingController();
+    _beTalentModController = TextEditingController();
+    _tpDiceCountController = TextEditingController();
+    _tpFlatController = TextEditingController();
+    _artifactDescriptionController = TextEditingController();
+    _reloadTimeController = TextEditingController();
+    _distanceLabelControllers = List<TextEditingController>.generate(
+      5,
+      (_) => TextEditingController(),
+      growable: false,
     );
-    _nameController = TextEditingController(text: _draftWeapon.name);
-    _distanceClassController = TextEditingController(
-      text: _draftWeapon.distanceClass,
+    _distanceTpModControllers = List<TextEditingController>.generate(
+      5,
+      (_) => TextEditingController(),
+      growable: false,
     );
-    _breakFactorController = TextEditingController(
-      text: _draftWeapon.breakFactor.toString(),
+    _syncControllersFromDraft();
+  }
+
+  @override
+  void didUpdateWidget(covariant WeaponEditorScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final nextInitialWeapon = _normalizedInitialWeapon();
+    final oldInitialWeapon = normalizeWeaponEditorSlot(
+      oldWidget.initialWeapon ?? const MainWeaponSlot(),
     );
-    _kkBaseController = TextEditingController(
-      text: _draftWeapon.kkBase.toString(),
-    );
-    _kkThresholdController = TextEditingController(
-      text: _draftWeapon.kkThreshold.toString(),
-    );
-    _iniModController = TextEditingController(
-      text: _draftWeapon.iniMod.toString(),
-    );
-    _wmAtController = TextEditingController(text: _draftWeapon.wmAt.toString());
-    _wmPaController = TextEditingController(text: _draftWeapon.wmPa.toString());
-    _beTalentModController = TextEditingController(
-      text: _draftWeapon.beTalentMod.toString(),
-    );
-    _tpDiceCountController = TextEditingController(
-      text: _draftWeapon.tpDiceCount.toString(),
-    );
-    _tpFlatController = TextEditingController(
-      text: _draftWeapon.tpFlat.toString(),
-    );
-    _artifactDescriptionController = TextEditingController(
-      text: _draftWeapon.artifactDescription,
-    );
-    _reloadTimeController = TextEditingController(
-      text: _draftWeapon.rangedProfile.reloadTime.toString(),
-    );
-    _distanceLabelControllers = _draftWeapon.rangedProfile.distanceBands
-        .map((entry) => TextEditingController(text: entry.label))
-        .toList(growable: false);
-    _distanceTpModControllers = _draftWeapon.rangedProfile.distanceBands
-        .map((entry) => TextEditingController(text: entry.tpMod.toString()))
-        .toList(growable: false);
+    final sourceChanged =
+        widget.isNew != oldWidget.isNew ||
+        widget.catalogWeaponName != oldWidget.catalogWeaponName ||
+        nextInitialWeapon != oldInitialWeapon;
+    if (!sourceChanged) {
+      return;
+    }
+    _draftWeapon = nextInitialWeapon;
+    _validationErrors = const <String>[];
+    _hasUnsavedChanges = false;
+    _syncControllersFromDraft();
   }
 
   @override
@@ -158,6 +161,34 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
   }
 
   Future<bool> requestClose() => _requestClose();
+
+  MainWeaponSlot _normalizedInitialWeapon() {
+    return normalizeWeaponEditorSlot(
+      widget.initialWeapon ?? const MainWeaponSlot(),
+    );
+  }
+
+  void _syncControllersFromDraft() {
+    _nameController.text = _draftWeapon.name;
+    _distanceClassController.text = _draftWeapon.distanceClass;
+    _breakFactorController.text = _draftWeapon.breakFactor.toString();
+    _kkBaseController.text = _draftWeapon.kkBase.toString();
+    _kkThresholdController.text = _draftWeapon.kkThreshold.toString();
+    _iniModController.text = _draftWeapon.iniMod.toString();
+    _wmAtController.text = _draftWeapon.wmAt.toString();
+    _wmPaController.text = _draftWeapon.wmPa.toString();
+    _beTalentModController.text = _draftWeapon.beTalentMod.toString();
+    _tpDiceCountController.text = _draftWeapon.tpDiceCount.toString();
+    _tpFlatController.text = _draftWeapon.tpFlat.toString();
+    _artifactDescriptionController.text = _draftWeapon.artifactDescription;
+    _reloadTimeController.text = _draftWeapon.rangedProfile.reloadTime
+        .toString();
+    final distanceBands = _draftWeapon.rangedProfile.distanceBands;
+    for (var i = 0; i < _distanceLabelControllers.length; i++) {
+      _distanceLabelControllers[i].text = distanceBands[i].label;
+      _distanceTpModControllers[i].text = distanceBands[i].tpMod.toString();
+    }
+  }
 
   @override
   Widget build(BuildContext context) => _buildScreen(context);

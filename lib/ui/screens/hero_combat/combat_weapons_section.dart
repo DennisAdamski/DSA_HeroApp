@@ -254,6 +254,9 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
     if (!_isWideLayout) {
       return table;
     }
+    if (_editorSeedWeapon == null) {
+      return table;
+    }
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,30 +265,26 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
         const SizedBox(width: 12),
         SizedBox(
           width: 420,
-          child: _editorSeedWeapon == null
-              ? const SizedBox.shrink()
-              : Card(
-                  child: WeaponEditorScreen(
-                    key: _editorKey,
-                    isNew: _editingSlotIndex == null,
-                    initialWeapon: _editingSlotIndex == null
-                        ? _editorSeedWeapon
-                        : _sourceSlotFor(_editingSlotIndex, null),
-                    combatTalents: widget.combatTalents,
-                    effectiveAttributes: widget.effectiveAttributes,
-                    catalogWeapons: widget.catalogWeapons,
-                    previewBuilder: (slot) => _previewForWeaponSlot(
-                      slot,
-                      slotIndex: _editingSlotIndex,
-                    ),
-                    catalogWeaponName: _catalogWeaponName,
-                    showAppBar: false,
-                    onSaved: (slot) {
-                      _saveWideEditor(slot);
-                    },
-                    onCancel: _closeWideEditor,
-                  ),
-                ),
+          child: Card(
+            child: WeaponEditorScreen(
+              key: _editorKey,
+              isNew: _editingSlotIndex == null,
+              initialWeapon: _editingSlotIndex == null
+                  ? _editorSeedWeapon
+                  : _sourceSlotFor(_editingSlotIndex, null),
+              combatTalents: widget.combatTalents,
+              effectiveAttributes: widget.effectiveAttributes,
+              catalogWeapons: widget.catalogWeapons,
+              previewBuilder: (slot) =>
+                  _previewForWeaponSlot(slot, slotIndex: _editingSlotIndex),
+              catalogWeaponName: _catalogWeaponName,
+              showAppBar: false,
+              onSaved: (slot) {
+                _saveWideEditor(slot);
+              },
+              onCancel: _closeWideEditor,
+            ),
+          ),
         ),
       ],
     );
