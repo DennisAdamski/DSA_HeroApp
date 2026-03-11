@@ -934,8 +934,13 @@ void main() {
       final actions = appBar.actions ?? const <Widget>[];
       expect(actions.first, isA<SizedBox>());
       expect((actions.first as SizedBox).width, 8);
-      expect(actions.last, isA<SizedBox>());
-      expect((actions.last as SizedBox).width, 12);
+      // Letztes Element ist jetzt das Settings-Icon; der rechte Spacer
+      // liegt direkt davor.
+      expect(actions.last, isA<IconButton>());
+      expect(
+        (actions.last as IconButton).tooltip,
+        'Einstellungen',
+      );
       expect(find.text('Bearbeiten'), findsOneWidget);
     },
   );
