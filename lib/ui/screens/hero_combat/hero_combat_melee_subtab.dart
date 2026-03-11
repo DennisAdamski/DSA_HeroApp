@@ -1005,7 +1005,6 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
     HeroState heroState,
     CombatPreviewStats preview,
   ) {
-    final isEditing = _editController.isEditing;
     final weaponSlots = _draftCombatConfig.weaponSlots;
     final selectedWeaponIndex = _selectedWeaponIndex();
     final armor = _draftCombatConfig.armor;
@@ -1090,120 +1089,6 @@ extension _HeroCombatMeleeSubtab on _HeroCombatTabState {
               ],
             );
           },
-        ),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Manuelle Modifikatoren',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _numberInput(
-                      label: 'INI Mod',
-                      keyName: 'combat-manual-ini-mod',
-                      isEditing: isEditing,
-                      onChanged: (parsed) {
-                        _draftCombatConfig = _draftCombatConfig.copyWith(
-                          manualMods: manual.copyWith(iniMod: parsed),
-                        );
-                        _markFieldChanged();
-                      },
-                    ),
-                    _numberInput(
-                      label: 'Ausweichen Mod',
-                      keyName: 'combat-manual-ausw-mod',
-                      isEditing: isEditing,
-                      onChanged: (parsed) {
-                        _draftCombatConfig = _draftCombatConfig.copyWith(
-                          manualMods: manual.copyWith(ausweichenMod: parsed),
-                        );
-                        _markFieldChanged();
-                      },
-                    ),
-                    _numberInput(
-                      label: 'AT Mod',
-                      keyName: 'combat-manual-at-mod',
-                      isEditing: isEditing,
-                      onChanged: (parsed) {
-                        _draftCombatConfig = _draftCombatConfig.copyWith(
-                          manualMods: manual.copyWith(atMod: parsed),
-                        );
-                        _markFieldChanged();
-                      },
-                    ),
-                    _numberInput(
-                      label: 'PA Mod',
-                      keyName: 'combat-manual-pa-mod',
-                      isEditing: isEditing,
-                      onChanged: (parsed) {
-                        _draftCombatConfig = _draftCombatConfig.copyWith(
-                          manualMods: manual.copyWith(paMod: parsed),
-                        );
-                        _markFieldChanged();
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Ergebnis',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    if (preview.isRangedWeapon)
-                      _resultChip('AT-Basis (Fernkampf)', preview.rangedAtBase),
-                    _resultChip('RS', preview.rsTotal),
-                    _resultChip('BE Roh', preview.beTotalRaw),
-                    _resultChip('RG Reduktion', preview.rgReduction),
-                    _resultChip('BE (Kampf)', preview.beKampf),
-                    _resultChip('BE Mod', preview.beMod),
-                    _resultChip('TP/KK', preview.tpKk),
-                    _resultChip('GE-Basis', preview.geBase),
-                    _resultChip('GE-Schwelle', preview.geThreshold),
-                    _resultChip('INI/GE', preview.iniGe),
-                    _resultChip(
-                      'Helden+Waffen INI',
-                      preview.kombinierteHeldenWaffenIni,
-                    ),
-                    _resultChip('TK-Kalk', preview.tpCalc),
-                    Chip(
-                      label: Text(
-                        'Spezialisierung: ${preview.specApplies ? 'Ja' : 'Nein'}',
-                      ),
-                    ),
-                    Chip(label: Text('Kampf INI: ${preview.kampfInitiative}')),
-                    _resultChip('Ausweichen', preview.ausweichen),
-                    _resultChip('AT', preview.at),
-                    if (!preview.isRangedWeapon)
-                      _resultChip('PA', preview.paMitIniParadeMod),
-                    _resultChip('eBE', preview.ebe),
-                    Chip(label: Text('TP: ${preview.tpExpression}')),
-                  ],
-                ),
-              ],
-            ),
-          ),
         ),
       ],
     );
