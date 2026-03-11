@@ -50,3 +50,4 @@ app.*.map.json
 ~$ListeWaffenUndTalente.xlsx
 assets/heroes/Gerajin Sirella von Tuzak.dsa-hero.json
 todo.tasks
+.claude/settings.local.json
