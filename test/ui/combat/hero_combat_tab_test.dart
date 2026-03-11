@@ -2396,6 +2396,86 @@ void main() {
     );
   });
 
+  testWidgets(
+    'wide weapons layout switches inline editor selection and restores table width',
+    (tester) async {
+      setTestSurfaceSize(tester, const Size(1400, 900));
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              weapons: <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzschwert',
+                  talentId: 'tal_nah',
+                  weaponType: 'Kurzschwert',
+                  tpFlat: 2,
+                ),
+                MainWeaponSlot(
+                  name: 'Bidenhaender',
+                  talentId: 'tal_nah',
+                  weaponType: 'Bidenhaender',
+                  tpFlat: 3,
+                ),
+              ],
+              selectedWeaponIndex: 0,
+            ),
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo);
+      await openWeaponsTab(tester);
+
+      final table = find.byKey(
+        const ValueKey<String>('combat-weapons-overview-table'),
+      );
+      expect(table, findsOneWidget);
+      final initialTableWidth = tester.getSize(table).width;
+
+      await tester.tap(find.text('Kurzschwert').first, warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      final nameField = find.byKey(
+        const ValueKey<String>('combat-weapon-form-name'),
+      );
+      expect(nameField, findsOneWidget);
+      expect(find.text('Waffe bearbeiten'), findsOneWidget);
+
+      final reducedTableWidth = tester.getSize(table).width;
+      expect(reducedTableWidth, lessThan(initialTableWidth));
+
+      final firstNameField = tester.widget<TextField>(nameField);
+      expect(firstNameField.controller?.text, 'Kurzschwert');
+
+      await tester.tap(find.text('Bidenhaender').first, warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      final secondNameField = tester.widget<TextField>(nameField);
+      expect(secondNameField.controller?.text, 'Bidenhaender');
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('combat-weapon-panel-close')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(nameField, findsNothing);
+      final restoredTableWidth = tester.getSize(table).width;
+      expect(restoredTableWidth, greaterThan(reducedTableWidth));
+    },
+  );
+
   testWidgets('weapon overview exposes INI fields in read mode', (
     tester,
   ) async {
