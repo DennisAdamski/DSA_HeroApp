@@ -20,7 +20,11 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                child: _buildSpecialRulesSection(hero, heroState),
+                child: _buildSpecialRulesSection(
+                  hero,
+                  heroState,
+                  catalog: catalog,
+                ),
               ),
             ],
           ),
@@ -55,7 +59,11 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
   // Sonderfertigkeiten
   // ---------------------------------------------------------------------------
 
-  Widget _buildSpecialRulesSection(HeroSheet hero, HeroState state) {
+  Widget _buildSpecialRulesSection(
+    HeroSheet hero,
+    HeroState state, {
+    required RulesCatalog catalog,
+  }) {
     final rules = _draftCombatConfig.specialRules;
     final armor = _draftCombatConfig.armor;
     final parsed = parseModifierTextsForHero(hero);
@@ -297,6 +305,11 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
             _markFieldChanged();
           },
         ),
+        ..._buildCatalogCombatSpecialAbilityCards(
+          catalog: catalog,
+          rules: rules,
+          isEditing: isEditing,
+        ),
       ],
     );
   }
@@ -313,6 +326,7 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
         .map((maneuver) => maneuver.id)
         .toList(growable: false);
     final supportByManeuver = _buildManeuverSupportMap(catalog, allManeuverIds);
+    final activeManeuverIds = _effectiveActiveManeuverIds(catalog);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,6 +339,7 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
           title: 'Bewaffnete Manöver',
           maneuvers: groupedManeuvers['bewaffnet'] ?? const <ManeuverDef>[],
           rules: rules,
+          activeManeuverIds: activeManeuverIds,
           isEditing: isEditing,
           supportByManeuver: supportByManeuver,
         ),
@@ -332,6 +347,7 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
           title: 'Waffenlose Manöver',
           maneuvers: groupedManeuvers['waffenlos'] ?? const <ManeuverDef>[],
           rules: rules,
+          activeManeuverIds: activeManeuverIds,
           isEditing: isEditing,
           supportByManeuver: supportByManeuver,
         ),
@@ -344,6 +360,7 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     required String title,
     required List<ManeuverDef> maneuvers,
     required CombatSpecialRules rules,
+    required Set<String> activeManeuverIds,
     required bool isEditing,
     required Map<String, _ManeuverSupportStatus> supportByManeuver,
   }) {
@@ -355,7 +372,7 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
           child: ListTile(title: Text('Keine Einträge in „$title“ gefunden.')),
         ),
       ...maneuvers.map((maneuver) {
-        final isActive = rules.activeManeuvers.contains(maneuver.id);
+        final isActive = activeManeuverIds.contains(maneuver.id);
         final support =
             supportByManeuver[maneuver.id] ??
             _ManeuverSupportStatus.unverifiable;

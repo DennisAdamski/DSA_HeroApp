@@ -181,6 +181,8 @@ void main() {
           kampfreflexe: true,
           ausweichenI: true,
           schildkampfI: true,
+          activeCombatSpecialAbilityIds: ['ksf_hammerfaust'],
+          gladiatorStyleTalent: 'raufen',
           activeManeuvers: ['Finte', 'Wuchtschlag'],
         ),
         manualMods: CombatManualMods(iniMod: 1, ausweichenMod: 2),
@@ -343,6 +345,10 @@ void main() {
     );
     expect(reloaded.combatConfig.armor.globalArmorTrainingLevel, 2);
     expect(reloaded.combatConfig.specialRules.kampfreflexe, isTrue);
+    expect(reloaded.combatConfig.specialRules.activeCombatSpecialAbilityIds, [
+      'ksf_hammerfaust',
+    ]);
+    expect(reloaded.combatConfig.specialRules.gladiatorStyleTalent, 'raufen');
     expect(reloaded.combatConfig.specialRules.activeManeuvers, [
       'Finte',
       'Wuchtschlag',

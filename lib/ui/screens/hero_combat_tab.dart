@@ -16,6 +16,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/maneuver_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/unarmed_style_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -268,6 +269,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                 overrideTalents: _draftTalents,
                 catalogTalents: catalog.talents,
                 catalogManeuvers: catalog.maneuvers,
+                catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
                 overrideCombatMasteries: _draftCombatMasteries,
               );
               final effectiveAttributes = computeEffectiveAttributes(

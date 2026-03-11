@@ -125,6 +125,8 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
       overrideConfig: previewConfig,
       overrideTalents: widget.draftTalents,
       catalogTalents: widget.catalog.talents,
+      catalogManeuvers: widget.catalog.maneuvers,
+      catalogCombatSpecialAbilities: widget.catalog.combatSpecialAbilities,
     );
   }
 

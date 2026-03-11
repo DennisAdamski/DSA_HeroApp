@@ -25,7 +25,35 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
     final seen = <String>{};
     final ids = <String>[];
     final weapon = _findMatchedCatalogWeapon(catalog);
+    final selectedTalent = _selectedCombatTalentDef(catalog);
+    final selectedTalentName = selectedTalent?.name ?? '';
+    final isUnarmedContext =
+        weapon == null || _isUnarmedTalentName(selectedTalentName);
+    final styleEffects = computeActiveUnarmedStyleEffects(
+      specialRules: _draftCombatConfig.specialRules,
+      catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
+      catalogManeuvers: catalog.maneuvers,
+      activeTalentName: selectedTalentName,
+    );
+    if (isUnarmedContext) {
+      for (final maneuverId in styleEffects.activatedManeuverIds) {
+        if (seen.add(maneuverId)) {
+          ids.add(maneuverId);
+        }
+      }
+    }
     if (weapon == null) {
+      ids.sort((a, b) {
+        final left = displayNameForManeuverId(
+          a,
+          catalogManeuvers: catalog.maneuvers,
+        );
+        final right = displayNameForManeuverId(
+          b,
+          catalogManeuvers: catalog.maneuvers,
+        );
+        return left.toLowerCase().compareTo(right.toLowerCase());
+      });
       return ids;
     }
 
@@ -80,6 +108,25 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
       );
       return left.toLowerCase().compareTo(right.toLowerCase());
     });
+    return ids;
+  }
+
+  /// Liefert alle effektiv aktiven Manöver aus manueller Auswahl und Stil-SF.
+  Set<String> _effectiveActiveManeuverIds(RulesCatalog catalog) {
+    final ids = <String>{
+      ...normalizeManeuverIds(
+        _draftCombatConfig.specialRules.activeManeuvers,
+        catalogManeuvers: catalog.maneuvers,
+      ),
+    };
+    final selectedTalentName = _selectedCombatTalentDef(catalog)?.name ?? '';
+    final styleEffects = computeActiveUnarmedStyleEffects(
+      specialRules: _draftCombatConfig.specialRules,
+      catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
+      catalogManeuvers: catalog.maneuvers,
+      activeTalentName: selectedTalentName,
+    );
+    ids.addAll(styleEffects.activatedManeuverIds);
     return ids;
   }
 
@@ -140,6 +187,20 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
     return candidates.first;
   }
 
+  /// Liefert das aktuell ausgewaehlte Kampftalent aus dem Katalog.
+  TalentDef? _selectedCombatTalentDef(RulesCatalog catalog) {
+    final talentId = _draftCombatConfig.selectedWeapon.talentId.trim();
+    if (talentId.isEmpty) {
+      return null;
+    }
+    for (final entry in catalog.talents) {
+      if (entry.id == talentId) {
+        return entry;
+      }
+    }
+    return null;
+  }
+
   /// Baut die Unterstuetzungszuordnung fuer eine Menge von Manöver-IDs.
   Map<String, _ManeuverSupportStatus> _buildManeuverSupportMap(
     RulesCatalog catalog,
@@ -163,6 +224,13 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
         catalogManeuvers: catalog.maneuvers,
       ),
     };
+    final styleEffects = computeActiveUnarmedStyleEffects(
+      specialRules: _draftCombatConfig.specialRules,
+      catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
+      catalogManeuvers: catalog.maneuvers,
+      activeTalentName: _selectedCombatTalentDef(catalog)?.name ?? '',
+    );
+    supportedIds.addAll(styleEffects.activatedManeuverIds);
     for (final maneuverId in maneuverIds) {
       support[maneuverId] = supportedIds.contains(maneuverId)
           ? _ManeuverSupportStatus.supported
@@ -220,5 +288,10 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
       chips.add(Chip(label: Text('S. ${maneuverDef.seite.trim()}')));
     }
     return chips;
+  }
+
+  bool _isUnarmedTalentName(String raw) {
+    final normalized = _normalizeToken(raw);
+    return normalized == 'raufen' || normalized == 'ringen';
   }
 }
