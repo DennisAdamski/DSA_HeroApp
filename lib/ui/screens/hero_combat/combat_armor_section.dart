@@ -114,6 +114,8 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
             Text(widget.armor.pieces[i].rs.toString()),
             Text(widget.armor.pieces[i].be.toString()),
             Text(widget.armor.pieces[i].isActive ? 'Ja' : 'Nein'),
+            Text(widget.armor.pieces[i].isArtifact ? 'Ja' : 'Nein'),
+            Text(_artifactDescriptionText(widget.armor.pieces[i])),
             if (showPieceRg1)
               Text(widget.armor.pieces[i].rg1Active ? 'Ja' : 'Nein'),
             IconButton(
@@ -161,6 +163,8 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
                     const Text('RS'),
                     const Text('BE'),
                     const Text('Aktiv'),
+                    const Text('Artefakt'),
+                    const Text('Artefaktbeschreibung'),
                     if (showPieceRg1) const Text('RG I'),
                     const Text('Aktion'),
                   ],
@@ -218,6 +222,8 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
       const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100),
+      const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),
+      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2),
       if (showPieceRg1)
         const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100),
       const AdaptiveTableColumnSpec.fixed(56),
@@ -358,8 +364,10 @@ class _ArmorPieceEditorPanelState extends State<_ArmorPieceEditorPanel> {
   late final TextEditingController _nameController;
   late final TextEditingController _rsController;
   late final TextEditingController _beController;
+  late final TextEditingController _artifactDescriptionController;
   late bool _isActive;
   late bool _rg1Active;
+  late bool _isArtifact;
   String? _validationMessage;
 
   @override
@@ -372,8 +380,12 @@ class _ArmorPieceEditorPanelState extends State<_ArmorPieceEditorPanel> {
     _beController = TextEditingController(
       text: widget.initialPiece.be.toString(),
     );
+    _artifactDescriptionController = TextEditingController(
+      text: widget.initialPiece.artifactDescription,
+    );
     _isActive = widget.initialPiece.isActive;
     _rg1Active = widget.initialPiece.rg1Active;
+    _isArtifact = widget.initialPiece.isArtifact;
   }
 
   @override
@@ -381,106 +393,134 @@ class _ArmorPieceEditorPanelState extends State<_ArmorPieceEditorPanel> {
     _nameController.dispose();
     _rsController.dispose();
     _beController.dispose();
+    _artifactDescriptionController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      key: const ValueKey<String>('combat-armor-editor-panel'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                widget.isNew ? 'Rüstung hinzufügen' : 'Rüstung bearbeiten',
-                style: Theme.of(context).textTheme.titleMedium,
+    return SingleChildScrollView(
+      child: Column(
+        key: const ValueKey<String>('combat-armor-editor-panel'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  widget.isNew ? 'Rüstung hinzufügen' : 'Rüstung bearbeiten',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
-            ),
-            IconButton(
-              key: const ValueKey<String>('combat-armor-panel-close'),
-              tooltip: 'Editor schließen',
-              onPressed: widget.onCancel,
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          key: const ValueKey<String>('combat-armor-form-name'),
-          controller: _nameController,
-          decoration: const InputDecoration(
-            labelText: 'Name',
-            border: OutlineInputBorder(),
+              IconButton(
+                key: const ValueKey<String>('combat-armor-panel-close'),
+                tooltip: 'Editor schließen',
+                onPressed: widget.onCancel,
+                icon: const Icon(Icons.close),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            _numberField(
-              controller: _rsController,
-              keyName: 'combat-armor-form-rs',
-              label: 'RS',
+          const SizedBox(height: 12),
+          TextField(
+            key: const ValueKey<String>('combat-armor-form-name'),
+            controller: _nameController,
+            decoration: const InputDecoration(
+              labelText: 'Name',
+              border: OutlineInputBorder(),
             ),
-            _numberField(
-              controller: _beController,
-              keyName: 'combat-armor-form-be',
-              label: 'BE',
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        SwitchListTile(
-          key: const ValueKey<String>('combat-armor-form-active'),
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Aktiv'),
-          value: _isActive,
-          onChanged: (value) {
-            setState(() {
-              _isActive = value;
-            });
-          },
-        ),
-        if (widget.showRg1Toggle)
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _numberField(
+                controller: _rsController,
+                keyName: 'combat-armor-form-rs',
+                label: 'RS',
+              ),
+              _numberField(
+                controller: _beController,
+                keyName: 'combat-armor-form-be',
+                label: 'BE',
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
           SwitchListTile(
-            key: const ValueKey<String>('combat-armor-form-rg1'),
+            key: const ValueKey<String>('combat-armor-form-active'),
             contentPadding: EdgeInsets.zero,
-            title: const Text('RG I aktiv'),
-            value: _rg1Active,
+            title: const Text('Aktiv'),
+            value: _isActive,
             onChanged: (value) {
               setState(() {
-                _rg1Active = value;
+                _isActive = value;
               });
             },
           ),
-        if (_validationMessage != null && _validationMessage!.trim().isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Text(
-              _validationMessage!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+          SwitchListTile(
+            key: const ValueKey<String>('combat-armor-form-artifact'),
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Artefakt'),
+            value: _isArtifact,
+            onChanged: (value) {
+              setState(() {
+                _isArtifact = value;
+              });
+            },
+          ),
+          TextField(
+            key: const ValueKey<String>(
+              'combat-armor-form-artifact-description',
+            ),
+            controller: _artifactDescriptionController,
+            enabled: _isArtifact,
+            minLines: 2,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              labelText: 'Artefaktbeschreibung',
+              border: OutlineInputBorder(),
             ),
           ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            TextButton(
-              onPressed: widget.onCancel,
-              child: const Text('Abbrechen'),
+          if (widget.showRg1Toggle)
+            SwitchListTile(
+              key: const ValueKey<String>('combat-armor-form-rg1'),
+              contentPadding: EdgeInsets.zero,
+              title: const Text('RG I aktiv'),
+              value: _rg1Active,
+              onChanged: (value) {
+                setState(() {
+                  _rg1Active = value;
+                });
+              },
             ),
-            const SizedBox(width: 8),
-            FilledButton(
-              key: const ValueKey<String>('combat-armor-form-save'),
-              onPressed: _submit,
-              child: const Text('Speichern'),
+          if (_validationMessage != null &&
+              _validationMessage!.trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                _validationMessage!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             ),
-          ],
-        ),
-      ],
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              TextButton(
+                onPressed: widget.onCancel,
+                child: const Text('Abbrechen'),
+              ),
+              const SizedBox(width: 8),
+              FilledButton(
+                key: const ValueKey<String>('combat-armor-form-save'),
+                onPressed: _submit,
+                child: const Text('Speichern'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -501,6 +541,8 @@ class _ArmorPieceEditorPanelState extends State<_ArmorPieceEditorPanel> {
         rg1Active: _rg1Active,
         rs: parsedRs < 0 ? 0 : parsedRs,
         be: parsedBe < 0 ? 0 : parsedBe,
+        isArtifact: _isArtifact,
+        artifactDescription: _artifactDescriptionController.text.trim(),
       ),
     );
   }
@@ -524,4 +566,15 @@ class _ArmorPieceEditorPanelState extends State<_ArmorPieceEditorPanel> {
       ),
     );
   }
+}
+
+String _artifactDescriptionText(ArmorPiece piece) {
+  if (!piece.isArtifact) {
+    return '-';
+  }
+  final description = piece.artifactDescription.trim();
+  if (description.isEmpty) {
+    return '-';
+  }
+  return description;
 }

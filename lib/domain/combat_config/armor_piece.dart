@@ -8,6 +8,8 @@ class ArmorPiece {
     this.rg1Active = false,
     this.rs = 0,
     this.be = 0,
+    this.isArtifact = false,
+    this.artifactDescription = '',
   });
 
   /// Anzeigename des Ruestungsstuecks.
@@ -25,6 +27,12 @@ class ArmorPiece {
   /// Behinderungswert des Stuecks.
   final int be;
 
+  /// Kennzeichnet das Ruestungsstueck als Artefakt.
+  final bool isArtifact;
+
+  /// Freitext-Beschreibung fuer das Artefakt.
+  final String artifactDescription;
+
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   ArmorPiece copyWith({
     String? name,
@@ -32,6 +40,8 @@ class ArmorPiece {
     bool? rg1Active,
     int? rs,
     int? be,
+    bool? isArtifact,
+    String? artifactDescription,
   }) {
     return ArmorPiece(
       name: name ?? this.name,
@@ -39,6 +49,8 @@ class ArmorPiece {
       rg1Active: rg1Active ?? this.rg1Active,
       rs: rs ?? this.rs,
       be: be ?? this.be,
+      isArtifact: isArtifact ?? this.isArtifact,
+      artifactDescription: artifactDescription ?? this.artifactDescription,
     );
   }
 
@@ -50,6 +62,8 @@ class ArmorPiece {
       'rg1Active': rg1Active,
       'rs': rs,
       'be': be,
+      'isArtifact': isArtifact,
+      'artifactDescription': artifactDescription,
     };
   }
 
@@ -64,6 +78,8 @@ class ArmorPiece {
       rg1Active: (json['rg1Active'] as bool?) ?? false,
       rs: getInt('rs'),
       be: getInt('be'),
+      isArtifact: (json['isArtifact'] as bool?) ?? false,
+      artifactDescription: (json['artifactDescription'] as String?) ?? '',
     );
   }
 }

@@ -39,6 +39,8 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),
+        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2),
         AdaptiveTableColumnSpec.fixed(56),
       ];
 
@@ -87,6 +89,8 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
             Text(widget.offhandEquipment[i].iniMod.toString()),
             Text(widget.offhandEquipment[i].atMod.toString()),
             Text(widget.offhandEquipment[i].paMod.toString()),
+            Text(widget.offhandEquipment[i].isArtifact ? 'Ja' : 'Nein'),
+            Text(_artifactDescriptionText(widget.offhandEquipment[i])),
             IconButton(
               key: ValueKey<String>('combat-offhand-remove-$i'),
               tooltip: 'Nebenhand-Ausrüstung entfernen',
@@ -132,6 +136,8 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
             const Text('INI Mod'),
             const Text('AT Mod'),
             const Text('PA Mod'),
+            const Text('Artefakt'),
+            const Text('Artefaktbeschreibung'),
             const Text('Aktion'),
           ],
           rows: rows,
@@ -301,8 +307,10 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
   late final TextEditingController _iniController;
   late final TextEditingController _atController;
   late final TextEditingController _paController;
+  late final TextEditingController _artifactDescriptionController;
   late OffhandEquipmentType _type;
   late ShieldSize _shieldSize;
+  late bool _isArtifact;
 
   @override
   void initState() {
@@ -320,8 +328,12 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
     _paController = TextEditingController(
       text: widget.initialEntry.paMod.toString(),
     );
+    _artifactDescriptionController = TextEditingController(
+      text: widget.initialEntry.artifactDescription,
+    );
     _type = widget.initialEntry.type;
     _shieldSize = widget.initialEntry.shieldSize;
+    _isArtifact = widget.initialEntry.isArtifact;
   }
 
   @override
@@ -331,134 +343,162 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
     _iniController.dispose();
     _atController.dispose();
     _paController.dispose();
+    _artifactDescriptionController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      key: const ValueKey<String>('combat-offhand-editor-panel'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                widget.isNew
-                    ? 'Nebenhand-Ausrüstung hinzufügen'
-                    : 'Nebenhand-Ausrüstung bearbeiten',
-                style: Theme.of(context).textTheme.titleMedium,
+    return SingleChildScrollView(
+      child: Column(
+        key: const ValueKey<String>('combat-offhand-editor-panel'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  widget.isNew
+                      ? 'Nebenhand-Ausrüstung hinzufügen'
+                      : 'Nebenhand-Ausrüstung bearbeiten',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
-            ),
-            IconButton(
-              key: const ValueKey<String>('combat-offhand-panel-close'),
-              tooltip: 'Editor schließen',
-              onPressed: widget.onCancel,
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          key: const ValueKey<String>('combat-offhand-form-name'),
-          controller: _nameController,
-          decoration: const InputDecoration(
-            labelText: 'Ausrüstungsname',
-            border: OutlineInputBorder(),
+              IconButton(
+                key: const ValueKey<String>('combat-offhand-panel-close'),
+                tooltip: 'Editor schließen',
+                onPressed: widget.onCancel,
+                icon: const Icon(Icons.close),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 10),
-        DropdownButtonFormField<OffhandEquipmentType>(
-          key: const ValueKey<String>('combat-offhand-form-type'),
-          initialValue: _type,
-          decoration: const InputDecoration(
-            labelText: 'Typ',
-            border: OutlineInputBorder(),
-          ),
-          items: const [
-            DropdownMenuItem(
-              value: OffhandEquipmentType.parryWeapon,
-              child: Text('Parierwaffe'),
-            ),
-            DropdownMenuItem(
-              value: OffhandEquipmentType.shield,
-              child: Text('Schild'),
-            ),
-          ],
-          onChanged: (value) {
-            setState(() {
-              _type = value ?? OffhandEquipmentType.parryWeapon;
-            });
-          },
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            _numberField(
-              controller: _bfController,
-              keyName: 'combat-offhand-form-bf',
-              label: 'BF',
-            ),
-            _numberField(
-              controller: _iniController,
-              keyName: 'combat-offhand-form-ini-mod',
-              label: 'INI Mod',
-            ),
-            _numberField(
-              controller: _atController,
-              keyName: 'combat-offhand-form-at-mod',
-              label: 'AT Mod',
-            ),
-            _numberField(
-              controller: _paController,
-              keyName: 'combat-offhand-form-pa-mod',
-              label: 'PA Mod',
-            ),
-          ],
-        ),
-        if (_type == OffhandEquipmentType.shield) ...[
-          const SizedBox(height: 10),
-          DropdownButtonFormField<ShieldSize>(
-            key: const ValueKey<String>('combat-offhand-form-shield-size'),
-            initialValue: _shieldSize,
+          const SizedBox(height: 12),
+          TextField(
+            key: const ValueKey<String>('combat-offhand-form-name'),
+            controller: _nameController,
             decoration: const InputDecoration(
-              labelText: 'Größe',
+              labelText: 'Ausrüstungsname',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 10),
+          DropdownButtonFormField<OffhandEquipmentType>(
+            key: const ValueKey<String>('combat-offhand-form-type'),
+            initialValue: _type,
+            decoration: const InputDecoration(
+              labelText: 'Typ',
               border: OutlineInputBorder(),
             ),
             items: const [
-              DropdownMenuItem(value: ShieldSize.small, child: Text('Klein')),
-              DropdownMenuItem(value: ShieldSize.large, child: Text('Groß')),
               DropdownMenuItem(
-                value: ShieldSize.veryLarge,
-                child: Text('Sehr groß'),
+                value: OffhandEquipmentType.parryWeapon,
+                child: Text('Parierwaffe'),
+              ),
+              DropdownMenuItem(
+                value: OffhandEquipmentType.shield,
+                child: Text('Schild'),
               ),
             ],
             onChanged: (value) {
               setState(() {
-                _shieldSize = value ?? ShieldSize.small;
+                _type = value ?? OffhandEquipmentType.parryWeapon;
               });
             },
           ),
-        ],
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            TextButton(
-              onPressed: widget.onCancel,
-              child: const Text('Abbrechen'),
-            ),
-            const SizedBox(width: 8),
-            FilledButton(
-              key: const ValueKey<String>('combat-offhand-form-save'),
-              onPressed: _submit,
-              child: const Text('Speichern'),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _numberField(
+                controller: _bfController,
+                keyName: 'combat-offhand-form-bf',
+                label: 'BF',
+              ),
+              _numberField(
+                controller: _iniController,
+                keyName: 'combat-offhand-form-ini-mod',
+                label: 'INI Mod',
+              ),
+              _numberField(
+                controller: _atController,
+                keyName: 'combat-offhand-form-at-mod',
+                label: 'AT Mod',
+              ),
+              _numberField(
+                controller: _paController,
+                keyName: 'combat-offhand-form-pa-mod',
+                label: 'PA Mod',
+              ),
+            ],
+          ),
+          if (_type == OffhandEquipmentType.shield) ...[
+            const SizedBox(height: 10),
+            DropdownButtonFormField<ShieldSize>(
+              key: const ValueKey<String>('combat-offhand-form-shield-size'),
+              initialValue: _shieldSize,
+              decoration: const InputDecoration(
+                labelText: 'Größe',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: ShieldSize.small, child: Text('Klein')),
+                DropdownMenuItem(value: ShieldSize.large, child: Text('Groß')),
+                DropdownMenuItem(
+                  value: ShieldSize.veryLarge,
+                  child: Text('Sehr groß'),
+                ),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  _shieldSize = value ?? ShieldSize.small;
+                });
+              },
             ),
           ],
-        ),
-      ],
+          const SizedBox(height: 12),
+          SwitchListTile(
+            key: const ValueKey<String>('combat-offhand-form-artifact'),
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Artefakt'),
+            value: _isArtifact,
+            onChanged: (value) {
+              setState(() {
+                _isArtifact = value;
+              });
+            },
+          ),
+          TextField(
+            key: const ValueKey<String>(
+              'combat-offhand-form-artifact-description',
+            ),
+            controller: _artifactDescriptionController,
+            enabled: _isArtifact,
+            minLines: 2,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              labelText: 'Artefaktbeschreibung',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              TextButton(
+                onPressed: widget.onCancel,
+                child: const Text('Abbrechen'),
+              ),
+              const SizedBox(width: 8),
+              FilledButton(
+                key: const ValueKey<String>('combat-offhand-form-save'),
+                onPressed: _submit,
+                child: const Text('Speichern'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -476,6 +516,8 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
         iniMod: parsedIni,
         atMod: parsedAt,
         paMod: parsedPa,
+        isArtifact: _isArtifact,
+        artifactDescription: _artifactDescriptionController.text.trim(),
       ),
     );
   }
@@ -499,4 +541,15 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
       ),
     );
   }
+}
+
+String _artifactDescriptionText(OffhandEquipmentEntry entry) {
+  if (!entry.isArtifact) {
+    return '-';
+  }
+  final description = entry.artifactDescription.trim();
+  if (description.isEmpty) {
+    return '-';
+  }
+  return description;
 }

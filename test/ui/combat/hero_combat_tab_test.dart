@@ -441,6 +441,8 @@ void main() {
     required String be,
     required bool isActive,
     required bool rg1Active,
+    bool artifact = false,
+    String? artifactDescription,
   }) async {
     await tester.enterText(
       find.byKey(const ValueKey<String>('combat-armor-form-name')),
@@ -469,7 +471,17 @@ void main() {
     }
 
     await setSwitch('combat-armor-form-active', isActive);
+    await setSwitch('combat-armor-form-artifact', artifact);
     await setSwitch('combat-armor-form-rg1', rg1Active);
+    if (artifactDescription != null) {
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('combat-armor-form-artifact-description'),
+        ),
+        artifactDescription,
+      );
+      await tester.pumpAndSettle();
+    }
 
     await tester.tap(
       find.byKey(const ValueKey<String>('combat-armor-form-save')),
@@ -2258,6 +2270,17 @@ void main() {
       find.byKey(const ValueKey<String>('combat-offhand-form-at-mod')),
       '2',
     );
+    await setSwitchByKey(
+      tester,
+      keyName: 'combat-offhand-form-artifact',
+      value: true,
+    );
+    await tester.enterText(
+      find.byKey(
+        const ValueKey<String>('combat-offhand-form-artifact-description'),
+      ),
+      'Gebundener Schutzgeist',
+    );
     await tester.tap(
       find.byKey(const ValueKey<String>('combat-offhand-form-save')),
     );
@@ -2285,6 +2308,11 @@ void main() {
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
     expect(hero.combatConfig.offhandAssignment.equipmentIndex, 0);
     expect(hero.combatConfig.offhandEquipment.single.atMod, 2);
+    expect(hero.combatConfig.offhandEquipment.single.isArtifact, isTrue);
+    expect(
+      hero.combatConfig.offhandEquipment.single.artifactDescription,
+      'Gebundener Schutzgeist',
+    );
   });
 
   testWidgets('weapon overview table lists active weapon first', (
@@ -2600,12 +2628,15 @@ void main() {
       be: '4',
       isActive: true,
       rg1Active: true,
+      artifact: true,
+      artifactDescription: 'Schimmernde Bannrunen',
     );
 
     expect(find.text('Kettenhemd'), findsOneWidget);
     expect(find.text('3'), findsAtLeast(1));
     expect(find.text('4'), findsAtLeast(1));
     expect(find.text('Ja'), findsAtLeast(1));
+    expect(find.text('Schimmernde Bannrunen'), findsOneWidget);
 
     await openArmorEditor(tester, index: 0);
     await fillArmorDialog(
@@ -2615,10 +2646,13 @@ void main() {
       be: '6',
       isActive: true,
       rg1Active: true,
+      artifact: true,
+      artifactDescription: 'Verstärkte Bannrunen',
     );
     expect(find.text('5'), findsAtLeast(1));
     expect(find.text('6'), findsAtLeast(1));
     expect(find.text('Ja'), findsAtLeast(1));
+    expect(find.text('Verstärkte Bannrunen'), findsOneWidget);
 
     final removeButton = find.byKey(
       const ValueKey<String>('combat-armor-remove-0'),
