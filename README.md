@@ -16,6 +16,7 @@ Flutter-App zur Verwaltung von DSA-Helden mit:
 - Der Magie-Tab verwaltet neben Zaubern jetzt auch heldenspezifische Ritualkategorien und Rituale.
 - Der Notizen-Tab ist in `Notizen` und `Verbindungen` unterteilt und speichert beide Bereiche direkt im Heldendatensatz.
 - Der Kampf-Tab verwaltet strukturierte `combatMasteries` als freien Baukasten fuer Waffen-, Schild- und Parierwaffen-Meisterschaften.
+- Waffenlose Kampftechniken aus `Wege des Schwerts` werden als katalogbasierte Kampf-Sonderfertigkeiten gefuehrt und schalten ihre zugeordneten Manöver direkt frei.
 
 ## Schnellstart
 
@@ -67,6 +68,7 @@ Vollstaendige Anleitung:
 - Axxeleratus aktiviert temporaer `Schnellziehen`, `Schnellladen (Bogen)` und `Schnellladen (Armbrust)`; Fernkampf-Ladezeiten werden im Kampf-Preview als `Aktion`/`Aktionen` ausgegeben.
 - Der Bereich `Kampfregeln` enthaelt jetzt zusaetzlich einen Builder fuer Kampfmeisterschaften mit Zieltyp, Effekten, Anforderungswarnungen und Punktbudget.
 - `CombatPreviewStats` zeigt anwendbare Meisterschaften sowie automatisch eingerechnete Boni fuer AT, PA, INI, Schild-PA, TP/KK, Ladezeit und Fernkampf-Reichweite.
+- Aktive waffenlose Kampfstile werden im Kampfregel-Tab als eigene Katalogsektion gepflegt; direkte Stilboni auf `Raufen`/`Ringen` sowie die freigeschalteten waffenlosen Manöver werden in die Kampfvorschau eingerechnet.
 
 ### Workspace-Layout (Stand: 2026-03-08)
 - Ab `1280 dp` nutzt der Hero-Workspace das **Helden Deck** statt der klassischen TabBar.

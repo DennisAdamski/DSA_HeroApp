@@ -149,6 +149,9 @@ final heroComputedProvider =
       final catalogManeuvers =
           ref.watch(rulesCatalogProvider).valueOrNull?.maneuvers ??
           const <ManeuverDef>[];
+      final catalogCombatSpecialAbilities =
+          ref.watch(rulesCatalogProvider).valueOrNull?.combatSpecialAbilities ??
+          const <CombatSpecialAbilityDef>[];
 
       final parsed = parseModifierTextsForHero(hero);
       final effectiveStartAttributes = computeEffectiveStartAttributes(
@@ -173,6 +176,7 @@ final heroComputedProvider =
         state,
         catalogTalents: catalogTalents,
         catalogManeuvers: catalogManeuvers,
+        catalogCombatSpecialAbilities: catalogCombatSpecialAbilities,
         parsedModifiers: parsed,
         effectiveAttributes: effective,
         derivedStats: derived,

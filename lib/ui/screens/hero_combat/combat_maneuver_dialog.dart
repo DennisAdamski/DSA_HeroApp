@@ -53,6 +53,24 @@ class _CombatManeuverDetailsDialog extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(maneuver.erklarung.trim()),
               ],
+              if (maneuver.voraussetzungen.trim().isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text('Voraussetzungen', style: theme.textTheme.titleSmall),
+                const SizedBox(height: 6),
+                Text(maneuver.voraussetzungen.trim()),
+              ],
+              if (maneuver.verbreitung.trim().isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text('Verbreitung', style: theme.textTheme.titleSmall),
+                const SizedBox(height: 6),
+                Text(maneuver.verbreitung.trim()),
+              ],
+              if (maneuver.kosten.trim().isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text('Kosten', style: theme.textTheme.titleSmall),
+                const SizedBox(height: 6),
+                Text(maneuver.kosten.trim()),
+              ],
               if (maneuver.erklarungLang.trim().isNotEmpty) ...[
                 const SizedBox(height: 16),
                 Text('Lange Erklärung', style: theme.textTheme.titleSmall),

@@ -68,12 +68,22 @@ void main() {
       "name": "Aufmerksamkeit",
       "gruppe": "kampf",
       "typ": "sonderfertigkeit",
+      "stil_typ": "waffenloser_kampfstil",
       "seite": "73",
       "beschreibung": "Beschleunigt Orientierung und verbessert Reaktionen.",
       "erklarung_lang": "Lange Sonderfertigkeitsbeschreibung.",
       "voraussetzungen": "IN 12",
       "verbreitung": "4, durch Praxis",
-      "kosten": "200 AP"
+      "kosten": "200 AP",
+      "aktiviert_manoever_ids": ["man_finte"],
+      "kampfwert_boni": [
+        {
+          "gilt_fuer_talent": "raufen",
+          "at_bonus": 1,
+          "pa_bonus": 1,
+          "ini_mod": 0
+        }
+      ]
     }
   ]
 }
@@ -94,6 +104,14 @@ void main() {
     expect(catalog.spells.first.variants, ['Selbst', 'Fremdheilung']);
     expect(catalog.maneuvers.first.kosten, '200 AP');
     expect(catalog.combatSpecialAbilities.first.name, 'Aufmerksamkeit');
+    expect(
+      catalog.combatSpecialAbilities.first.stilTyp,
+      'waffenloser_kampfstil',
+    );
+    expect(catalog.combatSpecialAbilities.first.aktiviertManoeverIds, [
+      'man_finte',
+    ]);
+    expect(catalog.combatSpecialAbilities.first.kampfwertBoni.first.atBonus, 1);
 
     final roundtrip = RulesCatalog.fromJson(catalog.toJson());
     expect(roundtrip.talents.first.id, 'tal_klettern');
@@ -146,12 +164,22 @@ void main() {
   "name": "Aufmerksamkeit",
   "gruppe": "kampf",
   "typ": "sonderfertigkeit",
+  "stil_typ": "waffenloser_kampfstil",
   "seite": "73",
   "beschreibung": "Beschleunigt Orientierung und verbessert Reaktionen.",
   "erklarung_lang": "Lange Sonderfertigkeitsbeschreibung.",
   "voraussetzungen": "IN 12",
   "verbreitung": "4, durch Praxis",
-  "kosten": "200 AP"
+  "kosten": "200 AP",
+  "aktiviert_manoever_ids": ["man_finte"],
+  "kampfwert_boni": [
+    {
+      "gilt_fuer_talent": "raufen",
+      "at_bonus": 1,
+      "pa_bonus": 1,
+      "ini_mod": 0
+    }
+  ]
 }
 ''';
 
@@ -167,6 +195,10 @@ void main() {
     expect(ability.voraussetzungen, 'IN 12');
     expect(ability.verbreitung, '4, durch Praxis');
     expect(ability.kosten, '200 AP');
+    expect(ability.stilTyp, 'waffenloser_kampfstil');
+    expect(ability.aktiviertManoeverIds, ['man_finte']);
+    expect(ability.kampfwertBoni.single.giltFuerTalent, 'raufen');
+    expect(ability.kampfwertBoni.single.paBonus, 1);
 
     final roundtrip = CombatSpecialAbilityDef.fromJson(ability.toJson());
     expect(roundtrip.id, 'ksf_aufmerksamkeit');

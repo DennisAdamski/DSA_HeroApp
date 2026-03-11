@@ -76,6 +76,24 @@ void main() {
           steigerung: 'C',
           attributes: <String>['Mut', 'Gewandheit', 'Koerperkraft'],
         ),
+        TalentDef(
+          id: 'tal_raufen',
+          name: 'Raufen',
+          group: 'Kampftalent',
+          type: 'Nahkampf',
+          weaponCategory: 'Waffenlos',
+          steigerung: 'C',
+          attributes: <String>['Mut', 'Gewandheit', 'Koerperkraft'],
+        ),
+        TalentDef(
+          id: 'tal_ringen',
+          name: 'Ringen',
+          group: 'Kampftalent',
+          type: 'Nahkampf',
+          weaponCategory: 'Waffenlos',
+          steigerung: 'C',
+          attributes: <String>['Mut', 'Gewandheit', 'Koerperkraft'],
+        ),
       ],
       spells: <SpellDef>[],
       weapons: <WeaponDef>[
@@ -155,6 +173,36 @@ void main() {
           typ: 'Waffenloses Manöver',
           erschwernis: 'Attacke +4',
           erklarung: 'Waffenloser Angriff.',
+        ),
+      ],
+      combatSpecialAbilities: <CombatSpecialAbilityDef>[
+        CombatSpecialAbilityDef(
+          id: 'ksf_hammerfaust',
+          name: 'Hammerfaust',
+          stilTyp: 'waffenloser_kampfstil',
+          beschreibung: 'Schaltet waffenlose Angriffsmanöver frei.',
+          aktiviertManoeverIds: <String>['man_sprungtritt'],
+          kampfwertBoni: <CombatSpecialAbilityBonusDef>[
+            CombatSpecialAbilityBonusDef(
+              giltFuerTalent: 'raufen',
+              atBonus: 1,
+              paBonus: 1,
+            ),
+          ],
+        ),
+        CombatSpecialAbilityDef(
+          id: 'ksf_gladiatorenstil',
+          name: 'Gladiatorenstil',
+          stilTyp: 'waffenloser_kampfstil',
+          beschreibung: 'Wahlweise Bonus auf Raufen oder Ringen.',
+          aktiviertManoeverIds: <String>['man_sprungtritt'],
+          kampfwertBoni: <CombatSpecialAbilityBonusDef>[
+            CombatSpecialAbilityBonusDef(
+              giltFuerTalent: 'wahl',
+              atBonus: 1,
+              paBonus: 1,
+            ),
+          ],
         ),
       ],
     );
@@ -556,6 +604,62 @@ void main() {
       expect(hero.combatConfig.specialRules.schnellziehen, isTrue);
       expect(hero.combatConfig.specialRules.schnellladenBogen, isTrue);
       expect(hero.combatConfig.specialRules.schnellladenArmbrust, isTrue);
+    },
+  );
+
+  testWidgets(
+    'combat rules tab stores active unarmed styles and preview shows granted maneuvers',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              mainWeapon: MainWeaponSlot(name: 'Faust', talentId: 'tal_raufen'),
+            ),
+            talents: const <String, HeroTalentEntry>{
+              'tal_raufen': HeroTalentEntry(
+                talentValue: 8,
+                atValue: 4,
+                paValue: 4,
+              ),
+            },
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final actions = await openCombatTab(tester, repo);
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+      await tapTab(tester, 'Kampfregeln');
+
+      expect(find.text('Waffenlose Kampftechniken'), findsOneWidget);
+      await setSwitchByKey(
+        tester,
+        keyName: 'combat-special-ability-ksf_hammerfaust',
+        value: true,
+      );
+
+      await actions.save();
+      await tester.pumpAndSettle();
+
+      final hero = (await repo.listHeroes()).firstWhere(
+        (entry) => entry.id == 'demo',
+      );
+      expect(
+        hero.combatConfig.specialRules.activeCombatSpecialAbilityIds,
+        contains('ksf_hammerfaust'),
+      );
+
+      await openMeleeTab(tester);
+      expect(find.text('Sprungtritt'), findsOneWidget);
     },
   );
 
@@ -1403,13 +1507,20 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).last,
     );
-    await tester.tap(find.byKey(const ValueKey<String>('combat-mastery-add')));
+    final addMasteryButton = find.byKey(
+      const ValueKey<String>('combat-mastery-add'),
+    );
+    await tester.ensureVisible(addMasteryButton);
+    await tester.pumpAndSettle();
+    await tester.tap(addMasteryButton, warnIfMissed: false);
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('combat-mastery-name')),
-      'Waffenmeister (Kurzschwert)',
+    final masteryNameField = find.byKey(
+      const ValueKey<String>('combat-mastery-name'),
     );
+    await tester.ensureVisible(masteryNameField);
+    await tester.pumpAndSettle();
+    await tester.enterText(masteryNameField, 'Waffenmeister (Kurzschwert)');
     await tester.enterText(
       find.byKey(const ValueKey<String>('combat-mastery-target-refs')),
       'Kurzschwert',

@@ -117,12 +117,23 @@ void main() {
           'name': 'Aufmerksamkeit',
           'gruppe': 'kampf',
           'typ': 'sonderfertigkeit',
+          'stil_typ': 'waffenloser_kampfstil',
           'seite': '73',
-          'beschreibung': 'Beschleunigt Orientierung und verbessert Reaktionen.',
+          'beschreibung':
+              'Beschleunigt Orientierung und verbessert Reaktionen.',
           'erklarung_lang': 'Lange Sonderfertigkeitsbeschreibung',
           'voraussetzungen': 'IN 12',
           'verbreitung': '4, durch Praxis',
           'kosten': '200 AP',
+          'aktiviert_manoever_ids': ['man_finte'],
+          'kampfwert_boni': [
+            {
+              'gilt_fuer_talent': 'raufen',
+              'at_bonus': 1,
+              'pa_bonus': 1,
+              'ini_mod': 0,
+            },
+          ],
         },
       ]),
     };
@@ -150,11 +161,17 @@ void main() {
     expect(catalog.maneuvers.first.erklarungLang, 'Lange Erklaerung');
     expect(catalog.maneuvers.first.voraussetzungen, 'GE 12');
     expect(catalog.maneuvers.first.kosten, '200 AP');
-    expect(
-      catalog.combatSpecialAbilities.map((e) => e.id).toList(),
-      ['ksf_aufmerksamkeit'],
-    );
+    expect(catalog.combatSpecialAbilities.map((e) => e.id).toList(), [
+      'ksf_aufmerksamkeit',
+    ]);
     expect(catalog.combatSpecialAbilities.first.verbreitung, '4, durch Praxis');
+    expect(catalog.combatSpecialAbilities.first.aktiviertManoeverIds, [
+      'man_finte',
+    ]);
+    expect(
+      catalog.combatSpecialAbilities.first.kampfwertBoni.single.giltFuerTalent,
+      'raufen',
+    );
   });
 
   test('throws when section JSON top-level is not a list', () async {
@@ -323,14 +340,8 @@ void main() {
   test('throws on duplicate combat special ability ids', () async {
     assets = buildValidAssets();
     assets['$basePath/kampf_sonderfertigkeiten.json'] = jsonEncode([
-      {
-        'id': 'ksf_aufmerksamkeit',
-        'name': 'Aufmerksamkeit',
-      },
-      {
-        'id': 'ksf_aufmerksamkeit',
-        'name': 'Kampfreflexe',
-      },
+      {'id': 'ksf_aufmerksamkeit', 'name': 'Aufmerksamkeit'},
+      {'id': 'ksf_aufmerksamkeit', 'name': 'Kampfreflexe'},
     ]);
 
     final loader = const CatalogLoader();
