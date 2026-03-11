@@ -184,53 +184,56 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   }
 
   TableRow _buildHeaderRow({required bool isEditing}) {
+    final debug = ref.read(debugModusProvider);
     final cells = <Widget>[
-      _headerCell('Talent-Name'),
-      _headerCell('Eigenschaften'),
-      _headerCell('TaW berechnet', highlighted: true),
-      _headerCell('Kompl.'),
-      _headerCell('BE'),
-      _headerCell('eBE'),
-      _headerCell('TaW'),
-      _headerCell('max TaW'),
-      _headerCell('Mod'),
-      _headerCell('SE'),
-      _headerCell('Spezialisierungen'),
+      _headerCell(debug ? 'talentName' : 'Talent-Name'),
+      _headerCell(debug ? 'attributes' : 'Eigenschaften'),
+      _headerCell(debug ? 'talentValue' : 'TaW berechnet', highlighted: true),
+      _headerCell(debug ? 'steigerung' : 'Kompl.'),
+      _headerCell(debug ? 'be' : 'BE'),
+      _headerCell(debug ? 'eBe' : 'eBE'),
+      _headerCell(debug ? 'taw' : 'TaW'),
+      _headerCell(debug ? 'maxTaw' : 'max TaW'),
+      _headerCell(debug ? 'modifier' : 'Mod'),
+      _headerCell(debug ? 'se' : 'SE'),
+      _headerCell(debug ? 'specializations' : 'Spezialisierungen'),
     ];
     if (isEditing) {
-      cells.add(_headerCell('Begabung'));
+      cells.add(_headerCell(debug ? 'gifted' : 'Begabung'));
     }
     return TableRow(children: cells);
   }
 
   TableRow _buildCombatHeaderRow({required bool isEditing}) {
+    final debug = ref.read(debugModusProvider);
     final cells = <Widget>[
-      _headerCell('Talent-Name'),
-      _headerCell('Waffengattung'),
-      _headerCell('Ersatzweise'),
-      _headerCell('Kompl.'),
-      _headerCell('BE'),
-      _headerCell('TaW'),
-      _headerCell('AT'),
-      _headerCell('PA'),
-      _headerCell('max TaW'),
-      if (isEditing) _headerCell('Begabung'),
-      _headerCell('Spezialisierung'),
+      _headerCell(debug ? 'talentName' : 'Talent-Name'),
+      _headerCell(debug ? 'waffengattung' : 'Waffengattung'),
+      _headerCell(debug ? 'ersatzweise' : 'Ersatzweise'),
+      _headerCell(debug ? 'steigerung' : 'Kompl.'),
+      _headerCell(debug ? 'be' : 'BE'),
+      _headerCell(debug ? 'taw' : 'TaW'),
+      _headerCell(debug ? 'at' : 'AT'),
+      _headerCell(debug ? 'pa' : 'PA'),
+      _headerCell(debug ? 'maxTaw' : 'max TaW'),
+      if (isEditing) _headerCell(debug ? 'gifted' : 'Begabung'),
+      _headerCell(debug ? 'specialization' : 'Spezialisierung'),
     ];
     return TableRow(children: cells);
   }
 
   TableRow _buildMetaHeaderRow() {
+    final debug = ref.read(debugModusProvider);
     return TableRow(
       children: [
-        _headerCell('Talent-Name'),
-        _headerCell('Bestandteile'),
-        _headerCell('Eigenschaften'),
-        _headerCell('BE'),
-        _headerCell('eBE'),
-        _headerCell('TaW'),
-        _headerCell('TaW berechnet', highlighted: true),
-        _headerCell('max TaW'),
+        _headerCell(debug ? 'talentName' : 'Talent-Name'),
+        _headerCell(debug ? 'components' : 'Bestandteile'),
+        _headerCell(debug ? 'attributes' : 'Eigenschaften'),
+        _headerCell(debug ? 'be' : 'BE'),
+        _headerCell(debug ? 'eBe' : 'eBE'),
+        _headerCell(debug ? 'taw' : 'TaW'),
+        _headerCell(debug ? 'talentValue' : 'TaW berechnet', highlighted: true),
+        _headerCell(debug ? 'maxTaw' : 'max TaW'),
       ],
     );
   }
