@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_mastery.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -21,6 +22,7 @@ void main() {
   HeroSheet buildHero({
     CombatConfig combatConfig = const CombatConfig(),
     Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
+    List<CombatMastery> combatMasteries = const <CombatMastery>[],
   }) {
     return HeroSheet(
       id: 'demo',
@@ -38,6 +40,7 @@ void main() {
       ),
       talents: talents,
       combatConfig: combatConfig,
+      combatMasteries: combatMasteries,
     );
   }
 
@@ -1304,6 +1307,113 @@ void main() {
     expect(hero.combatConfig.mainWeapon.weaponType, isEmpty);
     expect(hero.combatConfig.specialRules.kampfreflexe, isFalse);
     expect(hero.combatConfig.specialRules.aufmerksamkeit, isFalse);
+  });
+
+  testWidgets('can add and persist a combat mastery from combat rules', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            mainWeapon: MainWeaponSlot(
+              name: 'Kurzschwert',
+              weaponType: 'Kurzschwert',
+              talentId: 'tal_nah',
+            ),
+          ),
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(
+              talentValue: 18,
+              atValue: 9,
+              paValue: 9,
+              combatSpecializations: <String>['Kurzschwert'],
+            ),
+          },
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openCombatTab(tester, repo);
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    await tapTab(tester, 'Kampfregeln');
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey<String>('combat-mastery-add')),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(find.byKey(const ValueKey<String>('combat-mastery-add')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('combat-mastery-name')),
+      'Waffenmeister (Kurzschwert)',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('combat-mastery-target-refs')),
+      'Kurzschwert',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('combat-mastery-required-talent')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Schwerter').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey<String>('combat-mastery-effect-add')),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('combat-mastery-effect-add')),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('combat-mastery-effect-type')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('combat-mastery-effect-type')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('INI-Bonus').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('combat-mastery-effect-value')),
+      '1',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Speichern').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Speichern').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Waffenmeister (Kurzschwert)'), findsOneWidget);
+
+    await actions.save();
+    await tester.pumpAndSettle();
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.combatMasteries, hasLength(1));
+    expect(hero.combatMasteries.single.name, 'Waffenmeister (Kurzschwert)');
+    expect(
+      hero.combatMasteries.single.effects.single.type,
+      CombatMasteryEffectType.initiativeBonus,
+    );
   });
 
   testWidgets('supports multiple weapon slots in read mode with auto-save', (

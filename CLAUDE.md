@@ -134,9 +134,17 @@ DSA_HeroApp/
 
 Ergaenzungen zur aktuellen Struktur:
 
+- `lib/domain/combat_mastery.dart` definiert persistierte Kampfmeisterschaften
+  mit Zielbereich, Anforderungen und Effekten.
+- `lib/rules/derived/combat_mastery_rules.dart` kapselt Punktbudget,
+  Validierung, Zielauflösung und ableitbare Kampfmodifikatoren.
+- `lib/rules/derived/maneuver_rules.dart` normalisiert Manoever-Namen auf
+  stabile IDs fuer Regel- und UI-Verweise.
 - `lib/ui/widgets/combat_quick_stats.dart` enthaelt die kompakte Kampfwerte-Quickview.
 - `lib/ui/screens/hero_combat/` enthaelt die aufgeteilten Kampf-Subtabs sowie
   Helper fuer Regeln, Preview und Weapon-Editor.
+- `lib/ui/screens/hero_combat/combat_mastery_section.dart` enthaelt den
+  Builder und die Listen-UI fuer freie Kampfmeisterschaften.
 - `lib/ui/screens/hero_combat/weapon_editor/` enthaelt die Sektionen und
   Hilfsdialoge des Waffen-Editors.
 - `lib/ui/screens/hero_notes/` enthaelt die ausgelagerten Notizen-Teilwidgets.
@@ -173,6 +181,7 @@ Domain models (lib/domain/) — immutable, pure Dart
 | Class | File | Purpose |
 |---|---|---|
 | `HeroSheet` | `domain/hero_sheet.dart` | Persisted hero data; immutable, has `copyWith` and `toJson`/`fromJson` |
+| `CombatMastery` | `domain/combat_mastery.dart` | Persisted Kampfmeisterschaft mit Zielbereich, Anforderungen und Effekten |
 | `HeroTalentModifier` | `domain/hero_talent_entry.dart` | Einzelner Modifikatorbaustein fuer Nicht-Kampftalente (Wert + Beschreibung) |
 | `HeroMetaTalent` | `domain/hero_meta_talent.dart` | Heldenspezifische Meta-Talent-Definition mit Komponenten, Eigenschaften und BE-Regel |
 | `HeroState` | `domain/hero_state.dart` | Runtime state (current LeP/AsP/KaP/Au, temp modifiers) |
@@ -253,6 +262,22 @@ flutter analyze
 
 Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter.yaml`). The only project-specific rule enabled is `prefer_single_quotes: true`.
 
+### Update 2026-03-11
+
+- `HeroSheet` speichert jetzt `combatMasteries` als strukturierte Liste
+  freier Kampfmeisterschaften; die aktuelle `schemaVersion` dafuer ist **15**.
+- Die neue Domain liegt in `lib/domain/combat_mastery.dart`.
+- `lib/rules/derived/combat_mastery_rules.dart` kapselt Punktbudget,
+  Anwendbarkeit, Anforderungswarnungen und automatisch ableitbare Boni.
+- `lib/rules/derived/maneuver_rules.dart` normalisiert Manoever-Namen auf
+  stabile IDs fuer Meisterschaftseffekte und UI-Aufloesung.
+- `computeCombatPreviewStats()` rechnet anwendbare Kampfmeisterschaften in
+  AT, PA, INI, Schild-PA, TP/KK, Ladezeit und Reichweiten ein und liefert
+  zusaetzlich die Liste der anwendbaren Meisterschaften fuer die UI.
+- Der Bereich `Kampfregeln` im Kampf-Tab besitzt jetzt einen gefuehrten
+  Builder fuer Meisterschaften; bedingte oder rein dokumentative Effekte
+  bleiben dort strukturiert sichtbar.
+
 ### Update 2026-03-10
 
 - Der Kampf-Tab ist jetzt in die Bereiche Kampfwerte, Waffen,
@@ -268,7 +293,7 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 - `HeroSheet` verwendet jetzt `rawStartAttributes` fuer Roh-Startwerte und `startAttributes` fuer effektive Startwerte nach Rasse/Kultur/Profession.
 - Neue Start-/Maximum-Logik liegt in `lib/rules/derived/attribute_start_rules.dart`.
 - `HeroComputedSnapshot` enthaelt zusaetzlich effektive Startwerte und Eigenschaftsmaxima.
-- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **13**.
+- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **15**.
 - `HeroSheet` speichert zusaetzlich `ritualCategories` fuer heldenspezifische
   Ritualkategorien und Rituale.
 - `HeroSheet` speichert jetzt auch `notes` und `connections` fuer den
@@ -353,7 +378,7 @@ python tool/report_unreferenced_dart.py
 - **Screen size limit**: root screen/tab files must stay under **700 LOC**. Split into sub-files (e.g. `hero_combat/` directory) before exceeding this.
 - **ConsumerWidget vs ConsumerStatefulWidget**: use `ConsumerWidget` (stateless) by default; use `ConsumerStatefulWidget` only when local widget state is genuinely needed.
 - **Provider access in UI**: use `.watch` for reactive reads; use `.read` only inside callbacks (e.g. button presses).
-- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **13**.
+- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **15**.
 - **German comments and identifiers**: code-level comments and domain names follow German (rasse, kultur, Held, Talente, etc.).
 
 ### Catalog
