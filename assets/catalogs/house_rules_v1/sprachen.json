@@ -1,0 +1,372 @@
+[
+  {
+    "id": "spr_garethi",
+    "name": "Garethi",
+    "familie": "Garethi-Familie",
+    "maxWert": 18,
+    "steigerung": "A",
+    "schriftIds": ["sch_kusliker_zeichen"],
+    "schriftlos": false,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_bosparano",
+    "name": "Bosparano",
+    "familie": "Garethi-Familie",
+    "maxWert": 21,
+    "steigerung": "A",
+    "schriftIds": ["sch_kusliker_zeichen", "sch_imperiale_zeichen"],
+    "schriftlos": false,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_aureliani",
+    "name": "Aureliani",
+    "familie": "Garethi-Familie",
+    "maxWert": 21,
+    "steigerung": "A",
+    "schriftIds": ["sch_imperiale_zeichen"],
+    "schriftlos": false,
+    "hinweise": "Kenner der Sprachfamilie benötigen Sprachenkunde 7 für TaW über 18; Fremdsprachler benötigen Sprachenkunde 7 für TaW über 10"
+  },
+  {
+    "id": "spr_zyklopaeisch",
+    "name": "Zyklopäisch",
+    "familie": "Garethi-Familie",
+    "maxWert": 18,
+    "steigerung": "A",
+    "schriftIds": ["sch_kusliker_zeichen"],
+    "schriftlos": false,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_tulamidya",
+    "name": "Tulamidya",
+    "familie": "Tulamidya-Familie",
+    "maxWert": 18,
+    "steigerung": "A",
+    "schriftIds": ["sch_tulamidya", "sch_geheiligte_glyphen_unau", "sch_kusliker_zeichen"],
+    "schriftlos": false,
+    "hinweise": "Khôm: Geheiligte Glyphen von Unau; Aranien: Kusliker Zeichen"
+  },
+  {
+    "id": "spr_ur_tulamidya",
+    "name": "Ur-Tulamidya",
+    "familie": "Tulamidya-Familie",
+    "maxWert": 21,
+    "steigerung": "A",
+    "schriftIds": ["sch_tulamidya", "sch_ur_tulamidya", "sch_chrmk"],
+    "schriftlos": false,
+    "hinweise": "spät: Tulamidya / früh: Ur-Tulamidya / ursprünglich: Zelemja (Chrmk); Kenner benötigen Sprachenkunde 7 für TaW über 18; Fremdsprachler Sprachenkunde 7 für TaW über 10"
+  },
+  {
+    "id": "spr_zelemja",
+    "name": "Zelemja",
+    "familie": "Tulamidya-Familie",
+    "maxWert": 18,
+    "steigerung": "A",
+    "schriftIds": ["sch_chrmk"],
+    "schriftlos": false,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_alaani",
+    "name": "Alaani",
+    "familie": "Tulamidya-Familie",
+    "maxWert": 21,
+    "steigerung": "A",
+    "schriftIds": ["sch_kusliker_zeichen", "sch_altes_alaani"],
+    "schriftlos": false,
+    "hinweise": "heute: Kusliker Zeichen / rituell/früher: Altes Alaani; Kenner benötigen Sprachenkunde 7 für TaW über 18; Fremdsprachler Sprachenkunde 7 für TaW über 10"
+  },
+  {
+    "id": "spr_zhulchammaqra",
+    "name": "Zhulchammaqra",
+    "familie": "Tulamidya-Familie",
+    "maxWert": 15,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": "auch 'Norbardisch' / 'Trollzackisch'"
+  },
+  {
+    "id": "spr_ferkina",
+    "name": "Ferkina",
+    "familie": "Tulamidya-Familie",
+    "maxWert": 16,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_ruuz",
+    "name": "Ruuz",
+    "familie": "Tulamidya-Familie",
+    "maxWert": 18,
+    "steigerung": "A",
+    "schriftIds": ["sch_ur_tulamidya"],
+    "schriftlos": false,
+    "hinweise": "auch 'Ur-Maraskanisch'; Kenner benötigen Sprachenkunde 7 für TaW über 18; Fremdsprachler Sprachenkunde 7 für TaW über 10"
+  },
+  {
+    "id": "spr_altes_kemi",
+    "name": "Altes Kemi",
+    "familie": "Tulamidya-Familie",
+    "maxWert": 18,
+    "steigerung": "A",
+    "schriftIds": ["sch_altes_kemi"],
+    "schriftlos": false,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_rabensprache",
+    "name": "Rabensprache",
+    "familie": "Tulamidya-Familie",
+    "maxWert": 15,
+    "steigerung": "A",
+    "schriftIds": ["sch_kusliker_zeichen", "sch_tulamidya"],
+    "schriftlos": false,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_thorwalsch",
+    "name": "Thorwalsch",
+    "familie": "Thorwalsch-Familie",
+    "maxWert": 18,
+    "steigerung": "A",
+    "schriftIds": ["sch_kusliker_zeichen"],
+    "schriftlos": false,
+    "hinweise": "Dialekte: Gjalskisch, Fjarningisch"
+  },
+  {
+    "id": "spr_hjaldingsch",
+    "name": "Hjaldingsch",
+    "familie": "Thorwalsch-Familie",
+    "maxWert": 18,
+    "steigerung": "A",
+    "schriftIds": ["sch_hjaldingsche_runen"],
+    "schriftlos": false,
+    "hinweise": "auch 'Saga-Thorwalsch'"
+  },
+  {
+    "id": "spr_isdira",
+    "name": "Isdira",
+    "familie": "Elfisch-Familie",
+    "maxWert": 21,
+    "steigerung": "A",
+    "schriftIds": ["sch_isdira"],
+    "schriftlos": false,
+    "hinweise": "ohne Vorteil Zweistimmiger Gesang nur bis Komplexität 15 erlernbar"
+  },
+  {
+    "id": "spr_asdharia",
+    "name": "Asdharia",
+    "familie": "Elfisch-Familie",
+    "maxWert": 24,
+    "steigerung": "B",
+    "schriftIds": ["sch_asdharia"],
+    "schriftlos": false,
+    "hinweise": "ohne Vorteil Zweistimmiger Gesang nur bis Komplexität 15 erlernbar; Kenner benötigen Sprachenkunde 7 für TaW über 18; Fremdsprachler Sprachenkunde 7 für TaW über 10"
+  },
+  {
+    "id": "spr_rogolan",
+    "name": "Rogolan",
+    "familie": "Zwergisch-Familie",
+    "maxWert": 21,
+    "steigerung": "A",
+    "schriftIds": ["sch_rogolan"],
+    "schriftlos": false,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_angram",
+    "name": "Angram",
+    "familie": "Zwergisch-Familie",
+    "maxWert": 21,
+    "steigerung": "A",
+    "schriftIds": ["sch_angram"],
+    "schriftlos": false,
+    "hinweise": "Kenner benötigen Sprachenkunde 7 für TaW über 18; Fremdsprachler Sprachenkunde 7 für TaW über 10"
+  },
+  {
+    "id": "spr_ologhaijan",
+    "name": "Ologhaijan",
+    "familie": "Orkisch-Familie",
+    "maxWert": 15,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": "auch 'Hochorkisch'"
+  },
+  {
+    "id": "spr_oloarkh",
+    "name": "Oloarkh",
+    "familie": "Orkisch-Familie",
+    "maxWert": 10,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_mahrisch",
+    "name": "Mahrisch",
+    "familie": "Rissoal-Familie",
+    "maxWert": 20,
+    "steigerung": "A",
+    "schriftIds": ["sch_mahrische_glyphen"],
+    "schriftlos": false,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_rissoal",
+    "name": "Rissoal",
+    "familie": "Rissoal-Familie",
+    "maxWert": 20,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_drachisch",
+    "name": "Drachisch",
+    "familie": "Einzelsprachen",
+    "maxWert": 21,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": "nur unter Magie-Einsatz erlernbar"
+  },
+  {
+    "id": "spr_goblinisch",
+    "name": "Goblinisch",
+    "familie": "Einzelsprachen",
+    "maxWert": 12,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_grolmisch",
+    "name": "Grolmisch",
+    "familie": "Einzelsprachen",
+    "maxWert": 17,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_koboldisch",
+    "name": "Koboldisch",
+    "familie": "Einzelsprachen",
+    "maxWert": 15,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": "nur unter Magie-Einsatz erlernbar"
+  },
+  {
+    "id": "spr_molochisch",
+    "name": "Molochisch",
+    "familie": "Einzelsprachen",
+    "maxWert": 17,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_neckergesang",
+    "name": "Neckergesang",
+    "familie": "Einzelsprachen",
+    "maxWert": 18,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": "max 24 mit Gedankenbilder-Erweiterung; nur unter Magie-Einsatz erlernbar"
+  },
+  {
+    "id": "spr_nujuka",
+    "name": "Nujuka",
+    "familie": "Einzelsprachen",
+    "maxWert": 15,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": "auch 'Nivesisch'"
+  },
+  {
+    "id": "spr_rssahh",
+    "name": "Rssahh",
+    "familie": "Einzelsprachen",
+    "maxWert": 18,
+    "steigerung": "A",
+    "schriftIds": ["sch_chrmk"],
+    "schriftlos": false,
+    "hinweise": "für Nicht-Achaz nur bis TaW 9 erlernbar"
+  },
+  {
+    "id": "spr_trollisch",
+    "name": "Trollisch",
+    "familie": "Einzelsprachen",
+    "maxWert": 15,
+    "steigerung": "A",
+    "schriftIds": ["sch_trollische_raumbilderschrift"],
+    "schriftlos": false,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_waldmenschen",
+    "name": "Waldmenschen-Sprachen",
+    "familie": "Einzelsprachen",
+    "maxWert": 15,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": "auch 'Mohisch'; umfasst Tocamuyac, Puka-Puka"
+  },
+  {
+    "id": "spr_zlit",
+    "name": "Z'Lit",
+    "familie": "Einzelsprachen",
+    "maxWert": 17,
+    "steigerung": "A",
+    "schriftIds": [],
+    "schriftlos": true,
+    "hinweise": "nur von kiementragenden Wesen erlernbar"
+  },
+  {
+    "id": "spr_zhayad",
+    "name": "Zhayad",
+    "familie": "Geheimsprachen",
+    "maxWert": 15,
+    "steigerung": "A",
+    "schriftIds": ["sch_zhayad"],
+    "schriftlos": false,
+    "hinweise": ""
+  },
+  {
+    "id": "spr_atak",
+    "name": "Atak",
+    "familie": "Geheimsprachen",
+    "maxWert": 12,
+    "steigerung": "A",
+    "schriftIds": ["sch_zeichensprache"],
+    "schriftlos": false,
+    "hinweise": "beinhaltet Kenntnis der Zeichensprache"
+  },
+  {
+    "id": "spr_fuechsisch",
+    "name": "Füchsisch",
+    "familie": "Geheimsprachen",
+    "maxWert": 12,
+    "steigerung": "A",
+    "schriftIds": ["sch_zeichen_und_zinken"],
+    "schriftlos": false,
+    "hinweise": "beinhaltet Kenntnis der Zeichen und Zinken"
+  }
+]
