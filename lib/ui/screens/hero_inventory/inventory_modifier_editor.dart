@@ -331,42 +331,58 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
         );
 
       case InventoryModifierKind.talent:
-        if (talents.isEmpty) {
-          // Katalog noch nicht geladen – Freitextfeld als Fallback
-          return TextFormField(
-            initialValue: mod.targetId,
-            decoration: const InputDecoration(
-              labelText: 'Talent-ID',
-              border: OutlineInputBorder(),
-              isDense: true,
-              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            ),
-            onChanged: (v) => _emit(targetId: v.trim()),
-          );
-        }
-        final selectedId =
-            talents.any((t) => t.id == mod.targetId) ? mod.targetId : null;
-        return DropdownButtonFormField<String>(
-          key: ValueKey<String>('target-talent-${mod.targetId}'),
-          isExpanded: true,
-          initialValue: selectedId,
-          hint: const Text('Talent auswählen'),
-          decoration: const InputDecoration(
-            labelText: 'Talent',
-            border: OutlineInputBorder(),
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          ),
-          items: talents
-              .map(
-                (t) => DropdownMenuItem(
-                  value: t.id,
-                  child: Text(t.name, overflow: TextOverflow.ellipsis),
+        final initialName = talents.isEmpty
+            ? mod.targetId
+            : (talents.where((t) => t.id == mod.targetId).firstOrNull?.name ??
+                mod.targetId);
+        return Autocomplete<TalentDef>(
+          key: ValueKey<String>('talent-auto-${mod.targetId}'),
+          initialValue: TextEditingValue(text: initialName),
+          displayStringForOption: (t) => t.name,
+          optionsBuilder: (value) {
+            if (value.text.isEmpty) return talents;
+            final query = value.text.toLowerCase();
+            return talents.where((t) => t.name.toLowerCase().contains(query));
+          },
+          onSelected: (t) => _emit(targetId: t.id),
+          fieldViewBuilder: (context, ctrl, focusNode, onSubmitted) {
+            return TextField(
+              controller: ctrl,
+              focusNode: focusNode,
+              decoration: const InputDecoration(
+                labelText: 'Talent suchen',
+                border: OutlineInputBorder(),
+                isDense: true,
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              ),
+            );
+          },
+          optionsViewBuilder: (context, onSelected, options) {
+            return Align(
+              alignment: Alignment.topLeft,
+              child: Material(
+                elevation: 4,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 220),
+                  child: ListView.builder(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    itemCount: options.length,
+                    itemBuilder: (_, i) {
+                      final t = options.elementAt(i);
+                      return ListTile(
+                        dense: true,
+                        title: Text(t.name),
+                        subtitle:
+                            t.group.isNotEmpty ? Text(t.group) : null,
+                        onTap: () => onSelected(t),
+                      );
+                    },
+                  ),
                 ),
-              )
-              .toList(),
-          onChanged: (id) {
-            if (id != null) _emit(targetId: id);
+              ),
+            );
           },
         );
     }
