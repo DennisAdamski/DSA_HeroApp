@@ -5,6 +5,7 @@ Flutter-App zur Verwaltung von DSA-Helden mit:
 - Regeln/abgeleiteten Werten
 - Import/Export von Helden als JSON
 - Katalogdaten aus Excel-Quellen
+- Kampfmanöver und Kampf-Sonderfertigkeiten aus Split-JSON-Katalogen
 
 ## Aktuelle Fachlogik
 
@@ -14,6 +15,8 @@ Flutter-App zur Verwaltung von DSA-Helden mit:
 - Das Eigenschaftsmaximum wird aus dem effektiven Startwert berechnet: `ceil(Start * 1.5)`.
 - Der Magie-Tab verwaltet neben Zaubern jetzt auch heldenspezifische Ritualkategorien und Rituale.
 - Der Notizen-Tab ist in `Notizen` und `Verbindungen` unterteilt und speichert beide Bereiche direkt im Heldendatensatz.
+- Der Kampf-Tab verwaltet Waffenmeisterschaften ueber `CombatConfig.waffenmeisterschaften` und den Waffenmeister-Baukasten im Kampfregeln-Tab.
+- Waffenlose Kampftechniken aus `Wege des Schwerts` werden als katalogbasierte Kampf-Sonderfertigkeiten gefuehrt und schalten ihre zugeordneten Manöver direkt frei.
 
 ## Schnellstart
 
@@ -42,6 +45,7 @@ Vollstaendige Anleitung:
 - `lib/main.dart` als Einstiegspunkt
 - `lib/domain/`, `lib/state/`, `lib/data/`, `lib/rules/derived/`, `lib/ui/screens/`
 - `assets/catalogs/house_rules_v1/` (Split-JSON mit `manifest.json` + Teilkatalogen)
+- Der Kampf-Katalog umfasst jetzt auch `manoever.json` und `kampf_sonderfertigkeiten.json`.
 
 ### Architektur-Notiz (Stand: 2026-03-01)
 - State-Layer nutzt einen stream-basierten Heldenindex (`HeroIndexSnapshot`) fuer O(1)-Lookup je ID.
@@ -49,7 +53,7 @@ Vollstaendige Anleitung:
 - Repository-Schnittstelle ist auf inkrementelle Streams erweitert (`watchHeroIndex`, `watchHeroState`, `loadHeroById`).
 - UI-Tabs (`Combat`, `Talents`, `Overview`) sind in kleinere Part-Dateien zerlegt; Root-Dateien bleiben unter 700 LOC.
 
-### Kampf-UI (Stand: 2026-03-09)
+### Kampf-UI (Stand: 2026-03-11)
 - Der Sub-Tab `Ausrüstung` ist die zentrale Kampf-Inventaransicht fuer Waffen, Parierwaffen, Schilde und Ruestungen.
 - Haupt- und Nebenhand referenzieren konkrete Eintraege aus diesem Kampf-Inventar.
 - Die Waffen-Tabelle im Kampf-Tab ist kompakt und zeigt nur Kernwerte sowie Artefakt-Status.
@@ -62,6 +66,9 @@ Vollstaendige Anleitung:
 - Die angezeigte `PA` der aktiven Nahkampfwaffe enthaelt den heldenbezogenen INI-Parade-Bonus; dieser wird nicht mehr als eigener Waffenwert separat angezeigt.
 - Neue Waffen werden ueber denselben Dialog angelegt; der Katalog-Button oeffnet dabei vorbefuellte Vorlagen.
 - Axxeleratus aktiviert temporaer `Schnellziehen`, `Schnellladen (Bogen)` und `Schnellladen (Armbrust)`; Fernkampf-Ladezeiten werden im Kampf-Preview als `Aktion`/`Aktionen` ausgegeben.
+- Der Bereich `Kampfregeln` enthaelt jetzt zusaetzlich einen Builder fuer Kampfmeisterschaften mit Zieltyp, Effekten, Anforderungswarnungen und Punktbudget.
+- `CombatPreviewStats` zeigt anwendbare Meisterschaften sowie automatisch eingerechnete Boni fuer AT, PA, INI, Schild-PA, TP/KK, Ladezeit und Fernkampf-Reichweite.
+- Aktive waffenlose Kampfstile werden im Kampfregel-Tab als eigene Katalogsektion gepflegt; direkte Stilboni auf `Raufen`/`Ringen` sowie die freigeschalteten waffenlosen Manöver werden in die Kampfvorschau eingerechnet.
 
 ### Workspace-Layout (Stand: 2026-03-08)
 - Ab `1280 dp` nutzt der Hero-Workspace das **Helden Deck** statt der klassischen TabBar.
