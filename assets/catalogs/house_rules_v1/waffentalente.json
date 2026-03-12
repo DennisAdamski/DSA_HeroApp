@@ -329,7 +329,7 @@
                        ],
         "type":  "Fernkampf",
         "be":  "-3",
-        "weaponCategory":  "Kurzbogen , Kompositbogen, Elfenbogen, Kriegsbogen, Langbogen, Orkischer Reiterbogen",
+        "weaponCategory":  "Kurzbogen, Kompositbogen, Elfenbogen, Kriegsbogen, Langbogen, Orkischer Reiterbogen",
         "alternatives":  "",
         "source":  "ListeWaffenUndTalente.xlsx:Kampftalente",
         "description":  "",

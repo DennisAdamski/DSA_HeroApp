@@ -11,6 +11,8 @@ class OffhandEquipmentEntry {
     this.iniMod = 0,
     this.atMod = 0,
     this.paMod = 0,
+    this.isArtifact = false,
+    this.artifactDescription = '',
   });
 
   /// Anzeigename des Eintrags.
@@ -34,6 +36,12 @@ class OffhandEquipmentEntry {
   /// PA-Modifikator des Eintrags.
   final int paMod;
 
+  /// Kennzeichnet Schild oder Parierwaffe als Artefakt.
+  final bool isArtifact;
+
+  /// Freitext-Beschreibung fuer das Artefakt.
+  final String artifactDescription;
+
   /// Gibt an, ob der Eintrag ein Schild ist.
   bool get isShield => type == OffhandEquipmentType.shield;
 
@@ -46,6 +54,8 @@ class OffhandEquipmentEntry {
     int? iniMod,
     int? atMod,
     int? paMod,
+    bool? isArtifact,
+    String? artifactDescription,
   }) {
     return OffhandEquipmentEntry(
       name: name ?? this.name,
@@ -55,6 +65,8 @@ class OffhandEquipmentEntry {
       iniMod: iniMod ?? this.iniMod,
       atMod: atMod ?? this.atMod,
       paMod: paMod ?? this.paMod,
+      isArtifact: isArtifact ?? this.isArtifact,
+      artifactDescription: artifactDescription ?? this.artifactDescription,
     );
   }
 
@@ -68,6 +80,8 @@ class OffhandEquipmentEntry {
       'iniMod': iniMod,
       'atMod': atMod,
       'paMod': paMod,
+      'isArtifact': isArtifact,
+      'artifactDescription': artifactDescription,
     };
   }
 
@@ -82,6 +96,8 @@ class OffhandEquipmentEntry {
       iniMod: getInt('iniMod'),
       atMod: getInt('atMod'),
       paMod: getInt('paMod'),
+      isArtifact: (json['isArtifact'] as bool?) ?? false,
+      artifactDescription: (json['artifactDescription'] as String?) ?? '',
     );
   }
 }

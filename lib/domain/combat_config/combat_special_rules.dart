@@ -24,6 +24,8 @@ class CombatSpecialRules {
     this.axxeleratusActive = false,
     this.klingentaenzer = false,
     this.aufmerksamkeit = false,
+    this.activeCombatSpecialAbilityIds = const <String>[],
+    this.gladiatorStyleTalent = '',
     this.activeManeuvers = const <String>[],
   });
 
@@ -84,6 +86,12 @@ class CombatSpecialRules {
   /// Aufmerksamkeit: ersetzt 1W6/2W6-Anzeige durch +6/+12 in der Uebersicht.
   final bool aufmerksamkeit;
 
+  /// Aktiv geschaltete katalogbasierte Kampf-Sonderfertigkeiten.
+  final List<String> activeCombatSpecialAbilityIds;
+
+  /// Talentwahl fuer den Gladiatorenstil ('raufen' oder 'ringen').
+  final String gladiatorStyleTalent;
+
   /// Liste der aktuell aktiven Manoever-IDs (dedupliziert, kein Leerstring).
   final List<String> activeManeuvers;
 
@@ -109,6 +117,8 @@ class CombatSpecialRules {
     bool? axxeleratusActive,
     bool? klingentaenzer,
     bool? aufmerksamkeit,
+    List<String>? activeCombatSpecialAbilityIds,
+    String? gladiatorStyleTalent,
     List<String>? activeManeuvers,
   }) {
     return CombatSpecialRules(
@@ -130,6 +140,11 @@ class CombatSpecialRules {
       axxeleratusActive: axxeleratusActive ?? this.axxeleratusActive,
       klingentaenzer: klingentaenzer ?? this.klingentaenzer,
       aufmerksamkeit: aufmerksamkeit ?? this.aufmerksamkeit,
+      activeCombatSpecialAbilityIds: _normalizeStringList(
+        activeCombatSpecialAbilityIds ?? this.activeCombatSpecialAbilityIds,
+      ),
+      gladiatorStyleTalent: (gladiatorStyleTalent ?? this.gladiatorStyleTalent)
+          .trim(),
       activeManeuvers: _normalizeStringList(
         activeManeuvers ?? this.activeManeuvers,
       ),
@@ -157,6 +172,10 @@ class CombatSpecialRules {
       'axxeleratusActive': axxeleratusActive,
       'klingentaenzer': klingentaenzer,
       'aufmerksamkeit': aufmerksamkeit,
+      'activeCombatSpecialAbilityIds': _normalizeStringList(
+        activeCombatSpecialAbilityIds,
+      ),
+      'gladiatorStyleTalent': gladiatorStyleTalent.trim(),
       'activeManeuvers': _normalizeStringList(activeManeuvers),
     };
   }
@@ -185,6 +204,11 @@ class CombatSpecialRules {
       axxeleratusActive: getBool('axxeleratusActive'),
       klingentaenzer: getBool('klingentaenzer'),
       aufmerksamkeit: getBool('aufmerksamkeit'),
+      activeCombatSpecialAbilityIds: _normalizeStringList(
+        (json['activeCombatSpecialAbilityIds'] as List?) ?? const <dynamic>[],
+      ),
+      gladiatorStyleTalent:
+          (json['gladiatorStyleTalent'] as String?)?.trim() ?? '',
       activeManeuvers: _normalizeStringList(
         (json['activeManeuvers'] as List?) ?? const <dynamic>[],
       ),

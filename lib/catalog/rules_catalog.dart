@@ -15,6 +15,7 @@ class RulesCatalog {
     required this.spells,
     required this.weapons,
     this.maneuvers = const [],
+    this.combatSpecialAbilities = const [],
     this.metadata = const {},
   });
 
@@ -24,6 +25,8 @@ class RulesCatalog {
   final List<SpellDef> spells; // Alle Zaubersprueche
   final List<WeaponDef> weapons; // Alle Waffendefinitionen
   final List<ManeuverDef> maneuvers; // Kampfmanöver (optional, kann leer sein)
+  final List<CombatSpecialAbilityDef>
+  combatSpecialAbilities; // Kampf-Sonderfertigkeiten
   final Map<String, dynamic> metadata; // Sonstige Metadaten aus dem Manifest
 
   /// Sucht ein Manöver anhand des Namens (Groß-/Kleinschreibung wird ignoriert).
@@ -39,6 +42,9 @@ class RulesCatalog {
     final talentsRaw = (json['talents'] as List?) ?? const [];
     final spellsRaw = (json['spells'] as List?) ?? const [];
     final weaponsRaw = (json['weapons'] as List?) ?? const [];
+    final maneuversRaw = (json['maneuvers'] as List?) ?? const [];
+    final combatSpecialAbilitiesRaw =
+        (json['combatSpecialAbilities'] as List?) ?? const [];
 
     return RulesCatalog(
       version: _readString(json, 'version', fallback: 'unknown'),
@@ -55,6 +61,17 @@ class RulesCatalog {
           .whereType<Map>()
           .map((entry) => WeaponDef.fromJson(entry.cast<String, dynamic>()))
           .toList(growable: false),
+      maneuvers: maneuversRaw
+          .whereType<Map>()
+          .map((entry) => ManeuverDef.fromJson(entry.cast<String, dynamic>()))
+          .toList(growable: false),
+      combatSpecialAbilities: combatSpecialAbilitiesRaw
+          .whereType<Map>()
+          .map(
+            (entry) =>
+                CombatSpecialAbilityDef.fromJson(entry.cast<String, dynamic>()),
+          )
+          .toList(growable: false),
       metadata: (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
@@ -67,6 +84,12 @@ class RulesCatalog {
       'talents': talents.map((entry) => entry.toJson()).toList(growable: false),
       'spells': spells.map((entry) => entry.toJson()).toList(growable: false),
       'weapons': weapons.map((entry) => entry.toJson()).toList(growable: false),
+      'maneuvers': maneuvers
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
+      'combatSpecialAbilities': combatSpecialAbilities
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
     };
   }
 }
@@ -80,26 +103,42 @@ class ManeuverDef {
     required this.id,
     required this.name,
     this.gruppe = '',
+    this.typ = '',
     this.erschwernis = '',
     this.seite = '',
     this.erklarung = '',
+    this.erklarungLang = '',
+    this.voraussetzungen = '',
+    this.verbreitung = '',
+    this.kosten = '',
   });
 
   final String id; // Eindeutige ID (z. B. 'man_hammerschlag')
   final String name; // Anzeigename
   final String gruppe; // Kategorie (z. B. 'Angriff', 'Abwehr')
+  final String
+  typ; // Feinere Typisierung fuer die UI (z. B. 'Angriffsmanoever')
   final String erschwernis; // Erschwernis-Modifikator als Freitext
   final String seite; // Seitenreferenz im Regelwerk
   final String erklarung; // Regeltext / Beschreibung
+  final String erklarungLang; // Ausfuehrliche Regelbeschreibung
+  final String voraussetzungen; // Erwerbs- oder Einsatzvoraussetzungen
+  final String verbreitung; // Verbreitungsangabe laut Regelwerk
+  final String kosten; // AP-Kosten laut Regelwerk
 
   factory ManeuverDef.fromJson(Map<String, dynamic> json) {
     return ManeuverDef(
       id: _readString(json, 'id', fallback: ''),
       name: _readString(json, 'name', fallback: ''),
       gruppe: _readString(json, 'gruppe', fallback: ''),
+      typ: _readString(json, 'typ', fallback: ''),
       erschwernis: _readString(json, 'erschwernis', fallback: ''),
       seite: _readString(json, 'seite', fallback: ''),
       erklarung: _readString(json, 'erklarung', fallback: ''),
+      erklarungLang: _readString(json, 'erklarung_lang', fallback: ''),
+      voraussetzungen: _readString(json, 'voraussetzungen', fallback: ''),
+      verbreitung: _readString(json, 'verbreitung', fallback: ''),
+      kosten: _readString(json, 'kosten', fallback: ''),
     );
   }
 
@@ -108,9 +147,137 @@ class ManeuverDef {
       'id': id,
       'name': name,
       'gruppe': gruppe,
+      'typ': typ,
       'erschwernis': erschwernis,
       'seite': seite,
       'erklarung': erklarung,
+      'erklarung_lang': erklarungLang,
+      'voraussetzungen': voraussetzungen,
+      'verbreitung': verbreitung,
+      'kosten': kosten,
+    };
+  }
+}
+
+/// Definition einer Kampf-Sonderfertigkeit aus dem Regelkatalog.
+///
+/// Diese Eintraege werden aktuell als strukturierter Nachschlage-Katalog
+/// geladen und koennen spaeter enger mit UI und Regelberechnungen
+/// verknuepft werden.
+class CombatSpecialAbilityDef {
+  const CombatSpecialAbilityDef({
+    required this.id,
+    required this.name,
+    this.gruppe = 'kampf',
+    this.typ = 'sonderfertigkeit',
+    this.stilTyp = '',
+    this.seite = '',
+    this.beschreibung = '',
+    this.erklarungLang = '',
+    this.voraussetzungen = '',
+    this.verbreitung = '',
+    this.kosten = '',
+    this.aktiviertManoeverIds = const [],
+    this.kampfwertBoni = const [],
+  });
+
+  final String id; // Eindeutige ID (z. B. 'ksf_aufmerksamkeit')
+  final String name; // Anzeigename
+  final String gruppe; // Obergruppe, aktuell meist 'kampf'
+  final String typ; // Typisierung, aktuell 'sonderfertigkeit'
+  final String stilTyp; // Optionaler Stiltyp, z. B. 'waffenloser_kampfstil'
+  final String seite; // Seitenreferenz im Regelwerk
+  final String beschreibung; // Kurze Beschreibung
+  final String erklarungLang; // Ausfuehrliche Regelbeschreibung
+  final String voraussetzungen; // Erwerbsvoraussetzungen
+  final String verbreitung; // Verbreitungsangabe laut Regelwerk
+  final String kosten; // AP-Kosten laut Regelwerk
+  final List<String> aktiviertManoeverIds; // Freigeschaltete Manoever-IDs
+  final List<CombatSpecialAbilityBonusDef> kampfwertBoni; // Direkte Boni
+
+  /// Gibt an, ob der Eintrag einen regelwirksamen waffenlosen Kampfstil darstellt.
+  bool get isUnarmedCombatStyle => stilTyp.trim() == 'waffenloser_kampfstil';
+
+  /// Deserialisiert die Sonderfertigkeit tolerant aus JSON.
+  factory CombatSpecialAbilityDef.fromJson(Map<String, dynamic> json) {
+    final kampfwertBoniRaw = (json['kampfwert_boni'] as List?) ?? const [];
+    return CombatSpecialAbilityDef(
+      id: _readString(json, 'id', fallback: ''),
+      name: _readString(json, 'name', fallback: ''),
+      gruppe: _readString(json, 'gruppe', fallback: 'kampf'),
+      typ: _readString(json, 'typ', fallback: 'sonderfertigkeit'),
+      stilTyp: _readString(json, 'stil_typ', fallback: ''),
+      seite: _readString(json, 'seite', fallback: ''),
+      beschreibung: _readString(json, 'beschreibung', fallback: ''),
+      erklarungLang: _readString(json, 'erklarung_lang', fallback: ''),
+      voraussetzungen: _readString(json, 'voraussetzungen', fallback: ''),
+      verbreitung: _readString(json, 'verbreitung', fallback: ''),
+      kosten: _readString(json, 'kosten', fallback: ''),
+      aktiviertManoeverIds: _readStringList(json, 'aktiviert_manoever_ids'),
+      kampfwertBoni: kampfwertBoniRaw
+          .whereType<Map>()
+          .map(
+            (entry) => CombatSpecialAbilityBonusDef.fromJson(
+              entry.cast<String, dynamic>(),
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+
+  /// Serialisiert die Sonderfertigkeit in ein JSON-kompatibles Map.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'gruppe': gruppe,
+      'typ': typ,
+      'stil_typ': stilTyp,
+      'seite': seite,
+      'beschreibung': beschreibung,
+      'erklarung_lang': erklarungLang,
+      'voraussetzungen': voraussetzungen,
+      'verbreitung': verbreitung,
+      'kosten': kosten,
+      'aktiviert_manoever_ids': aktiviertManoeverIds,
+      'kampfwert_boni': kampfwertBoni
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
+    };
+  }
+}
+
+/// Beschreibt einen einfachen, direkt verrechenbaren Kampfwert-Bonus.
+class CombatSpecialAbilityBonusDef {
+  const CombatSpecialAbilityBonusDef({
+    this.giltFuerTalent = '',
+    this.atBonus = 0,
+    this.paBonus = 0,
+    this.iniMod = 0,
+  });
+
+  final String giltFuerTalent; // 'raufen', 'ringen', 'beide' oder 'wahl'
+  final int atBonus;
+  final int paBonus;
+  final int iniMod;
+
+  /// Deserialisiert einen Kampfwert-Bonus tolerant aus JSON.
+  factory CombatSpecialAbilityBonusDef.fromJson(Map<String, dynamic> json) {
+    return CombatSpecialAbilityBonusDef(
+      giltFuerTalent: _readString(json, 'gilt_fuer_talent', fallback: ''),
+      atBonus: (json['at_bonus'] as num?)?.toInt() ?? 0,
+      paBonus: (json['pa_bonus'] as num?)?.toInt() ?? 0,
+      iniMod: (json['ini_mod'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  /// Serialisiert den Bonus in ein JSON-kompatibles Map.
+  Map<String, dynamic> toJson() {
+    return {
+      'gilt_fuer_talent': giltFuerTalent,
+      'at_bonus': atBonus,
+      'pa_bonus': paBonus,
+      'ini_mod': iniMod,
     };
   }
 }

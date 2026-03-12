@@ -4,23 +4,20 @@ Aufgaben die notwendig sind für das erreichen des MVP
 
 ## Aufgaben für die KI (MVP)
 
-- [x] Inspector ändern zu einem Reiter für Aktuelles
-  - [x] LeP, AsP & Au auf Kampf und Magie-Tab anzeigen und bearbeitbar machen.
-  - [x] Modifikatoren eintragen
-  - [x] BE Konfigurieren
-  - [x] Wichtige Zauber aktivieren (Axxeleratus)
-- [x] Mod-Fields unabhängig vom Bearbeiten-State bearbeitbar machen
-- [x] Basiswerte Aktuell in Summe umbennennen
-- [x] MetaTalente unter Talente hinzufügen
-- [x] Lernkomplexität für Begabungen korrekt angeben
-- [x] Zauberrituale
+- [ ] Geschwindigkeit aktuell = Basis - eBE
+- [ ] Sprache und Schriften darstellen
+- [ ] Artefaktbeschreibung der Waffe bei Auswahl auf Kampfseite
+- [ ] Waffenmeister-Auswirkungen prüfen
+- [ ] Held export als Button auf Helden
+- [ ] Held löschen als Button auf Helden
+- [ ] Alle Helden (als Zip) exportieren als Button global
 
 ## Aufgaben für mich (MVP)
 
 - [ ] Testklasse nur für Logiken prüfen
 - [x] Standardtalente definieren
 - [ ] Eigenschaftsmodifikatoren prüfen
-- [ ] Helden importieren
+- [ ] Alanel importieren
 
 Folgeaufgaben für den nächsten Schritt
 

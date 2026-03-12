@@ -463,6 +463,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                   hero,
                   state,
                   catalogTalents: catalog.talents,
+                  catalogManeuvers: catalog.maneuvers,
+                  catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
                 ).beKampf
               : null;
           final talentBeOverride = ref.watch(talentBeOverrideProvider(hero.id));

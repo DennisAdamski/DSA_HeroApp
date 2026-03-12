@@ -50,5 +50,5 @@ app.*.map.json
 ~$ListeWaffenUndTalente.xlsx
 assets/heroes/Gerajin Sirella von Tuzak.dsa-hero.json
 todo.tasks
-.claude/settings.local.json
+assets/catalogs/house_rules_v1/waffenmeister.md
 .claude/settings.local.json

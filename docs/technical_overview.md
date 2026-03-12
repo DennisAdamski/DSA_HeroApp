@@ -28,7 +28,7 @@ Helden im Pen-&-Paper-Rollenspiel *Das Schwarze Auge* (DSA). Die App bietet:
 - Lokale Persistenz mit der Hive-Datenbank
 - DSA-Regelberechnungen (Eigenschaften, abgeleitete Werte, Talente, Kampf)
 - Heldenimport/-export als JSON
-- Katalogdaten (Talente, Waffen, Zauber) aus aufgesplitteten JSON-Assets
+- Katalogdaten (Talente, Waffen, Zauber, Manöver, Kampf-Sonderfertigkeiten) aus aufgesplitteten JSON-Assets
 
 ### Technologie-Stack
 
@@ -87,7 +87,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 13
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 15
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
@@ -97,7 +97,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 13) | Format-Version für Migrationskompatibilität |
+| `schemaVersion` | `int` (= 15) | Format-Version für Migrationskompatibilität |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
@@ -106,6 +106,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `persistentMods` | `StatModifiers` | Dauerhafte Modifikatoren (aus Vor-/Nachteilen) |
 | `bought` | `BoughtStats` | Gekaufte Ressourcenerhöhungen |
 | `combatConfig` | `CombatConfig` | Gesamte Kampfkonfiguration |
+| `combatConfig.waffenmeisterschaften` | `List<WaffenmeisterConfig>` | Waffenmeister-Baukasten mit Waffenart, Boni und Voraussetzungen |
 | `talents` | `Map<String, HeroTalentEntry>` | Alle Talente (Schlüssel: Talent-ID) |
 | `metaTalents` | `List<HeroMetaTalent>` | Heldenspezifische Meta-Talente mit Komponenten, Eigenschaften und BE-Regel |
 | `hiddenTalentIds` | `List<String>` | IDs ausgeblendeter Talente |
@@ -380,7 +381,12 @@ Aktivierungsstatus von Kampf-Sonderfertigkeiten (alle `bool`):
 | `axxeleratusActive` | Zauber Axxeleratus (verdoppelt Ini-Basisanteil und GS; weitere Kampfboni) |
 | `klingentaenzer` | Klingentänzer (2W6 statt 1W6 für Initiative) |
 | `aufmerksamkeit` | Aufmerksamkeit |
-| `activeManeuvers` | `List<String>` — Aktive Manöver-IDs |
+| `activeCombatSpecialAbilityIds` | `List<String>` — Aktiv geschaltete katalogbasierte Kampf-Sonderfertigkeiten |
+| `gladiatorStyleTalent` | `String` | Talentwahl fuer den Gladiatorenstil (`raufen` oder `ringen`) |
+| `activeManeuvers` | `List<String>` — Manuell aktivierte Manöver-IDs |
+
+Waffenmeisterschaften sind bewusst **nicht** Teil von `CombatSpecialRules`,
+sondern liegen in `CombatConfig.waffenmeisterschaften`.
 
 #### `CombatManualMods`
 
@@ -395,6 +401,29 @@ Manuell eingetragene Kampfmodifikatoren (situativ):
 | `atMod` | Angriff-Modifikator |
 | `paMod` | Parade-Modifikator |
 | `iniWurf` | Gewürfeltes Ini-Ergebnis (1W6 oder 2W6) |
+
+---
+
+### 2.5a `WaffenmeisterConfig`
+
+**Datei:** `lib/domain/combat_config/waffenmeister_config.dart`
+
+`WaffenmeisterConfig` beschreibt eine Waffenmeisterschaft fuer eine konkrete
+Waffenart innerhalb von `CombatConfig.waffenmeisterschaften`.
+
+| Feld | Typ | Bedeutung |
+|---|---|---|
+| `talentId` | `String` | Zugehoeriges Kampftalent |
+| `weaponType` | `String` | Konkrete Waffenart |
+| `bonuses` | `List<WaffenmeisterBonus>` | Vergebene Baukasten-Boni |
+| `additionalWeaponTypes` | `List<String>` | Bis zu zwei weitere aehnliche Waffenarten |
+| `styleName` | `String` | Optionaler Stilname |
+| `masterName` | `String` | Optionaler Lehrmeister |
+| `requiredAttribute1/2` | `String` | Geforderte Eigenschaften |
+| `requiredAttribute1Value/2Value` | `int` | Mindestwerte der Eigenschaften |
+
+Die automatische Wirkung der Waffenmeisterschaft wird in
+`lib/rules/derived/waffenmeister_rules.dart` aus den vergebenen Boni abgeleitet.
 
 ---
 
@@ -623,6 +652,7 @@ waffentalente.json     ← Kampftalente (group == 'Kampftalent')
 waffen.json            ← Waffen
 magie.json             ← Zaubersprüche
 manoever.json          ← Manöver (optional)
+kampf_sonderfertigkeiten.json ← Kampf-Sonderfertigkeiten (optional)
 ```
 
 **`CatalogLoader.loadFromAsset()`** (`lib/catalog/catalog_loader.dart`):
@@ -745,10 +775,13 @@ zusaetzlich um weitere `+2`.
 | Kampf-SF | aktiviert temporaer `Schnellziehen`, `Schnellladen (Bogen)` und `Schnellladen (Armbrust)` |
 | Anzeige | `Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2` |
 
-### 4.6 Waffe, Fernkampf-AT & Schaden
+### 4.6 Waffe, Fernkampf-AT, Schaden und Kampfmeisterschaften
 
 **Dateien:** `lib/rules/derived/combat_rules.dart`,
-`lib/rules/derived/fernkampf_rules.dart`
+`lib/rules/derived/fernkampf_rules.dart`,
+`lib/rules/derived/fernkampf_ladezeit_rules.dart`,
+`lib/rules/derived/combat_mastery_rules.dart`,
+`lib/rules/derived/maneuver_rules.dart`
 
 ```
 tpKk = truncate((KK − kkBase) / kkThreshold)   # Kraftbonus auf TP
@@ -782,6 +815,15 @@ Dabei gilt:
 - `Schnellladen (Armbrust)` reduziert die Ladezeit um `3/4` der Basis-
   Ladezeit, echt gerundet; bei bereits besessener SF reduziert Axxeleratus
   anschliessend um einen weiteren Punkt.
+- `maneuver_rules.dart` normalisiert Manoever-Namen und UI-Texte auf stabile
+  IDs, damit Kampfmeisterschaften dieselben Referenzen wie Katalog und UI
+  nutzen koennen.
+- `combat_mastery_rules.dart` bewertet Punktbudget und Voraussetzungen,
+  prueft die Anwendbarkeit fuer Hauptwaffe, Schild oder Parierwaffe und leitet
+  automatisch wirksame Modifikatoren fuer die Kampfvorschau ab.
+- `unarmed_style_rules.dart` wertet aktive waffenlose Kampfstile aus dem
+  Katalog aus, schaltet deren Manoever frei und rechnet feste Stilboni auf
+  `Raufen`/`Ringen` mit einem gemeinsamen Limit von `+2 AT` und `+2 PA` ein.
 
 **Spezialisierungs-Boni:**
 
@@ -803,7 +845,10 @@ Dabei gilt:
 `CombatPreviewStats` liefert für Nahkampf weiterhin `AT`/`PA`; bei
 Fernkampfwaffen enthält derselbe Snapshot einen gemeinsamen `AT`, die aktive
 Distanzbezeichnung, Ladezeit sowie den selektierten Geschossnamen,
-Geschossbestand und dessen Beschreibung.
+Geschossbestand und dessen Beschreibung. Zusaetzlich enthaelt der Snapshot
+die automatisch eingerechneten Kampfmeisterschafts-Modifikatoren, anwendbare
+Meisterschaften, strukturierte Manoever-Erleichterungen fuer die UI sowie
+feste Boni aktiver waffenloser Kampfstile.
 
 ### 4.7 Modifier-Parser
 
@@ -1025,7 +1070,7 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 | `hero_workspace_screen.dart` | `HeroWorkspaceScreen` | Dynamischer Workspace-Host fuer einen Helden |
 | `hero_overview_tab.dart` | `HeroOverviewTab` | Uebersicht-Tab fuer Eigenschaften, AP, Ressourcen, Biografie |
 | `hero_talents_tab.dart` | `HeroTalentsTab` | Talente + Sonderfertigkeiten-Sub-Tab |
-| `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Kampf (Nah- oder Fernkampf), SF, Manöver |
+| `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Kampf (Nah- oder Fernkampf), SF, Manöver und Kampfmeisterschaften |
 | `hero_magic_tab.dart` | `HeroMagicTab` | Zauber, Ritualkategorien/Rituale sowie Repräsentationen und magische SF |
 | `hero_inventory_tab.dart` | `HeroInventoryTab` | 12-spaltige editierbare Inventartabelle |
 | `hero_notes_tab.dart` | `HeroNotesTab` | Untertabs für freie Notizen und Verbindungen |
@@ -1083,7 +1128,7 @@ flutter drive --profile \
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` für `HeroSheet` ist **13**.
+- Die aktuelle `schemaVersion` für `HeroSheet` ist **15**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 1 wird **strikt** validiert.
 
