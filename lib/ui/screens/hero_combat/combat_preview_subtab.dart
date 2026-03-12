@@ -45,7 +45,6 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
       _buildCombatPreviewValuesCard(
         preview: preview,
         offhandWeapon: offhandWeapon,
-        catalog: catalog,
       ),
       if (preview.axxAttackDefenseHint.isNotEmpty) ...[
         const SizedBox(height: 8),
@@ -102,7 +101,6 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
   Widget _buildCombatPreviewValuesCard({
     required CombatPreviewStats preview,
     required MainWeaponSlot? offhandWeapon,
-    required RulesCatalog catalog,
   }) {
     final hasHeldRangedWeapon = _hasHeldRangedWeapon(
       preview: preview,
@@ -150,10 +148,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   Chip(label: Text('Distanz: $activeDistanceLabel')),
                 if (hasHeldRangedWeapon)
                   Chip(label: Text('Geschoss: $activeProjectileName')),
-                ..._buildWaffenmeisterPreviewChips(
-                  catalog: catalog,
-                  preview: preview,
-                ),
+                ..._buildWaffenmeisterPreviewChips(preview: preview),
               ],
             ),
           ],
@@ -187,8 +182,14 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
             ...maneuverIds.map((maneuverId) {
               final maneuver = _maneuverById(catalog, maneuverId);
               return Card(
-                margin: const EdgeInsets.only(bottom: 8),
+                margin: const EdgeInsets.only(bottom: 6),
                 child: ListTile(
+                  dense: true,
+                  visualDensity: const VisualDensity(vertical: -2),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
+                  ),
                   onTap: maneuver == null
                       ? null
                       : () => _showCombatManeuverDetailsDialog(
@@ -196,22 +197,13 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                           maneuver: maneuver,
                         ),
                   title: Text(_maneuverLabel(catalog, maneuverId)),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _buildPreviewManeuverMetaChips(
-                        catalog: catalog,
-                        preview: preview,
-                        maneuverId: maneuverId,
-                        maneuverDef: maneuver,
-                      ),
+                  subtitle: Text(
+                    _buildPreviewManeuverSummary(
+                      preview: preview,
+                      maneuverId: maneuverId,
+                      maneuverDef: maneuver,
                     ),
                   ),
-                  trailing: maneuver == null
-                      ? null
-                      : const Icon(Icons.open_in_new),
                 ),
               );
             }),
@@ -233,40 +225,17 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
     return offhandWeapon?.isRanged ?? false;
   }
 
-  /// Rendert die expliziten Waffenmeister-Boni fuer die Kampfwerte-Quickview.
+  /// Kennzeichnet im Preview nur, dass eine passende Waffenmeisterschaft aktiv ist.
   List<Widget> _buildWaffenmeisterPreviewChips({
-    required RulesCatalog catalog,
     required CombatPreviewStats preview,
   }) {
     if (!preview.waffenmeisterActive) {
       return const <Widget>[];
     }
 
-    final chips = <Widget>[Chip(label: Text(preview.waffenmeisterName))];
-    if (preview.waffenmeisterAtBonus != 0) {
-      chips.add(Chip(label: Text('WM AT: +${preview.waffenmeisterAtBonus}')));
-    }
-    if (preview.waffenmeisterPaBonus != 0) {
-      chips.add(Chip(label: Text('WM PA: +${preview.waffenmeisterPaBonus}')));
-    }
-    if (preview.waffenmeisterIniBonus != 0) {
-      chips.add(Chip(label: Text('WM INI: +${preview.waffenmeisterIniBonus}')));
-    }
-    for (final entry in preview.waffenmeisterManeuverReductions.entries) {
-      final label = displayNameForManeuverId(
-        entry.key,
-        catalogManeuvers: catalog.maneuvers,
-      );
-      chips.add(Chip(label: Text('$label -${entry.value}')));
-    }
-    for (final maneuverId in preview.waffenmeisterAdditionalManeuvers) {
-      final label = displayNameForManeuverId(
-        maneuverId,
-        catalogManeuvers: catalog.maneuvers,
-      );
+    return <Widget>[Chip(label: Text(preview.waffenmeisterName))]; /*
       chips.add(Chip(label: Text('WM Manöver: $label')));
-    }
-    return chips;
+    */
   }
 
   // ---------------------------------------------------------------------------
