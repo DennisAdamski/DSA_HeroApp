@@ -110,6 +110,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     required List<TalentDef> talents,
     required Attributes effectiveAttributes,
     required int activeBaseBe,
+    Map<String, int> inventoryTalentMods = const {},
   }) {
     final isEditing = _editController.isEditing;
     final columnSpecs = _talentColumnSpecs(isEditing: isEditing);
@@ -121,6 +122,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           effectiveAttributes: effectiveAttributes,
           isEditing: isEditing,
           activeBaseBe: activeBaseBe,
+          inventoryMod: inventoryTalentMods[talent.id] ?? 0,
         ),
       ),
     ];
@@ -243,6 +245,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     required Attributes effectiveAttributes,
     required bool isEditing,
     required int activeBaseBe,
+    int inventoryMod = 0,
   }) {
     final entry = _entryForTalent(talent.id);
     final ebe = computeTalentEbe(baseBe: activeBaseBe, talentBeRule: talent.be);
@@ -267,6 +270,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
             entry: entry,
             effectiveAttributes: effectiveAttributes,
             activeBaseBe: activeBaseBe,
+            inventoryMod: inventoryMod,
           ),
         ),
       ),
@@ -279,6 +283,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
             talentValue: entry.talentValue,
             modifier: entry.modifier,
             ebe: ebe,
+            inventoryMod: inventoryMod,
           ),
         ),
         key: ValueKey<String>('talents-field-${talent.id}-computed-taw'),
