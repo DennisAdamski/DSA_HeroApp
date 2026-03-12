@@ -41,12 +41,18 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                           preview.at -
                               _talentAtValue(weapon.talentId) -
                               weapon.wmAt -
+                              preview.waffenmeisterAtBonus -
                               (preview.specBonus) -
                               preview.offhandAtMod -
                               manual.atMod -
                               _atEbePart(preview.ebe),
                         ),
                         _calcStep('WM AT (Waffe)', weapon.wmAt),
+                        if (preview.waffenmeisterAtBonus != 0)
+                          _calcStep(
+                            'Waffenmeister AT',
+                            preview.waffenmeisterAtBonus,
+                          ),
                         _calcStep('eBE AT-Anteil', _atEbePart(preview.ebe)),
                         if (preview.specBonus > 0)
                           _calcStep('Spezialisierung', preview.specBonus),
@@ -69,6 +75,11 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                         if (preview.axxPaBaseBonus != 0)
                           _calcStep('Axxeleratus PA', preview.axxPaBaseBonus),
                         _calcStep('WM PA (Waffe)', weapon.wmPa),
+                        if (preview.waffenmeisterPaBonus != 0)
+                          _calcStep(
+                            'Waffenmeister PA',
+                            preview.waffenmeisterPaBonus,
+                          ),
                         _calcStep('eBE PA-Anteil', _paEbePart(preview.ebe)),
                         if (preview.offhandPaBonus != 0)
                           _calcStep('Nebenhand PA', preview.offhandPaBonus),
@@ -92,9 +103,19 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                         _calcStep('TP/KK', preview.tpKk),
                         _calcStep(
                           'KK-Basis',
-                          weapon.kkBase,
-                          label: 'Schwelle ${weapon.kkThreshold}',
+                          weapon.kkBase +
+                              preview.waffenmeisterTpKkBaseReduction,
+                          label:
+                              'Schwelle ${weapon.kkThreshold + preview.waffenmeisterTpKkThresholdReduction}',
                         ),
+                        if (preview.waffenmeisterTpKkBaseReduction != 0 ||
+                            preview.waffenmeisterTpKkThresholdReduction != 0)
+                          _calcStep(
+                            'Waffenmeister TP/KK',
+                            null,
+                            label:
+                                'Basis ${preview.waffenmeisterTpKkBaseReduction}, Schwelle ${preview.waffenmeisterTpKkThresholdReduction}',
+                          ),
                       ],
                     ),
                     const Divider(),
@@ -118,6 +139,11 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                         _calcStep('= Helden-INI', preview.heldenInitiative),
                         _calcStep('Waffen-INI Mod', weapon.iniMod),
                         _calcStep('INI/GE', preview.iniGe),
+                        if (preview.waffenmeisterIniBonus != 0)
+                          _calcStep(
+                            'Waffenmeister INI',
+                            preview.waffenmeisterIniBonus,
+                          ),
                         _calcStep(
                           '= Helden+Waffen-INI',
                           preview.kombinierteHeldenWaffenIni,
@@ -171,6 +197,8 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
             _calcStep('AT-Basis (Fernkampf)', preview.rangedAtBase),
             _calcStep('Talent AT-Anteil', talentEntry.atValue),
             _calcStep('WM AT (Waffe)', weapon.wmAt),
+            if (preview.waffenmeisterAtBonus != 0)
+              _calcStep('Waffenmeister AT', preview.waffenmeisterAtBonus),
             _calcStep('eBE', preview.ebe),
             if (preview.specBonus != 0)
               _calcStep('Spezialisierung', preview.specBonus),
@@ -191,6 +219,14 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
             ),
             _calcStep('TP Grundwert', weapon.tpFlat),
             _calcStep('TP/KK', preview.tpKk),
+            if (preview.waffenmeisterTpKkBaseReduction != 0 ||
+                preview.waffenmeisterTpKkThresholdReduction != 0)
+              _calcStep(
+                'Waffenmeister TP/KK',
+                null,
+                label:
+                    'Basis ${preview.waffenmeisterTpKkBaseReduction}, Schwelle ${preview.waffenmeisterTpKkThresholdReduction}',
+              ),
             if (preview.distanceTpMod != 0)
               _calcStep(
                 'Entfernung',
@@ -220,6 +256,8 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
             _calcStep('INI/GE', preview.iniGe),
             if (preview.projectileIniMod != 0)
               _calcStep('Geschoss INI', preview.projectileIniMod),
+            if (preview.waffenmeisterIniBonus != 0)
+              _calcStep('Waffenmeister INI', preview.waffenmeisterIniBonus),
             _calcStep(
               '= Helden+Waffen-INI',
               preview.kombinierteHeldenWaffenIni,
@@ -248,6 +286,8 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                 null,
                 label: 'aktiv',
               ),
+            if (preview.waffenmeisterReloadTimeHalved)
+              _calcStep('Waffenmeister', null, label: 'Ladezeit halbiert'),
           ],
         ),
       ],

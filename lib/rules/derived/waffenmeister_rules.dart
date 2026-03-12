@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config/waffenmeister_config.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/maneuver_rules.dart';
 
 /// Gesamt-Budget fuer Waffenmeister-Boni.
 const int waffenmeisterTotalBudget = 15;
@@ -135,8 +136,11 @@ WaffenmeisterValidation validateBonusAllocation({
   var maneuverReductionOver2Count = 0;
   for (final bonus in config.bonuses) {
     if (bonus.type == WaffenmeisterBonusType.maneuverReduction) {
-      final key = bonus.targetManeuver.isNotEmpty
-          ? bonus.targetManeuver
+      final normalizedTarget = bonus.targetManeuver.isNotEmpty
+          ? canonicalManeuverIdFromName(bonus.targetManeuver)
+          : '';
+      final key = normalizedTarget.isNotEmpty
+          ? normalizedTarget
           : '<unbenannt>';
       maneuverReductions[key] =
           (maneuverReductions[key] ?? 0) + bonus.value.abs();
@@ -216,7 +220,9 @@ WaffenmeisterValidation validateBonusAllocation({
     errors.add('Reichweiten-Bonus nur bei Fernkampfwaffen möglich.');
   }
   if (rangeCount > 2) {
-    errors.add('Reichweiten-Bonus maximal +20% (aktuell: +${rangeCount * 10}%).');
+    errors.add(
+      'Reichweiten-Bonus maximal +20% (aktuell: +${rangeCount * 10}%).',
+    );
   }
 
   final gezielterSchussCount = config.bonuses
@@ -339,8 +345,7 @@ WaffenmeisterCombatEffects computeWaffenmeisterEffects({
   for (final wm in waffenmeisterschaften) {
     if (wm.isSchild) continue; // Schild-Fall spaeter
     if (wm.talentId != activeTalentId) continue;
-    final primaryMatch =
-        wm.weaponType.trim().toLowerCase() == normalizedActive;
+    final primaryMatch = wm.weaponType.trim().toLowerCase() == normalizedActive;
     final additionalMatch = wm.additionalWeaponTypes.any(
       (type) => type.trim().toLowerCase() == normalizedActive,
     );
@@ -368,8 +373,11 @@ WaffenmeisterCombatEffects computeWaffenmeisterEffects({
   for (final bonus in matched.bonuses) {
     switch (bonus.type) {
       case WaffenmeisterBonusType.maneuverReduction:
-        final key = bonus.targetManeuver.isNotEmpty
-            ? bonus.targetManeuver
+        final normalizedTarget = bonus.targetManeuver.isNotEmpty
+            ? canonicalManeuverIdFromName(bonus.targetManeuver)
+            : '';
+        final key = normalizedTarget.isNotEmpty
+            ? normalizedTarget
             : '<unbenannt>';
         maneuverReductions[key] =
             (maneuverReductions[key] ?? 0) + bonus.value.abs();
@@ -386,7 +394,10 @@ WaffenmeisterCombatEffects computeWaffenmeisterEffects({
         ausfallPenaltyRemoved = true;
       case WaffenmeisterBonusType.additionalManeuver:
         if (bonus.targetManeuver.isNotEmpty) {
-          additionalManeuvers.add(bonus.targetManeuver);
+          final maneuverId = canonicalManeuverIdFromName(bonus.targetManeuver);
+          if (maneuverId.isNotEmpty) {
+            additionalManeuvers.add(maneuverId);
+          }
         }
       case WaffenmeisterBonusType.rangeIncrease:
         rangeIncreasePercent += bonus.value * 10;
