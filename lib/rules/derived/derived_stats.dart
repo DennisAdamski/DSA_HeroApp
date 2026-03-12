@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'modifier_parser.dart';
 
 /// Ergebniscontainer fuer alle zentral berechneten Heldenwerte.
@@ -67,7 +68,16 @@ DerivedStats computeDerivedStatsFromInputs({
 }) {
   final effectiveSheet = sheet.copyWith(attributes: effectiveAttributes);
   final mods = sheet.persistentMods + parsedModifiers.statMods + state.tempMods;
-  final baseGs = computeGs(effectiveSheet, mods);
+  final activeArmorPieces = sheet.combatConfig.armor.pieces
+      .where((piece) => piece.isActive)
+      .toList(growable: false);
+  final beTotalRaw = computeBeTotalRaw(activeArmorPieces);
+  final rgReduction = computeRgReduction(
+    globalArmorTrainingLevel: sheet.combatConfig.armor.globalArmorTrainingLevel,
+    activePieces: activeArmorPieces,
+  );
+  final beKampf = computeBeKampf(beTotalRaw, rgReduction);
+  final baseGs = computeGs(effectiveSheet, mods, beKampf: beKampf);
   final axxeleratusActive = isAxxeleratusEffectActive(
     sheet: sheet,
     state: state,

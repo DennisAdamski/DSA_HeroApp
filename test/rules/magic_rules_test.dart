@@ -139,6 +139,28 @@ void main() {
     expect(withGs, 16);
   });
 
+  test('Axxeleratus verdoppelt GS erst nach BE-Abzug', () {
+    final armoredHero = hero(
+      attributes: baseAttributes.copyWith(ge: 16),
+      combatConfig: const CombatConfig(
+        armor: ArmorConfig(
+          globalArmorTrainingLevel: 1,
+          pieces: <ArmorPiece>[
+            ArmorPiece(
+              name: 'Kettenhemd',
+              isActive: true,
+              be: 2,
+              rg1Active: true,
+            ),
+          ],
+        ),
+      ),
+    );
+
+    expect(computeDerivedStats(armoredHero, state).gs, 8);
+    expect(computeDerivedStats(armoredHero, stateWithAxx).gs, 16);
+  });
+
   test('Axxeleratus liefert den Anzeigehinweis fuer Finte +2', () {
     expect(buildAxxeleratusDefenseHint(axxeleratusActive: false), isEmpty);
     expect(
