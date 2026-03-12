@@ -42,7 +42,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
       ],
     ];
     final rightColumnChildren = <Widget>[
-      _buildCombatPreviewValuesCard(preview: preview),
+      _buildCombatPreviewValuesCard(
+        preview: preview,
+        offhandWeapon: offhandWeapon,
+      ),
       if (preview.axxAttackDefenseHint.isNotEmpty) ...[
         const SizedBox(height: 8),
         Text(preview.axxAttackDefenseHint),
@@ -95,7 +98,20 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
   }
 
   /// Zeigt die aktuellen Kampfwerte in einer kompakten Übersicht.
-  Widget _buildCombatPreviewValuesCard({required CombatPreviewStats preview}) {
+  Widget _buildCombatPreviewValuesCard({
+    required CombatPreviewStats preview,
+    required MainWeaponSlot? offhandWeapon,
+  }) {
+    final hasHeldRangedWeapon = _hasHeldRangedWeapon(
+      preview: preview,
+      offhandWeapon: offhandWeapon,
+    );
+    final activeDistanceLabel = preview.activeDistanceLabel.trim().isEmpty
+        ? '-'
+        : preview.activeDistanceLabel;
+    final activeProjectileName = preview.activeProjectileName.trim().isEmpty
+        ? '-'
+        : preview.activeProjectileName;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -128,26 +144,11 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
               spacing: 8,
               runSpacing: 8,
               children: [
-                Chip(
-                  label: Text(
-                    preview.activeDistanceLabel.trim().isEmpty
-                        ? 'Distanz: -'
-                        : 'Distanz: ${preview.activeDistanceLabel}',
-                  ),
-                ),
-                Chip(
-                  label: Text(
-                    preview.activeProjectileName.trim().isEmpty
-                        ? 'Geschoss: -'
-                        : 'Geschoss: ${preview.activeProjectileName}',
-                  ),
-                ),
-                if (preview.waffenmeisterManeuverReductions.isNotEmpty)
-                  Chip(
-                    label: Text(
-                      'Rabatte: ${preview.waffenmeisterManeuverReductions.length}',
-                    ),
-                  ),
+                if (hasHeldRangedWeapon)
+                  Chip(label: Text('Distanz: $activeDistanceLabel')),
+                if (hasHeldRangedWeapon)
+                  Chip(label: Text('Geschoss: $activeProjectileName')),
+                ..._buildWaffenmeisterPreviewChips(preview: preview),
               ],
             ),
           ],
@@ -181,8 +182,14 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
             ...maneuverIds.map((maneuverId) {
               final maneuver = _maneuverById(catalog, maneuverId);
               return Card(
-                margin: const EdgeInsets.only(bottom: 8),
+                margin: const EdgeInsets.only(bottom: 6),
                 child: ListTile(
+                  dense: true,
+                  visualDensity: const VisualDensity(vertical: -2),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
+                  ),
                   onTap: maneuver == null
                       ? null
                       : () => _showCombatManeuverDetailsDialog(
@@ -190,19 +197,13 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                           maneuver: maneuver,
                         ),
                   title: Text(_maneuverLabel(catalog, maneuverId)),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _buildPreviewManeuverMetaChips(
-                        maneuverDef: maneuver,
-                      ),
+                  subtitle: Text(
+                    _buildPreviewManeuverSummary(
+                      preview: preview,
+                      maneuverId: maneuverId,
+                      maneuverDef: maneuver,
                     ),
                   ),
-                  trailing: maneuver == null
-                      ? null
-                      : const Icon(Icons.open_in_new),
                 ),
               );
             }),
@@ -210,6 +211,31 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
         ),
       ),
     );
+  }
+
+  /// Kennzeichnet, ob aktuell in Haupt- oder Nebenhand eine Fernkampfwaffe
+  /// gehalten wird.
+  bool _hasHeldRangedWeapon({
+    required CombatPreviewStats preview,
+    required MainWeaponSlot? offhandWeapon,
+  }) {
+    if (preview.isRangedWeapon) {
+      return true;
+    }
+    return offhandWeapon?.isRanged ?? false;
+  }
+
+  /// Kennzeichnet im Preview nur, dass eine passende Waffenmeisterschaft aktiv ist.
+  List<Widget> _buildWaffenmeisterPreviewChips({
+    required CombatPreviewStats preview,
+  }) {
+    if (!preview.waffenmeisterActive) {
+      return const <Widget>[];
+    }
+
+    return <Widget>[Chip(label: Text(preview.waffenmeisterName))]; /*
+      chips.add(Chip(label: Text('WM Manöver: $label')));
+    */
   }
 
   // ---------------------------------------------------------------------------

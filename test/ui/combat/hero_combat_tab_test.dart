@@ -2950,6 +2950,106 @@ void main() {
     },
   );
 
+  testWidgets('combat preview hides ranged chips when no weapon is ranged', (
+    tester,
+  ) async {
+    setTestSurfaceSize(tester, const Size(1280, 900));
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                weaponType: 'Kurzschwert',
+                talentId: 'tal_nah',
+                tpDiceCount: 1,
+                tpDiceSides: 6,
+                tpFlat: 2,
+              ),
+            ],
+            selectedWeaponIndex: 0,
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openMeleeTab(tester);
+
+    expect(find.textContaining('Distanz:'), findsNothing);
+    expect(find.textContaining('Geschoss:'), findsNothing);
+  });
+
+  testWidgets(
+    'combat preview keeps ranged chips visible when offhand weapon is ranged',
+    (tester) async {
+      setTestSurfaceSize(tester, const Size(1280, 900));
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              weapons: <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzschwert',
+                  weaponType: 'Kurzschwert',
+                  talentId: 'tal_nah',
+                  tpDiceCount: 1,
+                  tpDiceSides: 6,
+                  tpFlat: 2,
+                ),
+                MainWeaponSlot(
+                  name: 'Kurzbogen',
+                  weaponType: 'Kurzbogen',
+                  talentId: 'tal_fern',
+                  combatType: WeaponCombatType.ranged,
+                  tpDiceCount: 1,
+                  tpDiceSides: 6,
+                  tpFlat: 4,
+                  rangedProfile: RangedWeaponProfile(
+                    projectiles: <RangedProjectile>[
+                      RangedProjectile(name: 'Jagdspitze', count: 8),
+                    ],
+                  ),
+                ),
+              ],
+              selectedWeaponIndex: 0,
+              offhandAssignment: OffhandAssignment(weaponIndex: 1),
+            ),
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo);
+      await openMeleeTab(tester);
+
+      expect(find.text('Distanz: -'), findsOneWidget);
+      expect(find.text('Geschoss: -'), findsOneWidget);
+    },
+  );
+
   testWidgets('combat rules groups maneuvers and opens details dialog', (
     tester,
   ) async {
@@ -3020,7 +3120,7 @@ void main() {
   });
 
   testWidgets(
-    'combat preview hides additional maneuvers when hero has none active',
+    'combat preview shows active waffenmeister bonuses and maneuver modifiers',
     (tester) async {
       setTestSurfaceSize(tester, const Size(1280, 900));
       addTearDown(tester.view.resetPhysicalSize);
@@ -3047,9 +3147,18 @@ void main() {
                   weaponType: 'Kurzschwert',
                   bonuses: <WaffenmeisterBonus>[
                     WaffenmeisterBonus(
+                      type: WaffenmeisterBonusType.atWmBonus,
+                      value: 1,
+                    ),
+                    WaffenmeisterBonus(
                       type: WaffenmeisterBonusType.additionalManeuver,
                       targetManeuver: 'Finte',
                       value: 1,
+                    ),
+                    WaffenmeisterBonus(
+                      type: WaffenmeisterBonusType.maneuverReduction,
+                      targetManeuver: 'Finte',
+                      value: 2,
                     ),
                   ],
                 ),
@@ -3071,7 +3180,20 @@ void main() {
       await openMeleeTab(tester);
 
       expect(find.text('Nutzbare Manöver'), findsOneWidget);
-      expect(find.text('Finte'), findsNothing);
+      expect(find.text('Waffenmeister (Kurzschwert)'), findsOneWidget);
+      expect(find.text('Finte'), findsOneWidget);
+      expect(find.textContaining('Typ: Angriffsmanöver'), findsOneWidget);
+      expect(find.textContaining('Erschwernis: Attacke +1'), findsOneWidget);
+      expect(find.textContaining('Waffenmeister: -2'), findsOneWidget);
+      expect(
+        find.textContaining('Waffenmeister: freigeschaltet'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Berechnungsschritte'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Waffenmeister AT'), findsOneWidget);
     },
   );
 }

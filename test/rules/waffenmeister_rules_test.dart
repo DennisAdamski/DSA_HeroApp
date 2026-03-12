@@ -81,112 +81,134 @@ void main() {
   group('computePointCostForBonus', () {
     test('Manoever-Reduktion: 1 Punkt pro -1', () {
       expect(
-        computePointCostForBonus(const WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.maneuverReduction,
-          value: 3,
-        )),
+        computePointCostForBonus(
+          const WaffenmeisterBonus(
+            type: WaffenmeisterBonusType.maneuverReduction,
+            value: 3,
+          ),
+        ),
         3,
       );
     });
 
     test('INI-Bonus: 3 Punkte pro +1', () {
       expect(
-        computePointCostForBonus(const WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.iniBonus,
-          value: 2,
-        )),
+        computePointCostForBonus(
+          const WaffenmeisterBonus(
+            type: WaffenmeisterBonusType.iniBonus,
+            value: 2,
+          ),
+        ),
         6,
       );
     });
 
     test('TP/KK: 2 Punkte', () {
       expect(
-        computePointCostForBonus(const WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.tpKkReduction,
-        )),
+        computePointCostForBonus(
+          const WaffenmeisterBonus(type: WaffenmeisterBonusType.tpKkReduction),
+        ),
         2,
       );
     });
 
     test('AT-WM: 5 Punkte pro +1', () {
       expect(
-        computePointCostForBonus(const WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.atWmBonus,
-          value: 1,
-        )),
+        computePointCostForBonus(
+          const WaffenmeisterBonus(
+            type: WaffenmeisterBonusType.atWmBonus,
+            value: 1,
+          ),
+        ),
         5,
       );
     });
 
     test('PA-WM: 5 Punkte pro +1', () {
       expect(
-        computePointCostForBonus(const WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.paWmBonus,
-          value: 2,
-        )),
+        computePointCostForBonus(
+          const WaffenmeisterBonus(
+            type: WaffenmeisterBonusType.paWmBonus,
+            value: 2,
+          ),
+        ),
         10,
       );
     });
 
     test('Ausfall: 2 Punkte', () {
       expect(
-        computePointCostForBonus(const WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.ausfallPenaltyRemoval,
-        )),
+        computePointCostForBonus(
+          const WaffenmeisterBonus(
+            type: WaffenmeisterBonusType.ausfallPenaltyRemoval,
+          ),
+        ),
         2,
       );
     });
 
     test('Zusatz-Manoever: 5 Punkte', () {
       expect(
-        computePointCostForBonus(const WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.additionalManeuver,
-        )),
+        computePointCostForBonus(
+          const WaffenmeisterBonus(
+            type: WaffenmeisterBonusType.additionalManeuver,
+          ),
+        ),
         5,
       );
     });
 
     test('Reichweite: 1 Punkt pro +10%', () {
       expect(
-        computePointCostForBonus(const WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.rangeIncrease,
-          value: 2,
-        )),
+        computePointCostForBonus(
+          const WaffenmeisterBonus(
+            type: WaffenmeisterBonusType.rangeIncrease,
+            value: 2,
+          ),
+        ),
         2,
       );
     });
 
     test('Gezielter Schuss: 2 Punkte', () {
       expect(
-        computePointCostForBonus(const WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.gezielterSchussReduction,
-        )),
+        computePointCostForBonus(
+          const WaffenmeisterBonus(
+            type: WaffenmeisterBonusType.gezielterSchussReduction,
+          ),
+        ),
         2,
       );
     });
 
     test('Ladezeit: 5 Punkte', () {
       expect(
-        computePointCostForBonus(const WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.reloadTimeHalved,
-        )),
+        computePointCostForBonus(
+          const WaffenmeisterBonus(
+            type: WaffenmeisterBonusType.reloadTimeHalved,
+          ),
+        ),
         5,
       );
     });
 
     test('Custom: customPointCost geclampt 2-5', () {
       expect(
-        computePointCostForBonus(const WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.customAdvantage,
-          customPointCost: 1,
-        )),
+        computePointCostForBonus(
+          const WaffenmeisterBonus(
+            type: WaffenmeisterBonusType.customAdvantage,
+            customPointCost: 1,
+          ),
+        ),
         2,
       );
       expect(
-        computePointCostForBonus(const WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.customAdvantage,
-          customPointCost: 7,
-        )),
+        computePointCostForBonus(
+          const WaffenmeisterBonus(
+            type: WaffenmeisterBonusType.customAdvantage,
+            customPointCost: 7,
+          ),
+        ),
         5,
       );
     });
@@ -228,10 +250,7 @@ void main() {
         talentId: 'tal_schwerter',
         weaponType: 'Langschwert',
         bonuses: const [
-          WaffenmeisterBonus(
-            type: WaffenmeisterBonusType.iniBonus,
-            value: 1,
-          ),
+          WaffenmeisterBonus(type: WaffenmeisterBonusType.iniBonus, value: 1),
           WaffenmeisterBonus(
             type: WaffenmeisterBonusType.maneuverReduction,
             value: 2,
@@ -281,14 +300,8 @@ void main() {
         talentId: 'tal_schwerter',
         weaponType: 'Langschwert',
         bonuses: const [
-          WaffenmeisterBonus(
-            type: WaffenmeisterBonusType.iniBonus,
-            value: 2,
-          ),
-          WaffenmeisterBonus(
-            type: WaffenmeisterBonusType.iniBonus,
-            value: 1,
-          ),
+          WaffenmeisterBonus(type: WaffenmeisterBonusType.iniBonus, value: 2),
+          WaffenmeisterBonus(type: WaffenmeisterBonusType.iniBonus, value: 1),
         ],
       );
       final result = validateBonusAllocation(
@@ -390,22 +403,14 @@ void main() {
       talentId: 'tal_schwerter',
       weaponType: 'Langschwert',
       bonuses: const [
-        WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.iniBonus,
-          value: 1,
-        ),
-        WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.atWmBonus,
-          value: 1,
-        ),
+        WaffenmeisterBonus(type: WaffenmeisterBonusType.iniBonus, value: 1),
+        WaffenmeisterBonus(type: WaffenmeisterBonusType.atWmBonus, value: 1),
         WaffenmeisterBonus(
           type: WaffenmeisterBonusType.maneuverReduction,
           value: 2,
           targetManeuver: 'Finte',
         ),
-        WaffenmeisterBonus(
-          type: WaffenmeisterBonusType.ausfallPenaltyRemoval,
-        ),
+        WaffenmeisterBonus(type: WaffenmeisterBonusType.ausfallPenaltyRemoval),
       ],
     );
 
@@ -418,7 +423,7 @@ void main() {
       expect(effects.isActive, isTrue);
       expect(effects.iniBonus, 1);
       expect(effects.atWmBonus, 1);
-      expect(effects.maneuverReductions['Finte'], 2);
+      expect(effects.maneuverReductions['man_finte'], 2);
       expect(effects.ausfallPenaltyRemoved, isTrue);
     });
 
@@ -469,6 +474,26 @@ void main() {
         activeTalentId: 'tal_schwerter',
       );
       expect(effects.isActive, isFalse);
+    });
+
+    test('Zusatz-Manoever werden als stabile Manoever-IDs normalisiert', () {
+      final effects = computeWaffenmeisterEffects(
+        waffenmeisterschaften: [
+          config.copyWith(
+            bonuses: const [
+              WaffenmeisterBonus(
+                type: WaffenmeisterBonusType.additionalManeuver,
+                targetManeuver: 'Finte',
+                value: 1,
+              ),
+            ],
+          ),
+        ],
+        activeWeaponType: 'Langschwert',
+        activeTalentId: 'tal_schwerter',
+      );
+
+      expect(effects.additionalManeuvers, contains('man_finte'));
     });
   });
 }
