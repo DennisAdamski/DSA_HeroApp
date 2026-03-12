@@ -188,7 +188,7 @@ Domain models (lib/domain/) — immutable, pure Dart
 | Class | File | Purpose |
 |---|---|---|
 | `HeroSheet` | `domain/hero_sheet.dart` | Persisted hero data; immutable, has `copyWith` and `toJson`/`fromJson` |
-| `CombatMastery` | `domain/combat_mastery.dart` | Persisted Kampfmeisterschaft mit Zielbereich, Anforderungen und Effekten |
+| `WaffenmeisterConfig` | `domain/combat_config/waffenmeister_config.dart` | Persistierte Waffenmeisterschaft mit Bonus-Baukasten, Waffenart und Anforderungen |
 | `HeroTalentModifier` | `domain/hero_talent_entry.dart` | Einzelner Modifikatorbaustein fuer Nicht-Kampftalente (Wert + Beschreibung) |
 | `HeroMetaTalent` | `domain/hero_meta_talent.dart` | Heldenspezifische Meta-Talent-Definition mit Komponenten, Eigenschaften und BE-Regel |
 | `HeroState` | `domain/hero_state.dart` | Runtime state (current LeP/AsP/KaP/Au, temp modifiers) |
@@ -271,18 +271,18 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 
 ### Update 2026-03-11
 
-- `HeroSheet` speichert jetzt `combatMasteries` als strukturierte Liste
-  freier Kampfmeisterschaften; die aktuelle `schemaVersion` dafuer ist **15**.
-- Die neue Domain liegt in `lib/domain/combat_mastery.dart`.
-- `lib/rules/derived/combat_mastery_rules.dart` kapselt Punktbudget,
-  Anwendbarkeit, Anforderungswarnungen und automatisch ableitbare Boni.
+- `CombatConfig` speichert Waffenmeisterschaften als
+  `waffenmeisterschaften`; die aktuelle `schemaVersion` fuer `HeroSheet`
+  bleibt **15**.
+- Die Domain liegt in `lib/domain/combat_config/waffenmeister_config.dart`.
+- `lib/rules/derived/waffenmeister_rules.dart` kapselt Punktbudget,
+  Validierung und automatisch ableitbare Kampfboni.
 - `lib/rules/derived/maneuver_rules.dart` normalisiert Manoever-Namen auf
-  stabile IDs fuer Meisterschaftseffekte und UI-Aufloesung.
-- `computeCombatPreviewStats()` rechnet anwendbare Kampfmeisterschaften in
-  AT, PA, INI, Schild-PA, TP/KK, Ladezeit und Reichweiten ein und liefert
-  zusaetzlich die Liste der anwendbaren Meisterschaften fuer die UI.
+  stabile IDs fuer Waffenmeistereffekte und UI-Aufloesung.
+- `computeCombatPreviewStats()` rechnet aktive Waffenmeisterschaften in
+  AT, PA, INI, TP/KK und Ladezeit ein.
 - Der Bereich `Kampfregeln` im Kampf-Tab besitzt jetzt einen gefuehrten
-  Builder fuer Meisterschaften; bedingte oder rein dokumentative Effekte
+  Waffenmeister-Baukasten; bedingte oder rein dokumentative Effekte
   bleiben dort strukturiert sichtbar.
 - Katalogbasierte waffenlose Kampfstile koennen dort ebenfalls aktiviert
   werden; ihre festen Boni und freigeschalteten Manoever werden in Vorschau

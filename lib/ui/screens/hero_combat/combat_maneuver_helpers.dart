@@ -25,10 +25,18 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
     final seen = <String>{};
     final ids = <String>[];
     final weapon = _findMatchedCatalogWeapon(catalog);
+    final selectedWeapon = _draftCombatConfig.selectedWeapon;
     final selectedTalent = _selectedCombatTalentDef(catalog);
     final selectedTalentName = selectedTalent?.name ?? '';
     final isUnarmedContext =
         weapon == null || _isUnarmedTalentName(selectedTalentName);
+    final wmEffects = computeWaffenmeisterEffects(
+      waffenmeisterschaften: _draftCombatConfig.waffenmeisterschaften,
+      activeWeaponType: selectedWeapon.weaponType.trim().isEmpty
+          ? selectedWeapon.name
+          : selectedWeapon.weaponType,
+      activeTalentId: selectedWeapon.talentId,
+    );
     final styleEffects = computeActiveUnarmedStyleEffects(
       specialRules: _draftCombatConfig.specialRules,
       catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
@@ -76,7 +84,7 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
         supportedIds.add(id);
       }
     }
-    for (final raw in preview.masteryAdditionalManeuverIds) {
+    for (final raw in wmEffects.additionalManeuvers) {
       final id = canonicalManeuverIdFromName(
         raw,
         catalogManeuvers: catalog.maneuvers,

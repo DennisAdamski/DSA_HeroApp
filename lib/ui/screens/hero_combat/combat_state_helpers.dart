@@ -171,7 +171,6 @@ extension _CombatStateHelpers on _HeroCombatTabState {
     final updatedHero = hero.copyWith(
       talents: Map<String, HeroTalentEntry>.from(_draftTalents),
       combatConfig: _draftCombatConfig,
-      combatMasteries: List<CombatMastery>.from(_draftCombatMasteries),
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     if (!mounted) {

@@ -2,21 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
-import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
-import 'package:dsa_heldenverwaltung/domain/combat_mastery.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/combat_mastery_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/maneuver_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/unarmed_style_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/waffenmeister_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -30,6 +29,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart'
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_offhand_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_weapons_section.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/waffenmeister_editor_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/combat_quick_stats.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
@@ -42,7 +42,6 @@ part 'hero_combat/combat_rules_subtab.dart';
 part 'hero_combat/combat_special_rules_helpers.dart';
 part 'hero_combat/combat_maneuver_helpers.dart';
 part 'hero_combat/combat_maneuver_dialog.dart';
-part 'hero_combat/combat_mastery_section.dart';
 part 'hero_combat/combat_state_helpers.dart';
 
 enum _ManeuverSupportStatus { supported, notSupported, unverifiable }
@@ -82,7 +81,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   Set<String> _invalidCombatTalentIds = <String>{};
   CombatConfig _draftCombatConfig = const CombatConfig();
-  List<CombatMastery> _draftCombatMasteries = const <CombatMastery>[];
   int? _temporaryIniRoll;
   String _weaponFilterTalentId = '';
   String _weaponFilterCombatType = '';
@@ -141,7 +139,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _draftTalents = Map<String, HeroTalentEntry>.from(hero.talents);
     _invalidCombatTalentIds = <String>{};
     _draftCombatConfig = hero.combatConfig;
-    _draftCombatMasteries = List<CombatMastery>.from(hero.combatMasteries);
     _temporaryIniRoll = null;
     _seedCombatControllers();
   }
@@ -270,7 +267,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                 catalogTalents: catalog.talents,
                 catalogManeuvers: catalog.maneuvers,
                 catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
-                overrideCombatMasteries: _draftCombatMasteries,
               );
               final effectiveAttributes = computeEffectiveAttributes(
                 hero,

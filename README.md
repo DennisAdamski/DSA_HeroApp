@@ -15,7 +15,7 @@ Flutter-App zur Verwaltung von DSA-Helden mit:
 - Das Eigenschaftsmaximum wird aus dem effektiven Startwert berechnet: `ceil(Start * 1.5)`.
 - Der Magie-Tab verwaltet neben Zaubern jetzt auch heldenspezifische Ritualkategorien und Rituale.
 - Der Notizen-Tab ist in `Notizen` und `Verbindungen` unterteilt und speichert beide Bereiche direkt im Heldendatensatz.
-- Der Kampf-Tab verwaltet strukturierte `combatMasteries` als freien Baukasten fuer Waffen-, Schild- und Parierwaffen-Meisterschaften.
+- Der Kampf-Tab verwaltet Waffenmeisterschaften ueber `CombatConfig.waffenmeisterschaften` und den Waffenmeister-Baukasten im Kampfregeln-Tab.
 - Waffenlose Kampftechniken aus `Wege des Schwerts` werden als katalogbasierte Kampf-Sonderfertigkeiten gefuehrt und schalten ihre zugeordneten Manöver direkt frei.
 
 ## Schnellstart

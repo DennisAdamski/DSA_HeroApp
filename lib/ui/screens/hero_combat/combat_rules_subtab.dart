@@ -30,10 +30,20 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
           ),
         ),
         const SizedBox(height: 12),
-        _buildCombatMasteriesSection(
-          hero: hero,
-          heroState: heroState,
-          catalog: catalog,
+        Card(
+          child: ExpansionTile(
+            initiallyExpanded: true,
+            title: Text(
+              'Waffenmeister',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                child: _buildWaffenmeisterSection(catalog),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 12),
         Card(
@@ -311,6 +321,138 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
           isEditing: isEditing,
         ),
       ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Waffenmeister
+  // ---------------------------------------------------------------------------
+
+  Widget _buildWaffenmeisterSection(RulesCatalog catalog) {
+    final wmList = _draftCombatConfig.waffenmeisterschaften;
+    final isEditing = _editController.isEditing;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Waffenmeister',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            if (isEditing)
+              IconButton(
+                icon: const Icon(Icons.add),
+                tooltip: 'Waffenmeister hinzufügen',
+                onPressed: () => _openWaffenmeisterEditor(
+                  catalog: catalog,
+                  index: -1,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (wmList.isEmpty)
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('Keine Waffenmeisterschaft konfiguriert.'),
+              subtitle: const Text(
+                'Voraussetzungen: TaW 18, Waffenspezialisierung, '
+                '2.500 AP in Kampf-SF, Eigenschafts-Anforderungen.',
+              ),
+            ),
+          ),
+        ...List.generate(wmList.length, (index) {
+          final wm = wmList[index];
+          final talentDef = catalog.talents
+              .where((t) => t.id == wm.talentId)
+              .firstOrNull;
+          final talentName = talentDef?.name ?? wm.talentId;
+          final bonusCount = wm.bonuses.length;
+          return Card(
+            child: ListTile(
+              leading: const Icon(Icons.military_tech),
+              title: Text('Waffenmeister (${wm.weaponType})'),
+              subtitle: Text(
+                '$talentName · $bonusCount Boni'
+                '${wm.styleName.isNotEmpty ? ' · ${wm.styleName}' : ''}',
+              ),
+              trailing: isEditing
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          tooltip: 'Bearbeiten',
+                          onPressed: () => _openWaffenmeisterEditor(
+                            catalog: catalog,
+                            index: index,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          tooltip: 'Entfernen',
+                          onPressed: () {
+                            final next = List<WaffenmeisterConfig>.from(
+                              wmList,
+                            )..removeAt(index);
+                            _draftCombatConfig =
+                                _draftCombatConfig.copyWith(
+                              waffenmeisterschaften: next,
+                            );
+                            _markFieldChanged();
+                          },
+                        ),
+                      ],
+                    )
+                  : null,
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  void _openWaffenmeisterEditor({
+    required RulesCatalog catalog,
+    required int index,
+  }) {
+    final isNew = index < 0;
+    final initial = isNew
+        ? const WaffenmeisterConfig()
+        : _draftCombatConfig.waffenmeisterschaften[index];
+    final combatTalents =
+        catalog.talents.where((t) => t.group == 'Kampftalent').toList();
+
+    Navigator.of(context).push(
+      MaterialPageRoute<WaffenmeisterConfig>(
+        builder: (_) => WaffenmeisterEditorScreen(
+          initialConfig: initial,
+          isNew: isNew,
+          combatTalents: combatTalents,
+          catalog: catalog,
+          onSaved: (result) {
+            final wmList = List<WaffenmeisterConfig>.from(
+              _draftCombatConfig.waffenmeisterschaften,
+            );
+            if (isNew) {
+              wmList.add(result);
+            } else {
+              wmList[index] = result;
+            }
+            _draftCombatConfig = _draftCombatConfig.copyWith(
+              waffenmeisterschaften: wmList,
+            );
+            _markFieldChanged();
+            Navigator.of(context).pop();
+          },
+          onCancel: () => Navigator.of(context).pop(),
+        ),
+      ),
     );
   }
 
