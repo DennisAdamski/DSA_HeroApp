@@ -7,12 +7,16 @@ class _TalentDetailDialog extends StatelessWidget {
     required this.entry,
     required this.effectiveAttributes,
     required this.activeBaseBe,
+    this.inventoryMod = 0,
   });
 
   final TalentDef talent;
   final HeroTalentEntry entry;
   final Attributes effectiveAttributes;
   final int activeBaseBe;
+
+  /// Summe aktiver Inventar-Modifikatoren fuer dieses Talent.
+  final int inventoryMod;
 
   @override
   Widget build(BuildContext context) {
@@ -57,8 +61,12 @@ class _TalentDetailDialog extends StatelessWidget {
                 _detailRow(theme, 'AT', '${entry.atValue}'),
                 _detailRow(theme, 'PA', '${entry.paValue}'),
               ],
-              if (entry.talentModifiers.isNotEmpty) ...[
-                _detailRow(theme, 'Gesamt-Mod', '${entry.modifier}'),
+              if (entry.talentModifiers.isNotEmpty || inventoryMod != 0) ...[
+                _detailRow(
+                  theme,
+                  'Gesamt-Mod',
+                  '${entry.modifier + inventoryMod}',
+                ),
                 const SizedBox(height: 4),
                 _sectionTitle(theme, 'Modifikatoren'),
                 ...entry.talentModifiers.map(
@@ -68,6 +76,8 @@ class _TalentDetailDialog extends StatelessWidget {
                     '${modifier.modifier}',
                   ),
                 ),
+                if (inventoryMod != 0)
+                  _detailRow(theme, 'Ausrüstung', '$inventoryMod'),
               ] else if (entry.modifier != 0)
                 _detailRow(theme, 'Modifikator', '${entry.modifier}'),
               if (entry.specialExperiences > 0)
@@ -86,6 +96,7 @@ class _TalentDetailDialog extends StatelessWidget {
                     talentValue: entry.talentValue,
                     modifier: entry.modifier,
                     ebe: computeTalentEbe(baseBe: activeBaseBe, talentBeRule: talent.be),
+                    inventoryMod: inventoryMod,
                   )}',
                 ),
               ],
