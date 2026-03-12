@@ -63,29 +63,32 @@ class _SprachenSchriftenTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    return Padding(
       padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
-      children: [
-        _SprachenSection(
-          draftSprachen: draftSprachen,
-          draftMuttersprache: draftMuttersprache,
-          alleSprachen: alleSprachen,
-          isEditing: isEditing,
-          onWertChanged: onSprachWertChanged,
-          onMuttersprachChanged: onMuttersprachChanged,
-          onAddSprache: onAddSprache,
-          onRemoveSprache: onRemoveSprache,
-        ),
-        const SizedBox(height: 8),
-        _SchriftenSection(
-          draftSchriften: draftSchriften,
-          alleSchriften: alleSchriften,
-          isEditing: isEditing,
-          onWertChanged: onSchriftWertChanged,
-          onAddSchrift: onAddSchrift,
-          onRemoveSchrift: onRemoveSchrift,
-        ),
-      ],
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _SprachenSection(
+            draftSprachen: draftSprachen,
+            draftMuttersprache: draftMuttersprache,
+            alleSprachen: alleSprachen,
+            isEditing: isEditing,
+            onWertChanged: onSprachWertChanged,
+            onMuttersprachChanged: onMuttersprachChanged,
+            onAddSprache: onAddSprache,
+            onRemoveSprache: onRemoveSprache,
+          ),
+          const SizedBox(height: 8),
+          _SchriftenSection(
+            draftSchriften: draftSchriften,
+            alleSchriften: alleSchriften,
+            isEditing: isEditing,
+            onWertChanged: onSchriftWertChanged,
+            onAddSchrift: onAddSchrift,
+            onRemoveSchrift: onRemoveSchrift,
+          ),
+        ],
+      ),
     );
   }
 }
