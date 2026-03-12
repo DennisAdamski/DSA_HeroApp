@@ -325,6 +325,9 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
   `Schild-PA` auf Basis von `PA-Basiswert + Schildmod + SF-Bonus`.
 - Der Untertab `Kampf` zeigt je nach aktiver Waffe dynamisch Nahkampfwerte
   (`AT`/`PA`) oder Fernkampfwerte (`AT`, TP, Ladezeit, Geschosse).
+- Distanz- und Geschoss-Chips erscheinen im Kampf-Preview nur, wenn in Haupt-
+  oder Nebenhand eine Fernkampfwaffe gehalten wird; editierbar bleiben diese
+  Werte weiterhin nur fuer die aktive Haupthand.
 - Der Waffen-Editor ist in Stammdaten-, Schaden-, Modifikatoren-, Fernkampf-
   und Vorschau-Sektionen gegliedert; auf breiten Screens erscheint er als
   Inline-Panel, sonst als eigene Seite.
@@ -334,6 +337,8 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 - `lib/rules/derived/fernkampf_rules.dart` kapselt Fernkampf-AT- und
   Fernkampf-TP-Helfer; `computeCombatPreviewStats()` liefert fuer Nah- und
   Fernkampf weiterhin denselben Snapshot-Typ.
+- `computeCombatPreviewStats()` stellt aktive Waffenmeisterschafts-Effekte
+  explizit fuer Preview-Chips, Berechnungsschritte und Manoeverhinweise bereit.
 - `lib/rules/derived/fernkampf_ladezeit_rules.dart` kapselt die effektive
   Ladezeit von Boegen und Armbruesten inklusive Axxeleratus-/Schnellladen-
   Ableitung fuer das Kampf-Preview.
