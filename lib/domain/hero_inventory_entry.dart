@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+
 class HeroInventoryEntry {
   const HeroInventoryEntry({
     this.gegenstand = '',
@@ -12,8 +14,18 @@ class HeroInventoryEntry {
     this.woDann = '',
     this.gruppe = '',
     this.beschreibung = '',
+    // Neue typisierte Felder (v16)
+    this.itemType = InventoryItemType.sonstiges,
+    this.source = InventoryItemSource.manuell,
+    this.sourceRef,
+    this.istAusgeruestet = false,
+    this.modifiers = const <InventoryItemModifier>[],
+    this.gewichtGramm = 0,
+    this.wertSilber = 0,
+    this.herkunft = '',
   });
 
+  // --- Bestehende 12 String-Felder (unveraendert, rueckwaertskompatibel) ---
   final String gegenstand;
   final String woGetragen;
   final String typ;
@@ -26,6 +38,43 @@ class HeroInventoryEntry {
   final String woDann;
   final String gruppe;
   final String beschreibung;
+
+  // --- Neue typisierte Felder (v16) ---
+
+  /// Kategorie des Inventar-Eintrags.
+  final InventoryItemType itemType;
+
+  /// Ursprung: manuell angelegt oder automatisch aus dem Kampf-Tab synchronisiert.
+  final InventoryItemSource source;
+
+  /// Composite-Schluessel fuer die Zuordnung zu einem Kampf-Tab-Eintrag.
+  ///
+  /// Format:
+  /// - Waffe:     `'w:{weaponName}'`
+  /// - Ruestung:  `'a:{pieceName}'`
+  /// - Geschoss:  `'w:{weaponName}|p:{projName}'`
+  /// - Nebenhand: `'oh:{equipmentName}'`
+  ///
+  /// `null` bei manuell angelegten Eintraegen.
+  final String? sourceRef;
+
+  /// Ob das Item gerade getragen/ausgeruest wird.
+  ///
+  /// Nur relevant fuer [InventoryItemType.ausruestung]. Steuert, ob
+  /// [modifiers] in die berechneten Heldenwerte einfliessen.
+  final bool istAusgeruestet;
+
+  /// Modifikatoren, die wirken, wenn [istAusgeruestet] == true.
+  final List<InventoryItemModifier> modifiers;
+
+  /// Gewicht in Gramm (0 = unbekannt).
+  final int gewichtGramm;
+
+  /// Wert in Silbertalern (0 = unbekannt).
+  final int wertSilber;
+
+  /// Herkunft / Fundort / Haendler des Items.
+  final String herkunft;
 
   HeroInventoryEntry copyWith({
     String? gegenstand,
@@ -40,6 +89,14 @@ class HeroInventoryEntry {
     String? woDann,
     String? gruppe,
     String? beschreibung,
+    InventoryItemType? itemType,
+    InventoryItemSource? source,
+    Object? sourceRef = _sentinel,
+    bool? istAusgeruestet,
+    List<InventoryItemModifier>? modifiers,
+    int? gewichtGramm,
+    int? wertSilber,
+    String? herkunft,
   }) {
     return HeroInventoryEntry(
       gegenstand: gegenstand ?? this.gegenstand,
@@ -54,6 +111,14 @@ class HeroInventoryEntry {
       woDann: woDann ?? this.woDann,
       gruppe: gruppe ?? this.gruppe,
       beschreibung: beschreibung ?? this.beschreibung,
+      itemType: itemType ?? this.itemType,
+      source: source ?? this.source,
+      sourceRef: sourceRef == _sentinel ? this.sourceRef : sourceRef as String?,
+      istAusgeruestet: istAusgeruestet ?? this.istAusgeruestet,
+      modifiers: modifiers ?? this.modifiers,
+      gewichtGramm: gewichtGramm ?? this.gewichtGramm,
+      wertSilber: wertSilber ?? this.wertSilber,
+      herkunft: herkunft ?? this.herkunft,
     );
   }
 
@@ -71,11 +136,42 @@ class HeroInventoryEntry {
       'woDann': woDann,
       'gruppe': gruppe,
       'beschreibung': beschreibung,
+      // v16
+      'itemType': itemType.name,
+      'source': source.name,
+      if (sourceRef != null) 'sourceRef': sourceRef,
+      'istAusgeruestet': istAusgeruestet,
+      'modifiers': modifiers.map((m) => m.toJson()).toList(),
+      'gewichtGramm': gewichtGramm,
+      'wertSilber': wertSilber,
+      'herkunft': herkunft,
     };
   }
 
   static HeroInventoryEntry fromJson(Map<String, dynamic> json) {
     String getString(String key) => (json[key] as String?) ?? '';
+
+    InventoryItemType parseItemType(String? raw) {
+      return InventoryItemType.values.firstWhere(
+        (e) => e.name == raw,
+        orElse: () => InventoryItemType.sonstiges,
+      );
+    }
+
+    InventoryItemSource parseSource(String? raw) {
+      return InventoryItemSource.values.firstWhere(
+        (e) => e.name == raw,
+        orElse: () => InventoryItemSource.manuell,
+      );
+    }
+
+    final modifiersRaw = json['modifiers'];
+    final modifiers = modifiersRaw is List
+        ? modifiersRaw
+            .whereType<Map<String, dynamic>>()
+            .map(InventoryItemModifier.fromJson)
+            .toList(growable: false)
+        : const <InventoryItemModifier>[];
 
     return HeroInventoryEntry(
       gegenstand: getString('gegenstand'),
@@ -90,6 +186,18 @@ class HeroInventoryEntry {
       woDann: getString('woDann'),
       gruppe: getString('gruppe'),
       beschreibung: getString('beschreibung'),
+      // v16 – lenient defaults
+      itemType: parseItemType(json['itemType'] as String?),
+      source: parseSource(json['source'] as String?),
+      sourceRef: json['sourceRef'] as String?,
+      istAusgeruestet: (json['istAusgeruestet'] as bool?) ?? false,
+      modifiers: modifiers,
+      gewichtGramm: (json['gewichtGramm'] as num?)?.toInt() ?? 0,
+      wertSilber: (json['wertSilber'] as num?)?.toInt() ?? 0,
+      herkunft: getString('herkunft'),
     );
   }
 }
+
+/// Sentinel-Objekt fuer nullable copyWith-Parameter.
+const Object _sentinel = Object();
