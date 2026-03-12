@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
@@ -65,9 +66,14 @@ DerivedStats computeDerivedStatsFromInputs({
   required HeroState state,
   required ModifierParseResult parsedModifiers,
   required Attributes effectiveAttributes,
+  StatModifiers inventoryStatMods = const StatModifiers(),
 }) {
   final effectiveSheet = sheet.copyWith(attributes: effectiveAttributes);
-  final mods = sheet.persistentMods + parsedModifiers.statMods + state.tempMods;
+  final mods =
+      sheet.persistentMods +
+      parsedModifiers.statMods +
+      state.tempMods +
+      inventoryStatMods;
   final activeArmorPieces = sheet.combatConfig.armor.pieces
       .where((piece) => piece.isActive)
       .toList(growable: false);

@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventory_modifier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -161,15 +162,20 @@ final heroComputedProvider =
       final attributeMaximums = computeAttributeMaximums(
         effectiveStartAttributes,
       );
+
+      // Inventar-Modifikatoren aus ausgeruesteten Items aggregieren
+      final inventoryMods = aggregateInventoryModifiers(hero.inventoryEntries);
+
       final effective = applyAttributeModifiers(
         hero.attributes,
-        parsed.attributeMods + state.tempAttributeMods,
+        parsed.attributeMods + state.tempAttributeMods + inventoryMods.attributeMods,
       );
       final derived = computeDerivedStatsFromInputs(
         sheet: hero,
         state: state,
         parsedModifiers: parsed,
         effectiveAttributes: effective,
+        inventoryStatMods: inventoryMods.statMods,
       );
       final combat = computeCombatPreviewStats(
         hero,
@@ -192,6 +198,9 @@ final heroComputedProvider =
           effectiveAttributes: effective,
           derivedStats: derived,
           combatPreviewStats: combat,
+          inventoryStatMods: inventoryMods.statMods,
+          inventoryAttributeMods: inventoryMods.attributeMods,
+          inventoryTalentMods: inventoryMods.talentMods,
         ),
       );
     });
