@@ -73,6 +73,24 @@ void main() {
           steigerung: 'C',
           attributes: <String>['Mut', 'Gewandheit', 'Koerperkraft'],
         ),
+        TalentDef(
+          id: 'tal_raufen',
+          name: 'Raufen',
+          group: 'Kampftalent',
+          type: 'Nahkampf',
+          weaponCategory: 'Waffenlos',
+          steigerung: 'C',
+          attributes: <String>['Mut', 'Gewandheit', 'Koerperkraft'],
+        ),
+        TalentDef(
+          id: 'tal_ringen',
+          name: 'Ringen',
+          group: 'Kampftalent',
+          type: 'Nahkampf',
+          weaponCategory: 'Waffenlos',
+          steigerung: 'C',
+          attributes: <String>['Mut', 'Gewandheit', 'Koerperkraft'],
+        ),
       ],
       spells: <SpellDef>[],
       weapons: <WeaponDef>[
@@ -82,7 +100,7 @@ void main() {
           type: 'Nahkampf',
           combatSkill: 'Schwerter',
           tp: '1W6+2',
-          possibleManeuvers: <String>['Finte'],
+          possibleManeuvers: <String>['man_finte'],
         ),
         WeaponDef(
           id: 'wpn_bidenhaender',
@@ -90,7 +108,7 @@ void main() {
           type: 'Nahkampf',
           combatSkill: 'Schwerter',
           tp: '2W6+2',
-          possibleManeuvers: <String>['Wuchtschlag'],
+          possibleManeuvers: <String>['man_wuchtschlag'],
         ),
         WeaponDef(
           id: 'wpn_dolch',
@@ -98,7 +116,7 @@ void main() {
           type: 'Nahkampf',
           combatSkill: 'Dolche',
           tp: '1W6',
-          possibleManeuvers: <String>['Finte'],
+          possibleManeuvers: <String>['man_finte'],
         ),
         WeaponDef(
           id: 'wpn_kurzbogen',
@@ -123,6 +141,63 @@ void main() {
               iniMod: -1,
               atMod: 2,
               description: 'Breite Spitze fuer Wild.',
+            ),
+          ],
+        ),
+      ],
+      maneuvers: <ManeuverDef>[
+        ManeuverDef(
+          id: 'man_finte',
+          name: 'Finte',
+          gruppe: 'bewaffnet',
+          typ: 'Angriffsmanöver',
+          erschwernis: 'Attacke +1',
+          erklarung: 'Kurze Finte.',
+          erklarungLang: 'Lange Finte-Erklärung.',
+        ),
+        ManeuverDef(
+          id: 'man_wuchtschlag',
+          name: 'Wuchtschlag',
+          gruppe: 'bewaffnet',
+          typ: 'Angriffsmanöver',
+          erschwernis: 'Attacke +X',
+          erklarung: 'Mehr Schaden.',
+        ),
+        ManeuverDef(
+          id: 'man_sprungtritt',
+          name: 'Sprungtritt',
+          gruppe: 'waffenlos',
+          typ: 'Waffenloses Manöver',
+          erschwernis: 'Attacke +4',
+          erklarung: 'Waffenloser Angriff.',
+        ),
+      ],
+      combatSpecialAbilities: <CombatSpecialAbilityDef>[
+        CombatSpecialAbilityDef(
+          id: 'ksf_hammerfaust',
+          name: 'Hammerfaust',
+          stilTyp: 'waffenloser_kampfstil',
+          beschreibung: 'Schaltet waffenlose Angriffsmanöver frei.',
+          aktiviertManoeverIds: <String>['man_sprungtritt'],
+          kampfwertBoni: <CombatSpecialAbilityBonusDef>[
+            CombatSpecialAbilityBonusDef(
+              giltFuerTalent: 'raufen',
+              atBonus: 1,
+              paBonus: 1,
+            ),
+          ],
+        ),
+        CombatSpecialAbilityDef(
+          id: 'ksf_gladiatorenstil',
+          name: 'Gladiatorenstil',
+          stilTyp: 'waffenloser_kampfstil',
+          beschreibung: 'Wahlweise Bonus auf Raufen oder Ringen.',
+          aktiviertManoeverIds: <String>['man_sprungtritt'],
+          kampfwertBoni: <CombatSpecialAbilityBonusDef>[
+            CombatSpecialAbilityBonusDef(
+              giltFuerTalent: 'wahl',
+              atBonus: 1,
+              paBonus: 1,
             ),
           ],
         ),
@@ -177,6 +252,10 @@ void main() {
 
   Future<void> openMeleeTab(WidgetTester tester) async {
     await tapTab(tester, 'Kampfwerte');
+  }
+
+  Future<void> openRulesTab(WidgetTester tester) async {
+    await tapTab(tester, 'Kampfregeln');
   }
 
   Future<void> openArmorTab(WidgetTester tester) async {
@@ -407,6 +486,8 @@ void main() {
     required String be,
     required bool isActive,
     required bool rg1Active,
+    bool artifact = false,
+    String? artifactDescription,
   }) async {
     await tester.enterText(
       find.byKey(const ValueKey<String>('combat-armor-form-name')),
@@ -435,7 +516,17 @@ void main() {
     }
 
     await setSwitch('combat-armor-form-active', isActive);
+    await setSwitch('combat-armor-form-artifact', artifact);
     await setSwitch('combat-armor-form-rg1', rg1Active);
+    if (artifactDescription != null) {
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('combat-armor-form-artifact-description'),
+        ),
+        artifactDescription,
+      );
+      await tester.pumpAndSettle();
+    }
 
     await tester.tap(
       find.byKey(const ValueKey<String>('combat-armor-form-save')),
@@ -510,6 +601,62 @@ void main() {
       expect(hero.combatConfig.specialRules.schnellziehen, isTrue);
       expect(hero.combatConfig.specialRules.schnellladenBogen, isTrue);
       expect(hero.combatConfig.specialRules.schnellladenArmbrust, isTrue);
+    },
+  );
+
+  testWidgets(
+    'combat rules tab stores active unarmed styles and preview shows granted maneuvers',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              mainWeapon: MainWeaponSlot(name: 'Faust', talentId: 'tal_raufen'),
+            ),
+            talents: const <String, HeroTalentEntry>{
+              'tal_raufen': HeroTalentEntry(
+                talentValue: 8,
+                atValue: 4,
+                paValue: 4,
+              ),
+            },
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final actions = await openCombatTab(tester, repo);
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+      await tapTab(tester, 'Kampfregeln');
+
+      expect(find.text('Waffenlose Kampftechniken'), findsOneWidget);
+      await setSwitchByKey(
+        tester,
+        keyName: 'combat-special-ability-ksf_hammerfaust',
+        value: true,
+      );
+
+      await actions.save();
+      await tester.pumpAndSettle();
+
+      final hero = (await repo.listHeroes()).firstWhere(
+        (entry) => entry.id == 'demo',
+      );
+      expect(
+        hero.combatConfig.specialRules.activeCombatSpecialAbilityIds,
+        contains('ksf_hammerfaust'),
+      );
+
+      await openMeleeTab(tester);
+      expect(find.text('Sprungtritt'), findsOneWidget);
     },
   );
 
@@ -1239,7 +1386,12 @@ void main() {
       scrollable: find.byType(Scrollable).last,
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Finte'));
+    final finteCard = find
+        .ancestor(of: find.text('Finte'), matching: find.byType(Card))
+        .first;
+    await tester.tap(
+      find.descendant(of: finteCard, matching: find.byType(Switch)),
+    );
     await tester.pumpAndSettle();
 
     await actions.save();
@@ -1253,7 +1405,10 @@ void main() {
     expect(hero.combatConfig.mainWeapon.wmAt, 2);
     expect(hero.combatConfig.specialRules.kampfreflexe, isTrue);
     expect(hero.combatConfig.specialRules.aufmerksamkeit, isTrue);
-    expect(hero.combatConfig.specialRules.activeManeuvers, contains('Finte'));
+    expect(
+      hero.combatConfig.specialRules.activeManeuvers,
+      contains('man_finte'),
+    );
   });
 
   testWidgets('cancel discards draft across combat subtabs', (tester) async {
@@ -1304,6 +1459,100 @@ void main() {
     expect(hero.combatConfig.mainWeapon.weaponType, isEmpty);
     expect(hero.combatConfig.specialRules.kampfreflexe, isFalse);
     expect(hero.combatConfig.specialRules.aufmerksamkeit, isFalse);
+  });
+
+  testWidgets('can add and persist a waffenmeister from combat rules', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            mainWeapon: MainWeaponSlot(
+              name: 'Kurzschwert',
+              weaponType: 'Kurzschwert',
+              talentId: 'tal_nah',
+            ),
+          ),
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(
+              talentValue: 18,
+              atValue: 9,
+              paValue: 9,
+              combatSpecializations: <String>['Kurzschwert'],
+            ),
+          },
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openCombatTab(tester, repo);
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    await tapTab(tester, 'Kampfregeln');
+    final addMasteryButton = find.byTooltip('Waffenmeister hinzufügen');
+    await tester.scrollUntilVisible(
+      addMasteryButton,
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.ensureVisible(addMasteryButton);
+    await tester.pumpAndSettle();
+    await tester.tap(addMasteryButton, warnIfMissed: false);
+    await tester.pumpAndSettle();
+
+    final talentDropdown = find.byType(DropdownButtonFormField<String>).first;
+    await tester.ensureVisible(talentDropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(talentDropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Schwerter').last);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Waffenart'),
+      'Kurzschwert',
+    );
+    await tester.pumpAndSettle();
+
+    final iniBonusChip = find.widgetWithText(ActionChip, 'INI +1');
+    await tester.scrollUntilVisible(
+      iniBonusChip,
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(iniBonusChip);
+    await tester.pumpAndSettle();
+
+    final saveButtons = find.text('Speichern');
+    await tester.tap(saveButtons.last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Waffenmeister (Kurzschwert)'), findsWidgets);
+
+    await actions.save();
+    await tester.pumpAndSettle();
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.combatConfig.waffenmeisterschaften, hasLength(1));
+    expect(
+      hero.combatConfig.waffenmeisterschaften.single.weaponType,
+      'Kurzschwert',
+    );
+    expect(
+      hero.combatConfig.waffenmeisterschaften.single.bonuses.single.type,
+      WaffenmeisterBonusType.iniBonus,
+    );
   });
 
   testWidgets('supports multiple weapon slots in read mode with auto-save', (
@@ -1438,14 +1687,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final finteTile = find.ancestor(
-      of: find.text('Finte'),
-      matching: find.byType(SwitchListTile),
-    );
+    final finteCard = find
+        .ancestor(of: find.text('Finte'), matching: find.byType(Card))
+        .first;
     expect(
       find.descendant(
-        of: finteTile,
-        matching: find.text('Von aktiver Waffe unterstützt'),
+        of: finteCard,
+        matching: find.textContaining('Unterstützt'),
       ),
       findsOneWidget,
     );
@@ -1466,7 +1714,10 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(
-      find.descendant(of: finteTile, matching: find.text('Nicht unterstützt')),
+      find.descendant(
+        of: finteCard,
+        matching: find.textContaining('Nicht unterstützt'),
+      ),
       findsOneWidget,
     );
   });
@@ -2107,6 +2358,17 @@ void main() {
       find.byKey(const ValueKey<String>('combat-offhand-form-at-mod')),
       '2',
     );
+    await setSwitchByKey(
+      tester,
+      keyName: 'combat-offhand-form-artifact',
+      value: true,
+    );
+    await tester.enterText(
+      find.byKey(
+        const ValueKey<String>('combat-offhand-form-artifact-description'),
+      ),
+      'Gebundener Schutzgeist',
+    );
     await tester.tap(
       find.byKey(const ValueKey<String>('combat-offhand-form-save')),
     );
@@ -2134,6 +2396,11 @@ void main() {
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
     expect(hero.combatConfig.offhandAssignment.equipmentIndex, 0);
     expect(hero.combatConfig.offhandEquipment.single.atMod, 2);
+    expect(hero.combatConfig.offhandEquipment.single.isArtifact, isTrue);
+    expect(
+      hero.combatConfig.offhandEquipment.single.artifactDescription,
+      'Gebundener Schutzgeist',
+    );
   });
 
   testWidgets('weapon overview table lists active weapon first', (
@@ -2244,6 +2511,86 @@ void main() {
       lessThan(tester.getTopLeft(kurzFinder).dy),
     );
   });
+
+  testWidgets(
+    'wide weapons layout switches inline editor selection and restores table width',
+    (tester) async {
+      setTestSurfaceSize(tester, const Size(1400, 900));
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              weapons: <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzschwert',
+                  talentId: 'tal_nah',
+                  weaponType: 'Kurzschwert',
+                  tpFlat: 2,
+                ),
+                MainWeaponSlot(
+                  name: 'Bidenhaender',
+                  talentId: 'tal_nah',
+                  weaponType: 'Bidenhaender',
+                  tpFlat: 3,
+                ),
+              ],
+              selectedWeaponIndex: 0,
+            ),
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo);
+      await openWeaponsTab(tester);
+
+      final table = find.byKey(
+        const ValueKey<String>('combat-weapons-overview-table'),
+      );
+      expect(table, findsOneWidget);
+      final initialTableWidth = tester.getSize(table).width;
+
+      await tester.tap(find.text('Kurzschwert').first, warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      final nameField = find.byKey(
+        const ValueKey<String>('combat-weapon-form-name'),
+      );
+      expect(nameField, findsOneWidget);
+      expect(find.text('Waffe bearbeiten'), findsOneWidget);
+
+      final reducedTableWidth = tester.getSize(table).width;
+      expect(reducedTableWidth, lessThan(initialTableWidth));
+
+      final firstNameField = tester.widget<TextField>(nameField);
+      expect(firstNameField.controller?.text, 'Kurzschwert');
+
+      await tester.tap(find.text('Bidenhaender').first, warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      final secondNameField = tester.widget<TextField>(nameField);
+      expect(secondNameField.controller?.text, 'Bidenhaender');
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('combat-weapon-panel-close')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(nameField, findsNothing);
+      final restoredTableWidth = tester.getSize(table).width;
+      expect(restoredTableWidth, greaterThan(reducedTableWidth));
+    },
+  );
 
   testWidgets('weapon overview exposes INI fields in read mode', (
     tester,
@@ -2369,12 +2716,15 @@ void main() {
       be: '4',
       isActive: true,
       rg1Active: true,
+      artifact: true,
+      artifactDescription: 'Schimmernde Bannrunen',
     );
 
     expect(find.text('Kettenhemd'), findsOneWidget);
     expect(find.text('3'), findsAtLeast(1));
     expect(find.text('4'), findsAtLeast(1));
     expect(find.text('Ja'), findsAtLeast(1));
+    expect(find.text('Schimmernde Bannrunen'), findsOneWidget);
 
     await openArmorEditor(tester, index: 0);
     await fillArmorDialog(
@@ -2384,10 +2734,13 @@ void main() {
       be: '6',
       isActive: true,
       rg1Active: true,
+      artifact: true,
+      artifactDescription: 'Verstärkte Bannrunen',
     );
     expect(find.text('5'), findsAtLeast(1));
     expect(find.text('6'), findsAtLeast(1));
     expect(find.text('Ja'), findsAtLeast(1));
+    expect(find.text('Verstärkte Bannrunen'), findsOneWidget);
 
     final removeButton = find.byKey(
       const ValueKey<String>('combat-armor-remove-0'),
@@ -2548,4 +2901,177 @@ void main() {
     final calculationTopLeft = tester.getTopLeft(armorCalculation);
     expect(calculationTopLeft.dy, greaterThan(tableTopLeft.dy + 40));
   });
+
+  testWidgets(
+    'combat preview shows current values and possible maneuvers on wide layouts',
+    (tester) async {
+      setTestSurfaceSize(tester, const Size(1280, 900));
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              weapons: <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzschwert',
+                  weaponType: 'Kurzschwert',
+                  talentId: 'tal_nah',
+                  tpDiceCount: 1,
+                  tpDiceSides: 6,
+                  tpFlat: 2,
+                ),
+              ],
+              selectedWeaponIndex: 0,
+              specialRules: CombatSpecialRules(
+                activeManeuvers: <String>['man_finte'],
+              ),
+            ),
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo);
+      await openMeleeTab(tester);
+
+      expect(find.text('Aktuelle Kampfwerte'), findsOneWidget);
+      expect(find.text('Nutzbare Manöver'), findsOneWidget);
+      expect(find.text('Finte'), findsOneWidget);
+      expect(find.textContaining('Typ: Angriffsmanöver'), findsOneWidget);
+    },
+  );
+
+  testWidgets('combat rules groups maneuvers and opens details dialog', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                weaponType: 'Kurzschwert',
+                talentId: 'tal_nah',
+                tpDiceCount: 1,
+                tpDiceSides: 6,
+                tpFlat: 2,
+              ),
+            ],
+            selectedWeaponIndex: 0,
+            specialRules: CombatSpecialRules(
+              activeManeuvers: <String>['man_finte'],
+            ),
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openRulesTab(tester);
+
+    await tester.scrollUntilVisible(
+      find.text('Finte'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Sprungtritt'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Finte'), findsOneWidget);
+    expect(find.text('Sprungtritt'), findsOneWidget);
+
+    final finteCard = find
+        .ancestor(of: find.text('Finte'), matching: find.byType(Card))
+        .first;
+    final detailButton = find.descendant(
+      of: finteCard,
+      matching: find.byIcon(Icons.info_outline),
+    );
+    await tester.ensureVisible(detailButton);
+    await tester.pumpAndSettle();
+    await tester.tap(detailButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lange Erklärung'), findsOneWidget);
+    expect(find.text('Lange Finte-Erklärung.'), findsOneWidget);
+  });
+
+  testWidgets(
+    'combat preview hides additional maneuvers when hero has none active',
+    (tester) async {
+      setTestSurfaceSize(tester, const Size(1280, 900));
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              weapons: <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzschwert',
+                  weaponType: 'Kurzschwert',
+                  talentId: 'tal_nah',
+                  tpDiceCount: 1,
+                  tpDiceSides: 6,
+                  tpFlat: 2,
+                ),
+              ],
+              selectedWeaponIndex: 0,
+              waffenmeisterschaften: <WaffenmeisterConfig>[
+                WaffenmeisterConfig(
+                  talentId: 'tal_nah',
+                  weaponType: 'Kurzschwert',
+                  bonuses: <WaffenmeisterBonus>[
+                    WaffenmeisterBonus(
+                      type: WaffenmeisterBonusType.additionalManeuver,
+                      targetManeuver: 'Finte',
+                      value: 1,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo);
+      await openMeleeTab(tester);
+
+      expect(find.text('Nutzbare Manöver'), findsOneWidget);
+      expect(find.text('Finte'), findsNothing);
+    },
+  );
 }

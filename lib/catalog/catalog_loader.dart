@@ -8,7 +8,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 ///
 /// Der Katalog besteht aus einer `manifest.json` (Einstiegspunkt) die Pfade zu
 /// den Teilkatalog-Dateien enthaelt (Talente, Kampftalente, Waffen, Magie,
-/// optional Manoever). Alle Dateipfade werden relativ zur Manifest-Datei
+/// optional Manoever und Kampf-Sonderfertigkeiten). Alle Dateipfade werden relativ zur Manifest-Datei
 /// aufgeloest.
 class CatalogLoader {
   const CatalogLoader({
@@ -79,6 +79,17 @@ class CatalogLoader {
     final manoeverAssetPath = manoeverRelative != null
         ? _resolveAssetPath(manifestAssetPath, manoeverRelative)
         : null;
+    final combatSpecialAbilitiesRelative = _readOptionalStringFromMap(
+      files,
+      'kampf_sonderfertigkeiten',
+    );
+    final combatSpecialAbilitiesAssetPath =
+        combatSpecialAbilitiesRelative != null
+        ? _resolveAssetPath(
+            manifestAssetPath,
+            combatSpecialAbilitiesRelative,
+          )
+        : null;
 
     final talente = await _loadJsonList(talenteAssetPath);
     final waffentalente = await _loadJsonList(waffentalenteAssetPath);
@@ -86,6 +97,10 @@ class CatalogLoader {
     final magie = await _loadJsonList(magieAssetPath);
     final manoeverRaw = manoeverAssetPath != null
         ? await _loadJsonList(manoeverAssetPath)
+        : const <Map<String, dynamic>>[];
+    final combatSpecialAbilitiesRaw =
+        combatSpecialAbilitiesAssetPath != null
+        ? await _loadJsonList(combatSpecialAbilitiesAssetPath)
         : const <Map<String, dynamic>>[];
 
     _validateCombatSplit(
@@ -118,6 +133,16 @@ class CatalogLoader {
       domainName: 'weapons',
       assetPath: manifestAssetPath,
     );
+    _validateUniqueIds(
+      entries: manoeverRaw,
+      domainName: 'maneuvers',
+      assetPath: manifestAssetPath,
+    );
+    _validateUniqueIds(
+      entries: combatSpecialAbilitiesRaw,
+      domainName: 'combat special abilities',
+      assetPath: manifestAssetPath,
+    );
 
     return RulesCatalog(
       version: _readOptionalString(manifest, 'version', fallback: 'unknown'),
@@ -134,6 +159,9 @@ class CatalogLoader {
           .toList(growable: false),
       maneuvers: manoeverRaw
           .map((entry) => ManeuverDef.fromJson(entry))
+          .toList(growable: false),
+      combatSpecialAbilities: combatSpecialAbilitiesRaw
+          .map((entry) => CombatSpecialAbilityDef.fromJson(entry))
           .toList(growable: false),
     );
   }

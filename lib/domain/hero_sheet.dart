@@ -21,7 +21,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 14,
+    this.schemaVersion = 15,
     required this.name,
     required this.level,
     required this.attributes,

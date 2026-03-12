@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
-import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -11,10 +11,14 @@ import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/maneuver_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/unarmed_style_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/waffenmeister_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_area_registry.dart';
@@ -37,6 +41,7 @@ part 'hero_combat/combat_preview_subtab.dart';
 part 'hero_combat/combat_rules_subtab.dart';
 part 'hero_combat/combat_special_rules_helpers.dart';
 part 'hero_combat/combat_maneuver_helpers.dart';
+part 'hero_combat/combat_maneuver_dialog.dart';
 part 'hero_combat/combat_state_helpers.dart';
 
 enum _ManeuverSupportStatus { supported, notSupported, unverifiable }
@@ -260,6 +265,8 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                 overrideConfig: previewConfig,
                 overrideTalents: _draftTalents,
                 catalogTalents: catalog.talents,
+                catalogManeuvers: catalog.maneuvers,
+                catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
               );
               final effectiveAttributes = computeEffectiveAttributes(
                 hero,
