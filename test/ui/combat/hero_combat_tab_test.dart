@@ -6,7 +6,6 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
-import 'package:dsa_heldenverwaltung/domain/combat_mastery.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -22,7 +21,6 @@ void main() {
   HeroSheet buildHero({
     CombatConfig combatConfig = const CombatConfig(),
     Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
-    List<CombatMastery> combatMasteries = const <CombatMastery>[],
   }) {
     return HeroSheet(
       id: 'demo',
@@ -40,7 +38,6 @@ void main() {
       ),
       talents: talents,
       combatConfig: combatConfig,
-      combatMasteries: combatMasteries,
     );
   }
 
@@ -1464,7 +1461,7 @@ void main() {
     expect(hero.combatConfig.specialRules.aufmerksamkeit, isFalse);
   });
 
-  testWidgets('can add and persist a combat mastery from combat rules', (
+  testWidgets('can add and persist a waffenmeister from combat rules', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -1502,79 +1499,59 @@ void main() {
     await tester.pumpAndSettle();
 
     await tapTab(tester, 'Kampfregeln');
+    final addMasteryButton = find.byTooltip('Waffenmeister hinzufügen');
     await tester.scrollUntilVisible(
-      find.byKey(const ValueKey<String>('combat-mastery-add')),
+      addMasteryButton,
       300,
       scrollable: find.byType(Scrollable).last,
-    );
-    final addMasteryButton = find.byKey(
-      const ValueKey<String>('combat-mastery-add'),
     );
     await tester.ensureVisible(addMasteryButton);
     await tester.pumpAndSettle();
     await tester.tap(addMasteryButton, warnIfMissed: false);
     await tester.pumpAndSettle();
 
-    final masteryNameField = find.byKey(
-      const ValueKey<String>('combat-mastery-name'),
-    );
-    await tester.ensureVisible(masteryNameField);
+    final talentDropdown = find.byType(DropdownButtonFormField<String>).first;
+    await tester.ensureVisible(talentDropdown);
     await tester.pumpAndSettle();
-    await tester.enterText(masteryNameField, 'Waffenmeister (Kurzschwert)');
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('combat-mastery-target-refs')),
-      'Kurzschwert',
-    );
-    await tester.tap(
-      find.byKey(const ValueKey<String>('combat-mastery-required-talent')),
-    );
+    await tester.tap(talentDropdown);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Schwerter').last);
+    await tester.tap(find.textContaining('Schwerter').last);
     await tester.pumpAndSettle();
 
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Waffenart'),
+      'Kurzschwert',
+    );
+    await tester.pumpAndSettle();
+
+    final iniBonusChip = find.widgetWithText(ActionChip, 'INI +1');
     await tester.scrollUntilVisible(
-      find.byKey(const ValueKey<String>('combat-mastery-effect-add')),
+      iniBonusChip,
       300,
       scrollable: find.byType(Scrollable).last,
     );
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const ValueKey<String>('combat-mastery-effect-add')),
-    );
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(
-      find.byKey(const ValueKey<String>('combat-mastery-effect-type')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const ValueKey<String>('combat-mastery-effect-type')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('INI-Bonus').last);
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('combat-mastery-effect-value')),
-      '1',
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Speichern').last);
+    await tester.tap(iniBonusChip);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Speichern').last);
+    final saveButtons = find.text('Speichern');
+    await tester.tap(saveButtons.last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Waffenmeister (Kurzschwert)'), findsOneWidget);
+    expect(find.text('Waffenmeister (Kurzschwert)'), findsWidgets);
 
     await actions.save();
     await tester.pumpAndSettle();
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-    expect(hero.combatMasteries, hasLength(1));
-    expect(hero.combatMasteries.single.name, 'Waffenmeister (Kurzschwert)');
+    expect(hero.combatConfig.waffenmeisterschaften, hasLength(1));
     expect(
-      hero.combatMasteries.single.effects.single.type,
-      CombatMasteryEffectType.initiativeBonus,
+      hero.combatConfig.waffenmeisterschaften.single.weaponType,
+      'Kurzschwert',
+    );
+    expect(
+      hero.combatConfig.waffenmeisterschaften.single.bonuses.single.type,
+      WaffenmeisterBonusType.iniBonus,
     );
   });
 
@@ -3064,19 +3041,20 @@ void main() {
                 ),
               ],
               selectedWeaponIndex: 0,
+              waffenmeisterschaften: <WaffenmeisterConfig>[
+                WaffenmeisterConfig(
+                  talentId: 'tal_nah',
+                  weaponType: 'Kurzschwert',
+                  bonuses: <WaffenmeisterBonus>[
+                    WaffenmeisterBonus(
+                      type: WaffenmeisterBonusType.additionalManeuver,
+                      targetManeuver: 'Finte',
+                      value: 1,
+                    ),
+                  ],
+                ),
+              ],
             ),
-            combatMasteries: const <CombatMastery>[
-              CombatMastery(
-                id: 'wm_1',
-                name: 'Waffenmeister',
-                effects: <CombatMasteryEffect>[
-                  CombatMasteryEffect(
-                    type: CombatMasteryEffectType.allowedAdditionalManeuver,
-                    maneuverId: 'man_finte',
-                  ),
-                ],
-              ),
-            ],
           ),
         ],
         states: {

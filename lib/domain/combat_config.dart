@@ -15,6 +15,7 @@ export 'package:dsa_heldenverwaltung/domain/combat_config/armor_config.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/combat_special_rules.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/combat_manual_mods.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/shield_size.dart';
+export 'package:dsa_heldenverwaltung/domain/combat_config/waffenmeister_config.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config/armor_config.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/combat_manual_mods.dart';
@@ -25,6 +26,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_entr
 import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_type.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_mode.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_slot.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/waffenmeister_config.dart';
 
 /// Aggregiert alle Kampfkonfigurationsdaten eines Helden.
 ///
@@ -44,6 +46,7 @@ class CombatConfig {
     this.armor = const ArmorConfig(),
     this.specialRules = const CombatSpecialRules(),
     this.manualMods = const CombatManualMods(),
+    this.waffenmeisterschaften = const <WaffenmeisterConfig>[],
   });
 
   /// Legacy-Hauptwaffe (wird bei [weapons.isEmpty] als einziger Slot verwendet).
@@ -69,6 +72,9 @@ class CombatConfig {
 
   /// Manuell eingegebene Kampfmodifikatoren (AT, PA, Ini, Ausweichen, IniWurf).
   final CombatManualMods manualMods;
+
+  /// Konfigurierte Waffenmeisterschaften (eine pro Waffenart).
+  final List<WaffenmeisterConfig> waffenmeisterschaften;
 
   /// Gibt die normalisierte Waffenliste zurueck.
   ///
@@ -115,6 +121,7 @@ class CombatConfig {
     ArmorConfig? armor,
     CombatSpecialRules? specialRules,
     CombatManualMods? manualMods,
+    List<WaffenmeisterConfig>? waffenmeisterschaften,
   }) {
     final nextWeapons = List<MainWeaponSlot>.from(
       weapons ?? weaponSlots,
@@ -150,6 +157,9 @@ class CombatConfig {
       armor: armor ?? this.armor,
       specialRules: specialRules ?? this.specialRules,
       manualMods: manualMods ?? this.manualMods,
+      waffenmeisterschaften: waffenmeisterschaften != null
+          ? List<WaffenmeisterConfig>.unmodifiable(waffenmeisterschaften)
+          : this.waffenmeisterschaften,
     );
   }
 
@@ -177,6 +187,9 @@ class CombatConfig {
       'armor': armor.toJson(),
       'specialRules': specialRules.toJson(),
       'manualMods': manualMods.toJson(),
+      'waffenmeisterschaften': waffenmeisterschaften
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
     };
   }
 
@@ -248,6 +261,7 @@ class CombatConfig {
       armor: ArmorConfig.fromJson(readMap('armor')),
       specialRules: CombatSpecialRules.fromJson(readMap('specialRules')),
       manualMods: CombatManualMods.fromJson(readMap('manualMods')),
+      waffenmeisterschaften: _parseWaffenmeisterschaften(json),
     );
   }
 }
@@ -329,4 +343,18 @@ _migrateLegacyOffhand({
     ),
     equipment: List<OffhandEquipmentEntry>.unmodifiable(nextEquipment),
   );
+}
+
+/// Parst die Waffenmeisterschaften aus einem JSON-Map.
+List<WaffenmeisterConfig> _parseWaffenmeisterschaften(
+  Map<String, dynamic> json,
+) {
+  final raw = (json['waffenmeisterschaften'] as List?) ?? const <dynamic>[];
+  final parsed = raw
+      .whereType<Map>()
+      .map((entry) => WaffenmeisterConfig.fromJson(
+            entry.cast<String, dynamic>(),
+          ))
+      .toList(growable: false);
+  return List<WaffenmeisterConfig>.unmodifiable(parsed);
 }

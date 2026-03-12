@@ -47,10 +47,6 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
         const SizedBox(height: 8),
         Text(preview.axxAttackDefenseHint),
       ],
-      if (preview.applicableMasteries.isNotEmpty) ...[
-        const SizedBox(height: 12),
-        _buildApplicableCombatMasteriesPreview(preview),
-      ],
       const SizedBox(height: 12),
       _buildPossibleManeuversPreviewCard(catalog: catalog, preview: preview),
     ];
@@ -146,10 +142,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                         : 'Geschoss: ${preview.activeProjectileName}',
                   ),
                 ),
-                if (preview.masteryManeuverDiscounts.isNotEmpty)
+                if (preview.waffenmeisterManeuverReductions.isNotEmpty)
                   Chip(
                     label: Text(
-                      'Rabatte: ${preview.masteryManeuverDiscounts.length}',
+                      'Rabatte: ${preview.waffenmeisterManeuverReductions.length}',
                     ),
                   ),
               ],
