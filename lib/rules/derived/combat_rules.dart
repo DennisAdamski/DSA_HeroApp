@@ -18,6 +18,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/shield_parry_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/unarmed_style_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffen_rules.dart';
 
 class CombatPreviewStats {
@@ -187,6 +188,8 @@ CombatPreviewStats computeCombatPreviewStats(
   Map<String, HeroTalentEntry>? overrideTalents,
   List<TalentDef> catalogTalents = const <TalentDef>[],
   List<ManeuverDef> catalogManeuvers = const <ManeuverDef>[],
+  List<CombatSpecialAbilityDef> catalogCombatSpecialAbilities =
+      const <CombatSpecialAbilityDef>[],
   List<CombatMastery>? overrideCombatMasteries,
   ModifierParseResult? parsedModifiers,
   Attributes? effectiveAttributes,
@@ -216,7 +219,8 @@ CombatPreviewStats computeCombatPreviewStats(
   final offhandEquipment =
       config.offhandAssignment.usesEquipment &&
           config.offhandAssignment.equipmentIndex >= 0 &&
-          config.offhandAssignment.equipmentIndex < config.offhandEquipment.length
+          config.offhandAssignment.equipmentIndex <
+              config.offhandEquipment.length
       ? config.offhandEquipment[config.offhandAssignment.equipmentIndex]
       : null;
   final armor = config.armor;
@@ -278,6 +282,13 @@ CombatPreviewStats computeCombatPreviewStats(
       : computeAxxeleratusTpBonus(axxeleratusActive: axxeleratusActive);
   final activeDistanceBand = main.rangedProfile.selectedDistanceBand;
   final activeProjectile = main.rangedProfile.selectedProjectileOrNull;
+  final selectedTalentName = selectedTalent?.name ?? '';
+  final unarmedStyleEffects = computeActiveUnarmedStyleEffects(
+    specialRules: special,
+    catalogCombatSpecialAbilities: catalogCombatSpecialAbilities,
+    catalogManeuvers: catalogManeuvers,
+    activeTalentName: selectedTalentName,
+  );
   final reloadTimeResult = computeRangedReloadTime(
     weapon: main,
     specialRules: special,
@@ -313,7 +324,8 @@ CombatPreviewStats computeCombatPreviewStats(
   final offhandModifiers = computeOffhandModifierSnapshot(
     equipment: offhandEquipment,
     specialRules: special,
-    paBase: computePa(effectiveSheet, mods) +
+    paBase:
+        computePa(effectiveSheet, mods) +
         computeAxxeleratusPaBaseBonus(axxeleratusActive: axxeleratusActive),
   );
 
@@ -347,6 +359,7 @@ CombatPreviewStats computeCombatPreviewStats(
             main.wmAt +
             atEbePart +
             atSpecBonus +
+            unarmedStyleEffects.atBonus +
             masteryModifiers.attackModifier +
             offhandModifiers.atMod +
             manualMods.atMod;
@@ -357,6 +370,7 @@ CombatPreviewStats computeCombatPreviewStats(
             main.wmPa +
             paEbePart +
             paSpecBonus +
+            unarmedStyleEffects.paBonus +
             masteryModifiers.parryModifier +
             offhandModifiers.mainPaMod +
             manualMods.paMod;
@@ -374,6 +388,7 @@ CombatPreviewStats computeCombatPreviewStats(
     eigenschaftsIni +
         ebe +
         sfIniBonus +
+        unarmedStyleEffects.iniMod +
         masteryModifiers.initiativeBonus +
         iniWurfEffective +
         axxIniBonus +

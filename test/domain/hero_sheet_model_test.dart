@@ -159,6 +159,8 @@ void main() {
             atMod: -5,
             paMod: 7,
             iniMod: -3,
+            isArtifact: true,
+            artifactDescription: 'Schutzgeist im Schildbuckel',
           ),
         ],
         armor: ArmorConfig(
@@ -169,6 +171,8 @@ void main() {
               rg1Active: true,
               rs: 3,
               be: 2,
+              isArtifact: true,
+              artifactDescription: 'Runenfutter gegen Stichwaffen',
             ),
           ],
           globalArmorTrainingLevel: 2,
@@ -177,6 +181,8 @@ void main() {
           kampfreflexe: true,
           ausweichenI: true,
           schildkampfI: true,
+          activeCombatSpecialAbilityIds: ['ksf_hammerfaust'],
+          gladiatorStyleTalent: 'raufen',
           activeManeuvers: ['Finte', 'Wuchtschlag'],
         ),
         manualMods: CombatManualMods(iniMod: 1, ausweichenMod: 2),
@@ -325,10 +331,24 @@ void main() {
       reloaded.combatConfig.offhandEquipment.single.type,
       OffhandEquipmentType.shield,
     );
+    expect(reloaded.combatConfig.offhandEquipment.single.isArtifact, isTrue);
+    expect(
+      reloaded.combatConfig.offhandEquipment.single.artifactDescription,
+      'Schutzgeist im Schildbuckel',
+    );
     expect(reloaded.combatConfig.armor.pieces.length, 1);
     expect(reloaded.combatConfig.armor.pieces.first.be, 2);
+    expect(reloaded.combatConfig.armor.pieces.first.isArtifact, isTrue);
+    expect(
+      reloaded.combatConfig.armor.pieces.first.artifactDescription,
+      'Runenfutter gegen Stichwaffen',
+    );
     expect(reloaded.combatConfig.armor.globalArmorTrainingLevel, 2);
     expect(reloaded.combatConfig.specialRules.kampfreflexe, isTrue);
+    expect(reloaded.combatConfig.specialRules.activeCombatSpecialAbilityIds, [
+      'ksf_hammerfaust',
+    ]);
+    expect(reloaded.combatConfig.specialRules.gladiatorStyleTalent, 'raufen');
     expect(reloaded.combatConfig.specialRules.activeManeuvers, [
       'Finte',
       'Wuchtschlag',
@@ -380,6 +400,8 @@ void main() {
     expect(loaded.combatConfig.mainWeapon.artifactDescription, isEmpty);
     expect(loaded.combatConfig.weaponSlots.length, 1);
     expect(loaded.combatConfig.offhandAssignment.isNone, isTrue);
+    expect(loaded.combatConfig.offhandEquipment, isEmpty);
+    expect(loaded.combatConfig.armor.pieces, isEmpty);
     expect(loaded.combatConfig.specialRules.activeManeuvers, isEmpty);
   });
 

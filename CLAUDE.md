@@ -12,7 +12,7 @@ Read this before making any changes.
 - Local persistence using the Hive key-value database
 - DSA rule calculations (attributes, derived stats, talents, combat)
 - Hero import/export as JSON
-- Catalog data (talents, weapons, spells) loaded from split JSON assets
+- Catalog data (talents, weapons, spells, maneuvers, combat special abilities) loaded from split JSON assets
 
 The primary language of comments, variable names, UI strings, and commit messages is **German**.
 
@@ -140,6 +140,13 @@ Ergaenzungen zur aktuellen Struktur:
   Validierung, Zielauflösung und ableitbare Kampfmodifikatoren.
 - `lib/rules/derived/maneuver_rules.dart` normalisiert Manoever-Namen auf
   stabile IDs fuer Regel- und UI-Verweise.
+- `lib/rules/derived/unarmed_style_rules.dart` leitet aus aktiven
+  waffenlosen Kampfstilen freigeschaltete Manoever und feste Stilboni fuer
+  `Raufen` und `Ringen` ab.
+- `assets/catalogs/house_rules_v1/kampf_sonderfertigkeiten.json` enthaelt
+  strukturierte Kampf-Sonderfertigkeiten mit Voraussetzungen, Verbreitung,
+  Kosten sowie optionalen Stilfeldern wie `stil_typ`,
+  `aktiviert_manoever_ids` und `kampfwert_boni`.
 - `lib/ui/widgets/combat_quick_stats.dart` enthaelt die kompakte Kampfwerte-Quickview.
 - `lib/ui/screens/hero_combat/` enthaelt die aufgeteilten Kampf-Subtabs sowie
   Helper fuer Regeln, Preview und Weapon-Editor.
@@ -277,6 +284,9 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 - Der Bereich `Kampfregeln` im Kampf-Tab besitzt jetzt einen gefuehrten
   Builder fuer Meisterschaften; bedingte oder rein dokumentative Effekte
   bleiben dort strukturiert sichtbar.
+- Katalogbasierte waffenlose Kampfstile koennen dort ebenfalls aktiviert
+  werden; ihre festen Boni und freigeschalteten Manoever werden in Vorschau
+  und Manoeverlisten automatisch beruecksichtigt.
 
 ### Update 2026-03-10
 

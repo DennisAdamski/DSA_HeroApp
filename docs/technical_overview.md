@@ -28,7 +28,7 @@ Helden im Pen-&-Paper-Rollenspiel *Das Schwarze Auge* (DSA). Die App bietet:
 - Lokale Persistenz mit der Hive-Datenbank
 - DSA-Regelberechnungen (Eigenschaften, abgeleitete Werte, Talente, Kampf)
 - Heldenimport/-export als JSON
-- Katalogdaten (Talente, Waffen, Zauber) aus aufgesplitteten JSON-Assets
+- Katalogdaten (Talente, Waffen, Zauber, Manöver, Kampf-Sonderfertigkeiten) aus aufgesplitteten JSON-Assets
 
 ### Technologie-Stack
 
@@ -382,7 +382,9 @@ Aktivierungsstatus von Kampf-Sonderfertigkeiten (alle `bool`):
 | `axxeleratusActive` | Zauber Axxeleratus (verdoppelt Ini-Basisanteil und GS; weitere Kampfboni) |
 | `klingentaenzer` | Klingentänzer (2W6 statt 1W6 für Initiative) |
 | `aufmerksamkeit` | Aufmerksamkeit |
-| `activeManeuvers` | `List<String>` — Aktive Manöver-IDs |
+| `activeCombatSpecialAbilityIds` | `List<String>` — Aktiv geschaltete katalogbasierte Kampf-Sonderfertigkeiten |
+| `gladiatorStyleTalent` | `String` | Talentwahl fuer den Gladiatorenstil (`raufen` oder `ringen`) |
+| `activeManeuvers` | `List<String>` — Manuell aktivierte Manöver-IDs |
 
 Kampfmeisterschaften sind bewusst **nicht** Teil von `CombatSpecialRules`,
 sondern liegen als eigene strukturierte Liste in `HeroSheet.combatMasteries`.
@@ -655,6 +657,7 @@ waffentalente.json     ← Kampftalente (group == 'Kampftalent')
 waffen.json            ← Waffen
 magie.json             ← Zaubersprüche
 manoever.json          ← Manöver (optional)
+kampf_sonderfertigkeiten.json ← Kampf-Sonderfertigkeiten (optional)
 ```
 
 **`CatalogLoader.loadFromAsset()`** (`lib/catalog/catalog_loader.dart`):
@@ -823,6 +826,9 @@ Dabei gilt:
 - `combat_mastery_rules.dart` bewertet Punktbudget und Voraussetzungen,
   prueft die Anwendbarkeit fuer Hauptwaffe, Schild oder Parierwaffe und leitet
   automatisch wirksame Modifikatoren fuer die Kampfvorschau ab.
+- `unarmed_style_rules.dart` wertet aktive waffenlose Kampfstile aus dem
+  Katalog aus, schaltet deren Manoever frei und rechnet feste Stilboni auf
+  `Raufen`/`Ringen` mit einem gemeinsamen Limit von `+2 AT` und `+2 PA` ein.
 
 **Spezialisierungs-Boni:**
 
@@ -846,7 +852,8 @@ Fernkampfwaffen enthält derselbe Snapshot einen gemeinsamen `AT`, die aktive
 Distanzbezeichnung, Ladezeit sowie den selektierten Geschossnamen,
 Geschossbestand und dessen Beschreibung. Zusaetzlich enthaelt der Snapshot
 die automatisch eingerechneten Kampfmeisterschafts-Modifikatoren, anwendbare
-Meisterschaften und strukturierte Manoever-Erleichterungen fuer die UI.
+Meisterschaften, strukturierte Manoever-Erleichterungen fuer die UI sowie
+feste Boni aktiver waffenloser Kampfstile.
 
 ### 4.7 Modifier-Parser
 
