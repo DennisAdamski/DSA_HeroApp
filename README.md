@@ -67,7 +67,8 @@ Vollstaendige Anleitung:
 - Neue Waffen werden ueber denselben Dialog angelegt; der Katalog-Button oeffnet dabei vorbefuellte Vorlagen.
 - Axxeleratus aktiviert temporaer `Schnellziehen`, `Schnellladen (Bogen)` und `Schnellladen (Armbrust)`; Fernkampf-Ladezeiten werden im Kampf-Preview als `Aktion`/`Aktionen` ausgegeben.
 - Der Bereich `Kampfregeln` enthaelt jetzt zusaetzlich einen Builder fuer Kampfmeisterschaften mit Zieltyp, Effekten, Anforderungswarnungen und Punktbudget.
-- `CombatPreviewStats` zeigt anwendbare Meisterschaften sowie automatisch eingerechnete Boni fuer AT, PA, INI, Schild-PA, TP/KK, Ladezeit und Fernkampf-Reichweite.
+- Das Kampf-Preview blendet Distanz- und Geschoss-Chips nur ein, wenn in Haupt- oder Nebenhand eine Fernkampfwaffe gehalten wird; die editierbare Distanz-/Geschossauswahl bleibt an die aktive Haupthand gebunden.
+- `CombatPreviewStats` zeigt anwendbare Waffenmeisterschaften explizit samt AT-/PA-/INI-/TP/KK-Anteilen, Ladezeit-Halbierung, zusaetzlichen Manoevern und strukturierten Manoever-Erleichterungen fuer Preview- und Berechnungsschritte.
 - Aktive waffenlose Kampfstile werden im Kampfregel-Tab als eigene Katalogsektion gepflegt; direkte Stilboni auf `Raufen`/`Ringen` sowie die freigeschalteten waffenlosen Manöver werden in die Kampfvorschau eingerechnet.
 
 ### Workspace-Layout (Stand: 2026-03-08)

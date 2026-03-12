@@ -42,7 +42,11 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
       ],
     ];
     final rightColumnChildren = <Widget>[
-      _buildCombatPreviewValuesCard(preview: preview),
+      _buildCombatPreviewValuesCard(
+        preview: preview,
+        offhandWeapon: offhandWeapon,
+        catalog: catalog,
+      ),
       if (preview.axxAttackDefenseHint.isNotEmpty) ...[
         const SizedBox(height: 8),
         Text(preview.axxAttackDefenseHint),
@@ -95,7 +99,21 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
   }
 
   /// Zeigt die aktuellen Kampfwerte in einer kompakten Übersicht.
-  Widget _buildCombatPreviewValuesCard({required CombatPreviewStats preview}) {
+  Widget _buildCombatPreviewValuesCard({
+    required CombatPreviewStats preview,
+    required MainWeaponSlot? offhandWeapon,
+    required RulesCatalog catalog,
+  }) {
+    final hasHeldRangedWeapon = _hasHeldRangedWeapon(
+      preview: preview,
+      offhandWeapon: offhandWeapon,
+    );
+    final activeDistanceLabel = preview.activeDistanceLabel.trim().isEmpty
+        ? '-'
+        : preview.activeDistanceLabel;
+    final activeProjectileName = preview.activeProjectileName.trim().isEmpty
+        ? '-'
+        : preview.activeProjectileName;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -128,26 +146,14 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
               spacing: 8,
               runSpacing: 8,
               children: [
-                Chip(
-                  label: Text(
-                    preview.activeDistanceLabel.trim().isEmpty
-                        ? 'Distanz: -'
-                        : 'Distanz: ${preview.activeDistanceLabel}',
-                  ),
+                if (hasHeldRangedWeapon)
+                  Chip(label: Text('Distanz: $activeDistanceLabel')),
+                if (hasHeldRangedWeapon)
+                  Chip(label: Text('Geschoss: $activeProjectileName')),
+                ..._buildWaffenmeisterPreviewChips(
+                  catalog: catalog,
+                  preview: preview,
                 ),
-                Chip(
-                  label: Text(
-                    preview.activeProjectileName.trim().isEmpty
-                        ? 'Geschoss: -'
-                        : 'Geschoss: ${preview.activeProjectileName}',
-                  ),
-                ),
-                if (preview.waffenmeisterManeuverReductions.isNotEmpty)
-                  Chip(
-                    label: Text(
-                      'Rabatte: ${preview.waffenmeisterManeuverReductions.length}',
-                    ),
-                  ),
               ],
             ),
           ],
@@ -196,6 +202,9 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                       spacing: 8,
                       runSpacing: 8,
                       children: _buildPreviewManeuverMetaChips(
+                        catalog: catalog,
+                        preview: preview,
+                        maneuverId: maneuverId,
                         maneuverDef: maneuver,
                       ),
                     ),
@@ -210,6 +219,54 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
         ),
       ),
     );
+  }
+
+  /// Kennzeichnet, ob aktuell in Haupt- oder Nebenhand eine Fernkampfwaffe
+  /// gehalten wird.
+  bool _hasHeldRangedWeapon({
+    required CombatPreviewStats preview,
+    required MainWeaponSlot? offhandWeapon,
+  }) {
+    if (preview.isRangedWeapon) {
+      return true;
+    }
+    return offhandWeapon?.isRanged ?? false;
+  }
+
+  /// Rendert die expliziten Waffenmeister-Boni fuer die Kampfwerte-Quickview.
+  List<Widget> _buildWaffenmeisterPreviewChips({
+    required RulesCatalog catalog,
+    required CombatPreviewStats preview,
+  }) {
+    if (!preview.waffenmeisterActive) {
+      return const <Widget>[];
+    }
+
+    final chips = <Widget>[Chip(label: Text(preview.waffenmeisterName))];
+    if (preview.waffenmeisterAtBonus != 0) {
+      chips.add(Chip(label: Text('WM AT: +${preview.waffenmeisterAtBonus}')));
+    }
+    if (preview.waffenmeisterPaBonus != 0) {
+      chips.add(Chip(label: Text('WM PA: +${preview.waffenmeisterPaBonus}')));
+    }
+    if (preview.waffenmeisterIniBonus != 0) {
+      chips.add(Chip(label: Text('WM INI: +${preview.waffenmeisterIniBonus}')));
+    }
+    for (final entry in preview.waffenmeisterManeuverReductions.entries) {
+      final label = displayNameForManeuverId(
+        entry.key,
+        catalogManeuvers: catalog.maneuvers,
+      );
+      chips.add(Chip(label: Text('$label -${entry.value}')));
+    }
+    for (final maneuverId in preview.waffenmeisterAdditionalManeuvers) {
+      final label = displayNameForManeuverId(
+        maneuverId,
+        catalogManeuvers: catalog.maneuvers,
+      );
+      chips.add(Chip(label: Text('WM Manöver: $label')));
+    }
+    return chips;
   }
 
   // ---------------------------------------------------------------------------
