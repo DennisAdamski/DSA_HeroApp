@@ -16,6 +16,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
     final offhandEquipment = _offhandEquipmentOrNull();
     final isEditing = _editController.isEditing;
     final manual = _draftCombatConfig.manualMods;
+    final artifactSummaryCard = _buildCombatArtifactSummaryCard(
+      offhandWeapon: offhandWeapon,
+      offhandEquipment: offhandEquipment,
+    );
     final leftColumnChildren = <Widget>[
       _buildPreviewWeaponSelection(
         catalog: catalog,
@@ -34,6 +38,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
         offhandWeapon: offhandWeapon,
         offhandEquipment: offhandEquipment,
       ),
+      if (artifactSummaryCard != null) ...[
+        const SizedBox(height: 12),
+        artifactSummaryCard,
+      ],
       const SizedBox(height: 12),
       buildWeaponCalculationDetails(preview: preview, isEditing: isEditing),
       if (isEditing) ...[
