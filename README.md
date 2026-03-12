@@ -1,24 +1,117 @@
 # DSA Heldenverwaltung
 
-Flutter-App zur Verwaltung von DSA-Helden mit:
-- lokaler Persistenz (Hive)
-- Regeln/abgeleiteten Werten
-- Import/Export von Helden als JSON
-- Katalogdaten aus Excel-Quellen
-- Kampfmanöver und Kampf-Sonderfertigkeiten aus Split-JSON-Katalogen
+Flutter-App zur Verwaltung von Helden fuer *Das Schwarze Auge* (DSA) mit lokalem Datenmodell, regelgestuetzten Berechnungen und katalogbasierten Inhalten.
 
-## Aktuelle Fachlogik
+Die App ist auf eine moeglichst umfangreiche Heldenverwaltung ausgelegt: Eigenschaften, Talente, Kampf, Magie, Inventar, Notizen, Import/Export und hausregelbasierte Katalogdaten werden in einer lokalen Anwendung zusammengefuehrt.
 
-- Neue Helden werden ueber einen Dialog mit Name und 8 Roh-Startwerten angelegt.
-- `rawStartAttributes` speichern die eingegebenen Rohwerte.
-- `startAttributes` speichern die effektiven Startwerte nach Rasse/Kultur/Profession.
-- Das Eigenschaftsmaximum wird aus dem effektiven Startwert berechnet: `ceil(Start * 1.5)`.
-- Der Magie-Tab verwaltet neben Zaubern jetzt auch heldenspezifische Ritualkategorien und Rituale.
-- Der Notizen-Tab ist in `Notizen` und `Verbindungen` unterteilt und speichert beide Bereiche direkt im Heldendatensatz.
-- Der Kampf-Tab verwaltet Waffenmeisterschaften ueber `CombatConfig.waffenmeisterschaften` und den Waffenmeister-Baukasten im Kampfregeln-Tab.
-- Waffenlose Kampftechniken aus `Wege des Schwerts` werden als katalogbasierte Kampf-Sonderfertigkeiten gefuehrt und schalten ihre zugeordneten Manöver direkt frei.
+## Inhalt
+
+- [Projektueberblick](#projektueberblick)
+- [Funktionsumfang](#funktionsumfang)
+- [Technischer Aufbau](#technischer-aufbau)
+- [Schnellstart](#schnellstart)
+- [Wie eine solche App aufgebaut werden kann](#wie-eine-solche-app-aufgebaut-werden-kann)
+- [Projektstruktur](#projektstruktur)
+- [Tests und Qualitaet](#tests-und-qualitaet)
+- [Weiterfuehrende Dokumentation](#weiterfuehrende-dokumentation)
+
+## Projektueberblick
+
+Die App verwaltet DSA-Helden lokal auf dem Geraet und kombiniert dabei drei Kernbereiche:
+
+- Persistente Heldendaten mit separatem Laufzeitzustand
+- Regelberechnungen fuer abgeleitete Werte und Kampfvorschau
+- Katalogdaten aus versionierten JSON-Assets auf Basis externer Excel-Quellen
+
+Technischer Stack:
+
+- Flutter + Dart
+- `flutter_riverpod` fuer State-Management
+- `Hive` fuer lokale Persistenz
+- JSON-Import/-Export fuer Heldendaten
+- Python-Tools unter `tool/` fuer Katalogaufbereitung und Wartung
+
+## Funktionsumfang
+
+### Heldenverwaltung
+
+- Anlegen neuer Helden mit Roh-Startwerten fuer die acht DSA-Eigenschaften
+- Persistenz aller Heldendaten inklusive Schema-Versionierung
+- Separate Speicherung des Laufzeitzustands wie aktuelle LeP, AsP, KaP und Ausdauer
+- Seed-Import von Beispielhelden aus `assets/heroes/`
+
+### Uebersicht und Stammdaten
+
+- Pflege von Name, Rasse, Kultur, Profession und Biografiedaten
+- Verwaltung von AP, Stufe, Ressourcen und textbasierten Modifikatoren
+- Berechnung effektiver Startwerte und Eigenschaftsmaxima
+- Parsing von Modifikator-Texten aus Vor-/Nachteilen sowie R/K/P-Feldern
+
+### Talente und Sprachen
+
+- Verwaltung allgemeiner Talente, Kampftalente und Meta-Talente
+- Validierung von AT/PA-Aufteilungen bei Kampftalenten
+- Unterstuetzung fuer Talentspezialisierungen, Sondererfahrungen und Begabungen
+- Eigener Bereich fuer Sprachen und Schriften auf Basis von Katalogdaten
+
+### Kampf
+
+- Pflege von Nah- und Fernkampfwaffen in einer gemeinsamen Kampfkonfiguration
+- Unterstuetzung fuer Nebenhand, Parierwaffen, Schilde und Ruestungen
+- Kampfvorschau mit AT, PA, TP, INI, Ladezeit, Distanzstufen und Geschossen
+- Verwaltung aktiver Manoever und katalogbasierter Kampf-Sonderfertigkeiten
+- Waffenmeister-Baukasten mit Voraussetzungen, Boni und Vorschau der Wirkung
+- Beruecksichtigung waffenloser Kampfstile und freigeschalteter Manoever
+
+### Magie
+
+- Verwaltung gelernter Zauber inklusive Repruesentation, Tradition und Begabung
+- Anzeige von Verfuegbarkeit, Lernkomplexitaet und heldenspezifischen Anpassungen
+- Eigener Ritual-Bereich mit Ritualkategorien, Ritualkenntnissen und Ritualen
+- Pflege magischer Sonderfertigkeiten und aktiver Zaubereffekte
+
+### Inventar, Notizen und Verbindungen
+
+- Bearbeitbares Inventar fuer Ausruestung und sonstige Gegenstaende
+- Notizen mit Titel und Beschreibung
+- Verbindungen/Kontakte mit Ort, Sozialstatus, Loyalitaet und Beschreibung
+
+### Datenimport und Kataloge
+
+- Import und Export kompletter Helden als JSON-Bundle
+- Konfliktbehandlung beim Import vorhandener Helden
+- Katalogdaten aus `assets/catalogs/house_rules_v1/`
+- Aufbereitung der Runtime-Kataloge aus Excel-Quellen ueber Skripte in `tool/`
+
+## Technischer Aufbau
+
+Die App folgt einer klar getrennten Schichtenarchitektur:
+
+```text
+UI (lib/ui/)
+  -> State Layer mit Riverpod (lib/state/)
+    -> Domain-Modelle (lib/domain/)
+    -> Regelmodule (lib/rules/derived/)
+    -> Repository/Data Layer (lib/data/)
+    -> Katalog-Layer (lib/catalog/)
+```
+
+Grundprinzipien des Projekts:
+
+- Domain-Modelle sind immutable und serialisierbar
+- Regellogik liegt ausschliesslich in `lib/rules/derived/`
+- UI und Provider rufen Regelmodule auf, rechnen aber nicht selbst
+- Katalogdaten werden zur Laufzeit aus Split-JSON geladen
 
 ## Schnellstart
+
+Voraussetzungen:
+
+- Flutter SDK
+- Dart SDK
+- Je nach Zielplattform Android Studio, Xcode oder passende Desktop-Toolchains
+
+Projekt lokal starten:
 
 ```bash
 flutter pub get
@@ -27,87 +120,81 @@ flutter test
 flutter run
 ```
 
-## iOS/Xcode setup (SPM-first)
-
-Fuer iOS-Builds auf Mac mit Xcode 15+:
+iOS/Xcode-Setup auf macOS:
 
 ```bash
 bash tool/ios_bootstrap_spm.sh
 ```
 
-Vollstaendige Anleitung:
+Details dazu stehen in `docs/ios_xcode_setup.md`.
 
-- `docs/ios_xcode_setup.md`
+## Wie eine solche App aufgebaut werden kann
 
-## Dateistatus (Stand: 2026-02-23)
+Wenn du diese App erweitern oder eine aehnliche DSA- oder Charakterverwaltungs-App bauen willst, ist die vorhandene Struktur bereits ein brauchbares Referenzmuster:
 
-### Runtime-relevant
-- `lib/main.dart` als Einstiegspunkt
-- `lib/domain/`, `lib/state/`, `lib/data/`, `lib/rules/derived/`, `lib/ui/screens/`
-- `assets/catalogs/house_rules_v1/` (Split-JSON mit `manifest.json` + Teilkatalogen)
-- Der Kampf-Katalog umfasst jetzt auch `manoever.json` und `kampf_sonderfertigkeiten.json`.
+1. Modelle fuer persistierte Heldendaten und separaten Laufzeitzustand definieren.
+2. Regelberechnungen als reine Funktionen kapseln, statt sie in Widgets oder State-Klassen zu verteilen.
+3. Ein Repository-Interface zwischen UI und Persistenz ziehen, damit Speichertechnik austauschbar bleibt.
+4. Katalogdaten versioniert und getrennt vom Code halten.
+5. Import/Export frueh als stabiles Bundle-Format modellieren.
+6. Reaktive UI ueber Provider/Snapshots aufbauen, damit abgeleitete Werte zentral berechnet werden.
 
-### Architektur-Notiz (Stand: 2026-03-01)
-- State-Layer nutzt einen stream-basierten Heldenindex (`HeroIndexSnapshot`) fuer O(1)-Lookup je ID.
-- Abgeleitete Berechnungen werden zentral ueber `HeroComputedSnapshot` gebuendelt (Modifier, effektive Attribute, Derived, Combat-Preview).
-- Repository-Schnittstelle ist auf inkrementelle Streams erweitert (`watchHeroIndex`, `watchHeroState`, `loadHeroById`).
-- UI-Tabs (`Combat`, `Talents`, `Overview`) sind in kleinere Part-Dateien zerlegt; Root-Dateien bleiben unter 700 LOC.
+Fuer die konkrete Umsetzung im Projekt sind diese Dokus die besten Einstiege:
 
-### Kampf-UI (Stand: 2026-03-11)
-- Der Sub-Tab `Ausrüstung` ist die zentrale Kampf-Inventaransicht fuer Waffen, Parierwaffen, Schilde und Ruestungen.
-- Haupt- und Nebenhand referenzieren konkrete Eintraege aus diesem Kampf-Inventar.
-- Die Waffen-Tabelle im Kampf-Tab ist kompakt und zeigt nur Kernwerte sowie Artefakt-Status.
-- Waffendetails werden ueber einen Dialog bearbeitet; inline editierbar bleiben nur `Waffentalent` und `BF`.
-- Nah- und Fernkampfwaffen werden gemeinsam gepflegt; Fernkampfwaffen bringen AT, Ladezeit, 5 Distanzstufen und persistente Geschossbestaende mit.
-- Parierwaffen und Schilde werden als eigene Kampf-Inventargruppe erfasst; Schilde erzeugen eine eigene `Schild-PA`, Parierwaffen modifizieren nur die Hauptwaffe.
-- Der Sub-Tab `Kampf` wechselt seine Anzeige automatisch je nach aktiver Waffe zwischen Nahkampfwerten und Fernkampfwerten.
-- Fuehrt die Nebenhand eine normale Waffe, zeigt die UI deren eigene Werte in einer separaten Nebenhand-Karte; die Initiative bleibt von der Haupthand bestimmt.
-- Der Waffen-Dialog gruppiert Stammdaten, berechnete Ausgabewerte sowie TP-/INI-/AT-Formelfelder; Formelwerte sind dort read-only sichtbar.
-- Die angezeigte `PA` der aktiven Nahkampfwaffe enthaelt den heldenbezogenen INI-Parade-Bonus; dieser wird nicht mehr als eigener Waffenwert separat angezeigt.
-- Neue Waffen werden ueber denselben Dialog angelegt; der Katalog-Button oeffnet dabei vorbefuellte Vorlagen.
-- Axxeleratus aktiviert temporaer `Schnellziehen`, `Schnellladen (Bogen)` und `Schnellladen (Armbrust)`; Fernkampf-Ladezeiten werden im Kampf-Preview als `Aktion`/`Aktionen` ausgegeben.
-- Der Bereich `Kampfregeln` enthaelt jetzt zusaetzlich einen Builder fuer Kampfmeisterschaften mit Zieltyp, Effekten, Anforderungswarnungen und Punktbudget.
-- Das Kampf-Preview blendet Distanz- und Geschoss-Chips nur ein, wenn in Haupt- oder Nebenhand eine Fernkampfwaffe gehalten wird; die editierbare Distanz-/Geschossauswahl bleibt an die aktive Haupthand gebunden.
-- `CombatPreviewStats` liefert explizite Waffenmeister-Anteile fuer Berechnungsschritte und Manoeverhinweise; unter `Aktuelle Kampfwerte` reicht ein kompakter Hinweis auf die aktive Waffenmeisterschaft.
-- Aktive waffenlose Kampfstile werden im Kampfregel-Tab als eigene Katalogsektion gepflegt; direkte Stilboni auf `Raufen`/`Ringen` sowie die freigeschalteten waffenlosen Manöver werden in die Kampfvorschau eingerechnet.
+- `docs/technical_overview.md` fuer Architektur, Datenfluss und Modellschichten
+- `docs/catalog_import_workflow.md` fuer den Weg von Excel nach Runtime-JSON
+- `docs/rules_mapping_house_rules_v1.md` fuer die fachliche Zuordnung der Hausregeln
+- `docs/test_strategy.md` fuer Testaufbau und Qualitaetssicherung
 
-### Workspace-Layout (Stand: 2026-03-08)
-- Ab `1280 dp` nutzt der Hero-Workspace das **Helden Deck** statt der klassischen TabBar.
-- Die linke Navigationsleiste des Helden Decks ist per Button ein- und ausfahrbar.
-- Die rechte Detailleiste ist ebenfalls ein- und ausfahrbar; im offenen Zustand startet sie ohne sichtbare Ueberschrift.
+## Projektstruktur
 
-### UI-Performance Guardrails (Stand: 2026-03-01)
-- Rebuild-Guardrail (Widget-Test): `flutter test test/ui/performance/ui_rebuild_guardrails_test.dart`
-- FrameTiming-Messung (Profile, Integration): `flutter drive --profile --driver=test_driver/integration_test.dart --target=integration_test/ui_edit_frame_timing_test.dart -d <deviceId>`
-- LOC-Budget-Check fuer `lib/ui/screens`: `python tool/check_screen_loc_budget.py --max-lines 700`
+```text
+lib/
+  catalog/        Katalog-Loader und Runtime-Katalog
+  data/           Repository, Persistenz und Datei-I/O
+  domain/         Persistierte und Laufzeit-Modelle
+  rules/derived/  Fach- und Regellogik
+  state/          Riverpod-Provider und berechnete Snapshots
+  ui/             Screens, Widgets und Workspace-Layout
 
-### Tooling und Datenaufbereitung
-- `tool/convert_excel_to_catalog.py`: erzeugt Runtime-Katalog aus Excel-Listen
-- `tool/import_liber_cantiones.py`: reichert `magie.json` mit Liber-Cantiones-Details und Review-Datei an
-- `tool/export_rule_cells.py`: Snapshot-Helfer fuer Regelzellen
-- `tool/report_unreferenced_dart.py`: Report fuer unreferenzierte `lib/*.dart`
-- `tool/check_screen_loc_budget.py`: LOC-Gate fuer Screen-Dateien (z. B. CI-Check auf 700 LOC)
+assets/
+  catalogs/house_rules_v1/  Split-JSON-Kataloge
+  heroes/                   Seed-Helden
 
-### Derzeit nicht angebundene Dart-Dateien (bewusst behalten)
-- `lib/rules/derived/magic_rules.dart`
-- `lib/rules/derived/mods_rules.dart`
-- `lib/ui/screens/hero_detail_screen.dart`
+tool/
+  Python- und Shell-Helfer fuer Import, Analyse und Wartung
 
-Diese Dateien sind aktuell als Platzhalter/Legacy dokumentiert und werden nicht geloescht.
+docs/
+  Technische und prozessuale Projektdokumentation
+```
 
-## Hinweis zu Excel-Lockfiles (`~$*.xlsx`)
+## Tests und Qualitaet
 
-Im Repo sind temporaere Office-Lockfiles versioniert:
-- `~$Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
-- `~$ListeTalente.xlsx`
-- `~$ListeWaffenUndTalente.xlsx`
-- `~$ListeZaubersprueche.xlsx`
+Empfohlene Standardbefehle:
 
-Sie sind **nicht runtime-relevant**. Aktueller Status: nur dokumentiert, kein Cleanup in diesem Schritt.
+```bash
+flutter analyze
+flutter test
+python tool/check_screen_loc_budget.py --max-lines 700
+```
 
-## Relevante Docs
+Zusatzlich vorhanden:
 
+- Widget- und State-Tests fuer UI, Provider und Regeln
+- Performance-Guardrails fuer Rebuild-Verhalten
+- Integrationstest fuer Frame-Timing im Profiling-Modus
+
+## Weiterfuehrende Dokumentation
+
+- `docs/technical_overview.md`
 - `docs/catalog_import_workflow.md`
 - `docs/rules_mapping_house_rules_v1.md`
 - `docs/test_strategy.md`
 - `docs/ui_performance_measurements.md`
+- `docs/ios_xcode_setup.md`
+
+## Hinweise
+
+- Die kanonische Katalogquelle fuer die App bleibt `assets/catalogs/house_rules_v1/`.
+- Excel-Dateien im Repo-Root sind Upstream-Quellen fuer die Katalogaufbereitung.
+- Platzhalter- und Legacy-Dateien werden bewusst nicht automatisch entfernt.
