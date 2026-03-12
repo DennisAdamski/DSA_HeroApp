@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 
 void main() {
   const state = HeroState(
@@ -1039,6 +1040,29 @@ void main() {
     final result = preview(sheet);
     expect(result.rsTotal, 2);
     expect(result.beTotalRaw, 2);
+  });
+
+  test('GS is reduced directly by BE after Ruestungsgewoehnung', () {
+    final sheet = heroWithAttributes(
+      ge: 16,
+      combatConfig: const CombatConfig(
+        armor: ArmorConfig(
+          globalArmorTrainingLevel: 1,
+          pieces: <ArmorPiece>[
+            ArmorPiece(
+              name: 'Kettenhemd',
+              isActive: true,
+              be: 2,
+              rg1Active: true,
+            ),
+          ],
+        ),
+      ),
+    );
+
+    final result = computeDerivedStats(sheet, state);
+
+    expect(result.gs, 8);
   });
 
   test('INI-Bonus auf Ausweichen ab Kampf-INI 21', () {
