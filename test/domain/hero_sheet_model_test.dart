@@ -9,7 +9,9 @@ import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
 void main() {
   test('hero sheet roundtrip with expanded basis fields', () {
@@ -231,7 +233,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 15);
+    expect(reloaded.schemaVersion, 16);
     expect(reloaded.kultur, 'Mittelreich');
     expect(reloaded.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -678,6 +680,106 @@ void main() {
       expect(loaded.combatConfig.armor.globalArmorTrainingLevel, 0);
     },
   );
+
+  test('schemaVersion ist 16 nach toJson (v16-Default)', () {
+    const hero = HeroSheet(
+      id: 'version-check',
+      name: 'Versionstest',
+      level: 1,
+      attributes: Attributes(
+        mu: 10,
+        kl: 10,
+        inn: 10,
+        ch: 10,
+        ff: 10,
+        ge: 10,
+        ko: 10,
+        kk: 10,
+      ),
+    );
+    final json = hero.toJson();
+    expect(json['schemaVersion'], 16);
+    expect(HeroSheet.fromJson(json).schemaVersion, 16);
+  });
+
+  test('v15 Hero-JSON liefert korrekte Standardwerte fuer neue Inventarfelder', () {
+    final v15Json = {
+      'schemaVersion': 15,
+      'id': 'v15-hero',
+      'name': 'Altgeruest',
+      'level': 1,
+      'attributes': {
+        'mu': 10, 'kl': 10, 'inn': 10, 'ch': 10,
+        'ff': 10, 'ge': 10, 'ko': 10, 'kk': 10,
+      },
+      'inventoryEntries': [
+        {
+          'gegenstand': 'Schwert',
+          'gewicht': '1500',
+          'anzahl': '1',
+        },
+      ],
+    };
+
+    final loaded = HeroSheet.fromJson(v15Json);
+    expect(loaded.inventoryEntries.length, 1);
+
+    final entry = loaded.inventoryEntries.first;
+    expect(entry.gegenstand, 'Schwert');
+    expect(entry.itemType, InventoryItemType.sonstiges);
+    expect(entry.source, InventoryItemSource.manuell);
+    expect(entry.sourceRef, isNull);
+    expect(entry.istAusgeruestet, isFalse);
+    expect(entry.modifiers, isEmpty);
+    expect(entry.gewichtGramm, 0);
+    expect(entry.wertSilber, 0);
+    expect(entry.herkunft, '');
+    // Alte String-Felder bleiben unveraendert
+    expect(entry.gewicht, '1500');
+  });
+
+  test('Inventar-Eintrag mit Modifikatoren wird korrekt im HeroSheet gespeichert', () {
+    final hero = HeroSheet(
+      id: 'inv-mod',
+      name: 'Modtest',
+      level: 1,
+      attributes: const Attributes(
+        mu: 10, kl: 10, inn: 10, ch: 10,
+        ff: 10, ge: 10, ko: 10, kk: 10,
+      ),
+      inventoryEntries: const [
+        HeroInventoryEntry(
+          gegenstand: 'Jaegerstiefel',
+          itemType: InventoryItemType.ausruestung,
+          source: InventoryItemSource.manuell,
+          istAusgeruestet: true,
+          gewichtGramm: 800,
+          wertSilber: 15,
+          herkunft: 'Marktplatz',
+          modifiers: [
+            InventoryItemModifier(
+              kind: InventoryModifierKind.stat,
+              targetId: 'gs',
+              wert: 2,
+            ),
+          ],
+        ),
+      ],
+    );
+
+    final reloaded = HeroSheet.fromJson(hero.toJson());
+    expect(reloaded.inventoryEntries.length, 1);
+    final entry = reloaded.inventoryEntries.first;
+    expect(entry.gegenstand, 'Jaegerstiefel');
+    expect(entry.itemType, InventoryItemType.ausruestung);
+    expect(entry.istAusgeruestet, isTrue);
+    expect(entry.gewichtGramm, 800);
+    expect(entry.wertSilber, 15);
+    expect(entry.herkunft, 'Marktplatz');
+    expect(entry.modifiers.length, 1);
+    expect(entry.modifiers.first.targetId, 'gs');
+    expect(entry.modifiers.first.wert, 2);
+  });
 
   test('legacy offhand entries migrate into referenced offhand equipment', () {
     final loaded = HeroSheet.fromJson({
