@@ -18,7 +18,7 @@ class HeroesHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final heroesAsync = ref.watch(heroListProvider);
-    final selectedHeroId = ref.watch(selectedHeroIdProvider);
+    final selectedHeroId = ref.watch(selectedHeroIdProvider); // fuer Markierung der aktiven Zeile
     const importExportActions = WorkspaceImportExportActions();
 
     final apple = isApplePlatform(context);
@@ -46,70 +46,35 @@ class HeroesHomeScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('DSA Helden'),
-        actions: heroesAsync.when(
-          data: (heroes) {
-            final selectedHero = _selectedHeroFor(
-              heroes: heroes,
-              selectedHeroId: selectedHeroId,
-            );
-            return [
-              if (apple)
-                IconButton(
-                  tooltip: 'Neuer Held',
-                  onPressed: createHero,
-                  icon: const Icon(Icons.add),
-                ),
-              const SizedBox(width: 8),
-              IconButton(
-                tooltip: 'Held löschen',
-                onPressed: selectedHero == null
-                    ? null
-                    : () => _deleteSelectedHero(
-                        context: context,
-                        ref: ref,
-                        hero: selectedHero,
-                      ),
-                icon: const Icon(Icons.delete_outline),
+        actions: [
+          if (apple)
+            IconButton(
+              tooltip: 'Neuer Held',
+              onPressed: createHero,
+              icon: const Icon(Icons.add),
+            ),
+          const SizedBox(width: 8),
+          IconButton(
+            tooltip: 'Held importieren',
+            onPressed: () => _importHero(
+              context: context,
+              ref: ref,
+              importExportActions: importExportActions,
+            ),
+            icon: const Icon(Icons.download),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            tooltip: 'Einstellungen',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const SettingsScreen(),
               ),
-              const SizedBox(width: 8),
-              IconButton(
-                tooltip: 'Held exportieren',
-                onPressed: selectedHero == null
-                    ? null
-                    : () => _exportSelectedHero(
-                        context: context,
-                        ref: ref,
-                        hero: selectedHero,
-                        importExportActions: importExportActions,
-                      ),
-                icon: const Icon(Icons.upload_file),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                tooltip: 'Held importieren',
-                onPressed: () => _importHero(
-                  context: context,
-                  ref: ref,
-                  importExportActions: importExportActions,
-                ),
-                icon: const Icon(Icons.download),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                tooltip: 'Einstellungen',
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const SettingsScreen(),
-                  ),
-                ),
-                icon: const Icon(Icons.settings),
-              ),
-              const SizedBox(width: 12),
-            ];
-          },
-          loading: () => const <Widget>[SizedBox(width: 12)],
-          error: (error, stackTrace) => const <Widget>[SizedBox(width: 12)],
-        ),
+            ),
+            icon: const Icon(Icons.settings),
+          ),
+          const SizedBox(width: 12),
+        ],
       ),
       floatingActionButton: apple
           ? null
@@ -137,7 +102,31 @@ class HeroesHomeScreen extends ConsumerWidget {
                 selected: selectedHeroId == hero.id,
                 title: Text(hero.name),
                 subtitle: Text('Level ${hero.level}'),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: 'Held exportieren',
+                      icon: const Icon(Icons.upload_file),
+                      onPressed: () => _exportSelectedHero(
+                        context: context,
+                        ref: ref,
+                        hero: hero,
+                        importExportActions: importExportActions,
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Held löschen',
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: () => _deleteSelectedHero(
+                        context: context,
+                        ref: ref,
+                        hero: hero,
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right),
+                  ],
+                ),
                 onTap: () {
                   ref.read(selectedHeroIdProvider.notifier).state = hero.id;
                   Navigator.of(context).push(
@@ -154,24 +143,6 @@ class HeroesHomeScreen extends ConsumerWidget {
         error: (error, stackTrace) => Center(child: Text('Fehler: $error')),
       ),
     );
-  }
-
-  HeroSheet? _selectedHeroFor({
-    required List<HeroSheet> heroes,
-    required String? selectedHeroId,
-  }) {
-    if (heroes.isEmpty) {
-      return null;
-    }
-    if (selectedHeroId == null) {
-      return heroes.first;
-    }
-    for (final hero in heroes) {
-      if (hero.id == selectedHeroId) {
-        return hero;
-      }
-    }
-    return heroes.first;
   }
 
   Future<void> _deleteSelectedHero({
