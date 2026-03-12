@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 
 /// Displaynamen fuer Stat-Modifikator-Felder.
 const Map<String, String> kStatFieldLabels = {
@@ -33,7 +36,7 @@ const Map<String, String> kAttributeFieldLabels = {
 /// Editor fuer die Modifikator-Liste eines Inventar-Items.
 ///
 /// Zeigt jede [InventoryItemModifier] als bearbeitbare Zeile:
-/// Typ-Dropdown → Ziel-Dropdown/Feld → Wert-Feld → Loeschen.
+/// Typ-Dropdown → Ziel-Dropdown → Wert-Feld → Loeschen.
 class InventoryModifierEditor extends StatefulWidget {
   const InventoryModifierEditor({
     super.key,
@@ -123,7 +126,7 @@ class _InventoryModifierEditorState extends State<InventoryModifierEditor> {
   }
 }
 
-class _ModifierRow extends StatefulWidget {
+class _ModifierRow extends ConsumerStatefulWidget {
   const _ModifierRow({
     super.key,
     required this.modifier,
@@ -136,12 +139,11 @@ class _ModifierRow extends StatefulWidget {
   final VoidCallback onDelete;
 
   @override
-  State<_ModifierRow> createState() => _ModifierRowState();
+  ConsumerState<_ModifierRow> createState() => _ModifierRowState();
 }
 
-class _ModifierRowState extends State<_ModifierRow> {
+class _ModifierRowState extends ConsumerState<_ModifierRow> {
   late TextEditingController _wertController;
-  late TextEditingController _talentIdController;
   late TextEditingController _beschreibungController;
 
   @override
@@ -149,9 +151,6 @@ class _ModifierRowState extends State<_ModifierRow> {
     super.initState();
     _wertController = TextEditingController(
       text: widget.modifier.wert.toString(),
-    );
-    _talentIdController = TextEditingController(
-      text: widget.modifier.targetId,
     );
     _beschreibungController = TextEditingController(
       text: widget.modifier.beschreibung,
@@ -161,7 +160,6 @@ class _ModifierRowState extends State<_ModifierRow> {
   @override
   void dispose() {
     _wertController.dispose();
-    _talentIdController.dispose();
     _beschreibungController.dispose();
     super.dispose();
   }
@@ -185,144 +183,192 @@ class _ModifierRowState extends State<_ModifierRow> {
   @override
   Widget build(BuildContext context) {
     final mod = widget.modifier;
+    final catalog = ref.watch(rulesCatalogProvider).asData?.value;
+
+    // Talente aus dem Katalog sortiert nach Name
+    final talents = catalog == null
+        ? const <TalentDef>[]
+        : (List<TalentDef>.of(catalog.talents)
+          ..sort((a, b) => a.name.compareTo(b.name)));
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Art-Dropdown
-          SizedBox(
-            width: 110,
-            child: DropdownButtonFormField<InventoryModifierKind>(
-              initialValue: mod.kind,
-              decoration: const InputDecoration(
-                labelText: 'Art',
-                border: OutlineInputBorder(),
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              ),
-              items: [
-                DropdownMenuItem(
-                  value: InventoryModifierKind.stat,
-                  child: const Text('Stat'),
-                ),
-                DropdownMenuItem(
-                  value: InventoryModifierKind.attribut,
-                  child: const Text('Attribut'),
-                ),
-                DropdownMenuItem(
-                  value: InventoryModifierKind.talent,
-                  child: const Text('Talent'),
-                ),
-              ],
-              onChanged: (kind) {
-                if (kind == null) return;
-                final defaultId = switch (kind) {
-                  InventoryModifierKind.stat => 'gs',
-                  InventoryModifierKind.attribut => 'ge',
-                  InventoryModifierKind.talent => '',
-                };
-                _talentIdController.text = defaultId;
-                _emit(kind: kind, targetId: defaultId);
-              },
-            ),
-          ),
-          const SizedBox(width: 6),
-          // Ziel-Feld
-          SizedBox(
-            width: mod.kind == InventoryModifierKind.talent ? 150 : 180,
-            child: mod.kind == InventoryModifierKind.talent
-                ? TextFormField(
-                    controller: _talentIdController,
-                    decoration: const InputDecoration(
-                      labelText: 'Talent-ID',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    ),
-                    onChanged: (v) => _emit(targetId: v.trim()),
-                  )
-                : DropdownButtonFormField<String>(
-                    key: ValueKey<String>('target-${mod.kind.name}-${mod.targetId}'),
-                    initialValue: _resolvedTargetId(mod),
-                    decoration: const InputDecoration(
-                      labelText: 'Ziel',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    ),
-                    isExpanded: true,
-                    items: _targetItems(mod.kind),
-                    onChanged: (id) {
-                      if (id == null) return;
-                      _emit(targetId: id);
-                    },
+          // Zeile 1: Art + Ziel + Löschen
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Art-Dropdown
+              SizedBox(
+                width: 110,
+                child: DropdownButtonFormField<InventoryModifierKind>(
+                  isExpanded: true,
+                  initialValue: mod.kind,
+                  decoration: const InputDecoration(
+                    labelText: 'Art',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                   ),
-          ),
-          const SizedBox(width: 6),
-          // Wert-Feld
-          SizedBox(
-            width: 64,
-            child: TextFormField(
-              controller: _wertController,
-              decoration: const InputDecoration(
-                labelText: 'Wert',
-                border: OutlineInputBorder(),
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  items: const [
+                    DropdownMenuItem(
+                      value: InventoryModifierKind.stat,
+                      child: Text('Stat'),
+                    ),
+                    DropdownMenuItem(
+                      value: InventoryModifierKind.attribut,
+                      child: Text('Attribut'),
+                    ),
+                    DropdownMenuItem(
+                      value: InventoryModifierKind.talent,
+                      child: Text('Talent'),
+                    ),
+                  ],
+                  onChanged: (kind) {
+                    if (kind == null) return;
+                    final defaultId = switch (kind) {
+                      InventoryModifierKind.stat => 'gs',
+                      InventoryModifierKind.attribut => 'ge',
+                      InventoryModifierKind.talent =>
+                        talents.isNotEmpty ? talents.first.id : '',
+                    };
+                    _emit(kind: kind, targetId: defaultId);
+                  },
+                ),
               ),
-              keyboardType: const TextInputType.numberWithOptions(signed: true),
-              onChanged: (v) => _emit(wert: int.tryParse(v) ?? 0),
-            ),
-          ),
-          const SizedBox(width: 6),
-          // Beschreibung
-          Expanded(
-            child: TextFormField(
-              controller: _beschreibungController,
-              decoration: const InputDecoration(
-                labelText: 'Quelle',
-                border: OutlineInputBorder(),
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              const SizedBox(width: 6),
+              // Ziel-Dropdown
+              Expanded(
+                child: _buildTargetField(mod, talents),
               ),
-              maxLength: 60,
-              onChanged: (v) => _emit(beschreibung: v),
-              buildCounter: (_, {required currentLength, required isFocused, maxLength}) =>
-                  null,
-            ),
+              // Loeschen
+              IconButton(
+                icon: Icon(
+                  Icons.remove_circle_outline,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                onPressed: widget.onDelete,
+                tooltip: 'Entfernen',
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
           ),
-          // Loeschen
-          IconButton(
-            icon: Icon(
-              Icons.remove_circle_outline,
-              size: 18,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: widget.onDelete,
-            tooltip: 'Entfernen',
-            visualDensity: VisualDensity.compact,
+          const SizedBox(height: 6),
+          // Zeile 2: Wert + Quelle
+          Row(
+            children: [
+              SizedBox(
+                width: 80,
+                child: TextFormField(
+                  controller: _wertController,
+                  decoration: const InputDecoration(
+                    labelText: 'Wert',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  ),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(signed: true),
+                  onChanged: (v) => _emit(wert: int.tryParse(v) ?? 0),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: TextFormField(
+                  controller: _beschreibungController,
+                  decoration: const InputDecoration(
+                    labelText: 'Quelle (optional)',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  ),
+                  maxLength: 60,
+                  onChanged: (v) => _emit(beschreibung: v),
+                  buildCounter: (
+                    _,  {required currentLength, required isFocused, maxLength}
+                  ) =>
+                      null,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  String _resolvedTargetId(InventoryItemModifier mod) {
-    final labels = mod.kind == InventoryModifierKind.stat
-        ? kStatFieldLabels
-        : kAttributeFieldLabels;
-    return labels.containsKey(mod.targetId) ? mod.targetId : labels.keys.first;
-  }
+  Widget _buildTargetField(InventoryItemModifier mod, List<TalentDef> talents) {
+    switch (mod.kind) {
+      case InventoryModifierKind.stat:
+      case InventoryModifierKind.attribut:
+        final labels = mod.kind == InventoryModifierKind.stat
+            ? kStatFieldLabels
+            : kAttributeFieldLabels;
+        final resolved =
+            labels.containsKey(mod.targetId) ? mod.targetId : labels.keys.first;
+        return DropdownButtonFormField<String>(
+          key: ValueKey<String>('target-${mod.kind.name}-${mod.targetId}'),
+          isExpanded: true,
+          initialValue: resolved,
+          decoration: const InputDecoration(
+            labelText: 'Ziel',
+            border: OutlineInputBorder(),
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          ),
+          items: labels.entries
+              .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+              .toList(),
+          onChanged: (id) {
+            if (id != null) _emit(targetId: id);
+          },
+        );
 
-  List<DropdownMenuItem<String>> _targetItems(InventoryModifierKind kind) {
-    final labels =
-        kind == InventoryModifierKind.stat ? kStatFieldLabels : kAttributeFieldLabels;
-    return labels.entries
-        .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
-        .toList();
+      case InventoryModifierKind.talent:
+        if (talents.isEmpty) {
+          // Katalog noch nicht geladen – Freitextfeld als Fallback
+          return TextFormField(
+            initialValue: mod.targetId,
+            decoration: const InputDecoration(
+              labelText: 'Talent-ID',
+              border: OutlineInputBorder(),
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            ),
+            onChanged: (v) => _emit(targetId: v.trim()),
+          );
+        }
+        final selectedId =
+            talents.any((t) => t.id == mod.targetId) ? mod.targetId : null;
+        return DropdownButtonFormField<String>(
+          key: ValueKey<String>('target-talent-${mod.targetId}'),
+          isExpanded: true,
+          initialValue: selectedId,
+          hint: const Text('Talent auswählen'),
+          decoration: const InputDecoration(
+            labelText: 'Talent',
+            border: OutlineInputBorder(),
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          ),
+          items: talents
+              .map(
+                (t) => DropdownMenuItem(
+                  value: t.id,
+                  child: Text(t.name, overflow: TextOverflow.ellipsis),
+                ),
+              )
+              .toList(),
+          onChanged: (id) {
+            if (id != null) _emit(targetId: id);
+          },
+        );
+    }
   }
 }
