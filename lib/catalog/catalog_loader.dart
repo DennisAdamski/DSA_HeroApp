@@ -90,6 +90,14 @@ class CatalogLoader {
             combatSpecialAbilitiesRelative,
           )
         : null;
+    final sprachenRelative = _readOptionalStringFromMap(files, 'sprachen');
+    final sprachenAssetPath = sprachenRelative != null
+        ? _resolveAssetPath(manifestAssetPath, sprachenRelative)
+        : null;
+    final schriftenRelative = _readOptionalStringFromMap(files, 'schriften');
+    final schriftenAssetPath = schriftenRelative != null
+        ? _resolveAssetPath(manifestAssetPath, schriftenRelative)
+        : null;
 
     final talente = await _loadJsonList(talenteAssetPath);
     final waffentalente = await _loadJsonList(waffentalenteAssetPath);
@@ -101,6 +109,12 @@ class CatalogLoader {
     final combatSpecialAbilitiesRaw =
         combatSpecialAbilitiesAssetPath != null
         ? await _loadJsonList(combatSpecialAbilitiesAssetPath)
+        : const <Map<String, dynamic>>[];
+    final sprachenRaw = sprachenAssetPath != null
+        ? await _loadJsonList(sprachenAssetPath)
+        : const <Map<String, dynamic>>[];
+    final schriftenRaw = schriftenAssetPath != null
+        ? await _loadJsonList(schriftenAssetPath)
         : const <Map<String, dynamic>>[];
 
     _validateCombatSplit(
@@ -143,6 +157,16 @@ class CatalogLoader {
       domainName: 'combat special abilities',
       assetPath: manifestAssetPath,
     );
+    _validateUniqueIds(
+      entries: sprachenRaw,
+      domainName: 'sprachen',
+      assetPath: manifestAssetPath,
+    );
+    _validateUniqueIds(
+      entries: schriftenRaw,
+      domainName: 'schriften',
+      assetPath: manifestAssetPath,
+    );
 
     return RulesCatalog(
       version: _readOptionalString(manifest, 'version', fallback: 'unknown'),
@@ -162,6 +186,12 @@ class CatalogLoader {
           .toList(growable: false),
       combatSpecialAbilities: combatSpecialAbilitiesRaw
           .map((entry) => CombatSpecialAbilityDef.fromJson(entry))
+          .toList(growable: false),
+      sprachen: sprachenRaw
+          .map((entry) => SpracheDef.fromJson(entry))
+          .toList(growable: false),
+      schriften: schriftenRaw
+          .map((entry) => SchriftDef.fromJson(entry))
           .toList(growable: false),
     );
   }

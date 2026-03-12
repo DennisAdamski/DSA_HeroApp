@@ -16,6 +16,8 @@ class RulesCatalog {
     required this.weapons,
     this.maneuvers = const [],
     this.combatSpecialAbilities = const [],
+    this.sprachen = const [],
+    this.schriften = const [],
     this.metadata = const {},
   });
 
@@ -27,6 +29,8 @@ class RulesCatalog {
   final List<ManeuverDef> maneuvers; // Kampfmanöver (optional, kann leer sein)
   final List<CombatSpecialAbilityDef>
   combatSpecialAbilities; // Kampf-Sonderfertigkeiten
+  final List<SpracheDef> sprachen; // Sprachdefinitionen
+  final List<SchriftDef> schriften; // Schriftdefinitionen
   final Map<String, dynamic> metadata; // Sonstige Metadaten aus dem Manifest
 
   /// Sucht ein Manöver anhand des Namens (Groß-/Kleinschreibung wird ignoriert).
@@ -45,6 +49,8 @@ class RulesCatalog {
     final maneuversRaw = (json['maneuvers'] as List?) ?? const [];
     final combatSpecialAbilitiesRaw =
         (json['combatSpecialAbilities'] as List?) ?? const [];
+    final sprachenRaw = (json['sprachen'] as List?) ?? const [];
+    final schriftenRaw = (json['schriften'] as List?) ?? const [];
 
     return RulesCatalog(
       version: _readString(json, 'version', fallback: 'unknown'),
@@ -72,6 +78,14 @@ class RulesCatalog {
                 CombatSpecialAbilityDef.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
+      sprachen: sprachenRaw
+          .whereType<Map>()
+          .map((entry) => SpracheDef.fromJson(entry.cast<String, dynamic>()))
+          .toList(growable: false),
+      schriften: schriftenRaw
+          .whereType<Map>()
+          .map((entry) => SchriftDef.fromJson(entry.cast<String, dynamic>()))
+          .toList(growable: false),
       metadata: (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
@@ -88,6 +102,12 @@ class RulesCatalog {
           .map((entry) => entry.toJson())
           .toList(growable: false),
       'combatSpecialAbilities': combatSpecialAbilities
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
+      'sprachen': sprachen
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
+      'schriften': schriften
           .map((entry) => entry.toJson())
           .toList(growable: false),
     };
@@ -278,6 +298,104 @@ class CombatSpecialAbilityBonusDef {
       'at_bonus': atBonus,
       'pa_bonus': paBonus,
       'ini_mod': iniMod,
+    };
+  }
+}
+
+/// Definition einer Sprache aus dem Regelkatalog.
+///
+/// [familie] bestimmt die dynamische Lernkomplexität:
+/// – Sprache liegt in derselben Familie wie Muttersprache → A (außer [steigerung] ist 'B')
+/// – Andere Familie oder keine Muttersprache → B
+/// [steigerung] ist normalerweise 'A'; bei seltenen Sprachen (z. B. Asdharia)
+/// ist es fest 'B'.
+class SpracheDef {
+  const SpracheDef({
+    required this.id,
+    required this.name,
+    required this.familie,
+    required this.maxWert,
+    this.steigerung = 'A',
+    this.schriftIds = const [],
+    this.schriftlos = false,
+    this.hinweise = '',
+  });
+
+  final String id; // Eindeutige ID (z. B. 'spr_garethi')
+  final String name; // Anzeigename
+  final String familie; // Sprachfamilie (z. B. 'Garethi-Familie')
+  final int maxWert; // Maximaler Talentwert
+  final String steigerung; // 'A' (Normalfall) oder 'B' (feste Komplexität)
+  final List<String> schriftIds; // IDs zugehöriger Schriften
+  final bool schriftlos; // true → keine Schrift vorhanden
+  final String hinweise; // Freitext-Sonderregeln
+
+  factory SpracheDef.fromJson(Map<String, dynamic> json) {
+    return SpracheDef(
+      id: _readString(json, 'id', fallback: ''),
+      name: _readString(json, 'name', fallback: ''),
+      familie: _readString(json, 'familie', fallback: ''),
+      maxWert: _readInt(json, 'maxWert', fallback: 18),
+      steigerung: _readString(json, 'steigerung', fallback: 'A'),
+      schriftIds: _readStringList(json, 'schriftIds'),
+      schriftlos: _readBool(json, 'schriftlos', fallback: false),
+      hinweise: _readString(json, 'hinweise', fallback: ''),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'familie': familie,
+      'maxWert': maxWert,
+      'steigerung': steigerung,
+      'schriftIds': schriftIds,
+      'schriftlos': schriftlos,
+      'hinweise': hinweise,
+    };
+  }
+}
+
+/// Definition einer Schrift aus dem Regelkatalog.
+///
+/// [steigerung] bestimmt die AP-Kosten pro Talentwert-Punkt ('A', 'B' oder 'C').
+class SchriftDef {
+  const SchriftDef({
+    required this.id,
+    required this.name,
+    required this.maxWert,
+    this.beschreibung = '',
+    this.steigerung = 'A',
+    this.hinweise = '',
+  });
+
+  final String id; // Eindeutige ID (z. B. 'sch_kusliker_zeichen')
+  final String name; // Anzeigename
+  final int maxWert; // Maximaler Talentwert
+  final String beschreibung; // Kurzbeschreibung (z. B. '31 Lautzeichen')
+  final String steigerung; // AP-Steigerungskategorie ('A', 'B' oder 'C')
+  final String hinweise; // Freitext-Sonderregeln
+
+  factory SchriftDef.fromJson(Map<String, dynamic> json) {
+    return SchriftDef(
+      id: _readString(json, 'id', fallback: ''),
+      name: _readString(json, 'name', fallback: ''),
+      maxWert: _readInt(json, 'maxWert', fallback: 10),
+      beschreibung: _readString(json, 'beschreibung', fallback: ''),
+      steigerung: _readString(json, 'steigerung', fallback: 'A'),
+      hinweise: _readString(json, 'hinweise', fallback: ''),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'maxWert': maxWert,
+      'beschreibung': beschreibung,
+      'steigerung': steigerung,
+      'hinweise': hinweise,
     };
   }
 }

@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
@@ -34,6 +35,7 @@ part 'hero_talents/talent_catalog_table.dart';
 part 'hero_talents/talent_detail_dialog.dart';
 part 'hero_talents/talent_modifiers_dialog.dart';
 part 'hero_talents/meta_talent_dialogs.dart';
+part 'hero_talents/hero_languages_tab.dart';
 
 enum _TalentTabScope { nonCombat, combat }
 
@@ -101,6 +103,9 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   Set<String> _invalidCombatTalentIds = <String>{};
   String _draftTalentSpecialAbilities = '';
   late final TextEditingController _talentSpecialAbilitiesController;
+  Map<String, HeroLanguageEntry> _draftSprachen = <String, HeroLanguageEntry>{};
+  Map<String, HeroScriptEntry> _draftSchriften = <String, HeroScriptEntry>{};
+  String _draftMuttersprache = '';
 
   @override
   void initState() {
@@ -115,7 +120,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       },
     );
     if (widget.scope == _TalentTabScope.nonCombat) {
-      _subTabController = TabController(length: 2, vsync: this);
+      _subTabController = TabController(length: 3, vsync: this);
       _subTabController!.addListener(() {
         if (mounted) {
           setState(() {});
@@ -194,6 +199,9 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     _draftTalentSpecialAbilities = hero.talentSpecialAbilities;
     _talentSpecialAbilitiesController.text = _draftTalentSpecialAbilities;
     _invalidCombatTalentIds = <String>{};
+    _draftSprachen = Map<String, HeroLanguageEntry>.from(hero.sprachen);
+    _draftSchriften = Map<String, HeroScriptEntry>.from(hero.schriften);
+    _draftMuttersprache = hero.muttersprache;
   }
 
   void _resetCellControllers() {
@@ -264,6 +272,9 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       ),
       metaTalents: List<HeroMetaTalent>.from(_draftMetaTalents),
       talentSpecialAbilities: _draftTalentSpecialAbilities,
+      sprachen: Map<String, HeroLanguageEntry>.unmodifiable(_draftSprachen),
+      schriften: Map<String, HeroScriptEntry>.unmodifiable(_draftSchriften),
+      muttersprache: _draftMuttersprache,
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     if (!mounted) {
@@ -519,11 +530,65 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       tabs: const [
                         Tab(text: 'Talente'),
                         Tab(text: 'Sonderfertigkeiten'),
+                        Tab(text: 'Sprachen & Schriften'),
                       ],
                     ),
                   if (widget.scope == _TalentTabScope.nonCombat &&
                       _subTabController!.index == 1)
                     _buildSpecialAbilitiesTab(),
+                  if (widget.scope == _TalentTabScope.nonCombat &&
+                      _subTabController!.index == 2)
+                    _SprachenSchriftenTab(
+                      heroId: widget.heroId,
+                      draftSprachen: _draftSprachen,
+                      draftSchriften: _draftSchriften,
+                      draftMuttersprache: _draftMuttersprache,
+                      alleSprachen: catalog.sprachen,
+                      alleSchriften: catalog.schriften,
+                      isEditing: _editController.isEditing,
+                      onSprachWertChanged: (id, wert) {
+                        final entry = _draftSprachen[id] ??
+                            const HeroLanguageEntry();
+                        _draftSprachen[id] = entry.copyWith(wert: wert);
+                        _markFieldChanged();
+                      },
+                      onSchriftWertChanged: (id, wert) {
+                        final entry = _draftSchriften[id] ??
+                            const HeroScriptEntry();
+                        _draftSchriften[id] = entry.copyWith(wert: wert);
+                        _markFieldChanged();
+                      },
+                      onMuttersprachChanged: (id) {
+                        setState(() {
+                          _draftMuttersprache =
+                              _draftMuttersprache == id ? '' : id;
+                        });
+                        _markFieldChanged();
+                      },
+                      onAddSprache: (id) {
+                        if (!_draftSprachen.containsKey(id)) {
+                          _draftSprachen[id] = const HeroLanguageEntry();
+                          _markFieldChanged();
+                        }
+                      },
+                      onRemoveSprache: (id) {
+                        _draftSprachen.remove(id);
+                        if (_draftMuttersprache == id) {
+                          _draftMuttersprache = '';
+                        }
+                        _markFieldChanged();
+                      },
+                      onAddSchrift: (id) {
+                        if (!_draftSchriften.containsKey(id)) {
+                          _draftSchriften[id] = const HeroScriptEntry();
+                          _markFieldChanged();
+                        }
+                      },
+                      onRemoveSchrift: (id) {
+                        _draftSchriften.remove(id);
+                        _markFieldChanged();
+                      },
+                    ),
                   if (widget.scope == _TalentTabScope.combat ||
                       _subTabController?.index == 0)
                     ...groups.map((group) {
