@@ -1,0 +1,210 @@
+[
+  {
+    "id": "sch_altes_alaani",
+    "name": "Altes Alaani",
+    "beschreibung": "um 1.000 Wort- und Silbenzeichen",
+    "maxWert": 18,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_altes_kemi",
+    "name": "Altes Kemi",
+    "beschreibung": "mehrere Tausend Wort- und Deutzeichen",
+    "maxWert": 21,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_amulashtra",
+    "name": "Amulashtra",
+    "beschreibung": "modern/historisch; alte Artefakt-Schrift; 24 Lautzeichen / um 300 Zeichen",
+    "maxWert": 17,
+    "steigerung": "A",
+    "hinweise": "modern max 11, historisch max 17"
+  },
+  {
+    "id": "sch_angram",
+    "name": "Angram",
+    "beschreibung": "altzwergische Bilderschrift",
+    "maxWert": 21,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_arkanil",
+    "name": "Arkanil",
+    "beschreibung": "'Rohalsschrift'; magisch potente Schrift; unbekannte Zeichenanzahl",
+    "maxWert": 24,
+    "steigerung": "C",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_chrmk",
+    "name": "Chrmk",
+    "beschreibung": "'Zelemja'; 5.000 Wort- und Deutzeichen",
+    "maxWert": 18,
+    "steigerung": "A",
+    "hinweise": "auch bekannt als 'Zelemja'"
+  },
+  {
+    "id": "sch_chuchas",
+    "name": "Chuchas",
+    "beschreibung": "'Yash-Hualay-Glyphen', 'Protozelemja'; um 20.000 Zeichen",
+    "maxWert": 24,
+    "steigerung": "B",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_drakhard_zinken",
+    "name": "Drakhard-Zinken",
+    "beschreibung": "'Zauberrunen' für Ritzungen; 24 Lautzeichen, spez. Ligaturen möglich",
+    "maxWert": 9,
+    "steigerung": "A",
+    "hinweise": "Wert kann mit Zusatzqualifikationen höher sein"
+  },
+  {
+    "id": "sch_drakned_glyphen",
+    "name": "Drakned-Glyphen",
+    "beschreibung": "angebliche 'Umschrift' des Drachischen",
+    "maxWert": 15,
+    "steigerung": "B",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_geheiligte_glyphen_unau",
+    "name": "Geheiligte Glyphen von Unau",
+    "beschreibung": "19 Laut- und Deutzeichen",
+    "maxWert": 13,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_gimaril",
+    "name": "Gimaril",
+    "beschreibung": "verbreitete 'Geheim'-Schrift mit 29 Laut- und Deutzeichen",
+    "maxWert": 10,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_gjalskisch",
+    "name": "Gjalskisch",
+    "beschreibung": "Misch-Schrift aus Hjaldingschen Runen und Ur-Tulamidya",
+    "maxWert": 14,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_hjaldingsche_runen",
+    "name": "Hjaldingsche Runen",
+    "beschreibung": "um 30 Lautzeichen und mehrere Dutzend Piktogramme",
+    "maxWert": 16,
+    "steigerung": "A",
+    "hinweise": "einfache Variante max 10, erweiterte Variante max 16"
+  },
+  {
+    "id": "sch_imperiale_zeichen",
+    "name": "Imperiale Zeichen",
+    "beschreibung": "'Altgüldenländisch'; 57 Lautzeichen",
+    "maxWert": 12,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_isdira",
+    "name": "Isdira",
+    "beschreibung": "27 Lautzeichen, dazu subtile Deutzeichen",
+    "maxWert": 15,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_asdharia",
+    "name": "Asdharia",
+    "beschreibung": "27 Lautzeichen, dazu subtile Deutzeichen (historische Form)",
+    "maxWert": 18,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_kusliker_zeichen",
+    "name": "Kusliker Zeichen",
+    "beschreibung": "31 Lautzeichen",
+    "maxWert": 10,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_mahrische_glyphen",
+    "name": "Mahrische Glyphen",
+    "beschreibung": "viele Hundert Bildzeichen, nahezu unbekannt",
+    "maxWert": 15,
+    "steigerung": "B",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_nanduria",
+    "name": "Nanduria",
+    "beschreibung": "häufige 'Geheim'-Schrift, 26 Lautzeichen",
+    "maxWert": 10,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_rogolan",
+    "name": "Rogolan",
+    "beschreibung": "24 Laut-Runen, davon 4 wenig verwendet",
+    "maxWert": 11,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_trollische_raumbilderschrift",
+    "name": "Trollische 'Raumbilderschrift'",
+    "beschreibung": "dreidimensionale Steinsetzungen",
+    "maxWert": 24,
+    "steigerung": "C",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_tulamidya",
+    "name": "Tulamidya",
+    "beschreibung": "56 Silbenzeichen",
+    "maxWert": 14,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_ur_tulamidya",
+    "name": "Ur-Tulamidya",
+    "beschreibung": "um 300 Wort-, Deut- und Silbenzeichen",
+    "maxWert": 16,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_zhayad",
+    "name": "Zhayad",
+    "beschreibung": "Magier-Geheimschrift; mehrere Hundert Laut- und Silbenzeichen",
+    "maxWert": 18,
+    "steigerung": "A",
+    "hinweise": ""
+  },
+  {
+    "id": "sch_zeichensprache",
+    "name": "Zeichensprache",
+    "beschreibung": "Gebärdensprache (Atak)",
+    "maxWert": 12,
+    "steigerung": "A",
+    "hinweise": "Bestandteil der Geheimsprache Atak"
+  },
+  {
+    "id": "sch_zeichen_und_zinken",
+    "name": "Zeichen und 'Zinken'",
+    "beschreibung": "Geheimzeichen und Straßenmarkierungen (Füchsisch)",
+    "maxWert": 12,
+    "steigerung": "A",
+    "hinweise": "Bestandteil der Geheimsprache Füchsisch"
+  }
+]
