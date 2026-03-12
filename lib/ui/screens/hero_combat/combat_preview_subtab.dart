@@ -1,7 +1,6 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 
-/// Kampfwerte-Subtab: Spieltisch-Schnellansicht mit CombatQuickStats,
-/// Haupthand-/Nebenhand-Auswahl, Berechnungsschritte und manuellen Mods.
+/// Kampfwerte-Subtab mit Auswahl links und aktueller Übersicht rechts.
 extension _CombatPreviewSubtab on _HeroCombatTabState {
   Widget _buildCombatPreviewSubTab({
     required List<TalentDef> combatTalents,
@@ -17,69 +16,203 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
     final offhandEquipment = _offhandEquipmentOrNull();
     final isEditing = _editController.isEditing;
     final manual = _draftCombatConfig.manualMods;
-
-    return ListView(
-      padding: const EdgeInsets.all(12),
-      children: [
-        // 1. CombatQuickStats prominent oben
-        CombatQuickStats(
-          at: preview.at,
-          pa: preview.isRangedWeapon ? null : preview.paMitIniParadeMod,
-          tpExpression: preview.tpExpression,
-          kampfInitiative: preview.kampfInitiative,
-          ausweichen: preview.ausweichen,
-          rs: preview.rsTotal,
-          ebe: preview.ebe,
-          isRanged: preview.isRangedWeapon,
-          ladezeit: preview.isRangedWeapon ? preview.reloadTimeDisplay : null,
-          geschosse: preview.isRangedWeapon
-              ? preview.activeProjectileCount
-              : null,
-        ),
-        if (preview.axxAttackDefenseHint.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Text(preview.axxAttackDefenseHint),
-        ],
-        if (preview.applicableMasteries.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          _buildApplicableCombatMasteriesPreview(preview),
-        ],
+    final leftColumnChildren = <Widget>[
+      _buildPreviewWeaponSelection(
+        catalog: catalog,
+        combatTalents: sortedTalents,
+        selectedWeaponIndex: selectedWeaponIndex,
+        weaponSlots: weaponSlots,
+        preview: preview,
+      ),
+      const SizedBox(height: 12),
+      _buildPreviewOffhandCard(
+        catalog: catalog,
+        combatTalents: sortedTalents,
+        mainPreview: preview,
+        hero: hero,
+        heroState: heroState,
+        offhandWeapon: offhandWeapon,
+        offhandEquipment: offhandEquipment,
+      ),
+      const SizedBox(height: 12),
+      buildWeaponCalculationDetails(preview: preview, isEditing: isEditing),
+      if (isEditing) ...[
         const SizedBox(height: 12),
-
-        // 2. Haupthand-Auswahl + Fernkampf-Steuerung
-        _buildPreviewWeaponSelection(
-          catalog: catalog,
-          combatTalents: sortedTalents,
-          selectedWeaponIndex: selectedWeaponIndex,
-          weaponSlots: weaponSlots,
-          preview: preview,
-        ),
-        const SizedBox(height: 12),
-
-        // 3. Nebenhand-Auswahl mit kompakter Vorschau
-        _buildPreviewOffhandCard(
-          catalog: catalog,
-          combatTalents: sortedTalents,
-          mainPreview: preview,
-          hero: hero,
-          heroState: heroState,
-          offhandWeapon: offhandWeapon,
-          offhandEquipment: offhandEquipment,
-        ),
-        const SizedBox(height: 12),
-
-        // 4. Berechnungsschritte (zugeklappt)
-        buildWeaponCalculationDetails(
-          preview: preview,
-          isEditing: isEditing,
-        ),
-
-        // 5. Manuelle Modifikatoren (nur im Edit-Modus)
-        if (isEditing) ...[
-          const SizedBox(height: 12),
-          _buildManualModifiersCard(manual: manual),
-        ],
+        _buildManualModifiersCard(manual: manual),
       ],
+    ];
+    final rightColumnChildren = <Widget>[
+      _buildCombatPreviewValuesCard(preview: preview),
+      if (preview.axxAttackDefenseHint.isNotEmpty) ...[
+        const SizedBox(height: 8),
+        Text(preview.axxAttackDefenseHint),
+      ],
+      if (preview.applicableMasteries.isNotEmpty) ...[
+        const SizedBox(height: 12),
+        _buildApplicableCombatMasteriesPreview(preview),
+      ],
+      const SizedBox(height: 12),
+      _buildPossibleManeuversPreviewCard(catalog: catalog, preview: preview),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useSplitLayout = constraints.maxWidth >= 1000;
+        if (!useSplitLayout) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ...leftColumnChildren,
+                const SizedBox(height: 12),
+                ...rightColumnChildren,
+              ],
+            ),
+          );
+        }
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 11,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: leftColumnChildren,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 9,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: rightColumnChildren,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Zeigt die aktuellen Kampfwerte in einer kompakten Übersicht.
+  Widget _buildCombatPreviewValuesCard({required CombatPreviewStats preview}) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Aktuelle Kampfwerte',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            CombatQuickStats(
+              at: preview.at,
+              pa: preview.isRangedWeapon ? null : preview.paMitIniParadeMod,
+              tpExpression: preview.tpExpression,
+              kampfInitiative: preview.kampfInitiative,
+              ausweichen: preview.ausweichen,
+              rs: preview.rsTotal,
+              ebe: preview.ebe,
+              isRanged: preview.isRangedWeapon,
+              ladezeit: preview.isRangedWeapon
+                  ? preview.reloadTimeDisplay
+                  : null,
+              geschosse: preview.isRangedWeapon
+                  ? preview.activeProjectileCount
+                  : null,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                Chip(
+                  label: Text(
+                    preview.activeDistanceLabel.trim().isEmpty
+                        ? 'Distanz: -'
+                        : 'Distanz: ${preview.activeDistanceLabel}',
+                  ),
+                ),
+                Chip(
+                  label: Text(
+                    preview.activeProjectileName.trim().isEmpty
+                        ? 'Geschoss: -'
+                        : 'Geschoss: ${preview.activeProjectileName}',
+                  ),
+                ),
+                if (preview.masteryManeuverDiscounts.isNotEmpty)
+                  Chip(
+                    label: Text(
+                      'Rabatte: ${preview.masteryManeuverDiscounts.length}',
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Zeigt die zur aktuellen Waffe möglichen Manöver.
+  Widget _buildPossibleManeuversPreviewCard({
+    required RulesCatalog catalog,
+    required CombatPreviewStats preview,
+  }) {
+    final maneuverIds = _activePreviewManeuverIds(catalog, preview);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Nutzbare Manöver',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            if (maneuverIds.isEmpty)
+              const Text(
+                'Für die aktive Waffe sind aktuell keine nutzbaren Manöver hinterlegt.',
+              ),
+            ...maneuverIds.map((maneuverId) {
+              final maneuver = _maneuverById(catalog, maneuverId);
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  onTap: maneuver == null
+                      ? null
+                      : () => _showCombatManeuverDetailsDialog(
+                          context: context,
+                          maneuver: maneuver,
+                        ),
+                  title: Text(_maneuverLabel(catalog, maneuverId)),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _buildPreviewManeuverMetaChips(
+                        maneuverDef: maneuver,
+                      ),
+                    ),
+                  ),
+                  trailing: maneuver == null
+                      ? null
+                      : const Icon(Icons.open_in_new),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
     );
   }
 
@@ -112,8 +245,9 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
               key: ValueKey<String>(
                 'combat-main-weapon-select-${selectedWeaponIndex < 0 ? 'none' : selectedWeaponIndex}-${weaponSlots.length}',
               ),
-              initialValue:
-                  selectedWeaponIndex < 0 ? null : selectedWeaponIndex,
+              initialValue: selectedWeaponIndex < 0
+                  ? null
+                  : selectedWeaponIndex,
               decoration: const InputDecoration(
                 labelText: 'Aktive Waffe',
                 border: OutlineInputBorder(),
@@ -141,7 +275,6 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                 );
               },
             ),
-            // Fernkampf-spezifische Steuerung
             if (hasActiveWeapon && preview.isRangedWeapon) ...[
               const SizedBox(height: 8),
               DropdownButtonFormField<int>(
@@ -171,7 +304,9 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                     ),
                 ],
                 onChanged: (value) {
-                  if (value == null) return;
+                  if (value == null) {
+                    return;
+                  }
                   _updateSelectedRangedDistance(value, catalog: catalog);
                 },
               ),
@@ -296,9 +431,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   value: 'none',
                   child: Text('Keine'),
                 ),
-                for (var i = 0;
-                    i < _draftCombatConfig.weaponSlots.length;
-                    i++)
+                for (var i = 0; i < _draftCombatConfig.weaponSlots.length; i++)
                   if (i != selectedWeaponIndex)
                     DropdownMenuItem<String>(
                       value: 'weapon:$i',
@@ -344,7 +477,6 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
               },
             ),
             const SizedBox(height: 8),
-            // Kompakte Chip-Vorschau
             if (offhandWeapon != null)
               Wrap(
                 spacing: 8,
@@ -357,11 +489,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                           : offhandWeapon.name,
                     ),
                   ),
-                  Chip(
-                    label: Text(
-                      combatTypeLabel(offhandWeapon.combatType),
-                    ),
-                  ),
+                  Chip(label: Text(combatTypeLabel(offhandWeapon.combatType))),
                 ],
               )
             else if (offhandEquipment != null)
@@ -479,6 +607,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
     );
   }
 
+  /// Baut ein kompaktes Eingabefeld fuer manuelle Kampfmodifikatoren.
   Widget _previewModField({
     required String key,
     required String label,

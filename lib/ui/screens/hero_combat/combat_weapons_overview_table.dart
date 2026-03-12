@@ -488,6 +488,8 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
       ),
       overrideTalents: draftTalents,
       catalogTalents: catalog.talents,
+      catalogManeuvers: catalog.maneuvers,
+      catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
     );
   }
 

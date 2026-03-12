@@ -10,6 +10,7 @@
                   "waffentalente":  "waffentalente.json",
                   "waffen":  "waffen.json",
                   "magie":  "magie.json",
-                  "manoever":  "manoever.json"
+                  "manoever":  "manoever.json",
+                  "kampf_sonderfertigkeiten":  "kampf_sonderfertigkeiten.json"
               }
 }
