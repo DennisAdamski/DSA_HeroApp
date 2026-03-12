@@ -106,7 +106,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `persistentMods` | `StatModifiers` | Dauerhafte Modifikatoren (aus Vor-/Nachteilen) |
 | `bought` | `BoughtStats` | Gekaufte Ressourcenerhöhungen |
 | `combatConfig` | `CombatConfig` | Gesamte Kampfkonfiguration |
-| `combatMasteries` | `List<CombatMastery>` | Frei definierte Kampfmeisterschaften mit Zielbereich, Anforderungen und Effekten |
+| `combatConfig.waffenmeisterschaften` | `List<WaffenmeisterConfig>` | Waffenmeister-Baukasten mit Waffenart, Boni und Voraussetzungen |
 | `talents` | `Map<String, HeroTalentEntry>` | Alle Talente (Schlüssel: Talent-ID) |
 | `metaTalents` | `List<HeroMetaTalent>` | Heldenspezifische Meta-Talente mit Komponenten, Eigenschaften und BE-Regel |
 | `hiddenTalentIds` | `List<String>` | IDs ausgeblendeter Talente |
@@ -150,7 +150,6 @@ HeroSheet
   │     │     └── List<ArmorPiece> pieces
   │     ├── CombatSpecialRules specialRules
   │     └── CombatManualMods manualMods
-  ├── List<CombatMastery> combatMasteries
   ├── Map<String, HeroTalentEntry> talents
   ├── List<HeroMetaTalent> metaTalents
   ├── List<HeroInventoryEntry> inventoryEntries
@@ -386,8 +385,8 @@ Aktivierungsstatus von Kampf-Sonderfertigkeiten (alle `bool`):
 | `gladiatorStyleTalent` | `String` | Talentwahl fuer den Gladiatorenstil (`raufen` oder `ringen`) |
 | `activeManeuvers` | `List<String>` — Manuell aktivierte Manöver-IDs |
 
-Kampfmeisterschaften sind bewusst **nicht** Teil von `CombatSpecialRules`,
-sondern liegen als eigene strukturierte Liste in `HeroSheet.combatMasteries`.
+Waffenmeisterschaften sind bewusst **nicht** Teil von `CombatSpecialRules`,
+sondern liegen in `CombatConfig.waffenmeisterschaften`.
 
 #### `CombatManualMods`
 
@@ -405,30 +404,26 @@ Manuell eingetragene Kampfmodifikatoren (situativ):
 
 ---
 
-### 2.5a `CombatMastery`
+### 2.5a `WaffenmeisterConfig`
 
-**Datei:** `lib/domain/combat_mastery.dart`
+**Datei:** `lib/domain/combat_config/waffenmeister_config.dart`
 
-Eine `CombatMastery` beschreibt eine freie Kampfmeisterschaft wie
-Waffenmeister, Schildmeister oder spaetere Parierwaffen-Meisterschaften. Die
-Eintraege werden direkt im Held gespeichert und nicht aus dem Katalog geladen.
+`WaffenmeisterConfig` beschreibt eine Waffenmeisterschaft fuer eine konkrete
+Waffenart innerhalb von `CombatConfig.waffenmeisterschaften`.
 
 | Feld | Typ | Bedeutung |
 |---|---|---|
-| `id` | `String` | Stabile ID innerhalb des Helden |
-| `name` | `String` | Anzeigename der Meisterschaft |
-| `targetScope` | `CombatMasteryTargetScope` | Zieltyp wie `singleWeapon`, `weaponSet`, `shield`, `parryWeapon`, `customGroup` |
-| `targetRefs` | `List<String>` | Konkrete Waffen-, Talent- oder Gruppenschluessel fuer die Zielaufloesung |
-| `effects` | `List<CombatMasteryEffect>` | Strukturierte Effekte mit Typ, Wert und optionalen Manoever-Referenzen |
-| `requirements` | `CombatMasteryRequirements` | Formale Voraussetzungen wie Talentwert, Spezialisierung oder Attribute |
-| `apCost` | `int` | Dokumentierter AP-Wert; wird in V1 validiert, aber nicht hart erzwungen |
-| `buildPoints` | `int` | Punktbudget fuer den Baukasten |
-| `notes` | `String` | Freitext fuer Sonderfaelle oder nicht automatisierte Wirkung |
+| `talentId` | `String` | Zugehoeriges Kampftalent |
+| `weaponType` | `String` | Konkrete Waffenart |
+| `bonuses` | `List<WaffenmeisterBonus>` | Vergebene Baukasten-Boni |
+| `additionalWeaponTypes` | `List<String>` | Bis zu zwei weitere aehnliche Waffenarten |
+| `styleName` | `String` | Optionaler Stilname |
+| `masterName` | `String` | Optionaler Lehrmeister |
+| `requiredAttribute1/2` | `String` | Geforderte Eigenschaften |
+| `requiredAttribute1Value/2Value` | `int` | Mindestwerte der Eigenschaften |
 
-Die Effekt-Taxonomie trennt automatische Boni (`attackModifier`,
-`parryModifier`, `initiativeBonus`, `shieldParryModifier`, `tpkkShift`,
-`reloadModifier`, `rangedRangePercent`) von strukturierten, aber nicht voll
-automatisierten Eintraegen (`specialRuleNote`, `conditionalToggle`).
+Die automatische Wirkung der Waffenmeisterschaft wird in
+`lib/rules/derived/waffenmeister_rules.dart` aus den vergebenen Boni abgeleitet.
 
 ---
 

@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
-import 'package:dsa_heldenverwaltung/domain/combat_mastery.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
@@ -186,39 +185,28 @@ void main() {
           activeManeuvers: ['Finte', 'Wuchtschlag'],
         ),
         manualMods: CombatManualMods(iniMod: 1, ausweichenMod: 2),
-      ),
-      combatMasteries: const <CombatMastery>[
-        CombatMastery(
-          id: 'mastery_1',
-          name: 'Waffenmeister (Kurzschwert)',
-          targetScope: CombatMasteryTargetScope.singleWeapon,
-          targetRefs: <String>['Kurzschwert'],
-          effects: <CombatMasteryEffect>[
-            CombatMasteryEffect(
-              type: CombatMasteryEffectType.initiativeBonus,
-              value: 1,
-            ),
-            CombatMasteryEffect(
-              type: CombatMasteryEffectType.maneuverDiscount,
-              maneuverId: 'man_finte',
-              value: 2,
-            ),
-          ],
-          requirements: CombatMasteryRequirements(
-            requiredTalentId: 'tal_schwerter',
-            attributeRequirements: <CombatMasteryAttributeRequirement>[
-              CombatMasteryAttributeRequirement(
-                attributeCode: 'GE',
-                minimum: 16,
+        waffenmeisterschaften: const <WaffenmeisterConfig>[
+          WaffenmeisterConfig(
+            talentId: 'tal_schwerter',
+            weaponType: 'Kurzschwert',
+            bonuses: <WaffenmeisterBonus>[
+              WaffenmeisterBonus(
+                type: WaffenmeisterBonusType.iniBonus,
+                value: 1,
               ),
-              CombatMasteryAttributeRequirement(
-                attributeCode: 'KK',
-                minimum: 16,
+              WaffenmeisterBonus(
+                type: WaffenmeisterBonusType.maneuverReduction,
+                targetManeuver: 'man_finte',
+                value: 2,
               ),
             ],
+            requiredAttribute1: 'GE',
+            requiredAttribute1Value: 16,
+            requiredAttribute2: 'KK',
+            requiredAttribute2Value: 16,
           ),
-        ),
-      ],
+        ],
+      ),
       hiddenTalentIds: ['tal_a', 'tal_a', ' ', 'tal_b'],
       talentSpecialAbilities: 'Meisterhandwerk, Begabung',
       notes: const <HeroNoteEntry>[
@@ -248,20 +236,6 @@ void main() {
     expect(reloaded.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
     expect(reloaded.apAvailable, 500);
-    expect(reloaded.combatMasteries.single.name, 'Waffenmeister (Kurzschwert)');
-    expect(
-      reloaded.combatMasteries.single.targetScope,
-      CombatMasteryTargetScope.singleWeapon,
-    );
-    expect(reloaded.combatMasteries.single.targetRefs, <String>['Kurzschwert']);
-    expect(
-      reloaded.combatMasteries.single.effects.first.type,
-      CombatMasteryEffectType.initiativeBonus,
-    );
-    expect(
-      reloaded.combatMasteries.single.requirements.attributeRequirements.length,
-      2,
-    );
     expect(reloaded.hiddenTalentIds, ['tal_a', 'tal_b']);
     expect(reloaded.talentSpecialAbilities, 'Meisterhandwerk, Begabung');
     expect(reloaded.notes.single.title, 'Offene Schuld');
@@ -353,6 +327,15 @@ void main() {
       'Finte',
       'Wuchtschlag',
     ]);
+    expect(reloaded.combatConfig.waffenmeisterschaften, hasLength(1));
+    expect(
+      reloaded.combatConfig.waffenmeisterschaften.single.weaponType,
+      'Kurzschwert',
+    );
+    expect(
+      reloaded.combatConfig.waffenmeisterschaften.single.bonuses.first.type,
+      WaffenmeisterBonusType.iniBonus,
+    );
   });
 
   test('hero sheet backwards compatibility for missing new fields', () {
@@ -382,7 +365,6 @@ void main() {
     expect(loaded.rasse, '');
     expect(loaded.apTotal, 0);
     expect(loaded.hiddenTalentIds, isEmpty);
-    expect(loaded.combatMasteries, isEmpty);
     expect(loaded.talentSpecialAbilities, '');
     expect(loaded.unknownModifierFragments, isEmpty);
     expect(loaded.metaTalents, isEmpty);
