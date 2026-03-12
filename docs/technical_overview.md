@@ -848,7 +848,12 @@ Distanzbezeichnung, Ladezeit sowie den selektierten Geschossnamen,
 Geschossbestand und dessen Beschreibung. Zusaetzlich enthaelt der Snapshot
 die automatisch eingerechneten Kampfmeisterschafts-Modifikatoren, anwendbare
 Meisterschaften, strukturierte Manoever-Erleichterungen fuer die UI sowie
-feste Boni aktiver waffenloser Kampfstile.
+feste Boni aktiver waffenloser Kampfstile. Fuer Waffenmeisterschaften enthaelt
+der Snapshot explizite AT-/PA-/INI-/TP/KK-/Ladezeit-Anteile, strukturierte
+Manoever-Erleichterungen und freigeschaltete Zusatz-Manoever fuer die UI; im
+Kampf-Preview wird die aktive Waffenmeisterschaft selbst nur kompakt markiert.
+Distanz- und Geschoss-Chips werden dort nur angezeigt, wenn in Haupt- oder
+Nebenhand eine Fernkampfwaffe gehalten wird.
 
 ### 4.7 Modifier-Parser
 

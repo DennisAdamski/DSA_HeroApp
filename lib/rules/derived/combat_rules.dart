@@ -90,6 +90,10 @@ class CombatPreviewStats {
     required this.waffenmeisterIniBonus,
     required this.waffenmeisterAtBonus,
     required this.waffenmeisterPaBonus,
+    required this.waffenmeisterTpKkBaseReduction,
+    required this.waffenmeisterTpKkThresholdReduction,
+    required this.waffenmeisterAdditionalManeuvers,
+    required this.waffenmeisterReloadTimeHalved,
     required this.waffenmeisterManeuverReductions,
   });
 
@@ -158,16 +162,34 @@ class CombatPreviewStats {
   final bool schnellladenBogenTemporary;
   final bool schnellladenArmbrustActive;
   final bool schnellladenArmbrustTemporary;
+
   /// Waffenmeisterschaft ist fuer die aktive Waffe aktiv.
   final bool waffenmeisterActive;
+
   /// Anzeigename der aktiven Waffenmeisterschaft.
   final String waffenmeisterName;
+
   /// INI-Bonus durch Waffenmeisterschaft.
   final int waffenmeisterIniBonus;
+
   /// AT-WM-Bonus durch Waffenmeisterschaft.
   final int waffenmeisterAtBonus;
+
   /// PA-WM-Bonus durch Waffenmeisterschaft.
   final int waffenmeisterPaBonus;
+
+  /// TP/KK-Basisreduktion durch Waffenmeisterschaft.
+  final int waffenmeisterTpKkBaseReduction;
+
+  /// TP/KK-Schwellenreduktion durch Waffenmeisterschaft.
+  final int waffenmeisterTpKkThresholdReduction;
+
+  /// Zusaetzlich freigeschaltete Manoever durch Waffenmeisterschaft.
+  final List<String> waffenmeisterAdditionalManeuvers;
+
+  /// Ladezeit-Halbierung durch Waffenmeisterschaft.
+  final bool waffenmeisterReloadTimeHalved;
+
   /// Manoever-Erschwernis-Reduktionen durch Waffenmeisterschaft.
   final Map<String, int> waffenmeisterManeuverReductions;
 }
@@ -246,7 +268,9 @@ CombatPreviewStats computeCombatPreviewStats(
   // --- Waffenmeister-Effekte ---
   final wmEffects = computeWaffenmeisterEffects(
     waffenmeisterschaften: config.waffenmeisterschaften,
-    activeWeaponType: main.weaponType.trim().isEmpty ? main.name : main.weaponType,
+    activeWeaponType: main.weaponType.trim().isEmpty
+        ? main.name
+        : main.weaponType,
     activeTalentId: main.talentId,
   );
 
@@ -389,7 +413,10 @@ CombatPreviewStats computeCombatPreviewStats(
     kkThreshold: kkThreshold,
   );
   final kombinierteHeldenWaffenIni = clampNonNegative(
-    heldenInitiative + main.iniMod + iniGe + projectileIniMod +
+    heldenInitiative +
+        main.iniMod +
+        iniGe +
+        projectileIniMod +
         wmEffects.iniBonus,
   );
   final kampfInitiative = clampNonNegative(
@@ -496,6 +523,10 @@ CombatPreviewStats computeCombatPreviewStats(
     waffenmeisterIniBonus: wmEffects.iniBonus,
     waffenmeisterAtBonus: wmEffects.atWmBonus,
     waffenmeisterPaBonus: wmEffects.paWmBonus,
+    waffenmeisterTpKkBaseReduction: wmEffects.tpKkBaseReduction,
+    waffenmeisterTpKkThresholdReduction: wmEffects.tpKkThresholdReduction,
+    waffenmeisterAdditionalManeuvers: wmEffects.additionalManeuvers,
+    waffenmeisterReloadTimeHalved: wmEffects.reloadTimeHalved,
     waffenmeisterManeuverReductions: wmEffects.maneuverReductions,
   );
 }
