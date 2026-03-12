@@ -26,8 +26,11 @@ int computeFk(HeroSheet sheet, StatModifiers mods) {
   return excelRound((inn + ff + kk) / 5) + mods.fk;
 }
 
-// Geschwindigkeit: Basis 8, +1 bei GE>15, -1 bei GE<11, + Mod.
-int computeGs(HeroSheet sheet, StatModifiers mods) {
+/// Berechnet die aktuelle Geschwindigkeit inklusive Behinderungsabzug.
+///
+/// Grundlage ist GS 8, modifiziert durch GE-Schwellen, direkte GS-Modifikatoren
+/// und die aktuelle Kampf-BE nach Rüstungsgewöhnung.
+int computeGs(HeroSheet sheet, StatModifiers mods, {int beKampf = 0}) {
   final ge = sheet.attributes.ge;
   int gs = 8;
   if (ge > 15) {
@@ -35,5 +38,5 @@ int computeGs(HeroSheet sheet, StatModifiers mods) {
   } else if (ge < 11) {
     gs -= 1;
   }
-  return gs + mods.gs;
+  return gs + mods.gs - beKampf;
 }
