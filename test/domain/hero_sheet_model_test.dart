@@ -233,7 +233,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 16);
+    expect(reloaded.schemaVersion, 17);
     expect(reloaded.kultur, 'Mittelreich');
     expect(reloaded.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -681,7 +681,7 @@ void main() {
     },
   );
 
-  test('schemaVersion ist 16 nach toJson (v16-Default)', () {
+  test('schemaVersion ist 17 nach toJson (v17-Default)', () {
     const hero = HeroSheet(
       id: 'version-check',
       name: 'Versionstest',
@@ -698,8 +698,8 @@ void main() {
       ),
     );
     final json = hero.toJson();
-    expect(json['schemaVersion'], 16);
-    expect(HeroSheet.fromJson(json).schemaVersion, 16);
+    expect(json['schemaVersion'], 17);
+    expect(HeroSheet.fromJson(json).schemaVersion, 17);
   });
 
   test('v15 Hero-JSON liefert korrekte Standardwerte fuer neue Inventarfelder', () {

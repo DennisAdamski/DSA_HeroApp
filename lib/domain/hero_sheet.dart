@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
@@ -21,7 +22,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 16,
+    this.schemaVersion = 17,
     required this.name,
     required this.level,
     required this.attributes,
@@ -39,6 +40,9 @@ class HeroSheet {
     this.representationen = const <String>[],
     this.merkmalskenntnisse = const <String>[],
     this.magicSpecialAbilities = const <MagicSpecialAbility>[],
+    this.sprachen = const <String, HeroLanguageEntry>{},
+    this.schriften = const <String, HeroScriptEntry>{},
+    this.muttersprache = '',
     this.rasse = '',
     this.rasseModText = '',
     this.kultur = '',
@@ -89,6 +93,15 @@ class HeroSheet {
   final List<String> merkmalskenntnisse;
   final List<MagicSpecialAbility> magicSpecialAbilities;
 
+  /// Sprachkenntnisse: sprachId → Eintrag.
+  final Map<String, HeroLanguageEntry> sprachen;
+
+  /// Schriftkenntnisse: schriftId → Eintrag.
+  final Map<String, HeroScriptEntry> schriften;
+
+  /// ID der Muttersprache (leer, wenn nicht gesetzt).
+  final String muttersprache;
+
   final String rasse;
   final String rasseModText;
   final String kultur;
@@ -137,6 +150,9 @@ class HeroSheet {
     List<String>? representationen,
     List<String>? merkmalskenntnisse,
     List<MagicSpecialAbility>? magicSpecialAbilities,
+    Map<String, HeroLanguageEntry>? sprachen,
+    Map<String, HeroScriptEntry>? schriften,
+    String? muttersprache,
     String? rasse,
     String? rasseModText,
     String? kultur,
@@ -189,6 +205,9 @@ class HeroSheet {
       merkmalskenntnisse: merkmalskenntnisse ?? this.merkmalskenntnisse,
       magicSpecialAbilities:
           magicSpecialAbilities ?? this.magicSpecialAbilities,
+      sprachen: sprachen ?? this.sprachen,
+      schriften: schriften ?? this.schriften,
+      muttersprache: muttersprache ?? this.muttersprache,
       rasse: rasse ?? this.rasse,
       rasseModText: rasseModText ?? this.rasseModText,
       kultur: kultur ?? this.kultur,
@@ -249,6 +268,9 @@ class HeroSheet {
       'magicSpecialAbilities': magicSpecialAbilities
           .map((entry) => entry.toJson())
           .toList(growable: false),
+      'sprachen': sprachen.map((key, value) => MapEntry(key, value.toJson())),
+      'schriften': schriften.map((key, value) => MapEntry(key, value.toJson())),
+      'muttersprache': muttersprache,
       'rasse': rasse,
       'rasseModText': rasseModText,
       'kultur': kultur,
@@ -308,6 +330,12 @@ class HeroSheet {
         (json['merkmalskenntnisse'] as List?) ?? const <dynamic>[];
     final rawMagicSpecialAbilities =
         (json['magicSpecialAbilities'] as List?) ?? const <dynamic>[];
+    final rawSprachen =
+        (json['sprachen'] as Map?)?.cast<String, dynamic>() ??
+        const <String, dynamic>{};
+    final rawSchriften =
+        (json['schriften'] as Map?)?.cast<String, dynamic>() ??
+        const <String, dynamic>{};
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     String getString(String key) => (json[key] as String?) ?? '';
 
@@ -383,6 +411,19 @@ class HeroSheet {
                 MagicSpecialAbility.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
+      sprachen: rawSprachen.map((key, value) {
+        final map = value is Map
+            ? value.cast<String, dynamic>()
+            : const <String, dynamic>{};
+        return MapEntry(key, HeroLanguageEntry.fromJson(map));
+      }),
+      schriften: rawSchriften.map((key, value) {
+        final map = value is Map
+            ? value.cast<String, dynamic>()
+            : const <String, dynamic>{};
+        return MapEntry(key, HeroScriptEntry.fromJson(map));
+      }),
+      muttersprache: getString('muttersprache'),
       rasse: getString('rasse'),
       rasseModText: getString('rasseModText'),
       kultur: getString('kultur'),
