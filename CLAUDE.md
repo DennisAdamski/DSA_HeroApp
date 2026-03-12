@@ -338,7 +338,8 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
   Fernkampf-TP-Helfer; `computeCombatPreviewStats()` liefert fuer Nah- und
   Fernkampf weiterhin denselben Snapshot-Typ.
 - `computeCombatPreviewStats()` stellt aktive Waffenmeisterschafts-Effekte
-  explizit fuer Preview-Chips, Berechnungsschritte und Manoeverhinweise bereit.
+  explizit fuer Berechnungsschritte und Manoeverhinweise bereit; im
+  Kampf-Preview selbst wird die aktive Waffenmeisterschaft kompakt markiert.
 - `lib/rules/derived/fernkampf_ladezeit_rules.dart` kapselt die effektive
   Ladezeit von Boegen und Armbruesten inklusive Axxeleratus-/Schnellladen-
   Ableitung fuer das Kampf-Preview.

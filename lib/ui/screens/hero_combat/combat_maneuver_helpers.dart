@@ -282,36 +282,27 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
     return chips;
   }
 
-  /// Liefert reduzierte Metadatenchips fuer die Kampfwert-Vorschau.
-  List<Widget> _buildPreviewManeuverMetaChips({
-    required RulesCatalog catalog,
+  /// Baut eine kompakte Zusammenfassung fuer die Kampfwert-Vorschau.
+  String _buildPreviewManeuverSummary({
     required CombatPreviewStats preview,
     required String maneuverId,
     required ManeuverDef? maneuverDef,
   }) {
-    final chips = <Widget>[];
+    final parts = <String>[];
     if (maneuverDef != null && maneuverDef.typ.trim().isNotEmpty) {
-      chips.add(Chip(label: Text('Typ: ${maneuverDef.typ.trim()}')));
+      parts.add('Typ: ${maneuverDef.typ.trim()}');
     }
     if (maneuverDef != null && maneuverDef.erschwernis.trim().isNotEmpty) {
-      chips.add(
-        Chip(label: Text('Erschwernis: ${maneuverDef.erschwernis.trim()}')),
-      );
-    }
-    if (maneuverDef != null && maneuverDef.seite.trim().isNotEmpty) {
-      chips.add(Chip(label: Text('S. ${maneuverDef.seite.trim()}')));
+      parts.add('Erschwernis: ${maneuverDef.erschwernis.trim()}');
     }
     final reduction = preview.waffenmeisterManeuverReductions[maneuverId] ?? 0;
     if (reduction > 0) {
-      chips.add(Chip(label: Text('Waffenmeister: -$reduction')));
+      parts.add('Waffenmeister: -$reduction');
     }
     if (preview.waffenmeisterAdditionalManeuvers.contains(maneuverId)) {
-      final label = preview.waffenmeisterActive
-          ? preview.waffenmeisterName
-          : 'Waffenmeister';
-      chips.add(Chip(label: Text('$label: freigeschaltet')));
+      parts.add('Waffenmeister: freigeschaltet');
     }
-    return chips;
+    return parts.join(' • ');
   }
 
   bool _isUnarmedTalentName(String raw) {
