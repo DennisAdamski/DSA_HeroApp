@@ -225,10 +225,7 @@ void main() {
         mainWeapon: MainWeaponSlot(iniMod: 3, kkBase: 10, kkThreshold: 3),
         offhandAssignment: OffhandAssignment(equipmentIndex: 0),
         offhandEquipment: <OffhandEquipmentEntry>[
-          OffhandEquipmentEntry(
-            type: OffhandEquipmentType.shield,
-            iniMod: -1,
-          ),
+          OffhandEquipmentEntry(type: OffhandEquipmentType.shield, iniMod: -1),
         ],
       ),
     );
@@ -866,6 +863,75 @@ void main() {
     expect(result.pa, greaterThanOrEqualTo(0));
     expect(result.tpExpression, isNotEmpty);
   });
+
+  test(
+    'combat preview exposes active waffenmeister contributions explicitly',
+    () {
+      final sheet = hero(
+        talents: const {
+          'tal_dolche': HeroTalentEntry(
+            atValue: 6,
+            paValue: 5,
+            combatSpecializations: <String>['Dolch'],
+          ),
+        },
+        combatConfig: const CombatConfig(
+          mainWeapon: MainWeaponSlot(
+            name: 'Dolch',
+            talentId: 'tal_dolche',
+            weaponType: 'Dolch',
+            kkBase: 12,
+            kkThreshold: 2,
+          ),
+          waffenmeisterschaften: <WaffenmeisterConfig>[
+            WaffenmeisterConfig(
+              talentId: 'tal_dolche',
+              weaponType: 'Dolch',
+              bonuses: <WaffenmeisterBonus>[
+                WaffenmeisterBonus(
+                  type: WaffenmeisterBonusType.atWmBonus,
+                  value: 1,
+                ),
+                WaffenmeisterBonus(
+                  type: WaffenmeisterBonusType.paWmBonus,
+                  value: 1,
+                ),
+                WaffenmeisterBonus(
+                  type: WaffenmeisterBonusType.iniBonus,
+                  value: 1,
+                ),
+                WaffenmeisterBonus(type: WaffenmeisterBonusType.tpKkReduction),
+                WaffenmeisterBonus(
+                  type: WaffenmeisterBonusType.maneuverReduction,
+                  value: 2,
+                  targetManeuver: 'Finte',
+                ),
+                WaffenmeisterBonus(
+                  type: WaffenmeisterBonusType.additionalManeuver,
+                  targetManeuver: 'Wuchtschlag',
+                  value: 1,
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+
+      final result = preview(sheet);
+
+      expect(result.waffenmeisterActive, isTrue);
+      expect(result.waffenmeisterAtBonus, 1);
+      expect(result.waffenmeisterPaBonus, 1);
+      expect(result.waffenmeisterIniBonus, 1);
+      expect(result.waffenmeisterTpKkBaseReduction, -1);
+      expect(result.waffenmeisterTpKkThresholdReduction, -1);
+      expect(result.waffenmeisterManeuverReductions['man_finte'], 2);
+      expect(
+        result.waffenmeisterAdditionalManeuvers,
+        contains('man_wuchtschlag'),
+      );
+    },
+  );
 
   test('eBE modifies AT and PA with excel-compatible sign behavior', () {
     final noArmor = hero(

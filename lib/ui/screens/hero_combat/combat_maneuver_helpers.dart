@@ -91,6 +91,9 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
       );
       if (id.isNotEmpty) {
         supportedIds.add(id);
+        if (seen.add(id)) {
+          ids.add(id);
+        }
       }
     }
     for (final raw in _draftCombatConfig.specialRules.activeManeuvers) {
@@ -281,6 +284,9 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
 
   /// Liefert reduzierte Metadatenchips fuer die Kampfwert-Vorschau.
   List<Widget> _buildPreviewManeuverMetaChips({
+    required RulesCatalog catalog,
+    required CombatPreviewStats preview,
+    required String maneuverId,
     required ManeuverDef? maneuverDef,
   }) {
     final chips = <Widget>[];
@@ -294,6 +300,16 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
     }
     if (maneuverDef != null && maneuverDef.seite.trim().isNotEmpty) {
       chips.add(Chip(label: Text('S. ${maneuverDef.seite.trim()}')));
+    }
+    final reduction = preview.waffenmeisterManeuverReductions[maneuverId] ?? 0;
+    if (reduction > 0) {
+      chips.add(Chip(label: Text('Waffenmeister: -$reduction')));
+    }
+    if (preview.waffenmeisterAdditionalManeuvers.contains(maneuverId)) {
+      final label = preview.waffenmeisterActive
+          ? preview.waffenmeisterName
+          : 'Waffenmeister';
+      chips.add(Chip(label: Text('$label: freigeschaltet')));
     }
     return chips;
   }
