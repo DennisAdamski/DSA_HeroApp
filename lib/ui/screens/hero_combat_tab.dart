@@ -38,6 +38,7 @@ part 'hero_combat/hero_combat_calculator_subtab.dart';
 part 'hero_combat/hero_combat_form_fields.dart';
 part 'hero_combat/weapon_detail_expansion.dart';
 part 'hero_combat/combat_preview_subtab.dart';
+part 'hero_combat/combat_artifact_summary_section.dart';
 part 'hero_combat/combat_rules_subtab.dart';
 part 'hero_combat/combat_special_rules_helpers.dart';
 part 'hero_combat/combat_maneuver_helpers.dart';
