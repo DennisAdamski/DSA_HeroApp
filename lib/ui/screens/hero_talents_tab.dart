@@ -552,6 +552,14 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                                     talents: talents,
                                     effectiveAttributes: effectiveAttributes!,
                                     activeBaseBe: activeTalentBe,
+                                    inventoryTalentMods: ref
+                                            .watch(heroComputedProvider(
+                                              widget.heroId,
+                                            ))
+                                            .asData
+                                            ?.value
+                                            .inventoryTalentMods ??
+                                        const {},
                                   ),
                           ],
                         ),

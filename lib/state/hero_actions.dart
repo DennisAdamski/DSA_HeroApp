@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
@@ -104,7 +105,16 @@ class HeroActions {
       unknownModifierFragments: parsed.unknownFragments,
     );
 
-    await repo.saveHero(normalizedHero);
+    // Inventar mit Kampf-Tab synchronisieren (Waffen, Ruestung, Geschosse)
+    final reconciledEntries = reconcileInventoryWithCombat(
+      normalizedHero.inventoryEntries,
+      normalizedHero.combatConfig,
+    );
+    final reconciledHero = normalizedHero.copyWith(
+      inventoryEntries: reconciledEntries,
+    );
+
+    await repo.saveHero(reconciledHero);
   }
 
   /// Speichert den Laufzeitzustand (LeP, AsP, KaP, Au, temp. Mods) eines Helden.
