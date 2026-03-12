@@ -286,9 +286,9 @@
         "id": "man_seitenwechsel",
         "name": "Seitenwechsel",
         "gruppe": "bewaffnet",
-        "erschwernis": "",
-        "seite": "",
-        "erklarung": ""
+        "erschwernis": "Ausweichen oder Binden +4 (Dauer abhängig von DK und Größe des Gegners)",
+        "seite": "Hausregel Philipp",
+        "erklarung": "Das Manöver baut auf einem ähnlichen Prinzip auf wie Binden oder Windmühle: Der Kämpfer leitet die Kraft eines gegnerischen Angriffs in eine ungefährliche Richtung um sich daraus einen Vorteil zu verschaffen. Dieser besteht in diesem Fall darin, dass er schnell an seinem Gegner vorbeischlüpfen kann um hinter ihm zu stehen was je nach Umgebung nutzlos bis lebensrettend sein kann. Das Manöver erfordert ein vorheriges Binden oder gezieltes Ausweichen um sich in eine günstige Position zu bringen und ist 4 Punkte erschwert. Die Anzahl der benötigten zusätzlichen Aktionen ist abhängig von der DK und der Größe des Gegners: ein Seitenwechsel in der DK H benötigt eine Freie Aktion, N benötigt 2 Freie Aktionen, S eine normale Aktion, P ist nicht möglich. Ein großer Gegner zählt automatisch als eine Kategorie weiter entfernt. Bei sehr großen Gegnern ist das Manöver nur mit Meisterzustimmung möglich. Verfügt man über die SF Beidhändiger Kampf II oder Tod von Links, so kann der Seitenwechsel noch mit einem Angriff aus der Zweithand kombiniert werden, was den Seitenwechsel um 4 weitere Punkte erschwert. Eine Parade gegen dieses Manöver ist nur zulässig, wenn die SF Kampfgespür erlernt, und eine Aktion aufgespart wurde. Das Manöver ist übrigens ebenfalls dazu geeignet einen Sturmangriff ins leere laufen zu lassen oder einen Ausfall zu stoppen. Das Manöver ist nur möglich wenn die INI des Anwenders über der seines Feindes liegt. Befindet sich neben dem Gegner ein weiterer Feind, dann steht diesem bei der Aktion unter Umständen ein Passierschlag zu."
     },
     {
         "id": "man_stumpfer_schlag",
