@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
@@ -171,6 +172,19 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     _editController.markFieldChanged();
   }
 
+  List<HeroCompanion> get _companions => _latestHero?.companions ?? const [];
+
+  /// Loest den Anzeigenamen des Traeger aus dem Inventar-Eintrag auf.
+  /// Gibt null zurueck, wenn der Held selbst der Traeger ist.
+  String? _traegerName(HeroInventoryEntry entry) {
+    if (entry.traegerTyp != InventoryTraeger.begleiter) return null;
+    final id = entry.traegerId;
+    if (id == null) return null;
+    final companion = _companions.where((c) => c.id == id).firstOrNull;
+    if (companion == null) return 'Begleiter';
+    return companion.name.isEmpty ? 'Unbenannter Begleiter' : companion.name;
+  }
+
   void _selectEntry(int draftIndex, bool isWide, BuildContext context) {
     if (isWide) {
       setState(() {
@@ -183,6 +197,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
           builder: (_) => InventoryItemEditor(
             entry: _draft[draftIndex],
             showAppBar: true,
+            companions: _companions,
             onSaved: (updated) {
               Navigator.of(context).pop();
               _updateEntry(draftIndex, updated);
@@ -316,6 +331,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
               key: ValueKey<String>('editor-$selectedIdx-$_editorRevision'),
               entry: _draft[selectedIdx],
               showAppBar: false,
+              companions: _companions,
               onSaved: (updated) => _updateEntry(selectedIdx, updated),
               onCancelled: () => setState(() => _selectedIndex = null),
             ),
@@ -360,6 +376,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
           key: ValueKey<int>(draftIdx),
           entry: entry,
           isEditing: isEditing,
+          traegerName: _traegerName(entry),
           onTap: isEditing
               ? () => _selectEntry(draftIdx, isWide, context)
               : () {},

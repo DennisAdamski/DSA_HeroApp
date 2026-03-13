@@ -1,5 +1,14 @@
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
+/// Wer oder was ein Inventarstück trägt.
+enum InventoryTraeger {
+  /// Wird vom Helden selbst getragen (Standard).
+  held,
+
+  /// Wird von einem Begleiter getragen.
+  begleiter,
+}
+
 class HeroInventoryEntry {
   const HeroInventoryEntry({
     this.gegenstand = '',
@@ -23,6 +32,9 @@ class HeroInventoryEntry {
     this.gewichtGramm = 0,
     this.wertSilber = 0,
     this.herkunft = '',
+    // Träger-Felder (v19)
+    this.traegerTyp = InventoryTraeger.held,
+    this.traegerId,
   });
 
   // --- Bestehende 12 String-Felder (unveraendert, rueckwaertskompatibel) ---
@@ -76,6 +88,15 @@ class HeroInventoryEntry {
   /// Herkunft / Fundort / Haendler des Items.
   final String herkunft;
 
+  // --- Träger-Felder (v19) ---
+
+  /// Wer dieses Inventarstück trägt.
+  final InventoryTraeger traegerTyp;
+
+  /// ID des Begleiters, wenn [traegerTyp] == [InventoryTraeger.begleiter].
+  /// Null, wenn der Held das Item trägt.
+  final String? traegerId;
+
   HeroInventoryEntry copyWith({
     String? gegenstand,
     String? woGetragen,
@@ -97,6 +118,8 @@ class HeroInventoryEntry {
     int? gewichtGramm,
     int? wertSilber,
     String? herkunft,
+    InventoryTraeger? traegerTyp,
+    Object? traegerId = _sentinel,
   }) {
     return HeroInventoryEntry(
       gegenstand: gegenstand ?? this.gegenstand,
@@ -119,6 +142,8 @@ class HeroInventoryEntry {
       gewichtGramm: gewichtGramm ?? this.gewichtGramm,
       wertSilber: wertSilber ?? this.wertSilber,
       herkunft: herkunft ?? this.herkunft,
+      traegerTyp: traegerTyp ?? this.traegerTyp,
+      traegerId: traegerId == _sentinel ? this.traegerId : traegerId as String?,
     );
   }
 
@@ -145,6 +170,9 @@ class HeroInventoryEntry {
       'gewichtGramm': gewichtGramm,
       'wertSilber': wertSilber,
       'herkunft': herkunft,
+      // v19
+      'traegerTyp': traegerTyp.name,
+      if (traegerId != null) 'traegerId': traegerId,
     };
   }
 
@@ -195,6 +223,12 @@ class HeroInventoryEntry {
       gewichtGramm: (json['gewichtGramm'] as num?)?.toInt() ?? 0,
       wertSilber: (json['wertSilber'] as num?)?.toInt() ?? 0,
       herkunft: getString('herkunft'),
+      // v19 – lenient defaults
+      traegerTyp: InventoryTraeger.values.firstWhere(
+        (e) => e.name == json['traegerTyp'],
+        orElse: () => InventoryTraeger.held,
+      ),
+      traegerId: json['traegerId'] as String?,
     );
   }
 }
