@@ -503,6 +503,11 @@ eine Liste referenzierter Talent-IDs, deren TaWs im Magie-Tab angezeigt werden.
 kanonisiert `threeAttributes`-Eingaben auf `MU/KL/IN/CH/FF/GE/KO/KK` und loest
 talentbasierte Ritualkategorien fuer die UI auf.
 
+Fuer Vertraute existiert zusaetzlich ein festes Preset in
+`lib/catalog/vertrautenmagie_preset.dart`. Das gleichwertige
+JSON-Referenzformat liegt unter
+`assets/catalogs/house_rules_v1/vertrautenmagie_rituale.json`.
+
 ---
 
 ### 2.7 `HeroInventoryEntry`
