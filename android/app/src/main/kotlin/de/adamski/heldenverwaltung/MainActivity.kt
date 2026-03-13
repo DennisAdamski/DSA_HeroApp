@@ -1,4 +1,4 @@
-package com.example.flutter_application_1
+package de.adamski.heldenverwaltung
 
 import io.flutter.embedding.android.FlutterActivity
 

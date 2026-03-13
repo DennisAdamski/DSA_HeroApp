@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive/hive.dart';
 
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 
@@ -20,8 +20,10 @@ class HiveSettingsRepository {
       StreamController<AppSettings>.broadcast();
 
   /// Erstellt und initialisiert das Settings-Repository.
-  static Future<HiveSettingsRepository> create() async {
-    final box = await Hive.openBox<Map>(_boxName);
+  static Future<HiveSettingsRepository> create({
+    required String storagePath,
+  }) async {
+    final box = await Hive.openBox<Map>(_boxName, path: storagePath);
     return HiveSettingsRepository._(box);
   }
 
@@ -43,5 +45,11 @@ class HiveSettingsRepository {
   /// Stream der Einstellungsaenderungen.
   Stream<AppSettings> watch() {
     return _controller.stream;
+  }
+
+  /// Schliesst Box und Streamcontroller.
+  Future<void> close() async {
+    await _controller.close();
+    await _box.close();
   }
 }

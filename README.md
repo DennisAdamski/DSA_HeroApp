@@ -20,6 +20,8 @@ Die App ist auf eine moeglichst umfangreiche Heldenverwaltung ausgelegt: Eigensc
 Die App verwaltet DSA-Helden lokal auf dem Geraet und kombiniert dabei drei Kernbereiche:
 
 - Persistente Heldendaten mit separatem Laufzeitzustand
+- Getrennter lokaler Einstellungsordner und optional konfigurierbarer
+  Heldenspeicher auf Desktop-Plattformen
 - Regelberechnungen fuer abgeleitete Werte und Kampfvorschau
 - Katalogdaten aus versionierten JSON-Assets auf Basis externer Excel-Quellen
 
@@ -39,6 +41,19 @@ Technischer Stack:
 - Persistenz aller Heldendaten inklusive Schema-Versionierung
 - Separate Speicherung des Laufzeitzustands wie aktuelle LeP, AsP, KaP und Ausdauer
 - Seed-Import von Beispielhelden aus `assets/heroes/`
+- Optionaler eigener Heldenspeicherordner auf Windows, macOS und Linux
+
+### Speicherung
+
+- App-Einstellungen liegen immer lokal in einem separaten App-Ordner unter
+  `Application Support` bzw. auf Windows in `AppData`
+- Heldendaten nutzen standardmaessig einen eigenen Unterordner und koennen auf
+  Desktop-Plattformen auf einen frei gewaehlten Ordner umgestellt werden
+- Ein ungueltiger benutzerdefinierter Heldenspeicherpfad fuehrt zu einem
+  klaren Fehlerzustand statt zu einem stillen Fallback
+- Standardpfade liegen direkt unter dem app-spezifischen Support-Ordner, also
+  z. B. `.../DSA Heldenverwaltung/Einstellungen` und
+  `.../DSA Heldenverwaltung/Helden`
 
 ### Uebersicht und Stammdaten
 

@@ -20,6 +20,15 @@ add_executable(${BINARY_NAME} WIN32
 # that need different build settings.
 apply_standard_settings(${BINARY_NAME})
 
+# Flutter erwartet den eigentlichen Target-Output unter dem internen Namen.
+# Fuer manuelle Nutzung erzeugen wir zusaetzlich eine zweite EXE mit dem
+# sichtbaren Produktnamen.
+add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "$<TARGET_FILE:${BINARY_NAME}>"
+    "$<TARGET_FILE_DIR:${BINARY_NAME}>/DSA Heldenverwaltung.exe"
+)
+
 # Add preprocessor definitions for the build version.
 target_compile_definitions(${BINARY_NAME} PRIVATE "FLUTTER_VERSION=\"${FLUTTER_VERSION}\"")
 target_compile_definitions(${BINARY_NAME} PRIVATE "FLUTTER_VERSION_MAJOR=${FLUTTER_VERSION_MAJOR}")

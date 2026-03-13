@@ -16,6 +16,20 @@ Read this before making any changes.
 
 The primary language of comments, variable names, UI strings, and commit messages is **German**.
 
+### Storage Update 2026-03-13
+
+- App-Einstellungen liegen in einem lokalen, nicht synchronisierten
+  Einstellungsordner unter `Application Support` bzw. auf Windows in
+  `AppData`.
+- Heldendaten nutzen einen getrennten Ordner und koennen auf Desktop-
+  Plattformen ueber `AppSettings.heroStoragePath` auf einen benutzerdefinierten
+  Pfad umgestellt werden.
+- Der app-spezifische Support-Ordner ist bereits die Wurzel; darunter liegen
+  nur noch die Unterordner `Einstellungen` und `Helden`.
+- `lib/data/app_storage_paths.dart` kapselt Default- und Override-Pfade.
+- `lib/ui/screens/app_startup_gate.dart` initialisiert das Helden-Repository
+  anhand des wirksamen Heldenspeicherpfads.
+
 ---
 
 ## Technology Stack
