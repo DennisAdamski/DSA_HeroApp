@@ -39,7 +39,14 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
 
   HeroSheet? _latestHero;
   List<HeroCompanion> _draftCompanions = <HeroCompanion>[];
-  int _selectedIndex = 0;
+
+  /// ID des aktuell in der Detailansicht gezeigten Begleiters.
+  /// null = Auswahl-Seite wird angezeigt.
+  String? _activeCompanionId;
+
+  /// Wird true, wenn der Nutzer explizit den Zurueck-Button gedrueckt hat.
+  /// Verhindert Auto-Select bei genau einem Begleiter nach Navigation zurueck.
+  bool _userNavigatedBack = false;
 
   @override
   void initState() {
@@ -71,8 +78,16 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   void _syncDraftFromHero(HeroSheet hero, {bool force = false}) {
     if (!_editController.shouldSync(hero, force: force)) return;
     _draftCompanions = List<HeroCompanion>.from(hero.companions);
-    if (_selectedIndex >= _draftCompanions.length) {
-      _selectedIndex = _draftCompanions.isEmpty ? 0 : _draftCompanions.length - 1;
+    // Aktiven Begleiter pruefen – wurde er geloescht?
+    if (_activeCompanionId != null &&
+        !_draftCompanions.any((c) => c.id == _activeCompanionId)) {
+      _activeCompanionId = null;
+    }
+    // Auto-Select: genau 1 Begleiter und Nutzer hat nicht explizit zuruecknavigiert.
+    if (_activeCompanionId == null &&
+        !_userNavigatedBack &&
+        _draftCompanions.length == 1) {
+      _activeCompanionId = _draftCompanions.first.id;
     }
   }
 
@@ -118,12 +133,15 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
     setState(() {
       _draftCompanions = List<HeroCompanion>.from(_draftCompanions)
         ..add(newCompanion);
-      _selectedIndex = _draftCompanions.length - 1;
+      _activeCompanionId = newCompanion.id;
+      _userNavigatedBack = false;
     });
     _markFieldChanged();
   }
 
-  Future<void> _deleteCompanion(int index) async {
+  Future<void> _deleteCompanion(String companionId) async {
+    final index = _draftCompanions.indexWhere((c) => c.id == companionId);
+    if (index < 0) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -147,18 +165,27 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
     setState(() {
       _draftCompanions = List<HeroCompanion>.from(_draftCompanions)
         ..removeAt(index);
-      if (_selectedIndex >= _draftCompanions.length && _selectedIndex > 0) {
-        _selectedIndex = _draftCompanions.length - 1;
+      if (_activeCompanionId == companionId) {
+        _activeCompanionId = null;
       }
     });
     _markFieldChanged();
   }
 
   void _updateCompanion(HeroCompanion updated) {
-    final next = List<HeroCompanion>.from(_draftCompanions);
-    next[_selectedIndex] = updated;
-    setState(() => _draftCompanions = next);
+    setState(() {
+      _draftCompanions = _draftCompanions
+          .map((c) => c.id == updated.id ? updated : c)
+          .toList();
+    });
     _markFieldChanged();
+  }
+
+  void _navigateBack() {
+    setState(() {
+      _activeCompanionId = null;
+      _userNavigatedBack = true;
+    });
   }
 
   @override
@@ -172,38 +199,31 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
     _syncDraftFromHero(hero);
 
     final isEditing = _editController.isEditing;
-    final hasCompanions = _draftCompanions.isNotEmpty;
-    final selectedCompanion =
-        hasCompanions ? _draftCompanions[_selectedIndex] : null;
+    final activeCompanion = _activeCompanionId != null
+        ? _draftCompanions.cast<HeroCompanion?>().firstWhere(
+            (c) => c!.id == _activeCompanionId,
+            orElse: () => null,
+          )
+        : null;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _BegleiterSelector(
-            companions: _draftCompanions,
-            selectedIndex: _selectedIndex,
-            isEditing: isEditing,
-            onSelect: (i) => setState(() => _selectedIndex = i),
-            onAdd: _addCompanion,
-            onDelete: _deleteCompanion,
-          ),
-          if (!hasCompanions)
-            _EmptyBegleiterHint(
-              isEditing: isEditing,
-              onAdd: _addCompanion,
-            )
-          else if (selectedCompanion != null) ...[
-            const SizedBox(height: 16),
-            _BegleiterDetail(
-              companion: selectedCompanion,
-              isEditing: isEditing,
-              onChanged: _updateCompanion,
-            ),
-          ],
-        ],
-      ),
+    if (activeCompanion != null) {
+      return _BegleiterDetailView(
+        companion: activeCompanion,
+        isEditing: isEditing,
+        onBack: _navigateBack,
+        onChanged: _updateCompanion,
+        onDelete: () => _deleteCompanion(activeCompanion.id),
+      );
+    }
+
+    return _BegleiterAuswahlView(
+      companions: _draftCompanions,
+      isEditing: isEditing,
+      onSelect: (id) => setState(() {
+        _activeCompanionId = id;
+        _userNavigatedBack = false;
+      }),
+      onAdd: _addCompanion,
     );
   }
 

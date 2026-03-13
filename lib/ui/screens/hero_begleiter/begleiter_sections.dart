@@ -77,62 +77,74 @@ class _LabeledField extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Begleiter-Selektor
+// Begleiter-Auswahl (Startseite des Tabs)
 // ---------------------------------------------------------------------------
 
-class _BegleiterSelector extends StatelessWidget {
-  const _BegleiterSelector({
+class _BegleiterAuswahlView extends StatelessWidget {
+  const _BegleiterAuswahlView({
     required this.companions,
-    required this.selectedIndex,
     required this.isEditing,
     required this.onSelect,
     required this.onAdd,
-    required this.onDelete,
   });
 
   final List<HeroCompanion> companions;
-  final int selectedIndex;
   final bool isEditing;
-  final ValueChanged<int> onSelect;
+  final ValueChanged<String> onSelect;
   final VoidCallback onAdd;
-  final Future<void> Function(int index) onDelete;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Wrap(
+    final theme = Theme.of(context);
+    if (companions.isEmpty) {
+      return _EmptyBegleiterHint(isEditing: isEditing, onAdd: onAdd);
+    }
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Begleiter',
+            style: theme.textTheme.titleMedium,
+          ),
+          const SizedBox(height: 12),
+          Wrap(
             spacing: 8,
-            runSpacing: 4,
+            runSpacing: 8,
             children: [
-              for (var i = 0; i < companions.length; i++)
-                ChoiceChip(
-                  label: Text(
-                    companions[i].name.isEmpty
-                        ? 'Unbenannt'
-                        : companions[i].name,
+              for (final companion in companions)
+                ActionChip(
+                  avatar: const Icon(Icons.pets_outlined, size: 18),
+                  label: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        companion.name.isEmpty ? 'Unbenannt' : companion.name,
+                      ),
+                      Text(
+                        companion.typ.label,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
-                  selected: i == selectedIndex,
-                  onSelected: (_) => onSelect(i),
+                  onPressed: () => onSelect(companion.id),
                 ),
             ],
           ),
-        ),
-        if (isEditing) ...[
-          if (companions.isNotEmpty)
-            IconButton(
-              tooltip: 'Begleiter löschen',
-              icon: const Icon(Icons.delete_outline),
-              onPressed: () => onDelete(selectedIndex),
+          if (isEditing) ...[
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: onAdd,
+              icon: const Icon(Icons.add),
+              label: const Text('Begleiter hinzufügen'),
             ),
-          IconButton(
-            tooltip: 'Begleiter hinzufügen',
-            icon: const Icon(Icons.add),
-            onPressed: onAdd,
-          ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -185,73 +197,115 @@ class _EmptyBegleiterHint extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Begleiter-Detail (Koordinator)
+// Begleiter-Detailansicht (mit Zurueck-Navigation)
 // ---------------------------------------------------------------------------
 
-class _BegleiterDetail extends StatelessWidget {
-  const _BegleiterDetail({
+class _BegleiterDetailView extends StatelessWidget {
+  const _BegleiterDetailView({
     required this.companion,
     required this.isEditing,
+    required this.onBack,
     required this.onChanged,
+    required this.onDelete,
   });
 
   final HeroCompanion companion;
   final bool isEditing;
+  final VoidCallback onBack;
   final ValueChanged<HeroCompanion> onChanged;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _GrunddatenSection(
-          companion: companion,
-          isEditing: isEditing,
-          onChanged: onChanged,
+        // Navigationsleiste mit Zurueck-Button
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 8, 8, 0),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                tooltip: 'Zurück zur Übersicht',
+                onPressed: onBack,
+              ),
+              Expanded(
+                child: Text(
+                  companion.name.isEmpty ? 'Unbenannt' : companion.name,
+                  style: theme.textTheme.titleMedium,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (isEditing)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  tooltip: 'Begleiter löschen',
+                  onPressed: onDelete,
+                ),
+            ],
+          ),
         ),
-        const SizedBox(height: _sectionSpacing),
-        _EigenschaftenSection(
-          companion: companion,
-          isEditing: isEditing,
-          onChanged: onChanged,
+        const Divider(height: 1),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _GrunddatenSection(
+                  companion: companion,
+                  isEditing: isEditing,
+                  onChanged: onChanged,
+                ),
+                const SizedBox(height: _sectionSpacing),
+                _EigenschaftenSection(
+                  companion: companion,
+                  isEditing: isEditing,
+                  onChanged: onChanged,
+                ),
+                const SizedBox(height: _sectionSpacing),
+                _KampfWerteSection(
+                  companion: companion,
+                  isEditing: isEditing,
+                  onChanged: onChanged,
+                ),
+                const SizedBox(height: _sectionSpacing),
+                _LepSection(
+                  companion: companion,
+                  isEditing: isEditing,
+                  onChanged: onChanged,
+                ),
+                const SizedBox(height: _sectionSpacing),
+                _WeiteresSection(
+                  companion: companion,
+                  isEditing: isEditing,
+                  onChanged: onChanged,
+                ),
+                const SizedBox(height: _sectionSpacing),
+                _VorNachteileSection(
+                  companion: companion,
+                  isEditing: isEditing,
+                  onChanged: onChanged,
+                ),
+                const SizedBox(height: _sectionSpacing),
+                _MerkmaleSection(
+                  companion: companion,
+                  isEditing: isEditing,
+                  onChanged: onChanged,
+                ),
+                const SizedBox(height: _sectionSpacing),
+                _RuestungSection(
+                  companion: companion,
+                  isEditing: isEditing,
+                  onChanged: onChanged,
+                ),
+                const SizedBox(height: _sectionSpacing),
+              ],
+            ),
+          ),
         ),
-        const SizedBox(height: _sectionSpacing),
-        _KampfWerteSection(
-          companion: companion,
-          isEditing: isEditing,
-          onChanged: onChanged,
-        ),
-        const SizedBox(height: _sectionSpacing),
-        _LepSection(
-          companion: companion,
-          isEditing: isEditing,
-          onChanged: onChanged,
-        ),
-        const SizedBox(height: _sectionSpacing),
-        _WeiteresSection(
-          companion: companion,
-          isEditing: isEditing,
-          onChanged: onChanged,
-        ),
-        const SizedBox(height: _sectionSpacing),
-        _VorNachteileSection(
-          companion: companion,
-          isEditing: isEditing,
-          onChanged: onChanged,
-        ),
-        const SizedBox(height: _sectionSpacing),
-        _MerkmaleSection(
-          companion: companion,
-          isEditing: isEditing,
-          onChanged: onChanged,
-        ),
-        const SizedBox(height: _sectionSpacing),
-        _RuestungSection(
-          companion: companion,
-          isEditing: isEditing,
-          onChanged: onChanged,
-        ),
-        const SizedBox(height: _sectionSpacing),
       ],
     );
   }
@@ -307,6 +361,56 @@ class _GrunddatenSection extends StatelessWidget {
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(familie: v)),
               ),
+            ),
+            const SizedBox(width: _fieldSpacing),
+            Expanded(
+              child: isEditing
+                  ? InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Typ',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                      ),
+                      child: DropdownButton<BegleiterTyp>(
+                        value: companion.typ,
+                        isExpanded: true,
+                        isDense: true,
+                        underline: const SizedBox.shrink(),
+                        items: BegleiterTyp.values
+                            .map(
+                              (t) => DropdownMenuItem(
+                                value: t,
+                                child: Text(t.label),
+                              ),
+                            )
+                            .toList(growable: false),
+                        onChanged: (t) {
+                          if (t != null) {
+                            onChanged(companion.copyWith(typ: t));
+                          }
+                        },
+                      ),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Typ',
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(companion.typ.label),
+                      ],
+                    ),
             ),
           ],
         ),
@@ -545,7 +649,11 @@ class _AttrEditFieldState extends State<_AttrEditField> {
                   _controller.clear();
                   widget.onChanged(null);
                 } else {
-                  widget.onChanged(int.tryParse(_controller.text));
+                  final parsed = int.tryParse(_controller.text) ?? 0;
+                  if (_controller.text != parsed.toString()) {
+                    _controller.text = parsed.toString();
+                  }
+                  widget.onChanged(parsed);
                 }
               },
             ),
