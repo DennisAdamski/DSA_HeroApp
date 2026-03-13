@@ -67,6 +67,12 @@ State Layer verbindet beides reaktiv über Riverpod.
 
 ### App-Start (`lib/main.dart`)
 
+Seit 2026-03-13 laeuft der Start in zwei Stufen: Zuerst wird ein lokaler
+Einstellungsordner fuer `HiveSettingsRepository` vorbereitet. Danach loest
+`AppStartupGate` den effektiven Heldenspeicherpfad auf, initialisiert
+`HiveHeroRepository` mit diesem Ordner und fuehrt anschliessend den
+Seed-Import aus.
+
 ```
 main()
   1. Flutter-Binding initialisieren
@@ -1017,6 +1023,25 @@ HiveHeroRepository
 ## 6. Persistenz (Data Layer)
 
 ### 6.1 `HiveHeroRepository`
+
+Seit 2026-03-13 nutzt das Repository einen expliziten Heldenspeicherpfad
+statt einer globalen Hive-Initialisierung ueber den Dokumente-Ordner. Der
+Standardpfad liegt unter dem app-spezifischen Support-Ordner in
+`.../Helden`; auf Windows ist das effektiv z. B.
+`.../AppData/Roaming/de.adamski/DSA Heldenverwaltung/Helden`, auf
+macOS und Linux analog unter dem jeweiligen `Application Support`-Pfad.
+macOS und Linux kann optional ein benutzerdefinierter Ordner verwendet werden.
+
+### 6.1a `HiveSettingsRepository` und Speicherpfade
+
+- App-Einstellungen liegen getrennt von Heldendaten in einem lokalen
+  Einstellungsordner `.../Einstellungen` unter demselben app-spezifischen
+  Support-Ordner.
+- `AppSettings` enthaelt optional `heroStoragePath` fuer einen
+  benutzerdefinierten Heldenspeicher auf Windows, macOS und Linux.
+- Ein ungueltiger benutzerdefinierter Heldenspeicherpfad fuehrt zu einem
+  sichtbaren Fehlerzustand; es gibt keinen stillen Rueckfall auf den
+  Standardordner.
 
 **Datei:** `lib/data/hive_hero_repository.dart`
 
