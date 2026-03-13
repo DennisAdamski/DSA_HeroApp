@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
@@ -22,7 +23,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 17,
+    this.schemaVersion = 19,
     required this.name,
     required this.level,
     required this.attributes,
@@ -69,6 +70,7 @@ class HeroSheet {
     this.inventoryEntries = const <HeroInventoryEntry>[],
     this.notes = const <HeroNoteEntry>[],
     this.connections = const <HeroConnectionEntry>[],
+    this.companions = const <HeroCompanion>[],
     this.unknownModifierFragments = const <String>[],
   }) : rawStartAttributes = rawStartAttributes ?? startAttributes ?? attributes,
        startAttributes = startAttributes ?? attributes;
@@ -128,6 +130,10 @@ class HeroSheet {
   final List<HeroInventoryEntry> inventoryEntries;
   final List<HeroNoteEntry> notes;
   final List<HeroConnectionEntry> connections;
+
+  /// Begleiter und Vertraute des Helden.
+  final List<HeroCompanion> companions;
+
   final List<String> unknownModifierFragments;
 
   /// Immutable Update fuer gezielte Feldanpassungen.
@@ -179,6 +185,7 @@ class HeroSheet {
     List<HeroInventoryEntry>? inventoryEntries,
     List<HeroNoteEntry>? notes,
     List<HeroConnectionEntry>? connections,
+    List<HeroCompanion>? companions,
     List<String>? unknownModifierFragments,
   }) {
     return HeroSheet(
@@ -235,6 +242,7 @@ class HeroSheet {
       inventoryEntries: inventoryEntries ?? this.inventoryEntries,
       notes: notes ?? this.notes,
       connections: connections ?? this.connections,
+      companions: companions ?? this.companions,
       unknownModifierFragments:
           unknownModifierFragments ?? this.unknownModifierFragments,
     );
@@ -301,6 +309,9 @@ class HeroSheet {
       'connections': connections
           .map((entry) => entry.toJson())
           .toList(growable: false),
+      'companions': companions
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
       'unknownModifierFragments': unknownModifierFragments,
     };
   }
@@ -316,6 +327,7 @@ class HeroSheet {
         (json['inventoryEntries'] as List?) ?? const <dynamic>[];
     final rawNotes = (json['notes'] as List?) ?? const <dynamic>[];
     final rawConnections = (json['connections'] as List?) ?? const <dynamic>[];
+    final rawCompanions = (json['companions'] as List?) ?? const <dynamic>[];
     final rawMetaTalents = (json['metaTalents'] as List?) ?? const <dynamic>[];
     final rawHiddenTalentIds =
         (json['hiddenTalentIds'] as List?) ?? const <dynamic>[];
@@ -463,6 +475,12 @@ class HeroSheet {
           .map(
             (entry) =>
                 HeroConnectionEntry.fromJson(entry.cast<String, dynamic>()),
+          )
+          .toList(growable: false),
+      companions: rawCompanions
+          .whereType<Map>()
+          .map(
+            (entry) => HeroCompanion.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
       unknownModifierFragments: rawUnknown

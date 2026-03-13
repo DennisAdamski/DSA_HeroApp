@@ -82,4 +82,27 @@ class ArmorPiece {
       artifactDescription: (json['artifactDescription'] as String?) ?? '',
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ArmorPiece &&
+          name == other.name &&
+          isActive == other.isActive &&
+          rg1Active == other.rg1Active &&
+          rs == other.rs &&
+          be == other.be &&
+          isArtifact == other.isArtifact &&
+          artifactDescription == other.artifactDescription;
+
+  @override
+  int get hashCode => Object.hash(
+    name,
+    isActive,
+    rg1Active,
+    rs,
+    be,
+    isArtifact,
+    artifactDescription,
+  );
 }
