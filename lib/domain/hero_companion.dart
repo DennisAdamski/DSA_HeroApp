@@ -4,6 +4,9 @@
 /// Aufbau wie Helden, sind aber wesentlich weniger komplex.
 library;
 
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart'
+    show ArmorPiece;
+
 /// Einzelner Bewegungswert eines Begleiters (z.B. Schwimmen, Fliegen).
 class HeroCompanionSpeed {
   const HeroCompanionSpeed({this.art = '', this.wert = 0});
@@ -45,7 +48,6 @@ class HeroCompanionSpeed {
 /// Eigenschaften definiert (Pferde z.B. haben nur KO und KK).
 ///
 /// TODO(companion): Kampfwerte (AT, PA, TP, …) – wird in Folgeschritt ergaenzt.
-/// TODO(companion): Ruestung – wird in Folgeschritt ergaenzt.
 /// TODO(companion): Bedeutung von Gw und Au klaeren.
 class HeroCompanion {
   const HeroCompanion({
@@ -85,6 +87,9 @@ class HeroCompanion {
     // TODO(companion): Bedeutung von Gw und Au klaeren.
     this.gw = '',
     this.au = '',
+    // Ruestung
+    this.ruestungsTeile = const <ArmorPiece>[],
+    this.ruestungsgewoehnung = 0,
   });
 
   /// Stabiler Schluessel des Begleiters.
@@ -190,6 +195,14 @@ class HeroCompanion {
   // TODO(companion): Bedeutung von Au klaeren.
   final String au;
 
+  // ---- Ruestung -----------------------------------------------------------
+
+  /// Ruestungsteile des Begleiters.
+  final List<ArmorPiece> ruestungsTeile;
+
+  /// Globale Ruestungsgewoehnung des Begleiters (0–3).
+  final int ruestungsgewoehnung;
+
   HeroCompanion copyWith({
     String? id,
     String? name,
@@ -222,6 +235,8 @@ class HeroCompanion {
     String? vorNachteile,
     String? gw,
     String? au,
+    List<ArmorPiece>? ruestungsTeile,
+    int? ruestungsgewoehnung,
   }) {
     return HeroCompanion(
       id: id ?? this.id,
@@ -259,6 +274,8 @@ class HeroCompanion {
       vorNachteile: vorNachteile ?? this.vorNachteile,
       gw: gw ?? this.gw,
       au: au ?? this.au,
+      ruestungsTeile: ruestungsTeile ?? this.ruestungsTeile,
+      ruestungsgewoehnung: ruestungsgewoehnung ?? this.ruestungsgewoehnung,
     );
   }
 
@@ -297,12 +314,18 @@ class HeroCompanion {
       'vorNachteile': vorNachteile,
       'gw': gw,
       'au': au,
+      'ruestungsTeile': ruestungsTeile
+          .map((p) => p.toJson())
+          .toList(growable: false),
+      'ruestungsgewoehnung': ruestungsgewoehnung,
     };
   }
 
   static HeroCompanion fromJson(Map<String, dynamic> json) {
     final rawGeschwindigkeiten =
         (json['geschwindigkeiten'] as List?) ?? const <dynamic>[];
+    final rawRuestungsTeile =
+        (json['ruestungsTeile'] as List?) ?? const <dynamic>[];
     return HeroCompanion(
       id: (json['id'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
@@ -340,6 +363,12 @@ class HeroCompanion {
       vorNachteile: (json['vorNachteile'] as String?) ?? '',
       gw: (json['gw'] as String?) ?? '',
       au: (json['au'] as String?) ?? '',
+      ruestungsTeile: rawRuestungsTeile
+          .whereType<Map>()
+          .map((m) => ArmorPiece.fromJson(m.cast<String, dynamic>()))
+          .toList(growable: false),
+      ruestungsgewoehnung:
+          (json['ruestungsgewoehnung'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -377,7 +406,9 @@ class HeroCompanion {
           futterbedarf == other.futterbedarf &&
           vorNachteile == other.vorNachteile &&
           gw == other.gw &&
-          au == other.au;
+          au == other.au &&
+          _armorListEqual(ruestungsTeile, other.ruestungsTeile) &&
+          ruestungsgewoehnung == other.ruestungsgewoehnung;
 
   @override
   int get hashCode => Object.hashAll([
@@ -412,6 +443,8 @@ class HeroCompanion {
     vorNachteile,
     gw,
     au,
+    ...ruestungsTeile,
+    ruestungsgewoehnung,
   ]);
 }
 
@@ -422,6 +455,14 @@ bool _speedListEqual(
   List<HeroCompanionSpeed> a,
   List<HeroCompanionSpeed> b,
 ) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
+bool _armorListEqual(List<ArmorPiece> a, List<ArmorPiece> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {
     if (a[i] != b[i]) return false;
