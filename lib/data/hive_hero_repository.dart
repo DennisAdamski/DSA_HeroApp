@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive/hive.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -32,12 +32,19 @@ class HiveHeroRepository implements HeroRepository {
 
   /// Erstellt und initialisiert das Repository asynchron.
   ///
-  /// Initialisiert Hive, oeffnet die Boxen, baut den In-Memory-Index auf
-  /// und abonniert Box-Events fuer reaktive Updates.
-  static Future<HiveHeroRepository> create() async {
-    await Hive.initFlutter();
-    final heroes = await Hive.openBox<Map>(_heroesBoxName);
-    final states = await Hive.openBox<Map>(_statesBoxName);
+  /// Oeffnet die Boxen im angegebenen [storagePath], baut den In-Memory-Index
+  /// auf und abonniert Box-Events fuer reaktive Updates.
+  static Future<HiveHeroRepository> create({
+    required String storagePath,
+  }) async {
+    final heroes = await Hive.openBox<Map>(
+      _heroesBoxName,
+      path: storagePath,
+    );
+    final states = await Hive.openBox<Map>(
+      _statesBoxName,
+      path: storagePath,
+    );
     final repository = HiveHeroRepository._(heroes, states);
     repository._seedHeroIndex();
     repository._heroEventSubscription = repository._heroesBox.watch().listen(
@@ -181,5 +188,7 @@ class HiveHeroRepository implements HeroRepository {
   Future<void> close() async {
     await _heroEventSubscription?.cancel();
     await _heroIndexController.close();
+    await _heroesBox.close();
+    await _statesBox.close();
   }
 }
