@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
+import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
+import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
-import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/app_shell.dart';
@@ -14,22 +16,57 @@ import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 
 /// Initialisiert das Helden-Repository anhand der aktuellen Einstellungen.
-class AppStartupGate extends ConsumerStatefulWidget {
+class AppStartupGate extends StatefulWidget {
   /// Erstellt das Startup-Gate fuer den App-Start.
-  const AppStartupGate({super.key});
+  const AppStartupGate({
+    super.key,
+    required this.settingsRepository,
+    required this.storagePaths,
+    required this.storageDirectoryPicker,
+  });
+
+  /// Persistenz fuer lokale App-Einstellungen.
+  final HiveSettingsRepository settingsRepository;
+
+  /// Zentrale Pfadlogik fuer Einstellungen und Heldendaten.
+  final AppStoragePaths storagePaths;
+
+  /// Native Ordnerauswahl fuer Desktop-Speicherpfade.
+  final StorageDirectoryPicker storageDirectoryPicker;
 
   @override
-  ConsumerState<AppStartupGate> createState() => _AppStartupGateState();
+  State<AppStartupGate> createState() => _AppStartupGateState();
 }
 
-class _AppStartupGateState extends ConsumerState<AppStartupGate> {
+class _AppStartupGateState extends State<AppStartupGate> {
   Future<_HeroRepositoryBootstrapResult>? _bootstrapFuture;
   HiveHeroRepository? _activeRepository;
+  late AppSettings _settings;
+  StreamSubscription<AppSettings>? _settingsSubscription;
   String? _currentConfiguredPath;
   int _loadGeneration = 0;
 
   @override
+  void initState() {
+    super.initState();
+    _settings = widget.settingsRepository.load();
+    _settingsSubscription = widget.settingsRepository.watch().listen((
+      settings,
+    ) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _settings = settings;
+        _ensureBootstrap();
+      });
+    });
+    _ensureBootstrap();
+  }
+
+  @override
   void dispose() {
+    unawaited(_settingsSubscription?.cancel());
     final repository = _activeRepository;
     if (repository != null) {
       // Die Boxen muessen beim Pfadwechsel sauber geschlossen werden.
@@ -38,8 +75,8 @@ class _AppStartupGateState extends ConsumerState<AppStartupGate> {
     super.dispose();
   }
 
-  void _ensureBootstrap(AppSettings settings) {
-    final configuredPath = settings.heroStoragePath;
+  void _ensureBootstrap() {
+    final configuredPath = _settings.heroStoragePath;
     if (_bootstrapFuture != null && configuredPath == _currentConfiguredPath) {
       return;
     }
@@ -58,8 +95,7 @@ class _AppStartupGateState extends ConsumerState<AppStartupGate> {
       await previousRepository.close();
     }
 
-    final storagePaths = ref.read(appStoragePathsProvider);
-    final heroStoragePath = await storagePaths.prepareHeroStoragePath(
+    final heroStoragePath = await widget.storagePaths.prepareHeroStoragePath(
       configuredPath: configuredPath,
     );
     final repository = await HiveHeroRepository.create(
@@ -78,25 +114,10 @@ class _AppStartupGateState extends ConsumerState<AppStartupGate> {
 
   @override
   Widget build(BuildContext context) {
-    final settingsAsync = ref.watch(appSettingsProvider);
-    if (settingsAsync.isLoading && !settingsAsync.hasValue) {
-      return const DsaAppShell(
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
-      );
-    }
-    if (settingsAsync.hasError) {
-      return DsaAppShell(
-        home: _HeroStorageErrorScreen(error: settingsAsync.error!),
-      );
-    }
-
-    final settings = settingsAsync.valueOrNull ?? const AppSettings();
-    _ensureBootstrap(settings);
-
     final future = _bootstrapFuture;
     if (future == null) {
-      return const DsaAppShell(
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      return _buildScope(
+        home: const Scaffold(body: Center(child: CircularProgressIndicator())),
       );
     }
 
@@ -104,26 +125,49 @@ class _AppStartupGateState extends ConsumerState<AppStartupGate> {
       future: future,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const DsaAppShell(
-            home: Scaffold(
+          return _buildScope(
+            home: const Scaffold(
               body: Center(child: CircularProgressIndicator()),
             ),
           );
         }
         if (snapshot.hasError) {
-          return DsaAppShell(
+          return _buildScope(
             home: _HeroStorageErrorScreen(error: snapshot.error!),
           );
         }
 
         final result = snapshot.requireData;
-        return ProviderScope(
-          overrides: [
-            heroRepositoryProvider.overrideWithValue(result.repository),
-          ],
-          child: const DsaAppShell(home: HeroesHomeScreen()),
+        return _buildScope(
+          repository: result.repository,
+          home: const HeroesHomeScreen(),
         );
       },
+    );
+  }
+
+  Widget _buildScope({
+    required Widget home,
+    HiveHeroRepository? repository,
+  }) {
+    final scopeKey = ValueKey<String>(
+      '${repository?.hashCode ?? 'none'}|${_currentConfiguredPath ?? 'default'}',
+    );
+    final overrides = [
+      settingsRepositoryProvider.overrideWithValue(widget.settingsRepository),
+      storageDirectoryPickerProvider.overrideWithValue(
+        widget.storageDirectoryPicker,
+      ),
+      appStoragePathsProvider.overrideWithValue(widget.storagePaths),
+    ];
+    if (repository != null) {
+      overrides.add(heroRepositoryProvider.overrideWithValue(repository));
+    }
+
+    return ProviderScope(
+      key: scopeKey,
+      overrides: overrides,
+      child: DsaAppShell(home: home),
     );
   }
 }
