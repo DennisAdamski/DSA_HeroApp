@@ -95,17 +95,17 @@ void main() {
       expect(hero.muttersprache, '');
     });
 
-    test('schemaVersion ist 17', () {
+    test('schemaVersion ist 18', () {
       const attrs = Attributes(
       mu: 8, kl: 8, inn: 8, ch: 8, ff: 8, ge: 8, ko: 8, kk: 8,
     );
       final hero = HeroSheet(
-        id: 'v17-id',
+        id: 'v18-id',
         name: 'NeuerHeld',
         level: 1,
         attributes: attrs,
       );
-      expect(hero.schemaVersion, 17);
+      expect(hero.schemaVersion, 18);
     });
   });
 }
