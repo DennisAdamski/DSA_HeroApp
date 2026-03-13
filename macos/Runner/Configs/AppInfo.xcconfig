@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = flutter_application_1
+PRODUCT_NAME = DSA Heldenverwaltung
 
 // The application's bundle identifier
 PRODUCT_BUNDLE_IDENTIFIER = de.adamski.heldenverwaltung
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 de.adamski. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 Dennis Adamski. All rights reserved.
