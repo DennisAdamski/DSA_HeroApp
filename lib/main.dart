@@ -2,25 +2,28 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
+import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
-import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
-import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/data/storage_directory_picker_impl.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/app_startup_gate.dart';
 
 /// Startet die Anwendung und initialisiert die persistenten Heldendaten.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final repository = await HiveHeroRepository.create();
-  final settingsRepo = await HiveSettingsRepository.create();
-  await const StartupHeroImporter().importFromAssets(repository);
+  const storagePaths = AppStoragePaths();
+  final settingsPath = await storagePaths.resolveSettingsStoragePath();
+  final settingsRepo = await HiveSettingsRepository.create(
+    storagePath: settingsPath,
+  );
 
   runApp(
     ProviderScope(
       overrides: [
-        heroRepositoryProvider.overrideWithValue(repository),
         settingsRepositoryProvider.overrideWithValue(settingsRepo),
+        storageDirectoryPickerProvider.overrideWithValue(
+          createStorageDirectoryPicker(),
+        ),
       ],
       child: const DsaApp(),
     ),
@@ -89,7 +92,7 @@ class DsaApp extends ConsumerWidget {
           appBarTheme: AppBarTheme(centerTitle: apple),
           pageTransitionsTheme: _pageTransitionsTheme,
         ),
-        home: const HeroesHomeScreen(),
+        home: const AppStartupGate(),
       ),
     );
   }
