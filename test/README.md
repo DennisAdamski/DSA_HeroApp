@@ -9,6 +9,9 @@
 - `domain/`: Modell- und Serialisierungs-Tests
 - `workspace/`: Workspace-Koordinationslogik
 
+Smoke-Tests unter `ui/smoke/` sichern den kleinsten lauffaehigen App-Start ab,
+inklusive Bootstrap und zentraler Startoberflaeche.
+
 ## Konventionen
 
 - Dateinamen bleiben `*_test.dart`.
