@@ -26,11 +26,11 @@ void main() {
     final heroPath = await storagePaths.resolveDefaultHeroStoragePath();
 
     expect(
-      settingsPath.endsWith(r'DSA Heldenverwaltung\Einstellungen'),
+      settingsPath.endsWith(r'support\Einstellungen'),
       isTrue,
     );
     expect(
-      heroPath.endsWith(r'DSA Heldenverwaltung\Helden'),
+      heroPath.endsWith(r'support\Helden'),
       isTrue,
     );
     expect(createdPaths, <String>[settingsPath]);
