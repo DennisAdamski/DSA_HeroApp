@@ -114,6 +114,71 @@ void main() {
       final entry = HeroInventoryEntry.fromJson(json);
       expect(entry.source, InventoryItemSource.manuell);
     });
+
+    test('altes JSON ohne traegerTyp deserialisiert als held', () {
+      final json = const <String, dynamic>{'gegenstand': 'Schwert'};
+      final entry = HeroInventoryEntry.fromJson(json);
+      expect(entry.traegerTyp, InventoryTraeger.held);
+      expect(entry.traegerId, isNull);
+    });
+
+    test('unbekannter traegerTyp-String faellt auf held zurueck', () {
+      final json = const <String, dynamic>{'traegerTyp': 'nichtExistent'};
+      final entry = HeroInventoryEntry.fromJson(json);
+      expect(entry.traegerTyp, InventoryTraeger.held);
+    });
+  });
+
+  group('InventoryTraeger – Roundtrip', () {
+    test('Träger Held wird korrekt serialisiert', () {
+      const entry = HeroInventoryEntry(
+        gegenstand: 'Rucksack',
+        traegerTyp: InventoryTraeger.held,
+      );
+      final json = entry.toJson();
+      final restored = HeroInventoryEntry.fromJson(json);
+      expect(restored.traegerTyp, InventoryTraeger.held);
+      expect(restored.traegerId, isNull);
+    });
+
+    test('Träger Begleiter mit ID wird korrekt serialisiert', () {
+      const entry = HeroInventoryEntry(
+        gegenstand: 'Satteltasche',
+        traegerTyp: InventoryTraeger.begleiter,
+        traegerId: 'companion-uuid-42',
+      );
+      final json = entry.toJson();
+      expect(json['traegerTyp'], 'begleiter');
+      expect(json['traegerId'], 'companion-uuid-42');
+
+      final restored = HeroInventoryEntry.fromJson(json);
+      expect(restored.traegerTyp, InventoryTraeger.begleiter);
+      expect(restored.traegerId, 'companion-uuid-42');
+    });
+
+    test('copyWith aendert Traeger auf Begleiter', () {
+      const entry = HeroInventoryEntry(gegenstand: 'Proviant');
+      final updated = entry.copyWith(
+        traegerTyp: InventoryTraeger.begleiter,
+        traegerId: 'comp-1',
+      );
+      expect(updated.traegerTyp, InventoryTraeger.begleiter);
+      expect(updated.traegerId, 'comp-1');
+    });
+
+    test('copyWith setzt traegerId auf null zurueck', () {
+      const entry = HeroInventoryEntry(
+        gegenstand: 'Schatz',
+        traegerTyp: InventoryTraeger.begleiter,
+        traegerId: 'comp-1',
+      );
+      final updated = entry.copyWith(
+        traegerTyp: InventoryTraeger.held,
+        traegerId: null,
+      );
+      expect(updated.traegerTyp, InventoryTraeger.held);
+      expect(updated.traegerId, isNull);
+    });
   });
 
   group('InventoryItemModifier – Roundtrip', () {
