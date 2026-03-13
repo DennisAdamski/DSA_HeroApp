@@ -51,6 +51,9 @@ Technischer Stack:
   Desktop-Plattformen auf einen frei gewaehlten Ordner umgestellt werden
 - Ein ungueltiger benutzerdefinierter Heldenspeicherpfad fuehrt zu einem
   klaren Fehlerzustand statt zu einem stillen Fallback
+- Standardpfade liegen direkt unter dem app-spezifischen Support-Ordner, also
+  z. B. `.../DSA Heldenverwaltung/Einstellungen` und
+  `.../DSA Heldenverwaltung/Helden`
 
 ### Uebersicht und Stammdaten
 
