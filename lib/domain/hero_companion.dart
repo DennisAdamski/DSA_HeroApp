@@ -42,6 +42,25 @@ class HeroCompanionSpeed {
   int get hashCode => Object.hash(art, wert);
 }
 
+/// Typ eines Begleiters.
+enum BegleiterTyp {
+  reittier,
+  vertrauter,
+  sonstigerBegleiter;
+
+  String get label => switch (this) {
+    BegleiterTyp.reittier => 'Reittier',
+    BegleiterTyp.vertrauter => 'Vertrauter',
+    BegleiterTyp.sonstigerBegleiter => 'Sonstiger Begleiter',
+  };
+
+  static BegleiterTyp fromJson(String? value) => switch (value) {
+    'reittier' => BegleiterTyp.reittier,
+    'vertrauter' => BegleiterTyp.vertrauter,
+    _ => BegleiterTyp.sonstigerBegleiter,
+  };
+}
+
 /// Persistierte Daten eines Begleiters/Vertrauten.
 ///
 /// Eigenschaften sind nullable, da nicht jeder Begleiter alle acht DSA-
@@ -53,6 +72,7 @@ class HeroCompanion {
   const HeroCompanion({
     required this.id,
     this.name = '',
+    this.typ = BegleiterTyp.sonstigerBegleiter,
     this.familie = '',
     this.aussehen = '',
     this.gattung = '',
@@ -97,6 +117,9 @@ class HeroCompanion {
 
   /// Name des Begleiters.
   final String name;
+
+  /// Typ des Begleiters (Reittier, Vertrauter, Sonstiger Begleiter).
+  final BegleiterTyp typ;
 
   /// Familien-/Artgruppe (z.B. 'Greif', 'Rappe').
   final String familie;
@@ -206,6 +229,7 @@ class HeroCompanion {
   HeroCompanion copyWith({
     String? id,
     String? name,
+    BegleiterTyp? typ,
     String? familie,
     String? aussehen,
     String? gattung,
@@ -241,6 +265,7 @@ class HeroCompanion {
     return HeroCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
+      typ: typ ?? this.typ,
       familie: familie ?? this.familie,
       aussehen: aussehen ?? this.aussehen,
       gattung: gattung ?? this.gattung,
@@ -283,6 +308,7 @@ class HeroCompanion {
     return {
       'id': id,
       'name': name,
+      'typ': typ.name,
       'familie': familie,
       'aussehen': aussehen,
       'gattung': gattung,
@@ -329,6 +355,7 @@ class HeroCompanion {
     return HeroCompanion(
       id: (json['id'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
+      typ: BegleiterTyp.fromJson(json['typ'] as String?),
       familie: (json['familie'] as String?) ?? '',
       aussehen: (json['aussehen'] as String?) ?? '',
       gattung: (json['gattung'] as String?) ?? '',
@@ -378,6 +405,7 @@ class HeroCompanion {
       other is HeroCompanion &&
           id == other.id &&
           name == other.name &&
+          typ == other.typ &&
           familie == other.familie &&
           aussehen == other.aussehen &&
           gattung == other.gattung &&
@@ -414,6 +442,7 @@ class HeroCompanion {
   int get hashCode => Object.hashAll([
     id,
     name,
+    typ,
     familie,
     aussehen,
     gattung,
