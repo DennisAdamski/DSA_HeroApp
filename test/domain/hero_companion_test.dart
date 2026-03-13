@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart' show ArmorPiece;
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -116,6 +117,60 @@ void main() {
     });
   });
 
+  group('HeroCompanion – Rüstung', () {
+    test('Roundtrip mit Ruestungsteilen und Ruestungsgewoehnung', () {
+      final companion = HeroCompanion(
+        id: 'armor-test',
+        name: 'Streitross',
+        ruestungsgewoehnung: 2,
+        ruestungsTeile: const [
+          ArmorPiece(name: 'Pferdedecke', rs: 3, be: 2, isActive: true),
+          ArmorPiece(name: 'Halsschutz', rs: 1, be: 1, isActive: false),
+        ],
+      );
+
+      final json = companion.toJson();
+      final restored = HeroCompanion.fromJson(json);
+
+      expect(restored, equals(companion));
+      expect(restored.ruestungsgewoehnung, 2);
+      expect(restored.ruestungsTeile.length, 2);
+      expect(restored.ruestungsTeile[0].name, 'Pferdedecke');
+      expect(restored.ruestungsTeile[0].rs, 3);
+      expect(restored.ruestungsTeile[0].isActive, isTrue);
+      expect(restored.ruestungsTeile[1].isActive, isFalse);
+    });
+
+    test('fromJson ohne ruestungsTeile ergibt leere Liste', () {
+      final companion = HeroCompanion.fromJson({'id': 'x'});
+      expect(companion.ruestungsTeile, isEmpty);
+      expect(companion.ruestungsgewoehnung, 0);
+    });
+
+    test('copyWith aktualisiert ruestungsTeile', () {
+      const companion = HeroCompanion(id: 'a');
+      final updated = companion.copyWith(
+        ruestungsTeile: const [ArmorPiece(name: 'Kettenhemd', rs: 4, be: 3)],
+        ruestungsgewoehnung: 1,
+      );
+      expect(updated.ruestungsTeile.length, 1);
+      expect(updated.ruestungsTeile.first.name, 'Kettenhemd');
+      expect(updated.ruestungsgewoehnung, 1);
+      // Original unveraendert
+      expect(companion.ruestungsTeile, isEmpty);
+    });
+
+    test('ruestungsTeile in toJson nur bei Wert serialisiert', () {
+      const companion = HeroCompanion(
+        id: 'b',
+        ruestungsTeile: [ArmorPiece(name: 'Test', rs: 2, be: 1)],
+      );
+      final json = companion.toJson();
+      expect(json['ruestungsTeile'], isA<List>());
+      expect((json['ruestungsTeile'] as List).length, 1);
+    });
+  });
+
   group('HeroSheet mit companions', () {
     const testAttributes = Attributes(
       mu: 8,
@@ -138,8 +193,8 @@ void main() {
       );
     }
 
-    test('schemaVersion ist 18', () {
-      expect(buildSheet().schemaVersion, 18);
+    test('schemaVersion ist 19', () {
+      expect(buildSheet().schemaVersion, 19);
     });
 
     test('Roundtrip mit leerem companions', () {
