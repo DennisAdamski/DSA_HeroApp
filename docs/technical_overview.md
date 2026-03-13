@@ -1026,13 +1026,17 @@ HiveHeroRepository
 
 Seit 2026-03-13 nutzt das Repository einen expliziten Heldenspeicherpfad
 statt einer globalen Hive-Initialisierung ueber den Dokumente-Ordner. Der
-Standardpfad liegt unter `.../DSA Heldenverwaltung/Helden`; auf Windows,
+Standardpfad liegt unter dem app-spezifischen Support-Ordner in
+`.../Helden`; auf Windows ist das effektiv z. B.
+`.../AppData/Roaming/de.adamski/DSA Heldenverwaltung/Helden`, auf
+macOS und Linux analog unter dem jeweiligen `Application Support`-Pfad.
 macOS und Linux kann optional ein benutzerdefinierter Ordner verwendet werden.
 
 ### 6.1a `HiveSettingsRepository` und Speicherpfade
 
 - App-Einstellungen liegen getrennt von Heldendaten in einem lokalen
-  Einstellungsordner `.../DSA Heldenverwaltung/Einstellungen`.
+  Einstellungsordner `.../Einstellungen` unter demselben app-spezifischen
+  Support-Ordner.
 - `AppSettings` enthaelt optional `heroStoragePath` fuer einen
   benutzerdefinierten Heldenspeicher auf Windows, macOS und Linux.
 - Ein ungueltiger benutzerdefinierter Heldenspeicherpfad fuehrt zu einem

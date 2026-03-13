@@ -55,7 +55,6 @@ class AppStoragePaths {
     this.directoryCreator = storage_access.ensureDirectoryExists,
   });
 
-  static const String appDirectoryName = 'DSA Heldenverwaltung';
   static const String settingsDirectoryName = 'Einstellungen';
   static const String heroesDirectoryName = 'Helden';
 
@@ -84,11 +83,7 @@ class AppStoragePaths {
   /// Loest den lokalen Einstellungsordner auf und legt ihn bei Bedarf an.
   Future<String> resolveSettingsStoragePath() async {
     final supportPath = await appSupportPathLoader();
-    final targetPath = path.join(
-      supportPath,
-      appDirectoryName,
-      settingsDirectoryName,
-    );
+    final targetPath = path.join(supportPath, settingsDirectoryName);
     await directoryCreator(targetPath);
     return targetPath;
   }
@@ -96,7 +91,7 @@ class AppStoragePaths {
   /// Loest den Standardordner fuer Heldendaten auf.
   Future<String> resolveDefaultHeroStoragePath() async {
     final supportPath = await appSupportPathLoader();
-    return path.join(supportPath, appDirectoryName, heroesDirectoryName);
+    return path.join(supportPath, heroesDirectoryName);
   }
 
   /// Beschreibt den aktuell wirksamen Heldenspeicherpfad samt Validierung.
