@@ -119,12 +119,21 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
           children: [
             Text('Waffen', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            FlexibleTable(
-              tableKey: const ValueKey<String>('combat-weapons-overview-table'),
-              columnSpecs: _columnSpecs,
-              headerCells: _buildHeaderCells(),
-              preHeaderRows: [_buildFilterRow(sortedTalents: sortedTalents)],
-              rows: overviewRows,
+            Expanded(
+              child: SingleChildScrollView(
+                primary: false,
+                child: FlexibleTable(
+                  tableKey: const ValueKey<String>(
+                    'combat-weapons-overview-table',
+                  ),
+                  columnSpecs: _columnSpecs,
+                  headerCells: _buildHeaderCells(),
+                  preHeaderRows: [
+                    _buildFilterRow(sortedTalents: sortedTalents),
+                  ],
+                  rows: overviewRows,
+                ),
+              ),
             ),
             if (overviewRows.isEmpty)
               const Padding(
