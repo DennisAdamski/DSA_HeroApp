@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/app_shell.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 
@@ -79,10 +80,14 @@ class _AppStartupGateState extends ConsumerState<AppStartupGate> {
   Widget build(BuildContext context) {
     final settingsAsync = ref.watch(appSettingsProvider);
     if (settingsAsync.isLoading && !settingsAsync.hasValue) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const DsaAppShell(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      );
     }
     if (settingsAsync.hasError) {
-      return _HeroStorageErrorScreen(error: settingsAsync.error!);
+      return DsaAppShell(
+        home: _HeroStorageErrorScreen(error: settingsAsync.error!),
+      );
     }
 
     final settings = settingsAsync.valueOrNull ?? const AppSettings();
@@ -90,19 +95,25 @@ class _AppStartupGateState extends ConsumerState<AppStartupGate> {
 
     final future = _bootstrapFuture;
     if (future == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const DsaAppShell(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      );
     }
 
     return FutureBuilder<_HeroRepositoryBootstrapResult>(
       future: future,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return const DsaAppShell(
+            home: Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ),
           );
         }
         if (snapshot.hasError) {
-          return _HeroStorageErrorScreen(error: snapshot.error!);
+          return DsaAppShell(
+            home: _HeroStorageErrorScreen(error: snapshot.error!),
+          );
         }
 
         final result = snapshot.requireData;
@@ -110,7 +121,7 @@ class _AppStartupGateState extends ConsumerState<AppStartupGate> {
           overrides: [
             heroRepositoryProvider.overrideWithValue(result.repository),
           ],
-          child: const HeroesHomeScreen(),
+          child: const DsaAppShell(home: HeroesHomeScreen()),
         );
       },
     );
