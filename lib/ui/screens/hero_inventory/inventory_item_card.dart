@@ -11,12 +11,17 @@ class InventoryItemCard extends StatelessWidget {
     required this.isEditing,
     required this.onTap,
     required this.onDelete,
+    this.traegerName,
   });
 
   final HeroInventoryEntry entry;
   final bool isEditing;
   final VoidCallback onTap;
   final VoidCallback? onDelete;
+
+  /// Anzeigename des Trägers, wenn das Item einem Begleiter zugeordnet ist.
+  /// Null bedeutet: Held trägt das Item (kein Badge).
+  final String? traegerName;
 
   @override
   Widget build(BuildContext context) {
@@ -94,6 +99,14 @@ class InventoryItemCard extends StatelessWidget {
                             label: '${entry.modifiers.length} Mod.',
                             color: theme.colorScheme.surfaceContainerHighest,
                             textColor: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ],
+                        if (traegerName != null) ...[
+                          const SizedBox(width: 4),
+                          _SmallChip(
+                            label: traegerName!,
+                            color: theme.colorScheme.secondaryContainer,
+                            textColor: theme.colorScheme.onSecondaryContainer,
                           ),
                         ],
                       ],

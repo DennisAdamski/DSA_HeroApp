@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_modifier_editor.dart';
@@ -19,12 +20,16 @@ class InventoryItemEditor extends StatefulWidget {
     required this.onSaved,
     required this.onCancelled,
     this.showAppBar = true,
+    this.companions = const <HeroCompanion>[],
   });
 
   final HeroInventoryEntry entry;
   final ValueChanged<HeroInventoryEntry> onSaved;
   final VoidCallback onCancelled;
   final bool showAppBar;
+
+  /// Begleiter des Helden – fuer das Träger-Dropdown.
+  final List<HeroCompanion> companions;
 
   @override
   State<InventoryItemEditor> createState() => _InventoryItemEditorState();
@@ -209,6 +214,17 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             isDense: true,
           ),
         ),
+        if (widget.companions.isNotEmpty) ...[
+          const SizedBox(height: _fieldSpacing),
+          _TraegerDropdown(
+            traegerTyp: _draft.traegerTyp,
+            traegerId: _draft.traegerId,
+            companions: widget.companions,
+            onChanged: (typ, id) => setState(() {
+              _draft = _draft.copyWith(traegerTyp: typ, traegerId: id);
+            }),
+          ),
+        ],
         const SizedBox(height: _fieldSpacing),
         TextField(
           controller: _beschreibungCtrl,
@@ -334,6 +350,60 @@ class _LinkedHint extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Dropdown zur Auswahl des Trägers (Held oder Begleiter).
+class _TraegerDropdown extends StatelessWidget {
+  const _TraegerDropdown({
+    required this.traegerTyp,
+    required this.traegerId,
+    required this.companions,
+    required this.onChanged,
+  });
+
+  final InventoryTraeger traegerTyp;
+  final String? traegerId;
+  final List<HeroCompanion> companions;
+  final void Function(InventoryTraeger typ, String? id) onChanged;
+
+  // Zusammengesetzter Auswahlwert: 'held' oder 'begleiter:{id}'
+  String get _currentValue {
+    if (traegerTyp == InventoryTraeger.begleiter && traegerId != null) {
+      return 'begleiter:$traegerId';
+    }
+    return 'held';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = <DropdownMenuItem<String>>[
+      const DropdownMenuItem(value: 'held', child: Text('Held')),
+      for (final c in companions)
+        DropdownMenuItem(
+          value: 'begleiter:${c.id}',
+          child: Text(c.name.isEmpty ? 'Unbenannter Begleiter' : c.name),
+        ),
+    ];
+
+    return DropdownButtonFormField<String>(
+      initialValue: _currentValue,
+      decoration: const InputDecoration(
+        labelText: 'Träger',
+        border: OutlineInputBorder(),
+        isDense: true,
+      ),
+      items: items,
+      onChanged: (v) {
+        if (v == null) return;
+        if (v == 'held') {
+          onChanged(InventoryTraeger.held, null);
+        } else {
+          final id = v.substring('begleiter:'.length);
+          onChanged(InventoryTraeger.begleiter, id);
+        }
+      },
     );
   }
 }
