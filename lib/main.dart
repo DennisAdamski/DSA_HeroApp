@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker_impl.dart';
-import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/app_startup_gate.dart';
 
 /// Startet die Anwendung und initialisiert die persistenten Heldendaten.
@@ -17,14 +14,10 @@ Future<void> main() async {
   );
 
   runApp(
-    ProviderScope(
-      overrides: [
-        settingsRepositoryProvider.overrideWithValue(settingsRepo),
-        storageDirectoryPickerProvider.overrideWithValue(
-          createStorageDirectoryPicker(),
-        ),
-      ],
-      child: const AppStartupGate(),
+    AppStartupGate(
+      settingsRepository: settingsRepo,
+      storagePaths: storagePaths,
+      storageDirectoryPicker: createStorageDirectoryPicker(),
     ),
   );
 }
@@ -36,6 +29,9 @@ class DsaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const AppStartupGate();
+    throw UnimplementedError(
+      'DsaApp benoetigt fuer Tests einen expliziten Bootstrap-Kontext. '
+      'Verwende AppStartupGate oder DsaAppShell mit passenden Provider-Overrides.',
+    );
   }
 }
