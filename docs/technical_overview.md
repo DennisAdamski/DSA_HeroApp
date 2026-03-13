@@ -1138,7 +1138,6 @@ Jeder Tab verwaltet seinen Draft-State lokal (z. B. `_draftTalents`,
 | Art | Datei | Zweck |
 |---|---|---|
 | Widget-Test | `test/ui/performance/ui_rebuild_guardrails_test.dart` | Prüft: kein exzessiver Rebuild bei Einzelfeld-Edits |
-| Integration-Test | `integration_test/ui_edit_frame_timing_test.dart` | Frame-Timing im Profile-Modus (Ziel: ≤ 16 ms p95) |
 | LOC-Budget | `tool/check_screen_loc_budget.py --max-lines 700` | Screen-Dateien max. 700 Zeilen |
 
 ```bash
@@ -1148,12 +1147,11 @@ flutter test
 # Einzelner Guardrail-Test
 flutter test test/ui/performance/ui_rebuild_guardrails_test.dart
 
-# Integration-Test (benötigt verbundenes Gerät)
-flutter drive --profile \
-  --driver=test_driver/integration_test.dart \
-  --target=integration_test/ui_edit_frame_timing_test.dart \
-  -d <deviceId>
 ```
+
+Für echte Frame-Messungen wird kein dedizierter Integration-Test mehr
+mitgeführt. Bei Bedarf erfolgt Profiling ad hoc über Flutter DevTools auf
+einem Zielgerät im Profile-Modus.
 
 ### Serialisierungskompatibilität
 

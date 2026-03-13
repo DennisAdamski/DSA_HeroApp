@@ -197,7 +197,7 @@ Zusatzlich vorhanden:
 
 - Widget- und State-Tests fuer UI, Provider und Regeln
 - Performance-Guardrails fuer Rebuild-Verhalten
-- Integrationstest fuer Frame-Timing im Profiling-Modus
+- Manuelles UI-Profiling ueber Flutter DevTools bei Bedarf
 
 ## Weiterfuehrende Dokumentation
 

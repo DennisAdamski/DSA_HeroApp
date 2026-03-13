@@ -18,36 +18,19 @@ flutter test test/ui/performance/ui_rebuild_guardrails_test.dart
 Technik:
 - Debug-Counter ueber `UiRebuildObserver` fuer Root-Builds zentraler Tabs.
 - Assertion pro Edit-Szenario auf geringe Root-Rebuilds.
+- Dieser Test bleibt der Standard-Guardrail fuer UI-Performance-Regressionsschutz.
 
-## 2) FrameTiming-Guardrail (Integration-Test)
+## 2) Ad-hoc Profiling (manuell)
 
-Misst Frame-Build-Zeiten waehrend wiederholter Edit-Aktionen.
-
-```bash
-flutter drive --profile \
-  --driver=test_driver/integration_test.dart \
-  --target=integration_test/ui_edit_frame_timing_test.dart \
-  -d <deviceId>
-```
-
-Aktueller Test:
-- Repeated row edits im Talents-Tab.
-- Repeated row edits im Combat-Talents-Tab.
-- Repeated overview edits (AP Feld).
-- Repeated AP-Increment Aktion in Overview.
-- p50/p95 Build-Duration als Kennzahl.
+Fuer echte Frame-Messungen werden keine dedizierten Integration-Tests mehr
+vorgehalten. Bei Bedarf erfolgt Profiling ad hoc auf einem Zielgeraet ueber
+Flutter DevTools oder den Performance-Overlay-Workflow.
 
 Hinweis:
-- Die harte Zielvorgabe bleibt in Release-Builds bei ~16ms p95.
-- Fuer belastbare Werte immer `--profile` nutzen.
-- Der Test nutzt 32ms als Regression-Grenzwert; operative Zielwerte bleiben strenger.
-
-## Letzte Baseline (Android Tablet Emulator, 2026-03-01)
-
-- talents_edit: p95 `2568 us` (2.57 ms)
-- combat_edit: p95 `1297 us` (1.30 ms)
-- overview_edit: p95 `1989 us` (1.99 ms)
-- overview_ap_increment: p95 `1395 us` (1.40 ms)
+- Operative Zielwerte fuer fluide Edit-Workflows bleiben bei etwa 16 ms pro
+  Frame.
+- Fuer belastbare Messungen weiterhin `--profile` oder einen release-nahen
+  Workflow auf realer Hardware nutzen.
 
 ## 3) LOC-Guardrail (Tooling/CI)
 

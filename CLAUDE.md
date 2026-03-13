@@ -118,7 +118,6 @@ DSA_HeroApp/
 │   └── test_support/
 │       └── fake_repository.dart
 ├── test/                            # Unit & widget tests
-├── integration_test/                # Frame-timing integration tests
 ├── assets/
 │   ├── catalogs/house_rules_v1/     # Split JSON catalog (runtime)
 │   │   ├── manifest.json
@@ -253,12 +252,10 @@ flutter test
 # Run a specific guardrail test
 flutter test test/ui/performance/ui_rebuild_guardrails_test.dart
 
-# Run integration test with frame timing (requires a connected device)
-flutter drive --profile \
-  --driver=test_driver/integration_test.dart \
-  --target=integration_test/ui_edit_frame_timing_test.dart \
-  -d <deviceId>
 ```
+
+For frame timing investigations, use Flutter DevTools on a connected device in
+profile mode as an ad-hoc workflow instead of a dedicated integration test.
 
 #### Test folder layout (since 2026-03-05)
 
@@ -442,7 +439,7 @@ The following files are **intentionally kept** but not currently wired into the 
 ## UI Performance Guardrails
 
 - **Rebuild guardrail test**: `test/ui/performance/ui_rebuild_guardrails_test.dart` — verifies that widgets do not rebuild excessively. Must pass before every commit that touches providers or widgets.
-- **Frame timing**: `integration_test/ui_edit_frame_timing_test.dart` — profile-mode integration test measuring jank. Run on device when changing edit flows.
+- **Manual profiling**: use Flutter DevTools in profile mode when a change needs real frame timing verification on device.
 - **LOC budget**: `tool/check_screen_loc_budget.py` — gates screen files at 700 LOC. Exceeded files must be split into a subdirectory of part files.
 
 ---
