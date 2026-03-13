@@ -20,10 +20,13 @@ add_executable(${BINARY_NAME} WIN32
 # that need different build settings.
 apply_standard_settings(${BINARY_NAME})
 
-# Der interne Target-Name bleibt Flutter-kompatibel; die erzeugte EXE erhaelt
-# jedoch den sichtbaren Produktnamen mit Leerzeichen.
-set_target_properties(${BINARY_NAME} PROPERTIES
-  OUTPUT_NAME "DSA Heldenverwaltung"
+# Flutter erwartet den eigentlichen Target-Output unter dem internen Namen.
+# Fuer manuelle Nutzung erzeugen wir zusaetzlich eine zweite EXE mit dem
+# sichtbaren Produktnamen.
+add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "$<TARGET_FILE:${BINARY_NAME}>"
+    "$<TARGET_FILE_DIR:${BINARY_NAME}>/DSA Heldenverwaltung.exe"
 )
 
 # Add preprocessor definitions for the build version.
