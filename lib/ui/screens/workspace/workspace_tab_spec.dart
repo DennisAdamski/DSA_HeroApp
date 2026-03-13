@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_magic_tab.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_begleiter_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_notes_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
@@ -31,6 +32,9 @@ abstract final class WorkspaceTabIds {
 
   /// ID des Notizen-Tabs.
   static const String notes = 'notes';
+
+  /// ID des Begleiter-Tabs.
+  static const String begleiter = 'begleiter';
 }
 
 /// Callback-Buendel fuer Dirty-/Edit-Integration eines Workspace-Tabs.
@@ -205,6 +209,20 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
         onRegisterDiscard: callbacks.onRegisterDiscard,
         onRegisterEditActions: callbacks.onRegisterEditActions,
       ),
+    ),
+    WorkspaceTabSpec(
+      id: WorkspaceTabIds.begleiter,
+      label: 'Begleiter',
+      icon: Icons.pets_outlined,
+      helper: 'Vertraute und Begleiter des Helden',
+      buildContent: ({required heroId, required callbacks}) =>
+          HeroBegleiterTab(
+            heroId: heroId,
+            onDirtyChanged: callbacks.onDirtyChanged,
+            onEditingChanged: callbacks.onEditingChanged,
+            onRegisterDiscard: callbacks.onRegisterDiscard,
+            onRegisterEditActions: callbacks.onRegisterEditActions,
+          ),
     ),
   ];
 }
