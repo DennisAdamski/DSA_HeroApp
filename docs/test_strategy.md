@@ -42,7 +42,7 @@ technische UI-Aspekte getrennt getestet werden.
 | `test/ui/workspace/hero_workspace_import_export_test.dart` | ui | Workspace Import/Export UI |
 | `test/ui/home/heroes_home_screen_test.dart` | ui | Startscreen/Navigation |
 | `test/ui/performance/ui_rebuild_guardrails_test.dart` | ui | Rebuild-Guardrail |
-| `test/ui/smoke/widget_test.dart` | ui | App-Start Smoke |
+| `test/ui/smoke/widget_test.dart` | ui | Minimaler App-Start bis zum leeren Startscreen |
 | `test/state/hero_by_id_provider_test.dart` | state | Provider-ID-Lookup |
 | `test/state/hero_computed_snapshot_test.dart` | state | Combined compute pipeline |
 | `test/state/hero_provider_lookup_strategy_test.dart` | state | Lookup-Strategie ohne Listenscan |
