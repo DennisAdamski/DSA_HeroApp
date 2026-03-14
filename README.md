@@ -60,6 +60,7 @@ Technischer Stack:
 - Pflege von Name, Rasse, Kultur, Profession und Biografiedaten
 - Verwaltung von AP, Stufe, Ressourcen und textbasierten Modifikatoren
 - Berechnung effektiver Startwerte und Eigenschaftsmaxima
+- Gefuehrte AP-Steigerung fuer Eigenschaften und kaufbare Grundwerte
 - Parsing von Modifikator-Texten aus Vor-/Nachteilen sowie R/K/P-Feldern
 
 ### Talente und Sprachen
@@ -67,6 +68,7 @@ Technischer Stack:
 - Verwaltung allgemeiner Talente, Kampftalente und Meta-Talente
 - Validierung von AT/PA-Aufteilungen bei Kampftalenten
 - Unterstuetzung fuer Talentspezialisierungen, Sondererfahrungen und Begabungen
+- Steigerungsdialog fuer Talente mit Live-AP-Kosten, SE-Verbrauch und Lehrmeister-Rabatt
 - Eigener Bereich fuer Sprachen und Schriften auf Basis von Katalogdaten
 
 ### Kampf
@@ -82,6 +84,7 @@ Technischer Stack:
 
 - Verwaltung gelernter Zauber inklusive Repruesentation, Tradition und Begabung
 - Anzeige von Verfuegbarkeit, Lernkomplexitaet und heldenspezifischen Anpassungen
+- Steigerungsdialog fuer Zauber mit Fremdrepr.-, Hauszauber- und Lehrmeisterlogik
 - Eigener Ritual-Bereich mit Ritualkategorien, Ritualkenntnissen und Ritualen
 - Pflege magischer Sonderfertigkeiten und aktiver Zaubereffekte
 
