@@ -219,28 +219,28 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
       controller: controller,
       readOnly: !isEditing,
       keyboardType: TextInputType.number,
-      decoration: _cellInputDecoration(isError: isError),
+      decoration: _cellInputDecoration(isError: isError).copyWith(
+        suffixIcon: onRaise == null
+            ? null
+            : IconButton(
+                key: ValueKey<String>('talents-raise-$talentId-$field'),
+                visualDensity: VisualDensity.compact,
+                iconSize: 18,
+                tooltip: raiseTooltip ?? 'Steigern',
+                onPressed: onRaise,
+                icon: const Icon(Icons.trending_up),
+              ),
+        suffixIconConstraints: onRaise == null
+            ? null
+            : const BoxConstraints(minWidth: 32, minHeight: 32),
+      ),
       onChanged: isEditing
           ? (raw) => _updateIntField(talentId, field, raw)
           : null,
     );
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
-      child: onRaise == null
-          ? textField
-          : Row(
-              children: [
-                Expanded(child: textField),
-                IconButton(
-                  key: ValueKey<String>('talents-raise-$talentId-$field'),
-                  visualDensity: VisualDensity.compact,
-                  iconSize: 18,
-                  tooltip: raiseTooltip ?? 'Steigern',
-                  onPressed: onRaise,
-                  icon: const Icon(Icons.trending_up),
-                ),
-              ],
-            ),
+      child: textField,
     );
   }
 
