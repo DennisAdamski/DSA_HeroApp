@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart' show ArmorPiece;
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 
@@ -56,7 +57,8 @@ void main() {
         ini: 8,
         magieresistenz: 2,
         loyalitaet: 9,
-        eigenAp: 50,
+        apGesamt: 100,
+        apAusgegeben: 50,
         geschwindigkeiten: const [
           HeroCompanionSpeed(art: 'zu Fuß', wert: 3),
           HeroCompanionSpeed(art: 'Fliegen', wert: 14),
@@ -68,9 +70,10 @@ void main() {
         zugkraft: '',
         ausbildung: 'Botenvogel',
         futterbedarf: 'Getreide, Insekten',
-        vorNachteile: 'Flink',
-        gw: '',
-        au: '',
+        vorteile: 'Flink',
+        nachteile: 'Scheu',
+        gw: 5,
+        au: 3,
       );
 
       final json = companion.toJson();
@@ -93,6 +96,25 @@ void main() {
       expect(companion.ko, isNull);
       expect(companion.geschwindigkeiten, isEmpty);
       expect(companion.maxLep, isNull);
+      expect(companion.vorteile, '');
+      expect(companion.nachteile, '');
+      expect(companion.gw, isNull);
+      expect(companion.au, isNull);
+    });
+
+    test('fromJson migriert altes eigenAp-Feld nach apGesamt', () {
+      final c = HeroCompanion.fromJson({'id': 'x', 'eigenAp': 75});
+      expect(c.apGesamt, 75);
+      expect(c.apAusgegeben, isNull);
+    });
+
+    test('fromJson migriert altes vorNachteile-Feld', () {
+      final companion = HeroCompanion.fromJson({
+        'id': 'x',
+        'vorNachteile': 'Flink',
+      });
+      expect(companion.vorteile, 'Flink');
+      expect(companion.nachteile, '');
     });
 
     test('copyWith erhält nullable Felder korrekt (null bleibt null)', () {
@@ -114,6 +136,65 @@ void main() {
       final json = companion.toJson();
       expect(json.containsKey('ko'), isTrue);
       expect(json.containsKey('mu'), isFalse);
+    });
+  });
+
+  group('HeroCompanionAttack', () {
+    test('Roundtrip mit allen Feldern', () {
+      const attack = HeroCompanionAttack(
+        id: 'atk-1',
+        name: 'Beißen',
+        dk: 'H',
+        at: 14,
+        pa: 7,
+        tp: '1W6+4',
+        beschreibung: 'Kraftvoller Biss',
+      );
+      final json = attack.toJson();
+      final restored = HeroCompanionAttack.fromJson(json);
+      expect(restored, equals(attack));
+    });
+
+    test('Roundtrip mit Minimalstruktur', () {
+      const attack = HeroCompanionAttack(id: 'min');
+      final json = attack.toJson();
+      final restored = HeroCompanionAttack.fromJson(json);
+      expect(restored, equals(attack));
+    });
+
+    test('fromJson toleriert fehlende Felder', () {
+      final attack = HeroCompanionAttack.fromJson({'id': 'x'});
+      expect(attack.name, '');
+      expect(attack.dk, '');
+      expect(attack.at, isNull);
+      expect(attack.pa, isNull);
+      expect(attack.tp, '');
+      expect(attack.beschreibung, '');
+    });
+
+    test('nullable at/pa werden in toJson nur bei Wert serialisiert', () {
+      const attack = HeroCompanionAttack(id: 'x', at: 12);
+      final json = attack.toJson();
+      expect(json.containsKey('at'), isTrue);
+      expect(json.containsKey('pa'), isFalse);
+    });
+  });
+
+  group('HeroCompanionSonderfertigkeit', () {
+    test('Roundtrip mit allen Feldern', () {
+      const sf = HeroCompanionSonderfertigkeit(
+        name: 'Wuchtschlag',
+        beschreibung: 'Erhöht Schaden um 2',
+      );
+      final json = sf.toJson();
+      final restored = HeroCompanionSonderfertigkeit.fromJson(json);
+      expect(restored, equals(sf));
+    });
+
+    test('fromJson toleriert fehlende Felder', () {
+      final sf = HeroCompanionSonderfertigkeit.fromJson({});
+      expect(sf.name, '');
+      expect(sf.beschreibung, '');
     });
   });
 
@@ -171,6 +252,90 @@ void main() {
     });
   });
 
+  group('HeroCompanion – Ritualkategorien', () {
+    const testKategorie = HeroRitualCategory(
+      id: 'vertrautenmagie',
+      name: 'Vertrautenmagie',
+      knowledgeMode: HeroRitualKnowledgeMode.ownKnowledge,
+      ownKnowledge: HeroRitualKnowledge(
+        name: 'Vertrautenmagie',
+        value: 5,
+        learningComplexity: 'E',
+      ),
+      rituals: [
+        HeroRitualEntry(
+          name: 'Zwiegespräch',
+          technik: 'Konzentration',
+          zauberdauer: '1 Aktion',
+          wirkung: 'Telepathische Unterhaltung',
+          kosten: '2 AsP',
+          zielobjekt: 'Hexe',
+          reichweite: 'Sichtweite',
+          wirkungsdauer: '5 Minuten',
+          merkmale: 'Kommunikation',
+        ),
+      ],
+    );
+
+    test('Roundtrip mit ritualCategories', () {
+      final companion = HeroCompanion(
+        id: 'v-1',
+        typ: BegleiterTyp.vertrauter,
+        ritualCategories: const [testKategorie],
+      );
+      final json = companion.toJson();
+      final restored = HeroCompanion.fromJson(json);
+      expect(restored, equals(companion));
+      expect(restored.ritualCategories.length, 1);
+      expect(restored.ritualCategories.first.id, 'vertrautenmagie');
+      expect(restored.ritualCategories.first.rituals.length, 1);
+      expect(
+        restored.ritualCategories.first.ownKnowledge?.value,
+        5,
+      );
+    });
+
+    test('fromJson ohne ritualCategories ergibt leere Liste', () {
+      final companion = HeroCompanion.fromJson({'id': 'x'});
+      expect(companion.ritualCategories, isEmpty);
+    });
+
+    test('toJson schreibt ritualCategories nur bei nicht-leerer Liste', () {
+      const companion = HeroCompanion(id: 'a');
+      final json = companion.toJson();
+      expect(json.containsKey('ritualCategories'), isFalse);
+    });
+
+    test('toJson mit Kategorien serialisiert ritualCategories', () {
+      final companion = HeroCompanion(
+        id: 'b',
+        ritualCategories: const [testKategorie],
+      );
+      final json = companion.toJson();
+      expect(json.containsKey('ritualCategories'), isTrue);
+      expect((json['ritualCategories'] as List).length, 1);
+    });
+
+    test('copyWith aktualisiert ritualCategories', () {
+      const companion = HeroCompanion(id: 'c');
+      final updated = companion.copyWith(
+        ritualCategories: const [testKategorie],
+      );
+      expect(updated.ritualCategories.length, 1);
+      expect(companion.ritualCategories, isEmpty);
+    });
+
+    test('altes JSON ohne ritualCategories-Key (Backward-Compat)', () {
+      final companion = HeroCompanion(
+        id: 'd',
+        ritualCategories: const [testKategorie],
+      );
+      final json = companion.toJson()..remove('ritualCategories');
+      final restored = HeroCompanion.fromJson(json);
+      expect(restored.ritualCategories, isEmpty);
+    });
+  });
+
   group('HeroSheet mit companions', () {
     const testAttributes = Attributes(
       mu: 8,
@@ -217,6 +382,34 @@ void main() {
       final restored = HeroSheet.fromJson(json);
       expect(restored.companions.length, 1);
       expect(restored.companions.first, equals(companion));
+    });
+
+    test('Roundtrip mit Angriffen und Sonderfertigkeiten', () {
+      final companion = const HeroCompanion(
+        id: 'c1',
+        angriffe: [
+          HeroCompanionAttack(id: 'a1', name: 'Beißen', at: 14, tp: '1W6+4'),
+        ],
+        sonderfertigkeiten: [
+          HeroCompanionSonderfertigkeit(name: 'Wuchtschlag'),
+        ],
+      );
+      final json = companion.toJson();
+      final restored = HeroCompanion.fromJson(json);
+      expect(restored.angriffe.length, 1);
+      expect(restored.angriffe.first.name, 'Beißen');
+      expect(restored.sonderfertigkeiten.length, 1);
+      expect(restored.sonderfertigkeiten.first.name, 'Wuchtschlag');
+    });
+
+    test('altes JSON ohne angriffe/sonderfertigkeiten ergibt leere Listen', () {
+      final companion = const HeroCompanion(id: 'c2');
+      final json = companion.toJson()
+        ..remove('angriffe')
+        ..remove('sonderfertigkeiten');
+      final restored = HeroCompanion.fromJson(json);
+      expect(restored.angriffe, isEmpty);
+      expect(restored.sonderfertigkeiten, isEmpty);
     });
 
     test('altes JSON ohne companions-Key ergibt leere Liste', () {

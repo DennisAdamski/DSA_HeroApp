@@ -4,13 +4,17 @@ import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart' show ArmorPiece;
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
+import 'package:dsa_heldenverwaltung/catalog/vertrautenmagie_preset.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 part 'hero_begleiter/begleiter_sections.dart';
+part 'hero_begleiter/vertrautenmagie_section.dart';
 
 /// Begleiter-Tab mit Auswahl- und Detailansicht fuer Vertraute/Begleiter.
 class HeroBegleiterTab extends ConsumerStatefulWidget {
@@ -77,7 +81,20 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
 
   void _syncDraftFromHero(HeroSheet hero, {bool force = false}) {
     if (!_editController.shouldSync(hero, force: force)) return;
-    _draftCompanions = List<HeroCompanion>.from(hero.companions);
+    // Migration: Vertrautenmagie von HeroSheet.ritualCategories zum Companion.
+    final altVertrautenmagie = hero.ritualCategories
+        .where((c) => c.id == 'vertrautenmagie')
+        .firstOrNull;
+    _draftCompanions = hero.companions.map((companion) {
+      if (companion.typ == BegleiterTyp.vertrauter &&
+          companion.ritualCategories.isEmpty &&
+          altVertrautenmagie != null) {
+        return companion.copyWith(
+          ritualCategories: [altVertrautenmagie],
+        );
+      }
+      return companion;
+    }).toList();
     // Aktiven Begleiter pruefen – wurde er geloescht?
     if (_activeCompanionId != null &&
         !_draftCompanions.any((c) => c.id == _activeCompanionId)) {
@@ -102,14 +119,23 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   Future<void> _saveChanges() async {
     final hero = _latestHero;
     if (hero == null) return;
-    await ref.read(heroActionsProvider).saveHero(
-      hero.copyWith(companions: List.unmodifiable(_draftCompanions)),
-    );
+    // Vertrautenmagie aus Hero-Ritualkategorien entfernen (lebt jetzt im Companion).
+    final heroRituals = hero.ritualCategories
+        .where((c) => c.id != 'vertrautenmagie')
+        .toList();
+    await ref
+        .read(heroActionsProvider)
+        .saveHero(
+          hero.copyWith(
+            companions: List.unmodifiable(_draftCompanions),
+            ritualCategories: List.unmodifiable(heroRituals),
+          ),
+        );
     if (!mounted) return;
     _editController.markSaved();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Begleiter gespeichert')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Begleiter gespeichert')));
   }
 
   Future<void> _cancelChanges() async => _discardChanges();
@@ -173,9 +199,43 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   }
 
   void _updateCompanion(HeroCompanion updated) {
+    final old = _draftCompanions.firstWhere(
+      (c) => c.id == updated.id,
+      orElse: () => updated,
+    );
+    // Seiteneffekt: Typ wechselt zu Vertrauter.
+    var effective = updated;
+    if (old.typ != BegleiterTyp.vertrauter &&
+        updated.typ == BegleiterTyp.vertrauter) {
+      // Loyalitaet vorbelegen, falls noch nicht gesetzt.
+      if (effective.loyalitaet == null) {
+        effective = effective.copyWith(loyalitaet: 15);
+      }
+      // Vertrautenmagie-Kategorie im Companion anlegen, falls fehlend.
+      final hatVertrautenmagie = effective.ritualCategories.any(
+        (cat) => cat.id == 'vertrautenmagie',
+      );
+      if (!hatVertrautenmagie) {
+        effective = effective.copyWith(
+          ritualCategories: [
+            ...effective.ritualCategories,
+            const HeroRitualCategory(
+              id: 'vertrautenmagie',
+              name: 'Vertrautenmagie',
+              knowledgeMode: HeroRitualKnowledgeMode.ownKnowledge,
+              ownKnowledge: HeroRitualKnowledge(
+                name: 'Vertrautenmagie',
+                value: 3,
+                learningComplexity: 'E',
+              ),
+            ),
+          ],
+        );
+      }
+    }
     setState(() {
       _draftCompanions = _draftCompanions
-          .map((c) => c.id == updated.id ? updated : c)
+          .map((c) => c.id == effective.id ? effective : c)
           .toList();
     });
     _markFieldChanged();
@@ -207,12 +267,16 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
         : null;
 
     if (activeCompanion != null) {
+      final vertrautenmagieKat = activeCompanion.ritualCategories
+          .where((c) => c.id == 'vertrautenmagie')
+          .firstOrNull;
       return _BegleiterDetailView(
         companion: activeCompanion,
         isEditing: isEditing,
         onBack: _navigateBack,
         onChanged: _updateCompanion,
         onDelete: () => _deleteCompanion(activeCompanion.id),
+        vertrautenmagieKategorie: vertrautenmagieKat,
       );
     }
 
