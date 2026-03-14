@@ -56,7 +56,7 @@ class _TalentDetailDialog extends StatelessWidget {
                 _detailRow(theme, 'Ersatzweise', talent.alternatives),
               const Divider(height: 16),
               _sectionTitle(theme, 'Heldenwerte'),
-              _detailRow(theme, 'TaW', '${entry.talentValue}'),
+              _detailRow(theme, 'TaW', entry.talentValue != null ? '${entry.talentValue}' : '—'),
               if (isCombat) ...[
                 _detailRow(theme, 'AT', '${entry.atValue}'),
                 _detailRow(theme, 'PA', '${entry.paValue}'),

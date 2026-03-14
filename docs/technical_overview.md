@@ -1257,6 +1257,20 @@ Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Da
 - `HeroNotesTab` teilt den Workspace-Bereich in die Untertabs `Notizen` und
   `Verbindungen`.
 
+### Update 2026-03-15: Gefuehrte AP-Steigerungen
+
+- `HeroTalentEntry.talentValue` ist nullable; `null` bedeutet sichtbares,
+  aber noch nicht aktiviertes Talent.
+- `lib/domain/learn/learn_rules.dart` kapselt Mapping von
+  Lernkomplexitaeten, AP-Kosten pro Schritt, SE-Verbrauch sowie
+  Lehrmeister- und Dukatenberechnung.
+- `lib/ui/widgets/steigerungs_dialog.dart` ist der gemeinsame Dialog fuer
+  Talent-, Zauber-, Eigenschafts- und Grundwertsteigerungen.
+- Die Tabs `hero_talents_tab.dart`, `hero_magic_tab.dart` und
+  `hero_overview_tab.dart` zeigen Raise-Aktionen nur im Edit-Modus ohne
+  ungespeicherte Draft-Aenderungen, um Konflikte mit lokalen Entwuerfen zu
+  vermeiden.
+
 ---
 
 *Erzeugt am 2026-03-04 — Bezieht sich auf Codestand `claude/create-technical-documentation-Eawbf`*
