@@ -301,8 +301,12 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       _intInputCell(
         talentId: talent.id,
         field: 'talentValue',
-        value: entry.talentValue,
+        value: entry.talentValue ?? 0,
         isEditing: isEditing,
+        onRaise: isEditing && _canUseSteigerungsDialog
+            ? () => _steigereTalent(talent.id)
+            : null,
+        raiseTooltip: 'Talent steigern',
       ),
       _textCell(_formatWholeNumber(maxTaw)),
       _talentModifierCell(talent: talent, entry: entry, isEditing: isEditing),
@@ -389,7 +393,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       _intInputCell(
         talentId: talent.id,
         field: 'talentValue',
-        value: entry.talentValue,
+        value: entry.talentValue ?? 0,
         isEditing: isEditing,
         isError: isInvalid,
       ),

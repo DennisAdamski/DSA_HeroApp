@@ -4,10 +4,10 @@
 /// Formel:
 /// `TaW_berechnet = TaW + Mod + eBE + inventoryMod`
 int computeTalentComputedTaw({
-  required int talentValue,
+  required int? talentValue,
   required int modifier,
   required int ebe,
   int inventoryMod = 0,
 }) {
-  return talentValue + modifier + ebe + inventoryMod;
+  return (talentValue ?? 0) + modifier + ebe + inventoryMod;
 }
