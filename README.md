@@ -199,6 +199,13 @@ Zusatzlich vorhanden:
 - Performance-Guardrails fuer Rebuild-Verhalten
 - Manuelles UI-Profiling ueber Flutter DevTools bei Bedarf
 
+Weitere Referenzen:
+
+- `lib/catalog/vertrautenmagie_preset.dart` enthaelt das getypte
+  Vertrautenmagie-Preset fuer freie Ritualkategorien.
+- `assets/catalogs/house_rules_v1/vertrautenmagie_rituale.json` enthaelt das
+  passende JSON-Snippet derselben Daten fuer Import, Review und Referenz.
+
 ## Weiterfuehrende Dokumentation
 
 - `docs/technical_overview.md`

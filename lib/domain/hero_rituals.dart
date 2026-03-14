@@ -64,6 +64,17 @@ class HeroRitualKnowledge {
       learningComplexity: (json['learningComplexity'] as String?) ?? 'E',
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is HeroRitualKnowledge &&
+          name == other.name &&
+          value == other.value &&
+          learningComplexity == other.learningComplexity;
+
+  @override
+  int get hashCode => Object.hash(name, value, learningComplexity);
 }
 
 /// Definition eines frei konfigurierbaren Zusatzfelds einer Ritualkategorie.
@@ -110,6 +121,17 @@ class HeroRitualFieldDef {
       type: _ritualFieldTypeFromJson(json['type']),
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is HeroRitualFieldDef &&
+          id == other.id &&
+          label == other.label &&
+          type == other.type;
+
+  @override
+  int get hashCode => Object.hash(id, label, type);
 }
 
 /// Konkreter Wert eines Zusatzfelds an einem einzelnen Ritual.
@@ -165,6 +187,18 @@ class HeroRitualFieldValue {
           : const <String>[],
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is HeroRitualFieldValue &&
+          fieldDefId == other.fieldDefId &&
+          textValue == other.textValue &&
+          _ritualListEqual(attributeCodes, other.attributeCodes);
+
+  @override
+  int get hashCode =>
+      Object.hash(fieldDefId, textValue, Object.hashAll(attributeCodes));
 }
 
 /// Einzelnes Ritual innerhalb einer Ritualkategorie.
@@ -282,6 +316,28 @@ class HeroRitualEntry {
           .toList(growable: false),
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is HeroRitualEntry &&
+          name == other.name &&
+          wirkung == other.wirkung &&
+          kosten == other.kosten &&
+          wirkungsdauer == other.wirkungsdauer &&
+          merkmale == other.merkmale &&
+          zauberdauer == other.zauberdauer &&
+          zielobjekt == other.zielobjekt &&
+          reichweite == other.reichweite &&
+          technik == other.technik &&
+          _ritualListEqual(additionalFieldValues, other.additionalFieldValues);
+
+  @override
+  int get hashCode => Object.hashAll([
+    name, wirkung, kosten, wirkungsdauer, merkmale,
+    zauberdauer, zielobjekt, reichweite, technik,
+    ...additionalFieldValues,
+  ]);
 }
 
 /// Heldenspezifische Ritualkategorie mit eigener Ritualliste.
@@ -391,6 +447,29 @@ class HeroRitualCategory {
           .toList(growable: false),
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is HeroRitualCategory &&
+          id == other.id &&
+          name == other.name &&
+          knowledgeMode == other.knowledgeMode &&
+          ownKnowledge == other.ownKnowledge &&
+          _ritualListEqual(derivedTalentIds, other.derivedTalentIds) &&
+          _ritualListEqual(additionalFieldDefs, other.additionalFieldDefs) &&
+          _ritualListEqual(rituals, other.rituals);
+
+  @override
+  int get hashCode => Object.hashAll([
+    id,
+    name,
+    knowledgeMode,
+    ownKnowledge,
+    ...derivedTalentIds,
+    ...additionalFieldDefs,
+    ...rituals,
+  ]);
 }
 
 String _ritualKnowledgeModeToJson(HeroRitualKnowledgeMode value) {
@@ -432,3 +511,11 @@ HeroRitualFieldType _ritualFieldTypeFromJson(Object? raw) {
 }
 
 const Object _keepNullableField = Object();
+
+bool _ritualListEqual<T>(List<T> a, List<T> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
+}
