@@ -175,7 +175,22 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                     ),
                     _buildDerivedValueCell(value: entry.modifier.toString()),
                     _buildDerivedValueCell(value: entry.current.toString()),
-                    _buildDerivedBoughtCell(entry),
+                    _buildDerivedBoughtCell(
+                      entry,
+                      onRaise:
+                          _canUseSteigerungsDialog &&
+                              entry.boughtKey != null &&
+                              kGrundwertKomplexitaeten.containsKey(
+                                entry.boughtKey!.replaceFirst('b_', ''),
+                              )
+                          ? () => _steigeGrundwert(
+                              entry.boughtKey!.replaceFirst('b_', ''),
+                            )
+                          : null,
+                      raiseTooltip: entry.boughtKey == null
+                          ? null
+                          : '${entry.label} steigern',
+                    ),
                   ],
                 ),
               ),
@@ -212,7 +227,14 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                 keyName: '${key}_max',
                 value: maximumValue.toString(),
               ),
-              _buildAttributesNumericCell(keyName: key, isAdjustable: true),
+              _buildAttributesNumericCell(
+                keyName: key,
+                isAdjustable: true,
+                onRaise: _canUseSteigerungsDialog
+                    ? () => _steigeEigenschaft(parseAttributeCode(key)!)
+                    : null,
+                raiseTooltip: '${entry.$1} steigern',
+              ),
               _buildAttributesNumericCell(keyName: tempKey, isAdjustable: true),
               _buildAttributesComputedCell(
                 keyName: key,
@@ -270,6 +292,8 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
   Widget _buildAttributesNumericCell({
     required String keyName,
     required bool isAdjustable,
+    VoidCallback? onRaise,
+    String? raiseTooltip,
   }) {
     if (!isAdjustable) {
       return _buildAttributesStaticCell(
@@ -280,33 +304,44 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
 
     final isTempModifier = _isTempAttributeKey(keyName);
     final isReadOnly = isTempModifier ? false : !_editController.isEditing;
+    final textField = TextField(
+      key: ValueKey<String>('overview-field-$keyName'),
+      controller: _field(keyName),
+      focusNode: isTempModifier ? _focusNode(keyName) : null,
+      readOnly: isReadOnly,
+      keyboardType: TextInputType.number,
+      textInputAction: isTempModifier ? TextInputAction.done : null,
+      decoration: _inputDecoration('').copyWith(
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        suffixIcon: onRaise == null
+            ? null
+            : IconButton(
+                key: ValueKey<String>('overview-raise-$keyName'),
+                visualDensity: VisualDensity.compact,
+                iconSize: 18,
+                tooltip: raiseTooltip ?? 'Steigern',
+                onPressed: onRaise,
+                icon: const Icon(Icons.trending_up),
+              ),
+        suffixIconConstraints: onRaise == null
+            ? null
+            : const BoxConstraints(minWidth: 32, minHeight: 32),
+      ),
+      onChanged: isTempModifier
+          ? (_) {
+              if (mounted) {
+                _viewRevision.value++;
+              }
+            }
+          : (isReadOnly ? null : _onFieldChanged),
+      onSubmitted: isTempModifier
+          ? (_) => _commitTempAttributeField(keyName)
+          : null,
+    );
     return Padding(
       padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
-      child: TextField(
-        key: ValueKey<String>('overview-field-$keyName'),
-        controller: _field(keyName),
-        focusNode: isTempModifier ? _focusNode(keyName) : null,
-        readOnly: isReadOnly,
-        keyboardType: TextInputType.number,
-        textInputAction: isTempModifier ? TextInputAction.done : null,
-        decoration: _inputDecoration('').copyWith(
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 8,
-          ),
-        ),
-        onChanged: isTempModifier
-            ? (_) {
-                if (mounted) {
-                  _viewRevision.value++;
-                }
-              }
-            : (isReadOnly ? null : _onFieldChanged),
-        onSubmitted: isTempModifier
-            ? (_) => _commitTempAttributeField(keyName)
-            : null,
-      ),
+      child: textField,
     );
   }
 
@@ -335,28 +370,43 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     return _buildAttributesStaticCell(value: value);
   }
 
-  Widget _buildDerivedBoughtCell(_DerivedRow entry) {
+  Widget _buildDerivedBoughtCell(
+    _DerivedRow entry, {
+    VoidCallback? onRaise,
+    String? raiseTooltip,
+  }) {
     final keyName = entry.boughtKey;
     if (keyName == null) {
       return _buildDerivedValueCell(value: '-');
     }
     final isReadOnly = !_editController.isEditing;
+    final textField = TextField(
+      key: ValueKey<String>('overview-derived-bought-$keyName'),
+      controller: _field(keyName),
+      readOnly: isReadOnly,
+      keyboardType: TextInputType.number,
+      decoration: _inputDecoration('').copyWith(
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        suffixIcon: onRaise == null
+            ? null
+            : IconButton(
+                key: ValueKey<String>('overview-derived-raise-$keyName'),
+                visualDensity: VisualDensity.compact,
+                iconSize: 18,
+                tooltip: raiseTooltip ?? 'Steigern',
+                onPressed: onRaise,
+                icon: const Icon(Icons.trending_up),
+              ),
+        suffixIconConstraints: onRaise == null
+            ? null
+            : const BoxConstraints(minWidth: 32, minHeight: 32),
+      ),
+      onChanged: isReadOnly ? null : _onFieldChanged,
+    );
     return Padding(
       padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
-      child: TextField(
-        key: ValueKey<String>('overview-derived-bought-$keyName'),
-        controller: _field(keyName),
-        readOnly: isReadOnly,
-        keyboardType: TextInputType.number,
-        decoration: _inputDecoration('').copyWith(
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 8,
-          ),
-        ),
-        onChanged: isReadOnly ? null : _onFieldChanged,
-      ),
+      child: textField,
     );
   }
 

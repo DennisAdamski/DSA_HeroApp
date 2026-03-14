@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
@@ -23,6 +24,7 @@ import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
@@ -31,6 +33,7 @@ part 'hero_talents/hero_talents_grouping.dart';
 part 'hero_talents/hero_talents_info_card.dart';
 part 'hero_talents/hero_talents_tables.dart';
 part 'hero_talents/hero_talents_cells.dart';
+part 'hero_talents/hero_talents_raise_actions.dart';
 part 'hero_talents/talent_catalog_table.dart';
 part 'hero_talents/talent_detail_dialog.dart';
 part 'hero_talents/talent_modifiers_dialog.dart';
@@ -547,21 +550,22 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       alleSchriften: catalog.schriften,
                       isEditing: _editController.isEditing,
                       onSprachWertChanged: (id, wert) {
-                        final entry = _draftSprachen[id] ??
-                            const HeroLanguageEntry();
+                        final entry =
+                            _draftSprachen[id] ?? const HeroLanguageEntry();
                         _draftSprachen[id] = entry.copyWith(wert: wert);
                         _markFieldChanged();
                       },
                       onSchriftWertChanged: (id, wert) {
-                        final entry = _draftSchriften[id] ??
-                            const HeroScriptEntry();
+                        final entry =
+                            _draftSchriften[id] ?? const HeroScriptEntry();
                         _draftSchriften[id] = entry.copyWith(wert: wert);
                         _markFieldChanged();
                       },
                       onMuttersprachChanged: (id) {
                         setState(() {
-                          _draftMuttersprache =
-                              _draftMuttersprache == id ? '' : id;
+                          _draftMuttersprache = _draftMuttersprache == id
+                              ? ''
+                              : id;
                         });
                         _markFieldChanged();
                       },
@@ -617,10 +621,13 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                                     talents: talents,
                                     effectiveAttributes: effectiveAttributes!,
                                     activeBaseBe: activeTalentBe,
-                                    inventoryTalentMods: ref
-                                            .watch(heroComputedProvider(
-                                              widget.heroId,
-                                            ))
+                                    inventoryTalentMods:
+                                        ref
+                                            .watch(
+                                              heroComputedProvider(
+                                                widget.heroId,
+                                              ),
+                                            )
                                             .asData
                                             ?.value
                                             .inventoryTalentMods ??

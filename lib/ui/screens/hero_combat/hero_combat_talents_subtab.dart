@@ -271,7 +271,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       _intInputCell(
         talentId: talent.id,
         field: 'talentValue',
-        value: entry.talentValue,
+        value: entry.talentValue ?? 0,
         isEditing: isEditing,
         isError: isInvalid,
       ),
