@@ -161,6 +161,11 @@ Ergaenzungen zur aktuellen Struktur:
   Kosten sowie optionalen Stilfeldern wie `stil_typ`,
   `aktiviert_manoever_ids` und `kampfwert_boni`.
 - `lib/ui/widgets/combat_quick_stats.dart` enthaelt die kompakte Kampfwerte-Quickview.
+- `lib/domain/learn/learn_complexity.dart` und
+  `lib/domain/learn/learn_rules.dart` kapseln die AP-Steigerungslogik
+  inklusive Aktivierungskosten, SE-Verbrauch und Lehrmeisterrabatt.
+- `lib/ui/widgets/steigerungs_dialog.dart` ist der gemeinsame Dialog fuer
+  Talent-, Zauber-, Eigenschafts- und Grundwert-Steigerungen.
 - `lib/ui/screens/hero_combat/` enthaelt die aufgeteilten Kampf-Subtabs sowie
   Helper fuer Regeln, Preview und Weapon-Editor.
 - `lib/ui/screens/hero_combat/combat_mastery_section.dart` enthaelt den
@@ -484,4 +489,15 @@ The following files are **intentionally kept** but not currently wired into the 
   representation/origin pair.
 - Combat talent caps must use `GE/KK` for melee and `FF/KK` for ranged,
   without using `IN`.
+
+## Update 2026-03-15
+
+- `HeroTalentEntry.talentValue` ist jetzt nullable; `null` bedeutet sichtbares,
+  aber noch nicht aktiviertes Talent.
+- Talente, Zauber, Eigenschaften und kaufbare Grundwerte koennen jetzt ueber
+  den gemeinsamen `steigerungs_dialog.dart` direkt AP-basiert gesteigert
+  werden.
+- Die Steigerungs-Buttons bleiben auf Talente-, Magie- und Uebersichts-Tab
+  absichtlich auf den Edit-Modus ohne ungespeicherte Drafts begrenzt, damit
+  Sofortspeicherung nicht mit lokalen Tab-Entwuerfen kollidiert.
 
