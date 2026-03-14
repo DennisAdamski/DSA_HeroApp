@@ -32,7 +32,7 @@ int computeAkrobatikBonus(Map<String, HeroTalentEntry> talents) {
   var akrobatikTaw = 0;
   for (final entry in talents.entries) {
     if (entry.key.toLowerCase().contains('akrobatik')) {
-      akrobatikTaw = entry.value.talentValue + entry.value.modifier;
+      akrobatikTaw = (entry.value.talentValue ?? 0) + entry.value.modifier;
       break;
     }
   }

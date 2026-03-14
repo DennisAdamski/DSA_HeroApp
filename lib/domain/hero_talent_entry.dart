@@ -1,13 +1,12 @@
+// [MermaidChart: ff341120-63ae-42dd-88e7-391a12fcef7f]
 /// Einzelner Modifikatorbaustein eines Talents.
 ///
 /// Die Beschreibung wird beim Erzeugen normalisiert und auf 60 Zeichen
 /// begrenzt. Leere Beschreibungen werden bei der Listen-Normalisierung
 /// verworfen.
 class HeroTalentModifier {
-  HeroTalentModifier({
-    required this.modifier,
-    required String description,
-  }) : description = _normalizeModifierDescription(description);
+  HeroTalentModifier({required this.modifier, required String description})
+    : description = _normalizeModifierDescription(description);
 
   final int modifier;
   final String description;
@@ -46,6 +45,9 @@ class HeroTalentModifier {
 /// Die Gesamtsumme der Modifikatorbausteine ist ueber [modifier] verfuegbar.
 /// Fuer Kampftalente kommen [atValue] und [paValue] hinzu.
 ///
+/// [talentValue] ist nullable: `null` bedeutet, das Talent ist eingeblendet
+/// aber noch nicht aktiviert (gelernt). `0` bedeutet aktiviert mit TaW 0.
+///
 /// [specializations] und [combatSpecializations] sind redundant gespeichert:
 ///   - [specializations]: Freitext-String fuer Anzeige und Legacy-Serialisierung
 ///   - [combatSpecializations]: normalisierte Liste fuer Programm-Logik
@@ -53,7 +55,7 @@ class HeroTalentModifier {
 /// [toJson], [fromJson]).
 class HeroTalentEntry {
   const HeroTalentEntry({
-    this.talentValue = 0,
+    this.talentValue,
     this.atValue = 0,
     this.paValue = 0,
     int modifier = 0,
@@ -65,7 +67,7 @@ class HeroTalentEntry {
     this.ebe = 0,
   }) : _legacyModifier = modifier;
 
-  final int talentValue;
+  final int? talentValue;
   final int atValue;
   final int paValue;
   final int _legacyModifier;
@@ -91,7 +93,7 @@ class HeroTalentEntry {
   /// zu halten. Wird nur [specializations] angegeben, bleibt [combatSpecializations]
   /// unveraendert (kein automatisches Parsen – das obliegt [fromJson]).
   HeroTalentEntry copyWith({
-    int? talentValue,
+    Object? talentValue = _keepFieldValue,
     int? atValue,
     int? paValue,
     int? modifier,
@@ -120,7 +122,9 @@ class HeroTalentEntry {
         : (modifier ?? _legacyModifier);
 
     return HeroTalentEntry(
-      talentValue: talentValue ?? this.talentValue,
+      talentValue: identical(talentValue, _keepFieldValue)
+          ? this.talentValue
+          : talentValue as int?,
       atValue: atValue ?? this.atValue,
       paValue: paValue ?? this.paValue,
       modifier: nextLegacyModifier,
@@ -143,7 +147,9 @@ class HeroTalentEntry {
     final normalizedCombatSpecializations = combatSpecializations.isEmpty
         ? _parseSpecializations(specializations)
         : _normalizeStringList(combatSpecializations);
-    final normalizedTalentModifiers = _normalizeTalentModifiers(talentModifiers);
+    final normalizedTalentModifiers = _normalizeTalentModifiers(
+      talentModifiers,
+    );
     final serializedSpecializations = normalizedCombatSpecializations.isEmpty
         ? specializations
         : normalizedCombatSpecializations.join(', ');
@@ -180,6 +186,7 @@ class HeroTalentEntry {
       }
       return raw.map((entry) => entry.toString()).toList(growable: false);
     }
+
     List<HeroTalentModifier> getTalentModifiers(String key) {
       final raw = json[key];
       if (raw is! List) {
@@ -215,7 +222,7 @@ class HeroTalentEntry {
         : mergedCombatSpecializations.join(', ');
 
     return HeroTalentEntry(
-      talentValue: getInt('talentValue'),
+      talentValue: (json['talentValue'] as num?)?.toInt(),
       atValue: getInt('atValue'),
       paValue: getInt('paValue'),
       talentModifiers: talentModifiers,
@@ -227,6 +234,8 @@ class HeroTalentEntry {
     );
   }
 }
+
+const Object _keepFieldValue = Object();
 
 String _normalizeModifierDescription(String raw) {
   final trimmed = raw.trim();
