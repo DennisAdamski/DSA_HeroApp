@@ -168,6 +168,10 @@ Ergaenzungen zur aktuellen Struktur:
 - `lib/ui/screens/hero_combat/weapon_editor/` enthaelt die Sektionen und
   Hilfsdialoge des Waffen-Editors.
 - `lib/ui/screens/hero_notes/` enthaelt die ausgelagerten Notizen-Teilwidgets.
+- `lib/catalog/vertrautenmagie_preset.dart` enthaelt das vollstaendige
+  Vertrautenmagie-Preset fuer freie Ritualkategorien.
+- `assets/catalogs/house_rules_v1/vertrautenmagie_rituale.json` enthaelt das
+  app-taugliche JSON-Snippet desselben Presets.
 
 ---
 
