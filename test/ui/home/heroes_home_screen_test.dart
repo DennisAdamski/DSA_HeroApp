@@ -151,10 +151,10 @@ void main() {
       expect(tabLabels, expectedWorkspaceTabLabels());
       expect(find.text('MU: 14'), findsOneWidget);
       expect(find.text('KO: 14'), findsOneWidget);
-      expect(find.text('LEP: 10/22'), findsOneWidget);
-      expect(find.text('AU: 10/22'), findsOneWidget);
-      expect(find.text('ASP: 10/21'), findsOneWidget);
-      expect(find.text('KAP: 0/0'), findsOneWidget);
+      expect(find.text('LeP: 10/22'), findsOneWidget);
+      expect(find.text('Au: 10/22'), findsOneWidget);
+      expect(find.text('AsP: 10/21'), findsOneWidget);
+      expect(find.text('KaP: 0/0'), findsOneWidget);
     },
   );
 }
