@@ -8,6 +8,9 @@ Schichten: **Domain → State → Rules → Data → Catalog**
 ## Diagramm
 
 ```mermaid
+---
+id: ff341120-63ae-42dd-88e7-391a12fcef7f
+---
 classDiagram
     %% ===== DOMAIN =====
 
