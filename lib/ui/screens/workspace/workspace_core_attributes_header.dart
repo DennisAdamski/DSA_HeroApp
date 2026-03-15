@@ -56,10 +56,10 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
       '${debugModus ? 'ge' : 'GE'}: ${effectiveAttributes.ge}',
       '${debugModus ? 'ko' : 'KO'}: ${effectiveAttributes.ko}',
       '${debugModus ? 'kk' : 'KK'}: ${effectiveAttributes.kk}',
-      '${debugModus ? 'currentLep/maxLep' : 'LEP'}: ${resourceText(state?.currentLep, derived?.maxLep)}',
-      '${debugModus ? 'currentAu/maxAu' : 'AU'}: ${resourceText(state?.currentAu, derived?.maxAu)}',
-      '${debugModus ? 'currentAsp/maxAsp' : 'ASP'}: ${resourceText(state?.currentAsp, derived?.maxAsp)}',
-      '${debugModus ? 'currentKap/maxKap' : 'KAP'}: ${resourceText(state?.currentKap, derived?.maxKap)}',
+      '${debugModus ? 'currentLep/maxLep' : 'LeP'}: ${resourceText(state?.currentLep, derived?.maxLep)}',
+      '${debugModus ? 'currentAu/maxAu' : 'Au'}: ${resourceText(state?.currentAu, derived?.maxAu)}',
+      '${debugModus ? 'currentAsp/maxAsp' : 'AsP'}: ${resourceText(state?.currentAsp, derived?.maxAsp)}',
+      '${debugModus ? 'currentKap/maxKap' : 'KaP'}: ${resourceText(state?.currentKap, derived?.maxKap)}',
       '${debugModus ? 'beKampf' : 'BE'}: ${activeTalentBe?.toString() ?? '-'}',
     ];
 
