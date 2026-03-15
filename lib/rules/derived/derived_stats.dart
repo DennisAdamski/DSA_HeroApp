@@ -92,6 +92,15 @@ DerivedStats computeDerivedStatsFromInputs({
     gs: baseGs,
     axxeleratusActive: axxeleratusActive,
   );
+  final iniBase = computeIniBase(effectiveSheet, mods);
+  final iniBaseBonus = computeIniBaseBonus(sheet.combatConfig.specialRules);
+  var gsBonus = 0;
+  if (parsedModifiers.hasFlinkFromVorteile) {
+    gsBonus += 1;
+  }
+  if (parsedModifiers.hasBehaebigFromNachteile) {
+    gsBonus -= 1;
+  }
 
   return DerivedStats(
     maxLep: computeMaxLep(effectiveSheet, mods),
@@ -99,11 +108,11 @@ DerivedStats computeDerivedStatsFromInputs({
     maxAsp: computeMaxAsp(effectiveSheet, mods),
     maxKap: computeMaxKap(effectiveSheet, mods),
     mr: computeMr(effectiveSheet, mods),
-    iniBase: computeIniBase(effectiveSheet, mods),
+    iniBase: iniBase + iniBaseBonus,
     atBase: computeAt(effectiveSheet, mods),
     paBase: computePa(effectiveSheet, mods),
     fkBase: computeFk(effectiveSheet, mods),
-    gs: gs,
+    gs: gs + gsBonus,
     // Ausweichen wird nicht mehr als Basiswertformel aus Attributen berechnet.
     // Der abgeleitete Wert spiegelt hier nur explizite Modifikatoren wider.
     ausweichen: mods.ausweichen,
