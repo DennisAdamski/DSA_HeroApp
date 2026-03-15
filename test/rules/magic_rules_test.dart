@@ -102,7 +102,7 @@ void main() {
     expect(withResult.ausweichen, withoutResult.ausweichen + 4);
   });
 
-  test('Axxeleratus verdoppelt nur den Ini-Basisanteil', () {
+  test('Axxeleratus verdoppelt die volle INI-Basis', () {
     final withoutAxx = hero(
       combatConfig: const CombatConfig(
         specialRules: CombatSpecialRules(kampfreflexe: true),
@@ -120,10 +120,11 @@ void main() {
     final withResult = preview(withAxx, heroState: stateWithAxx);
 
     expect(withoutResult.axxIniBonus, 0);
-    expect(withResult.axxIniBonus, withResult.eigenschaftsIni);
+    expect(withResult.iniBasis, withResult.eigenschaftsIni + 4);
+    expect(withResult.axxIniBonus, withResult.iniBasis);
     expect(
       withResult.heldenInitiative,
-      withoutResult.heldenInitiative + withResult.eigenschaftsIni,
+      withoutResult.heldenInitiative + withResult.iniBasis,
     );
     expect(withResult.iniWurfEffective, withoutResult.iniWurfEffective);
   });
