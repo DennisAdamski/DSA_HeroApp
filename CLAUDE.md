@@ -165,7 +165,8 @@ Ergaenzungen zur aktuellen Struktur:
   `lib/domain/learn/learn_rules.dart` kapseln die AP-Steigerungslogik
   inklusive Aktivierungskosten, SE-Verbrauch und Lehrmeisterrabatt.
 - `lib/ui/widgets/steigerungs_dialog.dart` ist der gemeinsame Dialog fuer
-  Talent-, Zauber-, Eigenschafts- und Grundwert-Steigerungen.
+  Talent-, Zauber-, Eigenschafts- und Grundwert-Steigerungen inklusive
+  manueller Komplexitaetskorrektur als Fallback fuer Sonderfaelle.
 - `lib/ui/screens/hero_combat/` enthaelt die aufgeteilten Kampf-Subtabs sowie
   Helper fuer Regeln, Preview und Weapon-Editor.
 - `lib/ui/screens/hero_combat/combat_mastery_section.dart` enthaelt den
@@ -496,8 +497,10 @@ The following files are **intentionally kept** but not currently wired into the 
   aber noch nicht aktiviertes Talent.
 - Talente, Zauber, Eigenschaften und kaufbare Grundwerte koennen jetzt ueber
   den gemeinsamen `steigerungs_dialog.dart` direkt AP-basiert gesteigert
-  werden.
-- Die Steigerungs-Buttons bleiben auf Talente-, Magie- und Uebersichts-Tab
+  werden; die automatisch ermittelte Lernkomplexitaet kann dort bei Bedarf
+  manuell angepasst werden.
+- Die Steigerungs-Buttons bleiben auf Talente-, Kampf-, Magie- und
+  Uebersichts-Tab
   absichtlich auf den Edit-Modus ohne ungespeicherte Drafts begrenzt, damit
   Sofortspeicherung nicht mit lokalen Tab-Entwuerfen kollidiert.
 

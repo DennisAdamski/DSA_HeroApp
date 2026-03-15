@@ -44,6 +44,7 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
   required int aktuellerWert,
   required LearnCost effektiveKomplexitaet,
   required int verfuegbareAp,
+  required int maxWert,
   int seAnzahl = 0,
   bool lehrmeisterVerfuegbar = false,
 }) {
@@ -53,6 +54,7 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
       return _SteigerungsDialog(
         bezeichnung: bezeichnung,
         aktuellerWert: aktuellerWert,
+        maxWert: maxWert,
         effektiveKomplexitaet: effektiveKomplexitaet,
         verfuegbareAp: verfuegbareAp,
         seAnzahl: seAnzahl,
@@ -66,6 +68,7 @@ class _SteigerungsDialog extends StatefulWidget {
   const _SteigerungsDialog({
     required this.bezeichnung,
     required this.aktuellerWert,
+    required this.maxWert,
     required this.effektiveKomplexitaet,
     required this.verfuegbareAp,
     required this.seAnzahl,
@@ -74,6 +77,7 @@ class _SteigerungsDialog extends StatefulWidget {
 
   final String bezeichnung;
   final int aktuellerWert;
+  final int maxWert;
   final LearnCost effektiveKomplexitaet;
   final int verfuegbareAp;
   final int seAnzahl;
@@ -85,6 +89,7 @@ class _SteigerungsDialog extends StatefulWidget {
 
 class _SteigerungsDialogState extends State<_SteigerungsDialog> {
   late int _neuerWert;
+  late LearnCost _ausgewaehlteKomplexitaet;
   late final TextEditingController _wertController;
   late final TextEditingController _lehrmeisterController;
   bool _mitLehrmeister = false;
@@ -93,7 +98,9 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
   @override
   void initState() {
     super.initState();
-    _neuerWert = math.max(widget.aktuellerWert + 1, 0);
+    final initialValue = math.max(widget.aktuellerWert + 1, 0);
+    _neuerWert = _normalizeZielwert(initialValue);
+    _ausgewaehlteKomplexitaet = widget.effektiveKomplexitaet;
     _wertController = TextEditingController(text: _neuerWert.toString());
     _lehrmeisterController = TextEditingController(
       text: _lehrmeisterTaW.toString(),
@@ -111,11 +118,15 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
     return math.max(widget.aktuellerWert, 0);
   }
 
+  int get _maxZielwert {
+    return math.max(widget.maxWert, _minZielwert);
+  }
+
   ({int apKosten, int seVerbraucht}) get _basisKosten {
     return berechneSteigerungskosten(
       vonWert: widget.aktuellerWert,
       aufWert: _neuerWert,
-      effektiveKomplexitaet: widget.effektiveKomplexitaet,
+      effektiveKomplexitaet: _ausgewaehlteKomplexitaet,
       seAnzahl: widget.seAnzahl,
     );
   }
@@ -136,15 +147,23 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
   }
 
   bool get _istGueltigerZielwert {
-    return _neuerWert > widget.aktuellerWert;
+    return _neuerWert > widget.aktuellerWert && _neuerWert <= _maxZielwert;
+  }
+
+  bool get _hatMaximalwertErreicht {
+    return widget.aktuellerWert >= _maxZielwert;
   }
 
   bool get _hatGenugAp {
     return _effektiveApKosten <= widget.verfuegbareAp;
   }
 
+  int _normalizeZielwert(int value) {
+    return value.clamp(_minZielwert, _maxZielwert);
+  }
+
   void _setNeuerWert(int value) {
-    final normalized = math.max(value, _minZielwert);
+    final normalized = _normalizeZielwert(value);
     if (normalized == _neuerWert) {
       return;
     }
@@ -173,6 +192,15 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
     });
   }
 
+  void _setKomplexitaet(LearnCost value) {
+    if (value == _ausgewaehlteKomplexitaet) {
+      return;
+    }
+    setState(() {
+      _ausgewaehlteKomplexitaet = value;
+    });
+  }
+
   String _aktuellerWertLabel() {
     if (widget.aktuellerWert < 0) {
       return 'nicht aktiviert';
@@ -180,19 +208,34 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
     return widget.aktuellerWert.toString();
   }
 
-  String _komplexitaetsText() {
-    final basisLabel = komplexitaetLabel(widget.effektiveKomplexitaet);
-    final verbrauchteSe = _basisKosten.seVerbraucht;
-    if (verbrauchteSe <= 0) {
-      return basisLabel;
+  String _ausgewaehlteKomplexitaetLabel() {
+    return komplexitaetLabel(_ausgewaehlteKomplexitaet);
+  }
+
+  String? _komplexitaetsHinweisText() {
+    final hinweise = <String>[];
+    if (_ausgewaehlteKomplexitaet != widget.effektiveKomplexitaet) {
+      final standardLabel = komplexitaetLabel(widget.effektiveKomplexitaet);
+      hinweise.add('Standard: $standardLabel');
     }
-    final reduzierteKomplexitaet = komplexitaetLabel(
-      widget.effektiveKomplexitaet.previous(),
-    );
-    final seLabel = verbrauchteSe == 1
-        ? '1 Schritt'
-        : '$verbrauchteSe Schritte';
-    return '$basisLabel (mit ${widget.seAnzahl} SE: $seLabel $reduzierteKomplexitaet)';
+
+    final verbrauchteSe = _basisKosten.seVerbraucht;
+    if (verbrauchteSe > 0) {
+      final reduzierteKomplexitaet = komplexitaetLabel(
+        _ausgewaehlteKomplexitaet.previous(),
+      );
+      final seLabel = verbrauchteSe == 1
+          ? '1 Schritt'
+          : '$verbrauchteSe Schritte';
+      hinweise.add(
+        'Mit ${widget.seAnzahl} SE: $seLabel als $reduzierteKomplexitaet',
+      );
+    }
+
+    if (hinweise.isEmpty) {
+      return null;
+    }
+    return hinweise.join(' | ');
   }
 
   String _formatDukaten(double value) {
@@ -205,6 +248,7 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
     final restAp = widget.verfuegbareAp - _effektiveApKosten;
     final kannBestaetigen = _istGueltigerZielwert && _hatGenugAp;
     final basisKosten = _basisKosten;
+    final komplexitaetsHinweis = _komplexitaetsHinweisText();
 
     return AlertDialog(
       title: Text('${widget.bezeichnung} steigern'),
@@ -215,14 +259,19 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Aktueller Wert: ${_aktuellerWertLabel()}'),
+              Text(
+                'Aktueller Wert: ${_aktuellerWertLabel()} | '
+                'Maximaler Wert: ${widget.maxWert}',
+              ),
               const SizedBox(height: 12),
               Text('Neuer Wert'),
               const SizedBox(height: 6),
               Row(
                 children: [
                   IconButton(
-                    onPressed: () => _setNeuerWert(_neuerWert - 1),
+                    onPressed: _neuerWert <= _minZielwert
+                        ? null
+                        : () => _setNeuerWert(_neuerWert - 1),
                     icon: const Icon(Icons.remove),
                     tooltip: 'Wert senken',
                   ),
@@ -247,21 +296,68 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
                         if (parsed == null) {
                           return;
                         }
-                        setState(() {
-                          _neuerWert = parsed;
-                        });
+                        _setNeuerWert(parsed);
                       },
                     ),
                   ),
                   IconButton(
-                    onPressed: () => _setNeuerWert(_neuerWert + 1),
+                    onPressed: _neuerWert >= _maxZielwert
+                        ? null
+                        : () => _setNeuerWert(_neuerWert + 1),
                     icon: const Icon(Icons.add),
                     tooltip: 'Wert steigern',
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              Text('Komplexität: ${_komplexitaetsText()}'),
+              Text('Komplexität'),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  IconButton(
+                    key: const ValueKey<String>(
+                      'steigerungs-dialog-complexity-decrease',
+                    ),
+                    onPressed:
+                        _ausgewaehlteKomplexitaet == LearnCost.values.first
+                        ? null
+                        : () => _setKomplexitaet(
+                            _ausgewaehlteKomplexitaet.previous(),
+                          ),
+                    icon: const Icon(Icons.remove),
+                    tooltip: 'Komplexität reduzieren',
+                  ),
+                  SizedBox(
+                    width: 92,
+                    child: Center(
+                      child: Text(
+                        _ausgewaehlteKomplexitaetLabel(),
+                        key: const ValueKey<String>(
+                          'steigerungs-dialog-complexity-value',
+                        ),
+                        style: theme.textTheme.titleMedium,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    key: const ValueKey<String>(
+                      'steigerungs-dialog-complexity-increase',
+                    ),
+                    onPressed:
+                        _ausgewaehlteKomplexitaet == LearnCost.values.last
+                        ? null
+                        : () => _setKomplexitaet(
+                            _ausgewaehlteKomplexitaet.next(),
+                          ),
+                    icon: const Icon(Icons.add),
+                    tooltip: 'Komplexität erhöhen',
+                  ),
+                ],
+              ),
+              if (komplexitaetsHinweis != null) ...[
+                Text(komplexitaetsHinweis, style: theme.textTheme.bodySmall),
+                const SizedBox(height: 4),
+              ],
               const SizedBox(height: 4),
               Text('AP-Kosten: ${basisKosten.apKosten}'),
               const SizedBox(height: 12),
@@ -322,7 +418,15 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
                   Text('Dukaten: ${_formatDukaten(_dukaten ?? 0)}'),
                 ],
               ],
-              if (!_istGueltigerZielwert) ...[
+              if (_hatMaximalwertErreicht) ...[
+                const SizedBox(height: 12),
+                Text(
+                  'Der Maximalwert ist bereits erreicht.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ] else if (!_istGueltigerZielwert) ...[
                 const SizedBox(height: 12),
                 Text(
                   'Der neue Wert muss ueber dem aktuellen Wert liegen.',

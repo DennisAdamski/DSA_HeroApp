@@ -12,7 +12,9 @@ import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -243,6 +245,11 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
           );
     final fremdReprPenaltySteps =
         currentAvailabilityEntry?.isForeignRepresentation == true ? 2 : 0;
+    final maxWert = computeTalentMaxValue(
+      effectiveAttributes: computeEffectiveAttributes(hero),
+      attributeNames: spell.attributes,
+      gifted: entry.gifted,
+    );
     final effektiveKomplexitaet = effectiveSteigerung(
       basisSteigerung: spell.steigerung,
       istHauszauber: entry.hauszauber,
@@ -270,6 +277,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       context: context,
       bezeichnung: spell.name,
       aktuellerWert: entry.spellValue,
+      maxWert: maxWert,
       effektiveKomplexitaet: learnCost,
       verfuegbareAp: hero.apAvailable,
       lehrmeisterVerfuegbar: true,

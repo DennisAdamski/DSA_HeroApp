@@ -4,6 +4,31 @@ Aufgaben die notwendig sind für das erreichen des MVP
 
 ## Aufgaben für die KI (MVP)
 
+- [ ] Basiswert anpassungen:
+  - [ ] Ini-Basis ist mit Kampfreflexe/Gespür
+  - [ ] Magieresistenz + Hohe/Niedrige Magieresistenz
+  - [ ] Lebensenergie + Hohe/Niedrige Lebenskraft
+  - [ ] Ausdauer + Asudauernd/Kurzatmig
+  - [ ] AsP +Astralmacht/Niedrige Astralenergie
+- [ ] MaxWerte für Basiswerte
+  - [ ] LeP = KO/2
+  - [ ] Au = KO*2
+  - [ ] MR = MU/2
+- [ ] Maximalwerte beim Steigern einblenden
+- [ ] Renaming von verschiedenen Variablen
+  - [ ] Der Basiswert von LeP (Lebenspunkte) heißt LE (Lebensenergie).
+  - [ ] Der Basiswert von AuP (Ausdauerpunkte) heißt AU (Ausdauer).
+  - [ ] Der Basiswert von AsP (Astralpunkte) heißt AE (Astralenergie).
+  - [ ] Der Basiswert von KaP (Karmalpunkte) heißt KE (Karmalenergie).
+  - [ ] Der Basiswert von MR (Magieresistenz), dort gibt es keine Punkte.
+- [ ] Einträge aus Rasse, Sonderfertigkeiten, etc. kommen in die Modifikation des entsprechenden Basiswerts
+  - [ ] Ein automatisch Berechneter Wert
+  - [ ] Ein manueller Wert
+- [ ] KE kann nicht gesteigert werden.
+- [ ] Eigenschaften steigern nach H, kann aber modifiziert werden, sodass diese dann nach G gesteigert werden können.
+- [ ] Nicht bearbeitbare Felder im nicht Bearbeitungsmodus anders darstellen, sodass man nicht davon ausgeht, dieses bearbeiten zu können.
+- [ ] 
+
 - [ ] Alle Helden (als Zip) exportieren als Button global
 - [x] Steigerungstabelle und Funktion
 - [ ] Körperzonen, Rüstungen und Wunden

@@ -1265,7 +1265,8 @@ Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Da
   Lernkomplexitaeten, AP-Kosten pro Schritt, SE-Verbrauch sowie
   Lehrmeister- und Dukatenberechnung.
 - `lib/ui/widgets/steigerungs_dialog.dart` ist der gemeinsame Dialog fuer
-  Talent-, Zauber-, Eigenschafts- und Grundwertsteigerungen.
+  Talent-, Zauber-, Eigenschafts- und Grundwertsteigerungen inklusive
+  manueller Komplexitaetskorrektur fuer seltene Sonderfaelle.
 - Die Tabs `hero_talents_tab.dart`, `hero_magic_tab.dart` und
   `hero_overview_tab.dart` zeigen Raise-Aktionen nur im Edit-Modus ohne
   ungespeicherte Draft-Aenderungen, um Konflikte mit lokalen Entwuerfen zu

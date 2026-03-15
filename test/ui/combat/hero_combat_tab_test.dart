@@ -821,6 +821,52 @@ void main() {
     },
   );
 
+  testWidgets('combat techniques support AP raising from the TaW cell', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(talentValue: 5, atValue: 3, paValue: 2),
+          },
+        ).copyWith(apAvailable: 500),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openCombatTab(tester, repo);
+    await tapTab(tester, 'Kampftechniken');
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    final raiseButton = find.byKey(
+      const ValueKey<String>('combat-talents-raise-tal_nah-talentValue'),
+    );
+    expect(raiseButton, findsOneWidget);
+
+    await tester.tap(raiseButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Schwerter steigern'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Steigern'));
+    await tester.pumpAndSettle();
+
+    final updatedHero = await repo.loadHeroById('demo');
+    final updatedEntry = updatedHero!.talents['tal_nah']!;
+    expect(updatedEntry.talentValue, 6);
+    expect(updatedEntry.atValue, 4);
+    expect(updatedEntry.paValue, 2);
+  });
+
   testWidgets('combat techniques save multiple specializations in edit mode', (
     tester,
   ) async {
@@ -3197,61 +3243,62 @@ void main() {
     },
   );
 
-  testWidgets('artifact summary stays hidden without active artifact descriptions', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [
-        buildHero(
-          combatConfig: const CombatConfig(
-            weapons: <MainWeaponSlot>[
-              MainWeaponSlot(
-                name: 'Kurzschwert',
-                talentId: 'tal_nah',
-                isArtifact: true,
-                artifactDescription: '',
-              ),
-            ],
-            selectedWeaponIndex: 0,
-            offhandEquipment: <OffhandEquipmentEntry>[
-              OffhandEquipmentEntry(
-                name: 'Buckler',
-                isArtifact: true,
-                artifactDescription: '',
-              ),
-            ],
-            armor: ArmorConfig(
-              pieces: <ArmorPiece>[
-                ArmorPiece(
-                  name: 'Kettenhemd',
-                  isActive: true,
+  testWidgets(
+    'artifact summary stays hidden without active artifact descriptions',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              weapons: <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzschwert',
+                  talentId: 'tal_nah',
                   isArtifact: true,
                   artifactDescription: '',
                 ),
               ],
+              selectedWeaponIndex: 0,
+              offhandEquipment: <OffhandEquipmentEntry>[
+                OffhandEquipmentEntry(
+                  name: 'Buckler',
+                  isArtifact: true,
+                  artifactDescription: '',
+                ),
+              ],
+              armor: ArmorConfig(
+                pieces: <ArmorPiece>[
+                  ArmorPiece(
+                    name: 'Kettenhemd',
+                    isActive: true,
+                    isArtifact: true,
+                    artifactDescription: '',
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
 
-    await openCombatTab(tester, repo);
-    await openMeleeTab(tester);
+      await openCombatTab(tester, repo);
+      await openMeleeTab(tester);
 
-    expect(
-      find.byKey(const ValueKey<String>('combat-artifact-summary-card')),
-      findsNothing,
-    );
-    expect(find.text('Artefakte'), findsNothing);
-  });
+      expect(
+        find.byKey(const ValueKey<String>('combat-artifact-summary-card')),
+        findsNothing,
+      );
+      expect(find.text('Artefakte'), findsNothing);
+    },
+  );
 
   testWidgets(
     'artifact summary shows mainhand offhand weapon and active armor after expanding',
@@ -3325,19 +3372,28 @@ void main() {
         const ValueKey<String>('combat-artifact-summary-card'),
       );
       expect(
-        find.byKey(const ValueKey<String>('combat-artifact-summary-group-mainhand')),
+        find.byKey(
+          const ValueKey<String>('combat-artifact-summary-group-mainhand'),
+        ),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey<String>('combat-artifact-summary-group-offhand')),
+        find.byKey(
+          const ValueKey<String>('combat-artifact-summary-group-offhand'),
+        ),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey<String>('combat-artifact-summary-group-armor')),
+        find.byKey(
+          const ValueKey<String>('combat-artifact-summary-group-armor'),
+        ),
         findsOneWidget,
       );
       expect(
-        find.descendant(of: artifactCard, matching: find.text('Gebundener Dschinn')),
+        find.descendant(
+          of: artifactCard,
+          matching: find.text('Gebundener Dschinn'),
+        ),
         findsOneWidget,
       );
       expect(
@@ -3420,60 +3476,61 @@ void main() {
     );
   });
 
-  testWidgets('artifact summary is placed between offhand and calculation details', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [
-        buildHero(
-          combatConfig: const CombatConfig(
-            weapons: <MainWeaponSlot>[
-              MainWeaponSlot(
-                name: 'Kurzschwert',
-                talentId: 'tal_nah',
-                isArtifact: true,
-                artifactDescription: 'Gebundener Dschinn',
-              ),
-            ],
-            selectedWeaponIndex: 0,
+  testWidgets(
+    'artifact summary is placed between offhand and calculation details',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              weapons: <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzschwert',
+                  talentId: 'tal_nah',
+                  isArtifact: true,
+                  artifactDescription: 'Gebundener Dschinn',
+                ),
+              ],
+              selectedWeaponIndex: 0,
+            ),
+            talents: const <String, HeroTalentEntry>{
+              'tal_nah': HeroTalentEntry(atValue: 12, paValue: 10),
+            },
           ),
-          talents: const <String, HeroTalentEntry>{
-            'tal_nah': HeroTalentEntry(atValue: 12, paValue: 10),
-          },
-        ),
-      ],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
 
-    await openCombatTab(tester, repo);
-    await openMeleeTab(tester);
+      await openCombatTab(tester, repo);
+      await openMeleeTab(tester);
 
-    final offhandCard = find.byKey(
-      const ValueKey<String>('combat-offhand-selection'),
-    );
-    final artifactCard = find.byKey(
-      const ValueKey<String>('combat-artifact-summary-card'),
-    );
-    final calculationCard = find.byKey(
-      const ValueKey<String>('combat-weapon-calculation-details'),
-    );
+      final offhandCard = find.byKey(
+        const ValueKey<String>('combat-offhand-selection'),
+      );
+      final artifactCard = find.byKey(
+        const ValueKey<String>('combat-artifact-summary-card'),
+      );
+      final calculationCard = find.byKey(
+        const ValueKey<String>('combat-weapon-calculation-details'),
+      );
 
-    expect(offhandCard, findsOneWidget);
-    expect(artifactCard, findsOneWidget);
-    expect(calculationCard, findsOneWidget);
+      expect(offhandCard, findsOneWidget);
+      expect(artifactCard, findsOneWidget);
+      expect(calculationCard, findsOneWidget);
 
-    final offhandTop = tester.getTopLeft(offhandCard).dy;
-    final artifactTop = tester.getTopLeft(artifactCard).dy;
-    final calculationTop = tester.getTopLeft(calculationCard).dy;
+      final offhandTop = tester.getTopLeft(offhandCard).dy;
+      final artifactTop = tester.getTopLeft(artifactCard).dy;
+      final calculationTop = tester.getTopLeft(calculationCard).dy;
 
-    expect(artifactTop, greaterThan(offhandTop));
-    expect(calculationTop, greaterThan(artifactTop));
-  });
+      expect(artifactTop, greaterThan(offhandTop));
+      expect(calculationTop, greaterThan(artifactTop));
+    },
+  );
 }
