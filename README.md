@@ -69,6 +69,7 @@ Technischer Stack:
 - Validierung von AT/PA-Aufteilungen bei Kampftalenten
 - Unterstuetzung fuer Talentspezialisierungen, Sondererfahrungen und Begabungen
 - Steigerungsdialog fuer Talente mit Live-AP-Kosten, SE-Verbrauch und Lehrmeister-Rabatt
+- AP-Steigerung fuer Kampftalente auch direkt im Kampftechniken-Tab
 - Eigener Bereich fuer Sprachen und Schriften auf Basis von Katalogdaten
 
 ### Kampf
