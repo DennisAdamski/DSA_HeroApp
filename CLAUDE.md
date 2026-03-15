@@ -497,7 +497,8 @@ The following files are **intentionally kept** but not currently wired into the 
 - Talente, Zauber, Eigenschaften und kaufbare Grundwerte koennen jetzt ueber
   den gemeinsamen `steigerungs_dialog.dart` direkt AP-basiert gesteigert
   werden.
-- Die Steigerungs-Buttons bleiben auf Talente-, Magie- und Uebersichts-Tab
+- Die Steigerungs-Buttons bleiben auf Talente-, Kampf-, Magie- und
+  Uebersichts-Tab
   absichtlich auf den Edit-Modus ohne ungespeicherte Drafts begrenzt, damit
   Sofortspeicherung nicht mit lokalen Tab-Entwuerfen kollidiert.
 
