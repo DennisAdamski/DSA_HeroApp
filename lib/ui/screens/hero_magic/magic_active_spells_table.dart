@@ -17,6 +17,8 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     required this.onTextOverridesChanged,
     required this.onRemoveSpell,
     required this.controllerFor,
+    required this.canRaiseValues,
+    this.onRaiseSpell,
     this.onAddSpell,
   });
 
@@ -37,6 +39,8 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final void Function(String spellId) onRemoveSpell;
   final TextEditingController Function(String id, String field, String initial)
   controllerFor;
+  final bool canRaiseValues;
+  final Future<void> Function(String spellId, SpellDef spell)? onRaiseSpell;
   final VoidCallback? onAddSpell;
 
   Future<void> _openSpellDetails(
@@ -315,29 +319,53 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                             ),
                             isEditing
                                 ? DataCell(
-                                    TextField(
-                                      controller: controllerFor(
-                                        spellId,
-                                        'spellValue',
-                                        entry.spellValue.toString(),
-                                      ),
-                                      keyboardType: TextInputType.number,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.allow(
-                                          RegExp(r'-?\d*'),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: TextField(
+                                            controller: controllerFor(
+                                              spellId,
+                                              'spellValue',
+                                              entry.spellValue.toString(),
+                                            ),
+                                            keyboardType: TextInputType.number,
+                                            inputFormatters: [
+                                              FilteringTextInputFormatter.allow(
+                                                RegExp(r'-?\d*'),
+                                              ),
+                                            ],
+                                            onChanged: (raw) =>
+                                                onSpellValueChanged(
+                                                  spellId,
+                                                  raw,
+                                                ),
+                                            textAlign: TextAlign.center,
+                                            style: theme.textTheme.bodySmall,
+                                            decoration: const InputDecoration(
+                                              isDense: true,
+                                              contentPadding:
+                                                  EdgeInsets.symmetric(
+                                                    horizontal: 4,
+                                                    vertical: 6,
+                                                  ),
+                                            ),
+                                          ),
                                         ),
+                                        if (canRaiseValues &&
+                                            onRaiseSpell != null)
+                                          IconButton(
+                                            key: ValueKey<String>(
+                                              'magic-spells-raise-$spellId',
+                                            ),
+                                            visualDensity:
+                                                VisualDensity.compact,
+                                            iconSize: 18,
+                                            tooltip: 'Zauber steigern',
+                                            onPressed: () =>
+                                                onRaiseSpell!(spellId, def),
+                                            icon: const Icon(Icons.trending_up),
+                                          ),
                                       ],
-                                      onChanged: (raw) =>
-                                          onSpellValueChanged(spellId, raw),
-                                      textAlign: TextAlign.center,
-                                      style: theme.textTheme.bodySmall,
-                                      decoration: const InputDecoration(
-                                        isDense: true,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 4,
-                                          vertical: 6,
-                                        ),
-                                      ),
                                     ),
                                   )
                                 : DataCell(Text(entry.spellValue.toString())),

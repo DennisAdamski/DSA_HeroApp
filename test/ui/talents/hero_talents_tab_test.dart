@@ -387,12 +387,14 @@ void main() {
       find.byKey(const ValueKey<String>('talents-catalog-open')),
       findsOneWidget,
     );
-    final catalogX = tester.getTopLeft(
-      find.byKey(const ValueKey<String>('talents-catalog-open')),
-    ).dx;
-    final beX = tester.getTopLeft(
-      find.byKey(const ValueKey<String>('talents-be-screen-open')),
-    ).dx;
+    final catalogX = tester
+        .getTopLeft(find.byKey(const ValueKey<String>('talents-catalog-open')))
+        .dx;
+    final beX = tester
+        .getTopLeft(
+          find.byKey(const ValueKey<String>('talents-be-screen-open')),
+        )
+        .dx;
     expect(catalogX, lessThan(beX));
   });
 
@@ -489,9 +491,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey<String>('talent-modifiers-add')));
+      await tester.tap(
+        find.byKey(const ValueKey<String>('talent-modifiers-add')),
+      );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey<String>('talent-modifiers-add')));
+      await tester.tap(
+        find.byKey(const ValueKey<String>('talent-modifiers-add')),
+      );
       await tester.pumpAndSettle();
 
       await tester.enterText(
@@ -516,7 +522,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
+        find.byKey(
+          const ValueKey<String>('talents-field-tal_a-modifier-total'),
+        ),
         findsOneWidget,
       );
       expect(find.text('1'), findsWidgets);
@@ -577,9 +585,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey<String>('talent-modifiers-add')));
+      await tester.tap(
+        find.byKey(const ValueKey<String>('talent-modifiers-add')),
+      );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey<String>('talent-modifiers-add')));
+      await tester.tap(
+        find.byKey(const ValueKey<String>('talent-modifiers-add')),
+      );
       await tester.pumpAndSettle();
 
       await tester.enterText(
@@ -656,7 +668,7 @@ void main() {
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-    expect(hero.talents['tal_a']?.talentValue, 0);
+    expect(hero.talents['tal_a']?.talentValue, isNull);
     expect(find.text('Athletik'), findsOneWidget);
   });
 
@@ -780,106 +792,103 @@ void main() {
     expect(find.text('Meta-Talente'), findsNothing);
   });
 
-  testWidgets('meta talents update live from draft talent values and be override', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [
-        buildHero(
-          talents: const <String, HeroTalentEntry>{
-            'tal_a': HeroTalentEntry(talentValue: 6),
-            'tal_b': HeroTalentEntry(talentValue: 8),
-            'tal_kampf': HeroTalentEntry(talentValue: 4),
-          },
-          metaTalents: const <HeroMetaTalent>[
-            HeroMetaTalent(
-              id: 'meta_pflanzensuchen',
-              name: 'Pflanzensuchen',
-              componentTalentIds: <String>['tal_a', 'tal_b', 'tal_kampf'],
-              attributes: <String>['MU', 'IN', 'FF'],
-              be: 'x2',
-            ),
-          ],
-          combatConfig: const CombatConfig(
-            armor: ArmorConfig(
-              pieces: <ArmorPiece>[
-                ArmorPiece(
-                  name: 'Ruestung',
-                  isActive: true,
-                  be: 2,
-                ),
-              ],
+  testWidgets(
+    'meta talents update live from draft talent values and be override',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(talentValue: 6),
+              'tal_b': HeroTalentEntry(talentValue: 8),
+              'tal_kampf': HeroTalentEntry(talentValue: 4),
+            },
+            metaTalents: const <HeroMetaTalent>[
+              HeroMetaTalent(
+                id: 'meta_pflanzensuchen',
+                name: 'Pflanzensuchen',
+                componentTalentIds: <String>['tal_a', 'tal_b', 'tal_kampf'],
+                attributes: <String>['MU', 'IN', 'FF'],
+                be: 'x2',
+              ),
+            ],
+            combatConfig: const CombatConfig(
+              armor: ArmorConfig(
+                pieces: <ArmorPiece>[
+                  ArmorPiece(name: 'Ruestung', isActive: true, be: 2),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
-
-    String textFor(Key key) {
-      final finder = find.descendant(
-        of: find.byKey(key),
-        matching: find.byType(Text),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
       );
-      return tester.widget<Text>(finder.first).data ?? '';
-    }
 
-    final actions = await openTalentsTab(tester, repo, buildCatalog());
-    expect(
-      textFor(
-        const ValueKey<String>(
-          'meta-talents-field-meta_pflanzensuchen-computed-taw',
+      String textFor(Key key) {
+        final finder = find.descendant(
+          of: find.byKey(key),
+          matching: find.byType(Text),
+        );
+        return tester.widget<Text>(finder.first).data ?? '';
+      }
+
+      final actions = await openTalentsTab(tester, repo, buildCatalog());
+      expect(
+        textFor(
+          const ValueKey<String>(
+            'meta-talents-field-meta_pflanzensuchen-computed-taw',
+          ),
         ),
-      ),
-      '2',
-    );
+        '2',
+      );
 
-    await actions.startEdit();
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
-      '9',
-    );
-    await tester.pumpAndSettle();
-    expect(
-      textFor(
-        const ValueKey<String>(
-          'meta-talents-field-meta_pflanzensuchen-computed-taw',
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
+        '9',
+      );
+      await tester.pumpAndSettle();
+      expect(
+        textFor(
+          const ValueKey<String>(
+            'meta-talents-field-meta_pflanzensuchen-computed-taw',
+          ),
         ),
-      ),
-      '3',
-    );
+        '3',
+      );
 
-    await openBeScreen(tester);
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('talents-be-override-field')),
-      '1',
-    );
-    await tester.pumpAndSettle();
-    await closeBeDialog(tester);
+      await openBeScreen(tester);
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talents-be-override-field')),
+        '1',
+      );
+      await tester.pumpAndSettle();
+      await closeBeDialog(tester);
 
-    expect(
-      textFor(
-        const ValueKey<String>('meta-talents-field-meta_pflanzensuchen-ebe'),
-      ),
-      '-2',
-    );
-    expect(
-      textFor(
-        const ValueKey<String>(
-          'meta-talents-field-meta_pflanzensuchen-computed-taw',
+      expect(
+        textFor(
+          const ValueKey<String>('meta-talents-field-meta_pflanzensuchen-ebe'),
         ),
-      ),
-      '5',
-    );
-  });
+        '-2',
+      );
+      expect(
+        textFor(
+          const ValueKey<String>(
+            'meta-talents-field-meta_pflanzensuchen-computed-taw',
+          ),
+        ),
+        '5',
+      );
+    },
+  );
 
   testWidgets(
     'meta talent references lock components in catalog and are activated on save',

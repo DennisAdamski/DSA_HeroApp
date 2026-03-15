@@ -85,22 +85,25 @@ void main() {
     expect(issues.single, contains('BE-Regel'));
   });
 
-  test('activating referenced meta talent components fills missing draft entries', () {
-    final result = activateReferencedMetaTalentComponents(
-      talents: const <String, HeroTalentEntry>{
-        'tal_a': HeroTalentEntry(talentValue: 5),
-      },
-      metaTalents: const <HeroMetaTalent>[
-        HeroMetaTalent(
-          id: 'meta_1',
-          name: 'Pflanzensuchen',
-          componentTalentIds: <String>['tal_a', 'tal_b'],
-          attributes: <String>['MU', 'IN', 'FF'],
-        ),
-      ],
-    );
+  test(
+    'activating referenced meta talent components fills missing draft entries',
+    () {
+      final result = activateReferencedMetaTalentComponents(
+        talents: const <String, HeroTalentEntry>{
+          'tal_a': HeroTalentEntry(talentValue: 5),
+        },
+        metaTalents: const <HeroMetaTalent>[
+          HeroMetaTalent(
+            id: 'meta_1',
+            name: 'Pflanzensuchen',
+            componentTalentIds: <String>['tal_a', 'tal_b'],
+            attributes: <String>['MU', 'IN', 'FF'],
+          ),
+        ],
+      );
 
-    expect(result.keys, containsAll(<String>['tal_a', 'tal_b']));
-    expect(result['tal_b']?.talentValue, 0);
-  });
+      expect(result.keys, containsAll(<String>['tal_a', 'tal_b']));
+      expect(result['tal_b']?.talentValue, isNull);
+    },
+  );
 }
