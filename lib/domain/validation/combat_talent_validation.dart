@@ -68,7 +68,7 @@ List<CombatTalentValidationIssue> validateCombatTalentDistribution({
   final filtered = filter == null ? talents : talents.where(filter);
   for (final talent in filtered) {
     final entry = talentEntries[talent.id] ?? const HeroTalentEntry();
-    final taw = entry.talentValue;
+    final taw = entry.talentValue ?? 0;
     final at = entry.atValue;
     final pa = entry.paValue;
     final type = talent.type.trim().toLowerCase();
