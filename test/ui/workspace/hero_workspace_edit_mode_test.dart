@@ -637,7 +637,7 @@ void main() {
       );
 
       await openWorkspace(tester, repo);
-      expect(find.text('LEP: 10/22'), findsOneWidget);
+      expect(find.text('LeP: 10/22'), findsOneWidget);
       expect(find.text('BE: 0'), findsOneWidget);
 
       await tester.tap(find.text('Bearbeiten').first);
@@ -666,7 +666,7 @@ void main() {
       await tester.tap(find.text('Speichern').first);
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('LEP: 15/'), findsOneWidget);
+      expect(find.textContaining('LeP: 15/'), findsOneWidget);
     },
   );
 

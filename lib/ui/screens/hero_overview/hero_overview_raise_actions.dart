@@ -72,6 +72,34 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
     };
   }
 
+  int _eigenschaftMaxWert(HeroSheet hero, AttributeCode code) {
+    final originModifiers = parseOriginAttributeModifiers(hero);
+    final effectiveStartAttributes = computeEffectiveStartAttributes(
+      hero.startAttributes,
+      originModifiers,
+    );
+    final attributeMaximums = computeAttributeMaximums(effectiveStartAttributes);
+    return readAttributeValue(attributeMaximums, code);
+  }
+
+  /// Nutzt bis zu einer modellierten Fachregel die mit den aktuellen AP erreichbare Obergrenze.
+  int _grundwertMaxWert({
+    required int aktuellerWert,
+    required LearnCost learnCost,
+    required int verfuegbareAp,
+  }) {
+    var maxWert = aktuellerWert;
+    var restAp = verfuegbareAp;
+    while (true) {
+      final int kostenFuerNaechstenSchritt = learnCost.costForStep(maxWert);
+      if (kostenFuerNaechstenSchritt > restAp) {
+        return maxWert;
+      }
+      restAp -= kostenFuerNaechstenSchritt;
+      maxWert++;
+    }
+  }
+
   Future<void> _steigeEigenschaft(AttributeCode code) async {
     final hero = _latestHero;
     if (hero == null || !_canUseSteigerungsDialog) {
@@ -79,10 +107,12 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
     }
 
     final aktuellerWert = readAttributeValue(hero.attributes, code);
+    final maxWert = _eigenschaftMaxWert(hero, code);
     final result = await showSteigerungsDialog(
       context: context,
       bezeichnung: _attributeLabel(code),
       aktuellerWert: aktuellerWert,
+      maxWert: maxWert,
       effektiveKomplexitaet: kEigenschaftKomplexitaet,
       verfuegbareAp: hero.apAvailable,
     );
@@ -120,11 +150,18 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
     if (learnCost == null) {
       return;
     }
+    final aktuellerWert = _grundwertValue(hero.bought, key);
+    final maxWert = _grundwertMaxWert(
+      aktuellerWert: aktuellerWert,
+      learnCost: learnCost,
+      verfuegbareAp: hero.apAvailable,
+    );
 
     final result = await showSteigerungsDialog(
       context: context,
       bezeichnung: _grundwertLabel(key),
-      aktuellerWert: _grundwertValue(hero.bought, key),
+      aktuellerWert: aktuellerWert,
+      maxWert: maxWert,
       effektiveKomplexitaet: learnCost,
       verfuegbareAp: hero.apAvailable,
     );

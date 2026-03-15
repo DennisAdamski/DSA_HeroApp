@@ -25,6 +25,27 @@ extension _HeroTalentsRaiseActions on _HeroTalentTableTabState {
     return null;
   }
 
+  /// Leitet den Talent-Maximalwert aus Probeigenschaften bzw. Kampftalent-Regeln ab.
+  int _maxWertFuerTalent(TalentDef talent, HeroTalentEntry entry) {
+    final hero = _latestHero;
+    if (hero == null) {
+      return entry.gifted ? 5 : 3;
+    }
+    final effectiveAttributes = computeEffectiveAttributes(hero);
+    if (isCombatTalentDef(talent)) {
+      return computeCombatTalentMaxValue(
+        effectiveAttributes: effectiveAttributes,
+        talentType: talent.type,
+        gifted: entry.gifted,
+      );
+    }
+    return computeTalentMaxValue(
+      effectiveAttributes: effectiveAttributes,
+      attributeNames: talent.attributes,
+      gifted: entry.gifted,
+    );
+  }
+
   Future<void> _steigereTalent(String talentId) async {
     final hero = _latestHero;
     if (hero == null || !_canUseSteigerungsDialog) {
@@ -43,6 +64,7 @@ extension _HeroTalentsRaiseActions on _HeroTalentTableTabState {
     }
 
     final entry = _entryForTalent(talentId);
+    final maxWert = _maxWertFuerTalent(talent, entry);
     final effektiveKomplexitaet = effectiveTalentLernkomplexitaet(
       basisKomplexitaet: talent.steigerung,
       gifted: entry.gifted,
@@ -66,6 +88,7 @@ extension _HeroTalentsRaiseActions on _HeroTalentTableTabState {
       context: context,
       bezeichnung: talent.name,
       aktuellerWert: entry.talentValue ?? -1,
+      maxWert: maxWert,
       effektiveKomplexitaet: learnCost,
       verfuegbareAp: hero.apAvailable,
       seAnzahl: entry.specialExperiences,
