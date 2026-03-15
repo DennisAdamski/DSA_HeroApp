@@ -164,6 +164,7 @@ void main() {
     final highIniResult = preview(highIniSheet);
 
     expect(referenceResult.eigenschaftsIni, 10);
+    expect(referenceResult.iniBasis, 10);
     expect(referenceResult.iniGe, 0);
     expect(referenceResult.heldenInitiative, 10);
     expect(referenceResult.kampfInitiative, 10);
@@ -218,6 +219,35 @@ void main() {
       expect(result.kampfInitiative, result.kombinierteHeldenWaffenIni - 1);
     },
   );
+
+  test('kampf initiative uses the higher value of main and offhand weapon', () {
+    final sheet = hero(
+      combatConfig: const CombatConfig(
+        weapons: <MainWeaponSlot>[
+          MainWeaponSlot(
+            name: 'Kurzschwert',
+            iniMod: 1,
+            kkBase: 12,
+            kkThreshold: 2,
+          ),
+          MainWeaponSlot(
+            name: 'Dolch',
+            iniMod: 4,
+            kkBase: 14,
+            kkThreshold: 1,
+          ),
+        ],
+        selectedWeaponIndex: 0,
+        offhandAssignment: OffhandAssignment(weaponIndex: 1),
+      ),
+    );
+
+    final result = preview(sheet);
+
+    expect(result.kombinierteHeldenWaffenIni, result.heldenInitiative + 1);
+    expect(result.offhandWeaponInitiative, result.heldenInitiative + 4);
+    expect(result.kampfInitiative, result.offhandWeaponInitiative);
+  });
 
   test('kombinierte Helden+Waffen INI includes weapon ini mod and INI/GE', () {
     final hero = heroWithAttributes(
@@ -280,26 +310,34 @@ void main() {
     );
   });
 
-  test('Flink from Vorteile adds +1 INI and +1 Ausweichen', () {
+  test('Flink from Vorteile adds +1 GS and +1 Ausweichen, but no INI', () {
     final withoutFlink = hero();
     final withFlink = hero(vorteileText: 'Flink');
 
     final withoutResult = preview(withoutFlink);
     final withResult = preview(withFlink);
+    final withoutDerived = computeDerivedStats(withoutFlink, state);
+    final withDerived = computeDerivedStats(withFlink, state);
 
-    expect(withResult.sfIniBonus, withoutResult.sfIniBonus + 1);
+    expect(withResult.sfIniBonus, withoutResult.sfIniBonus);
+    expect(withResult.heldenInitiative, withoutResult.heldenInitiative);
     expect(withResult.sfAusweichenBonus, withoutResult.sfAusweichenBonus + 1);
+    expect(withDerived.gs, withoutDerived.gs + 1);
   });
 
-  test('Behaebig from Nachteile gives -1 INI and -1 Ausweichen', () {
+  test('Behaebig from Nachteile gives -1 GS and -1 Ausweichen, but no INI', () {
     final withoutBehaebig = hero();
     final withBehaebig = hero(nachteileText: 'Behaebig');
 
     final withoutResult = preview(withoutBehaebig);
     final withResult = preview(withBehaebig);
+    final withoutDerived = computeDerivedStats(withoutBehaebig, state);
+    final withDerived = computeDerivedStats(withBehaebig, state);
 
-    expect(withResult.sfIniBonus, withoutResult.sfIniBonus - 1);
+    expect(withResult.sfIniBonus, withoutResult.sfIniBonus);
+    expect(withResult.heldenInitiative, withoutResult.heldenInitiative);
     expect(withResult.sfAusweichenBonus, withoutResult.sfAusweichenBonus - 1);
+    expect(withDerived.gs, withoutDerived.gs - 1);
   });
 
   test('Flink and Behaebig from texts cancel each other', () {
@@ -308,9 +346,13 @@ void main() {
 
     final baselineResult = preview(baseline);
     final withBothResult = preview(withBoth);
+    final baselineDerived = computeDerivedStats(baseline, state);
+    final withBothDerived = computeDerivedStats(withBoth, state);
 
     expect(withBothResult.sfIniBonus, baselineResult.sfIniBonus);
+    expect(withBothResult.heldenInitiative, baselineResult.heldenInitiative);
     expect(withBothResult.sfAusweichenBonus, baselineResult.sfAusweichenBonus);
+    expect(withBothDerived.gs, baselineDerived.gs);
   });
 
   test('Spezialisierung grants +1 AT and +1 PA when weapon type matches', () {
@@ -1063,6 +1105,18 @@ void main() {
     final result = computeDerivedStats(sheet, state);
 
     expect(result.gs, 8);
+  });
+
+  test('Flink and Behaebig adjust GS directly', () {
+    final baseline = computeDerivedStats(hero(), state);
+    final flink = computeDerivedStats(hero(vorteileText: 'Flink'), state);
+    final behaebig = computeDerivedStats(
+      hero(nachteileText: 'Behaebig'),
+      state,
+    );
+
+    expect(flink.gs, baseline.gs + 1);
+    expect(behaebig.gs, baseline.gs - 1);
   });
 
   test('INI-Bonus auf Ausweichen ab Kampf-INI 21', () {

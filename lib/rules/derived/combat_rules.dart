@@ -34,6 +34,7 @@ class CombatPreviewStats {
     required this.iniParadeMod,
     required this.tpCalc,
     required this.specApplies,
+    required this.iniBasis,
     required this.eigenschaftsIni,
     required this.iniWurfEffective,
     required this.axxIniBonus,
@@ -58,6 +59,7 @@ class CombatPreviewStats {
     required this.offhandPaBonus,
     required this.offhandAtMod,
     required this.offhandIniMod,
+    required this.offhandWeaponInitiative,
     required this.shieldPa,
     required this.shieldPaBonus,
     required this.offhandIsShield,
@@ -109,6 +111,7 @@ class CombatPreviewStats {
   final int iniParadeMod;
   final int tpCalc;
   final bool specApplies;
+  final int iniBasis;
   final int eigenschaftsIni;
   final int iniWurfEffective;
   final int axxIniBonus;
@@ -134,6 +137,7 @@ class CombatPreviewStats {
   final int offhandPaBonus;
   final int offhandAtMod;
   final int offhandIniMod;
+  final int? offhandWeaponInitiative;
   final int shieldPa;
   final int shieldPaBonus;
   final bool offhandIsShield;
@@ -228,6 +232,12 @@ CombatPreviewStats computeCombatPreviewStats(
   final config = overrideConfig ?? sheet.combatConfig;
   final talents = overrideTalents ?? sheet.talents;
   final main = config.selectedWeapon;
+  final offhandWeapon =
+      config.offhandAssignment.usesWeapon &&
+          config.offhandAssignment.weaponIndex >= 0 &&
+          config.offhandAssignment.weaponIndex < config.weaponSlots.length
+      ? config.weaponSlots[config.offhandAssignment.weaponIndex]
+      : null;
   final offhandEquipment =
       config.offhandAssignment.usesEquipment &&
           config.offhandAssignment.equipmentIndex >= 0 &&
@@ -391,13 +401,14 @@ CombatPreviewStats computeCombatPreviewStats(
   final iniDiceCount = computeIniDiceCount(special);
   final maxIniRoll = iniDiceCount * 6;
   final iniWurfEffective = _clamp(manualMods.iniWurf, 0, maxIniRoll);
-  final eigenschaftsIni = derived.iniBase;
+  final eigenschaftsIni = computeIniBase(effectiveSheet, mods);
+  final iniBasis = derived.iniBase;
   final axxIniBonus = computeAxxeleratusIniBonus(
-    iniBase: eigenschaftsIni,
+    iniBase: iniBasis,
     axxeleratusActive: axxeleratusActive,
   );
   final heldenInitiative = clampNonNegative(
-    eigenschaftsIni +
+    iniBasis +
         ebe +
         sfIniBonus +
         unarmedStyleEffects.iniMod +
@@ -405,23 +416,31 @@ CombatPreviewStats computeCombatPreviewStats(
         axxIniBonus +
         manualMods.iniMod,
   );
-  final geBase = 26 - wmKkBase;
-  final geThreshold = 7 - kkThreshold;
-  final iniGe = computeIniGe(
-    ge: effectiveSheet.attributes.ge,
-    kkBase: wmKkBase,
-    kkThreshold: kkThreshold,
+  final initiativeSnapshot = _computeWeaponInitiativeSnapshot(
+    slot: main,
+    heldenInitiative: heldenInitiative,
+    effectiveGe: effectiveSheet.attributes.ge,
+    catalogTalents: catalogTalents,
+    waffenmeisterschaften: config.waffenmeisterschaften,
   );
-  final kombinierteHeldenWaffenIni = clampNonNegative(
-    heldenInitiative +
-        main.iniMod +
-        iniGe +
-        projectileIniMod +
-        wmEffects.iniBonus,
-  );
-  final kampfInitiative = clampNonNegative(
-    kombinierteHeldenWaffenIni + offhandModifiers.iniMod,
-  );
+  final geBase = initiativeSnapshot.geBase;
+  final geThreshold = initiativeSnapshot.geThreshold;
+  final iniGe = initiativeSnapshot.iniGe;
+  final kombinierteHeldenWaffenIni = initiativeSnapshot.kombinierteIni;
+  final offhandWeaponInitiative = offhandWeapon == null
+      ? null
+      : _computeWeaponInitiativeSnapshot(
+          slot: offhandWeapon,
+          heldenInitiative: heldenInitiative,
+          effectiveGe: effectiveSheet.attributes.ge,
+          catalogTalents: catalogTalents,
+          waffenmeisterschaften: config.waffenmeisterschaften,
+        ).kombinierteIni;
+  final kampfInitiative = offhandWeaponInitiative == null
+      ? clampNonNegative(kombinierteHeldenWaffenIni + offhandModifiers.iniMod)
+      : (kombinierteHeldenWaffenIni > offhandWeaponInitiative
+            ? kombinierteHeldenWaffenIni
+            : offhandWeaponInitiative);
   final initiative = kampfInitiative;
   final iniParadeMod = computeIniParadeMod(kampfInitiative);
   final paMitIniParadeMod = isRangedWeapon ? 0 : pa + iniParadeMod;
@@ -460,6 +479,7 @@ CombatPreviewStats computeCombatPreviewStats(
     iniParadeMod: iniParadeMod,
     tpCalc: tpCalc,
     specApplies: specApplies,
+    iniBasis: iniBasis,
     eigenschaftsIni: eigenschaftsIni,
     iniWurfEffective: iniWurfEffective,
     axxIniBonus: axxIniBonus,
@@ -484,6 +504,7 @@ CombatPreviewStats computeCombatPreviewStats(
     offhandPaBonus: offhandModifiers.mainPaMod,
     offhandAtMod: offhandModifiers.atMod,
     offhandIniMod: offhandModifiers.iniMod,
+    offhandWeaponInitiative: offhandWeaponInitiative,
     shieldPa: offhandModifiers.shieldPa,
     shieldPaBonus: offhandModifiers.shieldPaBonus,
     offhandIsShield: offhandModifiers.isShield,
@@ -528,6 +549,69 @@ CombatPreviewStats computeCombatPreviewStats(
     waffenmeisterAdditionalManeuvers: wmEffects.additionalManeuvers,
     waffenmeisterReloadTimeHalved: wmEffects.reloadTimeHalved,
     waffenmeisterManeuverReductions: wmEffects.maneuverReductions,
+  );
+}
+
+class _WeaponInitiativeSnapshot {
+  const _WeaponInitiativeSnapshot({
+    required this.geBase,
+    required this.geThreshold,
+    required this.iniGe,
+    required this.projectileIniMod,
+    required this.waffenmeisterIniBonus,
+    required this.kombinierteIni,
+  });
+
+  final int geBase;
+  final int geThreshold;
+  final int iniGe;
+  final int projectileIniMod;
+  final int waffenmeisterIniBonus;
+  final int kombinierteIni;
+}
+
+_WeaponInitiativeSnapshot _computeWeaponInitiativeSnapshot({
+  required MainWeaponSlot slot,
+  required int heldenInitiative,
+  required int effectiveGe,
+  required List<TalentDef> catalogTalents,
+  required List<WaffenmeisterConfig> waffenmeisterschaften,
+}) {
+  final selectedTalent = _findTalentDefById(catalogTalents, slot.talentId);
+  final legacyRanged = isRangedCombatTalent(selectedTalent);
+  final isRangedWeapon = slot.isRanged || legacyRanged;
+  final wmEffects = computeWaffenmeisterEffects(
+    waffenmeisterschaften: waffenmeisterschaften,
+    activeWeaponType: slot.weaponType.trim().isEmpty ? slot.name : slot.weaponType,
+    activeTalentId: slot.talentId,
+  );
+  final wmKkBase = slot.kkBase + wmEffects.tpKkBaseReduction;
+  final wmKkThreshold = slot.kkThreshold + wmEffects.tpKkThresholdReduction;
+  final kkThreshold = wmKkThreshold < 1 ? 1 : wmKkThreshold;
+  final geBase = 26 - wmKkBase;
+  final geThreshold = 7 - kkThreshold;
+  final iniGe = computeIniGe(
+    ge: effectiveGe,
+    kkBase: wmKkBase,
+    kkThreshold: kkThreshold,
+  );
+  final activeProjectile = slot.rangedProfile.selectedProjectileOrNull;
+  final projectileIniMod = isRangedWeapon ? (activeProjectile?.iniMod ?? 0) : 0;
+  final kombinierteIni = clampNonNegative(
+    heldenInitiative +
+        slot.iniMod +
+        iniGe +
+        projectileIniMod +
+        wmEffects.iniBonus,
+  );
+
+  return _WeaponInitiativeSnapshot(
+    geBase: geBase,
+    geThreshold: geThreshold,
+    iniGe: iniGe,
+    projectileIniMod: projectileIniMod,
+    waffenmeisterIniBonus: wmEffects.iniBonus,
+    kombinierteIni: kombinierteIni,
   );
 }
 

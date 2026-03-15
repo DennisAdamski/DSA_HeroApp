@@ -11,12 +11,8 @@ int computeIniBase(HeroSheet sheet, StatModifiers mods) {
   return excelRound((mu + mu + inn + ge) / 5) + mods.iniBase;
 }
 
-// Sonderfertigkeit-Bonus auf Initiative (Kampfreflexe, Kampfgespuer, Flink, Behaebig).
-int computeSfIniBonus(
-  CombatSpecialRules special, {
-  required bool hasFlinkFromVorteile,
-  required bool hasBehaebigFromNachteile,
-}) {
+// INI-Basis-Modifikatoren aus Kampfsonderfertigkeiten.
+int computeIniBaseBonus(CombatSpecialRules special) {
   var total = 0;
   if (special.kampfreflexe) {
     total += 4;
@@ -24,13 +20,16 @@ int computeSfIniBonus(
   if (special.kampfgespuer) {
     total += 2;
   }
-  if (hasFlinkFromVorteile) {
-    total += 1;
-  }
-  if (hasBehaebigFromNachteile) {
-    total -= 1;
-  }
   return total;
+}
+
+// Zusätzlicher SF-Bonus auf Initiative oberhalb der Basis.
+int computeSfIniBonus(
+  CombatSpecialRules special, {
+  required bool hasFlinkFromVorteile,
+  required bool hasBehaebigFromNachteile,
+}) {
+  return 0;
 }
 
 // GE-basierter Waffenkomponent der Initiative.

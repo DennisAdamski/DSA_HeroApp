@@ -124,6 +124,12 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                       result: preview.initiative,
                       steps: [
                         _calcStep('Eigenschafts-INI', preview.eigenschaftsIni),
+                        if (preview.iniBasis != preview.eigenschaftsIni)
+                          _calcStep(
+                            'INI-Basis-Mod',
+                            preview.iniBasis - preview.eigenschaftsIni,
+                          ),
+                        _calcStep('= INI-Basis', preview.iniBasis),
                         _calcStep('eBE', preview.ebe),
                         if (preview.sfIniBonus != 0)
                           _calcStep('SF-Bonus', preview.sfIniBonus),
@@ -148,6 +154,11 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                           '= Helden+Waffen-INI',
                           preview.kombinierteHeldenWaffenIni,
                         ),
+                        if (preview.offhandWeaponInitiative != null)
+                          _calcStep(
+                            'Nebenhand-Waffen-INI',
+                            preview.offhandWeaponInitiative,
+                          ),
                         if (preview.offhandIniMod != 0)
                           _calcStep('Nebenhand INI', preview.offhandIniMod),
                         _calcStep('= Kampf-INI', preview.kampfInitiative),
@@ -247,6 +258,12 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
           result: preview.initiative,
           steps: [
             _calcStep('Eigenschafts-INI', preview.eigenschaftsIni),
+            if (preview.iniBasis != preview.eigenschaftsIni)
+              _calcStep(
+                'INI-Basis-Mod',
+                preview.iniBasis - preview.eigenschaftsIni,
+              ),
+            _calcStep('= INI-Basis', preview.iniBasis),
             _calcStep('eBE', preview.ebe),
             if (preview.sfIniBonus != 0)
               _calcStep('SF-Bonus', preview.sfIniBonus),
@@ -262,6 +279,12 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
               '= Helden+Waffen-INI',
               preview.kombinierteHeldenWaffenIni,
             ),
+            if (preview.offhandWeaponInitiative != null)
+              _calcStep(
+                'Nebenhand-Waffen-INI',
+                preview.offhandWeaponInitiative,
+              ),
+            _calcStep('= Kampf-INI', preview.kampfInitiative),
           ],
         ),
         const Divider(),
