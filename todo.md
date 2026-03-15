@@ -4,13 +4,10 @@ Aufgaben die notwendig sind für das erreichen des MVP
 
 ## Aufgaben für die KI (MVP)
 
-- [x] Geschwindigkeit aktuell = Basis - eBE
-- [x] Sprache und Schriften darstellen
-- [x] Artefaktbeschreibung der Waffe bei Auswahl auf Kampfseite
-- [x] Waffenmeister-Auswirkungen prüfen
-- [x] Held export als Button auf Helden
-- [x] Held löschen als Button auf Helden
 - [ ] Alle Helden (als Zip) exportieren als Button global
+- [x] Steigerungstabelle und Funktion
+- [ ] Körperzonen, Rüstungen und Wunden
+  - [ ] Berechnungen von Einschränkungen durch Wunden
 
 ## Aufgaben für mich (MVP)
 
