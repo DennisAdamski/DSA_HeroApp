@@ -9,6 +9,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     required TalentDef talent,
     required HeroTalentEntry entry,
     required int neuerWert,
+    int? explicitAtDelta,
   }) {
     final aktuellerWert = entry.talentValue ?? 0;
     final delta = neuerWert - aktuellerWert;
@@ -21,6 +22,13 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       );
     }
     if (normalizedType == 'nahkampf') {
+      if (explicitAtDelta != null) {
+        return entry.copyWith(
+          talentValue: neuerWert,
+          atValue: entry.atValue + explicitAtDelta,
+          paValue: entry.paValue + (delta - explicitAtDelta),
+        );
+      }
       final hasValidDistribution =
           entry.atValue >= 0 &&
           entry.paValue >= 0 &&
@@ -90,6 +98,26 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       return;
     }
 
+    final aktuellerWert = entry.talentValue ?? 0;
+    final delta = result.neuerWert - aktuellerWert;
+    final normalizedType = talent.type.trim().toLowerCase();
+    int? explicitAtDelta;
+    if (normalizedType == 'nahkampf' && delta > 0) {
+      if (!mounted) {
+        return;
+      }
+      explicitAtDelta = await _showAtPaVerteilungDialog(
+        talentName: talent.name,
+        delta: delta,
+        currentAt: entry.atValue,
+        currentPa: entry.paValue,
+        neuerWert: result.neuerWert,
+      );
+      if (explicitAtDelta == null) {
+        return;
+      }
+    }
+
     final normalizedSe = (entry.specialExperiences - result.seVerbraucht).clamp(
       0,
       entry.specialExperiences,
@@ -98,6 +126,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       talent: talent,
       entry: entry.copyWith(specialExperiences: normalizedSe),
       neuerWert: result.neuerWert,
+      explicitAtDelta: explicitAtDelta,
     );
     final updatedTalents = <String, HeroTalentEntry>{
       ..._draftTalents,
@@ -143,7 +172,10 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
+      if (isEditing)
+        const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 110)
+      else
+        const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
       const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 100),
@@ -697,5 +729,73 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       return value.toInt().toString();
     }
     return value.toString();
+  }
+
+  Future<int?> _showAtPaVerteilungDialog({
+    required String talentName,
+    required int delta,
+    required int currentAt,
+    required int currentPa,
+    required int neuerWert,
+  }) async {
+    int atDelta = delta;
+    return showDialog<int>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final paDelta = delta - atDelta;
+          return AlertDialog(
+            title: Text('AT/PA-Verteilung: $talentName'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Neuer TaW: $neuerWert  '
+                  '(+$delta ${delta == 1 ? 'Punkt' : 'Punkte'})',
+                ),
+                const SizedBox(height: 16),
+                Slider(
+                  min: 0,
+                  max: delta.toDouble(),
+                  divisions: delta,
+                  value: atDelta.toDouble(),
+                  label: 'AT +$atDelta',
+                  onChanged: (v) =>
+                      setDialogState(() => atDelta = v.round()),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Column(
+                      children: [
+                        const Text('AT'),
+                        Text('$currentAt \u2192 ${currentAt + atDelta}'),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        const Text('PA'),
+                        Text('$currentPa \u2192 ${currentPa + paDelta}'),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Abbrechen'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(ctx).pop(atDelta),
+                child: const Text('\u00dcbernehmen'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 }

@@ -3,9 +3,8 @@
 Aufgaben die notwendig sind für das erreichen des MVP
 
 ## Aufgaben für die KI (MVP)
-
-- [ ] Basiswert anpassungen:
-  - [ ] Ini-Basis ist mit Kampfreflexe/Gespür
+- [ ] Stelle Modifikatoren im Bereich der Basiswerte und Eigenschaften wie im Talentbereich dar. Es soll ersichtlich sein, woher eine gewisse Modifikation kommt. Standard-Modifikatoren bilden die folgenden Vor- und Nachteile:
+  - [x] Ini-Basis ist mit Kampfreflexe/Gespür
   - [ ] Magieresistenz + Hohe/Niedrige Magieresistenz
   - [ ] Lebensenergie + Hohe/Niedrige Lebenskraft
   - [ ] Ausdauer + Asudauernd/Kurzatmig
@@ -14,7 +13,7 @@ Aufgaben die notwendig sind für das erreichen des MVP
   - [ ] LeP = KO/2
   - [ ] Au = KO*2
   - [ ] MR = MU/2
-- [ ] Maximalwerte beim Steigern einblenden
+- [x] Maximalwerte beim Steigern einblenden
 - [ ] Renaming von verschiedenen Variablen
   - [ ] Der Basiswert von LeP (Lebenspunkte) heißt LE (Lebensenergie).
   - [ ] Der Basiswert von AuP (Ausdauerpunkte) heißt AU (Ausdauer).
@@ -25,9 +24,8 @@ Aufgaben die notwendig sind für das erreichen des MVP
   - [ ] Ein automatisch Berechneter Wert
   - [ ] Ein manueller Wert
 - [ ] KE kann nicht gesteigert werden.
-- [ ] Eigenschaften steigern nach H, kann aber modifiziert werden, sodass diese dann nach G gesteigert werden können.
+- [x] Eigenschaften steigern nach H, kann aber modifiziert werden, sodass diese dann nach G gesteigert werden können.
 - [ ] Nicht bearbeitbare Felder im nicht Bearbeitungsmodus anders darstellen, sodass man nicht davon ausgeht, dieses bearbeiten zu können.
-- [ ] 
 
 - [ ] Alle Helden (als Zip) exportieren als Button global
 - [x] Steigerungstabelle und Funktion
