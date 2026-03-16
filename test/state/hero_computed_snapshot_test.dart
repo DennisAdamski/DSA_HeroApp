@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
@@ -39,7 +40,7 @@ void main() {
         ko: 11,
         kk: 12,
       ),
-      rasseModText: 'MU+1',
+      background: HeroBackground(rasseModText: 'MU+1'),
       vorteileText: 'LEP+2',
     );
     const state = HeroState(

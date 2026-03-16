@@ -31,9 +31,9 @@ const int _modifierParseCacheMaxEntries = 512;
 /// Komfortfunktion: parst alle relevanten Modifikatorfelder eines Helden.
 ModifierParseResult parseModifierTextsForHero(HeroSheet hero) {
   final key = _buildModifierParseCacheKey(
-    rasseModText: hero.rasseModText,
-    kulturModText: hero.kulturModText,
-    professionModText: hero.professionModText,
+    rasseModText: hero.background.rasseModText,
+    kulturModText: hero.background.kulturModText,
+    professionModText: hero.background.professionModText,
     vorteileText: hero.vorteileText,
     nachteileText: hero.nachteileText,
   );
@@ -43,9 +43,9 @@ ModifierParseResult parseModifierTextsForHero(HeroSheet hero) {
   }
 
   final parsed = parseModifierTexts(
-    rasseModText: hero.rasseModText,
-    kulturModText: hero.kulturModText,
-    professionModText: hero.professionModText,
+    rasseModText: hero.background.rasseModText,
+    kulturModText: hero.background.kulturModText,
+    professionModText: hero.background.professionModText,
     vorteileText: hero.vorteileText,
     nachteileText: hero.nachteileText,
   );

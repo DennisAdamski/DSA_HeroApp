@@ -6,9 +6,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 /// Parst ausschliesslich Herkunftsmodifikatoren aus Rasse, Kultur und Profession.
 AttributeModifiers parseOriginAttributeModifiers(HeroSheet hero) {
   final parsed = parseModifierTexts(
-    rasseModText: hero.rasseModText,
-    kulturModText: hero.kulturModText,
-    professionModText: hero.professionModText,
+    rasseModText: hero.background.rasseModText,
+    kulturModText: hero.background.kulturModText,
+    professionModText: hero.background.professionModText,
     vorteileText: '',
     nachteileText: '',
   );
