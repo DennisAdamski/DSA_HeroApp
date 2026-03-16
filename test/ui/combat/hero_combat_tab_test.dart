@@ -860,6 +860,12 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Steigern'));
     await tester.pumpAndSettle();
 
+    // AT/PA-Verteilungsdialog erscheint fuer Nahkampf-Talente
+    expect(find.text('AT/PA-Verteilung: Schwerter'), findsOneWidget);
+    // Standard: alles auf AT -> Uebernehmen bestaetigen
+    await tester.tap(find.widgetWithText(FilledButton, 'Übernehmen'));
+    await tester.pumpAndSettle();
+
     final updatedHero = await repo.loadHeroById('demo');
     final updatedEntry = updatedHero!.talents['tal_nah']!;
     expect(updatedEntry.talentValue, 6);
