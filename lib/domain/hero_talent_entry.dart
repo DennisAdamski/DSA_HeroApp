@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
+
 // [MermaidChart: ff341120-63ae-42dd-88e7-391a12fcef7f]
 /// Einzelner Modifikatorbaustein eines Talents.
 ///
@@ -93,7 +95,7 @@ class HeroTalentEntry {
   /// zu halten. Wird nur [specializations] angegeben, bleibt [combatSpecializations]
   /// unveraendert (kein automatisches Parsen – das obliegt [fromJson]).
   HeroTalentEntry copyWith({
-    Object? talentValue = _keepFieldValue,
+    Object? talentValue = keepFieldValue,
     int? atValue,
     int? paValue,
     int? modifier,
@@ -122,7 +124,7 @@ class HeroTalentEntry {
         : (modifier ?? _legacyModifier);
 
     return HeroTalentEntry(
-      talentValue: identical(talentValue, _keepFieldValue)
+      talentValue: identical(talentValue, keepFieldValue)
           ? this.talentValue
           : talentValue as int?,
       atValue: atValue ?? this.atValue,
@@ -234,8 +236,6 @@ class HeroTalentEntry {
     );
   }
 }
-
-const Object _keepFieldValue = Object();
 
 String _normalizeModifierDescription(String raw) {
   final trimmed = raw.trim();
