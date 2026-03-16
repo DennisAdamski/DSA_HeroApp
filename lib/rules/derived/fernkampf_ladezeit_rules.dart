@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config/combat_special_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/main_weapon_slot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Abgeleiteter Aktivstatus einer Kampf-Sonderfertigkeit.
 class CombatSpecialAbilityStatus {
@@ -164,14 +165,14 @@ _RangedReloadKind _resolveWeaponReloadKind({
   required MainWeaponSlot weapon,
   required String? talentName,
 }) {
-  final normalizedTalent = _normalizeToken(talentName ?? '');
+  final normalizedTalent = normalizeCombatToken(talentName ?? '');
   if (normalizedTalent == 'boegen' || normalizedTalent == 'bogen') {
     return _RangedReloadKind.bogen;
   }
   if (normalizedTalent == 'armbrust' || normalizedTalent == 'armbrueste') {
     return _RangedReloadKind.armbrust;
   }
-  final normalizedWeaponType = _normalizeToken(weapon.weaponType);
+  final normalizedWeaponType = normalizeCombatToken(weapon.weaponType);
   if (normalizedWeaponType.contains('armbrust') ||
       normalizedWeaponType.contains('balestra') ||
       normalizedWeaponType.contains('arbal')) {
@@ -181,17 +182,6 @@ _RangedReloadKind _resolveWeaponReloadKind({
     return _RangedReloadKind.bogen;
   }
   return _RangedReloadKind.none;
-}
-
-String _normalizeToken(String raw) {
-  return raw
-      .trim()
-      .toLowerCase()
-      .replaceAll('ä', 'ae')
-      .replaceAll('ö', 'oe')
-      .replaceAll('ü', 'ue')
-      .replaceAll('ß', 'ss')
-      .replaceAll(RegExp(r'[^a-z0-9]+'), '');
 }
 
 enum _RangedReloadKind { none, bogen, armbrust }
