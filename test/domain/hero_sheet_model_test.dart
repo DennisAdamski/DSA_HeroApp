@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
@@ -39,23 +41,27 @@ void main() {
         ko: 12,
         kk: 12,
       ),
-      rasse: 'Mensch',
-      kultur: 'Mittelreich',
-      profession: 'Krieger',
-      rasseModText: 'MU+1',
-      kulturModText: 'KL+1',
-      professionModText: 'LE+2',
-      geschlecht: 'w',
-      alter: '23',
-      groesse: '172 cm',
-      gewicht: '65 kg',
-      haarfarbe: 'braun',
-      augenfarbe: 'gruen',
-      aussehen: 'auffaellig',
-      stand: 'frei',
-      titel: 'Ritterin',
-      familieHerkunftHintergrund: 'Text',
-      sozialstatus: 8,
+      background: HeroBackground(
+        rasse: 'Mensch',
+        kultur: 'Mittelreich',
+        profession: 'Krieger',
+        rasseModText: 'MU+1',
+        kulturModText: 'KL+1',
+        professionModText: 'LE+2',
+        stand: 'frei',
+        titel: 'Ritterin',
+        familieHerkunftHintergrund: 'Text',
+        sozialstatus: 8,
+      ),
+      appearance: HeroAppearance(
+        geschlecht: 'w',
+        alter: '23',
+        groesse: '172 cm',
+        gewicht: '65 kg',
+        haarfarbe: 'braun',
+        augenfarbe: 'gruen',
+        aussehen: 'auffaellig',
+      ),
       vorteileText: 'AE+2',
       nachteileText: 'MU-1',
       apTotal: 2000,
@@ -232,10 +238,10 @@ void main() {
     final json = hero.toJson();
     final reloaded = HeroSheet.fromJson(json);
 
-    expect(reloaded.rasse, 'Mensch');
+    expect(reloaded.background.rasse, 'Mensch');
     expect(reloaded.schemaVersion, 19);
-    expect(reloaded.kultur, 'Mittelreich');
-    expect(reloaded.profession, 'Krieger');
+    expect(reloaded.background.kultur, 'Mittelreich');
+    expect(reloaded.background.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
     expect(reloaded.apAvailable, 500);
     expect(reloaded.hiddenTalentIds, ['tal_a', 'tal_b']);
@@ -364,7 +370,7 @@ void main() {
     };
 
     final loaded = HeroSheet.fromJson(old);
-    expect(loaded.rasse, '');
+    expect(loaded.background.rasse, '');
     expect(loaded.apTotal, 0);
     expect(loaded.hiddenTalentIds, isEmpty);
     expect(loaded.talentSpecialAbilities, '');

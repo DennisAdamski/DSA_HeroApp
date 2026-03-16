@@ -21,7 +21,10 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
+      if (isEditing)
+        const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 110)
+      else
+        const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
       const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 110),
       const AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 140),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 76),

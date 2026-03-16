@@ -1,15 +1,5 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
-
-/// Normalisiert einen Kampf-Token robust fuer Vergleiche.
-String normalizeCombatToken(String raw) {
-  var value = raw.trim().toLowerCase();
-  value = value
-      .replaceAll(String.fromCharCode(228), 'ae')
-      .replaceAll(String.fromCharCode(246), 'oe')
-      .replaceAll(String.fromCharCode(252), 'ue')
-      .replaceAll(String.fromCharCode(223), 'ss');
-  return value.replaceAll(RegExp(r'[^a-z0-9]+'), '');
-}
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Leitet eine stabile Manoever-ID aus Name oder ID ab.
 ///

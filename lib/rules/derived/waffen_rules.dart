@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 // KK-Schadensbonus: truncate((KK - kkBase) / kkThreshold).
 int computeTpKk({
@@ -39,7 +40,7 @@ bool hasCombatSpecialization({
     return false;
   }
 
-  final weaponToken = _normalizeToken(type);
+  final weaponToken = normalizeCombatToken(type);
   if (weaponToken.isEmpty) {
     return false;
   }
@@ -48,7 +49,7 @@ bool hasCombatSpecialization({
       ? talentEntry.specializations.split(RegExp(r'[\n,;]+'))
       : talentEntry.combatSpecializations;
   for (final raw in specs) {
-    final token = _normalizeToken(raw);
+    final token = normalizeCombatToken(raw);
     if (token.isEmpty) {
       continue;
     }
@@ -65,7 +66,7 @@ bool isRangedCombatTalent(TalentDef? talent) {
   if (talent == null) {
     return false;
   }
-  return _normalizeToken(talent.type) == 'fernkampf';
+  return normalizeCombatToken(talent.type) == 'fernkampf';
 }
 
 // PA-Bonus durch Nebenhand (Schild, Parierdolch, Linkhand).
@@ -104,12 +105,3 @@ int computeOffhandPaBonus({
   }
 }
 
-String _normalizeToken(String raw) {
-  var value = raw.trim().toLowerCase();
-  value = value
-      .replaceAll(String.fromCharCode(228), 'ae')
-      .replaceAll(String.fromCharCode(246), 'oe')
-      .replaceAll(String.fromCharCode(252), 'ue')
-      .replaceAll(String.fromCharCode(223), 'ss');
-  return value.replaceAll(RegExp(r'[^a-z0-9]+'), '');
-}

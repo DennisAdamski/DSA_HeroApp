@@ -10,5 +10,6 @@
         "**/.symlinks": true,
         "**/.plugin_symlinks": true,
         ".mule": true
-    }
+    },
+    "markdown.validate.enabled": true
 }
