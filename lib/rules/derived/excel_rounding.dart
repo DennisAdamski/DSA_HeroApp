@@ -16,3 +16,4 @@ int roundUpAwayFromZero(num value) {
 }
 
 int clampNonNegative(int value) => value < 0 ? 0 : value;
+int clampNonPositive(int value) => value > 0 ? 0 : value;

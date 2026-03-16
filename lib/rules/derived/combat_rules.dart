@@ -400,7 +400,7 @@ CombatPreviewStats computeCombatPreviewStats(
   // --- Initiative-Kette (ini_rules) ---
   final iniDiceCount = computeIniDiceCount(special);
   final maxIniRoll = iniDiceCount * 6;
-  final iniWurfEffective = _clamp(manualMods.iniWurf, 0, maxIniRoll);
+  final iniWurfEffective = manualMods.iniWurf.clamp(0, maxIniRoll);
   final eigenschaftsIni = computeIniBase(effectiveSheet, mods);
   final iniBasis = derived.iniBase;
   final axxIniBonus = computeAxxeleratusIniBonus(
@@ -628,12 +628,3 @@ TalentDef? _findTalentDefById(List<TalentDef> talents, String id) {
   return null;
 }
 
-int _clamp(int value, int min, int max) {
-  if (value < min) {
-    return min;
-  }
-  if (value > max) {
-    return max;
-  }
-  return value;
-}

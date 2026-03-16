@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 
 /// Speichert den Heldenwert in einem einzelnen Zauber (unveraenderlich).
@@ -38,24 +39,24 @@ class HeroSpellEntry {
     int? modifier,
     bool? hauszauber,
     bool? gifted,
-    Object? learnedRepresentation = _keepFieldValue,
-    Object? learnedTradition = _keepFieldValue,
+    Object? learnedRepresentation = keepFieldValue,
+    Object? learnedTradition = keepFieldValue,
     List<String>? specializations,
-    Object? textOverrides = _keepFieldValue,
+    Object? textOverrides = keepFieldValue,
   }) {
     return HeroSpellEntry(
       spellValue: spellValue ?? this.spellValue,
       modifier: modifier ?? this.modifier,
       hauszauber: hauszauber ?? this.hauszauber,
       gifted: gifted ?? this.gifted,
-      learnedRepresentation: identical(learnedRepresentation, _keepFieldValue)
+      learnedRepresentation: identical(learnedRepresentation, keepFieldValue)
           ? this.learnedRepresentation
           : learnedRepresentation as String?,
-      learnedTradition: identical(learnedTradition, _keepFieldValue)
+      learnedTradition: identical(learnedTradition, keepFieldValue)
           ? this.learnedTradition
           : learnedTradition as String?,
       specializations: specializations ?? this.specializations,
-      textOverrides: identical(textOverrides, _keepFieldValue)
+      textOverrides: identical(textOverrides, keepFieldValue)
           ? this.textOverrides
           : textOverrides as HeroSpellTextOverrides?,
     );
@@ -110,8 +111,6 @@ class HeroSpellEntry {
     );
   }
 }
-
-const Object _keepFieldValue = Object();
 
 String? _readNullableString(Object? value) {
   if (value == null) {

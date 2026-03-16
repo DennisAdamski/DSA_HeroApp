@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Zusammengefasste Effekte aktiver waffenloser Kampfstile.
 class UnarmedStyleEffects {
@@ -82,9 +83,9 @@ String canonicalizeManeuverId(
       return trimmed;
     }
   }
-  final normalizedRaw = _normalizeToken(trimmed);
+  final normalizedRaw = normalizeCombatToken(trimmed);
   for (final maneuver in catalogManeuvers) {
-    if (_normalizeToken(maneuver.name) == normalizedRaw) {
+    if (normalizeCombatToken(maneuver.name) == normalizedRaw) {
       return maneuver.id;
     }
   }
@@ -112,7 +113,7 @@ bool _bonusAppliesToTalent(
 }
 
 String _normalizeStyleTalent(String raw) {
-  final normalized = _normalizeToken(raw);
+  final normalized = normalizeCombatToken(raw);
   if (normalized == 'raufen' ||
       normalized == 'ringen' ||
       normalized == 'beide') {
@@ -124,12 +125,3 @@ String _normalizeStyleTalent(String raw) {
   return '';
 }
 
-String _normalizeToken(String raw) {
-  var value = raw.trim().toLowerCase();
-  value = value
-      .replaceAll('ä', 'ae')
-      .replaceAll('ö', 'oe')
-      .replaceAll('ü', 'ue')
-      .replaceAll('ß', 'ss');
-  return value.replaceAll(RegExp(r'[^a-z0-9]+'), '');
-}
