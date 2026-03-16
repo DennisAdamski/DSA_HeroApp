@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 
@@ -79,9 +80,11 @@ void main() {
         ko: 10,
         kk: 10,
       ),
-      rasseModText: 'MU+1, KL-1',
-      kulturModText: 'IN+2',
-      professionModText: 'CH+3',
+      background: HeroBackground(
+        rasseModText: 'MU+1, KL-1',
+        kulturModText: 'IN+2',
+        professionModText: 'CH+3',
+      ),
       vorteileText: 'FF+4',
       nachteileText: 'KO-2, KK+5',
     );

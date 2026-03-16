@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
@@ -24,7 +25,7 @@ void main() {
         ko: 13,
         kk: 12,
       ),
-      rasse: 'Mensch',
+      background: HeroBackground(rasse: 'Mensch'),
     );
     const state = HeroState(
       currentLep: 30,
@@ -49,7 +50,7 @@ void main() {
 
     expect(reloaded.hero.id, bundle.hero.id);
     expect(reloaded.hero.name, bundle.hero.name);
-    expect(reloaded.hero.rasse, bundle.hero.rasse);
+    expect(reloaded.hero.background.rasse, bundle.hero.background.rasse);
     expect(reloaded.hero.startAttributes.mu, bundle.hero.startAttributes.mu);
     expect(reloaded.state.currentLep, bundle.state.currentLep);
     expect(reloaded.state.currentAu, bundle.state.currentAu);
