@@ -1,5 +1,3 @@
-import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
-
 /// Einzelner Angriffsmodus eines Begleiters (z.B. Beißen, Krallen, Sturzflug).
 class HeroCompanionAttack {
   const HeroCompanionAttack({
@@ -37,8 +35,8 @@ class HeroCompanionAttack {
     String? id,
     String? name,
     String? dk,
-    Object? at = keepFieldValue,
-    Object? pa = keepFieldValue,
+    Object? at = _keepNull,
+    Object? pa = _keepNull,
     String? tp,
     String? beschreibung,
   }) {
@@ -46,8 +44,8 @@ class HeroCompanionAttack {
       id: id ?? this.id,
       name: name ?? this.name,
       dk: dk ?? this.dk,
-      at: identical(at, keepFieldValue) ? this.at : at as int?,
-      pa: identical(pa, keepFieldValue) ? this.pa : pa as int?,
+      at: identical(at, _keepNull) ? this.at : at as int?,
+      pa: identical(pa, _keepNull) ? this.pa : pa as int?,
       tp: tp ?? this.tp,
       beschreibung: beschreibung ?? this.beschreibung,
     );
@@ -91,3 +89,6 @@ class HeroCompanionAttack {
   int get hashCode =>
       Object.hash(id, name, dk, at, pa, tp, beschreibung);
 }
+
+/// Sentinel-Wert fuer nullable copyWith-Felder.
+const Object _keepNull = Object();

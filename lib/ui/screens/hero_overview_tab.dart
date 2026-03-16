@@ -147,23 +147,23 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     }
 
     _field('name').text = hero.name;
-    _field('rasse').text = hero.rasse;
-    _field('rasse_mod').text = hero.rasseModText;
-    _field('kultur').text = hero.kultur;
-    _field('kultur_mod').text = hero.kulturModText;
-    _field('profession').text = hero.profession;
-    _field('profession_mod').text = hero.professionModText;
-    _field('geschlecht').text = hero.geschlecht;
-    _field('alter').text = hero.alter;
-    _field('groesse').text = hero.groesse;
-    _field('gewicht').text = hero.gewicht;
-    _field('haarfarbe').text = hero.haarfarbe;
-    _field('augenfarbe').text = hero.augenfarbe;
-    _field('aussehen').text = hero.aussehen;
-    _field('stand').text = hero.stand;
-    _field('titel').text = hero.titel;
-    _field('familie').text = hero.familieHerkunftHintergrund;
-    _field('sozialstatus').text = hero.sozialstatus.toString();
+    _field('rasse').text = hero.background.rasse;
+    _field('rasse_mod').text = hero.background.rasseModText;
+    _field('kultur').text = hero.background.kultur;
+    _field('kultur_mod').text = hero.background.kulturModText;
+    _field('profession').text = hero.background.profession;
+    _field('profession_mod').text = hero.background.professionModText;
+    _field('geschlecht').text = hero.appearance.geschlecht;
+    _field('alter').text = hero.appearance.alter;
+    _field('groesse').text = hero.appearance.groesse;
+    _field('gewicht').text = hero.appearance.gewicht;
+    _field('haarfarbe').text = hero.appearance.haarfarbe;
+    _field('augenfarbe').text = hero.appearance.augenfarbe;
+    _field('aussehen').text = hero.appearance.aussehen;
+    _field('stand').text = hero.background.stand;
+    _field('titel').text = hero.background.titel;
+    _field('familie').text = hero.background.familieHerkunftHintergrund;
+    _field('sozialstatus').text = hero.background.sozialstatus.toString();
     _field('vorteile').text = hero.vorteileText;
     _field('nachteile').text = hero.nachteileText;
     _field('ap_total').text = hero.apTotal.toString();
@@ -347,23 +347,27 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       name: _field('name').text.trim().isEmpty
           ? 'Unbenannter Held'
           : _field('name').text.trim(),
-      rasse: _field('rasse').text.trim(),
-      rasseModText: _field('rasse_mod').text.trim(),
-      kultur: _field('kultur').text.trim(),
-      kulturModText: _field('kultur_mod').text.trim(),
-      profession: _field('profession').text.trim(),
-      professionModText: _field('profession_mod').text.trim(),
-      geschlecht: _field('geschlecht').text.trim(),
-      alter: _field('alter').text.trim(),
-      groesse: _field('groesse').text.trim(),
-      gewicht: _field('gewicht').text.trim(),
-      haarfarbe: _field('haarfarbe').text.trim(),
-      augenfarbe: _field('augenfarbe').text.trim(),
-      aussehen: _field('aussehen').text.trim(),
-      stand: _field('stand').text.trim(),
-      titel: _field('titel').text.trim(),
-      familieHerkunftHintergrund: _field('familie').text.trim(),
-      sozialstatus: _readInt('sozialstatus', min: 0, max: 999),
+      appearance: hero.appearance.copyWith(
+        geschlecht: _field('geschlecht').text.trim(),
+        alter: _field('alter').text.trim(),
+        groesse: _field('groesse').text.trim(),
+        gewicht: _field('gewicht').text.trim(),
+        haarfarbe: _field('haarfarbe').text.trim(),
+        augenfarbe: _field('augenfarbe').text.trim(),
+        aussehen: _field('aussehen').text.trim(),
+      ),
+      background: hero.background.copyWith(
+        rasse: _field('rasse').text.trim(),
+        rasseModText: _field('rasse_mod').text.trim(),
+        kultur: _field('kultur').text.trim(),
+        kulturModText: _field('kultur_mod').text.trim(),
+        profession: _field('profession').text.trim(),
+        professionModText: _field('profession_mod').text.trim(),
+        stand: _field('stand').text.trim(),
+        titel: _field('titel').text.trim(),
+        familieHerkunftHintergrund: _field('familie').text.trim(),
+        sozialstatus: _readInt('sozialstatus', min: 0, max: 999),
+      ),
       vorteileText: _field('vorteile').text.trim(),
       nachteileText: _field('nachteile').text.trim(),
       apTotal: _readInt('ap_total', min: 0),

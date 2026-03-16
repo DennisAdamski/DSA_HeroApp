@@ -1,6 +1,8 @@
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
@@ -44,23 +46,8 @@ class HeroSheet {
     this.sprachen = const <String, HeroLanguageEntry>{},
     this.schriften = const <String, HeroScriptEntry>{},
     this.muttersprache = '',
-    this.rasse = '',
-    this.rasseModText = '',
-    this.kultur = '',
-    this.kulturModText = '',
-    this.profession = '',
-    this.professionModText = '',
-    this.geschlecht = '',
-    this.alter = '',
-    this.groesse = '',
-    this.gewicht = '',
-    this.haarfarbe = '',
-    this.augenfarbe = '',
-    this.aussehen = '',
-    this.stand = '',
-    this.titel = '',
-    this.familieHerkunftHintergrund = '',
-    this.sozialstatus = 0,
+    this.appearance = const HeroAppearance(),
+    this.background = const HeroBackground(),
     this.vorteileText = '',
     this.nachteileText = '',
     this.apTotal = 0,
@@ -104,23 +91,8 @@ class HeroSheet {
   /// ID der Muttersprache (leer, wenn nicht gesetzt).
   final String muttersprache;
 
-  final String rasse;
-  final String rasseModText;
-  final String kultur;
-  final String kulturModText;
-  final String profession;
-  final String professionModText;
-  final String geschlecht;
-  final String alter;
-  final String groesse;
-  final String gewicht;
-  final String haarfarbe;
-  final String augenfarbe;
-  final String aussehen;
-  final String stand;
-  final String titel;
-  final String familieHerkunftHintergrund;
-  final int sozialstatus;
+  final HeroAppearance appearance;
+  final HeroBackground background;
   final String vorteileText;
   final String nachteileText;
   final int apTotal;
@@ -159,23 +131,8 @@ class HeroSheet {
     Map<String, HeroLanguageEntry>? sprachen,
     Map<String, HeroScriptEntry>? schriften,
     String? muttersprache,
-    String? rasse,
-    String? rasseModText,
-    String? kultur,
-    String? kulturModText,
-    String? profession,
-    String? professionModText,
-    String? geschlecht,
-    String? alter,
-    String? groesse,
-    String? gewicht,
-    String? haarfarbe,
-    String? augenfarbe,
-    String? aussehen,
-    String? stand,
-    String? titel,
-    String? familieHerkunftHintergrund,
-    int? sozialstatus,
+    HeroAppearance? appearance,
+    HeroBackground? background,
     String? vorteileText,
     String? nachteileText,
     int? apTotal,
@@ -215,24 +172,8 @@ class HeroSheet {
       sprachen: sprachen ?? this.sprachen,
       schriften: schriften ?? this.schriften,
       muttersprache: muttersprache ?? this.muttersprache,
-      rasse: rasse ?? this.rasse,
-      rasseModText: rasseModText ?? this.rasseModText,
-      kultur: kultur ?? this.kultur,
-      kulturModText: kulturModText ?? this.kulturModText,
-      profession: profession ?? this.profession,
-      professionModText: professionModText ?? this.professionModText,
-      geschlecht: geschlecht ?? this.geschlecht,
-      alter: alter ?? this.alter,
-      groesse: groesse ?? this.groesse,
-      gewicht: gewicht ?? this.gewicht,
-      haarfarbe: haarfarbe ?? this.haarfarbe,
-      augenfarbe: augenfarbe ?? this.augenfarbe,
-      aussehen: aussehen ?? this.aussehen,
-      stand: stand ?? this.stand,
-      titel: titel ?? this.titel,
-      familieHerkunftHintergrund:
-          familieHerkunftHintergrund ?? this.familieHerkunftHintergrund,
-      sozialstatus: sozialstatus ?? this.sozialstatus,
+      appearance: appearance ?? this.appearance,
+      background: background ?? this.background,
       vorteileText: vorteileText ?? this.vorteileText,
       nachteileText: nachteileText ?? this.nachteileText,
       apTotal: apTotal ?? this.apTotal,
@@ -279,23 +220,8 @@ class HeroSheet {
       'sprachen': sprachen.map((key, value) => MapEntry(key, value.toJson())),
       'schriften': schriften.map((key, value) => MapEntry(key, value.toJson())),
       'muttersprache': muttersprache,
-      'rasse': rasse,
-      'rasseModText': rasseModText,
-      'kultur': kultur,
-      'kulturModText': kulturModText,
-      'profession': profession,
-      'professionModText': professionModText,
-      'geschlecht': geschlecht,
-      'alter': alter,
-      'groesse': groesse,
-      'gewicht': gewicht,
-      'haarfarbe': haarfarbe,
-      'augenfarbe': augenfarbe,
-      'aussehen': aussehen,
-      'stand': stand,
-      'titel': titel,
-      'familieHerkunftHintergrund': familieHerkunftHintergrund,
-      'sozialstatus': sozialstatus,
+      ...appearance.toJson(),
+      ...background.toJson(),
       'vorteileText': vorteileText,
       'nachteileText': nachteileText,
       'apTotal': apTotal,
@@ -436,23 +362,8 @@ class HeroSheet {
         return MapEntry(key, HeroScriptEntry.fromJson(map));
       }),
       muttersprache: getString('muttersprache'),
-      rasse: getString('rasse'),
-      rasseModText: getString('rasseModText'),
-      kultur: getString('kultur'),
-      kulturModText: getString('kulturModText'),
-      profession: getString('profession'),
-      professionModText: getString('professionModText'),
-      geschlecht: getString('geschlecht'),
-      alter: getString('alter'),
-      groesse: getString('groesse'),
-      gewicht: getString('gewicht'),
-      haarfarbe: getString('haarfarbe'),
-      augenfarbe: getString('augenfarbe'),
-      aussehen: getString('aussehen'),
-      stand: getString('stand'),
-      titel: getString('titel'),
-      familieHerkunftHintergrund: getString('familieHerkunftHintergrund'),
-      sozialstatus: getInt('sozialstatus'),
+      appearance: HeroAppearance.fromJson(json),
+      background: HeroBackground.fromJson(json),
       vorteileText: getString('vorteileText'),
       nachteileText: getString('nachteileText'),
       apTotal: getInt('apTotal'),

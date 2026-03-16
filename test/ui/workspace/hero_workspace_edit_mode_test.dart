@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
@@ -40,10 +41,12 @@ void main() {
         ko: 14,
         kk: 13,
       ),
-      rasse: 'Mensch',
-      kultur: 'Mittelreich',
-      profession: 'Kriegerin',
-      sozialstatus: 7,
+      background: HeroBackground(
+        rasse: 'Mensch',
+        kultur: 'Mittelreich',
+        profession: 'Kriegerin',
+        sozialstatus: 7,
+      ),
       apTotal: 1000,
       apSpent: 500,
       apAvailable: 500,
