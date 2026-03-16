@@ -1,6 +1,11 @@
+/// Begleiter/Vertraute eines Helden.
+///
+/// Ein Held kann mehrere Begleiter haben. Begleiter haben einen aehnlichen
+/// Aufbau wie Helden, sind aber wesentlich weniger komplex.
+library;
+
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart'
     show ArmorPiece;
-import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_attack.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_sonderfertigkeit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_speed.dart';
@@ -41,6 +46,7 @@ class HeroCompanion {
     this.gewicht = '',
     this.groesse = '',
     this.alter = '',
+    // Eigenschaften – nullable, da nicht jeder Begleiter alle besitzt.
     this.mu,
     this.kl,
     this.inn,
@@ -49,15 +55,18 @@ class HeroCompanion {
     this.ge,
     this.ko,
     this.kk,
+    // Abgeleitete Kampf-/Bewegungswerte.
     this.ini,
     this.magieresistenz,
     this.loyalitaet,
     this.apGesamt,
     this.apAusgegeben,
     this.geschwindigkeiten = const <HeroCompanionSpeed>[],
+    // Lebenspunkte.
     this.maxLep,
     this.maxAup,
     this.maxAsp,
+    // Weitere Eigenschaften.
     this.tragkraft = '',
     this.zugkraft = '',
     this.ausbildung = '',
@@ -66,51 +75,146 @@ class HeroCompanion {
     this.nachteile = '',
     this.gw,
     this.au,
+    // Angriffe und Sonderfertigkeiten.
     this.angriffe = const <HeroCompanionAttack>[],
     this.sonderfertigkeiten = const <HeroCompanionSonderfertigkeit>[],
+    // Ruestung
     this.ruestungsTeile = const <ArmorPiece>[],
     this.ruestungsgewoehnung = 0,
+    // Ritualkategorien (nur fuer Vertraute: Vertrautenmagie).
     this.ritualCategories = const <HeroRitualCategory>[],
   });
 
+  /// Stabiler Schluessel des Begleiters.
   final String id;
+
+  /// Name des Begleiters.
   final String name;
+
+  /// Typ des Begleiters (Reittier, Vertrauter, Sonstiger Begleiter).
   final BegleiterTyp typ;
+
+  /// Familien-/Artgruppe (z.B. 'Greif', 'Rappe').
   final String familie;
+
+  /// Aussehen des Begleiters.
   final String aussehen;
+
+  /// Gattung (z.B. 'Hund', 'Rabe', 'Pferd').
   final String gattung;
+
+  /// Gewicht als Freitext (z.B. '~50 kg').
   final String gewicht;
+
+  /// Groesse als Freitext.
   final String groesse;
+
+  /// Alter oder Geburtsjahr.
   final String alter;
+
+  // ---- DSA-Eigenschaften (nullable) ----------------------------------------
+
+  /// Mut.
   final int? mu;
+
+  /// Klugheit.
   final int? kl;
+
+  /// Intuition.
   final int? inn;
+
+  /// Charisma.
   final int? ch;
+
+  /// Fingerfertigkeit.
   final int? ff;
+
+  /// Gewandtheit.
   final int? ge;
+
+  /// Konstitution.
   final int? ko;
+
+  /// Koerperkraft.
   final int? kk;
+
+  // ---- Kampf- und Bewegungswerte -------------------------------------------
+
+  /// Ini-Basiswert.
   final int? ini;
+
+  /// Magieresistenz.
   final int? magieresistenz;
+
+  /// Loyalitaet gegenueber dem Helden.
   final int? loyalitaet;
+
+  /// Gesamt-AP des Begleiters.
   final int? apGesamt;
+
+  /// Ausgegebene AP des Begleiters.
   final int? apAusgegeben;
+
+  /// Geschwindigkeitswerte (z.B. zu Fuss, Schwimmen, Fliegen).
   final List<HeroCompanionSpeed> geschwindigkeiten;
+
+  // ---- Lebenspunkte --------------------------------------------------------
+
+  /// Maximale Lebenspunkte.
   final int? maxLep;
+
+  /// Maximale Ausdauerpunkte.
   final int? maxAup;
+
+  /// Maximale Astralpunkte.
   final int? maxAsp;
+
+  // ---- Weitere Angaben -----------------------------------------------------
+
+  /// Tragkraft des Begleiters.
   final String tragkraft;
+
+  /// Zugkraft des Begleiters.
   final String zugkraft;
+
+  /// Ausbildung/Dressur.
   final String ausbildung;
+
+  /// Futterbedarf.
   final String futterbedarf;
+
+  /// Vorteile des Begleiters (Freitext).
   final String vorteile;
+
+  /// Nachteile des Begleiters (Freitext).
   final String nachteile;
+
+  /// Gefahrenwert (0–20).
   final int? gw;
+
+  /// Ausdauer-Runden (Anzahl moeglicher Spielrunden bei einer Geschwindigkeit).
   final int? au;
+
+  // ---- Angriffe und Sonderfertigkeiten ------------------------------------
+
+  /// Angriffsmodi des Begleiters (z.B. Beißen, Krallen, Sturzflug).
   final List<HeroCompanionAttack> angriffe;
+
+  /// Sonderfertigkeiten des Begleiters.
   final List<HeroCompanionSonderfertigkeit> sonderfertigkeiten;
+
+  // ---- Ruestung -----------------------------------------------------------
+
+  /// Ruestungsteile des Begleiters.
   final List<ArmorPiece> ruestungsTeile;
+
+  /// Globale Ruestungsgewoehnung des Begleiters (0–3).
   final int ruestungsgewoehnung;
+
+  // ---- Vertrautenmagie -------------------------------------------------------
+
+  /// Ritualkategorien des Vertrauten (z.B. Vertrautenmagie mit aktiven Ritualen).
+  /// Leer fuer Nicht-Vertraute.
   final List<HeroRitualCategory> ritualCategories;
 
   HeroCompanion copyWith({
@@ -123,31 +227,31 @@ class HeroCompanion {
     String? gewicht,
     String? groesse,
     String? alter,
-    Object? mu = keepFieldValue,
-    Object? kl = keepFieldValue,
-    Object? inn = keepFieldValue,
-    Object? ch = keepFieldValue,
-    Object? ff = keepFieldValue,
-    Object? ge = keepFieldValue,
-    Object? ko = keepFieldValue,
-    Object? kk = keepFieldValue,
-    Object? ini = keepFieldValue,
-    Object? magieresistenz = keepFieldValue,
-    Object? loyalitaet = keepFieldValue,
-    Object? apGesamt = keepFieldValue,
-    Object? apAusgegeben = keepFieldValue,
+    Object? mu = _keepNull,
+    Object? kl = _keepNull,
+    Object? inn = _keepNull,
+    Object? ch = _keepNull,
+    Object? ff = _keepNull,
+    Object? ge = _keepNull,
+    Object? ko = _keepNull,
+    Object? kk = _keepNull,
+    Object? ini = _keepNull,
+    Object? magieresistenz = _keepNull,
+    Object? loyalitaet = _keepNull,
+    Object? apGesamt = _keepNull,
+    Object? apAusgegeben = _keepNull,
     List<HeroCompanionSpeed>? geschwindigkeiten,
-    Object? maxLep = keepFieldValue,
-    Object? maxAup = keepFieldValue,
-    Object? maxAsp = keepFieldValue,
+    Object? maxLep = _keepNull,
+    Object? maxAup = _keepNull,
+    Object? maxAsp = _keepNull,
     String? tragkraft,
     String? zugkraft,
     String? ausbildung,
     String? futterbedarf,
     String? vorteile,
     String? nachteile,
-    Object? gw = keepFieldValue,
-    Object? au = keepFieldValue,
+    Object? gw = _keepNull,
+    Object? au = _keepNull,
     List<HeroCompanionAttack>? angriffe,
     List<HeroCompanionSonderfertigkeit>? sonderfertigkeiten,
     List<ArmorPiece>? ruestungsTeile,
@@ -164,39 +268,35 @@ class HeroCompanion {
       gewicht: gewicht ?? this.gewicht,
       groesse: groesse ?? this.groesse,
       alter: alter ?? this.alter,
-      mu: identical(mu, keepFieldValue) ? this.mu : mu as int?,
-      kl: identical(kl, keepFieldValue) ? this.kl : kl as int?,
-      inn: identical(inn, keepFieldValue) ? this.inn : inn as int?,
-      ch: identical(ch, keepFieldValue) ? this.ch : ch as int?,
-      ff: identical(ff, keepFieldValue) ? this.ff : ff as int?,
-      ge: identical(ge, keepFieldValue) ? this.ge : ge as int?,
-      ko: identical(ko, keepFieldValue) ? this.ko : ko as int?,
-      kk: identical(kk, keepFieldValue) ? this.kk : kk as int?,
-      ini: identical(ini, keepFieldValue) ? this.ini : ini as int?,
-      magieresistenz: identical(magieresistenz, keepFieldValue)
+      mu: identical(mu, _keepNull) ? this.mu : mu as int?,
+      kl: identical(kl, _keepNull) ? this.kl : kl as int?,
+      inn: identical(inn, _keepNull) ? this.inn : inn as int?,
+      ch: identical(ch, _keepNull) ? this.ch : ch as int?,
+      ff: identical(ff, _keepNull) ? this.ff : ff as int?,
+      ge: identical(ge, _keepNull) ? this.ge : ge as int?,
+      ko: identical(ko, _keepNull) ? this.ko : ko as int?,
+      kk: identical(kk, _keepNull) ? this.kk : kk as int?,
+      ini: identical(ini, _keepNull) ? this.ini : ini as int?,
+      magieresistenz: identical(magieresistenz, _keepNull)
           ? this.magieresistenz
           : magieresistenz as int?,
-      loyalitaet: identical(loyalitaet, keepFieldValue)
+      loyalitaet: identical(loyalitaet, _keepNull)
           ? this.loyalitaet
           : loyalitaet as int?,
-      apGesamt: identical(apGesamt, keepFieldValue)
-          ? this.apGesamt
-          : apGesamt as int?,
-      apAusgegeben: identical(apAusgegeben, keepFieldValue)
-          ? this.apAusgegeben
-          : apAusgegeben as int?,
+      apGesamt: identical(apGesamt, _keepNull) ? this.apGesamt : apGesamt as int?,
+      apAusgegeben: identical(apAusgegeben, _keepNull) ? this.apAusgegeben : apAusgegeben as int?,
       geschwindigkeiten: geschwindigkeiten ?? this.geschwindigkeiten,
-      maxLep: identical(maxLep, keepFieldValue) ? this.maxLep : maxLep as int?,
-      maxAup: identical(maxAup, keepFieldValue) ? this.maxAup : maxAup as int?,
-      maxAsp: identical(maxAsp, keepFieldValue) ? this.maxAsp : maxAsp as int?,
+      maxLep: identical(maxLep, _keepNull) ? this.maxLep : maxLep as int?,
+      maxAup: identical(maxAup, _keepNull) ? this.maxAup : maxAup as int?,
+      maxAsp: identical(maxAsp, _keepNull) ? this.maxAsp : maxAsp as int?,
       tragkraft: tragkraft ?? this.tragkraft,
       zugkraft: zugkraft ?? this.zugkraft,
       ausbildung: ausbildung ?? this.ausbildung,
       futterbedarf: futterbedarf ?? this.futterbedarf,
       vorteile: vorteile ?? this.vorteile,
       nachteile: nachteile ?? this.nachteile,
-      gw: identical(gw, keepFieldValue) ? this.gw : gw as int?,
-      au: identical(au, keepFieldValue) ? this.au : au as int?,
+      gw: identical(gw, _keepNull) ? this.gw : gw as int?,
+      au: identical(au, _keepNull) ? this.au : au as int?,
       angriffe: angriffe ?? this.angriffe,
       sonderfertigkeiten: sonderfertigkeiten ?? this.sonderfertigkeiten,
       ruestungsTeile: ruestungsTeile ?? this.ruestungsTeile,
@@ -283,6 +383,7 @@ class HeroCompanion {
       ini: (json['ini'] as num?)?.toInt(),
       magieresistenz: (json['magieresistenz'] as num?)?.toInt(),
       loyalitaet: (json['loyalitaet'] as num?)?.toInt(),
+      // Backward-Compat: eigenAp wurde in apGesamt umbenannt.
       apGesamt: (json['apGesamt'] as num?)?.toInt() ??
           (json['eigenAp'] as num?)?.toInt(),
       apAusgegeben: (json['apAusgegeben'] as num?)?.toInt(),
@@ -299,10 +400,12 @@ class HeroCompanion {
       zugkraft: (json['zugkraft'] as String?) ?? '',
       ausbildung: (json['ausbildung'] as String?) ?? '',
       futterbedarf: (json['futterbedarf'] as String?) ?? '',
+      // Backward-Compat: altes 'vorNachteile'-Feld wird in 'vorteile' migriert.
       vorteile: (json['vorteile'] as String?) ??
           (json['vorNachteile'] as String?) ??
           '',
       nachteile: (json['nachteile'] as String?) ?? '',
+      // Backward-Compat: gw/au waren frueher als String gespeichert.
       gw: _parseIntOrString(json['gw']),
       au: _parseIntOrString(json['au']),
       angriffe: ((json['angriffe'] as List?) ?? const <dynamic>[])
@@ -360,7 +463,7 @@ class HeroCompanion {
           loyalitaet == other.loyalitaet &&
           apGesamt == other.apGesamt &&
           apAusgegeben == other.apAusgegeben &&
-          _listEqual(geschwindigkeiten, other.geschwindigkeiten) &&
+          _speedListEqual(geschwindigkeiten, other.geschwindigkeiten) &&
           maxLep == other.maxLep &&
           maxAup == other.maxAup &&
           maxAsp == other.maxAsp &&
@@ -374,7 +477,7 @@ class HeroCompanion {
           au == other.au &&
           _listEqual(angriffe, other.angriffe) &&
           _listEqual(sonderfertigkeiten, other.sonderfertigkeiten) &&
-          _listEqual(ruestungsTeile, other.ruestungsTeile) &&
+          _armorListEqual(ruestungsTeile, other.ruestungsTeile) &&
           ruestungsgewoehnung == other.ruestungsgewoehnung &&
           _listEqual(ritualCategories, other.ritualCategories);
 
@@ -422,6 +525,7 @@ class HeroCompanion {
   ]);
 }
 
+/// Liest einen int-Wert tolerant aus JSON – unterstuetzt num und String (Backward-Compat).
 int? _parseIntOrString(dynamic value) {
   if (value == null) return null;
   if (value is num) return value.toInt();
@@ -429,7 +533,29 @@ int? _parseIntOrString(dynamic value) {
   return null;
 }
 
+/// Sentinel-Wert fuer nullable copyWith-Felder.
+const Object _keepNull = Object();
+
+bool _speedListEqual(
+  List<HeroCompanionSpeed> a,
+  List<HeroCompanionSpeed> b,
+) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
 bool _listEqual<T>(List<T> a, List<T> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
+bool _armorListEqual(List<ArmorPiece> a, List<ArmorPiece> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {
     if (a[i] != b[i]) return false;
