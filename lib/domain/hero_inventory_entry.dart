@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
 /// Wer oder was ein Inventarstück trägt.
@@ -112,14 +113,14 @@ class HeroInventoryEntry {
     String? beschreibung,
     InventoryItemType? itemType,
     InventoryItemSource? source,
-    Object? sourceRef = _sentinel,
+    Object? sourceRef = keepFieldValue,
     bool? istAusgeruestet,
     List<InventoryItemModifier>? modifiers,
     int? gewichtGramm,
     int? wertSilber,
     String? herkunft,
     InventoryTraeger? traegerTyp,
-    Object? traegerId = _sentinel,
+    Object? traegerId = keepFieldValue,
   }) {
     return HeroInventoryEntry(
       gegenstand: gegenstand ?? this.gegenstand,
@@ -136,14 +137,14 @@ class HeroInventoryEntry {
       beschreibung: beschreibung ?? this.beschreibung,
       itemType: itemType ?? this.itemType,
       source: source ?? this.source,
-      sourceRef: sourceRef == _sentinel ? this.sourceRef : sourceRef as String?,
+      sourceRef: sourceRef == keepFieldValue ? this.sourceRef : sourceRef as String?,
       istAusgeruestet: istAusgeruestet ?? this.istAusgeruestet,
       modifiers: modifiers ?? this.modifiers,
       gewichtGramm: gewichtGramm ?? this.gewichtGramm,
       wertSilber: wertSilber ?? this.wertSilber,
       herkunft: herkunft ?? this.herkunft,
       traegerTyp: traegerTyp ?? this.traegerTyp,
-      traegerId: traegerId == _sentinel ? this.traegerId : traegerId as String?,
+      traegerId: traegerId == keepFieldValue ? this.traegerId : traegerId as String?,
     );
   }
 
@@ -232,6 +233,3 @@ class HeroInventoryEntry {
     );
   }
 }
-
-/// Sentinel-Objekt fuer nullable copyWith-Parameter.
-const Object _sentinel = Object();
