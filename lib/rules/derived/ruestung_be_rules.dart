@@ -92,7 +92,7 @@ int computeTalentEbe({required int baseBe, required String talentBeRule}) {
       return 0;
     }
     final reduction = normalizedBase * factor;
-    return _clampNonPositive(-reduction);
+    return clampNonPositive(-reduction);
   }
 
   final numeric = int.tryParse(compactRule);
@@ -102,8 +102,7 @@ int computeTalentEbe({required int baseBe, required String talentBeRule}) {
   final offset = -numeric;
   final reduction = normalizedBase - offset;
   final effectiveReduction = reduction < 0 ? 0 : reduction;
-  return _clampNonPositive(-effectiveReduction);
+  return clampNonPositive(-effectiveReduction);
 }
 
-int _clampNonPositive(int value) => value > 0 ? 0 : value;
 int _min(int a, int b) => a < b ? a : b;
