@@ -19,6 +19,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
@@ -481,19 +482,15 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
 
     _latestHero = hero;
     _syncDraftFromHero(hero);
-
     final catalogAsync = ref.watch(rulesCatalogProvider);
-
     return catalogAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) =>
           Center(child: Text('Katalog-Fehler: $error')),
       data: (catalog) {
-        final spellDefsById = <String, SpellDef>{};
-        for (final spell in catalog.spells) {
-          spellDefsById[spell.id] = spell;
-        }
-
+        final spellDefsById = <String, SpellDef>{
+          for (final spell in catalog.spells) spell.id: spell,
+        };
         return Column(
           children: [
             TabBar(
@@ -613,7 +610,7 @@ Future<SpellAvailabilityEntry?> _showSpellRepresentationDialog({
   required String spellName,
   required List<SpellAvailabilityEntry> entries,
 }) {
-  return showDialog<SpellAvailabilityEntry>(
+  return showAdaptiveDetailSheet<SpellAvailabilityEntry>(
     context: context,
     builder: (dialogContext) {
       return _SpellRepresentationDialog(spellName: spellName, entries: entries);
@@ -653,7 +650,7 @@ class _SpellRepresentationDialogState
       key: const ValueKey<String>('magic-spell-representation-dialog'),
       title: const Text('Zauber-Repräsentation wählen'),
       content: SizedBox(
-        width: 480,
+        width: kDialogWidthMedium,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
