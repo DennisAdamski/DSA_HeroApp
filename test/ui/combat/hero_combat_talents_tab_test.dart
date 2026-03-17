@@ -421,7 +421,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Kurzschwert'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Uebernehmen'));
+    await tester.tap(find.text('Übernehmen'));
     await tester.pumpAndSettle();
 
     await actions.save();

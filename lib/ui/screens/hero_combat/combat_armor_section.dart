@@ -5,6 +5,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
@@ -265,12 +267,12 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
       return;
     }
 
-    final result = await showDialog<ArmorPiece>(
+    final result = await showAdaptiveDetailSheet<ArmorPiece>(
       context: context,
       builder: (dialogContext) {
         return Dialog(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
+            constraints: const BoxConstraints(maxWidth: kDialogWidthMedium),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: _ArmorPieceEditorPanel(
