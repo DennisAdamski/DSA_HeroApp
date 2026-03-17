@@ -358,7 +358,7 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
     final mediaQuery = MediaQuery.of(context);
     final size = mediaQuery.size;
     final compactLayout = size.width < 720 || size.height < 720;
-    final maxWidth = compactLayout ? size.width - 16 : 920.0;
+    final maxWidth = compactLayout ? size.width - 16 : kDialogWidthExtraLarge;
     final maxHeight = compactLayout ? size.height - 16 : size.height * 0.9;
     final resolved = _ResolvedSpellDetails.fromSpell(
       def: widget.def,

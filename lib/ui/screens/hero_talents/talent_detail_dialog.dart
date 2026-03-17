@@ -37,7 +37,7 @@ class _TalentDetailDialog extends StatelessWidget {
     return AlertDialog(
       title: Text(talent.name),
       content: SizedBox(
-        width: 500,
+        width: kDialogWidthMedium,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -127,7 +127,7 @@ class _TalentDetailDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        FilledButton(
+        TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Schliessen'),
         ),

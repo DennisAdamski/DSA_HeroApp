@@ -266,7 +266,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       _tappableNameCell(
         talent.name,
         key: ValueKey<String>('talents-row-${talent.id}'),
-        onTap: () => showDialog<void>(
+        onTap: () => showAdaptiveDetailSheet<void>(
           context: context,
           builder: (_) => _TalentDetailDialog(
             talent: talent,
@@ -376,7 +376,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       _tappableNameCell(
         talent.name,
         key: ValueKey<String>('talents-row-${talent.id}'),
-        onTap: () => showDialog<void>(
+        onTap: () => showAdaptiveDetailSheet<void>(
           context: context,
           builder: (_) => _TalentDetailDialog(
             talent: talent,

@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_workspace_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
@@ -306,7 +307,7 @@ class _CreateHeroDialogState extends State<_CreateHeroDialog> {
       title: const Text('Neuen Helden anlegen'),
       content: SingleChildScrollView(
         child: SizedBox(
-          width: 420,
+          width: kDialogWidthSmall,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
