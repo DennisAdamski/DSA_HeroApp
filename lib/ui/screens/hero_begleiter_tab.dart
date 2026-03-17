@@ -10,10 +10,19 @@ import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrautenmagie_preset.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_field.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
-part 'hero_begleiter/begleiter_sections.dart';
+part 'hero_begleiter/begleiter_helpers.dart';
+part 'hero_begleiter/begleiter_grunddaten_section.dart';
+part 'hero_begleiter/begleiter_eigenschaften_section.dart';
+part 'hero_begleiter/begleiter_kampfwerte_section.dart';
+part 'hero_begleiter/begleiter_ruestung_section.dart';
+part 'hero_begleiter/begleiter_angriff_section.dart';
+part 'hero_begleiter/begleiter_sonderfertigkeiten_section.dart';
 part 'hero_begleiter/vertrautenmagie_section.dart';
 
 /// Begleiter-Tab mit Auswahl- und Detailansicht fuer Vertraute/Begleiter.
@@ -168,26 +177,15 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   Future<void> _deleteCompanion(String companionId) async {
     final index = _draftCompanions.indexWhere((c) => c.id == companionId);
     if (index < 0) return;
-    final confirmed = await showDialog<bool>(
+    final result = await showAdaptiveConfirmDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Begleiter löschen'),
-        content: Text(
+      title: 'Begleiter löschen',
+      content:
           'Möchtest du "${_draftCompanions[index].name}" wirklich löschen?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Abbrechen'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Löschen'),
-          ),
-        ],
-      ),
+      confirmLabel: 'Löschen',
+      isDestructive: true,
     );
-    if (confirmed != true || !mounted) return;
+    if (result != AdaptiveConfirmResult.confirm || !mounted) return;
     setState(() {
       _draftCompanions = List<HeroCompanion>.from(_draftCompanions)
         ..removeAt(index);

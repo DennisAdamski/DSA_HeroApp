@@ -626,7 +626,8 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                 padding: EdgeInsets.zero,
                 labelPadding: const EdgeInsets.only(right: 6),
                 onPressed: () async {
-                  final result = await _showCombatSpecializationDialog(
+                  final result = await showCombatSpecializationDialog(
+                    context: context,
                     title: 'Spezialisierungen: ${talent.name}',
                     options: options,
                     initialSelected: selected,
@@ -640,65 +641,6 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
           ],
         ),
       ),
-    );
-  }
-
-  Future<List<String>?> _showCombatSpecializationDialog({
-    required String title,
-    required List<String> options,
-    required List<String> initialSelected,
-  }) {
-    final selected = <String>{...initialSelected};
-    return showDialog<List<String>>(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(title),
-              content: SizedBox(
-                width: 420,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: options
-                        .map(
-                          (entry) => CheckboxListTile(
-                            value: selected.contains(entry),
-                            title: Text(entry),
-                            dense: true,
-                            onChanged: (enabled) {
-                              setDialogState(() {
-                                if (enabled == true) {
-                                  selected.add(entry);
-                                } else {
-                                  selected.remove(entry);
-                                }
-                              });
-                            },
-                          ),
-                        )
-                        .toList(growable: false),
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Abbrechen'),
-                ),
-                FilledButton(
-                  onPressed: () {
-                    final normalized = _normalizeStringList(selected);
-                    Navigator.of(context).pop(normalized);
-                  },
-                  child: const Text('Übernehmen'),
-                ),
-              ],
-            );
-          },
-        );
-      },
     );
   }
 
@@ -738,63 +680,14 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     required int currentPa,
     required int neuerWert,
   }) async {
-    int atDelta = delta;
-    return showDialog<int>(
+    return showAdaptiveDetailSheet<int>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) {
-          final paDelta = delta - atDelta;
-          return AlertDialog(
-            title: Text('AT/PA-Verteilung: $talentName'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Neuer TaW: $neuerWert  '
-                  '(+$delta ${delta == 1 ? 'Punkt' : 'Punkte'})',
-                ),
-                const SizedBox(height: 16),
-                Slider(
-                  min: 0,
-                  max: delta.toDouble(),
-                  divisions: delta,
-                  value: atDelta.toDouble(),
-                  label: 'AT +$atDelta',
-                  onChanged: (v) =>
-                      setDialogState(() => atDelta = v.round()),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      children: [
-                        const Text('AT'),
-                        Text('$currentAt \u2192 ${currentAt + atDelta}'),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        const Text('PA'),
-                        Text('$currentPa \u2192 ${currentPa + paDelta}'),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Abbrechen'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(ctx).pop(atDelta),
-                child: const Text('\u00dcbernehmen'),
-              ),
-            ],
-          );
-        },
+      builder: (_) => _AtPaVerteilungDialog(
+        talentName: talentName,
+        delta: delta,
+        currentAt: currentAt,
+        currentPa: currentPa,
+        neuerWert: neuerWert,
       ),
     );
   }

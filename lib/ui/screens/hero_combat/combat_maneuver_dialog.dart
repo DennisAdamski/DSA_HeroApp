@@ -23,7 +23,7 @@ class _CombatManeuverDetailsDialog extends StatelessWidget {
     return AlertDialog(
       title: Text(maneuver.name),
       content: SizedBox(
-        width: 560,
+        width: kDialogWidthMedium,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
