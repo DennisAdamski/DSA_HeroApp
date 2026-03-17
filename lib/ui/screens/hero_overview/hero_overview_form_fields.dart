@@ -9,24 +9,16 @@ extension _HeroOverviewFormFieldsSection on _HeroOverviewTabState {
     TextInputType? keyboardType,
     bool? readOnly,
   }) {
-    if (readOnly == true) {
-      return _buildLabeledStaticValueField(
-        key: ValueKey<String>('overview-field-$keyName'),
-        label: label,
-        value: _field(keyName).text,
-      );
-    }
-
-    final isReadOnly = readOnly ?? !_editController.isEditing;
-    return TextField(
+    final isEditing = readOnly == true ? false : (readOnly ?? _editController.isEditing);
+    return EditAwareField(
       key: ValueKey<String>('overview-field-$keyName'),
+      label: label,
+      isEditing: isEditing,
       controller: _field(keyName),
-      readOnly: isReadOnly,
       minLines: minLines,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      decoration: _inputDecoration(label),
-      onChanged: isReadOnly ? null : _onFieldChanged,
+      onChanged: isEditing ? _onFieldChanged : null,
     );
   }
 
@@ -35,22 +27,11 @@ extension _HeroOverviewFormFieldsSection on _HeroOverviewTabState {
     required String value,
     Key? key,
   }) {
-    return _buildLabeledStaticValueField(key: key, label: label, value: value);
-  }
-
-  Widget _buildLabeledStaticValueField({
-    required String label,
-    required String value,
-    Key? key,
-  }) {
-    return Column(
+    return EditAwareField(
       key: key,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: Theme.of(context).textTheme.labelMedium),
-        const SizedBox(height: 6),
-        Text(value, style: Theme.of(context).textTheme.bodyLarge),
-      ],
+      label: label,
+      value: value,
+      isEditing: false,
     );
   }
 

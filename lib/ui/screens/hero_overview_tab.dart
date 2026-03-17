@@ -23,6 +23,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dial
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_field.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_table_cell.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 
 part 'hero_overview/hero_overview_base_info_section.dart';

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:dsa_heldenverwaltung/domain/learn/learn_complexity.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 
 /// Ergebnis eines bestaetigten Steigerungsdialogs.
@@ -48,7 +50,7 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
   int seAnzahl = 0,
   bool lehrmeisterVerfuegbar = false,
 }) {
-  return showDialog<SteigerungsErgebnis>(
+  return showAdaptiveDetailSheet<SteigerungsErgebnis>(
     context: context,
     builder: (dialogContext) {
       return _SteigerungsDialog(
@@ -253,7 +255,7 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
     return AlertDialog(
       title: Text('${widget.bezeichnung} steigern'),
       content: SizedBox(
-        width: 420,
+        width: kDialogWidthSmall,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,

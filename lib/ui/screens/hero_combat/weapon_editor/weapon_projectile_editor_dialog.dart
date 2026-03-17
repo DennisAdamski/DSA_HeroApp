@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 
 /// Bearbeitet einen einzelnen Geschosstyp innerhalb des Waffen-Editors.
 class RangedProjectileEditorDialog extends StatefulWidget {
@@ -73,7 +74,7 @@ class _RangedProjectileEditorDialogState
         widget.isNew ? 'Geschoss hinzufuegen' : 'Geschoss bearbeiten',
       ),
       content: SizedBox(
-        width: 420,
+        width: kDialogWidthSmall,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
