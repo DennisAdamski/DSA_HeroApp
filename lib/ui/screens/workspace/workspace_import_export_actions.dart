@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 
 /// Kapselt Import-/Export-Aktionen fuer die Workspace-Shell.
 class WorkspaceImportExportActions {
@@ -59,7 +60,7 @@ class WorkspaceImportExportActions {
     if (!context.mounted) {
       return null;
     }
-    return showDialog<ImportConflictResolution>(
+    return showAdaptiveDetailSheet<ImportConflictResolution>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(

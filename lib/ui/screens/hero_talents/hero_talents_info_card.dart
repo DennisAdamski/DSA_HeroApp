@@ -84,7 +84,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     required String heroId,
     required int combatBaseBe,
   }) async {
-    await showDialog<void>(
+    await showAdaptiveDetailSheet<void>(
       context: context,
       builder: (context) =>
           TalentBeConfigDialog(heroId: heroId, combatBaseBe: combatBaseBe),
@@ -170,7 +170,7 @@ class _TalentBeConfigDialogState extends ConsumerState<TalentBeConfigDialog> {
     return AlertDialog(
       title: const Text('Talent-BE'),
       content: SizedBox(
-        width: 480,
+        width: kDialogWidthMedium,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -195,7 +195,7 @@ class _RitualEntryDialogState extends State<_RitualEntryDialog> {
       key: const ValueKey<String>('magic-ritual-entry-dialog'),
       title: Text(title),
       content: SizedBox(
-        width: 760,
+        width: kDialogWidthLarge,
         child: SingleChildScrollView(
           child: widget.isEditing
               ? _buildEditingContent(context)

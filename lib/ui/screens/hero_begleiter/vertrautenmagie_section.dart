@@ -32,7 +32,7 @@ class _VertrautenmagieSection extends StatelessWidget {
 
   Future<void> _addRitual(BuildContext context) async {
     final aktiviert = kategorie.rituals.map((r) => r.name).toSet();
-    final selected = await showDialog<HeroRitualEntry>(
+    final selected = await showAdaptiveDetailSheet<HeroRitualEntry>(
       context: context,
       builder: (_) =>
           _VertrautenmagiePickerDialog(aktiviert: aktiviert),
@@ -44,7 +44,7 @@ class _VertrautenmagieSection extends StatelessWidget {
   }
 
   void _showDetail(BuildContext context, HeroRitualEntry ritual) {
-    showDialog<void>(
+    showAdaptiveDetailSheet<void>(
       context: context,
       builder: (_) => _VertrautenmagieDetailDialog(ritual: ritual),
     );
@@ -58,7 +58,7 @@ class _VertrautenmagieSection extends StatelessWidget {
       children: [
         const _SectionHeader('Vertrautenmagie'),
         isEditing
-            ? _IntField(
+            ? EditAwareIntField(
                 label: 'Ritualkenntnis (RK)',
                 value: rk,
                 isEditing: true,
@@ -146,7 +146,7 @@ class _VertrautenmagiePickerDialog extends StatelessWidget {
     return AlertDialog(
       title: const Text('Ritual hinzufügen'),
       content: SizedBox(
-        width: 360,
+        width: kDialogWidthSmall,
         child: ListView.builder(
           shrinkWrap: true,
           itemCount: verfuegbar.length,
@@ -217,36 +217,39 @@ class _VertrautenmagieDetailDialog extends StatelessWidget {
     ];
     return AlertDialog(
       title: Text(ritual.name),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (ritual.wirkung.isNotEmpty) ...[
-              Text(ritual.wirkung),
-              const SizedBox(height: 12),
-            ],
-            ...rows.map(
-              (row) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: 110,
-                      child: Text(
-                        '${row.$1}:',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
+      content: SizedBox(
+        width: kDialogWidthMedium,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (ritual.wirkung.isNotEmpty) ...[
+                Text(ritual.wirkung),
+                const SizedBox(height: 12),
+              ],
+              ...rows.map(
+                (row) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 110,
+                        child: Text(
+                          '${row.$1}:',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                    ),
-                    Expanded(child: Text(row.$2)),
-                  ],
+                      Expanded(child: Text(row.$2)),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       actions: [

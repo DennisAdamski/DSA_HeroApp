@@ -47,7 +47,7 @@ extension _WeaponEditorStateHelpers on WeaponEditorScreenState {
     final source = projectileIndex == null
         ? const RangedProjectile()
         : projectiles[projectileIndex];
-    final result = await showDialog<RangedProjectile>(
+    final result = await showAdaptiveDetailSheet<RangedProjectile>(
       context: context,
       builder: (context) => RangedProjectileEditorDialog(
         initialProjectile: source,

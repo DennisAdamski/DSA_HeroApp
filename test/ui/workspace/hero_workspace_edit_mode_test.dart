@@ -260,12 +260,22 @@ void main() {
     apSpentAddButton.onPressed!.call();
     await tester.pumpAndSettle();
 
-    final apTotalAfter = tester.widget<TextField>(apTotalField);
-    final apSpentAfter = tester.widget<TextField>(
-      find.byKey(const ValueKey<String>('overview-field-ap_spent')),
+    final apTotalInner = find.descendant(
+      of: apTotalField,
+      matching: find.byType(TextField),
     );
-    expect(apTotalAfter.controller?.text, '1200');
-    expect(apSpentAfter.controller?.text, '800');
+    final apSpentInner = find.descendant(
+      of: find.byKey(const ValueKey<String>('overview-field-ap_spent')),
+      matching: find.byType(TextField),
+    );
+    expect(
+      tester.widget<TextField>(apTotalInner).controller?.text,
+      '1200',
+    );
+    expect(
+      tester.widget<TextField>(apSpentInner).controller?.text,
+      '800',
+    );
     expect(tester.widget<TextField>(apTotalAddField).controller?.text, isEmpty);
     expect(tester.widget<TextField>(apSpentAddField).controller?.text, isEmpty);
 
@@ -797,10 +807,14 @@ void main() {
     expect(hero, isNotNull);
     expect(hero!.name, 'Rondra');
 
-    final nameField = tester.widget<TextField>(
-      find.byKey(const ValueKey<String>('overview-field-name')),
+    // Nach dem Abbrechen zeigt EditAwareField im View-Modus Plain Text.
+    final nameFieldArea = find.byKey(
+      const ValueKey<String>('overview-field-name'),
     );
-    expect(nameField.controller?.text, 'Rondra');
+    expect(
+      find.descendant(of: nameFieldArea, matching: find.text('Rondra')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('notes tab can enter edit mode via global action', (
@@ -982,10 +996,14 @@ void main() {
     }
 
     expect(find.text('Basisinformationen'), findsOneWidget);
-    final nameField = tester.widget<TextField>(
-      find.byKey(const ValueKey<String>('overview-field-name')),
+    final nameFieldInner = find.descendant(
+      of: find.byKey(const ValueKey<String>('overview-field-name')),
+      matching: find.byType(TextField),
     );
-    expect(nameField.controller?.text, 'Nicht speichern');
+    expect(
+      tester.widget<TextField>(nameFieldInner).controller?.text,
+      'Nicht speichern',
+    );
   });
 
   testWidgets('dirty guard intercepts back navigation', (tester) async {
