@@ -376,11 +376,12 @@ void main() {
     await actions.startEdit();
     await tester.pumpAndSettle();
 
-    // Im Edit-Modus sind die Felder bearbeitbar.
-    final field = tester.widget<TextField>(
-      find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
+    // Im Edit-Modus rendert EditAwareTableCell ein editierbares TextField.
+    final innerField = find.descendant(
+      of: find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
+      matching: find.byType(TextField),
     );
-    expect(field.readOnly, isFalse);
+    expect(innerField, findsOneWidget);
 
     // Katalog-Button erscheint im Edit-Modus.
     expect(

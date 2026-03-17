@@ -40,7 +40,7 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
     final nameController = TextEditingController(text: existing?.name ?? '');
     final noteController = TextEditingController(text: existing?.note ?? '');
 
-    showDialog<void>(
+    showAdaptiveDetailSheet<void>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(

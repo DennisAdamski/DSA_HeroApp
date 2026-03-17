@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 
 /// Oeffnet den gemeinsamen Dialog fuer wichtige aktive Zaubereffekte.
 Future<void> showActiveSpellEffectsDialog({
@@ -49,7 +50,7 @@ class _ActiveSpellEffectsDialog extends ConsumerWidget {
       key: const ValueKey<String>('active-spell-effects-dialog'),
       title: const Text('Zauber aktivieren'),
       content: SizedBox(
-        width: 420,
+        width: kDialogWidthSmall,
         child: hero == null || state == null
             ? const Text('Held oder Laufzeitzustand konnte nicht geladen werden.')
             : Column(

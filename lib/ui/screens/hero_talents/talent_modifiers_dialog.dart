@@ -154,7 +154,7 @@ class _TalentModifiersDialogState extends State<_TalentModifiersDialog> {
     return AlertDialog(
       title: Text('Modifikatoren: ${widget.talentName}'),
       content: SizedBox(
-        width: 620,
+        width: kDialogWidthLarge,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,

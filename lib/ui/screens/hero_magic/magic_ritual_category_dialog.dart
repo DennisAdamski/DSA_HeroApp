@@ -161,7 +161,7 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
             : 'Ritualkategorie bearbeiten',
       ),
       content: SizedBox(
-        width: 720,
+        width: kDialogWidthLarge,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
