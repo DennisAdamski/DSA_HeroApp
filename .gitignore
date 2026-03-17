@@ -52,3 +52,5 @@ assets/heroes/Gerajin Sirella von Tuzak.dsa-hero.json
 todo.tasks
 assets/catalogs/house_rules_v1/waffenmeister.md
 .claude/settings.local.json
+*.xlsx
+*.pdf
