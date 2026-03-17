@@ -303,45 +303,57 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     }
 
     final isTempModifier = _isTempAttributeKey(keyName);
-    final isReadOnly = isTempModifier ? false : !_editController.isEditing;
-    final textField = TextField(
-      key: ValueKey<String>('overview-field-$keyName'),
-      controller: _field(keyName),
-      focusNode: isTempModifier ? _focusNode(keyName) : null,
-      readOnly: isReadOnly,
-      keyboardType: TextInputType.number,
-      textInputAction: isTempModifier ? TextInputAction.done : null,
-      decoration: _inputDecoration('').copyWith(
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        suffixIcon: onRaise == null
-            ? null
-            : IconButton(
-                key: ValueKey<String>('overview-raise-$keyName'),
-                visualDensity: VisualDensity.compact,
-                iconSize: 18,
-                tooltip: raiseTooltip ?? 'Steigern',
-                onPressed: onRaise,
-                icon: const Icon(Icons.trending_up),
-              ),
-        suffixIconConstraints: onRaise == null
-            ? null
-            : const BoxConstraints(minWidth: 32, minHeight: 32),
-      ),
-      onChanged: isTempModifier
-          ? (_) {
-              if (mounted) {
-                _viewRevision.value++;
-              }
+
+    // Temp-Modifier sind immer editierbar (eigener TextField-Pfad).
+    if (isTempModifier) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
+        child: TextField(
+          key: ValueKey<String>('overview-field-$keyName'),
+          controller: _field(keyName),
+          focusNode: _focusNode(keyName),
+          keyboardType: TextInputType.number,
+          textInputAction: TextInputAction.done,
+          decoration: _inputDecoration('').copyWith(
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 8,
+            ),
+          ),
+          onChanged: (_) {
+            if (mounted) {
+              _viewRevision.value++;
             }
-          : (isReadOnly ? null : _onFieldChanged),
-      onSubmitted: isTempModifier
-          ? (_) => _commitTempAttributeField(keyName)
-          : null,
-    );
-    return Padding(
+          },
+          onSubmitted: (_) => _commitTempAttributeField(keyName),
+        ),
+      );
+    }
+
+    // Regulaere Eigenschaftsfelder: View-Modus = Plain Text.
+    final isEditing = _editController.isEditing;
+    return EditAwareTableCell(
+      key: ValueKey<String>('overview-field-$keyName'),
+      value: _field(keyName).text,
+      isEditing: isEditing,
+      controller: _field(keyName),
+      keyboardType: TextInputType.number,
+      onChanged: isEditing ? _onFieldChanged : null,
       padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
-      child: textField,
+      suffixIcon: onRaise == null
+          ? null
+          : IconButton(
+              key: ValueKey<String>('overview-raise-$keyName'),
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: raiseTooltip ?? 'Steigern',
+              onPressed: onRaise,
+              icon: const Icon(Icons.trending_up),
+            ),
+      suffixIconConstraints: onRaise == null
+          ? null
+          : const BoxConstraints(minWidth: 32, minHeight: 32),
     );
   }
 
@@ -379,34 +391,28 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     if (keyName == null) {
       return _buildDerivedValueCell(value: '-');
     }
-    final isReadOnly = !_editController.isEditing;
-    final textField = TextField(
+    final isEditing = _editController.isEditing;
+    return EditAwareTableCell(
       key: ValueKey<String>('overview-derived-bought-$keyName'),
+      value: _field(keyName).text,
+      isEditing: isEditing,
       controller: _field(keyName),
-      readOnly: isReadOnly,
       keyboardType: TextInputType.number,
-      decoration: _inputDecoration('').copyWith(
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        suffixIcon: onRaise == null
-            ? null
-            : IconButton(
-                key: ValueKey<String>('overview-derived-raise-$keyName'),
-                visualDensity: VisualDensity.compact,
-                iconSize: 18,
-                tooltip: raiseTooltip ?? 'Steigern',
-                onPressed: onRaise,
-                icon: const Icon(Icons.trending_up),
-              ),
-        suffixIconConstraints: onRaise == null
-            ? null
-            : const BoxConstraints(minWidth: 32, minHeight: 32),
-      ),
-      onChanged: isReadOnly ? null : _onFieldChanged,
-    );
-    return Padding(
+      onChanged: isEditing ? _onFieldChanged : null,
       padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
-      child: textField,
+      suffixIcon: onRaise == null
+          ? null
+          : IconButton(
+              key: ValueKey<String>('overview-derived-raise-$keyName'),
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: raiseTooltip ?? 'Steigern',
+              onPressed: onRaise,
+              icon: const Icon(Icons.trending_up),
+            ),
+      suffixIconConstraints: onRaise == null
+          ? null
+          : const BoxConstraints(minWidth: 32, minHeight: 32),
     );
   }
 

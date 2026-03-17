@@ -200,7 +200,7 @@ class _CombatSpecialAbilityDetailsDialog extends StatelessWidget {
     return AlertDialog(
       title: Text(ability.name),
       content: SizedBox(
-        width: 560,
+        width: kDialogWidthMedium,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
