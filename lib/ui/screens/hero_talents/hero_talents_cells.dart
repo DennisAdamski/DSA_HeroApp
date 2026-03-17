@@ -150,57 +150,11 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     required List<String> options,
     required List<String> initialSelected,
   }) {
-    final selected = <String>{...initialSelected};
-    return showDialog<List<String>>(
+    return showCombatSpecializationDialog(
       context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(title),
-              content: SizedBox(
-                width: 420,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: options
-                        .map(
-                          (entry) => CheckboxListTile(
-                            value: selected.contains(entry),
-                            title: Text(entry),
-                            dense: true,
-                            onChanged: (enabled) {
-                              setDialogState(() {
-                                if (enabled == true) {
-                                  selected.add(entry);
-                                } else {
-                                  selected.remove(entry);
-                                }
-                              });
-                            },
-                          ),
-                        )
-                        .toList(growable: false),
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Abbrechen'),
-                ),
-                FilledButton(
-                  onPressed: () {
-                    final normalized = _normalizeStringList(selected);
-                    Navigator.of(context).pop(normalized);
-                  },
-                  child: const Text('Uebernehmen'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      title: title,
+      options: options,
+      initialSelected: initialSelected,
     );
   }
 
@@ -214,33 +168,30 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     String? raiseTooltip,
   }) {
     final controller = _controllerFor(talentId, field, value.toString());
-    final textField = TextField(
+    return EditAwareTableCell(
       key: ValueKey<String>('talents-field-$talentId-$field'),
+      value: value.toString(),
+      isEditing: isEditing,
       controller: controller,
-      readOnly: !isEditing,
       keyboardType: TextInputType.number,
-      decoration: _cellInputDecoration(isError: isError).copyWith(
-        suffixIcon: onRaise == null
-            ? null
-            : IconButton(
-                key: ValueKey<String>('talents-raise-$talentId-$field'),
-                visualDensity: VisualDensity.compact,
-                iconSize: 18,
-                tooltip: raiseTooltip ?? 'Steigern',
-                onPressed: onRaise,
-                icon: const Icon(Icons.trending_up),
-              ),
-        suffixIconConstraints: onRaise == null
-            ? null
-            : const BoxConstraints(minWidth: 32, minHeight: 32),
-      ),
+      isError: isError,
       onChanged: isEditing
           ? (raw) => _updateIntField(talentId, field, raw)
           : null,
-    );
-    return Padding(
       padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
-      child: textField,
+      suffixIcon: onRaise == null
+          ? null
+          : IconButton(
+              key: ValueKey<String>('talents-raise-$talentId-$field'),
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: raiseTooltip ?? 'Steigern',
+              onPressed: onRaise,
+              icon: const Icon(Icons.trending_up),
+            ),
+      suffixIconConstraints: onRaise == null
+          ? null
+          : const BoxConstraints(minWidth: 32, minHeight: 32),
     );
   }
 
@@ -376,7 +327,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     List<String> currentSpecs,
   ) async {
     final controller = TextEditingController();
-    final result = await showDialog<String>(
+    final result = await showAdaptiveDetailSheet<String>(
       context: context,
       builder: (ctx) {
         return AlertDialog(
@@ -422,22 +373,6 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
         value: value,
         onChanged: isEditing ? (next) => _updateGifted(talentId, next!) : null,
       ),
-    );
-  }
-
-  InputDecoration _cellInputDecoration({bool isError = false}) {
-    final theme = Theme.of(context).colorScheme;
-    final borderColor = isError ? theme.error : theme.outline;
-    return InputDecoration(
-      isDense: true,
-      border: OutlineInputBorder(borderSide: BorderSide(color: borderColor)),
-      enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: borderColor),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: isError ? theme.error : theme.primary),
-      ),
-      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
     );
   }
 
