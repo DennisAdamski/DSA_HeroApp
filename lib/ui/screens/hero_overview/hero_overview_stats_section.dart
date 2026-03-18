@@ -428,7 +428,6 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     HeroComputedSnapshot snapshot,
   ) {
     final theme = Theme.of(context);
-    final hasModifiers = entry.modifier != 0;
     return InkWell(
       onTap: () => _openStatModifierDialog(entry, hero, state, snapshot),
       child: Padding(
@@ -440,14 +439,12 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               entry.modifier.toString(),
               style: theme.textTheme.bodyMedium,
             ),
-            if (hasModifiers) ...[
-              const SizedBox(width: 4),
-              Icon(
-                Icons.info_outline,
-                size: 14,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ],
+            const SizedBox(width: 4),
+            Icon(
+              Icons.tune,
+              size: 14,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ],
         ),
       ),
