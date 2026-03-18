@@ -485,10 +485,10 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.ensureVisible(
-        find.byKey(const ValueKey<String>('talents-modifiers-edit-tal_a')),
+        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
       );
       await tester.tap(
-        find.byKey(const ValueKey<String>('talents-modifiers-edit-tal_a')),
+        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
       );
       await tester.pumpAndSettle();
 
@@ -579,10 +579,10 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.ensureVisible(
-        find.byKey(const ValueKey<String>('talents-modifiers-edit-tal_a')),
+        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
       );
       await tester.tap(
-        find.byKey(const ValueKey<String>('talents-modifiers-edit-tal_a')),
+        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
       );
       await tester.pumpAndSettle();
 
