@@ -8,13 +8,16 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_complexity.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
-import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
+import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_feature_flags.dart';
@@ -24,6 +27,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_con
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_field.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/attribute_modifier_detail_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_detail_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_table_cell.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 
@@ -177,15 +182,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('b_asp').text = hero.bought.asp.toString();
     _field('b_kap').text = hero.bought.kap.toString();
     _field('b_mr').text = hero.bought.mr.toString();
-
-    _field('m_lep').text = hero.persistentMods.lep.toString();
-    _field('m_au').text = hero.persistentMods.au.toString();
-    _field('m_asp').text = hero.persistentMods.asp.toString();
-    _field('m_kap').text = hero.persistentMods.kap.toString();
-    _field('m_mr').text = hero.persistentMods.mr.toString();
-    _field('m_ini').text = hero.persistentMods.iniBase.toString();
-    _field('m_gs').text = hero.persistentMods.gs.toString();
-    _field('m_ausw').text = hero.persistentMods.ausweichen.toString();
 
     _field('cur_lep').text = state.currentLep.toString();
     _field('cur_au').text = state.currentAu.toString();
@@ -381,16 +377,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         kap: _readInt('b_kap', min: 0, max: 999),
         mr: _readInt('b_mr', min: 0, max: 999),
       ),
-      persistentMods: StatModifiers(
-        lep: _readInt('m_lep', min: -999999, max: 999999),
-        au: _readInt('m_au', min: -999999, max: 999999),
-        asp: _readInt('m_asp', min: -999999, max: 999999),
-        kap: _readInt('m_kap', min: -999999, max: 999999),
-        mr: _readInt('m_mr', min: -999999, max: 999999),
-        iniBase: _readInt('m_ini', min: -999999, max: 999999),
-        gs: _readInt('m_gs', min: -999999, max: 999999),
-        ausweichen: _readInt('m_ausw', min: -999999, max: 999999),
-      ),
       attributes: Attributes(
         mu: _readInt('mu', min: 0, max: 99),
         kl: _readInt('kl', min: 0, max: 99),
@@ -524,14 +510,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
                   _buildParserWarningsSection(hero),
                 ],
                 const SizedBox(height: _sectionSpacing),
-                _buildCombinedStatsAndAttributesSection(
-                  hero,
-                  state,
-                  snapshot.derivedStats,
-                  snapshot.effectiveStartAttributes,
-                  snapshot.attributeMaximums,
-                  snapshot.effectiveAttributes,
-                ),
+                _buildCombinedStatsAndAttributesSection(snapshot),
               ],
             );
           },
@@ -548,6 +527,7 @@ class _DerivedRow {
   const _DerivedRow({
     required this.label,
     required this.variableName,
+    required this.statKey,
     required this.current,
     required this.modifier,
     this.bought,
@@ -556,6 +536,9 @@ class _DerivedRow {
 
   final String label;
   final String variableName;
+
+  /// Schluessel fuer benannte Modifikatoren (z.B. 'lep', 'au', 'iniBase').
+  final String statKey;
   final int current;
   final int modifier;
   final int? bought;

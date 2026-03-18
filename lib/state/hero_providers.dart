@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_modifier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_actions.dart';
@@ -166,9 +167,12 @@ final heroComputedProvider =
       // Inventar-Modifikatoren aus ausgeruesteten Items aggregieren
       final inventoryMods = aggregateInventoryModifiers(hero.inventoryEntries);
 
+      final namedAttrMods = aggregateNamedAttributeModifiers(
+        hero.attributeModifiers,
+      );
       final effective = applyAttributeModifiers(
         hero.attributes,
-        parsed.attributeMods + state.tempAttributeMods + inventoryMods.attributeMods,
+        parsed.attributeMods + namedAttrMods + state.tempAttributeMods + inventoryMods.attributeMods,
       );
       final derived = computeDerivedStatsFromInputs(
         sheet: hero,
