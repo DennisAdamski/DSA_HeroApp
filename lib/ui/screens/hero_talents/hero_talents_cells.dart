@@ -200,35 +200,27 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     required HeroTalentEntry entry,
     required bool isEditing,
   }) {
-    if (!isEditing) {
-      return _textCell(
-        _formatWholeNumber(entry.modifier),
-        key: ValueKey<String>('talents-field-${talent.id}-modifier-total'),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
+    final theme = Theme.of(context);
+    return InkWell(
+      key: ValueKey<String>('talents-field-${talent.id}-modifier-total'),
+      onTap: () => _openTalentModifiersDialog(talent: talent, entry: entry),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
               _formatWholeNumber(entry.modifier),
-              key: ValueKey<String>(
-                'talents-field-${talent.id}-modifier-total',
-              ),
+              style: theme.textTheme.bodyMedium,
             ),
-          ),
-          IconButton(
-            key: ValueKey<String>('talents-modifiers-edit-${talent.id}'),
-            visualDensity: VisualDensity.compact,
-            iconSize: 18,
-            tooltip: 'Modifikatoren bearbeiten',
-            onPressed: () =>
-                _openTalentModifiersDialog(talent: talent, entry: entry),
-            icon: const Icon(Icons.tune),
-          ),
-        ],
+            const SizedBox(width: 4),
+            Icon(
+              Icons.tune,
+              size: 14,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ],
+        ),
       ),
     );
   }
