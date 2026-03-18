@@ -60,6 +60,8 @@ class HeroSheet {
     this.connections = const <HeroConnectionEntry>[],
     this.companions = const <HeroCompanion>[],
     this.reisebericht = const HeroReisebericht(),
+    this.statModifiers = const <String, List<HeroTalentModifier>>{},
+    this.attributeModifiers = const <String, List<HeroTalentModifier>>{},
     this.unknownModifierFragments = const <String>[],
   }) : rawStartAttributes = rawStartAttributes ?? startAttributes ?? attributes,
        startAttributes = startAttributes ?? attributes;
@@ -111,6 +113,12 @@ class HeroSheet {
   /// Reisebericht-Zustand (abgehakte Erfahrungen und Belohnungen).
   final HeroReisebericht reisebericht;
 
+  /// Benannte, persistente Modifikatoren pro Basiswert (z.B. 'lep' → [...]).
+  final Map<String, List<HeroTalentModifier>> statModifiers;
+
+  /// Benannte, persistente Modifikatoren pro Eigenschaft (z.B. 'mu' → [...]).
+  final Map<String, List<HeroTalentModifier>> attributeModifiers;
+
   final List<String> unknownModifierFragments;
 
   /// Immutable Update fuer gezielte Feldanpassungen.
@@ -149,6 +157,8 @@ class HeroSheet {
     List<HeroConnectionEntry>? connections,
     List<HeroCompanion>? companions,
     HeroReisebericht? reisebericht,
+    Map<String, List<HeroTalentModifier>>? statModifiers,
+    Map<String, List<HeroTalentModifier>>? attributeModifiers,
     List<String>? unknownModifierFragments,
   }) {
     return HeroSheet(
@@ -191,6 +201,8 @@ class HeroSheet {
       connections: connections ?? this.connections,
       companions: companions ?? this.companions,
       reisebericht: reisebericht ?? this.reisebericht,
+      statModifiers: statModifiers ?? this.statModifiers,
+      attributeModifiers: attributeModifiers ?? this.attributeModifiers,
       unknownModifierFragments:
           unknownModifierFragments ?? this.unknownModifierFragments,
     );
@@ -246,6 +258,18 @@ class HeroSheet {
           .map((entry) => entry.toJson())
           .toList(growable: false),
       'reisebericht': reisebericht.toJson(),
+      'statModifiers': statModifiers.map(
+        (key, list) => MapEntry(
+          key,
+          list.map((entry) => entry.toJson()).toList(growable: false),
+        ),
+      ),
+      'attributeModifiers': attributeModifiers.map(
+        (key, list) => MapEntry(
+          key,
+          list.map((entry) => entry.toJson()).toList(growable: false),
+        ),
+      ),
       'unknownModifierFragments': unknownModifierFragments,
     };
   }
@@ -405,11 +429,94 @@ class HeroSheet {
       reisebericht: HeroReisebericht.fromJson(
         (json['reisebericht'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
+      statModifiers: _parseNamedModifiersMap(
+        json['statModifiers'],
+        migrationFallback: StatModifiers.fromJson(
+          (json['persistentMods'] as Map?)?.cast<String, dynamic>() ?? const {},
+        ),
+      ),
+      attributeModifiers: _parseNamedModifiersMap(json['attributeModifiers']),
       unknownModifierFragments: rawUnknown
           .map((entry) => entry.toString())
           .toList(growable: false),
     );
   }
+}
+
+/// Parst eine verschachtelte Modifikator-Map aus JSON.
+///
+/// Bei fehlenden Daten und vorhandenem [migrationFallback] werden Nicht-Null-
+/// Werte aus den alten persistentMods als benannte Eintraege migriert.
+Map<String, List<HeroTalentModifier>> _parseNamedModifiersMap(
+  dynamic raw, {
+  StatModifiers? migrationFallback,
+}) {
+  if (raw is Map) {
+    final result = <String, List<HeroTalentModifier>>{};
+    for (final entry in raw.entries) {
+      final key = entry.key.toString();
+      final list = entry.value;
+      if (list is! List) {
+        continue;
+      }
+      final modifiers = <HeroTalentModifier>[];
+      for (final item in list) {
+        if (item is! Map) {
+          continue;
+        }
+        final parsed = HeroTalentModifier.fromJson(
+          item.cast<String, dynamic>(),
+        );
+        if (parsed != null) {
+          modifiers.add(parsed);
+        }
+      }
+      if (modifiers.isNotEmpty) {
+        result[key] = List<HeroTalentModifier>.unmodifiable(modifiers);
+      }
+    }
+    if (result.isNotEmpty) {
+      return Map<String, List<HeroTalentModifier>>.unmodifiable(result);
+    }
+  }
+
+  // Migration: persistentMods-Werte als benannte Eintraege uebernehmen.
+  if (migrationFallback != null) {
+    return _migrateStatModifiers(migrationFallback);
+  }
+  return const <String, List<HeroTalentModifier>>{};
+}
+
+/// Konvertiert alte persistentMods in benannte Modifikatoreintraege.
+Map<String, List<HeroTalentModifier>> _migrateStatModifiers(
+  StatModifiers mods,
+) {
+  final result = <String, List<HeroTalentModifier>>{};
+  void add(String key, int value) {
+    if (value != 0) {
+      result[key] = [
+        HeroTalentModifier(modifier: value, description: 'Manuell'),
+      ];
+    }
+  }
+
+  add('lep', mods.lep);
+  add('au', mods.au);
+  add('asp', mods.asp);
+  add('kap', mods.kap);
+  add('mr', mods.mr);
+  add('iniBase', mods.iniBase);
+  add('at', mods.at);
+  add('pa', mods.pa);
+  add('fk', mods.fk);
+  add('gs', mods.gs);
+  add('ausweichen', mods.ausweichen);
+  add('rs', mods.rs);
+
+  if (result.isEmpty) {
+    return const <String, List<HeroTalentModifier>>{};
+  }
+  return Map<String, List<HeroTalentModifier>>.unmodifiable(result);
 }
 
 List<String> _normalizeHiddenTalentIds(Iterable<dynamic> values) {
