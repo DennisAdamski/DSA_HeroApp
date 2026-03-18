@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:dsa_heldenverwaltung/data/storage_exceptions.dart';
 
+/// Gibt zurueck, ob die App als installiertes MSIX-Paket laeuft.
+bool isMsixPackage() => Platform.resolvedExecutable.contains('WindowsApps');
+
 /// Prueft, ob ein existierendes Verzeichnis beschreibbar ist.
 Future<void> validateExistingWritableDirectory(String path) async {
   final directory = Directory(path);
