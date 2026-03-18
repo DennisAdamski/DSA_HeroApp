@@ -6,10 +6,8 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
         AdaptiveTableColumnSpec(minWidth: 220, maxWidth: 420, flex: 3),
         AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
-        AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 120),
         AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 120),
       ];
 
@@ -20,12 +18,10 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       const AdaptiveTableColumnSpec(minWidth: 84, maxWidth: 132),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),
       if (isEditing)
         const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 110)
       else
         const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
-      const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 110),
       const AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 140),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 76),
       const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 280, flex: 3),
@@ -41,11 +37,9 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2),
       const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
-      const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 100),
       if (isEditing) const AdaptiveTableColumnSpec.fixed(90),
       const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 3),
     ];
@@ -195,10 +189,8 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       _headerCell(debug ? 'attributes' : 'Eigenschaften'),
       _headerCell(debug ? 'talentValue' : 'TaW berechnet', highlighted: true),
       _headerCell(debug ? 'steigerung' : 'Kompl.'),
-      _headerCell(debug ? 'be' : 'BE'),
       _headerCell(debug ? 'eBe' : 'eBE'),
       _headerCell(debug ? 'taw' : 'TaW'),
-      _headerCell(debug ? 'maxTaw' : 'max TaW'),
       _headerCell(debug ? 'modifier' : 'Mod'),
       _headerCell(debug ? 'se' : 'SE'),
       _headerCell(debug ? 'specializations' : 'Spezialisierungen'),
@@ -216,11 +208,9 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       _headerCell(debug ? 'waffengattung' : 'Waffengattung'),
       _headerCell(debug ? 'ersatzweise' : 'Ersatzweise'),
       _headerCell(debug ? 'steigerung' : 'Kompl.'),
-      _headerCell(debug ? 'be' : 'BE'),
       _headerCell(debug ? 'taw' : 'TaW'),
       _headerCell(debug ? 'at' : 'AT'),
       _headerCell(debug ? 'pa' : 'PA'),
-      _headerCell(debug ? 'maxTaw' : 'max TaW'),
       if (isEditing) _headerCell(debug ? 'gifted' : 'Begabung'),
       _headerCell(debug ? 'specialization' : 'Spezialisierung'),
     ];
@@ -234,11 +224,9 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         _headerCell(debug ? 'talentName' : 'Talent-Name'),
         _headerCell(debug ? 'components' : 'Bestandteile'),
         _headerCell(debug ? 'attributes' : 'Eigenschaften'),
-        _headerCell(debug ? 'be' : 'BE'),
         _headerCell(debug ? 'eBe' : 'eBE'),
         _headerCell(debug ? 'taw' : 'TaW'),
         _headerCell(debug ? 'talentValue' : 'TaW berechnet', highlighted: true),
-        _headerCell(debug ? 'maxTaw' : 'max TaW'),
       ],
     );
   }
@@ -254,11 +242,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final ebe = computeTalentEbe(baseBe: activeBaseBe, talentBeRule: talent.be);
     final effectiveKomplexitaet = effectiveTalentLernkomplexitaet(
       basisKomplexitaet: talent.steigerung,
-      gifted: entry.gifted,
-    );
-    final maxTaw = _calculateMaxTaw(
-      effectiveAttributes: effectiveAttributes,
-      attributeNames: talent.attributes,
       gifted: entry.gifted,
     );
 
@@ -296,7 +279,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         _fallback(effectiveKomplexitaet),
         highlighted: effectiveKomplexitaet != talent.steigerung,
       ),
-      _textCell(_fallback(talent.be)),
       _textCell(
         _formatWholeNumber(ebe),
         key: ValueKey<String>('talents-field-${talent.id}-ebe-display'),
@@ -311,7 +293,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
             : null,
         raiseTooltip: 'Talent steigern',
       ),
-      _textCell(_formatWholeNumber(maxTaw)),
       _talentModifierCell(talent: talent, entry: entry, isEditing: isEditing),
       _intInputCell(
         talentId: talent.id,
@@ -354,10 +335,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       basisKomplexitaet: talent.steigerung,
       gifted: entry.gifted,
     );
-    final maxTaw = _calculateMaxTawFromTalent(
-      talent: talent,
-      gifted: entry.gifted,
-    );
 
     final effective = _latestHero != null
         ? computeEffectiveAttributes(_latestHero!)
@@ -392,7 +369,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         _fallback(effectiveKomplexitaet),
         highlighted: effectiveKomplexitaet != talent.steigerung,
       ),
-      _textCell(_fallback(talent.be)),
       _intInputCell(
         talentId: talent.id,
         field: 'talentValue',
@@ -414,7 +390,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         isEditing: isEditing,
         isError: isInvalid,
       ),
-      _textCell(_formatWholeNumber(maxTaw)),
       if (isEditing)
         _giftedCell(
           talentId: talent.id,
@@ -461,11 +436,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       componentTalentIds: metaTalent.componentTalentIds,
     );
     final computedTaw = computeMetaTalentComputedTaw(baseTaw: rawTaw, ebe: ebe);
-    final maxTaw = _calculateMaxTaw(
-      effectiveAttributes: effectiveAttributes,
-      attributeNames: metaTalent.attributes,
-      gifted: false,
-    );
 
     return TableRow(
       children: [
@@ -477,7 +447,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         _textCell(
           _buildShortAttributeLabel(effectiveAttributes, metaTalent.attributes),
         ),
-        _textCell(_fallback(metaTalent.be)),
         _textCell(
           _formatWholeNumber(ebe),
           key: ValueKey<String>('meta-talents-field-${metaTalent.id}-ebe'),
@@ -493,7 +462,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           ),
           highlighted: true,
         ),
-        _textCell(_formatWholeNumber(maxTaw)),
       ],
     );
   }
