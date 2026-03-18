@@ -54,3 +54,7 @@ assets/catalogs/house_rules_v1/waffenmeister.md
 .claude/settings.local.json
 *.xlsx
 *.pdf
+
+# MSIX-Build-Artefakte
+*.msix
+*.appx

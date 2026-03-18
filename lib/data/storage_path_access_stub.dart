@@ -1,5 +1,8 @@
 import 'package:dsa_heldenverwaltung/data/storage_exceptions.dart';
 
+/// Stub: Nicht-IO-Plattformen laufen nie als MSIX-Paket.
+bool isMsixPackage() => false;
+
 /// Stub fuer Pfadvalidierung ausserhalb von IO-Plattformen.
 Future<void> validateExistingWritableDirectory(String path) async {
   throw const HeroStoragePathException(

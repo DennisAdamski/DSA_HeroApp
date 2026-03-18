@@ -65,9 +65,9 @@ class AppStoragePaths {
   /// Gibt zurueck, ob Desktop-Plattformen einen benutzerdefinierten
   /// Heldenspeicherpfad unterstuetzen.
   bool supportsCustomHeroStoragePath() {
-    if (kIsWeb) {
-      return false;
-    }
+    if (kIsWeb) return false;
+    // MSIX-Sandbox: Custom Paths werden nicht unterstuetzt.
+    if (storage_access.isMsixPackage()) return false;
     switch (defaultTargetPlatform) {
       case TargetPlatform.windows:
       case TargetPlatform.macOS:
