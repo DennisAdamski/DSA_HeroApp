@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'modifier_parser.dart';
@@ -49,9 +50,12 @@ class DerivedStats {
 /// 4. Einzelformeln aus Ressourcen-/Kampfbasis-/Ini-Regeln auswerten
 DerivedStats computeDerivedStats(HeroSheet sheet, HeroState state) {
   final parsed = parseModifierTextsForHero(sheet);
+  final namedAttrMods = aggregateNamedAttributeModifiers(
+    sheet.attributeModifiers,
+  );
   final effectiveAttributes = applyAttributeModifiers(
     sheet.attributes,
-    parsed.attributeMods + state.tempAttributeMods,
+    parsed.attributeMods + namedAttrMods + state.tempAttributeMods,
   );
   return computeDerivedStatsFromInputs(
     sheet: sheet,
@@ -69,8 +73,10 @@ DerivedStats computeDerivedStatsFromInputs({
   StatModifiers inventoryStatMods = const StatModifiers(),
 }) {
   final effectiveSheet = sheet.copyWith(attributes: effectiveAttributes);
+  final namedStatMods = aggregateNamedStatModifiers(sheet.statModifiers);
   final mods =
       sheet.persistentMods +
+      namedStatMods +
       parsedModifiers.statMods +
       state.tempMods +
       inventoryStatMods;
