@@ -26,6 +26,17 @@ class _TalentDetailDialog extends StatelessWidget {
       basisKomplexitaet: talent.steigerung,
       gifted: entry.gifted,
     );
+    final maxTaw = isCombat
+        ? computeCombatTalentMaxValue(
+            effectiveAttributes: effectiveAttributes,
+            talentType: talent.type,
+            gifted: entry.gifted,
+          )
+        : computeTalentMaxValue(
+            effectiveAttributes: effectiveAttributes,
+            attributeNames: talent.attributes,
+            gifted: entry.gifted,
+          );
     final specs = entry.combatSpecializations.isNotEmpty
         ? entry.combatSpecializations
         : entry.specializations
@@ -83,6 +94,7 @@ class _TalentDetailDialog extends StatelessWidget {
               if (entry.specialExperiences > 0)
                 _detailRow(theme, 'SE', '${entry.specialExperiences}'),
               if (entry.gifted) _detailRow(theme, 'Begabung', 'Ja'),
+              _detailRow(theme, 'max TaW', '$maxTaw'),
               if (!isCombat) ...[
                 _detailRow(
                   theme,
