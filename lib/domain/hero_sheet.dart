@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -58,6 +59,7 @@ class HeroSheet {
     this.notes = const <HeroNoteEntry>[],
     this.connections = const <HeroConnectionEntry>[],
     this.companions = const <HeroCompanion>[],
+    this.reisebericht = const HeroReisebericht(),
     this.unknownModifierFragments = const <String>[],
   }) : rawStartAttributes = rawStartAttributes ?? startAttributes ?? attributes,
        startAttributes = startAttributes ?? attributes;
@@ -106,6 +108,9 @@ class HeroSheet {
   /// Begleiter und Vertraute des Helden.
   final List<HeroCompanion> companions;
 
+  /// Reisebericht-Zustand (abgehakte Erfahrungen und Belohnungen).
+  final HeroReisebericht reisebericht;
+
   final List<String> unknownModifierFragments;
 
   /// Immutable Update fuer gezielte Feldanpassungen.
@@ -143,6 +148,7 @@ class HeroSheet {
     List<HeroNoteEntry>? notes,
     List<HeroConnectionEntry>? connections,
     List<HeroCompanion>? companions,
+    HeroReisebericht? reisebericht,
     List<String>? unknownModifierFragments,
   }) {
     return HeroSheet(
@@ -184,6 +190,7 @@ class HeroSheet {
       notes: notes ?? this.notes,
       connections: connections ?? this.connections,
       companions: companions ?? this.companions,
+      reisebericht: reisebericht ?? this.reisebericht,
       unknownModifierFragments:
           unknownModifierFragments ?? this.unknownModifierFragments,
     );
@@ -238,6 +245,7 @@ class HeroSheet {
       'companions': companions
           .map((entry) => entry.toJson())
           .toList(growable: false),
+      'reisebericht': reisebericht.toJson(),
       'unknownModifierFragments': unknownModifierFragments,
     };
   }
@@ -394,6 +402,9 @@ class HeroSheet {
             (entry) => HeroCompanion.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
+      reisebericht: HeroReisebericht.fromJson(
+        (json['reisebericht'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
       unknownModifierFragments: rawUnknown
           .map((entry) => entry.toString())
           .toList(growable: false),
