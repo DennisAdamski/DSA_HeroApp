@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_magic_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_begleiter_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_notes_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_reisebericht_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
@@ -33,6 +34,9 @@ abstract final class WorkspaceTabIds {
 
   /// ID des Notizen-Tabs.
   static const String notes = 'notes';
+
+  /// ID des Reisebericht-Tabs.
+  static const String reisebericht = 'reisebericht';
 
   /// ID des Begleiter-Tabs.
   static const String begleiter = 'begleiter';
@@ -210,6 +214,20 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
         onRegisterDiscard: callbacks.onRegisterDiscard,
         onRegisterEditActions: callbacks.onRegisterEditActions,
       ),
+    ),
+    WorkspaceTabSpec(
+      id: WorkspaceTabIds.reisebericht,
+      label: 'Reisebericht',
+      icon: Icons.map_outlined,
+      helper: 'Abenteuererfahrungen und Meilensteine',
+      buildContent: ({required heroId, required callbacks}) =>
+          HeroReiseberichtTab(
+            heroId: heroId,
+            onDirtyChanged: callbacks.onDirtyChanged,
+            onEditingChanged: callbacks.onEditingChanged,
+            onRegisterDiscard: callbacks.onRegisterDiscard,
+            onRegisterEditActions: callbacks.onRegisterEditActions,
+          ),
     ),
     WorkspaceTabSpec(
       id: WorkspaceTabIds.begleiter,

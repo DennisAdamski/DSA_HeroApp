@@ -6,11 +6,16 @@ Future<_SpellDetailsDialogResult?> _showSpellDetailsDialog({
   required SpellDef def,
   required HeroSpellEntry entry,
   required bool isEditing,
+  required Attributes effectiveAttributes,
 }) {
   return showAdaptiveDetailSheet<_SpellDetailsDialogResult>(
     context: context,
-    builder: (_) =>
-        _SpellDetailsDialog(def: def, entry: entry, isEditing: isEditing),
+    builder: (_) => _SpellDetailsDialog(
+      def: def,
+      entry: entry,
+      isEditing: isEditing,
+      effectiveAttributes: effectiveAttributes,
+    ),
   );
 }
 
@@ -70,11 +75,13 @@ class _SpellDetailsDialog extends StatefulWidget {
     required this.def,
     required this.entry,
     required this.isEditing,
+    required this.effectiveAttributes,
   });
 
   final SpellDef def;
   final HeroSpellEntry entry;
   final bool isEditing;
+  final Attributes effectiveAttributes;
 
   @override
   State<_SpellDetailsDialog> createState() => _SpellDetailsDialogState();
@@ -365,6 +372,13 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
       entry: widget.entry,
     );
     final content = <Widget>[
+      _buildReadOnlyField(
+        label: 'Eigenschaften',
+        value: _probeWithValuesLabel(
+          widget.effectiveAttributes,
+          widget.def.attributes,
+        ),
+      ),
       if (widget.isEditing)
         _buildEditableField(
           label: 'Kosten',
