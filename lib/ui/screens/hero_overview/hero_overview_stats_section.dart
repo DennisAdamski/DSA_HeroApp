@@ -21,20 +21,24 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       ];
 
   Widget _buildCombinedStatsAndAttributesSection(
-    HeroSheet hero,
-    HeroState state,
-    DerivedStats derived,
-    Attributes effectiveStartAttributes,
-    Attributes attributeMaximums,
-    Attributes effectiveAttributes,
+    HeroComputedSnapshot snapshot,
   ) {
+    final hero = snapshot.hero;
+    final state = snapshot.state;
+    final derived = snapshot.derivedStats;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final derivedSection = _buildDerivedValuesSection(hero, state, derived);
+        final derivedSection = _buildDerivedValuesSection(
+          hero,
+          state,
+          derived,
+          snapshot,
+        );
         final attributesSection = _buildAttributesSection(
-          effectiveStartAttributes,
-          attributeMaximums,
-          effectiveAttributes,
+          snapshot.effectiveStartAttributes,
+          snapshot.attributeMaximums,
+          snapshot.effectiveAttributes,
+          snapshot,
         );
         if (constraints.maxWidth >= _largeTwoColumnBreakpoint) {
           return Row(
@@ -62,14 +66,22 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     HeroSheet hero,
     HeroState state,
     DerivedStats derived,
+    HeroComputedSnapshot snapshot,
   ) {
     final parsed = parseModifierTextsForHero(hero);
-    final totalMods = hero.persistentMods + parsed.statMods + state.tempMods;
+    final namedStatMods = aggregateNamedStatModifiers(hero.statModifiers);
+    final totalMods =
+        hero.persistentMods +
+        namedStatMods +
+        parsed.statMods +
+        state.tempMods +
+        snapshot.inventoryStatMods;
     final debugModus = ref.read(debugModusProvider);
     final entries = <_DerivedRow>[
       _DerivedRow(
         label: 'LeP',
         variableName: 'maxLep',
+        statKey: 'lep',
         current: derived.maxLep,
         modifier: totalMods.lep + _cappedLevel(hero.level),
         bought: hero.bought.lep,
@@ -78,6 +90,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       _DerivedRow(
         label: 'Au',
         variableName: 'maxAu',
+        statKey: 'au',
         current: derived.maxAu,
         modifier: totalMods.au + hero.level * 2,
         bought: hero.bought.au,
@@ -86,6 +99,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       _DerivedRow(
         label: 'AsP',
         variableName: 'maxAsp',
+        statKey: 'asp',
         current: derived.maxAsp,
         modifier: totalMods.asp + hero.level * 2,
         bought: hero.bought.asp,
@@ -94,6 +108,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       _DerivedRow(
         label: 'KaP',
         variableName: 'maxKap',
+        statKey: 'kap',
         current: derived.maxKap,
         modifier: totalMods.kap,
         bought: hero.bought.kap,
@@ -102,6 +117,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       _DerivedRow(
         label: 'MR',
         variableName: 'mr',
+        statKey: 'mr',
         current: derived.mr,
         modifier: totalMods.mr,
         bought: hero.bought.mr,
@@ -110,30 +126,35 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       _DerivedRow(
         label: 'Ini-Basis',
         variableName: 'iniBase',
+        statKey: 'iniBase',
         current: derived.iniBase,
         modifier: totalMods.iniBase,
       ),
       _DerivedRow(
         label: 'AT-Basis',
         variableName: 'atBase',
+        statKey: 'at',
         current: derived.atBase,
         modifier: totalMods.at,
       ),
       _DerivedRow(
         label: 'PA-Basis',
         variableName: 'paBase',
+        statKey: 'pa',
         current: derived.paBase,
         modifier: totalMods.pa,
       ),
       _DerivedRow(
         label: 'FK-Basis',
         variableName: 'fkBase',
+        statKey: 'fk',
         current: derived.fkBase,
         modifier: totalMods.fk,
       ),
       _DerivedRow(
         label: 'GS',
         variableName: 'gs',
+        statKey: 'gs',
         current: derived.gs,
         modifier: totalMods.gs,
       ),
@@ -173,7 +194,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                           (entry.current - entry.modifier - (entry.bought ?? 0))
                               .toString(),
                     ),
-                    _buildDerivedValueCell(value: entry.modifier.toString()),
+                    _buildTappableStatModifierCell(entry, hero, state, snapshot),
                     _buildDerivedValueCell(value: entry.current.toString()),
                     _buildDerivedBoughtCell(
                       entry,
@@ -205,6 +226,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     Attributes effectiveStartAttributes,
     Attributes attributeMaximums,
     Attributes effectiveAttributes,
+    HeroComputedSnapshot snapshot,
   ) {
     final attrDebugModus = ref.read(debugModusProvider);
     final rows = _HeroOverviewTabState._attributeEntries
@@ -236,9 +258,11 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                 raiseTooltip: '${entry.$1} steigern',
               ),
               _buildAttributesNumericCell(keyName: tempKey, isAdjustable: true),
-              _buildAttributesComputedCell(
-                keyName: key,
-                value: effective.toString(),
+              _buildTappableAttributeComputedCell(
+                label: entry.$1,
+                attrKey: key,
+                effective: effective,
+                snapshot: snapshot,
               ),
             ],
           );
@@ -424,6 +448,199 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       return 21;
     }
     return level;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Tappbare Modifier-Zellen
+  // ---------------------------------------------------------------------------
+
+  Widget _buildTappableStatModifierCell(
+    _DerivedRow entry,
+    HeroSheet hero,
+    HeroState state,
+    HeroComputedSnapshot snapshot,
+  ) {
+    final theme = Theme.of(context);
+    final hasModifiers = entry.modifier != 0;
+    return InkWell(
+      onTap: () => _openStatModifierDialog(entry, hero, state, snapshot),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              entry.modifier.toString(),
+              style: theme.textTheme.bodyMedium,
+            ),
+            if (hasModifiers) ...[
+              const SizedBox(width: 4),
+              Icon(
+                Icons.info_outline,
+                size: 14,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTappableAttributeComputedCell({
+    required String label,
+    required String attrKey,
+    required int effective,
+    required HeroComputedSnapshot snapshot,
+  }) {
+    final theme = Theme.of(context);
+    final hero = snapshot.hero;
+    final baseValue = _valueByKey(hero.attributes, attrKey);
+    final hasModifiers = effective != baseValue;
+    return InkWell(
+      onTap: () => _openAttributeModifierDialog(
+        label: label,
+        attrKey: attrKey,
+        effective: effective,
+        snapshot: snapshot,
+      ),
+      child: Padding(
+        key: ValueKey<String>('overview-effective-$attrKey'),
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(effective.toString(), style: theme.textTheme.bodyMedium),
+            if (hasModifiers) ...[
+              const SizedBox(width: 4),
+              Icon(
+                Icons.info_outline,
+                size: 14,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openStatModifierDialog(
+    _DerivedRow entry,
+    HeroSheet hero,
+    HeroState state,
+    HeroComputedSnapshot snapshot,
+  ) async {
+    final breakdown = computeModifierSourceBreakdown(hero);
+    final statKey = entry.statKey;
+    final namedMods = hero.statModifiers[statKey] ?? const [];
+
+    // Level-basierte Boni.
+    int levelBonus = 0;
+    if (statKey == 'lep') {
+      levelBonus = _cappedLevel(hero.level);
+    } else if (statKey == 'au' || statKey == 'asp') {
+      levelBonus = hero.level * 2;
+    }
+
+    final sources = <ModifierSourceEntry>[
+      (label: 'Rasse', value: statModValue(breakdown.rasseStatMods, statKey)),
+      (label: 'Kultur', value: statModValue(breakdown.kulturStatMods, statKey)),
+      (
+        label: 'Profession',
+        value: statModValue(breakdown.professionStatMods, statKey),
+      ),
+      (
+        label: 'Vorteile',
+        value: statModValue(breakdown.vorteileStatMods, statKey),
+      ),
+      (
+        label: 'Nachteile',
+        value: statModValue(breakdown.nachteileStatMods, statKey),
+      ),
+      (
+        label: 'Temporaer',
+        value: statModValue(state.tempMods, statKey),
+      ),
+      if (levelBonus != 0) (label: 'Level', value: levelBonus),
+      (
+        label: 'Inventar',
+        value: statModValue(snapshot.inventoryStatMods, statKey),
+      ),
+    ];
+
+    final result = await showStatModifierDetailDialog(
+      context: context,
+      statLabel: entry.label,
+      namedModifiers: namedMods,
+      parsedSources: sources,
+      total: entry.modifier,
+    );
+    if (result == null || !mounted) {
+      return;
+    }
+    final updatedMap = Map<String, List<HeroTalentModifier>>.from(
+      hero.statModifiers,
+    );
+    if (result.isEmpty) {
+      updatedMap.remove(statKey);
+    } else {
+      updatedMap[statKey] = result;
+    }
+    final updatedHero = hero.copyWith(statModifiers: updatedMap);
+    await ref.read(heroActionsProvider).saveHero(updatedHero);
+  }
+
+  Future<void> _openAttributeModifierDialog({
+    required String label,
+    required String attrKey,
+    required int effective,
+    required HeroComputedSnapshot snapshot,
+  }) async {
+    final hero = snapshot.hero;
+    final state = snapshot.state;
+    final breakdown = computeModifierSourceBreakdown(hero);
+    final namedMods = hero.attributeModifiers[attrKey] ?? const [];
+    final baseValue = _valueByKey(hero.attributes, attrKey);
+
+    final tempValue = attributeModValue(state.tempAttributeMods, attrKey);
+    final sources = <ModifierSourceEntry>[
+      (
+        label: 'Vorteile',
+        value: attributeModValue(breakdown.vorteileAttributeMods, attrKey),
+      ),
+      (
+        label: 'Nachteile',
+        value: attributeModValue(breakdown.nachteileAttributeMods, attrKey),
+      ),
+      if (tempValue != 0) (label: 'Temporaer', value: tempValue),
+      (
+        label: 'Inventar',
+        value: attributeModValue(snapshot.inventoryAttributeMods, attrKey),
+      ),
+    ];
+
+    final result = await showAttributeModifierDetailDialog(
+      context: context,
+      attributeLabel: label,
+      baseValue: baseValue,
+      namedModifiers: namedMods,
+      parsedSources: sources,
+      effectiveValue: effective,
+    );
+    if (result == null || !mounted) {
+      return;
+    }
+    final updatedMap = Map<String, List<HeroTalentModifier>>.from(
+      hero.attributeModifiers,
+    );
+    if (result.isEmpty) {
+      updatedMap.remove(attrKey);
+    } else {
+      updatedMap[attrKey] = result;
+    }
+    final updatedHero = hero.copyWith(attributeModifiers: updatedMap);
+    await ref.read(heroActionsProvider).saveHero(updatedHero);
   }
 
   int _effectiveValueByKey(Attributes effective, String key) {
