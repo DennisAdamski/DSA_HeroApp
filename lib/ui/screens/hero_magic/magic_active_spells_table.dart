@@ -6,6 +6,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     required this.activeSpellIds,
     required this.spellEntries,
     required this.spellDefs,
+    required this.effectiveAttributes,
     required this.merkmalskenntnisse,
     required this.heroRepresentationen,
     required this.isEditing,
@@ -25,6 +26,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final List<String> activeSpellIds;
   final Map<String, HeroSpellEntry> spellEntries;
   final Map<String, SpellDef> spellDefs;
+  final Attributes effectiveAttributes;
   final List<String> merkmalskenntnisse;
   final List<String> heroRepresentationen;
   final bool isEditing;
@@ -54,6 +56,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
       def: def,
       entry: entry,
       isEditing: isEditing,
+      effectiveAttributes: effectiveAttributes,
     );
     if (result == null) {
       return;
@@ -70,8 +73,8 @@ class _MagicActiveSpellsTable extends StatelessWidget {
         width: AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 220, flex: 2),
       ),
       const AdaptiveDataColumnSpec(
-        label: Text('Probe'),
-        width: AdaptiveTableColumnSpec(minWidth: 76, maxWidth: 96),
+        label: Text('Eigenschaften'),
+        width: AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 200, flex: 1),
       ),
       const AdaptiveDataColumnSpec(
         label: Text('ZfW'),
@@ -177,7 +180,13 @@ class _MagicActiveSpellsTable extends StatelessWidget {
         childrenPadding: EdgeInsets.zero,
         title: Row(
           children: [
-            Text('Aktivierte Zauber', style: theme.textTheme.titleSmall),
+            Expanded(
+              child: Text(
+                'Aktivierte Zauber',
+                style: theme.textTheme.titleSmall,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
             const SizedBox(width: 8),
             Text('(${sortedIds.length})', style: theme.textTheme.bodySmall),
           ],
@@ -258,7 +267,10 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                 true
                             ? 2
                             : 0;
-                        final probeLabel = _shortProbeLabel(def.attributes);
+                        final probeLabel = _probeWithValuesLabel(
+                          effectiveAttributes,
+                          def.attributes,
+                        );
                         final merkmale = parseSpellTraits(def.traits);
                         final effSteigerung = effectiveSteigerung(
                           basisSteigerung: def.steigerung,
@@ -669,35 +681,27 @@ DataCell _buildVariantsCell({
         width: width,
         child: variants.isEmpty
             ? Text('-', style: theme.textTheme.bodySmall)
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '${variants.length}× ',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Flexible(
-                    child: Text(
-                      variants.first,
-                      style: theme.textTheme.bodySmall,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+            : Text(
+                '${variants.length}x ${variants.first}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
       ),
     ),
   );
 }
 
-/// Baut ein kompaktes Probe-Label aus den drei Attributnamen.
+/// Baut ein Eigenschaften-Label mit Werten aus Attributnamen und Heldenwerten.
 ///
-/// Input: ['Mut', 'Klugheit', 'Charisma']
-/// Output: 'MU/KL/CH'
-String _shortProbeLabel(List<String> attributeNames) {
+/// Input: ['Mut', 'Klugheit', 'Charisma'], attributes
+/// Output: 'MU: 14 | KL: 12 | CH: 11'
+String _probeWithValuesLabel(
+  Attributes attributes,
+  List<String> attributeNames,
+) {
   final parts = <String>[];
   for (final name in attributeNames) {
     final code = parseAttributeCode(name);
@@ -705,9 +709,10 @@ String _shortProbeLabel(List<String> attributeNames) {
       parts.add('??');
       continue;
     }
-    parts.add(_attributeCodeLabel(code));
+    final value = readAttributeValue(attributes, code);
+    parts.add('${_attributeCodeLabel(code)}: $value');
   }
-  return parts.join('/');
+  return parts.join(' | ');
 }
 
 String _attributeCodeLabel(AttributeCode code) {
