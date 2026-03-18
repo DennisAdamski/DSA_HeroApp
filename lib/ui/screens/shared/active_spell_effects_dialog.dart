@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/attributo_input_dialog.dart';
 
 /// Oeffnet den gemeinsamen Dialog fuer wichtige aktive Zaubereffekte.
 Future<void> showActiveSpellEffectsDialog({
@@ -20,31 +22,65 @@ Future<void> showActiveSpellEffectsDialog({
   );
 }
 
-/// Dialog fuer laufend aktivierbare Zaubereffekte wie `Axxeleratus`.
-class _ActiveSpellEffectsDialog extends ConsumerWidget {
+/// Dialog fuer laufend aktivierbare Zaubereffekte wie `Axxeleratus` und `Attributo`.
+class _ActiveSpellEffectsDialog extends ConsumerStatefulWidget {
   const _ActiveSpellEffectsDialog({required this.heroId});
 
   final String heroId;
 
-  Future<void> _toggleEffect(
-    WidgetRef ref,
-    String effectId,
-    bool value,
-  ) async {
-    final state = ref.read(heroStateProvider(heroId)).valueOrNull;
+  @override
+  ConsumerState<_ActiveSpellEffectsDialog> createState() =>
+      _ActiveSpellEffectsDialogState();
+}
+
+class _ActiveSpellEffectsDialogState
+    extends ConsumerState<_ActiveSpellEffectsDialog> {
+  Future<void> _toggleEffect(String effectId, bool value) async {
+    final state = ref.read(heroStateProvider(widget.heroId)).valueOrNull;
     if (state == null) {
       return;
     }
     final updatedState = state.copyWith(
       activeSpellEffects: state.activeSpellEffects.withToggled(effectId, value),
     );
-    await ref.read(heroActionsProvider).saveHeroState(heroId, updatedState);
+    await ref.read(heroActionsProvider).saveHeroState(widget.heroId, updatedState);
+  }
+
+  Future<void> _toggleAttributo(bool value) async {
+    final state = ref.read(heroStateProvider(widget.heroId)).valueOrNull;
+    if (state == null) {
+      return;
+    }
+
+    if (value) {
+      final bonuses = await showAttributoInputDialog(context: context);
+      if (bonuses == null || !mounted) {
+        return;
+      }
+      final updatedState = state.copyWith(
+        tempAttributeMods: bonuses,
+        activeSpellEffects: state.activeSpellEffects.withToggled(
+          activeSpellEffectAttributo,
+          true,
+        ),
+      );
+      await ref.read(heroActionsProvider).saveHeroState(widget.heroId, updatedState);
+    } else {
+      final updatedState = state.copyWith(
+        tempAttributeMods: const AttributeModifiers(),
+        activeSpellEffects: state.activeSpellEffects.withToggled(
+          activeSpellEffectAttributo,
+          false,
+        ),
+      );
+      await ref.read(heroActionsProvider).saveHeroState(widget.heroId, updatedState);
+    }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final hero = ref.watch(heroByIdProvider(heroId));
-    final state = ref.watch(heroStateProvider(heroId)).valueOrNull;
+  Widget build(BuildContext context) {
+    final hero = ref.watch(heroByIdProvider(widget.heroId));
+    final state = ref.watch(heroStateProvider(widget.heroId)).valueOrNull;
 
     return AlertDialog(
       key: const ValueKey<String>('active-spell-effects-dialog'),
@@ -75,7 +111,9 @@ class _ActiveSpellEffectsDialog extends ConsumerWidget {
                           state: state,
                           effectId: effect.id,
                         ),
-                        onChanged: (value) => _toggleEffect(ref, effect.id, value),
+                        onChanged: effect.id == activeSpellEffectAttributo
+                            ? _toggleAttributo
+                            : (v) => _toggleEffect(effect.id, v),
                       ),
                     ),
                 ],
@@ -84,7 +122,7 @@ class _ActiveSpellEffectsDialog extends ConsumerWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Schliessen'),
+          child: const Text('Schließen'),
         ),
       ],
     );
