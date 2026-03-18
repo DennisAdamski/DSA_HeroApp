@@ -23,6 +23,9 @@ class ActiveSpellEffectDefinition {
 /// Effekt-ID fuer den laufenden Axxeleratus.
 const String activeSpellEffectAxxeleratus = 'effect_spell_axxeleratus';
 
+/// Effekt-ID fuer den laufenden Attributo.
+const String activeSpellEffectAttributo = 'effect_spell_attributo';
+
 /// Wichtige, direkt im Popup aktivierbare Zaubereffekte.
 const List<ActiveSpellEffectDefinition> importantActiveSpellEffects =
     <ActiveSpellEffectDefinition>[
@@ -30,7 +33,13 @@ const List<ActiveSpellEffectDefinition> importantActiveSpellEffects =
         id: activeSpellEffectAxxeleratus,
         label: 'Axxeleratus',
         description:
-            'Beschleunigt den Helden und erhoeht Initiative, GS und Nahkampfwerte.',
+            'Beschleunigt den Helden und erhöht Initiative, GS und Nahkampfwerte.',
+      ),
+      ActiveSpellEffectDefinition(
+        id: activeSpellEffectAttributo,
+        label: 'Attributo',
+        description:
+            'Erhöht temporär einzelne Eigenschaften des Helden.',
       ),
     ];
 
