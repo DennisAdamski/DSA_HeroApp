@@ -13,6 +13,7 @@
                   "manoever":  "manoever.json",
                   "kampf_sonderfertigkeiten":  "kampf_sonderfertigkeiten.json",
                   "sprachen":  "sprachen.json",
-                  "schriften":  "schriften.json"
+                  "schriften":  "schriften.json",
+                  "reisebericht": "reisebericht.json"
               }
 }

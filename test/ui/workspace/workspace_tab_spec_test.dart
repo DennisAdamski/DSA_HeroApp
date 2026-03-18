@@ -28,6 +28,7 @@ void main() {
       WorkspaceTabIds.magic,
       WorkspaceTabIds.inventory,
       WorkspaceTabIds.notes,
+      WorkspaceTabIds.reisebericht,
       WorkspaceTabIds.begleiter,
     ]);
   });
