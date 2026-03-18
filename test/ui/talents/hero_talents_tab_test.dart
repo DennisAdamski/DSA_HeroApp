@@ -233,10 +233,8 @@ void main() {
         'Talent-Name',
         'Eigenschaften',
         'Kompl.',
-        'BE',
         'eBE',
         'TaW',
-        'max TaW',
         'Mod',
         'TaW berechnet',
         'SE',
@@ -423,6 +421,11 @@ void main() {
     await openTalentsTab(tester, repo, buildCatalog());
 
     expect(find.text('B'), findsOneWidget);
+    expect(find.text('19'), findsNothing);
+
+    await tester.tap(find.text('Athletik'));
+    await tester.pumpAndSettle();
+
     expect(find.text('19'), findsOneWidget);
   });
 

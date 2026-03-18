@@ -419,34 +419,6 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     return value.toString();
   }
 
-  int _calculateMaxTaw({
-    required Attributes effectiveAttributes,
-    required List<String> attributeNames,
-    required bool gifted,
-  }) {
-    return computeTalentMaxValue(
-      effectiveAttributes: effectiveAttributes,
-      attributeNames: attributeNames,
-      gifted: gifted,
-    );
-  }
-
-  int _calculateMaxTawFromTalent({
-    required TalentDef talent,
-    required bool gifted,
-  }) {
-    final hero = _latestHero;
-    if (hero == null) {
-      return gifted ? 5 : 3;
-    }
-    final effective = computeEffectiveAttributes(hero);
-    return computeCombatTalentMaxValue(
-      effectiveAttributes: effective,
-      talentType: talent.type,
-      gifted: gifted,
-    );
-  }
-
   String _fallback(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) {
