@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
@@ -491,6 +492,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         final spellDefsById = <String, SpellDef>{
           for (final spell in catalog.spells) spell.id: spell,
         };
+        final effectiveAttributes = computeEffectiveAttributes(hero);
         return Column(
           children: [
             TabBar(
@@ -537,6 +539,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             activeSpellIds: activeSpellIds,
                             spellEntries: _draftSpells,
                             spellDefs: spellDefsById,
+                            effectiveAttributes: effectiveAttributes,
                             merkmalskenntnisse: _draftMerkmalskenntnisse,
                             heroRepresentationen: _draftRepresentationen,
                             isEditing: _editController.isEditing,

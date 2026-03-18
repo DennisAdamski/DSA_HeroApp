@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 import 'package:dsa_heldenverwaltung/catalog/combat_special_ability_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/maneuver_def.dart';
+import 'package:dsa_heldenverwaltung/catalog/reisebericht_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/schrift_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/sprache_def.dart';
@@ -15,6 +16,7 @@ export 'package:dsa_heldenverwaltung/catalog/schrift_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/sprache_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/talent_def.dart';
+export 'package:dsa_heldenverwaltung/catalog/reisebericht_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/weapon_def.dart';
 
 /// Haelt alle zur Laufzeit geladenen DSA-Spielregeldaten.
@@ -34,6 +36,7 @@ class RulesCatalog {
     this.combatSpecialAbilities = const [],
     this.sprachen = const [],
     this.schriften = const [],
+    this.reisebericht = const [],
     this.metadata = const {},
   });
 
@@ -47,6 +50,7 @@ class RulesCatalog {
   combatSpecialAbilities; // Kampf-Sonderfertigkeiten
   final List<SpracheDef> sprachen; // Sprachdefinitionen
   final List<SchriftDef> schriften; // Schriftdefinitionen
+  final List<ReiseberichtDef> reisebericht; // Reisebericht-Eintraege
   final Map<String, dynamic> metadata; // Sonstige Metadaten aus dem Manifest
 
   /// Sucht ein Manöver anhand des Namens (Groß-/Kleinschreibung wird ignoriert).
@@ -67,6 +71,7 @@ class RulesCatalog {
         (json['combatSpecialAbilities'] as List?) ?? const [];
     final sprachenRaw = (json['sprachen'] as List?) ?? const [];
     final schriftenRaw = (json['schriften'] as List?) ?? const [];
+    final reiseberichtRaw = (json['reisebericht'] as List?) ?? const [];
 
     return RulesCatalog(
       version: readCatalogString(json, 'version', fallback: 'unknown'),
@@ -102,6 +107,13 @@ class RulesCatalog {
           .whereType<Map>()
           .map((entry) => SchriftDef.fromJson(entry.cast<String, dynamic>()))
           .toList(growable: false),
+      reisebericht: reiseberichtRaw
+          .whereType<Map>()
+          .map(
+            (entry) =>
+                ReiseberichtDef.fromJson(entry.cast<String, dynamic>()),
+          )
+          .toList(growable: false),
       metadata:
           (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
@@ -125,6 +137,9 @@ class RulesCatalog {
           .map((entry) => entry.toJson())
           .toList(growable: false),
       'schriften': schriften
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
+      'reisebericht': reisebericht
           .map((entry) => entry.toJson())
           .toList(growable: false),
     };
