@@ -197,6 +197,15 @@ Ergaenzungen zur aktuellen Struktur:
   Dateien: Kategorieansicht, Entry-Tiles und Dialoge.
 - `assets/catalogs/house_rules_v1/reisebericht.json` enthaelt die
   erweiterbaren Katalogdaten fuer Abenteuererfahrungen in 6 Kategorien.
+- `lib/rules/derived/modifier_source_breakdown.dart` berechnet die
+  per-Quellen-Aufschluesselung (Rasse, Kultur, Profession, Vorteile,
+  Nachteile) fuer Basiswert- und Eigenschaftsmodifikatoren und stellt
+  Aggregations- und Feld-Extraktor-Helfer bereit.
+- `lib/ui/screens/hero_overview/stat_modifier_detail_dialog.dart` zeigt
+  editierbare benannte Modifikatoren und read-only geparste Quellen fuer
+  einen Basiswert (LeP, AsP, MR, etc.).
+- `lib/ui/screens/hero_overview/attribute_modifier_detail_dialog.dart`
+  zeigt dasselbe fuer eine Eigenschaft (MU, KL, etc.).
 
 ---
 
@@ -524,4 +533,22 @@ The following files are **intentionally kept** but not currently wired into the 
   Uebersichts-Tab
   absichtlich auf den Edit-Modus ohne ungespeicherte Drafts begrenzt, damit
   Sofortspeicherung nicht mit lokalen Tab-Entwuerfen kollidiert.
+
+## Update 2026-03-18
+
+- `HeroSheet` speichert jetzt `statModifiers` und `attributeModifiers`
+  als `Map<String, List<HeroTalentModifier>>` fuer benannte, persistente
+  Modifikatoren auf Basiswerten und Eigenschaften (gleiche Struktur wie
+  Talent-Modifikatoren).
+- Migration: beim Laden alter Helden ohne `statModifiers` werden vorhandene
+  `persistentMods`-Werte automatisch als benannte Eintraege mit Beschreibung
+  „Manuell" migriert.
+- `lib/rules/derived/modifier_source_breakdown.dart` liefert per-Quellen-
+  Aufschluesselung (Rasse, Kultur, Profession, Vorteile, Nachteile) fuer
+  geparste Modifikatoren sowie Aggregations- und Extraktionshelfer.
+- `computeDerivedStatsFromInputs()` und `effectiveAttributesProvider`
+  beruecksichtigen jetzt die benannten Modifikatoren.
+- Im Uebersicht-Tab sind Basiswert-Modifier und Eigenschafts-Berechnet-
+  Zellen tappbar und oeffnen editierbare Detail-Dialoge mit Quellen-
+  Aufschluesselung.
 
