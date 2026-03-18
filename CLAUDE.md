@@ -114,6 +114,8 @@ DSA_HeroApp/
 │   │       ├── hero_magic_tab.dart           # Tab: Magie
 │   │       ├── hero_magic/                  # Magic part files
 │   │       ├── hero_inventory_tab.dart      # Tab: Inventar
+│   │       ├── hero_reisebericht_tab.dart   # Tab: Reisebericht
+│   │       ├── hero_reisebericht/           # Reisebericht part files
 │   │       └── hero_detail_screen.dart      # legacy placeholder
 │   └── test_support/
 │       └── fake_repository.dart
@@ -124,7 +126,8 @@ DSA_HeroApp/
 │   │   ├── talente.json
 │   │   ├── waffen.json
 │   │   ├── waffentalente.json
-│   │   └── magie.json
+│   │   ├── magie.json
+│   │   └── reisebericht.json
 │   └── heroes/                      # Seed hero JSON files
 ├── tool/                            # Python helper scripts
 │   ├── convert_excel_to_catalog.py
@@ -178,6 +181,22 @@ Ergaenzungen zur aktuellen Struktur:
   Vertrautenmagie-Preset fuer freie Ritualkategorien.
 - `assets/catalogs/house_rules_v1/vertrautenmagie_rituale.json` enthaelt das
   app-taugliche JSON-Snippet desselben Presets.
+- `lib/catalog/reisebericht_def.dart` definiert Katalog-Klassen fuer
+  Reisebericht-Eintraege (Checkpoint, Multi-Requirement, Collection,
+  Grouped Progression, Meta) mit SE-, Talentbonus- und Eigenschaftsbonus-
+  Definitionen.
+- `lib/domain/hero_reisebericht.dart` speichert den heldenspezifischen
+  Reisebericht-Zustand (abgehakte IDs, offene Sammlungseintraege, Wahl-SE-
+  Zuordnungen, angewendete Belohnungs-IDs).
+- `lib/rules/derived/reisebericht_rules.dart` kapselt Completion-Checks,
+  Reward-Berechnung, Reward-Anwendung und Ruecknahme-Logik fuer den
+  Reisebericht.
+- `lib/ui/screens/hero_reisebericht_tab.dart` ist der Workspace-Tab mit
+  innerer TabBar fuer 6 Erfahrungs-Kategorien.
+- `lib/ui/screens/hero_reisebericht/` enthaelt die ausgelagerten Part-
+  Dateien: Kategorieansicht, Entry-Tiles und Dialoge.
+- `assets/catalogs/house_rules_v1/reisebericht.json` enthaelt die
+  erweiterbaren Katalogdaten fuer Abenteuererfahrungen in 6 Kategorien.
 
 ---
 
@@ -222,6 +241,8 @@ Domain models (lib/domain/) — immutable, pure Dart
 | `HeroRitualCategory` | `domain/hero_rituals.dart` | Heldenspezifische Ritualkategorie mit Ritualkenntnis oder Talentbezug |
 | `MagicSpecialAbility` | `domain/magic_special_ability.dart` | Persisted magic special ability (name + note) |
 | `HeroTransferBundle` | `domain/hero_transfer_bundle.dart` | Export/import envelope (hero + state + timestamp) |
+| `HeroReisebericht` | `domain/hero_reisebericht.dart` | Persistierter Reisebericht-Zustand (checkedIds, openEntries, wahlSeZuordnungen, appliedRewardIds) |
+| `ReiseberichtDef` | `catalog/reisebericht_def.dart` | Katalog-Definition eines Reisebericht-Eintrags mit Typ, Belohnungen und Untereintraegen |
 
 ### Providers Cheat-Sheet
 

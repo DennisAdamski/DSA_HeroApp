@@ -98,6 +98,13 @@ class CatalogLoader {
     final schriftenAssetPath = schriftenRelative != null
         ? _resolveAssetPath(manifestAssetPath, schriftenRelative)
         : null;
+    final reiseberichtRelative = _readOptionalStringFromMap(
+      files,
+      'reisebericht',
+    );
+    final reiseberichtAssetPath = reiseberichtRelative != null
+        ? _resolveAssetPath(manifestAssetPath, reiseberichtRelative)
+        : null;
 
     final talente = await _loadJsonList(talenteAssetPath);
     final waffentalente = await _loadJsonList(waffentalenteAssetPath);
@@ -115,6 +122,9 @@ class CatalogLoader {
         : const <Map<String, dynamic>>[];
     final schriftenRaw = schriftenAssetPath != null
         ? await _loadJsonList(schriftenAssetPath)
+        : const <Map<String, dynamic>>[];
+    final reiseberichtRaw = reiseberichtAssetPath != null
+        ? await _loadJsonList(reiseberichtAssetPath)
         : const <Map<String, dynamic>>[];
 
     _validateCombatSplit(
@@ -167,6 +177,11 @@ class CatalogLoader {
       domainName: 'schriften',
       assetPath: manifestAssetPath,
     );
+    _validateUniqueIds(
+      entries: reiseberichtRaw,
+      domainName: 'reisebericht',
+      assetPath: manifestAssetPath,
+    );
 
     return RulesCatalog(
       version: _readOptionalString(manifest, 'version', fallback: 'unknown'),
@@ -192,6 +207,9 @@ class CatalogLoader {
           .toList(growable: false),
       schriften: schriftenRaw
           .map((entry) => SchriftDef.fromJson(entry))
+          .toList(growable: false),
+      reisebericht: reiseberichtRaw
+          .map((entry) => ReiseberichtDef.fromJson(entry))
           .toList(growable: false),
     );
   }

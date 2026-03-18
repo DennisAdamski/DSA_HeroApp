@@ -1,0 +1,607 @@
+[
+  {
+    "id": "rb_anfuehrer",
+    "name": "Anführer",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Zum ersten Mal eine Einheit (auch andere Helden) im Kampf angeführt",
+    "ap": 30,
+    "se": [{"ziel": "talent", "name": "Kriegskunst"}]
+  },
+  {
+    "id": "rb_bezwinger_1",
+    "name": "Bezwinger der Elemente I",
+    "kategorie": "kampferfahrungen",
+    "typ": "grouped_progression",
+    "beschreibung": "Elementargeist besiegt",
+    "gruppe_id": "rb_bezwinger_elemente",
+    "stufe": 1,
+    "ap": 10
+  },
+  {
+    "id": "rb_bezwinger_2",
+    "name": "Bezwinger der Elemente II",
+    "kategorie": "kampferfahrungen",
+    "typ": "grouped_progression",
+    "beschreibung": "Dschinn besiegt",
+    "gruppe_id": "rb_bezwinger_elemente",
+    "stufe": 2,
+    "ap": 30
+  },
+  {
+    "id": "rb_bezwinger_3",
+    "name": "Bezwinger der Elemente III",
+    "kategorie": "kampferfahrungen",
+    "typ": "grouped_progression",
+    "beschreibung": "Elementaren Meister besiegt",
+    "gruppe_id": "rb_bezwinger_elemente",
+    "stufe": 3,
+    "ap": 50
+  },
+  {
+    "id": "rb_bezwinger_gruppe",
+    "name": "Bezwinger der Elemente I-III",
+    "kategorie": "kampferfahrungen",
+    "typ": "grouped_progression_bonus",
+    "beschreibung": "Alle drei Elementarstufen bezwungen",
+    "gruppe_id": "rb_bezwinger_elemente",
+    "se": [
+      {"ziel": "talent", "name": "Magiekunde"},
+      {"ziel": "talent", "name": "Selbstbeherrschung"}
+    ]
+  },
+  {
+    "id": "rb_chimarentoeter",
+    "name": "Chimärentöter",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erste Chimäre erlegt",
+    "ap": 10,
+    "se": [{"ziel": "talent", "name": "Tierkunde"}]
+  },
+  {
+    "id": "rb_daemonentoeter_1",
+    "name": "Dämonentöter I",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Niederen Dämon oder Daimonid besiegt",
+    "ap": 30,
+    "se": [{"ziel": "talent", "name": "Magiekunde"}]
+  },
+  {
+    "id": "rb_daemonentoeter_2",
+    "name": "Dämonentöter II",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Gehörnten Dämon besiegt",
+    "ap": 50,
+    "se": [{"ziel": "talent", "name": "Selbstbeherrschung"}]
+  },
+  {
+    "id": "rb_drachentoeter",
+    "name": "Drachentöter",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Bezwingen eines mächtigen Drachens (Riesenlindwurm, Purpurwurm, Kaiserdrache)",
+    "ap": 100,
+    "se": [
+      {"ziel": "talent", "name": "Magiekunde"},
+      {"ziel": "talent", "name": "Tierkunde"}
+    ]
+  },
+  {
+    "id": "rb_ernstfall",
+    "name": "Ernstfall",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erster Kampf auf Leben und Tod",
+    "ap": 25,
+    "se": [{"ziel": "talent", "name": "Selbstbeherrschung"}]
+  },
+  {
+    "id": "rb_golemvernichter",
+    "name": "Golemvernichter",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Ersten Golem zerstören",
+    "ap": 10,
+    "se": [{"ziel": "talent", "name": "Kriegskunst"}]
+  },
+  {
+    "id": "rb_herr_der_luefte",
+    "name": "Herr der Lüfte",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erster Kampf in der Luft",
+    "ap": 30,
+    "se": [{"ziel": "wahl", "name": "Reiten oder Fliegen", "optionen": ["Reiten", "Fliegen"]}]
+  },
+  {
+    "id": "rb_hinterhalt",
+    "name": "Hinterhalt",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Ersten Hinterhalt gelegt oder in einen geraten",
+    "ap": 15,
+    "se": [{"ziel": "talent", "name": "Sinnenschärfe"}]
+  },
+  {
+    "id": "rb_kriegskenner",
+    "name": "Kriegskenner",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Teilnahme an einer Schlacht",
+    "ap": 20,
+    "se": [{"ziel": "talent", "name": "Kriegskunst"}]
+  },
+  {
+    "id": "rb_knochenbrecher",
+    "name": "Knochenbrecher",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erster Kampf gegen Untote",
+    "ap": 20
+  },
+  {
+    "id": "rb_lykantropenbezwinger",
+    "name": "Lykantropenbezwinger",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erstes Werwesen vernichtet",
+    "ap": 35,
+    "se": [{"ziel": "wahl", "name": "Kriegskunst oder Tierkunde", "optionen": ["Kriegskunst", "Tierkunde"]}]
+  },
+  {
+    "id": "rb_magierjaeger",
+    "name": "Magierjäger",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Beliebigen Vollzauberer besiegt",
+    "ap": 40,
+    "se": [{"ziel": "grundwert", "name": "Magieresistenz"}]
+  },
+  {
+    "id": "rb_nahtoderfahrung",
+    "name": "Nahtoderfahrung",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Das erste Mal LeP <5 reduziert bekommen oder 3 Wunden in einer Zone erleiden",
+    "ap": 30,
+    "se": [{"ziel": "talent", "name": "Selbstbeherrschung"}]
+  },
+  {
+    "id": "rb_titanenzerstoerer",
+    "name": "Titanenzerstörer",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Sehr großen Golem besiegt",
+    "ap": 50,
+    "se": [{"ziel": "wahl", "name": "Baukunst oder Anatomie", "optionen": ["Baukunst", "Anatomie"]}]
+  },
+  {
+    "id": "rb_turnierchampion",
+    "name": "Turnierchampion",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Zum ersten Mal beliebige Turnierdisziplin gewonnen",
+    "ap": 30,
+    "se": [{"ziel": "wahl", "name": "Passende SE"}]
+  },
+  {
+    "id": "rb_vampirpfaehler",
+    "name": "Vampirpfähler",
+    "kategorie": "kampferfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Ersten Vampir getötet",
+    "ap": 35,
+    "se": [
+      {"ziel": "talent", "name": "Sagen/Legenden"},
+      {"ziel": "talent", "name": "Götter/Kulte"}
+    ]
+  },
+  {
+    "id": "rb_veteran",
+    "name": "Veteran",
+    "kategorie": "kampferfahrungen",
+    "typ": "meta",
+    "beschreibung": "Alle Kampferfahrungen gemacht",
+    "eigenschafts_bonus": [{"eigenschaft": "mu", "wert": 1}]
+  },
+
+  {
+    "id": "rb_ausser_atem",
+    "name": "Außer Atem",
+    "kategorie": "koerperliche_erprobungen",
+    "typ": "checkpoint",
+    "beschreibung": "Das erste Mal Überanstrengung gesammelt",
+    "ap": 10,
+    "se": [{"ziel": "talent", "name": "Ausdauer"}]
+  },
+  {
+    "id": "rb_dickkopf",
+    "name": "Dickkopf",
+    "kategorie": "koerperliche_erprobungen",
+    "typ": "multi_requirement",
+    "beschreibung": "In voller Rüstung (BE ohne Rüstungsgewöhnung 5+)",
+    "anforderungen": [
+      {
+        "id": "rb_dickkopf_klettern",
+        "name": "geklettert",
+        "ap": 20,
+        "se": [{"ziel": "talent", "name": "Klettern"}]
+      },
+      {
+        "id": "rb_dickkopf_schwimmen",
+        "name": "geschwommen",
+        "ap": 20,
+        "se": [{"ziel": "talent", "name": "Schwimmen"}]
+      }
+    ]
+  },
+  {
+    "id": "rb_efferdsjuenger",
+    "name": "Efferdsjünger",
+    "kategorie": "koerperliche_erprobungen",
+    "typ": "checkpoint",
+    "beschreibung": "5 Meilen am Stück geschwommen (oder 3 mit Rüstung)",
+    "ap": 15,
+    "se": [{"ziel": "talent", "name": "Schwimmen"}]
+  },
+  {
+    "id": "rb_sattelfest",
+    "name": "Sattelfest",
+    "kategorie": "koerperliche_erprobungen",
+    "typ": "checkpoint",
+    "beschreibung": "Zum ersten Mal eine Probe um im Ernstfall im Sattel zu bleiben bestanden",
+    "ap": 15,
+    "se": [{"ziel": "talent", "name": "Reiten"}]
+  },
+  {
+    "id": "rb_schmerzfest",
+    "name": "Schmerzfest",
+    "kategorie": "koerperliche_erprobungen",
+    "typ": "checkpoint",
+    "beschreibung": "Sprung ins Salzwasser trotz Verwundung",
+    "ap": 5,
+    "se": [{"ziel": "talent", "name": "Selbstbeherrschung"}]
+  },
+  {
+    "id": "rb_sprinter",
+    "name": "Sprinter",
+    "kategorie": "koerperliche_erprobungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erste Jagd erfolgreich oder das erste Mal um das eigene Leben gerannt",
+    "ap": 25,
+    "se": [{"ziel": "talent", "name": "Athletik"}]
+  },
+  {
+    "id": "rb_todesmutig",
+    "name": "Todesmutig",
+    "kategorie": "koerperliche_erprobungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erste lebensgefährliche Akrobatik- oder Körperbeherrschungsprobe abgelegt (z.B. Balance in 10 Schritt Höhe, Sprung über Abgrund)",
+    "ap": 35
+  },
+  {
+    "id": "rb_verbissen",
+    "name": "Verbissen",
+    "kategorie": "koerperliche_erprobungen",
+    "typ": "checkpoint",
+    "beschreibung": "Körperliche Probe (BEx2) trotz 3 Wunden an einem Arm oder Bein abgelegt",
+    "ap": 20,
+    "se": [{"ziel": "talent", "name": "Selbstbeherrschung"}]
+  },
+  {
+    "id": "rb_zaeh",
+    "name": "Zäh",
+    "kategorie": "koerperliche_erprobungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erste Wunde im Kampf ignoriert und diesen danach gewonnen",
+    "ap": 25,
+    "se": [{"ziel": "talent", "name": "Selbstbeherrschung"}]
+  },
+
+  {
+    "id": "rb_adelskenner",
+    "name": "Adelskenner",
+    "kategorie": "gesellschaftliche_erfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erste Verbindung zu einem Adeligen",
+    "ap": 25,
+    "se": [{"ziel": "talent", "name": "Etikette"}]
+  },
+  {
+    "id": "rb_anleger",
+    "name": "Anleger",
+    "kategorie": "gesellschaftliche_erfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erste Finanzinvestition getätigt",
+    "ap": 25,
+    "se": [{"ziel": "talent", "name": "Handel"}]
+  },
+  {
+    "id": "rb_stadtkenner",
+    "name": "Stadtkenner",
+    "kategorie": "gesellschaftliche_erfahrungen",
+    "typ": "collection_fixed",
+    "beschreibung": "Große Städte Aventuriens besucht",
+    "ap_pro_eintrag": 10,
+    "schwelle": 5,
+    "schwelle_belohnung": {
+      "talent_boni": [
+        {"talent_name": "Gassenwissen", "wert": 1},
+        {"talent_name": "Etikette", "wert": 1}
+      ]
+    },
+    "feste_eintraege": [
+      {"id": "rb_stadt_alanfa", "name": "Al'Anfa"},
+      {"id": "rb_stadt_festum", "name": "Festum"},
+      {"id": "rb_stadt_gareth", "name": "Gareth"},
+      {"id": "rb_stadt_havena", "name": "Havena"},
+      {"id": "rb_stadt_khunchom", "name": "Khunchom"},
+      {"id": "rb_stadt_lowangen", "name": "Lowangen"},
+      {"id": "rb_stadt_mengbilla", "name": "Mengbilla"},
+      {"id": "rb_stadt_mherwed", "name": "Mherwed"},
+      {"id": "rb_stadt_norburg", "name": "Norburg"},
+      {"id": "rb_stadt_perricum", "name": "Perricum"},
+      {"id": "rb_stadt_riva", "name": "Riva"},
+      {"id": "rb_stadt_tuzak", "name": "Tuzak"},
+      {"id": "rb_stadt_unau", "name": "Unau"},
+      {"id": "rb_stadt_vinsalt", "name": "Vinsalt"},
+      {"id": "rb_stadt_zorgan", "name": "Zorgan"}
+    ],
+    "bonus": {
+      "id": "rb_stadtkenner_extrem",
+      "name": "Stadtkenner extrem",
+      "beschreibung": "Alle Städte besucht",
+      "schwelle": 15,
+      "ap": 50,
+      "talent_boni": [
+        {"talent_name": "Gassenwissen", "wert": 1},
+        {"talent_name": "Etikette", "wert": 1}
+      ]
+    }
+  },
+  {
+    "id": "rb_unterwelterfahrung",
+    "name": "Unterwelterfahrung",
+    "kategorie": "gesellschaftliche_erfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erste Verbindung in die Illegalität",
+    "ap": 25,
+    "se": [{"ziel": "talent", "name": "Gassenwissen"}]
+  },
+  {
+    "id": "rb_weltreisender",
+    "name": "Weltreisender",
+    "kategorie": "gesellschaftliche_erfahrungen",
+    "typ": "collection_open",
+    "beschreibung": "Längerer Kontakt mit fremden Kulturen (alle außer der eigenen). Varianten einer Kultur zählen nicht.",
+    "schwelle": 10,
+    "se_intervall": 5,
+    "se": [{"ziel": "talent", "name": "Menschenkenntnis"}],
+    "klassifikationen": [
+      {"id": "normal", "name": "Bekannte Kultur", "ap": 10},
+      {"id": "exotisch", "name": "Exotische/Barbarenkultur", "ap": 20},
+      {"id": "ausseraventurisch", "name": "Nicht-aventurische Kultur", "ap": 30}
+    ]
+  },
+  {
+    "id": "rb_avesfreund",
+    "name": "Avesfreund",
+    "kategorie": "gesellschaftliche_erfahrungen",
+    "typ": "meta",
+    "beschreibung": "Alle Gesellschaftserfahrungen gemacht",
+    "eigenschafts_bonus": [{"eigenschaft": "wahl", "wert": 1, "optionen": ["Soziale Anpassungsfähigkeit", "CH"]}]
+  },
+
+  {
+    "id": "rb_dschungelchampion",
+    "name": "Dschungelchampion",
+    "kategorie": "naturerfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Längere Durchquerung des Dschungels",
+    "ap": 25,
+    "se": [{"ziel": "talent", "name": "Wildnisleben"}]
+  },
+  {
+    "id": "rb_eisexperte",
+    "name": "Eisexperte",
+    "kategorie": "naturerfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Längere Durchquerung von Eis- und Schneegebieten",
+    "ap": 25,
+    "se": [{"ziel": "talent", "name": "Wildnisleben"}]
+  },
+  {
+    "id": "rb_gebirgsgaenger",
+    "name": "Gebirgsgänger",
+    "kategorie": "naturerfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Längere Durchquerung von Gebirge",
+    "ap": 25,
+    "se": [{"ziel": "talent", "name": "Wildnisleben"}]
+  },
+  {
+    "id": "rb_katastrophenkenner",
+    "name": "Katastrophenkenner",
+    "kategorie": "naturerfahrungen",
+    "typ": "collection_open",
+    "beschreibung": "Gefährliches Naturereignis überlebt (Sand-/Schneesturm, Lawine, Orkan, Schiffbruch, Vulkanausbruch, etc.)",
+    "ap_pro_eintrag": 20,
+    "se_intervall": 3,
+    "se": [{"ziel": "talent", "name": "Körperbeherrschung"}]
+  },
+  {
+    "id": "rb_maraskanmeister",
+    "name": "Maraskanmeister",
+    "kategorie": "naturerfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Längere Durchquerung von Maraskan",
+    "ap": 50,
+    "se": [{"ziel": "talent", "name": "Wildnisleben"}]
+  },
+  {
+    "id": "rb_steppenstreifer",
+    "name": "Steppenstreifer",
+    "kategorie": "naturerfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Längere Durchquerung der Steppe",
+    "ap": 20,
+    "se": [{"ziel": "talent", "name": "Wildnisleben"}]
+  },
+  {
+    "id": "rb_sumpfschleicher",
+    "name": "Sumpfschleicher",
+    "kategorie": "naturerfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Längere Durchquerung von Sumpfgebieten",
+    "ap": 25,
+    "se": [{"ziel": "talent", "name": "Wildnisleben"}]
+  },
+  {
+    "id": "rb_wuestenwanderer",
+    "name": "Wüstenwanderer",
+    "kategorie": "naturerfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Längere Durchquerung der Wüste",
+    "ap": 25,
+    "se": [{"ziel": "talent", "name": "Wildnisleben"}]
+  },
+  {
+    "id": "rb_wildnisweiser",
+    "name": "Wildnisweiser",
+    "kategorie": "naturerfahrungen",
+    "typ": "meta",
+    "beschreibung": "Alle Naturerfahrungen gemacht",
+    "eigenschafts_bonus": [{"eigenschaft": "wahl", "wert": 1, "optionen": ["KO", "Akklimatisierung"]}]
+  },
+
+  {
+    "id": "rb_anhaenger_der_zwoelf",
+    "name": "Anhänger der Zwölf",
+    "kategorie": "spirituelle_erfahrungen",
+    "typ": "collection_fixed",
+    "beschreibung": "Einen Tempel jedes Zwölfgotts besucht",
+    "ap_pro_eintrag": 0,
+    "schwelle": 12,
+    "schwelle_belohnung": {
+      "ap": 50,
+      "se": [{"ziel": "talent", "name": "Götter/Kulte"}]
+    },
+    "feste_eintraege": [
+      {"id": "rb_tempel_praios", "name": "Praios"},
+      {"id": "rb_tempel_rondra", "name": "Rondra"},
+      {"id": "rb_tempel_efferd", "name": "Efferd"},
+      {"id": "rb_tempel_travia", "name": "Travia"},
+      {"id": "rb_tempel_boron", "name": "Boron"},
+      {"id": "rb_tempel_hesinde", "name": "Hesinde"},
+      {"id": "rb_tempel_firun", "name": "Firun"},
+      {"id": "rb_tempel_tsa", "name": "Tsa"},
+      {"id": "rb_tempel_phex", "name": "Phex"},
+      {"id": "rb_tempel_peraine", "name": "Peraine"},
+      {"id": "rb_tempel_ingerimm", "name": "Ingerimm"},
+      {"id": "rb_tempel_rahja", "name": "Rahja"}
+    ]
+  },
+  {
+    "id": "rb_namenloser_erstkontakt",
+    "name": "Namenloser Erstkontakt",
+    "kategorie": "spirituelle_erfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erster Kampf gegen Namenlose Diener",
+    "ap": 30,
+    "se": [{"ziel": "talent", "name": "Götter/Kulte"}]
+  },
+  {
+    "id": "rb_olymp",
+    "name": "Olymp",
+    "kategorie": "spirituelle_erfahrungen",
+    "typ": "collection_open",
+    "beschreibung": "Ein spirituelles Zentrum besucht (Haupttempel)",
+    "ap_pro_eintrag": 20,
+    "schwelle": 5,
+    "se_intervall": 1,
+    "se": [{"ziel": "wahl", "name": "Passende SE"}]
+  },
+  {
+    "id": "rb_sektenkenner",
+    "name": "Sektenkenner",
+    "kategorie": "spirituelle_erfahrungen",
+    "typ": "collection_open",
+    "beschreibung": "Kontakt mit einem Kult (z.B. Horas-Kult, Lowanger Dualismus, Tairach, Brazoragh, Rur & Gror, Rastullah)",
+    "ap_pro_eintrag": 10,
+    "schwelle": 6,
+    "se_intervall": 4,
+    "se": [{"ziel": "talent", "name": "Götter/Kulte"}]
+  },
+  {
+    "id": "rb_vollstaendiges_pantheon",
+    "name": "Vollständiges Pantheon",
+    "kategorie": "spirituelle_erfahrungen",
+    "typ": "meta",
+    "beschreibung": "Alle spirituellen Erfahrungen gemacht",
+    "eigenschafts_bonus": [{"eigenschaft": "in", "wert": 1}]
+  },
+
+  {
+    "id": "rb_drachenfluesterer",
+    "name": "Drachenflüsterer",
+    "kategorie": "magische_erfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erste Bekanntschaft mit einem mächtigen Drachen geschlossen",
+    "ap": 50
+  },
+  {
+    "id": "rb_geistreise",
+    "name": "Geistreise",
+    "kategorie": "magische_erfahrungen",
+    "typ": "checkpoint",
+    "beschreibung": "Erster Aufenthalt in Geister- oder Traumwelt",
+    "ap": 60,
+    "se": [{"ziel": "talent", "name": "Magiekunde"}]
+  },
+  {
+    "id": "rb_sphaerenreisender",
+    "name": "Sphärenreisender",
+    "kategorie": "magische_erfahrungen",
+    "typ": "collection_open",
+    "beschreibung": "Erkundung einer anderen Sphäre/Globule",
+    "ap_pro_eintrag": 60,
+    "schwelle": 2,
+    "se_intervall": 1,
+    "se": [{"ziel": "talent", "name": "Magiekunde"}]
+  },
+  {
+    "id": "rb_traditionskundig",
+    "name": "Traditionskundig",
+    "kategorie": "magische_erfahrungen",
+    "typ": "collection_fixed",
+    "beschreibung": "Wissensaustausch mit einer Vollzauberischen Tradition. Je 10 AP (20 AP für Voll- und Halbzauberer).",
+    "ap_pro_eintrag": 10,
+    "ap_pro_eintrag_alternativ": 20,
+    "ap_alternativ_bedingung": "Voll- oder Halbzauberer",
+    "schwelle": 6,
+    "schwelle_belohnung": {
+      "talent_boni": [
+        {"talent_name": "Magiekunde", "wert": 2}
+      ]
+    },
+    "feste_eintraege": [
+      {"id": "rb_tradition_druiden", "name": "Druiden"},
+      {"id": "rb_tradition_elfen", "name": "Elfen"},
+      {"id": "rb_tradition_geoden", "name": "Geoden"},
+      {"id": "rb_tradition_hexen", "name": "Hexen"},
+      {"id": "rb_tradition_kristallomanten", "name": "Kristallomanten"},
+      {"id": "rb_tradition_magier", "name": "Magier"}
+    ]
+  },
+  {
+    "id": "rb_meister_des_arkanen",
+    "name": "Meister des Arkanen",
+    "kategorie": "magische_erfahrungen",
+    "typ": "meta",
+    "beschreibung": "Alle magischen Erfahrungen gemacht",
+    "eigenschafts_bonus": [{"eigenschaft": "wahl", "wert": 1, "optionen": ["KL", "IN"]}]
+  }
+]
