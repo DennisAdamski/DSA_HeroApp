@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_workspace_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_import_export_actions.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/hero_avatar.dart';
 
 class HeroesHomeScreen extends ConsumerWidget {
   const HeroesHomeScreen({super.key});
@@ -101,6 +102,7 @@ class HeroesHomeScreen extends ConsumerWidget {
               final hero = heroes[index];
               return ListTile(
                 selected: selectedHeroId == hero.id,
+                leading: HeroAvatar(hero: hero),
                 title: Text(hero.name),
                 subtitle: Text('Level ${hero.level}'),
                 trailing: Row(
