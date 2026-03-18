@@ -1272,6 +1272,37 @@ Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Da
   ungespeicherte Draft-Aenderungen, um Konflikte mit lokalen Entwuerfen zu
   vermeiden.
 
+### Update 2026-03-19: Gemeinsame Wuerfel-Engine
+
+- `lib/domain/probe_engine.dart` definiert mit `ProbeType`,
+  `ResolvedProbeRequest`, `ProbeRollInput`, `ProbeResult` und
+  `AutomaticOutcome` den gemeinsamen Vertrag fuer alle Probearten.
+- `lib/rules/derived/probe_engine_rules.dart` kapselt die komplette
+  Regellogik als pure Funktionen inklusive RNG-Abstraktion fuer
+  deterministische Tests.
+- Eigenschaftsproben werten `1W20` gegen den modifizierten Eigenschaftswert
+  aus; `1` ist immer Erfolg, `20` immer Misserfolg.
+- Talent- und Zauberproben werten `3W20` gegen drei Zielwerte aus und
+  kompensieren Ueberschreitungen aus dem modifizierten Pool. Ein negativer
+  Restpool wird vorab als Malus auf alle drei Eigenschaften umgelegt.
+- Ab zwei gewuerfelten `20ern` gilt eine Talent- oder Zauberprobe als
+  automatisches Misslingen; ab zwei `1ern` als automatischer Erfolg mit
+  Spezieller Erfahrung.
+- Kampfproben fuer `AT`, `PA` und `Ausweichen` nutzen in v1 bewusst nur die
+  normale `<=`-Pruefung ohne Krit-/Patzer-Sonderlogik.
+- Initiativ- und Schadenswuerfe werden als Summenprobe ausgewertet; bei
+  Aufmerksamkeit liefert die Kampfvorschau einen festen Initiativwurf statt
+  eines digitalen Wurfangebots.
+- `CombatPreviewStats` enthaelt dafuer zusaetzlich rohe Wuerfel-
+  Spezifikationen fuer Initiative und Schaden.
+- `lib/ui/screens/shared/probe_request_factory.dart` baut die UI-Requests
+  aus Heldendaten, Talent-/Zauberkontext und Kampfvorschau.
+- `lib/ui/screens/shared/probe_dialog.dart` ist der gemeinsame Dialog fuer
+  digitales Wuerfeln und manuelle Eingabe. Er wird ueber Wuerfel-Symbole im
+  Uebersichts-, Talente-, Magie- und Kampf-Tab geoeffnet.
+- Wurfergebnisse bleiben bewusst temporaer im Dialog und werden nicht in
+  `HeroSheet` oder `HeroState` persistiert.
+
 ---
 
 *Erzeugt am 2026-03-04 — Bezieht sich auf Codestand `claude/create-technical-documentation-Eawbf`*

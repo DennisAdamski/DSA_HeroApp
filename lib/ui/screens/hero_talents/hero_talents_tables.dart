@@ -244,6 +244,15 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       basisKomplexitaet: talent.steigerung,
       gifted: entry.gifted,
     );
+    final computedTaw = computeTalentComputedTaw(
+      talentValue: entry.talentValue,
+      modifier: entry.modifier,
+      ebe: ebe,
+      inventoryMod: inventoryMod,
+    );
+    final hasSpecialization =
+        entry.combatSpecializations.isNotEmpty ||
+        _splitSpecializationTokens(entry.specializations).isNotEmpty;
 
     final cells = <Widget>[
       _tappableNameCell(
@@ -259,19 +268,31 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
             inventoryMod: inventoryMod,
           ),
         ),
+        trailing: IconButton(
+          key: ValueKey<String>('talents-roll-${talent.id}'),
+          visualDensity: VisualDensity.compact,
+          iconSize: 18,
+          tooltip: '${talent.name} würfeln',
+          onPressed: () => showProbeDialog(
+            context: context,
+            request: buildTalentProbeRequest(
+              title: talent.name,
+              targets: _buildProbeTargets(
+                effectiveAttributes,
+                talent.attributes,
+              ),
+              basePool: computedTaw,
+              hasSpecialization: hasSpecialization,
+            ),
+          ),
+          icon: const Icon(Icons.casino_outlined),
+        ),
       ),
       _textCell(
         _buildShortAttributeLabel(effectiveAttributes, talent.attributes),
       ),
       _textCell(
-        _formatWholeNumber(
-          computeTalentComputedTaw(
-            talentValue: entry.talentValue,
-            modifier: entry.modifier,
-            ebe: ebe,
-            inventoryMod: inventoryMod,
-          ),
-        ),
+        _formatWholeNumber(computedTaw),
         key: ValueKey<String>('talents-field-${talent.id}-computed-taw'),
         highlighted: true,
       ),

@@ -255,6 +255,35 @@ void main() {
     },
   );
 
+  testWidgets('talent row opens shared probe dialog via dice icon', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(talentValue: 7),
+          },
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openTalentsTab(tester, repo, buildCatalog());
+
+    await tester.tap(find.byKey(const ValueKey<String>('talents-roll-tal_a')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Talentprobe: Athletik'), findsOneWidget);
+  });
+
   testWidgets('non-combat groups follow configured custom order', (
     tester,
   ) async {
