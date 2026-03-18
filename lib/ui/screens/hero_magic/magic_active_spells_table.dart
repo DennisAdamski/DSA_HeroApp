@@ -180,7 +180,13 @@ class _MagicActiveSpellsTable extends StatelessWidget {
         childrenPadding: EdgeInsets.zero,
         title: Row(
           children: [
-            Text('Aktivierte Zauber', style: theme.textTheme.titleSmall),
+            Expanded(
+              child: Text(
+                'Aktivierte Zauber',
+                style: theme.textTheme.titleSmall,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
             const SizedBox(width: 8),
             Text('(${sortedIds.length})', style: theme.textTheme.bodySmall),
           ],
@@ -675,24 +681,13 @@ DataCell _buildVariantsCell({
         width: width,
         child: variants.isEmpty
             ? Text('-', style: theme.textTheme.bodySmall)
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '${variants.length}× ',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Flexible(
-                    child: Text(
-                      variants.first,
-                      style: theme.textTheme.bodySmall,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+            : Text(
+                '${variants.length}x ${variants.first}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
       ),
     ),
