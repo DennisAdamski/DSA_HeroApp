@@ -219,10 +219,10 @@ class _AttributeModifierDetailDialogState
                 ),
               ],
               const Divider(height: kDialogSectionSpacing * 2),
-              _sourceRow(theme, 'Aktuell', widget.baseValue),
+              _sourceRow(theme, 'Wert', widget.baseValue),
               _sourceRow(
                 theme,
-                'Berechnet',
+                'Aktuell',
                 widget.effectiveValue,
                 bold: true,
               ),

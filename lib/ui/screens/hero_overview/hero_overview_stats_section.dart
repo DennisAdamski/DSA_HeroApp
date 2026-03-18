@@ -17,7 +17,6 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
         AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120),
         AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120),
         AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 132),
-        AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 132),
       ];
 
   Widget _buildCombinedStatsAndAttributesSection(
@@ -232,7 +231,6 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     final rows = _HeroOverviewTabState._attributeEntries
         .map((entry) {
           final key = entry.$2;
-          final tempKey = '${key}_temp';
           final startValue = _valueByKey(effectiveStartAttributes, key);
           final maximumValue = _valueByKey(attributeMaximums, key);
           final effective = _effectiveValueByKey(effectiveAttributes, key);
@@ -257,7 +255,6 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                     : null,
                 raiseTooltip: '${entry.$1} steigern',
               ),
-              _buildAttributesNumericCell(keyName: tempKey, isAdjustable: true),
               _buildTappableAttributeComputedCell(
                 label: entry.$1,
                 attrKey: key,
@@ -286,9 +283,8 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                   _buildAttributesTableHeaderCell('Eigenschaft'),
                   _buildAttributesTableHeaderCell('Start'),
                   _buildAttributesTableHeaderCell('Max'),
+                  _buildAttributesTableHeaderCell('Wert'),
                   _buildAttributesTableHeaderCell('Aktuell'),
-                  _buildAttributesTableHeaderCell('Temp-Mod'),
-                  _buildAttributesTableHeaderCell('Berechnet'),
                 ],
               ),
               ...rows,
@@ -323,35 +319,6 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       return _buildAttributesStaticCell(
         key: ValueKey<String>('overview-field-$keyName'),
         value: _field(keyName).text,
-      );
-    }
-
-    final isTempModifier = _isTempAttributeKey(keyName);
-
-    // Temp-Modifier sind immer editierbar (eigener TextField-Pfad).
-    if (isTempModifier) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
-        child: TextField(
-          key: ValueKey<String>('overview-field-$keyName'),
-          controller: _field(keyName),
-          focusNode: _focusNode(keyName),
-          keyboardType: TextInputType.number,
-          textInputAction: TextInputAction.done,
-          decoration: _inputDecoration('').copyWith(
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 8,
-            ),
-          ),
-          onChanged: (_) {
-            if (mounted) {
-              _viewRevision.value++;
-            }
-          },
-          onSubmitted: (_) => _commitTempAttributeField(keyName),
-        ),
       );
     }
 
@@ -461,7 +428,6 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     HeroComputedSnapshot snapshot,
   ) {
     final theme = Theme.of(context);
-    final hasModifiers = entry.modifier != 0;
     return InkWell(
       onTap: () => _openStatModifierDialog(entry, hero, state, snapshot),
       child: Padding(
@@ -473,14 +439,12 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               entry.modifier.toString(),
               style: theme.textTheme.bodyMedium,
             ),
-            if (hasModifiers) ...[
-              const SizedBox(width: 4),
-              Icon(
-                Icons.info_outline,
-                size: 14,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ],
+            const SizedBox(width: 4),
+            Icon(
+              Icons.tune,
+              size: 14,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ],
         ),
       ),
@@ -494,9 +458,6 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     required HeroComputedSnapshot snapshot,
   }) {
     final theme = Theme.of(context);
-    final hero = snapshot.hero;
-    final baseValue = _valueByKey(hero.attributes, attrKey);
-    final hasModifiers = effective != baseValue;
     return InkWell(
       onTap: () => _openAttributeModifierDialog(
         label: label,
@@ -511,14 +472,12 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(effective.toString(), style: theme.textTheme.bodyMedium),
-            if (hasModifiers) ...[
-              const SizedBox(width: 4),
-              Icon(
-                Icons.info_outline,
-                size: 14,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ],
+            const SizedBox(width: 4),
+            Icon(
+              Icons.tune,
+              size: 14,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ],
         ),
       ),
@@ -606,6 +565,18 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     final tempValue = attributeModValue(state.tempAttributeMods, attrKey);
     final sources = <ModifierSourceEntry>[
       (
+        label: 'Rasse',
+        value: attributeModValue(breakdown.rasseAttributeMods, attrKey),
+      ),
+      (
+        label: 'Kultur',
+        value: attributeModValue(breakdown.kulturAttributeMods, attrKey),
+      ),
+      (
+        label: 'Profession',
+        value: attributeModValue(breakdown.professionAttributeMods, attrKey),
+      ),
+      (
         label: 'Vorteile',
         value: attributeModValue(breakdown.vorteileAttributeMods, attrKey),
       ),
@@ -613,7 +584,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
         label: 'Nachteile',
         value: attributeModValue(breakdown.nachteileAttributeMods, attrKey),
       ),
-      if (tempValue != 0) (label: 'Temporaer', value: tempValue),
+      if (tempValue != 0) (label: 'Attributo', value: tempValue),
       (
         label: 'Inventar',
         value: attributeModValue(snapshot.inventoryAttributeMods, attrKey),

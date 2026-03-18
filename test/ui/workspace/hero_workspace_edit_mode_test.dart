@@ -325,7 +325,7 @@ void main() {
     },
   );
 
-  testWidgets('overview edit/save persists attribute changes and temp mods', (
+  testWidgets('overview edit/save persists attribute changes', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -347,16 +347,12 @@ void main() {
 
     final verticalScrollable = activeTabVerticalScrollable();
     final muField = find.byKey(const ValueKey<String>('overview-field-mu'));
-    final muTempField = find.byKey(
-      const ValueKey<String>('overview-field-mu_temp'),
-    );
     await tester.scrollUntilVisible(
       muField,
       240,
       scrollable: verticalScrollable,
     );
     await tester.enterText(muField, '16');
-    await tester.enterText(muTempField, '2');
 
     await tester.tap(find.text('Speichern').first);
     await tester.pumpAndSettle();
@@ -365,146 +361,8 @@ void main() {
     final hero = findHeroById(heroes, 'demo');
     expect(hero, isNotNull);
     expect(hero!.attributes.mu, 16);
-    final state = await repo.loadHeroState('demo');
-    expect(state, isNotNull);
-    expect(state!.tempAttributeMods.mu, 2);
   });
 
-  testWidgets(
-    'overview temp attribute mod is editable and saved on submit without edit mode',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero()],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 10,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
-
-      await openWorkspace(tester, repo);
-
-      final verticalScrollable = activeTabVerticalScrollable();
-      final muTempField = find.byKey(
-        const ValueKey<String>('overview-field-mu_temp'),
-      );
-      final muEffective = find.byKey(
-        const ValueKey<String>('overview-effective-mu'),
-      );
-      await tester.scrollUntilVisible(
-        muTempField,
-        240,
-        scrollable: verticalScrollable,
-      );
-
-      final before = tester.widget<TextField>(muTempField);
-      expect(before.readOnly, isFalse);
-      expect(find.text('Bearbeiten'), findsOneWidget);
-      expect(find.text('Speichern'), findsNothing);
-      expect(find.text('Abbrechen'), findsNothing);
-
-      await tester.tap(muTempField);
-      await tester.pump();
-      await tester.enterText(muTempField, '3');
-      await tester.testTextInput.receiveAction(TextInputAction.done);
-      await tester.pumpAndSettle();
-
-      final state = await repo.loadHeroState('demo');
-      expect(state, isNotNull);
-      expect(state!.tempAttributeMods.mu, 3);
-      expect(tester.widget<TextField>(muTempField).controller?.text, '3');
-      expect(
-        find.descendant(of: muEffective, matching: find.text('17')),
-        findsOne,
-      );
-      expect(find.text('Bearbeiten'), findsOneWidget);
-      expect(find.text('Speichern'), findsNothing);
-      expect(find.text('Abbrechen'), findsNothing);
-    },
-  );
-
-  testWidgets(
-    'overview temp attribute mod saves on focus loss and clamps invalid values',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero()],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 10,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
-
-      await openWorkspace(tester, repo);
-
-      final verticalScrollable = activeTabVerticalScrollable();
-      final muTempField = find.byKey(
-        const ValueKey<String>('overview-field-mu_temp'),
-      );
-      final muEffective = find.byKey(
-        const ValueKey<String>('overview-effective-mu'),
-      );
-      await tester.scrollUntilVisible(
-        muTempField,
-        240,
-        scrollable: verticalScrollable,
-      );
-
-      await tester.tap(muTempField);
-      await tester.pump();
-      await tester.enterText(muTempField, '150');
-      FocusManager.instance.primaryFocus?.unfocus();
-      await tester.pumpAndSettle();
-
-      var state = await repo.loadHeroState('demo');
-      expect(state, isNotNull);
-      expect(state!.tempAttributeMods.mu, 99);
-      expect(tester.widget<TextField>(muTempField).controller?.text, '99');
-      expect(
-        find.descendant(of: muEffective, matching: find.text('113')),
-        findsOne,
-      );
-      expect(find.text('Speichern'), findsNothing);
-
-      await tester.tap(muTempField);
-      await tester.pump();
-      await tester.enterText(muTempField, '-150');
-      FocusManager.instance.primaryFocus?.unfocus();
-      await tester.pumpAndSettle();
-
-      state = await repo.loadHeroState('demo');
-      expect(state, isNotNull);
-      expect(state!.tempAttributeMods.mu, -99);
-      expect(tester.widget<TextField>(muTempField).controller?.text, '-99');
-      expect(
-        find.descendant(of: muEffective, matching: find.text('-85')),
-        findsOne,
-      );
-
-      await tester.tap(muTempField);
-      await tester.pump();
-      await tester.enterText(muTempField, 'abc');
-      await tester.testTextInput.receiveAction(TextInputAction.done);
-      await tester.pumpAndSettle();
-
-      state = await repo.loadHeroState('demo');
-      expect(state, isNotNull);
-      expect(state!.tempAttributeMods.mu, 0);
-      expect(tester.widget<TextField>(muTempField).controller?.text, '0');
-      expect(
-        find.descendant(of: muEffective, matching: find.text('14')),
-        findsOne,
-      );
-      expect(find.text('Speichern'), findsNothing);
-      expect(find.text('Abbrechen'), findsNothing);
-    },
-  );
 
   testWidgets(
     'overview shows start and max values and recomputes them from origin mods',
