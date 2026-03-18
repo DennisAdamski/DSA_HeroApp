@@ -568,6 +568,18 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     final tempValue = attributeModValue(state.tempAttributeMods, attrKey);
     final sources = <ModifierSourceEntry>[
       (
+        label: 'Rasse',
+        value: attributeModValue(breakdown.rasseAttributeMods, attrKey),
+      ),
+      (
+        label: 'Kultur',
+        value: attributeModValue(breakdown.kulturAttributeMods, attrKey),
+      ),
+      (
+        label: 'Profession',
+        value: attributeModValue(breakdown.professionAttributeMods, attrKey),
+      ),
+      (
         label: 'Vorteile',
         value: attributeModValue(breakdown.vorteileAttributeMods, attrKey),
       ),
