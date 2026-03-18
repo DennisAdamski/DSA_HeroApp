@@ -206,6 +206,17 @@ Ergaenzungen zur aktuellen Struktur:
   einen Basiswert (LeP, AsP, MR, etc.).
 - `lib/ui/screens/hero_overview/attribute_modifier_detail_dialog.dart`
   zeigt dasselbe fuer eine Eigenschaft (MU, KL, etc.).
+- `lib/domain/probe_engine.dart` definiert den gemeinsamen Request-/Result-
+  Vertrag fuer Wuerfelproben inklusive Wuerfel-Spezifikation,
+  Automatik-Ergebnissen und Roll-Modus.
+- `lib/rules/derived/probe_engine_rules.dart` kapselt die reine
+  Auswertungslogik fuer Eigenschafts-, Talent-, Zauber-, Kampf-,
+  Initiativ- und Schadensproben inklusive RNG-Abstraktion fuer Tests.
+- `lib/ui/screens/shared/probe_request_factory.dart` baut UI-nahe
+  `ResolvedProbeRequest`-Objekte aus Heldendaten und Kampfvorschau.
+- `lib/ui/screens/shared/probe_dialog.dart` ist der gemeinsame Dialog fuer
+  digitale und manuelle Wuerfelproben; alle Trigger im Workspace oeffnen
+  dieselbe Oberflaeche.
 
 ---
 
@@ -551,4 +562,20 @@ The following files are **intentionally kept** but not currently wired into the 
 - Im Uebersicht-Tab sind Basiswert-Modifier und Eigenschafts-Berechnet-
   Zellen tappbar und oeffnen editierbare Detail-Dialoge mit Quellen-
   Aufschluesselung.
+
+## Update 2026-03-19
+
+- Die App besitzt jetzt eine gemeinsame Wuerfel-Engine fuer
+  Eigenschafts-, Talent-, Zauber-, Kampf-, Initiativ- und Schadensproben.
+- `ResolvedProbeRequest`, `ProbeRollInput` und `ProbeResult` bilden die
+  stabile Schnittstelle zwischen UI und reiner Regellogik.
+- Talent- und Zauberproben nutzen die 3W20-Kompensationslogik mit
+  negativen Pools als Eigenschaftsmalus, Doppel-20 als automatischem
+  Misslingen und Doppel-1 als automatischem Erfolg mit Spezieller
+  Erfahrung.
+- `CombatPreviewStats` liefert zusaetzlich rohe Wuerfel-Spezifikationen
+  fuer Initiative und Schaden, damit die Probe-UI nicht aus Anzeige-Strings
+  zurueckparsen muss.
+- Wuerfel-Trigger sitzen kontextuell in Uebersicht, Talenten, Magie und
+  Kampf; alle oeffnen denselben `probe_dialog.dart`.
 

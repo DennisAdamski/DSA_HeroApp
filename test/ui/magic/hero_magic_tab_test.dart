@@ -208,6 +208,22 @@ void main() {
     },
   );
 
+  testWidgets('active spell row opens shared probe dialog via dice icon', (
+    tester,
+  ) async {
+    await openMagicTab(tester);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-spells-roll-spell_axxeleratus')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    expect(
+      find.text('Zauberprobe: Axxeleratus Blitzgeschwind'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('spell catalog shows all availability entries', (tester) async {
     final opened = await openMagicTab(tester);
 

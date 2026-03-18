@@ -18,6 +18,11 @@ class CombatQuickStats extends StatelessWidget {
     this.isRanged = false,
     this.ladezeit,
     this.geschosse,
+    this.onRollAt,
+    this.onRollPa,
+    this.onRollDamage,
+    this.onRollInitiative,
+    this.onRollAusweichen,
   });
 
   /// Angriffswert.
@@ -50,6 +55,21 @@ class CombatQuickStats extends StatelessWidget {
   /// Geschoss-Anzahl (nur Fernkampf).
   final int? geschosse;
 
+  /// Oeffnet die Probe fuer den Angriffswert.
+  final VoidCallback? onRollAt;
+
+  /// Oeffnet die Probe fuer den Paradewert.
+  final VoidCallback? onRollPa;
+
+  /// Oeffnet den Schadenswurf.
+  final VoidCallback? onRollDamage;
+
+  /// Oeffnet den Initiativwurf.
+  final VoidCallback? onRollInitiative;
+
+  /// Oeffnet die Probe fuer Ausweichen.
+  final VoidCallback? onRollAusweichen;
+
   @override
   Widget build(BuildContext context) {
     UiRebuildObserver.bump('combat_quick_stats');
@@ -57,11 +77,18 @@ class CombatQuickStats extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: [
-        Chip(label: Text('AT: $at')),
-        if (!isRanged && pa != null) Chip(label: Text('PA: $pa')),
-        Chip(label: Text('TP: $tpExpression')),
-        Chip(label: Text('Kampf INI: $kampfInitiative')),
-        Chip(label: Text('Ausweichen: $ausweichen')),
+        _buildRollChip(label: 'AT: $at', onPressed: onRollAt),
+        if (!isRanged && pa != null)
+          _buildRollChip(label: 'PA: $pa', onPressed: onRollPa),
+        _buildRollChip(label: 'TP: $tpExpression', onPressed: onRollDamage),
+        _buildRollChip(
+          label: 'Kampf INI: $kampfInitiative',
+          onPressed: onRollInitiative,
+        ),
+        _buildRollChip(
+          label: 'Ausweichen: $ausweichen',
+          onPressed: onRollAusweichen,
+        ),
         Chip(label: Text('RS: $rs')),
         Chip(label: Text('eBE: $ebe')),
         if (isRanged && ladezeit != null)
@@ -69,6 +96,26 @@ class CombatQuickStats extends StatelessWidget {
         if (isRanged && geschosse != null)
           Chip(label: Text('Geschosse: $geschosse')),
       ],
+    );
+  }
+
+  Widget _buildRollChip({
+    required String label,
+    required VoidCallback? onPressed,
+  }) {
+    final chip = Chip(
+      avatar: onPressed == null
+          ? null
+          : const Icon(Icons.casino_outlined, size: 18),
+      label: Text(label),
+    );
+    if (onPressed == null) {
+      return chip;
+    }
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(16),
+      child: chip,
     );
   }
 }

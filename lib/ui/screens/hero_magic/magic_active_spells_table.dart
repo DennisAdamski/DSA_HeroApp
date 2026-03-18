@@ -21,6 +21,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     required this.canRaiseValues,
     this.onRaiseSpell,
     this.onAddSpell,
+    this.onRollSpell,
   });
 
   final List<String> activeSpellIds;
@@ -44,6 +45,8 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final bool canRaiseValues;
   final Future<void> Function(String spellId, SpellDef spell)? onRaiseSpell;
   final VoidCallback? onAddSpell;
+  final void Function(String spellId, SpellDef spell, HeroSpellEntry entry)?
+  onRollSpell;
 
   Future<void> _openSpellDetails(
     BuildContext context,
@@ -312,14 +315,32 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                         return DataRow(
                           cells: [
                             DataCell(
-                              GestureDetector(
-                                onTap: openDetails,
-                                child: SizedBox(
-                                  width: layout.contentWidthFor(0),
-                                  child: Text(
-                                    def.name,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                              SizedBox(
+                                width: layout.contentWidthFor(0),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: openDetails,
+                                        child: Text(
+                                          def.name,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ),
+                                    if (onRollSpell != null)
+                                      IconButton(
+                                        key: ValueKey<String>(
+                                          'magic-spells-roll-$spellId',
+                                        ),
+                                        visualDensity: VisualDensity.compact,
+                                        iconSize: 18,
+                                        tooltip: '${def.name} würfeln',
+                                        onPressed: () =>
+                                            onRollSpell!(spellId, def, entry),
+                                        icon: const Icon(Icons.casino_outlined),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ),

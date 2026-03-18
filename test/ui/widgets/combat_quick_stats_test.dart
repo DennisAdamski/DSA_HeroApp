@@ -96,5 +96,32 @@ void main() {
       expect(find.text('RS: 7'), findsOneWidget);
       expect(find.text('eBE: 0'), findsOneWidget);
     });
+
+    testWidgets('nutzt ActionChips wenn Roll-Callbacks gesetzt sind',
+        (tester) async {
+      var atTapped = 0;
+      await tester.pumpWidget(
+        buildTestWidget(
+          CombatQuickStats(
+            at: 12,
+            pa: 10,
+            tpExpression: '1W6+3',
+            kampfInitiative: 8,
+            ausweichen: 5,
+            rs: 3,
+            ebe: 2,
+            onRollAt: () {
+              atTapped++;
+            },
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('AT: 12'));
+      await tester.pump();
+
+      expect(atTapped, 1);
+      expect(find.byIcon(Icons.casino_outlined), findsOneWidget);
+    });
   });
 }
