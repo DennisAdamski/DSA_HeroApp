@@ -233,10 +233,8 @@ void main() {
         'Talent-Name',
         'Eigenschaften',
         'Kompl.',
-        'BE',
         'eBE',
         'TaW',
-        'max TaW',
         'Mod',
         'TaW berechnet',
         'SE',
@@ -423,6 +421,11 @@ void main() {
     await openTalentsTab(tester, repo, buildCatalog());
 
     expect(find.text('B'), findsOneWidget);
+    expect(find.text('19'), findsNothing);
+
+    await tester.tap(find.text('Athletik'));
+    await tester.pumpAndSettle();
+
     expect(find.text('19'), findsOneWidget);
   });
 
@@ -485,10 +488,10 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.ensureVisible(
-        find.byKey(const ValueKey<String>('talents-modifiers-edit-tal_a')),
+        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
       );
       await tester.tap(
-        find.byKey(const ValueKey<String>('talents-modifiers-edit-tal_a')),
+        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
       );
       await tester.pumpAndSettle();
 
@@ -579,10 +582,10 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.ensureVisible(
-        find.byKey(const ValueKey<String>('talents-modifiers-edit-tal_a')),
+        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
       );
       await tester.tap(
-        find.byKey(const ValueKey<String>('talents-modifiers-edit-tal_a')),
+        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
       );
       await tester.pumpAndSettle();
 

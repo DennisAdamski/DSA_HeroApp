@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
@@ -69,7 +68,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     with AutomaticKeepAliveClientMixin {
   final Map<String, TextEditingController> _controllers =
       <String, TextEditingController>{};
-  final Map<String, FocusNode> _focusNodes = <String, FocusNode>{};
   final ValueNotifier<int> _viewRevision = ValueNotifier<int>(0);
 
   static const List<(String, String)> _attributeEntries = [
@@ -111,9 +109,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     for (final controller in _controllers.values) {
       controller.dispose();
     }
-    for (final focusNode in _focusNodes.values) {
-      focusNode.dispose();
-    }
     _viewRevision.dispose();
     super.dispose();
   }
@@ -132,20 +127,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
 
   TextEditingController _field(String key) {
     return _controllers.putIfAbsent(key, () => TextEditingController());
-  }
-
-  FocusNode _focusNode(String key) {
-    return _focusNodes.putIfAbsent(key, () {
-      final focusNode = FocusNode();
-      if (_isTempAttributeKey(key)) {
-        focusNode.addListener(() {
-          if (!focusNode.hasFocus) {
-            _commitTempAttributeField(key);
-          }
-        });
-      }
-      return focusNode;
-    });
   }
 
   void _syncControllers(HeroSheet hero, HeroState state, {bool force = false}) {
@@ -206,14 +187,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('ko_start').text = hero.startAttributes.ko.toString();
     _field('kk_start').text = hero.startAttributes.kk.toString();
 
-    _field('mu_temp').text = state.tempAttributeMods.mu.toString();
-    _field('kl_temp').text = state.tempAttributeMods.kl.toString();
-    _field('inn_temp').text = state.tempAttributeMods.inn.toString();
-    _field('ch_temp').text = state.tempAttributeMods.ch.toString();
-    _field('ff_temp').text = state.tempAttributeMods.ff.toString();
-    _field('ge_temp').text = state.tempAttributeMods.ge.toString();
-    _field('ko_temp').text = state.tempAttributeMods.ko.toString();
-    _field('kk_temp').text = state.tempAttributeMods.kk.toString();
   }
 
   int _readInt(String key, {required int min, int max = 999999}) {
@@ -227,51 +200,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     return parsed;
   }
 
-  bool _isTempAttributeKey(String key) {
-    return switch (key) {
-      'mu_temp' ||
-      'kl_temp' ||
-      'inn_temp' ||
-      'ch_temp' ||
-      'ff_temp' ||
-      'ge_temp' ||
-      'ko_temp' ||
-      'kk_temp' => true,
-      _ => false,
-    };
-  }
-
-  int _normalizeTempAttributeValue(String key) {
-    return _readInt(key, min: -99, max: 99);
-  }
-
-  AttributeModifiers _tempAttributeModsWithValue(
-    AttributeModifiers current,
-    String key,
-    int value,
-  ) {
-    switch (key) {
-      case 'mu_temp':
-        return current.copyWith(mu: value);
-      case 'kl_temp':
-        return current.copyWith(kl: value);
-      case 'inn_temp':
-        return current.copyWith(inn: value);
-      case 'ch_temp':
-        return current.copyWith(ch: value);
-      case 'ff_temp':
-        return current.copyWith(ff: value);
-      case 'ge_temp':
-        return current.copyWith(ge: value);
-      case 'ko_temp':
-        return current.copyWith(ko: value);
-      case 'kk_temp':
-        return current.copyWith(kk: value);
-      default:
-        return current;
-    }
-  }
-
   void _setFieldText(String key, String value) {
     final controller = _field(key);
     if (controller.text == value) {
@@ -281,53 +209,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       text: value,
       selection: TextSelection.collapsed(offset: value.length),
     );
-  }
-
-  /// Persistiert Temp-Modifikatoren direkt, ohne den globalen Edit-Modus zu nutzen.
-  Future<void> _commitTempAttributeField(String key) async {
-    if (!_isTempAttributeKey(key)) {
-      return;
-    }
-    final hero = _latestHero;
-    final state = _latestState;
-    if (hero == null || state == null) {
-      return;
-    }
-
-    final normalized = _normalizeTempAttributeValue(key);
-    final normalizedText = normalized.toString();
-    final currentValue = _field(key).text.trim();
-    final nextMods = _tempAttributeModsWithValue(
-      state.tempAttributeMods,
-      key,
-      normalized,
-    );
-    if (nextMods == state.tempAttributeMods) {
-      if (currentValue != normalizedText) {
-        _setFieldText(key, normalizedText);
-      }
-      return;
-    }
-
-    final updatedState = state.copyWith(tempAttributeMods: nextMods);
-    try {
-      await ref.read(heroActionsProvider).saveHeroState(hero.id, updatedState);
-      _latestState = updatedState;
-      _setFieldText(key, normalizedText);
-      if (mounted) {
-        _viewRevision.value++;
-      }
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Speichern fehlgeschlagen: $error')),
-      );
-      _editController.clearSyncSignature();
-      _syncControllers(hero, state, force: true);
-      _viewRevision.value++;
-    }
   }
 
   Future<void> _startEdit() async {
@@ -393,16 +274,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       currentAu: _readInt('cur_au', min: 0, max: 99999),
       currentAsp: _readInt('cur_asp', min: 0, max: 99999),
       currentKap: _readInt('cur_kap', min: 0, max: 99999),
-      tempAttributeMods: AttributeModifiers(
-        mu: _readInt('mu_temp', min: -99, max: 99),
-        kl: _readInt('kl_temp', min: -99, max: 99),
-        inn: _readInt('inn_temp', min: -99, max: 99),
-        ch: _readInt('ch_temp', min: -99, max: 99),
-        ff: _readInt('ff_temp', min: -99, max: 99),
-        ge: _readInt('ge_temp', min: -99, max: 99),
-        ko: _readInt('ko_temp', min: -99, max: 99),
-        kk: _readInt('kk_temp', min: -99, max: 99),
-      ),
     );
 
     await ref.read(heroActionsProvider).saveHero(updatedHero);

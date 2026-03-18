@@ -174,8 +174,20 @@ void main() {
       await openCombatTab(tester, repo, buildCatalog());
 
       expect(find.text('C'), findsNWidgets(2));
-      expect(find.text('18'), findsNWidgets(2));
+      expect(find.text('18'), findsNothing);
+
+      await tester.tap(find.text('Dolche'));
+      await tester.pumpAndSettle();
+      expect(find.text('18'), findsOneWidget);
+      await tester.tap(find.text('Schliessen'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Boegen'));
+      await tester.pumpAndSettle();
+      expect(find.text('18'), findsOneWidget);
       expect(find.text('23'), findsNothing);
+      await tester.tap(find.text('Schliessen'));
+      await tester.pumpAndSettle();
     },
   );
 
