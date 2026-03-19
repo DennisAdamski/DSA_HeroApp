@@ -94,7 +94,8 @@ Technischer Stack:
 
 ### Workspace und Regeneration
 
-- Inspector mit Rast-Aktion als Lagerfeuer-Symbol fuer Ausruhen, Schlafphase und Bettruhe
+- Vitalwerte enthalten neben LeP, Au, AsP und KaP auch Erschoepfung und Ueberanstrengung mit direkter manueller Anpassung
+- Rast-Aktion als Lagerfeuer-Symbol oben rechts in den Vitalwerten fuer Ausruhen, Schlafphase und Bettruhe
 - Strukturierte Regenerationslogik fuer LeP, Au und AsP inklusive KO-/IN-Proben und Umweltmodifikatoren
 - Dauerhafte Verwaltung von Erschoepfung und Ueberanstrengung im `HeroState`
 - Optionaler Fullrestore fuer lange Abwesenheiten: alle Vitalwerte auf Maximum und keine Wunden mehr

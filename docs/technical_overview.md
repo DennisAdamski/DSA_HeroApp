@@ -1323,9 +1323,10 @@ Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Da
 - Fuer laengere Abwesenheiten bietet der Rast-Dialog zusaetzlich einen
   `Fullrestore`, der alle Vitalwerte maximiert und den kompletten
   Wundzustand zuruecksetzt.
-- Der breite Workspace-Inspector zeigt ueber `inspector_rest_card.dart` eine
-  Lagerfeuer-Aktion, die `rest_dialog.dart` mit Vorschau und Sammeluebernahme
-  oeffnet.
+- Im breiten Workspace-Inspector sitzen `Erschoepfung` und
+  `Ueberanstrengung` jetzt direkt in den editierbaren Vitalwerten.
+- Das Lagerfeuer-Symbol sitzt oben rechts in derselben Vitalwerte-Karte und
+  oeffnet `rest_dialog.dart` mit Vorschau und Sammeluebernahme.
 
 ---
 
