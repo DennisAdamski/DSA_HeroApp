@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_ini_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_unterdrueckung_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wunden_detail_dialog.dart';
 
 /// Kompakte Wunden-Card fuer das Inspector-Panel.
@@ -43,15 +44,35 @@ class InspectorWundenCard extends ConsumerWidget {
   ) async {
     final zustand = heroState.wpiZustand;
     if (zustand.wundenInZone(zone) >= maxWundenProZone) return;
+
+    WundZustand neuerZustand;
     if (zone == WundZone.kopf) {
       final iniWert = await showWundIniDialog(context);
-      if (iniWert == null) return;
+      if (iniWert == null || !context.mounted) return;
+      neuerZustand = zustand.mitWundeHinzu(zone, iniWuerfelWert: iniWert);
+    } else {
+      neuerZustand = zustand.mitWundeHinzu(zone);
+    }
+
+    await _speichereWundZustand(ref, neuerZustand);
+
+    if (!context.mounted) return;
+    final hero = ref.read(heroByIdProvider(heroId));
+    if (hero == null) return;
+    final effekte = computeWundEffekte(neuerZustand);
+    final unterdruecken = await showWundUnterdrueckungDialog(
+      context: context,
+      hero: hero,
+      wpiZustand: neuerZustand,
+      zone: zone,
+      wundEffekte: effekte,
+    );
+    if (unterdruecken == true) {
+      final aktUnterdrueckt = neuerZustand.unterdrueckteInZone(zone);
       await _speichereWundZustand(
         ref,
-        zustand.mitWundeHinzu(zone, iniWuerfelWert: iniWert),
+        neuerZustand.mitUnterdrueckung(zone, aktUnterdrueckt + 1),
       );
-    } else {
-      await _speichereWundZustand(ref, zustand.mitWundeHinzu(zone));
     }
   }
 
