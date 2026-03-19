@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 
 /// Zentraler Compute-Snapshot fuer alle abgeleiteten Heldenwerte.
 class HeroComputedSnapshot {
@@ -13,6 +14,7 @@ class HeroComputedSnapshot {
     required this.hero,
     required this.state,
     required this.modifierParse,
+    required this.resourceActivation,
     required this.effectiveStartAttributes,
     required this.attributeMaximums,
     required this.effectiveAttributes,
@@ -26,6 +28,7 @@ class HeroComputedSnapshot {
   final HeroSheet hero;
   final HeroState state;
   final ModifierParseResult modifierParse;
+  final HeroResourceActivation resourceActivation;
   final Attributes effectiveStartAttributes;
   final Attributes attributeMaximums;
   final Attributes effectiveAttributes;

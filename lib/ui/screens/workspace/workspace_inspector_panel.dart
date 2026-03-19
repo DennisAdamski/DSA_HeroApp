@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
@@ -42,6 +43,7 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
     final heroState = heroStateAsync.valueOrNull;
     final derived = computedAsync.valueOrNull?.derivedStats;
     final combat = computedAsync.valueOrNull?.combatPreviewStats;
+    final resourceActivation = computedAsync.valueOrNull?.resourceActivation;
     final toggleTooltip = isExpanded
         ? 'Details ausblenden'
         : 'Details einblenden';
@@ -74,10 +76,13 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
                         heroId: heroId,
                         heroState: heroState,
                         derived: derived,
+                        resourceActivation: resourceActivation,
                       ),
                     const SizedBox(height: 10),
-                    _ZauberAktivierenCard(heroId: heroId),
-                    const SizedBox(height: 10),
+                    if (resourceActivation?.magic.isEnabled ?? false) ...[
+                      _ZauberAktivierenCard(heroId: heroId),
+                      const SizedBox(height: 10),
+                    ],
                     if (hero != null && derived != null && combat != null)
                       _StatuswerteCard(
                         heroId: heroId,
@@ -129,11 +134,13 @@ class _VitalwerteCard extends ConsumerWidget {
     required this.heroId,
     required this.heroState,
     required this.derived,
+    required this.resourceActivation,
   });
 
   final String heroId;
   final HeroState heroState;
   final DerivedStats derived;
+  final HeroResourceActivation? resourceActivation;
 
   Future<void> _save(WidgetRef ref, HeroState updated) async {
     await ref.read(heroActionsProvider).saveHeroState(heroId, updated);
@@ -141,6 +148,8 @@ class _VitalwerteCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final showMagicResources = resourceActivation?.magic.isEnabled ?? false;
+    final showDivineResources = resourceActivation?.divine.isEnabled ?? false;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -176,34 +185,38 @@ class _VitalwerteCard extends ConsumerWidget {
                 heroState.copyWith(currentAu: heroState.currentAu + 1),
               ),
             ),
-            const SizedBox(height: 6),
-            _ResourceRow(
-              label: 'AsP',
-              current: heroState.currentAsp,
-              max: derived.maxAsp,
-              onDecrement: () => _save(
-                ref,
-                heroState.copyWith(currentAsp: heroState.currentAsp - 1),
+            if (showMagicResources) ...[
+              const SizedBox(height: 6),
+              _ResourceRow(
+                label: 'AsP',
+                current: heroState.currentAsp,
+                max: derived.maxAsp,
+                onDecrement: () => _save(
+                  ref,
+                  heroState.copyWith(currentAsp: heroState.currentAsp - 1),
+                ),
+                onIncrement: () => _save(
+                  ref,
+                  heroState.copyWith(currentAsp: heroState.currentAsp + 1),
+                ),
               ),
-              onIncrement: () => _save(
-                ref,
-                heroState.copyWith(currentAsp: heroState.currentAsp + 1),
+            ],
+            if (showDivineResources) ...[
+              const SizedBox(height: 6),
+              _ResourceRow(
+                label: 'KaP',
+                current: heroState.currentKap,
+                max: derived.maxKap,
+                onDecrement: () => _save(
+                  ref,
+                  heroState.copyWith(currentKap: heroState.currentKap - 1),
+                ),
+                onIncrement: () => _save(
+                  ref,
+                  heroState.copyWith(currentKap: heroState.currentKap + 1),
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
-            _ResourceRow(
-              label: 'KaP',
-              current: heroState.currentKap,
-              max: derived.maxKap,
-              onDecrement: () => _save(
-                ref,
-                heroState.copyWith(currentKap: heroState.currentKap - 1),
-              ),
-              onIncrement: () => _save(
-                ref,
-                heroState.copyWith(currentKap: heroState.currentKap + 1),
-              ),
-            ),
+            ],
           ],
         ),
       ),
