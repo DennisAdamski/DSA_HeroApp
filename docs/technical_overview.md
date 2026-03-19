@@ -93,7 +93,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 15
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 20
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
@@ -103,7 +103,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 15) | Format-Version für Migrationskompatibilität |
+| `schemaVersion` | `int` (= 20) | Format-Version für Migrationskompatibilität |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
@@ -132,6 +132,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `apSpent` | `int` | Ausgegebene Abenteuerpunkte |
 | `apAvailable` | `int` | Verfügbare AP (= apTotal − apSpent) |
 | `dukaten` | `String` | Geldmenge (Freitext) |
+| `resourceActivationConfig` | `HeroResourceActivationConfig` | Nullable Auto-/Override-Schalter fuer Magie und goettliche Ressourcen |
 | `inventoryEntries` | `List<HeroInventoryEntry>` | Ausrüstung/Inventar |
 | `notes` | `List<HeroNoteEntry>` | Freie Notizen mit Titel und Beschreibung |
 | `connections` | `List<HeroConnectionEntry>` | Kontakte/Verbindungen mit Ort, Sozialstatus, Loyalität und Beschreibung |
@@ -1161,7 +1162,7 @@ einem Zielgerät im Profile-Modus.
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` für `HeroSheet` ist **15**.
+- Die aktuelle `schemaVersion` für `HeroSheet` ist **20**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 1 wird **strikt** validiert.
 

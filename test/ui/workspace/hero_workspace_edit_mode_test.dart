@@ -16,7 +16,11 @@ import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 
 void main() {
-  HeroSheet buildHero({StatModifiers persistentMods = const StatModifiers()}) {
+  HeroSheet buildHero({
+    StatModifiers persistentMods = const StatModifiers(),
+    HeroBackground? background,
+    String vorteileText = '',
+  }) {
     return HeroSheet(
       id: 'demo',
       name: 'Rondra',
@@ -41,16 +45,19 @@ void main() {
         ko: 14,
         kk: 13,
       ),
-      background: HeroBackground(
-        rasse: 'Mensch',
-        kultur: 'Mittelreich',
-        profession: 'Kriegerin',
-        sozialstatus: 7,
-      ),
+      background:
+          background ??
+          HeroBackground(
+            rasse: 'Mensch',
+            kultur: 'Mittelreich',
+            profession: 'Kriegerin',
+            sozialstatus: 7,
+          ),
       apTotal: 1000,
       apSpent: 500,
       apAvailable: 500,
       persistentMods: persistentMods,
+      vorteileText: vorteileText,
     );
   }
 
@@ -430,7 +437,7 @@ void main() {
     'overview edit/save persists bought values and current resources',
     (tester) async {
       final repo = FakeRepository(
-        heroes: [buildHero()],
+        heroes: [buildHero(vorteileText: 'KE+1')],
         states: {
           'demo': const HeroState(
             currentLep: 10,
@@ -542,10 +549,119 @@ void main() {
   );
 
   testWidgets(
-    'status tab opens active spell popup and saves Axxeleratus outside edit mode',
+    'workspace hides magical and divine resources when auto activation is off',
     (tester) async {
       final repo = FakeRepository(
         heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 4,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo);
+
+      expect(tabText('Magie'), findsNothing);
+      expect(find.textContaining('AsP:'), findsNothing);
+      expect(find.textContaining('KaP:'), findsNothing);
+
+      final verticalScrollable = activeTabVerticalScrollable();
+      final currentLepField = find.byKey(
+        const ValueKey<String>('overview-field-cur_lep'),
+      );
+      await tester.scrollUntilVisible(
+        currentLepField,
+        240,
+        scrollable: verticalScrollable,
+      );
+
+      expect(
+        find.byKey(const ValueKey<String>('overview-field-cur_asp')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('overview-field-cur_kap')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('status-active-spells-open')),
+        findsNothing,
+      );
+    },
+  );
+
+  testWidgets(
+    'manual magic override hides and restores magic tab via standard reset',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero(vorteileText: 'AE+3')],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo);
+
+      expect(tabText('Magie'), findsOneWidget);
+      expect(find.textContaining('AsP:'), findsOneWidget);
+
+      await tester.tap(find.text('Bearbeiten').first);
+      await tester.pumpAndSettle();
+
+      final verticalScrollable = activeTabVerticalScrollable();
+      final magicToggle = find.byKey(
+        const ValueKey<String>('overview-resource-toggle-magic'),
+      );
+      await tester.scrollUntilVisible(
+        magicToggle,
+        240,
+        scrollable: verticalScrollable,
+      );
+      final magicSwitch = tester.widget<Switch>(magicToggle);
+      magicSwitch.onChanged?.call(false);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Speichern').first);
+      await tester.pumpAndSettle();
+
+      expect(tabText('Magie'), findsNothing);
+      expect(find.textContaining('AsP:'), findsNothing);
+
+      await tester.tap(find.text('Bearbeiten').first);
+      await tester.pumpAndSettle();
+
+      final resetButton = find.byKey(
+        const ValueKey<String>('overview-resource-reset-magic'),
+      );
+      await tester.scrollUntilVisible(
+        resetButton,
+        240,
+        scrollable: verticalScrollable,
+      );
+      final resetWidget = tester.widget<TextButton>(resetButton);
+      resetWidget.onPressed?.call();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Speichern').first);
+      await tester.pumpAndSettle();
+
+      expect(tabText('Magie'), findsOneWidget);
+      expect(find.textContaining('AsP:'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'status tab opens active spell popup and saves Axxeleratus outside edit mode',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero(vorteileText: 'AE+1')],
         states: {
           'demo': const HeroState(
             currentLep: 10,
@@ -843,7 +959,7 @@ void main() {
       'Nicht speichern',
     );
 
-    await tester.drag(find.byType(TabBarView), const Offset(-500, 0));
+    await tester.tap(tabText('Talente'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 220));
@@ -853,7 +969,16 @@ void main() {
       await tester.pump(const Duration(milliseconds: 400));
     }
 
-    expect(find.text('Basisinformationen'), findsOneWidget);
+    final overviewTab = tabText('Übersicht');
+    await tester.ensureVisible(overviewTab);
+    await tester.tap(overviewTab, warnIfMissed: false);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(
+      find.byKey(const ValueKey<String>('overview-field-name')),
+      findsOneWidget,
+    );
     final nameFieldInner = find.descendant(
       of: find.byKey(const ValueKey<String>('overview-field-name')),
       matching: find.byType(TextField),
