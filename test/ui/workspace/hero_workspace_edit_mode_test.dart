@@ -275,14 +275,8 @@ void main() {
       of: find.byKey(const ValueKey<String>('overview-field-ap_spent')),
       matching: find.byType(TextField),
     );
-    expect(
-      tester.widget<TextField>(apTotalInner).controller?.text,
-      '1200',
-    );
-    expect(
-      tester.widget<TextField>(apSpentInner).controller?.text,
-      '800',
-    );
+    expect(tester.widget<TextField>(apTotalInner).controller?.text, '1200');
+    expect(tester.widget<TextField>(apSpentInner).controller?.text, '800');
     expect(tester.widget<TextField>(apTotalAddField).controller?.text, isEmpty);
     expect(tester.widget<TextField>(apSpentAddField).controller?.text, isEmpty);
 
@@ -332,9 +326,7 @@ void main() {
     },
   );
 
-  testWidgets('overview edit/save persists attribute changes', (
-    tester,
-  ) async {
+  testWidgets('overview edit/save persists attribute changes', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -369,7 +361,6 @@ void main() {
     expect(hero, isNotNull);
     expect(hero!.attributes.mu, 16);
   });
-
 
   testWidgets(
     'overview shows start and max values and recomputes them from origin mods',
@@ -618,16 +609,31 @@ void main() {
       await tester.pumpAndSettle();
 
       final verticalScrollable = activeTabVerticalScrollable();
-      final magicToggle = find.byKey(
-        const ValueKey<String>('overview-resource-toggle-magic'),
+      final settingsButton = find.byKey(
+        const ValueKey<String>('overview-resource-settings-open'),
       );
       await tester.scrollUntilVisible(
-        magicToggle,
+        settingsButton,
         240,
         scrollable: verticalScrollable,
       );
+      final settingsOpenButton = tester.widget<IconButton>(settingsButton);
+      settingsOpenButton.onPressed!.call();
+      await tester.pumpAndSettle();
+
+      final magicToggle = find.byKey(
+        const ValueKey<String>('overview-resource-toggle-magic'),
+      );
+      expect(
+        find.byKey(const ValueKey<String>('overview-resource-settings-dialog')),
+        findsOneWidget,
+      );
       final magicSwitch = tester.widget<Switch>(magicToggle);
       magicSwitch.onChanged?.call(false);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('overview-resource-settings-close')),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Speichern').first);
       await tester.pumpAndSettle();
@@ -638,16 +644,24 @@ void main() {
       await tester.tap(find.text('Bearbeiten').first);
       await tester.pumpAndSettle();
 
-      final resetButton = find.byKey(
-        const ValueKey<String>('overview-resource-reset-magic'),
-      );
       await tester.scrollUntilVisible(
-        resetButton,
+        settingsButton,
         240,
         scrollable: verticalScrollable,
       );
+      final settingsReopenButton = tester.widget<IconButton>(settingsButton);
+      settingsReopenButton.onPressed!.call();
+      await tester.pumpAndSettle();
+
+      final resetButton = find.byKey(
+        const ValueKey<String>('overview-resource-reset-magic'),
+      );
       final resetWidget = tester.widget<TextButton>(resetButton);
       resetWidget.onPressed?.call();
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('overview-resource-settings-close')),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Speichern').first);
       await tester.pumpAndSettle();
@@ -928,10 +942,7 @@ void main() {
       // Letztes Element ist jetzt das Settings-Icon; der rechte Spacer
       // liegt direkt davor.
       expect(actions.last, isA<IconButton>());
-      expect(
-        (actions.last as IconButton).tooltip,
-        'Einstellungen',
-      );
+      expect((actions.last as IconButton).tooltip, 'Einstellungen');
       expect(find.text('Bearbeiten'), findsOneWidget);
     },
   );

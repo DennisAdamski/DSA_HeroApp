@@ -21,6 +21,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dar
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_feature_flags.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
@@ -172,7 +173,8 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('cur_au').text = state.currentAu.toString();
     _field('cur_asp').text = state.currentAsp.toString();
     _field('cur_kap').text = state.currentKap.toString();
-    _draftMagicEnabledOverride = hero.resourceActivationConfig.magicEnabledOverride;
+    _draftMagicEnabledOverride =
+        hero.resourceActivationConfig.magicEnabledOverride;
     _draftDivineEnabledOverride =
         hero.resourceActivationConfig.divineEnabledOverride;
 
@@ -193,7 +195,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('ge_start').text = hero.startAttributes.ge.toString();
     _field('ko_start').text = hero.startAttributes.ko.toString();
     _field('kk_start').text = hero.startAttributes.kk.toString();
-
   }
 
   int _readInt(String key, {required int min, int max = 999999}) {
@@ -461,10 +462,15 @@ class _DerivedRow {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.title, required this.child});
+  const _SectionCard({
+    required this.title,
+    required this.child,
+    this.titleAction,
+  });
 
   final String title;
   final Widget child;
+  final Widget? titleAction;
 
   @override
   Widget build(BuildContext context) {
@@ -474,7 +480,17 @@ class _SectionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                titleAction ?? const SizedBox.shrink(),
+              ],
+            ),
             const SizedBox(height: _fieldSpacing),
             child,
           ],
