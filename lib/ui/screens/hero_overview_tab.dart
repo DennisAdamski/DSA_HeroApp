@@ -373,9 +373,16 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
               key: const ValueKey<String>('hero-overview-scroll'),
               padding: const EdgeInsets.all(_pagePadding),
               children: [
-                _buildAvatarSection(hero),
-                const SizedBox(height: _sectionSpacing),
-                _buildBaseInfoSection(),
+                if (hero.appearance.avatarFileName.isEmpty) ...[
+                  _AvatarActions(
+                    heroId: hero.id,
+                    hero: hero,
+                    hasAvatar: false,
+                    isEditing: _editController.isEditing,
+                  ),
+                  const SizedBox(height: _sectionSpacing),
+                ],
+                _buildBaseInfoSection(hero),
                 const SizedBox(height: _sectionSpacing),
                 _buildAdvantagesSection(),
                 const SizedBox(height: _sectionSpacing),
