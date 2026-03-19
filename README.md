@@ -84,6 +84,8 @@ Technischer Stack:
 ### Magie
 
 - Verwaltung gelernter Zauber inklusive Repruesentation, Tradition und Begabung
+- Automatische Aktivierung des Magie-Bereichs ueber AE/AsP-Modifikatoren aus
+  Rasse, Kultur, Profession oder Vorteilen mit optionalem manuellem Override
 - Anzeige von Verfuegbarkeit, Lernkomplexitaet und heldenspezifischen Anpassungen
 - Steigerungsdialog fuer Zauber mit Fremdrepr.-, Hauszauber-, manueller Komplexitaetskorrektur und Lehrmeisterlogik
 - Eigener Ritual-Bereich mit Ritualkategorien, Ritualkenntnissen und Ritualen

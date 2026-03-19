@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -26,7 +27,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 19,
+    this.schemaVersion = 20,
     required this.name,
     required this.level,
     required this.attributes,
@@ -55,6 +56,7 @@ class HeroSheet {
     this.apSpent = 0,
     this.apAvailable = 0,
     this.dukaten = '',
+    this.resourceActivationConfig = const HeroResourceActivationConfig(),
     this.inventoryEntries = const <HeroInventoryEntry>[],
     this.notes = const <HeroNoteEntry>[],
     this.connections = const <HeroConnectionEntry>[],
@@ -103,6 +105,7 @@ class HeroSheet {
   final int apSpent;
   final int apAvailable;
   final String dukaten;
+  final HeroResourceActivationConfig resourceActivationConfig;
   final List<HeroInventoryEntry> inventoryEntries;
   final List<HeroNoteEntry> notes;
   final List<HeroConnectionEntry> connections;
@@ -152,6 +155,7 @@ class HeroSheet {
     int? apSpent,
     int? apAvailable,
     String? dukaten,
+    HeroResourceActivationConfig? resourceActivationConfig,
     List<HeroInventoryEntry>? inventoryEntries,
     List<HeroNoteEntry>? notes,
     List<HeroConnectionEntry>? connections,
@@ -196,6 +200,8 @@ class HeroSheet {
       apSpent: apSpent ?? this.apSpent,
       apAvailable: apAvailable ?? this.apAvailable,
       dukaten: dukaten ?? this.dukaten,
+      resourceActivationConfig:
+          resourceActivationConfig ?? this.resourceActivationConfig,
       inventoryEntries: inventoryEntries ?? this.inventoryEntries,
       notes: notes ?? this.notes,
       connections: connections ?? this.connections,
@@ -247,6 +253,7 @@ class HeroSheet {
       'apSpent': apSpent,
       'apAvailable': apAvailable,
       'dukaten': dukaten,
+      'resourceActivationConfig': resourceActivationConfig.toJson(),
       'inventoryEntries': inventoryEntries
           .map((entry) => entry.toJson())
           .toList(growable: false),
@@ -402,6 +409,10 @@ class HeroSheet {
       apSpent: getInt('apSpent'),
       apAvailable: getInt('apAvailable'),
       dukaten: getString('dukaten'),
+      resourceActivationConfig: HeroResourceActivationConfig.fromJson(
+        (json['resourceActivationConfig'] as Map?)?.cast<String, dynamic>() ??
+            const <String, dynamic>{},
+      ),
       inventoryEntries: rawInventoryEntries
           .whereType<Map>()
           .map(

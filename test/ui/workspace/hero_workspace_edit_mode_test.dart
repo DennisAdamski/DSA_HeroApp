@@ -16,7 +16,11 @@ import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 
 void main() {
-  HeroSheet buildHero({StatModifiers persistentMods = const StatModifiers()}) {
+  HeroSheet buildHero({
+    StatModifiers persistentMods = const StatModifiers(),
+    HeroBackground? background,
+    String vorteileText = '',
+  }) {
     return HeroSheet(
       id: 'demo',
       name: 'Rondra',
@@ -41,16 +45,19 @@ void main() {
         ko: 14,
         kk: 13,
       ),
-      background: HeroBackground(
-        rasse: 'Mensch',
-        kultur: 'Mittelreich',
-        profession: 'Kriegerin',
-        sozialstatus: 7,
-      ),
+      background:
+          background ??
+          HeroBackground(
+            rasse: 'Mensch',
+            kultur: 'Mittelreich',
+            profession: 'Kriegerin',
+            sozialstatus: 7,
+          ),
       apTotal: 1000,
       apSpent: 500,
       apAvailable: 500,
       persistentMods: persistentMods,
+      vorteileText: vorteileText,
     );
   }
 
@@ -268,14 +275,8 @@ void main() {
       of: find.byKey(const ValueKey<String>('overview-field-ap_spent')),
       matching: find.byType(TextField),
     );
-    expect(
-      tester.widget<TextField>(apTotalInner).controller?.text,
-      '1200',
-    );
-    expect(
-      tester.widget<TextField>(apSpentInner).controller?.text,
-      '800',
-    );
+    expect(tester.widget<TextField>(apTotalInner).controller?.text, '1200');
+    expect(tester.widget<TextField>(apSpentInner).controller?.text, '800');
     expect(tester.widget<TextField>(apTotalAddField).controller?.text, isEmpty);
     expect(tester.widget<TextField>(apSpentAddField).controller?.text, isEmpty);
 
@@ -325,9 +326,7 @@ void main() {
     },
   );
 
-  testWidgets('overview edit/save persists attribute changes', (
-    tester,
-  ) async {
+  testWidgets('overview edit/save persists attribute changes', (tester) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -362,7 +361,6 @@ void main() {
     expect(hero, isNotNull);
     expect(hero!.attributes.mu, 16);
   });
-
 
   testWidgets(
     'overview shows start and max values and recomputes them from origin mods',
@@ -430,7 +428,7 @@ void main() {
     'overview edit/save persists bought values and current resources',
     (tester) async {
       final repo = FakeRepository(
-        heroes: [buildHero()],
+        heroes: [buildHero(vorteileText: 'KE+1')],
         states: {
           'demo': const HeroState(
             currentLep: 10,
@@ -542,10 +540,134 @@ void main() {
   );
 
   testWidgets(
-    'status tab opens active spell popup and saves Axxeleratus outside edit mode',
+    'workspace hides magical and divine resources when auto activation is off',
     (tester) async {
       final repo = FakeRepository(
         heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 4,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo);
+
+      expect(tabText('Magie'), findsNothing);
+      expect(find.textContaining('AsP:'), findsNothing);
+      expect(find.textContaining('KaP:'), findsNothing);
+
+      final verticalScrollable = activeTabVerticalScrollable();
+      final currentLepField = find.byKey(
+        const ValueKey<String>('overview-field-cur_lep'),
+      );
+      await tester.scrollUntilVisible(
+        currentLepField,
+        240,
+        scrollable: verticalScrollable,
+      );
+
+      expect(
+        find.byKey(const ValueKey<String>('overview-field-cur_asp')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('overview-field-cur_kap')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('status-active-spells-open')),
+        findsNothing,
+      );
+    },
+  );
+
+  testWidgets(
+    'resource settings dialog saves magic override without edit mode',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero(vorteileText: 'AE+3')],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo);
+
+      expect(tabText('Magie'), findsOneWidget);
+      expect(find.textContaining('AsP:'), findsOneWidget);
+
+      final verticalScrollable = activeTabVerticalScrollable();
+      final settingsButton = find.byKey(
+        const ValueKey<String>('overview-resource-settings-open'),
+      );
+      await tester.scrollUntilVisible(
+        settingsButton,
+        240,
+        scrollable: verticalScrollable,
+      );
+      final settingsOpenButton = tester.widget<IconButton>(settingsButton);
+      settingsOpenButton.onPressed!.call();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Speichern'), findsOneWidget);
+      final magicToggle = find.byKey(
+        const ValueKey<String>('overview-resource-toggle-magic'),
+      );
+      expect(
+        find.byKey(const ValueKey<String>('overview-resource-settings-dialog')),
+        findsOneWidget,
+      );
+      final magicSwitch = tester.widget<Switch>(magicToggle);
+      magicSwitch.onChanged?.call(false);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('overview-resource-settings-save')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tabText('Magie'), findsNothing);
+      expect(find.textContaining('AsP:'), findsNothing);
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        settingsButton,
+        240,
+        scrollable: verticalScrollable,
+      );
+      final settingsReopenButton = tester.widget<IconButton>(settingsButton);
+      settingsReopenButton.onPressed!.call();
+      await tester.pumpAndSettle();
+
+      final resetButton = find.byKey(
+        const ValueKey<String>('overview-resource-reset-magic'),
+      );
+      final resetWidget = tester.widget<TextButton>(resetButton);
+      resetWidget.onPressed?.call();
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('overview-resource-settings-save')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tabText('Magie'), findsOneWidget);
+      expect(find.textContaining('AsP:'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'status tab opens active spell popup and saves Axxeleratus outside edit mode',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero(vorteileText: 'AE+1')],
         states: {
           'demo': const HeroState(
             currentLep: 10,
@@ -812,10 +934,7 @@ void main() {
       // Letztes Element ist jetzt das Settings-Icon; der rechte Spacer
       // liegt direkt davor.
       expect(actions.last, isA<IconButton>());
-      expect(
-        (actions.last as IconButton).tooltip,
-        'Einstellungen',
-      );
+      expect((actions.last as IconButton).tooltip, 'Einstellungen');
       expect(find.text('Bearbeiten'), findsOneWidget);
     },
   );
@@ -843,7 +962,7 @@ void main() {
       'Nicht speichern',
     );
 
-    await tester.drag(find.byType(TabBarView), const Offset(-500, 0));
+    await tester.tap(tabText('Talente'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 220));
@@ -853,7 +972,16 @@ void main() {
       await tester.pump(const Duration(milliseconds: 400));
     }
 
-    expect(find.text('Basisinformationen'), findsOneWidget);
+    final overviewTab = tabText('Übersicht');
+    await tester.ensureVisible(overviewTab);
+    await tester.tap(overviewTab, warnIfMissed: false);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(
+      find.byKey(const ValueKey<String>('overview-field-name')),
+      findsOneWidget,
+    );
     final nameFieldInner = find.descendant(
       of: find.byKey(const ValueKey<String>('overview-field-name')),
       matching: find.byType(TextField),
