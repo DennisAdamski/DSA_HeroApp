@@ -9,6 +9,9 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_ini_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wunden_detail_dialog.dart';
 
 /// Kompakte Wunden-Card fuer das Inspector-Panel.
+///
+/// Zeigt im eingeklappten Zustand nur Titel und Effekt-Zusammenfassung;
+/// ausgeklappt erscheinen die 8 Zonenzeilen mit +/- Buttons.
 class InspectorWundenCard extends ConsumerWidget {
   const InspectorWundenCard({
     super.key,
@@ -64,67 +67,106 @@ class InspectorWundenCard extends ConsumerWidget {
     final gesamt = zustand.gesamtWunden;
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: ExpansionTile(
+        tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+        childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+        initiallyExpanded: false,
+        title: Row(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Wunden${gesamt > 0 ? ' ($gesamt)' : ''}',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ),
-                Text(
-                  'WS $wundschwelle',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: IconButton(
-                    padding: EdgeInsets.zero,
-                    iconSize: 16,
-                    tooltip: 'Wunden-Details',
-                    onPressed: () => showWundenDetailDialog(
-                      context: context,
-                      heroId: heroId,
-                    ),
-                    icon: const Icon(Icons.open_in_new),
-                  ),
-                ),
-              ],
+            Expanded(
+              child: Text(
+                'Wunden${gesamt > 0 ? ' ($gesamt)' : ''}',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
             ),
-            const SizedBox(height: 8),
-            for (final zone in WundZone.values)
-              _WundZoneCompactRow(
-                zone: zone,
-                wunden: zustand.wundenInZone(zone),
-                onHinzufuegen: () => _wundeHinzufuegen(context, ref, zone),
-                onEntfernen: () => _wundeEntfernen(ref, zone),
+            Text(
+              'WS $wundschwelle',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-            if (gesamt > 0) ...[
-              const Divider(height: 12),
-              _WundEffekteCompact(effekte: wundEffekte),
-            ],
-            if (wundEffekte.kampfunfaehig) ...[
-              const SizedBox(height: 4),
-              Text(
-                'Kampfunfähig!',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                  fontWeight: FontWeight.bold,
+            ),
+            const SizedBox(width: 4),
+            SizedBox(
+              width: 28,
+              height: 28,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                iconSize: 16,
+                tooltip: 'Wunden-Details',
+                onPressed: () => showWundenDetailDialog(
+                  context: context,
+                  heroId: heroId,
                 ),
+                icon: const Icon(Icons.open_in_new),
               ),
-            ],
+            ),
           ],
         ),
+        subtitle: gesamt > 0
+            ? _WundEffekteSubtitle(effekte: wundEffekte)
+            : null,
+        children: [
+          for (final zone in WundZone.values)
+            _WundZoneCompactRow(
+              zone: zone,
+              wunden: zustand.wundenInZone(zone),
+              unterdrueckte: zustand.unterdrueckteInZone(zone),
+              onHinzufuegen: () => _wundeHinzufuegen(context, ref, zone),
+              onEntfernen: () => _wundeEntfernen(ref, zone),
+            ),
+        ],
       ),
+    );
+  }
+}
+
+class _WundEffekteSubtitle extends StatelessWidget {
+  const _WundEffekteSubtitle({required this.effekte});
+
+  final WundEffekte effekte;
+
+  @override
+  Widget build(BuildContext context) {
+    final teile = <String>[];
+    if (effekte.atMalus != 0) teile.add('AT ${effekte.atMalus}');
+    if (effekte.paMalus != 0) teile.add('PA ${effekte.paMalus}');
+    if (effekte.fkMalus != 0) teile.add('FK ${effekte.fkMalus}');
+    if (effekte.iniGesamt != 0) teile.add('INI ${effekte.iniGesamt}');
+    if (effekte.gsMalus != 0) teile.add('GS ${effekte.gsMalus}');
+    if (effekte.talentProbeMalus != 0) {
+      teile.add('Proben ${effekte.talentProbeMalus}');
+    }
+    final children = <Widget>[];
+    if (teile.isNotEmpty) {
+      children.add(Text(
+        teile.join('  '),
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.error,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+    }
+    if (effekte.unterdrueckteGesamt > 0) {
+      children.add(Text(
+        '(${effekte.unterdrueckteGesamt} unterdr.)',
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ));
+    }
+    if (effekte.kampfunfaehig) {
+      children.add(Text(
+        'Kampfunfähig!',
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.error,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+    }
+    if (children.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
     );
   }
 }
@@ -133,12 +175,14 @@ class _WundZoneCompactRow extends StatelessWidget {
   const _WundZoneCompactRow({
     required this.zone,
     required this.wunden,
+    required this.unterdrueckte,
     required this.onHinzufuegen,
     required this.onEntfernen,
   });
 
   final WundZone zone;
   final int wunden;
+  final int unterdrueckte;
   final VoidCallback onHinzufuegen;
   final VoidCallback onEntfernen;
 
@@ -146,6 +190,7 @@ class _WundZoneCompactRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final label = wundZoneLabel[zone] ?? zone.name;
     final kritisch = wunden >= maxWundenProZone;
+    final effektive = wunden - unterdrueckte;
     return SizedBox(
       height: 28,
       child: Row(
@@ -167,9 +212,11 @@ class _WundZoneCompactRow extends StatelessWidget {
               child: Icon(
                 i < wunden ? Icons.circle : Icons.circle_outlined,
                 size: 12,
-                color: i < wunden
+                color: i < effektive
                     ? Theme.of(context).colorScheme.error
-                    : Theme.of(context).colorScheme.outlineVariant,
+                    : i < wunden
+                        ? Colors.amber
+                        : Theme.of(context).colorScheme.outlineVariant,
               ),
             ),
           const Spacer(),
@@ -196,33 +243,6 @@ class _WundZoneCompactRow extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _WundEffekteCompact extends StatelessWidget {
-  const _WundEffekteCompact({required this.effekte});
-
-  final WundEffekte effekte;
-
-  @override
-  Widget build(BuildContext context) {
-    final teile = <String>[];
-    if (effekte.atMalus != 0) teile.add('AT ${effekte.atMalus}');
-    if (effekte.paMalus != 0) teile.add('PA ${effekte.paMalus}');
-    if (effekte.fkMalus != 0) teile.add('FK ${effekte.fkMalus}');
-    if (effekte.iniGesamt != 0) teile.add('INI ${effekte.iniGesamt}');
-    if (effekte.gsMalus != 0) teile.add('GS ${effekte.gsMalus}');
-    if (effekte.talentProbeMalus != 0) {
-      teile.add('Proben ${effekte.talentProbeMalus}');
-    }
-    if (teile.isEmpty) return const SizedBox.shrink();
-    return Text(
-      teile.join('  '),
-      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-        color: Theme.of(context).colorScheme.error,
-        fontWeight: FontWeight.bold,
       ),
     );
   }
