@@ -619,4 +619,7 @@ The following files are **intentionally kept** but not currently wired into the 
   Lagerfeuer-Symbol. Der zugehoerige Dialog deckt Ausruhen, Schlafphase und
   Bettruhe inklusive KO-/IN-Proben, Umweltmodifikatoren und
   Zustandsabbau ab.
+- Der Rast-Dialog enthaelt zusaetzlich einen expliziten `Fullrestore` fuer
+  lange Abwesenheiten: alle Vitalwerte auf Maximum, keine Wunden,
+  keine Erschoepfung und keine Ueberanstrengung.
 
