@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
@@ -22,6 +23,8 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
@@ -560,6 +563,32 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                     catalog.spells,
                                   )
                                 : null,
+                            onRollSpell: (_, spell, entry) {
+                              final targets = <ProbeTargetValue>[];
+                              for (final raw in spell.attributes) {
+                                final code = parseAttributeCode(raw);
+                                if (code == null) {
+                                  continue;
+                                }
+                                targets.add(
+                                  ProbeTargetValue(
+                                    label: raw.toUpperCase(),
+                                    value: readAttributeValue(
+                                      effectiveAttributes,
+                                      code,
+                                    ),
+                                  ),
+                                );
+                              }
+                              showProbeDialog(
+                                context: context,
+                                request: buildSpellProbeRequest(
+                                  title: spell.name,
+                                  targets: targets,
+                                  basePool: entry.spellValue + entry.modifier,
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),

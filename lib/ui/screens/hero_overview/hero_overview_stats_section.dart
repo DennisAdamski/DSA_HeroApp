@@ -630,6 +630,21 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               size: 14,
               color: theme.colorScheme.onSurfaceVariant,
             ),
+            const SizedBox(width: 2),
+            IconButton(
+              key: ValueKey<String>('overview-roll-$attrKey'),
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: '$label würfeln',
+              onPressed: () => showProbeDialog(
+                context: context,
+                request: buildAttributeProbeRequest(
+                  label: label,
+                  effectiveValue: effective,
+                ),
+              ),
+              icon: const Icon(Icons.casino_outlined),
+            ),
           ],
         ),
       ),

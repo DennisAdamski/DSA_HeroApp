@@ -556,6 +556,41 @@ void main() {
     expect(find.widgetWithText(Tab, 'Kampfregeln'), findsOneWidget);
   });
 
+  testWidgets('combat quick stats open shared probe dialogs', (tester) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            mainWeapon: MainWeaponSlot(
+              talentId: 'tal_nah',
+              name: 'Kurzschwert',
+              weaponType: 'Schwert',
+              tpFlat: 2,
+            ),
+          ),
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(talentValue: 8, atValue: 8, paValue: 0),
+          },
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+
+    await tester.tap(find.textContaining('AT:').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Kampfprobe: AT'), findsOneWidget);
+  });
+
   testWidgets(
     'special rules tab stores new Schnellladen and Schnellziehen flags',
     (tester) async {
