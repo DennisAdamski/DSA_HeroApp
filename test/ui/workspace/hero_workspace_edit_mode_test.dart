@@ -586,7 +586,7 @@ void main() {
   );
 
   testWidgets(
-    'manual magic override hides and restores magic tab via standard reset',
+    'resource settings dialog saves magic override without edit mode',
     (tester) async {
       final repo = FakeRepository(
         heroes: [buildHero(vorteileText: 'AE+3')],
@@ -605,9 +605,6 @@ void main() {
       expect(tabText('Magie'), findsOneWidget);
       expect(find.textContaining('AsP:'), findsOneWidget);
 
-      await tester.tap(find.text('Bearbeiten').first);
-      await tester.pumpAndSettle();
-
       final verticalScrollable = activeTabVerticalScrollable();
       final settingsButton = find.byKey(
         const ValueKey<String>('overview-resource-settings-open'),
@@ -621,6 +618,7 @@ void main() {
       settingsOpenButton.onPressed!.call();
       await tester.pumpAndSettle();
 
+      expect(find.text('Speichern'), findsOneWidget);
       final magicToggle = find.byKey(
         const ValueKey<String>('overview-resource-toggle-magic'),
       );
@@ -632,16 +630,12 @@ void main() {
       magicSwitch.onChanged?.call(false);
       await tester.pumpAndSettle();
       await tester.tap(
-        find.byKey(const ValueKey<String>('overview-resource-settings-close')),
+        find.byKey(const ValueKey<String>('overview-resource-settings-save')),
       );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Speichern').first);
       await tester.pumpAndSettle();
 
       expect(tabText('Magie'), findsNothing);
       expect(find.textContaining('AsP:'), findsNothing);
-
-      await tester.tap(find.text('Bearbeiten').first);
       await tester.pumpAndSettle();
 
       await tester.scrollUntilVisible(
@@ -660,10 +654,8 @@ void main() {
       resetWidget.onPressed?.call();
       await tester.pumpAndSettle();
       await tester.tap(
-        find.byKey(const ValueKey<String>('overview-resource-settings-close')),
+        find.byKey(const ValueKey<String>('overview-resource-settings-save')),
       );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Speichern').first);
       await tester.pumpAndSettle();
 
       expect(tabText('Magie'), findsOneWidget);
