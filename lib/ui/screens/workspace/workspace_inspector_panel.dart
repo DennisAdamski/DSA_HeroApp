@@ -7,10 +7,12 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector_wunden_card.dart';
 
 const double _statusLabelWidth = 32;
 const double _statusValueWidth = 28;
@@ -77,6 +79,16 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
                         heroState: heroState,
                         derived: derived,
                         resourceActivation: resourceActivation,
+                      ),
+                    const SizedBox(height: 10),
+                    if (heroState != null)
+                      InspectorWundenCard(
+                        heroId: heroId,
+                        heroState: heroState,
+                        wundEffekte: computedAsync.valueOrNull?.wundEffekte
+                            ?? const WundEffekte(),
+                        wundschwelle: computedAsync.valueOrNull?.wundschwelle
+                            ?? 0,
                       ),
                     const SizedBox(height: 10),
                     if (resourceActivation?.magic.isEnabled ?? false) ...[
@@ -693,3 +705,4 @@ class _StepButton extends StatelessWidget {
     );
   }
 }
+
