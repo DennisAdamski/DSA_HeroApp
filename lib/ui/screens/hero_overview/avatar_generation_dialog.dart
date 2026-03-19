@@ -27,23 +27,29 @@ class AvatarGenerationDialog extends ConsumerStatefulWidget {
 
 class _AvatarGenerationDialogState
     extends ConsumerState<AvatarGenerationDialog> {
-  final _additionalController = TextEditingController();
+  final _promptController = TextEditingController();
   AvatarStyle _selectedStyle = AvatarStyle.fantasyIllustration;
   bool _loading = false;
+  bool _hasManualPromptEdits = false;
   Uint8List? _resultBytes;
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    _promptController.text = _autoPrompt;
+  }
+
+  @override
   void dispose() {
-    _additionalController.dispose();
+    _promptController.dispose();
     super.dispose();
   }
 
-  String get _currentPrompt => buildAvatarPrompt(
-        hero: widget.hero,
-        style: _selectedStyle,
-        additionalDescription: _additionalController.text,
-      );
+  String get _autoPrompt =>
+      buildAvatarPrompt(hero: widget.hero, style: _selectedStyle);
+
+  String get _currentPrompt => _promptController.text.trim();
 
   @override
   Widget build(BuildContext context) {
@@ -83,50 +89,59 @@ class _AvatarGenerationDialogState
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Stil',
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
+        Text('Stil', style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: AvatarStyle.values.map((style) {
-            final selected = style == _selectedStyle;
-            return ChoiceChip(
-              label: Text(style.displayName),
-              selected: selected,
-              onSelected: (_) => setState(() => _selectedStyle = style),
-            );
-          }).toList(growable: false),
+          children: AvatarStyle.values
+              .map((style) {
+                final selected = style == _selectedStyle;
+                return ChoiceChip(
+                  label: Text(style.displayName),
+                  selected: selected,
+                  onSelected: (_) => _selectStyle(style),
+                );
+              })
+              .toList(growable: false),
         ),
         const SizedBox(height: 16),
         TextField(
-          controller: _additionalController,
+          key: const ValueKey<String>('avatar-generation-prompt-field'),
+          controller: _promptController,
           decoration: const InputDecoration(
-            labelText: 'Zusaetzliche Beschreibung',
-            hintText: 'z.B. Narbe ueber dem linken Auge, grimmiger Blick...',
+            labelText: 'Prompt',
+            hintText: 'Der vollstaendige Prompt kann hier angepasst werden.',
+            helperText: 'Beim Oeffnen automatisch aus den Heldendaten erzeugt.',
             border: OutlineInputBorder(),
           ),
-          minLines: 2,
-          maxLines: 4,
+          minLines: 6,
+          maxLines: 12,
+          onChanged: (_) {
+            if (_loading) {
+              return;
+            }
+            setState(() {
+              _hasManualPromptEdits = true;
+            });
+          },
         ),
         const SizedBox(height: 16),
-        ExpansionTile(
-          title: const Text('Prompt-Vorschau'),
-          tilePadding: EdgeInsets.zero,
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: SelectableText(
-                _currentPrompt,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+            OutlinedButton.icon(
+              key: const ValueKey<String>('avatar-generation-reset-prompt'),
+              onPressed: _loading ? null : _resetPromptToAutoPrompt,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Neu aus Heldendaten erzeugen'),
+            ),
+            Text(
+              _hasManualPromptEdits
+                  ? 'Manuell angepasst'
+                  : 'Automatisch mit Stil synchronisiert',
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
         ),
@@ -156,8 +171,8 @@ class _AvatarGenerationDialogState
             child: Text(
               _error!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
           ),
         ],
@@ -194,10 +209,7 @@ class _AvatarGenerationDialogState
           borderRadius: BorderRadius.circular(12),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 400),
-            child: Image.memory(
-              _resultBytes!,
-              fit: BoxFit.contain,
-            ),
+            child: Image.memory(_resultBytes!, fit: BoxFit.contain),
           ),
         ),
         const SizedBox(height: 16),
@@ -229,6 +241,12 @@ class _AvatarGenerationDialogState
   Future<void> _generate() async {
     final client = ref.read(avatarApiClientProvider);
     if (client == null) return;
+    if (_currentPrompt.isEmpty) {
+      setState(() {
+        _error = 'Der Prompt darf nicht leer sein.';
+      });
+      return;
+    }
 
     setState(() {
       _loading = true;
@@ -251,6 +269,23 @@ class _AvatarGenerationDialogState
     }
   }
 
+  void _selectStyle(AvatarStyle style) {
+    setState(() {
+      _selectedStyle = style;
+      if (!_hasManualPromptEdits) {
+        _promptController.text = _autoPrompt;
+      }
+    });
+  }
+
+  void _resetPromptToAutoPrompt() {
+    setState(() {
+      _promptController.text = _autoPrompt;
+      _hasManualPromptEdits = false;
+      _error = null;
+    });
+  }
+
   void _retry() {
     setState(() {
       _resultBytes = null;
@@ -263,10 +298,9 @@ class _AvatarGenerationDialogState
     setState(() => _loading = true);
 
     try {
-      await ref.read(heroActionsProvider).saveHeroAvatar(
-            heroId: widget.heroId,
-            pngBytes: _resultBytes!,
-          );
+      await ref
+          .read(heroActionsProvider)
+          .saveHeroAvatar(heroId: widget.heroId, pngBytes: _resultBytes!);
       if (!mounted) return;
       Navigator.pop(context);
     } on Exception catch (e) {
