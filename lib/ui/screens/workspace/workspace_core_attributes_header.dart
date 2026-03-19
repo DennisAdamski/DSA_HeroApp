@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -31,13 +32,18 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
     final stateAsync = ref.watch(heroStateProvider(heroId));
     final derivedAsync = ref.watch(derivedStatsProvider(heroId));
     final combatPreviewAsync = ref.watch(combatPreviewProvider(heroId));
+    final resourceActivationAsync = ref.watch(resourceActivationProvider(heroId));
     final talentBeOverride = ref.watch(talentBeOverrideProvider(heroId));
     final effectiveAttributes =
         effectiveAsync.valueOrNull ?? computeEffectiveAttributes(hero);
     final state = stateAsync.valueOrNull;
     final derived = derivedAsync.valueOrNull;
+    final resourceActivation =
+        resourceActivationAsync.valueOrNull ?? computeHeroResourceActivation(hero);
     final activeTalentBe =
         talentBeOverride ?? combatPreviewAsync.valueOrNull?.beKampf;
+    final showMagicResources = resourceActivation.magic.isEnabled;
+    final showDivineResources = resourceActivation.divine.isEnabled;
 
     // Formatiert Ressourcen als "aktuell/max" oder "-" bei fehlenden Daten.
     String resourceText(int? current, int? max) {
@@ -58,8 +64,10 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
       '${debugModus ? 'kk' : 'KK'}: ${effectiveAttributes.kk}',
       '${debugModus ? 'currentLep/maxLep' : 'LeP'}: ${resourceText(state?.currentLep, derived?.maxLep)}',
       '${debugModus ? 'currentAu/maxAu' : 'Au'}: ${resourceText(state?.currentAu, derived?.maxAu)}',
-      '${debugModus ? 'currentAsp/maxAsp' : 'AsP'}: ${resourceText(state?.currentAsp, derived?.maxAsp)}',
-      '${debugModus ? 'currentKap/maxKap' : 'KaP'}: ${resourceText(state?.currentKap, derived?.maxKap)}',
+      if (showMagicResources)
+        '${debugModus ? 'currentAsp/maxAsp' : 'AsP'}: ${resourceText(state?.currentAsp, derived?.maxAsp)}',
+      if (showDivineResources)
+        '${debugModus ? 'currentKap/maxKap' : 'KaP'}: ${resourceText(state?.currentKap, derived?.maxKap)}',
       '${debugModus ? 'beKampf' : 'BE'}: ${activeTalentBe?.toString() ?? '-'}',
     ];
 
