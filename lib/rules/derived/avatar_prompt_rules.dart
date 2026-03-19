@@ -12,8 +12,11 @@ String buildAvatarPrompt({
 }) {
   final parts = <String>[];
 
-  // 1. Rahmen
-  parts.add('Portrait of a fantasy character, upper body, facing the viewer');
+  // 1. Rahmen: Hochkant-Halbkoerper-Portrait
+  parts.add(
+    'Half-body portrait of a fantasy character in tall vertical composition, '
+    'showing head, torso, and arms, facing the viewer',
+  );
 
   // 2. Rasse
   final raceDesc = mapRaceToVisualDescription(hero.background.rasse);
@@ -129,6 +132,15 @@ String _buildPhysicalTraits(HeroSheet hero) {
     }
   }
 
+  // Koerperbau aus Groesse und Gewicht ableiten
+  final bodyBuild = _estimateBodyBuild(
+    hero.appearance.groesse.trim(),
+    hero.appearance.gewicht.trim(),
+  );
+  if (bodyBuild.isNotEmpty) {
+    traits.add(bodyBuild);
+  }
+
   final haarfarbe = hero.appearance.haarfarbe.trim();
   if (haarfarbe.isNotEmpty) {
     traits.add('$haarfarbe hair');
@@ -140,6 +152,43 @@ String _buildPhysicalTraits(HeroSheet hero) {
   }
 
   return traits.isEmpty ? '' : traits.join(', ');
+}
+
+/// Schaetzt den Koerperbau anhand von Groesse (cm) und Gewicht (kg).
+String _estimateBodyBuild(String groesse, String gewicht) {
+  final height = int.tryParse(groesse);
+  final weight = int.tryParse(gewicht);
+  final parts = <String>[];
+
+  if (height != null) {
+    if (height < 150) {
+      parts.add('very short');
+    } else if (height < 165) {
+      parts.add('short');
+    } else if (height > 190) {
+      parts.add('very tall');
+    } else if (height > 180) {
+      parts.add('tall');
+    }
+  }
+
+  if (height != null && weight != null && height > 0) {
+    final heightM = height / 100.0;
+    final bmi = weight / (heightM * heightM);
+    if (bmi < 17) {
+      parts.add('very thin build');
+    } else if (bmi < 20) {
+      parts.add('slender build');
+    } else if (bmi < 25) {
+      parts.add('athletic build');
+    } else if (bmi < 30) {
+      parts.add('stocky build');
+    } else {
+      parts.add('heavy build');
+    }
+  }
+
+  return parts.join(', ');
 }
 
 String _mapCultureToDescription(String kultur) {

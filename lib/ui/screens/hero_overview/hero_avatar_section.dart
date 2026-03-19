@@ -1,38 +1,5 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 
-extension _HeroAvatarSection on _HeroOverviewTabState {
-  Widget _buildAvatarSection(HeroSheet hero) {
-    final avatarFileName = hero.appearance.avatarFileName;
-    final hasAvatar = avatarFileName.isNotEmpty;
-
-    // Ohne Avatar nur kompakte Aktionszeile anzeigen.
-    if (!hasAvatar) {
-      return _AvatarActions(
-        heroId: hero.id,
-        hero: hero,
-        hasAvatar: false,
-        isEditing: _editController.isEditing,
-      );
-    }
-
-    return _SectionCard(
-      title: 'Portraet',
-      child: Column(
-        children: [
-          _AvatarDisplay(heroId: hero.id, avatarFileName: avatarFileName),
-          const SizedBox(height: _fieldSpacing),
-          _AvatarActions(
-            heroId: hero.id,
-            hero: hero,
-            hasAvatar: true,
-            isEditing: _editController.isEditing,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _AvatarDisplay extends ConsumerWidget {
   const _AvatarDisplay({
     required this.heroId,

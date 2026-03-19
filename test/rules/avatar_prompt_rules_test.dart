@@ -12,6 +12,8 @@ HeroSheet _makeHero({
   String profession = '',
   String geschlecht = '',
   String alter = '',
+  String groesse = '',
+  String gewicht = '',
   String haarfarbe = '',
   String augenfarbe = '',
   String aussehen = '',
@@ -31,6 +33,8 @@ HeroSheet _makeHero({
     appearance: HeroAppearance(
       geschlecht: geschlecht,
       alter: alter,
+      groesse: groesse,
+      gewicht: gewicht,
       haarfarbe: haarfarbe,
       augenfarbe: augenfarbe,
       aussehen: aussehen,
@@ -81,6 +85,17 @@ void main() {
       }
     });
 
+    test('enthaelt Koerperbau aus Groesse und Gewicht', () {
+      final hero = _makeHero(groesse: '195', gewicht: '70');
+      final prompt = buildAvatarPrompt(
+        hero: hero,
+        style: AvatarStyle.fantasyIllustration,
+      );
+
+      expect(prompt, contains('very tall'));
+      expect(prompt, contains('slender build'));
+    });
+
     test('enthaelt negative Guidance', () {
       final hero = _makeHero();
       final prompt = buildAvatarPrompt(
@@ -100,7 +115,7 @@ void main() {
       );
 
       expect(prompt, isNotEmpty);
-      expect(prompt, contains('Portrait'));
+      expect(prompt, contains('portrait'));
     });
   });
 
