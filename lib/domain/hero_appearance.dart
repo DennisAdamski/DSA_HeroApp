@@ -8,6 +8,7 @@ class HeroAppearance {
     this.haarfarbe = '',
     this.augenfarbe = '',
     this.aussehen = '',
+    this.avatarFileName = '',
   });
 
   final String geschlecht;
@@ -18,6 +19,9 @@ class HeroAppearance {
   final String augenfarbe;
   final String aussehen;
 
+  /// Dateiname des KI-generierten Portraets (leer = kein Avatar).
+  final String avatarFileName;
+
   HeroAppearance copyWith({
     String? geschlecht,
     String? alter,
@@ -26,6 +30,7 @@ class HeroAppearance {
     String? haarfarbe,
     String? augenfarbe,
     String? aussehen,
+    String? avatarFileName,
   }) {
     return HeroAppearance(
       geschlecht: geschlecht ?? this.geschlecht,
@@ -35,6 +40,7 @@ class HeroAppearance {
       haarfarbe: haarfarbe ?? this.haarfarbe,
       augenfarbe: augenfarbe ?? this.augenfarbe,
       aussehen: aussehen ?? this.aussehen,
+      avatarFileName: avatarFileName ?? this.avatarFileName,
     );
   }
 
@@ -47,6 +53,7 @@ class HeroAppearance {
         'haarfarbe': haarfarbe,
         'augenfarbe': augenfarbe,
         'aussehen': aussehen,
+        'avatarFileName': avatarFileName,
       };
 
   /// Liest aus einer flachen Map (Felder auf Root-Ebene).
@@ -59,6 +66,7 @@ class HeroAppearance {
       haarfarbe: (json['haarfarbe'] as String?) ?? '',
       augenfarbe: (json['augenfarbe'] as String?) ?? '',
       aussehen: (json['aussehen'] as String?) ?? '',
+      avatarFileName: (json['avatarFileName'] as String?) ?? '',
     );
   }
 }
