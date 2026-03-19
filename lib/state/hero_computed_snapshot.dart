@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 
 /// Zentraler Compute-Snapshot fuer alle abgeleiteten Heldenwerte.
 class HeroComputedSnapshot {
@@ -20,6 +21,8 @@ class HeroComputedSnapshot {
     required this.effectiveAttributes,
     required this.derivedStats,
     required this.combatPreviewStats,
+    required this.wundEffekte,
+    required this.wundschwelle,
     this.inventoryStatMods = const StatModifiers(),
     this.inventoryAttributeMods = const AttributeModifiers(),
     this.inventoryTalentMods = const <String, int>{},
@@ -34,6 +37,12 @@ class HeroComputedSnapshot {
   final Attributes effectiveAttributes;
   final DerivedStats derivedStats;
   final CombatPreviewStats combatPreviewStats;
+
+  /// Aggregierte Wundeffekte (Mali auf AT, PA, FK, INI, GS, Proben).
+  final WundEffekte wundEffekte;
+
+  /// Effektive Wundschwelle (KO/2 + Modifikatoren).
+  final int wundschwelle;
 
   /// Aggregierte Stat-Modifikatoren aus ausgeruesteten Inventar-Items.
   final StatModifiers inventoryStatMods;

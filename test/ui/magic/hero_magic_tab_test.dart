@@ -189,6 +189,28 @@ void main() {
     expect(find.text('Rituale'), findsOneWidget);
   });
 
+  testWidgets('magic tab stores global lead attribute', (tester) async {
+    final opened = await openMagicTab(tester);
+
+    await opened.actions.startEdit();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.tap(find.text('Repr. & SF'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-lead-attribute-field')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.tap(find.text('KL').last);
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await opened.actions.save();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    final savedHero = await opened.repo.loadHeroById('demo');
+    expect(savedHero?.magicLeadAttribute, 'KL');
+  });
+
   testWidgets(
     'detail dialog is read-only outside edit mode and uses catalog variants',
     (tester) async {
