@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_tools.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 
@@ -42,6 +43,8 @@ class SettingsScreen extends ConsumerWidget {
             heroStorageLocationAsync: heroStorageLocationAsync,
             settingsStoragePathAsync: settingsStoragePathAsync,
           ),
+          const Divider(height: 1),
+          const _AvatarApiSection(),
         ],
       ),
     );
@@ -229,6 +232,117 @@ class _HeroStorageSection extends ConsumerWidget {
         SnackBar(content: Text('Ordner konnte nicht geoeffnet werden: $error')),
       );
     }
+  }
+}
+
+/// Abschnitt fuer die KI-Bildgenerierungs-API-Konfiguration.
+class _AvatarApiSection extends ConsumerStatefulWidget {
+  const _AvatarApiSection();
+
+  @override
+  ConsumerState<_AvatarApiSection> createState() => _AvatarApiSectionState();
+}
+
+class _AvatarApiSectionState extends ConsumerState<_AvatarApiSection> {
+  final _apiKeyController = TextEditingController();
+  AvatarApiProvider _selectedProvider = AvatarApiProvider.openaiDalle3;
+  bool _obscureKey = true;
+
+  @override
+  void initState() {
+    super.initState();
+    final settings = ref.read(appSettingsProvider).valueOrNull;
+    if (settings != null) {
+      _apiKeyController.text = settings.avatarApiConfig.apiKey;
+      _selectedProvider = settings.avatarApiConfig.provider;
+    }
+  }
+
+  @override
+  void dispose() {
+    _apiKeyController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Bildgenerierung', style: theme.textTheme.titleLarge),
+          const SizedBox(height: 8),
+          Text(
+            'Ueber eine KI-API koennen Heldenportraets generiert werden. '
+            'Die Kosten werden ueber deinen eigenen API-Schluessel abgerechnet.',
+            style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<AvatarApiProvider>(
+            initialValue: _selectedProvider,
+            decoration: const InputDecoration(
+              labelText: 'Anbieter',
+              border: OutlineInputBorder(),
+            ),
+            items: AvatarApiProvider.values
+                .map(
+                  (p) => DropdownMenuItem(
+                    value: p,
+                    child: Text(p.displayName),
+                  ),
+                )
+                .toList(growable: false),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() => _selectedProvider = value);
+              }
+            },
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _apiKeyController,
+            obscureText: _obscureKey,
+            decoration: InputDecoration(
+              labelText: 'API-Schluessel',
+              border: const OutlineInputBorder(),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureKey ? Icons.visibility : Icons.visibility_off,
+                ),
+                onPressed: () => setState(() => _obscureKey = !_obscureKey),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: _saveConfig,
+            icon: const Icon(Icons.save),
+            label: const Text('Speichern'),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Der API-Schluessel wird nur lokal auf diesem Geraet gespeichert '
+            'und nie an Dritte uebertragen.',
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveConfig() async {
+    final config = AvatarApiConfig(
+      provider: _selectedProvider,
+      apiKey: _apiKeyController.text.trim(),
+    );
+    await ref.read(settingsActionsProvider).saveAvatarApiConfig(config);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Bildgenerierung-Einstellungen gespeichert.')),
+    );
   }
 }
 

@@ -1,3 +1,5 @@
+import 'dart:io' as io;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,8 +34,11 @@ import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_field.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/attribute_modifier_detail_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_detail_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_table_cell.dart';
+import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_generation_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 
+part 'hero_overview/hero_avatar_section.dart';
 part 'hero_overview/hero_overview_base_info_section.dart';
 part 'hero_overview/hero_overview_ap_resources_section.dart';
 part 'hero_overview/hero_overview_stats_section.dart';
@@ -460,7 +465,16 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
               key: const ValueKey<String>('hero-overview-scroll'),
               padding: const EdgeInsets.all(_pagePadding),
               children: [
-                _buildBaseInfoSection(),
+                if (hero.appearance.avatarFileName.isEmpty) ...[
+                  _AvatarActions(
+                    heroId: hero.id,
+                    hero: hero,
+                    hasAvatar: false,
+                    isEditing: _editController.isEditing,
+                  ),
+                  const SizedBox(height: _sectionSpacing),
+                ],
+                _buildBaseInfoSection(hero),
                 const SizedBox(height: _sectionSpacing),
                 _buildAdvantagesSection(),
                 const SizedBox(height: _sectionSpacing),
