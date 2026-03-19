@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_detail_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_ini_dialog.dart';
 
 /// Oeffnet den Wunden-Detail-Dialog als Fullscreen-Dialog.
@@ -67,6 +73,22 @@ class _WundenDetailDialog extends ConsumerWidget {
       await speichereWundZustand(wpiZustand.mitWundeEntfernt(zone));
     }
 
+    void toggleUnterdrueckung(WundZone zone, int pipIndex) {
+      final effektive = wpiZustand.effektiveWundenInZone(zone);
+      final unterdrueckte = wpiZustand.unterdrueckteInZone(zone);
+      if (pipIndex < effektive) {
+        // Aktiver Pip → unterdruecken
+        speichereWundZustand(
+          wpiZustand.mitUnterdrueckung(zone, unterdrueckte + 1),
+        );
+      } else {
+        // Unterdrueckter Pip → wieder aktivieren
+        speichereWundZustand(
+          wpiZustand.mitUnterdrueckung(zone, unterdrueckte - 1),
+        );
+      }
+    }
+
     return AlertDialog(
       title: Row(
         children: [
@@ -118,8 +140,10 @@ class _WundenDetailDialog extends ConsumerWidget {
                 _ZonenZeile(
                   zone: zone,
                   wunden: wpiZustand.wundenInZone(zone),
+                  unterdrueckte: wpiZustand.unterdrueckteInZone(zone),
                   onHinzufuegen: () => wundeHinzufuegen(zone),
                   onEntfernen: () => wundeEntfernen(zone),
+                  onTogglePip: (i) => toggleUnterdrueckung(zone, i),
                 ),
                 if (zone != WundZone.values.last) const SizedBox(height: 4),
               ],
@@ -159,6 +183,27 @@ class _WundenDetailDialog extends ConsumerWidget {
                     ),
                   ),
               ],
+
+              // SB-Probe fuer Wundunterdrueckung
+              if (wpiZustand.gesamtWunden > 0) ...[
+                const Divider(height: 24),
+                _SbProbeSection(
+                  hero: hero,
+                  wpiZustand: wpiZustand,
+                  wundEffekte: wundEffekte,
+                ),
+              ],
+
+              // Kampfunfaehigkeit-ignorieren Toggle
+              if (wundEffekte.kampfunfaehig) ...[
+                const Divider(height: 24),
+                _KampfunfaehigIgnoriertToggle(
+                  ignoriert: wpiZustand.kampfunfaehigIgnoriert,
+                  onChanged: (v) => speichereWundZustand(
+                    wpiZustand.copyWith(kampfunfaehigIgnoriert: v),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -177,19 +222,24 @@ class _ZonenZeile extends StatelessWidget {
   const _ZonenZeile({
     required this.zone,
     required this.wunden,
+    required this.unterdrueckte,
     required this.onHinzufuegen,
     required this.onEntfernen,
+    required this.onTogglePip,
   });
 
   final WundZone zone;
   final int wunden;
+  final int unterdrueckte;
   final VoidCallback onHinzufuegen;
   final VoidCallback onEntfernen;
+  final ValueChanged<int> onTogglePip;
 
   @override
   Widget build(BuildContext context) {
     final label = wundZoneLabel[zone] ?? zone.name;
     final istKritisch = wunden >= maxWundenProZone;
+    final effektive = wunden - unterdrueckte;
     return Row(
       children: [
         SizedBox(
@@ -202,16 +252,21 @@ class _ZonenZeile extends StatelessWidget {
             ),
           ),
         ),
-        // Wunden-Pips
+        // Drei-Zustand-Pips: rot = aktiv, bernstein = unterdrueckt, grau = leer
         for (var i = 0; i < maxWundenProZone; i++)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: Icon(
-              i < wunden ? Icons.circle : Icons.circle_outlined,
-              size: 18,
-              color: i < wunden
-                  ? Theme.of(context).colorScheme.error
-                  : Theme.of(context).colorScheme.outlineVariant,
+            child: GestureDetector(
+              onTap: i < wunden ? () => onTogglePip(i) : null,
+              child: Icon(
+                i < wunden ? Icons.circle : Icons.circle_outlined,
+                size: 18,
+                color: i < effektive
+                    ? Theme.of(context).colorScheme.error
+                    : i < wunden
+                        ? Colors.amber
+                        : Theme.of(context).colorScheme.outlineVariant,
+              ),
             ),
           ),
         const Spacer(),
@@ -235,6 +290,126 @@ class _ZonenZeile extends StatelessWidget {
             tooltip: 'Wunde hinzufügen',
             onPressed: wunden < maxWundenProZone ? onHinzufuegen : null,
             icon: const Icon(Icons.add_circle_outline),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SbProbeSection extends StatelessWidget {
+  const _SbProbeSection({
+    required this.hero,
+    required this.wpiZustand,
+    required this.wundEffekte,
+  });
+
+  final dynamic hero;
+  final WundZustand wpiZustand;
+  final WundEffekte wundEffekte;
+
+  @override
+  Widget build(BuildContext context) {
+    final gesamtWunden = wpiZustand.gesamtWunden;
+    final erschwernis = computeSbUnterdrueckungErschwernis(
+      gesamtWunden: gesamtWunden,
+    );
+
+    final sbEntry = (hero.talents as Map<String, HeroTalentEntry>?)
+        ?['tal_selbstbeherrschung'];
+    final hatSb = sbEntry != null && sbEntry.talentValue != null;
+    final sbTaw = hatSb
+        ? computeTalentComputedTaw(
+            talentValue: sbEntry.talentValue,
+            modifier: sbEntry.modifier,
+            ebe: 0,
+          )
+        : 0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Wunde unterdrücken',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'SB-Probe erschwert um 4 × $gesamtWunden Wunden = $erschwernis',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        Text(
+          'Bei 2 Wunden aus einem Treffer: +8; bei 3: +12',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 8),
+        FilledButton.tonalIcon(
+          onPressed: hatSb
+              ? () {
+                  final effectiveAttrs = computeEffectiveAttributes(hero);
+                  const sbCodes = [
+                    AttributeCode.mu,
+                    AttributeCode.ko,
+                    AttributeCode.kk,
+                  ];
+                  final targets = sbCodes
+                      .map((code) => ProbeTargetValue(
+                            label: code.name.toUpperCase(),
+                            value: readAttributeValue(effectiveAttrs, code),
+                          ))
+                      .toList();
+                  showProbeDialog(
+                    context: context,
+                    request: buildTalentProbeRequest(
+                      title: 'Selbstbeherrschung (Wunde unterdrücken)',
+                      targets: targets,
+                      basePool: sbTaw,
+                      wundMalus:
+                          wundEffekte.talentProbeMalus + (-erschwernis),
+                    ),
+                  );
+                }
+              : null,
+          icon: const Icon(Icons.casino),
+          label: Text(hatSb
+              ? 'SB-Probe (TaW $sbTaw)'
+              : 'SB nicht erlernt'),
+        ),
+      ],
+    );
+  }
+}
+
+class _KampfunfaehigIgnoriertToggle extends StatelessWidget {
+  const _KampfunfaehigIgnoriertToggle({
+    required this.ignoriert,
+    required this.onChanged,
+  });
+
+  final bool ignoriert;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Kampfunfähigkeit ignoriert'),
+          value: ignoriert,
+          onChanged: onChanged,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Text(
+            'SB+12, verursacht 1W6 Erschöpfung, hält TaP* KR (min. 1). '
+            'Einmal pro Kampf möglich.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       ],
