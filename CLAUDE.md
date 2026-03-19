@@ -564,5 +564,6 @@ The following files are **intentionally kept** but not currently wired into the 
   Aktivierungsstatus ein oder aus.
 - Im Uebersicht-Tab sitzt die Ressourcen-Aktivierung jetzt hinter einem
   Settings-Icon im Bereich `Basiswerte`; der Dialog zeigt Auto-Modus und
-  manuelle Overrides fuer Magie und goettliche Ressourcen.
+  manuelle Overrides fuer Magie und goettliche Ressourcen und kann diese
+  auch ausserhalb des Bearbeitungsmodus direkt speichern.
 
