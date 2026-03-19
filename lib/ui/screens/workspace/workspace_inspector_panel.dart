@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector_rest_card.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector_wunden_card.dart';
 
 const double _statusLabelWidth = 32;
@@ -80,6 +81,9 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
                         derived: derived,
                         resourceActivation: resourceActivation,
                       ),
+                    const SizedBox(height: 10),
+                    if (heroState != null)
+                      InspectorRestCard(heroId: heroId, heroState: heroState),
                     const SizedBox(height: 10),
                     if (heroState != null)
                       InspectorWundenCard(

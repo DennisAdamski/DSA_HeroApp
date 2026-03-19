@@ -79,6 +79,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   List<String> _draftMerkmalskenntnisse = <String>[];
   List<MagicSpecialAbility> _draftMagicSpecialAbilities =
       <MagicSpecialAbility>[];
+  String _draftMagicLeadAttribute = '';
 
   @override
   void initState() {
@@ -136,6 +137,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _draftMagicSpecialAbilities = List<MagicSpecialAbility>.from(
       hero.magicSpecialAbilities,
     );
+    _draftMagicLeadAttribute = hero.magicLeadAttribute;
   }
 
   void _resetCellControllers() {
@@ -191,6 +193,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       magicSpecialAbilities: List<MagicSpecialAbility>.from(
         _draftMagicSpecialAbilities,
       ),
+      magicLeadAttribute: _draftMagicLeadAttribute,
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     if (!mounted) {
@@ -420,6 +423,11 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _markFieldChanged();
   }
 
+  void _updateMagicLeadAttribute(String value) {
+    _draftMagicLeadAttribute = value;
+    _markFieldChanged();
+  }
+
   void _showZauberKatalog(BuildContext context, List<SpellDef> allSpells) {
     final localActiveIds = _draftSpells.keys.toSet();
     showModalBottomSheet<void>(
@@ -620,10 +628,13 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                           _MagicHeaderSection(
                             representationen: _draftRepresentationen,
                             merkmalskenntnisse: _draftMerkmalskenntnisse,
+                            magicLeadAttribute: _draftMagicLeadAttribute,
                             isEditing: _editController.isEditing,
                             onRepresentationenChanged: _updateRepresentationen,
                             onMerkmalskenntnisseChanged:
                                 _updateMerkmalskenntnisse,
+                            onMagicLeadAttributeChanged:
+                                _updateMagicLeadAttribute,
                           ),
                           _MagicSpecialAbilitiesSection(
                             abilities: _draftMagicSpecialAbilities,

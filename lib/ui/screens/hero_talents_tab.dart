@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
@@ -110,8 +111,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   List<HeroMetaTalent> _draftMetaTalents = <HeroMetaTalent>[];
   Set<String> _invalidCombatTalentIds = <String>{};
-  String _draftTalentSpecialAbilities = '';
-  late final TextEditingController _talentSpecialAbilitiesController;
+  List<TalentSpecialAbility> _draftTalentSpecialAbilities =
+      <TalentSpecialAbility>[];
   Map<String, HeroLanguageEntry> _draftSprachen = <String, HeroLanguageEntry>{};
   Map<String, HeroScriptEntry> _draftSchriften = <String, HeroScriptEntry>{};
   String _draftMuttersprache = '';
@@ -136,7 +137,6 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         }
       });
     }
-    _talentSpecialAbilitiesController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _registerWithParent();
@@ -150,7 +150,6 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       controller.dispose();
     }
     _subTabController?.dispose();
-    _talentSpecialAbilitiesController.dispose();
     _tableRevision.dispose();
     super.dispose();
   }
@@ -205,8 +204,9 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       talents: hero.talents,
       metaTalents: _draftMetaTalents,
     );
-    _draftTalentSpecialAbilities = hero.talentSpecialAbilities;
-    _talentSpecialAbilitiesController.text = _draftTalentSpecialAbilities;
+    _draftTalentSpecialAbilities = List<TalentSpecialAbility>.from(
+      hero.talentSpecialAbilities,
+    );
     _invalidCombatTalentIds = <String>{};
     _draftSprachen = Map<String, HeroLanguageEntry>.from(hero.sprachen);
     _draftSchriften = Map<String, HeroScriptEntry>.from(hero.schriften);
@@ -280,7 +280,9 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         metaTalents: _draftMetaTalents,
       ),
       metaTalents: List<HeroMetaTalent>.from(_draftMetaTalents),
-      talentSpecialAbilities: _draftTalentSpecialAbilities,
+      talentSpecialAbilities: List<TalentSpecialAbility>.from(
+        _draftTalentSpecialAbilities,
+      ),
       sprachen: Map<String, HeroLanguageEntry>.unmodifiable(_draftSprachen),
       schriften: Map<String, HeroScriptEntry>.unmodifiable(_draftSchriften),
       muttersprache: _draftMuttersprache,
