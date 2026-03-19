@@ -2,8 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
 
 void main() {
@@ -172,5 +175,45 @@ void main() {
     );
 
     expect(modifier, -8);
+  });
+
+  test('full restore resets resources, conditions and wounds to maximum', () {
+    final updated = buildFullRestoreState(
+      currentState: const HeroState(
+        currentLep: 4,
+        currentAsp: 2,
+        currentKap: 0,
+        currentAu: 1,
+        erschoepfung: 5,
+        ueberanstrengung: 3,
+        wpiZustand: WundZustand(
+          wundenProZone: <WundZone, int>{WundZone.kopf: 2},
+          kopfIniMalus: 7,
+          kampfunfaehigIgnoriert: true,
+        ),
+      ),
+      derivedStats: const DerivedStats(
+        maxLep: 22,
+        maxAu: 21,
+        maxAsp: 17,
+        maxKap: 6,
+        mr: 0,
+        iniBase: 0,
+        atBase: 0,
+        paBase: 0,
+        fkBase: 0,
+        gs: 0,
+        ausweichen: 0,
+      ),
+    );
+
+    expect(updated.currentLep, 22);
+    expect(updated.currentAu, 21);
+    expect(updated.currentAsp, 17);
+    expect(updated.currentKap, 6);
+    expect(updated.erschoepfung, 0);
+    expect(updated.ueberanstrengung, 0);
+    expect(updated.wpiZustand.gesamtWunden, 0);
+    expect(updated.wpiZustand.kopfIniMalus, 0);
   });
 }

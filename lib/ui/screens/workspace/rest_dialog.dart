@@ -185,6 +185,11 @@ class _RestDialogState extends ConsumerState<_RestDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Abbrechen'),
         ),
+        OutlinedButton(
+          key: const ValueKey<String>('rest-dialog-full-restore'),
+          onPressed: () => _confirmAndApplyFullRestore(heroState, computed),
+          child: const Text('Fullrestore'),
+        ),
         FilledButton(
           key: const ValueKey<String>('rest-dialog-apply'),
           onPressed: () => _applyPreview(heroState, computed),
@@ -1019,6 +1024,46 @@ class _RestDialogState extends ConsumerState<_RestDialog> {
       ueberanstrengung: preview.nextUeberanstrengung,
       erschoepfung: preview.nextErschoepfung,
     );
+    await _saveAndClose(updated);
+  }
+
+  Future<void> _confirmAndApplyFullRestore(
+    HeroState heroState,
+    HeroComputedSnapshot computed,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Fullrestore anwenden?'),
+          content: const Text(
+            'Setzt LeP, Au, AsP und KaP auf Maximum, entfernt alle Wunden '
+            'und baut Erschöpfung sowie Überanstrengung vollständig ab.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Abbrechen'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Anwenden'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true) {
+      return;
+    }
+    final updated = buildFullRestoreState(
+      currentState: heroState,
+      derivedStats: computed.derivedStats,
+    );
+    await _saveAndClose(updated);
+  }
+
+  Future<void> _saveAndClose(HeroState updated) async {
     await ref.read(heroActionsProvider).saveHeroState(widget.heroId, updated);
     if (!mounted) {
       return;
