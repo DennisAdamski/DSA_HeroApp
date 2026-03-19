@@ -146,6 +146,47 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
               geschosse: preview.isRangedWeapon
                   ? preview.activeProjectileCount
                   : null,
+              onRollAt: () => showProbeDialog(
+                context: context,
+                request: buildCombatCheckProbeRequest(
+                  type: ProbeType.combatAttack,
+                  title: 'Kampfprobe: AT',
+                  targetValue: preview.at,
+                ),
+              ),
+              onRollPa: preview.isRangedWeapon
+                  ? null
+                  : () => showProbeDialog(
+                      context: context,
+                      request: buildCombatCheckProbeRequest(
+                        type: ProbeType.combatParry,
+                        title: 'Kampfprobe: PA',
+                        targetValue: preview.paMitIniParadeMod,
+                      ),
+                    ),
+              onRollDamage: () => showProbeDialog(
+                context: context,
+                request: buildDamageProbeRequest(
+                  title: 'Schadenswurf',
+                  diceSpec: preview.damageDiceSpec,
+                ),
+              ),
+              onRollInitiative: () => showProbeDialog(
+                context: context,
+                request: buildInitiativeProbeRequest(
+                  title: 'Initiativwurf',
+                  diceSpec: preview.initiativeDiceSpec,
+                  fixedRollTotal: preview.initiativeFixedRollTotal,
+                ),
+              ),
+              onRollAusweichen: () => showProbeDialog(
+                context: context,
+                request: buildCombatCheckProbeRequest(
+                  type: ProbeType.dodge,
+                  title: 'Kampfprobe: Ausweichen',
+                  targetValue: preview.ausweichen,
+                ),
+              ),
             ),
             const SizedBox(height: 8),
             Wrap(
