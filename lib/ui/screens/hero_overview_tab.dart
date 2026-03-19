@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -16,9 +17,11 @@ import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_feature_flags.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
@@ -84,6 +87,8 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   late final WorkspaceTabEditController _editController;
   HeroSheet? _latestHero;
   HeroState? _latestState;
+  bool? _draftMagicEnabledOverride;
+  bool? _draftDivineEnabledOverride;
 
   @override
   void initState() {
@@ -168,6 +173,10 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('cur_au').text = state.currentAu.toString();
     _field('cur_asp').text = state.currentAsp.toString();
     _field('cur_kap').text = state.currentKap.toString();
+    _draftMagicEnabledOverride =
+        hero.resourceActivationConfig.magicEnabledOverride;
+    _draftDivineEnabledOverride =
+        hero.resourceActivationConfig.divineEnabledOverride;
 
     _field('mu').text = hero.attributes.mu.toString();
     _field('kl').text = hero.attributes.kl.toString();
@@ -186,7 +195,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('ge_start').text = hero.startAttributes.ge.toString();
     _field('ko_start').text = hero.startAttributes.ko.toString();
     _field('kk_start').text = hero.startAttributes.kk.toString();
-
   }
 
   int _readInt(String key, {required int min, int max = 999999}) {
@@ -251,6 +259,10 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       nachteileText: _field('nachteile').text.trim(),
       apTotal: _readInt('ap_total', min: 0),
       apSpent: _readInt('ap_spent', min: 0),
+      resourceActivationConfig: HeroResourceActivationConfig(
+        magicEnabledOverride: _draftMagicEnabledOverride,
+        divineEnabledOverride: _draftDivineEnabledOverride,
+      ),
       bought: BoughtStats(
         lep: _readInt('b_lep', min: 0, max: 999),
         au: _readInt('b_au', min: 0, max: 999),
@@ -311,6 +323,85 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     }
   }
 
+  HeroResourceActivation _buildCurrentResourceActivation(HeroSheet hero) {
+    return _buildResourceActivationForOverrides(
+      hero,
+      magicEnabledOverride: _draftMagicEnabledOverride,
+      divineEnabledOverride: _draftDivineEnabledOverride,
+    );
+  }
+
+  /// Berechnet die Ressourcen-Aktivierung fuer den aktuellen Bearbeitungsstand.
+  HeroResourceActivation _buildResourceActivationForOverrides(
+    HeroSheet hero, {
+    required bool? magicEnabledOverride,
+    required bool? divineEnabledOverride,
+  }) {
+    if (!_editController.isEditing) {
+      return computeHeroResourceActivation(
+        hero.copyWith(
+          resourceActivationConfig: HeroResourceActivationConfig(
+            magicEnabledOverride: magicEnabledOverride,
+            divineEnabledOverride: divineEnabledOverride,
+          ),
+        ),
+      );
+    }
+    final draftHero = hero.copyWith(
+      background: hero.background.copyWith(
+        rasseModText: _field('rasse_mod').text.trim(),
+        kulturModText: _field('kultur_mod').text.trim(),
+        professionModText: _field('profession_mod').text.trim(),
+      ),
+      vorteileText: _field('vorteile').text.trim(),
+      resourceActivationConfig: HeroResourceActivationConfig(
+        magicEnabledOverride: magicEnabledOverride,
+        divineEnabledOverride: divineEnabledOverride,
+      ),
+    );
+    return computeHeroResourceActivation(draftHero);
+  }
+
+  /// Uebernimmt Ressourcen-Overrides in den Draft des Overview-Tabs.
+  void _applyDraftResourceActivationOverrides({
+    required bool? magicEnabledOverride,
+    required bool? divineEnabledOverride,
+  }) {
+    final hasChanged =
+        _draftMagicEnabledOverride != magicEnabledOverride ||
+        _draftDivineEnabledOverride != divineEnabledOverride;
+    _draftMagicEnabledOverride = magicEnabledOverride;
+    _draftDivineEnabledOverride = divineEnabledOverride;
+    if (hasChanged) {
+      _onFieldChanged('');
+    }
+  }
+
+  /// Speichert Ressourcen-Overrides direkt am Helden ausserhalb des Edit-Modus.
+  Future<void> _saveResourceActivationOverrides(
+    HeroSheet hero, {
+    required bool? magicEnabledOverride,
+    required bool? divineEnabledOverride,
+  }) async {
+    final updatedHero = hero.copyWith(
+      resourceActivationConfig: HeroResourceActivationConfig(
+        magicEnabledOverride: magicEnabledOverride,
+        divineEnabledOverride: divineEnabledOverride,
+      ),
+    );
+    await ref.read(heroActionsProvider).saveHero(updatedHero);
+    if (!mounted) {
+      return;
+    }
+    _latestHero = updatedHero;
+    _draftMagicEnabledOverride = magicEnabledOverride;
+    _draftDivineEnabledOverride = divineEnabledOverride;
+    _viewRevision.value++;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Ressourcen-Einstellungen gespeichert')),
+    );
+  }
+
   void _applyApIncrement({
     required String targetKey,
     required String incrementKey,
@@ -361,6 +452,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         _latestHero = hero;
         _latestState = state;
         _syncControllers(hero, state);
+        final resourceActivation = _buildCurrentResourceActivation(hero);
         return ValueListenableBuilder<int>(
           valueListenable: _viewRevision,
           builder: (context, revision, child) {
@@ -374,14 +466,17 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
                 const SizedBox(height: _sectionSpacing),
                 _buildApSection(hero),
                 const SizedBox(height: _sectionSpacing),
-                _buildCurrentResourcesSection(),
+                _buildCurrentResourcesSection(resourceActivation),
                 if (kShowParserWarnings &&
                     hero.unknownModifierFragments.isNotEmpty) ...[
                   const SizedBox(height: _sectionSpacing),
                   _buildParserWarningsSection(hero),
                 ],
                 const SizedBox(height: _sectionSpacing),
-                _buildCombinedStatsAndAttributesSection(snapshot),
+                _buildCombinedStatsAndAttributesSection(
+                  snapshot,
+                  resourceActivation,
+                ),
               ],
             );
           },
@@ -417,10 +512,15 @@ class _DerivedRow {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.title, required this.child});
+  const _SectionCard({
+    required this.title,
+    required this.child,
+    this.titleAction,
+  });
 
   final String title;
   final Widget child;
+  final Widget? titleAction;
 
   @override
   Widget build(BuildContext context) {
@@ -430,7 +530,17 @@ class _SectionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                titleAction ?? const SizedBox.shrink(),
+              ],
+            ),
             const SizedBox(height: _fieldSpacing),
             child,
           ],

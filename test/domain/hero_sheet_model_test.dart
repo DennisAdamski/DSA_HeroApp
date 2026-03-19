@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
@@ -67,6 +68,10 @@ void main() {
       apTotal: 2000,
       apSpent: 1500,
       apAvailable: 500,
+      resourceActivationConfig: const HeroResourceActivationConfig(
+        magicEnabledOverride: false,
+        divineEnabledOverride: true,
+      ),
       talents: <String, HeroTalentEntry>{
         'tal_schwerter': HeroTalentEntry(
           talentValue: 11,
@@ -239,11 +244,13 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.background.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 19);
+    expect(reloaded.schemaVersion, 20);
     expect(reloaded.background.kultur, 'Mittelreich');
     expect(reloaded.background.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
     expect(reloaded.apAvailable, 500);
+    expect(reloaded.resourceActivationConfig.magicEnabledOverride, isFalse);
+    expect(reloaded.resourceActivationConfig.divineEnabledOverride, isTrue);
     expect(reloaded.hiddenTalentIds, ['tal_a', 'tal_b']);
     expect(reloaded.talentSpecialAbilities, 'Meisterhandwerk, Begabung');
     expect(reloaded.notes.single.title, 'Offene Schuld');
@@ -375,6 +382,8 @@ void main() {
     expect(loaded.hiddenTalentIds, isEmpty);
     expect(loaded.talentSpecialAbilities, '');
     expect(loaded.unknownModifierFragments, isEmpty);
+    expect(loaded.resourceActivationConfig.magicEnabledOverride, isNull);
+    expect(loaded.resourceActivationConfig.divineEnabledOverride, isNull);
     expect(loaded.metaTalents, isEmpty);
     expect(loaded.ritualCategories, isEmpty);
     expect(loaded.notes, isEmpty);
@@ -687,7 +696,7 @@ void main() {
     },
   );
 
-  test('schemaVersion ist 19 nach toJson (v19-Default)', () {
+  test('schemaVersion ist 20 nach toJson (v20-Default)', () {
     const hero = HeroSheet(
       id: 'version-check',
       name: 'Versionstest',
@@ -704,8 +713,8 @@ void main() {
       ),
     );
     final json = hero.toJson();
-    expect(json['schemaVersion'], 19);
-    expect(HeroSheet.fromJson(json).schemaVersion, 19);
+    expect(json['schemaVersion'], 20);
+    expect(HeroSheet.fromJson(json).schemaVersion, 20);
   });
 
   test('v15 Hero-JSON liefert korrekte Standardwerte fuer neue Inventarfelder', () {
