@@ -95,23 +95,203 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     final isEditing = _editController.isEditing;
     return Padding(
       padding: const EdgeInsets.all(12),
-      child: TextField(
-        key: const ValueKey<String>('talents-special-abilities-global'),
-        controller: _talentSpecialAbilitiesController,
-        readOnly: !isEditing,
-        maxLines: 8,
-        decoration: const InputDecoration(
-          labelText: 'Sonderfertigkeiten',
-          alignLabelWithHint: true,
-          border: OutlineInputBorder(),
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: ExpansionTile(
+          key: const ValueKey<String>('talents-special-abilities-global'),
+          initiallyExpanded: true,
+          tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+          childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          title: Row(
+            children: [
+              Text(
+                'Sonderfertigkeiten',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '(${_draftTalentSpecialAbilities.length})',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+          children: [
+            if (_draftTalentSpecialAbilities.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'Keine Sonderfertigkeiten eingetragen.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ..._draftTalentSpecialAbilities.asMap().entries.map((entry) {
+              final index = entry.key;
+              final ability = entry.value;
+              return ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(ability.name),
+                subtitle: ability.note.trim().isEmpty ? null : Text(ability.note),
+                trailing: isEditing
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            key: ValueKey<String>(
+                              'talents-special-abilities-edit-$index',
+                            ),
+                            icon: const Icon(Icons.edit, size: 18),
+                            tooltip: 'Bearbeiten',
+                            onPressed: () => _editTalentSpecialAbility(
+                              index,
+                              existing: ability,
+                            ),
+                          ),
+                          IconButton(
+                            key: ValueKey<String>(
+                              'talents-special-abilities-delete-$index',
+                            ),
+                            icon: const Icon(Icons.delete, size: 18),
+                            tooltip: 'Entfernen',
+                            onPressed: () => _removeTalentSpecialAbility(index),
+                          ),
+                        ],
+                      )
+                    : null,
+              );
+            }),
+            if (isEditing)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: OutlinedButton.icon(
+                  key: const ValueKey<String>('talents-special-abilities-add'),
+                  onPressed: _addTalentSpecialAbility,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Hinzufügen'),
+                ),
+              ),
+          ],
         ),
-        onChanged: isEditing
-            ? (value) {
-                _draftTalentSpecialAbilities = value;
-                _markFieldChanged();
-              }
-            : null,
       ),
+    );
+  }
+
+  void _addTalentSpecialAbility() {
+    _showTalentSpecialAbilityDialog(
+      onSave: (ability) {
+        _draftTalentSpecialAbilities = [
+          ..._draftTalentSpecialAbilities,
+          ability,
+        ];
+        _markFieldChanged();
+      },
+    );
+  }
+
+  void _editTalentSpecialAbility(
+    int index, {
+    required TalentSpecialAbility existing,
+  }) {
+    _showTalentSpecialAbilityDialog(
+      existing: existing,
+      onSave: (ability) {
+        final updated = List<TalentSpecialAbility>.from(
+          _draftTalentSpecialAbilities,
+        );
+        updated[index] = ability;
+        _draftTalentSpecialAbilities = updated;
+        _markFieldChanged();
+      },
+    );
+  }
+
+  void _removeTalentSpecialAbility(int index) {
+    final updated = List<TalentSpecialAbility>.from(_draftTalentSpecialAbilities);
+    updated.removeAt(index);
+    _draftTalentSpecialAbilities = updated;
+    _markFieldChanged();
+  }
+
+  void _showTalentSpecialAbilityDialog({
+    TalentSpecialAbility? existing,
+    required void Function(TalentSpecialAbility ability) onSave,
+  }) {
+    var draftName = existing?.name ?? '';
+    var draftNote = existing?.note ?? '';
+
+    showAdaptiveDetailSheet<void>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(
+                existing == null
+                    ? 'Sonderfertigkeit hinzufügen'
+                    : 'Sonderfertigkeit bearbeiten',
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      key: const ValueKey<String>('talents-special-ability-name'),
+                      initialValue: draftName,
+                      decoration: const InputDecoration(
+                        labelText: 'Name',
+                        hintText: 'z. B. Regeneration I',
+                      ),
+                      autofocus: true,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          draftName = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      key: const ValueKey<String>('talents-special-ability-note'),
+                      initialValue: draftNote,
+                      decoration: const InputDecoration(
+                        labelText: 'Notiz (optional)',
+                      ),
+                      maxLines: 2,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          draftNote = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Abbrechen'),
+                ),
+                FilledButton(
+                  key: const ValueKey<String>('talents-special-ability-save'),
+                  onPressed: () {
+                    final name = draftName.trim();
+                    if (name.isEmpty) {
+                      return;
+                    }
+                    onSave(
+                      TalentSpecialAbility(
+                        name: name,
+                        note: draftNote.trim(),
+                      ),
+                    );
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: const Text('Speichern'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
