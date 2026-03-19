@@ -33,6 +33,8 @@ class WundZustand {
   const WundZustand({
     this.wundenProZone = const <WundZone, int>{},
     this.kopfIniMalus = 0,
+    this.unterdrueckteWundenProZone = const <WundZone, int>{},
+    this.kampfunfaehigIgnoriert = false,
   });
 
   /// Anzahl Wunden je Zone (0–3). Fehlende Zonen = 0 Wunden.
@@ -45,8 +47,26 @@ class WundZustand {
   /// (aufgerundet) abgezogen.
   final int kopfIniMalus;
 
+  /// Anzahl unterdrueckter Wunden je Zone (0..wundenInZone).
+  ///
+  /// Unterdrueckte Wunden existieren physisch weiterhin (zaehlen fuer
+  /// Kampfunfaehigkeit bei 3), verursachen aber keine Abzuege.
+  final Map<WundZone, int> unterdrueckteWundenProZone;
+
+  /// Ob der Held Kampfunfaehigkeit (durch niedrige LeP oder 0 AuP)
+  /// aktuell ignoriert. Rein informativ — kein Rundentracking.
+  final bool kampfunfaehigIgnoriert;
+
   /// Gibt die Wundenanzahl in der angegebenen [zone] zurueck.
   int wundenInZone(WundZone zone) => wundenProZone[zone] ?? 0;
+
+  /// Gibt die Anzahl unterdrueckter Wunden in [zone] zurueck.
+  int unterdrueckteInZone(WundZone zone) =>
+      unterdrueckteWundenProZone[zone] ?? 0;
+
+  /// Effektive (nicht unterdrueckte) Wunden in [zone].
+  int effektiveWundenInZone(WundZone zone) =>
+      wundenInZone(zone) - unterdrueckteInZone(zone);
 
   /// Gesamtzahl aller Wunden ueber alle Zonen.
   int get gesamtWunden {
@@ -57,15 +77,47 @@ class WundZustand {
     return total;
   }
 
+  /// Gesamtzahl aller unterdrueckten Wunden.
+  int get gesamtUnterdrueckt {
+    var total = 0;
+    for (final count in unterdrueckteWundenProZone.values) {
+      total += count;
+    }
+    return total;
+  }
+
+  /// Gesamtzahl effektiver (nicht unterdrueckter) Wunden.
+  int get gesamtEffektiveWunden => gesamtWunden - gesamtUnterdrueckt;
+
   /// Erstellt eine Kopie mit optional ersetzten Feldern.
   WundZustand copyWith({
     Map<WundZone, int>? wundenProZone,
     int? kopfIniMalus,
+    Map<WundZone, int>? unterdrueckteWundenProZone,
+    bool? kampfunfaehigIgnoriert,
   }) {
     return WundZustand(
       wundenProZone: wundenProZone ?? this.wundenProZone,
       kopfIniMalus: kopfIniMalus ?? this.kopfIniMalus,
+      unterdrueckteWundenProZone:
+          unterdrueckteWundenProZone ?? this.unterdrueckteWundenProZone,
+      kampfunfaehigIgnoriert:
+          kampfunfaehigIgnoriert ?? this.kampfunfaehigIgnoriert,
     );
+  }
+
+  /// Setzt die Anzahl unterdrueckter Wunden in [zone].
+  ///
+  /// [count] wird auf `[0, wundenInZone(zone)]` geclampt.
+  WundZustand mitUnterdrueckung(WundZone zone, int count) {
+    final clamped = count.clamp(0, wundenInZone(zone));
+    final naechste = Map<WundZone, int>.of(unterdrueckteWundenProZone);
+    if (clamped > 0) {
+      naechste[zone] = clamped;
+    } else {
+      naechste.remove(zone);
+    }
+    return copyWith(unterdrueckteWundenProZone: naechste);
   }
 
   /// Fuegt eine Wunde in [zone] hinzu (max [maxWundenProZone]).
@@ -83,6 +135,8 @@ class WundZustand {
     return WundZustand(
       wundenProZone: naechste,
       kopfIniMalus: naechsterIniMalus,
+      unterdrueckteWundenProZone: unterdrueckteWundenProZone,
+      kampfunfaehigIgnoriert: kampfunfaehigIgnoriert,
     );
   }
 
@@ -100,9 +154,23 @@ class WundZustand {
       final anteil = (kopfIniMalus / aktuell).ceil();
       naechsterIniMalus = (kopfIniMalus - anteil).clamp(0, kopfIniMalus);
     }
+    // Unterdrueckte Wunden auf neue Wundenanzahl clampen.
+    final neueWunden = naechste[zone] ?? 0;
+    final aktUnterdrueckt = unterdrueckteInZone(zone);
+    final naechsteUnterdrueckt =
+        Map<WundZone, int>.of(unterdrueckteWundenProZone);
+    if (aktUnterdrueckt > neueWunden) {
+      if (neueWunden > 0) {
+        naechsteUnterdrueckt[zone] = neueWunden;
+      } else {
+        naechsteUnterdrueckt.remove(zone);
+      }
+    }
     return WundZustand(
       wundenProZone: naechste,
       kopfIniMalus: naechsterIniMalus,
+      unterdrueckteWundenProZone: naechsteUnterdrueckt,
+      kampfunfaehigIgnoriert: kampfunfaehigIgnoriert,
     );
   }
 
@@ -114,9 +182,18 @@ class WundZustand {
         zonenMap[entry.key.name] = entry.value;
       }
     }
+    final unterdruecktMap = <String, dynamic>{};
+    for (final entry in unterdrueckteWundenProZone.entries) {
+      if (entry.value > 0) {
+        unterdruecktMap[entry.key.name] = entry.value;
+      }
+    }
     return {
       'wundenProZone': zonenMap,
       'kopfIniMalus': kopfIniMalus,
+      if (unterdruecktMap.isNotEmpty)
+        'unterdrueckteWundenProZone': unterdruecktMap,
+      if (kampfunfaehigIgnoriert) 'kampfunfaehigIgnoriert': true,
     };
   }
 
@@ -131,9 +208,24 @@ class WundZustand {
         zonenMap[zone] = wert.clamp(0, maxWundenProZone);
       }
     }
+    final rawUnterdrueckt =
+        (json['unterdrueckteWundenProZone'] as Map?)
+            ?.cast<String, dynamic>() ??
+        const {};
+    final unterdruecktMap = <WundZone, int>{};
+    for (final zone in WundZone.values) {
+      final wert = (rawUnterdrueckt[zone.name] as num?)?.toInt() ?? 0;
+      final maxWert = zonenMap[zone] ?? 0;
+      if (wert > 0 && maxWert > 0) {
+        unterdruecktMap[zone] = wert.clamp(0, maxWert);
+      }
+    }
     return WundZustand(
       wundenProZone: zonenMap,
       kopfIniMalus: (json['kopfIniMalus'] as num?)?.toInt() ?? 0,
+      unterdrueckteWundenProZone: unterdruecktMap,
+      kampfunfaehigIgnoriert:
+          (json['kampfunfaehigIgnoriert'] as bool?) ?? false,
     );
   }
 }
