@@ -1,5 +1,6 @@
 /// Unterstuetzte KI-Bildgenerierungs-Anbieter.
 enum AvatarApiProvider {
+  openaiGptImage1('OpenAI GPT-image-1'),
   openaiDalle3('OpenAI DALL-E 3');
 
   const AvatarApiProvider(this.displayName);
@@ -18,7 +19,7 @@ enum AvatarApiProvider {
 /// Konfiguration fuer die KI-Bildgenerierungs-API.
 class AvatarApiConfig {
   const AvatarApiConfig({
-    this.provider = AvatarApiProvider.openaiDalle3,
+    this.provider = AvatarApiProvider.openaiGptImage1,
     this.apiKey = '',
   });
 
@@ -46,7 +47,7 @@ class AvatarApiConfig {
   static AvatarApiConfig fromJson(Map<String, dynamic> json) {
     return AvatarApiConfig(
       provider: AvatarApiProvider.fromId(json['provider'] as String?) ??
-          AvatarApiProvider.openaiDalle3,
+          AvatarApiProvider.openaiGptImage1,
       apiKey: (json['apiKey'] as String?) ?? '',
     );
   }
