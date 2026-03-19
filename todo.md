@@ -3,13 +3,15 @@
 Aufgaben die notwendig sind für das erreichen des MVP
 
 ## Aufgaben für die KI (MVP)
-- [ ] Stelle Modifikatoren im Bereich der Basiswerte und Eigenschaften wie im Talentbereich dar. Es soll ersichtlich sein, woher eine gewisse Modifikation kommt. Standard-Modifikatoren bilden die folgenden Vor- und Nachteile:
+
+- [x] Stelle Modifikatoren im Bereich der Basiswerte und Eigenschaften wie im Talentbereich dar. Es soll ersichtlich sein, woher eine gewisse Modifikation kommt.
+- [ ] Standard-Modifikatoren bilden die folgenden Vor- und Nachteile:
   - [x] Ini-Basis ist mit Kampfreflexe/Gespür
   - [ ] Magieresistenz + Hohe/Niedrige Magieresistenz
   - [ ] Lebensenergie + Hohe/Niedrige Lebenskraft
   - [ ] Ausdauer + Asudauernd/Kurzatmig
   - [ ] AsP +Astralmacht/Niedrige Astralenergie
-- [ ] MaxWerte für Basiswerte
+- [ ] MaxWerte für die zukaufbaren Basiswerte
   - [ ] LeP = KO/2
   - [ ] Au = KO*2
   - [ ] MR = MU/2
@@ -20,17 +22,17 @@ Aufgaben die notwendig sind für das erreichen des MVP
   - [ ] Der Basiswert von AsP (Astralpunkte) heißt AE (Astralenergie).
   - [ ] Der Basiswert von KaP (Karmalpunkte) heißt KE (Karmalenergie).
   - [ ] Der Basiswert von MR (Magieresistenz), dort gibt es keine Punkte.
-- [ ] Einträge aus Rasse, Sonderfertigkeiten, etc. kommen in die Modifikation des entsprechenden Basiswerts
-  - [ ] Ein automatisch Berechneter Wert
-  - [ ] Ein manueller Wert
-- [ ] KE kann nicht gesteigert werden.
+- [x] Einträge aus Rasse, Sonderfertigkeiten, etc. kommen in die Modifikation des entsprechenden Basiswerts
+  - [x] Ein automatisch Berechneter Wert
+  - [x] Ein manueller Wert
+- [x] KE kann nicht gesteigert werden.
 - [x] Eigenschaften steigern nach H, kann aber modifiziert werden, sodass diese dann nach G gesteigert werden können.
 - [ ] Nicht bearbeitbare Felder im nicht Bearbeitungsmodus anders darstellen, sodass man nicht davon ausgeht, dieses bearbeiten zu können.
 
 - [ ] Alle Helden (als Zip) exportieren als Button global
 - [x] Steigerungstabelle und Funktion
 - [ ] Körperzonen, Rüstungen und Wunden
-  - [ ] Berechnungen von Einschränkungen durch Wunden
+  - [x] Berechnungen von Einschränkungen durch Wunden
 
 ## Aufgaben für mich (MVP)
 
