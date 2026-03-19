@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/inventory_modifier_rules.dart
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_actions.dart';
@@ -176,12 +177,22 @@ final heroComputedProvider =
         hero.attributes,
         parsed.attributeMods + namedAttrMods + state.tempAttributeMods + inventoryMods.attributeMods,
       );
+      // Wundberechnung
+      final wundEffekte = computeWundEffekte(state.wpiZustand);
+      final wundStatMods = wundEffekteToStatModifiers(wundEffekte);
+      final wundschwelleMods = hero.statModifiers['wundschwelle'] ?? const [];
+      final wundschwelle = computeWundschwelle(
+        ko: effective.ko,
+        mods: wundschwelleMods,
+      );
+
       final derived = computeDerivedStatsFromInputs(
         sheet: hero,
         state: state,
         parsedModifiers: parsed,
         effectiveAttributes: effective,
         inventoryStatMods: inventoryMods.statMods,
+        wundStatMods: wundStatMods,
       );
       final combat = computeCombatPreviewStats(
         hero,
@@ -205,6 +216,8 @@ final heroComputedProvider =
           effectiveAttributes: effective,
           derivedStats: derived,
           combatPreviewStats: combat,
+          wundEffekte: wundEffekte,
+          wundschwelle: wundschwelle,
           inventoryStatMods: inventoryMods.statMods,
           inventoryAttributeMods: inventoryMods.attributeMods,
           inventoryTalentMods: inventoryMods.talentMods,
