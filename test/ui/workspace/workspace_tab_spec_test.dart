@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
@@ -33,7 +32,7 @@ void main() {
     ]);
   });
 
-  test('visibleWorkspaceTabsForHero filters hidden tabs and keeps order', () {
+  test('magic workspace tab follows effective resource activation', () {
     final heroWithoutMagic = HeroSheet(
       id: 'mundane',
       name: 'Alrik',
@@ -49,52 +48,51 @@ void main() {
         kk: 12,
       ),
     );
-    final heroWithMagic = heroWithoutMagic.copyWith(
-      spells: const <String, HeroSpellEntry>{
-        'spell_axxeleratus': HeroSpellEntry(spellValue: 8),
-      },
+    final heroWithAutoMagic = heroWithoutMagic.copyWith(
+      vorteileText: 'AE+2',
     );
-    final tabs = <WorkspaceTabSpec>[
-      WorkspaceTabSpec(
-        id: 'overview',
-        label: 'Uebersicht',
-        icon: Icons.looks_one_outlined,
-        helper: 'Immer sichtbar',
-        buildContent: ({required heroId, required callbacks}) =>
-            const SizedBox.shrink(),
+    final heroWithManualDisable = heroWithAutoMagic.copyWith(
+      resourceActivationConfig: const HeroResourceActivationConfig(
+        magicEnabledOverride: false,
       ),
-      WorkspaceTabSpec(
-        id: 'magic',
-        label: 'Magie',
-        icon: Icons.looks_two_outlined,
-        helper: 'Nur fuer magische Helden',
-        isVisible: (hero) => hero.spells.isNotEmpty,
-        buildContent: ({required heroId, required callbacks}) =>
-            const SizedBox.shrink(),
+    );
+    final heroWithManualEnable = heroWithoutMagic.copyWith(
+      resourceActivationConfig: const HeroResourceActivationConfig(
+        magicEnabledOverride: true,
       ),
-      WorkspaceTabSpec(
-        id: 'notes',
-        label: 'Notizen',
-        icon: Icons.looks_3_outlined,
-        helper: 'Immer sichtbar',
-        buildContent: ({required heroId, required callbacks}) =>
-            const SizedBox.shrink(),
-      ),
-    ];
+    );
+    final tabs = buildWorkspaceTabs(
+      heroId: 'demo',
+      callbacksForTab: (_) => callbacks,
+    );
 
     expect(
       visibleWorkspaceTabsForHero(
         hero: heroWithoutMagic,
         tabs: tabs,
       ).map((tab) => tab.id).toList(growable: false),
-      <String>['overview', 'notes'],
+      isNot(contains(WorkspaceTabIds.magic)),
     );
     expect(
       visibleWorkspaceTabsForHero(
-        hero: heroWithMagic,
+        hero: heroWithAutoMagic,
         tabs: tabs,
-      ).map((tab) => tab.id).toList(growable: false),
-      <String>['overview', 'magic', 'notes'],
+      ).map((tab) => tab.id),
+      contains(WorkspaceTabIds.magic),
+    );
+    expect(
+      visibleWorkspaceTabsForHero(
+        hero: heroWithManualDisable,
+        tabs: tabs,
+      ).map((tab) => tab.id),
+      isNot(contains(WorkspaceTabIds.magic)),
+    );
+    expect(
+      visibleWorkspaceTabsForHero(
+        hero: heroWithManualEnable,
+        tabs: tabs,
+      ).map((tab) => tab.id),
+      contains(WorkspaceTabIds.magic),
     );
   });
 }

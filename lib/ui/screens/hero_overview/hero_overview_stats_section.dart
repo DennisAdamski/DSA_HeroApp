@@ -21,6 +21,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
 
   Widget _buildCombinedStatsAndAttributesSection(
     HeroComputedSnapshot snapshot,
+    HeroResourceActivation resourceActivation,
   ) {
     final hero = snapshot.hero;
     final state = snapshot.state;
@@ -32,6 +33,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
           state,
           derived,
           snapshot,
+          resourceActivation,
         );
         final attributesSection = _buildAttributesSection(
           snapshot.effectiveStartAttributes,
@@ -66,6 +68,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     HeroState state,
     DerivedStats derived,
     HeroComputedSnapshot snapshot,
+    HeroResourceActivation resourceActivation,
   ) {
     final parsed = parseModifierTextsForHero(hero);
     final namedStatMods = aggregateNamedStatModifiers(hero.statModifiers);
@@ -95,24 +98,26 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
         bought: hero.bought.au,
         boughtKey: 'b_au',
       ),
-      _DerivedRow(
-        label: 'AsP',
-        variableName: 'maxAsp',
-        statKey: 'asp',
-        current: derived.maxAsp,
-        modifier: totalMods.asp + hero.level * 2,
-        bought: hero.bought.asp,
-        boughtKey: 'b_asp',
-      ),
-      _DerivedRow(
-        label: 'KaP',
-        variableName: 'maxKap',
-        statKey: 'kap',
-        current: derived.maxKap,
-        modifier: totalMods.kap,
-        bought: hero.bought.kap,
-        boughtKey: 'b_kap',
-      ),
+      if (resourceActivation.magic.isEnabled)
+        _DerivedRow(
+          label: 'AsP',
+          variableName: 'maxAsp',
+          statKey: 'asp',
+          current: derived.maxAsp,
+          modifier: totalMods.asp + hero.level * 2,
+          bought: hero.bought.asp,
+          boughtKey: 'b_asp',
+        ),
+      if (resourceActivation.divine.isEnabled)
+        _DerivedRow(
+          label: 'KaP',
+          variableName: 'maxKap',
+          statKey: 'kap',
+          current: derived.maxKap,
+          modifier: totalMods.kap,
+          bought: hero.bought.kap,
+          boughtKey: 'b_kap',
+        ),
       _DerivedRow(
         label: 'MR',
         variableName: 'mr',
@@ -161,63 +166,160 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
 
     return _SectionCard(
       title: 'Basiswerte',
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: adaptiveTableMinWidth(_derivedValueColumnSpecs),
-          ),
-          child: Table(
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            columnWidths: buildAdaptiveTableColumnWidths(
-              _derivedValueColumnSpecs,
-            ),
-            children: [
-              TableRow(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildResourceActivationSection(resourceActivation),
+          const SizedBox(height: _fieldSpacing),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: adaptiveTableMinWidth(_derivedValueColumnSpecs),
+              ),
+              child: Table(
+                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                columnWidths: buildAdaptiveTableColumnWidths(
+                  _derivedValueColumnSpecs,
+                ),
                 children: [
-                  _buildAttributesTableHeaderCell('Wert'),
-                  _buildAttributesTableHeaderCell('Start'),
-                  _buildAttributesTableHeaderCell('Modifikator'),
-                  _buildAttributesTableHeaderCell('Aktuell'),
-                  _buildAttributesTableHeaderCell('Zugekauft'),
+                  TableRow(
+                    children: [
+                      _buildAttributesTableHeaderCell('Wert'),
+                      _buildAttributesTableHeaderCell('Start'),
+                      _buildAttributesTableHeaderCell('Modifikator'),
+                      _buildAttributesTableHeaderCell('Aktuell'),
+                      _buildAttributesTableHeaderCell('Zugekauft'),
+                    ],
+                  ),
+                  ...entries.map(
+                    (entry) => TableRow(
+                      children: [
+                        _buildAttributesTableLabelCell(
+                          debugModus ? entry.variableName : entry.label,
+                        ),
+                        _buildDerivedValueCell(
+                          value:
+                              (entry.current -
+                                      entry.modifier -
+                                      (entry.bought ?? 0))
+                                  .toString(),
+                        ),
+                        _buildTappableStatModifierCell(
+                          entry,
+                          hero,
+                          state,
+                          snapshot,
+                        ),
+                        _buildDerivedValueCell(value: entry.current.toString()),
+                        _buildDerivedBoughtCell(
+                          entry,
+                          onRaise:
+                              _canUseSteigerungsDialog &&
+                                  entry.boughtKey != null &&
+                                  kGrundwertKomplexitaeten.containsKey(
+                                    entry.boughtKey!.replaceFirst('b_', ''),
+                                  )
+                              ? () => _steigeGrundwert(
+                                  entry.boughtKey!.replaceFirst('b_', ''),
+                                )
+                              : null,
+                          raiseTooltip: entry.boughtKey == null
+                              ? null
+                              : '${entry.label} steigern',
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-              ...entries.map(
-                (entry) => TableRow(
-                  children: [
-                    _buildAttributesTableLabelCell(
-                      debugModus ? entry.variableName : entry.label,
-                    ),
-                    _buildDerivedValueCell(
-                      value:
-                          (entry.current - entry.modifier - (entry.bought ?? 0))
-                              .toString(),
-                    ),
-                    _buildTappableStatModifierCell(entry, hero, state, snapshot),
-                    _buildDerivedValueCell(value: entry.current.toString()),
-                    _buildDerivedBoughtCell(
-                      entry,
-                      onRaise:
-                          _canUseSteigerungsDialog &&
-                              entry.boughtKey != null &&
-                              kGrundwertKomplexitaeten.containsKey(
-                                entry.boughtKey!.replaceFirst('b_', ''),
-                              )
-                          ? () => _steigeGrundwert(
-                              entry.boughtKey!.replaceFirst('b_', ''),
-                            )
-                          : null,
-                      raiseTooltip: entry.boughtKey == null
-                          ? null
-                          : '${entry.label} steigern',
-                    ),
-                  ],
-                ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResourceActivationSection(
+    HeroResourceActivation resourceActivation,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Ressourcen-Bereiche',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: 8),
+        _buildResourceActivationRow(
+          label: 'Magie',
+          keySuffix: 'magic',
+          activation: resourceActivation.magic,
+          onChanged: _setMagicEnabledOverride,
+        ),
+        const SizedBox(height: 8),
+        _buildResourceActivationRow(
+          label: 'Göttliches',
+          keySuffix: 'divine',
+          activation: resourceActivation.divine,
+          onChanged: _setDivineEnabledOverride,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResourceActivationRow({
+    required String label,
+    required String keySuffix,
+    required ResourceActivationStatus activation,
+    required ValueChanged<bool?> onChanged,
+  }) {
+    final statusText = activation.isEnabled ? 'aktiviert' : 'deaktiviert';
+    final sourceText = activation.hasManualOverride
+        ? 'manuell'
+        : 'automatisch';
+    if (!_editController.isEditing) {
+      return Row(
+        children: [
+          Expanded(
+            child: Text(
+              '$label: $statusText ($sourceText)',
+              key: ValueKey<String>('overview-resource-status-$keySuffix'),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      key: ValueKey<String>('overview-resource-row-$keySuffix'),
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: Theme.of(context).textTheme.bodyLarge),
+              Text(
+                'Standard: ${activation.autoEnabled ? 'aktiviert' : 'deaktiviert'}',
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
           ),
         ),
-      ),
+        Switch.adaptive(
+          key: ValueKey<String>('overview-resource-toggle-$keySuffix'),
+          value: activation.isEnabled,
+          onChanged: (value) => onChanged(value),
+        ),
+        if (activation.hasManualOverride) ...[
+          const SizedBox(width: 8),
+          TextButton(
+            key: ValueKey<String>('overview-resource-reset-$keySuffix'),
+            onPressed: () => onChanged(null),
+            child: const Text('Standard'),
+          ),
+        ],
+      ],
     );
   }
 
