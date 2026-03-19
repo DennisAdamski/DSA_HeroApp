@@ -223,9 +223,8 @@ Ergaenzungen zur aktuellen Struktur:
 - `lib/rules/derived/rest_rules.dart` kapselt Rast, Regeneration,
   Umweltmodifikatoren sowie den Abbau von Erschoepfung und
   Ueberanstrengung.
-- `lib/ui/screens/workspace/inspector_rest_card.dart` und
-  `lib/ui/screens/workspace/rest_dialog.dart` bilden die Lagerfeuer-Aktion
-  im Workspace-Inspector.
+- `lib/ui/screens/workspace/rest_dialog.dart` bildet die Lagerfeuer-Aktion
+  des Workspace-Inspectors; der Trigger sitzt direkt in den Vitalwerten.
 
 ---
 
@@ -615,11 +614,13 @@ The following files are **intentionally kept** but not currently wired into the 
   `erschoepfung` sowie `ueberanstrengung` dauerhaft im Laufzeitzustand.
 - Der Talente-Tab verwaltet Talent-Sonderfertigkeiten ueber einen
   strukturierten Editor statt ueber ein Freitextfeld.
-- Der breite Workspace-Inspector besitzt eine neue Rast-Karte mit
-  Lagerfeuer-Symbol. Der zugehoerige Dialog deckt Ausruhen, Schlafphase und
-  Bettruhe inklusive KO-/IN-Proben, Umweltmodifikatoren und
+- Der breite Workspace-Inspector zeigt das Lagerfeuer-Symbol jetzt direkt
+  oben rechts in den Vitalwerten. Der zugehoerige Dialog deckt Ausruhen,
+  Schlafphase und Bettruhe inklusive KO-/IN-Proben, Umweltmodifikatoren und
   Zustandsabbau ab.
 - Der Rast-Dialog enthaelt zusaetzlich einen expliziten `Fullrestore` fuer
   lange Abwesenheiten: alle Vitalwerte auf Maximum, keine Wunden,
   keine Erschoepfung und keine Ueberanstrengung.
+- `Erschoepfung` und `Ueberanstrengung` sind im Inspector Teil der
+  Vitalwerte und koennen dort direkt per Stepper geaendert werden.
 
