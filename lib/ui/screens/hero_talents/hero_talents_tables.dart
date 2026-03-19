@@ -283,6 +283,13 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               ),
               basePool: computedTaw,
               hasSpecialization: hasSpecialization,
+              wundMalus: ref
+                      .read(heroComputedProvider(widget.heroId))
+                      .asData
+                      ?.value
+                      .wundEffekte
+                      .talentProbeMalus ??
+                  0,
             ),
           ),
           icon: const Icon(Icons.casino_outlined),

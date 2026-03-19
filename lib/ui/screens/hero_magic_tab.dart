@@ -580,12 +580,22 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                   ),
                                 );
                               }
+                              final wundEffekte = ref
+                                      .read(
+                                        heroComputedProvider(widget.heroId),
+                                      )
+                                      .asData
+                                      ?.value
+                                      .wundEffekte;
                               showProbeDialog(
                                 context: context,
                                 request: buildSpellProbeRequest(
                                   title: spell.name,
                                   targets: targets,
                                   basePool: entry.spellValue + entry.modifier,
+                                  wundMalus:
+                                      (wundEffekte?.talentProbeMalus ?? 0) +
+                                      (wundEffekte?.zauberExtraMalus ?? 0),
                                 ),
                               );
                             },
