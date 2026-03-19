@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -489,6 +490,50 @@ void main() {
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
     expect(hero.talents['tal_a']?.talentValue, 7);
+  });
+
+  testWidgets('structured talent special abilities are saved from the sf tab', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openTalentsTab(tester, repo, buildCatalog());
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Sonderfertigkeiten'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-special-abilities-add')),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-special-ability-name')),
+      'Regeneration I',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-special-ability-save')),
+    );
+    await tester.pumpAndSettle();
+
+    await actions.save();
+    await tester.pumpAndSettle();
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.talentSpecialAbilities, const <TalentSpecialAbility>[
+      TalentSpecialAbility(name: 'Regeneration I'),
+    ]);
   });
 
   testWidgets(

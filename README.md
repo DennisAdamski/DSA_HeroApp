@@ -67,7 +67,7 @@ Technischer Stack:
 
 - Verwaltung allgemeiner Talente, Kampftalente und Meta-Talente
 - Validierung von AT/PA-Aufteilungen bei Kampftalenten
-- Unterstuetzung fuer Talentspezialisierungen, Sondererfahrungen und Begabungen
+- Unterstuetzung fuer Talentspezialisierungen, Sondererfahrungen, Begabungen und strukturierte Talent-Sonderfertigkeiten
 - Steigerungsdialog fuer Talente mit Live-AP-Kosten, SE-Verbrauch, manueller Komplexitaetskorrektur und Lehrmeister-Rabatt
 - AP-Steigerung fuer Kampftalente auch direkt im Kampftechniken-Tab
 - Eigener Bereich fuer Sprachen und Schriften auf Basis von Katalogdaten
@@ -86,10 +86,18 @@ Technischer Stack:
 - Verwaltung gelernter Zauber inklusive Repruesentation, Tradition und Begabung
 - Automatische Aktivierung des Magie-Bereichs ueber AE/AsP-Modifikatoren aus
   Rasse, Kultur, Profession oder Vorteilen mit optionalem manuellem Override
+- Globale Leiteigenschaft fuer magische Regeneration im Magie-Bereich
 - Anzeige von Verfuegbarkeit, Lernkomplexitaet und heldenspezifischen Anpassungen
 - Steigerungsdialog fuer Zauber mit Fremdrepr.-, Hauszauber-, manueller Komplexitaetskorrektur und Lehrmeisterlogik
 - Eigener Ritual-Bereich mit Ritualkategorien, Ritualkenntnissen und Ritualen
 - Pflege magischer Sonderfertigkeiten und aktiver Zaubereffekte
+
+### Workspace und Regeneration
+
+- Inspector mit Rast-Aktion als Lagerfeuer-Symbol fuer Ausruhen, Schlafphase und Bettruhe
+- Strukturierte Regenerationslogik fuer LeP, Au und AsP inklusive KO-/IN-Proben und Umweltmodifikatoren
+- Dauerhafte Verwaltung von Erschoepfung und Ueberanstrengung im `HeroState`
+- Vorschau und Sammeluebernahme der Rast-Ergebnisse direkt im Workspace
 
 ### Inventar, Notizen und Verbindungen
 
@@ -123,6 +131,7 @@ Grundprinzipien des Projekts:
 - Regellogik liegt ausschliesslich in `lib/rules/derived/`
 - UI und Provider rufen Regelmodule auf, rechnen aber nicht selbst
 - Katalogdaten werden zur Laufzeit aus Split-JSON geladen
+- `HeroSheet` nutzt Schema-Version `21`, `HeroState` Schema-Version `5`
 
 ## Schnellstart
 

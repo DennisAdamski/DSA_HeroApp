@@ -93,7 +93,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 20
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 21
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
@@ -103,7 +103,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 20) | Format-Version für Migrationskompatibilität |
+| `schemaVersion` | `int` (= 21) | Format-Version für Migrationskompatibilität |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
@@ -116,9 +116,10 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `talents` | `Map<String, HeroTalentEntry>` | Alle Talente (Schlüssel: Talent-ID) |
 | `metaTalents` | `List<HeroMetaTalent>` | Heldenspezifische Meta-Talente mit Komponenten, Eigenschaften und BE-Regel |
 | `hiddenTalentIds` | `List<String>` | IDs ausgeblendeter Talente |
-| `talentSpecialAbilities` | `String` | Freitexte für Sonderfertigkeiten |
+| `talentSpecialAbilities` | `List<TalentSpecialAbility>` | Strukturierte Talent-Sonderfertigkeiten (Name + optionale Notiz), Legacy-Strings werden tolerant migriert |
 | `spells` | `Map<String, HeroSpellEntry>` | Aktivierte oder gelernte Zauber des Helden |
 | `ritualCategories` | `List<HeroRitualCategory>` | Heldenspezifische Ritualkategorien mit Ritualkenntnis oder Talentbezug |
+| `magicLeadAttribute` | `String` | Globale Leiteigenschaft für magische Regeneration (`MU` bis `KK`) |
 | `rasse` / `rasseModText` | `String` | Rasse und Rassenmodifikator-Text |
 | `kultur` / `kulturModText` | `String` | Kultur und Kulturmodifikator-Text |
 | `profession` / `professionModText` | `String` | Profession und Professions-Mod-Text |
@@ -168,18 +169,20 @@ HeroSheet
 
 ### 2.2 `HeroState` — Laufzeitzustand
 
-**Datei:** `lib/domain/hero_state.dart` | **Schema-Version:** 2
+**Datei:** `lib/domain/hero_state.dart` | **Schema-Version:** 5
 
 Enthält ausschließlich zur Laufzeit veränderliche Werte. Wird separat von `HeroSheet`
 persistiert (eigene Hive-Box `hero_states_v1`).
 
 | Feld | Typ | Bedeutung |
 |---|---|---|
-| `schemaVersion` | `int` (= 2) | Format-Version |
+| `schemaVersion` | `int` (= 5) | Format-Version |
 | `currentLep` | `int` | Aktuelle Lebenspunkte |
 | `currentAsp` | `int` | Aktuelle Astralpunkte |
 | `currentKap` | `int` | Aktuelle Karmapunkte |
 | `currentAu` | `int` | Aktueller Ausdauerwert |
+| `erschoepfung` | `int` | Aktuelle Erschöpfung für Rast- und Schlafregeln |
+| `ueberanstrengung` | `int` | Aktuelle Überanstrengung; wird vor Erschöpfung abgebaut |
 | `tempMods` | `StatModifiers` | Temporäre Stat-Modifikatoren |
 | `tempAttributeMods` | `AttributeModifiers` | Temporäre Eigenschaftsmodifikatoren |
 
@@ -1105,9 +1108,9 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 | `heroes_home_screen.dart` | `HeroesHomeScreen` | Heldenliste; Import/Export/Löschen |
 | `hero_workspace_screen.dart` | `HeroWorkspaceScreen` | Dynamischer Workspace-Host fuer einen Helden |
 | `hero_overview_tab.dart` | `HeroOverviewTab` | Uebersicht-Tab fuer Eigenschaften, AP, Ressourcen, Biografie |
-| `hero_talents_tab.dart` | `HeroTalentsTab` | Talente + Sonderfertigkeiten-Sub-Tab |
+| `hero_talents_tab.dart` | `HeroTalentsTab` | Talente, strukturierte Talent-Sonderfertigkeiten und Meta-Talente |
 | `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Kampf (Nah- oder Fernkampf), SF, Manöver und Kampfmeisterschaften |
-| `hero_magic_tab.dart` | `HeroMagicTab` | Zauber, Ritualkategorien/Rituale sowie Repräsentationen und magische SF |
+| `hero_magic_tab.dart` | `HeroMagicTab` | Zauber, Ritualkategorien/Rituale, Repräsentationen, magische SF und globale Leiteigenschaft |
 | `hero_inventory_tab.dart` | `HeroInventoryTab` | 12-spaltige editierbare Inventartabelle |
 | `hero_notes_tab.dart` | `HeroNotesTab` | Untertabs für freie Notizen und Verbindungen |
 | `hero_detail_screen.dart` | `HeroDetailScreen` | Legacy-Platzhalter (nicht eingebunden) |
@@ -1162,7 +1165,7 @@ einem Zielgerät im Profile-Modus.
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` für `HeroSheet` ist **20**.
+- Die aktuelle `schemaVersion` für `HeroSheet` ist **21**, für `HeroState` **5**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 1 wird **strikt** validiert.
 
@@ -1303,6 +1306,23 @@ Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Da
   Uebersichts-, Talente-, Magie- und Kampf-Tab geoeffnet.
 - Wurfergebnisse bleiben bewusst temporaer im Dialog und werden nicht in
   `HeroSheet` oder `HeroState` persistiert.
+
+### Update 2026-03-19: Rast und strukturierte Regeneration
+
+- `lib/domain/talent_special_ability.dart` fuehrt `TalentSpecialAbility`
+  als strukturiertes Modell fuer Talent-Sonderfertigkeiten ein.
+- `HeroSheet.talentSpecialAbilities` speichert diese Sonderfertigkeiten jetzt
+  als Liste; alte Freitextdaten werden beim Laden automatisch migriert.
+- `HeroSheet.magicLeadAttribute` speichert die globale Leiteigenschaft fuer
+  magische Regeneration.
+- `HeroState` fuehrt `erschoepfung` und `ueberanstrengung` als persistierte
+  Laufzeitwerte ein.
+- `lib/rules/derived/rest_rules.dart` kapselt Ausruhen, Schlafphase,
+  Bettruhe, Umweltmodifikatoren sowie den Zustandsabbau gemaess der
+  Rastregeln.
+- Der breite Workspace-Inspector zeigt ueber `inspector_rest_card.dart` eine
+  Lagerfeuer-Aktion, die `rest_dialog.dart` mit Vorschau und Sammeluebernahme
+  oeffnet.
 
 ---
 

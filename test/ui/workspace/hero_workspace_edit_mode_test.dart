@@ -1102,6 +1102,59 @@ void main() {
     expect(workspaceDetailsToggleButton(), findsOneWidget);
   });
 
+  testWidgets('wide workspace inspector opens rest dialog and saves changes', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+          ueberanstrengung: 2,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+    expect(find.text('Rast'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey<String>('workspace-rest-open')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey<String>('rest-dialog')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey<String>('rest-au-enabled')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Manuell').at(0));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('rest-au-roll-manual')),
+      '9',
+    );
+    await tester.tap(find.text('Manuell').at(1));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('rest-au-ko-manual')),
+      '1',
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('rest-conditions-enabled')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey<String>('rest-dialog-apply')));
+    await tester.pumpAndSettle();
+
+    final state = await repo.loadHeroState('demo');
+    expect(state, isNotNull);
+    expect(state!.currentAu, 22);
+    expect(state.ueberanstrengung, 1);
+  });
+
   testWidgets('wide workspace can expand and collapse Helden Deck', (
     tester,
   ) async {
