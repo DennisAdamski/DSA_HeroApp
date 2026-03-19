@@ -46,7 +46,7 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - **HeroSpellEntry**: Speichert ZfW (spellValue), Modifikator, Hauszauber-Flag, Begabungs-Flag, die konkret gelernte Zauber-Repräsentation (`learnedRepresentation`) samt Herkunftstradition (`learnedTradition`) sowie optionale heldenspezifische Text-Overrides pro aktiviertem Zauber; das Listenfeld `specializations` bleibt nur noch als Legacy-Kompatibilitaet bestehen.
 - **HeroSpellTextOverrides**: Optionales Override-Objekt fuer importierte Zauberdetails (`aspCost`, `targetObject`, `range`, `duration`, `castingTime`, `wirkung`, `modifications`, `variants`) pro aktiviertem Zauber.
 - **MagicSpecialAbility**: Name + optionale Notiz fuer magische Sonderfertigkeiten.
-- **HeroSheet** (schemaVersion 20): Enthaelt `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities`, `metaTalents` und `resourceActivationConfig`; Waffenmeisterschaften liegen in `combatConfig.waffenmeisterschaften`. Zauber-Eintraege koennen zusaetzlich `gifted`, `learnedRepresentation`, `learnedTradition` und `textOverrides` speichern.
+- **HeroSheet** (schemaVersion 21): Enthaelt `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities`, `magicLeadAttribute`, strukturierte `talentSpecialAbilities`, `metaTalents` und `resourceActivationConfig`; Waffenmeisterschaften liegen in `combatConfig.waffenmeisterschaften`. Zauber-Eintraege koennen zusaetzlich `gifted`, `learnedRepresentation`, `learnedTradition` und `textOverrides` speichern.
 
 ### Regelfunktionen (`magic_rules.dart`, `learning_rules.dart`)
 
@@ -59,6 +59,7 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - **Merkmale parsen** (`parseSpellTraits`): Splittet Merkmale-Strings wie `"Eigenschaften, Elementar (Erz)"` in eine Liste.
 - **Talent-Maxima** (`computeTalentMaxValue`, `computeCombatTalentMaxValue`): Normale Talente nutzen die hoechste Probe-Eigenschaft, Kampftalente die feste Sonderregel `GE/KK` bzw. `FF/KK` plus `+3` oder `+5` bei Begabung.
 - **Ressourcen-Aktivierung** (`resource_activation_rules.dart`): Aktiviert Magie automatisch bei `AE`/`AsP`-Modifikatoren aus Rasse, Kultur, Profession oder Vorteilen und goettliche Ressourcen bei `KE`/`KaP`; beide Bereiche koennen pro Held manuell uebersteuert werden.
+- **Rast & Regeneration** (`rest_rules.dart`): Liest relevante Vor-/Nachteile aus `vorteileText` und `nachteileText`, wertet `Regeneration I/II` aus Talent-SF sowie `Meisterliche Regeneration` aus magischen SF aus und berechnet Au-, LeP- und AsP-Regeneration inklusive KO-/IN-Proben, Krankheit, Umweltmodifikatoren und Abbau von `Ueberanstrengung` vor `Erschoepfung`.
 
 ### UI-Tab (Magie)
 
@@ -76,6 +77,12 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - Offensichtliche OCR-/Silbentrennungsfehler aus der PDF werden im Importer konservativ bereinigt.
 - Im Magie-Tab zeigt der Detaildialog fuer aktivierte Zauber die effektiven Werte aus `SpellDef` plus optionalen `HeroSpellTextOverrides`; `source` bleibt dabei read-only.
 - Konstanten `kRepresentationen` und `kMerkmale` in `rules_catalog.dart` definieren die verfuegbaren Repraesentationen und Merkmale.
+
+## Rast im Workspace
+
+- Der breite Workspace-Inspector zeigt eine Lagerfeuer-Aktion `Rast`.
+- Der Rast-Dialog unterstuetzt `Ausruhen`, `Schlafphase` und `Bettruhe`.
+- KO- und IN-Proben, Wuerfe und Umweltmodifikatoren werden direkt im Rast-Fenster erfasst; das Ergebnis wird gesammelt in `HeroState` gespeichert.
 
 ## Wichtige Hinweise
 

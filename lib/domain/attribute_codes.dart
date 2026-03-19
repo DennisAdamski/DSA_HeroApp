@@ -6,6 +6,28 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 /// UI-Pfade dieselben Aliase akzeptieren.
 enum AttributeCode { mu, kl, inn, ch, ff, ge, ko, kk }
 
+/// Stabiler persistierter Code fuer einen [AttributeCode].
+String attributeCodeKey(AttributeCode code) {
+  switch (code) {
+    case AttributeCode.mu:
+      return 'MU';
+    case AttributeCode.kl:
+      return 'KL';
+    case AttributeCode.inn:
+      return 'IN';
+    case AttributeCode.ch:
+      return 'CH';
+    case AttributeCode.ff:
+      return 'FF';
+    case AttributeCode.ge:
+      return 'GE';
+    case AttributeCode.ko:
+      return 'KO';
+    case AttributeCode.kk:
+      return 'KK';
+  }
+}
+
 /// Normalisiert Eigenschaftsnamen fuer robuste Alias-Erkennung.
 ///
 /// Beispiele:

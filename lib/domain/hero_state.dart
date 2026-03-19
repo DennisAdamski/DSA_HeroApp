@@ -9,11 +9,13 @@ import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 /// Modifikatoren, die nicht dauerhaft ins Heldenblatt geschrieben werden.
 class HeroState {
   const HeroState({
-    this.schemaVersion = 4,
+    this.schemaVersion = 5,
     required this.currentLep,
     required this.currentAsp,
     required this.currentKap,
     required this.currentAu,
+    this.erschoepfung = 0,
+    this.ueberanstrengung = 0,
     this.tempMods = const StatModifiers(),
     this.tempAttributeMods = const AttributeModifiers(),
     this.activeSpellEffects = const ActiveSpellEffectsState(),
@@ -21,11 +23,13 @@ class HeroState {
   });
 
   const HeroState.empty()
-      : schemaVersion = 4,
+      : schemaVersion = 5,
         currentLep = 0,
         currentAsp = 0,
         currentKap = 0,
         currentAu = 0,
+        erschoepfung = 0,
+        ueberanstrengung = 0,
         tempMods = const StatModifiers(),
         tempAttributeMods = const AttributeModifiers(),
         activeSpellEffects = const ActiveSpellEffectsState(),
@@ -36,6 +40,8 @@ class HeroState {
   final int currentAsp;
   final int currentKap;
   final int currentAu;
+  final int erschoepfung;
+  final int ueberanstrengung;
   final StatModifiers tempMods;
   final AttributeModifiers tempAttributeMods;
   final ActiveSpellEffectsState activeSpellEffects;
@@ -49,6 +55,8 @@ class HeroState {
     int? currentAsp,
     int? currentKap,
     int? currentAu,
+    int? erschoepfung,
+    int? ueberanstrengung,
     StatModifiers? tempMods,
     AttributeModifiers? tempAttributeMods,
     ActiveSpellEffectsState? activeSpellEffects,
@@ -60,6 +68,8 @@ class HeroState {
       currentAsp: currentAsp ?? this.currentAsp,
       currentKap: currentKap ?? this.currentKap,
       currentAu: currentAu ?? this.currentAu,
+      erschoepfung: erschoepfung ?? this.erschoepfung,
+      ueberanstrengung: ueberanstrengung ?? this.ueberanstrengung,
       tempMods: tempMods ?? this.tempMods,
       tempAttributeMods: tempAttributeMods ?? this.tempAttributeMods,
       activeSpellEffects: activeSpellEffects ?? this.activeSpellEffects,
@@ -75,6 +85,8 @@ class HeroState {
       'currentAsp': currentAsp,
       'currentKap': currentKap,
       'currentAu': currentAu,
+      'erschoepfung': erschoepfung,
+      'ueberanstrengung': ueberanstrengung,
       'tempMods': tempMods.toJson(),
       'tempAttributeMods': tempAttributeMods.toJson(),
       'activeSpellEffects': activeSpellEffects.toJson(),
@@ -91,6 +103,8 @@ class HeroState {
       currentAsp: getInt('currentAsp'),
       currentKap: getInt('currentKap'),
       currentAu: getInt('currentAu'),
+      erschoepfung: getInt('erschoepfung'),
+      ueberanstrengung: getInt('ueberanstrengung'),
       tempMods: StatModifiers.fromJson(
         (json['tempMods'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
