@@ -14,6 +14,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_deta
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_ini_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_unterdrueckung_dialog.dart';
 
 /// Oeffnet den Wunden-Detail-Dialog als Fullscreen-Dialog.
 Future<void> showWundenDetailDialog({
@@ -57,14 +58,32 @@ class _WundenDetailDialog extends ConsumerWidget {
 
     Future<void> wundeHinzufuegen(WundZone zone) async {
       if (wpiZustand.wundenInZone(zone) >= maxWundenProZone) return;
+
+      WundZustand neuerZustand;
       if (zone == WundZone.kopf) {
         final iniWert = await showWundIniDialog(context);
-        if (iniWert == null) return;
-        await speichereWundZustand(
-          wpiZustand.mitWundeHinzu(zone, iniWuerfelWert: iniWert),
-        );
+        if (iniWert == null || !context.mounted) return;
+        neuerZustand = wpiZustand.mitWundeHinzu(zone, iniWuerfelWert: iniWert);
       } else {
-        await speichereWundZustand(wpiZustand.mitWundeHinzu(zone));
+        neuerZustand = wpiZustand.mitWundeHinzu(zone);
+      }
+
+      await speichereWundZustand(neuerZustand);
+
+      if (!context.mounted) return;
+      final effekte = computeWundEffekte(neuerZustand);
+      final unterdruecken = await showWundUnterdrueckungDialog(
+        context: context,
+        hero: hero,
+        wpiZustand: neuerZustand,
+        zone: zone,
+        wundEffekte: effekte,
+      );
+      if (unterdruecken == true) {
+        final aktUnterdrueckt = neuerZustand.unterdrueckteInZone(zone);
+        await speichereWundZustand(
+          neuerZustand.mitUnterdrueckung(zone, aktUnterdrueckt + 1),
+        );
       }
     }
 
