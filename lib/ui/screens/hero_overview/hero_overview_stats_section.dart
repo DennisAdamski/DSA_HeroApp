@@ -166,11 +166,15 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
 
     return _SectionCard(
       title: 'Basiswerte',
+      titleAction: IconButton(
+        key: const ValueKey<String>('overview-resource-settings-open'),
+        tooltip: 'Ressourcen-Einstellungen',
+        onPressed: () => _openResourceActivationDialog(hero),
+        icon: const Icon(Icons.settings_outlined),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildResourceActivationSection(resourceActivation),
-          const SizedBox(height: _fieldSpacing),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: ConstrainedBox(
@@ -240,31 +244,57 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     );
   }
 
-  Widget _buildResourceActivationSection(
-    HeroResourceActivation resourceActivation,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Ressourcen-Bereiche',
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
-        const SizedBox(height: 8),
-        _buildResourceActivationRow(
-          label: 'Magie',
-          keySuffix: 'magic',
-          activation: resourceActivation.magic,
-          onChanged: _setMagicEnabledOverride,
-        ),
-        const SizedBox(height: 8),
-        _buildResourceActivationRow(
-          label: 'Göttliches',
-          keySuffix: 'divine',
-          activation: resourceActivation.divine,
-          onChanged: _setDivineEnabledOverride,
-        ),
-      ],
+  Future<void> _openResourceActivationDialog(HeroSheet hero) async {
+    await showAdaptiveDetailSheet<void>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            final resourceActivation = _buildCurrentResourceActivation(hero);
+            return AlertDialog(
+              key: const ValueKey<String>('overview-resource-settings-dialog'),
+              title: const Text('Ressourcen-Einstellungen'),
+              content: SizedBox(
+                width: 420,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildResourceActivationRow(
+                      label: 'Magie',
+                      keySuffix: 'magic',
+                      activation: resourceActivation.magic,
+                      onChanged: (value) {
+                        _setMagicEnabledOverride(value);
+                        setDialogState(() {});
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    _buildResourceActivationRow(
+                      label: 'Göttliches',
+                      keySuffix: 'divine',
+                      activation: resourceActivation.divine,
+                      onChanged: (value) {
+                        _setDivineEnabledOverride(value);
+                        setDialogState(() {});
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  key: const ValueKey<String>(
+                    'overview-resource-settings-close',
+                  ),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Schließen'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -275,9 +305,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     required ValueChanged<bool?> onChanged,
   }) {
     final statusText = activation.isEnabled ? 'aktiviert' : 'deaktiviert';
-    final sourceText = activation.hasManualOverride
-        ? 'manuell'
-        : 'automatisch';
+    final sourceText = activation.hasManualOverride ? 'manuell' : 'automatisch';
     if (!_editController.isEditing) {
       return Row(
         children: [
@@ -537,10 +565,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              entry.modifier.toString(),
-              style: theme.textTheme.bodyMedium,
-            ),
+            Text(entry.modifier.toString(), style: theme.textTheme.bodyMedium),
             const SizedBox(width: 4),
             Icon(
               Icons.tune,
@@ -619,10 +644,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
         label: 'Nachteile',
         value: statModValue(breakdown.nachteileStatMods, statKey),
       ),
-      (
-        label: 'Temporaer',
-        value: statModValue(state.tempMods, statKey),
-      ),
+      (label: 'Temporaer', value: statModValue(state.tempMods, statKey)),
       if (levelBonus != 0) (label: 'Level', value: levelBonus),
       (
         label: 'Inventar',

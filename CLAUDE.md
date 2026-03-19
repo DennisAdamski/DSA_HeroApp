@@ -562,7 +562,7 @@ The following files are **intentionally kept** but not currently wired into the 
 - Der Workspace blendet den Magie-Tab, AsP-/KaP-Headerchips, Inspector-
   Ressourcen und den Button `Zauber aktivieren` anhand dieses effektiven
   Aktivierungsstatus ein oder aus.
-- Im Uebersicht-Tab bleibt eine immer sichtbare Aktivierungs-Sektion im
-  Bereich `Basiswerte`, ueber die Auto-Modus und manuelle Overrides
-  verwaltet werden.
+- Im Uebersicht-Tab sitzt die Ressourcen-Aktivierung jetzt hinter einem
+  Settings-Icon im Bereich `Basiswerte`; der Dialog zeigt Auto-Modus und
+  manuelle Overrides fuer Magie und goettliche Ressourcen.
 
