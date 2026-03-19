@@ -16,7 +16,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
       title: 'Basisinformationen',
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= _standardTwoColumnBreakpoint;
+          final isWide = constraints.maxWidth >= 1000;
           if (isWide) {
             return _buildWideAvatarBaseInfo(hero, constraints);
           }
@@ -26,12 +26,12 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
     );
   }
 
-  /// Breites Layout: linke Felder | Avatar | rechte Felder.
+  /// Breites Layout: Feldgrid links, Avatar rechts.
   Widget _buildWideAvatarBaseInfo(
     HeroSheet hero,
     BoxConstraints constraints,
   ) {
-    final avatarWidth = (constraints.maxWidth * 0.28).clamp(150.0, 280.0);
+    final avatarWidth = (constraints.maxWidth * 0.25).clamp(150.0, 280.0);
 
     return Column(
       children: [
@@ -41,35 +41,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Column(
-                children: [
-                  _buildInputField(label: 'Rasse', keyName: 'rasse'),
-                  const SizedBox(height: _gridSpacing),
-                  _buildInputField(label: 'Kultur', keyName: 'kultur'),
-                  const SizedBox(height: _gridSpacing),
-                  _buildInputField(
-                    label: 'Profession',
-                    keyName: 'profession',
-                  ),
-                  const SizedBox(height: _gridSpacing),
-                  _buildInputField(
-                    label: 'Geschlecht',
-                    keyName: 'geschlecht',
-                  ),
-                  const SizedBox(height: _gridSpacing),
-                  _buildInputField(label: 'Groesse', keyName: 'groesse'),
-                  const SizedBox(height: _gridSpacing),
-                  _buildInputField(label: 'Haarfarbe', keyName: 'haarfarbe'),
-                  const SizedBox(height: _gridSpacing),
-                  _buildInputField(label: 'Stand', keyName: 'stand'),
-                  const SizedBox(height: _gridSpacing),
-                  _buildInputField(
-                    label: 'Sozialstatus',
-                    keyName: 'sozialstatus',
-                    keyboardType: TextInputType.number,
-                  ),
-                ],
-              ),
+              child: Column(children: _buildStandardFieldRows()),
             ),
             const SizedBox(width: _gridSpacing),
             SizedBox(
@@ -89,56 +61,6 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
                   ),
                 ],
               ),
-            ),
-            const SizedBox(width: _gridSpacing),
-            Expanded(
-              child: Column(
-                children: [
-                  _buildInputField(
-                    label: 'Rasse Modifikatoren',
-                    keyName: 'rasse_mod',
-                  ),
-                  const SizedBox(height: _gridSpacing),
-                  _buildInputField(
-                    label: 'Kultur Modifikatoren',
-                    keyName: 'kultur_mod',
-                  ),
-                  const SizedBox(height: _gridSpacing),
-                  _buildInputField(
-                    label: 'Profession Modifikatoren',
-                    keyName: 'profession_mod',
-                  ),
-                  const SizedBox(height: _gridSpacing),
-                  _buildInputField(label: 'Alter', keyName: 'alter'),
-                  const SizedBox(height: _gridSpacing),
-                  _buildInputField(label: 'Gewicht', keyName: 'gewicht'),
-                  const SizedBox(height: _gridSpacing),
-                  _buildInputField(
-                    label: 'Augenfarbe',
-                    keyName: 'augenfarbe',
-                  ),
-                  const SizedBox(height: _gridSpacing),
-                  _buildInputField(label: 'Titel', keyName: 'titel'),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: _gridSpacing),
-        _ResponsiveFieldGrid(
-          breakpoint: _standardTwoColumnBreakpoint,
-          children: [
-            _buildInputField(
-              label: 'Aussehen',
-              keyName: 'aussehen',
-              minLines: 4,
-              maxLines: 6,
-            ),
-            _buildInputField(
-              label: 'Familie/Herkunft/Hintergrund',
-              keyName: 'familie',
-              minLines: 4,
-              maxLines: 6,
             ),
           ],
         ),
