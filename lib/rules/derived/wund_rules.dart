@@ -16,6 +16,7 @@ class WundEffekte {
     this.hinweise = const <String>[],
     this.kampfunfaehig = false,
     this.kampfunfaehigeZonen = const <WundZone>[],
+    this.unterdrueckteGesamt = 0,
   });
 
   /// Summe aller AT-Abzuege (Basis + zonenspezifisch).
@@ -56,6 +57,9 @@ class WundEffekte {
 
   /// Zonen mit 3 Wunden (nicht mehr verwendbar).
   final List<WundZone> kampfunfaehigeZonen;
+
+  /// Anzahl insgesamt unterdrueckter Wunden (fuer UI-Anzeige).
+  final int unterdrueckteGesamt;
 }
 
 /// Berechnet die Wundschwelle des Helden: KO/2 (abgerundet) + Modifikatoren.
@@ -72,61 +76,76 @@ int computeWundschwelle({
 }
 
 /// Berechnet alle aggregierten Wundeffekte aus dem aktuellen Wundenzustand.
+///
+/// Unterdrueckte Wunden verursachen keine Abzuege, zaehlen aber weiterhin
+/// fuer Kampfunfaehigkeit (Zone >= 3 Wunden).
 WundEffekte computeWundEffekte(WundZustand zustand) {
   final gesamt = zustand.gesamtWunden;
   if (gesamt == 0) return const WundEffekte();
 
-  // --- Basisabzuege: pro Wunde, zonenunabhaengig ---
-  var atMalus = gesamt * -2;
-  var paMalus = gesamt * -2;
-  var fkMalus = gesamt * -2;
-  var iniMalus = gesamt * -2;
-  var gsMalus = gesamt * -1;
-  final talentProbeMalus = gesamt * -3;
+  final effektiv = zustand.gesamtEffektiveWunden;
+  final unterdrueckt = zustand.gesamtUnterdrueckt;
 
-  // --- Zonenspezifische Zusatzabzuege ---
+  // --- Basisabzuege: pro effektiver (nicht unterdrueckter) Wunde ---
+  var atMalus = effektiv * -2;
+  var paMalus = effektiv * -2;
+  var fkMalus = effektiv * -2;
+  var iniMalus = effektiv * -2;
+  var gsMalus = effektiv * -1;
+  final talentProbeMalus = effektiv * -3;
+
+  // --- Zonenspezifische Zusatzabzuege (nur effektive Wunden) ---
   var zauberExtraMalus = 0;
   final hinweise = <String>[];
   final kampfunfaehigeZonen = <WundZone>[];
 
   for (final zone in WundZone.values) {
-    final wunden = zustand.wundenInZone(zone);
-    if (wunden <= 0) continue;
+    final wundenTotal = zustand.wundenInZone(zone);
+    if (wundenTotal <= 0) continue;
+    final wundenEffektiv = zustand.effektiveWundenInZone(zone);
 
-    switch (zone) {
-      case WundZone.kopf:
-        atMalus += wunden * -1;
-        paMalus += wunden * -1;
-        fkMalus += wunden * -1;
-        // Fester INI-Teil wird ueber kopfIniWuerfelMalus abgebildet,
-        // da der Effekt gewuerfelt ist.
-        zauberExtraMalus += wunden * -3;
+    // Zonenspezifische Abzuege nur fuer effektive Wunden.
+    if (wundenEffektiv > 0) {
+      switch (zone) {
+        case WundZone.kopf:
+          atMalus += wundenEffektiv * -1;
+          paMalus += wundenEffektiv * -1;
+          fkMalus += wundenEffektiv * -1;
+          zauberExtraMalus += wundenEffektiv * -3;
 
-      case WundZone.brust:
-      case WundZone.bauch:
-      case WundZone.ruecken:
-        atMalus += wunden * -1;
-        paMalus += wunden * -1;
-        fkMalus += wunden * -1;
-        hinweise.add(
-          '+${wunden}W6 SP Extraschaden (${wundZoneLabel[zone]})',
-        );
+        case WundZone.brust:
+        case WundZone.bauch:
+        case WundZone.ruecken:
+          atMalus += wundenEffektiv * -1;
+          paMalus += wundenEffektiv * -1;
+          fkMalus += wundenEffektiv * -1;
 
-      case WundZone.linkerArm:
-      case WundZone.rechterArm:
-        atMalus += wunden * -2;
-        paMalus += wunden * -2;
-        fkMalus += wunden * -4;
+        case WundZone.linkerArm:
+        case WundZone.rechterArm:
+          atMalus += wundenEffektiv * -2;
+          paMalus += wundenEffektiv * -2;
+          fkMalus += wundenEffektiv * -4;
 
-      case WundZone.linkesBein:
-      case WundZone.rechtesBein:
-        atMalus += wunden * -1;
-        paMalus += wunden * -1;
-        fkMalus += wunden * -2;
-        gsMalus += wunden * -2;
+        case WundZone.linkesBein:
+        case WundZone.rechtesBein:
+          atMalus += wundenEffektiv * -1;
+          paMalus += wundenEffektiv * -1;
+          fkMalus += wundenEffektiv * -2;
+          gsMalus += wundenEffektiv * -2;
+      }
     }
 
-    if (wunden >= maxWundenProZone) {
+    // Extraschaden-Hinweise basieren auf Gesamtwunden (physisch vorhanden).
+    if (zone == WundZone.brust ||
+        zone == WundZone.bauch ||
+        zone == WundZone.ruecken) {
+      hinweise.add(
+        '+${wundenTotal}W6 SP Extraschaden (${wundZoneLabel[zone]})',
+      );
+    }
+
+    // Kampfunfaehigkeit basiert auf Gesamtwunden (Wunde existiert physisch).
+    if (wundenTotal >= maxWundenProZone) {
       kampfunfaehigeZonen.add(zone);
     }
   }
@@ -148,20 +167,50 @@ WundEffekte computeWundEffekte(WundZustand zustand) {
     }
   }
 
+  if (unterdrueckt > 0) {
+    hinweise.add('$unterdrueckt Wunde${unterdrueckt > 1 ? 'n' : ''}'
+        ' unterdrückt');
+  }
+
+  // kopfIniWuerfelMalus proportional zu effektiven Kopfwunden.
+  final kopfTotal = zustand.wundenInZone(WundZone.kopf);
+  final kopfEffektiv = zustand.effektiveWundenInZone(WundZone.kopf);
+  final effektiverKopfIniMalus = kopfTotal > 0 && kopfEffektiv > 0
+      ? (zustand.kopfIniMalus * kopfEffektiv / kopfTotal).ceil()
+      : 0;
+
   return WundEffekte(
     atMalus: atMalus,
     paMalus: paMalus,
     fkMalus: fkMalus,
     iniMalus: iniMalus,
-    kopfIniWuerfelMalus: zustand.kopfIniMalus,
+    kopfIniWuerfelMalus: effektiverKopfIniMalus,
     gsMalus: gsMalus,
     talentProbeMalus: talentProbeMalus,
     zauberExtraMalus: zauberExtraMalus,
     hinweise: hinweise,
     kampfunfaehig: kampfunfaehigeZonen.isNotEmpty,
     kampfunfaehigeZonen: kampfunfaehigeZonen,
+    unterdrueckteGesamt: unterdrueckt,
   );
 }
+
+/// Berechnet die SB-Erschwernis fuer das Unterdruecken von Wunden.
+///
+/// [gesamtWunden] = alle Wunden inkl. der neuen.
+/// [neueWunden] = 1 (normal), 2 oder 3 (Mehrfachwunden aus einem Treffer).
+///
+/// Bei Einzelwunden: 4 × Gesamtwunden.
+/// Bei Mehrfachwunden aus einem Treffer: pauschal +8 (2) bzw. +12 (3).
+int computeSbUnterdrueckungErschwernis({
+  required int gesamtWunden,
+  int neueWunden = 1,
+}) => switch (neueWunden) {
+  1 => 4 * gesamtWunden,
+  2 => 8,
+  3 => 12,
+  _ => 4 * gesamtWunden,
+};
 
 /// Konvertiert aggregierte Wundeffekte in [StatModifiers] fuer die
 /// zentrale Berechnungspipeline.

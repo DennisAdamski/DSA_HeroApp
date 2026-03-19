@@ -305,6 +305,225 @@ void main() {
     });
   });
 
+  group('computeWundEffekte mit Unterdrueckung', () {
+    test('unterdrueckte Wunde verursacht keine Abzuege', () {
+      final zustand = const WundZustand(
+        wundenProZone: {WundZone.brust: 1},
+        unterdrueckteWundenProZone: {WundZone.brust: 1},
+      );
+      final e = computeWundEffekte(zustand);
+      expect(e.atMalus, 0);
+      expect(e.paMalus, 0);
+      expect(e.fkMalus, 0);
+      expect(e.iniMalus, 0);
+      expect(e.gsMalus, 0);
+      expect(e.talentProbeMalus, 0);
+      expect(e.unterdrueckteGesamt, 1);
+    });
+
+    test('teilweise unterdrueckt: nur effektive Wunden zaehlen', () {
+      final zustand = const WundZustand(
+        wundenProZone: {WundZone.linkerArm: 2},
+        unterdrueckteWundenProZone: {WundZone.linkerArm: 1},
+      );
+      final e = computeWundEffekte(zustand);
+      // 1 effektive Wunde:
+      // Basis: AT -2, PA -2, FK -2, INI -2, GS -1, Proben -3
+      // Arm:   AT -2, PA -2, FK -4
+      expect(e.atMalus, -4);
+      expect(e.paMalus, -4);
+      expect(e.fkMalus, -6);
+      expect(e.iniMalus, -2);
+      expect(e.gsMalus, -1);
+      expect(e.talentProbeMalus, -3);
+    });
+
+    test('alle Wunden unterdrueckt → keine Mali', () {
+      final zustand = const WundZustand(
+        wundenProZone: {
+          WundZone.kopf: 1,
+          WundZone.brust: 2,
+        },
+        kopfIniMalus: 8,
+        unterdrueckteWundenProZone: {
+          WundZone.kopf: 1,
+          WundZone.brust: 2,
+        },
+      );
+      final e = computeWundEffekte(zustand);
+      expect(e.atMalus, 0);
+      expect(e.paMalus, 0);
+      expect(e.fkMalus, 0);
+      expect(e.iniMalus, 0);
+      expect(e.kopfIniWuerfelMalus, 0);
+      expect(e.gsMalus, 0);
+      expect(e.talentProbeMalus, 0);
+      expect(e.zauberExtraMalus, 0);
+      expect(e.unterdrueckteGesamt, 3);
+    });
+
+    test('Kampfunfaehigkeit greift trotz Unterdrueckung', () {
+      final zustand = const WundZustand(
+        wundenProZone: {WundZone.linkerArm: 3},
+        unterdrueckteWundenProZone: {WundZone.linkerArm: 3},
+      );
+      final e = computeWundEffekte(zustand);
+      expect(e.kampfunfaehig, true);
+      expect(e.kampfunfaehigeZonen, [WundZone.linkerArm]);
+      // Aber keine Abzuege:
+      expect(e.atMalus, 0);
+      expect(e.paMalus, 0);
+    });
+
+    test('kopfIniMalus proportional bei unterdrueckten Kopfwunden', () {
+      final zustand = const WundZustand(
+        wundenProZone: {WundZone.kopf: 2},
+        kopfIniMalus: 10,
+        unterdrueckteWundenProZone: {WundZone.kopf: 1},
+      );
+      final e = computeWundEffekte(zustand);
+      // 1 effektive von 2 → ceil(10 * 1 / 2) = 5
+      expect(e.kopfIniWuerfelMalus, 5);
+    });
+
+    test('Extraschaden-Hinweis basiert auf Gesamtwunden', () {
+      final zustand = const WundZustand(
+        wundenProZone: {WundZone.brust: 2},
+        unterdrueckteWundenProZone: {WundZone.brust: 1},
+      );
+      final e = computeWundEffekte(zustand);
+      expect(e.hinweise, contains('+2W6 SP Extraschaden (Brust)'));
+    });
+
+    test('Unterdrueckungs-Hinweis wird angezeigt', () {
+      final zustand = const WundZustand(
+        wundenProZone: {WundZone.brust: 1},
+        unterdrueckteWundenProZone: {WundZone.brust: 1},
+      );
+      final e = computeWundEffekte(zustand);
+      expect(e.hinweise, contains('1 Wunde unterdrückt'));
+    });
+  });
+
+  group('computeSbUnterdrueckungErschwernis', () {
+    test('Einzelwunde: 4 * Gesamtwunden', () {
+      expect(
+        computeSbUnterdrueckungErschwernis(gesamtWunden: 1),
+        4,
+      );
+      expect(
+        computeSbUnterdrueckungErschwernis(gesamtWunden: 3),
+        12,
+      );
+      expect(
+        computeSbUnterdrueckungErschwernis(gesamtWunden: 5),
+        20,
+      );
+    });
+
+    test('2 Wunden aus einem Treffer: pauschal 8', () {
+      expect(
+        computeSbUnterdrueckungErschwernis(gesamtWunden: 2, neueWunden: 2),
+        8,
+      );
+      expect(
+        computeSbUnterdrueckungErschwernis(gesamtWunden: 5, neueWunden: 2),
+        8,
+      );
+    });
+
+    test('3 Wunden aus einem Treffer: pauschal 12', () {
+      expect(
+        computeSbUnterdrueckungErschwernis(gesamtWunden: 3, neueWunden: 3),
+        12,
+      );
+      expect(
+        computeSbUnterdrueckungErschwernis(gesamtWunden: 6, neueWunden: 3),
+        12,
+      );
+    });
+  });
+
+  group('WundZustand Unterdrueckung', () {
+    test('mitUnterdrueckung setzt Zaehler geclampt', () {
+      final zustand = const WundZustand(
+        wundenProZone: {WundZone.brust: 2},
+      );
+      final aktualisiert = zustand.mitUnterdrueckung(WundZone.brust, 1);
+      expect(aktualisiert.unterdrueckteInZone(WundZone.brust), 1);
+      expect(aktualisiert.effektiveWundenInZone(WundZone.brust), 1);
+    });
+
+    test('mitUnterdrueckung clampt auf Wundenanzahl', () {
+      final zustand = const WundZustand(
+        wundenProZone: {WundZone.brust: 1},
+      );
+      final aktualisiert = zustand.mitUnterdrueckung(WundZone.brust, 5);
+      expect(aktualisiert.unterdrueckteInZone(WundZone.brust), 1);
+    });
+
+    test('mitUnterdrueckung clampt auf 0', () {
+      final zustand = const WundZustand(
+        wundenProZone: {WundZone.brust: 2},
+        unterdrueckteWundenProZone: {WundZone.brust: 1},
+      );
+      final aktualisiert = zustand.mitUnterdrueckung(WundZone.brust, -3);
+      expect(aktualisiert.unterdrueckteInZone(WundZone.brust), 0);
+    });
+
+    test('mitWundeEntfernt clampt Unterdrueckung', () {
+      final zustand = const WundZustand(
+        wundenProZone: {WundZone.brust: 2},
+        unterdrueckteWundenProZone: {WundZone.brust: 2},
+      );
+      final aktualisiert = zustand.mitWundeEntfernt(WundZone.brust);
+      expect(aktualisiert.wundenInZone(WundZone.brust), 1);
+      expect(aktualisiert.unterdrueckteInZone(WundZone.brust), 1);
+    });
+
+    test('letzte Wunde entfernt → Unterdrueckung auf 0', () {
+      final zustand = const WundZustand(
+        wundenProZone: {WundZone.brust: 1},
+        unterdrueckteWundenProZone: {WundZone.brust: 1},
+      );
+      final aktualisiert = zustand.mitWundeEntfernt(WundZone.brust);
+      expect(aktualisiert.wundenInZone(WundZone.brust), 0);
+      expect(aktualisiert.unterdrueckteInZone(WundZone.brust), 0);
+    });
+
+    test('Serialisierung Roundtrip mit Unterdrueckung', () {
+      final zustand = const WundZustand(
+        wundenProZone: {WundZone.kopf: 2, WundZone.brust: 1},
+        kopfIniMalus: 10,
+        unterdrueckteWundenProZone: {WundZone.kopf: 1},
+        kampfunfaehigIgnoriert: true,
+      );
+      final json = zustand.toJson();
+      final wiederhergestellt = WundZustand.fromJson(json);
+      expect(wiederhergestellt.unterdrueckteInZone(WundZone.kopf), 1);
+      expect(wiederhergestellt.unterdrueckteInZone(WundZone.brust), 0);
+      expect(wiederhergestellt.kampfunfaehigIgnoriert, true);
+      expect(wiederhergestellt.kopfIniMalus, 10);
+    });
+
+    test('fromJson ohne Unterdrueckung → leere Map', () {
+      final zustand = WundZustand.fromJson({
+        'wundenProZone': {'kopf': 1},
+        'kopfIniMalus': 5,
+      });
+      expect(zustand.unterdrueckteInZone(WundZone.kopf), 0);
+      expect(zustand.kampfunfaehigIgnoriert, false);
+    });
+
+    test('fromJson clampt Unterdrueckung auf Wundenanzahl', () {
+      final zustand = WundZustand.fromJson({
+        'wundenProZone': {'kopf': 1},
+        'unterdrueckteWundenProZone': {'kopf': 3},
+      });
+      expect(zustand.unterdrueckteInZone(WundZone.kopf), 1);
+    });
+  });
+
   group('wundEffekteToStatModifiers', () {
     test('konvertiert Mali korrekt', () {
       final effekte = computeWundEffekte(const WundZustand(
