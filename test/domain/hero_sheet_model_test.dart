@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
@@ -72,6 +73,7 @@ void main() {
         magicEnabledOverride: false,
         divineEnabledOverride: true,
       ),
+      magicLeadAttribute: 'KL',
       talents: <String, HeroTalentEntry>{
         'tal_schwerter': HeroTalentEntry(
           talentValue: 11,
@@ -221,7 +223,10 @@ void main() {
         ],
       ),
       hiddenTalentIds: ['tal_a', 'tal_a', ' ', 'tal_b'],
-      talentSpecialAbilities: 'Meisterhandwerk, Begabung',
+      talentSpecialAbilities: const <TalentSpecialAbility>[
+        TalentSpecialAbility(name: 'Meisterhandwerk'),
+        TalentSpecialAbility(name: 'Begabung'),
+      ],
       notes: const <HeroNoteEntry>[
         HeroNoteEntry(
           title: 'Offene Schuld',
@@ -244,15 +249,19 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.background.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 20);
+    expect(reloaded.schemaVersion, 21);
     expect(reloaded.background.kultur, 'Mittelreich');
     expect(reloaded.background.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
     expect(reloaded.apAvailable, 500);
     expect(reloaded.resourceActivationConfig.magicEnabledOverride, isFalse);
     expect(reloaded.resourceActivationConfig.divineEnabledOverride, isTrue);
+    expect(reloaded.magicLeadAttribute, 'KL');
     expect(reloaded.hiddenTalentIds, ['tal_a', 'tal_b']);
-    expect(reloaded.talentSpecialAbilities, 'Meisterhandwerk, Begabung');
+    expect(reloaded.talentSpecialAbilities.map((entry) => entry.name), [
+      'Meisterhandwerk',
+      'Begabung',
+    ]);
     expect(reloaded.notes.single.title, 'Offene Schuld');
     expect(
       reloaded.notes.single.description,
@@ -380,10 +389,11 @@ void main() {
     expect(loaded.background.rasse, '');
     expect(loaded.apTotal, 0);
     expect(loaded.hiddenTalentIds, isEmpty);
-    expect(loaded.talentSpecialAbilities, '');
+    expect(loaded.talentSpecialAbilities, isEmpty);
     expect(loaded.unknownModifierFragments, isEmpty);
     expect(loaded.resourceActivationConfig.magicEnabledOverride, isNull);
     expect(loaded.resourceActivationConfig.divineEnabledOverride, isNull);
+    expect(loaded.magicLeadAttribute, isEmpty);
     expect(loaded.metaTalents, isEmpty);
     expect(loaded.ritualCategories, isEmpty);
     expect(loaded.notes, isEmpty);
@@ -696,7 +706,7 @@ void main() {
     },
   );
 
-  test('schemaVersion ist 20 nach toJson (v20-Default)', () {
+  test('schemaVersion ist 21 nach toJson (v21-Default)', () {
     const hero = HeroSheet(
       id: 'version-check',
       name: 'Versionstest',
@@ -713,8 +723,33 @@ void main() {
       ),
     );
     final json = hero.toJson();
-    expect(json['schemaVersion'], 20);
-    expect(HeroSheet.fromJson(json).schemaVersion, 20);
+    expect(json['schemaVersion'], 21);
+    expect(HeroSheet.fromJson(json).schemaVersion, 21);
+  });
+
+  test('legacy talentSpecialAbilities string migrates into structured list', () {
+    final loaded = HeroSheet.fromJson({
+      'schemaVersion': 20,
+      'id': 'legacy-sf',
+      'name': 'Alt-SF',
+      'level': 1,
+      'attributes': {
+        'mu': 10,
+        'kl': 10,
+        'inn': 10,
+        'ch': 10,
+        'ff': 10,
+        'ge': 10,
+        'ko': 10,
+        'kk': 10,
+      },
+      'talentSpecialAbilities': 'Regeneration I, Regeneration II',
+    });
+
+    expect(loaded.talentSpecialAbilities.map((entry) => entry.name), [
+      'Regeneration I',
+      'Regeneration II',
+    ]);
   });
 
   test('v15 Hero-JSON liefert korrekte Standardwerte fuer neue Inventarfelder', () {
