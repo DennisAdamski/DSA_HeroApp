@@ -1,3 +1,4 @@
+import 'dart:io' as io;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_prompt_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 
 /// Dialog fuer die KI-basierte Portraet-Generierung.
 class AvatarGenerationDialog extends ConsumerStatefulWidget {
@@ -301,6 +303,19 @@ class _AvatarGenerationDialogState
       await ref
           .read(heroActionsProvider)
           .saveHeroAvatar(heroId: widget.heroId, pngBytes: _resultBytes!);
+      if (!mounted) return;
+
+      // Flutter cached Image.file() nach Dateipfad — bei Neugenerierung
+      // wuerde sonst das alte Bild angezeigt. Daher gezielt evicten.
+      final location =
+          await ref.read(heroStorageLocationProvider.future);
+      final storage = ref.read(avatarFileStorageProvider);
+      final path = storage.resolveAvatarPath(
+        heroStoragePath: location.effectivePath,
+        avatarFileName: '${widget.heroId}.png',
+      );
+      FileImage(io.File(path)).evict();
+
       if (!mounted) return;
       Navigator.pop(context);
     } on Exception catch (e) {
