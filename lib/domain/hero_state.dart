@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 
 /// Laufzeitzustand eines Helden, getrennt von den Stammdaten (`HeroSheet`).
 ///
@@ -8,7 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 /// Modifikatoren, die nicht dauerhaft ins Heldenblatt geschrieben werden.
 class HeroState {
   const HeroState({
-    this.schemaVersion = 3,
+    this.schemaVersion = 4,
     required this.currentLep,
     required this.currentAsp,
     required this.currentKap,
@@ -16,17 +17,19 @@ class HeroState {
     this.tempMods = const StatModifiers(),
     this.tempAttributeMods = const AttributeModifiers(),
     this.activeSpellEffects = const ActiveSpellEffectsState(),
+    this.wpiZustand = const WundZustand(),
   });
 
   const HeroState.empty()
-      : schemaVersion = 3,
+      : schemaVersion = 4,
         currentLep = 0,
         currentAsp = 0,
         currentKap = 0,
         currentAu = 0,
         tempMods = const StatModifiers(),
         tempAttributeMods = const AttributeModifiers(),
-        activeSpellEffects = const ActiveSpellEffectsState();
+        activeSpellEffects = const ActiveSpellEffectsState(),
+        wpiZustand = const WundZustand();
 
   final int schemaVersion;
   final int currentLep;
@@ -37,6 +40,9 @@ class HeroState {
   final AttributeModifiers tempAttributeMods;
   final ActiveSpellEffectsState activeSpellEffects;
 
+  /// Aktueller Wundenzustand des Helden.
+  final WundZustand wpiZustand;
+
   /// Immutable Update fuer Teilmengen des Laufzeitzustands.
   HeroState copyWith({
     int? currentLep,
@@ -46,6 +52,7 @@ class HeroState {
     StatModifiers? tempMods,
     AttributeModifiers? tempAttributeMods,
     ActiveSpellEffectsState? activeSpellEffects,
+    WundZustand? wpiZustand,
   }) {
     return HeroState(
       schemaVersion: schemaVersion,
@@ -56,6 +63,7 @@ class HeroState {
       tempMods: tempMods ?? this.tempMods,
       tempAttributeMods: tempAttributeMods ?? this.tempAttributeMods,
       activeSpellEffects: activeSpellEffects ?? this.activeSpellEffects,
+      wpiZustand: wpiZustand ?? this.wpiZustand,
     );
   }
 
@@ -70,6 +78,7 @@ class HeroState {
       'tempMods': tempMods.toJson(),
       'tempAttributeMods': tempAttributeMods.toJson(),
       'activeSpellEffects': activeSpellEffects.toJson(),
+      'wpiZustand': wpiZustand.toJson(),
     };
   }
 
@@ -92,6 +101,9 @@ class HeroState {
       activeSpellEffects: ActiveSpellEffectsState.fromJson(
         (json['activeSpellEffects'] as Map?)?.cast<String, dynamic>() ??
             const {},
+      ),
+      wpiZustand: WundZustand.fromJson(
+        (json['wpiZustand'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
     );
   }
