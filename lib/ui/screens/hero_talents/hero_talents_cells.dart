@@ -19,23 +19,39 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     );
   }
 
-  Widget _tappableNameCell(String text, {Key? key, VoidCallback? onTap}) {
+  Widget _tappableNameCell(
+    String text, {
+    Key? key,
+    VoidCallback? onTap,
+    Widget? trailing,
+  }) {
     final theme = Theme.of(context);
     return Padding(
       key: key,
       padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(4),
-          child: Text(
-            text,
-            style: TextStyle(
-              color: theme.colorScheme.primary,
-              decoration: TextDecoration.underline,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(4),
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    color: theme.colorScheme.primary,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
             ),
-          ),
+            if (trailing != null) ...[
+              const SizedBox(width: 4),
+              trailing,
+            ],
+          ],
         ),
       ),
     );
@@ -383,6 +399,26 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
       parts.add('${_attributeCodeLabel(code)}: $value');
     }
     return parts.join(' | ');
+  }
+
+  List<ProbeTargetValue> _buildProbeTargets(
+    Attributes attributes,
+    List<String> attributeNames,
+  ) {
+    final targets = <ProbeTargetValue>[];
+    for (final name in attributeNames) {
+      final code = parseAttributeCode(name);
+      if (code == null) {
+        continue;
+      }
+      targets.add(
+        ProbeTargetValue(
+          label: _attributeCodeLabel(code),
+          value: readAttributeValue(attributes, code),
+        ),
+      );
+    }
+    return List<ProbeTargetValue>.unmodifiable(targets);
   }
 
   String _attributeCodeLabel(AttributeCode code) {

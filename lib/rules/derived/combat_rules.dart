@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ausweichen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
@@ -67,6 +68,9 @@ class CombatPreviewStats {
     required this.offhandRequiresLinkhand,
     required this.offhandName,
     required this.iniDiceCount,
+    required this.initiativeDiceSpec,
+    required this.initiativeFixedRollTotal,
+    required this.damageDiceSpec,
     required this.axxAttackDefenseHint,
     required this.isRangedWeapon,
     required this.rangedAtBase,
@@ -146,6 +150,9 @@ class CombatPreviewStats {
   final String offhandName;
   // Anzahl Ini-Wuerfel: 1 (normal) oder 2 (Klingentaenzer)
   final int iniDiceCount;
+  final DiceSpec initiativeDiceSpec;
+  final int? initiativeFixedRollTotal;
+  final DiceSpec damageDiceSpec;
   final String axxAttackDefenseHint;
   final bool isRangedWeapon;
   final int rangedAtBase;
@@ -401,6 +408,7 @@ CombatPreviewStats computeCombatPreviewStats(
   final iniDiceCount = computeIniDiceCount(special);
   final maxIniRoll = iniDiceCount * 6;
   final iniWurfEffective = manualMods.iniWurf.clamp(0, maxIniRoll);
+  final initiativeFixedRollTotal = special.aufmerksamkeit ? maxIniRoll : null;
   final eigenschaftsIni = computeIniBase(effectiveSheet, mods);
   final iniBasis = derived.iniBase;
   final axxIniBonus = computeAxxeleratusIniBonus(
@@ -512,6 +520,13 @@ CombatPreviewStats computeCombatPreviewStats(
     offhandRequiresLinkhand: offhandModifiers.requiresLinkhandViolation,
     offhandName: offhandModifiers.displayName,
     iniDiceCount: iniDiceCount,
+    initiativeDiceSpec: DiceSpec(count: iniDiceCount, sides: 6),
+    initiativeFixedRollTotal: initiativeFixedRollTotal,
+    damageDiceSpec: DiceSpec(
+      count: main.tpDiceCount < 1 ? 1 : main.tpDiceCount,
+      sides: main.tpDiceSides < 1 ? 6 : main.tpDiceSides,
+      modifier: tpCalc,
+    ),
     axxAttackDefenseHint: axxAttackDefenseHint,
     isRangedWeapon: isRangedWeapon,
     rangedAtBase: rangedAtBase,
