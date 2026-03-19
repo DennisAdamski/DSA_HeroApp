@@ -4,9 +4,13 @@ import 'package:http/http.dart' as http;
 
 import 'package:dsa_heldenverwaltung/data/avatar_api_client.dart';
 
-/// OpenAI DALL-E 3 Implementation der [AvatarApiClient]-Schnittstelle.
-class OpenAiDalle3Client implements AvatarApiClient {
-  OpenAiDalle3Client({required this.apiKey, http.Client? httpClient})
+/// Gemeinsame Basis fuer OpenAI-Bildgenerierungs-Clients.
+///
+/// DALL-E 3 und GPT-image-1 nutzen denselben Endpoint und dasselbe
+/// Antwortformat; sie unterscheiden sich nur in Modell, Groesse,
+/// Quality-Parameter und Kosten.
+abstract class _OpenAiImageClient implements AvatarApiClient {
+  _OpenAiImageClient({required this.apiKey, http.Client? httpClient})
       : _httpClient = httpClient ?? http.Client();
 
   final String apiKey;
@@ -15,11 +19,9 @@ class OpenAiDalle3Client implements AvatarApiClient {
   static const String _endpoint =
       'https://api.openai.com/v1/images/generations';
 
-  @override
-  double get estimatedCostUsd => 0.080;
-
-  @override
-  String get providerName => 'OpenAI DALL-E 3';
+  String get _model;
+  String get _size;
+  String get _quality;
 
   @override
   Future<List<int>> generatePortrait({required String prompt}) async {
@@ -30,11 +32,11 @@ class OpenAiDalle3Client implements AvatarApiClient {
         'Authorization': 'Bearer $apiKey',
       },
       body: jsonEncode({
-        'model': 'dall-e-3',
+        'model': _model,
         'prompt': prompt,
         'n': 1,
-        'size': '1024x1792',
-        'quality': 'hd',
+        'size': _size,
+        'quality': _quality,
         'response_format': 'b64_json',
       }),
     );
@@ -96,4 +98,44 @@ class OpenAiDalle3Client implements AvatarApiClient {
         );
     }
   }
+}
+
+/// OpenAI GPT-image-1: bessere Prompt-Treue und Detailtreue als DALL-E 3.
+class OpenAiGptImage1Client extends _OpenAiImageClient {
+  OpenAiGptImage1Client({required super.apiKey, super.httpClient});
+
+  @override
+  String get _model => 'gpt-image-1';
+
+  @override
+  String get _size => '1024x1536';
+
+  @override
+  String get _quality => 'high';
+
+  @override
+  double get estimatedCostUsd => 0.25;
+
+  @override
+  String get providerName => 'OpenAI GPT-image-1';
+}
+
+/// OpenAI DALL-E 3: guenstiger, etwas geringere Qualitaet.
+class OpenAiDalle3Client extends _OpenAiImageClient {
+  OpenAiDalle3Client({required super.apiKey, super.httpClient});
+
+  @override
+  String get _model => 'dall-e-3';
+
+  @override
+  String get _size => '1024x1792';
+
+  @override
+  String get _quality => 'hd';
+
+  @override
+  double get estimatedCostUsd => 0.080;
+
+  @override
+  String get providerName => 'OpenAI DALL-E 3';
 }

@@ -18,7 +18,7 @@ void main() {
     test('fromJson mit leerer Map liefert Defaults', () {
       final config = AvatarApiConfig.fromJson(const {});
 
-      expect(config.provider, AvatarApiProvider.openaiDalle3);
+      expect(config.provider, AvatarApiProvider.openaiGptImage1);
       expect(config.apiKey, '');
       expect(config.isConfigured, isFalse);
     });
@@ -29,7 +29,7 @@ void main() {
         'apiKey': 'sk-123',
       });
 
-      expect(config.provider, AvatarApiProvider.openaiDalle3);
+      expect(config.provider, AvatarApiProvider.openaiGptImage1);
       expect(config.apiKey, 'sk-123');
     });
 
@@ -52,6 +52,10 @@ void main() {
 
   group('AvatarApiProvider', () {
     test('fromId findet bekannte Provider', () {
+      expect(
+        AvatarApiProvider.fromId('openaiGptImage1'),
+        AvatarApiProvider.openaiGptImage1,
+      );
       expect(
         AvatarApiProvider.fromId('openaiDalle3'),
         AvatarApiProvider.openaiDalle3,
