@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -1153,6 +1154,53 @@ void main() {
     expect(state, isNotNull);
     expect(state!.currentAu, 22);
     expect(state.ueberanstrengung, 1);
+  });
+
+  testWidgets('wide workspace rest dialog can full restore resources and wounds', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero(vorteileText: 'AE+3, KE+1')],
+      states: {
+        'demo': const HeroState(
+          currentLep: 5,
+          currentAsp: 2,
+          currentKap: 0,
+          currentAu: 1,
+          erschoepfung: 4,
+          ueberanstrengung: 2,
+          wpiZustand: WundZustand(
+            wundenProZone: <WundZone, int>{WundZone.kopf: 2},
+            kopfIniMalus: 8,
+            kampfunfaehigIgnoriert: true,
+          ),
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+    await tester.tap(find.byKey(const ValueKey<String>('workspace-rest-open')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('rest-dialog-full-restore')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Anwenden'));
+    await tester.pumpAndSettle();
+
+    final state = await repo.loadHeroState('demo');
+    expect(state, isNotNull);
+    expect(state!.currentLep, 22);
+    expect(state.currentAu, 22);
+    expect(state.currentAsp, 24);
+    expect(state.currentKap, 1);
+    expect(state.erschoepfung, 0);
+    expect(state.ueberanstrengung, 0);
+    expect(state.wpiZustand.gesamtWunden, 0);
+    expect(state.wpiZustand.kopfIniMalus, 0);
+    expect(state.wpiZustand.kampfunfaehigIgnoriert, isFalse);
   });
 
   testWidgets('wide workspace can expand and collapse Helden Deck', (

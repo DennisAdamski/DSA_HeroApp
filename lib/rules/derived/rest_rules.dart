@@ -1,7 +1,10 @@
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 
 /// Art des Zustandsabbaus fuer Erschöpfung und Überanstrengung.
 enum RestConditionMode { rast, schlaf }
@@ -349,6 +352,26 @@ RestConditionRecoveryResult computeConditionRecovery({
     remainingErschoepfung: remainingErschoepfung,
     hours: cappedHours,
     mode: mode,
+  );
+}
+
+/// Setzt einen Heldenzustand fuer lange Abwesenheiten vollstaendig zurueck.
+///
+/// Der Fullrestore setzt alle Vitalwerte auf ihre Maximalwerte, baut
+/// Erschoepfung und Ueberanstrengung vollstaendig ab und entfernt alle
+/// Wunden. Sonstige Laufzeiteffekte bleiben unveraendert.
+HeroState buildFullRestoreState({
+  required HeroState currentState,
+  required DerivedStats derivedStats,
+}) {
+  return currentState.copyWith(
+    currentLep: derivedStats.maxLep,
+    currentAsp: derivedStats.maxAsp,
+    currentKap: derivedStats.maxKap,
+    currentAu: derivedStats.maxAu,
+    erschoepfung: 0,
+    ueberanstrengung: 0,
+    wpiZustand: const WundZustand(),
   );
 }
 

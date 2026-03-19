@@ -97,6 +97,7 @@ Technischer Stack:
 - Inspector mit Rast-Aktion als Lagerfeuer-Symbol fuer Ausruhen, Schlafphase und Bettruhe
 - Strukturierte Regenerationslogik fuer LeP, Au und AsP inklusive KO-/IN-Proben und Umweltmodifikatoren
 - Dauerhafte Verwaltung von Erschoepfung und Ueberanstrengung im `HeroState`
+- Optionaler Fullrestore fuer lange Abwesenheiten: alle Vitalwerte auf Maximum und keine Wunden mehr
 - Vorschau und Sammeluebernahme der Rast-Ergebnisse direkt im Workspace
 
 ### Inventar, Notizen und Verbindungen

@@ -1320,6 +1320,9 @@ Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Da
 - `lib/rules/derived/rest_rules.dart` kapselt Ausruhen, Schlafphase,
   Bettruhe, Umweltmodifikatoren sowie den Zustandsabbau gemaess der
   Rastregeln.
+- Fuer laengere Abwesenheiten bietet der Rast-Dialog zusaetzlich einen
+  `Fullrestore`, der alle Vitalwerte maximiert und den kompletten
+  Wundzustand zuruecksetzt.
 - Der breite Workspace-Inspector zeigt ueber `inspector_rest_card.dart` eine
   Lagerfeuer-Aktion, die `rest_dialog.dart` mit Vorschau und Sammeluebernahme
   oeffnet.
