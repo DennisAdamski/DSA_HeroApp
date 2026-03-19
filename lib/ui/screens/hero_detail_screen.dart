@@ -102,7 +102,7 @@ class _HeroDetailScreenState extends ConsumerState<HeroDetailScreen> {
     return parsed;
   }
 
-  Future<void> _save(HeroSheet hero) async {
+  Future<void> _save(HeroSheet hero, HeroState state) async {
     final actions = ref.read(heroActionsProvider);
 
     final updatedHero = hero.copyWith(
@@ -137,12 +137,11 @@ class _HeroDetailScreenState extends ConsumerState<HeroDetailScreen> {
       ),
     );
 
-    final updatedState = HeroState(
+    final updatedState = state.copyWith(
       currentLep: _readInt('cur_lep', min: 0, max: 999),
       currentAu: _readInt('cur_au', min: 0, max: 999),
       currentAsp: _readInt('cur_asp', min: 0, max: 999),
       currentKap: _readInt('cur_kap', min: 0, max: 999),
-      tempMods: const StatModifiers(),
     );
 
     await actions.saveHero(updatedHero);
@@ -226,7 +225,7 @@ class _HeroDetailScreenState extends ConsumerState<HeroDetailScreen> {
             Row(
               children: [
                 FilledButton.icon(
-                  onPressed: () => _save(hero!),
+                  onPressed: () => _save(hero!, state),
                   icon: const Icon(Icons.save),
                   label: const Text('Speichern'),
                 ),

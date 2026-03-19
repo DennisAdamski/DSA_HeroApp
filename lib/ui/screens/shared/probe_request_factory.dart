@@ -16,11 +16,15 @@ ResolvedProbeRequest buildAttributeProbeRequest({
 }
 
 /// Baut eine aufgeloeste Talentprobe.
+///
+/// [wundMalus] wird als negativer Startwert fuer die situative Erschwernis
+/// gesetzt (Wundabzuege auf Talent- und Zauberproben).
 ResolvedProbeRequest buildTalentProbeRequest({
   required String title,
   required List<ProbeTargetValue> targets,
   required int basePool,
   bool hasSpecialization = false,
+  int wundMalus = 0,
 }) {
   return ResolvedProbeRequest(
     type: ProbeType.talent,
@@ -32,14 +36,19 @@ ResolvedProbeRequest buildTalentProbeRequest({
     targets: targets,
     basePool: basePool,
     specializationBonus: hasSpecialization ? 2 : 0,
+    initialSituationalModifier: wundMalus,
   );
 }
 
 /// Baut eine aufgeloeste Zauberprobe.
+///
+/// [wundMalus] wird als negativer Startwert fuer die situative Erschwernis
+/// gesetzt (Wundabzuege auf Zauberproben inkl. Kopfwunden-Extramalus).
 ResolvedProbeRequest buildSpellProbeRequest({
   required String title,
   required List<ProbeTargetValue> targets,
   required int basePool,
+  int wundMalus = 0,
 }) {
   return ResolvedProbeRequest(
     type: ProbeType.spell,
@@ -50,6 +59,7 @@ ResolvedProbeRequest buildSpellProbeRequest({
     diceSpec: const DiceSpec(count: 3, sides: 20),
     targets: targets,
     basePool: basePool,
+    initialSituationalModifier: wundMalus,
   );
 }
 

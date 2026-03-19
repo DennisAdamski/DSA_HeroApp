@@ -16,6 +16,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 
 /// Persistiertes Kernmodell eines Helden (ohne Laufzeitzustand).
 ///
@@ -27,7 +28,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 20,
+    this.schemaVersion = 21,
     required this.name,
     required this.level,
     required this.attributes,
@@ -39,12 +40,13 @@ class HeroSheet {
     this.talents = const <String, HeroTalentEntry>{},
     this.metaTalents = const <HeroMetaTalent>[],
     this.hiddenTalentIds = const <String>[],
-    this.talentSpecialAbilities = '',
+    this.talentSpecialAbilities = const <TalentSpecialAbility>[],
     this.spells = const <String, HeroSpellEntry>{},
     this.ritualCategories = const <HeroRitualCategory>[],
     this.representationen = const <String>[],
     this.merkmalskenntnisse = const <String>[],
     this.magicSpecialAbilities = const <MagicSpecialAbility>[],
+    this.magicLeadAttribute = '',
     this.sprachen = const <String, HeroLanguageEntry>{},
     this.schriften = const <String, HeroScriptEntry>{},
     this.muttersprache = '',
@@ -81,12 +83,13 @@ class HeroSheet {
   final Map<String, HeroTalentEntry> talents;
   final List<HeroMetaTalent> metaTalents;
   final List<String> hiddenTalentIds;
-  final String talentSpecialAbilities;
+  final List<TalentSpecialAbility> talentSpecialAbilities;
   final Map<String, HeroSpellEntry> spells;
   final List<HeroRitualCategory> ritualCategories;
   final List<String> representationen;
   final List<String> merkmalskenntnisse;
   final List<MagicSpecialAbility> magicSpecialAbilities;
+  final String magicLeadAttribute;
 
   /// Sprachkenntnisse: sprachId → Eintrag.
   final Map<String, HeroLanguageEntry> sprachen;
@@ -138,12 +141,13 @@ class HeroSheet {
     Map<String, HeroTalentEntry>? talents,
     List<HeroMetaTalent>? metaTalents,
     List<String>? hiddenTalentIds,
-    String? talentSpecialAbilities,
+    List<TalentSpecialAbility>? talentSpecialAbilities,
     Map<String, HeroSpellEntry>? spells,
     List<HeroRitualCategory>? ritualCategories,
     List<String>? representationen,
     List<String>? merkmalskenntnisse,
     List<MagicSpecialAbility>? magicSpecialAbilities,
+    String? magicLeadAttribute,
     Map<String, HeroLanguageEntry>? sprachen,
     Map<String, HeroScriptEntry>? schriften,
     String? muttersprache,
@@ -189,6 +193,7 @@ class HeroSheet {
       merkmalskenntnisse: merkmalskenntnisse ?? this.merkmalskenntnisse,
       magicSpecialAbilities:
           magicSpecialAbilities ?? this.magicSpecialAbilities,
+      magicLeadAttribute: magicLeadAttribute ?? this.magicLeadAttribute,
       sprachen: sprachen ?? this.sprachen,
       schriften: schriften ?? this.schriften,
       muttersprache: muttersprache ?? this.muttersprache,
@@ -232,7 +237,9 @@ class HeroSheet {
           .map((entry) => entry.toJson())
           .toList(growable: false),
       'hiddenTalentIds': _normalizeHiddenTalentIds(hiddenTalentIds),
-      'talentSpecialAbilities': talentSpecialAbilities,
+      'talentSpecialAbilities': talentSpecialAbilities
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
       'spells': spells.map((key, value) => MapEntry(key, value.toJson())),
       'ritualCategories': ritualCategories
           .map((entry) => entry.toJson())
@@ -242,6 +249,7 @@ class HeroSheet {
       'magicSpecialAbilities': magicSpecialAbilities
           .map((entry) => entry.toJson())
           .toList(growable: false),
+      'magicLeadAttribute': magicLeadAttribute,
       'sprachen': sprachen.map((key, value) => MapEntry(key, value.toJson())),
       'schriften': schriften.map((key, value) => MapEntry(key, value.toJson())),
       'muttersprache': muttersprache,
@@ -296,6 +304,7 @@ class HeroSheet {
     final rawMetaTalents = (json['metaTalents'] as List?) ?? const <dynamic>[];
     final rawHiddenTalentIds =
         (json['hiddenTalentIds'] as List?) ?? const <dynamic>[];
+    final rawTalentSpecialAbilities = json['talentSpecialAbilities'];
     final rawSpells =
         (json['spells'] as Map?)?.cast<String, dynamic>() ??
         const <String, dynamic>{};
@@ -361,7 +370,9 @@ class HeroSheet {
           )
           .toList(growable: false),
       hiddenTalentIds: _normalizeHiddenTalentIds(rawHiddenTalentIds),
-      talentSpecialAbilities: getString('talentSpecialAbilities'),
+      talentSpecialAbilities: _parseTalentSpecialAbilities(
+        rawTalentSpecialAbilities,
+      ),
       spells: rawSpells.map((key, value) {
         final map = value is Map
             ? value.cast<String, dynamic>()
@@ -388,6 +399,7 @@ class HeroSheet {
                 MagicSpecialAbility.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
+      magicLeadAttribute: getString('magicLeadAttribute').toUpperCase(),
       sprachen: rawSprachen.map((key, value) {
         final map = value is Map
             ? value.cast<String, dynamic>()
@@ -452,6 +464,23 @@ class HeroSheet {
           .toList(growable: false),
     );
   }
+}
+
+List<TalentSpecialAbility> _parseTalentSpecialAbilities(dynamic raw) {
+  if (raw is List) {
+    return raw
+        .whereType<Map>()
+        .map(
+          (entry) =>
+              TalentSpecialAbility.fromJson(entry.cast<String, dynamic>()),
+        )
+        .where((entry) => entry.name.trim().isNotEmpty)
+        .toList(growable: false);
+  }
+  if (raw is String) {
+    return parseLegacyTalentSpecialAbilities(raw);
+  }
+  return const <TalentSpecialAbility>[];
 }
 
 /// Parst eine verschachtelte Modifikator-Map aus JSON.

@@ -25,11 +25,13 @@ classDiagram
         +BoughtStats bought
         +CombatConfig combatConfig
         +Map~String,HeroTalentEntry~ talents
+        +List~TalentSpecialAbility~ talentSpecialAbilities
         +List~HeroMetaTalent~ metaTalents
         +Map~String,HeroSpellEntry~ spells
         +List~HeroInventoryEntry~ inventoryEntries
         +List~HeroRitualCategory~ ritualCategories
         +List~MagicSpecialAbility~ magicSpecialAbilities
+        +String magicLeadAttribute
         +int apTotal / apSpent
         +int schemaVersion
         +copyWith() HeroSheet
@@ -40,6 +42,8 @@ classDiagram
         +int currentAsp
         +int currentKap
         +int currentAu
+        +int erschoepfung
+        +int ueberanstrengung
         +StatModifiers tempMods
         +AttributeModifiers tempAttributeMods
         +int schemaVersion
@@ -115,6 +119,11 @@ classDiagram
     class HeroTalentModifier {
         +int modifier
         +String description
+    }
+
+    class TalentSpecialAbility {
+        +String name
+        +String note
     }
 
     class HeroSpellEntry {
@@ -297,6 +306,7 @@ classDiagram
     HeroSheet *-- BoughtStats : bought
     HeroSheet *-- CombatConfig : combatConfig
     HeroSheet *-- "0..*" HeroTalentEntry : talents
+    HeroSheet *-- "0..*" TalentSpecialAbility : talentSpecialAbilities
     HeroSheet *-- "0..*" HeroMetaTalent : metaTalents
     HeroSheet *-- "0..*" HeroSpellEntry : spells
     HeroSheet *-- "0..*" HeroInventoryEntry : inventoryEntries

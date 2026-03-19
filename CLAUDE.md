@@ -217,6 +217,14 @@ Ergaenzungen zur aktuellen Struktur:
 - `lib/ui/screens/shared/probe_dialog.dart` ist der gemeinsame Dialog fuer
   digitale und manuelle Wuerfelproben; alle Trigger im Workspace oeffnen
   dieselbe Oberflaeche.
+- `lib/domain/talent_special_ability.dart` definiert strukturierte
+  Talent-Sonderfertigkeiten (Name + optionale Notiz) inklusive Legacy-
+  Migration aus altem Freitext.
+- `lib/rules/derived/rest_rules.dart` kapselt Rast, Regeneration,
+  Umweltmodifikatoren sowie den Abbau von Erschoepfung und
+  Ueberanstrengung.
+- `lib/ui/screens/workspace/rest_dialog.dart` bildet die Lagerfeuer-Aktion
+  des Workspace-Inspectors; der Trigger sitzt direkt in den Vitalwerten.
 
 ---
 
@@ -253,7 +261,8 @@ Domain models (lib/domain/) — immutable, pure Dart
 | `WaffenmeisterConfig` | `domain/combat_config/waffenmeister_config.dart` | Persistierte Waffenmeisterschaft mit Bonus-Baukasten, Waffenart und Anforderungen |
 | `HeroTalentModifier` | `domain/hero_talent_entry.dart` | Einzelner Modifikatorbaustein fuer Nicht-Kampftalente (Wert + Beschreibung) |
 | `HeroMetaTalent` | `domain/hero_meta_talent.dart` | Heldenspezifische Meta-Talent-Definition mit Komponenten, Eigenschaften und BE-Regel |
-| `HeroState` | `domain/hero_state.dart` | Runtime state (current LeP/AsP/KaP/Au, temp modifiers) |
+| `HeroState` | `domain/hero_state.dart` | Runtime state (current LeP/AsP/KaP/Au, Erschoepfung, Ueberanstrengung, temp modifiers) |
+| `TalentSpecialAbility` | `domain/talent_special_ability.dart` | Persistierte Talent-Sonderfertigkeit mit Name und Notiz |
 | `HeroComputedSnapshot` | `state/hero_computed_snapshot.dart` | All derived values for one hero, computed in one pass |
 | `HeroIndexSnapshot` | `state/hero_index_snapshot.dart` | Sorted hero list + O(1) ID map |
 | `HeroSpellEntry` | `domain/hero_spell_entry.dart` | Persisted spell entry (ZfW, Hauszauber, modifier, learnedRepresentation, learnedTradition, Legacy-Spezialisierungen, Text-Overrides) |
@@ -456,7 +465,7 @@ python tool/report_unreferenced_dart.py
 - **Screen size limit**: root screen/tab files must stay under **700 LOC**. Split into sub-files (e.g. `hero_combat/` directory) before exceeding this.
 - **ConsumerWidget vs ConsumerStatefulWidget**: use `ConsumerWidget` (stateless) by default; use `ConsumerStatefulWidget` only when local widget state is genuinely needed.
 - **Provider access in UI**: use `.watch` for reactive reads; use `.read` only inside callbacks (e.g. button presses).
-- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **20**.
+- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **21** for `HeroSheet` and **5** for `HeroState`.
 - **German comments and identifiers**: code-level comments and domain names follow German (rasse, kultur, Held, Talente, etc.).
 
 ### Catalog
@@ -593,4 +602,25 @@ The following files are **intentionally kept** but not currently wired into the 
   zurueckparsen muss.
 - Wuerfel-Trigger sitzen kontextuell in Uebersicht, Talenten, Magie und
   Kampf; alle oeffnen denselben `probe_dialog.dart`.
+
+## Update 2026-03-19
+
+- `HeroSheet` nutzt jetzt `schemaVersion` **21**. `talentSpecialAbilities`
+  ist als `List<TalentSpecialAbility>` modelliert; alte String-Daten werden
+  beim Laden automatisch in strukturierte Eintraege migriert.
+- `HeroSheet.magicLeadAttribute` speichert eine globale Leiteigenschaft fuer
+  magische Regeneration und wird im Magie-Tab unter `Repr. & SF` gepflegt.
+- `HeroState` nutzt jetzt `schemaVersion` **5** und speichert
+  `erschoepfung` sowie `ueberanstrengung` dauerhaft im Laufzeitzustand.
+- Der Talente-Tab verwaltet Talent-Sonderfertigkeiten ueber einen
+  strukturierten Editor statt ueber ein Freitextfeld.
+- Der breite Workspace-Inspector zeigt das Lagerfeuer-Symbol jetzt direkt
+  oben rechts in den Vitalwerten. Der zugehoerige Dialog deckt Ausruhen,
+  Schlafphase und Bettruhe inklusive KO-/IN-Proben, Umweltmodifikatoren und
+  Zustandsabbau ab.
+- Der Rast-Dialog enthaelt zusaetzlich einen expliziten `Fullrestore` fuer
+  lange Abwesenheiten: alle Vitalwerte auf Maximum, keine Wunden,
+  keine Erschoepfung und keine Ueberanstrengung.
+- `Erschoepfung` und `Ueberanstrengung` sind im Inspector Teil der
+  Vitalwerte und koennen dort direkt per Stepper geaendert werden.
 
