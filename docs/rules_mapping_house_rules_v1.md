@@ -46,7 +46,7 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - **HeroSpellEntry**: Speichert ZfW (spellValue), Modifikator, Hauszauber-Flag, Begabungs-Flag, die konkret gelernte Zauber-Repräsentation (`learnedRepresentation`) samt Herkunftstradition (`learnedTradition`) sowie optionale heldenspezifische Text-Overrides pro aktiviertem Zauber; das Listenfeld `specializations` bleibt nur noch als Legacy-Kompatibilitaet bestehen.
 - **HeroSpellTextOverrides**: Optionales Override-Objekt fuer importierte Zauberdetails (`aspCost`, `targetObject`, `range`, `duration`, `castingTime`, `wirkung`, `modifications`, `variants`) pro aktiviertem Zauber.
 - **MagicSpecialAbility**: Name + optionale Notiz fuer magische Sonderfertigkeiten.
-- **HeroSheet** (schemaVersion 15): Enthaelt `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities` und `metaTalents`; Waffenmeisterschaften liegen in `combatConfig.waffenmeisterschaften`. Zauber-Eintraege koennen zusaetzlich `gifted`, `learnedRepresentation`, `learnedTradition` und `textOverrides` speichern.
+- **HeroSheet** (schemaVersion 20): Enthaelt `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities`, `metaTalents` und `resourceActivationConfig`; Waffenmeisterschaften liegen in `combatConfig.waffenmeisterschaften`. Zauber-Eintraege koennen zusaetzlich `gifted`, `learnedRepresentation`, `learnedTradition` und `textOverrides` speichern.
 
 ### Regelfunktionen (`magic_rules.dart`, `learning_rules.dart`)
 
@@ -58,6 +58,7 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - **Effektive Steigerung** (`effectiveSteigerung`): Erhoeht die Basis zuerst um `+2`, wenn der Zauber in Fremdrepräsentation gelernt wurde, und reduziert danach additiv um je eine Stufe fuer Hauszauber, passende Merkmalskenntnisse und Begabung.
 - **Merkmale parsen** (`parseSpellTraits`): Splittet Merkmale-Strings wie `"Eigenschaften, Elementar (Erz)"` in eine Liste.
 - **Talent-Maxima** (`computeTalentMaxValue`, `computeCombatTalentMaxValue`): Normale Talente nutzen die hoechste Probe-Eigenschaft, Kampftalente die feste Sonderregel `GE/KK` bzw. `FF/KK` plus `+3` oder `+5` bei Begabung.
+- **Ressourcen-Aktivierung** (`resource_activation_rules.dart`): Aktiviert Magie automatisch bei `AE`/`AsP`-Modifikatoren aus Rasse, Kultur, Profession oder Vorteilen und goettliche Ressourcen bei `KE`/`KaP`; beide Bereiche koennen pro Held manuell uebersteuert werden.
 
 ### UI-Tab (Magie)
 

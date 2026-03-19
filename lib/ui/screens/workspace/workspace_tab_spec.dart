@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -181,6 +182,7 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       label: 'Magie',
       icon: Icons.bolt_outlined,
       helper: 'Katalogansicht fuer Zauber',
+      isVisible: (hero) => computeHeroResourceActivation(hero).magic.isEnabled,
       buildContent: ({required heroId, required callbacks}) => HeroMagicTab(
         heroId: heroId,
         onDirtyChanged: callbacks.onDirtyChanged,

@@ -6,6 +6,7 @@ class HeroTransferBundle {
     required this.exportedAt,
     required this.hero,
     required this.state,
+    this.avatarBase64,
   });
 
   static const String kind = 'dsa.hero.export';
@@ -15,6 +16,9 @@ class HeroTransferBundle {
   final HeroSheet hero;
   final HeroState state;
 
+  /// Base64-kodierte Avatar-PNG-Daten (optional).
+  final String? avatarBase64;
+
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'kind': kind,
@@ -22,6 +26,7 @@ class HeroTransferBundle {
       'exportedAt': exportedAt.toUtc().toIso8601String(),
       'hero': hero.toJson(),
       'state': state.toJson(),
+      if (avatarBase64 != null) 'avatarBase64': avatarBase64,
     };
   }
 
@@ -70,10 +75,15 @@ class HeroTransferBundle {
       throw const FormatException('Feld "hero.id" fehlt oder ist ungueltig.');
     }
 
+    final rawAvatar = json['avatarBase64'];
+    final avatarBase64 =
+        rawAvatar is String && rawAvatar.isNotEmpty ? rawAvatar : null;
+
     return HeroTransferBundle(
       exportedAt: exportedAt.toUtc(),
       hero: HeroSheet.fromJson(heroMap),
       state: HeroState.fromJson(rawState.cast<String, dynamic>()),
+      avatarBase64: avatarBase64,
     );
   }
 }
