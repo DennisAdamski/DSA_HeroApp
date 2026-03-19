@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_config.dart' show AvatarApiConfig;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 
 /// Settings-Repository (wird beim App-Start uebersteuert).
@@ -91,6 +92,12 @@ class SettingsActions {
   Future<void> clearHeroStoragePath() async {
     final current = _repo.load();
     await _repo.save(current.copyWith(heroStoragePath: null));
+  }
+
+  /// Speichert die Avatar-API-Konfiguration.
+  Future<void> saveAvatarApiConfig(AvatarApiConfig config) async {
+    final current = _repo.load();
+    await _repo.save(current.copyWith(avatarApiConfig: config));
   }
 }
 
