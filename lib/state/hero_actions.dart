@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -14,7 +16,11 @@ import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
+import 'package:dsa_heldenverwaltung/state/avatar_providers.dart'
+    show avatarFileStorageProvider;
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart'
+    show heroStorageLocationProvider;
 
 /// Steuert, wie beim Import eines bereits vorhandenen Helden verfahren wird.
 enum ImportConflictResolution {
@@ -144,10 +150,25 @@ class HeroActions {
     final codec = _ref.read(heroTransferCodecProvider);
     final hero = await _loadHeroById(heroId);
     final state = (await repo.loadHeroState(heroId)) ?? const HeroState.empty();
+    // Avatar-Bytes laden und base64-kodieren (falls vorhanden)
+    String? avatarBase64;
+    if (hero.appearance.avatarFileName.isNotEmpty) {
+      final heroStoragePath = await _resolveHeroStoragePath();
+      final storage = _ref.read(avatarFileStorageProvider);
+      final bytes = await storage.loadAvatarBytes(
+        heroStoragePath: heroStoragePath,
+        avatarFileName: hero.appearance.avatarFileName,
+      );
+      if (bytes != null) {
+        avatarBase64 = base64Encode(bytes);
+      }
+    }
+
     final bundle = HeroTransferBundle(
       exportedAt: DateTime.now().toUtc(),
       hero: hero,
       state: state,
+      avatarBase64: avatarBase64,
     );
     return codec.encode(bundle);
   }
@@ -179,8 +200,67 @@ class HeroActions {
 
     await saveHero(hero);
     await saveHeroState(heroId, bundle.state);
+
+    // Avatar aus Bundle importieren (falls vorhanden)
+    if (bundle.avatarBase64 != null && bundle.avatarBase64!.isNotEmpty) {
+      final pngBytes = base64Decode(bundle.avatarBase64!);
+      final heroStoragePath = await _resolveHeroStoragePath();
+      final storage = _ref.read(avatarFileStorageProvider);
+      final fileName = await storage.saveAvatar(
+        heroStoragePath: heroStoragePath,
+        heroId: heroId,
+        pngBytes: pngBytes,
+      );
+      // avatarFileName im Helden aktualisieren
+      final savedHero = await _loadHeroById(heroId);
+      await saveHero(savedHero.copyWith(
+        appearance: savedHero.appearance.copyWith(avatarFileName: fileName),
+      ));
+    }
+
     _ref.read(selectedHeroIdProvider.notifier).state = heroId;
     return heroId;
+  }
+
+  /// Speichert ein generiertes Avatar-Bild und aktualisiert den Helden.
+  Future<void> saveHeroAvatar({
+    required String heroId,
+    required List<int> pngBytes,
+  }) async {
+    final hero = await _loadHeroById(heroId);
+    final heroStoragePath = await _resolveHeroStoragePath();
+    final storage = _ref.read(avatarFileStorageProvider);
+    final fileName = await storage.saveAvatar(
+      heroStoragePath: heroStoragePath,
+      heroId: heroId,
+      pngBytes: pngBytes,
+    );
+    final updated = hero.copyWith(
+      appearance: hero.appearance.copyWith(avatarFileName: fileName),
+    );
+    await saveHero(updated);
+  }
+
+  /// Entfernt den Avatar eines Helden.
+  Future<void> removeHeroAvatar(String heroId) async {
+    final hero = await _loadHeroById(heroId);
+    if (hero.appearance.avatarFileName.isEmpty) return;
+    final heroStoragePath = await _resolveHeroStoragePath();
+    final storage = _ref.read(avatarFileStorageProvider);
+    await storage.deleteAvatar(
+      heroStoragePath: heroStoragePath,
+      avatarFileName: hero.appearance.avatarFileName,
+    );
+    final updated = hero.copyWith(
+      appearance: hero.appearance.copyWith(avatarFileName: ''),
+    );
+    await saveHero(updated);
+  }
+
+  /// Ermittelt den aktuell wirksamen Heldenspeicherpfad.
+  Future<String> _resolveHeroStoragePath() async {
+    final location = await _ref.read(heroStorageLocationProvider.future);
+    return location.effectivePath;
   }
 
   /// Laedt einen Helden aus dem Repository.

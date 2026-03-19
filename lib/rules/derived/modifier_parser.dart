@@ -24,6 +24,31 @@ class ModifierParseResult {
   final List<String> unknownFragments;
 }
 
+/// Extrahiert alle erkannten Basiswert-Codes aus einem freien Modifier-Text.
+///
+/// Die Rueckgabe enthaelt normalisierte Codes wie `ASP` oder `KAP`; unbekannte
+/// Fragmente werden ignoriert.
+Set<String> extractNormalizedStatModifierCodes(String text) {
+  final codes = <String>{};
+  final regex = RegExp(r'^\s*([A-Za-z]+)\s*([+-])\s*(\d+)\s*$');
+  final fragments = text.split(RegExp(r'[\n,;]+'));
+  for (final raw in fragments) {
+    final fragment = raw.trim();
+    if (fragment.isEmpty) {
+      continue;
+    }
+    final match = regex.firstMatch(fragment);
+    if (match == null) {
+      continue;
+    }
+    final code = _normalizeCode(match.group(1)!);
+    if (_isKnownStatCode(code)) {
+      codes.add(code);
+    }
+  }
+  return codes;
+}
+
 final Map<String, ModifierParseResult> _modifierParseCache =
     <String, ModifierParseResult>{};
 const int _modifierParseCacheMaxEntries = 512;
@@ -220,9 +245,30 @@ String _buildModifierParseCacheKey({
 String _normalizeCode(String input) {
   final text = input.toUpperCase().replaceAll(RegExp(r'[^A-Z]'), '');
 
-  const aliases = {'AE': 'ASP', 'LE': 'LEP', 'AW': 'AUSWEICHEN'};
+  const aliases = {
+    'AE': 'ASP',
+    'KE': 'KAP',
+    'LE': 'LEP',
+    'AW': 'AUSWEICHEN',
+  };
 
   return aliases[text] ?? text;
+}
+
+bool _isKnownStatCode(String code) {
+  switch (code) {
+    case 'LEP':
+    case 'AU':
+    case 'ASP':
+    case 'KAP':
+    case 'MR':
+    case 'INI':
+    case 'GS':
+    case 'AUSWEICHEN':
+      return true;
+    default:
+      return false;
+  }
 }
 
 // Wendet einen Modifier-Betrag auf die passende Eigenschaft an.
