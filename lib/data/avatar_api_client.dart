@@ -17,6 +17,8 @@ abstract class AvatarApiClient {
 /// Erstellt den passenden API-Client fuer den konfigurierten Provider.
 AvatarApiClient createAvatarApiClient(AvatarApiConfig config) {
   switch (config.provider) {
+    case AvatarApiProvider.openaiGptImage1:
+      return OpenAiGptImage1Client(apiKey: config.apiKey);
     case AvatarApiProvider.openaiDalle3:
       return OpenAiDalle3Client(apiKey: config.apiKey);
   }
