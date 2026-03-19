@@ -71,6 +71,7 @@ DerivedStats computeDerivedStatsFromInputs({
   required ModifierParseResult parsedModifiers,
   required Attributes effectiveAttributes,
   StatModifiers inventoryStatMods = const StatModifiers(),
+  StatModifiers wundStatMods = const StatModifiers(),
 }) {
   final effectiveSheet = sheet.copyWith(attributes: effectiveAttributes);
   final namedStatMods = aggregateNamedStatModifiers(sheet.statModifiers);
@@ -79,7 +80,8 @@ DerivedStats computeDerivedStatsFromInputs({
       namedStatMods +
       parsedModifiers.statMods +
       state.tempMods +
-      inventoryStatMods;
+      inventoryStatMods +
+      wundStatMods;
   final activeArmorPieces = sheet.combatConfig.armor.pieces
       .where((piece) => piece.isActive)
       .toList(growable: false);
