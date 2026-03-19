@@ -245,12 +245,23 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
   }
 
   Future<void> _openResourceActivationDialog(HeroSheet hero) async {
+    var dialogMagicEnabledOverride = _editController.isEditing
+        ? _draftMagicEnabledOverride
+        : hero.resourceActivationConfig.magicEnabledOverride;
+    var dialogDivineEnabledOverride = _editController.isEditing
+        ? _draftDivineEnabledOverride
+        : hero.resourceActivationConfig.divineEnabledOverride;
+
     await showAdaptiveDetailSheet<void>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) {
-            final resourceActivation = _buildCurrentResourceActivation(hero);
+            final resourceActivation = _buildResourceActivationForOverrides(
+              hero,
+              magicEnabledOverride: dialogMagicEnabledOverride,
+              divineEnabledOverride: dialogDivineEnabledOverride,
+            );
             return AlertDialog(
               key: const ValueKey<String>('overview-resource-settings-dialog'),
               title: const Text('Ressourcen-Einstellungen'),
@@ -264,20 +275,18 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                       label: 'Magie',
                       keySuffix: 'magic',
                       activation: resourceActivation.magic,
-                      onChanged: (value) {
-                        _setMagicEnabledOverride(value);
-                        setDialogState(() {});
-                      },
+                      onChanged: (value) => setDialogState(() {
+                        dialogMagicEnabledOverride = value;
+                      }),
                     ),
                     const SizedBox(height: 8),
                     _buildResourceActivationRow(
                       label: 'Göttliches',
                       keySuffix: 'divine',
                       activation: resourceActivation.divine,
-                      onChanged: (value) {
-                        _setDivineEnabledOverride(value);
-                        setDialogState(() {});
-                      },
+                      onChanged: (value) => setDialogState(() {
+                        dialogDivineEnabledOverride = value;
+                      }),
                     ),
                   ],
                 ),
@@ -288,7 +297,31 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                     'overview-resource-settings-close',
                   ),
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Schließen'),
+                  child: const Text('Abbrechen'),
+                ),
+                FilledButton(
+                  key: const ValueKey<String>(
+                    'overview-resource-settings-save',
+                  ),
+                  onPressed: () async {
+                    if (_editController.isEditing) {
+                      _applyDraftResourceActivationOverrides(
+                        magicEnabledOverride: dialogMagicEnabledOverride,
+                        divineEnabledOverride: dialogDivineEnabledOverride,
+                      );
+                    } else {
+                      await _saveResourceActivationOverrides(
+                        hero,
+                        magicEnabledOverride: dialogMagicEnabledOverride,
+                        divineEnabledOverride: dialogDivineEnabledOverride,
+                      );
+                    }
+                    if (!dialogContext.mounted) {
+                      return;
+                    }
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: const Text('Speichern'),
                 ),
               ],
             );
@@ -306,19 +339,6 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
   }) {
     final statusText = activation.isEnabled ? 'aktiviert' : 'deaktiviert';
     final sourceText = activation.hasManualOverride ? 'manuell' : 'automatisch';
-    if (!_editController.isEditing) {
-      return Row(
-        children: [
-          Expanded(
-            child: Text(
-              '$label: $statusText ($sourceText)',
-              key: ValueKey<String>('overview-resource-status-$keySuffix'),
-            ),
-          ),
-        ],
-      );
-    }
-
     return Row(
       key: ValueKey<String>('overview-resource-row-$keySuffix'),
       children: [
@@ -327,6 +347,11 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label, style: Theme.of(context).textTheme.bodyLarge),
+              Text(
+                'Aktuell: $statusText ($sourceText)',
+                key: ValueKey<String>('overview-resource-status-$keySuffix'),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
               Text(
                 'Standard: ${activation.autoEnabled ? 'aktiviert' : 'deaktiviert'}',
                 style: Theme.of(context).textTheme.bodySmall,

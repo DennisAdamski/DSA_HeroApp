@@ -324,8 +324,28 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   }
 
   HeroResourceActivation _buildCurrentResourceActivation(HeroSheet hero) {
+    return _buildResourceActivationForOverrides(
+      hero,
+      magicEnabledOverride: _draftMagicEnabledOverride,
+      divineEnabledOverride: _draftDivineEnabledOverride,
+    );
+  }
+
+  /// Berechnet die Ressourcen-Aktivierung fuer den aktuellen Bearbeitungsstand.
+  HeroResourceActivation _buildResourceActivationForOverrides(
+    HeroSheet hero, {
+    required bool? magicEnabledOverride,
+    required bool? divineEnabledOverride,
+  }) {
     if (!_editController.isEditing) {
-      return computeHeroResourceActivation(hero);
+      return computeHeroResourceActivation(
+        hero.copyWith(
+          resourceActivationConfig: HeroResourceActivationConfig(
+            magicEnabledOverride: magicEnabledOverride,
+            divineEnabledOverride: divineEnabledOverride,
+          ),
+        ),
+      );
     }
     final draftHero = hero.copyWith(
       background: hero.background.copyWith(
@@ -335,21 +355,51 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       ),
       vorteileText: _field('vorteile').text.trim(),
       resourceActivationConfig: HeroResourceActivationConfig(
-        magicEnabledOverride: _draftMagicEnabledOverride,
-        divineEnabledOverride: _draftDivineEnabledOverride,
+        magicEnabledOverride: magicEnabledOverride,
+        divineEnabledOverride: divineEnabledOverride,
       ),
     );
     return computeHeroResourceActivation(draftHero);
   }
 
-  void _setMagicEnabledOverride(bool? value) {
-    _draftMagicEnabledOverride = value;
-    _onFieldChanged('');
+  /// Uebernimmt Ressourcen-Overrides in den Draft des Overview-Tabs.
+  void _applyDraftResourceActivationOverrides({
+    required bool? magicEnabledOverride,
+    required bool? divineEnabledOverride,
+  }) {
+    final hasChanged =
+        _draftMagicEnabledOverride != magicEnabledOverride ||
+        _draftDivineEnabledOverride != divineEnabledOverride;
+    _draftMagicEnabledOverride = magicEnabledOverride;
+    _draftDivineEnabledOverride = divineEnabledOverride;
+    if (hasChanged) {
+      _onFieldChanged('');
+    }
   }
 
-  void _setDivineEnabledOverride(bool? value) {
-    _draftDivineEnabledOverride = value;
-    _onFieldChanged('');
+  /// Speichert Ressourcen-Overrides direkt am Helden ausserhalb des Edit-Modus.
+  Future<void> _saveResourceActivationOverrides(
+    HeroSheet hero, {
+    required bool? magicEnabledOverride,
+    required bool? divineEnabledOverride,
+  }) async {
+    final updatedHero = hero.copyWith(
+      resourceActivationConfig: HeroResourceActivationConfig(
+        magicEnabledOverride: magicEnabledOverride,
+        divineEnabledOverride: divineEnabledOverride,
+      ),
+    );
+    await ref.read(heroActionsProvider).saveHero(updatedHero);
+    if (!mounted) {
+      return;
+    }
+    _latestHero = updatedHero;
+    _draftMagicEnabledOverride = magicEnabledOverride;
+    _draftDivineEnabledOverride = divineEnabledOverride;
+    _viewRevision.value++;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Ressourcen-Einstellungen gespeichert')),
+    );
   }
 
   void _applyApIncrement({
