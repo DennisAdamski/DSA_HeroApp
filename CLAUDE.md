@@ -335,7 +335,7 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 
 - `CombatConfig` speichert Waffenmeisterschaften als
   `waffenmeisterschaften`; die aktuelle `schemaVersion` fuer `HeroSheet`
-  bleibt **15**.
+  liegt inzwischen bei **20**.
 - Die Domain liegt in `lib/domain/combat_config/waffenmeister_config.dart`.
 - `lib/rules/derived/waffenmeister_rules.dart` kapselt Punktbudget,
   Validierung und automatisch ableitbare Kampfboni.
@@ -365,7 +365,7 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 - `HeroSheet` verwendet jetzt `rawStartAttributes` fuer Roh-Startwerte und `startAttributes` fuer effektive Startwerte nach Rasse/Kultur/Profession.
 - Neue Start-/Maximum-Logik liegt in `lib/rules/derived/attribute_start_rules.dart`.
 - `HeroComputedSnapshot` enthaelt zusaetzlich effektive Startwerte und Eigenschaftsmaxima.
-- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **15**.
+- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **20**.
 - `HeroSheet` speichert zusaetzlich `ritualCategories` fuer heldenspezifische
   Ritualkategorien und Rituale.
 - `HeroSheet` speichert jetzt auch `notes` und `connections` fuer den
@@ -456,7 +456,7 @@ python tool/report_unreferenced_dart.py
 - **Screen size limit**: root screen/tab files must stay under **700 LOC**. Split into sub-files (e.g. `hero_combat/` directory) before exceeding this.
 - **ConsumerWidget vs ConsumerStatefulWidget**: use `ConsumerWidget` (stateless) by default; use `ConsumerStatefulWidget` only when local widget state is genuinely needed.
 - **Provider access in UI**: use `.watch` for reactive reads; use `.read` only inside callbacks (e.g. button presses).
-- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **15**.
+- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **20**.
 - **German comments and identifiers**: code-level comments and domain names follow German (rasse, kultur, Held, Talente, etc.).
 
 ### Catalog
@@ -562,6 +562,21 @@ The following files are **intentionally kept** but not currently wired into the 
 - Im Uebersicht-Tab sind Basiswert-Modifier und Eigenschafts-Berechnet-
   Zellen tappbar und oeffnen editierbare Detail-Dialoge mit Quellen-
   Aufschluesselung.
+
+## Update 2026-03-19
+
+- `HeroSheet` speichert jetzt `resourceActivationConfig` mit nullable
+  Overrides fuer `magicEnabledOverride` und `divineEnabledOverride`.
+- `lib/rules/derived/resource_activation_rules.dart` leitet daraus den
+  effektiven Status fuer Magie und goettliche Ressourcen ab.
+- `KE` wird im Modifier-Parser jetzt als Alias fuer `KAP` erkannt.
+- Der Workspace blendet den Magie-Tab, AsP-/KaP-Headerchips, Inspector-
+  Ressourcen und den Button `Zauber aktivieren` anhand dieses effektiven
+  Aktivierungsstatus ein oder aus.
+- Im Uebersicht-Tab sitzt die Ressourcen-Aktivierung jetzt hinter einem
+  Settings-Icon im Bereich `Basiswerte`; der Dialog zeigt Auto-Modus und
+  manuelle Overrides fuer Magie und goettliche Ressourcen und kann diese
+  auch ausserhalb des Bearbeitungsmodus direkt speichern.
 
 ## Update 2026-03-19
 

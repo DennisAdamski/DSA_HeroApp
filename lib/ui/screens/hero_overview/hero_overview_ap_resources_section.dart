@@ -82,7 +82,7 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
     );
   }
 
-  Widget _buildCurrentResourcesSection() {
+  Widget _buildCurrentResourcesSection(HeroResourceActivation resourceActivation) {
     return _SectionCard(
       title: 'Aktuelle Ressourcen',
       child: Column(
@@ -96,37 +96,41 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
                 keyboardType: TextInputType.number,
               ),
               _buildInputField(
-                label: 'AsP aktuell',
-                keyName: 'cur_asp',
-                keyboardType: TextInputType.number,
-              ),
-              _buildInputField(
                 label: 'Au aktuell',
                 keyName: 'cur_au',
                 keyboardType: TextInputType.number,
               ),
-              _buildInputField(
-                label: 'KaP aktuell',
-                keyName: 'cur_kap',
-                keyboardType: TextInputType.number,
-              ),
+              if (resourceActivation.magic.isEnabled)
+                _buildInputField(
+                  label: 'AsP aktuell',
+                  keyName: 'cur_asp',
+                  keyboardType: TextInputType.number,
+                ),
+              if (resourceActivation.divine.isEnabled)
+                _buildInputField(
+                  label: 'KaP aktuell',
+                  keyName: 'cur_kap',
+                  keyboardType: TextInputType.number,
+                ),
             ],
           ),
-          const SizedBox(height: _gridSpacing),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: OutlinedButton.icon(
-              key: const ValueKey<String>('status-active-spells-open'),
-              onPressed: () {
-                showActiveSpellEffectsDialog(
-                  context: context,
-                  heroId: widget.heroId,
-                );
-              },
-              icon: const Icon(Icons.auto_awesome_outlined),
-              label: const Text('Zauber aktivieren'),
+          if (resourceActivation.magic.isEnabled) ...[
+            const SizedBox(height: _gridSpacing),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                key: const ValueKey<String>('status-active-spells-open'),
+                onPressed: () {
+                  showActiveSpellEffectsDialog(
+                    context: context,
+                    heroId: widget.heroId,
+                  );
+                },
+                icon: const Icon(Icons.auto_awesome_outlined),
+                label: const Text('Zauber aktivieren'),
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
