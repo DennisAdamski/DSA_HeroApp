@@ -12,8 +12,8 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector_rest_card.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector_wunden_card.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 
 const double _statusLabelWidth = 32;
 const double _statusValueWidth = 28;
@@ -81,9 +81,6 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
                         derived: derived,
                         resourceActivation: resourceActivation,
                       ),
-                    const SizedBox(height: 10),
-                    if (heroState != null)
-                      InspectorRestCard(heroId: heroId, heroState: heroState),
                     const SizedBox(height: 10),
                     if (heroState != null)
                       InspectorWundenCard(
@@ -172,7 +169,23 @@ class _VitalwerteCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Vitalwerte', style: Theme.of(context).textTheme.titleSmall),
+            Row(
+              children: [
+                Text(
+                  'Vitalwerte',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const Spacer(),
+                IconButton(
+                  key: const ValueKey<String>('workspace-rest-open'),
+                  tooltip: 'Rast oeffnen',
+                  onPressed: () {
+                    showRestDialog(context: context, heroId: heroId);
+                  },
+                  icon: const Icon(Icons.local_fire_department_outlined),
+                ),
+              ],
+            ),
             const SizedBox(height: 10),
             _ResourceRow(
               label: 'LeP',
@@ -233,6 +246,54 @@ class _VitalwerteCard extends ConsumerWidget {
                 ),
               ),
             ],
+            const SizedBox(height: 10),
+            const Divider(height: 1),
+            const SizedBox(height: 10),
+            _StateCounterRow(
+              rowKey: const ValueKey<String>(
+                'workspace-vital-row-ueberanstrengung',
+              ),
+              label: 'Ueberanstrengung',
+              value: heroState.ueberanstrengung,
+              decrementTooltip: 'Ueberanstrengung verringern',
+              incrementTooltip: 'Ueberanstrengung erhoehen',
+              onDecrement: () => _save(
+                ref,
+                heroState.copyWith(
+                  ueberanstrengung: heroState.ueberanstrengung > 0
+                      ? heroState.ueberanstrengung - 1
+                      : 0,
+                ),
+              ),
+              onIncrement: () => _save(
+                ref,
+                heroState.copyWith(
+                  ueberanstrengung: heroState.ueberanstrengung + 1,
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            _StateCounterRow(
+              rowKey: const ValueKey<String>(
+                'workspace-vital-row-erschoepfung',
+              ),
+              label: 'Erschoepfung',
+              value: heroState.erschoepfung,
+              decrementTooltip: 'Erschoepfung verringern',
+              incrementTooltip: 'Erschoepfung erhoehen',
+              onDecrement: () => _save(
+                ref,
+                heroState.copyWith(
+                  erschoepfung: heroState.erschoepfung > 0
+                      ? heroState.erschoepfung - 1
+                      : 0,
+                ),
+              ),
+              onIncrement: () => _save(
+                ref,
+                heroState.copyWith(erschoepfung: heroState.erschoepfung + 1),
+              ),
+            ),
           ],
         ),
       ),
@@ -298,6 +359,66 @@ class _ResourceRow extends StatelessWidget {
           icon: Icons.add,
           tooltip: '$label erhoehen',
           onPressed: current < max ? onIncrement : null,
+        ),
+      ],
+    );
+  }
+}
+
+/// Zustandszeile ohne Maximum fuer Erschoepfung und Ueberanstrengung.
+class _StateCounterRow extends StatelessWidget {
+  const _StateCounterRow({
+    required this.rowKey,
+    required this.label,
+    required this.value,
+    required this.decrementTooltip,
+    required this.incrementTooltip,
+    required this.onDecrement,
+    required this.onIncrement,
+  });
+
+  final Key rowKey;
+  final String label;
+  final int value;
+  final String decrementTooltip;
+  final String incrementTooltip;
+  final VoidCallback onDecrement;
+  final VoidCallback onIncrement;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      key: rowKey,
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        _StepButton(
+          icon: Icons.remove,
+          tooltip: decrementTooltip,
+          onPressed: onDecrement,
+        ),
+        const SizedBox(width: 6),
+        SizedBox(
+          width: 32,
+          child: Text(
+            '$value',
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        const SizedBox(width: 6),
+        _StepButton(
+          icon: Icons.add,
+          tooltip: incrementTooltip,
+          onPressed: onIncrement,
         ),
       ],
     );

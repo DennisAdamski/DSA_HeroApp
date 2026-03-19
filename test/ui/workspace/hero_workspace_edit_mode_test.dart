@@ -1121,7 +1121,12 @@ void main() {
 
     await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
-    expect(find.text('Rast'), findsOneWidget);
+    expect(
+      find.byKey(
+        const ValueKey<String>('workspace-vital-row-ueberanstrengung'),
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.byKey(const ValueKey<String>('workspace-rest-open')));
     await tester.pumpAndSettle();
 
@@ -1154,6 +1159,47 @@ void main() {
     expect(state, isNotNull);
     expect(state!.currentAu, 22);
     expect(state.ueberanstrengung, 1);
+  });
+
+  testWidgets('wide workspace vital values can edit ueberanstrengung and erschoepfung', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+          erschoepfung: 1,
+          ueberanstrengung: 2,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+    expect(
+      find.byKey(
+        const ValueKey<String>('workspace-vital-row-ueberanstrengung'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('workspace-vital-row-erschoepfung')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byTooltip('Ueberanstrengung erhoehen'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Erschoepfung verringern'));
+    await tester.pumpAndSettle();
+
+    final state = await repo.loadHeroState('demo');
+    expect(state, isNotNull);
+    expect(state!.ueberanstrengung, 3);
+    expect(state.erschoepfung, 0);
   });
 
   testWidgets('wide workspace rest dialog can full restore resources and wounds', (
