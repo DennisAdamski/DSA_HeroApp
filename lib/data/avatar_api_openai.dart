@@ -23,6 +23,16 @@ abstract class _OpenAiImageClient implements AvatarApiClient {
   String get _size;
   String get _quality;
 
+  /// Baut den Request-Body. Subklassen koennen dies ueberschreiben,
+  /// um modellspezifische Parameter zu setzen.
+  Map<String, dynamic> _buildRequestBody(String prompt) => {
+        'model': _model,
+        'prompt': prompt,
+        'n': 1,
+        'size': _size,
+        'quality': _quality,
+      };
+
   @override
   Future<List<int>> generatePortrait({required String prompt}) async {
     final response = await _httpClient.post(
@@ -31,14 +41,7 @@ abstract class _OpenAiImageClient implements AvatarApiClient {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $apiKey',
       },
-      body: jsonEncode({
-        'model': _model,
-        'prompt': prompt,
-        'n': 1,
-        'size': _size,
-        'quality': _quality,
-        'response_format': 'b64_json',
-      }),
+      body: jsonEncode(_buildRequestBody(prompt)),
     );
 
     if (response.statusCode != 200) {
@@ -132,6 +135,12 @@ class OpenAiDalle3Client extends _OpenAiImageClient {
 
   @override
   String get _quality => 'hd';
+
+  @override
+  Map<String, dynamic> _buildRequestBody(String prompt) => {
+        ...super._buildRequestBody(prompt),
+        'response_format': 'b64_json',
+      };
 
   @override
   double get estimatedCostUsd => 0.080;
