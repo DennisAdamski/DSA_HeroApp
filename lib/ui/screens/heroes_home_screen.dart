@@ -5,23 +5,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
+import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_workspace_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_import_export_actions.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/hero_document.dart';
 
+/// Startseite mit Heldenarchiv und Einstieg in den Workspace.
 class HeroesHomeScreen extends ConsumerWidget {
+  /// Erstellt die Startseite der Heldenverwaltung.
   const HeroesHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final heroesAsync = ref.watch(heroListProvider);
-    final selectedHeroId = ref.watch(selectedHeroIdProvider); // fuer Markierung der aktiven Zeile
+    final selectedHeroId = ref.watch(selectedHeroIdProvider);
     const importExportActions = WorkspaceImportExportActions();
-
     final apple = isApplePlatform(context);
 
     Future<void> createHero() async {
@@ -67,11 +70,9 @@ class HeroesHomeScreen extends ConsumerWidget {
           const SizedBox(width: 8),
           IconButton(
             tooltip: 'Einstellungen',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const SettingsScreen(),
-              ),
-            ),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
             icon: const Icon(Icons.settings),
           ),
           const SizedBox(width: 12),
@@ -85,63 +86,120 @@ class HeroesHomeScreen extends ConsumerWidget {
               label: const Text('Neuer Held'),
             ),
       body: heroesAsync.when(
-        data: (heroes) {
-          if (heroes.isEmpty) {
-            return const Center(
-              child: Text(
-                'Noch keine Helden angelegt. Erstelle deinen ersten Helden.',
-              ),
-            );
-          }
-
-          return ListView.separated(
-            itemCount: heroes.length,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final hero = heroes[index];
-              return ListTile(
-                selected: selectedHeroId == hero.id,
-                title: Text(hero.name),
-                subtitle: Text('Level ${hero.level}'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      tooltip: 'Held exportieren',
-                      icon: const Icon(Icons.upload_file),
-                      onPressed: () => _exportSelectedHero(
-                        context: context,
-                        ref: ref,
-                        hero: hero,
-                        importExportActions: importExportActions,
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: 'Held löschen',
-                      icon: const Icon(Icons.delete_outline),
-                      onPressed: () => _deleteSelectedHero(
-                        context: context,
-                        ref: ref,
-                        hero: hero,
-                      ),
-                    ),
-                    const Icon(Icons.chevron_right),
-                  ],
-                ),
-                onTap: () {
-                  ref.read(selectedHeroIdProvider.notifier).state = hero.id;
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => HeroWorkspaceScreen(heroId: hero.id),
-                    ),
-                  );
-                },
-              );
-            },
-          );
-        },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(child: Text('Fehler: $error')),
+        data: (heroes) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final cardWidth = switch (constraints.maxWidth) {
+                >= 1560 => (constraints.maxWidth - 40) / 3,
+                >= 980 => (constraints.maxWidth - 20) / 2,
+                _ => constraints.maxWidth,
+              };
+
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    HeroPageHeader(
+                      title: 'Heldenarchiv',
+                      subtitle:
+                          'Wähle ein Heldendokument, springe direkt in den Workspace und halte Spielwerte übersichtlich an einer Stelle.',
+                      metrics: [
+                        HeroMetricChip(
+                          label: 'Helden',
+                          value: '${heroes.length}',
+                        ),
+                        HeroMetricChip(
+                          label: 'Auswahl',
+                          value: selectedHeroId == null ? 'Auto' : 'Fixiert',
+                        ),
+                        const HeroMetricChip(
+                          label: 'Transfer',
+                          value: 'JSON',
+                          caption: 'Import und Export aktiv',
+                        ),
+                      ],
+                      trailing: apple
+                          ? FilledButton.icon(
+                              onPressed: createHero,
+                              icon: const Icon(Icons.add),
+                              label: const Text('Neuer Held'),
+                            )
+                          : null,
+                    ),
+                    const SizedBox(height: 20),
+                    if (heroes.isEmpty)
+                      HeroDocumentSection(
+                        title: 'Noch kein Held vorhanden',
+                        subtitle:
+                            'Erstelle einen neuen Helden oder importiere ein bestehendes Dokument.',
+                        child: Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: [
+                            FilledButton.icon(
+                              onPressed: createHero,
+                              icon: const Icon(Icons.add),
+                              label: const Text('Held anlegen'),
+                            ),
+                            OutlinedButton.icon(
+                              onPressed: () => _importHero(
+                                context: context,
+                                ref: ref,
+                                importExportActions: importExportActions,
+                              ),
+                              icon: const Icon(Icons.download),
+                              label: const Text('Held importieren'),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      Wrap(
+                        spacing: 20,
+                        runSpacing: 20,
+                        children: [
+                          for (final hero in heroes)
+                            SizedBox(
+                              width: cardWidth,
+                              child: _HeroSummaryCard(
+                                hero: hero,
+                                isSelected: selectedHeroId == hero.id,
+                                onOpen: () {
+                                  ref
+                                          .read(selectedHeroIdProvider.notifier)
+                                          .state =
+                                      hero.id;
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          HeroWorkspaceScreen(heroId: hero.id),
+                                    ),
+                                  );
+                                },
+                                onExport: () => _exportSelectedHero(
+                                  context: context,
+                                  ref: ref,
+                                  hero: hero,
+                                  importExportActions: importExportActions,
+                                ),
+                                onDelete: () => _deleteSelectedHero(
+                                  context: context,
+                                  ref: ref,
+                                  hero: hero,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -261,6 +319,172 @@ class HeroesHomeScreen extends ConsumerWidget {
     return showAdaptiveDetailSheet<_CreateHeroDraft>(
       context: context,
       builder: (dialogContext) => const _CreateHeroDialog(),
+    );
+  }
+}
+
+/// Kartenhafte Kurzübersicht eines Helden für die Startseite.
+class _HeroSummaryCard extends ConsumerWidget {
+  const _HeroSummaryCard({
+    required this.hero,
+    required this.isSelected,
+    required this.onOpen,
+    required this.onExport,
+    required this.onDelete,
+  });
+
+  final HeroSheet hero;
+  final bool isSelected;
+  final VoidCallback onOpen;
+  final VoidCallback onExport;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final computed = ref.watch(heroComputedProvider(hero.id)).valueOrNull;
+    final derived = computed?.derivedStats;
+    final state = computed?.state;
+    final resourceActivation = computed?.resourceActivation;
+    final nameParts = hero.name.trim().split(RegExp(r'\s+'));
+    final initials = nameParts
+        .where((part) => part.isNotEmpty)
+        .take(2)
+        .map((part) => part.substring(0, 1).toUpperCase())
+        .join();
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: isSelected
+          ? colorScheme.secondaryContainer.withValues(alpha: 0.55)
+          : colorScheme.surface,
+      borderRadius: BorderRadius.circular(24),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: onOpen,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isSelected
+                  ? colorScheme.secondary
+                  : colorScheme.outlineVariant,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                onTap: onOpen,
+                leading: CircleAvatar(
+                  radius: 26,
+                  backgroundColor: colorScheme.primaryContainer,
+                  foregroundColor: colorScheme.onPrimaryContainer,
+                  child: Text(
+                    initials.isEmpty ? 'H' : initials,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                title: Text(
+                  hero.name,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    '${hero.background.rasse.isEmpty ? 'Unbekannte Herkunft' : hero.background.rasse} · ${hero.background.profession.isEmpty ? 'Ohne Profession' : hero.background.profession}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  HeroMetricChip(label: 'Stufe', value: '${hero.level}'),
+                  HeroMetricChip(
+                    label: 'AP frei',
+                    value: '${hero.apAvailable}',
+                  ),
+                  HeroMetricChip(
+                    label: 'Magie',
+                    value: resourceActivation?.magic.isEnabled == true
+                        ? 'Ja'
+                        : 'Nein',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  HeroMetricChip(
+                    label: 'LeP',
+                    value: state == null || derived == null
+                        ? '-'
+                        : '${state.currentLep}/${derived.maxLep}',
+                    backgroundColor: colorScheme.errorContainer.withValues(
+                      alpha: 0.72,
+                    ),
+                    foregroundColor: colorScheme.onErrorContainer,
+                  ),
+                  HeroMetricChip(
+                    label: 'Au',
+                    value: state == null || derived == null
+                        ? '-'
+                        : '${state.currentAu}/${derived.maxAu}',
+                    backgroundColor: colorScheme.tertiaryContainer.withValues(
+                      alpha: 0.72,
+                    ),
+                    foregroundColor: colorScheme.onTertiaryContainer,
+                  ),
+                  HeroMetricChip(
+                    label: 'AT/PA',
+                    value: computed == null
+                        ? '-'
+                        : '${computed.combatPreviewStats.at}/${computed.combatPreviewStats.pa}',
+                  ),
+                  HeroMetricChip(
+                    label: 'INI',
+                    value: computed == null
+                        ? '-'
+                        : '${computed.combatPreviewStats.initiative}',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  FilledButton.tonalIcon(
+                    onPressed: onExport,
+                    icon: const Icon(Icons.upload_file),
+                    label: const Text('Export'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: onDelete,
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Löschen'),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4, top: 10),
+                    child: Icon(Icons.arrow_forward),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

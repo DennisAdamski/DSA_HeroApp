@@ -85,6 +85,7 @@ void main() {
       expect(find.byIcon(Icons.upload_file), findsOneWidget);
       expect(find.byIcon(Icons.download), findsOneWidget);
 
+      await tester.ensureVisible(find.byIcon(Icons.upload_file));
       await tester.tap(find.byIcon(Icons.upload_file));
       await tester.pump(const Duration(milliseconds: 750));
       await tester.pumpAndSettle();
