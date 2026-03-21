@@ -12,8 +12,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dar
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 void main() {
-  List<String> expectedWorkspaceTabLabels() {
-    return buildWorkspaceTabs(
+  List<String> expectedWorkspaceTabLabels(HeroSheet hero) {
+    final tabs = buildWorkspaceTabs(
       heroId: 'demo',
       callbacksForTab: (_) => const WorkspaceTabCallbacks(
         onDirtyChanged: _noopBool,
@@ -21,6 +21,10 @@ void main() {
         onRegisterDiscard: _noopDiscard,
         onRegisterEditActions: _noopEditActions,
       ),
+    );
+    return visibleWorkspaceTabsForHero(
+      hero: hero,
+      tabs: tabs,
     ).map((tab) => tab.label).toList(growable: false);
   }
 
@@ -148,13 +152,13 @@ void main() {
           .widgetList<Tab>(find.byType(Tab))
           .map((tab) => (tab.text ?? '').trim())
           .toList(growable: false);
-      expect(tabLabels, expectedWorkspaceTabLabels());
+      expect(tabLabels, expectedWorkspaceTabLabels(hero));
       expect(find.text('MU: 14'), findsOneWidget);
       expect(find.text('KO: 14'), findsOneWidget);
       expect(find.text('LeP: 10/22'), findsOneWidget);
       expect(find.text('Au: 10/22'), findsOneWidget);
-      expect(find.text('AsP: 10/21'), findsOneWidget);
-      expect(find.text('KaP: 0/0'), findsOneWidget);
+      expect(find.textContaining('AsP:'), findsNothing);
+      expect(find.textContaining('KaP:'), findsNothing);
     },
   );
 }
