@@ -164,6 +164,8 @@ Ergaenzungen zur aktuellen Struktur:
   Kosten sowie optionalen Stilfeldern wie `stil_typ`,
   `aktiviert_manoever_ids` und `kampfwert_boni`.
 - `lib/ui/widgets/combat_quick_stats.dart` enthaelt die kompakte Kampfwerte-Quickview.
+- `lib/ui/widgets/hero_document.dart` buendelt dokumentartige Seitenkoepfe,
+  Rubriken und Kennzahlen-Chips fuer die modernisierte Workspace-UI.
 - `lib/domain/learn/learn_complexity.dart` und
   `lib/domain/learn/learn_rules.dart` kapseln die AP-Steigerungslogik
   inklusive Aktivierungskosten, SE-Verbrauch und Lehrmeisterrabatt.

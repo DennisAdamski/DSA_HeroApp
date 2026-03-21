@@ -31,6 +31,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_talents/combat_specializati
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_table_cell.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/hero_document.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
@@ -456,6 +457,37 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     _editController.markFieldChanged();
   }
 
+  /// Baut den Seitenkopf fuer die Talente-Ansicht.
+  Widget _buildTalentsHeader({
+    required HeroSheet hero,
+    required int activeTalentCount,
+    required int groupCount,
+    required int activeBaseBe,
+    required int specialAbilitiesCount,
+  }) {
+    final subtitle = widget.scope == _TalentTabScope.combat
+        ? 'Kampftechniken, Verteilungen und kampfrelevante Spezialisierungen im Blick.'
+        : 'Talente, Sonderfertigkeiten sowie Sprachen und Schriften dokumentartig gruppiert.';
+    return HeroPageHeader(
+      title: widget.scope == _TalentTabScope.combat
+          ? 'Kampftechniken'
+          : 'Talente',
+      subtitle: '${hero.name} · $subtitle',
+      metrics: [
+        HeroMetricChip(
+          label: widget.scope == _TalentTabScope.combat
+              ? 'Techniken'
+              : 'Aktive Talente',
+          value: '$activeTalentCount',
+        ),
+        HeroMetricChip(label: 'Gruppen', value: '$groupCount'),
+        HeroMetricChip(label: 'BE', value: '$activeBaseBe'),
+        if (widget.scope == _TalentTabScope.nonCombat)
+          HeroMetricChip(label: 'SF', value: '$specialAbilitiesCount'),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -521,8 +553,19 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                 });
 
               return ListView(
-                padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                 children: [
+                  if (MediaQuery.sizeOf(context).width >= 900) ...[
+                    _buildTalentsHeader(
+                      hero: hero,
+                      activeTalentCount: activeTalents.length,
+                      groupCount: groups.length,
+                      activeBaseBe: activeTalentBe,
+                      specialAbilitiesCount:
+                          _draftTalentSpecialAbilities.length,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   if (widget.scope == _TalentTabScope.nonCombat &&
                       widget.showInlineActions)
                     _buildTopActionBar(
