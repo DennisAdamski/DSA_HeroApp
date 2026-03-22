@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 
 /// Karte fuer einen einzelnen Inventar-Eintrag in der Listenansicht.
 class InventoryItemCard extends StatelessWidget {
@@ -26,19 +27,28 @@ class InventoryItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final codex = context.codexTheme;
     final isLinked = entry.sourceRef != null;
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        borderRadius: BorderRadius.circular(codex.panelRadius),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(codex.panelRadius),
+            image: const DecorationImage(
+              image: AssetImage('assets/ui/codex/parchment_texture.png'),
+              fit: BoxFit.cover,
+              opacity: 0.06,
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
               _SourceIcon(source: entry.source),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +85,7 @@ class InventoryItemCard extends StatelessWidget {
                           ),
                       ],
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         _SmallChip(
@@ -93,7 +103,8 @@ class InventoryItemCard extends StatelessWidget {
                           ),
                         ],
                         if (entry.modifiers.isNotEmpty &&
-                            entry.itemType == InventoryItemType.ausruestung) ...[
+                            entry.itemType ==
+                                InventoryItemType.ausruestung) ...[
                           const SizedBox(width: 4),
                           _SmallChip(
                             label: '${entry.modifiers.length} Mod.',
@@ -165,6 +176,7 @@ class _SourceIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final codex = context.codexTheme;
     IconData icon;
     switch (source) {
       case InventoryItemSource.waffe:
@@ -178,7 +190,16 @@ class _SourceIcon extends StatelessWidget {
       case InventoryItemSource.manuell:
         icon = Icons.inventory_2_outlined;
     }
-    return Icon(icon, size: 20, color: Theme.of(context).colorScheme.outline);
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: codex.panelRaised,
+        borderRadius: BorderRadius.circular(codex.panelRadius),
+        border: Border.all(color: codex.rule),
+      ),
+      child: Icon(icon, size: 18, color: Theme.of(context).colorScheme.outline),
+    );
   }
 }
 

@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 
 part 'hero_reisebericht/reisebericht_category_view.dart';
 part 'hero_reisebericht/reisebericht_entry_tile.dart';
@@ -140,12 +141,14 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
         parts.add('${rewards.eigenschaftsBoni.length}x Eigenschaftsbonus');
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Reisebericht gespeichert: ${parts.join(', ')}')),
+        SnackBar(
+          content: Text('Reisebericht gespeichert: ${parts.join(', ')}'),
+        ),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Reisebericht gespeichert')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Reisebericht gespeichert')));
     }
   }
 
@@ -194,7 +197,8 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
 
     showDialog<bool>(
       context: context,
-      builder: (ctx) => _RevokeConfirmDialog(rewards: revoke, entryName: def.name),
+      builder: (ctx) =>
+          _RevokeConfirmDialog(rewards: revoke, entryName: def.name),
     ).then((confirmed) {
       if (confirmed == true) {
         final hero = _latestHero;
@@ -204,10 +208,7 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
         final cleaned = Set<String>.of(_draft.appliedRewardIds)
           ..removeAll(revoke.newAppliedIds);
         setState(() {
-          _draft = _draft.copyWith(
-            checkedIds: next,
-            appliedRewardIds: cleaned,
-          );
+          _draft = _draft.copyWith(checkedIds: next, appliedRewardIds: cleaned);
         });
         _editController.markFieldChanged();
       }
@@ -239,33 +240,43 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
 
     return Column(
       children: [
+        const CodexTabHeader(
+          title: 'Abenteuer-Chronik',
+          subtitle:
+              'Erfahrungen, Meilensteine und Belohnungen als fortlaufender Reisebericht.',
+          assetPath: 'assets/ui/codex/hero_banner_crest.png',
+        ),
         TabBar(
           controller: _innerTabController,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
-          tabs: _kategorieKeys.map((key) {
-            final label = reiseberichtKategorien[key] ?? key;
-            // Kurzlabel ohne "Meine "
-            final short = label.replaceFirst('Meine ', '');
-            return Tab(text: short);
-          }).toList(growable: false),
+          tabs: _kategorieKeys
+              .map((key) {
+                final label = reiseberichtKategorien[key] ?? key;
+                // Kurzlabel ohne "Meine "
+                final short = label.replaceFirst('Meine ', '');
+                return Tab(text: short);
+              })
+              .toList(growable: false),
         ),
         Expanded(
           child: TabBarView(
             controller: _innerTabController,
-            children: _kategorieKeys.map((kategorie) {
-              final entries = catalog.reisebericht
-                  .where((d) => d.kategorie == kategorie)
-                  .toList(growable: false);
-              return _ReiseberichtCategoryView(
-                entries: entries,
-                allDefs: catalog.reisebericht,
-                draft: _draft,
-                isEditing: _editController.isEditing,
-                onToggleChecked: _toggleChecked,
-                onUpdateDraft: _updateDraft,
-              );
-            }).toList(growable: false),
+            children: _kategorieKeys
+                .map((kategorie) {
+                  final entries = catalog.reisebericht
+                      .where((d) => d.kategorie == kategorie)
+                      .toList(growable: false);
+                  return _ReiseberichtCategoryView(
+                    entries: entries,
+                    allDefs: catalog.reisebericht,
+                    draft: _draft,
+                    isEditing: _editController.isEditing,
+                    onToggleChecked: _toggleChecked,
+                    onUpdateDraft: _updateDraft,
+                  );
+                })
+                .toList(growable: false),
           ),
         ),
       ],

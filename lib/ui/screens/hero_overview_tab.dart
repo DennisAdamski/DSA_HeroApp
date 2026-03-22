@@ -32,6 +32,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dar
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_field.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/attribute_modifier_detail_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_detail_dialog.dart';
@@ -49,7 +51,6 @@ part 'hero_overview/hero_overview_raise_actions.dart';
 
 const double _pagePadding = 16;
 const double _sectionSpacing = 16;
-const double _fieldSpacing = 12;
 const double _gridSpacing = 12;
 const double _standardTwoColumnBreakpoint = 700;
 const double _largeTwoColumnBreakpoint = 900;
@@ -460,6 +461,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         _latestState = state;
         _syncControllers(hero, state);
         final resourceActivation = _buildCurrentResourceActivation(hero);
+        final showOverviewHeader = MediaQuery.sizeOf(context).width >= 600;
         return ValueListenableBuilder<int>(
           valueListenable: _viewRevision,
           builder: (context, revision, child) {
@@ -467,6 +469,15 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
               key: const ValueKey<String>('hero-overview-scroll'),
               padding: const EdgeInsets.all(_pagePadding),
               children: [
+                if (showOverviewHeader) ...[
+                  const CodexTabHeader(
+                    title: 'Helden-Dossier',
+                    subtitle:
+                        'Stammdaten, Ressourcen, Modifikatoren und abgeleitete Werte im Codex-Look.',
+                    assetPath: 'assets/ui/codex/hero_banner_crest.png',
+                  ),
+                  const SizedBox(height: _sectionSpacing),
+                ],
                 if (hero.appearance.avatarFileName.isEmpty) ...[
                   _AvatarActions(
                     heroId: hero.id,
@@ -540,29 +551,7 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ),
-                titleAction ?? const SizedBox.shrink(),
-              ],
-            ),
-            const SizedBox(height: _fieldSpacing),
-            child,
-          ],
-        ),
-      ),
-    );
+    return CodexSectionCard(title: title, trailing: titleAction, child: child);
   }
 }
 
