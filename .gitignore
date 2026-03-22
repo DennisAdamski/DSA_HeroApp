@@ -57,4 +57,5 @@ assets/catalogs/house_rules_v1/waffenmeister.md
 
 # MSIX-Build-Artefakte
 *.msix
-*.appx.claude/worktrees/
+*.appx
+.claude/worktrees/
