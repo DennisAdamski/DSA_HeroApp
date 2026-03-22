@@ -52,8 +52,15 @@ void main() {
   group('HeroSheet mit sprachen/schriften', () {
     test('Roundtrip persistiert sprachen, schriften und muttersprache', () {
       const attrs = Attributes(
-      mu: 8, kl: 8, inn: 8, ch: 8, ff: 8, ge: 8, ko: 8, kk: 8,
-    );
+        mu: 8,
+        kl: 8,
+        inn: 8,
+        ch: 8,
+        ff: 8,
+        ge: 8,
+        ko: 8,
+        kk: 8,
+      );
       final hero = HeroSheet(
         id: 'test-id',
         name: 'Testhold',
@@ -63,9 +70,7 @@ void main() {
           'spr_garethi': HeroLanguageEntry(wert: 18),
           'spr_tulamidya': HeroLanguageEntry(wert: 8, modifier: 1),
         },
-        schriften: const {
-          'sch_kusliker_zeichen': HeroScriptEntry(wert: 10),
-        },
+        schriften: const {'sch_kusliker_zeichen': HeroScriptEntry(wert: 10)},
         muttersprache: 'spr_garethi',
       );
 
@@ -95,17 +100,24 @@ void main() {
       expect(hero.muttersprache, '');
     });
 
-    test('schemaVersion ist 20', () {
+    test('schemaVersion ist 21', () {
       const attrs = Attributes(
-      mu: 8, kl: 8, inn: 8, ch: 8, ff: 8, ge: 8, ko: 8, kk: 8,
-    );
+        mu: 8,
+        kl: 8,
+        inn: 8,
+        ch: 8,
+        ff: 8,
+        ge: 8,
+        ko: 8,
+        kk: 8,
+      );
       final hero = HeroSheet(
         id: 'v20-id',
         name: 'NeuerHeld',
         level: 1,
         attributes: attrs,
       );
-      expect(hero.schemaVersion, 20);
+      expect(hero.schemaVersion, 21);
     });
   });
 }
