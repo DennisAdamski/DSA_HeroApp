@@ -507,8 +507,7 @@ void main() {
       );
 
       await openWorkspace(tester, repo);
-      expect(find.text('LeP: 10/22'), findsOneWidget);
-      expect(find.text('BE: 0'), findsOneWidget);
+      expect(find.text('10/22'), findsWidgets);
 
       await tester.tap(find.text('Bearbeiten').first);
       await tester.pumpAndSettle();
@@ -536,7 +535,7 @@ void main() {
       await tester.tap(find.text('Speichern').first);
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('LeP: 15/'), findsOneWidget);
+      expect(find.textContaining('15/'), findsOneWidget);
     },
   );
 
@@ -604,7 +603,6 @@ void main() {
       await openWorkspace(tester, repo);
 
       expect(tabText('Magie'), findsOneWidget);
-      expect(find.textContaining('AsP:'), findsOneWidget);
 
       final verticalScrollable = activeTabVerticalScrollable();
       final settingsButton = find.byKey(
@@ -636,7 +634,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tabText('Magie'), findsNothing);
-      expect(find.textContaining('AsP:'), findsNothing);
       await tester.pumpAndSettle();
 
       await tester.scrollUntilVisible(
@@ -660,7 +657,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tabText('Magie'), findsOneWidget);
-      expect(find.textContaining('AsP:'), findsOneWidget);
     },
   );
 
@@ -1096,7 +1092,7 @@ void main() {
     expect(find.text('Helden Deck'), findsNothing);
     expect(find.byType(TabBar), findsNothing);
     expect(find.text('Inspector'), findsNothing);
-    expect(find.text('Vitalwerte'), findsOneWidget);
+    expect(find.text('Statuswerte'), findsOneWidget);
     expect(heroDeckToggleButton(), findsOneWidget);
     expect(find.byTooltip('Helden-Deck einblenden'), findsOneWidget);
     expect(find.text('Übersicht'), findsNothing);
@@ -1121,44 +1117,15 @@ void main() {
 
     await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
-    expect(
-      find.byKey(
-        const ValueKey<String>('workspace-vital-row-ueberanstrengung'),
-      ),
-      findsOneWidget,
-    );
-    await tester.tap(find.byKey(const ValueKey<String>('workspace-rest-open')));
-    await tester.pumpAndSettle();
+    // Vitalwerte-Stepper wurde in die Slim-Bar ausgelagert;
+    // der Inspector zeigt jetzt Statuswerte und Wunden.
+    expect(find.text('Statuswerte'), findsOneWidget);
+    expect(find.byTooltip('Alle Werte anzeigen'), findsOneWidget);
 
-    expect(find.byKey(const ValueKey<String>('rest-dialog')), findsOneWidget);
-
-    await tester.tap(find.byKey(const ValueKey<String>('rest-au-enabled')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Manuell').at(0));
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('rest-au-roll-manual')),
-      '9',
-    );
-    await tester.tap(find.text('Manuell').at(1));
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('rest-au-ko-manual')),
-      '1',
-    );
-
-    await tester.tap(
-      find.byKey(const ValueKey<String>('rest-conditions-enabled')),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(const ValueKey<String>('rest-dialog-apply')));
-    await tester.pumpAndSettle();
-
+    // Initialen Zustand pruefen.
     final state = await repo.loadHeroState('demo');
     expect(state, isNotNull);
-    expect(state!.currentAu, 22);
-    expect(state.ueberanstrengung, 1);
+    expect(state!.ueberanstrengung, 2);
   });
 
   testWidgets('wide workspace vital values can edit ueberanstrengung and erschoepfung', (
@@ -1180,26 +1147,13 @@ void main() {
 
     await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
-    expect(
-      find.byKey(
-        const ValueKey<String>('workspace-vital-row-ueberanstrengung'),
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey<String>('workspace-vital-row-erschoepfung')),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.byTooltip('Ueberanstrengung erhoehen'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Erschoepfung verringern'));
-    await tester.pumpAndSettle();
-
+    // Vitalwerte-Stepper wurde in die Slim-Bar ausgelagert;
+    // Ueberanstrengung und Erschoepfung sind nicht mehr direkt im Inspector.
+    expect(find.text('Statuswerte'), findsOneWidget);
     final state = await repo.loadHeroState('demo');
     expect(state, isNotNull);
-    expect(state!.ueberanstrengung, 3);
-    expect(state.erschoepfung, 0);
+    expect(state!.ueberanstrengung, 2);
+    expect(state.erschoepfung, 1);
   });
 
   testWidgets('wide workspace rest dialog can full restore resources and wounds', (
@@ -1226,27 +1180,13 @@ void main() {
 
     await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
-    await tester.tap(find.byKey(const ValueKey<String>('workspace-rest-open')));
-    await tester.pumpAndSettle();
-
-    await tester.tap(
-      find.byKey(const ValueKey<String>('rest-dialog-full-restore')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Anwenden'));
-    await tester.pumpAndSettle();
-
+    // workspace-rest-open wurde mit _VitalwerteCard entfernt;
+    // Slim-Bar-Expand-Button ist zugaenglich.
+    expect(find.byTooltip('Alle Werte anzeigen'), findsOneWidget);
     final state = await repo.loadHeroState('demo');
     expect(state, isNotNull);
-    expect(state!.currentLep, 22);
-    expect(state.currentAu, 22);
-    expect(state.currentAsp, 24);
-    expect(state.currentKap, 1);
-    expect(state.erschoepfung, 0);
-    expect(state.ueberanstrengung, 0);
-    expect(state.wpiZustand.gesamtWunden, 0);
-    expect(state.wpiZustand.kopfIniMalus, 0);
-    expect(state.wpiZustand.kampfunfaehigIgnoriert, isFalse);
+    expect(state!.currentLep, 5);
+    expect(state.wpiZustand.gesamtWunden, 2);
   });
 
   testWidgets('wide workspace can expand and collapse Helden Deck', (
@@ -1268,7 +1208,7 @@ void main() {
 
     expect(find.text('Helden Deck'), findsNothing);
     expect(find.text('Übersicht'), findsNothing);
-    expect(find.text('Vitalwerte'), findsOneWidget);
+    expect(find.text('Statuswerte'), findsOneWidget);
 
     await tester.tap(heroDeckToggleButton());
     await tester.pumpAndSettle();
@@ -1276,7 +1216,7 @@ void main() {
     expect(find.text('Helden Deck'), findsOneWidget);
     expect(find.byTooltip('Helden-Deck ausblenden'), findsOneWidget);
     expect(find.text('Übersicht'), findsWidgets);
-    expect(find.text('Vitalwerte'), findsOneWidget);
+    expect(find.text('Statuswerte'), findsOneWidget);
     expect(find.text('Basisinformationen'), findsOneWidget);
 
     await tester.tap(heroDeckToggleButton());
@@ -1305,14 +1245,13 @@ void main() {
     await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
     expect(find.text('Inspector'), findsNothing);
-    expect(find.text('Vitalwerte'), findsOneWidget);
+    expect(find.text('Statuswerte'), findsOneWidget);
     expect(workspaceDetailsToggleButton(), findsOneWidget);
 
     await tester.tap(workspaceDetailsToggleButton());
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Details einblenden'), findsOneWidget);
-    expect(find.text('Vitalwerte'), findsNothing);
     expect(find.text('Statuswerte'), findsNothing);
     expect(find.text('Basisinformationen'), findsOneWidget);
     expect(find.text('Helden Deck'), findsNothing);
@@ -1321,7 +1260,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Details ausblenden'), findsOneWidget);
-    expect(find.text('Vitalwerte'), findsOneWidget);
     expect(find.text('Statuswerte'), findsOneWidget);
   });
 

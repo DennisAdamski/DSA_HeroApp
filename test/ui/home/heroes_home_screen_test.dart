@@ -149,12 +149,9 @@ void main() {
           .map((tab) => (tab.text ?? '').trim())
           .toList(growable: false);
       expect(tabLabels, expectedWorkspaceTabLabels());
-      expect(find.text('MU: 14'), findsOneWidget);
-      expect(find.text('KO: 14'), findsOneWidget);
-      expect(find.text('LeP: 10/22'), findsOneWidget);
-      expect(find.text('Au: 10/22'), findsOneWidget);
-      expect(find.text('AsP: 10/21'), findsOneWidget);
-      expect(find.text('KaP: 0/0'), findsOneWidget);
+      // Slim-Bar zeigt Ressourcen als kompakte Wert-Chips ohne Beschriftungs-Prefix.
+      expect(find.textContaining('10/22'), findsWidgets);
+      expect(find.byTooltip('Alle Werte anzeigen'), findsOneWidget);
     },
   );
 }

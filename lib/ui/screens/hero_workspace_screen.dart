@@ -422,11 +422,15 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
+  /// Liefert den Slim-Bar-Attribut-Header fuer den aktuellen Helden.
+  Widget _coreAttributesHeader(HeroSheet hero) =>
+      WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero, useSlimBar: true);
+
   /// Klassisches Layout: Attribut-Header oben, darunter der Tab-Inhalt.
   Widget _buildClassicWorkspaceBody(HeroSheet hero) {
     return Column(
       children: [
-        WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
+        _coreAttributesHeader(hero),
         Expanded(child: _buildWorkspaceTabView()),
       ],
     );
@@ -477,7 +481,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         Expanded(
           child: Column(
             children: [
-              WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
+              _coreAttributesHeader(hero),
               Expanded(child: _buildWorkspaceTabView()),
             ],
           ),
@@ -534,7 +538,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         Expanded(
           child: Column(
             children: [
-              WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
+              _coreAttributesHeader(hero),
               Expanded(child: _buildWorkspaceTabView()),
             ],
           ),
@@ -571,7 +575,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         Expanded(
           child: Column(
             children: [
-              WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
+              _coreAttributesHeader(hero),
               Expanded(child: _buildWorkspaceTabView()),
             ],
           ),
