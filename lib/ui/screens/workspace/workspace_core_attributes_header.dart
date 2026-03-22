@@ -13,11 +13,17 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 /// Zeigt Kurzwerte fuer alle 8 Eigenschaften, Ressourcen (LeP/Au/AsP/KaP)
 /// und die aktuelle BE als kompakte Chips an. Wird bei jedem Providerwechsel
 /// reaktiv neu gebaut.
+///
+/// Wenn [showVitalRow] auf `false` gesetzt wird, werden die Vital-Karten
+/// (LeP/Au/AsP/KaP/BE) ausgeblendet. Nur die Eigenschaften-Pillen (Row 2)
+/// bleiben sichtbar. Auf breiten Screens (HeroDeck) wird Row 1 ausgeblendet,
+/// da der Inspector die Vitalwerte bereits zeigt.
 class WorkspaceCoreAttributesHeader extends ConsumerWidget {
   const WorkspaceCoreAttributesHeader({
     super.key,
     required this.heroId,
     required this.hero,
+    this.showVitalRow = true,
   });
 
   /// ID des darzustellenden Helden.
@@ -25,6 +31,11 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
 
   /// Helddaten als Fallback fuer die Berechnung effektiver Attribute.
   final HeroSheet hero;
+
+  /// Ob die Vital-Karten-Row (LeP/Au/AsP/KaP/BE) angezeigt werden soll.
+  /// Standardmaessig `true`. Auf breiten Screens (HeroDeck) wird dieser
+  /// Parameter auf `false` gesetzt, da der Inspector die Werte zeigt.
+  final bool showVitalRow;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -53,7 +64,9 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
     }
 
     final debugModus = ref.watch(debugModusProvider);
-    final chips = <String>[
+
+    // Row 2: Eigenschaften-Pillen (immer sichtbar)
+    final attributeChips = <String>[
       '${debugModus ? 'mu' : 'MU'}: ${effectiveAttributes.mu}',
       '${debugModus ? 'kl' : 'KL'}: ${effectiveAttributes.kl}',
       '${debugModus ? 'inn' : 'IN'}: ${effectiveAttributes.inn}',
@@ -62,6 +75,10 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
       '${debugModus ? 'ge' : 'GE'}: ${effectiveAttributes.ge}',
       '${debugModus ? 'ko' : 'KO'}: ${effectiveAttributes.ko}',
       '${debugModus ? 'kk' : 'KK'}: ${effectiveAttributes.kk}',
+    ];
+
+    // Row 1: Vital-Karten (LeP/Au/AsP/KaP/BE) – nur wenn showVitalRow == true
+    final vitalChips = <String>[
       '${debugModus ? 'currentLep/maxLep' : 'LeP'}: ${resourceText(state?.currentLep, derived?.maxLep)}',
       '${debugModus ? 'currentAu/maxAu' : 'Au'}: ${resourceText(state?.currentAu, derived?.maxAu)}',
       if (showMagicResources)
@@ -71,23 +88,52 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
       '${debugModus ? 'beKampf' : 'BE'}: ${activeTalentBe?.toString() ?? '-'}',
     ];
 
+    Widget buildChipsScrollRow(List<String> chips) => SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: chips
+                .map(
+                  (entry) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Chip(
+                      label: Text(entry),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+        );
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        runAlignment: WrapAlignment.center,
-        spacing: 8,
-        runSpacing: 8,
-        children: chips
-            .map(
-              (entry) => Chip(
-                label: Text(entry),
-                visualDensity: VisualDensity.compact,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showVitalRow) ...[
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: vitalChips
+                    .map(
+                      (entry) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Chip(
+                          label: Text(entry),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ),
+                    )
+                    .toList(growable: false),
               ),
-            )
-            .toList(growable: false),
+            ),
+            const SizedBox(height: 12),
+          ],
+          buildChipsScrollRow(attributeChips),
+        ],
       ),
     );
   }

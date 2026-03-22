@@ -477,7 +477,11 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         Expanded(
           child: Column(
             children: [
-              WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
+              WorkspaceCoreAttributesHeader(
+                heroId: widget.heroId,
+                hero: hero,
+                showVitalRow: false,
+              ),
               Expanded(child: _buildWorkspaceTabView()),
             ],
           ),
