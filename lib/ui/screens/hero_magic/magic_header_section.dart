@@ -1,6 +1,6 @@
 part of '../hero_magic_tab.dart';
 
-/// Kopfbereich des Magie-Tabs: Repraesentation und Merkmalskenntnisse.
+/// Kopfbereich des Magie-Tabs: Repräsentation und Merkmalskenntnisse.
 class _MagicHeaderSection extends StatelessWidget {
   const _MagicHeaderSection({
     required this.representationen,
@@ -23,10 +23,12 @@ class _MagicHeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: CodexSectionCard(
+        title: 'Repräsentationen & Fokus',
+        subtitle:
+            'Repräsentationen, Merkmalskenntnisse und arkane Leiteigenschaft.',
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -35,35 +37,39 @@ class _MagicHeaderSection extends StatelessWidget {
             Wrap(
               spacing: 6,
               runSpacing: 4,
-              children: kRepresentationen.map((rep) {
-                final selected = representationen.contains(rep);
-                return FilterChip(
-                  label: Text(rep),
-                  selected: selected,
-                  onSelected: isEditing
-                      ? (value) {
-                          final updated = List<String>.from(representationen);
-                          if (value) {
-                            updated.add(rep);
-                          } else {
-                            updated.remove(rep);
-                          }
-                          onRepresentationenChanged(updated);
-                        }
-                      : null,
-                );
-              }).toList(growable: false),
+              children: kRepresentationen
+                  .map((rep) {
+                    final selected = representationen.contains(rep);
+                    return FilterChip(
+                      label: Text(rep),
+                      selected: selected,
+                      onSelected: isEditing
+                          ? (value) {
+                              final updated = List<String>.from(
+                                representationen,
+                              );
+                              if (value) {
+                                updated.add(rep);
+                              } else {
+                                updated.remove(rep);
+                              }
+                              onRepresentationenChanged(updated);
+                            }
+                          : null,
+                    );
+                  })
+                  .toList(growable: false),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               key: const ValueKey<String>('magic-lead-attribute-field'),
-              initialValue:
-                  magicLeadAttribute.isEmpty ? null : magicLeadAttribute,
+              initialValue: magicLeadAttribute.isEmpty
+                  ? null
+                  : magicLeadAttribute,
               decoration: const InputDecoration(
                 labelText: 'Leiteigenschaft',
                 border: OutlineInputBorder(),
-                helperText:
-                    'Wird für Meisterliche Regeneration verwendet.',
+                helperText: 'Wird für Meisterliche Regeneration verwendet.',
               ),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'MU', child: Text('MU')),
@@ -97,25 +103,28 @@ class _MagicHeaderSection extends StatelessWidget {
             Wrap(
               spacing: 6,
               runSpacing: 4,
-              children: kMerkmale.map((merkmal) {
-                final selected = merkmalskenntnisse.contains(merkmal);
-                return FilterChip(
-                  label: Text(merkmal),
-                  selected: selected,
-                  onSelected: isEditing
-                      ? (value) {
-                          final updated =
-                              List<String>.from(merkmalskenntnisse);
-                          if (value) {
-                            updated.add(merkmal);
-                          } else {
-                            updated.remove(merkmal);
-                          }
-                          onMerkmalskenntnisseChanged(updated);
-                        }
-                      : null,
-                );
-              }).toList(growable: false),
+              children: kMerkmale
+                  .map((merkmal) {
+                    final selected = merkmalskenntnisse.contains(merkmal);
+                    return FilterChip(
+                      label: Text(merkmal),
+                      selected: selected,
+                      onSelected: isEditing
+                          ? (value) {
+                              final updated = List<String>.from(
+                                merkmalskenntnisse,
+                              );
+                              if (value) {
+                                updated.add(merkmal);
+                              } else {
+                                updated.remove(merkmal);
+                              }
+                              onMerkmalskenntnisseChanged(updated);
+                            }
+                          : null,
+                    );
+                  })
+                  .toList(growable: false),
             ),
           ],
         ),

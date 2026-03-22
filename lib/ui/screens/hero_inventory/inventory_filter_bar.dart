@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_badge.dart';
 
 /// Aktiver Filtertyp in der Inventar-Ansicht.
 enum InventoryFilter {
@@ -35,6 +36,24 @@ class InventoryFilterBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              CodexBadge(
+                label: _formatWeight(totalWeightGramm),
+                icon: Icons.scale_outlined,
+                tone: CodexBadgeTone.accent,
+              ),
+              CodexBadge(
+                label: '$totalValueSilber S',
+                icon: Icons.monetization_on_outlined,
+              ),
+            ],
+          ),
+        ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 4),

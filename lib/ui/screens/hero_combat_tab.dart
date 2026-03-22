@@ -34,6 +34,9 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart'
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_offhand_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents/combat_specialization_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_weapons_section.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_metric_tile.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/waffenmeister_editor_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/combat_quick_stats.dart';
@@ -284,6 +287,12 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
 
               return Column(
                 children: [
+                  const CodexTabHeader(
+                    title: 'Taktische Kampfansicht',
+                    subtitle:
+                        'Waffenhaltung, Vorschauwerte, Rüstung und Regelmodule in verdichteter Schlachtfeld-Darstellung.',
+                    assetPath: 'assets/ui/codex/combat_silhouette.png',
+                  ),
                   TabBar(
                     controller: _subTabController,
                     isScrollable: true,

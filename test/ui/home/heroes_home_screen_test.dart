@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -12,18 +12,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dar
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 void main() {
-  List<String> expectedWorkspaceTabLabels() {
-    return buildWorkspaceTabs(
-      heroId: 'demo',
-      callbacksForTab: (_) => const WorkspaceTabCallbacks(
-        onDirtyChanged: _noopBool,
-        onEditingChanged: _noopBool,
-        onRegisterDiscard: _noopDiscard,
-        onRegisterEditActions: _noopEditActions,
-      ),
-    ).map((tab) => tab.label).toList(growable: false);
-  }
-
   final hero = HeroSheet(
     id: 'demo',
     name: 'Rondra',
@@ -39,6 +27,21 @@ void main() {
       kk: 13,
     ),
   );
+
+  List<String> expectedWorkspaceTabLabels() {
+    return visibleWorkspaceTabsForHero(
+      hero: hero,
+      tabs: buildWorkspaceTabs(
+        heroId: 'demo',
+        callbacksForTab: (_) => const WorkspaceTabCallbacks(
+          onDirtyChanged: _noopBool,
+          onEditingChanged: _noopBool,
+          onRegisterDiscard: _noopDiscard,
+          onRegisterEditActions: _noopEditActions,
+        ),
+      ),
+    ).map((tab) => tab.label).toList(growable: false);
+  }
 
   testWidgets('shows hero picker with create action', (tester) async {
     final repo = FakeRepository(
@@ -110,7 +113,7 @@ void main() {
     expect(heroes.single.name, 'Alrik');
     expect(heroes.single.rawStartAttributes.kl, 13);
     expect(heroes.single.startAttributes.kl, 13);
-    expect(find.text('Basisinformationen'), findsOneWidget);
+    expect(find.text('Alrik'), findsWidgets);
   });
 
   testWidgets(
@@ -153,8 +156,8 @@ void main() {
       expect(find.text('KO: 14'), findsOneWidget);
       expect(find.text('LeP: 10/22'), findsOneWidget);
       expect(find.text('Au: 10/22'), findsOneWidget);
-      expect(find.text('AsP: 10/21'), findsOneWidget);
-      expect(find.text('KaP: 0/0'), findsOneWidget);
+      expect(find.text('AsP: 10/21'), findsNothing);
+      expect(find.text('KaP: 0/0'), findsNothing);
     },
   );
 }

@@ -7,12 +7,13 @@ import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_summary_rail.dart';
 
 /// Persistenter Attribut-Header ueber dem Tab-Inhalt im Workspace.
 ///
-/// Zeigt Kurzwerte fuer alle 8 Eigenschaften, Ressourcen (LeP/Au/AsP/KaP)
-/// und die aktuelle BE als kompakte Chips an. Wird bei jedem Providerwechsel
-/// reaktiv neu gebaut.
+/// Zeigt Kurzwerte fuer alle 8 Eigenschaften, Ressourcen (LeP/Au/AsP/KaP),
+/// die aktuelle BE sowie den Wundstatus als persistente Summary-Rail an.
+/// Wird bei jedem Providerwechsel reaktiv neu gebaut.
 class WorkspaceCoreAttributesHeader extends ConsumerWidget {
   const WorkspaceCoreAttributesHeader({
     super.key,
@@ -28,24 +29,21 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final effectiveAsync = ref.watch(effectiveAttributesProvider(heroId));
-    final stateAsync = ref.watch(heroStateProvider(heroId));
-    final derivedAsync = ref.watch(derivedStatsProvider(heroId));
-    final combatPreviewAsync = ref.watch(combatPreviewProvider(heroId));
-    final resourceActivationAsync = ref.watch(resourceActivationProvider(heroId));
+    final computedAsync = ref.watch(heroComputedProvider(heroId));
     final talentBeOverride = ref.watch(talentBeOverrideProvider(heroId));
+    final computed = computedAsync.valueOrNull;
     final effectiveAttributes =
-        effectiveAsync.valueOrNull ?? computeEffectiveAttributes(hero);
-    final state = stateAsync.valueOrNull;
-    final derived = derivedAsync.valueOrNull;
+        computed?.effectiveAttributes ?? computeEffectiveAttributes(hero);
+    final state = computed?.state;
+    final derived = computed?.derivedStats;
     final resourceActivation =
-        resourceActivationAsync.valueOrNull ?? computeHeroResourceActivation(hero);
+        computed?.resourceActivation ?? computeHeroResourceActivation(hero);
     final activeTalentBe =
-        talentBeOverride ?? combatPreviewAsync.valueOrNull?.beKampf;
+        talentBeOverride ?? computed?.combatPreviewStats.beKampf;
     final showMagicResources = resourceActivation.magic.isEnabled;
     final showDivineResources = resourceActivation.divine.isEnabled;
+    final activeWounds = state?.wpiZustand.gesamtEffektiveWunden ?? 0;
 
-    // Formatiert Ressourcen als "aktuell/max" oder "-" bei fehlenden Daten.
     String resourceText(int? current, int? max) {
       final currentText = current?.toString() ?? '-';
       final maxText = max?.toString() ?? '-';
@@ -53,42 +51,86 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
     }
 
     final debugModus = ref.watch(debugModusProvider);
-    final chips = <String>[
-      '${debugModus ? 'mu' : 'MU'}: ${effectiveAttributes.mu}',
-      '${debugModus ? 'kl' : 'KL'}: ${effectiveAttributes.kl}',
-      '${debugModus ? 'inn' : 'IN'}: ${effectiveAttributes.inn}',
-      '${debugModus ? 'ch' : 'CH'}: ${effectiveAttributes.ch}',
-      '${debugModus ? 'ff' : 'FF'}: ${effectiveAttributes.ff}',
-      '${debugModus ? 'ge' : 'GE'}: ${effectiveAttributes.ge}',
-      '${debugModus ? 'ko' : 'KO'}: ${effectiveAttributes.ko}',
-      '${debugModus ? 'kk' : 'KK'}: ${effectiveAttributes.kk}',
-      '${debugModus ? 'currentLep/maxLep' : 'LeP'}: ${resourceText(state?.currentLep, derived?.maxLep)}',
-      '${debugModus ? 'currentAu/maxAu' : 'Au'}: ${resourceText(state?.currentAu, derived?.maxAu)}',
+    final items = <CodexSummaryRailItem>[
+      CodexSummaryRailItem(
+        label: debugModus ? 'mu' : 'MU',
+        value: effectiveAttributes.mu.toString(),
+        icon: Icons.bolt_outlined,
+      ),
+      CodexSummaryRailItem(
+        label: debugModus ? 'kl' : 'KL',
+        value: effectiveAttributes.kl.toString(),
+        icon: Icons.menu_book_outlined,
+      ),
+      CodexSummaryRailItem(
+        label: debugModus ? 'inn' : 'IN',
+        value: effectiveAttributes.inn.toString(),
+        icon: Icons.visibility_outlined,
+      ),
+      CodexSummaryRailItem(
+        label: debugModus ? 'ch' : 'CH',
+        value: effectiveAttributes.ch.toString(),
+        icon: Icons.record_voice_over_outlined,
+      ),
+      CodexSummaryRailItem(
+        label: debugModus ? 'ff' : 'FF',
+        value: effectiveAttributes.ff.toString(),
+        icon: Icons.back_hand_outlined,
+      ),
+      CodexSummaryRailItem(
+        label: debugModus ? 'ge' : 'GE',
+        value: effectiveAttributes.ge.toString(),
+        icon: Icons.directions_run_outlined,
+      ),
+      CodexSummaryRailItem(
+        label: debugModus ? 'ko' : 'KO',
+        value: effectiveAttributes.ko.toString(),
+        icon: Icons.health_and_safety_outlined,
+      ),
+      CodexSummaryRailItem(
+        label: debugModus ? 'kk' : 'KK',
+        value: effectiveAttributes.kk.toString(),
+        icon: Icons.sports_martial_arts_outlined,
+      ),
+      CodexSummaryRailItem(
+        label: debugModus ? 'currentLep/maxLep' : 'LeP',
+        value: resourceText(state?.currentLep, derived?.maxLep),
+        icon: Icons.favorite_outline,
+        highlight: true,
+      ),
+      CodexSummaryRailItem(
+        label: debugModus ? 'currentAu/maxAu' : 'Au',
+        value: resourceText(state?.currentAu, derived?.maxAu),
+        icon: Icons.battery_charging_full_outlined,
+      ),
       if (showMagicResources)
-        '${debugModus ? 'currentAsp/maxAsp' : 'AsP'}: ${resourceText(state?.currentAsp, derived?.maxAsp)}',
+        CodexSummaryRailItem(
+          label: debugModus ? 'currentAsp/maxAsp' : 'AsP',
+          value: resourceText(state?.currentAsp, derived?.maxAsp),
+          icon: Icons.auto_awesome_outlined,
+        ),
       if (showDivineResources)
-        '${debugModus ? 'currentKap/maxKap' : 'KaP'}: ${resourceText(state?.currentKap, derived?.maxKap)}',
-      '${debugModus ? 'beKampf' : 'BE'}: ${activeTalentBe?.toString() ?? '-'}',
+        CodexSummaryRailItem(
+          label: debugModus ? 'currentKap/maxKap' : 'KaP',
+          value: resourceText(state?.currentKap, derived?.maxKap),
+          icon: Icons.self_improvement_outlined,
+        ),
+      CodexSummaryRailItem(
+        label: debugModus ? 'beKampf' : 'BE',
+        value: activeTalentBe?.toString() ?? '-',
+        icon: Icons.shield_outlined,
+      ),
+      CodexSummaryRailItem(
+        label: 'Wunden',
+        value: activeWounds.toString(),
+        icon: Icons.healing_outlined,
+        helper: activeWounds > 0
+            ? 'Aktive Mali moeglich'
+            : 'Keine aktiven Wunden',
+        highlight: activeWounds > 0,
+      ),
     ];
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        runAlignment: WrapAlignment.center,
-        spacing: 8,
-        runSpacing: 8,
-        children: chips
-            .map(
-              (entry) => Chip(
-                label: Text(entry),
-                visualDensity: VisualDensity.compact,
-              ),
-            )
-            .toList(growable: false),
-      ),
-    );
+    return CodexSummaryRail(items: items);
   }
 }

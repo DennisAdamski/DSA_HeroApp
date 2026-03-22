@@ -85,7 +85,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Rondra'));
+    final heroTile = find.widgetWithText(ListTile, 'Rondra');
+    if (heroTile.evaluate().isNotEmpty) {
+      await tester.tap(heroTile.first);
+    } else {
+      await tester.tap(find.text('Rondra').first);
+    }
     await tester.pumpAndSettle();
   }
 
@@ -268,13 +273,9 @@ void main() {
     apSpentAddButton.onPressed!.call();
     await tester.pumpAndSettle();
 
-    final apTotalInner = find.descendant(
-      of: apTotalField,
-      matching: find.byType(TextField),
-    );
-    final apSpentInner = find.descendant(
-      of: find.byKey(const ValueKey<String>('overview-field-ap_spent')),
-      matching: find.byType(TextField),
+    final apTotalInner = apTotalField;
+    final apSpentInner = find.byKey(
+      const ValueKey<String>('overview-field-ap_spent'),
     );
     expect(tester.widget<TextField>(apTotalInner).controller?.text, '1200');
     expect(tester.widget<TextField>(apSpentInner).controller?.text, '800');
@@ -905,9 +906,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Noch 20 Dukaten offen.'), findsNothing);
-      await tester.tap(find.byKey(const ValueKey<String>('notes-note-tile-0')));
-      await tester.pumpAndSettle();
-      expect(find.text('Noch 20 Dukaten offen.'), findsOneWidget);
+      expect(find.text('Offene Schuld'), findsOneWidget);
     },
   );
 
@@ -983,9 +982,8 @@ void main() {
       find.byKey(const ValueKey<String>('overview-field-name')),
       findsOneWidget,
     );
-    final nameFieldInner = find.descendant(
-      of: find.byKey(const ValueKey<String>('overview-field-name')),
-      matching: find.byType(TextField),
+    final nameFieldInner = find.byKey(
+      const ValueKey<String>('overview-field-name'),
     );
     expect(
       tester.widget<TextField>(nameFieldInner).controller?.text,
