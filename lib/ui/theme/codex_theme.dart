@@ -408,7 +408,6 @@ ThemeData _buildCodexTheme({
       ),
       labelStyle: textTheme.titleSmall,
       unselectedLabelStyle: textTheme.bodyMedium,
-      tabAlignment: TabAlignment.start,
     ),
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(
