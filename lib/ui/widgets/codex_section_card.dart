@@ -42,24 +42,28 @@ class CodexSectionCard extends StatelessWidget {
     final codex = context.codexTheme;
     final theme = Theme.of(context);
 
+    final decoration = codex.showDecoration
+        ? BoxDecoration(
+            borderRadius: BorderRadius.circular(codex.sectionRadius),
+            image: const DecorationImage(
+              image: AssetImage('assets/ui/codex/parchment_texture.png'),
+              fit: BoxFit.cover,
+              opacity: 0.08,
+            ),
+            gradient: LinearGradient(
+              colors: <Color>[
+                codex.panel.withValues(alpha: 0.98),
+                codex.panelRaised.withValues(alpha: 0.96),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          )
+        : null;
+
     return Card(
       child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(codex.sectionRadius),
-          image: const DecorationImage(
-            image: AssetImage('assets/ui/codex/parchment_texture.png'),
-            fit: BoxFit.cover,
-            opacity: 0.08,
-          ),
-          gradient: LinearGradient(
-            colors: <Color>[
-              codex.panel.withValues(alpha: 0.98),
-              codex.panelRaised.withValues(alpha: 0.96),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        decoration: decoration,
         child: Padding(
           padding: EdgeInsets.all(padded ? 18 : 0),
           child: Column(
