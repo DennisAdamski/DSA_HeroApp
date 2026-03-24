@@ -12,6 +12,7 @@ class CodexSummaryRailItem {
     this.icon,
     this.helper,
     this.highlight = false,
+    this.onTap,
   });
 
   /// Anzeige-Label.
@@ -28,23 +29,44 @@ class CodexSummaryRailItem {
 
   /// Hebt den Eintrag hervor.
   final bool highlight;
+
+  /// Tap-Handler fuer interaktive Eintraege.
+  final VoidCallback? onTap;
 }
 
 /// Persistente Rail fuer verdichtete Kernwerte im Workspace.
+///
+/// Unterstuetzt einen zusammengeklappten Modus mit kompakten einzeiligen
+/// Chips und einen ausgeklappten Modus mit groesseren Kacheln.
 class CodexSummaryRail extends StatelessWidget {
   /// Erstellt eine Rail aus kompakten Metrik-Karten.
-  const CodexSummaryRail({super.key, required this.items});
+  const CodexSummaryRail({
+    super.key,
+    required this.items,
+    this.collapsed = false,
+    this.onToggleCollapsed,
+  });
 
   /// Anzuzeigende Summary-Eintraege.
   final List<CodexSummaryRailItem> items;
+
+  /// Zeigt die Rail im kompakten einzeiligen Modus.
+  final bool collapsed;
+
+  /// Callback zum Umschalten zwischen collapsed und expanded.
+  final VoidCallback? onToggleCollapsed;
 
   @override
   Widget build(BuildContext context) {
     final codex = context.codexTheme;
 
+    final padding = collapsed
+        ? const EdgeInsets.fromLTRB(12, 6, 4, 6)
+        : const EdgeInsets.fromLTRB(12, 10, 12, 10);
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      padding: padding,
       decoration: BoxDecoration(
         gradient: codex.heroGradientSoft,
         border: Border(
@@ -52,53 +74,116 @@ class CodexSummaryRail extends StatelessWidget {
           top: BorderSide(color: codex.rule.withValues(alpha: 0.6)),
         ),
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final useHorizontalRail = constraints.maxWidth < 720;
-          final tiles = items
-              .map(
-                (item) => SizedBox(
-                  width: useHorizontalRail ? 120 : null,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minWidth: useHorizontalRail ? 120 : 132,
-                      maxWidth: useHorizontalRail ? 120 : 178,
-                    ),
-                    child: CodexMetricTile(
-                      label: item.label,
-                      value: item.value,
-                      combinedValueText: '${item.label}: ${item.value}',
-                      icon: item.icon,
-                      helper: item.helper,
-                      highlight: item.highlight,
-                    ),
+      child: collapsed ? _buildCollapsed(codex) : _buildExpanded(codex),
+    );
+  }
+
+  Widget _buildCollapsed(CodexTheme codex) {
+    return Row(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (var i = 0; i < items.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 6),
+                  CodexMetricTile(
+                    label: items[i].label,
+                    value: items[i].value,
+                    icon: items[i].icon,
+                    highlight: items[i].highlight,
+                    compact: true,
+                    onTap: items[i].onTap,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+        if (onToggleCollapsed != null)
+          IconButton(
+            icon: const Icon(Icons.expand_more, size: 20),
+            onPressed: onToggleCollapsed,
+            tooltip: 'Kernwerte aufklappen',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildExpanded(CodexTheme codex) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useHorizontalRail = constraints.maxWidth < 720;
+        final tiles = items
+            .map(
+              (item) => SizedBox(
+                width: useHorizontalRail ? 100 : null,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: useHorizontalRail ? 100 : 100,
+                    maxWidth: useHorizontalRail ? 100 : 140,
+                  ),
+                  child: CodexMetricTile(
+                    label: item.label,
+                    value: item.value,
+                    icon: item.icon,
+                    helper: item.helper,
+                    highlight: item.highlight,
+                    onTap: item.onTap,
                   ),
                 ),
-              )
-              .toList(growable: false);
-
-          if (useHorizontalRail) {
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (var index = 0; index < tiles.length; index++) ...[
-                    if (index > 0) const SizedBox(width: 10),
-                    tiles[index],
-                  ],
-                ],
               ),
-            );
-          }
+            )
+            .toList(growable: false);
 
-          return Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: tiles,
+        final toggle = onToggleCollapsed != null
+            ? IconButton(
+                icon: const Icon(Icons.expand_less, size: 20),
+                onPressed: onToggleCollapsed,
+                tooltip: 'Kernwerte zuklappen',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              )
+            : null;
+
+        if (useHorizontalRail) {
+          return Row(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (var i = 0; i < tiles.length; i++) ...[
+                        if (i > 0) const SizedBox(width: 8),
+                        tiles[i],
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              ?toggle,
+            ],
           );
-        },
-      ),
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: tiles,
+            ),
+            if (toggle case final toggle?)
+              Align(alignment: Alignment.centerRight, child: toggle),
+          ],
+        );
+      },
     );
   }
 }

@@ -9,10 +9,11 @@ class CodexMetricTile extends StatelessWidget {
     super.key,
     required this.label,
     required this.value,
-    this.combinedValueText,
     this.icon,
     this.helper,
     this.highlight = false,
+    this.compact = false,
+    this.onTap,
   });
 
   /// Bezeichnung der Kennzahl.
@@ -20,9 +21,6 @@ class CodexMetricTile extends StatelessWidget {
 
   /// Sichtbarer Wert.
   final String value;
-
-  /// Optionaler kombinierter Text fuer Label-und-Wert-Assertions.
-  final String? combinedValueText;
 
   /// Optionales Icon fuer schnelle Erkennbarkeit.
   final IconData? icon;
@@ -33,6 +31,12 @@ class CodexMetricTile extends StatelessWidget {
   /// Hebt die Karte farblich an.
   final bool highlight;
 
+  /// Aktiviert die kompakte einzeilige Darstellung.
+  final bool compact;
+
+  /// Tap-Handler fuer interaktive Kacheln.
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     final codex = context.codexTheme;
@@ -42,47 +46,104 @@ class CodexMetricTile extends StatelessWidget {
         : codex.panelRaised.withValues(alpha: 0.95);
     final border = highlight ? codex.brass.withValues(alpha: 0.35) : codex.rule;
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: background,
+    final content = compact ? _buildCompact(theme, codex) : _buildExpanded(theme, codex);
+
+    return Material(
+      color: background,
+      borderRadius: BorderRadius.circular(codex.panelRadius),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(codex.panelRadius),
-        border: Border.all(color: border),
+        child: Container(
+          padding: compact
+              ? const EdgeInsets.symmetric(horizontal: 8, vertical: 5)
+              : const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(codex.panelRadius),
+            border: Border.all(color: border),
+          ),
+          child: content,
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              if (icon != null) ...[
-                Icon(icon, size: 16, color: codex.inkMuted),
-                const SizedBox(width: 6),
-              ],
-              Flexible(
-                child: Text(
-                  label,
+    );
+  }
+
+  Widget _buildCompact(ThemeData theme, CodexTheme codex) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icon != null) ...[
+          Icon(icon, size: 14, color: codex.inkMuted),
+          const SizedBox(width: 4),
+        ],
+        Flexible(
+          child: Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: '$label ',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: codex.inkMuted,
                     letterSpacing: 0.5,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            combinedValueText ?? value,
-            style: theme.textTheme.titleLarge?.copyWith(
-              color: codex.ink,
+                TextSpan(
+                  text: value,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: codex.ink,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
+            overflow: TextOverflow.ellipsis,
           ),
-          if (helper != null && helper!.trim().isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(helper!, style: theme.textTheme.bodySmall),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExpanded(ThemeData theme, CodexTheme codex) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 16, color: codex.inkMuted),
+              const SizedBox(width: 6),
+            ],
+            Flexible(
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '$label ',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: codex.inkMuted,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    TextSpan(
+                      text: value,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: codex.ink,
+                      ),
+                    ),
+                  ],
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
+        ),
+        if (helper != null && helper!.trim().isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(helper!, style: theme.textTheme.bodySmall),
         ],
-      ),
+      ],
     );
   }
 }
