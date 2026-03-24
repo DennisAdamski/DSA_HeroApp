@@ -52,6 +52,12 @@ final uiVarianteProvider = Provider<UiVariante>((ref) {
       ?? UiVariante.codex;
 });
 
+/// Ob die Kernwerte-Rail im Workspace zugeklappt ist.
+final summaryRailCollapsedProvider = Provider<bool>((ref) {
+  return ref.watch(appSettingsProvider).valueOrNull?.summaryRailCollapsed
+      ?? false;
+});
+
 /// Aktuelle Beschreibung des wirksamen Heldenspeicherorts.
 final heroStorageLocationProvider = FutureProvider<HeroStorageLocation>((ref) {
   final storagePaths = ref.watch(appStoragePathsProvider);
@@ -111,6 +117,14 @@ class SettingsActions {
   Future<void> saveAvatarApiConfig(AvatarApiConfig config) async {
     final current = _repo.load();
     await _repo.save(current.copyWith(avatarApiConfig: config));
+  }
+
+  /// Schaltet den Collapse-Zustand der Kernwerte-Rail um.
+  Future<void> toggleSummaryRailCollapsed() async {
+    final current = _repo.load();
+    await _repo.save(
+      current.copyWith(summaryRailCollapsed: !current.summaryRailCollapsed),
+    );
   }
 }
 

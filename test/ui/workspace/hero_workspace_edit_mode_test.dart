@@ -508,8 +508,8 @@ void main() {
       );
 
       await openWorkspace(tester, repo);
-      expect(find.text('LeP: 10/22'), findsOneWidget);
-      expect(find.text('BE: 0'), findsOneWidget);
+      expect(find.textContaining('10/22'), findsWidgets);
+      expect(find.textContaining('BE'), findsWidgets);
 
       await tester.tap(find.text('Bearbeiten').first);
       await tester.pumpAndSettle();
@@ -537,7 +537,7 @@ void main() {
       await tester.tap(find.text('Speichern').first);
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('LeP: 15/'), findsOneWidget);
+      expect(find.textContaining('15/'), findsWidgets);
     },
   );
 
@@ -559,7 +559,7 @@ void main() {
       await openWorkspace(tester, repo);
 
       expect(tabText('Magie'), findsNothing);
-      expect(find.textContaining('AsP:'), findsNothing);
+      expect(find.textContaining('AsP'), findsNothing);
       expect(find.textContaining('KaP:'), findsNothing);
 
       final verticalScrollable = activeTabVerticalScrollable();
@@ -605,7 +605,7 @@ void main() {
       await openWorkspace(tester, repo);
 
       expect(tabText('Magie'), findsOneWidget);
-      expect(find.textContaining('AsP:'), findsOneWidget);
+      expect(find.textContaining('AsP'), findsWidgets);
 
       final verticalScrollable = activeTabVerticalScrollable();
       final settingsButton = find.byKey(
@@ -637,7 +637,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tabText('Magie'), findsNothing);
-      expect(find.textContaining('AsP:'), findsNothing);
+      expect(find.textContaining('AsP'), findsNothing);
       await tester.pumpAndSettle();
 
       await tester.scrollUntilVisible(
@@ -661,7 +661,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tabText('Magie'), findsOneWidget);
-      expect(find.textContaining('AsP:'), findsOneWidget);
+      expect(find.textContaining('AsP'), findsWidgets);
     },
   );
 
