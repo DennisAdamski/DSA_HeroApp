@@ -34,15 +34,18 @@ class CodexEmptyState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: codex.heroGradientSoft,
+        gradient: codex.showDecoration ? codex.heroGradientSoft : null,
+        color: codex.showDecoration ? null : codex.panelRaised,
         borderRadius: BorderRadius.circular(codex.sectionRadius),
         border: Border.all(color: codex.rule),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(assetPath, height: 88, fit: BoxFit.contain),
-          const SizedBox(height: 18),
+          if (codex.showDecoration) ...[
+            Image.asset(assetPath, height: 88, fit: BoxFit.contain),
+            const SizedBox(height: 18),
+          ],
           Text(
             title,
             style: theme.textTheme.titleLarge,

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
+import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_page_scaffold.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_bottom_navigation.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_command_deck_panel.dart';

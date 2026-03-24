@@ -30,10 +30,11 @@ const double _heroDeckInspectorCollapsedWidth = 56;
 extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
   /// Klassisches Layout: Attribut-Header oben, darunter der Tab-Inhalt.
   Widget _buildClassicWorkspaceBody(HeroSheet hero) {
+    final showHeroHeader = context.codexTheme.showDecoration;
     return CodexPageScaffold(
       child: Column(
         children: [
-          _buildWorkspaceHeroHeader(hero, isCompact: true),
+          if (showHeroHeader) _buildWorkspaceHeroHeader(hero, isCompact: true),
           WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
           Expanded(child: _buildWorkspaceTabView()),
         ],
@@ -59,6 +60,7 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
 
   /// Helden-Deck-Layout: Navigation links, Inhalt mittig, Detailpanel rechts.
   Widget _buildHeroDeckWorkspaceBody(HeroSheet hero) {
+    final showHeroHeader = context.codexTheme.showDecoration;
     final activeTabIndex = _activeTabIndex();
     final navigationWidth = _heroDeckExpanded
         ? _heroDeckNavigationWidth
@@ -89,7 +91,8 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
           child: CodexPageScaffold(
             child: Column(
               children: [
-                _buildWorkspaceHeroHeader(hero, isCompact: false),
+                if (showHeroHeader)
+                  _buildWorkspaceHeroHeader(hero, isCompact: false),
                 WorkspaceCoreAttributesHeader(
                   heroId: widget.heroId,
                   hero: hero,
@@ -128,6 +131,7 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
 
   /// Medium-Layout: Collapsed Sidebar (Icon-only) + Content-Bereich.
   Widget _buildMediumWorkspaceBody(HeroSheet hero) {
+    final showHeroHeader = context.codexTheme.showDecoration;
     final activeTabIndex = _activeTabIndex();
     return Row(
       children: [
@@ -152,7 +156,8 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
           child: CodexPageScaffold(
             child: Column(
               children: [
-                _buildWorkspaceHeroHeader(hero, isCompact: false),
+                if (showHeroHeader)
+                  _buildWorkspaceHeroHeader(hero, isCompact: false),
                 WorkspaceCoreAttributesHeader(
                   heroId: widget.heroId,
                   hero: hero,
@@ -168,6 +173,7 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
 
   /// Expanded-Layout: ausgeklappte Sidebar + Content, kein Inspector.
   Widget _buildExpandedWorkspaceBody(HeroSheet hero) {
+    final showHeroHeader = context.codexTheme.showDecoration;
     final activeTabIndex = _activeTabIndex();
     final navigationWidth = _heroDeckExpanded
         ? _heroDeckNavigationWidth
@@ -195,7 +201,8 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
           child: CodexPageScaffold(
             child: Column(
               children: [
-                _buildWorkspaceHeroHeader(hero, isCompact: false),
+                if (showHeroHeader)
+                  _buildWorkspaceHeroHeader(hero, isCompact: false),
                 WorkspaceCoreAttributesHeader(
                   heroId: widget.heroId,
                   hero: hero,

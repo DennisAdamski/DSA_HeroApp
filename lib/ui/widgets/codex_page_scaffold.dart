@@ -21,6 +21,14 @@ class CodexPageScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final codex = context.codexTheme;
 
+    if (!codex.showDecoration) {
+      return Container(
+        color: codex.parchment,
+        padding: padding,
+        child: child,
+      );
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: codex.parchment,
