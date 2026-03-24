@@ -47,7 +47,7 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
         talentBeOverride ?? computed?.combatPreviewStats.beKampf;
     final showMagicResources = resourceActivation.magic.isEnabled;
     final showDivineResources = resourceActivation.divine.isEnabled;
-    final activeWounds = state?.wpiZustand.gesamtEffektiveWunden ?? 0;
+    final totalWounds = state?.wpiZustand.gesamtWunden ?? 0;
 
     String resourceText(int? current, int? max) {
       final currentText = current?.toString() ?? '-';
@@ -163,12 +163,9 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
       ),
       CodexSummaryRailItem(
         label: 'Wunden',
-        value: activeWounds.toString(),
+        value: totalWounds.toString(),
         icon: Icons.healing_outlined,
-        helper: activeWounds > 0
-            ? 'Aktive Mali moeglich'
-            : 'Keine aktiven Wunden',
-        highlight: activeWounds > 0,
+        highlight: totalWounds > 0,
         onTap: () => showWundenDetailDialog(
           context: context,
           heroId: heroId,
