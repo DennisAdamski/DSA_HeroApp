@@ -74,7 +74,6 @@ class CodexMetricTile extends StatelessWidget {
           Text(
             combinedValueText ?? value,
             style: theme.textTheme.titleLarge?.copyWith(
-              fontFamily: 'Cinzel',
               color: codex.ink,
             ),
           ),

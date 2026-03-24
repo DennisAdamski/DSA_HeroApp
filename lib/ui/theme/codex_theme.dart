@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
+
 /// Semantische Codex-Designwerte fuer die Workspace-Oberflaeche.
 @immutable
 class CodexTheme extends ThemeExtension<CodexTheme> {
@@ -24,6 +26,7 @@ class CodexTheme extends ThemeExtension<CodexTheme> {
     required this.heroGradientSoft,
     required this.sectionRadius,
     required this.panelRadius,
+    this.showDecoration = true,
   });
 
   /// Hauptflaeche mit Pergamentcharakter.
@@ -77,16 +80,16 @@ class CodexTheme extends ThemeExtension<CodexTheme> {
   /// Standardradius kleiner Panels und Badges.
   final double panelRadius;
 
+  /// Steuert, ob dekorative Elemente (Texturen, Wasserzeichen, Gradients,
+  /// Asset-Illustrationen) angezeigt werden.
+  final bool showDecoration;
+
   /// Liefert das aktive Codex-Theme aus dem Build-Kontext.
   static CodexTheme of(BuildContext context) {
-    final extension = Theme.of(context).extension<CodexTheme>();
-    if (extension != null) {
-      return extension;
-    }
-    final brightness = Theme.of(context).brightness;
-    return brightness == Brightness.dark
-        ? _darkCodexTheme()
-        : _lightCodexTheme();
+    return Theme.of(context).extension<CodexTheme>()
+        ?? (Theme.of(context).brightness == Brightness.dark
+            ? _darkCodexTheme()
+            : _lightCodexTheme());
   }
 
   @override
@@ -108,6 +111,7 @@ class CodexTheme extends ThemeExtension<CodexTheme> {
     Gradient? heroGradientSoft,
     double? sectionRadius,
     double? panelRadius,
+    bool? showDecoration,
   }) {
     return CodexTheme(
       parchment: parchment ?? this.parchment,
@@ -127,6 +131,7 @@ class CodexTheme extends ThemeExtension<CodexTheme> {
       heroGradientSoft: heroGradientSoft ?? this.heroGradientSoft,
       sectionRadius: sectionRadius ?? this.sectionRadius,
       panelRadius: panelRadius ?? this.panelRadius,
+      showDecoration: showDecoration ?? this.showDecoration,
     );
   }
 
@@ -156,12 +161,69 @@ class CodexTheme extends ThemeExtension<CodexTheme> {
       heroGradientSoft: t < 0.5 ? heroGradientSoft : other.heroGradientSoft,
       sectionRadius: lerpDouble(sectionRadius, other.sectionRadius, t)!,
       panelRadius: lerpDouble(panelRadius, other.panelRadius, t)!,
+      showDecoration: t < 0.5 ? showDecoration : other.showDecoration,
     );
   }
 }
 
-/// Baut das globale Codex-Theme fuer Light- und Dark-Mode.
-ThemeData buildCodexTheme({
+/// Baut das globale App-Theme fuer die gewaehlte UI-Variante.
+ThemeData buildAppTheme({
+  required UiVariante variante,
+  required Brightness brightness,
+  required bool centerAppBarTitle,
+}) {
+  return switch (variante) {
+    UiVariante.codex => _buildCodexTheme(
+      brightness: brightness,
+      centerAppBarTitle: centerAppBarTitle,
+    ),
+    UiVariante.klassisch => _buildClassicTheme(
+      brightness: brightness,
+      centerAppBarTitle: centerAppBarTitle,
+    ),
+  };
+}
+
+ThemeData _buildClassicTheme({
+  required Brightness brightness,
+  required bool centerAppBarTitle,
+}) {
+  final isDark = brightness == Brightness.dark;
+  const seedColor = Color(0xFF2A5A73);
+  final colorScheme = ColorScheme.fromSeed(
+    seedColor: seedColor,
+    brightness: brightness,
+  );
+  final codex = isDark ? _darkClassicTheme() : _lightClassicTheme();
+  final base = ThemeData(
+    useMaterial3: true,
+    brightness: brightness,
+    colorScheme: colorScheme,
+    scaffoldBackgroundColor: codex.parchment,
+    fontFamily: 'Merriweather',
+    extensions: <ThemeExtension<dynamic>>[codex],
+  );
+
+  final textTheme = base.textTheme.apply(
+    fontFamily: 'Merriweather',
+    bodyColor: codex.ink,
+    displayColor: codex.ink,
+  );
+
+  return base.copyWith(
+    textTheme: textTheme,
+    appBarTheme: AppBarTheme(centerTitle: centerAppBarTitle),
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+      },
+    ),
+  );
+}
+
+ThemeData _buildCodexTheme({
   required Brightness brightness,
   required bool centerAppBarTitle,
 }) {
@@ -403,6 +465,7 @@ CodexTheme _lightCodexTheme() {
     ),
     sectionRadius: 24,
     panelRadius: 16,
+    showDecoration: true,
   );
 }
 
@@ -433,6 +496,61 @@ CodexTheme _darkCodexTheme() {
     ),
     sectionRadius: 24,
     panelRadius: 16,
+    showDecoration: true,
+  );
+}
+
+CodexTheme _lightClassicTheme() {
+  return const CodexTheme(
+    parchment: Color(0xFFF2F5F7),
+    parchmentStrong: Color(0xFFE8ECF0),
+    panel: Color(0xFFFFFFFF),
+    panelRaised: Color(0xFFF5F7FA),
+    ink: Color(0xFF1D2830),
+    inkMuted: Color(0xFF5A6670),
+    brass: Color(0xFF2A5A73),
+    brassMuted: Color(0xFF6A99B3),
+    rule: Color(0xFFD0D7DE),
+    accent: Color(0xFF2A5A73),
+    success: Color(0xFF2E7D32),
+    warning: Color(0xFFE65100),
+    danger: Color(0xFFC62828),
+    heroGradient: LinearGradient(
+      colors: <Color>[Color(0xFF2A5A73), Color(0xFF2A5A73)],
+    ),
+    heroGradientSoft: LinearGradient(
+      colors: <Color>[Color(0xFFF2F5F7), Color(0xFFF2F5F7)],
+    ),
+    sectionRadius: 12,
+    panelRadius: 8,
+    showDecoration: false,
+  );
+}
+
+CodexTheme _darkClassicTheme() {
+  return const CodexTheme(
+    parchment: Color(0xFF121212),
+    parchmentStrong: Color(0xFF1E1E1E),
+    panel: Color(0xFF1E1E1E),
+    panelRaised: Color(0xFF2C2C2C),
+    ink: Color(0xFFE0E0E0),
+    inkMuted: Color(0xFF9E9E9E),
+    brass: Color(0xFF5C9AB8),
+    brassMuted: Color(0xFF3A6E88),
+    rule: Color(0xFF424242),
+    accent: Color(0xFF5C9AB8),
+    success: Color(0xFF66BB6A),
+    warning: Color(0xFFFF9800),
+    danger: Color(0xFFEF5350),
+    heroGradient: LinearGradient(
+      colors: <Color>[Color(0xFF1E1E1E), Color(0xFF1E1E1E)],
+    ),
+    heroGradientSoft: LinearGradient(
+      colors: <Color>[Color(0xFF121212), Color(0xFF121212)],
+    ),
+    sectionRadius: 12,
+    panelRadius: 8,
+    showDecoration: false,
   );
 }
 

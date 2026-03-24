@@ -28,6 +28,7 @@ class DsaAppShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dunkelModus = ref.watch(dunkelModusProvider);
+    final variante = ref.watch(uiVarianteProvider);
     final apple = _isApple();
 
     return ScrollConfiguration(
@@ -37,7 +38,8 @@ class DsaAppShell extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         themeMode: dunkelModus ? ThemeMode.dark : ThemeMode.light,
         theme:
-            buildCodexTheme(
+            buildAppTheme(
+              variante: variante,
               brightness: Brightness.light,
               centerAppBarTitle: apple,
             ).copyWith(
@@ -47,7 +49,8 @@ class DsaAppShell extends ConsumerWidget {
               pageTransitionsTheme: _pageTransitionsTheme,
             ),
         darkTheme:
-            buildCodexTheme(
+            buildAppTheme(
+              variante: variante,
               brightness: Brightness.dark,
               centerAppBarTitle: apple,
             ).copyWith(

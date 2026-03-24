@@ -32,11 +32,16 @@ class CodexTabHeader extends StatelessWidget {
     final width = MediaQuery.sizeOf(context).width;
     final useCompactLayout = width < 480;
 
+    final showAsset = codex.showDecoration &&
+        assetPath != null &&
+        !useCompactLayout;
+
     return Container(
       margin: EdgeInsets.fromLTRB(12, useCompactLayout ? 8 : 12, 12, 0),
       padding: EdgeInsets.all(useCompactLayout ? 12 : 18),
       decoration: BoxDecoration(
-        gradient: codex.heroGradientSoft,
+        gradient: codex.showDecoration ? codex.heroGradientSoft : null,
+        color: codex.showDecoration ? null : codex.panelRaised,
         borderRadius: BorderRadius.circular(codex.sectionRadius),
         border: Border.all(color: codex.rule),
       ),
@@ -54,7 +59,7 @@ class CodexTabHeader extends StatelessWidget {
               ],
             ),
           ),
-          if (assetPath != null && !useCompactLayout) ...[
+          if (showAsset) ...[
             const SizedBox(width: 16),
             Opacity(
               opacity: 0.9,
