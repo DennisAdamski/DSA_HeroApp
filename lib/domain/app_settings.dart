@@ -17,6 +17,7 @@ class AppSettings {
     this.heroStoragePath,
     this.avatarApiConfig = const AvatarApiConfig(),
     this.uiVariante = UiVariante.codex,
+    this.summaryRailCollapsed = false,
   });
 
   final bool debugModus;
@@ -29,6 +30,9 @@ class AppSettings {
   /// Aktive visuelle Darstellungsvariante.
   final UiVariante uiVariante;
 
+  /// Ob die Kernwerte-Rail im Workspace zugeklappt ist.
+  final bool summaryRailCollapsed;
+
   /// Erstellt eine angepasste Kopie der Einstellungen.
   AppSettings copyWith({
     bool? debugModus,
@@ -36,6 +40,7 @@ class AppSettings {
     Object? heroStoragePath = _copySentinel,
     AvatarApiConfig? avatarApiConfig,
     UiVariante? uiVariante,
+    bool? summaryRailCollapsed,
   }) {
     return AppSettings(
       debugModus: debugModus ?? this.debugModus,
@@ -45,6 +50,7 @@ class AppSettings {
           : heroStoragePath as String?,
       avatarApiConfig: avatarApiConfig ?? this.avatarApiConfig,
       uiVariante: uiVariante ?? this.uiVariante,
+      summaryRailCollapsed: summaryRailCollapsed ?? this.summaryRailCollapsed,
     );
   }
 
@@ -54,6 +60,7 @@ class AppSettings {
     'heroStoragePath': heroStoragePath,
     'avatarApiConfig': avatarApiConfig.toJson(),
     'uiVariante': uiVariante.name,
+    'summaryRailCollapsed': summaryRailCollapsed,
   };
 
   static AppSettings fromJson(Map<String, dynamic> json) {
@@ -76,6 +83,7 @@ class AppSettings {
         (json['avatarApiConfig'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
       uiVariante: uiVariante,
+      summaryRailCollapsed: json['summaryRailCollapsed'] as bool? ?? false,
     );
   }
 }
