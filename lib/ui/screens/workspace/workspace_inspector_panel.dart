@@ -15,7 +15,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dial
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector_wunden_card.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
-import 'package:dsa_heldenverwaltung/ui/widgets/codex_badge.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 
 const double _statusLabelWidth = 32;
@@ -79,8 +78,6 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
                         icon: Icon(toggleIcon),
                       ),
                     ),
-                    if (hero != null) _HeldCard(hero: hero),
-                    const SizedBox(height: 10),
                     if (heroState != null && derived != null)
                       _VitalwerteCard(
                         heroId: heroId,
@@ -122,41 +119,6 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
                   icon: Icon(toggleIcon),
                 ),
               ),
-      ),
-    );
-  }
-}
-
-class _HeldCard extends StatelessWidget {
-  const _HeldCard({required this.hero});
-
-  final HeroSheet hero;
-
-  @override
-  Widget build(BuildContext context) {
-    return CodexSectionCard(
-      title: hero.name,
-      subtitle: hero.background.profession.trim().isEmpty
-          ? 'Heldendossier'
-          : hero.background.profession,
-      badges: <Widget>[
-        CodexBadge(label: 'Level ${hero.level}', tone: CodexBadgeTone.accent),
-        if (hero.background.rasse.trim().isNotEmpty)
-          CodexBadge(label: hero.background.rasse),
-      ],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            hero.background.kultur.trim().isEmpty
-                ? 'Ohne Kulturangabe'
-                : hero.background.kultur,
-          ),
-          if (hero.background.titel.trim().isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text('Titel: ${hero.background.titel}'),
-          ],
-        ],
       ),
     );
   }
