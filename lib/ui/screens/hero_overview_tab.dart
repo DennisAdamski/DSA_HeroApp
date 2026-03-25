@@ -35,6 +35,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_field.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/attribute_modifier_detail_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_detail_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/hero_document.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_table_cell.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_generation_dialog.dart';
@@ -49,7 +50,6 @@ part 'hero_overview/hero_overview_raise_actions.dart';
 
 const double _pagePadding = 16;
 const double _sectionSpacing = 16;
-const double _fieldSpacing = 12;
 const double _gridSpacing = 12;
 const double _standardTwoColumnBreakpoint = 700;
 const double _largeTwoColumnBreakpoint = 900;
@@ -440,6 +440,57 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _onFieldChanged(updatedValue.toString());
   }
 
+  /// Baut den dokumentartigen Deckblatt-Kopf fuer den Helden.
+  Widget _buildPageHeader(
+    HeroSheet hero,
+    HeroComputedSnapshot snapshot,
+    HeroResourceActivation resourceActivation,
+  ) {
+    final derived = snapshot.derivedStats;
+    final state = snapshot.state;
+    final profession = hero.background.profession.trim().isEmpty
+        ? 'Ohne Profession'
+        : hero.background.profession.trim();
+    final kultur = hero.background.kultur.trim().isEmpty
+        ? 'Unbekannte Kultur'
+        : hero.background.kultur.trim();
+    return HeroPageHeader(
+      title: hero.name,
+      subtitle:
+          '$profession · $kultur · Das Deckblatt bündelt Herkunft, Eigenschaften und aktuelle Ressourcen des Helden.',
+      metrics: [
+        HeroMetricChip(label: 'Stufe', value: '${hero.level}'),
+        HeroMetricChip(label: 'AP frei', value: '${hero.apAvailable}'),
+        HeroMetricChip(
+          label: 'LeP',
+          value: '${state.currentLep}/${derived.maxLep}',
+          backgroundColor: Theme.of(
+            context,
+          ).colorScheme.errorContainer.withValues(alpha: 0.72),
+          foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
+        ),
+        HeroMetricChip(
+          label: 'Au',
+          value: '${state.currentAu}/${derived.maxAu}',
+          backgroundColor: Theme.of(
+            context,
+          ).colorScheme.tertiaryContainer.withValues(alpha: 0.72),
+          foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
+        ),
+        if (resourceActivation.magic.isEnabled)
+          HeroMetricChip(
+            label: 'AsP',
+            value: '${state.currentAsp}/${derived.maxAsp}',
+          ),
+        if (resourceActivation.divine.isEnabled)
+          HeroMetricChip(
+            label: 'KaP',
+            value: '${state.currentKap}/${derived.maxKap}',
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -467,6 +518,8 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
               key: const ValueKey<String>('hero-overview-scroll'),
               padding: const EdgeInsets.all(_pagePadding),
               children: [
+                _buildPageHeader(hero, snapshot, resourceActivation),
+                const SizedBox(height: _sectionSpacing),
                 if (hero.appearance.avatarFileName.isEmpty) ...[
                   _AvatarActions(
                     heroId: hero.id,
@@ -540,28 +593,11 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ),
-                titleAction ?? const SizedBox.shrink(),
-              ],
-            ),
-            const SizedBox(height: _fieldSpacing),
-            child,
-          ],
-        ),
-      ),
+    return HeroDocumentSection(
+      title: title,
+      trailing: titleAction,
+      padding: const EdgeInsets.all(16),
+      child: child,
     );
   }
 }

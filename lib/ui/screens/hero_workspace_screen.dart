@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_bottom_navigation.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_command_deck_panel.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_core_attributes_header.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_inspector_panel.dart';
@@ -392,14 +391,37 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     return spaced;
   }
 
-  /// Baut die horizontale TabBar fuer das klassische Layout.
+  /// Baut die horizontale Kapitelnavigation fuer kompakte Layouts.
   PreferredSizeWidget _buildWorkspaceTabBar() {
-    return TabBar(
-      controller: _tabController,
-      isScrollable: true,
-      tabs: _visibleTabs
-          .map((tab) => Tab(text: tab.label))
-          .toList(growable: false),
+    final colorScheme = Theme.of(context).colorScheme;
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(64),
+      child: Container(
+        color: colorScheme.surface,
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
+        child: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          dividerColor: Colors.transparent,
+          indicator: BoxDecoration(
+            color: colorScheme.secondaryContainer,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: colorScheme.secondary),
+          ),
+          labelColor: colorScheme.onSecondaryContainer,
+          unselectedLabelColor: colorScheme.onSurface,
+          tabs: _visibleTabs
+              .map(
+                (tab) => Tab(
+                  icon: Icon(tab.icon, size: 18),
+                  text: tab.label,
+                  iconMargin: const EdgeInsets.only(bottom: 4),
+                ),
+              )
+              .toList(growable: false),
+        ),
+      ),
     );
   }
 
@@ -427,6 +449,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     return Column(
       children: [
         WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
+        _buildWorkspaceTabBar(),
         Expanded(child: _buildWorkspaceTabView()),
       ],
     );
@@ -625,8 +648,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     final apple = isApplePlatform(context);
     final hasVisibleTabs = _visibleTabs.isNotEmpty;
     final isCompactLayout = layout == WorkspaceLayout.compact;
-    final useBottomNav = isCompactLayout && apple && hasVisibleTabs;
-    final showTabBar = isCompactLayout && !apple && hasVisibleTabs;
     final showInspectorAction =
         layout == WorkspaceLayout.medium || layout == WorkspaceLayout.expanded;
 
@@ -639,7 +660,22 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(hero.name),
+          title: Column(
+            crossAxisAlignment: apple
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(hero.name),
+              if (hasVisibleTabs)
+                Text(
+                  _activeTabSpec()?.helper ?? '',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+            ],
+          ),
           leading: IconButton(
             key: const ValueKey<String>('workspace-back-button'),
             icon: Icon(apple ? Icons.arrow_back_ios : Icons.arrow_back),
@@ -661,27 +697,12 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
               IconButton(
                 tooltip: 'Einstellungen',
                 onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const SettingsScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
                 ),
                 icon: const Icon(Icons.settings),
               ),
           ],
-          bottom: showTabBar ? _buildWorkspaceTabBar() : null,
         ),
-        bottomNavigationBar: useBottomNav
-            ? WorkspaceBottomNavigation(
-                tabs: _visibleTabs,
-                activeTabIndex: _activeTabIndex(),
-                onSelectTab: (index) {
-                  if (_tabController.index == index) {
-                    return;
-                  }
-                  _tabController.animateTo(index);
-                },
-              )
-            : null,
         body: switch (layout) {
           WorkspaceLayout.compact => _buildClassicWorkspaceBody(hero),
           WorkspaceLayout.medium => _buildMediumWorkspaceBody(hero),
