@@ -48,12 +48,12 @@ class _WundenDetailDialog extends ConsumerWidget {
     final wpiZustand = heroState.wpiZustand;
     final wundEffekte = computed.wundEffekte;
     final wundschwelle = computed.wundschwelle;
+    final wundschwellenStufen = computed.wundschwellenStufen;
 
     Future<void> speichereWundZustand(WundZustand neuerZustand) async {
-      await ref.read(heroActionsProvider).saveHeroState(
-        heroId,
-        heroState.copyWith(wpiZustand: neuerZustand),
-      );
+      await ref
+          .read(heroActionsProvider)
+          .saveHeroState(heroId, heroState.copyWith(wpiZustand: neuerZustand));
     }
 
     Future<void> wundeHinzufuegen(WundZone zone) async {
@@ -139,9 +139,9 @@ class _WundenDetailDialog extends ConsumerWidget {
                 } else {
                   updatedModifiers['wundschwelle'] = result;
                 }
-                await ref.read(heroActionsProvider).saveHero(
-                  hero.copyWith(statModifiers: updatedModifiers),
-                );
+                await ref
+                    .read(heroActionsProvider)
+                    .saveHero(hero.copyWith(statModifiers: updatedModifiers));
               }
             },
           ),
@@ -154,6 +154,9 @@ class _WundenDetailDialog extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              _WundschwellenStufenText(stufen: wundschwellenStufen),
+              const SizedBox(height: 8),
+
               // Zonenraster
               for (final zone in WundZone.values) ...[
                 _ZonenZeile(
@@ -190,9 +193,7 @@ class _WundenDetailDialog extends ConsumerWidget {
                         Expanded(
                           child: Text(
                             hinweis,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
+                            style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
                                   color: Theme.of(context).colorScheme.error,
                                 ),
@@ -283,8 +284,8 @@ class _ZonenZeile extends StatelessWidget {
                 color: i < effektive
                     ? Theme.of(context).colorScheme.error
                     : i < wunden
-                        ? Colors.amber
-                        : Theme.of(context).colorScheme.outlineVariant,
+                    ? Colors.amber
+                    : Theme.of(context).colorScheme.outlineVariant,
               ),
             ),
           ),
@@ -316,6 +317,29 @@ class _ZonenZeile extends StatelessWidget {
   }
 }
 
+class _WundschwellenStufenText extends StatelessWidget {
+  const _WundschwellenStufenText({required this.stufen});
+
+  final WundschwellenStufen stufen;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final teile = [
+      '0,5 KO: ${stufen.halbKo}',
+      'KO: ${stufen.ko}',
+      '1,5 KO: ${stufen.einhalbKo}',
+      '2 KO: ${stufen.zweiKo}',
+    ];
+
+    return Text(
+      'Wundschwelle: ${teile.join(' | ')}',
+      style: textTheme.bodyMedium,
+      softWrap: true,
+    );
+  }
+}
+
 class _SbProbeSection extends StatelessWidget {
   const _SbProbeSection({
     required this.hero,
@@ -334,8 +358,9 @@ class _SbProbeSection extends StatelessWidget {
       gesamtWunden: gesamtWunden,
     );
 
-    final sbEntry = (hero.talents as Map<String, HeroTalentEntry>?)
-        ?['tal_selbstbeherrschung'];
+    final sbEntry =
+        (hero.talents
+            as Map<String, HeroTalentEntry>?)?['tal_selbstbeherrschung'];
     final hatSb = sbEntry != null && sbEntry.talentValue != null;
     final sbTaw = hatSb
         ? computeTalentComputedTaw(
@@ -374,10 +399,12 @@ class _SbProbeSection extends StatelessWidget {
                     AttributeCode.kk,
                   ];
                   final targets = sbCodes
-                      .map((code) => ProbeTargetValue(
-                            label: code.name.toUpperCase(),
-                            value: readAttributeValue(effectiveAttrs, code),
-                          ))
+                      .map(
+                        (code) => ProbeTargetValue(
+                          label: code.name.toUpperCase(),
+                          value: readAttributeValue(effectiveAttrs, code),
+                        ),
+                      )
                       .toList();
                   showProbeDialog(
                     context: context,
@@ -385,16 +412,13 @@ class _SbProbeSection extends StatelessWidget {
                       title: 'Selbstbeherrschung (Wunde unterdrücken)',
                       targets: targets,
                       basePool: sbTaw,
-                      wundMalus:
-                          wundEffekte.talentProbeMalus + (-erschwernis),
+                      wundMalus: wundEffekte.talentProbeMalus + (-erschwernis),
                     ),
                   );
                 }
               : null,
           icon: const Icon(Icons.casino),
-          label: Text(hatSb
-              ? 'SB-Probe (TaW $sbTaw)'
-              : 'SB nicht erlernt'),
+          label: Text(hatSb ? 'SB-Probe (TaW $sbTaw)' : 'SB nicht erlernt'),
         ),
       ],
     );

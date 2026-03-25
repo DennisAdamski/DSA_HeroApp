@@ -48,6 +48,66 @@ void main() {
     });
   });
 
+  group('computeWundschwellenStufen', () {
+    test('gerade KO ohne Modifikatoren', () {
+      final stufen = computeWundschwellenStufen(ko: 14);
+
+      expect(stufen.halbKo, 7);
+      expect(stufen.ko, 14);
+      expect(stufen.einhalbKo, 21);
+      expect(stufen.zweiKo, 28);
+    });
+
+    test('ungerade KO rundet 0,5 und 1,5 kaufmaennisch', () {
+      final stufen = computeWundschwellenStufen(ko: 15);
+
+      expect(stufen.halbKo, 8);
+      expect(stufen.ko, 15);
+      expect(stufen.einhalbKo, 23);
+      expect(stufen.zweiKo, 30);
+    });
+
+    test('Eisern gibt +2 auf alle Stufen', () {
+      final stufen = computeWundschwellenStufen(
+        ko: 14,
+        vorteileText: 'Eisern, Flink',
+      );
+
+      expect(stufen.halbKo, 9);
+      expect(stufen.ko, 16);
+      expect(stufen.einhalbKo, 23);
+      expect(stufen.zweiKo, 30);
+    });
+
+    test('Glasknochen gibt -2 auf alle Stufen', () {
+      final stufen = computeWundschwellenStufen(
+        ko: 14,
+        nachteileText: 'Glasknochen, Arroganz 8',
+      );
+
+      expect(stufen.halbKo, 5);
+      expect(stufen.ko, 12);
+      expect(stufen.einhalbKo, 19);
+      expect(stufen.zweiKo, 26);
+    });
+
+    test('kombiniert Textbonus mit benannten Wundschwelle-Modifikatoren', () {
+      final stufen = computeWundschwellenStufen(
+        ko: 15,
+        mods: [
+          HeroTalentModifier(modifier: 1, description: 'Artefakt'),
+          HeroTalentModifier(modifier: -1, description: 'Fluch'),
+        ],
+        vorteileText: 'Eisern',
+      );
+
+      expect(stufen.halbKo, 10);
+      expect(stufen.ko, 17);
+      expect(stufen.einhalbKo, 25);
+      expect(stufen.zweiKo, 32);
+    });
+  });
+
   group('computeWundEffekte', () {
     test('keine Wunden → alle Mali 0', () {
       const zustand = WundZustand();
@@ -86,9 +146,7 @@ void main() {
     });
 
     test('einzelne Brustwunde: Basis + zonenspezifisch + Hinweis', () {
-      final zustand = const WundZustand(
-        wundenProZone: {WundZone.brust: 1},
-      );
+      final zustand = const WundZustand(wundenProZone: {WundZone.brust: 1});
       final e = computeWundEffekte(zustand);
       expect(e.atMalus, -3);
       expect(e.paMalus, -3);
@@ -152,16 +210,11 @@ void main() {
     });
 
     test('3 Wunden in Zone → kampfunfaehig', () {
-      final zustand = const WundZustand(
-        wundenProZone: {WundZone.linkerArm: 3},
-      );
+      final zustand = const WundZustand(wundenProZone: {WundZone.linkerArm: 3});
       final e = computeWundEffekte(zustand);
       expect(e.kampfunfaehig, true);
       expect(e.kampfunfaehigeZonen, [WundZone.linkerArm]);
-      expect(
-        e.hinweise,
-        contains('Linker Arm: nicht mehr verwendbar'),
-      );
+      expect(e.hinweise, contains('Linker Arm: nicht mehr verwendbar'));
     });
 
     test('3 Kopfwunden → Folgeschaden-Hinweis', () {
@@ -172,22 +225,14 @@ void main() {
       final e = computeWundEffekte(zustand);
       expect(e.kampfunfaehig, true);
       expect(e.kampfunfaehigeZonen, [WundZone.kopf]);
-      expect(
-        e.hinweise,
-        contains('Kopf: 1 SP/KR Folgeschaden'),
-      );
+      expect(e.hinweise, contains('Kopf: 1 SP/KR Folgeschaden'));
     });
 
     test('3 Brustwunden → Folgeschaden-Hinweis', () {
-      final zustand = const WundZustand(
-        wundenProZone: {WundZone.brust: 3},
-      );
+      final zustand = const WundZustand(wundenProZone: {WundZone.brust: 3});
       final e = computeWundEffekte(zustand);
       expect(e.kampfunfaehig, true);
-      expect(
-        e.hinweise,
-        contains('Brust: 1 SP/KR Folgeschaden'),
-      );
+      expect(e.hinweise, contains('Brust: 1 SP/KR Folgeschaden'));
     });
   });
 
@@ -199,9 +244,7 @@ void main() {
     });
 
     test('mitWundeHinzu begrenzt auf maxWundenProZone', () {
-      final zustand = const WundZustand(
-        wundenProZone: {WundZone.brust: 3},
-      );
+      final zustand = const WundZustand(wundenProZone: {WundZone.brust: 3});
       final aktualisiert = zustand.mitWundeHinzu(WundZone.brust);
       expect(aktualisiert.wundenInZone(WundZone.brust), 3);
     });
@@ -218,9 +261,7 @@ void main() {
     });
 
     test('mitWundeEntfernt reduziert Zaehler', () {
-      final zustand = const WundZustand(
-        wundenProZone: {WundZone.brust: 2},
-      );
+      final zustand = const WundZustand(wundenProZone: {WundZone.brust: 2});
       final aktualisiert = zustand.mitWundeEntfernt(WundZone.brust);
       expect(aktualisiert.wundenInZone(WundZone.brust), 1);
     });
@@ -340,15 +381,9 @@ void main() {
 
     test('alle Wunden unterdrueckt → keine Mali', () {
       final zustand = const WundZustand(
-        wundenProZone: {
-          WundZone.kopf: 1,
-          WundZone.brust: 2,
-        },
+        wundenProZone: {WundZone.kopf: 1, WundZone.brust: 2},
         kopfIniMalus: 8,
-        unterdrueckteWundenProZone: {
-          WundZone.kopf: 1,
-          WundZone.brust: 2,
-        },
+        unterdrueckteWundenProZone: {WundZone.kopf: 1, WundZone.brust: 2},
       );
       final e = computeWundEffekte(zustand);
       expect(e.atMalus, 0);
@@ -407,18 +442,9 @@ void main() {
 
   group('computeSbUnterdrueckungErschwernis', () {
     test('Einzelwunde: 4 * Gesamtwunden', () {
-      expect(
-        computeSbUnterdrueckungErschwernis(gesamtWunden: 1),
-        4,
-      );
-      expect(
-        computeSbUnterdrueckungErschwernis(gesamtWunden: 3),
-        12,
-      );
-      expect(
-        computeSbUnterdrueckungErschwernis(gesamtWunden: 5),
-        20,
-      );
+      expect(computeSbUnterdrueckungErschwernis(gesamtWunden: 1), 4);
+      expect(computeSbUnterdrueckungErschwernis(gesamtWunden: 3), 12);
+      expect(computeSbUnterdrueckungErschwernis(gesamtWunden: 5), 20);
     });
 
     test('2 Wunden aus einem Treffer: pauschal 8', () {
@@ -446,18 +472,14 @@ void main() {
 
   group('WundZustand Unterdrueckung', () {
     test('mitUnterdrueckung setzt Zaehler geclampt', () {
-      final zustand = const WundZustand(
-        wundenProZone: {WundZone.brust: 2},
-      );
+      final zustand = const WundZustand(wundenProZone: {WundZone.brust: 2});
       final aktualisiert = zustand.mitUnterdrueckung(WundZone.brust, 1);
       expect(aktualisiert.unterdrueckteInZone(WundZone.brust), 1);
       expect(aktualisiert.effektiveWundenInZone(WundZone.brust), 1);
     });
 
     test('mitUnterdrueckung clampt auf Wundenanzahl', () {
-      final zustand = const WundZustand(
-        wundenProZone: {WundZone.brust: 1},
-      );
+      final zustand = const WundZustand(wundenProZone: {WundZone.brust: 1});
       final aktualisiert = zustand.mitUnterdrueckung(WundZone.brust, 5);
       expect(aktualisiert.unterdrueckteInZone(WundZone.brust), 1);
     });
@@ -526,10 +548,9 @@ void main() {
 
   group('wundEffekteToStatModifiers', () {
     test('konvertiert Mali korrekt', () {
-      final effekte = computeWundEffekte(const WundZustand(
-        wundenProZone: {WundZone.kopf: 1},
-        kopfIniMalus: 8,
-      ));
+      final effekte = computeWundEffekte(
+        const WundZustand(wundenProZone: {WundZone.kopf: 1}, kopfIniMalus: 8),
+      );
       final mods = wundEffekteToStatModifiers(effekte);
       expect(mods.at, effekte.atMalus);
       expect(mods.pa, effekte.paMalus);
