@@ -23,6 +23,7 @@ class HeroComputedSnapshot {
     required this.combatPreviewStats,
     required this.wundEffekte,
     required this.wundschwelle,
+    required this.wundschwellenStufen,
     this.inventoryStatMods = const StatModifiers(),
     this.inventoryAttributeMods = const AttributeModifiers(),
     this.inventoryTalentMods = const <String, int>{},
@@ -43,6 +44,9 @@ class HeroComputedSnapshot {
 
   /// Effektive Wundschwelle (KO/2 + Modifikatoren).
   final int wundschwelle;
+
+  /// Vier KO-basierte Wundschwellen fuer die Anzeige im Wundendialog.
+  final WundschwellenStufen wundschwellenStufen;
 
   /// Aggregierte Stat-Modifikatoren aus ausgeruesteten Inventar-Items.
   final StatModifiers inventoryStatMods;
