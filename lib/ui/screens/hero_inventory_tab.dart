@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_item_ca
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_item_editor.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 
 const double _widthBreakpoint = 1280;
 const double _pagePadding = 12;
@@ -123,9 +124,9 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     if (!mounted) return;
 
     _editController.markSaved();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Inventar gespeichert')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Inventar gespeichert')));
   }
 
   Future<void> _cancelChanges() async => _discardChanges();
@@ -247,6 +248,12 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const CodexTabHeader(
+          title: 'Ausrüstungs-Ledger',
+          subtitle:
+              'Traglast, Wert und Ausrüstungsstatus in einer dichteren Inventaransicht.',
+          assetPath: 'assets/ui/codex/compass_mark.png',
+        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(
             _pagePadding,
@@ -254,10 +261,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
             _pagePadding,
             0,
           ),
-          child: _DukatenField(
-            controller: _dukatenCtrl,
-            isEditing: isEditing,
-          ),
+          child: _DukatenField(controller: _dukatenCtrl, isEditing: isEditing),
         ),
         const SizedBox(height: 8),
         Padding(
@@ -281,8 +285,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
 
   Widget _buildWideLayout(Widget filterBar, Widget list, bool isEditing) {
     final selectedIdx = _selectedIndex;
-    final showEditor =
-        selectedIdx != null && selectedIdx < _draft.length;
+    final showEditor = selectedIdx != null && selectedIdx < _draft.length;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,6 +295,12 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const CodexTabHeader(
+                title: 'Ausrüstungs-Ledger',
+                subtitle:
+                    'Inventar, Träger und Split-Editor in einer aufgeteilten Verwaltungsansicht.',
+                assetPath: 'assets/ui/codex/compass_mark.png',
+              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   _pagePadding,
@@ -380,8 +389,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
           onTap: isEditing
               ? () => _selectEntry(draftIdx, isWide, context)
               : () {},
-          onDelete: (isEditing &&
-                  entry.source == InventoryItemSource.manuell)
+          onDelete: (isEditing && entry.source == InventoryItemSource.manuell)
               ? () => _deleteEntry(draftIdx)
               : null,
         );
@@ -398,10 +406,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
 // ---------------------------------------------------------------------------
 
 class _DukatenField extends StatelessWidget {
-  const _DukatenField({
-    required this.controller,
-    required this.isEditing,
-  });
+  const _DukatenField({required this.controller, required this.isEditing});
 
   final TextEditingController controller;
   final bool isEditing;

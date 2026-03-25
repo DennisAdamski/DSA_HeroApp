@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_badge.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
 
 /// Seitenleiste fuer den Desktop-Helden-Deck-Modus.
@@ -37,6 +39,7 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final codex = context.codexTheme;
     final colorScheme = Theme.of(context).colorScheme;
     final toggleTooltip = isExpanded
         ? 'Helden-Deck ausblenden'
@@ -45,8 +48,11 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
         ? Icons.keyboard_double_arrow_left
         : Icons.keyboard_double_arrow_right;
 
-    return ColoredBox(
-      color: colorScheme.surfaceContainerLowest,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: codex.heroGradientSoft,
+        border: Border(right: BorderSide(color: codex.rule)),
+      ),
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -97,9 +103,14 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 6),
                       child: ListTile(
                         selected: selected,
-                        selectedTileColor: colorScheme.secondaryContainer,
+                        selectedTileColor: codex.brass.withValues(alpha: 0.14),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(
+                            codex.panelRadius,
+                          ),
+                          side: BorderSide(
+                            color: selected ? codex.brassMuted : codex.rule,
+                          ),
                         ),
                         leading: Stack(
                           clipBehavior: Clip.none,
@@ -121,10 +132,22 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
                           ],
                         ),
                         title: Text(tab.label),
-                        subtitle: Text(
-                          tab.helper,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              tab.helper,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (dirty) ...[
+                              const SizedBox(height: 6),
+                              const CodexBadge(
+                                label: 'Ungespeichert',
+                                tone: CodexBadgeTone.warning,
+                              ),
+                            ],
+                          ],
                         ),
                         onTap: () => onSelectTab(index),
                       ),
@@ -152,9 +175,14 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
                             height: 48,
                             decoration: BoxDecoration(
                               color: selected
-                                  ? colorScheme.secondaryContainer
+                                  ? codex.brass.withValues(alpha: 0.14)
                                   : null,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(
+                                codex.panelRadius,
+                              ),
+                              border: Border.all(
+                                color: selected ? codex.brassMuted : codex.rule,
+                              ),
                             ),
                             child: Center(
                               child: Stack(

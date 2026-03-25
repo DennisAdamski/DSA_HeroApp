@@ -14,6 +14,7 @@ import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_field.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 part 'hero_begleiter/begleiter_helpers.dart';
@@ -98,9 +99,7 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
       if (companion.typ == BegleiterTyp.vertrauter &&
           companion.ritualCategories.isEmpty &&
           altVertrautenmagie != null) {
-        return companion.copyWith(
-          ritualCategories: [altVertrautenmagie],
-        );
+        return companion.copyWith(ritualCategories: [altVertrautenmagie]);
       }
       return companion;
     }).toList();
@@ -268,24 +267,48 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
       final vertrautenmagieKat = activeCompanion.ritualCategories
           .where((c) => c.id == 'vertrautenmagie')
           .firstOrNull;
-      return _BegleiterDetailView(
-        companion: activeCompanion,
-        isEditing: isEditing,
-        onBack: _navigateBack,
-        onChanged: _updateCompanion,
-        onDelete: () => _deleteCompanion(activeCompanion.id),
-        vertrautenmagieKategorie: vertrautenmagieKat,
+      return Column(
+        children: [
+          const CodexTabHeader(
+            title: 'Begleiter-Dossier',
+            subtitle:
+                'Vertraute und Begleiter mit Grunddaten, Kampfwerten und Sonderfertigkeiten.',
+            assetPath: 'assets/ui/codex/hero_banner_crest.png',
+          ),
+          Expanded(
+            child: _BegleiterDetailView(
+              companion: activeCompanion,
+              isEditing: isEditing,
+              onBack: _navigateBack,
+              onChanged: _updateCompanion,
+              onDelete: () => _deleteCompanion(activeCompanion.id),
+              vertrautenmagieKategorie: vertrautenmagieKat,
+            ),
+          ),
+        ],
       );
     }
 
-    return _BegleiterAuswahlView(
-      companions: _draftCompanions,
-      isEditing: isEditing,
-      onSelect: (id) => setState(() {
-        _activeCompanionId = id;
-        _userNavigatedBack = false;
-      }),
-      onAdd: _addCompanion,
+    return Column(
+      children: [
+        const CodexTabHeader(
+          title: 'Begleiter-Dossier',
+          subtitle:
+              'Vertraute und Begleiter mit Grunddaten, Kampfwerten und Sonderfertigkeiten.',
+          assetPath: 'assets/ui/codex/hero_banner_crest.png',
+        ),
+        Expanded(
+          child: _BegleiterAuswahlView(
+            companions: _draftCompanions,
+            isEditing: isEditing,
+            onSelect: (id) => setState(() {
+              _activeCompanionId = id;
+              _userNavigatedBack = false;
+            }),
+            onAdd: _addCompanion,
+          ),
+        ),
+      ],
     );
   }
 

@@ -26,6 +26,8 @@ import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents/combat_specialization_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
@@ -505,6 +507,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
           return ValueListenableBuilder<int>(
             valueListenable: _tableRevision,
             builder: (context, revision, child) {
+              final showTalentsHeader = MediaQuery.sizeOf(context).width >= 600;
               // Nur Talente anzeigen, die im Draft aktiv sind.
               final activeTalents = relevantTalents
                   .where((t) => _draftTalents.containsKey(t.id))
@@ -523,6 +526,20 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
               return ListView(
                 padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                 children: [
+                  if (showTalentsHeader) ...[
+                    CodexTabHeader(
+                      title: widget.scope == _TalentTabScope.combat
+                          ? 'Kampftechniken'
+                          : 'Talente & Bildung',
+                      subtitle: widget.scope == _TalentTabScope.combat
+                          ? 'AT/PA-Verteilung, Waffengattungen und Spezialisierungen im taktischen Codex.'
+                          : 'Talentgruppen, Sonderfertigkeiten sowie Sprachen und Schriften in verdichteter Darstellung.',
+                      assetPath: widget.scope == _TalentTabScope.combat
+                          ? 'assets/ui/codex/combat_silhouette.png'
+                          : 'assets/ui/codex/compass_mark.png',
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   if (widget.scope == _TalentTabScope.nonCombat &&
                       widget.showInlineActions)
                     _buildTopActionBar(
@@ -611,37 +628,27 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                           ),
                         );
 
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        child: ExpansionTile(
-                          initiallyExpanded: true,
-                          tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                          childrenPadding: EdgeInsets.zero,
-                          title: Text(group),
-                          subtitle: Text(
-                            '${talents.length} Talente',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          children: [
-                            widget.scope == _TalentTabScope.combat
-                                ? _buildCombatTalentsTable(talents: talents)
-                                : _buildTalentsTable(
-                                    talents: talents,
-                                    effectiveAttributes: effectiveAttributes!,
-                                    activeBaseBe: activeTalentBe,
-                                    inventoryTalentMods:
-                                        ref
-                                            .watch(
-                                              heroComputedProvider(
-                                                widget.heroId,
-                                              ),
-                                            )
-                                            .asData
-                                            ?.value
-                                            .inventoryTalentMods ??
-                                        const {},
-                                  ),
-                          ],
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: CodexSectionCard(
+                          title: group,
+                          subtitle: '${talents.length} Talente',
+                          child: widget.scope == _TalentTabScope.combat
+                              ? _buildCombatTalentsTable(talents: talents)
+                              : _buildTalentsTable(
+                                  talents: talents,
+                                  effectiveAttributes: effectiveAttributes!,
+                                  activeBaseBe: activeTalentBe,
+                                  inventoryTalentMods:
+                                      ref
+                                          .watch(
+                                            heroComputedProvider(widget.heroId),
+                                          )
+                                          .asData
+                                          ?.value
+                                          .inventoryTalentMods ??
+                                      const {},
+                                ),
                         ),
                       );
                     }),
