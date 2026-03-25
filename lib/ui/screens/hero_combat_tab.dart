@@ -37,7 +37,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_weapons_secti
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/waffenmeister_editor_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/combat_quick_stats.dart';
-import 'package:dsa_heldenverwaltung/ui/widgets/hero_document.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
@@ -227,26 +226,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     });
   }
 
-  /// Baut den Seitenkopf fuer kampfrelevante Werte und Ausruestung.
-  Widget _buildCombatHeader({
-    required HeroSheet hero,
-    required CombatPreviewStats preview,
-    required int weaponCount,
-  }) {
-    return HeroPageHeader(
-      title: 'Kampf',
-      subtitle:
-          '${hero.name} · Spieltischansicht mit Fokus auf aktive Ausrüstung, Verteidigung und schnellen Kampfwerten.',
-      metrics: [
-        HeroMetricChip(label: 'AT/PA', value: '${preview.at}/${preview.pa}'),
-        HeroMetricChip(label: 'INI', value: '${preview.initiative}'),
-        HeroMetricChip(label: 'BE', value: '${preview.beKampf}'),
-        HeroMetricChip(label: 'RS', value: '${preview.rsTotal}'),
-        HeroMetricChip(label: 'Waffen', value: '$weaponCount'),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -305,17 +284,6 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
 
               return Column(
                 children: [
-                  if (MediaQuery.sizeOf(context).width >= 900) ...[
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                      child: _buildCombatHeader(
-                        hero: hero,
-                        preview: preview,
-                        weaponCount: _draftCombatConfig.weaponSlots.length,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
                   TabBar(
                     controller: _subTabController,
                     isScrollable: true,

@@ -901,15 +901,8 @@ void main() {
       );
 
       await openWorkspace(tester, repo);
-      await selectWorkspaceTab(tester, 'Notizen');
-      final innerNotesTab = find.descendant(
-        of: find.byType(TabBar).last,
-        matching: find.text('Notizen'),
-      );
-      if (innerNotesTab.evaluate().isNotEmpty) {
-        await tester.tap(innerNotesTab);
-        await tester.pumpAndSettle();
-      }
+      await tester.tap(tabText('Notizen'));
+      await tester.pumpAndSettle();
 
       expect(find.text('Noch 20 Dukaten offen.'), findsNothing);
       await tester.tap(find.byKey(const ValueKey<String>('notes-note-tile-0')));
@@ -1168,97 +1161,93 @@ void main() {
     expect(state.ueberanstrengung, 1);
   });
 
-  testWidgets(
-    'wide workspace vital values can edit ueberanstrengung and erschoepfung',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero()],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 10,
-            currentKap: 0,
-            currentAu: 10,
-            erschoepfung: 1,
-            ueberanstrengung: 2,
-          ),
-        },
-      );
-
-      await openWorkspace(tester, repo, size: const Size(1600, 1200));
-
-      expect(
-        find.byKey(
-          const ValueKey<String>('workspace-vital-row-ueberanstrengung'),
+  testWidgets('wide workspace vital values can edit ueberanstrengung and erschoepfung', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+          erschoepfung: 1,
+          ueberanstrengung: 2,
         ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey<String>('workspace-vital-row-erschoepfung')),
-        findsOneWidget,
-      );
+      },
+    );
 
-      await tester.tap(find.byTooltip('Ueberanstrengung erhoehen'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Erschoepfung verringern'));
-      await tester.pumpAndSettle();
+    await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
-      final state = await repo.loadHeroState('demo');
-      expect(state, isNotNull);
-      expect(state!.ueberanstrengung, 3);
-      expect(state.erschoepfung, 0);
-    },
-  );
+    expect(
+      find.byKey(
+        const ValueKey<String>('workspace-vital-row-ueberanstrengung'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('workspace-vital-row-erschoepfung')),
+      findsOneWidget,
+    );
 
-  testWidgets(
-    'wide workspace rest dialog can full restore resources and wounds',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero(vorteileText: 'AE+3, KE+1')],
-        states: {
-          'demo': const HeroState(
-            currentLep: 5,
-            currentAsp: 2,
-            currentKap: 0,
-            currentAu: 1,
-            erschoepfung: 4,
-            ueberanstrengung: 2,
-            wpiZustand: WundZustand(
-              wundenProZone: <WundZone, int>{WundZone.kopf: 2},
-              kopfIniMalus: 8,
-              kampfunfaehigIgnoriert: true,
-            ),
+    await tester.tap(find.byTooltip('Ueberanstrengung erhoehen'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Erschoepfung verringern'));
+    await tester.pumpAndSettle();
+
+    final state = await repo.loadHeroState('demo');
+    expect(state, isNotNull);
+    expect(state!.ueberanstrengung, 3);
+    expect(state.erschoepfung, 0);
+  });
+
+  testWidgets('wide workspace rest dialog can full restore resources and wounds', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero(vorteileText: 'AE+3, KE+1')],
+      states: {
+        'demo': const HeroState(
+          currentLep: 5,
+          currentAsp: 2,
+          currentKap: 0,
+          currentAu: 1,
+          erschoepfung: 4,
+          ueberanstrengung: 2,
+          wpiZustand: WundZustand(
+            wundenProZone: <WundZone, int>{WundZone.kopf: 2},
+            kopfIniMalus: 8,
+            kampfunfaehigIgnoriert: true,
           ),
-        },
-      );
+        ),
+      },
+    );
 
-      await openWorkspace(tester, repo, size: const Size(1600, 1200));
+    await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
-      await tester.tap(
-        find.byKey(const ValueKey<String>('workspace-rest-open')),
-      );
-      await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey<String>('workspace-rest-open')));
+    await tester.pumpAndSettle();
 
-      await tester.tap(
-        find.byKey(const ValueKey<String>('rest-dialog-full-restore')),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Anwenden'));
-      await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('rest-dialog-full-restore')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Anwenden'));
+    await tester.pumpAndSettle();
 
-      final state = await repo.loadHeroState('demo');
-      expect(state, isNotNull);
-      expect(state!.currentLep, 22);
-      expect(state.currentAu, 22);
-      expect(state.currentAsp, 24);
-      expect(state.currentKap, 1);
-      expect(state.erschoepfung, 0);
-      expect(state.ueberanstrengung, 0);
-      expect(state.wpiZustand.gesamtWunden, 0);
-      expect(state.wpiZustand.kopfIniMalus, 0);
-      expect(state.wpiZustand.kampfunfaehigIgnoriert, isFalse);
-    },
-  );
+    final state = await repo.loadHeroState('demo');
+    expect(state, isNotNull);
+    expect(state!.currentLep, 22);
+    expect(state.currentAu, 22);
+    expect(state.currentAsp, 24);
+    expect(state.currentKap, 1);
+    expect(state.erschoepfung, 0);
+    expect(state.ueberanstrengung, 0);
+    expect(state.wpiZustand.gesamtWunden, 0);
+    expect(state.wpiZustand.kopfIniMalus, 0);
+    expect(state.wpiZustand.kampfunfaehigIgnoriert, isFalse);
+  });
 
   testWidgets('wide workspace can expand and collapse Helden Deck', (
     tester,
