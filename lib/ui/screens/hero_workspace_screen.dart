@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_page_scaffold.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_bottom_navigation.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_command_deck_panel.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_core_attributes_header.dart';
@@ -422,16 +423,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
-  /// Klassisches Layout: Attribut-Header oben, darunter der Tab-Inhalt.
-  Widget _buildClassicWorkspaceBody(HeroSheet hero) {
-    return Column(
-      children: [
-        WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
-        Expanded(child: _buildWorkspaceTabView()),
-      ],
-    );
-  }
-
   /// Schaltet das linke Helden-Deck zwischen ein- und ausgefahren um.
   void _toggleHeroDeckExpanded() {
     setState(() {
@@ -444,160 +435,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     setState(() {
       _workspaceDetailsExpanded = !_workspaceDetailsExpanded;
     });
-  }
-
-  /// Helden-Deck-Layout: Navigation links, Inhalt mittig, Detailpanel rechts.
-  Widget _buildHeroDeckWorkspaceBody(HeroSheet hero) {
-    final activeTabIndex = _activeTabIndex();
-    final navigationWidth = _heroDeckExpanded
-        ? _heroDeckNavigationWidth
-        : _heroDeckCollapsedWidth;
-    final detailsWidth = _workspaceDetailsExpanded
-        ? _heroDeckInspectorWidth
-        : _heroDeckInspectorCollapsedWidth;
-    return Row(
-      children: [
-        SizedBox(
-          width: navigationWidth,
-          child: WorkspaceCommandDeckNavigationPanel(
-            tabs: _visibleTabs,
-            activeTabIndex: activeTabIndex,
-            isExpanded: _heroDeckExpanded,
-            isDirty: _tabRegistry.isDirty,
-            onToggleExpanded: _toggleHeroDeckExpanded,
-            onSelectTab: (index) {
-              if (_tabController.index == index) {
-                return;
-              }
-              _tabController.animateTo(index);
-            },
-          ),
-        ),
-        const VerticalDivider(width: 1),
-        Expanded(
-          child: Column(
-            children: [
-              WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
-              Expanded(child: _buildWorkspaceTabView()),
-            ],
-          ),
-        ),
-        const VerticalDivider(width: 1),
-        SizedBox(
-          width: detailsWidth,
-          child: WorkspaceInspectorPanel(
-            heroId: widget.heroId,
-            isExpanded: _workspaceDetailsExpanded,
-            onToggleExpanded: _toggleWorkspaceDetailsExpanded,
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Ermittelt das passende Layout anhand der verfuegbaren Breite.
-  WorkspaceLayout _layoutForWidth(double width) {
-    if (width >= kHeroDeckBreakpoint) {
-      return WorkspaceLayout.heroDeck;
-    }
-    if (width >= kTabletBreakpoint) {
-      return WorkspaceLayout.expanded;
-    }
-    if (width >= kMediumBreakpoint) {
-      return WorkspaceLayout.medium;
-    }
-    return WorkspaceLayout.compact;
-  }
-
-  /// Medium-Layout: Collapsed Sidebar (Icon-only) + Content-Bereich.
-  Widget _buildMediumWorkspaceBody(HeroSheet hero) {
-    final activeTabIndex = _activeTabIndex();
-    return Row(
-      children: [
-        SizedBox(
-          width: _heroDeckCollapsedWidth,
-          child: WorkspaceCommandDeckNavigationPanel(
-            tabs: _visibleTabs,
-            activeTabIndex: activeTabIndex,
-            isExpanded: false,
-            isDirty: _tabRegistry.isDirty,
-            onToggleExpanded: () {},
-            onSelectTab: (index) {
-              if (_tabController.index == index) {
-                return;
-              }
-              _tabController.animateTo(index);
-            },
-          ),
-        ),
-        const VerticalDivider(width: 1),
-        Expanded(
-          child: Column(
-            children: [
-              WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
-              Expanded(child: _buildWorkspaceTabView()),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Expanded-Layout: ausgeklappte Sidebar + Content, kein Inspector.
-  Widget _buildExpandedWorkspaceBody(HeroSheet hero) {
-    final activeTabIndex = _activeTabIndex();
-    final navigationWidth = _heroDeckExpanded
-        ? _heroDeckNavigationWidth
-        : _heroDeckCollapsedWidth;
-    return Row(
-      children: [
-        SizedBox(
-          width: navigationWidth,
-          child: WorkspaceCommandDeckNavigationPanel(
-            tabs: _visibleTabs,
-            activeTabIndex: activeTabIndex,
-            isExpanded: _heroDeckExpanded,
-            isDirty: _tabRegistry.isDirty,
-            onToggleExpanded: _toggleHeroDeckExpanded,
-            onSelectTab: (index) {
-              if (_tabController.index == index) {
-                return;
-              }
-              _tabController.animateTo(index);
-            },
-          ),
-        ),
-        const VerticalDivider(width: 1),
-        Expanded(
-          child: Column(
-            children: [
-              WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
-              Expanded(child: _buildWorkspaceTabView()),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Zeigt den Inspector als BottomSheet fuer Medium/Expanded ohne Spalte.
-  void _showInspectorSheet() {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (_) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.7,
-        minChildSize: 0.3,
-        maxChildSize: 0.95,
-        builder: (sheetContext, scrollController) => WorkspaceInspectorPanel(
-          heroId: widget.heroId,
-          isExpanded: true,
-          onToggleExpanded: () => Navigator.of(sheetContext).pop(),
-        ),
-      ),
-    );
   }
 
   @override
@@ -661,9 +498,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
               IconButton(
                 tooltip: 'Einstellungen',
                 onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const SettingsScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
                 ),
                 icon: const Icon(Icons.settings),
               ),

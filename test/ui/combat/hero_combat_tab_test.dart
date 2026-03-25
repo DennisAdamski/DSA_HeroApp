@@ -585,7 +585,9 @@ void main() {
 
     await openCombatTab(tester, repo);
 
-    await tester.tap(find.textContaining('AT:').first);
+    final atChip = find.textContaining('AT:').first;
+    await tester.ensureVisible(atChip);
+    await tester.tap(atChip);
     await tester.pumpAndSettle();
 
     expect(find.text('Kampfprobe: AT'), findsOneWidget);

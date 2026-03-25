@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 
 part 'hero_notes/hero_notes_sections.dart';
 
@@ -244,38 +245,50 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     _latestHero = hero;
     _syncDraftFromHero(hero);
 
-    return Column(
-      children: [
-        TabBar(
-          controller: _innerTabController,
-          tabs: const [
-            Tab(text: 'Notizen'),
-            Tab(text: 'Verbindungen'),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final showHeader = constraints.maxHeight >= 140;
+        return Column(
+          children: [
+            if (showHeader)
+              const CodexTabHeader(
+                title: 'Chronik & Kontakte',
+                subtitle:
+                    'Freie Notizen und soziale Verbindungen in derselben Codex-OberflÃ¤che.',
+                assetPath: 'assets/ui/codex/compass_mark.png',
+              ),
+            TabBar(
+              controller: _innerTabController,
+              tabs: const [
+                Tab(text: 'Notizen'),
+                Tab(text: 'Verbindungen'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _innerTabController,
+                children: [
+                  _NotesSection(
+                    entries: _draftNotes,
+                    isEditing: _editController.isEditing,
+                    onAdd: _addNote,
+                    onRemove: _removeNote,
+                    onTitleChanged: _updateNoteTitle,
+                    onDescriptionChanged: _updateNoteDescription,
+                  ),
+                  _ConnectionsSection(
+                    entries: _draftConnections,
+                    isEditing: _editController.isEditing,
+                    onAdd: _addConnection,
+                    onRemove: _removeConnection,
+                    onChanged: _updateConnection,
+                  ),
+                ],
+              ),
+            ),
           ],
-        ),
-        Expanded(
-          child: TabBarView(
-            controller: _innerTabController,
-            children: [
-              _NotesSection(
-                entries: _draftNotes,
-                isEditing: _editController.isEditing,
-                onAdd: _addNote,
-                onRemove: _removeNote,
-                onTitleChanged: _updateNoteTitle,
-                onDescriptionChanged: _updateNoteDescription,
-              ),
-              _ConnectionsSection(
-                entries: _draftConnections,
-                isEditing: _editController.isEditing,
-                onAdd: _addConnection,
-                onRemove: _removeConnection,
-                onChanged: _updateConnection,
-              ),
-            ],
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_badge.dart';
 
 /// Bottom Navigation fuer iPhone-Layouts (compact, < 744dp).
 ///
@@ -65,6 +66,8 @@ class WorkspaceBottomNavigation extends StatelessWidget {
   void _showOverflowSheet(BuildContext context, int visibleTabCount) {
     showModalBottomSheet<void>(
       context: context,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+      showDragHandle: true,
       builder: (sheetContext) {
         return SafeArea(
           child: Column(
@@ -74,7 +77,18 @@ class WorkspaceBottomNavigation extends StatelessWidget {
                 ListTile(
                   leading: Icon(tabs[i].icon),
                   title: Text(tabs[i].label),
-                  subtitle: Text(tabs[i].helper),
+                  subtitle: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      Text(tabs[i].helper),
+                      if (activeTabIndex == i)
+                        const CodexBadge(
+                          label: 'Aktiv',
+                          tone: CodexBadgeTone.accent,
+                        ),
+                    ],
+                  ),
                   selected: activeTabIndex == i,
                   onTap: () {
                     Navigator.of(sheetContext).pop();

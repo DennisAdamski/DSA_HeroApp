@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart' show AvatarApiConfig;
+export 'package:dsa_heldenverwaltung/domain/app_settings.dart' show UiVariante;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 
 /// Settings-Repository (wird beim App-Start uebersteuert).
@@ -43,6 +44,18 @@ final debugModusProvider = Provider<bool>((ref) {
 /// Schnellzugriff auf den Dunkelmodus-Zustand.
 final dunkelModusProvider = Provider<bool>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.dunkelModus ?? false;
+});
+
+/// Schnellzugriff auf die aktive UI-Variante.
+final uiVarianteProvider = Provider<UiVariante>((ref) {
+  return ref.watch(appSettingsProvider).valueOrNull?.uiVariante
+      ?? UiVariante.codex;
+});
+
+/// Ob die Kernwerte-Rail im Workspace zugeklappt ist.
+final summaryRailCollapsedProvider = Provider<bool>((ref) {
+  return ref.watch(appSettingsProvider).valueOrNull?.summaryRailCollapsed
+      ?? false;
 });
 
 /// Aktuelle Beschreibung des wirksamen Heldenspeicherorts.
@@ -94,10 +107,24 @@ class SettingsActions {
     await _repo.save(current.copyWith(heroStoragePath: null));
   }
 
+  /// Setzt die visuelle Darstellungsvariante.
+  Future<void> setUiVariante(UiVariante variante) async {
+    final current = _repo.load();
+    await _repo.save(current.copyWith(uiVariante: variante));
+  }
+
   /// Speichert die Avatar-API-Konfiguration.
   Future<void> saveAvatarApiConfig(AvatarApiConfig config) async {
     final current = _repo.load();
     await _repo.save(current.copyWith(avatarApiConfig: config));
+  }
+
+  /// Schaltet den Collapse-Zustand der Kernwerte-Rail um.
+  Future<void> toggleSummaryRailCollapsed() async {
+    final current = _repo.load();
+    await _repo.save(
+      current.copyWith(summaryRailCollapsed: !current.summaryRailCollapsed),
+    );
   }
 }
 
