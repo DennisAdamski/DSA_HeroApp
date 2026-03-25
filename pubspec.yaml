@@ -44,4 +44,16 @@ flutter:
   assets:
     - assets/catalogs/house_rules_v1/
     - assets/heroes/
+    - assets/ui/codex/
+  fonts:
+    - family: Merriweather
+      fonts:
+        - asset: assets/fonts/merriweather/Merriweather.ttf
+        - asset: assets/fonts/merriweather/Merriweather.ttf
+          weight: 700
+    - family: Cinzel
+      fonts:
+        - asset: assets/fonts/cinzel/Cinzel.ttf
+        - asset: assets/fonts/cinzel/Cinzel.ttf
+          weight: 700
 

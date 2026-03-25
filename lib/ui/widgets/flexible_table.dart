@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 
 /// Beschreibt eine einzelne Zeile fuer [FlexibleTable].
@@ -73,6 +74,7 @@ class _FlexibleTableState extends State<FlexibleTable> {
 
   @override
   Widget build(BuildContext context) {
+    final codex = context.codexTheme;
     final minWidth = (widget.minChars <= 0 ? 3 : widget.minChars) * 12.0;
     final useLegacyCellMinWidth = widget.columnSpecs == null;
     final allRows = <TableRow>[
@@ -99,63 +101,70 @@ class _FlexibleTableState extends State<FlexibleTable> {
         ),
       ),
     ];
-    return Stack(
-      children: [
-        NotificationListener<ScrollNotification>(
-          onNotification: (notification) {
-            _updateScrollIndicator();
-            return false;
-          },
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final responsiveLayout =
-                  widget.columnSpecs == null || !constraints.maxWidth.isFinite
-                  ? null
-                  : resolveAdaptiveTableLayout(
-                      widget.columnSpecs!,
-                      availableWidth: constraints.maxWidth,
-                    );
-              final columnWidths = widget.columnSpecs == null
-                  ? null
-                  : (responsiveLayout?.toColumnWidthMap() ??
-                        buildAdaptiveTableColumnWidths(widget.columnSpecs!));
-
-              return SingleChildScrollView(
-                controller: _scrollController,
-                scrollDirection: Axis.horizontal,
-                child: Table(
-                  key: widget.tableKey,
-                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                  columnWidths: columnWidths,
-                  defaultColumnWidth: const IntrinsicColumnWidth(),
-                  children: allRows,
-                ),
-              );
+    return Container(
+      decoration: BoxDecoration(
+        color: codex.panelRaised.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(codex.panelRadius),
+        border: Border.all(color: codex.rule),
+      ),
+      child: Stack(
+        children: [
+          NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              _updateScrollIndicator();
+              return false;
             },
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final responsiveLayout =
+                    widget.columnSpecs == null || !constraints.maxWidth.isFinite
+                    ? null
+                    : resolveAdaptiveTableLayout(
+                        widget.columnSpecs!,
+                        availableWidth: constraints.maxWidth,
+                      );
+                final columnWidths = widget.columnSpecs == null
+                    ? null
+                    : (responsiveLayout?.toColumnWidthMap() ??
+                          buildAdaptiveTableColumnWidths(widget.columnSpecs!));
+
+                return SingleChildScrollView(
+                  controller: _scrollController,
+                  scrollDirection: Axis.horizontal,
+                  child: Table(
+                    key: widget.tableKey,
+                    defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                    columnWidths: columnWidths,
+                    defaultColumnWidth: const IntrinsicColumnWidth(),
+                    children: allRows,
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-        if (_canScrollRight)
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: 24,
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      Theme.of(context).scaffoldBackgroundColor.withAlpha(0),
-                      Theme.of(context).scaffoldBackgroundColor,
-                    ],
+          if (_canScrollRight)
+            Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: 24,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        codex.panelRaised.withValues(alpha: 0),
+                        codex.panelRaised,
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -167,11 +176,14 @@ class _FlexibleTableState extends State<FlexibleTable> {
     bool isHeader = false,
     Color? backgroundColor,
   }) {
+    final codex = context.codexTheme;
     return TableRow(
       key: key,
-      decoration: backgroundColor == null
-          ? null
-          : BoxDecoration(color: backgroundColor),
+      decoration: BoxDecoration(
+        color: isHeader
+            ? codex.parchmentStrong.withValues(alpha: 0.92)
+            : backgroundColor,
+      ),
       children: cells
           .map(
             (cell) => Padding(
@@ -181,8 +193,9 @@ class _FlexibleTableState extends State<FlexibleTable> {
                       constraints: BoxConstraints(minWidth: minWidth),
                       child: isHeader
                           ? DefaultTextStyle.merge(
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: codex.ink,
                               ),
                               child: cell,
                             )
@@ -190,7 +203,10 @@ class _FlexibleTableState extends State<FlexibleTable> {
                     )
                   : (isHeader
                         ? DefaultTextStyle.merge(
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: codex.ink,
+                            ),
                             child: cell,
                           )
                         : cell),

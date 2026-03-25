@@ -131,12 +131,15 @@ void main() {
       expect(updated.ko, isNull);
     });
 
-    test('nullable Eigenschaften werden in toJson nur bei Wert serialisiert', () {
-      const companion = HeroCompanion(id: 'b', ko: 10);
-      final json = companion.toJson();
-      expect(json.containsKey('ko'), isTrue);
-      expect(json.containsKey('mu'), isFalse);
-    });
+    test(
+      'nullable Eigenschaften werden in toJson nur bei Wert serialisiert',
+      () {
+        const companion = HeroCompanion(id: 'b', ko: 10);
+        final json = companion.toJson();
+        expect(json.containsKey('ko'), isTrue);
+        expect(json.containsKey('mu'), isFalse);
+      },
+    );
   });
 
   group('HeroCompanionAttack', () {
@@ -289,10 +292,7 @@ void main() {
       expect(restored.ritualCategories.length, 1);
       expect(restored.ritualCategories.first.id, 'vertrautenmagie');
       expect(restored.ritualCategories.first.rituals.length, 1);
-      expect(
-        restored.ritualCategories.first.ownKnowledge?.value,
-        5,
-      );
+      expect(restored.ritualCategories.first.ownKnowledge?.value, 5);
     });
 
     test('fromJson ohne ritualCategories ergibt leere Liste', () {
@@ -357,6 +357,10 @@ void main() {
         companions: companions,
       );
     }
+
+    test('schemaVersion ist 21', () {
+      expect(buildSheet().schemaVersion, 21);
+    });
 
     test('Roundtrip mit leerem companions', () {
       final sheet = buildSheet();

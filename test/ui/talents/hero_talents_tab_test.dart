@@ -122,10 +122,28 @@ void main() {
     return actions!;
   }
 
+  Future<void> scrollMainListUpUntilVisible(
+    WidgetTester tester,
+    Finder target,
+  ) async {
+    final mainScrollable = find.byType(Scrollable).first;
+    for (var attempt = 0; attempt < 12; attempt++) {
+      if (target.evaluate().isNotEmpty) {
+        return;
+      }
+      await tester.drag(mainScrollable, const Offset(0, 300));
+      await tester.pumpAndSettle();
+    }
+    expect(target, findsOneWidget);
+  }
+
   Future<void> openBeScreen(WidgetTester tester) async {
-    await tester.tap(
-      find.byKey(const ValueKey<String>('talents-be-screen-open')),
+    final beButton = find.byKey(
+      const ValueKey<String>('talents-be-screen-open'),
     );
+    await scrollMainListUpUntilVisible(tester, beButton);
+    await tester.ensureVisible(beButton);
+    await tester.tap(beButton);
     await tester.pumpAndSettle();
     expect(find.text('Talent-BE'), findsOneWidget);
   }
@@ -142,15 +160,12 @@ void main() {
     required List<String> attributes,
     String be = '',
   }) async {
-    await tester.ensureVisible(
-      find.byKey(const ValueKey<String>('meta-talents-manage-open')),
+    final manageButton = find.byKey(
+      const ValueKey<String>('meta-talents-manage-open'),
     );
-    await tester.ensureVisible(
-      find.byKey(const ValueKey<String>('meta-talents-manage-open')),
-    );
-    await tester.tap(
-      find.byKey(const ValueKey<String>('meta-talents-manage-open')),
-    );
+    await scrollMainListUpUntilVisible(tester, manageButton);
+    await tester.ensureVisible(manageButton);
+    await tester.tap(manageButton);
     await tester.pumpAndSettle();
 
     await tester.tap(
@@ -179,8 +194,10 @@ void main() {
     }
 
     for (final componentId in componentIds) {
-      await tester.ensureVisible(
+      await tester.scrollUntilVisible(
         find.byKey(ValueKey<String>('meta-talent-component-$componentId')),
+        200,
+        scrollable: find.byType(Scrollable).last,
       );
       await tester.tap(
         find.byKey(ValueKey<String>('meta-talent-component-$componentId')),
@@ -357,15 +374,19 @@ void main() {
 
     await openTalentsTab(tester, repo, customCatalog);
 
-    final groupOrder = tester
-        .widgetList<ExpansionTile>(find.byType(ExpansionTile))
-        .map((tile) => ((tile.title as Text).data ?? '').trim())
-        .toList(growable: false);
-    expect(groupOrder, [
-      'Koerperliche Talente',
-      'Gesellschaftliche Talente',
-      'Natur Talente',
-    ]);
+    final koerper = find.text('Koerperliche Talente');
+    final gesellschaft = find.text('Gesellschaftliche Talente');
+    await tester.scrollUntilVisible(
+      find.text('Natur Talente'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    final natur = find.text('Natur Talente');
+    expect(koerper, findsOneWidget);
+    expect(gesellschaft, findsOneWidget);
+    expect(natur, findsOneWidget);
+    expect(tester.getTopLeft(koerper).dy, lessThan(tester.getTopLeft(gesellschaft).dy));
+    expect(tester.getTopLeft(gesellschaft).dy, lessThan(tester.getTopLeft(natur).dy));
     await tester.scrollUntilVisible(
       find.text('Wissenstalente'),
       300,
@@ -854,12 +875,20 @@ void main() {
     await tester.tap(find.text('Schliessen'));
     await tester.pumpAndSettle();
 
+    await tester.scrollUntilVisible(
+      find.text('Meta-Talente'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Meta-Talente'), findsOneWidget);
     expect(find.text('Pflanzensuchen'), findsOneWidget);
 
-    await tester.tap(
-      find.byKey(const ValueKey<String>('meta-talents-manage-open')),
+    final manageButton = find.byKey(
+      const ValueKey<String>('meta-talents-manage-open'),
     );
+    await scrollMainListUpUntilVisible(tester, manageButton);
+    await tester.ensureVisible(manageButton);
+    await tester.tap(manageButton);
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.delete_outline).first);
     await tester.pumpAndSettle();
@@ -917,7 +946,27 @@ void main() {
         return tester.widget<Text>(finder.first).data ?? '';
       }
 
+      Future<String> visibleTextFor(Key key) async {
+        final field = find.byKey(key);
+        await tester.scrollUntilVisible(
+          field,
+          300,
+          scrollable: find.byType(Scrollable).first,
+        );
+        return textFor(key);
+      }
+
       final actions = await openTalentsTab(tester, repo, buildCatalog());
+      final computedTawField = find.byKey(
+        const ValueKey<String>(
+          'meta-talents-field-meta_pflanzensuchen-computed-taw',
+        ),
+      );
+      await tester.scrollUntilVisible(
+        computedTawField,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(
         textFor(
           const ValueKey<String>(
@@ -952,13 +1001,13 @@ void main() {
       await closeBeDialog(tester);
 
       expect(
-        textFor(
+        await visibleTextFor(
           const ValueKey<String>('meta-talents-field-meta_pflanzensuchen-ebe'),
         ),
         '-2',
       );
       expect(
-        textFor(
+        await visibleTextFor(
           const ValueKey<String>(
             'meta-talents-field-meta_pflanzensuchen-computed-taw',
           ),

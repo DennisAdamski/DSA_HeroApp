@@ -10,15 +10,28 @@ extension _HeroOverviewFormFieldsSection on _HeroOverviewTabState {
     bool? readOnly,
   }) {
     final isEditing = readOnly == true ? false : (readOnly ?? _editController.isEditing);
-    return EditAwareField(
-      key: ValueKey<String>('overview-field-$keyName'),
-      label: label,
-      isEditing: isEditing,
+    final fieldKey = ValueKey<String>('overview-field-$keyName');
+    if (!isEditing) {
+      return KeyedSubtree(
+        key: fieldKey,
+        child: EditAwareField(
+          label: label,
+          isEditing: false,
+          controller: _field(keyName),
+          minLines: minLines,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+        ),
+      );
+    }
+    return TextField(
+      key: fieldKey,
       controller: _field(keyName),
       minLines: minLines,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      onChanged: isEditing ? _onFieldChanged : null,
+      decoration: _inputDecoration(label),
+      onChanged: _onFieldChanged,
     );
   }
 

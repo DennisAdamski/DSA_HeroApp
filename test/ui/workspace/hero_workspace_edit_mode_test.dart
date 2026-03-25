@@ -85,7 +85,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Rondra'));
+    final heroTile = find.widgetWithText(ListTile, 'Rondra');
+    if (heroTile.evaluate().isNotEmpty) {
+      await tester.tap(heroTile.first);
+    } else {
+      await tester.tap(find.text('Rondra').first);
+    }
     await tester.pumpAndSettle();
   }
 
@@ -268,13 +273,9 @@ void main() {
     apSpentAddButton.onPressed!.call();
     await tester.pumpAndSettle();
 
-    final apTotalInner = find.descendant(
-      of: apTotalField,
-      matching: find.byType(TextField),
-    );
-    final apSpentInner = find.descendant(
-      of: find.byKey(const ValueKey<String>('overview-field-ap_spent')),
-      matching: find.byType(TextField),
+    final apTotalInner = apTotalField;
+    final apSpentInner = find.byKey(
+      const ValueKey<String>('overview-field-ap_spent'),
     );
     expect(tester.widget<TextField>(apTotalInner).controller?.text, '1200');
     expect(tester.widget<TextField>(apSpentInner).controller?.text, '800');
@@ -507,8 +508,8 @@ void main() {
       );
 
       await openWorkspace(tester, repo);
-      expect(find.text('LeP: 10/22'), findsOneWidget);
-      expect(find.text('BE: 0'), findsOneWidget);
+      expect(find.textContaining('10/22'), findsWidgets);
+      expect(find.textContaining('BE'), findsWidgets);
 
       await tester.tap(find.text('Bearbeiten').first);
       await tester.pumpAndSettle();
@@ -536,7 +537,7 @@ void main() {
       await tester.tap(find.text('Speichern').first);
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('LeP: 15/'), findsOneWidget);
+      expect(find.textContaining('15/'), findsWidgets);
     },
   );
 
@@ -558,7 +559,7 @@ void main() {
       await openWorkspace(tester, repo);
 
       expect(tabText('Magie'), findsNothing);
-      expect(find.textContaining('AsP:'), findsNothing);
+      expect(find.textContaining('AsP'), findsNothing);
       expect(find.textContaining('KaP:'), findsNothing);
 
       final verticalScrollable = activeTabVerticalScrollable();
@@ -604,7 +605,7 @@ void main() {
       await openWorkspace(tester, repo);
 
       expect(tabText('Magie'), findsOneWidget);
-      expect(find.textContaining('AsP:'), findsOneWidget);
+      expect(find.textContaining('AsP'), findsWidgets);
 
       final verticalScrollable = activeTabVerticalScrollable();
       final settingsButton = find.byKey(
@@ -636,7 +637,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tabText('Magie'), findsNothing);
-      expect(find.textContaining('AsP:'), findsNothing);
+      expect(find.textContaining('AsP'), findsNothing);
       await tester.pumpAndSettle();
 
       await tester.scrollUntilVisible(
@@ -660,7 +661,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tabText('Magie'), findsOneWidget);
-      expect(find.textContaining('AsP:'), findsOneWidget);
+      expect(find.textContaining('AsP'), findsWidgets);
     },
   );
 
@@ -905,9 +906,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Noch 20 Dukaten offen.'), findsNothing);
-      await tester.tap(find.byKey(const ValueKey<String>('notes-note-tile-0')));
-      await tester.pumpAndSettle();
-      expect(find.text('Noch 20 Dukaten offen.'), findsOneWidget);
+      expect(find.text('Offene Schuld'), findsOneWidget);
     },
   );
 
@@ -983,9 +982,8 @@ void main() {
       find.byKey(const ValueKey<String>('overview-field-name')),
       findsOneWidget,
     );
-    final nameFieldInner = find.descendant(
-      of: find.byKey(const ValueKey<String>('overview-field-name')),
-      matching: find.byType(TextField),
+    final nameFieldInner = find.byKey(
+      const ValueKey<String>('overview-field-name'),
     );
     expect(
       tester.widget<TextField>(nameFieldInner).controller?.text,

@@ -39,12 +39,59 @@ class SettingsScreen extends ConsumerWidget {
             onChanged: (_) => actions.toggleDunkelModus(),
           ),
           const Divider(height: 1),
+          _UiVarianteSection(),
+          const Divider(height: 1),
           _HeroStorageSection(
             heroStorageLocationAsync: heroStorageLocationAsync,
             settingsStoragePathAsync: settingsStoragePathAsync,
           ),
           const Divider(height: 1),
           const _AvatarApiSection(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Abschnitt fuer die visuelle Darstellungsvariante.
+class _UiVarianteSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final variante = ref.watch(uiVarianteProvider);
+    final actions = ref.read(settingsActionsProvider);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Darstellung', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 12),
+          SegmentedButton<UiVariante>(
+            segments: const <ButtonSegment<UiVariante>>[
+              ButtonSegment(
+                value: UiVariante.klassisch,
+                label: Text('Klassisch'),
+                icon: Icon(Icons.palette_outlined),
+              ),
+              ButtonSegment(
+                value: UiVariante.codex,
+                label: Text('Codex'),
+                icon: Icon(Icons.auto_stories),
+              ),
+            ],
+            selected: <UiVariante>{variante},
+            onSelectionChanged: (selected) {
+              actions.setUiVariante(selected.first);
+            },
+          ),
+          const SizedBox(height: 8),
+          Text(
+            variante == UiVariante.codex
+                ? 'Pergament-und-Messing-Aesthetik mit Texturen und dekorativen Elementen.'
+                : 'Schlichtes Material-Design ohne dekorative Elemente.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ],
       ),
     );
