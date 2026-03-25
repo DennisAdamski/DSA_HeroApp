@@ -175,7 +175,10 @@ final heroComputedProvider =
       );
       final effective = applyAttributeModifiers(
         hero.attributes,
-        parsed.attributeMods + namedAttrMods + state.tempAttributeMods + inventoryMods.attributeMods,
+        parsed.attributeMods +
+            namedAttrMods +
+            state.tempAttributeMods +
+            inventoryMods.attributeMods,
       );
       // Wundberechnung
       final wundEffekte = computeWundEffekte(state.wpiZustand);
@@ -184,6 +187,12 @@ final heroComputedProvider =
       final wundschwelle = computeWundschwelle(
         ko: effective.ko,
         mods: wundschwelleMods,
+      );
+      final wundschwellenStufen = computeWundschwellenStufen(
+        ko: effective.ko,
+        mods: wundschwelleMods,
+        vorteileText: hero.vorteileText,
+        nachteileText: hero.nachteileText,
       );
 
       final derived = computeDerivedStatsFromInputs(
@@ -218,6 +227,7 @@ final heroComputedProvider =
           combatPreviewStats: combat,
           wundEffekte: wundEffekte,
           wundschwelle: wundschwelle,
+          wundschwellenStufen: wundschwellenStufen,
           inventoryStatMods: inventoryMods.statMods,
           inventoryAttributeMods: inventoryMods.attributeMods,
           inventoryTalentMods: inventoryMods.talentMods,
