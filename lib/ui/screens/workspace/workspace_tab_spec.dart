@@ -138,7 +138,7 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       id: WorkspaceTabIds.overview,
       label: 'Übersicht',
       icon: Icons.dashboard_outlined,
-      helper: 'Deckblatt, Herkunft, Eigenschaften und Ressourcen',
+      helper: 'Vitalwerte, Statuswerte und aktive Effekte',
       buildContent: ({required heroId, required callbacks}) => HeroOverviewTab(
         heroId: heroId,
         onDirtyChanged: callbacks.onDirtyChanged,
@@ -151,7 +151,7 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       id: WorkspaceTabIds.talents,
       label: 'Talente',
       icon: Icons.auto_stories_outlined,
-      helper: 'Fertigkeiten, Spezialisierungen und Sprachen',
+      helper: 'Talentwerte und Spezialisierungen',
       useCompactIconOnlyEditActions: true,
       buildContent: ({required heroId, required callbacks}) => HeroTalentsTab(
         heroId: heroId,
@@ -167,7 +167,7 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       id: WorkspaceTabIds.combat,
       label: 'Kampf',
       icon: Icons.sports_martial_arts_outlined,
-      helper: 'Kampfwerte, Waffen, Rüstung und Regeln',
+      helper: 'Kampftechniken, Nahkampf, Sonderfertigkeiten, Manoever',
       buildContent: ({required heroId, required callbacks}) => HeroCombatTab(
         heroId: heroId,
         showInlineCombatTalentsActions: false,
@@ -181,7 +181,7 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       id: WorkspaceTabIds.magic,
       label: 'Magie',
       icon: Icons.bolt_outlined,
-      helper: 'Zauber, Rituale, Repräsentationen und SF',
+      helper: 'Katalogansicht fuer Zauber',
       isVisible: (hero) => computeHeroResourceActivation(hero).magic.isEnabled,
       buildContent: ({required heroId, required callbacks}) => HeroMagicTab(
         heroId: heroId,
@@ -195,7 +195,7 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       id: WorkspaceTabIds.inventory,
       label: 'Inventar',
       icon: Icons.inventory_2_outlined,
-      helper: 'Getragene Ausrüstung, Vorräte und Wertsachen',
+      helper: 'Ausruestung und Gegenstaende',
       buildContent: ({required heroId, required callbacks}) => HeroInventoryTab(
         heroId: heroId,
         onDirtyChanged: callbacks.onDirtyChanged,
@@ -236,13 +236,14 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       label: 'Begleiter',
       icon: Icons.pets_outlined,
       helper: 'Vertraute und Begleiter des Helden',
-      buildContent: ({required heroId, required callbacks}) => HeroBegleiterTab(
-        heroId: heroId,
-        onDirtyChanged: callbacks.onDirtyChanged,
-        onEditingChanged: callbacks.onEditingChanged,
-        onRegisterDiscard: callbacks.onRegisterDiscard,
-        onRegisterEditActions: callbacks.onRegisterEditActions,
-      ),
+      buildContent: ({required heroId, required callbacks}) =>
+          HeroBegleiterTab(
+            heroId: heroId,
+            onDirtyChanged: callbacks.onDirtyChanged,
+            onEditingChanged: callbacks.onEditingChanged,
+            onRegisterDiscard: callbacks.onRegisterDiscard,
+            onRegisterEditActions: callbacks.onRegisterEditActions,
+          ),
     ),
   ];
 }
