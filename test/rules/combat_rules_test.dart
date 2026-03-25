@@ -321,7 +321,9 @@ void main() {
 
     expect(withResult.sfIniBonus, withoutResult.sfIniBonus);
     expect(withResult.heldenInitiative, withoutResult.heldenInitiative);
-    expect(withResult.sfAusweichenBonus, withoutResult.sfAusweichenBonus + 1);
+    expect(withResult.sfAusweichenBonus, withoutResult.sfAusweichenBonus);
+    expect(withResult.ausweichenMod, withoutResult.ausweichenMod + 1);
+    expect(withResult.ausweichen, withoutResult.ausweichen + 1);
     expect(withDerived.gs, withoutDerived.gs + 1);
   });
 
@@ -336,7 +338,9 @@ void main() {
 
     expect(withResult.sfIniBonus, withoutResult.sfIniBonus);
     expect(withResult.heldenInitiative, withoutResult.heldenInitiative);
-    expect(withResult.sfAusweichenBonus, withoutResult.sfAusweichenBonus - 1);
+    expect(withResult.sfAusweichenBonus, withoutResult.sfAusweichenBonus);
+    expect(withResult.ausweichenMod, withoutResult.ausweichenMod - 1);
+    expect(withResult.ausweichen, withoutResult.ausweichen - 1);
     expect(withDerived.gs, withoutDerived.gs - 1);
   });
 
@@ -352,6 +356,8 @@ void main() {
     expect(withBothResult.sfIniBonus, baselineResult.sfIniBonus);
     expect(withBothResult.heldenInitiative, baselineResult.heldenInitiative);
     expect(withBothResult.sfAusweichenBonus, baselineResult.sfAusweichenBonus);
+    expect(withBothResult.ausweichenMod, baselineResult.ausweichenMod);
+    expect(withBothResult.ausweichen, baselineResult.ausweichen);
     expect(withBothDerived.gs, baselineDerived.gs);
   });
 
