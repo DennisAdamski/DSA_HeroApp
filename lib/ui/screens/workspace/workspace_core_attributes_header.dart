@@ -35,7 +35,6 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final computedAsync = ref.watch(heroComputedProvider(heroId));
     final talentBeOverride = ref.watch(talentBeOverrideProvider(heroId));
-    final collapsed = ref.watch(summaryRailCollapsedProvider);
     final computed = computedAsync.valueOrNull;
     final effectiveAttributes =
         computed?.effectiveAttributes ?? computeEffectiveAttributes(hero);
@@ -173,13 +172,7 @@ class WorkspaceCoreAttributesHeader extends ConsumerWidget {
       ),
     ];
 
-    return CodexSummaryRail(
-      items: items,
-      collapsed: collapsed,
-      onToggleCollapsed: () {
-        ref.read(settingsActionsProvider).toggleSummaryRailCollapsed();
-      },
-    );
+    return CodexSummaryRail(items: items);
   }
 }
 
