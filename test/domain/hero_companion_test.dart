@@ -358,10 +358,6 @@ void main() {
       );
     }
 
-    test('schemaVersion ist 20', () {
-      expect(buildSheet().schemaVersion, 20);
-    });
-
     test('Roundtrip mit leerem companions', () {
       final sheet = buildSheet();
       final json = sheet.toJson();

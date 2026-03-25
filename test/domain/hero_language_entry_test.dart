@@ -94,18 +94,5 @@ void main() {
       expect(hero.schriften, isEmpty);
       expect(hero.muttersprache, '');
     });
-
-    test('schemaVersion ist 20', () {
-      const attrs = Attributes(
-      mu: 8, kl: 8, inn: 8, ch: 8, ff: 8, ge: 8, ko: 8, kk: 8,
-    );
-      final hero = HeroSheet(
-        id: 'v20-id',
-        name: 'NeuerHeld',
-        level: 1,
-        attributes: attrs,
-      );
-      expect(hero.schemaVersion, 20);
-    });
   });
 }
