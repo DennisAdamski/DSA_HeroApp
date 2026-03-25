@@ -730,8 +730,6 @@ Sonderfertigkeits-Boni auf IniBase:
 |---|---|
 | Kampfreflexe | +4 |
 | Kampfgespür | +2 |
-| Flink (Vorteil) | +1 |
-| Behäbig (Nachteil) | −1 |
 
 ### 4.4 Rüstung & Behinderung
 
@@ -768,9 +766,10 @@ deren `talentValue`, nicht `AT` oder `PA`.
 **Datei:** `lib/rules/derived/ausweichen_rules.dart`
 
 ```
-sfAusweichenBonus = 3×AusweichenI + 3×AusweichenII + 3×AusweichenIII + Flink − Behäbig
+sfAusweichenBonus = 3×AusweichenI + 3×AusweichenII + 3×AusweichenIII
 akrobatikBonus    = max(0, floor((AkrobatikTaW − 9) / 3))
-Ausweichen        = max(0, PABasis + sfBonus + akrobatikBonus + manualMod − beKampf)
+ausweichenMod     = manualMod + Flink − Behäbig
+Ausweichen        = max(0, PABasis + sfBonus + akrobatikBonus + ausweichenMod − beKampf)
 ```
 
 Bei aktivem Axxeleratus erhoeht sich `PABasis` um `+2` und Ausweichen

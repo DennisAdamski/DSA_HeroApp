@@ -181,6 +181,8 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                           _calcStep('Axxeleratus', preview.axxAusweichenBonus),
                         if (preview.iniAusweichenBonus != 0)
                           _calcStep('INI-Bonus', preview.iniAusweichenBonus),
+                        if (preview.ausweichenMod != 0)
+                          _calcStep('Modifikator', preview.ausweichenMod),
                         _calcStep('BE Kampf', -preview.beKampf),
                       ],
                     ),

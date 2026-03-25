@@ -53,6 +53,7 @@ class CombatPreviewStats {
     required this.akrobatikBonus,
     required this.sfIniBonus,
     required this.sfAusweichenBonus,
+    required this.ausweichenMod,
     required this.axxAusweichenBonus,
     required this.iniAusweichenBonus,
     required this.paBase,
@@ -134,6 +135,7 @@ class CombatPreviewStats {
   final int akrobatikBonus;
   final int sfIniBonus;
   final int sfAusweichenBonus;
+  final int ausweichenMod;
   final int axxAusweichenBonus;
   final int iniAusweichenBonus;
   final int paBase;
@@ -345,11 +347,11 @@ CombatPreviewStats computeCombatPreviewStats(
     hasFlinkFromVorteile: parsed.hasFlinkFromVorteile,
     hasBehaebigFromNachteile: parsed.hasBehaebigFromNachteile,
   );
-  final sfAusweichenBonus = computeSfAusweichenBonus(
-    special,
-    hasFlinkFromVorteile: parsed.hasFlinkFromVorteile,
-    hasBehaebigFromNachteile: parsed.hasBehaebigFromNachteile,
-  );
+  final sfAusweichenBonus = computeSfAusweichenBonus(special);
+  final ausweichenTextMod =
+      (parsed.hasFlinkFromVorteile ? 1 : 0) +
+      (parsed.hasBehaebigFromNachteile ? -1 : 0);
+  final ausweichenMod = manualMods.ausweichenMod + ausweichenTextMod;
   final offhandModifiers = computeOffhandModifierSnapshot(
     equipment: offhandEquipment,
     specialRules: special,
@@ -467,7 +469,7 @@ CombatPreviewStats computeCombatPreviewStats(
     akrobatikBonus: akrobatikBonusValue,
     axxAusweichenBonus: axxAusweichenBonus,
     iniAusweichenBonus: iniAusweichenBonus,
-    manualAusweichenMod: manualMods.ausweichenMod,
+    ausweichenMod: ausweichenMod,
     beKampf: beKampf,
   );
   final axxAttackDefenseHint = buildAxxeleratusDefenseHint(
@@ -505,6 +507,7 @@ CombatPreviewStats computeCombatPreviewStats(
     akrobatikBonus: akrobatikBonusValue,
     sfIniBonus: sfIniBonus,
     sfAusweichenBonus: sfAusweichenBonus,
+    ausweichenMod: ausweichenMod,
     axxAusweichenBonus: axxAusweichenBonus,
     iniAusweichenBonus: iniAusweichenBonus,
     paBase: paBase,
