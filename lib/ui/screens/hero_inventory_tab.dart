@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_item_ca
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_item_editor.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/hero_document.dart';
 
 const double _widthBreakpoint = 1280;
 const double _pagePadding = 12;
@@ -123,9 +124,9 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     if (!mounted) return;
 
     _editController.markSaved();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Inventar gespeichert')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Inventar gespeichert')));
   }
 
   Future<void> _cancelChanges() async => _discardChanges();
@@ -183,6 +184,60 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     final companion = _companions.where((c) => c.id == id).firstOrNull;
     if (companion == null) return 'Begleiter';
     return companion.name.isEmpty ? 'Unbenannter Begleiter' : companion.name;
+  }
+
+  /// Ordnet einen Inventar-Eintrag in eine nutzungsorientierte Dokumentgruppe ein.
+  String _groupLabel(HeroInventoryEntry entry) {
+    if (entry.istAusgeruestet || entry.source != InventoryItemSource.manuell) {
+      return 'Getragen & einsatzbereit';
+    }
+    if (entry.itemType == InventoryItemType.verbrauchsgegenstand) {
+      return 'Vorräte & Verbrauch';
+    }
+    if (entry.itemType == InventoryItemType.wertvolles) {
+      return 'Wertsachen';
+    }
+    return 'Sonstiger Besitz';
+  }
+
+  int _groupPriority(String label) {
+    switch (label) {
+      case 'Getragen & einsatzbereit':
+        return 0;
+      case 'Vorräte & Verbrauch':
+        return 1;
+      case 'Wertsachen':
+        return 2;
+      case 'Sonstiger Besitz':
+        return 3;
+    }
+    return 99;
+  }
+
+  /// Baut den Seitenkopf fuer Besitz, Geld und Tragegewicht.
+  Widget _buildInventoryHeader(int totalWeight, int totalValue) {
+    return HeroPageHeader(
+      title: 'Besitz',
+      subtitle:
+          'Getragene Ausrüstung, Vorräte und Wertsachen werden nach ihrem direkten Nutzwert am Spieltisch gruppiert.',
+      metrics: [
+        HeroMetricChip(label: 'Einträge', value: '${_draft.length}'),
+        HeroMetricChip(
+          label: 'Gewicht',
+          value: '${(totalWeight / 1000).toStringAsFixed(1)} kg',
+        ),
+        HeroMetricChip(
+          label: 'Wert',
+          value: '${(totalValue / 10).toStringAsFixed(1)} D',
+        ),
+        HeroMetricChip(
+          label: 'Dukaten',
+          value: _dukatenCtrl.text.trim().isEmpty
+              ? '-'
+              : _dukatenCtrl.text.trim(),
+        ),
+      ],
+    );
   }
 
   void _selectEntry(int draftIndex, bool isWide, BuildContext context) {
@@ -254,10 +309,20 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
             _pagePadding,
             0,
           ),
-          child: _DukatenField(
-            controller: _dukatenCtrl,
-            isEditing: isEditing,
+          child: _buildInventoryHeader(
+            _draft.fold(0, (sum, entry) => sum + entry.gewichtGramm),
+            _draft.fold(0, (sum, entry) => sum + entry.wertSilber),
           ),
+        ),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            _pagePadding,
+            _pagePadding,
+            _pagePadding,
+            0,
+          ),
+          child: _DukatenField(controller: _dukatenCtrl, isEditing: isEditing),
         ),
         const SizedBox(height: 8),
         Padding(
@@ -281,8 +346,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
 
   Widget _buildWideLayout(Widget filterBar, Widget list, bool isEditing) {
     final selectedIdx = _selectedIndex;
-    final showEditor =
-        selectedIdx != null && selectedIdx < _draft.length;
+    final showEditor = selectedIdx != null && selectedIdx < _draft.length;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,6 +356,19 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  _pagePadding,
+                  _pagePadding,
+                  _pagePadding,
+                  0,
+                ),
+                child: _buildInventoryHeader(
+                  _draft.fold(0, (sum, entry) => sum + entry.gewichtGramm),
+                  _draft.fold(0, (sum, entry) => sum + entry.wertSilber),
+                ),
+              ),
+              const SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   _pagePadding,
@@ -367,25 +444,43 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
       );
     }
 
-    return ListView.builder(
+    final grouped = <String, List<(int, HeroInventoryEntry)>>{};
+    for (final item in filtered) {
+      final label = _groupLabel(item.$2);
+      grouped.putIfAbsent(label, () => <(int, HeroInventoryEntry)>[]).add(item);
+    }
+    final groupNames = grouped.keys.toList()
+      ..sort((a, b) => _groupPriority(a).compareTo(_groupPriority(b)));
+
+    return ListView(
       padding: const EdgeInsets.only(bottom: 16),
-      itemCount: filtered.length,
-      itemBuilder: (context, listIdx) {
-        final (draftIdx, entry) = filtered[listIdx];
-        return InventoryItemCard(
-          key: ValueKey<int>(draftIdx),
-          entry: entry,
-          isEditing: isEditing,
-          traegerName: _traegerName(entry),
-          onTap: isEditing
-              ? () => _selectEntry(draftIdx, isWide, context)
-              : () {},
-          onDelete: (isEditing &&
-                  entry.source == InventoryItemSource.manuell)
-              ? () => _deleteEntry(draftIdx)
-              : null,
-        );
-      },
+      children: [
+        for (final groupName in groupNames) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+            child: Text(
+              groupName,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ),
+          for (final item in grouped[groupName]!)
+            InventoryItemCard(
+              key: ValueKey<int>(item.$1),
+              entry: item.$2,
+              isEditing: isEditing,
+              traegerName: _traegerName(item.$2),
+              onTap: isEditing
+                  ? () => _selectEntry(item.$1, isWide, context)
+                  : () {},
+              onDelete:
+                  (isEditing && item.$2.source == InventoryItemSource.manuell)
+                  ? () => _deleteEntry(item.$1)
+                  : null,
+            ),
+        ],
+      ],
     );
   }
 
@@ -398,10 +493,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
 // ---------------------------------------------------------------------------
 
 class _DukatenField extends StatelessWidget {
-  const _DukatenField({
-    required this.controller,
-    required this.isEditing,
-  });
+  const _DukatenField({required this.controller, required this.isEditing});
 
   final TextEditingController controller;
   final bool isEditing;

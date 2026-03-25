@@ -28,6 +28,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dar
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/hero_document.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 import 'package:uuid/uuid.dart';
 
@@ -428,6 +429,30 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _markFieldChanged();
   }
 
+  /// Baut den Seitenkopf fuer den Magiebereich.
+  Widget _buildMagicHeader(HeroSheet hero) {
+    return HeroPageHeader(
+      title: 'Magie',
+      subtitle:
+          '${hero.name} · Aktive Effekte, bekannte Zauber und ritualisierte Magie in einer dokumentnahen Arbeitsfläche.',
+      metrics: [
+        HeroMetricChip(label: 'Zauber', value: '${_draftSpells.length}'),
+        HeroMetricChip(
+          label: 'Ritualgruppen',
+          value: '${_draftRitualCategories.length}',
+        ),
+        HeroMetricChip(
+          label: 'Repräsentationen',
+          value: '${_draftRepresentationen.length}',
+        ),
+        HeroMetricChip(
+          label: 'Magische SF',
+          value: '${_draftMagicSpecialAbilities.length}',
+        ),
+      ],
+    );
+  }
+
   void _showZauberKatalog(BuildContext context, List<SpellDef> allSpells) {
     final localActiveIds = _draftSpells.keys.toSet();
     showModalBottomSheet<void>(
@@ -506,6 +531,11 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         final effectiveAttributes = computeEffectiveAttributes(hero);
         return Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: _buildMagicHeader(hero),
+            ),
+            const SizedBox(height: 12),
             TabBar(
               controller: _innerTabController,
               tabs: const [
@@ -589,12 +619,10 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                 );
                               }
                               final wundEffekte = ref
-                                      .read(
-                                        heroComputedProvider(widget.heroId),
-                                      )
-                                      .asData
-                                      ?.value
-                                      .wundEffekte;
+                                  .read(heroComputedProvider(widget.heroId))
+                                  .asData
+                                  ?.value
+                                  .wundEffekte;
                               showProbeDialog(
                                 context: context,
                                 request: buildSpellProbeRequest(
