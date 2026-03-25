@@ -62,6 +62,28 @@ class WundEffekte {
   final int unterdrueckteGesamt;
 }
 
+/// Vier Anzeige-Schwellen fuer die Wunden-UI auf Basis von KO.
+class WundschwellenStufen {
+  const WundschwellenStufen({
+    required this.halbKo,
+    required this.ko,
+    required this.einhalbKo,
+    required this.zweiKo,
+  });
+
+  /// Wundschwelle bei 0,5 KO.
+  final int halbKo;
+
+  /// Wundschwelle bei 1,0 KO.
+  final int ko;
+
+  /// Wundschwelle bei 1,5 KO.
+  final int einhalbKo;
+
+  /// Wundschwelle bei 2,0 KO.
+  final int zweiKo;
+}
+
 /// Berechnet die Wundschwelle des Helden: KO/2 (abgerundet) + Modifikatoren.
 int computeWundschwelle({
   required int ko,
@@ -73,6 +95,31 @@ int computeWundschwelle({
     modSumme += m.modifier;
   }
   return basis + modSumme;
+}
+
+/// Berechnet die vier im Wundendialog angezeigten Wundschwellenstufen.
+///
+/// Die KO-basierten Faktoren 0,5 und 1,5 werden kaufmaennisch gerundet.
+/// Zusatzmodifikatoren aus `mods` wirken auf alle vier Stufen. Der Vorteil
+/// `Eisern` gibt pauschal `+2`, der Nachteil `Glasknochen` pauschal `-2`.
+WundschwellenStufen computeWundschwellenStufen({
+  required int ko,
+  List<HeroTalentModifier> mods = const [],
+  String vorteileText = '',
+  String nachteileText = '',
+}) {
+  final modSumme = _sumWundschwelleMods(mods);
+  final namedBonus =
+      (_containsNamedToken(vorteileText, const {'eisern'}) ? 2 : 0) +
+      (_containsNamedToken(nachteileText, const {'glasknochen'}) ? -2 : 0);
+  final gesamtBonus = modSumme + namedBonus;
+
+  return WundschwellenStufen(
+    halbKo: _roundKaufmaennisch(ko * 0.5) + gesamtBonus,
+    ko: ko + gesamtBonus,
+    einhalbKo: _roundKaufmaennisch(ko * 1.5) + gesamtBonus,
+    zweiKo: ko * 2 + gesamtBonus,
+  );
 }
 
 /// Berechnet alle aggregierten Wundeffekte aus dem aktuellen Wundenzustand.
@@ -168,8 +215,10 @@ WundEffekte computeWundEffekte(WundZustand zustand) {
   }
 
   if (unterdrueckt > 0) {
-    hinweise.add('$unterdrueckt Wunde${unterdrueckt > 1 ? 'n' : ''}'
-        ' unterdrückt');
+    hinweise.add(
+      '$unterdrueckt Wunde${unterdrueckt > 1 ? 'n' : ''}'
+      ' unterdrückt',
+    );
   }
 
   // kopfIniWuerfelMalus proportional zu effektiven Kopfwunden.
@@ -225,4 +274,38 @@ StatModifiers wundEffekteToStatModifiers(WundEffekte effekte) {
     iniBase: effekte.iniMalus - effekte.kopfIniWuerfelMalus,
     gs: effekte.gsMalus,
   );
+}
+
+int _sumWundschwelleMods(List<HeroTalentModifier> mods) {
+  var modSumme = 0;
+  for (final modifier in mods) {
+    modSumme += modifier.modifier;
+  }
+  return modSumme;
+}
+
+int _roundKaufmaennisch(double value) => value.round();
+
+bool _containsNamedToken(String text, Set<String> targets) {
+  for (final rawFragment in text.split(RegExp(r'[\n,;]+'))) {
+    final fragment = rawFragment.trim();
+    if (fragment.isEmpty) {
+      continue;
+    }
+    final normalizedFragment = fragment
+        .toLowerCase()
+        .replaceAll(String.fromCharCode(228), 'a')
+        .replaceAll(String.fromCharCode(246), 'o')
+        .replaceAll(String.fromCharCode(252), 'u')
+        .replaceAll(String.fromCharCode(223), 'ss');
+    final tokens = normalizedFragment
+        .split(RegExp(r'[^a-z0-9]+'))
+        .where((entry) => entry.isNotEmpty);
+    for (final token in tokens) {
+      if (targets.contains(token)) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
