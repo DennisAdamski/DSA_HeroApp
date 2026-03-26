@@ -47,6 +47,12 @@ class EditAwareField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final labelStyle = theme.textTheme.labelMedium?.copyWith(
+      fontWeight: FontWeight.w700,
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+
     if (!isEditing) {
       final displayValue = controller?.text ?? value ?? '';
       return _StaticLabeledValue(
@@ -62,6 +68,8 @@ class EditAwareField extends StatelessWidget {
         labelText: label,
         border: const OutlineInputBorder(),
         isDense: true,
+        labelStyle: labelStyle,
+        floatingLabelStyle: labelStyle,
       ),
       maxLines: maxLines,
       minLines: minLines,
@@ -102,6 +110,12 @@ class EditAwareIntField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final labelStyle = theme.textTheme.labelMedium?.copyWith(
+      fontWeight: FontWeight.w700,
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+
     if (!isEditing) {
       final displayValue = controller?.text ?? (value != null ? '$value' : '');
       return _StaticLabeledValue(
@@ -112,13 +126,13 @@ class EditAwareIntField extends StatelessWidget {
     }
     return TextFormField(
       controller: controller,
-      initialValue: controller == null
-          ? (value != null ? '$value' : '')
-          : null,
+      initialValue: controller == null ? (value != null ? '$value' : '') : null,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
         isDense: true,
+        labelStyle: labelStyle,
+        floatingLabelStyle: labelStyle,
         suffixIcon: suffixIcon,
         suffixIconConstraints: suffixIconConstraints,
       ),
@@ -155,7 +169,8 @@ class _StaticLabeledValue extends StatelessWidget {
       children: [
         Text(
           label,
-          style: theme.textTheme.labelSmall?.copyWith(
+          style: theme.textTheme.labelMedium?.copyWith(
+            fontWeight: FontWeight.w700,
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
