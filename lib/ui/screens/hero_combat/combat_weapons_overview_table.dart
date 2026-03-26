@@ -125,23 +125,21 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-                IconButton(
-                  key: const ValueKey<String>('combat-weapon-add'),
-                  tooltip: 'Leere Waffe hinzufügen',
-                  visualDensity: VisualDensity.compact,
-                  constraints:
-                      const BoxConstraints.tightFor(width: 30, height: 30),
-                  onPressed: onWeaponAdd,
-                  icon: const Icon(Icons.add, size: 18),
-                ),
-                IconButton(
-                  key: const ValueKey<String>('combat-weapon-from-catalog'),
-                  tooltip: 'Waffe aus Katalog hinzufügen',
-                  visualDensity: VisualDensity.compact,
-                  constraints:
-                      const BoxConstraints.tightFor(width: 30, height: 30),
-                  onPressed: onWeaponCatalog,
-                  icon: const Icon(Icons.library_add, size: 18),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    FilledButton(
+                      key: const ValueKey<String>('combat-weapon-add'),
+                      onPressed: onWeaponAdd,
+                      child: const Text('+ Leere Waffe'),
+                    ),
+                    OutlinedButton(
+                      key: const ValueKey<String>('combat-weapon-from-catalog'),
+                      onPressed: onWeaponCatalog,
+                      child: const Text('+ Katalogwaffe'),
+                    ),
+                  ],
                 ),
               ],
             ),

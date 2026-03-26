@@ -114,14 +114,10 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
-            IconButton(
+            FilledButton(
               key: const ValueKey<String>('combat-offhand-add'),
-              tooltip: 'Nebenhand-Ausrüstung hinzufügen',
-              visualDensity: VisualDensity.compact,
-              constraints:
-                  const BoxConstraints.tightFor(width: 30, height: 30),
               onPressed: () => _openEditor(),
-              icon: const Icon(Icons.add, size: 18),
+              child: const Text('+ Parierwaffe/Schild'),
             ),
           ],
         ),
