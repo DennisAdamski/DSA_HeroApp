@@ -16,31 +16,31 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
         keyName: 'ap_total',
         keyboardType: TextInputType.number,
       ),
-      if (isEditing)
-        _buildApIncrementField(
-          label: 'AP Gesamt addieren',
+      _buildApIncrementField(
+        label: 'AP Gesamt addieren',
+        incrementKey: 'ap_total_add',
+        onPressed: () => _applyApIncrement(
+          targetKey: 'ap_total',
           incrementKey: 'ap_total_add',
-          onPressed: () => _applyApIncrement(
-            targetKey: 'ap_total',
-            incrementKey: 'ap_total_add',
-            label: 'AP Gesamt',
-          ),
+          label: 'AP Gesamt',
         ),
+        isEditing: isEditing,
+      ),
       _buildInputField(
         label: 'AP Ausgegeben',
         keyName: 'ap_spent',
         keyboardType: TextInputType.number,
       ),
-      if (isEditing)
-        _buildApIncrementField(
-          label: 'AP Ausgegeben addieren',
+      _buildApIncrementField(
+        label: 'AP Ausgegeben addieren',
+        incrementKey: 'ap_spent_add',
+        onPressed: () => _applyApIncrement(
+          targetKey: 'ap_spent',
           incrementKey: 'ap_spent_add',
-          onPressed: () => _applyApIncrement(
-            targetKey: 'ap_spent',
-            incrementKey: 'ap_spent_add',
-            label: 'AP Ausgegeben',
-          ),
+          label: 'AP Ausgegeben',
         ),
+        isEditing: isEditing,
+      ),
       _buildReadOnlyValueField(
         key: const ValueKey<String>('overview-readonly-ap_available'),
         label: 'AP Verfügbar',
@@ -63,6 +63,7 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
     required String label,
     required String incrementKey,
     required VoidCallback onPressed,
+    required bool isEditing,
   }) {
     return TextField(
       key: ValueKey<String>('overview-field-$incrementKey'),
@@ -79,60 +80,7 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
           icon: const Icon(Icons.add),
         ),
       ),
-    );
-  }
-
-  Widget _buildCurrentResourcesSection(HeroResourceActivation resourceActivation) {
-    return _SectionCard(
-      title: 'Aktuelle Ressourcen',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSingleLineFieldsRow(
-            children: [
-              _buildInputField(
-                label: 'LeP aktuell',
-                keyName: 'cur_lep',
-                keyboardType: TextInputType.number,
-              ),
-              _buildInputField(
-                label: 'Au aktuell',
-                keyName: 'cur_au',
-                keyboardType: TextInputType.number,
-              ),
-              if (resourceActivation.magic.isEnabled)
-                _buildInputField(
-                  label: 'AsP aktuell',
-                  keyName: 'cur_asp',
-                  keyboardType: TextInputType.number,
-                ),
-              if (resourceActivation.divine.isEnabled)
-                _buildInputField(
-                  label: 'KaP aktuell',
-                  keyName: 'cur_kap',
-                  keyboardType: TextInputType.number,
-                ),
-            ],
-          ),
-          if (resourceActivation.magic.isEnabled) ...[
-            const SizedBox(height: _gridSpacing),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: OutlinedButton.icon(
-                key: const ValueKey<String>('status-active-spells-open'),
-                onPressed: () {
-                  showActiveSpellEffectsDialog(
-                    context: context,
-                    heroId: widget.heroId,
-                  );
-                },
-                icon: const Icon(Icons.auto_awesome_outlined),
-                label: const Text('Zauber aktivieren'),
-              ),
-            ),
-          ],
-        ],
-      ),
+      onChanged: isEditing ? _onFieldChanged : null,
     );
   }
 
