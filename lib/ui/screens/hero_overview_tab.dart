@@ -26,7 +26,6 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_feature_flags.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
@@ -412,14 +411,11 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     );
   }
 
-  void _applyApIncrement({
+  Future<void> _applyApIncrement({
     required String targetKey,
     required String incrementKey,
     required String label,
-  }) {
-    if (!_editController.isEditing) {
-      return;
-    }
+  }) async {
     final rawIncrement = _field(incrementKey).text.trim();
     if (rawIncrement.isEmpty) {
       return;
@@ -440,6 +436,27 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         offset: updatedValue.toString().length,
       );
     _field(incrementKey).clear();
+    if (!_editController.isEditing) {
+      final hero = _latestHero;
+      if (hero == null) {
+        return;
+      }
+      final updatedHero = switch (targetKey) {
+        'ap_total' => hero.copyWith(apTotal: updatedValue),
+        'ap_spent' => hero.copyWith(apSpent: updatedValue),
+        _ => hero,
+      };
+      await ref.read(heroActionsProvider).saveHero(updatedHero);
+      if (!mounted) {
+        return;
+      }
+      _latestHero = updatedHero;
+      _viewRevision.value++;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('$label aktualisiert')));
+      return;
+    }
     _onFieldChanged(updatedValue.toString());
   }
 
@@ -471,10 +488,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
               padding: const EdgeInsets.all(_pagePadding),
               children: [
                 if (hero.appearance.avatarFileName.isEmpty) ...[
-                  _NoAvatarActions(
-                    heroId: hero.id,
-                    hero: hero,
-                  ),
+                  _NoAvatarActions(heroId: hero.id, hero: hero),
                   const SizedBox(height: _sectionSpacing),
                 ],
                 _buildBaseInfoSection(hero),
@@ -482,8 +496,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
                 _buildAdvantagesSection(),
                 const SizedBox(height: _sectionSpacing),
                 _buildApSection(hero),
-                const SizedBox(height: _sectionSpacing),
-                _buildCurrentResourcesSection(resourceActivation),
                 if (kShowParserWarnings &&
                     hero.unknownModifierFragments.isNotEmpty) ...[
                   const SizedBox(height: _sectionSpacing),
