@@ -142,7 +142,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
         children: [
           _buildInputField(label: 'Geschlecht', keyName: 'geschlecht'),
           _buildInputField(label: 'Alter', keyName: 'alter'),
-          _buildInputField(label: 'Groesse', keyName: 'groesse'),
+          _buildInputField(label: 'Größe', keyName: 'groesse'),
           _buildInputField(label: 'Gewicht', keyName: 'gewicht'),
           _buildInputField(label: 'Haarfarbe', keyName: 'haarfarbe'),
           _buildInputField(label: 'Augenfarbe', keyName: 'augenfarbe'),

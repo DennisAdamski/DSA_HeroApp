@@ -156,7 +156,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
           const Text('Name'),
           IconButton(
             key: const ValueKey<String>('combat-weapon-add'),
-            tooltip: 'Leere Waffe hinzufuegen',
+            tooltip: 'Leere Waffe hinzufügen',
             visualDensity: VisualDensity.compact,
             constraints: const BoxConstraints.tightFor(width: 30, height: 30),
             onPressed: onWeaponAdd,
@@ -164,7 +164,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
           ),
           IconButton(
             key: const ValueKey<String>('combat-weapon-from-catalog'),
-            tooltip: 'Waffe aus Katalog hinzufuegen',
+            tooltip: 'Waffe aus Katalog hinzufügen',
             visualDensity: VisualDensity.compact,
             constraints: const BoxConstraints.tightFor(width: 30, height: 30),
             onPressed: onWeaponCatalog,

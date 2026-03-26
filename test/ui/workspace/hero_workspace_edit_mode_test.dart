@@ -1412,7 +1412,7 @@ void main() {
       expect(find.text('(berechnet)'), findsOneWidget);
       expect(find.text('(manuell)'), findsNothing);
 
-      await tester.tap(find.byTooltip('BE erhoehen'));
+      await tester.tap(find.byTooltip('BE erhöhen'));
       await tester.pumpAndSettle();
 
       expect(find.text('(berechnet)'), findsNothing);
