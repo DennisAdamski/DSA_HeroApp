@@ -126,6 +126,19 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> tapWorkspaceEditAction(WidgetTester tester) async {
+    final textButton = find.text('Bearbeiten');
+    if (textButton.evaluate().isNotEmpty) {
+      await tester.tap(textButton.first);
+      await tester.pumpAndSettle();
+      return;
+    }
+
+    final iconButton = find.byTooltip('Bearbeiten');
+    await tester.tap(iconButton.first);
+    await tester.pumpAndSettle();
+  }
+
   Finder heroDeckToggleButton() {
     return find.byKey(const ValueKey<String>('hero-deck-toggle'));
   }
@@ -388,8 +401,7 @@ void main() {
       await openWorkspace(tester, repo, catalog: buildCatalog());
       await selectWorkspaceTab(tester, 'Talente');
 
-      await tester.tap(find.text('Bearbeiten').first);
-      await tester.pumpAndSettle();
+      await tapWorkspaceEditAction(tester);
 
       expect(
         find.byKey(const ValueKey<String>('talents-catalog-open')),
