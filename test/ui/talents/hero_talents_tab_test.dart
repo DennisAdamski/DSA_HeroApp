@@ -84,6 +84,23 @@ void main() {
           attributes: <String>['Mut', 'Gewandheit', 'Koerperkraft'],
         ),
       ],
+      sprachen: <SpracheDef>[
+        SpracheDef(
+          id: 'spr_zyklopaeisch',
+          name: 'Zyklopäisch',
+          familie: 'Tulamidya',
+          steigerung: 'A',
+          maxWert: 18,
+        ),
+      ],
+      schriften: <SchriftDef>[
+        SchriftDef(
+          id: 'schrift_kusliker',
+          name: 'Kusliker Zeichen',
+          steigerung: 'B',
+          maxWert: 18,
+        ),
+      ],
       spells: <SpellDef>[],
       weapons: <WeaponDef>[],
     );
@@ -385,8 +402,14 @@ void main() {
     expect(koerper, findsOneWidget);
     expect(gesellschaft, findsOneWidget);
     expect(natur, findsOneWidget);
-    expect(tester.getTopLeft(koerper).dy, lessThan(tester.getTopLeft(gesellschaft).dy));
-    expect(tester.getTopLeft(gesellschaft).dy, lessThan(tester.getTopLeft(natur).dy));
+    expect(
+      tester.getTopLeft(koerper).dy,
+      lessThan(tester.getTopLeft(gesellschaft).dy),
+    );
+    expect(
+      tester.getTopLeft(gesellschaft).dy,
+      lessThan(tester.getTopLeft(natur).dy),
+    );
     await tester.scrollUntilVisible(
       find.text('Wissenstalente'),
       300,
@@ -557,6 +580,70 @@ void main() {
     ]);
   });
 
+  testWidgets('special ability add action stays available outside edit mode', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openTalentsTab(tester, repo, buildCatalog());
+
+    await tester.tap(find.text('Sonderfertigkeiten'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-special-abilities-add')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sonderfertigkeit hinzufügen'), findsOneWidget);
+  });
+
+  testWidgets(
+    'languages and scripts show described add buttons outside edit mode',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openTalentsTab(tester, repo, buildCatalog());
+
+      await tester.tap(find.text('Sprachen & Schriften'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Lege bekannte Sprachen mit Lernwert und Muttersprache an.'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Erfasse gelernte Schriften inklusive aktuellem Wert.'),
+        findsOneWidget,
+      );
+      expect(find.widgetWithText(FilledButton, 'Sprache'), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, 'Schrift'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Sprache'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sprachen'), findsWidgets);
+    },
+  );
+
   testWidgets(
     'modifier dialog persists summed talent modifiers and updates computed taw',
     (tester) async {
@@ -583,10 +670,14 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.ensureVisible(
-        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
+        find.byKey(
+          const ValueKey<String>('talents-field-tal_a-modifier-total'),
+        ),
       );
       await tester.tap(
-        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
+        find.byKey(
+          const ValueKey<String>('talents-field-tal_a-modifier-total'),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -677,10 +768,14 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.ensureVisible(
-        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
+        find.byKey(
+          const ValueKey<String>('talents-field-tal_a-modifier-total'),
+        ),
       );
       await tester.tap(
-        find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
+        find.byKey(
+          const ValueKey<String>('talents-field-tal_a-modifier-total'),
+        ),
       );
       await tester.pumpAndSettle();
 
