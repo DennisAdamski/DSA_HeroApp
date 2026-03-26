@@ -75,13 +75,12 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
             ),
           ],
         ),
-        if (hero.appearance.avatarGallery.length > 1) ...[
+        if (hero.appearance.avatarGallery.isNotEmpty) ...[
           const SizedBox(height: _gridSpacing),
           _AvatarGalleryStrip(
             heroId: widget.heroId,
             gallery: hero.appearance.avatarGallery,
             primaerbildId: hero.appearance.primaerbildId,
-            isEditing: _editController.isEditing,
           ),
         ],
       ],
@@ -110,13 +109,12 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
           hasAvatar: true,
           isEditing: _editController.isEditing,
         ),
-        if (hero.appearance.avatarGallery.length > 1) ...[
+        if (hero.appearance.avatarGallery.isNotEmpty) ...[
           const SizedBox(height: _gridSpacing),
           _AvatarGalleryStrip(
             heroId: widget.heroId,
             gallery: hero.appearance.avatarGallery,
             primaerbildId: hero.appearance.primaerbildId,
-            isEditing: _editController.isEditing,
           ),
         ],
         const SizedBox(height: _gridSpacing),

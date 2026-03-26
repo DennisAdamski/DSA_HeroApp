@@ -20,16 +20,19 @@ class _AvatarDisplay extends ConsumerWidget {
           heroStoragePath: location.effectivePath,
           avatarFileName: avatarFileName,
         );
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 350),
-            child: Image.file(
-              io.File(path),
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return const _AvatarPlaceholder();
-              },
+        return GestureDetector(
+          onTap: () => _openFullscreen(context, path),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 350),
+              child: Image.file(
+                io.File(path),
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return const _AvatarPlaceholder();
+                },
+              ),
             ),
           ),
         );
@@ -39,6 +42,13 @@ class _AvatarDisplay extends ConsumerWidget {
         child: Center(child: CircularProgressIndicator()),
       ),
       error: (_, _) => const _AvatarPlaceholder(),
+    );
+  }
+
+  void _openFullscreen(BuildContext context, String path) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => _AvatarFullscreenDialog(imagePath: path),
     );
   }
 }
@@ -177,6 +187,48 @@ class _AvatarActions extends ConsumerWidget {
 }
 
 // ---------------------------------------------------------------------------
+// Vollbild-Dialog fuer Avatar-Bilder
+// ---------------------------------------------------------------------------
+
+class _AvatarFullscreenDialog extends StatelessWidget {
+  const _AvatarFullscreenDialog({required this.imagePath});
+
+  final String imagePath;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog.fullscreen(
+      child: Stack(
+        children: [
+          Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Image.file(
+                io.File(imagePath),
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => const Icon(
+                  Icons.broken_image_outlined,
+                  size: 64,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Avatar-Galerie-Streifen
 // ---------------------------------------------------------------------------
 
@@ -185,17 +237,15 @@ class _AvatarGalleryStrip extends ConsumerWidget {
     required this.heroId,
     required this.gallery,
     required this.primaerbildId,
-    required this.isEditing,
   });
 
   final String heroId;
   final List<AvatarGalleryEntry> gallery;
   final String primaerbildId;
-  final bool isEditing;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (gallery.length <= 1) return const SizedBox.shrink();
+    if (gallery.isEmpty) return const SizedBox.shrink();
 
     final locationAsync = ref.watch(heroStorageLocationProvider);
     final snapshotDiff = ref.watch(avatarSnapshotDiffProvider(heroId));
@@ -245,7 +295,6 @@ class _AvatarGalleryStrip extends ConsumerWidget {
                     entry: entry,
                     path: path,
                     isPrimaer: isPrimaer,
-                    isEditing: isEditing,
                   );
                 },
               );
@@ -266,20 +315,18 @@ class _GalleryThumbnail extends ConsumerWidget {
     required this.entry,
     required this.path,
     required this.isPrimaer,
-    required this.isEditing,
   });
 
   final String heroId;
   final AvatarGalleryEntry entry;
   final String path;
   final bool isPrimaer;
-  final bool isEditing;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-      onTap: () => _setAsActive(ref),
-      onLongPress: isEditing ? () => _showContextMenu(context, ref) : null,
+      onTap: () => _openFullscreen(context),
+      onLongPress: () => _showContextMenu(context, ref),
       child: Stack(
         children: [
           ClipRRect(
@@ -321,10 +368,10 @@ class _GalleryThumbnail extends ConsumerWidget {
     );
   }
 
-  Future<void> _setAsActive(WidgetRef ref) async {
-    await ref.read(heroActionsProvider).setActiveAvatar(
-      heroId: heroId,
-      galleryEntryId: entry.id,
+  void _openFullscreen(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => _AvatarFullscreenDialog(imagePath: path),
     );
   }
 
@@ -336,15 +383,43 @@ class _GalleryThumbnail extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.star_outline),
-              title: const Text('Als Primaerbild setzen'),
+              leading: const Icon(Icons.fullscreen),
+              title: const Text('Vergroessern'),
               onTap: () {
                 Navigator.pop(context);
-                ref.read(heroActionsProvider).setPrimaerbild(
+                _openFullscreen(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.image_outlined),
+              title: const Text('Als aktives Bild setzen'),
+              onTap: () {
+                Navigator.pop(context);
+                ref.read(heroActionsProvider).setActiveAvatar(
                   heroId: heroId,
                   galleryEntryId: entry.id,
                 );
               },
+            ),
+            ListTile(
+              leading: Icon(
+                isPrimaer ? Icons.star : Icons.star_outline,
+              ),
+              title: Text(
+                isPrimaer
+                    ? 'Primaerbild (aktiv)'
+                    : 'Als Primaerbild setzen',
+              ),
+              enabled: !isPrimaer,
+              onTap: isPrimaer
+                  ? null
+                  : () {
+                      Navigator.pop(context);
+                      ref.read(heroActionsProvider).setPrimaerbild(
+                        heroId: heroId,
+                        galleryEntryId: entry.id,
+                      );
+                    },
             ),
             ListTile(
               leading: const Icon(Icons.delete_outline),
