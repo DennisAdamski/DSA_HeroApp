@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_filter_bar.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_item_card.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_item_editor.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 
 const double _widthBreakpoint = 1280;
 const double _pagePadding = 12;
 
+/// Inventar-Tab mit direkter Bearbeitung ohne globalen Workspace-Edit-Modus.
 class HeroInventoryTab extends ConsumerStatefulWidget {
+  /// Erstellt den Inventar-Tab fuer einen einzelnen Helden.
   const HeroInventoryTab({
     super.key,
     required this.heroId,
@@ -39,175 +43,593 @@ class HeroInventoryTab extends ConsumerStatefulWidget {
 
 class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     with AutomaticKeepAliveClientMixin {
-  late final WorkspaceTabEditController _editController;
   HeroSheet? _latestHero;
-  List<HeroInventoryEntry> _draft = const [];
   InventoryFilter _filter = InventoryFilter.alle;
   int? _selectedIndex;
+  HeroInventoryEntry? _pendingNewEntry;
   int _editorRevision = 0;
-  final TextEditingController _dukatenCtrl = TextEditingController();
+
+  static const List<AdaptiveTableColumnSpec> _columnSpecs =
+      <AdaptiveTableColumnSpec>[
+        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 280, flex: 2),
+        AdaptiveTableColumnSpec(minWidth: 130, maxWidth: 180, flex: 1),
+        AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 150, flex: 1),
+        AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 1),
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 92),
+        AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120),
+        AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120),
+        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 280, flex: 2),
+        AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 280, flex: 2),
+        AdaptiveTableColumnSpec.fixed(88),
+      ];
 
   @override
   void initState() {
     super.initState();
-    _editController = WorkspaceTabEditController(
-      onDirtyChanged: widget.onDirtyChanged,
-      onEditingChanged: widget.onEditingChanged,
-      requestRebuild: () {
-        if (mounted) setState(() {});
-      },
-    );
-    _dukatenCtrl.addListener(_onDukatenChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _registerWithParent();
+      if (mounted) {
+        _registerWithParent();
+      }
     });
   }
 
-  @override
-  void dispose() {
-    _dukatenCtrl.dispose();
-    super.dispose();
-  }
-
   void _registerWithParent() {
-    _editController.emitCurrentState();
-    widget.onRegisterDiscard(_discardChanges);
+    widget.onDirtyChanged(false);
+    widget.onEditingChanged(false);
+    widget.onRegisterDiscard(_noopWorkspaceAction);
     widget.onRegisterEditActions(
       WorkspaceTabEditActions(
-        startEdit: _startEdit,
-        save: _saveChanges,
-        cancel: _cancelChanges,
+        startEdit: _noopWorkspaceAction,
+        save: _noopWorkspaceAction,
+        cancel: _noopWorkspaceAction,
+        headerActions: <WorkspaceHeaderAction>[
+          WorkspaceHeaderAction(
+            builder: _buildHeaderAddAction,
+            showWhenIdle: true,
+          ),
+        ],
       ),
     );
   }
 
-  void _onDukatenChanged() {
-    if (_editController.isEditing) {
-      _editController.markFieldChanged();
-    }
-  }
+  Future<void> _noopWorkspaceAction() async {}
 
-  void _syncFromHero(HeroSheet hero, {bool force = false}) {
-    if (!_editController.shouldSync(hero, force: force)) return;
-    _draft = List.of(hero.inventoryEntries);
-    _dukatenCtrl.text = hero.dukaten;
-  }
+  List<HeroInventoryEntry> get _entries =>
+      _latestHero?.inventoryEntries ?? const <HeroInventoryEntry>[];
 
-  Future<void> _startEdit() async {
-    _editController.startEdit();
-  }
+  List<HeroCompanion> get _companions =>
+      _latestHero?.companions ?? const <HeroCompanion>[];
 
-  Future<void> _saveChanges() async {
-    final hero = _latestHero;
-    if (hero == null) return;
-
-    // Ammo-Ruecksync: anzahl-Aenderungen aus Draft in CombatConfig uebertragen
-    var updatedConfig = hero.combatConfig;
-    for (final entry in _draft) {
-      if (entry.source == InventoryItemSource.geschoss &&
-          entry.sourceRef != null) {
-        final count = int.tryParse(entry.anzahl) ?? 0;
-        updatedConfig = applyAmmoCountChangeToConfig(
-          updatedConfig,
-          entry.sourceRef!,
-          count,
-        );
+  List<(int, HeroInventoryEntry)> _filteredEntries() {
+    final result = <(int, HeroInventoryEntry)>[];
+    for (var index = 0; index < _entries.length; index++) {
+      final entry = _entries[index];
+      if (matchesInventoryFilter(entry.itemType, entry.source, _filter)) {
+        result.add((index, entry));
       }
     }
-
-    final updatedHero = hero.copyWith(
-      dukaten: _dukatenCtrl.text.trim(),
-      inventoryEntries: _draft,
-      combatConfig: updatedConfig,
-    );
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
-    if (!mounted) return;
-
-    _editController.markSaved();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Inventar gespeichert')));
+    return result;
   }
 
-  Future<void> _cancelChanges() async => _discardChanges();
-
-  Future<void> _discardChanges() async {
-    final hero = _latestHero;
-    if (hero != null) {
-      _editController.clearSyncSignature();
-      _syncFromHero(hero, force: true);
+  String _traegerName(HeroInventoryEntry entry) {
+    if (entry.traegerTyp != InventoryTraeger.begleiter) {
+      return 'Held';
     }
-    setState(() => _selectedIndex = null);
-    _editController.markDiscarded();
-  }
 
-  void _addEntry() {
-    setState(() {
-      _draft = [..._draft, const HeroInventoryEntry()];
-      _selectedIndex = _draft.length - 1;
-      _editorRevision++;
-    });
-    _editController.markFieldChanged();
-  }
-
-  void _updateEntry(int draftIndex, HeroInventoryEntry updated) {
-    setState(() {
-      final list = List.of(_draft);
-      list[draftIndex] = updated;
-      _draft = list;
-      _editorRevision++;
-    });
-    _editController.markFieldChanged();
-  }
-
-  void _deleteEntry(int draftIndex) {
-    setState(() {
-      final list = List.of(_draft)..removeAt(draftIndex);
-      _draft = list;
-      if (_selectedIndex == draftIndex) {
-        _selectedIndex = null;
-      } else if (_selectedIndex != null && _selectedIndex! > draftIndex) {
-        _selectedIndex = _selectedIndex! - 1;
-      }
-    });
-    _editController.markFieldChanged();
-  }
-
-  List<HeroCompanion> get _companions => _latestHero?.companions ?? const [];
-
-  /// Loest den Anzeigenamen des Traeger aus dem Inventar-Eintrag auf.
-  /// Gibt null zurueck, wenn der Held selbst der Traeger ist.
-  String? _traegerName(HeroInventoryEntry entry) {
-    if (entry.traegerTyp != InventoryTraeger.begleiter) return null;
     final id = entry.traegerId;
-    if (id == null) return null;
-    final companion = _companions.where((c) => c.id == id).firstOrNull;
-    if (companion == null) return 'Begleiter';
-    return companion.name.isEmpty ? 'Unbenannter Begleiter' : companion.name;
+    if (id == null) {
+      return 'Begleiter';
+    }
+
+    final companion = _companions.where((item) => item.id == id).firstOrNull;
+    if (companion == null) {
+      return 'Begleiter';
+    }
+
+    final name = companion.name.trim();
+    return name.isEmpty ? 'Unbenannter Begleiter' : name;
   }
 
-  void _selectEntry(int draftIndex, bool isWide, BuildContext context) {
-    if (isWide) {
-      setState(() {
-        _selectedIndex = draftIndex;
-        _editorRevision++;
-      });
-    } else {
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => InventoryItemEditor(
-            entry: _draft[draftIndex],
-            showAppBar: true,
-            companions: _companions,
-            onSaved: (updated) {
-              Navigator.of(context).pop();
-              _updateEntry(draftIndex, updated);
-            },
-            onCancelled: () => Navigator.of(context).pop(),
-          ),
+  Widget _buildHeaderAddAction(BuildContext context) {
+    final useCompactButton = MediaQuery.sizeOf(context).width < 720;
+    final tooltip = 'Gegenstand hinzufügen';
+
+    if (useCompactButton) {
+      return Tooltip(
+        message: tooltip,
+        child: IconButton(
+          key: const ValueKey<String>('inventory-header-add'),
+          onPressed: () => _openNewEntryAction(context),
+          icon: const Icon(Icons.add),
         ),
       );
     }
+
+    return FilledButton(
+      key: const ValueKey<String>('inventory-header-add'),
+      onPressed: () => _openNewEntryAction(context),
+      child: const Text('+ Gegenstand'),
+    );
+  }
+
+  Future<void> _openNewEntryAction(BuildContext context) async {
+    final isWide = MediaQuery.sizeOf(context).width >= _widthBreakpoint;
+    final entry = HeroInventoryEntry(itemType: _defaultItemTypeForFilter());
+
+    if (isWide) {
+      setState(() {
+        _pendingNewEntry = entry;
+        _selectedIndex = null;
+        _editorRevision++;
+      });
+      return;
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (routeContext) => InventoryItemEditor(
+          entry: entry,
+          showAppBar: true,
+          isNew: true,
+          companions: _companions,
+          onSaved: (updated) async {
+            await _saveNewEntry(updated);
+            if (routeContext.mounted) {
+              Navigator.of(routeContext).pop();
+            }
+          },
+          onCancelled: () => Navigator.of(routeContext).pop(),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openEditEntryAction(
+    BuildContext context,
+    int entryIndex,
+  ) async {
+    final isWide = MediaQuery.sizeOf(context).width >= _widthBreakpoint;
+    if (isWide) {
+      setState(() {
+        _pendingNewEntry = null;
+        _selectedIndex = entryIndex;
+        _editorRevision++;
+      });
+      return;
+    }
+
+    final entry = _entries[entryIndex];
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (routeContext) => InventoryItemEditor(
+          entry: entry,
+          showAppBar: true,
+          companions: _companions,
+          onSaved: (updated) async {
+            await _saveUpdatedEntry(entryIndex, updated);
+            if (routeContext.mounted) {
+              Navigator.of(routeContext).pop();
+            }
+          },
+          onCancelled: () => Navigator.of(routeContext).pop(),
+        ),
+      ),
+    );
+  }
+
+  InventoryItemType _defaultItemTypeForFilter() {
+    switch (_filter) {
+      case InventoryFilter.ausruestung:
+        return InventoryItemType.ausruestung;
+      case InventoryFilter.verbrauchsgegenstand:
+        return InventoryItemType.verbrauchsgegenstand;
+      case InventoryFilter.wertvolles:
+        return InventoryItemType.wertvolles;
+      case InventoryFilter.sonstiges:
+        return InventoryItemType.sonstiges;
+      case InventoryFilter.alle:
+      case InventoryFilter.waffen:
+      case InventoryFilter.geschosse:
+        return InventoryItemType.sonstiges;
+    }
+  }
+
+  Future<void> _saveNewEntry(HeroInventoryEntry entry) async {
+    final hero = _latestHero;
+    if (hero == null) {
+      return;
+    }
+
+    final nextEntries = List<HeroInventoryEntry>.from(_entries)..add(entry);
+    final nextSelectedIndex = _manualEntryCount(nextEntries) - 1;
+
+    await _saveEntries(
+      nextEntries,
+      changedEntry: entry,
+      nextSelectedIndex: nextSelectedIndex,
+      clearPendingEntry: true,
+    );
+  }
+
+  Future<void> _saveUpdatedEntry(int index, HeroInventoryEntry entry) async {
+    final hero = _latestHero;
+    if (hero == null || index < 0 || index >= _entries.length) {
+      return;
+    }
+
+    final nextEntries = List<HeroInventoryEntry>.from(_entries);
+    nextEntries[index] = entry;
+
+    await _saveEntries(
+      nextEntries,
+      changedEntry: entry,
+      nextSelectedIndex: index,
+      clearPendingEntry: true,
+    );
+  }
+
+  Future<void> _deleteEntry(int index) async {
+    final hero = _latestHero;
+    if (hero == null || index < 0 || index >= _entries.length) {
+      return;
+    }
+
+    final entry = _entries[index];
+    if (entry.source != InventoryItemSource.manuell) {
+      return;
+    }
+
+    final confirmed = await showAdaptiveConfirmDialog(
+      context: context,
+      title: 'Gegenstand löschen',
+      content: 'Soll „${_entryName(entry)}“ wirklich gelöscht werden?',
+      confirmLabel: 'Löschen',
+      isDestructive: true,
+    );
+    if (!mounted || confirmed != AdaptiveConfirmResult.confirm) {
+      return;
+    }
+
+    final nextEntries = List<HeroInventoryEntry>.from(_entries)
+      ..removeAt(index);
+    final nextSelectedIndex = _selectedIndex == null
+        ? null
+        : _selectedIndex == index
+        ? null
+        : _selectedIndex! > index
+        ? _selectedIndex! - 1
+        : _selectedIndex;
+
+    await _saveEntries(
+      nextEntries,
+      nextSelectedIndex: nextSelectedIndex,
+      clearPendingEntry: true,
+    );
+  }
+
+  Future<void> _saveEntries(
+    List<HeroInventoryEntry> entries, {
+    HeroInventoryEntry? changedEntry,
+    int? nextSelectedIndex,
+    bool clearPendingEntry = false,
+  }) async {
+    final hero = _latestHero;
+    if (hero == null) {
+      return;
+    }
+
+    final updatedHero = hero.copyWith(
+      inventoryEntries: entries,
+      combatConfig: _applyAmmoCounts(hero, entries),
+    );
+    await ref.read(heroActionsProvider).saveHero(updatedHero);
+    if (!mounted) {
+      return;
+    }
+
+    final shouldResetFilter =
+        changedEntry != null &&
+        _filter != InventoryFilter.alle &&
+        !matchesInventoryFilter(
+          changedEntry.itemType,
+          changedEntry.source,
+          _filter,
+        );
+
+    setState(() {
+      if (shouldResetFilter) {
+        _filter = InventoryFilter.alle;
+      }
+      _selectedIndex = nextSelectedIndex;
+      if (clearPendingEntry) {
+        _pendingNewEntry = null;
+      }
+      _editorRevision++;
+    });
+  }
+
+  CombatConfig _applyAmmoCounts(
+    HeroSheet hero,
+    List<HeroInventoryEntry> entries,
+  ) {
+    var updatedConfig = hero.combatConfig;
+    for (final entry in entries) {
+      final isProjectile =
+          entry.source == InventoryItemSource.geschoss &&
+          entry.sourceRef != null;
+      if (!isProjectile) {
+        continue;
+      }
+
+      final count = int.tryParse(entry.anzahl) ?? 0;
+      updatedConfig = applyAmmoCountChangeToConfig(
+        updatedConfig,
+        entry.sourceRef!,
+        count,
+      );
+    }
+    return updatedConfig;
+  }
+
+  int _manualEntryCount(List<HeroInventoryEntry> entries) {
+    return entries
+        .where((entry) => entry.source == InventoryItemSource.manuell)
+        .length;
+  }
+
+  Future<void> _saveDukaten(String value) async {
+    final hero = _latestHero;
+    if (hero == null) {
+      return;
+    }
+
+    final normalized = value.trim();
+    if (normalized == hero.dukaten.trim()) {
+      return;
+    }
+
+    await ref
+        .read(heroActionsProvider)
+        .saveHero(hero.copyWith(dukaten: normalized));
+  }
+
+  String _entryName(HeroInventoryEntry entry) {
+    final name = entry.gegenstand.trim();
+    return name.isEmpty ? 'Unbenannter Gegenstand' : name;
+  }
+
+  String _typeLabel(InventoryItemType type) {
+    switch (type) {
+      case InventoryItemType.ausruestung:
+        return 'Ausrüstung';
+      case InventoryItemType.verbrauchsgegenstand:
+        return 'Verbrauch';
+      case InventoryItemType.wertvolles:
+        return 'Wertvolles';
+      case InventoryItemType.sonstiges:
+        return 'Sonstiges';
+    }
+  }
+
+  String _sourceLabel(InventoryItemSource source) {
+    switch (source) {
+      case InventoryItemSource.manuell:
+        return 'Manuell';
+      case InventoryItemSource.waffe:
+        return 'Waffe';
+      case InventoryItemSource.ruestung:
+        return 'Rüstung';
+      case InventoryItemSource.geschoss:
+        return 'Geschoss';
+      case InventoryItemSource.nebenhand:
+        return 'Nebenhand';
+    }
+  }
+
+  String _formatWeight(int gramm) {
+    if (gramm <= 0) {
+      return '–';
+    }
+
+    if (gramm >= 1000) {
+      final kilo = gramm / 1000.0;
+      final hasDecimal = kilo.truncateToDouble() != kilo;
+      final value = kilo.toStringAsFixed(hasDecimal ? 1 : 0);
+      return '$value kg';
+    }
+
+    return '$gramm g';
+  }
+
+  String _formatValue(int silber) {
+    if (silber <= 0) {
+      return '–';
+    }
+    return '$silber S';
+  }
+
+  List<Widget> _buildStatusWidgets(HeroInventoryEntry entry) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final widgets = <Widget>[];
+
+    if (entry.sourceRef != null) {
+      widgets.add(
+        _StatusBadge(
+          label: 'Verknüpft',
+          color: colorScheme.secondaryContainer,
+          textColor: colorScheme.onSecondaryContainer,
+        ),
+      );
+    }
+
+    final isEquipment = entry.itemType == InventoryItemType.ausruestung;
+    if (entry.istAusgeruestet && isEquipment) {
+      widgets.add(
+        _StatusBadge(
+          label: 'Ausgerüstet',
+          color: colorScheme.primaryContainer,
+          textColor: colorScheme.onPrimaryContainer,
+        ),
+      );
+    }
+
+    if (entry.modifiers.isNotEmpty && isEquipment) {
+      widgets.add(
+        _StatusBadge(
+          label: '${entry.modifiers.length} Mod.',
+          color: colorScheme.surfaceContainerHighest,
+          textColor: colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
+
+    if (widgets.isEmpty) {
+      return const <Widget>[Text('–')];
+    }
+    return widgets;
+  }
+
+  Widget _buildTable(BuildContext context) {
+    final filteredEntries = _filteredEntries();
+    if (filteredEntries.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32),
+          child: Text('Keine Einträge in dieser Kategorie.'),
+        ),
+      );
+    }
+
+    final colorScheme = Theme.of(context).colorScheme;
+    final rows = <FlexibleTableRow>[];
+    for (final (index, entry) in filteredEntries) {
+      final isSelected = _selectedIndex == index;
+      rows.add(
+        FlexibleTableRow(
+          key: ValueKey<int>(index),
+          backgroundColor: isSelected
+              ? colorScheme.primaryContainer.withValues(alpha: 0.22)
+              : null,
+          cells: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                key: ValueKey<String>('inventory-row-open-$index'),
+                onPressed: () => _openEditEntryAction(context, index),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _entryName(entry),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ),
+            Text(_typeLabel(entry.itemType)),
+            Text(_sourceLabel(entry.source)),
+            Text(_traegerName(entry)),
+            Text(entry.anzahl.trim().isEmpty ? '–' : entry.anzahl.trim()),
+            Text(_formatWeight(entry.gewichtGramm)),
+            Text(_formatValue(entry.wertSilber)),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: _buildStatusWidgets(entry),
+            ),
+            Text(
+              entry.herkunft.trim().isEmpty ? '–' : entry.herkunft.trim(),
+              overflow: TextOverflow.ellipsis,
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Wrap(
+                spacing: 4,
+                children: [
+                  IconButton(
+                    key: ValueKey<String>('inventory-row-edit-$index'),
+                    tooltip: 'Bearbeiten',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => _openEditEntryAction(context, index),
+                    icon: const Icon(Icons.edit_outlined),
+                  ),
+                  if (entry.source == InventoryItemSource.manuell)
+                    IconButton(
+                      key: ValueKey<String>('inventory-row-delete-$index'),
+                      tooltip: 'Löschen',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () => _deleteEntry(index),
+                      icon: Icon(
+                        Icons.delete_outline,
+                        color: colorScheme.error,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: FlexibleTable(
+        tableKey: const ValueKey<String>('inventory-table'),
+        columnSpecs: _columnSpecs,
+        headerCells: const <Widget>[
+          Text('Gegenstand'),
+          Text('Typ'),
+          Text('Quelle'),
+          Text('Träger'),
+          Text('Anzahl'),
+          Text('Gewicht'),
+          Text('Wert'),
+          Text('Status'),
+          Text('Herkunft'),
+          Text('Aktion'),
+        ],
+        rows: rows,
+      ),
+    );
+  }
+
+  Widget _buildEditorPanel() {
+    final pendingEntry = _pendingNewEntry;
+    if (pendingEntry != null) {
+      return InventoryItemEditor(
+        key: ValueKey<String>('inventory-editor-new-$_editorRevision'),
+        entry: pendingEntry,
+        showAppBar: false,
+        isNew: true,
+        companions: _companions,
+        onSaved: _saveNewEntry,
+        onCancelled: () => setState(() => _pendingNewEntry = null),
+      );
+    }
+
+    final selectedIndex = _selectedIndex;
+    if (selectedIndex != null && selectedIndex < _entries.length) {
+      return InventoryItemEditor(
+        key: ValueKey<String>(
+          'inventory-editor-$selectedIndex-$_editorRevision',
+        ),
+        entry: _entries[selectedIndex],
+        showAppBar: false,
+        companions: _companions,
+        onSaved: (entry) => _saveUpdatedEntry(selectedIndex, entry),
+        onCancelled: () => setState(() => _selectedIndex = null),
+      );
+    }
+
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Text(
+          'Gegenstand auswählen oder oben rechts hinzufügen.',
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
   }
 
   @override
@@ -219,39 +641,92 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     }
 
     _latestHero = hero;
-    _syncFromHero(hero);
 
-    final isEditing = _editController.isEditing;
     final isWide = MediaQuery.sizeOf(context).width >= _widthBreakpoint;
-    final totalWeight = _draft.fold(0, (sum, e) => sum + e.gewichtGramm);
-    final totalValue = _draft.fold(0, (sum, e) => sum + e.wertSilber);
+    final totalWeight = hero.inventoryEntries.fold<int>(
+      0,
+      (sum, entry) => sum + entry.gewichtGramm,
+    );
+    final totalValue = hero.inventoryEntries.fold<int>(
+      0,
+      (sum, entry) => sum + entry.wertSilber,
+    );
 
     final filterBar = InventoryFilterBar(
       activeFilter: _filter,
-      onFilterChanged: (f) => setState(() {
-        _filter = f;
-        _selectedIndex = null;
-      }),
+      onFilterChanged: (filter) => setState(() => _filter = filter),
       totalWeightGramm: totalWeight,
       totalValueSilber: totalValue,
     );
+    final table = _buildTable(context);
 
-    final list = _buildList(isEditing, isWide, context);
-
-    if (isWide && isEditing) {
-      return _buildWideLayout(filterBar, list, isEditing);
+    if (isWide) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const CodexTabHeader(
+                  title: 'Ausrüstungs-Ledger',
+                  subtitle:
+                      'Traglast, Herkunft und Ausrüstungsstatus in einer direkten Inventartabelle.',
+                  assetPath: 'assets/ui/codex/compass_mark.png',
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    _pagePadding,
+                    _pagePadding,
+                    _pagePadding,
+                    0,
+                  ),
+                  child: _DukatenField(
+                    key: const ValueKey<String>('inventory-dukaten-field'),
+                    value: hero.dukaten,
+                    onCommit: _saveDukaten,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: _pagePadding - 4,
+                  ),
+                  child: filterBar,
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: _pagePadding,
+                    ),
+                    child: table,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const VerticalDivider(width: 1),
+          Expanded(
+            flex: 2,
+            child: Container(
+              key: const ValueKey<String>('inventory-editor-panel'),
+              color: Theme.of(context).colorScheme.surface,
+              child: _buildEditorPanel(),
+            ),
+          ),
+        ],
+      );
     }
-    return _buildNarrowLayout(filterBar, list, isEditing);
-  }
 
-  Widget _buildNarrowLayout(Widget filterBar, Widget list, bool isEditing) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const CodexTabHeader(
           title: 'Ausrüstungs-Ledger',
           subtitle:
-              'Traglast, Wert und Ausrüstungsstatus in einer dichteren Inventaransicht.',
+              'Traglast, Wert und Ausrüstungsstatus in einer kompakten Inventartabelle.',
           assetPath: 'assets/ui/codex/compass_mark.png',
         ),
         Padding(
@@ -261,139 +736,25 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
             _pagePadding,
             0,
           ),
-          child: _DukatenField(controller: _dukatenCtrl, isEditing: isEditing),
+          child: _DukatenField(
+            key: const ValueKey<String>('inventory-dukaten-field'),
+            value: hero.dukaten,
+            onCommit: _saveDukaten,
+          ),
         ),
         const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: _pagePadding - 4),
           child: filterBar,
         ),
-        const SizedBox(height: 4),
-        Expanded(child: list),
-        if (isEditing)
-          Padding(
-            padding: const EdgeInsets.all(_pagePadding),
-            child: FilledButton.icon(
-              onPressed: _addEntry,
-              icon: const Icon(Icons.add),
-              label: const Text('Gegenstand hinzufügen'),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildWideLayout(Widget filterBar, Widget list, bool isEditing) {
-    final selectedIdx = _selectedIndex;
-    final showEditor = selectedIdx != null && selectedIdx < _draft.length;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 420,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const CodexTabHeader(
-                title: 'Ausrüstungs-Ledger',
-                subtitle:
-                    'Inventar, Träger und Split-Editor in einer aufgeteilten Verwaltungsansicht.',
-                assetPath: 'assets/ui/codex/compass_mark.png',
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  _pagePadding,
-                  _pagePadding,
-                  _pagePadding,
-                  0,
-                ),
-                child: _DukatenField(
-                  controller: _dukatenCtrl,
-                  isEditing: isEditing,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: _pagePadding - 4,
-                ),
-                child: filterBar,
-              ),
-              const SizedBox(height: 4),
-              Expanded(child: list),
-              Padding(
-                padding: const EdgeInsets.all(_pagePadding),
-                child: FilledButton.icon(
-                  onPressed: _addEntry,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Gegenstand hinzufügen'),
-                ),
-              ),
-            ],
+        const SizedBox(height: 8),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: _pagePadding),
+            child: table,
           ),
         ),
-        const VerticalDivider(width: 1),
-        if (showEditor)
-          Expanded(
-            child: InventoryItemEditor(
-              key: ValueKey<String>('editor-$selectedIdx-$_editorRevision'),
-              entry: _draft[selectedIdx],
-              showAppBar: false,
-              companions: _companions,
-              onSaved: (updated) => _updateEntry(selectedIdx, updated),
-              onCancelled: () => setState(() => _selectedIndex = null),
-            ),
-          )
-        else
-          const Expanded(
-            child: Center(
-              child: Text(
-                'Gegenstand auswählen zum Bearbeiten',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-          ),
       ],
-    );
-  }
-
-  Widget _buildList(bool isEditing, bool isWide, BuildContext context) {
-    final filtered = <(int, HeroInventoryEntry)>[];
-    for (var i = 0; i < _draft.length; i++) {
-      final entry = _draft[i];
-      if (matchesInventoryFilter(entry.itemType, entry.source, _filter)) {
-        filtered.add((i, entry));
-      }
-    }
-
-    if (filtered.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Text('Keine Einträge in dieser Kategorie.'),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 16),
-      itemCount: filtered.length,
-      itemBuilder: (context, listIdx) {
-        final (draftIdx, entry) = filtered[listIdx];
-        return InventoryItemCard(
-          key: ValueKey<int>(draftIdx),
-          entry: entry,
-          isEditing: isEditing,
-          traegerName: _traegerName(entry),
-          onTap: isEditing
-              ? () => _selectEntry(draftIdx, isWide, context)
-              : () {},
-          onDelete: (isEditing && entry.source == InventoryItemSource.manuell)
-              ? () => _deleteEntry(draftIdx)
-              : null,
-        );
-      },
     );
   }
 
@@ -401,28 +762,103 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
   bool get wantKeepAlive => true;
 }
 
-// ---------------------------------------------------------------------------
-// Hilfs-Widget
-// ---------------------------------------------------------------------------
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({
+    required this.label,
+    required this.color,
+    required this.textColor,
+  });
 
-class _DukatenField extends StatelessWidget {
-  const _DukatenField({required this.controller, required this.isEditing});
+  final String label;
+  final Color color;
+  final Color textColor;
 
-  final TextEditingController controller;
-  final bool isEditing;
+  @override
+  Widget build(BuildContext context) {
+    final labelStyle = Theme.of(context).textTheme.labelSmall;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(label, style: labelStyle?.copyWith(color: textColor)),
+    );
+  }
+}
+
+class _DukatenField extends StatefulWidget {
+  const _DukatenField({super.key, required this.value, required this.onCommit});
+
+  final String value;
+  final Future<void> Function(String value) onCommit;
+
+  @override
+  State<_DukatenField> createState() => _DukatenFieldState();
+}
+
+class _DukatenFieldState extends State<_DukatenField> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.value);
+    _focusNode = FocusNode()..addListener(_handleFocusChange);
+  }
+
+  @override
+  void didUpdateWidget(covariant _DukatenField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_focusNode.hasFocus) {
+      return;
+    }
+    if (oldWidget.value != widget.value && _controller.text != widget.value) {
+      _controller.text = widget.value;
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChange);
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleFocusChange() {
+    if (!_focusNode.hasFocus) {
+      _commitIfChanged();
+    }
+  }
+
+  Future<void> _commitIfChanged() async {
+    final nextValue = _controller.text.trim();
+    if (nextValue == widget.value.trim()) {
+      return;
+    }
+    await widget.onCommit(nextValue);
+  }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 200,
       child: TextField(
-        controller: controller,
-        readOnly: !isEditing,
+        controller: _controller,
+        focusNode: _focusNode,
         decoration: const InputDecoration(
           labelText: 'Dukaten',
           border: OutlineInputBorder(),
           isDense: true,
         ),
+        onSubmitted: (_) => _commitIfChanged(),
+        onTapOutside: (_) {
+          _commitIfChanged();
+          _focusNode.unfocus();
+        },
       ),
     );
   }
