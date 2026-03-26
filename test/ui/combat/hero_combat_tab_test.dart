@@ -556,6 +556,36 @@ void main() {
     expect(find.widgetWithText(Tab, 'Kampfregeln'), findsOneWidget);
   });
 
+  testWidgets('combat add actions use descriptive header labels', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+
+    await openWeaponsTab(tester);
+    expect(find.widgetWithText(FilledButton, '+ Leere Waffe'), findsOneWidget);
+    expect(
+      find.widgetWithText(OutlinedButton, '+ Katalogwaffe'),
+      findsOneWidget,
+    );
+
+    await openArmorTab(tester);
+    expect(find.widgetWithText(FilledButton, '+ Rüstung'), findsOneWidget);
+    expect(
+      find.widgetWithText(FilledButton, '+ Parierwaffe/Schild'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('combat quick stats open shared probe dialogs', (tester) async {
     final repo = FakeRepository(
       heroes: [
