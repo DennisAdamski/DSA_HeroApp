@@ -514,7 +514,10 @@ void main() {
 
       await tester.tap(find.text('Rituale'));
       await _pumpAndSettleIgnoringKnownOverflow(tester);
-      expect(find.widgetWithText(FilledButton, '+ Kategorie'), findsOneWidget);
+      expect(
+        find.widgetWithText(FilledButton, '+ Ritualkategorie'),
+        findsOneWidget,
+      );
       await tester.tap(
         find.byKey(const ValueKey<String>('magic-rituals-add-category')),
       );
