@@ -448,15 +448,12 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             canRaiseValues: _canUseSteigerungsDialog,
                             onRaiseSpell: _steigeZauber,
                             onAddSpell: () async {
-                                  if (!_editController.isEditing) {
-                                    await _startEdit();
-                                  }
-                                  if (!context.mounted) return;
-                                  _showZauberKatalog(
-                                    context,
-                                    catalog.spells,
-                                  );
-                                },
+                              if (!_editController.isEditing) {
+                                await _startEdit();
+                              }
+                              if (!context.mounted) return;
+                              _showZauberKatalog(context, catalog.spells);
+                            },
                             onRollSpell: (_, spell, entry) {
                               final targets = <ProbeTargetValue>[];
                               for (final raw in spell.attributes) {
@@ -524,12 +521,10 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             abilities: _draftMagicSpecialAbilities,
                             isEditing: _editController.isEditing,
                             onChanged: _updateMagicSpecialAbilities,
-                            onAdd: () async {
+                            onEnsureEditing: () async {
                               if (!_editController.isEditing) {
                                 await _startEdit();
                               }
-                              if (!context.mounted) return;
-                              _showMagicSfAddDialog(context);
                             },
                           ),
                         ],

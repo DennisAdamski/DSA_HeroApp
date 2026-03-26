@@ -72,65 +72,6 @@ extension _MagicManagementHelpers on _HeroMagicTabState {
     _markFieldChanged();
   }
 
-  void _showMagicSfAddDialog(BuildContext context) {
-    final nameController = TextEditingController();
-    final noteController = TextEditingController();
-    showAdaptiveDetailSheet<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Sonderfertigkeit hinzufügen'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  hintText: 'z.B. Kraftlinienmagie',
-                ),
-                autofocus: true,
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: noteController,
-                decoration: const InputDecoration(
-                  labelText: 'Notiz (optional)',
-                  hintText: 'z.B. Stufe II',
-                ),
-                maxLines: 2,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Abbrechen'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final name = nameController.text.trim();
-                if (name.isEmpty) return;
-                _updateMagicSpecialAbilities([
-                  ..._draftMagicSpecialAbilities,
-                  MagicSpecialAbility(
-                    name: name,
-                    note: noteController.text.trim(),
-                  ),
-                ]);
-                Navigator.of(dialogContext).pop();
-              },
-              child: const Text('Speichern'),
-            ),
-          ],
-        );
-      },
-    ).then((_) {
-      nameController.dispose();
-      noteController.dispose();
-    });
-  }
-
   void _showZauberKatalog(BuildContext context, List<SpellDef> allSpells) {
     final localActiveIds = _draftSpells.keys.toSet();
     final screenWidth = MediaQuery.of(context).size.width;
