@@ -186,6 +186,26 @@ double adaptiveTableMinWidth(List<AdaptiveTableColumnSpec> specs) {
   return specs.fold<double>(0, (sum, spec) => sum + spec.lowerBound);
 }
 
+/// Summiert die Mindestbreite einer `DataTable` inklusive Flutter-Tabellen-
+/// Abstaenden, damit Container oder Sheets breit genug dimensioniert werden
+/// koennen.
+double adaptiveDataTableMinWidth(
+  List<AdaptiveDataColumnSpec> specs, {
+  required double columnSpacing,
+  required double horizontalMargin,
+}) {
+  final minColumnWidths = specs.fold<double>(
+    0,
+    (sum, spec) => sum + spec.width.lowerBound + spec.contentPadding,
+  );
+  return minColumnWidths +
+      _adaptiveDataTableChromeWidth(
+        columnCount: specs.length,
+        columnSpacing: columnSpacing,
+        horizontalMargin: horizontalMargin,
+      );
+}
+
 /// Loest adaptive `Table`-Spalten auf die verfuegbare Breite auf.
 AdaptiveTableLayout resolveAdaptiveTableLayout(
   List<AdaptiveTableColumnSpec> specs, {
