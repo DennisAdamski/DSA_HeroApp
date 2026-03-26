@@ -1096,6 +1096,97 @@ void main() {
       find.byKey(const ValueKey<String>('combat-weapon-form-save')),
       findsOneWidget,
     );
+    expect(find.textContaining('Waffe'), findsWidgets);
+  });
+
+  testWidgets('wide armor section keeps full width until editor opens', (
+    tester,
+  ) async {
+    setTestSurfaceSize(tester, const Size(1400, 1000));
+    addTearDown(() => setTestSurfaceSize(tester, const Size(800, 600)));
+
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openArmorTab(tester);
+
+    final armorCard = find.byKey(const ValueKey<String>('combat-armor-card'));
+    expect(armorCard, findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('combat-armor-editor-card')),
+      findsNothing,
+    );
+
+    final fullWidth = tester.getSize(armorCard).width;
+    expect(fullWidth, greaterThan(1200));
+
+    await tester.tap(find.byKey(const ValueKey<String>('combat-armor-add')));
+    await tester.pumpAndSettle();
+
+    final splitWidth = tester.getSize(armorCard).width;
+    expect(
+      find.byKey(const ValueKey<String>('combat-armor-editor-card')),
+      findsOneWidget,
+    );
+    expect(splitWidth, lessThan(fullWidth));
+  });
+
+  testWidgets('wide offhand section keeps full width until editor opens', (
+    tester,
+  ) async {
+    setTestSurfaceSize(tester, const Size(1400, 1000));
+    addTearDown(() => setTestSurfaceSize(tester, const Size(800, 600)));
+
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openArmorTab(tester);
+
+    final offhandCard = find.byKey(
+      const ValueKey<String>('combat-offhand-card'),
+    );
+    expect(offhandCard, findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('combat-offhand-editor-card')),
+      findsNothing,
+    );
+
+    final fullWidth = tester.getSize(offhandCard).width;
+    expect(fullWidth, greaterThan(1200));
+
+    final addEquipment = find.byKey(
+      const ValueKey<String>('combat-offhand-add'),
+    );
+    await tester.ensureVisible(addEquipment);
+    await tester.tap(addEquipment);
+    await tester.pumpAndSettle();
+
+    final splitWidth = tester.getSize(offhandCard).width;
+    expect(
+      find.byKey(const ValueKey<String>('combat-offhand-editor-card')),
+      findsOneWidget,
+    );
+    expect(splitWidth, lessThan(fullWidth));
   });
 
   testWidgets('weapon dialog saves hidden weapon fields in read mode', (
