@@ -133,9 +133,13 @@ extension _MagicManagementHelpers on _HeroMagicTabState {
 
   void _showZauberKatalog(BuildContext context, List<SpellDef> allSpells) {
     final localActiveIds = _draftSpells.keys.toSet();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final sheetWidth = _magicSpellCatalogSheetMinWidth.clamp(0.0, screenWidth);
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
+      constraints: BoxConstraints.tightFor(width: sheetWidth),
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setSheetState) {

@@ -1,5 +1,45 @@
 part of '../hero_talents_tab.dart';
 
+const double _talentCatalogTableColumnSpacing = 12.0;
+const double _talentCatalogTableHorizontalMargin = 12.0;
+const List<AdaptiveDataColumnSpec> _talentCatalogTableColumns =
+    <AdaptiveDataColumnSpec>[
+      AdaptiveDataColumnSpec(
+        label: SizedBox(width: 36),
+        width: AdaptiveTableColumnSpec.fixed(84),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('Name'),
+        width: AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 2),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('Gruppe'),
+        width: AdaptiveTableColumnSpec(minWidth: 130, maxWidth: 200, flex: 1),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('Eigenschaften'),
+        width: AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 260, flex: 2),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('Stg'),
+        width: AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('BE'),
+        width: AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('Status'),
+        width: AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 160),
+      ),
+    ];
+
+final double _talentCatalogSheetMinWidth = adaptiveDataTableMinWidth(
+  _talentCatalogTableColumns,
+  columnSpacing: _talentCatalogTableColumnSpacing,
+  horizontalMargin: _talentCatalogTableHorizontalMargin,
+);
+
 /// Durchsuchbare Katalog-Tabelle aller Talente mit Aktivierungs-Checkboxen.
 /// Wird als Inhalt eines Modal Bottom Sheets verwendet (analog Zauber-Katalog).
 class _TalentCatalogTable extends StatefulWidget {
@@ -44,36 +84,6 @@ class _TalentCatalogTableState extends State<_TalentCatalogTable> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final filtered = _filteredTalents();
-    final columns = <AdaptiveDataColumnSpec>[
-      const AdaptiveDataColumnSpec(
-        label: SizedBox(width: 36),
-        width: AdaptiveTableColumnSpec.fixed(84),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Name'),
-        width: AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 2),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Gruppe'),
-        width: AdaptiveTableColumnSpec(minWidth: 130, maxWidth: 200, flex: 1),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Eigenschaften'),
-        width: AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 260, flex: 2),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Stg'),
-        width: AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('BE'),
-        width: AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Status'),
-        width: AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 160),
-      ),
-    ];
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -135,21 +145,19 @@ class _TalentCatalogTableState extends State<_TalentCatalogTable> {
           Flexible(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                const columnSpacing = 12.0;
-                const horizontalMargin = 12.0;
                 final layout = resolveAdaptiveDataTableLayout(
-                  columns,
+                  _talentCatalogTableColumns,
                   availableWidth: constraints.maxWidth,
-                  columnSpacing: columnSpacing,
-                  horizontalMargin: horizontalMargin,
+                  columnSpacing: _talentCatalogTableColumnSpacing,
+                  horizontalMargin: _talentCatalogTableHorizontalMargin,
                 );
 
                 return SingleChildScrollView(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: DataTable(
-                      columnSpacing: columnSpacing,
-                      horizontalMargin: horizontalMargin,
+                      columnSpacing: _talentCatalogTableColumnSpacing,
+                      horizontalMargin: _talentCatalogTableHorizontalMargin,
                       headingRowHeight: 36,
                       dataRowMinHeight: 32,
                       dataRowMaxHeight: 40,

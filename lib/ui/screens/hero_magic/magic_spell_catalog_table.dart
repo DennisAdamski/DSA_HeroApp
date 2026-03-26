@@ -1,5 +1,37 @@
 part of '../hero_magic_tab.dart';
 
+const double _magicSpellCatalogTableColumnSpacing = 12.0;
+const double _magicSpellCatalogTableHorizontalMargin = 12.0;
+const List<AdaptiveDataColumnSpec> _magicSpellCatalogTableColumns =
+    <AdaptiveDataColumnSpec>[
+      AdaptiveDataColumnSpec(
+        label: SizedBox(width: 36),
+        width: AdaptiveTableColumnSpec.fixed(72),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('Name'),
+        width: AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 2),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('Verbreitungen'),
+        width: AdaptiveTableColumnSpec(minWidth: 190, maxWidth: 340, flex: 2),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('Merkmale'),
+        width: AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 220, flex: 1),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('Stg'),
+        width: AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+      ),
+    ];
+
+final double _magicSpellCatalogSheetMinWidth = adaptiveDataTableMinWidth(
+  _magicSpellCatalogTableColumns,
+  columnSpacing: _magicSpellCatalogTableColumnSpacing,
+  horizontalMargin: _magicSpellCatalogTableHorizontalMargin,
+);
+
 /// Durchsuchbare Katalog-Tabelle aller Zauber mit Aktivierungs-Checkboxen.
 /// Wird als Inhalt eines Modal Bottom Sheets verwendet.
 class _MagicSpellCatalogTable extends StatefulWidget {
@@ -63,28 +95,6 @@ class _MagicSpellCatalogTableState extends State<_MagicSpellCatalogTable> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final filtered = _filteredSpells();
-    final columns = <AdaptiveDataColumnSpec>[
-      const AdaptiveDataColumnSpec(
-        label: SizedBox(width: 36),
-        width: AdaptiveTableColumnSpec.fixed(72),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Name'),
-        width: AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 2),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Verbreitungen'),
-        width: AdaptiveTableColumnSpec(minWidth: 190, maxWidth: 340, flex: 2),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Merkmale'),
-        width: AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 220, flex: 1),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Stg'),
-        width: AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
-      ),
-    ];
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -162,21 +172,19 @@ class _MagicSpellCatalogTableState extends State<_MagicSpellCatalogTable> {
           Flexible(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                const columnSpacing = 12.0;
-                const horizontalMargin = 12.0;
                 final layout = resolveAdaptiveDataTableLayout(
-                  columns,
+                  _magicSpellCatalogTableColumns,
                   availableWidth: constraints.maxWidth,
-                  columnSpacing: columnSpacing,
-                  horizontalMargin: horizontalMargin,
+                  columnSpacing: _magicSpellCatalogTableColumnSpacing,
+                  horizontalMargin: _magicSpellCatalogTableHorizontalMargin,
                 );
 
                 return SingleChildScrollView(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: DataTable(
-                      columnSpacing: columnSpacing,
-                      horizontalMargin: horizontalMargin,
+                      columnSpacing: _magicSpellCatalogTableColumnSpacing,
+                      horizontalMargin: _magicSpellCatalogTableHorizontalMargin,
                       headingRowHeight: 36,
                       dataRowMinHeight: 32,
                       dataRowMaxHeight: 40,
