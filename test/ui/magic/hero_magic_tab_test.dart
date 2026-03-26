@@ -194,6 +194,34 @@ void main() {
   });
 
   testWidgets(
+    'zauberbereich ist keine ExpansionTile und zeigt beschrifteten Add-Button',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          buildHero().copyWith(spells: const <String, HeroSpellEntry>{}),
+        ],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+      await openMagicTab(tester, repo: repo);
+
+      expect(find.byType(ExpansionTile), findsNothing);
+      expect(find.text('+ Zauber'), findsOneWidget);
+      expect(
+        find.text('Aktiviere hier Zauber für diesen Helden.'),
+        findsOneWidget,
+      );
+      expect(find.text('Keine Zauber aktiviert.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'magische Sonderfertigkeiten nutzen feste Sektion und speichern Beschreibung',
     (tester) async {
       final repo = FakeRepository(
@@ -479,12 +507,9 @@ void main() {
   });
 
   testWidgets(
-    'edit mode creates own knowledge ritual category with default taw and selected complexity',
+    'ritualkategorien lassen sich auch außerhalb des Edit-Modus hinzufügen',
     (tester) async {
       final opened = await openMagicTab(tester);
-
-      await opened.actions.startEdit();
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
 
       await tester.tap(find.text('Rituale'));
       await _pumpAndSettleIgnoringKnownOverflow(tester);

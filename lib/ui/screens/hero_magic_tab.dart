@@ -500,6 +500,11 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             heroTalents: hero.talents,
                             isEditing: _editController.isEditing,
                             onChanged: _updateRitualCategories,
+                            onEnsureEditing: () async {
+                              if (!_editController.isEditing) {
+                                await _startEdit();
+                              }
+                            },
                           ),
                         ],
                       ),
