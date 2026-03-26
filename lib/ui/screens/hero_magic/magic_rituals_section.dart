@@ -131,7 +131,7 @@ class _MagicRitualsSection extends StatelessWidget {
                   key: const ValueKey<String>('magic-rituals-add-category'),
                   onPressed: () => _addCategory(context),
                   icon: const Icon(Icons.add),
-                  label: const Text('+ Kategorie'),
+                  label: const Text('Kategorie'),
                 ),
               ],
             ),
