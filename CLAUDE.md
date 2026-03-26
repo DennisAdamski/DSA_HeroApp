@@ -73,7 +73,7 @@ DSA_HeroApp/
 │   │   ├── hero_meta_talent.dart        # Heldenspezifische Meta-Talent-Definition
 │   │   ├── hero_spell_entry.dart       # Zauber-Eintrag (ZfW, Hauszauber, …)
 │   │   ├── hero_inventory_entry.dart
-│   │   ├── magic_special_ability.dart  # Magische Sonderfertigkeit (Name+Notiz)
+│   │   ├── magic_special_ability.dart  # Magische Sonderfertigkeit (Name+Beschreibung)
 │   │   ├── stat_modifiers.dart
 │   │   ├── bought_stats.dart
 │   │   └── validation/
@@ -269,7 +269,7 @@ Domain models (lib/domain/) — immutable, pure Dart
 | `HeroSpellEntry` | `domain/hero_spell_entry.dart` | Persisted spell entry (ZfW, Hauszauber, modifier, learnedRepresentation, learnedTradition, Legacy-Spezialisierungen, Text-Overrides) |
 | `HeroSpellTextOverrides` | `domain/hero_spell_text_overrides.dart` | Heldenspezifische Korrekturen fuer importierte Zauberdetails |
 | `HeroRitualCategory` | `domain/hero_rituals.dart` | Heldenspezifische Ritualkategorie mit Ritualkenntnis oder Talentbezug |
-| `MagicSpecialAbility` | `domain/magic_special_ability.dart` | Persisted magic special ability (name + note) |
+| `MagicSpecialAbility` | `domain/magic_special_ability.dart` | Persisted magic special ability (name + Beschreibung, lädt Legacy-`note`) |
 | `HeroTransferBundle` | `domain/hero_transfer_bundle.dart` | Export/import envelope (hero + state + timestamp) |
 | `HeroReisebericht` | `domain/hero_reisebericht.dart` | Persistierter Reisebericht-Zustand (checkedIds, openEntries, wahlSeZuordnungen, appliedRewardIds) |
 | `ReiseberichtDef` | `catalog/reisebericht_def.dart` | Katalog-Definition eines Reisebericht-Eintrags mit Typ, Belohnungen und Untereintraegen |
