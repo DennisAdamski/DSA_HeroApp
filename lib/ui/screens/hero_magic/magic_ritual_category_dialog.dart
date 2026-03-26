@@ -109,7 +109,7 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
     if (_knowledgeMode == HeroRitualKnowledgeMode.derivedTalents &&
         _selectedTalentIds.isEmpty) {
       setState(() {
-        _errorText = 'Bitte mindestens ein Talent auswaehlen.';
+        _errorText = 'Bitte mindestens ein Talent auswählen.';
       });
       return;
     }

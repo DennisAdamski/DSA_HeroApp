@@ -187,7 +187,7 @@ class _HeroStorageErrorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Heldenspeicher nicht verfuegbar')),
+      appBar: AppBar(title: const Text('Heldenspeicher nicht verfügbar')),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
@@ -208,8 +208,8 @@ class _HeroStorageErrorScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Pruefe den konfigurierten Heldenspeicher in den '
-                  'Einstellungen. App-Einstellungen bleiben lokal verfuegbar.',
+                  'Prüfe den konfigurierten Heldenspeicher in den '
+                  'Einstellungen. App-Einstellungen bleiben lokal verfügbar.',
                 ),
                 const SizedBox(height: 24),
                 FilledButton.icon(
@@ -221,7 +221,7 @@ class _HeroStorageErrorScreen extends StatelessWidget {
                     );
                   },
                   icon: const Icon(Icons.settings),
-                  label: const Text('Einstellungen oeffnen'),
+                  label: const Text('Einstellungen öffnen'),
                 ),
               ],
             ),

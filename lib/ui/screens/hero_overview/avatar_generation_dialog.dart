@@ -126,10 +126,10 @@ class _AvatarGenerationDialogState
           const SizedBox(height: 16),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Gesicht aus Primaerbild beibehalten'),
+            title: const Text('Gesicht aus Primärbild beibehalten'),
             subtitle: const Text(
               'Das Referenzbild wird mitgesendet, '
-              'damit die KI das Gesicht uebernimmt.',
+              'damit die KI das Gesicht übernimmt.',
             ),
             value: _useReferenceImage,
             onChanged: _loading
@@ -157,9 +157,9 @@ class _AvatarGenerationDialogState
           decoration: const InputDecoration(
             labelText: 'Prompt',
             hintText:
-                'Der vollstaendige Prompt kann hier angepasst werden.',
+                'Der vollständige Prompt kann hier angepasst werden.',
             helperText:
-                'Beim Oeffnen automatisch aus den Heldendaten erzeugt.',
+                'Beim Öffnen automatisch aus den Heldendaten erzeugt.',
             border: OutlineInputBorder(),
           ),
           minLines: 6,
@@ -207,8 +207,8 @@ class _AvatarGenerationDialogState
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Geschaetzte Kosten: ~\$${estimatedCost.toStringAsFixed(2)} USD '
-                  '(ueber deinen API-Key)',
+                  'Geschätzte Kosten: ~\$${estimatedCost.toStringAsFixed(2)} USD '
+                  '(über deinen API-Key)',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -289,7 +289,7 @@ class _AvatarGenerationDialogState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Aenderungen seit Primaerbild:',
+            'Änderungen seit Primärbild:',
             style: Theme.of(context).textTheme.labelMedium,
           ),
           const SizedBox(height: 4),
@@ -340,7 +340,7 @@ class _AvatarGenerationDialogState
             FilledButton.icon(
               onPressed: _loading ? null : _accept,
               icon: const Icon(Icons.check),
-              label: const Text('Uebernehmen'),
+              label: const Text('Übernehmen'),
             ),
           ],
         ),

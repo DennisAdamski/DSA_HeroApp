@@ -141,7 +141,7 @@ class _TalentDetailDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Schliessen'),
+          child: const Text('Schließen'),
         ),
       ],
     );

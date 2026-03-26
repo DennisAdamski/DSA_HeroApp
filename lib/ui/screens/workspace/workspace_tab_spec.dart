@@ -181,7 +181,7 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       id: WorkspaceTabIds.magic,
       label: 'Magie',
       icon: Icons.bolt_outlined,
-      helper: 'Katalogansicht fuer Zauber',
+      helper: 'Katalogansicht für Zauber',
       isVisible: (hero) => computeHeroResourceActivation(hero).magic.isEnabled,
       buildContent: ({required heroId, required callbacks}) => HeroMagicTab(
         heroId: heroId,
@@ -195,7 +195,7 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       id: WorkspaceTabIds.inventory,
       label: 'Inventar',
       icon: Icons.inventory_2_outlined,
-      helper: 'Ausruestung und Gegenstaende',
+      helper: 'Ausrüstung und Gegenstände',
       buildContent: ({required heroId, required callbacks}) => HeroInventoryTab(
         heroId: heroId,
         onDirtyChanged: callbacks.onDirtyChanged,

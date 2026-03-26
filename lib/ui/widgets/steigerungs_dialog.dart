@@ -431,7 +431,7 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
               ] else if (!_istGueltigerZielwert) ...[
                 const SizedBox(height: 12),
                 Text(
-                  'Der neue Wert muss ueber dem aktuellen Wert liegen.',
+                  'Der neue Wert muss über dem aktuellen Wert liegen.',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.error,
                   ),
@@ -439,7 +439,7 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
               ] else if (!_hatGenugAp) ...[
                 const SizedBox(height: 12),
                 Text(
-                  'Nicht genug AP fuer diese Steigerung.',
+                  'Nicht genug AP für diese Steigerung.',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.error,
                   ),

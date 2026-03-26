@@ -149,7 +149,7 @@ void main() {
   }
 
   Future<void> closeBeDialog(WidgetTester tester) async {
-    await tester.tap(find.text('Schliessen'));
+    await tester.tap(find.text('Schließen'));
     await tester.pumpAndSettle();
   }
 
@@ -872,7 +872,7 @@ void main() {
       attributes: const <String>['MU', 'IN', 'FF'],
       be: 'x2',
     );
-    await tester.tap(find.text('Schliessen'));
+    await tester.tap(find.text('Schließen'));
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
@@ -892,7 +892,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.delete_outline).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Schliessen'));
+    await tester.tap(find.text('Schließen'));
     await tester.pumpAndSettle();
 
     expect(find.text('Pflanzensuchen'), findsNothing);
