@@ -7,6 +7,22 @@ abstract class AvatarApiClient {
   /// Gibt die rohen PNG-Bytes zurueck.
   Future<List<int>> generatePortrait({required String prompt});
 
+  /// Generiert ein Portraetbild mit Referenzbild fuer Gesichtstreue.
+  ///
+  /// Nicht alle Provider unterstuetzen diese Funktion.
+  /// Pruefe vorher [supportsReferenceImage].
+  Future<List<int>> generatePortraitWithReference({
+    required String prompt,
+    required List<int> referenceImageBytes,
+  }) {
+    throw UnsupportedError(
+      '$providerName unterstuetzt keine Referenzbild-Generierung.',
+    );
+  }
+
+  /// Ob der Provider Referenzbild-basierte Generierung unterstuetzt.
+  bool get supportsReferenceImage => false;
+
   /// Geschaetzte Kosten pro Generierung in USD.
   double get estimatedCostUsd;
 

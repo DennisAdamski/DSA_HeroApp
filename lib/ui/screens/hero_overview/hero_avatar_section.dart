@@ -98,6 +98,11 @@ class _AvatarActions extends ConsumerWidget {
             icon: const Icon(Icons.key),
             label: const Text('API-Key einrichten'),
           ),
+        OutlinedButton.icon(
+          onPressed: () => _uploadImage(context, ref),
+          icon: const Icon(Icons.upload_file),
+          label: const Text('Bild hochladen'),
+        ),
         if (hasAvatar && isEditing)
           OutlinedButton.icon(
             onPressed: () => _removeAvatar(context, ref),
@@ -129,12 +134,30 @@ class _AvatarActions extends ConsumerWidget {
     );
   }
 
+  Future<void> _uploadImage(BuildContext context, WidgetRef ref) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty) return;
+    final bytes = result.files.first.bytes;
+    if (bytes == null || bytes.isEmpty) return;
+    if (!context.mounted) return;
+
+    await ref.read(heroActionsProvider).uploadHeroImage(
+      heroId: heroId,
+      imageBytes: bytes,
+    );
+  }
+
   Future<void> _removeAvatar(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Portraet entfernen?'),
-        content: const Text('Das generierte Portraet wird unwiderruflich geloescht.'),
+        content: const Text(
+          'Das generierte Portraet wird unwiderruflich geloescht.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -150,5 +173,193 @@ class _AvatarActions extends ConsumerWidget {
     if (confirmed != true) return;
     if (!context.mounted) return;
     await ref.read(heroActionsProvider).removeHeroAvatar(heroId);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Avatar-Galerie-Streifen
+// ---------------------------------------------------------------------------
+
+class _AvatarGalleryStrip extends ConsumerWidget {
+  const _AvatarGalleryStrip({
+    required this.heroId,
+    required this.gallery,
+    required this.primaerbildId,
+    required this.isEditing,
+  });
+
+  final String heroId;
+  final List<AvatarGalleryEntry> gallery;
+  final String primaerbildId;
+  final bool isEditing;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (gallery.length <= 1) return const SizedBox.shrink();
+
+    final locationAsync = ref.watch(heroStorageLocationProvider);
+    final snapshotDiff = ref.watch(avatarSnapshotDiffProvider(heroId));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('Galerie', style: Theme.of(context).textTheme.titleSmall),
+            if (snapshotDiff != null && snapshotDiff.hatAenderungen) ...[
+              const SizedBox(width: 8),
+              Tooltip(
+                message: 'Der Held hat sich seit dem Primaerbild veraendert.',
+                child: Chip(
+                  avatar: Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  label: const Text('Aenderungen'),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 80,
+          child: locationAsync.when(
+            data: (location) {
+              final storage = ref.read(avatarFileStorageProvider);
+              return ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: gallery.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final entry = gallery[index];
+                  final isPrimaer = entry.id == primaerbildId;
+                  final path = storage.resolveAvatarPath(
+                    heroStoragePath: location.effectivePath,
+                    avatarFileName: entry.fileName,
+                  );
+                  return _GalleryThumbnail(
+                    heroId: heroId,
+                    entry: entry,
+                    path: path,
+                    isPrimaer: isPrimaer,
+                    isEditing: isEditing,
+                  );
+                },
+              );
+            },
+            loading: () =>
+                const Center(child: CircularProgressIndicator()),
+            error: (_, _) => const SizedBox.shrink(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _GalleryThumbnail extends ConsumerWidget {
+  const _GalleryThumbnail({
+    required this.heroId,
+    required this.entry,
+    required this.path,
+    required this.isPrimaer,
+    required this.isEditing,
+  });
+
+  final String heroId;
+  final AvatarGalleryEntry entry;
+  final String path;
+  final bool isPrimaer;
+  final bool isEditing;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: () => _setAsActive(ref),
+      onLongPress: isEditing ? () => _showContextMenu(context, ref) : null,
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              width: 72,
+              height: 72,
+              child: Image.file(
+                io.File(path),
+                fit: BoxFit.cover,
+                cacheWidth: 144,
+                errorBuilder: (_, _, _) => Container(
+                  color:
+                      Theme.of(context).colorScheme.surfaceContainerHighest,
+                  child: const Icon(Icons.broken_image_outlined, size: 24),
+                ),
+              ),
+            ),
+          ),
+          if (isPrimaer)
+            Positioned(
+              top: 2,
+              right: 2,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.star,
+                  size: 14,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _setAsActive(WidgetRef ref) async {
+    await ref.read(heroActionsProvider).setActiveAvatar(
+      heroId: heroId,
+      galleryEntryId: entry.id,
+    );
+  }
+
+  void _showContextMenu(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.star_outline),
+              title: const Text('Als Primaerbild setzen'),
+              onTap: () {
+                Navigator.pop(context);
+                ref.read(heroActionsProvider).setPrimaerbild(
+                  heroId: heroId,
+                  galleryEntryId: entry.id,
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline),
+              title: const Text('Entfernen'),
+              onTap: () {
+                Navigator.pop(context);
+                ref.read(heroActionsProvider).removeGalleryImage(
+                  heroId: heroId,
+                  galleryEntryId: entry.id,
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

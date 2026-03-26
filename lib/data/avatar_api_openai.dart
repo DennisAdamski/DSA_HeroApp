@@ -66,6 +66,19 @@ abstract class _OpenAiImageClient implements AvatarApiClient {
     return base64Decode(b64);
   }
 
+  @override
+  bool get supportsReferenceImage => false;
+
+  @override
+  Future<List<int>> generatePortraitWithReference({
+    required String prompt,
+    required List<int> referenceImageBytes,
+  }) {
+    throw UnsupportedError(
+      '$providerName unterstuetzt keine Referenzbild-Generierung.',
+    );
+  }
+
   Exception _parseApiError(http.Response response) {
     String detail;
     try {
@@ -121,6 +134,58 @@ class OpenAiGptImage1Client extends _OpenAiImageClient {
 
   @override
   String get providerName => 'OpenAI GPT-image-1';
+
+  @override
+  bool get supportsReferenceImage => true;
+
+  @override
+  Future<List<int>> generatePortraitWithReference({
+    required String prompt,
+    required List<int> referenceImageBytes,
+  }) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('https://api.openai.com/v1/images/edits'),
+    );
+    request.headers['Authorization'] = 'Bearer $apiKey';
+    request.fields['model'] = _model;
+    request.fields['prompt'] = prompt;
+    request.fields['n'] = '1';
+    request.fields['size'] = _size;
+    request.fields['quality'] = _quality;
+
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        'image[]',
+        referenceImageBytes,
+        filename: 'reference.png',
+      ),
+    );
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode != 200) {
+      throw _parseApiError(response);
+    }
+
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    final data = json['data'] as List?;
+    if (data == null || data.isEmpty) {
+      throw const FormatException(
+        'Die API hat kein Bild zurueckgegeben.',
+      );
+    }
+
+    final b64 = (data[0] as Map)['b64_json'] as String?;
+    if (b64 == null || b64.isEmpty) {
+      throw const FormatException(
+        'Die API-Antwort enthaelt keine Bilddaten.',
+      );
+    }
+
+    return base64Decode(b64);
+  }
 }
 
 /// OpenAI DALL-E 3: guenstiger, etwas geringere Qualitaet.
