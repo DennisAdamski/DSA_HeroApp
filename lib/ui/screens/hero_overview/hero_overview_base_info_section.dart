@@ -37,22 +37,18 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
   }
 
   /// Breites Layout: Feldgrid links, Avatar rechts.
-  Widget _buildWideAvatarBaseInfo(
-    HeroSheet hero,
-    BoxConstraints constraints,
-  ) {
+  Widget _buildWideAvatarBaseInfo(HeroSheet hero, BoxConstraints constraints) {
     final avatarWidth = (constraints.maxWidth * 0.25).clamp(150.0, 280.0);
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildInputField(label: 'Name', keyName: 'name'),
         const SizedBox(height: _gridSpacing),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(children: _buildStandardFieldRows()),
-            ),
+            Expanded(child: Column(children: _buildStandardFieldRows())),
             const SizedBox(width: _gridSpacing),
             SizedBox(
               width: avatarWidth,
@@ -76,6 +72,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
   /// Schmales Layout mit Avatar: Bild oben, dann Felder.
   Widget _buildNarrowAvatarBaseInfo(HeroSheet hero) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildInputField(label: 'Name', keyName: 'name'),
         const SizedBox(height: _gridSpacing),
@@ -99,6 +96,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
   /// Standard-Feldanordnung ohne Avatar (wie das urspruengliche Layout).
   Widget _buildStandardFieldLayout() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildInputField(label: 'Name', keyName: 'name'),
         const SizedBox(height: _gridSpacing),
@@ -113,10 +111,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
         breakpoint: _standardTwoColumnBreakpoint,
         children: [
           _buildInputField(label: 'Rasse', keyName: 'rasse'),
-          _buildInputField(
-            label: 'Rasse Modifikatoren',
-            keyName: 'rasse_mod',
-          ),
+          _buildInputField(label: 'Rasse Modifikatoren', keyName: 'rasse_mod'),
         ],
       ),
       const SizedBox(height: _gridSpacing),
