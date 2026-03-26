@@ -104,10 +104,7 @@ void main() {
   }
 
   Finder tabText(String label) {
-    return find.descendant(
-      of: find.byType(TabBar).first,
-      matching: find.text(label),
-    );
+    return find.descendant(of: find.byType(TabBar), matching: find.text(label));
   }
 
   Finder activeTabVerticalScrollable() {
@@ -120,7 +117,7 @@ void main() {
   }
 
   Future<void> selectWorkspaceTab(WidgetTester tester, String label) async {
-    final tab = tabText(label);
+    final tab = tabText(label).first;
     await tester.ensureVisible(tab);
     await tester.tap(tab);
     await tester.pumpAndSettle();
@@ -854,7 +851,7 @@ void main() {
     );
 
     await openWorkspace(tester, repo);
-    await selectWorkspaceTab(tester, 'Notizen');
+    await selectWorkspaceTab(tester, 'Chroniken & Kontakte');
 
     await tester.tap(find.text('Bearbeiten').first);
     await tester.pumpAndSettle();
@@ -878,9 +875,8 @@ void main() {
       );
 
       await openWorkspace(tester, repo);
-      await selectWorkspaceTab(tester, 'Notizen');
-
-      await tester.tap(find.text('Bearbeiten').first);
+      await selectWorkspaceTab(tester, 'Chroniken & Kontakte');
+      expect(find.byKey(const ValueKey<String>('notes-add-note')), findsOneWidget);
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const ValueKey<String>('notes-add-note')));
@@ -894,8 +890,12 @@ void main() {
         'Noch 20 Dukaten offen.',
       );
 
-      await tester.tap(find.text('Verbindungen'));
+      await tester.tap(find.text('Kontakte'));
       await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('notes-add-connection')),
+        findsOneWidget,
+      );
       await tester.tap(
         find.byKey(const ValueKey<String>('notes-add-connection')),
       );
@@ -941,7 +941,8 @@ void main() {
       );
 
       await openWorkspace(tester, repo);
-      await tester.tap(tabText('Notizen'));
+      await selectWorkspaceTab(tester, 'Chroniken & Kontakte');
+      await tester.tap(find.text('Chroniken'));
       await tester.pumpAndSettle();
 
       expect(find.text('Noch 20 Dukaten offen.'), findsNothing);

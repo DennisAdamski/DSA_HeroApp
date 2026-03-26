@@ -12,7 +12,7 @@ class _NotesSection extends StatelessWidget {
 
   final List<HeroNoteEntry> entries;
   final bool isEditing;
-  final VoidCallback onAdd;
+  final Future<void> Function() onAdd;
   final void Function(int index) onRemove;
   final void Function(int index, String value) onTitleChanged;
   final void Function(int index, String value) onDescriptionChanged;
@@ -27,14 +27,11 @@ class _NotesSection extends StatelessWidget {
           subtitle: isEditing
               ? 'Lege Einträge mit Titel und Beschreibung an.'
               : 'Tippe auf einen Titel, um die vollständige Beschreibung zu sehen.',
-          action: isEditing
-              ? FilledButton.icon(
-                  key: const ValueKey<String>('notes-add-note'),
-                  onPressed: onAdd,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Notiz'),
-                )
-              : null,
+          action: FilledButton(
+            key: const ValueKey<String>('notes-add-note'),
+            onPressed: onAdd,
+            child: const Text('+ Chronik'),
+          ),
           child: entries.isEmpty
               ? const _EmptyState(message: 'Noch keine Notizen vorhanden.')
               : Column(
@@ -79,7 +76,7 @@ class _ConnectionsSection extends StatelessWidget {
 
   final List<HeroConnectionEntry> entries;
   final bool isEditing;
-  final VoidCallback onAdd;
+  final Future<void> Function() onAdd;
   final void Function(int index) onRemove;
   final void Function(
     int index, {
@@ -101,14 +98,11 @@ class _ConnectionsSection extends StatelessWidget {
           subtitle: isEditing
               ? 'Pflege Kontakte, Beziehungen und Hintergründe.'
               : 'Öffne einen Eintrag, um Ort, Sozialstatus, Loyalität und Beschreibung zu sehen.',
-          action: isEditing
-              ? FilledButton.icon(
-                  key: const ValueKey<String>('notes-add-connection'),
-                  onPressed: onAdd,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Verbindung'),
-                )
-              : null,
+          action: FilledButton(
+            key: const ValueKey<String>('notes-add-connection'),
+            onPressed: onAdd,
+            child: const Text('+ Kontakt'),
+          ),
           child: entries.isEmpty
               ? const _EmptyState(message: 'Noch keine Verbindungen vorhanden.')
               : Column(
