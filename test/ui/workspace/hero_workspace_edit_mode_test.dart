@@ -1189,9 +1189,9 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.byTooltip('Ueberanstrengung erhoehen'));
+    await tester.tap(find.byTooltip('Überanstrengung erhöhen'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Erschoepfung verringern'));
+    await tester.tap(find.byTooltip('Erschöpfung verringern'));
     await tester.pumpAndSettle();
 
     final state = await repo.loadHeroState('demo');
@@ -1421,7 +1421,7 @@ void main() {
         find.byKey(const ValueKey<String>('workspace-status-be-clear')),
         findsOneWidget,
       );
-      expect(find.byTooltip('BE auf berechnet zuruecksetzen'), findsOneWidget);
+      expect(find.byTooltip('BE auf berechnet zurücksetzen'), findsOneWidget);
       expect(find.text('Entfernen'), findsNothing);
 
       await tester.tap(

@@ -382,7 +382,7 @@ class _TalentBeConfigDialogState extends ConsumerState<TalentBeConfigDialog> {
                   key: const ValueKey<String>('talents-be-override-clear'),
                   onPressed: _clearOverride,
                   icon: const Icon(Icons.clear),
-                  label: const Text('Override loeschen'),
+                  label: const Text('Override löschen'),
                 ),
                 Text(
                   'Aktive BE: $activeTalentBe',
@@ -396,7 +396,7 @@ class _TalentBeConfigDialogState extends ConsumerState<TalentBeConfigDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Schliessen'),
+          child: const Text('Schließen'),
         ),
       ],
     );

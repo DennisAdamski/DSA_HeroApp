@@ -149,7 +149,7 @@ class _VitalwerteCard extends ConsumerWidget {
       title: 'Vitalwerte',
       trailing: IconButton(
         key: const ValueKey<String>('workspace-rest-open'),
-        tooltip: 'Rast oeffnen',
+        tooltip: 'Rast öffnen',
         onPressed: () {
           showRestDialog(context: context, heroId: heroId);
         },
@@ -224,10 +224,10 @@ class _VitalwerteCard extends ConsumerWidget {
             rowKey: const ValueKey<String>(
               'workspace-vital-row-ueberanstrengung',
             ),
-            label: 'Ueberanstrengung',
+            label: 'Überanstrengung',
             value: heroState.ueberanstrengung,
-            decrementTooltip: 'Ueberanstrengung verringern',
-            incrementTooltip: 'Ueberanstrengung erhoehen',
+            decrementTooltip: 'Überanstrengung verringern',
+            incrementTooltip: 'Überanstrengung erhöhen',
             onDecrement: () => _save(
               ref,
               heroState.copyWith(
@@ -246,10 +246,10 @@ class _VitalwerteCard extends ConsumerWidget {
           const SizedBox(height: 6),
           _StateCounterRow(
             rowKey: const ValueKey<String>('workspace-vital-row-erschoepfung'),
-            label: 'Erschoepfung',
+            label: 'Erschöpfung',
             value: heroState.erschoepfung,
-            decrementTooltip: 'Erschoepfung verringern',
-            incrementTooltip: 'Erschoepfung erhoehen',
+            decrementTooltip: 'Erschöpfung verringern',
+            incrementTooltip: 'Erschöpfung erhöhen',
             onDecrement: () => _save(
               ref,
               heroState.copyWith(
@@ -616,7 +616,7 @@ class _BeStatusRow extends ConsumerWidget {
                   height: 28,
                   child: IconButton(
                     key: const ValueKey<String>('workspace-status-be-clear'),
-                    tooltip: 'BE auf berechnet zuruecksetzen',
+                    tooltip: 'BE auf berechnet zurücksetzen',
                     padding: EdgeInsets.zero,
                     iconSize: 16,
                     onPressed: () {

@@ -25,8 +25,8 @@ class _NotesSection extends StatelessWidget {
         _SectionCard(
           title: 'Freie Notizen',
           subtitle: isEditing
-              ? 'Lege Eintraege mit Titel und Beschreibung an.'
-              : 'Tippe auf einen Titel, um die vollstaendige Beschreibung zu sehen.',
+              ? 'Lege Einträge mit Titel und Beschreibung an.'
+              : 'Tippe auf einen Titel, um die vollständige Beschreibung zu sehen.',
           action: isEditing
               ? FilledButton.icon(
                   key: const ValueKey<String>('notes-add-note'),
@@ -99,8 +99,8 @@ class _ConnectionsSection extends StatelessWidget {
         _SectionCard(
           title: 'Verbindungen',
           subtitle: isEditing
-              ? 'Pflege Kontakte, Beziehungen und Hintergruende.'
-              : 'Oeffne einen Eintrag, um Ort, Sozialstatus, Loyalitaet und Beschreibung zu sehen.',
+              ? 'Pflege Kontakte, Beziehungen und Hintergründe.'
+              : 'Öffne einen Eintrag, um Ort, Sozialstatus, Loyalität und Beschreibung zu sehen.',
           action: isEditing
               ? FilledButton.icon(
                   key: const ValueKey<String>('notes-add-connection'),

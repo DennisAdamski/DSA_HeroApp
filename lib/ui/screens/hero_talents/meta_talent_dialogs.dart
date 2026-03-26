@@ -159,7 +159,7 @@ class _MetaTalentManagerDialogState extends State<_MetaTalentManagerDialog> {
                                   _updateMetaTalents(updated);
                                 },
                                 icon: const Icon(Icons.delete_outline),
-                                tooltip: 'Loeschen',
+                                tooltip: 'Löschen',
                               ),
                             ],
                           ),
@@ -173,7 +173,7 @@ class _MetaTalentManagerDialogState extends State<_MetaTalentManagerDialog> {
       actions: [
         FilledButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Schliessen'),
+          child: const Text('Schließen'),
         ),
       ],
     );

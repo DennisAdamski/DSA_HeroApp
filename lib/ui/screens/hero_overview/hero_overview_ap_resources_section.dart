@@ -43,7 +43,7 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
         ),
       _buildReadOnlyValueField(
         key: const ValueKey<String>('overview-readonly-ap_available'),
-        label: 'AP Verfuegbar',
+        label: 'AP Verfügbar',
         value: apAvailable.toString(),
       ),
       _buildReadOnlyValueField(

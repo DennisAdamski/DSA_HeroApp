@@ -109,7 +109,7 @@ class _ResourceStepperDialog extends ConsumerWidget {
             const SizedBox(height: 24),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Schliessen'),
+              child: const Text('Schließen'),
             ),
           ],
         ),

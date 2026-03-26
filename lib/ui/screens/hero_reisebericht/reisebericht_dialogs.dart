@@ -29,12 +29,12 @@ class _RevokeConfirmDialog extends StatelessWidget {
     }
 
     return AlertDialog(
-      title: Text('$entryName zuruecknehmen?'),
+      title: Text('$entryName zurücknehmen?'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Folgende Belohnungen werden rueckgaengig gemacht:'),
+          const Text('Folgende Belohnungen werden rückgängig gemacht:'),
           const SizedBox(height: 12),
           if (parts.isEmpty)
             const Text('Keine Belohnungen betroffen.')
@@ -60,7 +60,7 @@ class _RevokeConfirmDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Zuruecknehmen'),
+          child: const Text('Zurücknehmen'),
         ),
       ],
     );
@@ -282,7 +282,7 @@ class _WahlSeDialogState extends State<_WahlSeDialog> {
             if (result == null || result.isEmpty) return;
             Navigator.of(context).pop(result);
           },
-          child: const Text('Uebernehmen'),
+          child: const Text('Übernehmen'),
         ),
       ],
     );

@@ -139,7 +139,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
               const Padding(
                 padding: EdgeInsets.only(top: 8),
                 child: Text(
-                  'Keine Waffen fuer den aktuellen Filter vorhanden.',
+                  'Keine Waffen für den aktuellen Filter vorhanden.',
                 ),
               ),
           ],
