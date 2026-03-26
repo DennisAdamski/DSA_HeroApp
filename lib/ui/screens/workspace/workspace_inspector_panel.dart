@@ -325,7 +325,7 @@ class _ResourceRow extends StatelessWidget {
         const SizedBox(width: 4),
         _StepButton(
           icon: Icons.add,
-          tooltip: '$label erhoehen',
+          tooltip: '$label erhöhen',
           onPressed: current < max ? onIncrement : null,
         ),
       ],
@@ -572,7 +572,7 @@ class _BeStatusRow extends ConsumerWidget {
         const SizedBox(width: 4),
         _StepButton(
           icon: Icons.add,
-          tooltip: 'BE erhoehen',
+          tooltip: 'BE erhöhen',
           onPressed: () {
             ref.read(talentBeOverrideProvider(heroId).notifier).state =
                 displayed + 1;
@@ -706,7 +706,7 @@ class _EditableStatusRow extends StatelessWidget {
         const SizedBox(width: 4),
         _StepButton(
           icon: Icons.add,
-          tooltip: '$label erhoehen',
+          tooltip: '$label erhöhen',
           onPressed: onIncrement,
         ),
         const SizedBox(width: 12),
