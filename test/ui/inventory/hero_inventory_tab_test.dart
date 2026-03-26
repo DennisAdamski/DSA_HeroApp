@@ -12,12 +12,14 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 HeroSheet _buildHero({
-  List<HeroInventoryEntry> inventoryEntries = const [],
+  List<HeroInventoryEntry> inventoryEntries = const <HeroInventoryEntry>[],
+  String dukaten = '',
 }) {
   return HeroSheet(
     id: 'hero-1',
     name: 'Thalion',
     level: 1,
+    dukaten: dukaten,
     attributes: const Attributes(
       mu: 12,
       kl: 11,
@@ -32,11 +34,16 @@ HeroSheet _buildHero({
   );
 }
 
-Future<WorkspaceTabEditActions> _openTab(
+Future<void> _openTab(
   WidgetTester tester,
-  FakeRepository repo,
-) async {
-  WorkspaceTabEditActions? actions;
+  FakeRepository repo, {
+  Size size = const Size(1200, 800),
+}) async {
+  tester.view.devicePixelRatio = 1.0;
+  tester.view.physicalSize = size;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+
   await tester.pumpWidget(
     ProviderScope(
       overrides: [heroRepositoryProvider.overrideWithValue(repo)],
@@ -47,42 +54,132 @@ Future<WorkspaceTabEditActions> _openTab(
             onDirtyChanged: (_) {},
             onEditingChanged: (_) {},
             onRegisterDiscard: (_) {},
-            onRegisterEditActions: (a) => actions = a,
+            onRegisterEditActions: (_) {},
           ),
         ),
       ),
     ),
   );
   await tester.pumpAndSettle();
-  expect(actions, isNotNull);
-  return actions!;
+}
+
+Finder _dukatenField() {
+  return find.descendant(
+    of: find.byKey(const ValueKey<String>('inventory-dukaten-field')),
+    matching: find.byType(TextField),
+  );
+}
+
+class _InventoryWorkspaceHarness extends StatefulWidget {
+  const _InventoryWorkspaceHarness({required this.heroId});
+
+  final String heroId;
+
+  @override
+  State<_InventoryWorkspaceHarness> createState() =>
+      _InventoryWorkspaceHarnessState();
+}
+
+class _InventoryWorkspaceHarnessState
+    extends State<_InventoryWorkspaceHarness> {
+  WorkspaceTabEditActions? _actions;
+
+  void _registerActions(WorkspaceTabEditActions actions) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _actions = actions);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final headerActions =
+        _actions?.headerActions ?? const <WorkspaceHeaderAction>[];
+
+    return Scaffold(
+      appBar: AppBar(
+        actions: [
+          for (final action in headerActions)
+            if (action.showWhenIdle) Builder(builder: action.builder),
+        ],
+      ),
+      body: HeroInventoryTab(
+        heroId: widget.heroId,
+        onDirtyChanged: (_) {},
+        onEditingChanged: (_) {},
+        onRegisterDiscard: (_) {},
+        onRegisterEditActions: _registerActions,
+      ),
+    );
+  }
+}
+
+Future<void> _openWorkspaceHarness(
+  WidgetTester tester,
+  FakeRepository repo, {
+  Size size = const Size(740, 844),
+}) async {
+  tester.view.devicePixelRatio = 1.0;
+  tester.view.physicalSize = size;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+      child: const MaterialApp(
+        home: _InventoryWorkspaceHarness(heroId: 'hero-1'),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
 }
 
 void main() {
-  group('HeroInventoryTab – Filter-Chips', () {
-    testWidgets('zeigt alle Filter-Chips an', (tester) async {
-      final repo = FakeRepository(heroes: [_buildHero()]);
+  group('HeroInventoryTab – Tabelle und Filter', () {
+    testWidgets('zeigt die Filter-Chips und die Inventartabelle', (
+      tester,
+    ) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          _buildHero(
+            inventoryEntries: const <HeroInventoryEntry>[
+              HeroInventoryEntry(
+                gegenstand: 'Rucksack',
+                source: InventoryItemSource.manuell,
+              ),
+            ],
+          ),
+        ],
+      );
+
       await _openTab(tester, repo);
 
       expect(find.text('Alle'), findsOneWidget);
       expect(find.text('Ausrüstung'), findsOneWidget);
       expect(find.text('Verbrauchsgegenstände'), findsOneWidget);
       expect(find.text('Wertvolles'), findsOneWidget);
-      expect(find.text('Sonstiges'), findsOneWidget);
+      expect(find.widgetWithText(FilterChip, 'Sonstiges'), findsOneWidget);
       expect(find.text('Waffen (auto)'), findsOneWidget);
       expect(find.text('Geschosse (auto)'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('inventory-table')),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('filtert Eintraege nach Typ', (tester) async {
+    testWidgets('filtert Einträge nach Typ', (tester) async {
       final repo = FakeRepository(
-        heroes: [
+        heroes: <HeroSheet>[
           _buildHero(
-            inventoryEntries: [
-              const HeroInventoryEntry(
+            inventoryEntries: const <HeroInventoryEntry>[
+              HeroInventoryEntry(
                 gegenstand: 'Trank',
                 itemType: InventoryItemType.verbrauchsgegenstand,
               ),
-              const HeroInventoryEntry(
+              HeroInventoryEntry(
                 gegenstand: 'Ring',
                 itemType: InventoryItemType.wertvolles,
               ),
@@ -90,13 +187,12 @@ void main() {
           ),
         ],
       );
+
       await _openTab(tester, repo);
 
-      // Beide Eintraege sichtbar im Filter 'Alle'
       expect(find.text('Trank'), findsOneWidget);
       expect(find.text('Ring'), findsOneWidget);
 
-      // Auf 'Wertvolles' filtern (FilterChip gezielt ansprechen)
       await tester.tap(find.widgetWithText(FilterChip, 'Wertvolles'));
       await tester.pumpAndSettle();
 
@@ -105,126 +201,63 @@ void main() {
     });
   });
 
-  group('HeroInventoryTab – Verlinkter Eintrag (kein Delete-Button)', () {
-    testWidgets(
-      'verlinkter Eintrag hat keinen Loeschen-Button im Edit-Modus',
-      (tester) async {
-        final repo = FakeRepository(
-          heroes: [
-            _buildHero(
-              inventoryEntries: [
-                const HeroInventoryEntry(
-                  gegenstand: 'Langschwert',
-                  source: InventoryItemSource.waffe,
-                  sourceRef: 'w:Langschwert',
-                  istAusgeruestet: true,
-                ),
-              ],
-            ),
-          ],
-        );
-        final actions = await _openTab(tester, repo);
-        await actions.startEdit();
-        await tester.pumpAndSettle();
-
-        expect(find.text('Langschwert'), findsOneWidget);
-        expect(find.byIcon(Icons.delete_outline), findsNothing);
-      },
-    );
-  });
-
-  group('HeroInventoryTab – Manueller Eintrag (Delete-Button vorhanden)', () {
-    testWidgets(
-      'manueller Eintrag hat Loeschen-Button im Edit-Modus',
-      (tester) async {
-        final repo = FakeRepository(
-          heroes: [
-            _buildHero(
-              inventoryEntries: [
-                const HeroInventoryEntry(
-                  gegenstand: 'Rucksack',
-                  source: InventoryItemSource.manuell,
-                ),
-              ],
-            ),
-          ],
-        );
-        final actions = await _openTab(tester, repo);
-        await actions.startEdit();
-        await tester.pumpAndSettle();
-
-        expect(find.text('Rucksack'), findsOneWidget);
-        expect(find.byIcon(Icons.delete_outline), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'verlinkter und manueller Eintrag: nur manueller hat Delete-Button',
-      (tester) async {
-        final repo = FakeRepository(
-          heroes: [
-            _buildHero(
-              inventoryEntries: [
-                const HeroInventoryEntry(
-                  gegenstand: 'Langschwert',
-                  source: InventoryItemSource.waffe,
-                  sourceRef: 'w:Langschwert',
-                ),
-                const HeroInventoryEntry(
-                  gegenstand: 'Rucksack',
-                  source: InventoryItemSource.manuell,
-                ),
-              ],
-            ),
-          ],
-        );
-        final actions = await _openTab(tester, repo);
-        await actions.startEdit();
-        await tester.pumpAndSettle();
-
-        // Genau ein Delete-Button (nur fuer Rucksack)
-        expect(find.byIcon(Icons.delete_outline), findsOneWidget);
-
-        // Delete-Button ist im Rucksack-Card
-        final rucksackCard = find.ancestor(
-          of: find.text('Rucksack'),
-          matching: find.byType(Card),
-        );
-        expect(
-          find.descendant(
-            of: rucksackCard,
-            matching: find.byIcon(Icons.delete_outline),
+  group('HeroInventoryTab – Zeilenaktionen', () {
+    testWidgets('verlinkter Eintrag hat keinen Delete-Button', (tester) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          _buildHero(
+            inventoryEntries: const <HeroInventoryEntry>[
+              HeroInventoryEntry(
+                gegenstand: 'Langschwert',
+                source: InventoryItemSource.waffe,
+                sourceRef: 'w:Langschwert',
+                istAusgeruestet: true,
+              ),
+            ],
           ),
-          findsOneWidget,
-        );
-      },
-    );
-  });
+        ],
+      );
 
-  group('HeroInventoryTab – Eintrag hinzufuegen und loeschen', () {
-    testWidgets('Gegenstand hinzufuegen-Button erzeugt neuen Eintrag',
-        (tester) async {
-      final repo = FakeRepository(heroes: [_buildHero()]);
-      final actions = await _openTab(tester, repo);
-      await actions.startEdit();
-      await tester.pumpAndSettle();
+      await _openTab(tester, repo);
 
-      expect(find.text('Keine Einträge in dieser Kategorie.'), findsOneWidget);
-
-      await tester.tap(find.text('Gegenstand hinzufügen'));
-      await tester.pumpAndSettle();
-
-      // Kein Leer-Text mehr; der neue Eintrag erscheint
-      expect(find.text('Keine Einträge in dieser Kategorie.'), findsNothing);
+      expect(find.text('Langschwert'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('inventory-row-delete-0')),
+        findsNothing,
+      );
     });
 
-    testWidgets('manuellen Eintrag loeschen entfernt ihn aus der Liste',
-        (tester) async {
+    testWidgets('manueller Eintrag hat einen Delete-Button', (tester) async {
       final repo = FakeRepository(
-        heroes: [
+        heroes: <HeroSheet>[
           _buildHero(
-            inventoryEntries: [
-              const HeroInventoryEntry(
+            inventoryEntries: const <HeroInventoryEntry>[
+              HeroInventoryEntry(
+                gegenstand: 'Rucksack',
+                source: InventoryItemSource.manuell,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await _openTab(tester, repo);
+
+      expect(find.text('Rucksack'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('inventory-row-delete-0')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('manuellen Eintrag bearbeiten speichert sofort', (
+      tester,
+    ) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          _buildHero(
+            inventoryEntries: const <HeroInventoryEntry>[
+              HeroInventoryEntry(
                 gegenstand: 'Seil',
                 source: InventoryItemSource.manuell,
               ),
@@ -232,17 +265,146 @@ void main() {
           ),
         ],
       );
-      final actions = await _openTab(tester, repo);
-      await actions.startEdit();
+
+      await _openTab(tester, repo);
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('inventory-row-open-0')),
+      );
       await tester.pumpAndSettle();
 
-      expect(find.text('Seil'), findsOneWidget);
+      expect(find.text('Gegenstand bearbeiten'), findsOneWidget);
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('inventory-editor-name')),
+        'Seil, 20 m',
+      );
 
-      await tester.tap(find.byIcon(Icons.delete_outline));
+      await tester.tap(
+        find.byKey(const ValueKey<String>('inventory-editor-save')),
+      );
       await tester.pumpAndSettle();
 
-      expect(find.text('Seil'), findsNothing);
+      final heroes = await repo.listHeroes();
+      final hero = heroes.single;
+      expect(hero.inventoryEntries.single.gegenstand, 'Seil, 20 m');
+    });
+
+    testWidgets('manuellen Eintrag löschen entfernt ihn nach Bestätigung', (
+      tester,
+    ) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          _buildHero(
+            inventoryEntries: const <HeroInventoryEntry>[
+              HeroInventoryEntry(
+                gegenstand: 'Seil',
+                source: InventoryItemSource.manuell,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await _openTab(tester, repo);
+
+      final deleteButton = tester.widget<IconButton>(
+        find.byKey(const ValueKey<String>('inventory-row-delete-0')),
+      );
+      deleteButton.onPressed!.call();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Gegenstand löschen'), findsOneWidget);
+      await tester.tap(find.widgetWithText(TextButton, 'Löschen'));
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.single;
+      expect(hero.inventoryEntries, isEmpty);
       expect(find.text('Keine Einträge in dieser Kategorie.'), findsOneWidget);
+    });
+  });
+
+  group('HeroInventoryTab – Direktes Speichern', () {
+    testWidgets('Dukaten speichern bei Fokusverlust direkt', (tester) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[_buildHero(dukaten: '5')],
+      );
+
+      await _openTab(tester, repo);
+
+      await tester.enterText(_dukatenField(), '12');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.single;
+      expect(hero.dukaten, '12');
+    });
+
+    testWidgets('Header-Aktion fügt Gegenstand direkt hinzu', (tester) async {
+      final repo = FakeRepository(heroes: <HeroSheet>[_buildHero()]);
+
+      await _openWorkspaceHarness(tester, repo);
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('inventory-header-add')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('inventory-editor-name')),
+        'Proviant',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('inventory-editor-save')),
+      );
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.single;
+      expect(hero.inventoryEntries, hasLength(1));
+      expect(hero.inventoryEntries.single.gegenstand, 'Proviant');
+    });
+  });
+
+  group('HeroInventoryTab – Breites Layout', () {
+    testWidgets('breites Layout öffnet den Editor als Split-Panel', (
+      tester,
+    ) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          _buildHero(
+            inventoryEntries: const <HeroInventoryEntry>[
+              HeroInventoryEntry(
+                gegenstand: 'Rucksack',
+                source: InventoryItemSource.manuell,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await _openTab(tester, repo, size: const Size(1400, 900));
+
+      expect(
+        find.byKey(const ValueKey<String>('inventory-editor-panel')),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Gegenstand auswählen oder oben rechts hinzufügen.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('inventory-row-open-0')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Gegenstand bearbeiten'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('inventory-editor-name')),
+        findsOneWidget,
+      );
     });
   });
 }

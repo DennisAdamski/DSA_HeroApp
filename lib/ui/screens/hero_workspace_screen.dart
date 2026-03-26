@@ -377,14 +377,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
           ),
         );
       }
-    } else {
-      widgets.add(
-        OutlinedButton.icon(
-          onPressed: null,
-          icon: const Icon(Icons.edit),
-          label: const Text('Bearbeiten'),
-        ),
-      );
     }
     return widgets;
   }

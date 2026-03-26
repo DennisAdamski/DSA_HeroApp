@@ -103,7 +103,7 @@ Technischer Stack:
 
 ### Inventar, Notizen und Verbindungen
 
-- Bearbeitbares Inventar fuer Ausruestung und sonstige Gegenstaende
+- Direkt bearbeitbares Inventar als kompakte Tabelle fuer Ausruestung und sonstige Gegenstaende
 - Notizen mit Titel und Beschreibung
 - Verbindungen/Kontakte mit Ort, Sozialstatus, Loyalitaet und Beschreibung
 
