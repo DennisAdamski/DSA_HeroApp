@@ -133,7 +133,25 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Rüstung', style: Theme.of(context).textTheme.titleMedium),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Rüstung',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            IconButton(
+              key: const ValueKey<String>('combat-armor-add'),
+              tooltip: 'Rüstung hinzufügen',
+              visualDensity: VisualDensity.compact,
+              constraints:
+                  const BoxConstraints.tightFor(width: 30, height: 30),
+              onPressed: () => _openEditor(),
+              icon: const Icon(Icons.add, size: 18),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         LayoutBuilder(
           builder: (context, constraints) {
@@ -145,23 +163,7 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
                   tableKey: const ValueKey<String>('combat-armor-table'),
                   columnSpecs: _columnSpecs(showPieceRg1: showPieceRg1),
                   headerCells: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('Name'),
-                        IconButton(
-                          key: const ValueKey<String>('combat-armor-add'),
-                          tooltip: 'Rüstung hinzufügen',
-                          visualDensity: VisualDensity.compact,
-                          constraints: const BoxConstraints.tightFor(
-                            width: 30,
-                            height: 30,
-                          ),
-                          onPressed: () => _openEditor(),
-                          icon: const Icon(Icons.add, size: 18),
-                        ),
-                      ],
-                    ),
+                    const Text('Name'),
                     const Text('RS'),
                     const Text('BE'),
                     const Text('Aktiv'),

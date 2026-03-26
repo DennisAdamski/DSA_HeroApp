@@ -106,32 +106,31 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
     final tableSection = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Parierwaffen & Schilde',
-          style: Theme.of(context).textTheme.titleMedium,
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Parierwaffen & Schilde',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            IconButton(
+              key: const ValueKey<String>('combat-offhand-add'),
+              tooltip: 'Nebenhand-Ausrüstung hinzufügen',
+              visualDensity: VisualDensity.compact,
+              constraints:
+                  const BoxConstraints.tightFor(width: 30, height: 30),
+              onPressed: () => _openEditor(),
+              icon: const Icon(Icons.add, size: 18),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         FlexibleTable(
           tableKey: const ValueKey<String>('combat-offhand-table'),
           columnSpecs: _columnSpecs,
           headerCells: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Name'),
-                IconButton(
-                  key: const ValueKey<String>('combat-offhand-add'),
-                  tooltip: 'Nebenhand-Ausrüstung hinzufügen',
-                  visualDensity: VisualDensity.compact,
-                  constraints: const BoxConstraints.tightFor(
-                    width: 30,
-                    height: 30,
-                  ),
-                  onPressed: () => _openEditor(),
-                  icon: const Icon(Icons.add, size: 18),
-                ),
-              ],
-            ),
+            const Text('Name'),
             const Text('Typ'),
             const Text('BF'),
             const Text('Größe'),
