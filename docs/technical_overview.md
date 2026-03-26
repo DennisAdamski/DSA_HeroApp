@@ -1110,7 +1110,7 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 | `hero_talents_tab.dart` | `HeroTalentsTab` | Talente, strukturierte Talent-Sonderfertigkeiten und Meta-Talente |
 | `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Kampf (Nah- oder Fernkampf), SF, Manöver und Kampfmeisterschaften |
 | `hero_magic_tab.dart` | `HeroMagicTab` | Zauber, Ritualkategorien/Rituale, Repräsentationen, magische SF und globale Leiteigenschaft |
-| `hero_inventory_tab.dart` | `HeroInventoryTab` | 12-spaltige editierbare Inventartabelle |
+| `hero_inventory_tab.dart` | `HeroInventoryTab` | Direkte Inventartabelle mit AppBar-Aktion, Split-Editor und Sofortspeicherung |
 | `hero_notes_tab.dart` | `HeroNotesTab` | Untertabs für freie Notizen und Verbindungen |
 | `hero_detail_screen.dart` | `HeroDetailScreen` | Legacy-Platzhalter (nicht eingebunden) |
 
@@ -1134,8 +1134,10 @@ Nutzer bearbeitet Felder (Draft wird dirty)
       └── Speichern → HeroActions.saveHero() → Repository → Stream → UI-Rebuild
 ```
 
-Jeder Tab verwaltet seinen Draft-State lokal (z. B. `_draftTalents`,
-`_draftCombatConfig`) und synchronisiert beim Laden/Speichern mit dem Repository.
+Die meisten Tabs verwalten ihren Draft-State lokal (z. B. `_draftTalents`,
+`_draftCombatConfig`) und synchronisieren beim Laden/Speichern mit dem Repository.
+Der Inventar-Tab ist die Ausnahme: Inventaritems und Dukaten werden dort direkt
+pro Aktion gespeichert und nutzen keinen globalen Edit-Modus.
 
 ---
 
