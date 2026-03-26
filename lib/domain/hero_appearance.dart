@@ -91,8 +91,8 @@ class HeroAppearance {
     var gallery = <AvatarGalleryEntry>[];
     if (rawGallery != null) {
       gallery = rawGallery
-          .whereType<Map<String, dynamic>>()
-          .map(AvatarGalleryEntry.fromJson)
+          .whereType<Map>()
+          .map((e) => AvatarGalleryEntry.fromJson(e.cast<String, dynamic>()))
           .toList();
     }
 
@@ -108,7 +108,7 @@ class HeroAppearance {
       ];
     }
 
-    final rawSnapshot = json['avatarSnapshot'] as Map<String, dynamic>?;
+    final rawSnapshot = (json['avatarSnapshot'] as Map?)?.cast<String, dynamic>();
 
     return HeroAppearance(
       geschlecht: (json['geschlecht'] as String?) ?? '',
