@@ -70,6 +70,17 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final addSpellAction =
+        onAddSpell != null
+        ? IconButton(
+            key: const ValueKey<String>('magic-spells-add'),
+            tooltip: '+ Zauber',
+            visualDensity: VisualDensity.compact,
+            constraints: const BoxConstraints.tightFor(width: 30, height: 30),
+            onPressed: onAddSpell,
+            icon: const Icon(Icons.add, size: 18),
+          )
+        : null;
     final columns = <AdaptiveDataColumnSpec>[
       const AdaptiveDataColumnSpec(
         label: Text('Name'),
@@ -144,23 +155,34 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     if (activeSpellIds.isEmpty) {
       return Card(
         margin: const EdgeInsets.only(bottom: 10),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        child: ExpansionTile(
+          initiallyExpanded: true,
+          tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+          childrenPadding: EdgeInsets.zero,
+          title: Row(
             children: [
-              Text('Keine Zauber aktiviert.', style: theme.textTheme.bodySmall),
-              if (isEditing && onAddSpell != null) ...[
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  key: const ValueKey<String>('magic-spells-add'),
-                  onPressed: onAddSpell,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Zauber hinzufügen'),
+              Expanded(
+                child: Text(
+                  'Keine Zauber aktiviert.',
+                  style: theme.textTheme.titleSmall,
+                  overflow: TextOverflow.ellipsis,
                 ),
+              ),
+              if (addSpellAction != null) ...[
+                const SizedBox(width: 8),
+                addSpellAction,
               ],
             ],
           ),
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text(
+                'Aktiviere hier Zauber f\u00fcr diesen Helden.',
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -192,6 +214,10 @@ class _MagicActiveSpellsTable extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text('(${sortedIds.length})', style: theme.textTheme.bodySmall),
+            if (addSpellAction != null) ...[
+              const SizedBox(width: 8),
+              addSpellAction,
+            ],
           ],
         ),
         children: [
@@ -335,7 +361,8 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                         ),
                                         visualDensity: VisualDensity.compact,
                                         iconSize: 18,
-                                        tooltip: '${def.name} würfeln',
+                                        tooltip:
+                                            '${def.name} w\u00fcrfeln',
                                         onPressed: () =>
                                             onRollSpell!(spellId, def, entry),
                                         icon: const Icon(Icons.casino_outlined),
@@ -635,16 +662,6 @@ class _MagicActiveSpellsTable extends StatelessWidget {
               );
             },
           ),
-          if (isEditing && onAddSpell != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-              child: OutlinedButton.icon(
-                key: const ValueKey<String>('magic-spells-add'),
-                onPressed: onAddSpell,
-                icon: const Icon(Icons.add),
-                label: const Text('Zauber hinzufügen'),
-              ),
-            ),
         ],
       ),
     );

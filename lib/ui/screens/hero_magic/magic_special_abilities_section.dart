@@ -6,17 +6,13 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
     required this.abilities,
     required this.isEditing,
     required this.onChanged,
+    this.onAdd,
   });
 
   final List<MagicSpecialAbility> abilities;
   final bool isEditing;
   final void Function(List<MagicSpecialAbility>) onChanged;
-
-  void _addAbility(BuildContext context) {
-    _showEditDialog(context, null, (ability) {
-      onChanged([...abilities, ability]);
-    });
-  }
+  final VoidCallback? onAdd;
 
   void _editAbility(BuildContext context, int index) {
     _showEditDialog(context, abilities[index], (ability) {
@@ -106,11 +102,25 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
         childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
         title: Row(
           children: [
-            Text('Sonderfertigkeiten',
-                style: theme.textTheme.titleSmall),
+            Expanded(
+              child: Text('Sonderfertigkeiten',
+                  style: theme.textTheme.titleSmall),
+            ),
             const SizedBox(width: 8),
             Text('(${abilities.length})',
                 style: theme.textTheme.bodySmall),
+            if (onAdd != null) ...[
+              const SizedBox(width: 8),
+              IconButton(
+                key: const ValueKey<String>('magic-sf-add'),
+                tooltip: 'Sonderfertigkeit hinzufügen',
+                visualDensity: VisualDensity.compact,
+                constraints:
+                    const BoxConstraints.tightFor(width: 30, height: 30),
+                onPressed: onAdd,
+                icon: const Icon(Icons.add, size: 18),
+              ),
+            ],
           ],
         ),
         children: [
@@ -152,15 +162,6 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
                   : null,
             );
           }),
-          if (isEditing)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: OutlinedButton.icon(
-                onPressed: () => _addAbility(context),
-                icon: const Icon(Icons.add),
-                label: const Text('Hinzufügen'),
-              ),
-            ),
         ],
       ),
     );

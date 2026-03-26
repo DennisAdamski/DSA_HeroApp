@@ -117,7 +117,34 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Waffen', style: Theme.of(context).textTheme.titleMedium),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Waffen',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                IconButton(
+                  key: const ValueKey<String>('combat-weapon-add'),
+                  tooltip: 'Leere Waffe hinzufügen',
+                  visualDensity: VisualDensity.compact,
+                  constraints:
+                      const BoxConstraints.tightFor(width: 30, height: 30),
+                  onPressed: onWeaponAdd,
+                  icon: const Icon(Icons.add, size: 18),
+                ),
+                IconButton(
+                  key: const ValueKey<String>('combat-weapon-from-catalog'),
+                  tooltip: 'Waffe aus Katalog hinzufügen',
+                  visualDensity: VisualDensity.compact,
+                  constraints:
+                      const BoxConstraints.tightFor(width: 30, height: 30),
+                  onPressed: onWeaponCatalog,
+                  icon: const Icon(Icons.library_add, size: 18),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
             Expanded(
               child: SingleChildScrollView(
@@ -150,28 +177,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
 
   List<Widget> _buildHeaderCells() {
     return <Widget>[
-      Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('Name'),
-          IconButton(
-            key: const ValueKey<String>('combat-weapon-add'),
-            tooltip: 'Leere Waffe hinzufügen',
-            visualDensity: VisualDensity.compact,
-            constraints: const BoxConstraints.tightFor(width: 30, height: 30),
-            onPressed: onWeaponAdd,
-            icon: const Icon(Icons.add, size: 18),
-          ),
-          IconButton(
-            key: const ValueKey<String>('combat-weapon-from-catalog'),
-            tooltip: 'Waffe aus Katalog hinzufügen',
-            visualDensity: VisualDensity.compact,
-            constraints: const BoxConstraints.tightFor(width: 30, height: 30),
-            onPressed: onWeaponCatalog,
-            icon: const Icon(Icons.library_add, size: 18),
-          ),
-        ],
-      ),
+      const Text('Name'),
       for (final header in _headers.skip(1)) Text(header),
     ];
   }
