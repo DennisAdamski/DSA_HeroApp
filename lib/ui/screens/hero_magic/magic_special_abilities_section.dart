@@ -110,15 +110,11 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
             Text('(${abilities.length})',
                 style: theme.textTheme.bodySmall),
             if (onAdd != null) ...[
-              const SizedBox(width: 8),
-              IconButton(
+              const SizedBox(width: 12),
+              FilledButton(
                 key: const ValueKey<String>('magic-sf-add'),
-                tooltip: 'Sonderfertigkeit hinzufügen',
-                visualDensity: VisualDensity.compact,
-                constraints:
-                    const BoxConstraints.tightFor(width: 30, height: 30),
                 onPressed: onAdd,
-                icon: const Icon(Icons.add, size: 18),
+                child: const Text('+ Sonderfertigkeit'),
               ),
             ],
           ],
