@@ -11,11 +11,10 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
           children: [
             _buildStandardFieldLayout(),
             const SizedBox(height: _gridSpacing),
-            _AvatarActions(
-              heroId: widget.heroId,
-              hero: hero,
-              hasAvatar: false,
-              isEditing: _editController.isEditing,
+            const _SketchedAvatarPlaceholder(),
+            const SizedBox(height: _gridSpacing),
+            Center(
+              child: _NoAvatarActions(heroId: widget.heroId, hero: hero),
             ),
           ],
         ),
@@ -64,25 +63,12 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
                     avatarFileName: hero.appearance.avatarFileName,
                   ),
                   const SizedBox(height: 8),
-                  _AvatarActions(
-                    heroId: widget.heroId,
-                    hero: hero,
-                    hasAvatar: true,
-                    isEditing: _editController.isEditing,
-                  ),
+                  _HasAvatarActions(heroId: widget.heroId, hero: hero),
                 ],
               ),
             ),
           ],
         ),
-        if (hero.appearance.avatarGallery.isNotEmpty) ...[
-          const SizedBox(height: _gridSpacing),
-          _AvatarGalleryStrip(
-            heroId: widget.heroId,
-            gallery: hero.appearance.avatarGallery,
-            primaerbildId: hero.appearance.primaerbildId,
-          ),
-        ],
       ],
     );
   }
@@ -103,20 +89,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
           ),
         ),
         const SizedBox(height: 8),
-        _AvatarActions(
-          heroId: widget.heroId,
-          hero: hero,
-          hasAvatar: true,
-          isEditing: _editController.isEditing,
-        ),
-        if (hero.appearance.avatarGallery.isNotEmpty) ...[
-          const SizedBox(height: _gridSpacing),
-          _AvatarGalleryStrip(
-            heroId: widget.heroId,
-            gallery: hero.appearance.avatarGallery,
-            primaerbildId: hero.appearance.primaerbildId,
-          ),
-        ],
+        _HasAvatarActions(heroId: widget.heroId, hero: hero),
         const SizedBox(height: _gridSpacing),
         ..._buildStandardFieldRows(),
       ],
