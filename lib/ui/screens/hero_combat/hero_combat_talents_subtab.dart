@@ -71,7 +71,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Unbekannte Lernkomplexitaet fuer ${talent.name}: '
+            'Unbekannte Lernkomplexität für ${talent.name}: '
             '$effektiveKomplexitaet',
           ),
         ),

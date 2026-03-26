@@ -407,7 +407,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   /// Baut den TabBarView mit allen aktuell sichtbaren Tab-Widgets.
   Widget _buildWorkspaceTabView() {
     if (_visibleTabs.isEmpty) {
-      return const Center(child: Text('Keine Bereiche verfuegbar.'));
+      return const Center(child: Text('Keine Bereiche verfügbar.'));
     }
 
     return TabBarView(

@@ -282,14 +282,14 @@ class _AvatarAlbumDialog extends ConsumerWidget {
                     const SizedBox(width: 8),
                     Tooltip(
                       message:
-                          'Der Held hat sich seit dem Primaerbild veraendert.',
+                          'Der Held hat sich seit dem Primärbild verändert.',
                       child: Chip(
                         avatar: Icon(
                           Icons.info_outline,
                           size: 16,
                           color: Theme.of(context).colorScheme.primary,
                         ),
-                        label: const Text('Aenderungen'),
+                        label: const Text('Änderungen'),
                         visualDensity: VisualDensity.compact,
                       ),
                     ),
@@ -407,7 +407,7 @@ class _AlbumCard extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             IconButton(
-              tooltip: 'Vergroessern',
+              tooltip: 'Vergrößern',
               icon: const Icon(Icons.fullscreen),
               iconSize: 20,
               visualDensity: VisualDensity.compact,
@@ -424,7 +424,7 @@ class _AlbumCard extends ConsumerWidget {
               ),
             ),
             IconButton(
-              tooltip: isPrimaer ? 'Ist Primaerbild' : 'Als Primaerbild setzen',
+              tooltip: isPrimaer ? 'Ist Primärbild' : 'Als Primärbild setzen',
               icon: Icon(isPrimaer ? Icons.star : Icons.star_outline),
               iconSize: 20,
               visualDensity: VisualDensity.compact,
@@ -461,7 +461,7 @@ class _AlbumCard extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Bild entfernen?'),
-        content: const Text('Das Bild wird unwiderruflich geloescht.'),
+        content: const Text('Das Bild wird unwiderruflich gelöscht.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),

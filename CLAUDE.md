@@ -15,6 +15,7 @@ Read this before making any changes.
 - Catalog data (talents, weapons, spells, maneuvers, combat special abilities) loaded from split JSON assets
 
 The primary language of comments, variable names, UI strings, and commit messages is **German**.
+Visible UI text should use proper German umlauts and `ß` instead of transliterations like `ae`, `oe`, `ue`, or `ss` whenever technically possible.
 
 ### Storage Update 2026-03-13
 
@@ -467,6 +468,7 @@ python tool/report_unreferenced_dart.py
 - **Provider access in UI**: use `.watch` for reactive reads; use `.read` only inside callbacks (e.g. button presses).
 - **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **21** for `HeroSheet` and **5** for `HeroState`.
 - **German comments and identifiers**: code-level comments and domain names follow German (rasse, kultur, Held, Talente, etc.).
+- **UI wording**: user-facing German text should prefer real umlauts and `ß` over transliterations such as `ae`, `oe`, `ue`, and `ss`, unless a technical constraint requires ASCII.
 
 ### Catalog
 
