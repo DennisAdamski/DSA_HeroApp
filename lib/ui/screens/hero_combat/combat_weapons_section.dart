@@ -143,9 +143,13 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
   }
 
   Future<void> _openCatalogSheet() async {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final sheetWidth = weaponCatalogSheetMinWidth.clamp(0.0, screenWidth);
     final selectedWeapon = await showModalBottomSheet<WeaponDef>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
+      constraints: BoxConstraints.tightFor(width: sheetWidth),
       builder: (context) {
         final screenHeight = MediaQuery.of(context).size.height;
         return SizedBox(
