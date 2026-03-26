@@ -471,11 +471,9 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
               padding: const EdgeInsets.all(_pagePadding),
               children: [
                 if (hero.appearance.avatarFileName.isEmpty) ...[
-                  _AvatarActions(
+                  _NoAvatarActions(
                     heroId: hero.id,
                     hero: hero,
-                    hasAvatar: false,
-                    isEditing: _editController.isEditing,
                   ),
                   const SizedBox(height: _sectionSpacing),
                 ],
