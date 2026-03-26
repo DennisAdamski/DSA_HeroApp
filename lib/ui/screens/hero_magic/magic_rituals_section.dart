@@ -127,11 +127,10 @@ class _MagicRitualsSection extends StatelessWidget {
                   style: theme.textTheme.bodySmall,
                 ),
                 const Spacer(),
-                OutlinedButton.icon(
+                FilledButton(
                   key: const ValueKey<String>('magic-rituals-add-category'),
                   onPressed: () => _addCategory(context),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Kategorie'),
+                  child: const Text('+ Kategorie'),
                 ),
               ],
             ),
