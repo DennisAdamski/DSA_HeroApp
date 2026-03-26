@@ -8,6 +8,7 @@ class _MagicRitualsSection extends StatelessWidget {
     required this.heroTalents,
     required this.isEditing,
     required this.onChanged,
+    this.onEnsureEditing,
   });
 
   final List<HeroRitualCategory> ritualCategories;
@@ -15,8 +16,13 @@ class _MagicRitualsSection extends StatelessWidget {
   final Map<String, HeroTalentEntry> heroTalents;
   final bool isEditing;
   final void Function(List<HeroRitualCategory>) onChanged;
+  final Future<void> Function()? onEnsureEditing;
 
   Future<void> _addCategory(BuildContext context) async {
+    await onEnsureEditing?.call();
+    if (!context.mounted) {
+      return;
+    }
     final created = await _showRitualCategoryDialog(
       context: context,
       catalogTalents: catalogTalents,
@@ -121,13 +127,12 @@ class _MagicRitualsSection extends StatelessWidget {
                   style: theme.textTheme.bodySmall,
                 ),
                 const Spacer(),
-                if (isEditing)
-                  OutlinedButton.icon(
-                    key: const ValueKey<String>('magic-rituals-add-category'),
-                    onPressed: () => _addCategory(context),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Kategorie'),
-                  ),
+                OutlinedButton.icon(
+                  key: const ValueKey<String>('magic-rituals-add-category'),
+                  onPressed: () => _addCategory(context),
+                  icon: const Icon(Icons.add),
+                  label: const Text('+ Kategorie'),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -135,9 +140,7 @@ class _MagicRitualsSection extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
-                  isEditing
-                      ? 'Noch keine Ritualkategorien. Lege eine neue Kategorie an.'
-                      : 'Keine Ritualkategorien eingetragen.',
+                  'Noch keine Ritualkategorien. Lege eine neue Kategorie an.',
                   key: const ValueKey<String>('magic-rituals-empty'),
                   style: theme.textTheme.bodySmall,
                 ),
