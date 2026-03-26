@@ -101,14 +101,28 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
           childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
           title: Row(
             children: [
-              Text(
-                'Sonderfertigkeiten',
-                style: Theme.of(context).textTheme.titleSmall,
+              Expanded(
+                child: Text(
+                  'Sonderfertigkeiten',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
               ),
               const SizedBox(width: 8),
               Text(
                 '(${_draftTalentSpecialAbilities.length})',
                 style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(width: 12),
+              FilledButton(
+                key: const ValueKey<String>('talents-special-abilities-add'),
+                onPressed: () async {
+                  await _ensureEditingSession();
+                  if (!mounted) {
+                    return;
+                  }
+                  _addTalentSpecialAbility();
+                },
+                child: const Text('+ Sonderfertigkeit'),
               ),
             ],
           ),
@@ -159,21 +173,6 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                     : null,
               );
             }),
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: OutlinedButton.icon(
-                key: const ValueKey<String>('talents-special-abilities-add'),
-                onPressed: () async {
-                  await _ensureEditingSession();
-                  if (!mounted) {
-                    return;
-                  }
-                  _addTalentSpecialAbility();
-                },
-                icon: const Icon(Icons.add),
-                label: const Text('Hinzufügen'),
-              ),
-            ),
           ],
         ),
       ),
