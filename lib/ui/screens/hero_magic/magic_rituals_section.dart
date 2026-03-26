@@ -130,7 +130,7 @@ class _MagicRitualsSection extends StatelessWidget {
                 FilledButton(
                   key: const ValueKey<String>('magic-rituals-add-category'),
                   onPressed: () => _addCategory(context),
-                  child: const Text('+ Kategorie'),
+                  child: const Text('+ Ritualkategorie'),
                 ),
               ],
             ),
