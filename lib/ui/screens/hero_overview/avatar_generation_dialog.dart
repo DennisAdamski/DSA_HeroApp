@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_style.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_prompt_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/avatar_snapshot_diff.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
@@ -33,6 +34,7 @@ class _AvatarGenerationDialogState
   AvatarStyle _selectedStyle = AvatarStyle.fantasyIllustration;
   bool _loading = false;
   bool _hasManualPromptEdits = false;
+  bool _useReferenceImage = false;
   Uint8List? _resultBytes;
   String? _error;
 
@@ -48,8 +50,14 @@ class _AvatarGenerationDialogState
     super.dispose();
   }
 
-  String get _autoPrompt =>
-      buildAvatarPrompt(hero: widget.hero, style: _selectedStyle);
+  String get _autoPrompt {
+    final diff = ref.read(avatarSnapshotDiffProvider(widget.heroId));
+    return buildAvatarPrompt(
+      hero: widget.hero,
+      style: _selectedStyle,
+      snapshotDiff: _useReferenceImage ? diff : null,
+    );
+  }
 
   String get _currentPrompt => _promptController.text.trim();
 
@@ -87,6 +95,13 @@ class _AvatarGenerationDialogState
   }
 
   Widget _buildConfigView(double? estimatedCost) {
+    final supportsRef = ref.watch(avatarSupportsReferenceProvider);
+    final hasPrimaerbild =
+        widget.hero.appearance.primaerbildId.isNotEmpty;
+    final showRefToggle = supportsRef && hasPrimaerbild;
+    final snapshotDiff =
+        ref.watch(avatarSnapshotDiffProvider(widget.heroId));
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,14 +122,44 @@ class _AvatarGenerationDialogState
               })
               .toList(growable: false),
         ),
+        if (showRefToggle) ...[
+          const SizedBox(height: 16),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Gesicht aus Primaerbild beibehalten'),
+            subtitle: const Text(
+              'Das Referenzbild wird mitgesendet, '
+              'damit die KI das Gesicht uebernimmt.',
+            ),
+            value: _useReferenceImage,
+            onChanged: _loading
+                ? null
+                : (value) {
+                    setState(() {
+                      _useReferenceImage = value;
+                      if (!_hasManualPromptEdits) {
+                        _promptController.text = _autoPrompt;
+                      }
+                    });
+                  },
+          ),
+          if (_useReferenceImage &&
+              snapshotDiff != null &&
+              snapshotDiff.hatAenderungen) ...[
+            const SizedBox(height: 8),
+            _buildSnapshotDiffSummary(snapshotDiff),
+          ],
+        ],
         const SizedBox(height: 16),
         TextField(
           key: const ValueKey<String>('avatar-generation-prompt-field'),
           controller: _promptController,
           decoration: const InputDecoration(
             labelText: 'Prompt',
-            hintText: 'Der vollstaendige Prompt kann hier angepasst werden.',
-            helperText: 'Beim Oeffnen automatisch aus den Heldendaten erzeugt.',
+            hintText:
+                'Der vollstaendige Prompt kann hier angepasst werden.',
+            helperText:
+                'Beim Oeffnen automatisch aus den Heldendaten erzeugt.',
             border: OutlineInputBorder(),
           ),
           minLines: 6,
@@ -134,7 +179,9 @@ class _AvatarGenerationDialogState
           runSpacing: 12,
           children: [
             OutlinedButton.icon(
-              key: const ValueKey<String>('avatar-generation-reset-prompt'),
+              key: const ValueKey<String>(
+                'avatar-generation-reset-prompt',
+              ),
               onPressed: _loading ? null : _resetPromptToAutoPrompt,
               icon: const Icon(Icons.refresh),
               label: const Text('Neu aus Heldendaten erzeugen'),
@@ -203,6 +250,67 @@ class _AvatarGenerationDialogState
     );
   }
 
+  Widget _buildSnapshotDiffSummary(AvatarSnapshotDiff diff) {
+    final items = <String>[];
+    if (diff.alterChange != null) {
+      items.add('Alter: ${diff.alterChange}');
+    }
+    for (final entry in diff.attributeChanges.entries) {
+      items.add('${entry.key}: ${entry.value.alt} \u2192 ${entry.value.neu}');
+    }
+    for (final v in diff.neueVorteile) {
+      items.add('+ Vorteil: $v');
+    }
+    for (final v in diff.entfernteVorteile) {
+      items.add('- Vorteil: $v');
+    }
+    for (final n in diff.neueNachteile) {
+      items.add('+ Nachteil: $n');
+    }
+    for (final n in diff.entfernteNachteile) {
+      items.add('- Nachteil: $n');
+    }
+    if (diff.haarfarbeChange != null) {
+      items.add('Haarfarbe: ${diff.haarfarbeChange}');
+    }
+    if (diff.augenfarbeChange != null) {
+      items.add('Augenfarbe: ${diff.augenfarbeChange}');
+    }
+
+    if (items.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Aenderungen seit Primaerbild:',
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
+          const SizedBox(height: 4),
+          ...items.take(6).map(
+                (item) => Text(
+                  item,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+          if (items.length > 6)
+            Text(
+              '... und ${items.length - 6} weitere',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildResultView() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -256,7 +364,21 @@ class _AvatarGenerationDialogState
     });
 
     try {
-      final bytes = await client.generatePortrait(prompt: _currentPrompt);
+      List<int> bytes;
+      if (_useReferenceImage && client.supportsReferenceImage) {
+        final refBytes =
+            await ref.read(primaerbildBytesProvider(widget.heroId).future);
+        if (refBytes != null && refBytes.isNotEmpty) {
+          bytes = await client.generatePortraitWithReference(
+            prompt: _currentPrompt,
+            referenceImageBytes: refBytes,
+          );
+        } else {
+          bytes = await client.generatePortrait(prompt: _currentPrompt);
+        }
+      } else {
+        bytes = await client.generatePortrait(prompt: _currentPrompt);
+      }
       if (!mounted) return;
       setState(() {
         _resultBytes = Uint8List.fromList(bytes);
@@ -300,9 +422,12 @@ class _AvatarGenerationDialogState
     setState(() => _loading = true);
 
     try {
-      await ref
-          .read(heroActionsProvider)
-          .saveHeroAvatar(heroId: widget.heroId, pngBytes: _resultBytes!);
+      await ref.read(heroActionsProvider).saveHeroAvatar(
+        heroId: widget.heroId,
+        pngBytes: _resultBytes!,
+        stilId: _selectedStyle.name,
+        promptAuszug: _currentPrompt,
+      );
       if (!mounted) return;
 
       // Flutter cached Image.file() nach Dateipfad — bei Neugenerierung

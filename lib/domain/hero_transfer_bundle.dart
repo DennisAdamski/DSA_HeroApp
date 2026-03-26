@@ -7,17 +7,21 @@ class HeroTransferBundle {
     required this.hero,
     required this.state,
     this.avatarBase64,
+    this.galleryImages,
   });
 
   static const String kind = 'dsa.hero.export';
-  static const int transferSchemaVersion = 1;
+  static const int transferSchemaVersion = 2;
 
   final DateTime exportedAt;
   final HeroSheet hero;
   final HeroState state;
 
-  /// Base64-kodierte Avatar-PNG-Daten (optional).
+  /// Base64-kodierte Avatar-PNG-Daten (optional, Legacy-Kompatibilitaet).
   final String? avatarBase64;
+
+  /// Gallery-Bilder als Base64-kodierte Eintraege (optional).
+  final List<Map<String, dynamic>>? galleryImages;
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
@@ -27,6 +31,8 @@ class HeroTransferBundle {
       'hero': hero.toJson(),
       'state': state.toJson(),
       if (avatarBase64 != null) 'avatarBase64': avatarBase64,
+      if (galleryImages != null && galleryImages!.isNotEmpty)
+        'galleryImages': galleryImages,
     };
   }
 
@@ -40,9 +46,10 @@ class HeroTransferBundle {
 
     final rawVersion = json['transferSchemaVersion'];
     final version = rawVersion is num ? rawVersion.toInt() : null;
-    if (version != transferSchemaVersion) {
-      throw const FormatException(
-        'Unbekannte Export-Version: nur Version 1 wird unterstuetzt.',
+    if (version == null || version < 1 || version > transferSchemaVersion) {
+      throw FormatException(
+        'Unbekannte Export-Version: nur Version 1-$transferSchemaVersion '
+        'wird unterstuetzt.',
       );
     }
 
@@ -79,11 +86,17 @@ class HeroTransferBundle {
     final avatarBase64 =
         rawAvatar is String && rawAvatar.isNotEmpty ? rawAvatar : null;
 
+    final rawGallery = json['galleryImages'] as List?;
+    final galleryImages = rawGallery
+        ?.whereType<Map<String, dynamic>>()
+        .toList(growable: false);
+
     return HeroTransferBundle(
       exportedAt: exportedAt.toUtc(),
       hero: HeroSheet.fromJson(heroMap),
       state: HeroState.fromJson(rawState.cast<String, dynamic>()),
       avatarBase64: avatarBase64,
+      galleryImages: galleryImages,
     );
   }
 }
