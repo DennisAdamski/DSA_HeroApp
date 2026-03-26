@@ -358,13 +358,25 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
         ]);
       }
     } else if (_tabRegistry.isEditableTab(activeTabId)) {
-      widgets.add(
-        FilledButton.icon(
-          onPressed: onStartEdit,
-          icon: const Icon(Icons.edit),
-          label: const Text('Bearbeiten'),
-        ),
-      );
+      if (useCompactIconOnlyEditActions) {
+        widgets.add(
+          Tooltip(
+            message: 'Bearbeiten',
+            child: IconButton(
+              onPressed: onStartEdit,
+              icon: const Icon(Icons.edit),
+            ),
+          ),
+        );
+      } else {
+        widgets.add(
+          FilledButton.icon(
+            onPressed: onStartEdit,
+            icon: const Icon(Icons.edit),
+            label: const Text('Bearbeiten'),
+          ),
+        );
+      }
     } else {
       widgets.add(
         OutlinedButton.icon(

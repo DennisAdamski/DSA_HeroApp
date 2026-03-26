@@ -173,11 +173,12 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       message: 'Talente verwalten',
                       child: IconButton(
                         key: const ValueKey<String>('talents-catalog-open'),
-                        onPressed: () =>
-                            _showTalentKatalog(context, _latestCatalogTalents),
+                        onPressed: () async =>
+                            _openTalentCatalogAction(_latestCatalogTalents),
                         icon: const Icon(Icons.library_add),
                       ),
                     ),
+                    showWhenIdle: true,
                   ),
                 if (widget.scope == _TalentTabScope.nonCombat)
                   WorkspaceHeaderAction(
@@ -185,11 +186,12 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       message: 'Meta-Talente verwalten',
                       child: IconButton(
                         key: const ValueKey<String>('meta-talents-manage-open'),
-                        onPressed: () =>
-                            _openMetaTalentManager(_latestCatalogTalents),
+                        onPressed: () async =>
+                            _openMetaTalentManagerAction(_latestCatalogTalents),
                         icon: const Icon(Icons.merge_type),
                       ),
                     ),
+                    showWhenIdle: true,
                   ),
               ],
       ),
@@ -458,6 +460,31 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     _editController.markFieldChanged();
   }
 
+  Future<void> _ensureEditingSession() async {
+    if (_editController.isEditing) {
+      return;
+    }
+    await _startEdit();
+  }
+
+  Future<void> _openTalentCatalogAction(List<TalentDef> allTalents) async {
+    await _ensureEditingSession();
+    if (!mounted) {
+      return;
+    }
+    _showTalentKatalog(context, allTalents);
+  }
+
+  Future<void> _openMetaTalentManagerAction(
+    List<TalentDef> allCatalogTalents,
+  ) async {
+    await _ensureEditingSession();
+    if (!mounted) {
+      return;
+    }
+    await _openMetaTalentManager(allCatalogTalents);
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -574,6 +601,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       alleSprachen: catalog.sprachen,
                       alleSchriften: catalog.schriften,
                       isEditing: _editController.isEditing,
+                      onPrepareAddEntry: _ensureEditingSession,
                       onSprachWertChanged: (id, wert) {
                         final entry =
                             _draftSprachen[id] ?? const HeroLanguageEntry();
