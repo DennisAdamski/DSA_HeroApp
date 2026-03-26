@@ -65,4 +65,48 @@ class AvatarFileStorage {
       await file.delete();
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Gallery-Methoden fuer Multi-Image-Support
+  // ---------------------------------------------------------------------------
+
+  /// Speichert ein Gallery-Bild und gibt den Dateinamen zurueck.
+  Future<String> saveGalleryImage({
+    required String heroStoragePath,
+    required String heroId,
+    required String entryId,
+    required List<int> pngBytes,
+  }) async {
+    final dir = Directory(p.join(heroStoragePath, _avatarDir));
+    if (!dir.existsSync()) {
+      await dir.create(recursive: true);
+    }
+    final fileName = '${heroId}_$entryId.png';
+    final file = File(p.join(dir.path, fileName));
+    await file.writeAsBytes(pngBytes, flush: true);
+    return fileName;
+  }
+
+  /// Loescht ein einzelnes Gallery-Bild.
+  Future<void> deleteGalleryImage({
+    required String heroStoragePath,
+    required String fileName,
+  }) async {
+    if (fileName.isEmpty) return;
+    final file = File(p.join(heroStoragePath, _avatarDir, fileName));
+    if (file.existsSync()) {
+      await file.delete();
+    }
+  }
+
+  /// Laedt die Bytes eines Gallery-Bildes (fuer Export).
+  Future<List<int>?> loadGalleryImageBytes({
+    required String heroStoragePath,
+    required String fileName,
+  }) async {
+    if (fileName.isEmpty) return null;
+    final file = File(p.join(heroStoragePath, _avatarDir, fileName));
+    if (!file.existsSync()) return null;
+    return file.readAsBytes();
+  }
 }

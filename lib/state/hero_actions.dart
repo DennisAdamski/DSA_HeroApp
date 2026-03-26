@@ -15,6 +15,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart'
     show avatarFileStorageProvider;
@@ -152,15 +154,39 @@ class HeroActions {
     final state = (await repo.loadHeroState(heroId)) ?? const HeroState.empty();
     // Avatar-Bytes laden und base64-kodieren (falls vorhanden)
     String? avatarBase64;
-    if (hero.appearance.avatarFileName.isNotEmpty) {
+    List<Map<String, dynamic>>? galleryImages;
+    final hasAvatar = hero.appearance.avatarFileName.isNotEmpty;
+    final hasGallery = hero.appearance.avatarGallery.isNotEmpty;
+
+    if (hasAvatar || hasGallery) {
       final heroStoragePath = await _resolveHeroStoragePath();
       final storage = _ref.read(avatarFileStorageProvider);
-      final bytes = await storage.loadAvatarBytes(
-        heroStoragePath: heroStoragePath,
-        avatarFileName: hero.appearance.avatarFileName,
-      );
-      if (bytes != null) {
-        avatarBase64 = base64Encode(bytes);
+
+      if (hasAvatar) {
+        final bytes = await storage.loadAvatarBytes(
+          heroStoragePath: heroStoragePath,
+          avatarFileName: hero.appearance.avatarFileName,
+        );
+        if (bytes != null) {
+          avatarBase64 = base64Encode(bytes);
+        }
+      }
+
+      // Gallery-Bilder base64-kodiert einbetten
+      if (hasGallery) {
+        galleryImages = [];
+        for (final entry in hero.appearance.avatarGallery) {
+          final bytes = await storage.loadGalleryImageBytes(
+            heroStoragePath: heroStoragePath,
+            fileName: entry.fileName,
+          );
+          if (bytes != null) {
+            galleryImages.add({
+              ...entry.toJson(),
+              'base64': base64Encode(bytes),
+            });
+          }
+        }
       }
     }
 
@@ -169,6 +195,7 @@ class HeroActions {
       hero: hero,
       state: state,
       avatarBase64: avatarBase64,
+      galleryImages: galleryImages,
     );
     return codec.encode(bundle);
   }
@@ -201,58 +228,306 @@ class HeroActions {
     await saveHero(hero);
     await saveHeroState(heroId, bundle.state);
 
-    // Avatar aus Bundle importieren (falls vorhanden)
-    if (bundle.avatarBase64 != null && bundle.avatarBase64!.isNotEmpty) {
-      final pngBytes = base64Decode(bundle.avatarBase64!);
+    final hasGallery =
+        bundle.galleryImages != null && bundle.galleryImages!.isNotEmpty;
+    final hasLegacyAvatar =
+        bundle.avatarBase64 != null && bundle.avatarBase64!.isNotEmpty;
+
+    if (hasGallery || hasLegacyAvatar) {
       final heroStoragePath = await _resolveHeroStoragePath();
       final storage = _ref.read(avatarFileStorageProvider);
+
+    // Gallery-Bilder aus Bundle importieren (falls vorhanden)
+    if (hasGallery) {
+      final restoredGallery = <AvatarGalleryEntry>[];
+      for (final img in bundle.galleryImages!) {
+        final b64 = img['base64'] as String?;
+        if (b64 == null || b64.isEmpty) continue;
+        final entryJson = Map<String, dynamic>.from(img)..remove('base64');
+        final entry = AvatarGalleryEntry.fromJson(entryJson);
+        final pngBytes = base64Decode(b64);
+        await storage.saveGalleryImage(
+          heroStoragePath: heroStoragePath,
+          heroId: heroId,
+          entryId: entry.id,
+          pngBytes: pngBytes,
+        );
+        restoredGallery.add(entry);
+      }
+      if (restoredGallery.isNotEmpty) {
+        final savedHero = await _loadHeroById(heroId);
+        await saveHero(savedHero.copyWith(
+          appearance: savedHero.appearance.copyWith(
+            avatarGallery: restoredGallery,
+          ),
+        ));
+      }
+    }
+
+    // Legacy-Avatar aus Bundle importieren (falls vorhanden)
+    if (hasLegacyAvatar) {
+      final pngBytes = base64Decode(bundle.avatarBase64!);
       final fileName = await storage.saveAvatar(
         heroStoragePath: heroStoragePath,
         heroId: heroId,
         pngBytes: pngBytes,
       );
-      // avatarFileName im Helden aktualisieren
       final savedHero = await _loadHeroById(heroId);
       await saveHero(savedHero.copyWith(
         appearance: savedHero.appearance.copyWith(avatarFileName: fileName),
       ));
     }
+    } // end if (hasGallery || hasLegacyAvatar)
 
     _ref.read(selectedHeroIdProvider.notifier).state = heroId;
     return heroId;
   }
 
-  /// Speichert ein generiertes Avatar-Bild und aktualisiert den Helden.
+  /// Speichert ein KI-generiertes Avatar-Bild und legt einen Gallery-Eintrag an.
+  ///
+  /// [stilId] und [promptAuszug] werden am Gallery-Eintrag hinterlegt.
   Future<void> saveHeroAvatar({
     required String heroId,
     required List<int> pngBytes,
+    String stilId = '',
+    String promptAuszug = '',
   }) async {
     final hero = await _loadHeroById(heroId);
     final heroStoragePath = await _resolveHeroStoragePath();
     final storage = _ref.read(avatarFileStorageProvider);
-    final fileName = await storage.saveAvatar(
+    const uuid = Uuid();
+    final entryId = uuid.v4();
+
+    final fileName = await storage.saveGalleryImage(
+      heroStoragePath: heroStoragePath,
+      heroId: heroId,
+      entryId: entryId,
+      pngBytes: pngBytes,
+    );
+
+    // Legacy-Kompatibilitaet: auch als Haupt-Avatar speichern
+    await storage.saveAvatar(
       heroStoragePath: heroStoragePath,
       heroId: heroId,
       pngBytes: pngBytes,
     );
+
+    final entry = AvatarGalleryEntry(
+      id: entryId,
+      fileName: fileName,
+      quelle: 'ki',
+      stilId: stilId,
+      erstelltAm: DateTime.now().toUtc().toIso8601String(),
+      promptAuszug: promptAuszug.length > 200
+          ? promptAuszug.substring(0, 200)
+          : promptAuszug,
+    );
+
+    final updatedGallery = [...hero.appearance.avatarGallery, entry];
     final updated = hero.copyWith(
-      appearance: hero.appearance.copyWith(avatarFileName: fileName),
+      appearance: hero.appearance.copyWith(
+        avatarFileName: '$heroId.png',
+        avatarGallery: updatedGallery,
+      ),
     );
     await saveHero(updated);
   }
 
-  /// Entfernt den Avatar eines Helden.
-  Future<void> removeHeroAvatar(String heroId) async {
+  /// Laedt ein eigenes Bild hoch und fuegt es zur Gallery hinzu.
+  Future<void> uploadHeroImage({
+    required String heroId,
+    required List<int> imageBytes,
+  }) async {
     final hero = await _loadHeroById(heroId);
-    if (hero.appearance.avatarFileName.isEmpty) return;
     final heroStoragePath = await _resolveHeroStoragePath();
     final storage = _ref.read(avatarFileStorageProvider);
-    await storage.deleteAvatar(
+    const uuid = Uuid();
+    final entryId = uuid.v4();
+
+    final fileName = await storage.saveGalleryImage(
       heroStoragePath: heroStoragePath,
-      avatarFileName: hero.appearance.avatarFileName,
+      heroId: heroId,
+      entryId: entryId,
+      pngBytes: imageBytes,
     );
+
+    // Auch als aktiven Avatar setzen
+    await storage.saveAvatar(
+      heroStoragePath: heroStoragePath,
+      heroId: heroId,
+      pngBytes: imageBytes,
+    );
+
+    final entry = AvatarGalleryEntry(
+      id: entryId,
+      fileName: fileName,
+      quelle: 'upload',
+      erstelltAm: DateTime.now().toUtc().toIso8601String(),
+    );
+
+    final updatedGallery = [...hero.appearance.avatarGallery, entry];
     final updated = hero.copyWith(
-      appearance: hero.appearance.copyWith(avatarFileName: ''),
+      appearance: hero.appearance.copyWith(
+        avatarFileName: '$heroId.png',
+        avatarGallery: updatedGallery,
+      ),
+    );
+    await saveHero(updated);
+  }
+
+  /// Setzt ein Gallery-Bild als Primaerbild und erstellt einen Snapshot.
+  Future<void> setPrimaerbild({
+    required String heroId,
+    required String galleryEntryId,
+  }) async {
+    final hero = await _loadHeroById(heroId);
+
+    final snapshot = AvatarSnapshot(
+      erstelltAm: DateTime.now().toUtc().toIso8601String(),
+      attributes: {
+        'MU': hero.attributes.mu,
+        'KL': hero.attributes.kl,
+        'IN': hero.attributes.inn,
+        'CH': hero.attributes.ch,
+        'FF': hero.attributes.ff,
+        'GE': hero.attributes.ge,
+        'KO': hero.attributes.ko,
+        'KK': hero.attributes.kk,
+      },
+      alter: hero.appearance.alter,
+      vorteileText: hero.vorteileText,
+      nachteileText: hero.nachteileText,
+      rasse: hero.background.rasse,
+      geschlecht: hero.appearance.geschlecht,
+      haarfarbe: hero.appearance.haarfarbe,
+      augenfarbe: hero.appearance.augenfarbe,
+    );
+
+    final updated = hero.copyWith(
+      appearance: hero.appearance.copyWith(
+        primaerbildId: galleryEntryId,
+        avatarSnapshot: () => snapshot,
+      ),
+    );
+    await saveHero(updated);
+  }
+
+  /// Setzt ein Gallery-Bild als aktiv angezeigten Avatar.
+  Future<void> setActiveAvatar({
+    required String heroId,
+    required String galleryEntryId,
+  }) async {
+    final hero = await _loadHeroById(heroId);
+    final entry = hero.appearance.avatarGallery
+        .where((e) => e.id == galleryEntryId)
+        .firstOrNull;
+    if (entry == null) return;
+
+    final heroStoragePath = await _resolveHeroStoragePath();
+    final storage = _ref.read(avatarFileStorageProvider);
+
+    // Gallery-Bild als Haupt-Avatar kopieren
+    final bytes = await storage.loadGalleryImageBytes(
+      heroStoragePath: heroStoragePath,
+      fileName: entry.fileName,
+    );
+    if (bytes != null) {
+      await storage.saveAvatar(
+        heroStoragePath: heroStoragePath,
+        heroId: heroId,
+        pngBytes: bytes,
+      );
+    }
+
+    final updated = hero.copyWith(
+      appearance: hero.appearance.copyWith(avatarFileName: '$heroId.png'),
+    );
+    await saveHero(updated);
+  }
+
+  /// Entfernt ein einzelnes Bild aus der Gallery.
+  Future<void> removeGalleryImage({
+    required String heroId,
+    required String galleryEntryId,
+  }) async {
+    final hero = await _loadHeroById(heroId);
+    final entry = hero.appearance.avatarGallery
+        .where((e) => e.id == galleryEntryId)
+        .firstOrNull;
+    if (entry == null) return;
+
+    final heroStoragePath = await _resolveHeroStoragePath();
+    final storage = _ref.read(avatarFileStorageProvider);
+    await storage.deleteGalleryImage(
+      heroStoragePath: heroStoragePath,
+      fileName: entry.fileName,
+    );
+
+    final updatedGallery = hero.appearance.avatarGallery
+        .where((e) => e.id != galleryEntryId)
+        .toList();
+
+    // Primaerbild-Referenz aufraeuemen falls betroffen
+    final primaerbildId = hero.appearance.primaerbildId == galleryEntryId
+        ? ''
+        : hero.appearance.primaerbildId;
+
+    // Wenn letztes Bild entfernt → auch Haupt-Avatar loeschen
+    var avatarFileName = hero.appearance.avatarFileName;
+    if (updatedGallery.isEmpty && avatarFileName.isNotEmpty) {
+      await storage.deleteAvatar(
+        heroStoragePath: heroStoragePath,
+        avatarFileName: avatarFileName,
+      );
+      avatarFileName = '';
+    }
+
+    final updated = hero.copyWith(
+      appearance: hero.appearance.copyWith(
+        avatarFileName: avatarFileName,
+        avatarGallery: updatedGallery,
+        primaerbildId: primaerbildId,
+        avatarSnapshot: primaerbildId.isEmpty
+            ? () => null
+            : null,
+      ),
+    );
+    await saveHero(updated);
+  }
+
+  /// Entfernt den Avatar eines Helden (Legacy-Methode, entfernt alle Bilder).
+  Future<void> removeHeroAvatar(String heroId) async {
+    final hero = await _loadHeroById(heroId);
+    if (hero.appearance.avatarFileName.isEmpty &&
+        hero.appearance.avatarGallery.isEmpty) {
+      return;
+    }
+    final heroStoragePath = await _resolveHeroStoragePath();
+    final storage = _ref.read(avatarFileStorageProvider);
+
+    // Haupt-Avatar loeschen
+    if (hero.appearance.avatarFileName.isNotEmpty) {
+      await storage.deleteAvatar(
+        heroStoragePath: heroStoragePath,
+        avatarFileName: hero.appearance.avatarFileName,
+      );
+    }
+
+    // Alle Gallery-Bilder loeschen
+    for (final entry in hero.appearance.avatarGallery) {
+      await storage.deleteGalleryImage(
+        heroStoragePath: heroStoragePath,
+        fileName: entry.fileName,
+      );
+    }
+
+    final updated = hero.copyWith(
+      appearance: hero.appearance.copyWith(
+        avatarFileName: '',
+        avatarGallery: const [],
+        primaerbildId: '',
+        avatarSnapshot: () => null,
+      ),
     );
     await saveHero(updated);
   }

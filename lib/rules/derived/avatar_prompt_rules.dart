@@ -1,15 +1,21 @@
 import 'package:dsa_heldenverwaltung/domain/avatar_style.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/avatar_snapshot_diff.dart';
 
 /// Baut einen vollstaendigen Bildgenerierungs-Prompt aus Heldendaten.
 ///
 /// Der Prompt wird auf Englisch generiert, da alle grossen Bild-APIs
 /// damit deutlich bessere Ergebnisse liefern.
+///
+/// Wenn ein [snapshotDiff] uebergeben wird und Aenderungen enthaelt,
+/// werden Hinweise auf die Veraenderungen seit dem Primaerbild in den
+/// Prompt eingearbeitet.
 String buildAvatarPrompt({
   required HeroSheet hero,
   required AvatarStyle style,
   String additionalDescription = '',
+  AvatarSnapshotDiff? snapshotDiff,
 }) {
   final parts = <String>[
     'Half-body portrait of a fantasy character in tall vertical composition, '
@@ -83,6 +89,11 @@ String buildAvatarPrompt({
   final extra = additionalDescription.trim();
   if (extra.isNotEmpty) {
     parts.add(extra);
+  }
+
+  final diffHints = _buildSnapshotDiffHints(snapshotDiff);
+  if (diffHints.isNotEmpty) {
+    parts.add(diffHints);
   }
 
   parts.add(style.promptFragment);
@@ -611,4 +622,75 @@ String _normalizeForLookup(String value) {
       .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
+}
+
+// ---------------------------------------------------------------------------
+// Snapshot-Diff Prompt-Erweiterung
+// ---------------------------------------------------------------------------
+
+/// Baut Prompt-Hinweise aus den Aenderungen seit dem Primaerbild.
+String _buildSnapshotDiffHints(AvatarSnapshotDiff? diff) {
+  if (diff == null || !diff.hatAenderungen) return '';
+
+  final hints = <String>[];
+
+  // Alteraenderung
+  if (diff.alterChange != null) {
+    hints.add('The character has aged (${diff.alterChange})');
+  }
+
+  // Starke Eigenschaftsaenderungen visuell beschreiben
+  for (final entry in diff.attributeChanges.entries) {
+    final delta = entry.value.neu - entry.value.alt;
+    if (delta.abs() < 3) continue;
+    final direction = delta > 0 ? 'increased' : 'decreased';
+    switch (entry.key) {
+      case 'KK':
+        hints.add(
+          'Physical strength has $direction noticeably '
+          '(more ${delta > 0 ? "muscular" : "lean"} build)',
+        );
+      case 'KO':
+        hints.add(
+          'Constitution has $direction '
+          '(${delta > 0 ? "hardier, more weathered" : "frailer"} appearance)',
+        );
+      case 'CH':
+        hints.add(
+          'Charisma has $direction '
+          '(${delta > 0 ? "more radiant presence" : "more subdued demeanor"})',
+        );
+      case 'GE':
+        hints.add(
+          'Agility has $direction '
+          '(${delta > 0 ? "more graceful posture" : "stiffer posture"})',
+        );
+    }
+  }
+
+  // Neue Nachteile mit visueller Relevanz
+  final nachteilSource = diff.neueNachteile.join(' ').toLowerCase();
+  if (nachteilSource.contains('narbe') || nachteilSource.contains('wund')) {
+    hints.add('The character now bears visible scars from past battles');
+  }
+  if (nachteilSource.contains('einaeugig') ||
+      nachteilSource.contains('einaug')) {
+    hints.add('The character has lost an eye');
+  }
+  if (nachteilSource.contains('einbeinig') ||
+      nachteilSource.contains('einarm')) {
+    hints.add('The character has lost a limb');
+  }
+
+  // Haarfarbe / Augenfarbe
+  if (diff.haarfarbeChange != null) {
+    hints.add('Hair color has changed (${diff.haarfarbeChange})');
+  }
+  if (diff.augenfarbeChange != null) {
+    hints.add('Eye color has changed (${diff.augenfarbeChange})');
+  }
+
+  if (hints.isEmpty) return '';
+
+  return 'Changes since reference portrait: ${hints.take(4).join(', ')}';
 }

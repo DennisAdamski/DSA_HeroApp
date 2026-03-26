@@ -7,7 +7,18 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
     if (!hasAvatar) {
       return _SectionCard(
         title: 'Basisinformationen',
-        child: _buildStandardFieldLayout(),
+        child: Column(
+          children: [
+            _buildStandardFieldLayout(),
+            const SizedBox(height: _gridSpacing),
+            _AvatarActions(
+              heroId: widget.heroId,
+              hero: hero,
+              hasAvatar: false,
+              isEditing: _editController.isEditing,
+            ),
+          ],
+        ),
       );
     }
 
@@ -64,6 +75,15 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
             ),
           ],
         ),
+        if (hero.appearance.avatarGallery.length > 1) ...[
+          const SizedBox(height: _gridSpacing),
+          _AvatarGalleryStrip(
+            heroId: widget.heroId,
+            gallery: hero.appearance.avatarGallery,
+            primaerbildId: hero.appearance.primaerbildId,
+            isEditing: _editController.isEditing,
+          ),
+        ],
       ],
     );
   }
@@ -90,6 +110,15 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
           hasAvatar: true,
           isEditing: _editController.isEditing,
         ),
+        if (hero.appearance.avatarGallery.length > 1) ...[
+          const SizedBox(height: _gridSpacing),
+          _AvatarGalleryStrip(
+            heroId: widget.heroId,
+            gallery: hero.appearance.avatarGallery,
+            primaerbildId: hero.appearance.primaerbildId,
+            isEditing: _editController.isEditing,
+          ),
+        ],
         const SizedBox(height: _gridSpacing),
         ..._buildStandardFieldRows(),
       ],
