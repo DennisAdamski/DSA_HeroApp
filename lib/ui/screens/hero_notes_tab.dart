@@ -15,9 +15,9 @@ const double _notesPagePadding = 16;
 const double _notesSectionSpacing = 16;
 const double _notesFieldSpacing = 12;
 
-/// Notizen-Tab mit Unterbereichen fuer freie Notizen und Verbindungen.
+/// Tab für Chroniken und Kontakte mit getrennten Unterbereichen.
 class HeroNotesTab extends ConsumerStatefulWidget {
-  /// Erzeugt den Notizen-Tab fuer einen einzelnen Helden.
+  /// Erzeugt den Tab für Chroniken und Kontakte für einen einzelnen Helden.
   const HeroNotesTab({
     super.key,
     required this.heroId,
@@ -27,7 +27,7 @@ class HeroNotesTab extends ConsumerStatefulWidget {
     required this.onRegisterEditActions,
   });
 
-  /// ID des Helden, dessen Notizen geladen werden.
+  /// ID des Helden, dessen Chroniken und Kontakte geladen werden.
   final String heroId;
 
   /// Meldet Dirty-Aenderungen an den Workspace.
@@ -39,7 +39,7 @@ class HeroNotesTab extends ConsumerStatefulWidget {
   /// Registriert die Discard-Aktion des Tabs.
   final void Function(WorkspaceAsyncAction discardAction) onRegisterDiscard;
 
-  /// Registriert globale Start-/Save-/Cancel-Aktionen fuer die AppBar.
+  /// Registriert globale Start-/Save-/Cancel-Aktionen für die AppBar.
   final void Function(WorkspaceTabEditActions actions) onRegisterEditActions;
 
   @override
@@ -163,7 +163,16 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     _editController.markFieldChanged();
   }
 
-  void _addNote() {
+  /// Wechselt bei Bedarf zuerst in den Edit-Modus, bevor neue Einträge entstehen.
+  Future<void> _startEditIfNeeded() async {
+    if (_editController.isEditing) {
+      return;
+    }
+    await _startEdit();
+  }
+
+  Future<void> _addNote() async {
+    await _startEditIfNeeded();
     setState(() {
       _draftNotes = List<HeroNoteEntry>.from(_draftNotes)
         ..add(const HeroNoteEntry());
@@ -196,7 +205,8 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     _markFieldChanged();
   }
 
-  void _addConnection() {
+  Future<void> _addConnection() async {
+    await _startEditIfNeeded();
     setState(() {
       _draftConnections = List<HeroConnectionEntry>.from(_draftConnections)
         ..add(const HeroConnectionEntry());
@@ -252,7 +262,7 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
           children: [
             if (showHeader)
               const CodexTabHeader(
-                title: 'Chronik & Kontakte',
+                title: 'Chroniken & Kontakte',
                 subtitle:
                     'Freie Notizen und soziale Verbindungen in derselben Codex-OberflÃ¤che.',
                 assetPath: 'assets/ui/codex/compass_mark.png',
@@ -260,8 +270,8 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
             TabBar(
               controller: _innerTabController,
               tabs: const [
-                Tab(text: 'Notizen'),
-                Tab(text: 'Verbindungen'),
+                Tab(text: 'Chroniken'),
+                Tab(text: 'Kontakte'),
               ],
             ),
             Expanded(

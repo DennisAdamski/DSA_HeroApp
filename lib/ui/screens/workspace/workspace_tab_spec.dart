@@ -206,9 +206,9 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
     ),
     WorkspaceTabSpec(
       id: WorkspaceTabIds.notes,
-      label: 'Notizen',
+      label: 'Chroniken & Kontakte',
       icon: Icons.sticky_note_2_outlined,
-      helper: 'Freier Platzhalterbereich',
+      helper: 'Chroniken, Kontakte und soziale Verbindungen',
       buildContent: ({required heroId, required callbacks}) => HeroNotesTab(
         heroId: heroId,
         onDirtyChanged: callbacks.onDirtyChanged,
