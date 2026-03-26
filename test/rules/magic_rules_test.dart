@@ -282,4 +282,33 @@ void main() {
       'Elf 6; Ach 3; Mag 3; Dru -> Elf 2; Hex -> Elf 2',
     );
   });
+
+  group('describeActiveSpellEffects', () {
+    test('returns empty when axxeleratus inactive', () {
+      final result = describeActiveSpellEffects(
+        axxeleratusActive: false,
+        axxIniBonus: 0,
+        axxPaBaseBonus: 0,
+        axxAusweichenBonus: 0,
+        axxTpBonus: 0,
+      );
+      expect(result, isEmpty);
+    });
+
+    test('returns all axxeleratus bonuses when active', () {
+      final result = describeActiveSpellEffects(
+        axxeleratusActive: true,
+        axxIniBonus: 6,
+        axxPaBaseBonus: 2,
+        axxAusweichenBonus: 2,
+        axxTpBonus: 2,
+      );
+      expect(result, hasLength(1));
+      expect(result.first.label, 'Axxeleratus');
+      expect(result.first.bonusText, contains('INI+6'));
+      expect(result.first.bonusText, contains('PA+2'));
+      expect(result.first.bonusText, contains('AW+2'));
+      expect(result.first.bonusText, contains('TP+2'));
+    });
+  });
 }
