@@ -213,6 +213,7 @@ void main() {
 
       expect(find.byType(ExpansionTile), findsNothing);
       expect(find.text('+ Zauber'), findsOneWidget);
+      expect(find.text('Kategorie'), findsNothing);
       expect(
         find.text('Aktiviere hier Zauber für diesen Helden.'),
         findsOneWidget,
