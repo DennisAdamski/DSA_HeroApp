@@ -35,62 +35,74 @@ class _StatuswerteCard extends ConsumerWidget {
         children: [
           _EditableStatusRow(
             label: 'Ini',
-            baseValue: combat.initiative - mods.iniBase,
             modifierValue: mods.iniBase,
             finalValue: combat.initiative,
             onDecrement: () =>
                 _saveMods(ref, mods.copyWith(iniBase: mods.iniBase - 1)),
             onIncrement: () =>
                 _saveMods(ref, mods.copyWith(iniBase: mods.iniBase + 1)),
+            onReset: mods.iniBase != 0
+                ? () => _saveMods(ref, mods.copyWith(iniBase: 0))
+                : null,
           ),
           const SizedBox(height: 6),
           _EditableStatusRow(
             label: 'GS',
-            baseValue: derived.gs - mods.gs,
             modifierValue: mods.gs,
             finalValue: derived.gs,
             onDecrement: () => _saveMods(ref, mods.copyWith(gs: mods.gs - 1)),
             onIncrement: () => _saveMods(ref, mods.copyWith(gs: mods.gs + 1)),
+            onReset: mods.gs != 0
+                ? () => _saveMods(ref, mods.copyWith(gs: 0))
+                : null,
           ),
           const SizedBox(height: 6),
           _EditableStatusRow(
             label: 'AW',
-            baseValue: combat.ausweichen - mods.ausweichen,
             modifierValue: mods.ausweichen,
             finalValue: combat.ausweichen,
             onDecrement: () =>
                 _saveMods(ref, mods.copyWith(ausweichen: mods.ausweichen - 1)),
             onIncrement: () =>
                 _saveMods(ref, mods.copyWith(ausweichen: mods.ausweichen + 1)),
+            onReset: mods.ausweichen != 0
+                ? () => _saveMods(ref, mods.copyWith(ausweichen: 0))
+                : null,
           ),
           const SizedBox(height: 6),
           _EditableStatusRow(
             label: 'PA',
-            baseValue: combat.pa - mods.pa,
             modifierValue: mods.pa,
             finalValue: combat.pa,
             onDecrement: () => _saveMods(ref, mods.copyWith(pa: mods.pa - 1)),
             onIncrement: () => _saveMods(ref, mods.copyWith(pa: mods.pa + 1)),
+            onReset: mods.pa != 0
+                ? () => _saveMods(ref, mods.copyWith(pa: 0))
+                : null,
           ),
           const SizedBox(height: 6),
           _EditableStatusRow(
             label: 'AT',
-            baseValue: combat.at - mods.at,
             modifierValue: mods.at,
             finalValue: combat.at,
             onDecrement: () => _saveMods(ref, mods.copyWith(at: mods.at - 1)),
             onIncrement: () => _saveMods(ref, mods.copyWith(at: mods.at + 1)),
+            onReset: mods.at != 0
+                ? () => _saveMods(ref, mods.copyWith(at: 0))
+                : null,
           ),
           const SizedBox(height: 6),
           _ReadOnlyStatusRow(label: 'MR', finalValue: derived.mr),
           const SizedBox(height: 6),
           _EditableStatusRow(
             label: 'RS',
-            baseValue: combat.rsTotal - mods.rs,
             modifierValue: mods.rs,
             finalValue: combat.rsTotal,
             onDecrement: () => _saveMods(ref, mods.copyWith(rs: mods.rs - 1)),
             onIncrement: () => _saveMods(ref, mods.copyWith(rs: mods.rs + 1)),
+            onReset: mods.rs != 0
+                ? () => _saveMods(ref, mods.copyWith(rs: 0))
+                : null,
           ),
           const SizedBox(height: 6),
           _BeStatusRow(heroId: heroId, combat: combat),
@@ -224,24 +236,24 @@ class _BeStatusRow extends ConsumerWidget {
   }
 }
 
-/// Einheitliche Zeile fuer bearbeitbare Statuswerte mit Basis, Modifikator
-/// und Endwert.
+/// Einheitliche Zeile fuer bearbeitbare Statuswerte.
+/// Zeigt Label | – | + | Spacer | Endwert | ±Mod (nur wenn != 0) | Reset (nur wenn gesetzt).
 class _EditableStatusRow extends StatelessWidget {
   const _EditableStatusRow({
     required this.label,
-    required this.baseValue,
     required this.modifierValue,
     required this.finalValue,
     required this.onDecrement,
     required this.onIncrement,
+    this.onReset,
   });
 
   final String label;
-  final int baseValue;
   final int modifierValue;
   final int finalValue;
   final VoidCallback onDecrement;
   final VoidCallback onIncrement;
+  final VoidCallback? onReset;
 
   @override
   Widget build(BuildContext context) {
@@ -263,32 +275,10 @@ class _EditableStatusRow extends StatelessWidget {
             ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
-        SizedBox(
-          width: _statusValueWidth,
-          child: Text(
-            '$baseValue',
-            textAlign: TextAlign.right,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
         _StepButton(
           icon: Icons.remove,
           tooltip: '$label verringern',
           onPressed: onDecrement,
-        ),
-        const SizedBox(width: 4),
-        SizedBox(
-          width: _statusModifierWidth,
-          child: Text(
-            '$sign$modifierValue',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
         ),
         const SizedBox(width: 4),
         _StepButton(
@@ -296,7 +286,6 @@ class _EditableStatusRow extends StatelessWidget {
           tooltip: '$label erhöhen',
           onPressed: onIncrement,
         ),
-        const SizedBox(width: 12),
         const Spacer(),
         SizedBox(
           width: _statusFinalWidth,
@@ -308,6 +297,36 @@ class _EditableStatusRow extends StatelessWidget {
             ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
+        if (modifierValue != 0) ...[
+          const SizedBox(width: 4),
+          SizedBox(
+            width: 24,
+            child: Text(
+              '$sign$modifierValue',
+              textAlign: TextAlign.right,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+        if (onReset != null) ...[
+          const SizedBox(width: 2),
+          SizedBox(
+            width: 28,
+            height: 28,
+            child: IconButton(
+              tooltip: '$label zurücksetzen',
+              padding: EdgeInsets.zero,
+              iconSize: 14,
+              onPressed: onReset,
+              icon: const Icon(Icons.replay),
+            ),
+          ),
+        ] else ...[
+          const SizedBox(width: 30),
+        ],
       ],
     );
   }
