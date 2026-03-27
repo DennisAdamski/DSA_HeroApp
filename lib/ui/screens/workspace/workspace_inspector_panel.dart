@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
@@ -399,26 +401,74 @@ class _StateCounterRow extends StatelessWidget {
   }
 }
 
-class _ZauberAktivierenCard extends StatelessWidget {
+class _ZauberAktivierenCard extends ConsumerWidget {
   const _ZauberAktivierenCard({required this.heroId});
 
   final String heroId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final heroSheet = ref.watch(heroByIdProvider(heroId));
+    final heroStateAsync = ref.watch(heroStateProvider(heroId));
+    final computedAsync = ref.watch(heroComputedProvider(heroId));
+    final heroState = heroStateAsync.valueOrNull;
+    final combat = computedAsync.valueOrNull?.combatPreviewStats;
+
+    final axxActive = heroSheet != null && heroState != null
+        ? isAxxeleratusEffectActive(sheet: heroSheet, state: heroState)
+        : false;
+
+    final chips = combat != null
+        ? describeActiveSpellEffects(
+            axxeleratusActive: axxActive,
+            axxIniBonus: combat.axxIniBonus,
+            axxPaBaseBonus: combat.axxPaBaseBonus,
+            axxAusweichenBonus: combat.axxAusweichenBonus,
+            axxTpBonus: computeAxxeleratusTpBonus(
+              axxeleratusActive: axxActive,
+            ),
+          )
+        : <ActiveSpellEffectChip>[];
+
     return CodexSectionCard(
       title: 'Arkane Effekte',
-      subtitle: 'Aktive Zaubereffekte und Zustandsmodifikatoren',
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: OutlinedButton.icon(
-          key: const ValueKey<String>('workspace-active-spells-open'),
-          onPressed: () {
-            showActiveSpellEffectsDialog(context: context, heroId: heroId);
-          },
-          icon: const Icon(Icons.auto_awesome_outlined),
-          label: const Text('Zauber aktivieren'),
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              key: const ValueKey<String>('workspace-active-spells-open'),
+              onPressed: () {
+                showActiveSpellEffectsDialog(
+                  context: context,
+                  heroId: heroId,
+                );
+              },
+              icon: const Icon(Icons.auto_awesome_outlined),
+              label: Text(chips.isEmpty ? 'Zauber aktivieren' : 'Verwalten'),
+            ),
+          ),
+          if (chips.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                for (final chip in chips)
+                  Chip(
+                    avatar: const Icon(Icons.bolt, size: 16),
+                    label: Text(
+                      '${chip.label}: ${chip.bonusText}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }
