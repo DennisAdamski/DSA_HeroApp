@@ -173,7 +173,7 @@ class _VitalwerteCard extends ConsumerWidget {
           ),
           const SizedBox(height: 6),
           _ResourceRow(
-            label: 'Au',
+            label: 'AuP',
             current: heroState.currentAu,
             max: derived.maxAu,
             onDecrement: () => _save(
@@ -288,10 +288,16 @@ class _ResourceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isLow = max > 0 && current <= (max / 3).ceil();
+    final isOverMax = current > max;
+    final valueColor = isOverMax
+        ? Colors.amber
+        : isLow
+            ? Theme.of(context).colorScheme.error
+            : null;
     return Row(
       children: [
         SizedBox(
-          width: 36,
+          width: 62,
           child: Text(
             label,
             style: Theme.of(
@@ -305,28 +311,25 @@ class _ResourceRow extends StatelessWidget {
           onPressed: onDecrement,
         ),
         const SizedBox(width: 4),
-        SizedBox(
-          width: 44,
-          child: Text(
-            '$current',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: isLow ? Theme.of(context).colorScheme.error : null,
-              fontWeight: FontWeight.bold,
-            ),
+        _StepButton(
+          icon: Icons.add,
+          tooltip: '$label erhöhen',
+          onPressed: onIncrement,
+        ),
+        const Spacer(),
+        Text(
+          '$current',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: valueColor,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        const SizedBox(width: 3),
         Text(
           '/ $max',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-        ),
-        const SizedBox(width: 4),
-        _StepButton(
-          icon: Icons.add,
-          tooltip: '$label erhöhen',
-          onPressed: current < max ? onIncrement : null,
         ),
       ],
     );
@@ -358,7 +361,8 @@ class _StateCounterRow extends StatelessWidget {
     return Row(
       key: rowKey,
       children: [
-        Expanded(
+        SizedBox(
+          width: 110,
           child: Text(
             label,
             style: Theme.of(
@@ -371,22 +375,22 @@ class _StateCounterRow extends StatelessWidget {
           tooltip: decrementTooltip,
           onPressed: onDecrement,
         ),
-        const SizedBox(width: 6),
-        SizedBox(
-          width: 32,
-          child: Text(
-            '$value',
-            textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 4),
         _StepButton(
           icon: Icons.add,
           tooltip: incrementTooltip,
           onPressed: onIncrement,
+        ),
+        const Spacer(),
+        SizedBox(
+          width: 32,
+          child: Text(
+            '$value',
+            textAlign: TextAlign.right,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
         ),
       ],
     );
