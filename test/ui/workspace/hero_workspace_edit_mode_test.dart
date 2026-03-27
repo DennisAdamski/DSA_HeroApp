@@ -1456,55 +1456,12 @@ void main() {
       find.byKey(const ValueKey<String>('workspace-status-row-be')),
       findsOneWidget,
     );
-    expect(find.text('(berechnet)'), findsOneWidget);
     expect(find.text('AP verfuegbar: 500'), findsNothing);
     expect(find.text('Ruestung'), findsNothing);
     expect(find.text('Kampfwerte'), findsNothing);
     expect(find.text('Manueller BE'), findsNothing);
     expect(find.text('Entfernen'), findsNothing);
   });
-
-  testWidgets(
-    'workspace status BE row switches to manual override and clears',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero()],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 10,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
-
-      await openWorkspace(tester, repo, size: const Size(1600, 1200));
-
-      expect(find.text('(berechnet)'), findsOneWidget);
-      expect(find.text('(manuell)'), findsNothing);
-
-      await tester.tap(find.byTooltip('BE erhöhen'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('(berechnet)'), findsNothing);
-      expect(find.text('(manuell)'), findsOneWidget);
-      expect(
-        find.byKey(const ValueKey<String>('workspace-status-be-clear')),
-        findsOneWidget,
-      );
-      expect(find.byTooltip('BE auf berechnet zurücksetzen'), findsOneWidget);
-      expect(find.text('Entfernen'), findsNothing);
-
-      await tester.tap(
-        find.byKey(const ValueKey<String>('workspace-status-be-clear')),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('(berechnet)'), findsOneWidget);
-      expect(find.text('(manuell)'), findsNothing);
-    },
-  );
 
   testWidgets('overview shows attributes and derived in responsive section', (
     tester,

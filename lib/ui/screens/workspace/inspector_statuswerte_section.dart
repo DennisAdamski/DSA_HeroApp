@@ -1,10 +1,5 @@
 part of 'workspace_inspector_panel.dart';
 
-const double _statusLabelWidth = 32;
-const double _statusValueWidth = 28;
-const double _statusModifierWidth = 28;
-const double _statusFinalWidth = 28;
-
 class _StatuswerteCard extends ConsumerWidget {
   const _StatuswerteCard({
     required this.heroId,
@@ -33,10 +28,11 @@ class _StatuswerteCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _EditableStatusRow(
+          _InspectorValueRow(
+            key: const ValueKey<String>('workspace-status-row-Ini'),
             label: 'Ini',
-            modifierValue: mods.iniBase,
-            finalValue: combat.initiative,
+            modifier: mods.iniBase,
+            result: combat.initiative,
             onDecrement: () =>
                 _saveMods(ref, mods.copyWith(iniBase: mods.iniBase - 1)),
             onIncrement: () =>
@@ -46,10 +42,11 @@ class _StatuswerteCard extends ConsumerWidget {
                 : null,
           ),
           const SizedBox(height: 6),
-          _EditableStatusRow(
+          _InspectorValueRow(
+            key: const ValueKey<String>('workspace-status-row-GS'),
             label: 'GS',
-            modifierValue: mods.gs,
-            finalValue: derived.gs,
+            modifier: mods.gs,
+            result: derived.gs,
             onDecrement: () => _saveMods(ref, mods.copyWith(gs: mods.gs - 1)),
             onIncrement: () => _saveMods(ref, mods.copyWith(gs: mods.gs + 1)),
             onReset: mods.gs != 0
@@ -57,10 +54,11 @@ class _StatuswerteCard extends ConsumerWidget {
                 : null,
           ),
           const SizedBox(height: 6),
-          _EditableStatusRow(
+          _InspectorValueRow(
+            key: const ValueKey<String>('workspace-status-row-AW'),
             label: 'AW',
-            modifierValue: mods.ausweichen,
-            finalValue: combat.ausweichen,
+            modifier: mods.ausweichen,
+            result: combat.ausweichen,
             onDecrement: () =>
                 _saveMods(ref, mods.copyWith(ausweichen: mods.ausweichen - 1)),
             onIncrement: () =>
@@ -70,10 +68,11 @@ class _StatuswerteCard extends ConsumerWidget {
                 : null,
           ),
           const SizedBox(height: 6),
-          _EditableStatusRow(
+          _InspectorValueRow(
+            key: const ValueKey<String>('workspace-status-row-PA'),
             label: 'PA',
-            modifierValue: mods.pa,
-            finalValue: combat.pa,
+            modifier: mods.pa,
+            result: combat.pa,
             onDecrement: () => _saveMods(ref, mods.copyWith(pa: mods.pa - 1)),
             onIncrement: () => _saveMods(ref, mods.copyWith(pa: mods.pa + 1)),
             onReset: mods.pa != 0
@@ -81,10 +80,11 @@ class _StatuswerteCard extends ConsumerWidget {
                 : null,
           ),
           const SizedBox(height: 6),
-          _EditableStatusRow(
+          _InspectorValueRow(
+            key: const ValueKey<String>('workspace-status-row-AT'),
             label: 'AT',
-            modifierValue: mods.at,
-            finalValue: combat.at,
+            modifier: mods.at,
+            result: combat.at,
             onDecrement: () => _saveMods(ref, mods.copyWith(at: mods.at - 1)),
             onIncrement: () => _saveMods(ref, mods.copyWith(at: mods.at + 1)),
             onReset: mods.at != 0
@@ -92,12 +92,17 @@ class _StatuswerteCard extends ConsumerWidget {
                 : null,
           ),
           const SizedBox(height: 6),
-          _ReadOnlyStatusRow(label: 'MR', finalValue: derived.mr),
+          _ReadOnlyValueRow(
+            key: const ValueKey<String>('workspace-status-row-MR'),
+            label: 'MR',
+            value: derived.mr,
+          ),
           const SizedBox(height: 6),
-          _EditableStatusRow(
+          _InspectorValueRow(
+            key: const ValueKey<String>('workspace-status-row-RS'),
             label: 'RS',
-            modifierValue: mods.rs,
-            finalValue: combat.rsTotal,
+            modifier: mods.rs,
+            result: combat.rsTotal,
             onDecrement: () => _saveMods(ref, mods.copyWith(rs: mods.rs - 1)),
             onIncrement: () => _saveMods(ref, mods.copyWith(rs: mods.rs + 1)),
             onReset: mods.rs != 0
@@ -105,265 +110,13 @@ class _StatuswerteCard extends ConsumerWidget {
                 : null,
           ),
           const SizedBox(height: 6),
-          _BeStatusRow(heroId: heroId, combat: combat),
+          _ReadOnlyValueRow(
+            key: const ValueKey<String>('workspace-status-row-be'),
+            label: 'BE',
+            value: combat.beKampf,
+          ),
         ],
       ),
-    );
-  }
-}
-
-/// Spezielle BE-Zeile mit temporaerem Override fuer Talentproben.
-class _BeStatusRow extends ConsumerWidget {
-  const _BeStatusRow({required this.heroId, required this.combat});
-
-  final String heroId;
-  final CombatPreviewStats combat;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final override = ref.watch(talentBeOverrideProvider(heroId));
-    final displayed = override ?? combat.beKampf;
-    final isManual = override != null;
-    final stateText = isManual ? '(manuell)' : '(berechnet)';
-
-    return Row(
-      key: const ValueKey<String>('workspace-status-row-be'),
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: _statusLabelWidth,
-          child: Text(
-            'BE',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-        SizedBox(
-          width: _statusValueWidth,
-          child: Text(
-            '${combat.beKampf}',
-            textAlign: TextAlign.right,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-        _StepButton(
-          icon: Icons.remove,
-          tooltip: 'BE verringern',
-          onPressed: () {
-            ref.read(talentBeOverrideProvider(heroId).notifier).state =
-                displayed - 1;
-          },
-        ),
-        const SizedBox(width: 4),
-        SizedBox(
-          width: _statusModifierWidth,
-          child: Text(
-            '$displayed',
-            textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-        const SizedBox(width: 4),
-        _StepButton(
-          icon: Icons.add,
-          tooltip: 'BE erhöhen',
-          onPressed: () {
-            ref.read(talentBeOverrideProvider(heroId).notifier).state =
-                displayed + 1;
-          },
-        ),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: _statusFinalWidth,
-          child: Text(
-            '$displayed',
-            textAlign: TextAlign.right,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    stateText,
-                    textAlign: TextAlign.right,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
-              ),
-              if (isManual) ...[
-                const SizedBox(width: 2),
-                SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: IconButton(
-                    key: const ValueKey<String>('workspace-status-be-clear'),
-                    tooltip: 'BE auf berechnet zurücksetzen',
-                    padding: EdgeInsets.zero,
-                    iconSize: 16,
-                    onPressed: () {
-                      ref
-                              .read(talentBeOverrideProvider(heroId).notifier)
-                              .state =
-                          null;
-                    },
-                    icon: const Icon(Icons.replay),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Einheitliche Zeile fuer bearbeitbare Statuswerte.
-/// Zeigt Label | – | + | Spacer | Endwert | ±Mod (nur wenn != 0) | Reset (nur wenn gesetzt).
-class _EditableStatusRow extends StatelessWidget {
-  const _EditableStatusRow({
-    required this.label,
-    required this.modifierValue,
-    required this.finalValue,
-    required this.onDecrement,
-    required this.onIncrement,
-    this.onReset,
-  });
-
-  final String label;
-  final int modifierValue;
-  final int finalValue;
-  final VoidCallback onDecrement;
-  final VoidCallback onIncrement;
-  final VoidCallback? onReset;
-
-  @override
-  Widget build(BuildContext context) {
-    final sign = modifierValue > 0 ? '+' : '';
-    final color = modifierValue > 0
-        ? Theme.of(context).colorScheme.primary
-        : modifierValue < 0
-            ? Theme.of(context).colorScheme.error
-            : null;
-    return Row(
-      key: ValueKey<String>('workspace-status-row-$label'),
-      children: [
-        SizedBox(
-          width: _statusLabelWidth,
-          child: Text(
-            label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-        _StepButton(
-          icon: Icons.remove,
-          tooltip: '$label verringern',
-          onPressed: onDecrement,
-        ),
-        const SizedBox(width: 4),
-        _StepButton(
-          icon: Icons.add,
-          tooltip: '$label erhöhen',
-          onPressed: onIncrement,
-        ),
-        const Spacer(),
-        SizedBox(
-          width: _statusFinalWidth,
-          child: Text(
-            '$finalValue',
-            textAlign: TextAlign.right,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-        if (modifierValue != 0) ...[
-          const SizedBox(width: 4),
-          SizedBox(
-            width: 24,
-            child: Text(
-              '$sign$modifierValue',
-              textAlign: TextAlign.right,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-          ),
-        ],
-        if (onReset != null) ...[
-          const SizedBox(width: 2),
-          SizedBox(
-            width: 28,
-            height: 28,
-            child: IconButton(
-              tooltip: '$label zurücksetzen',
-              padding: EdgeInsets.zero,
-              iconSize: 14,
-              onPressed: onReset,
-              icon: const Icon(Icons.replay),
-            ),
-          ),
-        ] else ...[
-          const SizedBox(width: 30),
-        ],
-      ],
-    );
-  }
-}
-
-class _ReadOnlyStatusRow extends StatelessWidget {
-  const _ReadOnlyStatusRow({required this.label, required this.finalValue});
-
-  final String label;
-  final int finalValue;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      key: ValueKey<String>('workspace-status-row-$label'),
-      children: [
-        SizedBox(
-          width: _statusLabelWidth,
-          child: Text(
-            label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-        const Spacer(),
-        SizedBox(
-          width: _statusFinalWidth,
-          child: Text(
-            '$finalValue',
-            textAlign: TextAlign.right,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-      ],
     );
   }
 }
