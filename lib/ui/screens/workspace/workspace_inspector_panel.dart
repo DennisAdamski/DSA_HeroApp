@@ -81,12 +81,6 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
                         heroState: heroState,
                         derived: derived,
                         resourceActivation: resourceActivation,
-                      ),
-                    const SizedBox(height: 10),
-                    if (heroState != null)
-                      InspectorWundenCard(
-                        heroId: heroId,
-                        heroState: heroState,
                         wundEffekte:
                             computedAsync.valueOrNull?.wundEffekte ??
                             const WundEffekte(),
@@ -127,12 +121,16 @@ class _VitalwerteCard extends ConsumerWidget {
     required this.heroState,
     required this.derived,
     required this.resourceActivation,
+    required this.wundEffekte,
+    required this.wundschwelle,
   });
 
   final String heroId;
   final HeroState heroState;
   final DerivedStats derived;
   final HeroResourceActivation? resourceActivation;
+  final WundEffekte wundEffekte;
+  final int wundschwelle;
 
   Future<void> _save(WidgetRef ref, HeroState updated) async {
     await ref.read(heroActionsProvider).saveHeroState(heroId, updated);
@@ -214,6 +212,13 @@ class _VitalwerteCard extends ConsumerWidget {
               ),
             ),
           ],
+          const SizedBox(height: 6),
+          InspectorWundenSection(
+            heroId: heroId,
+            heroState: heroState,
+            wundEffekte: wundEffekte,
+            wundschwelle: wundschwelle,
+          ),
           const SizedBox(height: 10),
           const Divider(height: 1),
           const SizedBox(height: 10),
