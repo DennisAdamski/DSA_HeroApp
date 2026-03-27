@@ -51,67 +51,84 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
     final toggleTooltip = isExpanded
         ? 'Details ausblenden'
         : 'Details einblenden';
-    final toggleIcon = isExpanded
-        ? Icons.keyboard_double_arrow_right
-        : Icons.keyboard_double_arrow_left;
 
     final codex = context.codexTheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: codex.heroGradientSoft,
-        border: Border(left: BorderSide(color: codex.rule)),
+    final dragBar = GestureDetector(
+      key: const ValueKey<String>('workspace-details-toggle'),
+      onTap: onToggleExpanded,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Center(
+          child: Tooltip(
+            message: toggleTooltip,
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+        ),
       ),
-      child: SafeArea(
-        child: isExpanded
-            ? SingleChildScrollView(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+    );
+
+    return ClipRRect(
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(codex.sectionRadius),
+        bottomLeft: Radius.circular(codex.sectionRadius),
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(gradient: codex.heroGradientSoft),
+        child: SafeArea(
+          child: isExpanded
+              ? Column(
                   children: [
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                        key: const ValueKey<String>('workspace-details-toggle'),
-                        tooltip: toggleTooltip,
-                        onPressed: onToggleExpanded,
-                        icon: Icon(toggleIcon),
+                    dragBar,
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (heroState != null && derived != null)
+                              _VitalwerteCard(
+                                heroId: heroId,
+                                heroState: heroState,
+                                derived: derived,
+                                resourceActivation: resourceActivation,
+                                wundEffekte:
+                                    computedAsync.valueOrNull?.wundEffekte ??
+                                    const WundEffekte(),
+                                wundschwelle:
+                                    computedAsync.valueOrNull?.wundschwelle ??
+                                    0,
+                              ),
+                            const SizedBox(height: 10),
+                            if (resourceActivation?.magic.isEnabled ??
+                                false) ...[
+                              _ZauberAktivierenCard(heroId: heroId),
+                              const SizedBox(height: 10),
+                            ],
+                            if (hero != null &&
+                                derived != null &&
+                                combat != null)
+                              _StatuswerteCard(
+                                heroId: heroId,
+                                hero: hero,
+                                derived: derived,
+                                combat: combat,
+                              ),
+                          ],
+                        ),
                       ),
                     ),
-                    if (heroState != null && derived != null)
-                      _VitalwerteCard(
-                        heroId: heroId,
-                        heroState: heroState,
-                        derived: derived,
-                        resourceActivation: resourceActivation,
-                        wundEffekte:
-                            computedAsync.valueOrNull?.wundEffekte ??
-                            const WundEffekte(),
-                        wundschwelle:
-                            computedAsync.valueOrNull?.wundschwelle ?? 0,
-                      ),
-                    const SizedBox(height: 10),
-                    if (resourceActivation?.magic.isEnabled ?? false) ...[
-                      _ZauberAktivierenCard(heroId: heroId),
-                      const SizedBox(height: 10),
-                    ],
-                    if (hero != null && derived != null && combat != null)
-                      _StatuswerteCard(
-                        heroId: heroId,
-                        hero: hero,
-                        derived: derived,
-                        combat: combat,
-                      ),
                   ],
-                ),
-              )
-            : Center(
-                child: IconButton(
-                  key: const ValueKey<String>('workspace-details-toggle'),
-                  tooltip: toggleTooltip,
-                  onPressed: onToggleExpanded,
-                  icon: Icon(toggleIcon),
-                ),
-              ),
+                )
+              : dragBar,
+        ),
       ),
     );
   }
@@ -155,10 +172,12 @@ class _VitalwerteCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _ResourceRow(
+          _InspectorValueRow(
             label: 'LeP',
-            current: heroState.currentLep,
-            max: derived.maxLep,
+            modifier: heroState.currentLep - derived.maxLep,
+            result: heroState.currentLep,
+            maxValue: derived.maxLep,
+            resultColor: _vitalColor(context, heroState.currentLep, derived.maxLep),
             onDecrement: () => _save(
               ref,
               heroState.copyWith(currentLep: heroState.currentLep - 1),
@@ -167,12 +186,20 @@ class _VitalwerteCard extends ConsumerWidget {
               ref,
               heroState.copyWith(currentLep: heroState.currentLep + 1),
             ),
+            onReset: heroState.currentLep != derived.maxLep
+                ? () => _save(
+                    ref,
+                    heroState.copyWith(currentLep: derived.maxLep),
+                  )
+                : null,
           ),
           const SizedBox(height: 6),
-          _ResourceRow(
+          _InspectorValueRow(
             label: 'AuP',
-            current: heroState.currentAu,
-            max: derived.maxAu,
+            modifier: heroState.currentAu - derived.maxAu,
+            result: heroState.currentAu,
+            maxValue: derived.maxAu,
+            resultColor: _vitalColor(context, heroState.currentAu, derived.maxAu),
             onDecrement: () => _save(
               ref,
               heroState.copyWith(currentAu: heroState.currentAu - 1),
@@ -181,13 +208,21 @@ class _VitalwerteCard extends ConsumerWidget {
               ref,
               heroState.copyWith(currentAu: heroState.currentAu + 1),
             ),
+            onReset: heroState.currentAu != derived.maxAu
+                ? () => _save(
+                    ref,
+                    heroState.copyWith(currentAu: derived.maxAu),
+                  )
+                : null,
           ),
           if (showMagicResources) ...[
             const SizedBox(height: 6),
-            _ResourceRow(
+            _InspectorValueRow(
               label: 'AsP',
-              current: heroState.currentAsp,
-              max: derived.maxAsp,
+              modifier: heroState.currentAsp - derived.maxAsp,
+              result: heroState.currentAsp,
+              maxValue: derived.maxAsp,
+              resultColor: _vitalColor(context, heroState.currentAsp, derived.maxAsp),
               onDecrement: () => _save(
                 ref,
                 heroState.copyWith(currentAsp: heroState.currentAsp - 1),
@@ -196,14 +231,22 @@ class _VitalwerteCard extends ConsumerWidget {
                 ref,
                 heroState.copyWith(currentAsp: heroState.currentAsp + 1),
               ),
+              onReset: heroState.currentAsp != derived.maxAsp
+                  ? () => _save(
+                      ref,
+                      heroState.copyWith(currentAsp: derived.maxAsp),
+                    )
+                  : null,
             ),
           ],
           if (showDivineResources) ...[
             const SizedBox(height: 6),
-            _ResourceRow(
+            _InspectorValueRow(
               label: 'KaP',
-              current: heroState.currentKap,
-              max: derived.maxKap,
+              modifier: heroState.currentKap - derived.maxKap,
+              result: heroState.currentKap,
+              maxValue: derived.maxKap,
+              resultColor: _vitalColor(context, heroState.currentKap, derived.maxKap),
               onDecrement: () => _save(
                 ref,
                 heroState.copyWith(currentKap: heroState.currentKap - 1),
@@ -212,6 +255,12 @@ class _VitalwerteCard extends ConsumerWidget {
                 ref,
                 heroState.copyWith(currentKap: heroState.currentKap + 1),
               ),
+              onReset: heroState.currentKap != derived.maxKap
+                  ? () => _save(
+                      ref,
+                      heroState.copyWith(currentKap: derived.maxKap),
+                    )
+                  : null,
             ),
           ],
           const SizedBox(height: 6),
@@ -224,14 +273,13 @@ class _VitalwerteCard extends ConsumerWidget {
           const SizedBox(height: 10),
           const Divider(height: 1),
           const SizedBox(height: 10),
-          _StateCounterRow(
-            rowKey: const ValueKey<String>(
+          _InspectorValueRow(
+            key: const ValueKey<String>(
               'workspace-vital-row-ueberanstrengung',
             ),
             label: 'Überanstrengung',
-            value: heroState.ueberanstrengung,
-            decrementTooltip: 'Überanstrengung verringern',
-            incrementTooltip: 'Überanstrengung erhöhen',
+            modifier: heroState.ueberanstrengung,
+            result: heroState.ueberanstrengung,
             onDecrement: () => _save(
               ref,
               heroState.copyWith(
@@ -246,14 +294,19 @@ class _VitalwerteCard extends ConsumerWidget {
                 ueberanstrengung: heroState.ueberanstrengung + 1,
               ),
             ),
+            onReset: heroState.ueberanstrengung != 0
+                ? () => _save(
+                    ref,
+                    heroState.copyWith(ueberanstrengung: 0),
+                  )
+                : null,
           ),
           const SizedBox(height: 6),
-          _StateCounterRow(
-            rowKey: const ValueKey<String>('workspace-vital-row-erschoepfung'),
+          _InspectorValueRow(
+            key: const ValueKey<String>('workspace-vital-row-erschoepfung'),
             label: 'Erschöpfung',
-            value: heroState.erschoepfung,
-            decrementTooltip: 'Erschöpfung verringern',
-            incrementTooltip: 'Erschöpfung erhöhen',
+            modifier: heroState.erschoepfung,
+            result: heroState.erschoepfung,
             onDecrement: () => _save(
               ref,
               heroState.copyWith(
@@ -266,6 +319,12 @@ class _VitalwerteCard extends ConsumerWidget {
               ref,
               heroState.copyWith(erschoepfung: heroState.erschoepfung + 1),
             ),
+            onReset: heroState.erschoepfung != 0
+                ? () => _save(
+                    ref,
+                    heroState.copyWith(erschoepfung: 0),
+                  )
+                : null,
           ),
         ],
       ),
@@ -273,40 +332,49 @@ class _VitalwerteCard extends ConsumerWidget {
   }
 }
 
-/// Ressourcenzeile: Label | – | Wert / Max | +
-class _ResourceRow extends StatelessWidget {
-  const _ResourceRow({
+/// Einheitliche editierbare Zeile fuer Inspector-Werte.
+///
+/// Layout: {Name} [-] {Modifier} [+] [↺] … {Ergebnis} {/ Max}
+class _InspectorValueRow extends StatelessWidget {
+  const _InspectorValueRow({
+    super.key,
     required this.label,
-    required this.current,
-    required this.max,
+    required this.modifier,
     required this.onDecrement,
     required this.onIncrement,
+    this.onReset,
+    required this.result,
+    this.maxValue,
+    this.resultColor,
   });
 
   final String label;
-  final int current;
-  final int max;
+  final int modifier;
   final VoidCallback onDecrement;
   final VoidCallback onIncrement;
+  final VoidCallback? onReset;
+  final int result;
+  final int? maxValue;
+  final Color? resultColor;
 
   @override
   Widget build(BuildContext context) {
-    final isLow = max > 0 && current <= (max / 3).ceil();
-    final isOverMax = current > max;
-    final valueColor = isOverMax
-        ? Colors.amber
-        : isLow
+    final sign = modifier > 0 ? '+' : '';
+    final modColor = modifier > 0
+        ? Theme.of(context).colorScheme.primary
+        : modifier < 0
             ? Theme.of(context).colorScheme.error
-            : null;
+            : Theme.of(context).colorScheme.onSurfaceVariant;
     return Row(
       children: [
-        SizedBox(
-          width: 62,
+        Expanded(
           child: Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(fontWeight: FontWeight.bold),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         _StepButton(
@@ -314,25 +382,99 @@ class _ResourceRow extends StatelessWidget {
           tooltip: '$label verringern',
           onPressed: onDecrement,
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 2),
+        SizedBox(
+          width: 28,
+          child: Text(
+            '$sign$modifier',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: modColor,
+            ),
+          ),
+        ),
+        const SizedBox(width: 2),
         _StepButton(
           icon: Icons.add,
           tooltip: '$label erhöhen',
           onPressed: onIncrement,
         ),
+        if (onReset != null) ...[
+          const SizedBox(width: 2),
+          SizedBox(
+            width: 28,
+            height: 28,
+            child: IconButton(
+              tooltip: '$label zurücksetzen',
+              padding: EdgeInsets.zero,
+              iconSize: 14,
+              onPressed: onReset,
+              icon: const Icon(Icons.replay),
+            ),
+          ),
+        ],
         const Spacer(),
-        Text(
-          '$current',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: valueColor,
-            fontWeight: FontWeight.bold,
+        SizedBox(
+          width: 28,
+          child: Text(
+            '$result',
+            textAlign: TextAlign.right,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: resultColor,
+            ),
           ),
         ),
-        const SizedBox(width: 3),
-        Text(
-          '/ $max',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+        if (maxValue != null) ...[
+          const SizedBox(width: 2),
+          Text(
+            '/ $maxValue',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Nur-Lese-Zeile fuer MR und BE, ausgerichtet an _InspectorValueRow.
+class _ReadOnlyValueRow extends StatelessWidget {
+  const _ReadOnlyValueRow({
+    super.key,
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(fontWeight: FontWeight.bold),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const Spacer(),
+        SizedBox(
+          width: 28,
+          child: Text(
+            '$value',
+            textAlign: TextAlign.right,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
       ],
@@ -340,65 +482,13 @@ class _ResourceRow extends StatelessWidget {
   }
 }
 
-/// Zustandszeile ohne Maximum fuer Erschoepfung und Ueberanstrengung.
-class _StateCounterRow extends StatelessWidget {
-  const _StateCounterRow({
-    required this.rowKey,
-    required this.label,
-    required this.value,
-    required this.decrementTooltip,
-    required this.incrementTooltip,
-    required this.onDecrement,
-    required this.onIncrement,
-  });
-
-  final Key rowKey;
-  final String label;
-  final int value;
-  final String decrementTooltip;
-  final String incrementTooltip;
-  final VoidCallback onDecrement;
-  final VoidCallback onIncrement;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      key: rowKey,
-      children: [
-        SizedBox(
-          width: 110,
-          child: Text(
-            label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-        _StepButton(
-          icon: Icons.remove,
-          tooltip: decrementTooltip,
-          onPressed: onDecrement,
-        ),
-        const SizedBox(width: 4),
-        _StepButton(
-          icon: Icons.add,
-          tooltip: incrementTooltip,
-          onPressed: onIncrement,
-        ),
-        const Spacer(),
-        SizedBox(
-          width: 32,
-          child: Text(
-            '$value',
-            textAlign: TextAlign.right,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-      ],
-    );
+/// Farbgebung fuer Vitalwerte: rot bei niedrig, amber bei ueber Maximum.
+Color? _vitalColor(BuildContext context, int current, int max) {
+  if (current > max) return Colors.amber;
+  if (max > 0 && current <= (max / 3).ceil()) {
+    return Theme.of(context).colorScheme.error;
   }
+  return null;
 }
 
 class _ZauberAktivierenCard extends ConsumerWidget {
