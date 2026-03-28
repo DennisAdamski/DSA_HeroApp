@@ -70,32 +70,41 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
   Widget build(BuildContext context) {
     UiRebuildObserver.bump('combat_armor_section');
     final sectionContent = _buildSectionContent(context);
-    return Card(
+    final tableCard = Card(
+      key: const ValueKey<String>('combat-armor-card'),
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: _isWideLayout && _editorSeedPiece != null
-            ? Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: sectionContent),
-                  const SizedBox(width: 12),
-                  SizedBox(
-                    width: 360,
-                    child: _ArmorPieceEditorPanel(
-                      key: ValueKey<String>(
-                        'combat-armor-editor-${_editingPieceIndex ?? 'new'}',
-                      ),
-                      initialPiece: _editorSeedPiece!,
-                      showRg1Toggle: widget.armor.globalArmorTrainingLevel == 1,
-                      isNew: _editingPieceIndex == null,
-                      onCancel: _closeWideEditor,
-                      onSave: _savePiece,
-                    ),
-                  ),
-                ],
-              )
-            : sectionContent,
+        child: sectionContent,
       ),
+    );
+    if (!_isWideLayout || _editorSeedPiece == null) {
+      return tableCard;
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: tableCard),
+        const SizedBox(width: 12),
+        SizedBox(
+          width: 360,
+          child: Card(
+            key: const ValueKey<String>('combat-armor-editor-card'),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: _ArmorPieceEditorPanel(
+                key: ValueKey<String>(
+                  'combat-armor-editor-${_editingPieceIndex ?? 'new'}',
+                ),
+                initialPiece: _editorSeedPiece!,
+                showRg1Toggle: widget.armor.globalArmorTrainingLevel == 1,
+                isNew: _editingPieceIndex == null,
+                onCancel: _closeWideEditor,
+                onSave: _savePiece,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -133,7 +142,21 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Rüstung', style: Theme.of(context).textTheme.titleMedium),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Rüstung',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            FilledButton(
+              key: const ValueKey<String>('combat-armor-add'),
+              onPressed: () => _openEditor(),
+              child: const Text('+ Rüstung'),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         LayoutBuilder(
           builder: (context, constraints) {
@@ -145,23 +168,7 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
                   tableKey: const ValueKey<String>('combat-armor-table'),
                   columnSpecs: _columnSpecs(showPieceRg1: showPieceRg1),
                   headerCells: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('Name'),
-                        IconButton(
-                          key: const ValueKey<String>('combat-armor-add'),
-                          tooltip: 'Rüstung hinzufügen',
-                          visualDensity: VisualDensity.compact,
-                          constraints: const BoxConstraints.tightFor(
-                            width: 30,
-                            height: 30,
-                          ),
-                          onPressed: () => _openEditor(),
-                          icon: const Icon(Icons.add, size: 18),
-                        ),
-                      ],
-                    ),
+                    const Text('Name'),
                     const Text('RS'),
                     const Text('BE'),
                     const Text('Aktiv'),
@@ -507,13 +514,15 @@ class _ArmorPieceEditorPanelState extends State<_ArmorPieceEditorPanel> {
               ),
             ),
           const SizedBox(height: 12),
-          Row(
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               TextButton(
                 onPressed: widget.onCancel,
                 child: const Text('Abbrechen'),
               ),
-              const SizedBox(width: 8),
               FilledButton(
                 key: const ValueKey<String>('combat-armor-form-save'),
                 onPressed: _submit,

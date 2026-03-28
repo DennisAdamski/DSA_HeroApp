@@ -71,7 +71,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Unbekannte Lernkomplexitaet fuer ${talent.name}: '
+            'Unbekannte Lernkomplexität für ${talent.name}: '
             '$effektiveKomplexitaet',
           ),
         ),
@@ -201,9 +201,16 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     List<TalentDef> allCombatTalents,
   ) {
     final localActiveIds = _draftTalents.keys.toSet();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final sheetWidth = _combatTalentCatalogSheetMinWidth.clamp(
+      0.0,
+      screenWidth,
+    );
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
+      constraints: BoxConstraints.tightFor(width: sheetWidth),
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setSheetState) {

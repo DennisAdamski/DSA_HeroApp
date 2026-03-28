@@ -331,7 +331,7 @@ class _CollectionFixedTile extends StatelessWidget {
                 child: Text(
                   thresholdMet
                       ? 'Schwelle $checkedCount/${def.schwelle} erreicht!'
-                      : 'Schwelle: ${def.schwelle} fuer Bonus',
+                      : 'Schwelle: ${def.schwelle} für Bonus',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: thresholdMet ? Colors.green : null,
                     fontWeight: thresholdMet ? FontWeight.bold : null,
@@ -622,8 +622,8 @@ class _GroupedProgressionBonusTile extends StatelessWidget {
           children: [
             Text(
               complete
-                  ? 'Gruppe vollstaendig — Bonus freigeschaltet!'
-                  : 'Alle Stufen der Gruppe abschliessen fuer Bonus',
+                  ? 'Gruppe vollständig - Bonus freigeschaltet!'
+                  : 'Alle Stufen der Gruppe abschließen für Bonus',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             _RewardChips(seDefs: def.se),

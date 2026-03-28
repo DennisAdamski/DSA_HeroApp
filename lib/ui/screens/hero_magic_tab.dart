@@ -447,12 +447,13 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             controllerFor: _controllerFor,
                             canRaiseValues: _canUseSteigerungsDialog,
                             onRaiseSpell: _steigeZauber,
-                            onAddSpell: _editController.isEditing
-                                ? () => _showZauberKatalog(
-                                    context,
-                                    catalog.spells,
-                                  )
-                                : null,
+                            onAddSpell: () async {
+                              if (!_editController.isEditing) {
+                                await _startEdit();
+                              }
+                              if (!context.mounted) return;
+                              _showZauberKatalog(context, catalog.spells);
+                            },
                             onRollSpell: (_, spell, entry) {
                               final targets = <ProbeTargetValue>[];
                               for (final raw in spell.attributes) {
@@ -499,6 +500,11 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             heroTalents: hero.talents,
                             isEditing: _editController.isEditing,
                             onChanged: _updateRitualCategories,
+                            onEnsureEditing: () async {
+                              if (!_editController.isEditing) {
+                                await _startEdit();
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -520,6 +526,11 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             abilities: _draftMagicSpecialAbilities,
                             isEditing: _editController.isEditing,
                             onChanged: _updateMagicSpecialAbilities,
+                            onEnsureEditing: () async {
+                              if (!_editController.isEditing) {
+                                await _startEdit();
+                              }
+                            },
                           ),
                         ],
                       ),

@@ -104,10 +104,7 @@ void main() {
   }
 
   Finder tabText(String label) {
-    return find.descendant(
-      of: find.byType(TabBar).first,
-      matching: find.text(label),
-    );
+    return find.descendant(of: find.byType(TabBar), matching: find.text(label));
   }
 
   Finder activeTabVerticalScrollable() {
@@ -120,9 +117,22 @@ void main() {
   }
 
   Future<void> selectWorkspaceTab(WidgetTester tester, String label) async {
-    final tab = tabText(label);
+    final tab = tabText(label).first;
     await tester.ensureVisible(tab);
     await tester.tap(tab);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> tapWorkspaceEditAction(WidgetTester tester) async {
+    final textButton = find.text('Bearbeiten');
+    if (textButton.evaluate().isNotEmpty) {
+      await tester.tap(textButton.first);
+      await tester.pumpAndSettle();
+      return;
+    }
+
+    final iconButton = find.byTooltip('Bearbeiten');
+    await tester.tap(iconButton.first);
     await tester.pumpAndSettle();
   }
 
@@ -165,7 +175,7 @@ void main() {
       },
     );
 
-    await openWorkspace(tester, repo);
+    await openWorkspace(tester, repo, size: const Size(740, 844));
 
     await tester.tap(find.text('Bearbeiten').first);
     await tester.pumpAndSettle();
@@ -200,6 +210,84 @@ void main() {
     expect(hero!.name, 'Rondra Neu');
     expect(hero.apTotal, 1200);
     expect(hero.apSpent, 50);
+  });
+
+  testWidgets('overview AP add actions persist outside edit mode', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo);
+
+    final verticalScrollable = activeTabVerticalScrollable();
+    final apTotalField = find.byKey(
+      const ValueKey<String>('overview-field-ap_total'),
+    );
+    final apTotalAddField = find.byKey(
+      const ValueKey<String>('overview-field-ap_total_add'),
+    );
+    final apSpentAddField = find.byKey(
+      const ValueKey<String>('overview-field-ap_spent_add'),
+    );
+    await tester.scrollUntilVisible(
+      apTotalField,
+      240,
+      scrollable: verticalScrollable,
+    );
+
+    final totalAddWidget = tester.widget<TextField>(apTotalAddField);
+    final spentAddWidget = tester.widget<TextField>(apSpentAddField);
+    expect(totalAddWidget.controller?.text, isEmpty);
+    expect(spentAddWidget.controller?.text, isEmpty);
+    expect(
+      totalAddWidget.inputFormatters?.any(
+        (formatter) => formatter is FilteringTextInputFormatter,
+      ),
+      isTrue,
+    );
+    expect(
+      spentAddWidget.inputFormatters?.any(
+        (formatter) => formatter is FilteringTextInputFormatter,
+      ),
+      isTrue,
+    );
+
+    await tester.enterText(apTotalAddField, '200');
+    final apTotalAddAction = find.byKey(
+      const ValueKey<String>('overview-action-ap_total_add'),
+    );
+    final apTotalAddButton = tester.widget<IconButton>(apTotalAddAction);
+    expect(apTotalAddButton.onPressed, isNotNull);
+    apTotalAddButton.onPressed!.call();
+    await tester.pumpAndSettle();
+
+    await tester.enterText(apSpentAddField, '300');
+    final apSpentAddAction = find.byKey(
+      const ValueKey<String>('overview-action-ap_spent_add'),
+    );
+    final apSpentAddButton = tester.widget<IconButton>(apSpentAddAction);
+    expect(apSpentAddButton.onPressed, isNotNull);
+    apSpentAddButton.onPressed!.call();
+    await tester.pumpAndSettle();
+
+    final heroes = await repo.listHeroes();
+    final hero = findHeroById(heroes, 'demo');
+    expect(hero, isNotNull);
+    expect(hero!.apTotal, 1200);
+    expect(hero.apSpent, 800);
+    expect(tester.widget<TextField>(apTotalAddField).controller?.text, isEmpty);
+    expect(tester.widget<TextField>(apSpentAddField).controller?.text, isEmpty);
+    expect(find.text('Speichern'), findsNothing);
   });
 
   testWidgets('overview AP add actions update editable AP fields', (
@@ -310,8 +398,7 @@ void main() {
       await openWorkspace(tester, repo, catalog: buildCatalog());
       await selectWorkspaceTab(tester, 'Talente');
 
-      await tester.tap(find.text('Bearbeiten').first);
-      await tester.pumpAndSettle();
+      await tapWorkspaceEditAction(tester);
 
       expect(
         find.byKey(const ValueKey<String>('talents-catalog-open')),
@@ -379,7 +466,7 @@ void main() {
         },
       );
 
-      await openWorkspace(tester, repo);
+      await openWorkspace(tester, repo, size: const Size(740, 844));
 
       final verticalScrollable = activeTabVerticalScrollable();
       final startKl = find.byKey(
@@ -426,120 +513,88 @@ void main() {
     },
   );
 
-  testWidgets(
-    'overview edit/save persists bought values and current resources',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero(vorteileText: 'KE+1')],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 10,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
+  testWidgets('overview edit/save persists bought values', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero(vorteileText: 'KE+1')],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
 
-      await openWorkspace(tester, repo);
+    await openWorkspace(tester, repo);
 
-      await tester.tap(find.text('Bearbeiten').first);
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Bearbeiten').first);
+    await tester.pumpAndSettle();
 
-      final verticalScrollable = activeTabVerticalScrollable();
-      final boughtLepField = find.byKey(
-        const ValueKey<String>('overview-derived-bought-b_lep'),
-      );
-      final currentKapField = find.byKey(
-        const ValueKey<String>('overview-field-cur_kap'),
-      );
+    final verticalScrollable = activeTabVerticalScrollable();
+    final boughtLepField = find.byKey(
+      const ValueKey<String>('overview-derived-bought-b_lep'),
+    );
 
-      await tester.scrollUntilVisible(
-        currentKapField,
-        240,
-        scrollable: verticalScrollable,
-      );
-      await tester.enterText(
-        find.byKey(const ValueKey<String>('overview-field-cur_lep')),
-        '17',
-      );
-      await tester.enterText(currentKapField, '4');
+    await tester.scrollUntilVisible(
+      boughtLepField,
+      240,
+      scrollable: verticalScrollable,
+    );
+    await tester.enterText(boughtLepField, '3');
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('overview-derived-bought-b_mr')),
+      '2',
+    );
 
-      await tester.scrollUntilVisible(
-        boughtLepField,
-        240,
-        scrollable: verticalScrollable,
-      );
-      await tester.enterText(boughtLepField, '3');
-      await tester.enterText(
-        find.byKey(const ValueKey<String>('overview-derived-bought-b_mr')),
-        '2',
-      );
+    await tester.tap(find.text('Speichern').first);
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Speichern').first);
-      await tester.pumpAndSettle();
+    final heroes = await repo.listHeroes();
+    final hero = findHeroById(heroes, 'demo');
+    expect(hero, isNotNull);
+    expect(hero!.bought.lep, 3);
+    expect(hero.bought.mr, 2);
+  });
 
-      final heroes = await repo.listHeroes();
-      final hero = findHeroById(heroes, 'demo');
-      expect(hero, isNotNull);
-      expect(hero!.bought.lep, 3);
-      expect(hero.bought.mr, 2);
+  testWidgets('header resources stay visible after overview save', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
 
-      final state = await repo.loadHeroState('demo');
-      expect(state, isNotNull);
-      expect(state!.currentLep, 17);
-      expect(state.currentKap, 4);
-    },
-  );
+    await openWorkspace(tester, repo);
+    expect(find.textContaining('10/22'), findsWidgets);
+    expect(find.textContaining('BE'), findsWidgets);
 
-  testWidgets(
-    'header resources show current and max values after overview save',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero()],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 10,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
+    await tester.tap(find.text('Bearbeiten').first);
+    await tester.pumpAndSettle();
 
-      await openWorkspace(tester, repo);
-      expect(find.textContaining('10/22'), findsWidgets);
-      expect(find.textContaining('BE'), findsWidgets);
+    final verticalScrollable = activeTabVerticalScrollable();
+    final boughtLepField = find.byKey(
+      const ValueKey<String>('overview-derived-bought-b_lep'),
+    );
+    await tester.scrollUntilVisible(
+      boughtLepField,
+      240,
+      scrollable: verticalScrollable,
+    );
+    await tester.enterText(boughtLepField, '2');
 
-      await tester.tap(find.text('Bearbeiten').first);
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Speichern').first);
+    await tester.pumpAndSettle();
 
-      final verticalScrollable = activeTabVerticalScrollable();
-      final boughtLepField = find.byKey(
-        const ValueKey<String>('overview-derived-bought-b_lep'),
-      );
-      final currentLepField = find.byKey(
-        const ValueKey<String>('overview-field-cur_lep'),
-      );
-      await tester.scrollUntilVisible(
-        currentLepField,
-        240,
-        scrollable: verticalScrollable,
-      );
-      await tester.enterText(currentLepField, '15');
-      await tester.scrollUntilVisible(
-        boughtLepField,
-        240,
-        scrollable: verticalScrollable,
-      );
-      await tester.enterText(boughtLepField, '2');
-
-      await tester.tap(find.text('Speichern').first);
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('15/'), findsWidgets);
-    },
-  );
+    expect(find.textContaining('10/'), findsWidgets);
+  });
 
   testWidgets(
     'workspace hides magical and divine resources when auto activation is off',
@@ -562,16 +617,6 @@ void main() {
       expect(find.textContaining('AsP'), findsNothing);
       expect(find.textContaining('KaP:'), findsNothing);
 
-      final verticalScrollable = activeTabVerticalScrollable();
-      final currentLepField = find.byKey(
-        const ValueKey<String>('overview-field-cur_lep'),
-      );
-      await tester.scrollUntilVisible(
-        currentLepField,
-        240,
-        scrollable: verticalScrollable,
-      );
-
       expect(
         find.byKey(const ValueKey<String>('overview-field-cur_asp')),
         findsNothing,
@@ -580,10 +625,7 @@ void main() {
         find.byKey(const ValueKey<String>('overview-field-cur_kap')),
         findsNothing,
       );
-      expect(
-        find.byKey(const ValueKey<String>('status-active-spells-open')),
-        findsNothing,
-      );
+      expect(find.text('Aktuelle Ressourcen'), findsNothing);
     },
   );
 
@@ -666,7 +708,7 @@ void main() {
   );
 
   testWidgets(
-    'status tab opens active spell popup and saves Axxeleratus outside edit mode',
+    'wide workspace inspector opens active spell popup and saves Axxeleratus outside edit mode',
     (tester) async {
       final repo = FakeRepository(
         heroes: [buildHero(vorteileText: 'AE+1')],
@@ -680,16 +722,10 @@ void main() {
         },
       );
 
-      await openWorkspace(tester, repo);
+      await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
-      final verticalScrollable = activeTabVerticalScrollable();
       final openButton = find.byKey(
-        const ValueKey<String>('status-active-spells-open'),
-      );
-      await tester.scrollUntilVisible(
-        openButton,
-        240,
-        scrollable: verticalScrollable,
+        const ValueKey<String>('workspace-active-spells-open'),
       );
       await tester.ensureVisible(openButton);
       await tester.pumpAndSettle();
@@ -815,12 +851,37 @@ void main() {
     );
 
     await openWorkspace(tester, repo);
-    await selectWorkspaceTab(tester, 'Notizen');
+    await selectWorkspaceTab(tester, 'Chroniken & Kontakte');
 
     await tester.tap(find.text('Bearbeiten').first);
     await tester.pumpAndSettle();
 
     expect(find.text('Speichern'), findsOneWidget);
+  });
+
+  testWidgets('inventory tab shows add action and no global edit action', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo);
+    await selectWorkspaceTab(tester, 'Inventar');
+
+    expect(
+      find.byKey(const ValueKey<String>('inventory-header-add')),
+      findsOneWidget,
+    );
+    expect(find.text('Bearbeiten'), findsNothing);
   });
 
   testWidgets(
@@ -839,9 +900,11 @@ void main() {
       );
 
       await openWorkspace(tester, repo);
-      await selectWorkspaceTab(tester, 'Notizen');
-
-      await tester.tap(find.text('Bearbeiten').first);
+      await selectWorkspaceTab(tester, 'Chroniken & Kontakte');
+      expect(
+        find.byKey(const ValueKey<String>('notes-add-note')),
+        findsOneWidget,
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const ValueKey<String>('notes-add-note')));
@@ -855,8 +918,12 @@ void main() {
         'Noch 20 Dukaten offen.',
       );
 
-      await tester.tap(find.text('Verbindungen'));
+      await tester.tap(find.text('Kontakte'));
       await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('notes-add-connection')),
+        findsOneWidget,
+      );
       await tester.tap(
         find.byKey(const ValueKey<String>('notes-add-connection')),
       );
@@ -902,7 +969,8 @@ void main() {
       );
 
       await openWorkspace(tester, repo);
-      await tester.tap(tabText('Notizen'));
+      await selectWorkspaceTab(tester, 'Chroniken & Kontakte');
+      await tester.tap(find.text('Chroniken'));
       await tester.pumpAndSettle();
 
       expect(find.text('Noch 20 Dukaten offen.'), findsNothing);
@@ -1159,93 +1227,97 @@ void main() {
     expect(state.ueberanstrengung, 1);
   });
 
-  testWidgets('wide workspace vital values can edit ueberanstrengung and erschoepfung', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [buildHero()],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 10,
-          currentKap: 0,
-          currentAu: 10,
-          erschoepfung: 1,
-          ueberanstrengung: 2,
-        ),
-      },
-    );
-
-    await openWorkspace(tester, repo, size: const Size(1600, 1200));
-
-    expect(
-      find.byKey(
-        const ValueKey<String>('workspace-vital-row-ueberanstrengung'),
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey<String>('workspace-vital-row-erschoepfung')),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.byTooltip('Ueberanstrengung erhoehen'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Erschoepfung verringern'));
-    await tester.pumpAndSettle();
-
-    final state = await repo.loadHeroState('demo');
-    expect(state, isNotNull);
-    expect(state!.ueberanstrengung, 3);
-    expect(state.erschoepfung, 0);
-  });
-
-  testWidgets('wide workspace rest dialog can full restore resources and wounds', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [buildHero(vorteileText: 'AE+3, KE+1')],
-      states: {
-        'demo': const HeroState(
-          currentLep: 5,
-          currentAsp: 2,
-          currentKap: 0,
-          currentAu: 1,
-          erschoepfung: 4,
-          ueberanstrengung: 2,
-          wpiZustand: WundZustand(
-            wundenProZone: <WundZone, int>{WundZone.kopf: 2},
-            kopfIniMalus: 8,
-            kampfunfaehigIgnoriert: true,
+  testWidgets(
+    'wide workspace vital values can edit ueberanstrengung and erschoepfung',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+            erschoepfung: 1,
+            ueberanstrengung: 2,
           ),
+        },
+      );
+
+      await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+      expect(
+        find.byKey(
+          const ValueKey<String>('workspace-vital-row-ueberanstrengung'),
         ),
-      },
-    );
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('workspace-vital-row-erschoepfung')),
+        findsOneWidget,
+      );
 
-    await openWorkspace(tester, repo, size: const Size(1600, 1200));
+      await tester.tap(find.byTooltip('Überanstrengung erhöhen'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Erschöpfung verringern'));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey<String>('workspace-rest-open')));
-    await tester.pumpAndSettle();
+      final state = await repo.loadHeroState('demo');
+      expect(state, isNotNull);
+      expect(state!.ueberanstrengung, 3);
+      expect(state.erschoepfung, 0);
+    },
+  );
 
-    await tester.tap(
-      find.byKey(const ValueKey<String>('rest-dialog-full-restore')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Anwenden'));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'wide workspace rest dialog can full restore resources and wounds',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero(vorteileText: 'AE+3, KE+1')],
+        states: {
+          'demo': const HeroState(
+            currentLep: 5,
+            currentAsp: 2,
+            currentKap: 0,
+            currentAu: 1,
+            erschoepfung: 4,
+            ueberanstrengung: 2,
+            wpiZustand: WundZustand(
+              wundenProZone: <WundZone, int>{WundZone.kopf: 2},
+              kopfIniMalus: 8,
+              kampfunfaehigIgnoriert: true,
+            ),
+          ),
+        },
+      );
 
-    final state = await repo.loadHeroState('demo');
-    expect(state, isNotNull);
-    expect(state!.currentLep, 22);
-    expect(state.currentAu, 22);
-    expect(state.currentAsp, 24);
-    expect(state.currentKap, 1);
-    expect(state.erschoepfung, 0);
-    expect(state.ueberanstrengung, 0);
-    expect(state.wpiZustand.gesamtWunden, 0);
-    expect(state.wpiZustand.kopfIniMalus, 0);
-    expect(state.wpiZustand.kampfunfaehigIgnoriert, isFalse);
-  });
+      await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('workspace-rest-open')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('rest-dialog-full-restore')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Anwenden'));
+      await tester.pumpAndSettle();
+
+      final state = await repo.loadHeroState('demo');
+      expect(state, isNotNull);
+      expect(state!.currentLep, 22);
+      expect(state.currentAu, 22);
+      expect(state.currentAsp, 24);
+      expect(state.currentKap, 1);
+      expect(state.erschoepfung, 0);
+      expect(state.ueberanstrengung, 0);
+      expect(state.wpiZustand.gesamtWunden, 0);
+      expect(state.wpiZustand.kopfIniMalus, 0);
+      expect(state.wpiZustand.kampfunfaehigIgnoriert, isFalse);
+    },
+  );
 
   testWidgets('wide workspace can expand and collapse Helden Deck', (
     tester,
@@ -1384,55 +1456,12 @@ void main() {
       find.byKey(const ValueKey<String>('workspace-status-row-be')),
       findsOneWidget,
     );
-    expect(find.text('(berechnet)'), findsOneWidget);
     expect(find.text('AP verfuegbar: 500'), findsNothing);
     expect(find.text('Ruestung'), findsNothing);
     expect(find.text('Kampfwerte'), findsNothing);
     expect(find.text('Manueller BE'), findsNothing);
     expect(find.text('Entfernen'), findsNothing);
   });
-
-  testWidgets(
-    'workspace status BE row switches to manual override and clears',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero()],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 10,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
-
-      await openWorkspace(tester, repo, size: const Size(1600, 1200));
-
-      expect(find.text('(berechnet)'), findsOneWidget);
-      expect(find.text('(manuell)'), findsNothing);
-
-      await tester.tap(find.byTooltip('BE erhoehen'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('(berechnet)'), findsNothing);
-      expect(find.text('(manuell)'), findsOneWidget);
-      expect(
-        find.byKey(const ValueKey<String>('workspace-status-be-clear')),
-        findsOneWidget,
-      );
-      expect(find.byTooltip('BE auf berechnet zuruecksetzen'), findsOneWidget);
-      expect(find.text('Entfernen'), findsNothing);
-
-      await tester.tap(
-        find.byKey(const ValueKey<String>('workspace-status-be-clear')),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('(berechnet)'), findsOneWidget);
-      expect(find.text('(manuell)'), findsNothing);
-    },
-  );
 
   testWidgets('overview shows attributes and derived in responsive section', (
     tester,
