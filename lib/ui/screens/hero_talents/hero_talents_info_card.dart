@@ -287,48 +287,40 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
   }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Row(
         children: [
-          TextField(
-            key: const ValueKey<String>('talents-group-search'),
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: 'Talentgruppen durchsuchen\u2026',
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: _talentGroupFilter.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      tooltip: 'Suche löschen',
-                      onPressed: () => _searchController.clear(),
-                    )
-                  : null,
-              isDense: true,
-              border: const OutlineInputBorder(),
+          Expanded(
+            child: TextField(
+              key: const ValueKey<String>('talents-group-search'),
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Talente suchen\u2026',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _talentGroupFilter.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        tooltip: 'Suche löschen',
+                        onPressed: () => _searchController.clear(),
+                      )
+                    : null,
+                isDense: true,
+                border: const OutlineInputBorder(),
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FilledButton.icon(
-                  key: const ValueKey<String>('talents-catalog-open'),
-                  onPressed: () => _openTalentCatalogAction(allTalents),
-                  icon: const Icon(Icons.library_add),
-                  label: const Text('+ Talent'),
-                ),
-                const SizedBox(width: 8),
-                FilledButton.icon(
-                  key: const ValueKey<String>('meta-talents-manage-open'),
-                  onPressed: () =>
-                      _openMetaTalentManagerAction(allCatalogTalents),
-                  icon: const Icon(Icons.merge_type),
-                  label: const Text('+ Meta-Talent'),
-                ),
-              ],
-            ),
+          const SizedBox(width: 8),
+          FilledButton.icon(
+            key: const ValueKey<String>('talents-catalog-open'),
+            onPressed: () => _openTalentCatalogAction(allTalents),
+            icon: const Icon(Icons.library_add),
+            label: const Text('+ Talent'),
+          ),
+          const SizedBox(width: 8),
+          FilledButton.icon(
+            key: const ValueKey<String>('meta-talents-manage-open'),
+            onPressed: () => _openMetaTalentManagerAction(allCatalogTalents),
+            icon: const Icon(Icons.merge_type),
+            label: const Text('+ Meta-Talent'),
           ),
         ],
       ),
