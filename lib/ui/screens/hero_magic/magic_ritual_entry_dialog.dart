@@ -205,7 +205,7 @@ class _RitualEntryDialogState extends State<_RitualEntryDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(widget.isEditing ? 'Abbrechen' : 'Schliessen'),
+          child: Text(widget.isEditing ? 'Abbrechen' : 'Schließen'),
         ),
         if (widget.isEditing)
           FilledButton(

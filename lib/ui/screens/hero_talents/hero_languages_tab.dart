@@ -17,7 +17,9 @@ String _computeSprachKomplexitaet({
   if (muttersprache.isEmpty) {
     return 'B';
   }
-  final mutterDef = alleSprachen.where((s) => s.id == muttersprache).firstOrNull;
+  final mutterDef = alleSprachen
+      .where((s) => s.id == muttersprache)
+      .firstOrNull;
   if (mutterDef == null) {
     return 'B';
   }
@@ -37,6 +39,7 @@ class _SprachenSchriftenTab extends StatelessWidget {
     required this.alleSprachen,
     required this.alleSchriften,
     required this.isEditing,
+    required this.onPrepareAddEntry,
     required this.onSprachWertChanged,
     required this.onSchriftWertChanged,
     required this.onMuttersprachChanged,
@@ -53,6 +56,7 @@ class _SprachenSchriftenTab extends StatelessWidget {
   final List<SpracheDef> alleSprachen;
   final List<SchriftDef> alleSchriften;
   final bool isEditing;
+  final Future<void> Function() onPrepareAddEntry;
   final void Function(String id, int wert) onSprachWertChanged;
   final void Function(String id, int wert) onSchriftWertChanged;
   final void Function(String id) onMuttersprachChanged;
@@ -73,6 +77,7 @@ class _SprachenSchriftenTab extends StatelessWidget {
             draftMuttersprache: draftMuttersprache,
             alleSprachen: alleSprachen,
             isEditing: isEditing,
+            onPrepareAddEntry: onPrepareAddEntry,
             onWertChanged: onSprachWertChanged,
             onMuttersprachChanged: onMuttersprachChanged,
             onAddSprache: onAddSprache,
@@ -83,6 +88,7 @@ class _SprachenSchriftenTab extends StatelessWidget {
             draftSchriften: draftSchriften,
             alleSchriften: alleSchriften,
             isEditing: isEditing,
+            onPrepareAddEntry: onPrepareAddEntry,
             onWertChanged: onSchriftWertChanged,
             onAddSchrift: onAddSchrift,
             onRemoveSchrift: onRemoveSchrift,
@@ -103,6 +109,7 @@ class _SprachenSection extends StatelessWidget {
     required this.draftMuttersprache,
     required this.alleSprachen,
     required this.isEditing,
+    required this.onPrepareAddEntry,
     required this.onWertChanged,
     required this.onMuttersprachChanged,
     required this.onAddSprache,
@@ -113,6 +120,7 @@ class _SprachenSection extends StatelessWidget {
   final String draftMuttersprache;
   final List<SpracheDef> alleSprachen;
   final bool isEditing;
+  final Future<void> Function() onPrepareAddEntry;
   final void Function(String id, int wert) onWertChanged;
   final void Function(String id) onMuttersprachChanged;
   final void Function(String id) onAddSprache;
@@ -139,29 +147,34 @@ class _SprachenSection extends StatelessWidget {
         childrenPadding: EdgeInsets.zero,
         title: const Text('Sprachen'),
         subtitle: Text(
-          '${draftSprachen.length} Einträge',
+          'Lege bekannte Sprachen mit Lernwert und Muttersprache an.',
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        trailing: isEditing
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    tooltip: 'Sprache hinzufügen',
-                    onPressed: () => _showSprachKatalog(context),
-                  ),
-                  const Icon(Icons.expand_more),
-                ],
-              )
-            : null,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FilledButton.icon(
+              onPressed: () async {
+                await onPrepareAddEntry();
+                if (!context.mounted) {
+                  return;
+                }
+                _showSprachKatalog(context);
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Sprache'),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.expand_more),
+          ],
+        ),
         children: [
           if (draftSprachen.isEmpty)
             Padding(
               padding: const EdgeInsets.all(12),
               child: Text(
                 isEditing
-                    ? 'Keine Sprachen eingetragen. Tippe auf + um eine Sprache hinzuzufügen.'
+                    ? 'Keine Sprachen eingetragen. Tippe auf Sprache, um einen Eintrag hinzuzufügen.'
                     : 'Keine Sprachen eingetragen.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
@@ -187,9 +200,9 @@ class _SprachenSection extends StatelessWidget {
           child: Text(
             familie,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       );
@@ -357,8 +370,8 @@ class _SprachRowState extends State<_SprachRow> {
               message: widget.isMuttersprache
                   ? 'Muttersprache'
                   : widget.isEditing
-                      ? 'Als Muttersprache setzen'
-                      : '',
+                  ? 'Als Muttersprache setzen'
+                  : '',
               child: Icon(
                 widget.isMuttersprache ? Icons.star : Icons.star_outline,
                 size: 18,
@@ -406,12 +419,12 @@ class _SprachRowState extends State<_SprachRow> {
                     textAlign: TextAlign.center,
                     decoration: const InputDecoration(
                       isDense: true,
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 4,
+                        horizontal: 4,
+                      ),
                     ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     onChanged: (v) {
                       final parsed = int.tryParse(v);
                       if (parsed != null) {
@@ -463,6 +476,7 @@ class _SchriftenSection extends StatelessWidget {
     required this.draftSchriften,
     required this.alleSchriften,
     required this.isEditing,
+    required this.onPrepareAddEntry,
     required this.onWertChanged,
     required this.onAddSchrift,
     required this.onRemoveSchrift,
@@ -471,6 +485,7 @@ class _SchriftenSection extends StatelessWidget {
   final Map<String, HeroScriptEntry> draftSchriften;
   final List<SchriftDef> alleSchriften;
   final bool isEditing;
+  final Future<void> Function() onPrepareAddEntry;
   final void Function(String id, int wert) onWertChanged;
   final void Function(String id) onAddSchrift;
   final void Function(String id) onRemoveSchrift;
@@ -489,29 +504,34 @@ class _SchriftenSection extends StatelessWidget {
         childrenPadding: EdgeInsets.zero,
         title: const Text('Schriften'),
         subtitle: Text(
-          '${draftSchriften.length} Einträge',
+          'Erfasse gelernte Schriften inklusive aktuellem Wert.',
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        trailing: isEditing
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    tooltip: 'Schrift hinzufügen',
-                    onPressed: () => _showSchriftKatalog(context),
-                  ),
-                  const Icon(Icons.expand_more),
-                ],
-              )
-            : null,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FilledButton.icon(
+              onPressed: () async {
+                await onPrepareAddEntry();
+                if (!context.mounted) {
+                  return;
+                }
+                _showSchriftKatalog(context);
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Schrift'),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.expand_more),
+          ],
+        ),
         children: [
           if (draftSchriften.isEmpty)
             Padding(
               padding: const EdgeInsets.all(12),
               child: Text(
                 isEditing
-                    ? 'Keine Schriften eingetragen. Tippe auf + um eine Schrift hinzuzufügen.'
+                    ? 'Keine Schriften eingetragen. Tippe auf Schrift, um einen Eintrag hinzuzufügen.'
                     : 'Keine Schriften eingetragen.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
@@ -699,12 +719,12 @@ class _SchriftRowState extends State<_SchriftRow> {
                     textAlign: TextAlign.center,
                     decoration: const InputDecoration(
                       isDense: true,
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 4,
+                        horizontal: 4,
+                      ),
                     ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     onChanged: (v) {
                       final parsed = int.tryParse(v);
                       if (parsed != null) {

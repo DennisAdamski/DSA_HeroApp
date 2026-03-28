@@ -15,6 +15,7 @@ Read this before making any changes.
 - Catalog data (talents, weapons, spells, maneuvers, combat special abilities) loaded from split JSON assets
 
 The primary language of comments, variable names, UI strings, and commit messages is **German**.
+Visible UI text should use proper German umlauts and `ß` instead of transliterations like `ae`, `oe`, `ue`, or `ss` whenever technically possible.
 
 ### Storage Update 2026-03-13
 
@@ -72,7 +73,7 @@ DSA_HeroApp/
 │   │   ├── hero_meta_talent.dart        # Heldenspezifische Meta-Talent-Definition
 │   │   ├── hero_spell_entry.dart       # Zauber-Eintrag (ZfW, Hauszauber, …)
 │   │   ├── hero_inventory_entry.dart
-│   │   ├── magic_special_ability.dart  # Magische Sonderfertigkeit (Name+Notiz)
+│   │   ├── magic_special_ability.dart  # Magische Sonderfertigkeit (Name+Beschreibung)
 │   │   ├── stat_modifiers.dart
 │   │   ├── bought_stats.dart
 │   │   └── validation/
@@ -268,7 +269,7 @@ Domain models (lib/domain/) — immutable, pure Dart
 | `HeroSpellEntry` | `domain/hero_spell_entry.dart` | Persisted spell entry (ZfW, Hauszauber, modifier, learnedRepresentation, learnedTradition, Legacy-Spezialisierungen, Text-Overrides) |
 | `HeroSpellTextOverrides` | `domain/hero_spell_text_overrides.dart` | Heldenspezifische Korrekturen fuer importierte Zauberdetails |
 | `HeroRitualCategory` | `domain/hero_rituals.dart` | Heldenspezifische Ritualkategorie mit Ritualkenntnis oder Talentbezug |
-| `MagicSpecialAbility` | `domain/magic_special_ability.dart` | Persisted magic special ability (name + note) |
+| `MagicSpecialAbility` | `domain/magic_special_ability.dart` | Persisted magic special ability (name + Beschreibung, lädt Legacy-`note`) |
 | `HeroTransferBundle` | `domain/hero_transfer_bundle.dart` | Export/import envelope (hero + state + timestamp) |
 | `HeroReisebericht` | `domain/hero_reisebericht.dart` | Persistierter Reisebericht-Zustand (checkedIds, openEntries, wahlSeZuordnungen, appliedRewardIds) |
 | `ReiseberichtDef` | `catalog/reisebericht_def.dart` | Katalog-Definition eines Reisebericht-Eintrags mit Typ, Belohnungen und Untereintraegen |
@@ -467,6 +468,7 @@ python tool/report_unreferenced_dart.py
 - **Provider access in UI**: use `.watch` for reactive reads; use `.read` only inside callbacks (e.g. button presses).
 - **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **21** for `HeroSheet` and **5** for `HeroState`.
 - **German comments and identifiers**: code-level comments and domain names follow German (rasse, kultur, Held, Talente, etc.).
+- **UI wording**: user-facing German text should prefer real umlauts and `ß` over transliterations such as `ae`, `oe`, `ue`, and `ss`, unless a technical constraint requires ASCII.
 
 ### Catalog
 

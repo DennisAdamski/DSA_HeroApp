@@ -16,7 +16,7 @@ Sie sind verbindlich und haben Vorrang vor impliziten Standardannahmen.
 - Nur den fuer den Task noetigen Scope aendern.
 - Architektur, Schichten, Abhaengigkeiten und Projektaufbau aktiv und kritisch hinterfragen, statt bestehende Muster ungeprueft zu uebernehmen.
 - Erstelle möglichst generische Funktionen, sodass Erweiterungen und Skalierungen möglich sind.
-- Nutze Umlaute in Strings, die in der UI Anwendung finden. Ä, ö ,ü, ß sind nicht verboten.
+- Nutze in UI-Strings konsequent echte Umlaute und ß statt Transliterationen wie `ae`, `oe`, `ue` oder `ss`, sofern kein technischer Grund dagegen spricht.
 - Hinterfrage die Anforderung im Prompt. Gibt es eine bessere Lösung? Dann schlag diese vor.
 
 ## Verbotene Befehle
@@ -82,6 +82,7 @@ Hinweis zu `flutter clean`:
 - Plattformordner (`ios/`, `android/`, `macos/`, `windows/`, `linux/`) nur bei klarer Notwendigkeit aendern.
 - Vorhandene Tools unter `tool/` bevorzugen statt ad-hoc Skripte.
 - Keine unbegruendeten Massenaenderungen an generierten Plattformdateien.
+- Buttons, die einer Liste einen neuen Eintrag hinzufuegen, gehoeren in den Header der jeweiligen Section/Card/ExpansionTile und sind als `+ <Singular>` zu beschriften (z. B. `+ Sonderfertigkeit`, `+ Notiz`, `+ Verbindung`).
 
 ## Vor jeder Aenderung: Pflicht-Checkliste
 1. Ziel und Scope des Tasks klar benennen.

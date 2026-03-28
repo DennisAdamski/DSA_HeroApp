@@ -12,7 +12,7 @@ class _NotesSection extends StatelessWidget {
 
   final List<HeroNoteEntry> entries;
   final bool isEditing;
-  final VoidCallback onAdd;
+  final Future<void> Function() onAdd;
   final void Function(int index) onRemove;
   final void Function(int index, String value) onTitleChanged;
   final void Function(int index, String value) onDescriptionChanged;
@@ -25,16 +25,13 @@ class _NotesSection extends StatelessWidget {
         _SectionCard(
           title: 'Freie Notizen',
           subtitle: isEditing
-              ? 'Lege Eintraege mit Titel und Beschreibung an.'
-              : 'Tippe auf einen Titel, um die vollstaendige Beschreibung zu sehen.',
-          action: isEditing
-              ? FilledButton.icon(
-                  key: const ValueKey<String>('notes-add-note'),
-                  onPressed: onAdd,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Notiz'),
-                )
-              : null,
+              ? 'Lege Einträge mit Titel und Beschreibung an.'
+              : 'Tippe auf einen Titel, um die vollständige Beschreibung zu sehen.',
+          action: FilledButton(
+            key: const ValueKey<String>('notes-add-note'),
+            onPressed: onAdd,
+            child: const Text('+ Chronik'),
+          ),
           child: entries.isEmpty
               ? const _EmptyState(message: 'Noch keine Notizen vorhanden.')
               : Column(
@@ -79,7 +76,7 @@ class _ConnectionsSection extends StatelessWidget {
 
   final List<HeroConnectionEntry> entries;
   final bool isEditing;
-  final VoidCallback onAdd;
+  final Future<void> Function() onAdd;
   final void Function(int index) onRemove;
   final void Function(
     int index, {
@@ -99,16 +96,13 @@ class _ConnectionsSection extends StatelessWidget {
         _SectionCard(
           title: 'Verbindungen',
           subtitle: isEditing
-              ? 'Pflege Kontakte, Beziehungen und Hintergruende.'
-              : 'Oeffne einen Eintrag, um Ort, Sozialstatus, Loyalitaet und Beschreibung zu sehen.',
-          action: isEditing
-              ? FilledButton.icon(
-                  key: const ValueKey<String>('notes-add-connection'),
-                  onPressed: onAdd,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Verbindung'),
-                )
-              : null,
+              ? 'Pflege Kontakte, Beziehungen und Hintergründe.'
+              : 'Öffne einen Eintrag, um Ort, Sozialstatus, Loyalität und Beschreibung zu sehen.',
+          action: FilledButton(
+            key: const ValueKey<String>('notes-add-connection'),
+            onPressed: onAdd,
+            child: const Text('+ Kontakt'),
+          ),
           child: entries.isEmpty
               ? const _EmptyState(message: 'Noch keine Verbindungen vorhanden.')
               : Column(

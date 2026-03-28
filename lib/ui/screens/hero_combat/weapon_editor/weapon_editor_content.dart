@@ -188,7 +188,7 @@ extension _WeaponEditorContent on WeaponEditorScreenState {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.isNew ? 'Waffe hinzufuegen' : 'Waffe bearbeiten'),
+          title: Text(widget.isNew ? 'Waffe hinzufügen' : 'Waffe bearbeiten'),
         ),
         body: content,
       ),
@@ -196,7 +196,7 @@ extension _WeaponEditorContent on WeaponEditorScreenState {
   }
 
   Widget _header(BuildContext context) {
-    final title = widget.isNew ? 'Waffe hinzufuegen' : 'Waffe bearbeiten';
+    final title = widget.isNew ? 'Waffe hinzufügen' : 'Waffe bearbeiten';
     final template = widget.catalogWeaponName?.trim() ?? '';
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),

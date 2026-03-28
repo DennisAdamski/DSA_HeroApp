@@ -159,7 +159,11 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
 
   void _markFieldChanged() => _editController.markFieldChanged();
 
-  void _addCompanion() {
+  Future<void> _addCompanion() async {
+    if (!_editController.isEditing) {
+      await _startEdit();
+    }
+    if (!mounted) return;
     final newCompanion = HeroCompanion(
       id: const Uuid().v4(),
       name: 'Neuer Begleiter',
@@ -300,7 +304,6 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
         Expanded(
           child: _BegleiterAuswahlView(
             companions: _draftCompanions,
-            isEditing: isEditing,
             onSelect: (id) => setState(() {
               _activeCompanionId = id;
               _userNavigatedBack = false;

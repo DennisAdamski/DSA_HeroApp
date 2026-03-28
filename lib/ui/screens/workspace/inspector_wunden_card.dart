@@ -9,6 +9,167 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_ini_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_unterdrueckung_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wunden_detail_dialog.dart';
 
+/// Einbettbare Wunden-Sektion fuer die Vitalwerte-Card.
+///
+/// Zeigt eine aufklappbare Zeile mit Gesamtwunden und Wundschwelle;
+/// ausgeklappt erscheinen Effekte, Zonenzeilen und ein Detail-Button.
+class InspectorWundenSection extends ConsumerStatefulWidget {
+  const InspectorWundenSection({
+    super.key,
+    required this.heroId,
+    required this.heroState,
+    required this.wundEffekte,
+    required this.wundschwelle,
+  });
+
+  final String heroId;
+  final HeroState heroState;
+  final WundEffekte wundEffekte;
+  final int wundschwelle;
+
+  @override
+  ConsumerState<InspectorWundenSection> createState() =>
+      _InspectorWundenSectionState();
+}
+
+class _InspectorWundenSectionState
+    extends ConsumerState<InspectorWundenSection> {
+  bool _expanded = false;
+
+  Future<void> _speichereWundZustand(WundZustand neuerZustand) async {
+    await ref.read(heroActionsProvider).saveHeroState(
+      widget.heroId,
+      widget.heroState.copyWith(wpiZustand: neuerZustand),
+    );
+  }
+
+  Future<void> _wundeHinzufuegen(WundZone zone) async {
+    final zustand = widget.heroState.wpiZustand;
+    if (zustand.wundenInZone(zone) >= maxWundenProZone) return;
+
+    WundZustand neuerZustand;
+    if (zone == WundZone.kopf) {
+      final iniWert = await showWundIniDialog(context);
+      if (iniWert == null || !mounted) return;
+      neuerZustand = zustand.mitWundeHinzu(zone, iniWuerfelWert: iniWert);
+    } else {
+      neuerZustand = zustand.mitWundeHinzu(zone);
+    }
+
+    await _speichereWundZustand(neuerZustand);
+
+    if (!mounted) return;
+    final hero = ref.read(heroByIdProvider(widget.heroId));
+    if (hero == null) return;
+    final effekte = computeWundEffekte(neuerZustand);
+    final unterdruecken = await showWundUnterdrueckungDialog(
+      context: context,
+      hero: hero,
+      wpiZustand: neuerZustand,
+      zone: zone,
+      wundEffekte: effekte,
+    );
+    if (unterdruecken == true) {
+      final aktUnterdrueckt = neuerZustand.unterdrueckteInZone(zone);
+      await _speichereWundZustand(
+        neuerZustand.mitUnterdrueckung(zone, aktUnterdrueckt + 1),
+      );
+    }
+  }
+
+  Future<void> _wundeEntfernen(WundZone zone) async {
+    final zustand = widget.heroState.wpiZustand;
+    if (zustand.wundenInZone(zone) <= 0) return;
+    await _speichereWundZustand(zustand.mitWundeEntfernt(zone));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final zustand = widget.heroState.wpiZustand;
+    final gesamt = zustand.gesamtWunden;
+    final hatWunden = gesamt > 0;
+    final errorColor = Theme.of(context).colorScheme.error;
+    final secondaryColor = Theme.of(context).colorScheme.onSurfaceVariant;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Zusammenfassungszeile
+        InkWell(
+          onTap: () => setState(() => _expanded = !_expanded),
+          child: SizedBox(
+            height: 32,
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 62,
+                  child: Text(
+                    'Wunden',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: hatWunden ? errorColor : null,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _expanded ? Icons.expand_less : Icons.expand_more,
+                  size: 16,
+                  color: secondaryColor,
+                ),
+                const Spacer(),
+                if (hatWunden)
+                  Text(
+                    '$gesamt',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: errorColor,
+                    ),
+                  ),
+                const SizedBox(width: 4),
+                Text(
+                  'WS ${widget.wundschwelle}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: secondaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Aufgeklappter Bereich
+        if (_expanded) ...[
+          if (hatWunden) _WundEffekteSubtitle(effekte: widget.wundEffekte),
+          for (final zone in WundZone.values)
+            _WundZoneCompactRow(
+              zone: zone,
+              wunden: zustand.wundenInZone(zone),
+              unterdrueckte: zustand.unterdrueckteInZone(zone),
+              onHinzufuegen: () => _wundeHinzufuegen(zone),
+              onEntfernen: () => _wundeEntfernen(zone),
+            ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: SizedBox(
+              width: 28,
+              height: 28,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                iconSize: 16,
+                tooltip: 'Wunden-Details',
+                onPressed: () => showWundenDetailDialog(
+                  context: context,
+                  heroId: widget.heroId,
+                ),
+                icon: const Icon(Icons.open_in_new),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 /// Kompakte Wunden-Card fuer das Inspector-Panel.
 ///
 /// Zeigt im eingeklappten Zustand nur Titel und Effekt-Zusammenfassung;

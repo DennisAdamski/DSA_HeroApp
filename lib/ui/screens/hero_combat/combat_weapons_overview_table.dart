@@ -70,20 +70,20 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
 
   static const List<AdaptiveTableColumnSpec> _columnSpecs =
       <AdaptiveTableColumnSpec>[
-        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 300, flex: 3),
-        AdaptiveTableColumnSpec(minWidth: 100, maxWidth: 180, flex: 2),
-        AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 260, flex: 2),
-        AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 220, flex: 2),
+        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 3),
+        AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 180, flex: 1),
+        AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 260, flex: 2),
+        AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 240, flex: 2),
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 96),
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
         AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
+        AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 92),
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
         AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 120),
-        AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 320, flex: 3),
-        AdaptiveTableColumnSpec.fixed(56),
+        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 420, flex: 4),
+        AdaptiveTableColumnSpec.fixed(72),
       ];
 
   static const List<String> _headers = <String>[
@@ -117,7 +117,32 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Waffen', style: Theme.of(context).textTheme.titleMedium),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Waffen',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    FilledButton(
+                      key: const ValueKey<String>('combat-weapon-add'),
+                      onPressed: onWeaponAdd,
+                      child: const Text('+ Leere Waffe'),
+                    ),
+                    OutlinedButton(
+                      key: const ValueKey<String>('combat-weapon-from-catalog'),
+                      onPressed: onWeaponCatalog,
+                      child: const Text('+ Katalogwaffe'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
             Expanded(
               child: SingleChildScrollView(
@@ -138,9 +163,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
             if (overviewRows.isEmpty)
               const Padding(
                 padding: EdgeInsets.only(top: 8),
-                child: Text(
-                  'Keine Waffen fuer den aktuellen Filter vorhanden.',
-                ),
+                child: Text('Keine Waffen für den aktuellen Filter vorhanden.'),
               ),
           ],
         ),
@@ -150,28 +173,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
 
   List<Widget> _buildHeaderCells() {
     return <Widget>[
-      Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('Name'),
-          IconButton(
-            key: const ValueKey<String>('combat-weapon-add'),
-            tooltip: 'Leere Waffe hinzufuegen',
-            visualDensity: VisualDensity.compact,
-            constraints: const BoxConstraints.tightFor(width: 30, height: 30),
-            onPressed: onWeaponAdd,
-            icon: const Icon(Icons.add, size: 18),
-          ),
-          IconButton(
-            key: const ValueKey<String>('combat-weapon-from-catalog'),
-            tooltip: 'Waffe aus Katalog hinzufuegen',
-            visualDensity: VisualDensity.compact,
-            constraints: const BoxConstraints.tightFor(width: 30, height: 30),
-            onPressed: onWeaponCatalog,
-            icon: const Icon(Icons.library_add, size: 18),
-          ),
-        ],
-      ),
+      const Text('Name'),
       for (final header in _headers.skip(1)) Text(header),
     ];
   }

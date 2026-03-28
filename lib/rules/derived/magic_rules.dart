@@ -287,3 +287,40 @@ String buildAxxeleratusDefenseHint({required bool axxeleratusActive}) {
   }
   return 'Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2';
 }
+
+/// Ergebnis-Typ fuer einen aktiven Zaubereffekt-Chip im Inspector.
+class ActiveSpellEffectChip {
+  const ActiveSpellEffectChip({
+    required this.label,
+    required this.bonusText,
+  });
+
+  final String label;
+  final String bonusText;
+}
+
+/// Beschreibt aktive Zaubereffekte als Chips fuer das Inspector-Panel.
+///
+/// Nimmt die bereits berechneten Bonus-Werte aus `CombatPreviewStats`
+/// entgegen, damit keine erneute Berechnung noetig ist.
+List<ActiveSpellEffectChip> describeActiveSpellEffects({
+  required bool axxeleratusActive,
+  required int axxIniBonus,
+  required int axxPaBaseBonus,
+  required int axxAusweichenBonus,
+  required int axxTpBonus,
+}) {
+  final chips = <ActiveSpellEffectChip>[];
+  if (axxeleratusActive) {
+    final parts = <String>[];
+    if (axxIniBonus != 0) parts.add('INI+$axxIniBonus');
+    if (axxPaBaseBonus != 0) parts.add('PA+$axxPaBaseBonus');
+    if (axxAusweichenBonus != 0) parts.add('AW+$axxAusweichenBonus');
+    if (axxTpBonus != 0) parts.add('TP+$axxTpBonus');
+    chips.add(ActiveSpellEffectChip(
+      label: 'Axxeleratus',
+      bonusText: parts.join(' '),
+    ));
+  }
+  return chips;
+}

@@ -7,7 +7,17 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
     if (!hasAvatar) {
       return _SectionCard(
         title: 'Basisinformationen',
-        child: _buildStandardFieldLayout(),
+        child: Column(
+          children: [
+            _buildStandardFieldLayout(),
+            const SizedBox(height: _gridSpacing),
+            const _SketchedAvatarPlaceholder(),
+            const SizedBox(height: _gridSpacing),
+            Center(
+              child: _NoAvatarActions(heroId: widget.heroId, hero: hero),
+            ),
+          ],
+        ),
       );
     }
 
@@ -27,22 +37,18 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
   }
 
   /// Breites Layout: Feldgrid links, Avatar rechts.
-  Widget _buildWideAvatarBaseInfo(
-    HeroSheet hero,
-    BoxConstraints constraints,
-  ) {
+  Widget _buildWideAvatarBaseInfo(HeroSheet hero, BoxConstraints constraints) {
     final avatarWidth = (constraints.maxWidth * 0.25).clamp(150.0, 280.0);
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildInputField(label: 'Name', keyName: 'name'),
         const SizedBox(height: _gridSpacing),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(children: _buildStandardFieldRows()),
-            ),
+            Expanded(child: Column(children: _buildStandardFieldRows())),
             const SizedBox(width: _gridSpacing),
             SizedBox(
               width: avatarWidth,
@@ -53,12 +59,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
                     avatarFileName: hero.appearance.avatarFileName,
                   ),
                   const SizedBox(height: 8),
-                  _AvatarActions(
-                    heroId: widget.heroId,
-                    hero: hero,
-                    hasAvatar: true,
-                    isEditing: _editController.isEditing,
-                  ),
+                  _HasAvatarActions(heroId: widget.heroId, hero: hero),
                 ],
               ),
             ),
@@ -71,6 +72,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
   /// Schmales Layout mit Avatar: Bild oben, dann Felder.
   Widget _buildNarrowAvatarBaseInfo(HeroSheet hero) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildInputField(label: 'Name', keyName: 'name'),
         const SizedBox(height: _gridSpacing),
@@ -84,12 +86,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
           ),
         ),
         const SizedBox(height: 8),
-        _AvatarActions(
-          heroId: widget.heroId,
-          hero: hero,
-          hasAvatar: true,
-          isEditing: _editController.isEditing,
-        ),
+        _HasAvatarActions(heroId: widget.heroId, hero: hero),
         const SizedBox(height: _gridSpacing),
         ..._buildStandardFieldRows(),
       ],
@@ -99,6 +96,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
   /// Standard-Feldanordnung ohne Avatar (wie das urspruengliche Layout).
   Widget _buildStandardFieldLayout() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildInputField(label: 'Name', keyName: 'name'),
         const SizedBox(height: _gridSpacing),
@@ -113,10 +111,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
         breakpoint: _standardTwoColumnBreakpoint,
         children: [
           _buildInputField(label: 'Rasse', keyName: 'rasse'),
-          _buildInputField(
-            label: 'Rasse Modifikatoren',
-            keyName: 'rasse_mod',
-          ),
+          _buildInputField(label: 'Rasse Modifikatoren', keyName: 'rasse_mod'),
         ],
       ),
       const SizedBox(height: _gridSpacing),
@@ -147,7 +142,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
         children: [
           _buildInputField(label: 'Geschlecht', keyName: 'geschlecht'),
           _buildInputField(label: 'Alter', keyName: 'alter'),
-          _buildInputField(label: 'Groesse', keyName: 'groesse'),
+          _buildInputField(label: 'Größe', keyName: 'groesse'),
           _buildInputField(label: 'Gewicht', keyName: 'gewicht'),
           _buildInputField(label: 'Haarfarbe', keyName: 'haarfarbe'),
           _buildInputField(label: 'Augenfarbe', keyName: 'augenfarbe'),

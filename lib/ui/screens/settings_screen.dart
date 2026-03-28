@@ -129,7 +129,7 @@ class _HeroStorageSection extends ConsumerWidget {
               Text(
                 'Heldendaten werden getrennt von den App-Einstellungen '
                 'gespeichert. Ein benutzerdefinierter Pfad eignet sich z. B. '
-                'fuer einen Cloud-Ordner.',
+                'für einen Cloud-Ordner.',
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 16),
@@ -170,7 +170,7 @@ class _HeroStorageSection extends ConsumerWidget {
                         ref: ref,
                       ),
                       icon: const Icon(Icons.folder_open),
-                      label: const Text('Ordner waehlen'),
+                      label: const Text('Ordner wählen'),
                     ),
                     OutlinedButton.icon(
                       onPressed: location.usesCustomPath
@@ -182,7 +182,7 @@ class _HeroStorageSection extends ConsumerWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
-                                    'Heldenspeicher auf Standardpfad zurueckgesetzt.',
+                                    'Heldenspeicher auf Standardpfad zurückgesetzt.',
                                   ),
                                 ),
                               );
@@ -199,14 +199,14 @@ class _HeroStorageSection extends ConsumerWidget {
                               )
                           : null,
                       icon: const Icon(Icons.open_in_new),
-                      label: const Text('Ordner oeffnen'),
+                      label: const Text('Ordner öffnen'),
                     ),
                   ],
                 ),
               ] else ...[
                 Text(
                   'Ein benutzerdefinierter Heldenspeicher ist auf dieser '
-                  'Plattform derzeit nicht verfuegbar.',
+                  'Plattform derzeit nicht verfügbar.',
                   style: theme.textTheme.bodyMedium,
                 ),
               ],
@@ -245,7 +245,7 @@ class _HeroStorageSection extends ConsumerWidget {
     final selectedPath = await ref
         .read(storageDirectoryPickerProvider)
         .pickDirectory(
-          dialogTitle: 'Heldenspeicher waehlen',
+          dialogTitle: 'Heldenspeicher wählen',
         );
     if (!context.mounted) {
       return;
@@ -276,7 +276,7 @@ class _HeroStorageSection extends ConsumerWidget {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ordner konnte nicht geoeffnet werden: $error')),
+        SnackBar(content: Text('Ordner konnte nicht geöffnet werden: $error')),
       );
     }
   }
@@ -323,8 +323,8 @@ class _AvatarApiSectionState extends ConsumerState<_AvatarApiSection> {
           Text('Bildgenerierung', style: theme.textTheme.titleLarge),
           const SizedBox(height: 8),
           Text(
-            'Ueber eine KI-API koennen Heldenportraets generiert werden. '
-            'Die Kosten werden ueber deinen eigenen API-Schluessel abgerechnet.',
+            'Über eine KI-API können Heldenporträts generiert werden. '
+            'Die Kosten werden über deinen eigenen API-Schlüssel abgerechnet.',
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
@@ -371,8 +371,8 @@ class _AvatarApiSectionState extends ConsumerState<_AvatarApiSection> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Der API-Schluessel wird nur lokal auf diesem Geraet gespeichert '
-            'und nie an Dritte uebertragen.',
+            'Der API-Schlüssel wird nur lokal auf diesem Gerät gespeichert '
+            'und nie an Dritte übertragen.',
             style: theme.textTheme.bodySmall,
           ),
         ],

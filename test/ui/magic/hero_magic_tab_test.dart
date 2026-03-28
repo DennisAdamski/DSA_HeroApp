@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -45,6 +46,8 @@ void main() {
     Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
     List<HeroRitualCategory> ritualCategories = const <HeroRitualCategory>[],
     List<String> representationen = const <String>['Mag', 'Dru', 'Elf'],
+    List<MagicSpecialAbility> magicSpecialAbilities =
+        const <MagicSpecialAbility>[],
   }) {
     return HeroSheet(
       id: 'demo',
@@ -62,6 +65,7 @@ void main() {
       ),
       merkmalskenntnisse: <String>['Kraft'],
       representationen: representationen,
+      magicSpecialAbilities: magicSpecialAbilities,
       talents: talents,
       ritualCategories: ritualCategories,
       spells: <String, HeroSpellEntry>{
@@ -188,6 +192,97 @@ void main() {
 
     expect(find.text('Rituale'), findsOneWidget);
   });
+
+  testWidgets(
+    'zauberbereich ist keine ExpansionTile und zeigt beschrifteten Add-Button',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          buildHero().copyWith(spells: const <String, HeroSpellEntry>{}),
+        ],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+      await openMagicTab(tester, repo: repo);
+
+      expect(find.byType(ExpansionTile), findsNothing);
+      expect(find.text('+ Zauber'), findsOneWidget);
+      expect(find.text('Kategorie'), findsNothing);
+      expect(
+        find.text('Aktiviere hier Zauber für diesen Helden.'),
+        findsOneWidget,
+      );
+      expect(find.text('Keine Zauber aktiviert.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'magische Sonderfertigkeiten nutzen feste Sektion und speichern Beschreibung',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          buildHero(
+            magicSpecialAbilities: const <MagicSpecialAbility>[
+              MagicSpecialAbility(
+                name: 'Kraftlinienmagie',
+                beschreibung: 'Stufe II',
+              ),
+            ],
+          ),
+        ],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+      final opened = await openMagicTab(tester, repo: repo);
+
+      await tester.tap(find.text('Repr. & SF'));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+      expect(find.byType(ExpansionTile), findsNothing);
+      expect(find.text('Kraftlinienmagie'), findsOneWidget);
+      expect(find.text('Stufe II'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey<String>('magic-sf-add')));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+      expect(find.text('Sonderfertigkeit hinzufügen'), findsOneWidget);
+      expect(find.text('Beschreibung'), findsOneWidget);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Name'),
+        'Matrixverständnis',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Beschreibung'),
+        'Erleichtert Analyse magischer Strukturen.',
+      );
+      await tester.tap(find.text('Speichern'));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+      await opened.actions.save();
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+      final savedHero = await opened.repo.loadHeroById('demo');
+      expect(savedHero?.magicSpecialAbilities, hasLength(2));
+      expect(savedHero?.magicSpecialAbilities.last.name, 'Matrixverständnis');
+      expect(
+        savedHero?.magicSpecialAbilities.last.beschreibung,
+        'Erleichtert Analyse magischer Strukturen.',
+      );
+    },
+  );
 
   testWidgets('magic tab stores global lead attribute', (tester) async {
     final opened = await openMagicTab(tester);
@@ -413,15 +508,16 @@ void main() {
   });
 
   testWidgets(
-    'edit mode creates own knowledge ritual category with default taw and selected complexity',
+    'ritualkategorien lassen sich auch außerhalb des Edit-Modus hinzufügen',
     (tester) async {
       final opened = await openMagicTab(tester);
 
-      await opened.actions.startEdit();
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
-
       await tester.tap(find.text('Rituale'));
       await _pumpAndSettleIgnoringKnownOverflow(tester);
+      expect(
+        find.widgetWithText(FilledButton, '+ Ritualkategorie'),
+        findsOneWidget,
+      );
       await tester.tap(
         find.byKey(const ValueKey<String>('magic-rituals-add-category')),
       );

@@ -90,7 +90,7 @@ Technischer Stack:
 - Anzeige von Verfuegbarkeit, Lernkomplexitaet und heldenspezifischen Anpassungen
 - Steigerungsdialog fuer Zauber mit Fremdrepr.-, Hauszauber-, manueller Komplexitaetskorrektur und Lehrmeisterlogik
 - Eigener Ritual-Bereich mit Ritualkategorien, Ritualkenntnissen und Ritualen
-- Pflege magischer Sonderfertigkeiten und aktiver Zaubereffekte
+- Pflege magischer Sonderfertigkeiten mit Beschreibung und aktiver Zaubereffekte
 
 ### Workspace und Regeneration
 
@@ -103,7 +103,7 @@ Technischer Stack:
 
 ### Inventar, Notizen und Verbindungen
 
-- Bearbeitbares Inventar fuer Ausruestung und sonstige Gegenstaende
+- Direkt bearbeitbares Inventar als kompakte Tabelle fuer Ausruestung und sonstige Gegenstaende
 - Notizen mit Titel und Beschreibung
 - Verbindungen/Kontakte mit Ort, Sozialstatus, Loyalitaet und Beschreibung
 

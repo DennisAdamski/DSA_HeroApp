@@ -1,34 +1,34 @@
-/// Strukturierte magische Sonderfertigkeit (Name + optionale Notiz).
+/// Strukturierte magische Sonderfertigkeit mit Name und Beschreibung.
 class MagicSpecialAbility {
-  const MagicSpecialAbility({
-    required this.name,
-    this.note = '',
-  });
+  /// Erstellt eine persistierbare magische Sonderfertigkeit.
+  const MagicSpecialAbility({required this.name, this.beschreibung = ''});
 
+  /// Sichtbarer Name der Sonderfertigkeit.
   final String name;
-  final String note;
 
-  MagicSpecialAbility copyWith({
-    String? name,
-    String? note,
-  }) {
+  /// Optionale Beschreibung oder heldenspezifische Ausprägung.
+  final String beschreibung;
+
+  /// Legacy-Alias für ältere Aufrufer und Datenbestände.
+  String get note => beschreibung;
+
+  MagicSpecialAbility copyWith({String? name, String? beschreibung}) {
     return MagicSpecialAbility(
       name: name ?? this.name,
-      note: note ?? this.note,
+      beschreibung: beschreibung ?? this.beschreibung,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'note': note,
-    };
+    return {'name': name, 'beschreibung': beschreibung, 'note': beschreibung};
   }
 
   static MagicSpecialAbility fromJson(Map<String, dynamic> json) {
+    final beschreibung =
+        (json['beschreibung'] as String?) ?? (json['note'] as String?) ?? '';
     return MagicSpecialAbility(
       name: (json['name'] as String?) ?? '',
-      note: (json['note'] as String?) ?? '',
+      beschreibung: beschreibung,
     );
   }
 }

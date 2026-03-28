@@ -127,16 +127,28 @@ class _FlexibleTableState extends State<FlexibleTable> {
                     ? null
                     : (responsiveLayout?.toColumnWidthMap() ??
                           buildAdaptiveTableColumnWidths(widget.columnSpecs!));
+                final tableWidth =
+                    responsiveLayout?.tableWidth ?? constraints.maxWidth;
+                final minTableWidth = constraints.maxWidth.isFinite
+                    ? constraints.maxWidth
+                    : tableWidth;
 
                 return SingleChildScrollView(
                   controller: _scrollController,
                   scrollDirection: Axis.horizontal,
-                  child: Table(
-                    key: widget.tableKey,
-                    defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                    columnWidths: columnWidths,
-                    defaultColumnWidth: const IntrinsicColumnWidth(),
-                    children: allRows,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: minTableWidth),
+                    child: SizedBox(
+                      width: tableWidth,
+                      child: Table(
+                        key: widget.tableKey,
+                        defaultVerticalAlignment:
+                            TableCellVerticalAlignment.middle,
+                        columnWidths: columnWidths,
+                        defaultColumnWidth: const IntrinsicColumnWidth(),
+                        children: allRows,
+                      ),
+                    ),
                   ),
                 );
               },
