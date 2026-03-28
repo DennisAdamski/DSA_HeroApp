@@ -128,7 +128,7 @@ extension _WeaponEditorContent on WeaponEditorScreenState {
                   wmPaController: _wmPaController,
                   beTalentModController: _beTalentModController,
                   onBreakFactorChanged: (value) => _setDraftWeapon(
-                    _draftWeapon.copyWith(breakFactor: value < 0 ? 0 : value),
+                    _draftWeapon.copyWith(breakFactor: value),
                   ),
                   onIniModChanged: (value) =>
                       _setDraftWeapon(_draftWeapon.copyWith(iniMod: value)),

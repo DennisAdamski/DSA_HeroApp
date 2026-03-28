@@ -322,9 +322,6 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       if (slot.tpDiceCount < 1) {
         return '$slotLabel: Würfelanzahl muss >= 1 sein.';
       }
-      if (slot.breakFactor < 0) {
-        return '$slotLabel: BF darf nicht negativ sein.';
-      }
       if (slot.isRanged && slot.rangedProfile.reloadTime < 0) {
         return '$slotLabel: Ladezeit darf nicht negativ sein.';
       }
