@@ -177,7 +177,7 @@ class WeaponBasicInfoSection extends StatelessWidget {
                     ),
                     contentPadding: EdgeInsets.zero,
                     dense: true,
-                    title: const Text('Einhaendig'),
+                    title: const Text('Einhändig'),
                     value: isOneHanded,
                     onChanged: onOneHandedChanged,
                   ),

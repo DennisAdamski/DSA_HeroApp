@@ -257,7 +257,7 @@ class _BeStepperDialogState extends ConsumerState<_BeStepperDialog> {
                         .state = null;
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Zuruecksetzen'),
+                  child: const Text('Zurücksetzen'),
                 ),
                 const SizedBox(width: 8),
                 FilledButton(
@@ -267,7 +267,7 @@ class _BeStepperDialogState extends ConsumerState<_BeStepperDialog> {
                         .state = _value;
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Uebernehmen'),
+                  child: const Text('Übernehmen'),
                 ),
               ],
             ),

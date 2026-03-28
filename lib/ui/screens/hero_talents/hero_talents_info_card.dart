@@ -28,15 +28,13 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                 icon: const Icon(Icons.edit),
                 label: const Text('Bearbeiten'),
               ),
-              if (_editController.isEditing) ...[
-                const SizedBox(width: 8),
-                FilledButton.icon(
-                  key: const ValueKey<String>('talents-catalog-open'),
-                  onPressed: () => _showTalentKatalog(context, allTalents),
-                  icon: const Icon(Icons.library_add),
-                  label: const Text('Talente verwalten'),
-                ),
-              ],
+              const SizedBox(width: 8),
+              FilledButton.icon(
+                key: const ValueKey<String>('talents-catalog-open'),
+                onPressed: () => _openTalentCatalogAction(allTalents),
+                icon: const Icon(Icons.library_add),
+                label: const Text('Talente verwalten'),
+              ),
               const SizedBox(width: 8),
               OutlinedButton.icon(
                 key: const ValueKey<String>('talents-be-screen-open'),
@@ -47,15 +45,14 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                 icon: const Icon(Icons.shield_outlined),
                 label: Text('BE konfigurieren ($activeTalentBe)'),
               ),
-              if (_editController.isEditing) ...[
-                const SizedBox(width: 8),
-                FilledButton.icon(
-                  key: const ValueKey<String>('meta-talents-manage-open'),
-                  onPressed: () => _openMetaTalentManager(allCatalogTalents),
-                  icon: const Icon(Icons.merge_type),
-                  label: const Text('Meta-Talente verwalten'),
-                ),
-              ],
+              const SizedBox(width: 8),
+              FilledButton.icon(
+                key: const ValueKey<String>('meta-talents-manage-open'),
+                onPressed: () =>
+                    _openMetaTalentManagerAction(allCatalogTalents),
+                icon: const Icon(Icons.merge_type),
+                label: const Text('Meta-Talente verwalten'),
+              ),
             ],
           ),
         ),
@@ -104,14 +101,28 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
           childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
           title: Row(
             children: [
-              Text(
-                'Sonderfertigkeiten',
-                style: Theme.of(context).textTheme.titleSmall,
+              Expanded(
+                child: Text(
+                  'Sonderfertigkeiten',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
               ),
               const SizedBox(width: 8),
               Text(
                 '(${_draftTalentSpecialAbilities.length})',
                 style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(width: 12),
+              FilledButton(
+                key: const ValueKey<String>('talents-special-abilities-add'),
+                onPressed: () async {
+                  await _ensureEditingSession();
+                  if (!mounted) {
+                    return;
+                  }
+                  _addTalentSpecialAbility();
+                },
+                child: const Text('+ Sonderfertigkeit'),
               ),
             ],
           ),
@@ -131,7 +142,9 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 title: Text(ability.name),
-                subtitle: ability.note.trim().isEmpty ? null : Text(ability.note),
+                subtitle: ability.note.trim().isEmpty
+                    ? null
+                    : Text(ability.note),
                 trailing: isEditing
                     ? Row(
                         mainAxisSize: MainAxisSize.min,
@@ -160,16 +173,6 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                     : null,
               );
             }),
-            if (isEditing)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: OutlinedButton.icon(
-                  key: const ValueKey<String>('talents-special-abilities-add'),
-                  onPressed: _addTalentSpecialAbility,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Hinzufügen'),
-                ),
-              ),
           ],
         ),
       ),
@@ -206,7 +209,9 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
   }
 
   void _removeTalentSpecialAbility(int index) {
-    final updated = List<TalentSpecialAbility>.from(_draftTalentSpecialAbilities);
+    final updated = List<TalentSpecialAbility>.from(
+      _draftTalentSpecialAbilities,
+    );
     updated.removeAt(index);
     _draftTalentSpecialAbilities = updated;
     _markFieldChanged();
@@ -235,7 +240,9 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextFormField(
-                      key: const ValueKey<String>('talents-special-ability-name'),
+                      key: const ValueKey<String>(
+                        'talents-special-ability-name',
+                      ),
                       initialValue: draftName,
                       decoration: const InputDecoration(
                         labelText: 'Name',
@@ -250,7 +257,9 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
-                      key: const ValueKey<String>('talents-special-ability-note'),
+                      key: const ValueKey<String>(
+                        'talents-special-ability-note',
+                      ),
                       initialValue: draftNote,
                       decoration: const InputDecoration(
                         labelText: 'Notiz (optional)',
@@ -278,10 +287,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                       return;
                     }
                     onSave(
-                      TalentSpecialAbility(
-                        name: name,
-                        note: draftNote.trim(),
-                      ),
+                      TalentSpecialAbility(name: name, note: draftNote.trim()),
                     );
                     Navigator.of(dialogContext).pop();
                   },
@@ -382,7 +388,7 @@ class _TalentBeConfigDialogState extends ConsumerState<TalentBeConfigDialog> {
                   key: const ValueKey<String>('talents-be-override-clear'),
                   onPressed: _clearOverride,
                   icon: const Icon(Icons.clear),
-                  label: const Text('Override loeschen'),
+                  label: const Text('Override löschen'),
                 ),
                 Text(
                   'Aktive BE: $activeTalentBe',
@@ -396,7 +402,7 @@ class _TalentBeConfigDialogState extends ConsumerState<TalentBeConfigDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Schliessen'),
+          child: const Text('Schließen'),
         ),
       ],
     );

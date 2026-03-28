@@ -7,13 +7,11 @@ part of '../hero_begleiter_tab.dart';
 class _BegleiterAuswahlView extends StatelessWidget {
   const _BegleiterAuswahlView({
     required this.companions,
-    required this.isEditing,
     required this.onSelect,
     required this.onAdd,
   });
 
   final List<HeroCompanion> companions;
-  final bool isEditing;
   final ValueChanged<String> onSelect;
   final VoidCallback onAdd;
 
@@ -21,16 +19,27 @@ class _BegleiterAuswahlView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     if (companions.isEmpty) {
-      return _EmptyBegleiterHint(isEditing: isEditing, onAdd: onAdd);
+      return _EmptyBegleiterHint(onAdd: onAdd);
     }
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Begleiter',
-            style: theme.textTheme.titleMedium,
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Begleiter',
+                  style: theme.textTheme.titleMedium,
+                ),
+              ),
+              FilledButton.icon(
+                onPressed: onAdd,
+                icon: const Icon(Icons.add),
+                label: const Text('Begleiter'),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -59,14 +68,6 @@ class _BegleiterAuswahlView extends StatelessWidget {
                 ),
             ],
           ),
-          if (isEditing) ...[
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(Icons.add),
-              label: const Text('Begleiter hinzufügen'),
-            ),
-          ],
         ],
       ),
     );
@@ -79,11 +80,9 @@ class _BegleiterAuswahlView extends StatelessWidget {
 
 class _EmptyBegleiterHint extends StatelessWidget {
   const _EmptyBegleiterHint({
-    required this.isEditing,
     required this.onAdd,
   });
 
-  final bool isEditing;
   final VoidCallback onAdd;
 
   @override
@@ -105,14 +104,12 @@ class _EmptyBegleiterHint extends StatelessWidget {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-            if (isEditing) ...[
-              const SizedBox(height: 12),
-              FilledButton.icon(
-                onPressed: onAdd,
-                icon: const Icon(Icons.add),
-                label: const Text('Begleiter hinzufügen'),
-              ),
-            ],
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: onAdd,
+              icon: const Icon(Icons.add),
+              label: const Text('Begleiter hinzufügen'),
+            ),
           ],
         ),
       ),

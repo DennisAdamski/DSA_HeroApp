@@ -106,32 +106,27 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
     final tableSection = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Parierwaffen & Schilde',
-          style: Theme.of(context).textTheme.titleMedium,
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Parierwaffen & Schilde',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            FilledButton(
+              key: const ValueKey<String>('combat-offhand-add'),
+              onPressed: () => _openEditor(),
+              child: const Text('+ Parierwaffe/Schild'),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         FlexibleTable(
           tableKey: const ValueKey<String>('combat-offhand-table'),
           columnSpecs: _columnSpecs,
           headerCells: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Name'),
-                IconButton(
-                  key: const ValueKey<String>('combat-offhand-add'),
-                  tooltip: 'Nebenhand-Ausrüstung hinzufügen',
-                  visualDensity: VisualDensity.compact,
-                  constraints: const BoxConstraints.tightFor(
-                    width: 30,
-                    height: 30,
-                  ),
-                  onPressed: () => _openEditor(),
-                  icon: const Icon(Icons.add, size: 18),
-                ),
-              ],
-            ),
+            const Text('Name'),
             const Text('Typ'),
             const Text('BF'),
             const Text('Größe'),
@@ -152,31 +147,42 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
       ],
     );
 
-    return Card(
+    final tableCard = Card(
+      key: const ValueKey<String>('combat-offhand-card'),
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: _isWideLayout && _editorSeedEntry != null
-            ? Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: tableSection),
-                  const SizedBox(width: 12),
-                  SizedBox(
-                    width: 380,
-                    child: _OffhandEditorPanel(
-                      key: ValueKey<String>(
-                        'combat-offhand-editor-${_editingEntryIndex ?? 'new'}',
-                      ),
-                      initialEntry: _editorSeedEntry!,
-                      isNew: _editingEntryIndex == null,
-                      onCancel: _closeWideEditor,
-                      onSave: _saveEntry,
-                    ),
-                  ),
-                ],
-              )
-            : tableSection,
+        child: tableSection,
       ),
+    );
+
+    if (!_isWideLayout || _editorSeedEntry == null) {
+      return tableCard;
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: tableCard),
+        const SizedBox(width: 12),
+        SizedBox(
+          width: 380,
+          child: Card(
+            key: const ValueKey<String>('combat-offhand-editor-card'),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: _OffhandEditorPanel(
+                key: ValueKey<String>(
+                  'combat-offhand-editor-${_editingEntryIndex ?? 'new'}',
+                ),
+                initialEntry: _editorSeedEntry!,
+                isNew: _editingEntryIndex == null,
+                onCancel: _closeWideEditor,
+                onSave: _saveEntry,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -485,13 +491,15 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
             ),
           ),
           const SizedBox(height: 12),
-          Row(
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               TextButton(
                 onPressed: widget.onCancel,
                 child: const Text('Abbrechen'),
               ),
-              const SizedBox(width: 8),
               FilledButton(
                 key: const ValueKey<String>('combat-offhand-form-save'),
                 onPressed: _submit,

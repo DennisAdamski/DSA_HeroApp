@@ -3,6 +3,58 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 
+const double weaponCatalogTableColumnSpacing = 12.0;
+const double weaponCatalogTableHorizontalMargin = 12.0;
+const List<AdaptiveDataColumnSpec> weaponCatalogTableColumns =
+    <AdaptiveDataColumnSpec>[
+      AdaptiveDataColumnSpec(
+        label: SizedBox(width: 36),
+        width: AdaptiveTableColumnSpec.fixed(80),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('Name'),
+        width: AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 2),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('Talent'),
+        width: AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 180, flex: 1),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('Typ'),
+        width: AdaptiveTableColumnSpec(minWidth: 90, maxWidth: 140),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('Kategorie'),
+        width: AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 240, flex: 2),
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('INI'),
+        width: AdaptiveTableColumnSpec(minWidth: 64, maxWidth: 92),
+        numeric: true,
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('WM AT'),
+        width: AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 96),
+        numeric: true,
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('WM PA'),
+        width: AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 96),
+        numeric: true,
+      ),
+      AdaptiveDataColumnSpec(
+        label: Text('DK'),
+        width: AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 96),
+      ),
+    ];
+
+/// Mindestbreite des Waffen-Katalogs, damit alle Tabelleninhalte sichtbar sind.
+final double weaponCatalogSheetMinWidth = adaptiveDataTableMinWidth(
+  weaponCatalogTableColumns,
+  columnSpacing: weaponCatalogTableColumnSpacing,
+  horizontalMargin: weaponCatalogTableHorizontalMargin,
+);
+
 /// Durchsuchbare Katalog-Tabelle aller Waffen.
 ///
 /// Wird als Inhalt eines Modal Bottom Sheets verwendet.
@@ -43,12 +95,7 @@ class _WeaponCatalogTableState extends State<WeaponCatalogTable> {
 
     final needle = _searchQuery.toLowerCase();
     return weapons
-        .where(
-          (weapon) =>
-              weapon.name.toLowerCase().contains(needle) ||
-              weapon.combatSkill.toLowerCase().contains(needle) ||
-              weapon.weaponCategory.toLowerCase().contains(needle),
-        )
+        .where((weapon) => weapon.name.toLowerCase().contains(needle))
         .toList(growable: false);
   }
 
@@ -56,47 +103,6 @@ class _WeaponCatalogTableState extends State<WeaponCatalogTable> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final filtered = _filteredWeapons();
-    final columns = <AdaptiveDataColumnSpec>[
-      const AdaptiveDataColumnSpec(
-        label: SizedBox(width: 36),
-        width: AdaptiveTableColumnSpec.fixed(80),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Name'),
-        width: AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 2),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Talent'),
-        width: AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 180, flex: 1),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Typ'),
-        width: AdaptiveTableColumnSpec(minWidth: 90, maxWidth: 140),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Kategorie'),
-        width: AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 240, flex: 2),
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('INI'),
-        width: AdaptiveTableColumnSpec(minWidth: 64, maxWidth: 92),
-        numeric: true,
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('WM AT'),
-        width: AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 96),
-        numeric: true,
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('WM PA'),
-        width: AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 96),
-        numeric: true,
-      ),
-      const AdaptiveDataColumnSpec(
-        label: Text('DK'),
-        width: AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 96),
-      ),
-    ];
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -167,21 +173,19 @@ class _WeaponCatalogTableState extends State<WeaponCatalogTable> {
           Flexible(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                const columnSpacing = 12.0;
-                const horizontalMargin = 12.0;
                 final layout = resolveAdaptiveDataTableLayout(
-                  columns,
+                  weaponCatalogTableColumns,
                   availableWidth: constraints.maxWidth,
-                  columnSpacing: columnSpacing,
-                  horizontalMargin: horizontalMargin,
+                  columnSpacing: weaponCatalogTableColumnSpacing,
+                  horizontalMargin: weaponCatalogTableHorizontalMargin,
                 );
 
                 return SingleChildScrollView(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: DataTable(
-                      columnSpacing: columnSpacing,
-                      horizontalMargin: horizontalMargin,
+                      columnSpacing: weaponCatalogTableColumnSpacing,
+                      horizontalMargin: weaponCatalogTableHorizontalMargin,
                       headingRowHeight: 36,
                       dataRowMinHeight: 32,
                       dataRowMaxHeight: 40,

@@ -179,14 +179,14 @@ void main() {
       await tester.tap(find.text('Dolche'));
       await tester.pumpAndSettle();
       expect(find.text('18'), findsOneWidget);
-      await tester.tap(find.text('Schliessen'));
+      await tester.tap(find.text('Schließen'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Boegen'));
       await tester.pumpAndSettle();
       expect(find.text('18'), findsOneWidget);
       expect(find.text('23'), findsNothing);
-      await tester.tap(find.text('Schliessen'));
+      await tester.tap(find.text('Schließen'));
       await tester.pumpAndSettle();
     },
   );

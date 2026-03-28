@@ -74,7 +74,7 @@ void main() {
 
   test('rejects unsupported transfer version', () {
     final map = buildBundle().toJson();
-    map['transferSchemaVersion'] = 2;
+    map['transferSchemaVersion'] = 99;
 
     expect(
       () => HeroTransferBundle.fromJson(map),
