@@ -22,10 +22,6 @@ List<String> validateWeaponSlot(MainWeaponSlot slot) {
   if (slot.kkThreshold < 1) {
     errors.add('Die KK-Schwelle muss mindestens 1 sein.');
   }
-  if (slot.breakFactor < 0) {
-    errors.add('Der Bruchfaktor darf nicht negativ sein.');
-  }
-
   final rangedProfile = slot.rangedProfile;
   if (rangedProfile.reloadTime < 0) {
     errors.add('Die Ladezeit darf nicht negativ sein.');
