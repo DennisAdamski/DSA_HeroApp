@@ -81,7 +81,6 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
             ),
           ),
         ),
-        const VerticalDivider(width: 1),
         SizedBox(
           width: detailsWidth,
           child: WorkspaceInspectorPanel(
