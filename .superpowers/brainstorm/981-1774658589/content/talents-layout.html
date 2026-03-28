@@ -1,0 +1,108 @@
+<h2>Talente-Tab — neue Struktur</h2>
+<p class="subtitle">Mockup des geplanten Layouts mit Such-Header und umsortierten Buttons</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Talente-Tab (nach Umbau)</div>
+    <div class="mockup-body" style="padding: 0; font-family: sans-serif; font-size: 13px;">
+
+      <!-- Workspace AppBar -->
+      <div style="background:#1565C0; color:white; padding: 10px 16px; display:flex; align-items:center; justify-content:space-between; border-radius: 6px 6px 0 0;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:11px; opacity:0.7;">◀</span>
+          <strong>Heldenname</strong>
+          <span style="background:#1976D2; border-radius:12px; padding:2px 10px; font-size:11px;">Übersicht</span>
+          <span style="background:#1E88E5; border-radius:12px; padding:2px 10px; font-size:11px; border: 1px solid white;">Talente</span>
+          <span style="background:#1976D2; border-radius:12px; padding:2px 10px; font-size:11px;">Kampf</span>
+          <span style="background:#1976D2; border-radius:12px; padding:2px 10px; font-size:11px;">...</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <!-- NUR noch: Bearbeiten + Settings -->
+          <span style="background:#1976D2; border-radius:4px; padding:4px 10px; font-size:11px; border:1px solid rgba(255,255,255,0.4);">✏ Bearbeiten</span>
+          <span style="font-size:16px;">⚙</span>
+        </div>
+      </div>
+
+      <!-- Lokale Aktionsleiste (bisheriger Top-Action-Bar, reduziert) -->
+      <div style="background:#F5F5F5; border-bottom:1px solid #E0E0E0; padding: 8px 12px; display:flex; align-items:center; justify-content:flex-end; gap:8px;">
+        <span style="font-size:11px; color:#666;">Lokale Leiste (nur noch 2 Buttons):</span>
+        <span style="background:#1976D2; color:white; border-radius:4px; padding:4px 10px; font-size:11px;">✏ Bearbeiten</span>
+        <span style="background:white; border:1px solid #1976D2; color:#1976D2; border-radius:4px; padding:4px 8px; font-size:13px;">⚙</span>
+        <span style="font-size:10px; color:#999; margin-left:4px;">(BE konfigurieren hinter Settings-Icon)</span>
+      </div>
+
+      <!-- NEU: Such-Header -->
+      <div style="background:white; border-bottom:2px solid #E3F2FD; padding: 10px 12px; display:flex; align-items:center; gap:10px;">
+        <div style="flex:1; display:flex; align-items:center; background:#F5F5F5; border-radius:8px; padding:6px 12px; gap:6px; border:1px solid #E0E0E0;">
+          <span style="color:#999;">🔍</span>
+          <span style="color:#BDBDBD; font-size:12px;">Talentgruppen durchsuchen…</span>
+        </div>
+        <button style="background:#1976D2; color:white; border:none; border-radius:6px; padding:7px 12px; font-size:12px; cursor:pointer;">
+          + Talent
+        </button>
+        <button style="background:#1976D2; color:white; border:none; border-radius:6px; padding:7px 12px; font-size:12px; cursor:pointer;">
+          + Meta-Talent
+        </button>
+      </div>
+
+      <!-- Talent-Gruppen (gefiltert) -->
+      <div style="padding: 10px 12px; display:flex; flex-direction:column; gap:6px;">
+        <div style="background:#E3F2FD; border-radius:6px; padding:8px 12px; display:flex; justify-content:space-between;">
+          <strong>Körperliche Talente</strong><span style="color:#666; font-size:11px;">18 Talente ▸</span>
+        </div>
+        <div style="background:#E8F5E9; border-radius:6px; padding:8px 12px; display:flex; justify-content:space-between;">
+          <strong>Gesellschaftliche Talente</strong><span style="color:#666; font-size:11px;">12 Talente ▸</span>
+        </div>
+        <div style="background:#FFF3E0; border-radius:6px; padding:8px 12px; display:flex; justify-content:space-between;">
+          <strong>Naturtalente</strong><span style="color:#666; font-size:11px;">9 Talente ▸</span>
+        </div>
+        <div style="background:#FCE4EC; border-radius:6px; padding:8px 12px; display:flex; justify-content:space-between;">
+          <strong>Wissenstalente</strong><span style="color:#666; font-size:11px;">15 Talente ▸</span>
+        </div>
+        <div style="background:#F3E5F5; border-radius:6px; padding:8px 12px; display:flex; justify-content:space-between;">
+          <strong>Handwerkliche Talente</strong><span style="color:#666; font-size:11px;">11 Talente ▸</span>
+        </div>
+        <div style="background:#ECEFF1; border-radius:6px; padding:8px 12px; display:flex; justify-content:space-between; opacity:0.5;">
+          <strong>Meta-Talente</strong><span style="color:#666; font-size:11px;">3 ▸</span>
+        </div>
+      </div>
+
+      <!-- Legende -->
+      <div style="background:#FFFDE7; padding:8px 12px; font-size:11px; color:#795548; border-top:1px solid #FFE082;">
+        💡 Tippe z.B. "Wissen" → nur "Wissenstalente" wird angezeigt. Gruppen ohne Match werden ausgeblendet.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Was ändert sich im Detail</h3>
+  <table style="width:100%; border-collapse:collapse; font-size:12px;">
+    <thead>
+      <tr style="background:#F5F5F5;">
+        <th style="padding:6px; text-align:left; border:1px solid #ddd;">Bereich</th>
+        <th style="padding:6px; text-align:left; border:1px solid #ddd;">Vorher</th>
+        <th style="padding:6px; text-align:left; border:1px solid #ddd;">Nachher</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:6px; border:1px solid #ddd;">Global Header</td>
+        <td style="padding:6px; border:1px solid #ddd;">Bearbeiten + 📚 + 🔀 + ⚙</td>
+        <td style="padding:6px; border:1px solid #ddd; background:#E8F5E9;">Bearbeiten + ⚙</td>
+      </tr>
+      <tr>
+        <td style="padding:6px; border:1px solid #ddd;">Lokale Leiste</td>
+        <td style="padding:6px; border:1px solid #ddd;">Bearbeiten + Talente verwalten + BE konfigurieren + Meta-Talente verwalten</td>
+        <td style="padding:6px; border:1px solid #ddd; background:#E8F5E9;">Bearbeiten + ⚙ (BE hinter Icon)</td>
+      </tr>
+      <tr>
+        <td style="padding:6px; border:1px solid #ddd; background:#E3F2FD;"><strong>NEU: Such-Header</strong></td>
+        <td style="padding:6px; border:1px solid #ddd;">—</td>
+        <td style="padding:6px; border:1px solid #ddd; background:#E3F2FD;">🔍 Suchfeld + "＋ Talent" + "＋ Meta-Talent"</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p class="subtitle" style="margin-top:16px;">Passt dieses Layout? Eine Frage dazu gleich im Terminal.</p>
