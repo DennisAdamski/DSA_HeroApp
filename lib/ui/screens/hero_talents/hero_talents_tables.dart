@@ -1,47 +1,84 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 
 extension _HeroTalentsTables on _HeroTalentTableTabState {
+  // Meta-Talente haben eine andere Struktur, daher eigene Spaltenspezifikationen
   static const List<AdaptiveTableColumnSpec> _metaTalentColumnSpecs =
       <AdaptiveTableColumnSpec>[
-        AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
-        AdaptiveTableColumnSpec(minWidth: 220, maxWidth: 420, flex: 3),
-        AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
-        AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 120),
+        AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2), // Name
+        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 180), // Eigenschaften
+        AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 70), // TaW*
+        AdaptiveTableColumnSpec(minWidth: 60, maxWidth: 60), // eBE
+        AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 70), // TaW
+        AdaptiveTableColumnSpec(
+          minWidth: 180,
+          maxWidth: 400,
+          flex: 2,
+        ), // Bestandteile
       ];
 
+  // Normale Talente (nicht-Kampf) haben die Standardstruktur, aber die TaW-Spalte ist im Bearbeitungsmodus breiter, um den Steigerungsbutton aufzunehmen
   List<AdaptiveTableColumnSpec> _talentColumnSpecs({required bool isEditing}) {
     return <AdaptiveTableColumnSpec>[
-      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
-      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 280, flex: 2),
-      const AdaptiveTableColumnSpec(minWidth: 84, maxWidth: 132),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),
+      const AdaptiveTableColumnSpec(
+        minWidth: 160,
+        maxWidth: 240,
+        flex: 2,
+      ), // Talent-Name
+      const AdaptiveTableColumnSpec(
+        minWidth: 180,
+        maxWidth: 180,
+      ), // Eigenschaften
+      const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 70), // TaW*
+      const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 70), // Kompl.
+      const AdaptiveTableColumnSpec(minWidth: 60, maxWidth: 60), // eBE
       if (isEditing)
-        const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 110)
+        const AdaptiveTableColumnSpec(
+          minWidth: 80,
+          maxWidth: 110,
+        ) // TaW (edit: breiter)
       else
-        const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
-      const AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 140),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 76),
-      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 280, flex: 3),
-      if (isEditing) const AdaptiveTableColumnSpec.fixed(90),
+        const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 70), // TaW
+      const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 70), // Mod
+      const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 70), // SE
+      const AdaptiveTableColumnSpec(
+        minWidth: 160,
+        maxWidth: 280,
+        flex: 3,
+      ), // Spezialisierungen
+      if (isEditing) const AdaptiveTableColumnSpec.fixed(90), // Begabung
     ];
   }
 
+  // Kampf-Talente haben zusätzliche Spalten für AT/PA und Waffengattung, daher eigene Spaltenspezifikationen. Auch hier ist die TaW-Spalte im Bearbeitungsmodus breiter.
   List<AdaptiveTableColumnSpec> _combatTalentColumnSpecs({
     required bool isEditing,
   }) {
     return <AdaptiveTableColumnSpec>[
-      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
-      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2),
-      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
-      if (isEditing) const AdaptiveTableColumnSpec.fixed(90),
-      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 3),
+      const AdaptiveTableColumnSpec(
+        minWidth: 160,
+        maxWidth: 240,
+        flex: 2,
+      ), // Talent-Name
+      const AdaptiveTableColumnSpec(
+        minWidth: 180,
+        maxWidth: 320,
+        flex: 2,
+      ), // Waffengattung
+      const AdaptiveTableColumnSpec(
+        minWidth: 160,
+        maxWidth: 240,
+        flex: 2,
+      ), // Ersatzweise
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80), // Kompl.
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90), // TaW
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90), // AT
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90), // PA
+      if (isEditing) const AdaptiveTableColumnSpec.fixed(90), // Begabung
+      const AdaptiveTableColumnSpec(
+        minWidth: 180,
+        maxWidth: 320,
+        flex: 3,
+      ), // Spezialisierung
     ];
   }
 
@@ -185,9 +222,9 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   TableRow _buildHeaderRow({required bool isEditing}) {
     final debug = ref.read(debugModusProvider);
     final cells = <Widget>[
-      _headerCell(debug ? 'talentName' : 'Talent-Name'),
+      _headerCell(debug ? 'talentName' : 'Name'),
       _headerCell(debug ? 'attributes' : 'Eigenschaften'),
-      _headerCell(debug ? 'talentValue' : 'TaW berechnet', highlighted: true),
+      _headerCell(debug ? 'talentValue' : 'TaW*', highlighted: true),
       _headerCell(debug ? 'steigerung' : 'Kompl.'),
       _headerCell(debug ? 'eBe' : 'eBE'),
       _headerCell(debug ? 'taw' : 'TaW'),
@@ -204,7 +241,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   TableRow _buildCombatHeaderRow({required bool isEditing}) {
     final debug = ref.read(debugModusProvider);
     final cells = <Widget>[
-      _headerCell(debug ? 'talentName' : 'Talent-Name'),
+      _headerCell(debug ? 'talentName' : 'Name'),
       _headerCell(debug ? 'waffengattung' : 'Waffengattung'),
       _headerCell(debug ? 'ersatzweise' : 'Ersatzweise'),
       _headerCell(debug ? 'steigerung' : 'Kompl.'),
@@ -221,12 +258,12 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final debug = ref.read(debugModusProvider);
     return TableRow(
       children: [
-        _headerCell(debug ? 'talentName' : 'Talent-Name'),
-        _headerCell(debug ? 'components' : 'Bestandteile'),
+        _headerCell(debug ? 'talentName' : 'Name'),
         _headerCell(debug ? 'attributes' : 'Eigenschaften'),
+        _headerCell(debug ? 'talentValue' : 'TaW*', highlighted: true),
         _headerCell(debug ? 'eBe' : 'eBE'),
         _headerCell(debug ? 'taw' : 'TaW'),
-        _headerCell(debug ? 'talentValue' : 'TaW berechnet', highlighted: true),
+        _headerCell(debug ? 'components' : 'Bestandteile'),
       ],
     );
   }
@@ -283,7 +320,8 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               ),
               basePool: computedTaw,
               hasSpecialization: hasSpecialization,
-              wundMalus: ref
+              wundMalus:
+                  ref
                       .read(heroComputedProvider(widget.heroId))
                       .asData
                       ?.value
@@ -464,16 +502,60 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       componentTalentIds: metaTalent.componentTalentIds,
     );
     final computedTaw = computeMetaTalentComputedTaw(baseTaw: rawTaw, ebe: ebe);
+    final talentProbeMalus =
+        ref
+            .read(heroComputedProvider(widget.heroId))
+            .asData
+            ?.value
+            .wundEffekte
+            .talentProbeMalus ??
+        0;
 
     return TableRow(
       children: [
-        _textCell(
+        _tappableNameCell(
           metaTalent.name,
           key: ValueKey<String>('meta-talents-row-${metaTalent.id}'),
+          onTap: () => showAdaptiveDetailSheet<void>(
+            context: context,
+            builder: (_) => _MetaTalentDetailDialog(
+              metaTalent: metaTalent,
+              effectiveAttributes: effectiveAttributes,
+              activeBaseBe: activeBaseBe,
+              componentNames: componentNames,
+              rawTaw: rawTaw,
+              computedTaw: computedTaw,
+            ),
+          ),
+          trailing: IconButton(
+            key: ValueKey<String>('meta-talents-roll-${metaTalent.id}'),
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            tooltip: '${metaTalent.name} würfeln',
+            onPressed: () => showProbeDialog(
+              context: context,
+              request: buildTalentProbeRequest(
+                title: metaTalent.name,
+                targets: _buildProbeTargets(
+                  effectiveAttributes,
+                  metaTalent.attributes,
+                ),
+                basePool: computedTaw,
+                wundMalus: talentProbeMalus,
+              ),
+            ),
+            icon: const Icon(Icons.casino_outlined),
+          ),
         ),
-        _textCell(componentNames.join(', ')),
         _textCell(
           _buildShortAttributeLabel(effectiveAttributes, metaTalent.attributes),
+        ),
+        _textCell(
+          _formatWholeNumber(computedTaw),
+          key: ValueKey<String>(
+            'meta-talents-field-${metaTalent.id}-computed-taw',
+          ),
+          highlighted: true,
         ),
         _textCell(
           _formatWholeNumber(ebe),
@@ -483,13 +565,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           _formatWholeNumber(rawTaw),
           key: ValueKey<String>('meta-talents-field-${metaTalent.id}-raw-taw'),
         ),
-        _textCell(
-          _formatWholeNumber(computedTaw),
-          key: ValueKey<String>(
-            'meta-talents-field-${metaTalent.id}-computed-taw',
-          ),
-          highlighted: true,
-        ),
+        _textCell(componentNames.join(', ')),
       ],
     );
   }

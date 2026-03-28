@@ -755,11 +755,13 @@ BE-Modifikatoren aus Talenten: Notation `"-"`, `"-N"`, `"xN"`.
 |---|---|
 | Roh-TaW | kaufmaennisch gerundeter Mittelwert aller `HeroTalentEntry.talentValue` der Komponenten |
 | `eBE` | `computeTalentEbe(baseBe, beRule)` mit der BE-Regel des Meta-Talents |
-| `TaW berechnet` | `Roh-TaW + eBE` |
+| `TaW*` | `Roh-TaW + eBE` |
 | `max TaW` | bestehende Talent-Maximum-Logik ueber die drei konfigurierten Eigenschaften |
 
 Kampftalente duerfen als Komponenten referenziert werden; dabei zaehlt nur
 deren `talentValue`, nicht `AT` oder `PA`.
+Im Talente-Workspace werden Meta-Talente analog zu normalen Talenten als
+oeffnende Namenslinks mit Detaildialog und eigener Talentprobe dargestellt.
 
 ### 4.5 Ausweichen
 
