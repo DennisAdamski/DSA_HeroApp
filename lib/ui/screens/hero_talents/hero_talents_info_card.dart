@@ -5,56 +5,36 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     required String heroId,
     required int combatBaseBe,
     required int activeTalentBe,
-    required List<TalentDef> allTalents,
-    required List<TalentDef> allCatalogTalents,
   }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
       child: Align(
         alignment: Alignment.centerRight,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              FilledButton.icon(
-                key: const ValueKey<String>('talents-local-start-edit'),
-                onPressed: _editController.isEditing
-                    ? null
-                    : () {
-                        _startEdit();
-                      },
-                icon: const Icon(Icons.edit),
-                label: const Text('Bearbeiten'),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            FilledButton.icon(
+              key: const ValueKey<String>('talents-local-start-edit'),
+              onPressed: _editController.isEditing
+                  ? null
+                  : () {
+                      _startEdit();
+                    },
+              icon: const Icon(Icons.edit),
+              label: const Text('Bearbeiten'),
+            ),
+            const SizedBox(width: 4),
+            IconButton(
+              key: const ValueKey<String>('talents-be-screen-open'),
+              onPressed: () => _openTalentBeScreen(
+                heroId: heroId,
+                combatBaseBe: combatBaseBe,
               ),
-              const SizedBox(width: 8),
-              FilledButton.icon(
-                key: const ValueKey<String>('talents-catalog-open'),
-                onPressed: () => _openTalentCatalogAction(allTalents),
-                icon: const Icon(Icons.library_add),
-                label: const Text('Talente verwalten'),
-              ),
-              const SizedBox(width: 8),
-              OutlinedButton.icon(
-                key: const ValueKey<String>('talents-be-screen-open'),
-                onPressed: () => _openTalentBeScreen(
-                  heroId: heroId,
-                  combatBaseBe: combatBaseBe,
-                ),
-                icon: const Icon(Icons.shield_outlined),
-                label: Text('BE konfigurieren ($activeTalentBe)'),
-              ),
-              const SizedBox(width: 8),
-              FilledButton.icon(
-                key: const ValueKey<String>('meta-talents-manage-open'),
-                onPressed: () =>
-                    _openMetaTalentManagerAction(allCatalogTalents),
-                icon: const Icon(Icons.merge_type),
-                label: const Text('Meta-Talente verwalten'),
-              ),
-            ],
-          ),
+              icon: const Icon(Icons.settings),
+              tooltip: 'BE konfigurieren ($activeTalentBe)',
+            ),
+          ],
         ),
       ),
     );
@@ -298,6 +278,60 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
           },
         );
       },
+    );
+  }
+
+  Widget _buildSearchHeader({
+    required List<TalentDef> allTalents,
+    required List<TalentDef> allCatalogTalents,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            key: const ValueKey<String>('talents-group-search'),
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: 'Talentgruppen durchsuchen\u2026',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _talentGroupFilter.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      tooltip: 'Suche löschen',
+                      onPressed: () => _searchController.clear(),
+                    )
+                  : null,
+              isDense: true,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FilledButton.icon(
+                  key: const ValueKey<String>('talents-catalog-open'),
+                  onPressed: () => _openTalentCatalogAction(allTalents),
+                  icon: const Icon(Icons.library_add),
+                  label: const Text('+ Talent'),
+                ),
+                const SizedBox(width: 8),
+                FilledButton.icon(
+                  key: const ValueKey<String>('meta-talents-manage-open'),
+                  onPressed: () =>
+                      _openMetaTalentManagerAction(allCatalogTalents),
+                  icon: const Icon(Icons.merge_type),
+                  label: const Text('+ Meta-Talent'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

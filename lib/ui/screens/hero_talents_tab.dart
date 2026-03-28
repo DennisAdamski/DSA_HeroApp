@@ -105,6 +105,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   late final WorkspaceTabEditController _editController;
   TabController? _subTabController;
   final ValueNotifier<int> _tableRevision = ValueNotifier<int>(0);
+  final TextEditingController _searchController = TextEditingController();
+  String _talentGroupFilter = '';
   final Map<String, TextEditingController> _cellControllers =
       <String, TextEditingController>{};
 
@@ -122,6 +124,13 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(() {
+      if (mounted) {
+        setState(() {
+          _talentGroupFilter = _searchController.text;
+        });
+      }
+    });
     _editController = WorkspaceTabEditController(
       onDirtyChanged: widget.onDirtyChanged,
       onEditingChanged: widget.onEditingChanged,
@@ -153,6 +162,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     }
     _subTabController?.dispose();
     _tableRevision.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -164,36 +174,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         startEdit: _startEdit,
         save: _saveChanges,
         cancel: _cancelChanges,
-        headerActions: widget.showInlineActions
-            ? const <WorkspaceHeaderAction>[]
-            : <WorkspaceHeaderAction>[
-                if (widget.scope == _TalentTabScope.nonCombat)
-                  WorkspaceHeaderAction(
-                    builder: (_) => Tooltip(
-                      message: 'Talente verwalten',
-                      child: IconButton(
-                        key: const ValueKey<String>('talents-catalog-open'),
-                        onPressed: () async =>
-                            _openTalentCatalogAction(_latestCatalogTalents),
-                        icon: const Icon(Icons.library_add),
-                      ),
-                    ),
-                    showWhenIdle: true,
-                  ),
-                if (widget.scope == _TalentTabScope.nonCombat)
-                  WorkspaceHeaderAction(
-                    builder: (_) => Tooltip(
-                      message: 'Meta-Talente verwalten',
-                      child: IconButton(
-                        key: const ValueKey<String>('meta-talents-manage-open'),
-                        onPressed: () async =>
-                            _openMetaTalentManagerAction(_latestCatalogTalents),
-                        icon: const Icon(Icons.merge_type),
-                      ),
-                    ),
-                    showWhenIdle: true,
-                  ),
-              ],
+        headerActions: const <WorkspaceHeaderAction>[],
       ),
     );
   }
@@ -553,6 +534,12 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                   }
                   return a.toLowerCase().compareTo(b.toLowerCase());
                 });
+              final filterQuery = _talentGroupFilter.trim().toLowerCase();
+              final filteredGroups = filterQuery.isEmpty
+                  ? groups
+                  : groups
+                        .where((g) => g.toLowerCase().contains(filterQuery))
+                        .toList(growable: false);
 
               return ListView(
                 padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
@@ -577,8 +564,6 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       heroId: hero.id,
                       combatBaseBe: combatBaseBe ?? 0,
                       activeTalentBe: activeTalentBe,
-                      allTalents: relevantTalents,
-                      allCatalogTalents: catalog.talents,
                     ),
                   if (widget.scope == _TalentTabScope.combat &&
                       widget.showInlineActions)
@@ -591,6 +576,12 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                         Tab(text: 'Sonderfertigkeiten'),
                         Tab(text: 'Sprachen & Schriften'),
                       ],
+                    ),
+                  if (widget.scope == _TalentTabScope.nonCombat &&
+                      _subTabController?.index == 0)
+                    _buildSearchHeader(
+                      allTalents: relevantTalents,
+                      allCatalogTalents: catalog.talents,
                     ),
                   if (widget.scope == _TalentTabScope.nonCombat &&
                       _subTabController!.index == 1)
@@ -652,7 +643,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                     ),
                   if (widget.scope == _TalentTabScope.combat ||
                       _subTabController?.index == 0)
-                    ...groups.map((group) {
+                    ...filteredGroups.map((group) {
                       final talents = List<TalentDef>.from(grouped[group]!)
                         ..sort(
                           (a, b) => a.name.toLowerCase().compareTo(
@@ -686,7 +677,9 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                     }),
                   if (widget.scope == _TalentTabScope.nonCombat &&
                       (_subTabController?.index == 0) &&
-                      _draftMetaTalents.isNotEmpty)
+                      _draftMetaTalents.isNotEmpty &&
+                      (filterQuery.isEmpty ||
+                          'meta-talente'.contains(filterQuery)))
                     _buildMetaTalentsCard(
                       metaTalents: _draftMetaTalents,
                       catalogTalents: catalog.talents,
