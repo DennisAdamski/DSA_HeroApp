@@ -413,29 +413,15 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
 
   Future<void> _applyApIncrement({
     required String targetKey,
-    required String incrementKey,
     required String label,
+    required int increment,
   }) async {
-    final rawIncrement = _field(incrementKey).text.trim();
-    if (rawIncrement.isEmpty) {
-      return;
-    }
-    final increment = int.tryParse(rawIncrement);
-    if (increment == null || increment <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Für $label ist nur eine positive Ganzzahl erlaubt.'),
-        ),
-      );
-      return;
-    }
     final updatedValue = _readInt(targetKey, min: 0) + increment;
     _field(targetKey)
       ..text = updatedValue.toString()
       ..selection = TextSelection.collapsed(
         offset: updatedValue.toString().length,
       );
-    _field(incrementKey).clear();
     if (!_editController.isEditing) {
       final hero = _latestHero;
       if (hero == null) {
