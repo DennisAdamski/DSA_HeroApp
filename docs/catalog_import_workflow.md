@@ -31,6 +31,9 @@ flutter test
   - Every entry must have `group = "Kampftalent"`.
 - `waffen.json`:
   - Contains weapon catalog entries.
+  - Weapon entries may also include raw Arsenal metadata such as
+    `weight`, `length`, `breakFactor`, `price`, `remarks`,
+    `reloadTimeText`, and `rangedDistanceBands`.
 - `magie.json`:
   - Contains spells only.
   - Spell detail fields from `Liber Cantiones.pdf` are maintained via

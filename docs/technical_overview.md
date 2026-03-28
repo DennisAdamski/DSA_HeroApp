@@ -618,7 +618,13 @@ Kampftalente erkennt man an: `group == 'Kampftalent'` **oder** `weaponCategory !
 | `tpkk` | TP/KK-Skalierungsnotation |
 | `iniMod`, `atMod`, `paMod` | Waffenmodifikatoren |
 | `reach` | Reichweite |
+| `weight` | Arsenal-Rohgewicht aus dem Katalog |
+| `length` | Arsenal-Rohlaenge aus dem Katalog |
+| `breakFactor` | Arsenal-Roh-Bruchfaktor aus dem Katalog |
+| `price` | Arsenal-Rohpreis aus dem Katalog |
+| `remarks` | Arsenal-Rohbemerkungen aus dem Katalog |
 | `reloadTime` | Feste Ladezeit von Fernkampfwaffen |
+| `reloadTimeText` | Arsenal-Rohladezeit inklusive Zusatznotationen |
 | `rangedDistanceBands` | Optionale Vorlage für die 5 Distanzstufen einer Fernkampfwaffe |
 | `rangedProjectiles` | Optionale Geschoss-Vorlagen |
 | `active` | Im App verfügbar? |
