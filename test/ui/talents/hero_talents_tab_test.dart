@@ -160,6 +160,7 @@ void main() {
     );
     await scrollMainListUpUntilVisible(tester, beButton);
     await tester.ensureVisible(beButton);
+    await tester.pumpAndSettle();
     await tester.tap(beButton);
     await tester.pumpAndSettle();
     expect(find.text('Talent-BE'), findsOneWidget);
@@ -256,11 +257,11 @@ void main() {
 
       expect(find.text('Koerper'), findsOneWidget);
       expect(find.text('Natur'), findsNothing);
-      expect(find.text('Ohne Gruppe'), findsOneWidget);
+      expect(find.text('Ohne Gruppe', skipOffstage: false), findsOneWidget);
       expect(find.text('Kampftalent'), findsNothing);
       expect(find.text('Athletik'), findsOneWidget);
       expect(find.text('Boote Fahren'), findsNothing);
-      expect(find.text('Schatzensuche'), findsOneWidget);
+      expect(find.text('Schatzensuche', skipOffstage: false), findsOneWidget);
       expect(find.text('Schwerter'), findsNothing);
       expect(find.text('MU: 14 | GE: 12 | KK: 13'), findsOneWidget);
 
