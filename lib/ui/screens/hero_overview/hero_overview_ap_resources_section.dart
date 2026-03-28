@@ -11,35 +11,23 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
     final level = isEditing ? computeLevelFromSpentAp(apSpent) : hero.level;
 
     final rowItems = <Widget>[
-      _buildInputField(
+      _buildApValueField(
         label: 'AP Gesamt',
         keyName: 'ap_total',
-        keyboardType: TextInputType.number,
-      ),
-      _buildApIncrementField(
-        label: 'AP Gesamt addieren',
-        incrementKey: 'ap_total_add',
-        onPressed: () => _applyApIncrement(
+        currentValue: apTotal,
+        onAddPressed: () => _showApIncrementDialog(
           targetKey: 'ap_total',
-          incrementKey: 'ap_total_add',
           label: 'AP Gesamt',
         ),
-        isEditing: isEditing,
       ),
-      _buildInputField(
+      _buildApValueField(
         label: 'AP Ausgegeben',
         keyName: 'ap_spent',
-        keyboardType: TextInputType.number,
-      ),
-      _buildApIncrementField(
-        label: 'AP Ausgegeben addieren',
-        incrementKey: 'ap_spent_add',
-        onPressed: () => _applyApIncrement(
+        currentValue: apSpent,
+        onAddPressed: () => _showApIncrementDialog(
           targetKey: 'ap_spent',
-          incrementKey: 'ap_spent_add',
           label: 'AP Ausgegeben',
         ),
-        isEditing: isEditing,
       ),
       _buildReadOnlyValueField(
         key: const ValueKey<String>('overview-readonly-ap_available'),
@@ -59,29 +47,104 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
     );
   }
 
-  Widget _buildApIncrementField({
+  Widget _buildApValueField({
     required String label,
-    required String incrementKey,
-    required VoidCallback onPressed,
-    required bool isEditing,
+    required String keyName,
+    required int currentValue,
+    required VoidCallback onAddPressed,
   }) {
-    return TextField(
-      key: ValueKey<String>('overview-field-$incrementKey'),
-      controller: _field(incrementKey),
-      keyboardType: TextInputType.number,
-      inputFormatters: <TextInputFormatter>[
-        FilteringTextInputFormatter.digitsOnly,
-      ],
-      decoration: _inputDecoration(label).copyWith(
-        suffixIcon: IconButton(
-          key: ValueKey<String>('overview-action-$incrementKey'),
-          tooltip: '$label anwenden',
-          onPressed: onPressed,
-          icon: const Icon(Icons.add),
-        ),
-      ),
-      onChanged: isEditing ? _onFieldChanged : null,
+    final isEditing = _editController.isEditing;
+    final addButton = IconButton(
+      key: ValueKey<String>('overview-action-add-$keyName'),
+      tooltip: '$label addieren',
+      onPressed: onAddPressed,
+      icon: const Icon(Icons.add),
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
     );
+
+    if (!isEditing) {
+      final theme = Theme.of(context);
+      return Column(
+        key: ValueKey<String>('overview-field-$keyName-view'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('$currentValue'),
+              addButton,
+            ],
+          ),
+        ],
+      );
+    }
+
+    return TextField(
+      key: ValueKey<String>('overview-field-$keyName'),
+      controller: _field(keyName),
+      keyboardType: TextInputType.number,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      decoration: _inputDecoration(label).copyWith(
+        suffixIcon: addButton,
+      ),
+      onChanged: _onFieldChanged,
+    );
+  }
+
+  Future<void> _showApIncrementDialog({
+    required String targetKey,
+    required String label,
+  }) async {
+    final dialogController = TextEditingController();
+    final result = await showDialog<int>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text('$label addieren'),
+          content: TextField(
+            controller: dialogController,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(
+              labelText: 'Betrag',
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            onSubmitted: (v) {
+              final n = int.tryParse(v.trim());
+              if (n != null && n > 0) Navigator.of(ctx).pop(n);
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Abbrechen'),
+            ),
+            TextButton(
+              onPressed: () {
+                final n = int.tryParse(dialogController.text.trim());
+                if (n != null && n > 0) Navigator.of(ctx).pop(n);
+              },
+              child: const Text('Addieren'),
+            ),
+          ],
+        );
+      },
+    );
+    dialogController.dispose();
+    if (result == null || !mounted) return;
+    await _applyApIncrement(targetKey: targetKey, label: label, increment: result);
   }
 
   Widget _buildSingleLineFieldsRow({
