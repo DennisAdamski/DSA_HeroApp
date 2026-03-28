@@ -535,11 +535,6 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                   return a.toLowerCase().compareTo(b.toLowerCase());
                 });
               final filterQuery = _talentGroupFilter.trim().toLowerCase();
-              final filteredGroups = filterQuery.isEmpty
-                  ? groups
-                  : groups
-                        .where((g) => g.toLowerCase().contains(filterQuery))
-                        .toList(growable: false);
 
               return ListView(
                 padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
@@ -643,48 +638,76 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                     ),
                   if (widget.scope == _TalentTabScope.combat ||
                       _subTabController?.index == 0)
-                    ...filteredGroups.map((group) {
-                      final talents = List<TalentDef>.from(grouped[group]!)
-                        ..sort(
-                          (a, b) => a.name.toLowerCase().compareTo(
-                            b.name.toLowerCase(),
+                    ...groups.expand((group) {
+                      final allGroupTalents =
+                          List<TalentDef>.from(grouped[group]!)
+                            ..sort(
+                              (a, b) => a.name.toLowerCase().compareTo(
+                                b.name.toLowerCase(),
+                              ),
+                            );
+                      final talents = filterQuery.isEmpty
+                          ? allGroupTalents
+                          : allGroupTalents
+                                .where(
+                                  (t) => t.name
+                                      .toLowerCase()
+                                      .contains(filterQuery),
+                                )
+                                .toList(growable: false);
+                      if (talents.isEmpty) return const <Widget>[];
+                      return [
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: CodexSectionCard(
+                            title: group,
+                            subtitle: '${talents.length} Talente',
+                            child: widget.scope == _TalentTabScope.combat
+                                ? _buildCombatTalentsTable(talents: talents)
+                                : _buildTalentsTable(
+                                    talents: talents,
+                                    effectiveAttributes: effectiveAttributes!,
+                                    activeBaseBe: activeTalentBe,
+                                    inventoryTalentMods:
+                                        ref
+                                            .watch(
+                                              heroComputedProvider(
+                                                widget.heroId,
+                                              ),
+                                            )
+                                            .asData
+                                            ?.value
+                                            .inventoryTalentMods ??
+                                        const {},
+                                  ),
                           ),
-                        );
-
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: CodexSectionCard(
-                          title: group,
-                          subtitle: '${talents.length} Talente',
-                          child: widget.scope == _TalentTabScope.combat
-                              ? _buildCombatTalentsTable(talents: talents)
-                              : _buildTalentsTable(
-                                  talents: talents,
-                                  effectiveAttributes: effectiveAttributes!,
-                                  activeBaseBe: activeTalentBe,
-                                  inventoryTalentMods:
-                                      ref
-                                          .watch(
-                                            heroComputedProvider(widget.heroId),
-                                          )
-                                          .asData
-                                          ?.value
-                                          .inventoryTalentMods ??
-                                      const {},
-                                ),
                         ),
-                      );
+                      ];
                     }),
                   if (widget.scope == _TalentTabScope.nonCombat &&
                       (_subTabController?.index == 0) &&
-                      _draftMetaTalents.isNotEmpty &&
-                      (filterQuery.isEmpty ||
-                          'meta-talente'.contains(filterQuery)))
-                    _buildMetaTalentsCard(
-                      metaTalents: _draftMetaTalents,
-                      catalogTalents: catalog.talents,
-                      effectiveAttributes: effectiveAttributes!,
-                      activeBaseBe: activeTalentBe,
+                      _draftMetaTalents.isNotEmpty)
+                    Builder(
+                      builder: (context) {
+                        final visibleMeta = filterQuery.isEmpty
+                            ? _draftMetaTalents
+                            : _draftMetaTalents
+                                  .where(
+                                    (m) => m.name
+                                        .toLowerCase()
+                                        .contains(filterQuery),
+                                  )
+                                  .toList(growable: false);
+                        if (visibleMeta.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return _buildMetaTalentsCard(
+                          metaTalents: visibleMeta,
+                          catalogTalents: catalog.talents,
+                          effectiveAttributes: effectiveAttributes!,
+                          activeBaseBe: activeTalentBe,
+                        );
+                      },
                     ),
                 ],
               );
