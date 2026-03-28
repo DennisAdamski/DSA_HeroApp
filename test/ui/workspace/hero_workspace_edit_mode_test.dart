@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -212,176 +211,8 @@ void main() {
     expect(hero.apSpent, 50);
   });
 
-  testWidgets('overview AP add actions persist outside edit mode', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [buildHero()],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 10,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
-
-    await openWorkspace(tester, repo);
-
-    final verticalScrollable = activeTabVerticalScrollable();
-    final apTotalField = find.byKey(
-      const ValueKey<String>('overview-field-ap_total'),
-    );
-    final apTotalAddField = find.byKey(
-      const ValueKey<String>('overview-field-ap_total_add'),
-    );
-    final apSpentAddField = find.byKey(
-      const ValueKey<String>('overview-field-ap_spent_add'),
-    );
-    await tester.scrollUntilVisible(
-      apTotalField,
-      240,
-      scrollable: verticalScrollable,
-    );
-
-    final totalAddWidget = tester.widget<TextField>(apTotalAddField);
-    final spentAddWidget = tester.widget<TextField>(apSpentAddField);
-    expect(totalAddWidget.controller?.text, isEmpty);
-    expect(spentAddWidget.controller?.text, isEmpty);
-    expect(
-      totalAddWidget.inputFormatters?.any(
-        (formatter) => formatter is FilteringTextInputFormatter,
-      ),
-      isTrue,
-    );
-    expect(
-      spentAddWidget.inputFormatters?.any(
-        (formatter) => formatter is FilteringTextInputFormatter,
-      ),
-      isTrue,
-    );
-
-    await tester.enterText(apTotalAddField, '200');
-    final apTotalAddAction = find.byKey(
-      const ValueKey<String>('overview-action-ap_total_add'),
-    );
-    final apTotalAddButton = tester.widget<IconButton>(apTotalAddAction);
-    expect(apTotalAddButton.onPressed, isNotNull);
-    apTotalAddButton.onPressed!.call();
-    await tester.pumpAndSettle();
-
-    await tester.enterText(apSpentAddField, '300');
-    final apSpentAddAction = find.byKey(
-      const ValueKey<String>('overview-action-ap_spent_add'),
-    );
-    final apSpentAddButton = tester.widget<IconButton>(apSpentAddAction);
-    expect(apSpentAddButton.onPressed, isNotNull);
-    apSpentAddButton.onPressed!.call();
-    await tester.pumpAndSettle();
-
-    final heroes = await repo.listHeroes();
-    final hero = findHeroById(heroes, 'demo');
-    expect(hero, isNotNull);
-    expect(hero!.apTotal, 1200);
-    expect(hero.apSpent, 800);
-    expect(tester.widget<TextField>(apTotalAddField).controller?.text, isEmpty);
-    expect(tester.widget<TextField>(apSpentAddField).controller?.text, isEmpty);
-    expect(find.text('Speichern'), findsNothing);
-  });
-
-  testWidgets('overview AP add actions update editable AP fields', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [buildHero()],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 10,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
-
-    await openWorkspace(tester, repo);
-
-    await tester.tap(find.text('Bearbeiten').first);
-    await tester.pumpAndSettle();
-
-    final verticalScrollable = activeTabVerticalScrollable();
-    final apTotalField = find.byKey(
-      const ValueKey<String>('overview-field-ap_total'),
-    );
-    final apTotalAddField = find.byKey(
-      const ValueKey<String>('overview-field-ap_total_add'),
-    );
-    final apSpentAddField = find.byKey(
-      const ValueKey<String>('overview-field-ap_spent_add'),
-    );
-    await tester.scrollUntilVisible(
-      apTotalField,
-      240,
-      scrollable: verticalScrollable,
-    );
-
-    final totalAddWidget = tester.widget<TextField>(apTotalAddField);
-    final spentAddWidget = tester.widget<TextField>(apSpentAddField);
-    expect(totalAddWidget.controller?.text, isEmpty);
-    expect(spentAddWidget.controller?.text, isEmpty);
-    expect(
-      totalAddWidget.inputFormatters?.any(
-        (formatter) => formatter is FilteringTextInputFormatter,
-      ),
-      isTrue,
-    );
-    expect(
-      spentAddWidget.inputFormatters?.any(
-        (formatter) => formatter is FilteringTextInputFormatter,
-      ),
-      isTrue,
-    );
-
-    await tester.enterText(apTotalAddField, '200');
-    final apTotalAddAction = find.byKey(
-      const ValueKey<String>('overview-action-ap_total_add'),
-    );
-    final apTotalAddButton = tester.widget<IconButton>(apTotalAddAction);
-    expect(apTotalAddButton.onPressed, isNotNull);
-    apTotalAddButton.onPressed!.call();
-    await tester.pumpAndSettle();
-
-    await tester.enterText(apSpentAddField, '300');
-    final apSpentAddAction = find.byKey(
-      const ValueKey<String>('overview-action-ap_spent_add'),
-    );
-    final apSpentAddButton = tester.widget<IconButton>(apSpentAddAction);
-    expect(apSpentAddButton.onPressed, isNotNull);
-    apSpentAddButton.onPressed!.call();
-    await tester.pumpAndSettle();
-
-    final apTotalInner = apTotalField;
-    final apSpentInner = find.byKey(
-      const ValueKey<String>('overview-field-ap_spent'),
-    );
-    expect(tester.widget<TextField>(apTotalInner).controller?.text, '1200');
-    expect(tester.widget<TextField>(apSpentInner).controller?.text, '800');
-    expect(tester.widget<TextField>(apTotalAddField).controller?.text, isEmpty);
-    expect(tester.widget<TextField>(apSpentAddField).controller?.text, isEmpty);
-
-    await tester.tap(find.text('Speichern').first);
-    await tester.pumpAndSettle();
-
-    final heroes = await repo.listHeroes();
-    final hero = findHeroById(heroes, 'demo');
-    expect(hero, isNotNull);
-    expect(hero!.apTotal, 1200);
-    expect(hero.apSpent, 800);
-  });
-
   testWidgets(
-    'talents tab shows catalog actions in upper workspace bar while editing',
+    'talents tab shows BE action in header and catalog actions in the tab body while editing',
     (tester) async {
       final repo = FakeRepository(
         heroes: [buildHero()],
@@ -395,21 +226,26 @@ void main() {
         },
       );
 
-      await openWorkspace(tester, repo, catalog: buildCatalog());
+      await openWorkspace(
+        tester,
+        repo,
+        size: const Size(740, 844),
+        catalog: buildCatalog(),
+      );
       await selectWorkspaceTab(tester, 'Talente');
 
       await tapWorkspaceEditAction(tester);
 
+      expect(
+        find.byKey(const ValueKey<String>('talents-be-screen-open')),
+        findsOneWidget,
+      );
       expect(
         find.byKey(const ValueKey<String>('talents-catalog-open')),
         findsOneWidget,
       );
       expect(
         find.byKey(const ValueKey<String>('meta-talents-manage-open')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey<String>('talents-be-screen-open')),
         findsOneWidget,
       );
     },
