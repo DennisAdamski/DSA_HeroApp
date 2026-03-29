@@ -67,7 +67,11 @@ class _TalentDetailDialog extends StatelessWidget {
                 _detailRow(theme, 'Ersatzweise', talent.alternatives),
               const Divider(height: 16),
               _sectionTitle(theme, 'Heldenwerte'),
-              _detailRow(theme, 'TaW', entry.talentValue != null ? '${entry.talentValue}' : '—'),
+              _detailRow(
+                theme,
+                'TaW',
+                entry.talentValue != null ? '${entry.talentValue}' : '—',
+              ),
               if (isCombat) ...[
                 _detailRow(theme, 'AT', '${entry.atValue}'),
                 _detailRow(theme, 'PA', '${entry.paValue}'),
@@ -103,7 +107,7 @@ class _TalentDetailDialog extends StatelessWidget {
                 ),
                 _detailRow(
                   theme,
-                  'TaW berechnet',
+                  'TaW*',
                   '${computeTalentComputedTaw(
                     talentValue: entry.talentValue,
                     modifier: entry.modifier,
@@ -123,8 +127,7 @@ class _TalentDetailDialog extends StatelessWidget {
                         (s) => Chip(
                           label: Text(s),
                           visualDensity: VisualDensity.compact,
-                          materialTapTargetSize:
-                              adaptiveTapTargetSize(context),
+                          materialTapTargetSize: adaptiveTapTargetSize(context),
                           padding: EdgeInsets.zero,
                           labelPadding: const EdgeInsets.symmetric(
                             horizontal: 6,
@@ -134,6 +137,113 @@ class _TalentDetailDialog extends StatelessWidget {
                       .toList(growable: false),
                 ),
               ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Schließen'),
+        ),
+      ],
+    );
+  }
+
+  Widget _sectionTitle(ThemeData theme, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(
+        title,
+        style: theme.textTheme.labelLarge?.copyWith(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _detailRow(ThemeData theme, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 140,
+            child: Text(
+              label,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          Expanded(child: Text(value, style: theme.textTheme.bodySmall)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Dialog mit Detailansicht eines Meta-Talents inklusive Komponenten und Probe.
+class _MetaTalentDetailDialog extends StatelessWidget {
+  const _MetaTalentDetailDialog({
+    required this.metaTalent,
+    required this.effectiveAttributes,
+    required this.activeBaseBe,
+    required this.componentNames,
+    required this.rawTaw,
+    required this.computedTaw,
+  });
+
+  final HeroMetaTalent metaTalent;
+  final Attributes effectiveAttributes;
+  final int activeBaseBe;
+  final List<String> componentNames;
+  final int rawTaw;
+  final int computedTaw;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final maxTaw = computeTalentMaxValue(
+      effectiveAttributes: effectiveAttributes,
+      attributeNames: metaTalent.attributes,
+      gifted: false,
+    );
+    final ebe = computeMetaTalentEbe(
+      baseBe: activeBaseBe,
+      beRule: metaTalent.be,
+    );
+
+    return AlertDialog(
+      title: Text(metaTalent.name),
+      content: SizedBox(
+        width: kDialogWidthMedium,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionTitle(theme, 'Meta-Talent'),
+              _detailRow(theme, 'Typ', 'Heldenspezifisches Meta-Talent'),
+              _detailRow(
+                theme,
+                'Eigenschaften',
+                metaTalent.attributes.join(', '),
+              ),
+              if (metaTalent.be.isNotEmpty)
+                _detailRow(theme, 'BE-Regel', metaTalent.be),
+              const Divider(height: 16),
+              _sectionTitle(theme, 'Heldenwerte'),
+              _detailRow(theme, 'Roh-TaW', '$rawTaw'),
+              _detailRow(theme, 'eBE', '$ebe'),
+              _detailRow(theme, 'TaW*', '$computedTaw'),
+              _detailRow(theme, 'max TaW', '$maxTaw'),
+              const Divider(height: 16),
+              _sectionTitle(theme, 'Bestandteile'),
+              ...componentNames.map(
+                (componentName) => _detailRow(theme, 'Talent', componentName),
+              ),
             ],
           ),
         ),

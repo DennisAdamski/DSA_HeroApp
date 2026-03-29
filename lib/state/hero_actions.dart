@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
+import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -20,6 +22,7 @@ import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart'
     show avatarFileStorageProvider;
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart'
     show heroStorageLocationProvider;
@@ -152,6 +155,11 @@ class HeroActions {
     final codec = _ref.read(heroTransferCodecProvider);
     final hero = await _loadHeroById(heroId);
     final state = (await repo.loadHeroState(heroId)) ?? const HeroState.empty();
+    final runtimeData = await _ref.read(catalogRuntimeDataProvider.future);
+    final transferCatalogEntries = _buildTransferCatalogEntries(
+      hero: hero,
+      runtimeData: runtimeData,
+    );
     // Avatar-Bytes laden und base64-kodieren (falls vorhanden)
     String? avatarBase64;
     List<Map<String, dynamic>>? galleryImages;
@@ -196,6 +204,9 @@ class HeroActions {
       state: state,
       avatarBase64: avatarBase64,
       galleryImages: galleryImages,
+      catalogEntries: transferCatalogEntries.isEmpty
+          ? null
+          : transferCatalogEntries,
     );
     return codec.encode(bundle);
   }
@@ -225,6 +236,26 @@ class HeroActions {
       hero = hero.copyWith(id: heroId);
     }
 
+    final transferCatalogEntries = bundle.catalogEntries;
+    if (transferCatalogEntries != null && transferCatalogEntries.isNotEmpty) {
+      final runtimeData = await _ref.read(catalogRuntimeDataProvider.future);
+      final repository = _ref.read(customCatalogRepositoryProvider);
+      await repository.importTransferEntries(
+        catalogVersion: runtimeData.baseData.version,
+        entries: transferCatalogEntries
+            .map(
+              (entry) => CustomCatalogEntryRecord(
+                section: entry.section,
+                id: entry.id,
+                filePath: '',
+                data: entry.data,
+              ),
+            )
+            .toList(growable: false),
+      );
+      _ref.read(catalogActionsProvider).reloadCatalog();
+    }
+
     await saveHero(hero);
     await saveHeroState(heroId, bundle.state);
 
@@ -237,47 +268,51 @@ class HeroActions {
       final heroStoragePath = await _resolveHeroStoragePath();
       final storage = _ref.read(avatarFileStorageProvider);
 
-    // Gallery-Bilder aus Bundle importieren (falls vorhanden)
-    if (hasGallery) {
-      final restoredGallery = <AvatarGalleryEntry>[];
-      for (final img in bundle.galleryImages!) {
-        final b64 = img['base64'] as String?;
-        if (b64 == null || b64.isEmpty) continue;
-        final entryJson = Map<String, dynamic>.from(img)..remove('base64');
-        final entry = AvatarGalleryEntry.fromJson(entryJson);
-        final pngBytes = base64Decode(b64);
-        await storage.saveGalleryImage(
+      // Gallery-Bilder aus Bundle importieren (falls vorhanden)
+      if (hasGallery) {
+        final restoredGallery = <AvatarGalleryEntry>[];
+        for (final img in bundle.galleryImages!) {
+          final b64 = img['base64'] as String?;
+          if (b64 == null || b64.isEmpty) continue;
+          final entryJson = Map<String, dynamic>.from(img)..remove('base64');
+          final entry = AvatarGalleryEntry.fromJson(entryJson);
+          final pngBytes = base64Decode(b64);
+          await storage.saveGalleryImage(
+            heroStoragePath: heroStoragePath,
+            heroId: heroId,
+            entryId: entry.id,
+            pngBytes: pngBytes,
+          );
+          restoredGallery.add(entry);
+        }
+        if (restoredGallery.isNotEmpty) {
+          final savedHero = await _loadHeroById(heroId);
+          await saveHero(
+            savedHero.copyWith(
+              appearance: savedHero.appearance.copyWith(
+                avatarGallery: restoredGallery,
+              ),
+            ),
+          );
+        }
+      }
+
+      // Legacy-Avatar aus Bundle importieren (falls vorhanden)
+      if (hasLegacyAvatar) {
+        final pngBytes = base64Decode(bundle.avatarBase64!);
+        final fileName = await storage.saveAvatar(
           heroStoragePath: heroStoragePath,
           heroId: heroId,
-          entryId: entry.id,
           pngBytes: pngBytes,
         );
-        restoredGallery.add(entry);
-      }
-      if (restoredGallery.isNotEmpty) {
         final savedHero = await _loadHeroById(heroId);
-        await saveHero(savedHero.copyWith(
-          appearance: savedHero.appearance.copyWith(
-            avatarGallery: restoredGallery,
+        await saveHero(
+          savedHero.copyWith(
+            appearance: savedHero.appearance.copyWith(avatarFileName: fileName),
           ),
-        ));
+        );
       }
     }
-
-    // Legacy-Avatar aus Bundle importieren (falls vorhanden)
-    if (hasLegacyAvatar) {
-      final pngBytes = base64Decode(bundle.avatarBase64!);
-      final fileName = await storage.saveAvatar(
-        heroStoragePath: heroStoragePath,
-        heroId: heroId,
-        pngBytes: pngBytes,
-      );
-      final savedHero = await _loadHeroById(heroId);
-      await saveHero(savedHero.copyWith(
-        appearance: savedHero.appearance.copyWith(avatarFileName: fileName),
-      ));
-    }
-    } // end if (hasGallery || hasLegacyAvatar)
 
     _ref.read(selectedHeroIdProvider.notifier).state = heroId;
     return heroId;
@@ -487,9 +522,7 @@ class HeroActions {
         avatarFileName: avatarFileName,
         avatarGallery: updatedGallery,
         primaerbildId: primaerbildId,
-        avatarSnapshot: primaerbildId.isEmpty
-            ? () => null
-            : null,
+        avatarSnapshot: primaerbildId.isEmpty ? () => null : null,
       ),
     );
     await saveHero(updated);
@@ -607,3 +640,201 @@ const Set<String> _defaultTalentIds = <String>{
   'tal_schneidern',
   'tal_pflanzenkunde',
 };
+
+List<HeroTransferCatalogEntry> _buildTransferCatalogEntries({
+  required HeroSheet hero,
+  required CatalogRuntimeData runtimeData,
+}) {
+  final effectiveCustomEntries = _effectiveCustomEntryMaps(runtimeData);
+  final referencedIds = <CatalogSectionId, Set<String>>{
+    for (final section in editableCatalogSections) section: <String>{},
+  };
+
+  void addId(CatalogSectionId section, String id) {
+    final normalized = id.trim();
+    if (normalized.isEmpty) {
+      return;
+    }
+    referencedIds[section]!.add(normalized);
+  }
+
+  for (final talentId in hero.talents.keys) {
+    addId(CatalogSectionId.talents, talentId);
+    addId(CatalogSectionId.combatTalents, talentId);
+  }
+  for (final talentId in hero.hiddenTalentIds) {
+    addId(CatalogSectionId.talents, talentId);
+    addId(CatalogSectionId.combatTalents, talentId);
+  }
+  for (final metaTalent in hero.metaTalents) {
+    for (final componentId in metaTalent.componentTalentIds) {
+      addId(CatalogSectionId.talents, componentId);
+      addId(CatalogSectionId.combatTalents, componentId);
+    }
+  }
+  for (final spellId in hero.spells.keys) {
+    addId(CatalogSectionId.spells, spellId);
+  }
+  for (final spracheId in hero.sprachen.keys) {
+    addId(CatalogSectionId.sprachen, spracheId);
+  }
+  for (final schriftId in hero.schriften.keys) {
+    addId(CatalogSectionId.schriften, schriftId);
+  }
+  addId(CatalogSectionId.sprachen, hero.muttersprache);
+
+  for (final spracheId in referencedIds[CatalogSectionId.sprachen]!) {
+    final sprache =
+        effectiveCustomEntries[CatalogSectionId.sprachen]![spracheId];
+    if (sprache == null) {
+      continue;
+    }
+    final rawSchriftIds = (sprache['schriftIds'] as List?) ?? const [];
+    for (final schriftId in rawSchriftIds) {
+      addId(CatalogSectionId.schriften, schriftId.toString());
+    }
+  }
+
+  for (final weapon in hero.combatConfig.weaponSlots) {
+    addId(CatalogSectionId.talents, weapon.talentId);
+    addId(CatalogSectionId.combatTalents, weapon.talentId);
+  }
+  for (final mastery in hero.combatConfig.waffenmeisterschaften) {
+    addId(CatalogSectionId.talents, mastery.talentId);
+    addId(CatalogSectionId.combatTalents, mastery.talentId);
+  }
+  for (final maneuverId in hero.combatConfig.specialRules.activeManeuvers) {
+    addId(CatalogSectionId.maneuvers, maneuverId);
+  }
+  for (final abilityId
+      in hero.combatConfig.specialRules.activeCombatSpecialAbilityIds) {
+    addId(CatalogSectionId.combatSpecialAbilities, abilityId);
+  }
+
+  final customCombatTalentsByName = <String, String>{};
+  for (final entry
+      in effectiveCustomEntries[CatalogSectionId.combatTalents]!.values) {
+    final name = (entry['name'] as String? ?? '').trim().toLowerCase();
+    final id = (entry['id'] as String? ?? '').trim();
+    if (name.isNotEmpty && id.isNotEmpty) {
+      customCombatTalentsByName[name] = id;
+    }
+  }
+  final customManeuversByName = <String, String>{};
+  for (final entry
+      in effectiveCustomEntries[CatalogSectionId.maneuvers]!.values) {
+    final name = (entry['name'] as String? ?? '').trim().toLowerCase();
+    final id = (entry['id'] as String? ?? '').trim();
+    if (name.isNotEmpty && id.isNotEmpty) {
+      customManeuversByName[name] = id;
+    }
+  }
+
+  for (final abilityId
+      in referencedIds[CatalogSectionId.combatSpecialAbilities]!) {
+    final ability =
+        effectiveCustomEntries[CatalogSectionId
+            .combatSpecialAbilities]![abilityId];
+    if (ability == null) {
+      continue;
+    }
+    final rawManeuverIds =
+        (ability['aktiviert_manoever_ids'] as List?) ?? const [];
+    final maneuverIds = rawManeuverIds.map((entry) => entry.toString());
+    for (final maneuverId in maneuverIds) {
+      addId(CatalogSectionId.maneuvers, maneuverId);
+    }
+  }
+
+  for (final weaponEntry
+      in effectiveCustomEntries[CatalogSectionId.weapons]!.values) {
+    final weaponName = (weaponEntry['name'] as String? ?? '').trim();
+    if (weaponName.isEmpty) {
+      continue;
+    }
+
+    final matchesWeapon = hero.combatConfig.weaponSlots.any((slot) {
+      return slot.name.trim() == weaponName ||
+          slot.weaponType.trim() == weaponName;
+    });
+    final matchesMastery = hero.combatConfig.waffenmeisterschaften.any(
+      (mastery) => mastery.weaponType.trim() == weaponName,
+    );
+    if (!matchesWeapon && !matchesMastery) {
+      continue;
+    }
+
+    addId(
+      CatalogSectionId.weapons,
+      (weaponEntry['id'] as String? ?? '').trim(),
+    );
+
+    final combatSkillName = (weaponEntry['combatSkill'] as String? ?? '')
+        .trim()
+        .toLowerCase();
+    if (combatSkillName.isNotEmpty) {
+      final customTalentId = customCombatTalentsByName[combatSkillName];
+      if (customTalentId != null) {
+        addId(CatalogSectionId.combatTalents, customTalentId);
+      }
+    }
+
+    final rawManeuvers =
+        (weaponEntry['possibleManeuvers'] as List?) ?? const [];
+    final rawActiveManeuvers =
+        (weaponEntry['activeManeuvers'] as List?) ?? const [];
+    for (final raw in <dynamic>[...rawManeuvers, ...rawActiveManeuvers]) {
+      final value = raw.toString().trim();
+      if (value.isEmpty) {
+        continue;
+      }
+      addId(CatalogSectionId.maneuvers, value);
+      final maneuverId = customManeuversByName[value.toLowerCase()];
+      if (maneuverId != null) {
+        addId(CatalogSectionId.maneuvers, maneuverId);
+      }
+    }
+  }
+
+  final entries = <HeroTransferCatalogEntry>[];
+  for (final section in editableCatalogSections) {
+    final entryMap = effectiveCustomEntries[section]!;
+    final sortedIds = referencedIds[section]!.toList()..sort();
+    for (final entryId in sortedIds) {
+      final entry = entryMap[entryId];
+      if (entry == null) {
+        continue;
+      }
+      entries.add(
+        HeroTransferCatalogEntry(section: section, id: entryId, data: entry),
+      );
+    }
+  }
+  return List<HeroTransferCatalogEntry>.unmodifiable(entries);
+}
+
+Map<CatalogSectionId, Map<String, Map<String, dynamic>>>
+_effectiveCustomEntryMaps(CatalogRuntimeData runtimeData) {
+  final baseIds = <CatalogSectionId, Set<String>>{
+    for (final section in editableCatalogSections)
+      section: runtimeData.baseData
+          .entriesFor(section)
+          .map((entry) => (entry['id'] as String? ?? '').trim())
+          .where((id) => id.isNotEmpty)
+          .toSet(),
+  };
+  final result = <CatalogSectionId, Map<String, Map<String, dynamic>>>{
+    for (final section in editableCatalogSections)
+      section: <String, Map<String, dynamic>>{},
+  };
+  for (final section in editableCatalogSections) {
+    for (final entry in runtimeData.effectiveData.entriesFor(section)) {
+      final id = (entry['id'] as String? ?? '').trim();
+      if (id.isEmpty || baseIds[section]!.contains(id)) {
+        continue;
+      }
+      result[section]![id] = entry;
+    }
+  }
+  return result;
+}
