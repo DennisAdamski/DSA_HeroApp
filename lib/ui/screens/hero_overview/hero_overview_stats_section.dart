@@ -3,20 +3,20 @@ part of 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 extension _HeroOverviewStatsSection on _HeroOverviewTabState {
   static const List<AdaptiveTableColumnSpec> _derivedValueColumnSpecs =
       <AdaptiveTableColumnSpec>[
-        AdaptiveTableColumnSpec(minWidth: 96, maxWidth: 136),
-        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120),
-        AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 132),
-        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120),
-        AdaptiveTableColumnSpec(minWidth: 82, maxWidth: 120),
+        AdaptiveTableColumnSpec(minWidth: 96, maxWidth: 136), // Wert (LeP, AsP, …)
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Start
+        AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 132), // Modifikator
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Aktuell
+        AdaptiveTableColumnSpec(minWidth: 82, maxWidth: 120), // Zugekauft
       ];
 
   static const List<AdaptiveTableColumnSpec> _attributeColumnSpecs =
       <AdaptiveTableColumnSpec>[
-        AdaptiveTableColumnSpec(minWidth: 96, maxWidth: 136),
-        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120),
-        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120),
-        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120),
-        AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 132),
+        AdaptiveTableColumnSpec(minWidth: 96, maxWidth: 136), // Eigenschaft
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Start
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Max
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Wert
+        AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 132), // Aktuell
       ];
 
   Widget _buildCombinedStatsAndAttributesSection(
