@@ -116,7 +116,7 @@ extension _WeaponEditorContent on WeaponEditorScreenState {
                   onKkBaseChanged: (value) =>
                       _setDraftWeapon(_draftWeapon.copyWith(kkBase: value)),
                   onKkThresholdChanged: (value) => _setDraftWeapon(
-                    _draftWeapon.copyWith(kkThreshold: value < 1 ? 1 : value),
+                    _draftWeapon.copyWith(kkThreshold: value),
                   ),
                 ),
                 const SizedBox(height: 12),
