@@ -227,15 +227,15 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
     required bool showPieceRg1,
   }) {
     return <AdaptiveTableColumnSpec>[
-      const AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 260, flex: 2),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
-      const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100),
-      const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),
-      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2),
+      const AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 260, flex: 2), // Name
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),             // RS
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),             // BE
+      const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100),            // Aktiv
+      const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),            // Artefakt
+      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2), // Artefaktbeschreibung
       if (showPieceRg1)
-        const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100),
-      const AdaptiveTableColumnSpec.fixed(56),
+        const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100),          // RG I aktiv
+      const AdaptiveTableColumnSpec.fixed(56),                               // Aktion
     ];
   }
 
