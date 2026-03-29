@@ -267,8 +267,8 @@ In `HeroSheet` werden `persistentMods` (aus geparsten Vor-/Nachteilen, dauerhaft
 | `combatType` | `WeaponCombatType` | Explizite Einordnung als Nah- oder Fernkampfwaffe |
 | `weaponType` | `String` | Waffenkategorie |
 | `distanceClass` | `String` | Distanzklasse der Nahkampfwaffe (Legacy-kompatibel) |
-| `kkBase` | `int` | KK-Basis für TP-Bonus-Berechnung |
-| `kkThreshold` | `int` | KK-Schwelle für TP-Schritte |
+| `kkBase` | `int` | KK-Basis für TP-Bonus-Berechnung; `0` zusammen mit `kkThreshold = 0` deaktiviert TP/KK und INI/GE |
+| `kkThreshold` | `int` | KK-Schwelle für TP-Schritte; `0` ist nur zusammen mit `kkBase = 0` als Deaktivierung erlaubt |
 | `breakFactor` | `int` | Bruchfaktor der Waffe |
 | `tpDiceCount` | `int` | Anzahl TP-Würfel |
 | `tpDiceSides` | `int` (= 6) | Seiten des TP-Würfels (immer 6) |
@@ -876,6 +876,8 @@ Manoever-Erleichterungen und freigeschaltete Zusatz-Manoever fuer die UI; im
 Kampf-Preview wird die aktive Waffenmeisterschaft selbst nur kompakt markiert.
 Distanz- und Geschoss-Chips werden dort nur angezeigt, wenn in Haupt- oder
 Nebenhand eine Fernkampfwaffe gehalten wird.
+Ein TP/KK-Wert von `0/0` wird dabei als bewusste Deaktivierung behandelt; in
+diesem Fall entfallen TP/KK- und INI/GE-Berechnungen fuer die Waffe.
 
 ### 4.7 Modifier-Parser
 

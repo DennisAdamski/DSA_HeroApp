@@ -30,7 +30,7 @@ MainWeaponSlot weaponSlotFromCatalog(
     weaponType: weapon.name,
     distanceClass: weapon.reach,
     kkBase: kkBase,
-    kkThreshold: kkThreshold < 1 ? 1 : kkThreshold,
+    kkThreshold: kkThreshold,
     breakFactor: breakFactor,
     tpDiceCount: tpDiceCount < 1 ? 1 : tpDiceCount,
     tpFlat: tpFlat,

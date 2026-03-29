@@ -28,6 +28,7 @@ class CombatPreviewStats {
     required this.rgReduction,
     required this.beKampf,
     required this.beMod,
+    required this.usesTpKkThreshold,
     required this.tpKk,
     required this.geBase,
     required this.geThreshold,
@@ -109,6 +110,7 @@ class CombatPreviewStats {
   final int rgReduction;
   final int beKampf;
   final int beMod;
+  final bool usesTpKkThreshold;
   final int tpKk;
   final int geBase;
   final int geThreshold;
@@ -303,12 +305,20 @@ CombatPreviewStats computeCombatPreviewStats(
   final paSpecBonus = specApplies && !isRangedWeapon ? 1 : 0;
   final wmKkBase = main.kkBase + wmEffects.tpKkBaseReduction;
   final wmKkThreshold = main.kkThreshold + wmEffects.tpKkThresholdReduction;
-  final kkThreshold = wmKkThreshold < 1 ? 1 : wmKkThreshold;
-  final tpKk = computeTpKk(
-    kk: effectiveSheet.attributes.kk,
-    kkBase: wmKkBase,
-    kkThreshold: kkThreshold,
+  final usesTpKkThreshold = _usesTpKkThreshold(
+    kkBase: main.kkBase,
+    kkThreshold: main.kkThreshold,
   );
+  final kkThreshold = usesTpKkThreshold && wmKkThreshold < 1
+      ? 1
+      : wmKkThreshold;
+  final tpKk = usesTpKkThreshold
+      ? computeTpKk(
+          kk: effectiveSheet.attributes.kk,
+          kkBase: wmKkBase,
+          kkThreshold: kkThreshold,
+        )
+      : 0;
   final axxTpBonus = isRangedWeapon
       ? 0
       : computeAxxeleratusTpBonus(axxeleratusActive: axxeleratusActive);
@@ -482,6 +492,7 @@ CombatPreviewStats computeCombatPreviewStats(
     rgReduction: rgReduction,
     beKampf: beKampf,
     beMod: beMod,
+    usesTpKkThreshold: usesTpKkThreshold,
     tpKk: tpKk,
     geBase: geBase,
     geThreshold: geThreshold,
@@ -600,19 +611,29 @@ _WeaponInitiativeSnapshot _computeWeaponInitiativeSnapshot({
   final isRangedWeapon = slot.isRanged || legacyRanged;
   final wmEffects = computeWaffenmeisterEffects(
     waffenmeisterschaften: waffenmeisterschaften,
-    activeWeaponType: slot.weaponType.trim().isEmpty ? slot.name : slot.weaponType,
+    activeWeaponType: slot.weaponType.trim().isEmpty
+        ? slot.name
+        : slot.weaponType,
     activeTalentId: slot.talentId,
   );
   final wmKkBase = slot.kkBase + wmEffects.tpKkBaseReduction;
   final wmKkThreshold = slot.kkThreshold + wmEffects.tpKkThresholdReduction;
-  final kkThreshold = wmKkThreshold < 1 ? 1 : wmKkThreshold;
-  final geBase = 26 - wmKkBase;
-  final geThreshold = 7 - kkThreshold;
-  final iniGe = computeIniGe(
-    ge: effectiveGe,
-    kkBase: wmKkBase,
-    kkThreshold: kkThreshold,
+  final usesTpKkThreshold = _usesTpKkThreshold(
+    kkBase: slot.kkBase,
+    kkThreshold: slot.kkThreshold,
   );
+  final kkThreshold = usesTpKkThreshold && wmKkThreshold < 1
+      ? 1
+      : wmKkThreshold;
+  final geBase = usesTpKkThreshold ? 26 - wmKkBase : 0;
+  final geThreshold = usesTpKkThreshold ? 7 - kkThreshold : 0;
+  final iniGe = usesTpKkThreshold
+      ? computeIniGe(
+          ge: effectiveGe,
+          kkBase: wmKkBase,
+          kkThreshold: kkThreshold,
+        )
+      : 0;
   final activeProjectile = slot.rangedProfile.selectedProjectileOrNull;
   final projectileIniMod = isRangedWeapon ? (activeProjectile?.iniMod ?? 0) : 0;
   final kombinierteIni = clampNonNegative(
@@ -646,3 +667,7 @@ TalentDef? _findTalentDefById(List<TalentDef> talents, String id) {
   return null;
 }
 
+/// `0/0` kennzeichnet bewusst deaktivierte TP/KK- und INI/GE-Regeln.
+bool _usesTpKkThreshold({required int kkBase, required int kkThreshold}) {
+  return !(kkBase == 0 && kkThreshold == 0);
+}
