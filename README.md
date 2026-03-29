@@ -49,6 +49,9 @@ Technischer Stack:
   `Application Support` bzw. auf Windows in `AppData`
 - Heldendaten nutzen standardmaessig einen eigenen Unterordner und koennen auf
   Desktop-Plattformen auf einen frei gewaehlten Ordner umgestellt werden
+- Custom-Kataloge werden im aktiven Heldenspeicher unter
+  `custom_catalogs/<katalogversion>/<sektion>/<id>.json` gespeichert und
+  koennen dadurch ueber einen synchronisierten Cloud-Ordner mitlaufen
 - Ein ungueltiger benutzerdefinierter Heldenspeicherpfad fuehrt zu einem
   klaren Fehlerzustand statt zu einem stillen Fallback
 - Standardpfade liegen direkt unter dem app-spezifischen Support-Ordner, also
@@ -112,6 +115,13 @@ Technischer Stack:
 - Import und Export kompletter Helden als JSON-Bundle
 - Konfliktbehandlung beim Import vorhandener Helden
 - Katalogdaten aus `assets/catalogs/house_rules_v1/`
+- Settings-Bereich `Katalogverwaltung` zum Einsehen aller Basisdaten sowie zum
+  Anlegen, Bearbeiten und Loeschen synchronisierbarer Custom-Eintraege
+- Hero-Exporte koennen benoetigte Custom-Katalogeintraege mitsenden, damit
+  referenzierte Hausregeln beim Import direkt wieder aufloesbar sind
+- Reisebericht-Daten liegen bewusst separat unter
+  `assets/catalogs/reiseberichte/house_rules_v1/` und gehoeren nicht zur
+  editierbaren Settings-Katalogverwaltung
 - Aufbereitung der Runtime-Kataloge aus Excel-Quellen ueber Skripte in `tool/`
 
 ## Technischer Aufbau
@@ -191,6 +201,7 @@ lib/
 
 assets/
   catalogs/house_rules_v1/  Split-JSON-Kataloge
+  catalogs/reiseberichte/   Separater Reisebericht-Katalog
   heroes/                   Seed-Helden
 
 tool/
@@ -235,5 +246,9 @@ Weitere Referenzen:
 ## Hinweise
 
 - Die kanonische Katalogquelle fuer die App bleibt `assets/catalogs/house_rules_v1/`.
+- Benutzerdefinierte Katalogeintraege liegen nie im Einstellungsordner,
+  sondern immer im aktuell aktiven Heldenspeicher.
+- `assets/catalogs/reiseberichte/house_rules_v1/reisebericht.json` bleibt ein
+  separater Runtime-Katalog ausserhalb der editierbaren Settings-Sektionen.
 - Excel-Dateien im Repo-Root sind Upstream-Quellen fuer die Katalogaufbereitung.
 - Platzhalter- und Legacy-Dateien werden bewusst nicht automatisch entfernt.

@@ -559,10 +559,11 @@ Kapselt einen vollständigen Heldenexport.
 | Feld/Konstante | Wert/Typ | Bedeutung |
 |---|---|---|
 | `kind` (const) | `'dsa.hero.export'` | Format-Kennzeichnung |
-| `transferSchemaVersion` (const) | `1` | Export-Formatversion (strict) |
+| `transferSchemaVersion` (const) | `3` | Export-Formatversion (strict) |
 | `exportedAt` | `DateTime` (UTC) | Exportzeitpunkt |
 | `hero` | `HeroSheet` | Persistierte Heldendaten |
 | `state` | `HeroState` | Laufzeitzustand zum Exportzeitpunkt |
+| `catalogEntries` | `List<HeroTransferCatalogEntry>?` | Optional eingebettete referenzierte Custom-Katalogeintraege |
 
 `fromJson()` validiert strikt: `kind`, `transferSchemaVersion`, ISO-8601-Zeitstempel,
 Vorhandensein von `hero` und `state`. Wirft `FormatException` bei Validierungsfehlern.
@@ -584,6 +585,12 @@ Vorhandensein von `hero` und `state`. Wirft `FormatException` bei Validierungsfe
 | `weapons` | `List<WeaponDef>` | Alle Waffen |
 | `maneuvers` | `List<ManeuverDef>` | Kampfmanöver (optional) |
 | `metadata` | `Map<String, dynamic>` | Weitere Metadaten |
+
+Seit 2026-03-29 wird der Asset-Katalog intern zunaechst als
+`CatalogSourceData` geladen. Danach kombiniert `CatalogRuntimeData` die
+Basisdaten mit konfliktfreien Custom-Dateien aus dem aktiven Heldenspeicher.
+`CatalogAdminSnapshot` bildet daraus die Settings-Ansicht fuer die
+Katalogverwaltung.
 
 ### `TalentDef`
 
@@ -664,7 +671,7 @@ Kampftalente erkennt man an: `group == 'Kampftalent'` **oder** `weaponCategory !
 
 ### Split-JSON-Struktur & Ladevorgang
 
-**Dateipfad:** `assets/catalogs/house_rules_v1/`
+**Basis-Dateipfad:** `assets/catalogs/house_rules_v1/`
 
 ```
 manifest.json          ← Einstiegspunkt; enthält Dateipfade der Teilkataloge
@@ -674,16 +681,25 @@ waffen.json            ← Waffen
 magie.json             ← Zaubersprüche
 manoever.json          ← Manöver (optional)
 kampf_sonderfertigkeiten.json ← Kampf-Sonderfertigkeiten (optional)
+sprachen.json          ← Sprachen (optional)
+schriften.json         ← Schriften (optional)
 ```
 
-**`CatalogLoader.loadFromAsset()`** (`lib/catalog/catalog_loader.dart`):
+**Separater Reisebericht-Pfad:** `assets/catalogs/reiseberichte/house_rules_v1/`
+
+**Synchronisierbare Custom-Dateien im Heldenspeicher:**
+`<hero-storage>/custom_catalogs/<version>/<sektion>/<id>.json`
+
+**`CatalogLoader.loadSourceData()` + `buildCatalogFromSourceData()`**
+(`lib/catalog/catalog_loader.dart`):
 
 1. `manifest.json` laden (Dateipfade, Version, Metadaten)
-2. Alle Teilkataloge laden (relative Pfade auflösen)
+2. Alle Teilkataloge laden (relative Pfade auflösen; Reisebericht darf ausserhalb des Basisordners liegen)
 3. **Kampf-Split validieren**: `talente.json` darf keine `'Kampftalent'`-Einträge enthalten;
    `waffentalente.json` muss ausschließlich `'Kampftalent'`-Einträge enthalten
 4. **IDs validieren**: Jede Sektion muss eindeutige, nicht-leere IDs haben
-5. Zusammengeführten `RulesCatalog` zurückgeben
+5. Basisdaten mit konfliktfreien Custom-Dateien aus dem Heldenspeicher mergen
+6. Zusammengeführten `RulesCatalog` zurückgeben
 
 ---
 
@@ -951,6 +967,9 @@ apAvailable   = max(0, apTotal − apSpent)
 | `combatPreviewProvider(id)` | `Provider.family<AsyncValue<CombatPreviewStats>>` | Kampfvorschau |
 | `heroActionsProvider` | `Provider<HeroActions>` | Schreiboperationen |
 | `catalogLoaderProvider` | `Provider<CatalogLoader>` | Katalog-Lader |
+| `customCatalogRepositoryProvider` | `Provider<CustomCatalogRepository>` | Datei-I/O fuer synchronisierbare Custom-Kataloge |
+| `catalogRuntimeDataProvider` | `FutureProvider<CatalogRuntimeData>` | Basis + Custom + Fehlerzustand |
+| `catalogAdminSnapshotProvider` | `FutureProvider<CatalogAdminSnapshot>` | Settings-Katalogverwaltung |
 | `rulesCatalogProvider` | `FutureProvider<RulesCatalog>` | Geladener Katalog |
 | `talentBeOverrideProvider(id)` | `StateProvider.family<bool?>` | Manuelle BE-Überschreibung |
 | `talentsVisibilityModeProvider(id)` | `StateProvider.family<bool>` | Verborgene Talente zeigen |
@@ -1083,6 +1102,12 @@ macOS und Linux kann optional ein benutzerdefinierter Ordner verwendet werden.
 - `encode(bundle)` → JSON-String (2-Space-Einrückung)
 - `decode(rawJson)` → `HeroTransferBundle` (wirft `FormatException` bei Fehler)
 
+Beim Export wird die minimale benoetigte Menge referenzierter
+Custom-Katalogeintraege optional in `HeroTransferBundle.catalogEntries`
+eingebettet. Beim Import werden diese Dateien zuerst in den aktiven
+Heldenspeicher geschrieben, damit anschliessend gespeicherte Heldenreferenzen
+sofort aufloesbar sind.
+
 **Gateway** (`lib/data/hero_transfer_file_gateway.dart`):
 
 Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dart`):
@@ -1178,7 +1203,7 @@ einem Zielgerät im Profile-Modus.
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
 - Die aktuelle `schemaVersion` für `HeroSheet` ist **21**, für `HeroState` **5**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
-- `HeroTransferBundle.transferSchemaVersion` = 1 wird **strikt** validiert.
+- `HeroTransferBundle.transferSchemaVersion` = 3 wird **strikt** validiert.
 
 ### Dateinamen & Stil
 
@@ -1215,6 +1240,10 @@ python tool/report_unreferenced_dart.py
 
 Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Dateien unter
 `assets/catalogs/house_rules_v1/` **nie manuell bearbeiten**.
+
+Synchronisierbare Benutzererweiterungen liegen stattdessen im aktiven
+Heldenspeicher unter `custom_catalogs/<version>/<sektion>/<id>.json` und werden
+ueber die Settings-Katalogverwaltung bearbeitet.
 
 ### Update 2026-03-07: Begabung & Lernkomplexitaet
 

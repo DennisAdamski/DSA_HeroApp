@@ -43,6 +43,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/catalogs/house_rules_v1/
+    - assets/catalogs/reiseberichte/house_rules_v1/
     - assets/heroes/
     - assets/ui/codex/
   fonts:

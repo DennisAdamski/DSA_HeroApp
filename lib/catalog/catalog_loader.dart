@@ -1,7 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:path/path.dart' as path;
 
+import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
+import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 
 /// Laedt und validiert das Split-JSON-Katalogformat aus Flutter-Assets.
@@ -23,11 +26,25 @@ class CatalogLoader {
     return loadFromAsset(defaultAssetPath);
   }
 
+  /// Laedt die Rohdaten des Standard-Katalogs aus [defaultAssetPath].
+  Future<CatalogSourceData> loadDefaultSourceData() {
+    return loadSourceData(defaultAssetPath);
+  }
+
   /// Laedt einen Katalog aus der angegebenen Manifest-Datei.
   ///
   /// Liest alle Teilkatalog-Dateien, validiert die Kampftalent-Aufteilung
   /// und prueft auf doppelte IDs. Wirft [FormatException] bei Fehlern.
   Future<RulesCatalog> loadFromAsset(String manifestAssetPath) async {
+    final sourceData = await loadSourceData(manifestAssetPath);
+    return buildCatalogFromSourceData(
+      sourceData,
+      assetPathForErrors: manifestAssetPath,
+    );
+  }
+
+  /// Laedt die Split-JSON-Struktur als rohe Sektionsdaten.
+  Future<CatalogSourceData> loadSourceData(String manifestAssetPath) async {
     final manifest = await _loadJsonObject(manifestAssetPath);
     final files = _readJsonObject(
       manifest,
@@ -37,178 +54,154 @@ class CatalogLoader {
     );
     final metadata =
         (manifest['metadata'] as Map?)?.cast<String, dynamic>() ?? const {};
-
-    final talenteAssetPath = _resolveAssetPath(
-      manifestAssetPath,
-      _readRequiredString(
-        files,
-        'talente',
-        assetPath: manifestAssetPath,
-        context: 'manifest.files',
-      ),
+    final sections = <CatalogSectionId, List<Map<String, dynamic>>>{};
+    sections[CatalogSectionId.talents] = await _loadRequiredSection(
+      files: files,
+      manifestAssetPath: manifestAssetPath,
+      section: CatalogSectionId.talents,
     );
-    final waffentalenteAssetPath = _resolveAssetPath(
-      manifestAssetPath,
-      _readRequiredString(
-        files,
-        'waffentalente',
-        assetPath: manifestAssetPath,
-        context: 'manifest.files',
-      ),
+    sections[CatalogSectionId.combatTalents] = await _loadRequiredSection(
+      files: files,
+      manifestAssetPath: manifestAssetPath,
+      section: CatalogSectionId.combatTalents,
     );
-    final waffenAssetPath = _resolveAssetPath(
-      manifestAssetPath,
-      _readRequiredString(
-        files,
-        'waffen',
-        assetPath: manifestAssetPath,
-        context: 'manifest.files',
-      ),
+    sections[CatalogSectionId.weapons] = await _loadRequiredSection(
+      files: files,
+      manifestAssetPath: manifestAssetPath,
+      section: CatalogSectionId.weapons,
     );
-    final magieAssetPath = _resolveAssetPath(
-      manifestAssetPath,
-      _readRequiredString(
-        files,
-        'magie',
-        assetPath: manifestAssetPath,
-        context: 'manifest.files',
-      ),
+    sections[CatalogSectionId.spells] = await _loadRequiredSection(
+      files: files,
+      manifestAssetPath: manifestAssetPath,
+      section: CatalogSectionId.spells,
     );
 
-    final manoeverRelative = _readOptionalStringFromMap(files, 'manoever');
-    final manoeverAssetPath = manoeverRelative != null
-        ? _resolveAssetPath(manifestAssetPath, manoeverRelative)
-        : null;
-    final combatSpecialAbilitiesRelative = _readOptionalStringFromMap(
-      files,
-      'kampf_sonderfertigkeiten',
-    );
-    final combatSpecialAbilitiesAssetPath =
-        combatSpecialAbilitiesRelative != null
-        ? _resolveAssetPath(
-            manifestAssetPath,
-            combatSpecialAbilitiesRelative,
-          )
-        : null;
-    final sprachenRelative = _readOptionalStringFromMap(files, 'sprachen');
-    final sprachenAssetPath = sprachenRelative != null
-        ? _resolveAssetPath(manifestAssetPath, sprachenRelative)
-        : null;
-    final schriftenRelative = _readOptionalStringFromMap(files, 'schriften');
-    final schriftenAssetPath = schriftenRelative != null
-        ? _resolveAssetPath(manifestAssetPath, schriftenRelative)
-        : null;
-    final reiseberichtRelative = _readOptionalStringFromMap(
-      files,
-      'reisebericht',
-    );
-    final reiseberichtAssetPath = reiseberichtRelative != null
-        ? _resolveAssetPath(manifestAssetPath, reiseberichtRelative)
-        : null;
+    for (final section in const <CatalogSectionId>[
+      CatalogSectionId.maneuvers,
+      CatalogSectionId.combatSpecialAbilities,
+      CatalogSectionId.sprachen,
+      CatalogSectionId.schriften,
+    ]) {
+      sections[section] = await _loadOptionalSection(
+        files: files,
+        manifestAssetPath: manifestAssetPath,
+        section: section,
+      );
+    }
 
-    final talente = await _loadJsonList(talenteAssetPath);
-    final waffentalente = await _loadJsonList(waffentalenteAssetPath);
-    final waffen = await _loadJsonList(waffenAssetPath);
-    final magie = await _loadJsonList(magieAssetPath);
-    final manoeverRaw = manoeverAssetPath != null
-        ? await _loadJsonList(manoeverAssetPath)
-        : const <Map<String, dynamic>>[];
-    final combatSpecialAbilitiesRaw =
-        combatSpecialAbilitiesAssetPath != null
-        ? await _loadJsonList(combatSpecialAbilitiesAssetPath)
-        : const <Map<String, dynamic>>[];
-    final sprachenRaw = sprachenAssetPath != null
-        ? await _loadJsonList(sprachenAssetPath)
-        : const <Map<String, dynamic>>[];
-    final schriftenRaw = schriftenAssetPath != null
-        ? await _loadJsonList(schriftenAssetPath)
-        : const <Map<String, dynamic>>[];
-    final reiseberichtRaw = reiseberichtAssetPath != null
-        ? await _loadJsonList(reiseberichtAssetPath)
-        : const <Map<String, dynamic>>[];
+    final reisebericht = await _loadOptionalSectionByKey(
+      files: files,
+      manifestAssetPath: manifestAssetPath,
+      manifestKey: reiseberichtManifestKey,
+    );
+
+    return CatalogSourceData(
+      version: _readOptionalString(manifest, 'version', fallback: 'unknown'),
+      source: _readOptionalString(manifest, 'source', fallback: 'unknown'),
+      metadata: metadata,
+      sections: sections,
+      reisebericht: reisebericht,
+    );
+  }
+
+  /// Baut einen typisierten Laufzeitkatalog aus rohen Sektionsdaten.
+  RulesCatalog buildCatalogFromSourceData(
+    CatalogSourceData sourceData, {
+    String assetPathForErrors = 'catalog',
+  }) {
+    final talents = sourceData.entriesFor(CatalogSectionId.talents);
+    final combatTalents = sourceData.entriesFor(CatalogSectionId.combatTalents);
+    final weapons = sourceData.entriesFor(CatalogSectionId.weapons);
+    final spells = sourceData.entriesFor(CatalogSectionId.spells);
+    final maneuvers = sourceData.entriesFor(CatalogSectionId.maneuvers);
+    final combatSpecialAbilities = sourceData.entriesFor(
+      CatalogSectionId.combatSpecialAbilities,
+    );
+    final sprachen = sourceData.entriesFor(CatalogSectionId.sprachen);
+    final schriften = sourceData.entriesFor(CatalogSectionId.schriften);
 
     _validateCombatSplit(
-      entries: talente,
+      entries: talents,
       mustBeCombatTalent: false,
-      assetPath: talenteAssetPath,
+      assetPath: assetPathForErrors,
     );
     _validateCombatSplit(
-      entries: waffentalente,
+      entries: combatTalents,
       mustBeCombatTalent: true,
-      assetPath: waffentalenteAssetPath,
+      assetPath: assetPathForErrors,
     );
 
     final combinedTalents = <Map<String, dynamic>>[
-      ...talente,
-      ...waffentalente,
+      ...talents,
+      ...combatTalents,
     ];
     _validateUniqueIds(
       entries: combinedTalents,
       domainName: 'talents',
-      assetPath: manifestAssetPath,
+      assetPath: assetPathForErrors,
     );
     _validateUniqueIds(
-      entries: magie,
+      entries: spells,
       domainName: 'spells',
-      assetPath: manifestAssetPath,
+      assetPath: assetPathForErrors,
     );
     _validateUniqueIds(
-      entries: waffen,
+      entries: weapons,
       domainName: 'weapons',
-      assetPath: manifestAssetPath,
+      assetPath: assetPathForErrors,
     );
     _validateUniqueIds(
-      entries: manoeverRaw,
+      entries: maneuvers,
       domainName: 'maneuvers',
-      assetPath: manifestAssetPath,
+      assetPath: assetPathForErrors,
     );
     _validateUniqueIds(
-      entries: combatSpecialAbilitiesRaw,
+      entries: combatSpecialAbilities,
       domainName: 'combat special abilities',
-      assetPath: manifestAssetPath,
+      assetPath: assetPathForErrors,
     );
     _validateUniqueIds(
-      entries: sprachenRaw,
+      entries: sprachen,
       domainName: 'sprachen',
-      assetPath: manifestAssetPath,
+      assetPath: assetPathForErrors,
     );
     _validateUniqueIds(
-      entries: schriftenRaw,
+      entries: schriften,
       domainName: 'schriften',
-      assetPath: manifestAssetPath,
+      assetPath: assetPathForErrors,
     );
     _validateUniqueIds(
-      entries: reiseberichtRaw,
+      entries: sourceData.reisebericht,
       domainName: 'reisebericht',
-      assetPath: manifestAssetPath,
+      assetPath: assetPathForErrors,
     );
 
     return RulesCatalog(
-      version: _readOptionalString(manifest, 'version', fallback: 'unknown'),
-      source: _readOptionalString(manifest, 'source', fallback: 'unknown'),
-      metadata: metadata,
+      version: sourceData.version,
+      source: sourceData.source,
+      metadata: sourceData.metadata,
       talents: combinedTalents
           .map((entry) => TalentDef.fromJson(entry))
           .toList(growable: false),
-      spells: magie
+      spells: spells
           .map((entry) => SpellDef.fromJson(entry))
           .toList(growable: false),
-      weapons: waffen
+      weapons: weapons
           .map((entry) => WeaponDef.fromJson(entry))
           .toList(growable: false),
-      maneuvers: manoeverRaw
+      maneuvers: maneuvers
           .map((entry) => ManeuverDef.fromJson(entry))
           .toList(growable: false),
-      combatSpecialAbilities: combatSpecialAbilitiesRaw
+      combatSpecialAbilities: combatSpecialAbilities
           .map((entry) => CombatSpecialAbilityDef.fromJson(entry))
           .toList(growable: false),
-      sprachen: sprachenRaw
+      sprachen: sprachen
           .map((entry) => SpracheDef.fromJson(entry))
           .toList(growable: false),
-      schriften: schriftenRaw
+      schriften: schriften
           .map((entry) => SchriftDef.fromJson(entry))
           .toList(growable: false),
-      reisebericht: reiseberichtRaw
+      reisebericht: sourceData.reisebericht
           .map((entry) => ReiseberichtDef.fromJson(entry))
           .toList(growable: false),
     );
@@ -329,12 +322,8 @@ String? _readOptionalStringFromMap(Map<String, dynamic> json, String key) {
 /// Beispiel: `'assets/catalogs/v1/manifest.json'` + `'talente.json'`
 /// ergibt `'assets/catalogs/v1/talente.json'`.
 String _resolveAssetPath(String manifestAssetPath, String relativePath) {
-  final slashIndex = manifestAssetPath.lastIndexOf('/');
-  if (slashIndex < 0) {
-    return relativePath;
-  }
-  final baseDir = manifestAssetPath.substring(0, slashIndex);
-  return '$baseDir/$relativePath';
+  final baseDir = path.posix.dirname(manifestAssetPath);
+  return path.posix.normalize(path.posix.join(baseDir, relativePath));
 }
 
 /// Prueft, ob alle Eintraege korrekt als Kampftalente markiert sind.
@@ -389,4 +378,44 @@ void _validateUniqueIds({
       );
     }
   }
+}
+
+Future<List<Map<String, dynamic>>> _loadRequiredSection({
+  required Map<String, dynamic> files,
+  required String manifestAssetPath,
+  required CatalogSectionId section,
+}) async {
+  final relativePath = _readRequiredString(
+    files,
+    section.manifestFileKey,
+    assetPath: manifestAssetPath,
+    context: 'manifest.files',
+  );
+  final assetPath = _resolveAssetPath(manifestAssetPath, relativePath);
+  return _loadJsonList(assetPath);
+}
+
+Future<List<Map<String, dynamic>>> _loadOptionalSection({
+  required Map<String, dynamic> files,
+  required String manifestAssetPath,
+  required CatalogSectionId section,
+}) {
+  return _loadOptionalSectionByKey(
+    files: files,
+    manifestAssetPath: manifestAssetPath,
+    manifestKey: section.manifestFileKey,
+  );
+}
+
+Future<List<Map<String, dynamic>>> _loadOptionalSectionByKey({
+  required Map<String, dynamic> files,
+  required String manifestAssetPath,
+  required String manifestKey,
+}) async {
+  final relativePath = _readOptionalStringFromMap(files, manifestKey);
+  if (relativePath == null) {
+    return const <Map<String, dynamic>>[];
+  }
+  final assetPath = _resolveAssetPath(manifestAssetPath, relativePath);
+  return _loadJsonList(assetPath);
 }
