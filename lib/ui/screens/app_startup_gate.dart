@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
+import 'package:dsa_heldenverwaltung/data/custom_catalog_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/app_shell.dart';
@@ -109,7 +111,10 @@ class _AppStartupGateState extends State<AppStartupGate> {
     }
 
     _activeRepository = repository;
-    return _HeroRepositoryBootstrapResult(repository: repository);
+    return _HeroRepositoryBootstrapResult(
+      repository: repository,
+      heroStoragePath: heroStoragePath,
+    );
   }
 
   @override
@@ -140,6 +145,9 @@ class _AppStartupGateState extends State<AppStartupGate> {
         final result = snapshot.requireData;
         return _buildScope(
           repository: result.repository,
+          customCatalogRepository: CustomCatalogRepository(
+            heroStoragePath: result.heroStoragePath,
+          ),
           home: const HeroesHomeScreen(),
         );
       },
@@ -149,6 +157,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
   Widget _buildScope({
     required Widget home,
     HiveHeroRepository? repository,
+    CustomCatalogRepository? customCatalogRepository,
   }) {
     final scopeKey = ValueKey<String>(
       '${repository?.hashCode ?? 'none'}|${_currentConfiguredPath ?? 'default'}',
@@ -159,6 +168,10 @@ class _AppStartupGateState extends State<AppStartupGate> {
         widget.storageDirectoryPicker,
       ),
       appStoragePathsProvider.overrideWithValue(widget.storagePaths),
+      customCatalogRepositoryProvider.overrideWithValue(
+        customCatalogRepository ??
+            const CustomCatalogRepository(heroStoragePath: ''),
+      ),
     ];
     if (repository != null) {
       overrides.add(heroRepositoryProvider.overrideWithValue(repository));
@@ -173,9 +186,13 @@ class _AppStartupGateState extends State<AppStartupGate> {
 }
 
 class _HeroRepositoryBootstrapResult {
-  const _HeroRepositoryBootstrapResult({required this.repository});
+  const _HeroRepositoryBootstrapResult({
+    required this.repository,
+    required this.heroStoragePath,
+  });
 
   final HiveHeroRepository repository;
+  final String heroStoragePath;
 }
 
 /// Fehleransicht fuer ungueltige oder nicht verfuegbare Heldenspeicherpfade.
@@ -202,10 +219,7 @@ class _HeroStorageErrorScreen extends StatelessWidget {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  '$error',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
+                Text('$error', style: Theme.of(context).textTheme.bodyLarge),
                 const SizedBox(height: 16),
                 const Text(
                   'Prüfe den konfigurierten Heldenspeicher in den '
@@ -215,9 +229,7 @@ class _HeroStorageErrorScreen extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const SettingsScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
                     );
                   },
                   icon: const Icon(Icons.settings),

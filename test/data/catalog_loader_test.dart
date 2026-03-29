@@ -10,6 +10,8 @@ void main() {
 
   const manifestPath = 'assets/catalogs/house_rules_v1/manifest.json';
   const basePath = 'assets/catalogs/house_rules_v1';
+  const reiseberichtPath =
+      'assets/catalogs/reiseberichte/house_rules_v1/reisebericht.json';
 
   late Map<String, String> assets;
 
@@ -50,6 +52,7 @@ void main() {
           'magie': 'magie.json',
           'manoever': 'manoever.json',
           'kampf_sonderfertigkeiten': 'kampf_sonderfertigkeiten.json',
+          'reisebericht': '../reiseberichte/house_rules_v1/reisebericht.json',
         },
       }),
       '$basePath/talente.json': jsonEncode([
@@ -136,6 +139,16 @@ void main() {
           ],
         },
       ]),
+      reiseberichtPath: jsonEncode([
+        {
+          'id': 'rb_test',
+          'name': 'Test-Reisebericht',
+          'kategorie': 'natur',
+          'typ': 'checkpoint',
+          'beschreibung': 'Testeintrag',
+          'ap': 5,
+        },
+      ]),
     };
   }
 
@@ -172,6 +185,7 @@ void main() {
       catalog.combatSpecialAbilities.first.kampfwertBoni.single.giltFuerTalent,
       'raufen',
     );
+    expect(catalog.reisebericht.map((e) => e.id).toList(), ['rb_test']);
   });
 
   test('throws when section JSON top-level is not a list', () async {

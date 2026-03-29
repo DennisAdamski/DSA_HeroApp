@@ -31,6 +31,19 @@ Visible UI text should use proper German umlauts and `ß` instead of translitera
 - `lib/ui/screens/app_startup_gate.dart` initialisiert das Helden-Repository
   anhand des wirksamen Heldenspeicherpfads.
 
+### Catalog Update 2026-03-29
+
+- Editierbare Basis-Kataloge bleiben weiterhin Asset-Dateien unter
+  `assets/catalogs/house_rules_v1/`.
+- Benutzerdefinierte Katalogeintraege werden synchronisierbar im aktiven
+  Heldenspeicher unter
+  `custom_catalogs/<katalogversion>/<sektion>/<id>.json` abgelegt.
+- Die Settings besitzen eine `Katalogverwaltung`, die Basis- und
+  Custom-Eintraege gemeinsam anzeigt; bearbeitbar sind nur Custom-Dateien.
+- Reisebericht-Daten liegen bewusst separat unter
+  `assets/catalogs/reiseberichte/house_rules_v1/reisebericht.json` und gehoeren
+  nicht zur editierbaren Katalogverwaltung.
+
 ---
 
 ## Technology Stack
@@ -122,13 +135,13 @@ DSA_HeroApp/
 │       └── fake_repository.dart
 ├── test/                            # Unit & widget tests
 ├── assets/
-│   ├── catalogs/house_rules_v1/     # Split JSON catalog (runtime)
+│   ├── catalogs/house_rules_v1/     # Split JSON catalog (runtime, editierbare Basisdaten)
 │   │   ├── manifest.json
 │   │   ├── talente.json
 │   │   ├── waffen.json
 │   │   ├── waffentalente.json
-│   │   ├── magie.json
-│   │   └── reisebericht.json
+│   │   └── magie.json
+│   ├── catalogs/reiseberichte/      # Separater Reisebericht-Katalog
 │   └── heroes/                      # Seed hero JSON files
 ├── tool/                            # Python helper scripts
 │   ├── convert_excel_to_catalog.py
@@ -164,6 +177,17 @@ Ergaenzungen zur aktuellen Struktur:
   strukturierte Kampf-Sonderfertigkeiten mit Voraussetzungen, Verbreitung,
   Kosten sowie optionalen Stilfeldern wie `stil_typ`,
   `aktiviert_manoever_ids` und `kampfwert_boni`.
+- `lib/catalog/catalog_section_id.dart` definiert die editierbaren
+  Katalogsektionen der Settings-Verwaltung samt Anzeigenamen,
+  Verzeichnisnamen und Basis-Templates.
+- `lib/catalog/catalog_runtime_data.dart` trennt Basisdaten, geladene
+  Custom-Dateien und den wirksamen Laufzeitkatalog.
+- `lib/data/custom_catalog_repository.dart` verwaltet synchronisierbare
+  Custom-Katalogdateien im aktiven Heldenspeicher.
+- `lib/ui/screens/catalog_management_screen.dart` und
+  `lib/ui/screens/catalog_entry_editor_screen.dart` bilden die
+  Settings-Katalogverwaltung inklusive JSON-Editor fuer
+  Kampf-Sonderfertigkeiten.
 - `lib/ui/widgets/combat_quick_stats.dart` enthaelt die kompakte Kampfwerte-Quickview.
 - `lib/domain/learn/learn_complexity.dart` und
   `lib/domain/learn/learn_rules.dart` kapseln die AP-Steigerungslogik
@@ -196,7 +220,7 @@ Ergaenzungen zur aktuellen Struktur:
   innerer TabBar fuer 6 Erfahrungs-Kategorien.
 - `lib/ui/screens/hero_reisebericht/` enthaelt die ausgelagerten Part-
   Dateien: Kategorieansicht, Entry-Tiles und Dialoge.
-- `assets/catalogs/house_rules_v1/reisebericht.json` enthaelt die
+- `assets/catalogs/reiseberichte/house_rules_v1/reisebericht.json` enthaelt die
   erweiterbaren Katalogdaten fuer Abenteuererfahrungen in 6 Kategorien.
 - `lib/rules/derived/modifier_source_breakdown.dart` berechnet die
   per-Quellen-Aufschluesselung (Rasse, Kultur, Profession, Vorteile,
@@ -473,6 +497,12 @@ python tool/report_unreferenced_dart.py
 ### Catalog
 
 - The canonical catalog source is `assets/catalogs/house_rules_v1/` (split JSON with `manifest.json`).
+- Reisebericht-Daten werden separat aus
+  `assets/catalogs/reiseberichte/house_rules_v1/` geladen; der Manifest-Eintrag
+  in `assets/catalogs/house_rules_v1/manifest.json` verweist bewusst dorthin.
+- Synchronisierbare Custom-Katalogdateien liegen nicht im Asset-Baum und nicht
+  im Einstellungsordner, sondern im aktiven Heldenspeicher unter
+  `custom_catalogs/<katalogversion>/<sektion>/<id>.json`.
 - Do **not** modify catalog JSON files by hand; use the Python tools in `tool/`.
 - Excel source files (`*.xlsx`) at the repo root are the upstream source; `~$*.xlsx` lockfiles are versioned but not runtime-relevant.
 
