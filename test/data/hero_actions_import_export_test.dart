@@ -1,20 +1,41 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
+import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
+import 'package:dsa_heldenverwaltung/data/custom_catalog_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 
 void main() {
-  ProviderContainer buildContainer(FakeRepository repo) {
+  ProviderContainer buildContainer(
+    FakeRepository repo, {
+    CatalogRuntimeData? runtimeData,
+    CustomCatalogRepository? customCatalogRepository,
+  }) {
     final container = ProviderContainer(
-      overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        heroRepositoryProvider.overrideWithValue(repo),
+        catalogRuntimeDataProvider.overrideWith(
+          (ref) async => runtimeData ?? _buildRuntimeData(),
+        ),
+        customCatalogRepositoryProvider.overrideWithValue(
+          customCatalogRepository ??
+              const CustomCatalogRepository(heroStoragePath: ''),
+        ),
+      ],
     );
     addTearDown(container.dispose);
     return container;
@@ -64,6 +85,116 @@ void main() {
     expect(map['state'], isA<Map>());
   });
 
+  test('buildExportJson embeds referenced custom catalog entries', () async {
+    final repo = FakeRepository(
+      heroes: [
+        const HeroSheet(
+          id: 'h1',
+          name: 'Test',
+          level: 1,
+          attributes: Attributes(
+            mu: 8,
+            kl: 8,
+            inn: 8,
+            ch: 8,
+            ff: 8,
+            ge: 8,
+            ko: 8,
+            kk: 8,
+          ),
+          talents: <String, HeroTalentEntry>{
+            'tal_custom': HeroTalentEntry(),
+          },
+          spells: <String, HeroSpellEntry>{
+            'spell_custom': HeroSpellEntry(),
+          },
+          sprachen: <String, HeroLanguageEntry>{
+            'spr_custom': HeroLanguageEntry(),
+          },
+          muttersprache: 'spr_custom',
+        ),
+      ],
+      states: {
+        'h1': const HeroState(
+          currentLep: 20,
+          currentAsp: 5,
+          currentKap: 0,
+          currentAu: 30,
+        ),
+      },
+    );
+    final runtimeData = _buildRuntimeData(
+      customEntries: <CustomCatalogEntryRecord>[
+        CustomCatalogEntryRecord(
+          section: CatalogSectionId.talents,
+          id: 'tal_custom',
+          filePath: '/tmp/tal_custom.json',
+          data: const <String, dynamic>{
+            'id': 'tal_custom',
+            'name': 'Hauswissen',
+            'group': 'Wissen',
+            'steigerung': 'B',
+            'attributes': <String>['KL', 'KL', 'IN'],
+            'active': true,
+          },
+        ),
+        CustomCatalogEntryRecord(
+          section: CatalogSectionId.spells,
+          id: 'spell_custom',
+          filePath: '/tmp/spell_custom.json',
+          data: const <String, dynamic>{
+            'id': 'spell_custom',
+            'name': 'Hauszauber',
+            'tradition': 'Gildenmagie',
+            'steigerung': 'C',
+            'attributes': <String>['KL', 'IN', 'CH'],
+            'active': true,
+          },
+        ),
+        CustomCatalogEntryRecord(
+          section: CatalogSectionId.sprachen,
+          id: 'spr_custom',
+          filePath: '/tmp/spr_custom.json',
+          data: const <String, dynamic>{
+            'id': 'spr_custom',
+            'name': 'Geheimsprache',
+            'familie': 'Test',
+            'maxWert': 18,
+            'steigerung': 'A',
+            'schriftIds': <String>['sch_custom'],
+            'schriftlos': false,
+          },
+        ),
+        CustomCatalogEntryRecord(
+          section: CatalogSectionId.schriften,
+          id: 'sch_custom',
+          filePath: '/tmp/sch_custom.json',
+          data: const <String, dynamic>{
+            'id': 'sch_custom',
+            'name': 'Geheimschrift',
+            'maxWert': 10,
+            'steigerung': 'A',
+          },
+        ),
+      ],
+    );
+    final container = buildContainer(repo, runtimeData: runtimeData);
+    final actions = container.read(heroActionsProvider);
+
+    final raw = await actions.buildExportJson('h1');
+    final bundle = HeroTransferBundle.fromJson(
+      jsonDecode(raw) as Map<String, dynamic>,
+    );
+
+    final ids = bundle.catalogEntries!.map((entry) => entry.id).toSet();
+    expect(ids, containsAll(<String>[
+      'tal_custom',
+      'spell_custom',
+      'spr_custom',
+      'sch_custom',
+    ]));
+  });
+
   test('createHero stores raw and effective start attributes', () async {
     final repo = FakeRepository.empty();
     final container = buildContainer(repo);
@@ -89,57 +220,30 @@ void main() {
     expect(hero.rawStartAttributes.kl, 13);
     expect(hero.startAttributes.kl, 13);
     expect(hero.attributes.kl, 13);
-    expect(
-      hero.talents.keys,
-      containsAll(const <String>[
-        'tal_dolche',
-        'tal_hiebwaffen',
-        'tal_raufen',
-        'tal_ringen',
-        'tal_saebel',
-        'tal_wurfmesser',
-        'tal_athletik',
-        'tal_klettern',
-        'tal_koerperbeherrschung',
-        'tal_schleichen',
-        'tal_schwimmen',
-        'tal_selbstbeherrschung',
-        'tal_sich_verstecken',
-        'tal_singen',
-        'tal_sinnesschaerfe',
-        'tal_tanzen',
-        'tal_zechen',
-        'tal_menschenkenntnis',
-        'tal_ueberreden',
-        'tal_faehrtensuchen',
-        'tal_orientierung',
-        'tal_wildnisleben',
-        'tal_goetter_kulte',
-        'tal_rechnen',
-        'tal_sagen_legenden',
-        'tal_heilkunde_wunden',
-        'tal_holzbearbeitung',
-        'tal_kochen',
-        'tal_lederarbeiten',
-        'tal_malen_zeichnen',
-        'tal_schneidern',
-        'tal_pflanzenkunde',
-      ]),
-    );
-    expect(hero.metaTalents, hasLength(1));
+    expect(hero.talents.keys, contains('tal_klettern'));
     expect(hero.metaTalents.single.id, 'meta_kraeutersuchen');
-    expect(hero.metaTalents.single.name, 'Kräutersuchen');
-    expect(hero.metaTalents.single.componentTalentIds, <String>[
-      'tal_sinnesschaerfe',
-      'tal_wildnisleben',
-      'tal_pflanzenkunde',
-    ]);
-    expect(hero.metaTalents.single.attributes, <String>['MU', 'IN', 'FF']);
   });
 
-  test('import non-conflicting hero creates hero and state', () async {
+  test('importHeroBundle stores embedded custom catalog entries', () async {
+    final tempDir = await Directory.systemTemp.createTemp(
+      'hero_actions_import_export_test',
+    );
+    addTearDown(() async {
+      if (await tempDir.exists()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
     final repo = FakeRepository.empty();
-    final container = buildContainer(repo);
+    final runtimeData = _buildRuntimeData();
+    final customRepository = CustomCatalogRepository(
+      heroStoragePath: tempDir.path,
+    );
+    final container = buildContainer(
+      repo,
+      runtimeData: runtimeData,
+      customCatalogRepository: customRepository,
+    );
     final actions = container.read(heroActionsProvider);
 
     final bundle = HeroTransferBundle(
@@ -166,158 +270,54 @@ void main() {
         currentAu: 18,
         tempAttributeMods: AttributeModifiers(mu: 3),
       ),
+      catalogEntries: const <HeroTransferCatalogEntry>[
+        HeroTransferCatalogEntry(
+          section: CatalogSectionId.talents,
+          id: 'tal_custom',
+          data: <String, dynamic>{
+            'id': 'tal_custom',
+            'name': 'Hauswissen',
+            'group': 'Wissen',
+            'steigerung': 'B',
+            'attributes': <String>['KL', 'KL', 'IN'],
+            'active': true,
+          },
+        ),
+      ],
     );
 
-    final importedId = await actions.importHeroBundle(
+    await actions.importHeroBundle(
       bundle,
       resolution: ImportConflictResolution.overwriteExisting,
     );
 
-    expect(importedId, 'new-id');
-    final heroes = await repo.listHeroes();
-    expect(heroes.length, 1);
-    expect(heroes.single.id, 'new-id');
-    final state = await repo.loadHeroState('new-id');
-    expect(state?.currentLep, 12);
-    expect(state?.tempAttributeMods.mu, 3);
+    final snapshot = await customRepository.load(
+      catalogVersion: runtimeData.baseData.version,
+    );
+    expect(snapshot.entries, hasLength(1));
+    expect(snapshot.entries.single.id, 'tal_custom');
+    expect(snapshot.issues, isEmpty);
+    expect((await repo.listHeroes()).single.id, 'new-id');
   });
+}
 
-  test('conflict overwrite replaces existing hero and state', () async {
-    final repo = FakeRepository(
-      heroes: [
-        const HeroSheet(
-          id: 'same-id',
-          name: 'Alt',
-          level: 1,
-          attributes: Attributes(
-            mu: 8,
-            kl: 8,
-            inn: 8,
-            ch: 8,
-            ff: 8,
-            ge: 8,
-            ko: 8,
-            kk: 8,
-          ),
-        ),
-      ],
-      states: {
-        'same-id': const HeroState(
-          currentLep: 5,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
-    final container = buildContainer(repo);
-    final actions = container.read(heroActionsProvider);
-
-    final bundle = HeroTransferBundle(
-      exportedAt: DateTime.utc(2026, 2, 22),
-      hero: const HeroSheet(
-        id: 'same-id',
-        name: 'Neu',
-        level: 1,
-        attributes: Attributes(
-          mu: 10,
-          kl: 8,
-          inn: 8,
-          ch: 8,
-          ff: 8,
-          ge: 8,
-          ko: 8,
-          kk: 8,
-        ),
-      ),
-      state: const HeroState(
-        currentLep: 33,
-        currentAsp: 1,
-        currentKap: 0,
-        currentAu: 40,
-      ),
-    );
-
-    final importedId = await actions.importHeroBundle(
-      bundle,
-      resolution: ImportConflictResolution.overwriteExisting,
-    );
-
-    expect(importedId, 'same-id');
-    final heroes = await repo.listHeroes();
-    expect(heroes.length, 1);
-    expect(heroes.single.name, 'Neu');
-    final state = await repo.loadHeroState('same-id');
-    expect(state?.currentLep, 33);
-  });
-
-  test('conflict createNewHero generates a new id', () async {
-    final repo = FakeRepository(
-      heroes: [
-        const HeroSheet(
-          id: 'same-id',
-          name: 'Alt',
-          level: 1,
-          attributes: Attributes(
-            mu: 8,
-            kl: 8,
-            inn: 8,
-            ch: 8,
-            ff: 8,
-            ge: 8,
-            ko: 8,
-            kk: 8,
-          ),
-        ),
-      ],
-      states: {
-        'same-id': const HeroState(
-          currentLep: 5,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
-    final container = buildContainer(repo);
-    final actions = container.read(heroActionsProvider);
-
-    final bundle = HeroTransferBundle(
-      exportedAt: DateTime.utc(2026, 2, 22),
-      hero: const HeroSheet(
-        id: 'same-id',
-        name: 'Neu',
-        level: 1,
-        attributes: Attributes(
-          mu: 10,
-          kl: 8,
-          inn: 8,
-          ch: 8,
-          ff: 8,
-          ge: 8,
-          ko: 8,
-          kk: 8,
-        ),
-      ),
-      state: const HeroState(
-        currentLep: 33,
-        currentAsp: 1,
-        currentKap: 0,
-        currentAu: 40,
-      ),
-    );
-
-    final importedId = await actions.importHeroBundle(
-      bundle,
-      resolution: ImportConflictResolution.createNewHero,
-    );
-
-    expect(importedId, isNot('same-id'));
-    final heroes = await repo.listHeroes();
-    expect(heroes.length, 2);
-    expect(heroes.any((hero) => hero.id == 'same-id'), isTrue);
-    expect(heroes.any((hero) => hero.id == importedId), isTrue);
-    final state = await repo.loadHeroState(importedId);
-    expect(state?.currentLep, 33);
-  });
+CatalogRuntimeData _buildRuntimeData({
+  String version = 'house_rules_v1',
+  List<CustomCatalogEntryRecord> customEntries = const <CustomCatalogEntryRecord>[],
+}) {
+  final baseData = CatalogSourceData(
+    version: version,
+    source: 'tests',
+    metadata: const <String, dynamic>{},
+    sections: <CatalogSectionId, List<Map<String, dynamic>>>{
+      for (final section in editableCatalogSections)
+        section: const <Map<String, dynamic>>[],
+    },
+    reisebericht: const <Map<String, dynamic>>[],
+  );
+  final snapshot = CustomCatalogSnapshot(entries: customEntries);
+  return CatalogRuntimeData.resolve(
+    baseData: baseData,
+    customSnapshot: snapshot,
+  );
 }

@@ -51,16 +51,16 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
 
   static const List<AdaptiveTableColumnSpec> _columnSpecs =
       <AdaptiveTableColumnSpec>[
-        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 280, flex: 2),
-        AdaptiveTableColumnSpec(minWidth: 130, maxWidth: 180, flex: 1),
-        AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 150, flex: 1),
-        AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 1),
-        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 92),
-        AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120),
-        AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120),
-        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 280, flex: 2),
-        AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 280, flex: 2),
-        AdaptiveTableColumnSpec.fixed(88),
+        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 280, flex: 2), // Gegenstand
+        AdaptiveTableColumnSpec(minWidth: 130, maxWidth: 180, flex: 1), // Typ
+        AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 150, flex: 1), // Quelle
+        AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 1), // Träger
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 92),             // Anzahl
+        AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120),            // Gewicht
+        AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120),            // Wert
+        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 280, flex: 2), // Status
+        AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 280, flex: 2), // Herkunft
+        AdaptiveTableColumnSpec.fixed(88),                               // Aktion
       ];
 
   @override

@@ -167,20 +167,20 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     required bool isEditing,
   }) {
     return <AdaptiveTableColumnSpec>[
-      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
-      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2),
-      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),
+      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2), // Talent-Name
+      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2), // Waffengattung
+      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2), // Ersatzweise
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),             // Kompl.
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),             // BE
       if (isEditing)
-        const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 110)
+        const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 110)           // TaW (edit: breiter)
       else
-        const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),
-      const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 100),
-      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 3),
-      if (isEditing) const AdaptiveTableColumnSpec.fixed(90),
+        const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),           // TaW
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),             // AT
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),             // PA
+      const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 100),            // max TaW
+      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 3), // Spezialisierung
+      if (isEditing) const AdaptiveTableColumnSpec.fixed(90),                // Begabung
     ];
   }
 

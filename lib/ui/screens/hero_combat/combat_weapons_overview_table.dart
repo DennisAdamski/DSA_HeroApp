@@ -70,20 +70,20 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
 
   static const List<AdaptiveTableColumnSpec> _columnSpecs =
       <AdaptiveTableColumnSpec>[
-        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 3),
-        AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 180, flex: 1),
-        AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 260, flex: 2),
-        AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 240, flex: 2),
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 96),
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
-        AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
-        AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 92),
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),
-        AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 120),
-        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 420, flex: 4),
-        AdaptiveTableColumnSpec.fixed(72),
+        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 3), // Name
+        AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 180, flex: 1), // Typ
+        AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 260, flex: 2), // Waffentalent
+        AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 240, flex: 2), // Waffenart
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 96),             // DK
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),             // AT
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),             // PA
+        AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),            // TP
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),             // INI
+        AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 92),             // BF
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),             // eBE
+        AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 120),            // Artefakt
+        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 420, flex: 4), // Artefaktbeschreibung
+        AdaptiveTableColumnSpec.fixed(72),                               // Aktion
       ];
 
   static const List<String> _headers = <String>[

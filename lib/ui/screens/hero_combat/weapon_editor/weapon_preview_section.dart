@@ -12,6 +12,18 @@ class WeaponPreviewSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tpKkDisplay = preview.usesTpKkThreshold
+        ? preview.tpKk.toString()
+        : '-';
+    final geBaseDisplay = preview.usesTpKkThreshold
+        ? preview.geBase.toString()
+        : '-';
+    final geThresholdDisplay = preview.usesTpKkThreshold
+        ? preview.geThreshold.toString()
+        : '-';
+    final iniGeDisplay = preview.usesTpKkThreshold
+        ? preview.iniGe.toString()
+        : '-';
     return WeaponEditorSectionCard(
       title: 'Vorschau',
       child: Wrap(
@@ -52,25 +64,25 @@ class WeaponPreviewSection extends StatelessWidget {
           _readOnlyField(
             context,
             'TP/KK',
-            preview.tpKk.toString(),
+            tpKkDisplay,
             keyName: 'combat-weapon-form-preview-tpkk',
           ),
           _readOnlyField(
             context,
             'GE-Basis',
-            preview.geBase.toString(),
+            geBaseDisplay,
             keyName: 'combat-weapon-form-preview-ge-base',
           ),
           _readOnlyField(
             context,
             'GE-Schwelle',
-            preview.geThreshold.toString(),
+            geThresholdDisplay,
             keyName: 'combat-weapon-form-preview-ge-threshold',
           ),
           _readOnlyField(
             context,
             'INI/GE',
-            preview.iniGe.toString(),
+            iniGeDisplay,
             keyName: 'combat-weapon-form-preview-ini-ge',
           ),
           _readOnlyField(

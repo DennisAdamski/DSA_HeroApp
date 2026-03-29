@@ -556,7 +556,9 @@ void main() {
     expect(find.widgetWithText(Tab, 'Kampfregeln'), findsOneWidget);
   });
 
-  testWidgets('combat add actions use descriptive header labels', (tester) async {
+  testWidgets('combat add actions use descriptive header labels', (
+    tester,
+  ) async {
     final repo = FakeRepository(
       heroes: [buildHero()],
       states: {
@@ -1294,6 +1296,54 @@ void main() {
         )
         .height;
     expect(readOnlyHeight, closeTo(editableHeight, 1));
+  });
+
+  testWidgets('weapon editor treats TP/KK 0/0 as disabled in the preview', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openWeaponsTab(tester);
+    await openAddWeaponDialog(tester);
+    await fillWeaponDialog(
+      tester,
+      name: 'Testwaffe',
+      talent: 'Schwerter',
+      weaponType: 'Kurzschwert',
+      kkBase: '0',
+      kkThreshold: '0',
+    );
+
+    final tpKkField = find.ancestor(
+      of: find.byKey(const ValueKey<String>('combat-weapon-form-preview-tpkk')),
+      matching: find.byType(InputDecorator),
+    );
+    final iniGeField = find.ancestor(
+      of: find.byKey(
+        const ValueKey<String>('combat-weapon-form-preview-ini-ge'),
+      ),
+      matching: find.byType(InputDecorator),
+    );
+
+    expect(
+      find.descendant(of: tpKkField, matching: find.text('-')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: iniGeField, matching: find.text('-')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('weapon type filters talent selection without auto-selecting', (
