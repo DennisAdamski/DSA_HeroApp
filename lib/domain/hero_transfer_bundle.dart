@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 
@@ -8,10 +9,11 @@ class HeroTransferBundle {
     required this.state,
     this.avatarBase64,
     this.galleryImages,
+    this.catalogEntries,
   });
 
   static const String kind = 'dsa.hero.export';
-  static const int transferSchemaVersion = 2;
+  static const int transferSchemaVersion = 3;
 
   final DateTime exportedAt;
   final HeroSheet hero;
@@ -23,6 +25,9 @@ class HeroTransferBundle {
   /// Gallery-Bilder als Base64-kodierte Eintraege (optional).
   final List<Map<String, dynamic>>? galleryImages;
 
+  /// Optional eingebettete benutzerdefinierte Katalogeintraege.
+  final List<HeroTransferCatalogEntry>? catalogEntries;
+
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'kind': kind,
@@ -33,6 +38,10 @@ class HeroTransferBundle {
       if (avatarBase64 != null) 'avatarBase64': avatarBase64,
       if (galleryImages != null && galleryImages!.isNotEmpty)
         'galleryImages': galleryImages,
+      if (catalogEntries != null && catalogEntries!.isNotEmpty)
+        'catalogEntries': catalogEntries!
+            .map((entry) => entry.toJson())
+            .toList(growable: false),
     };
   }
 
@@ -83,12 +92,21 @@ class HeroTransferBundle {
     }
 
     final rawAvatar = json['avatarBase64'];
-    final avatarBase64 =
-        rawAvatar is String && rawAvatar.isNotEmpty ? rawAvatar : null;
+    final avatarBase64 = rawAvatar is String && rawAvatar.isNotEmpty
+        ? rawAvatar
+        : null;
 
     final rawGallery = json['galleryImages'] as List?;
-    final galleryImages = rawGallery
-        ?.whereType<Map<String, dynamic>>()
+    final galleryImages = rawGallery?.whereType<Map<String, dynamic>>().toList(
+      growable: false,
+    );
+    final rawCatalogEntries = json['catalogEntries'] as List?;
+    final catalogEntries = rawCatalogEntries
+        ?.whereType<Map>()
+        .map(
+          (entry) =>
+              HeroTransferCatalogEntry.fromJson(entry.cast<String, dynamic>()),
+        )
         .toList(growable: false);
 
     return HeroTransferBundle(
@@ -97,6 +115,58 @@ class HeroTransferBundle {
       state: HeroState.fromJson(rawState.cast<String, dynamic>()),
       avatarBase64: avatarBase64,
       galleryImages: galleryImages,
+      catalogEntries: catalogEntries,
+    );
+  }
+}
+
+/// Eingebetteter benutzerdefinierter Katalogeintrag innerhalb eines Hero-Exports.
+class HeroTransferCatalogEntry {
+  const HeroTransferCatalogEntry({
+    required this.section,
+    required this.id,
+    required this.data,
+  });
+
+  final CatalogSectionId section;
+  final String id;
+  final Map<String, dynamic> data;
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'section': section.directoryName,
+      'id': id,
+      'data': data,
+    };
+  }
+
+  static HeroTransferCatalogEntry fromJson(Map<String, dynamic> json) {
+    final sectionRaw = json['section'] as String? ?? '';
+    final section = catalogSectionFromDirectoryName(sectionRaw);
+    if (section == null) {
+      throw FormatException(
+        'Unbekannte Katalogsektion im Hero-Export: "$sectionRaw".',
+      );
+    }
+
+    final id = (json['id'] as String? ?? '').trim();
+    if (id.isEmpty) {
+      throw const FormatException(
+        'Feld "catalogEntries[].id" fehlt oder ist ungueltig.',
+      );
+    }
+
+    final data = json['data'];
+    if (data is! Map) {
+      throw const FormatException(
+        'Feld "catalogEntries[].data" fehlt oder ist ungueltig.',
+      );
+    }
+
+    return HeroTransferCatalogEntry(
+      section: section,
+      id: id,
+      data: data.cast<String, dynamic>(),
     );
   }
 }

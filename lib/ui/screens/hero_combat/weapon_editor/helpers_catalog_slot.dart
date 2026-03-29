@@ -14,6 +14,8 @@ MainWeaponSlot weaponSlotFromCatalog(
   final tpkkMatch = RegExp(r'(\d+)\s*/\s*(\d+)').firstMatch(weapon.tpkk);
   final kkBase = int.tryParse(tpkkMatch?.group(1) ?? '') ?? 0;
   final kkThreshold = int.tryParse(tpkkMatch?.group(2) ?? '') ?? 1;
+  final breakFactorMatch = RegExp(r'-?\d+').firstMatch(weapon.breakFactor);
+  final breakFactor = int.tryParse(breakFactorMatch?.group(0) ?? '') ?? 0;
   final rangedProfile = combatType == WeaponCombatType.ranged
       ? RangedWeaponProfile(
           reloadTime: weapon.reloadTime,
@@ -28,7 +30,8 @@ MainWeaponSlot weaponSlotFromCatalog(
     weaponType: weapon.name,
     distanceClass: weapon.reach,
     kkBase: kkBase,
-    kkThreshold: kkThreshold < 1 ? 1 : kkThreshold,
+    kkThreshold: kkThreshold,
+    breakFactor: breakFactor,
     tpDiceCount: tpDiceCount < 1 ? 1 : tpDiceCount,
     tpFlat: tpFlat,
     wmAt: weapon.atMod,

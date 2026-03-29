@@ -100,14 +100,17 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                           label: '${weapon.tpDiceCount}W${weapon.tpDiceSides}',
                         ),
                         _calcStep('TP Grundwert', weapon.tpFlat),
-                        _calcStep('TP/KK', preview.tpKk),
-                        _calcStep(
-                          'KK-Basis',
-                          weapon.kkBase +
-                              preview.waffenmeisterTpKkBaseReduction,
-                          label:
-                              'Schwelle ${weapon.kkThreshold + preview.waffenmeisterTpKkThresholdReduction}',
-                        ),
+                        if (preview.usesTpKkThreshold) ...[
+                          _calcStep('TP/KK', preview.tpKk),
+                          _calcStep(
+                            'KK-Basis',
+                            weapon.kkBase +
+                                preview.waffenmeisterTpKkBaseReduction,
+                            label:
+                                'Schwelle ${weapon.kkThreshold + preview.waffenmeisterTpKkThresholdReduction}',
+                          ),
+                        ] else
+                          _calcStep('TP/KK', null, label: 'deaktiviert (0/0)'),
                         if (preview.waffenmeisterTpKkBaseReduction != 0 ||
                             preview.waffenmeisterTpKkThresholdReduction != 0)
                           _calcStep(
@@ -144,7 +147,10 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                           _calcStep('Manueller Mod', manual.iniMod),
                         _calcStep('= Helden-INI', preview.heldenInitiative),
                         _calcStep('Waffen-INI Mod', weapon.iniMod),
-                        _calcStep('INI/GE', preview.iniGe),
+                        if (preview.usesTpKkThreshold)
+                          _calcStep('INI/GE', preview.iniGe)
+                        else
+                          _calcStep('INI/GE', null, label: 'deaktiviert (0/0)'),
                         if (preview.waffenmeisterIniBonus != 0)
                           _calcStep(
                             'Waffenmeister INI',
@@ -231,7 +237,10 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
               label: '${weapon.tpDiceCount}W${weapon.tpDiceSides}',
             ),
             _calcStep('TP Grundwert', weapon.tpFlat),
-            _calcStep('TP/KK', preview.tpKk),
+            if (preview.usesTpKkThreshold)
+              _calcStep('TP/KK', preview.tpKk)
+            else
+              _calcStep('TP/KK', null, label: 'deaktiviert (0/0)'),
             if (preview.waffenmeisterTpKkBaseReduction != 0 ||
                 preview.waffenmeisterTpKkThresholdReduction != 0)
               _calcStep(
@@ -272,7 +281,10 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
             if (manual.iniMod != 0) _calcStep('Manueller Mod', manual.iniMod),
             _calcStep('= Helden-INI', preview.heldenInitiative),
             _calcStep('Waffen-INI Mod', weapon.iniMod),
-            _calcStep('INI/GE', preview.iniGe),
+            if (preview.usesTpKkThreshold)
+              _calcStep('INI/GE', preview.iniGe)
+            else
+              _calcStep('INI/GE', null, label: 'deaktiviert (0/0)'),
             if (preview.projectileIniMod != 0)
               _calcStep('Geschoss INI', preview.projectileIniMod),
             if (preview.waffenmeisterIniBonus != 0)

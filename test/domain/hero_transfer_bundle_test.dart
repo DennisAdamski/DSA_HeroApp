@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -60,6 +61,35 @@ void main() {
       <String>[activeSpellEffectAxxeleratus],
     );
     expect(reloaded.exportedAt.toUtc(), bundle.exportedAt.toUtc());
+  });
+
+  test('roundtrip keeps embedded custom catalog entries', () {
+    final bundle = HeroTransferBundle(
+      exportedAt: DateTime.utc(2026, 2, 22, 12, 0, 0),
+      hero: buildBundle().hero,
+      state: buildBundle().state,
+      catalogEntries: const <HeroTransferCatalogEntry>[
+        HeroTransferCatalogEntry(
+          section: CatalogSectionId.spells,
+          id: 'spell_custom',
+          data: <String, dynamic>{
+            'id': 'spell_custom',
+            'name': 'Hauszauber',
+            'tradition': 'Gildenmagie',
+            'steigerung': 'C',
+            'attributes': <String>['KL', 'IN', 'CH'],
+          },
+        ),
+      ],
+    );
+
+    final reloaded = HeroTransferBundle.fromJson(bundle.toJson());
+
+    expect(reloaded.catalogEntries, isNotNull);
+    expect(reloaded.catalogEntries, hasLength(1));
+    expect(reloaded.catalogEntries!.single.section, CatalogSectionId.spells);
+    expect(reloaded.catalogEntries!.single.id, 'spell_custom');
+    expect(reloaded.catalogEntries!.single.data['name'], 'Hauszauber');
   });
 
   test('rejects wrong kind', () {

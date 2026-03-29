@@ -43,7 +43,36 @@ void main() {
       "name": "Langschwert",
       "type": "Nahkampf",
       "combatSkill": "Schwerter",
-      "tp": "1W+4",
+      "tp": "1W6+4",
+      "tpkk": "11/4",
+      "atMod": 1,
+      "paMod": 0,
+      "iniMod": -1,
+      "weight": "80",
+      "length": "95",
+      "breakFactor": "1",
+      "price": "180",
+      "remarks": "-",
+      "reach": "N",
+      "active": true
+    },
+    {
+      "id": "wpn_kurzbogen",
+      "name": "Kurzbogen",
+      "type": "Fernkampf",
+      "combatSkill": "Bogen",
+      "tp": "1W6+4*",
+      "weight": "20 + 2",
+      "price": "45 S / 25 K",
+      "reloadTime": 2,
+      "reloadTimeText": "2",
+      "rangedDistanceBands": [
+        {"label": "5", "tpMod": 1},
+        {"label": "15", "tpMod": 1},
+        {"label": "25", "tpMod": 0},
+        {"label": "40", "tpMod": 0},
+        {"label": "60", "tpMod": -1}
+      ],
       "active": true
     }
   ],
@@ -95,11 +124,21 @@ void main() {
     expect(catalog.version, 'house_rules_v1');
     expect(catalog.talents.length, 1);
     expect(catalog.spells.length, 1);
-    expect(catalog.weapons.length, 1);
+    expect(catalog.weapons.length, 2);
     expect(catalog.maneuvers.length, 1);
     expect(catalog.combatSpecialAbilities.length, 1);
     expect(catalog.talents.first.name, 'Klettern');
     expect(catalog.spells.first.targetObject, 'Lebewesen');
+    expect(catalog.weapons.first.breakFactor, '1');
+    expect(catalog.weapons.first.weight, '80');
+    expect(catalog.weapons.first.length, '95');
+    expect(catalog.weapons.first.price, '180');
+    expect(catalog.weapons.first.remarks, '-');
+    expect(catalog.weapons.first.reach, 'N');
+    expect(catalog.weapons[1].reloadTime, 2);
+    expect(catalog.weapons[1].reloadTimeText, '2');
+    expect(catalog.weapons[1].rangedDistanceBands.length, 5);
+    expect(catalog.weapons[1].rangedDistanceBands[4].tpMod, -1);
     expect(catalog.spells.first.source, 'Liber Cantiones S. 12');
     expect(catalog.spells.first.variants, ['Selbst', 'Fremdheilung']);
     expect(catalog.maneuvers.first.kosten, '200 AP');
@@ -115,12 +154,49 @@ void main() {
 
     final roundtrip = RulesCatalog.fromJson(catalog.toJson());
     expect(roundtrip.talents.first.id, 'tal_klettern');
+    expect(roundtrip.weapons.first.breakFactor, '1');
+    expect(roundtrip.weapons.first.weight, '80');
+    expect(roundtrip.weapons.first.length, '95');
+    expect(roundtrip.weapons.first.price, '180');
+    expect(roundtrip.weapons.first.remarks, '-');
+    expect(roundtrip.weapons[1].reloadTimeText, '2');
+    expect(roundtrip.weapons[1].rangedDistanceBands[0].label, '5');
     expect(roundtrip.spells.first.wirkung, 'Heilt LeP.');
     expect(roundtrip.spells.first.targetObject, 'Lebewesen');
     expect(roundtrip.spells.first.source, 'Liber Cantiones S. 12');
     expect(roundtrip.spells.first.variants, ['Selbst', 'Fremdheilung']);
     expect(roundtrip.maneuvers.first.verbreitung, '6, fast ueberall');
     expect(roundtrip.combatSpecialAbilities.first.kosten, '200 AP');
+  });
+
+  test('weapon parsing keeps backwards compatibility for legacy entries', () {
+    const raw = '''
+{
+  "id": "wpn_alt",
+  "name": "Altwaffe",
+  "type": "Nahkampf",
+  "combatSkill": "Hiebwaffen",
+  "tp": "1W6+2",
+  "tpkk": "11/4",
+  "atMod": 0,
+  "paMod": -1,
+  "iniMod": 0,
+  "reach": "N",
+  "active": true
+}
+''';
+
+    final map = jsonDecode(raw) as Map<String, dynamic>;
+    final weapon = WeaponDef.fromJson(map);
+
+    expect(weapon.weight, '');
+    expect(weapon.length, '');
+    expect(weapon.breakFactor, '');
+    expect(weapon.price, '');
+    expect(weapon.remarks, '');
+    expect(weapon.reloadTime, 0);
+    expect(weapon.reloadTimeText, '');
+    expect(weapon.rangedDistanceBands, isEmpty);
   });
 
   test('maneuver fields roundtrip correctly', () {

@@ -1,25 +1,53 @@
 # Catalog Import Workflow
 
-This project now uses a split JSON catalog with a manifest as runtime source.
+This project uses a split JSON base catalog plus synchronizable custom catalog
+files in the active hero storage.
 
 ## Canonical runtime structure
+
+Base assets:
 
 - `assets/catalogs/house_rules_v1/manifest.json`
 - `assets/catalogs/house_rules_v1/talente.json`
 - `assets/catalogs/house_rules_v1/waffentalente.json`
 - `assets/catalogs/house_rules_v1/waffen.json`
 - `assets/catalogs/house_rules_v1/magie.json`
+- `assets/catalogs/house_rules_v1/manoever.json`
+- `assets/catalogs/house_rules_v1/kampf_sonderfertigkeiten.json`
+- `assets/catalogs/house_rules_v1/sprachen.json`
+- `assets/catalogs/house_rules_v1/schriften.json`
 
-## Maintenance workflow (manual JSON)
+Separate runtime catalog:
 
-1. Edit the JSON files directly.
-2. Keep IDs stable whenever possible to avoid breaking persisted references.
-3. Run checks:
+- `assets/catalogs/reiseberichte/house_rules_v1/reisebericht.json`
 
-```bash
-flutter analyze
-flutter test
-```
+Synchronizable custom entries in hero storage:
+
+- `<hero-storage>/custom_catalogs/house_rules_v1/<sektion>/<id>.json`
+
+Examples:
+
+- `<hero-storage>/custom_catalogs/house_rules_v1/talente/tal_custom.json`
+- `<hero-storage>/custom_catalogs/house_rules_v1/waffen/wpn_custom.json`
+
+## Maintenance workflow
+
+### Base catalog assets
+
+- Base assets remain read-only at runtime.
+- Their canonical source is still the split JSON structure below
+  `assets/catalogs/house_rules_v1/`.
+- Do not edit these files ad hoc inside feature work.
+- Regenerate or maintain them through the Python tooling in `tool/`.
+
+### Custom catalog entries
+
+- Users create and edit custom entries inside the app via
+  `Einstellungen -> Katalogverwaltung`.
+- Only custom entries are editable; base entries are view-only.
+- Each custom entry is stored as its own JSON file to reduce sync conflicts.
+- Changes from external sync tools are picked up after app restart or
+  `Katalog neu laden`.
 
 ## Split rules
 
@@ -31,16 +59,50 @@ flutter test
   - Every entry must have `group = "Kampftalent"`.
 - `waffen.json`:
   - Contains weapon catalog entries.
+  - Weapon entries may also include raw Arsenal metadata such as
+    `weight`, `length`, `breakFactor`, `price`, `remarks`,
+    `reloadTimeText`, `rangedDistanceBands`, and `rangedProjectiles`.
 - `magie.json`:
   - Contains spells only.
   - Spell detail fields from `Liber Cantiones.pdf` are maintained via
     `tool/import_liber_cantiones.py`.
+- `reisebericht.json`:
+  - Is intentionally excluded from the editable settings catalog management.
+  - Remains a dedicated runtime catalog referenced through the manifest.
+- `vertrautenmagie_rituale.json`:
+  - Remains a separate preset/reference file and is not part of the settings
+    catalog management.
+
+## Loader validation behavior
+
+The catalog loader validates the split structure at runtime:
+
+- Each section file must be a JSON array.
+- Invalid combat split (`group`) throws `FormatException`.
+- Duplicate IDs inside each domain throw `FormatException`.
+- The manifest may resolve files outside its own directory, which is used for
+  the separate Reisebericht asset path.
+
+Custom catalog loading validates additional invariants:
+
+- Each file must contain a JSON object.
+- Empty IDs are rejected.
+- Duplicate custom IDs in the same section are ignored and reported.
+- Custom IDs that collide with base IDs are ignored and reported.
+- Invalid custom files must not block the base catalog.
+
+## Hero import/export
+
+- `HeroTransferBundle.transferSchemaVersion` is currently `3`.
+- Hero exports may embed the minimal set of referenced custom catalog entries.
+- On import, embedded custom entries are written into the active hero storage
+  before the hero itself is saved.
 
 ## Liber Cantiones import
 
 Use the importer to enrich `magie.json` with:
 
-- `source` (first Liber Cantiones spell page)
+- `source`
 - `aspCost`
 - `targetObject`
 - `range`
@@ -50,8 +112,6 @@ Use the importer to enrich `magie.json` with:
 - `modifications`
 - `variants`
 
-Command:
-
 ```bash
 python tool/import_liber_cantiones.py \
   --pdf "C:/path/to/Liber Cantiones.pdf" \
@@ -59,46 +119,10 @@ python tool/import_liber_cantiones.py \
   --review tool/generated/liber_cantiones_missing_spells.json
 ```
 
-Notes:
-
-- The importer keeps all existing spell identities and base catalog fields.
-- For multi-page spells, `source` stores the first printed spell page from
-  `Liber Cantiones` (for example `Liber Cantiones S. 153`).
-- Imported long-text fields are whitespace-normalized; PDF line breaks are
-  flattened to regular spaces instead of preserving page layout.
-- The importer also applies a conservative OCR cleanup pass for obvious split
-  words such as `Verstandesfunk - tionen`, `T iere` or `wer den`.
-- Ambiguous, unmatched, or PDF-only-reference cases are written to
-  `tool/generated/liber_cantiones_missing_spells.json` for manual review.
-- The script requires `pypdf` and, for AES-encrypted PDFs, `cryptography`.
-
-## Combat talent UI note
-
-- Combat talents remain sourced from `assets/catalogs/house_rules_v1/waffentalente.json`.
-- The in-app combat talent tab mirrors the Excel `Kampftechniken` layout/validation for editing (`TaW`/`AT`/`PA` rules).
-- This is UI logic only and does not require importing combat talent values from `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`.
-
-## Loader validation behavior
-
-The catalog loader validates the split structure at runtime:
-
-- Each section file must be a JSON array.
-- Invalid combat split (`group`) throws `FormatException`.
-- Duplicate IDs in each domain (`talents`, `spells`, `weapons`) throw `FormatException`.
-
-## Legacy note (Excel converter)
-
-The old Excel converter script is still present as legacy:
-
-- `tool/convert_excel_to_catalog.py`
-
-It is no longer the primary maintenance path for `house_rules_v1`.
-
-## Optional migration helper
-
-For one-time or repeatable monolith-to-split migrations:
+## Tooling
 
 ```bash
+python tool/convert_excel_to_catalog.py
 python tool/split_house_rules_catalog.py \
   --input path/to/house_rules_v1.json \
   --output-dir assets/catalogs/house_rules_v1 \

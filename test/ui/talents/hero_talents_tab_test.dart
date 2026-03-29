@@ -167,7 +167,7 @@ void main() {
   }
 
   Future<void> closeBeDialog(WidgetTester tester) async {
-    await tester.tap(find.text('Schließen'));
+    await tester.tap(find.byType(TextButton).first);
     await tester.pumpAndSettle();
   }
 
@@ -266,13 +266,13 @@ void main() {
       expect(find.text('MU: 14 | GE: 12 | KK: 13'), findsOneWidget);
 
       final headers = <String>[
-        'Talent-Name',
+        'Name',
         'Eigenschaften',
         'Kompl.',
         'eBE',
         'TaW',
         'Mod',
-        'TaW berechnet',
+        'TaW*',
         'SE',
         'Spezialisierungen',
       ];
@@ -318,6 +318,73 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Talentprobe: Athletik'), findsOneWidget);
+  });
+
+  testWidgets('meta talent row opens detail dialog and probe dialog', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(talentValue: 6),
+            'tal_b': HeroTalentEntry(talentValue: 8),
+          },
+          metaTalents: const <HeroMetaTalent>[
+            HeroMetaTalent(
+              id: 'meta_pflanzensuchen',
+              name: 'Pflanzensuchen',
+              componentTalentIds: <String>['tal_a', 'tal_b'],
+              attributes: <String>['MU', 'IN', 'FF'],
+              be: 'x2',
+            ),
+          ],
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openTalentsTab(tester, repo, buildCatalog());
+
+    final metaTalentRow = find.byKey(
+      const ValueKey<String>('meta-talents-row-meta_pflanzensuchen'),
+    );
+    await tester.scrollUntilVisible(
+      metaTalentRow,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(metaTalentRow);
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -120));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(of: metaTalentRow, matching: find.text('Pflanzensuchen')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Heldenspezifisches Meta-Talent'), findsOneWidget);
+    expect(find.text('Roh-TaW'), findsOneWidget);
+    expect(find.text('Athletik'), findsWidgets);
+    expect(find.text('Boote Fahren'), findsWidgets);
+
+    await tester.tap(find.text('Schließen'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(
+        const ValueKey<String>('meta-talents-roll-meta_pflanzensuchen'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Talentprobe: Pflanzensuchen'), findsOneWidget);
   });
 
   testWidgets('non-combat groups follow configured custom order', (
