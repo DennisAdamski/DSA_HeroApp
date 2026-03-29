@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/data/storage_directory_tools.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/catalog_management_screen.dart';
 
 /// Einstellungs-Screen fuer globale, heldenunabhaengige Optionen.
 class SettingsScreen extends ConsumerWidget {
@@ -25,9 +26,7 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           SwitchListTile(
             title: const Text('Debug-Modus'),
-            subtitle: const Text(
-              'Variablennamen statt Anzeigebezeichnungen',
-            ),
+            subtitle: const Text('Variablennamen statt Anzeigebezeichnungen'),
             value: debugModus,
             onChanged: (_) => actions.toggleDebugModus(),
           ),
@@ -46,7 +45,58 @@ class SettingsScreen extends ConsumerWidget {
             settingsStoragePathAsync: settingsStoragePathAsync,
           ),
           const Divider(height: 1),
+          const _CatalogManagementSection(),
+          const Divider(height: 1),
           const _AvatarApiSection(),
+        ],
+      ),
+    );
+  }
+}
+
+class _CatalogManagementSection extends ConsumerWidget {
+  const _CatalogManagementSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final heroStorageLocation = ref.watch(heroStorageLocationProvider);
+    final effectivePath =
+        heroStorageLocation.valueOrNull?.effectivePath ?? 'Wird geladen …';
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Katalogverwaltung', style: theme.textTheme.titleLarge),
+          const SizedBox(height: 8),
+          Text(
+            'Alle Basis-Katalogdaten können hier eingesehen werden. Eigene Einträge werden als Custom-Kataloge im Heldenspeicher abgelegt und lassen sich dadurch über einen Cloud-Ordner synchronisieren.',
+            style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 12),
+          _PathInfoTile(
+            label: 'Aktiver Speicher für Custom-Kataloge',
+            value: effectivePath,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Hinweis: Änderungen aus einem synchronisierten Ordner werden erst nach „Katalog neu laden“ oder nach einem App-Neustart sichtbar.',
+            style: theme.textTheme.bodySmall,
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const CatalogManagementScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.library_books_outlined),
+            label: const Text('Katalogverwaltung öffnen'),
+          ),
         ],
       ),
     );
@@ -165,10 +215,8 @@ class _HeroStorageSection extends ConsumerWidget {
                   runSpacing: 12,
                   children: [
                     FilledButton.icon(
-                      onPressed: () => _selectHeroStoragePath(
-                        context: context,
-                        ref: ref,
-                      ),
+                      onPressed: () =>
+                          _selectHeroStoragePath(context: context, ref: ref),
                       icon: const Icon(Icons.folder_open),
                       label: const Text('Ordner wählen'),
                     ),
@@ -194,9 +242,9 @@ class _HeroStorageSection extends ConsumerWidget {
                     OutlinedButton.icon(
                       onPressed: canOpenDirectory
                           ? () => _openStorageFolder(
-                                context: context,
-                                path: location.effectivePath,
-                              )
+                              context: context,
+                              path: location.effectivePath,
+                            )
                           : null,
                       icon: const Icon(Icons.open_in_new),
                       label: const Text('Ordner öffnen'),
@@ -244,9 +292,7 @@ class _HeroStorageSection extends ConsumerWidget {
   }) async {
     final selectedPath = await ref
         .read(storageDirectoryPickerProvider)
-        .pickDirectory(
-          dialogTitle: 'Heldenspeicher wählen',
-        );
+        .pickDirectory(dialogTitle: 'Heldenspeicher wählen');
     if (!context.mounted) {
       return;
     }
@@ -259,9 +305,7 @@ class _HeroStorageSection extends ConsumerWidget {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Heldenspeicher aktualisiert.'),
-      ),
+      const SnackBar(content: Text('Heldenspeicher aktualisiert.')),
     );
   }
 
@@ -336,10 +380,7 @@ class _AvatarApiSectionState extends ConsumerState<_AvatarApiSection> {
             ),
             items: AvatarApiProvider.values
                 .map(
-                  (p) => DropdownMenuItem(
-                    value: p,
-                    child: Text(p.displayName),
-                  ),
+                  (p) => DropdownMenuItem(value: p, child: Text(p.displayName)),
                 )
                 .toList(growable: false),
             onChanged: (value) {
@@ -388,7 +429,9 @@ class _AvatarApiSectionState extends ConsumerState<_AvatarApiSection> {
     await ref.read(settingsActionsProvider).saveAvatarApiConfig(config);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Bildgenerierung-Einstellungen gespeichert.')),
+      const SnackBar(
+        content: Text('Bildgenerierung-Einstellungen gespeichert.'),
+      ),
     );
   }
 }
@@ -411,10 +454,7 @@ class _PathInfoTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
+            Text(label, style: Theme.of(context).textTheme.labelLarge),
             const SizedBox(height: 6),
             SelectableText(
               value,
