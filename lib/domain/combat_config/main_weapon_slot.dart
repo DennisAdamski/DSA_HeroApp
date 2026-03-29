@@ -190,7 +190,7 @@ class MainWeaponSlot {
       weaponType: getString('weaponType'),
       distanceClass: getString('distanceClass'),
       kkBase: getInt('kkBase', 0),
-      kkThreshold: getInt('kkThreshold', 1) < 1 ? 1 : getInt('kkThreshold', 1),
+      kkThreshold: getInt('kkThreshold', 1),
       breakFactor: getInt('breakFactor', 0),
       tpDiceCount: getInt('tpDiceCount', 1),
       tpDiceSides: 6,

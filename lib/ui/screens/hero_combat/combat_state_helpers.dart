@@ -316,8 +316,11 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       if (weaponType.isNotEmpty && talent == null) {
         return '$slotLabel: Waffenart "$weaponType" benötigt ein gültiges Talent.';
       }
-      if (slot.kkThreshold < 1) {
-        return '$slotLabel: KK-Schwelle muss > 0 sein.';
+      if (slot.kkThreshold < 0) {
+        return '$slotLabel: KK-Schwelle darf nicht negativ sein.';
+      }
+      if (slot.kkThreshold == 0 && slot.kkBase != 0) {
+        return '$slotLabel: TP/KK darf nur als 0/0 deaktiviert werden.';
       }
       if (slot.tpDiceCount < 1) {
         return '$slotLabel: Würfelanzahl muss >= 1 sein.';

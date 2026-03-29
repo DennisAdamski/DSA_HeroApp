@@ -141,6 +141,26 @@ void main() {
     expect(preview(zero).iniGe, 0);
   });
 
+  test('TP/KK 0/0 disables TP/KK and INI/GE calculations', () {
+    const combatConfig = CombatConfig(
+      mainWeapon: MainWeaponSlot(kkBase: 0, kkThreshold: 0, iniMod: 3),
+    );
+    final sheet = heroWithAttributes(
+      kk: 18,
+      ge: 18,
+      combatConfig: combatConfig,
+    );
+
+    final result = preview(sheet);
+
+    expect(result.usesTpKkThreshold, isFalse);
+    expect(result.tpKk, 0);
+    expect(result.geBase, 0);
+    expect(result.geThreshold, 0);
+    expect(result.iniGe, 0);
+    expect(result.kombinierteHeldenWaffenIni, result.heldenInitiative + 3);
+  });
+
   test('Ini Parade Mod is never negative', () {
     const baseCombatConfig = CombatConfig(
       mainWeapon: MainWeaponSlot(kkBase: 15, kkThreshold: 3),
@@ -230,12 +250,7 @@ void main() {
             kkBase: 12,
             kkThreshold: 2,
           ),
-          MainWeaponSlot(
-            name: 'Dolch',
-            iniMod: 4,
-            kkBase: 14,
-            kkThreshold: 1,
-          ),
+          MainWeaponSlot(name: 'Dolch', iniMod: 4, kkBase: 14, kkThreshold: 1),
         ],
         selectedWeaponIndex: 0,
         offhandAssignment: OffhandAssignment(weaponIndex: 1),

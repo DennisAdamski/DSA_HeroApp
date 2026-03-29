@@ -19,8 +19,12 @@ List<String> validateWeaponSlot(MainWeaponSlot slot) {
   if (slot.tpDiceCount < 1) {
     errors.add('Die Anzahl der TP-Wuerfel muss mindestens 1 sein.');
   }
-  if (slot.kkThreshold < 1) {
-    errors.add('Die KK-Schwelle muss mindestens 1 sein.');
+  if (slot.kkThreshold < 0) {
+    errors.add('Die KK-Schwelle darf nicht negativ sein.');
+  }
+  final usesDisabledTpKk = slot.kkBase == 0 && slot.kkThreshold == 0;
+  if (!usesDisabledTpKk && slot.kkThreshold == 0) {
+    errors.add('TP/KK darf nur als 0/0 deaktiviert werden.');
   }
   final rangedProfile = slot.rangedProfile;
   if (rangedProfile.reloadTime < 0) {
