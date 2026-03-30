@@ -391,7 +391,7 @@ Aktivierungsstatus von Kampf-Sonderfertigkeiten (alle `bool`):
 | `axxeleratusActive` | Zauber Axxeleratus (verdoppelt Ini-Basisanteil und GS; weitere Kampfboni) |
 | `klingentaenzer` | Klingentänzer (2W6 statt 1W6 für Initiative) |
 | `aufmerksamkeit` | Aufmerksamkeit |
-| `activeCombatSpecialAbilityIds` | `List<String>` — Aktiv geschaltete katalogbasierte Kampf-Sonderfertigkeiten |
+| `activeCombatSpecialAbilityIds` | `List<String>` — Aktiv geschaltete katalogbasierte Kampf-Sonderfertigkeiten ohne bereits separat modellierte Manöver oder fest verdrahtete Regel-Schalter |
 | `gladiatorStyleTalent` | `String` | Talentwahl fuer den Gladiatorenstil (`raufen` oder `ringen`) |
 | `activeManeuvers` | `List<String>` — Manuell aktivierte Manöver-IDs |
 
@@ -689,6 +689,12 @@ schriften.json         ← Schriften (optional)
 
 **Synchronisierbare Custom-Dateien im Heldenspeicher:**
 `<hero-storage>/custom_catalogs/<version>/<sektion>/<id>.json`
+
+Hinweis:
+`manoever.json` bleibt die kanonische Quelle für manöverartige
+Kampfoptionen. `kampf_sonderfertigkeiten.json` enthält nur eigenständige
+Kampf-Sonderfertigkeiten; die Kampf-UI filtert katalogbasierte
+Namensdopplungen gegen den Manöverkatalog heraus.
 
 **`CatalogLoader.loadSourceData()` + `buildCatalogFromSourceData()`**
 (`lib/catalog/catalog_loader.dart`):
