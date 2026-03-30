@@ -81,6 +81,7 @@ Technischer Stack:
 - Unterstuetzung fuer Nebenhand, Parierwaffen, Schilde und Ruestungen
 - Kampfvorschau mit AT, PA, TP, INI, Ladezeit, Distanzstufen und Geschossen
 - Verwaltung aktiver Manoever und katalogbasierter Kampf-Sonderfertigkeiten
+- Kampf-Sonderfertigkeiten und Manöver bleiben als getrennte Katalogquellen modelliert; die Kampf-UI filtert Doppelungen anhand der Manöver-Namen aus
 - Waffenmeister-Baukasten mit Voraussetzungen, Boni und Vorschau der Wirkung
 - Beruecksichtigung waffenloser Kampfstile und freigeschalteter Manoever
 
