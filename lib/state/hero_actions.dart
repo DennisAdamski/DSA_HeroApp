@@ -6,8 +6,10 @@ import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
+import 'package:dsa_heldenverwaltung/data/gruppen_snapshot_codec.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/gruppen_snapshot.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -16,6 +18,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
@@ -209,6 +212,58 @@ class HeroActions {
           : transferCatalogEntries,
     );
     return codec.encode(bundle);
+  }
+
+  /// Erstellt einen Gruppen-Snapshot-JSON-String fuer die angegebenen Helden.
+  ///
+  /// Laedt fuer jeden Helden Sheet, State und abgeleitete Werte und baut
+  /// daraus kompakte [HeldVisitenkarte]-Eintraege.
+  Future<String> buildGruppenExportJson({
+    required String gruppenName,
+    required List<String> heroIds,
+  }) async {
+    final repo = _ref.read(heroRepositoryProvider);
+    final visitenkarten = <HeldVisitenkarte>[];
+
+    for (final heroId in heroIds) {
+      final hero = await repo.loadHeroById(heroId);
+      if (hero == null) continue;
+      final state =
+          (await repo.loadHeroState(heroId)) ?? const HeroState.empty();
+      final derivedStats = computeDerivedStats(hero, state);
+
+      String? avatarBase64;
+      if (hero.appearance.avatarFileName.isNotEmpty) {
+        try {
+          final heroStoragePath = await _resolveHeroStoragePath();
+          final storage = _ref.read(avatarFileStorageProvider);
+          final bytes = await storage.loadAvatarBytes(
+            heroStoragePath: heroStoragePath,
+            avatarFileName: hero.appearance.avatarFileName,
+          );
+          if (bytes != null) {
+            avatarBase64 = base64Encode(bytes);
+          }
+        } on Exception {
+          // Avatar nicht verfuegbar — Visitenkarte ohne Bild erstellen.
+        }
+      }
+
+      visitenkarten.add(
+        HeldVisitenkarte.fromHeroComputed(
+          hero,
+          derivedStats,
+          avatarBase64: avatarBase64,
+        ),
+      );
+    }
+
+    final snapshot = GruppenSnapshot(
+      gruppenName: gruppenName.trim().isEmpty ? 'Meine Gruppe' : gruppenName.trim(),
+      exportedAt: DateTime.now().toUtc(),
+      helden: visitenkarten,
+    );
+    return const GruppenSnapshotCodec().encode(snapshot);
   }
 
   /// Parst einen Import-JSON-String zu einem [HeroTransferBundle].
