@@ -7,6 +7,7 @@ class HeroConnectionEntry {
     this.sozialstatus = '',
     this.loyalitaet = '',
     this.beschreibung = '',
+    this.adventureId = '',
   });
 
   /// Anzeigename der Verbindung.
@@ -24,6 +25,9 @@ class HeroConnectionEntry {
   /// Ausfuehrliche Beschreibung oder Hintergrundnotiz.
   final String beschreibung;
 
+  /// Optionale Referenz auf ein zugeordnetes Abenteuer.
+  final String adventureId;
+
   /// Liefert eine neue Instanz mit gezielt ersetzten Feldern.
   HeroConnectionEntry copyWith({
     String? name,
@@ -31,6 +35,7 @@ class HeroConnectionEntry {
     String? sozialstatus,
     String? loyalitaet,
     String? beschreibung,
+    String? adventureId,
   }) {
     return HeroConnectionEntry(
       name: name ?? this.name,
@@ -38,6 +43,7 @@ class HeroConnectionEntry {
       sozialstatus: sozialstatus ?? this.sozialstatus,
       loyalitaet: loyalitaet ?? this.loyalitaet,
       beschreibung: beschreibung ?? this.beschreibung,
+      adventureId: adventureId ?? this.adventureId,
     );
   }
 
@@ -49,6 +55,7 @@ class HeroConnectionEntry {
       'sozialstatus': sozialstatus,
       'loyalitaet': loyalitaet,
       'beschreibung': beschreibung,
+      'adventureId': adventureId,
     };
   }
 
@@ -62,6 +69,7 @@ class HeroConnectionEntry {
       sozialstatus: getString('sozialstatus'),
       loyalitaet: getString('loyalitaet'),
       beschreibung: getString('beschreibung'),
+      adventureId: getString('adventureId'),
     );
   }
 }

@@ -2,7 +2,7 @@
 
 Flutter-App zur Verwaltung von Helden fuer *Das Schwarze Auge* (DSA) mit lokalem Datenmodell, regelgestuetzten Berechnungen und katalogbasierten Inhalten.
 
-Die App ist auf eine moeglichst umfangreiche Heldenverwaltung ausgelegt: Eigenschaften, Talente, Kampf, Magie, Inventar, Notizen, Import/Export und hausregelbasierte Katalogdaten werden in einer lokalen Anwendung zusammengefuehrt.
+Die App ist auf eine moeglichst umfangreiche Heldenverwaltung ausgelegt: Eigenschaften, Talente, Kampf, Magie, Inventar, Chroniken, Kontakte, Abenteuer, Import/Export und hausregelbasierte Katalogdaten werden in einer lokalen Anwendung zusammengefuehrt.
 
 ## Inhalt
 
@@ -64,6 +64,7 @@ Technischer Stack:
 - Verwaltung von AP, Stufe, Ressourcen und textbasierten Modifikatoren
 - Berechnung effektiver Startwerte und Eigenschaftsmaxima
 - Gefuehrte AP-Steigerung fuer Eigenschaften und kaufbare Grundwerte
+- Abenteuer-Sondererfahrungen fuer Eigenschaften und Grundwerte werden direkt in den Steigerungsdialogen angezeigt und beim Steigern verbraucht
 - Parsing von Modifikator-Texten aus Vor-/Nachteilen sowie R/K/P-Feldern
 
 ### Talente und Sprachen
@@ -104,11 +105,13 @@ Technischer Stack:
 - Optionaler Fullrestore fuer lange Abwesenheiten: alle Vitalwerte auf Maximum und keine Wunden mehr
 - Vorschau und Sammeluebernahme der Rast-Ergebnisse direkt im Workspace
 
-### Inventar, Notizen und Verbindungen
+### Inventar, Chroniken, Kontakte und Abenteuer
 
 - Direkt bearbeitbares Inventar als kompakte Tabelle fuer Ausruestung und sonstige Gegenstaende
-- Notizen mit Titel und Beschreibung
-- Verbindungen/Kontakte mit Ort, Sozialstatus, Loyalitaet und Beschreibung
+- Freie Chroniken mit Titel und Beschreibung
+- Verbindungen/Kontakte mit Ort, Sozialstatus, Loyalitaet, Beschreibung und optionaler Abenteuer-Zuordnung
+- Abenteuer als manuell sortierbare Helden-Etappen mit Zusammenfassung, abenteuerbezogenen Notizen, AP-Belohnung und fest zugeordneten Sondererfahrungen
+- Abenteuer-Belohnungen lassen sich einmalig anwenden oder zuruecknehmen; der Reisebericht bleibt davon fachlich getrennt
 
 ### Datenimport und Kataloge
 

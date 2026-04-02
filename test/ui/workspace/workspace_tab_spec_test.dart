@@ -32,6 +32,17 @@ void main() {
     ]);
   });
 
+  test('notes workspace tab exposes adventure-focused label and helper', () {
+    final tabs = buildWorkspaceTabs(
+      heroId: 'demo',
+      callbacksForTab: (_) => callbacks,
+    );
+    final notesTab = tabs.firstWhere((tab) => tab.id == WorkspaceTabIds.notes);
+
+    expect(notesTab.label, 'Chroniken, Kontakte & Abenteuer');
+    expect(notesTab.helper, contains('Abenteuer'));
+  });
+
   test('magic workspace tab follows effective resource activation', () {
     final heroWithoutMagic = HeroSheet(
       id: 'mundane',
@@ -48,9 +59,7 @@ void main() {
         kk: 12,
       ),
     );
-    final heroWithAutoMagic = heroWithoutMagic.copyWith(
-      vorteileText: 'AE+2',
-    );
+    final heroWithAutoMagic = heroWithoutMagic.copyWith(vorteileText: 'AE+2');
     final heroWithManualDisable = heroWithAutoMagic.copyWith(
       resourceActivationConfig: const HeroResourceActivationConfig(
         magicEnabledOverride: false,
