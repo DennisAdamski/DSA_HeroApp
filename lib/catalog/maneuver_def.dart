@@ -4,6 +4,8 @@ import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 ///
 /// Manoever koennen Waffen ([WeaponDef.possibleManeuvers]) zugeordnet sein.
 /// [erschwernis] enthaelt den Erschwernis-Wert als Freitext (z. B. '-4' oder '+0').
+/// Fernkampf-Manoever mit [mussSeperatErlerntWerden] werden pro aktivem FK-Talent
+/// einzeln aktiviert; die gespeicherte ID lautet dann `<id>::<talentId>`.
 class ManeuverDef {
   const ManeuverDef({
     required this.id,
@@ -17,20 +19,33 @@ class ManeuverDef {
     this.voraussetzungen = '',
     this.verbreitung = '',
     this.kosten = '',
+    this.nurFuerTalente = const <String>[],
+    this.mussSeperatErlerntWerden = false,
+    this.giltFuerTalentTyp = '',
   });
 
-  final String id; // Eindeutige ID (z. B. 'man_hammerschlag')
-  final String name; // Anzeigename
-  final String gruppe; // Kategorie (z. B. 'Angriff', 'Abwehr')
-  final String
-  typ; // Feinere Typisierung fuer die UI (z. B. 'Angriffsmanoever')
-  final String erschwernis; // Erschwernis-Modifikator als Freitext
-  final String seite; // Seitenreferenz im Regelwerk
-  final String erklarung; // Regeltext / Beschreibung
-  final String erklarungLang; // Ausfuehrliche Regelbeschreibung
-  final String voraussetzungen; // Erwerbs- oder Einsatzvoraussetzungen
-  final String verbreitung; // Verbreitungsangabe laut Regelwerk
-  final String kosten; // AP-Kosten laut Regelwerk
+  final String id;
+  final String name;
+  final String gruppe;
+  final String typ;
+  final String erschwernis;
+  final String seite;
+  final String erklarung;
+  final String erklarungLang;
+  final String voraussetzungen;
+  final String verbreitung;
+  final String kosten;
+
+  /// Schraenkt Sichtbarkeit auf bestimmte Talent-IDs ein.
+  /// Leer = gilt fuer alle Talente des [giltFuerTalentTyp].
+  final List<String> nurFuerTalente;
+
+  /// Wenn true: muss fuer jedes FK-Talent separat aktiviert werden.
+  /// Gespeicherte ID: `<id>::<talentId>`.
+  final bool mussSeperatErlerntWerden;
+
+  /// Talenttyp-Filter fuer [mussSeperatErlerntWerden] (z. B. 'fernkampf').
+  final String giltFuerTalentTyp;
 
   factory ManeuverDef.fromJson(Map<String, dynamic> json) {
     return ManeuverDef(
@@ -49,6 +64,17 @@ class ManeuverDef {
       ),
       verbreitung: readCatalogString(json, 'verbreitung', fallback: ''),
       kosten: readCatalogString(json, 'kosten', fallback: ''),
+      nurFuerTalente: readCatalogStringList(json, 'nur_fuer_talente'),
+      mussSeperatErlerntWerden: readCatalogBool(
+        json,
+        'muss_separat_erlernt_werden',
+        fallback: false,
+      ),
+      giltFuerTalentTyp: readCatalogString(
+        json,
+        'gilt_fuer_talent_typ',
+        fallback: '',
+      ),
     );
   }
 
@@ -65,6 +91,9 @@ class ManeuverDef {
       'voraussetzungen': voraussetzungen,
       'verbreitung': verbreitung,
       'kosten': kosten,
+      if (nurFuerTalente.isNotEmpty) 'nur_fuer_talente': nurFuerTalente,
+      if (mussSeperatErlerntWerden) 'muss_separat_erlernt_werden': true,
+      if (giltFuerTalentTyp.isNotEmpty) 'gilt_fuer_talent_typ': giltFuerTalentTyp,
     };
   }
 }
