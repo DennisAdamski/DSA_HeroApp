@@ -2,6 +2,8 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
@@ -28,7 +30,7 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 21,
+    this.schemaVersion = 22,
     required this.name,
     required this.level,
     required this.attributes,
@@ -62,6 +64,9 @@ class HeroSheet {
     this.inventoryEntries = const <HeroInventoryEntry>[],
     this.notes = const <HeroNoteEntry>[],
     this.connections = const <HeroConnectionEntry>[],
+    this.adventures = const <HeroAdventureEntry>[],
+    this.attributeSePool = const HeroAttributeSePool(),
+    this.statSePool = const HeroStatSePool(),
     this.companions = const <HeroCompanion>[],
     this.reisebericht = const HeroReisebericht(),
     this.statModifiers = const <String, List<HeroTalentModifier>>{},
@@ -112,6 +117,9 @@ class HeroSheet {
   final List<HeroInventoryEntry> inventoryEntries;
   final List<HeroNoteEntry> notes;
   final List<HeroConnectionEntry> connections;
+  final List<HeroAdventureEntry> adventures;
+  final HeroAttributeSePool attributeSePool;
+  final HeroStatSePool statSePool;
 
   /// Begleiter und Vertraute des Helden.
   final List<HeroCompanion> companions;
@@ -163,6 +171,9 @@ class HeroSheet {
     List<HeroInventoryEntry>? inventoryEntries,
     List<HeroNoteEntry>? notes,
     List<HeroConnectionEntry>? connections,
+    List<HeroAdventureEntry>? adventures,
+    HeroAttributeSePool? attributeSePool,
+    HeroStatSePool? statSePool,
     List<HeroCompanion>? companions,
     HeroReisebericht? reisebericht,
     Map<String, List<HeroTalentModifier>>? statModifiers,
@@ -210,6 +221,9 @@ class HeroSheet {
       inventoryEntries: inventoryEntries ?? this.inventoryEntries,
       notes: notes ?? this.notes,
       connections: connections ?? this.connections,
+      adventures: adventures ?? this.adventures,
+      attributeSePool: attributeSePool ?? this.attributeSePool,
+      statSePool: statSePool ?? this.statSePool,
       companions: companions ?? this.companions,
       reisebericht: reisebericht ?? this.reisebericht,
       statModifiers: statModifiers ?? this.statModifiers,
@@ -269,6 +283,11 @@ class HeroSheet {
       'connections': connections
           .map((entry) => entry.toJson())
           .toList(growable: false),
+      'adventures': adventures
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
+      'attributeSePool': attributeSePool.toJson(),
+      'statSePool': statSePool.toJson(),
       'companions': companions
           .map((entry) => entry.toJson())
           .toList(growable: false),
@@ -300,6 +319,7 @@ class HeroSheet {
         (json['inventoryEntries'] as List?) ?? const <dynamic>[];
     final rawNotes = (json['notes'] as List?) ?? const <dynamic>[];
     final rawConnections = (json['connections'] as List?) ?? const <dynamic>[];
+    final rawAdventures = (json['adventures'] as List?) ?? const <dynamic>[];
     final rawCompanions = (json['companions'] as List?) ?? const <dynamic>[];
     final rawMetaTalents = (json['metaTalents'] as List?) ?? const <dynamic>[];
     final rawHiddenTalentIds =
@@ -443,11 +463,24 @@ class HeroSheet {
                 HeroConnectionEntry.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
-      companions: rawCompanions
+      adventures: rawAdventures
           .whereType<Map>()
           .map(
-            (entry) => HeroCompanion.fromJson(entry.cast<String, dynamic>()),
+            (entry) =>
+                HeroAdventureEntry.fromJson(entry.cast<String, dynamic>()),
           )
+          .toList(growable: false),
+      attributeSePool: HeroAttributeSePool.fromJson(
+        (json['attributeSePool'] as Map?)?.cast<String, dynamic>() ??
+            const <String, dynamic>{},
+      ),
+      statSePool: HeroStatSePool.fromJson(
+        (json['statSePool'] as Map?)?.cast<String, dynamic>() ??
+            const <String, dynamic>{},
+      ),
+      companions: rawCompanions
+          .whereType<Map>()
+          .map((entry) => HeroCompanion.fromJson(entry.cast<String, dynamic>()))
           .toList(growable: false),
       reisebericht: HeroReisebericht.fromJson(
         (json['reisebericht'] as Map?)?.cast<String, dynamic>() ?? const {},

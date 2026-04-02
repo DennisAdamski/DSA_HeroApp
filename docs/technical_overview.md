@@ -93,7 +93,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 21
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 22
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
@@ -103,7 +103,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 21) | Format-Version für Migrationskompatibilität |
+| `schemaVersion` | `int` (= 22) | Format-Version für Migrationskompatibilität |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
@@ -135,8 +135,11 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `dukaten` | `String` | Geldmenge (Freitext) |
 | `resourceActivationConfig` | `HeroResourceActivationConfig` | Nullable Auto-/Override-Schalter fuer Magie und goettliche Ressourcen |
 | `inventoryEntries` | `List<HeroInventoryEntry>` | Ausrüstung/Inventar |
-| `notes` | `List<HeroNoteEntry>` | Freie Notizen mit Titel und Beschreibung |
-| `connections` | `List<HeroConnectionEntry>` | Kontakte/Verbindungen mit Ort, Sozialstatus, Loyalität und Beschreibung |
+| `notes` | `List<HeroNoteEntry>` | Freie Chroniken mit Titel und Beschreibung |
+| `connections` | `List<HeroConnectionEntry>` | Kontakte/Verbindungen mit Ort, Sozialstatus, Loyalität, Beschreibung und optionaler Abenteuer-Referenz |
+| `adventures` | `List<HeroAdventureEntry>` | Manuell sortierte Abenteuer-Etappen mit Zusammenfassung, Notizen, AP-Belohnung, festen SE-Zielen und Anwendungsstatus |
+| `attributeSePool` | `HeroAttributeSePool` | Persistierte Abenteuer-SE für Eigenschaften (`MU` bis `KK`) |
+| `statSePool` | `HeroStatSePool` | Persistierte Abenteuer-SE für Grundwerte (`LeP`, `Au`, `AsP`, `KaP`, `MR`) |
 | `unknownModifierFragments` | `List<String>` | Unparsbare Modifier-Fragmente (UI-Hinweis) |
 
 #### Kompositions-Baum
@@ -1146,7 +1149,7 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 | `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Kampf (Nah- oder Fernkampf), SF, Manöver und Kampfmeisterschaften |
 | `hero_magic_tab.dart` | `HeroMagicTab` | Zauber, Ritualkategorien/Rituale, Repräsentationen, magische SF und globale Leiteigenschaft |
 | `hero_inventory_tab.dart` | `HeroInventoryTab` | Direkte Inventartabelle mit AppBar-Aktion, Split-Editor und Sofortspeicherung |
-| `hero_notes_tab.dart` | `HeroNotesTab` | Untertabs für freie Notizen und Verbindungen |
+| `hero_notes_tab.dart` | `HeroNotesTab` | Untertabs für Chroniken, Kontakte und Abenteuer mit getrenntem Reward-Workflow |
 | `hero_detail_screen.dart` | `HeroDetailScreen` | Legacy-Platzhalter (nicht eingebunden) |
 
 ### Responsive Layout
@@ -1201,7 +1204,7 @@ einem Zielgerät im Profile-Modus.
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` für `HeroSheet` ist **21**, für `HeroState` **5**.
+- Die aktuelle `schemaVersion` für `HeroSheet` ist **22**, für `HeroState` **5**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 3 wird **strikt** validiert.
 
@@ -1300,6 +1303,23 @@ ueber die Settings-Katalogverwaltung bearbeitet.
 - `HeroConnectionEntry` speichert Name, Ort, Sozialstatus, Loyalitaet und Beschreibung.
 - `HeroNotesTab` teilt den Workspace-Bereich in die Untertabs `Notizen` und
   `Verbindungen`.
+
+### Update 2026-04-02: Chroniken, Kontakte und Abenteuer
+
+- `HeroSheet` nutzt jetzt `schemaVersion` **22** und speichert zusaetzlich
+  `adventures`, `attributeSePool` und `statSePool`.
+- `HeroAdventureEntry` modelliert eine manuell sortierte Abenteuer-Etappe mit
+  AP-Belohnung, festen SE-Zielen, eigenem Notizblock und `rewardsApplied`.
+- `HeroConnectionEntry` enthaelt jetzt `adventureId`, damit Kontakte optional
+  einem Abenteuer zugeordnet werden koennen.
+- `lib/rules/derived/adventure_rewards_rules.dart` kapselt Anwenden,
+  Ruecknahme und Referenzbereinigung fuer Abenteuer-Belohnungen.
+- `HeroNotesTab` gliedert den Bereich jetzt in `Chroniken`, `Kontakte` und
+  `Abenteuer`; der bestehende Reisebericht bleibt fachlich und technisch
+  separat.
+- `hero_overview_raise_actions.dart` uebergibt Abenteuer-SE fuer
+  Eigenschaften und Grundwerte an den gemeinsamen Steigerungsdialog und zieht
+  verbrauchte SE aus den persistierten Pools ab.
 
 ### Update 2026-03-15: Gefuehrte AP-Steigerungen
 
