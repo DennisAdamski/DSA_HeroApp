@@ -78,8 +78,25 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
       hero.startAttributes,
       originModifiers,
     );
-    final attributeMaximums = computeAttributeMaximums(effectiveStartAttributes);
+    final attributeMaximums = computeAttributeMaximums(
+      effectiveStartAttributes,
+    );
     return readAttributeValue(attributeMaximums, code);
+  }
+
+  int _eigenschaftSeAnzahl(HeroSheet hero, AttributeCode code) {
+    return hero.attributeSePool.valueFor(code);
+  }
+
+  HeroAttributeSePool _attributeSePoolAfterConsumption({
+    required HeroSheet hero,
+    required AttributeCode code,
+    required int usedSe,
+  }) {
+    if (usedSe <= 0) {
+      return hero.attributeSePool;
+    }
+    return hero.attributeSePool.adjust(code, -usedSe);
   }
 
   /// Nutzt bis zu einer modellierten Fachregel die mit den aktuellen AP erreichbare Obergrenze.
@@ -100,6 +117,21 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
     }
   }
 
+  int _grundwertSeAnzahl(HeroSheet hero, String key) {
+    return hero.statSePool.valueFor(key);
+  }
+
+  HeroStatSePool _statSePoolAfterConsumption({
+    required HeroSheet hero,
+    required String key,
+    required int usedSe,
+  }) {
+    if (usedSe <= 0) {
+      return hero.statSePool;
+    }
+    return hero.statSePool.adjust(key, -usedSe);
+  }
+
   Future<void> _steigeEigenschaft(AttributeCode code) async {
     final hero = _latestHero;
     if (hero == null || !_canUseSteigerungsDialog) {
@@ -115,6 +147,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
       maxWert: maxWert,
       effektiveKomplexitaet: kEigenschaftKomplexitaet,
       verfuegbareAp: hero.apAvailable,
+      seAnzahl: _eigenschaftSeAnzahl(hero, code),
     );
     if (result == null) {
       return;
@@ -125,6 +158,11 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
         hero.attributes,
         code,
         result.neuerWert,
+      ),
+      attributeSePool: _attributeSePoolAfterConsumption(
+        hero: hero,
+        code: code,
+        usedSe: result.seVerbraucht,
       ),
       apSpent: hero.apSpent + result.apKosten,
     );
@@ -164,6 +202,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
       maxWert: maxWert,
       effektiveKomplexitaet: learnCost,
       verfuegbareAp: hero.apAvailable,
+      seAnzahl: _grundwertSeAnzahl(hero, key),
     );
     if (result == null) {
       return;
@@ -171,6 +210,11 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
 
     final updatedHero = hero.copyWith(
       bought: _boughtWithRaisedValue(hero.bought, key, result.neuerWert),
+      statSePool: _statSePoolAfterConsumption(
+        hero: hero,
+        key: key,
+        usedSe: result.seVerbraucht,
+      ),
       apSpent: hero.apSpent + result.apKosten,
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);

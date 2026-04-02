@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -20,6 +22,9 @@ void main() {
     StatModifiers persistentMods = const StatModifiers(),
     HeroBackground? background,
     String vorteileText = '',
+    List<HeroAdventureEntry> adventures = const <HeroAdventureEntry>[],
+    HeroAttributeSePool attributeSePool = const HeroAttributeSePool(),
+    HeroStatSePool statSePool = const HeroStatSePool(),
   }) {
     return HeroSheet(
       id: 'demo',
@@ -58,6 +63,9 @@ void main() {
       apAvailable: 500,
       persistentMods: persistentMods,
       vorteileText: vorteileText,
+      adventures: adventures,
+      attributeSePool: attributeSePool,
+      statSePool: statSePool,
     );
   }
 
@@ -123,14 +131,41 @@ void main() {
   }
 
   Future<void> tapWorkspaceEditAction(WidgetTester tester) async {
-    final textButton = find.text('Bearbeiten');
+    final appBar = find.byType(AppBar);
+    final textButton = find.descendant(
+      of: appBar,
+      matching: find.text('Bearbeiten'),
+    );
     if (textButton.evaluate().isNotEmpty) {
       await tester.tap(textButton.first);
       await tester.pumpAndSettle();
       return;
     }
 
-    final iconButton = find.byTooltip('Bearbeiten');
+    final iconButton = find.descendant(
+      of: appBar,
+      matching: find.byTooltip('Bearbeiten'),
+    );
+    await tester.tap(iconButton.first);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> tapWorkspaceSaveAction(WidgetTester tester) async {
+    final appBar = find.byType(AppBar);
+    final textButton = find.descendant(
+      of: appBar,
+      matching: find.text('Speichern'),
+    );
+    if (textButton.evaluate().isNotEmpty) {
+      await tester.tap(textButton.first);
+      await tester.pumpAndSettle();
+      return;
+    }
+
+    final iconButton = find.descendant(
+      of: appBar,
+      matching: find.byTooltip('Speichern'),
+    );
     await tester.tap(iconButton.first);
     await tester.pumpAndSettle();
   }
@@ -447,7 +482,7 @@ void main() {
         },
       );
 
-      await openWorkspace(tester, repo);
+      await openWorkspace(tester, repo, size: const Size(740, 1100));
 
       expect(tabText('Magie'), findsNothing);
       expect(find.textContaining('AsP'), findsNothing);
@@ -480,7 +515,7 @@ void main() {
         },
       );
 
-      await openWorkspace(tester, repo);
+      await openWorkspace(tester, repo, size: const Size(740, 1100));
 
       expect(tabText('Magie'), findsOneWidget);
       expect(find.textContaining('AsP'), findsWidgets);
@@ -687,7 +722,7 @@ void main() {
     );
 
     await openWorkspace(tester, repo);
-    await selectWorkspaceTab(tester, 'Chroniken & Kontakte');
+    await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
 
     await tester.tap(find.text('Bearbeiten').first);
     await tester.pumpAndSettle();
@@ -721,7 +756,7 @@ void main() {
   });
 
   testWidgets(
-    'notes tab saves notes and connections and reveals descriptions by title click',
+    'notes tab saves notes, contacts and adventures and reveals chronicle titles',
     (tester) async {
       final repo = FakeRepository(
         heroes: [buildHero()],
@@ -735,8 +770,8 @@ void main() {
         },
       );
 
-      await openWorkspace(tester, repo);
-      await selectWorkspaceTab(tester, 'Chroniken & Kontakte');
+      await openWorkspace(tester, repo, size: const Size(740, 1100));
+      await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
       expect(
         find.byKey(const ValueKey<String>('notes-add-note')),
         findsOneWidget,
@@ -752,6 +787,42 @@ void main() {
       await tester.enterText(
         find.byKey(const ValueKey<String>('notes-note-description-0')),
         'Noch 20 Dukaten offen.',
+      );
+
+      await tester.tap(find.text('Abenteuer'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('notes-add-adventure')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-adventure-title-0')),
+        'Die Höhlen von Tairach',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-adventure-summary-0')),
+        'Ein gefährlicher Vorstoß in orkisches Gebiet.',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-adventure-ap-0')),
+        '45',
+      );
+      await tester.ensureVisible(
+        find.byKey(const ValueKey<String>('notes-adventure-add-note-0')),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('notes-adventure-add-note-0')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-adventure-note-title-0-0')),
+        'Schlüsselstelle',
+      );
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-note-description-0-0'),
+        ),
+        'Der Eingang wurde mit einem Runenkreis gesichert.',
       );
 
       await tester.tap(find.text('Kontakte'));
@@ -784,9 +855,17 @@ void main() {
         find.byKey(const ValueKey<String>('notes-connection-description-0')),
         'Informant aus dem Hafenviertel.',
       );
-
-      await tester.tap(find.text('Speichern').first);
+      await tester.ensureVisible(
+        find.byKey(const ValueKey<String>('notes-connection-adventure-0')),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('notes-connection-adventure-0')),
+      );
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Die Höhlen von Tairach').last);
+      await tester.pumpAndSettle();
+
+      await tapWorkspaceSaveAction(tester);
 
       final heroes = await repo.listHeroes();
       final hero = findHeroById(heroes, 'demo');
@@ -803,14 +882,121 @@ void main() {
         hero.connections.single.beschreibung,
         'Informant aus dem Hafenviertel.',
       );
+      expect(hero.connections.single.adventureId, isNotEmpty);
+      expect(hero.adventures, hasLength(1));
+      expect(hero.adventures.single.title, 'Die Höhlen von Tairach');
+      expect(
+        hero.adventures.single.summary,
+        'Ein gefährlicher Vorstoß in orkisches Gebiet.',
+      );
+      expect(hero.adventures.single.apReward, 45);
+      expect(hero.adventures.single.notes.single.title, 'Schlüsselstelle');
 
       await openWorkspace(tester, repo);
-      await selectWorkspaceTab(tester, 'Chroniken & Kontakte');
+      await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
       await tester.tap(find.text('Chroniken'));
       await tester.pumpAndSettle();
 
       expect(find.text('Noch 20 Dukaten offen.'), findsNothing);
       expect(find.text('Offene Schuld'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'adventure rewards can be applied and overview raises consume SE pools',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            adventures: const <HeroAdventureEntry>[
+              HeroAdventureEntry(
+                id: 'adv_1',
+                title: 'Feuer im Nebel',
+                apReward: 40,
+                seRewards: <HeroAdventureSeReward>[
+                  HeroAdventureSeReward(
+                    targetType: HeroAdventureSeTargetType.eigenschaft,
+                    targetId: 'mu',
+                    targetLabel: 'Mut',
+                    count: 1,
+                  ),
+                  HeroAdventureSeReward(
+                    targetType: HeroAdventureSeTargetType.grundwert,
+                    targetId: 'lep',
+                    targetLabel: 'LeP',
+                    count: 1,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo, size: const Size(740, 1100));
+      await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
+      await tester.tap(find.text('Abenteuer'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Feuer im Nebel').first);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('notes-adventure-apply-adv_1')),
+      );
+      await tester.pumpAndSettle();
+
+      var heroes = await repo.listHeroes();
+      var hero = findHeroById(heroes, 'demo');
+      expect(hero, isNotNull);
+      expect(hero!.apTotal, 1040);
+      expect(hero.attributeSePool.mu, 1);
+      expect(hero.statSePool.lep, 1);
+      expect(hero.adventures.single.rewardsApplied, isTrue);
+
+      await selectWorkspaceTab(tester, 'Übersicht');
+      await tapWorkspaceEditAction(tester);
+
+      final verticalScrollable = activeTabVerticalScrollable();
+      final muRaiseButton = find.byKey(
+        const ValueKey<String>('overview-raise-mu'),
+      );
+      final lepRaiseButton = find.byKey(
+        const ValueKey<String>('overview-derived-raise-b_lep'),
+      );
+      await tester.scrollUntilVisible(
+        muRaiseButton,
+        240,
+        scrollable: verticalScrollable,
+      );
+      await tester.tap(muRaiseButton);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Mit 1 SE: 1 Schritt als G'), findsOneWidget);
+      await tester.tap(find.text('Steigern'));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        lepRaiseButton,
+        240,
+        scrollable: verticalScrollable,
+      );
+      await tester.tap(lepRaiseButton);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Mit 1 SE: 1 Schritt als G'), findsOneWidget);
+      await tester.tap(find.text('Steigern'));
+      await tester.pumpAndSettle();
+
+      heroes = await repo.listHeroes();
+      hero = findHeroById(heroes, 'demo');
+      expect(hero, isNotNull);
+      expect(hero!.attributeSePool.mu, 0);
+      expect(hero.statSePool.lep, 0);
     },
   );
 

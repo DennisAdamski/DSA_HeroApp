@@ -195,13 +195,25 @@ Ergaenzungen zur aktuellen Struktur:
 - `lib/ui/widgets/steigerungs_dialog.dart` ist der gemeinsame Dialog fuer
   Talent-, Zauber-, Eigenschafts- und Grundwert-Steigerungen inklusive
   manueller Komplexitaetskorrektur als Fallback fuer Sonderfaelle.
+- `lib/domain/hero_adventure_entry.dart` definiert persistierte Abenteuer-
+  Etappen inklusive AP-Belohnung, festen SE-Zielen und Anwendungsstatus.
+- `lib/domain/hero_adventure_se_pools.dart` kapselt die persistierten
+  Sondererfahrungs-Pools fuer Eigenschaften und Grundwerte.
+- `lib/rules/derived/adventure_rewards_rules.dart` kapselt Anwenden,
+  Ruecknahmepruefung, Ruecknahme und Referenzbereinigung fuer
+  Abenteuer-Belohnungen.
 - `lib/ui/screens/hero_combat/` enthaelt die aufgeteilten Kampf-Subtabs sowie
   Helper fuer Regeln, Preview und Weapon-Editor.
 - `lib/ui/screens/hero_combat/combat_mastery_section.dart` enthaelt den
   Builder und die Listen-UI fuer freie Kampfmeisterschaften.
 - `lib/ui/screens/hero_combat/weapon_editor/` enthaelt die Sektionen und
   Hilfsdialoge des Waffen-Editors.
-- `lib/ui/screens/hero_notes/` enthaelt die ausgelagerten Notizen-Teilwidgets.
+- `lib/ui/screens/hero_notes_tab.dart` hostet die Untertabs `Chroniken`,
+  `Kontakte` und `Abenteuer`; der Reisebericht bleibt ein eigener Workspace-Tab.
+- `lib/ui/screens/hero_notes/` enthaelt die ausgelagerten Teilwidgets fuer
+  Chroniken, Kontakte und Abenteuer.
+- `lib/ui/screens/hero_overview/hero_overview_raise_actions.dart` verbraucht
+  Abenteuer-SE fuer Eigenschaften und Grundwerte direkt beim Steigern.
 - `lib/catalog/vertrautenmagie_preset.dart` enthaelt das vollstaendige
   Vertrautenmagie-Preset fuer freie Ritualkategorien.
 - `assets/catalogs/house_rules_v1/vertrautenmagie_rituale.json` enthaelt das
@@ -490,7 +502,7 @@ python tool/report_unreferenced_dart.py
 - **Screen size limit**: root screen/tab files must stay under **700 LOC**. Split into sub-files (e.g. `hero_combat/` directory) before exceeding this.
 - **ConsumerWidget vs ConsumerStatefulWidget**: use `ConsumerWidget` (stateless) by default; use `ConsumerStatefulWidget` only when local widget state is genuinely needed.
 - **Provider access in UI**: use `.watch` for reactive reads; use `.read` only inside callbacks (e.g. button presses).
-- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **21** for `HeroSheet` and **5** for `HeroState`.
+- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **22** for `HeroSheet` and **5** for `HeroState`.
 - **German comments and identifiers**: code-level comments and domain names follow German (rasse, kultur, Held, Talente, etc.).
 - **UI wording**: user-facing German text should prefer real umlauts and `ß` over transliterations such as `ae`, `oe`, `ue`, and `ss`, unless a technical constraint requires ASCII.
 
@@ -655,4 +667,19 @@ The following files are **intentionally kept** but not currently wired into the 
   keine Erschoepfung und keine Ueberanstrengung.
 - `Erschoepfung` und `Ueberanstrengung` sind im Inspector Teil der
   Vitalwerte und koennen dort direkt per Stepper geaendert werden.
+
+## Update 2026-04-02
+
+- `HeroSheet` nutzt jetzt `schemaVersion` **22** und speichert zusaetzlich
+  `adventures`, `attributeSePool` und `statSePool`.
+- `HeroConnectionEntry` besitzt jetzt `adventureId`, damit Kontakte optional
+  genau einem Abenteuer zugeordnet werden koennen.
+- `HeroNotesTab` ist jetzt in die drei Untertabs `Chroniken`, `Kontakte` und
+  `Abenteuer` gegliedert; Abenteuer bleiben fachlich vom Reisebericht getrennt.
+- Abenteuer koennen AP und fest zugeordnete Sondererfahrungen fuer Talente,
+  Eigenschaften und Grundwerte einmalig anwenden oder, falls ungenutzt,
+  wieder zuruecknehmen.
+- Eigenschafts- und Grundwertsteigerungen lesen diese Abenteuer-SE aus
+  persistierten Pools und verbrauchen sie direkt im gemeinsamen
+  `steigerungs_dialog.dart`.
 
