@@ -23,7 +23,7 @@ class _NotesSection extends StatelessWidget {
       padding: const EdgeInsets.all(_notesPagePadding),
       children: [
         _SectionCard(
-          title: 'Freie Notizen',
+          title: 'Freie Chroniken',
           subtitle: isEditing
               ? 'Lege Einträge mit Titel und Beschreibung an.'
               : 'Tippe auf einen Titel, um die vollständige Beschreibung zu sehen.',
@@ -33,7 +33,7 @@ class _NotesSection extends StatelessWidget {
             child: const Text('+ Chronik'),
           ),
           child: entries.isEmpty
-              ? const _EmptyState(message: 'Noch keine Notizen vorhanden.')
+              ? const _EmptyState(message: 'Noch keine Chroniken vorhanden.')
               : Column(
                   children: [
                     for (var index = 0; index < entries.length; index++)
@@ -69,6 +69,8 @@ class _ConnectionsSection extends StatelessWidget {
   const _ConnectionsSection({
     required this.entries,
     required this.isEditing,
+    required this.adventureOptions,
+    required this.adventureLabelForId,
     required this.onAdd,
     required this.onRemove,
     required this.onChanged,
@@ -76,6 +78,8 @@ class _ConnectionsSection extends StatelessWidget {
 
   final List<HeroConnectionEntry> entries;
   final bool isEditing;
+  final List<_AdventureTargetOption> adventureOptions;
+  final String Function(String adventureId) adventureLabelForId;
   final Future<void> Function() onAdd;
   final void Function(int index) onRemove;
   final void Function(
@@ -85,6 +89,7 @@ class _ConnectionsSection extends StatelessWidget {
     String? sozialstatus,
     String? loyalitaet,
     String? beschreibung,
+    String? adventureId,
   })
   onChanged;
 
@@ -94,17 +99,19 @@ class _ConnectionsSection extends StatelessWidget {
       padding: const EdgeInsets.all(_notesPagePadding),
       children: [
         _SectionCard(
-          title: 'Verbindungen',
+          title: 'Kontakte & Verbindungen',
           subtitle: isEditing
-              ? 'Pflege Kontakte, Beziehungen und Hintergründe.'
-              : 'Öffne einen Eintrag, um Ort, Sozialstatus, Loyalität und Beschreibung zu sehen.',
+              ? 'Pflege Kontakte, Beziehungen und optionale Abenteuer-Bezüge.'
+              : 'Öffne einen Eintrag, um Details und die Abenteuer-Zuordnung zu sehen.',
           action: FilledButton(
             key: const ValueKey<String>('notes-add-connection'),
             onPressed: onAdd,
             child: const Text('+ Kontakt'),
           ),
           child: entries.isEmpty
-              ? const _EmptyState(message: 'Noch keine Verbindungen vorhanden.')
+              ? const _EmptyState(
+                  message: 'Noch keine Kontakte oder Verbindungen vorhanden.',
+                )
               : Column(
                   children: [
                     for (var index = 0; index < entries.length; index++)
@@ -118,12 +125,14 @@ class _ConnectionsSection extends StatelessWidget {
                             ? _EditableConnectionCard(
                                 index: index,
                                 entry: entries[index],
+                                adventureOptions: adventureOptions,
                                 onRemove: onRemove,
                                 onChanged: onChanged,
                               )
                             : _ReadOnlyConnectionTile(
                                 index: index,
                                 entry: entries[index],
+                                adventureLabelForId: adventureLabelForId,
                               ),
                       ),
                   ],
@@ -163,14 +172,14 @@ class _EditableNoteCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Notiz ${index + 1}',
+                    'Chronik ${index + 1}',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
                 IconButton(
                   key: ValueKey<String>('notes-remove-note-$index'),
                   onPressed: () => onRemove(index),
-                  tooltip: 'Notiz entfernen',
+                  tooltip: 'Chronik entfernen',
                   icon: const Icon(Icons.delete_outline),
                 ),
               ],
@@ -213,7 +222,9 @@ class _ReadOnlyNoteTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = entry.title.trim().isEmpty ? 'Unbenannte Notiz' : entry.title;
+    final title = entry.title.trim().isEmpty
+        ? 'Unbenannte Chronik'
+        : entry.title;
     final description = entry.description.trim().isEmpty
         ? 'Keine Beschreibung hinterlegt.'
         : entry.description;
@@ -235,12 +246,14 @@ class _EditableConnectionCard extends StatelessWidget {
   const _EditableConnectionCard({
     required this.index,
     required this.entry,
+    required this.adventureOptions,
     required this.onRemove,
     required this.onChanged,
   });
 
   final int index;
   final HeroConnectionEntry entry;
+  final List<_AdventureTargetOption> adventureOptions;
   final void Function(int index) onRemove;
   final void Function(
     int index, {
@@ -249,11 +262,18 @@ class _EditableConnectionCard extends StatelessWidget {
     String? sozialstatus,
     String? loyalitaet,
     String? beschreibung,
+    String? adventureId,
   })
   onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final normalizedAdventureId = entry.adventureId.trim();
+    final dropdownValue = normalizedAdventureId.isEmpty
+        ? ''
+        : adventureOptions.any((option) => option.id == normalizedAdventureId)
+        ? normalizedAdventureId
+        : '';
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -265,14 +285,14 @@ class _EditableConnectionCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Verbindung ${index + 1}',
+                    'Kontakt ${index + 1}',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
                 IconButton(
                   key: ValueKey<String>('notes-remove-connection-$index'),
                   onPressed: () => onRemove(index),
-                  tooltip: 'Verbindung entfernen',
+                  tooltip: 'Kontakt entfernen',
                   icon: const Icon(Icons.delete_outline),
                 ),
               ],
@@ -310,7 +330,7 @@ class _EditableConnectionCard extends StatelessWidget {
                     fieldKey: ValueKey<String>(
                       'notes-connection-loyalitaet-$index',
                     ),
-                    label: 'Loyalitaet',
+                    label: 'Loyalität',
                     initialValue: entry.loyalitaet,
                     onChanged: (value) => onChanged(index, loyalitaet: value),
                   ),
@@ -342,6 +362,59 @@ class _EditableConnectionCard extends StatelessWidget {
               },
             ),
             const SizedBox(height: _notesFieldSpacing),
+            DropdownButtonFormField<String>(
+              key: ValueKey<String>('notes-connection-adventure-$index'),
+              initialValue: dropdownValue,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                labelText: 'Abenteuer',
+                border: OutlineInputBorder(),
+              ),
+              selectedItemBuilder: (context) {
+                return [
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Kein Abenteuer',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  ...adventureOptions.map(
+                    (option) => Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        option.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                ];
+              },
+              items: [
+                const DropdownMenuItem<String>(
+                  value: '',
+                  child: Text(
+                    'Kein Abenteuer',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                ...adventureOptions.map(
+                  (option) => DropdownMenuItem<String>(
+                    value: option.id,
+                    child: Text(
+                      option.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+              onChanged: (value) => onChanged(index, adventureId: value ?? ''),
+            ),
+            const SizedBox(height: _notesFieldSpacing),
             TextFormField(
               key: ValueKey<String>('notes-connection-description-$index'),
               initialValue: entry.beschreibung,
@@ -362,21 +435,26 @@ class _EditableConnectionCard extends StatelessWidget {
 }
 
 class _ReadOnlyConnectionTile extends StatelessWidget {
-  const _ReadOnlyConnectionTile({required this.index, required this.entry});
+  const _ReadOnlyConnectionTile({
+    required this.index,
+    required this.entry,
+    required this.adventureLabelForId,
+  });
 
   final int index;
   final HeroConnectionEntry entry;
+  final String Function(String adventureId) adventureLabelForId;
 
   @override
   Widget build(BuildContext context) {
-    final name = entry.name.trim().isEmpty
-        ? 'Unbenannte Verbindung'
-        : entry.name;
+    final name = entry.name.trim().isEmpty ? 'Unbenannter Kontakt' : entry.name;
+    final adventureLabel = adventureLabelForId(entry.adventureId);
     final chips = <String>[
       if (entry.ort.trim().isNotEmpty) 'Ort: ${entry.ort}',
       if (entry.sozialstatus.trim().isNotEmpty)
         'Sozialstatus: ${entry.sozialstatus}',
-      if (entry.loyalitaet.trim().isNotEmpty) 'Loyalitaet: ${entry.loyalitaet}',
+      if (entry.loyalitaet.trim().isNotEmpty) 'Loyalität: ${entry.loyalitaet}',
+      if (adventureLabel.trim().isNotEmpty) 'Abenteuer: $adventureLabel',
     ];
     return Card(
       margin: EdgeInsets.zero,

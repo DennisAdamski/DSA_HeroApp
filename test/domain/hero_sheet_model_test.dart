@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
@@ -241,8 +243,46 @@ void main() {
           sozialstatus: '5',
           loyalitaet: 'schwankend',
           beschreibung: 'Informant aus dem Hafenviertel.',
+          adventureId: 'adv_jucho',
         ),
       ],
+      adventures: const <HeroAdventureEntry>[
+        HeroAdventureEntry(
+          id: 'adv_jucho',
+          title: 'Feuer über Punin',
+          summary: 'Die Gruppe schützt einen Geweihten vor Attentätern.',
+          notes: <HeroNoteEntry>[
+            HeroNoteEntry(
+              title: 'Ankunft',
+              description: 'Das Abenteuer beginnt im Hafenviertel.',
+            ),
+          ],
+          apReward: 75,
+          seRewards: <HeroAdventureSeReward>[
+            HeroAdventureSeReward(
+              targetType: HeroAdventureSeTargetType.talent,
+              targetId: 'tal_schwerter',
+              targetLabel: 'Schwerter',
+              count: 2,
+            ),
+            HeroAdventureSeReward(
+              targetType: HeroAdventureSeTargetType.grundwert,
+              targetId: 'lep',
+              targetLabel: 'LeP',
+              count: 1,
+            ),
+            HeroAdventureSeReward(
+              targetType: HeroAdventureSeTargetType.eigenschaft,
+              targetId: 'mu',
+              targetLabel: 'Mut',
+              count: 1,
+            ),
+          ],
+          rewardsApplied: true,
+        ),
+      ],
+      attributeSePool: const HeroAttributeSePool(mu: 1, ge: 2),
+      statSePool: const HeroStatSePool(lep: 1, asp: 2),
       unknownModifierFragments: ['foo'],
     );
 
@@ -250,7 +290,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.background.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 21);
+    expect(reloaded.schemaVersion, 22);
     expect(reloaded.background.kultur, 'Mittelreich');
     expect(reloaded.background.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -271,6 +311,22 @@ void main() {
     expect(reloaded.connections.single.name, 'Jucho');
     expect(reloaded.connections.single.ort, 'Punin');
     expect(reloaded.connections.single.loyalitaet, 'schwankend');
+    expect(reloaded.connections.single.adventureId, 'adv_jucho');
+    expect(reloaded.adventures.single.id, 'adv_jucho');
+    expect(reloaded.adventures.single.title, 'Feuer über Punin');
+    expect(reloaded.adventures.single.summary, contains('Geweihten'));
+    expect(reloaded.adventures.single.notes.single.title, 'Ankunft');
+    expect(reloaded.adventures.single.apReward, 75);
+    expect(
+      reloaded.adventures.single.seRewards.first.targetType,
+      HeroAdventureSeTargetType.talent,
+    );
+    expect(reloaded.adventures.single.seRewards.first.count, 2);
+    expect(reloaded.adventures.single.rewardsApplied, isTrue);
+    expect(reloaded.attributeSePool.mu, 1);
+    expect(reloaded.attributeSePool.ge, 2);
+    expect(reloaded.statSePool.lep, 1);
+    expect(reloaded.statSePool.asp, 2);
     expect(reloaded.unknownModifierFragments, contains('foo'));
     expect(reloaded.metaTalents.single.name, 'Pflanzensuchen');
     expect(reloaded.metaTalents.single.componentTalentIds, <String>[
@@ -399,6 +455,9 @@ void main() {
     expect(loaded.ritualCategories, isEmpty);
     expect(loaded.notes, isEmpty);
     expect(loaded.connections, isEmpty);
+    expect(loaded.adventures, isEmpty);
+    expect(loaded.attributeSePool.mu, 0);
+    expect(loaded.statSePool.lep, 0);
     expect(loaded.rawStartAttributes.mu, loaded.attributes.mu);
     expect(loaded.rawStartAttributes.kk, loaded.attributes.kk);
     expect(loaded.startAttributes.mu, loaded.attributes.mu);
@@ -707,7 +766,7 @@ void main() {
     },
   );
 
-  test('schemaVersion ist 21 nach toJson (v21-Default)', () {
+  test('schemaVersion ist 22 nach toJson (v22-Default)', () {
     const hero = HeroSheet(
       id: 'version-check',
       name: 'Versionstest',
@@ -724,8 +783,8 @@ void main() {
       ),
     );
     final json = hero.toJson();
-    expect(json['schemaVersion'], 21);
-    expect(HeroSheet.fromJson(json).schemaVersion, 21);
+    expect(json['schemaVersion'], 22);
+    expect(HeroSheet.fromJson(json).schemaVersion, 22);
   });
 
   test(
