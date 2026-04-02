@@ -4,7 +4,7 @@ import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 ///
 /// Manoever koennen Waffen ([WeaponDef.possibleManeuvers]) zugeordnet sein.
 /// [erschwernis] enthaelt den Erschwernis-Wert als Freitext (z. B. '-4' oder '+0').
-/// Fernkampf-Manoever mit [mussSeperatErlerntWerden] werden pro aktivem FK-Talent
+/// Fernkampf-Manoever mit [mussSeparatErlerntWerden] werden pro aktivem FK-Talent
 /// einzeln aktiviert; die gespeicherte ID lautet dann `<id>::<talentId>`.
 class ManeuverDef {
   const ManeuverDef({
@@ -20,7 +20,7 @@ class ManeuverDef {
     this.verbreitung = '',
     this.kosten = '',
     this.nurFuerTalente = const <String>[],
-    this.mussSeperatErlerntWerden = false,
+    this.mussSeparatErlerntWerden = false,
     this.giltFuerTalentTyp = '',
   });
 
@@ -42,9 +42,9 @@ class ManeuverDef {
 
   /// Wenn true: muss fuer jedes FK-Talent separat aktiviert werden.
   /// Gespeicherte ID: `<id>::<talentId>`.
-  final bool mussSeperatErlerntWerden;
+  final bool mussSeparatErlerntWerden;
 
-  /// Talenttyp-Filter fuer [mussSeperatErlerntWerden] (z. B. 'fernkampf').
+  /// Talenttyp-Filter fuer [mussSeparatErlerntWerden] (z. B. 'fernkampf').
   final String giltFuerTalentTyp;
 
   factory ManeuverDef.fromJson(Map<String, dynamic> json) {
@@ -65,7 +65,7 @@ class ManeuverDef {
       verbreitung: readCatalogString(json, 'verbreitung', fallback: ''),
       kosten: readCatalogString(json, 'kosten', fallback: ''),
       nurFuerTalente: readCatalogStringList(json, 'nur_fuer_talente'),
-      mussSeperatErlerntWerden: readCatalogBool(
+      mussSeparatErlerntWerden: readCatalogBool(
         json,
         'muss_separat_erlernt_werden',
         fallback: false,
@@ -92,7 +92,7 @@ class ManeuverDef {
       'verbreitung': verbreitung,
       'kosten': kosten,
       if (nurFuerTalente.isNotEmpty) 'nur_fuer_talente': nurFuerTalente,
-      if (mussSeperatErlerntWerden) 'muss_separat_erlernt_werden': true,
+      if (mussSeparatErlerntWerden) 'muss_separat_erlernt_werden': true,
       if (giltFuerTalentTyp.isNotEmpty) 'gilt_fuer_talent_typ': giltFuerTalentTyp,
     };
   }
