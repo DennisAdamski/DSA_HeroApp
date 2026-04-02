@@ -24,21 +24,37 @@ void main() {
   });
 
   test(
-    'catalog keeps genuine combat special abilities for WdS pages 74-76 and 95',
+    'catalog keeps genuine combat special abilities for WdS pages 74-76',
     () {
       final names = combatSpecialAbilities.map((entry) => entry.name).toSet();
 
-      expect(names, contains('Berittener Schütze'));
-      expect(names, contains('Eisenhagel'));
-      expect(names, contains('Scharfschütze'));
-      expect(names, contains('Meisterschütze'));
-      expect(names, contains('Schnellladen (Bogen)'));
-      expect(names, contains('Schnellladen (Armbrust)'));
       expect(names, contains('Meisterliches Entwaffnen'));
 
       expect(names, isNot(contains('Finte')));
       expect(names, isNot(contains('Klingensturm')));
       expect(names, isNot(contains('Befreiungsschlag')));
+    },
+  );
+
+  test(
+    'Fernkampf-SF wurden als Manoever migriert (WdS S. 95)',
+    () {
+      final maneuverNames = maneuvers.map((entry) => entry.name).toSet();
+
+      expect(maneuverNames, contains('Berittener Schütze'));
+      expect(maneuverNames, contains('Eisenhagel'));
+      expect(maneuverNames, contains('Scharfschütze'));
+      expect(maneuverNames, contains('Meisterschütze'));
+      expect(maneuverNames, contains('Schnellladen (Bogen)'));
+      expect(maneuverNames, contains('Schnellladen (Armbrust)'));
+
+      final ksfNames = combatSpecialAbilities.map((entry) => entry.name).toSet();
+      expect(ksfNames, isNot(contains('Berittener Schütze')));
+      expect(ksfNames, isNot(contains('Eisenhagel')));
+      expect(ksfNames, isNot(contains('Scharfschütze')));
+      expect(ksfNames, isNot(contains('Meisterschütze')));
+      expect(ksfNames, isNot(contains('Schnellladen (Bogen)')));
+      expect(ksfNames, isNot(contains('Schnellladen (Armbrust)')));
     },
   );
 }
