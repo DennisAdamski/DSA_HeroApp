@@ -4,42 +4,50 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
 
+const _kAttrRequest = ResolvedProbeRequest(
+  type: ProbeType.attribute,
+  title: 'Eigenschaftsprobe: Mut',
+  subtitle: 'MU',
+  ruleHint: 'rule',
+  diceSpec: DiceSpec(count: 1, sides: 20),
+  targets: <ProbeTargetValue>[ProbeTargetValue(label: 'MU', value: 14)],
+);
+
+Widget _wrap(Widget child) =>
+    MaterialApp(home: Scaffold(body: child));
+
 void main() {
-  Widget wrapApp(Widget child) {
-    return MaterialApp(home: Scaffold(body: child));
-  }
-
-  testWidgets('dialog shows an initial digital result', (tester) async {
-    const request = ResolvedProbeRequest(
-      type: ProbeType.attribute,
-      title: 'Eigenschaftsprobe: Mut',
-      subtitle: 'MU',
-      ruleHint: 'rule',
-      diceSpec: DiceSpec(count: 1, sides: 20),
-      targets: <ProbeTargetValue>[ProbeTargetValue(label: 'MU', value: 14)],
-    );
-
-    await tester.pumpWidget(wrapApp(const ProbeDialog(request: request)));
+  testWidgets('dialog opens in idle state – kein Ergebnis vor dem Würfeln',
+      (tester) async {
+    await tester.pumpWidget(_wrap(const ProbeDialog(request: _kAttrRequest)));
     await tester.pumpAndSettle();
 
     expect(find.text('Eigenschaftsprobe: Mut'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('probe-dialog-result-headline')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('Ergebnis erscheint nach Klick auf Würfeln', (tester) async {
+    await tester.pumpWidget(_wrap(const ProbeDialog(request: _kAttrRequest)));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Würfeln'));
+    await tester.pump();
+    // Animationsdauer (1400 ms) plus Puffer überspringen.
+    await tester.pump(const Duration(milliseconds: 1600));
+    await tester.pumpAndSettle();
+
     expect(
       find.byKey(const ValueKey<String>('probe-dialog-result-headline')),
       findsOneWidget,
     );
   });
 
-  testWidgets('manual mode evaluates entered dice values', (tester) async {
-    const request = ResolvedProbeRequest(
-      type: ProbeType.attribute,
-      title: 'Eigenschaftsprobe: Mut',
-      subtitle: 'MU',
-      ruleHint: 'rule',
-      diceSpec: DiceSpec(count: 1, sides: 20),
-      targets: <ProbeTargetValue>[ProbeTargetValue(label: 'MU', value: 14)],
-    );
-
-    await tester.pumpWidget(wrapApp(const ProbeDialog(request: request)));
+  testWidgets('manueller Modus wertet eingegebene Würfelwerte aus',
+      (tester) async {
+    await tester.pumpWidget(_wrap(const ProbeDialog(request: _kAttrRequest)));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Manuell'));
@@ -53,7 +61,7 @@ void main() {
     expect(find.text('Misslungen'), findsOneWidget);
   });
 
-  testWidgets('talent probes expose the specialization toggle', (tester) async {
+  testWidgets('Talentproben zeigen den Spezialisierungs-Toggle', (tester) async {
     const request = ResolvedProbeRequest(
       type: ProbeType.talent,
       title: 'Talentprobe: Athletik',
@@ -69,7 +77,7 @@ void main() {
       specializationBonus: 2,
     );
 
-    await tester.pumpWidget(wrapApp(const ProbeDialog(request: request)));
+    await tester.pumpWidget(_wrap(const ProbeDialog(request: request)));
     await tester.pumpAndSettle();
 
     expect(
