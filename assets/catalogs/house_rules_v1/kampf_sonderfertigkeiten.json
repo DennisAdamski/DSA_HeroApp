@@ -8,7 +8,8 @@
         "beschreibung": "Beschleunigt Orientierung, verbessert Reaktionen und erschwert Passierschläge gegen den Helden.",
         "voraussetzungen": "IN 12",
         "verbreitung": "4, durch Praxis",
-        "kosten": "200 AP"
+        "kosten": "200 AP",
+        "erklarung_lang": "Der Held verschafft sich im Kampf schon mit einer Aktion Orientierung und hebt seine Initiative ohne zusätzliche Probe sofort auf das bestmögliche Würfelergebnis an. Überraschungen, Hinterhalte und Passierschläge gegen ihn sind zusätzlich erschwert, und das Umwandeln von Angriffs- und Abwehraktionen darf er bis unmittelbar vor seiner ersten eigenen Aktion der Runde offenlassen."
     },
     {
         "id": "ksf_ausweichen_i",
@@ -19,7 +20,8 @@
         "beschreibung": "Gewährt +3 auf Ausweichen-Proben.",
         "voraussetzungen": "GE 10",
         "verbreitung": "5, durch Praxis",
-        "kosten": "300 AP; verbilligt für Helden mit dem Vorteil Schlangenmensch (150 AP)"
+        "kosten": "300 AP; verbilligt für Helden mit dem Vorteil Schlangenmensch (150 AP)",
+        "erklarung_lang": "Der Held legt Ausweichen-Proben mit einem Bonus von 3 Punkten ab. Der Bonus gilt auch gegen Fernkampf- und Sturmangriffe."
     },
     {
         "id": "ksf_ausweichen_ii",
@@ -30,7 +32,8 @@
         "beschreibung": "Gewährt insgesamt +6 auf Ausweichen-Proben.",
         "voraussetzungen": "GE 12; SF Ausweichen I und Aufmerksamkeit",
         "verbreitung": "4, durch Praxis",
-        "kosten": "200 AP; verbilligt für Helden mit dem Vorteil Schlangenmensch (100 AP)"
+        "kosten": "200 AP; verbilligt für Helden mit dem Vorteil Schlangenmensch (100 AP)",
+        "erklarung_lang": "Die zweite Ausbaustufe erhöht den Gesamtbonus auf Ausweichen-Proben auf 6 Punkte. Der Vorteil gilt weiterhin auch gegen Fernkampf- und Sturmangriffe."
     },
     {
         "id": "ksf_ausweichen_iii",
@@ -41,7 +44,8 @@
         "beschreibung": "Gewährt insgesamt +9 auf Ausweichen-Proben.",
         "voraussetzungen": "GE 15; SF Ausweichen II und Kampfreflexe",
         "verbreitung": "3, durch Praxis",
-        "kosten": "200 AP; verbilligt für Helden mit dem Vorteil Schlangenmensch (100 AP)"
+        "kosten": "200 AP; verbilligt für Helden mit dem Vorteil Schlangenmensch (100 AP)",
+        "erklarung_lang": "Die höchste Ausbaustufe erhöht den Gesamtbonus auf Ausweichen-Proben auf 9 Punkte. Der Vorteil gilt weiterhin auch gegen Fernkampf- und Sturmangriffe."
     },
     {
         "id": "ksf_beidhaendiger_kampf_i",
@@ -52,7 +56,8 @@
         "beschreibung": "Reduziert Abzüge mit der falschen Hand und erweitert den Einsatz von Zweitwaffen.",
         "voraussetzungen": "GE 12, SF Linkhand",
         "verbreitung": "3, vornehmlich bei Gladiatoren und Schaukämpfern, im tulamidischen und südaventurischen Raum",
-        "kosten": "100 AP; billiger für Helden mit den Vorteilen Beidhändig (50 AP) oder Linkshändig (75 AP)"
+        "kosten": "100 AP; billiger für Helden mit den Vorteilen Beidhändig (50 AP) oder Linkshändig (75 AP)",
+        "erklarung_lang": "Der Held kontrolliert Kampfhandlungen mit der falschen Hand deutlich besser. Die Abzüge sinken auf AT -3 und PA -3, weitere passende Manöver werden zugänglich, und der Körperkraft-Bonus auf Trefferpunkte darf auch mit der Nebenhand genutzt werden."
     },
     {
         "id": "ksf_beidhaendiger_kampf_ii",
@@ -63,7 +68,8 @@
         "beschreibung": "Entfernt Handabzüge vollständig und gewährt eine zusätzliche Waffenaktion pro Runde.",
         "voraussetzungen": "GE 15, SF Beidhändiger Kampf I",
         "verbreitung": "2, vornehmlich bei Gladiatoren und Schaukämpfern, im tulamidischen und südaventurischen Raum",
-        "kosten": "400 AP; billiger für Helden mit den Vorteilen Beidhändig (200 AP) oder Linkshändig (300 AP)"
+        "kosten": "400 AP; billiger für Helden mit den Vorteilen Beidhändig (200 AP) oder Linkshändig (300 AP)",
+        "erklarung_lang": "Der Held beherrscht den beidhändigen Kampf so sicher, dass bei der Verwendung der falschen Hand keine regulären AT- oder PA-Abzüge mehr anfallen. Zusätzlich erhält er pro Kampfrunde eine weitere Angriffs- oder Abwehraktion mit der Zweitwaffe; dieser Vorteil ist nicht kumulativ mit ähnlichen Zusatzaktionen wie Tod von Links oder Parierwaffen II."
     },
     {
         "id": "ksf_blindkampf",
@@ -74,7 +80,8 @@
         "beschreibung": "Begrenzt Sichtabzüge im Nahkampf auf maximal –2/–2.",
         "voraussetzungen": "GE 12; TaW Sinnenschärfe 15; SF Kampfgespür",
         "verbreitung": "1, Mystiker und Ordenskrieger",
-        "kosten": "200 AP"
+        "kosten": "200 AP",
+        "erklarung_lang": "Der Held kann auch bei völliger Dunkelheit, gegen Unsichtbare oder selbst ohne Augenlicht noch erstaunlich sicher kämpfen. Schlechte Sicht verursacht höchstens Abzüge von AT -2 und PA -2; nur Pike, Lanzenreiten und Peitschen profitieren davon nicht. In Überraschungs- und Hinterhaltssituationen sind seine Intuitionsproben zusätzlich um 2 erleichtert."
     },
     {
         "id": "ksf_improvisierte_waffen",
@@ -83,9 +90,10 @@
         "typ": "sonderfertigkeit",
         "seite": "74",
         "beschreibung": "Erlaubt effektiven Einsatz improvisierter Nah- und eingeschränkt auch Wurfwaffen.",
-        "voraussetzungen": "IN 12, GE 12; TaW Raufen 10",
+        "voraussetzungen": "IN 12, GE 12; TaW Raufen 10; um die SF auch mit Wurfwaffen nutzen zu können, muss der TaW einer Wurfwaffe mindestens 10 betragen",
         "verbreitung": "2, im Umfeld heimlicher Kulte und Orden, bei Schaukämpfern",
-        "kosten": "100 AP"
+        "kosten": "100 AP",
+        "erklarung_lang": "Der Held kann beinahe jeden Gegenstand sinnvoll als Waffe einsetzen und damit auch Tricks nutzen, die mit improvisierten Waffen sonst nicht möglich sind. Die erhöhte Patzerchance entfällt. Mit ausreichender Erfahrung in einer Wurfwaffe lässt sich die Sonderfertigkeit auch eingeschränkt auf improvisierte Wurfgeschosse anwenden."
     },
     {
         "id": "ksf_kampf_im_wasser",
@@ -96,7 +104,8 @@
         "beschreibung": "Halbiert Kampfabzüge im flachen Wasser und erlaubt dort zusätzliche Manöver.",
         "voraussetzungen": "GE 12, TaW Körperbeherrschung 7",
         "verbreitung": "4, bei Kulturen an Fluss- oder Seeufern sowie Kämpfern zur See",
-        "kosten": "100 AP"
+        "kosten": "100 AP",
+        "erklarung_lang": "Der Held gleicht unsicheren Stand, Wellenbewegung und eingeschränkte Beweglichkeit im knie-, hüft- oder schultertiefen Wasser besser aus und erleidet nur die Hälfte der üblichen Kampfmodifikatoren. Außerdem darf er im Wasser zusätzliche Manöver einsetzen, die ungeübten Kämpfern dort verwehrt bleiben. In schultertiefem Wasser ist die Anwendung auf Dolche, Infanteriewaffen und Speere beschränkt."
     },
     {
         "id": "ksf_kampfgespuer",
@@ -107,7 +116,8 @@
         "beschreibung": "Erhöht den Initiative-Basiswert und verbessert Reaktionen.",
         "voraussetzungen": "IN 15; SF Aufmerksamkeit und Kampfreflexe",
         "verbreitung": "3, bei erfahrenen Einzelkämpfern",
-        "kosten": "300 AP"
+        "kosten": "300 AP",
+        "erklarung_lang": "Kampfgespür erhöht den Initiative-Basiswert zusätzlich zu Kampfreflexe um weitere 2 Punkte. Passierschläge und Proben gegen Überraschung werden nochmals erschwert beziehungsweise erleichtert, und der Held darf Angriffs- und Abwehraktionen jederzeit umwandeln, ohne dies vorher ankündigen zu müssen. In Kombination mit Klingensturm oder Klingenwand darf er seine verbesserten AT- oder PA-Werte frei verteilen, statt sie nur zu halbieren."
     },
     {
         "id": "ksf_kampfreflexe",
@@ -118,7 +128,8 @@
         "beschreibung": "Erhöht den Initiative-Wert um 4 Punkte.",
         "voraussetzungen": "INI-Basiswert 10",
         "verbreitung": "4, professionelle Kämpfer",
-        "kosten": "300 AP"
+        "kosten": "300 AP",
+        "erklarung_lang": "Der Held reagiert sichtbar schneller und erhält einen festen Bonus von 4 Punkten auf seine Initiative. Die Sonderfertigkeit greift nur, wenn die effektiv getragene Rüstung höchstens BE 4 verursacht; Rüstungsgewöhnung zählt dabei regulär mit."
     },
     {
         "id": "ksf_klingentaenzer",
@@ -128,8 +139,9 @@
         "seite": "75",
         "beschreibung": "Verwendet 2W6 für Initiative und erweitert Klingensturm/Klingenwand.",
         "voraussetzungen": "GE 15, SF Kampfgespür, Klingensturm, Klingenwand",
-        "verbreitung": "1, einige wenige vornehmlich tulamidische Schwertmeister",
-        "kosten": "400 AP"
+        "verbreitung": "1, einige wenige, vornehmlich tulamidische Schwertmeister",
+        "kosten": "400 AP",
+        "erklarung_lang": "Der Held bestimmt seine Initiative mit 2W6 statt 1W6. Misslungene Ansagen bestrafen ihn nur mit der Hälfte des angesagten Werts auf die nächste Aktion. Bei Klingensturm und Klingenwand darf er seine Werte sogar gegen bis zu drei Gegner oder Angriffe aufteilen. Alle Vorteile gelten nur bei einer effektiven BE von höchstens 2."
     },
     {
         "id": "ksf_linkhand",
@@ -140,7 +152,8 @@
         "beschreibung": "Grundvoraussetzung für Schild-, Parier- und Zweitwaffenkampf.",
         "voraussetzungen": "KK 10, GE 10",
         "verbreitung": "6, eigentlich überall, wo Schilde oder Parierwaffen verbreitet sind",
-        "kosten": "300 AP (225 AP für Helden mit Linkshändig, 150 AP für Helden mit Beidhändig)"
+        "kosten": "300 AP (225 AP für Helden mit Linkshändig, 150 AP für Helden mit Beidhändig)",
+        "erklarung_lang": "Linkhand bildet die grundlegende Koordination für Schilde, Parierwaffen und Zweitwaffen. Schildkämpfer erhalten dadurch insgesamt einen zusätzlichen Punkt auf ihren Paradewert, und die Abzüge beim Einsatz der falschen Hand sinken auf AT -6 und PA -6."
     },
     {
         "id": "ksf_meisterliches_entwaffnen",
@@ -151,7 +164,11 @@
         "beschreibung": "Erlaubt Entwaffnen gegen Zweihandwaffen und erschwert die gegnerische KK-Probe weiter.",
         "voraussetzungen": "GE 15, SF Entwaffnen",
         "verbreitung": "2, bei Duellkämpfern, Schwertgesellen, Rondra-Geweihten",
-        "kosten": "100 AP"
+        "kosten": "100 AP",
+        "erklarung_lang": "Der Held beherrscht die fortgeschrittene Form des Entwaffnens. Damit darf er auch Gegner mit zweihändig geführten Waffen entwaffnen und verschärft bei Einhandwaffen zusätzlich die Körperkraft-Probe, mit der sich der Verteidiger noch an seiner Waffe festhalten könnte.",
+        "aktiviert_manoever_ids": [
+            "man_entwaffnen_meisterlich"
+        ]
     },
     {
         "id": "ksf_parierwaffen_i",
@@ -162,7 +179,8 @@
         "beschreibung": "Verbessert die Parade mit Parierwaffen und schaltet passende Manöver frei.",
         "voraussetzungen": "GE 12, SF Linkhand",
         "verbreitung": "4, bei entsprechenden Kulturen",
-        "kosten": "200 AP; für Helden mit dem Vorteil Beidhändig verbilligt (150 AP)"
+        "kosten": "200 AP; für Helden mit dem Vorteil Beidhändig verbilligt (150 AP)",
+        "erklarung_lang": "Der Held verwendet mit einer Parierwaffe den Paradewert der Hauptwaffe minus 1 plus dem PA-WM der Parierwaffe. Außerdem erhält er Zugriff auf passende Manöver mit der linken Hand und kann Parierwaffen insgesamt effektiver führen."
     },
     {
         "id": "ksf_parierwaffen_ii",
@@ -173,7 +191,8 @@
         "beschreibung": "Erhöht den PA-Wert mit Parierwaffen weiter und gewährt eine zusätzliche Parade.",
         "voraussetzungen": "GE 15, SF Parierwaffen I",
         "verbreitung": "3, bei entsprechenden Kulturen",
-        "kosten": "200 AP; für Helden mit dem Vorteil Beidhändig verbilligt (150 AP)"
+        "kosten": "200 AP; für Helden mit dem Vorteil Beidhändig verbilligt (150 AP)",
+        "erklarung_lang": "Mit dieser Ausbaustufe verwendet der Held mit einer Parierwaffe den Paradewert der Hauptwaffe plus 2 plus dem PA-WM der Parierwaffe. Die Sonderfertigkeit ermöglicht das Erlernen von Tod von Links und gewährt eine zusätzliche Parade mit der Parierwaffe pro Kampfrunde."
     },
     {
         "id": "ksf_ruestungsgewoehnung_i",
@@ -184,7 +203,8 @@
         "beschreibung": "Reduziert die Behinderung eines bestimmten Rüstungstyps um 1.",
         "voraussetzungen": "KK 10",
         "verbreitung": "6, mindestens einjährige Praxis",
-        "kosten": "150 AP; verteuert für Helden mit dem Vorteil Akademische Ausbildung (Magier) (225 AP)"
+        "kosten": "150 AP; verteuert für Helden mit dem Vorteil Akademische Ausbildung (Magier) (225 AP)",
+        "erklarung_lang": "Der Held ist an einen bestimmten Rüstungstyp so gut gewöhnt, dass ihn diese Rüstung insgesamt um 1 Punkt weniger behindert. Bei mehrteiligen Rüstungen muss er dazu den Hauptteil tragen. Die Senkung zählt nicht nur für eBE im Kampf, sondern für alle Regeln, die auf BE-Grenzen oder BE-Schwellen prüfen, etwa andere Sonderfertigkeiten, Geschwindigkeit oder Initiative."
     },
     {
         "id": "ksf_ruestungsgewoehnung_ii",
@@ -195,7 +215,8 @@
         "beschreibung": "Reduziert die Behinderung beliebiger Rüstungen um 1.",
         "voraussetzungen": "KK 12; SF Rüstungsgewöhnung I",
         "verbreitung": "4, durch Praxis",
-        "kosten": "300 AP; verteuert für Helden mit dem Vorteil Akademische Ausbildung (Magier) (450 AP)"
+        "kosten": "300 AP; verteuert für Helden mit dem Vorteil Akademische Ausbildung (Magier) (450 AP)",
+        "erklarung_lang": "Der Held ist so sehr an behindernde Rüstung gewöhnt, dass ihn jede komplette Rüstung um 1 Punkt weniger BE belastet. Dieser Punkt ist nicht zusätzlich zu Rüstungsgewöhnung I zu verstehen, sondern ersetzt deren Effekt. Auch hier gilt die Reduktion für alle Anwendungen des BE-Werts."
     },
     {
         "id": "ksf_ruestungsgewoehnung_iii",
@@ -206,7 +227,8 @@
         "beschreibung": "Reduziert die Behinderung beliebiger Rüstungen um 2 und halbiert INI-Abzüge.",
         "voraussetzungen": "KK 15; SF Rüstungsgewöhnung II",
         "verbreitung": "2, durch Praxis",
-        "kosten": "450 AP; verteuert für Helden mit dem Vorteil Akademische Ausbildung (Magier) (675 AP)"
+        "kosten": "450 AP; verteuert für Helden mit dem Vorteil Akademische Ausbildung (Magier) (675 AP)",
+        "erklarung_lang": "Der Held wird von jeder Rüstung um 2 Punkte weniger behindert; dieser Vorteil ist nicht kumulativ mit Rüstungsgewöhnung I oder II. Zusätzlich muss er nur die halben Initiative-Abzüge seiner Rüstung hinnehmen."
     },
     {
         "id": "ksf_schildkampf_i",
@@ -217,7 +239,8 @@
         "beschreibung": "Erhöht den Schild-Paradewert und erlaubt Schildangriffe mit Raufen.",
         "voraussetzungen": "KK 12; SF Linkhand",
         "verbreitung": "6, bei vielen professionellen Kämpfern",
-        "kosten": "200 AP; für Helden mit dem Vorteil Beidhändig verbilligt (150 AP)"
+        "kosten": "200 AP; für Helden mit dem Vorteil Beidhändig verbilligt (150 AP)",
+        "erklarung_lang": "Auf Basis der Sonderfertigkeit Linkhand erhält der Held 2 weitere Punkte auf seinen Paradewert mit Schilden, sodass sich insgesamt PA-Basis plus Schildmodifikator plus 3 ergeben. Außerdem kann er den Schild mit dem Talent Raufen für Angriffsaktionen einsetzen."
     },
     {
         "id": "ksf_schildkampf_ii",
@@ -228,7 +251,8 @@
         "beschreibung": "Erhöht die Schild-PA weiter und erlaubt zwei zusätzliche Schildparaden pro Runde.",
         "voraussetzungen": "KK 15; SF Schildkampf I",
         "verbreitung": "3, bei professionellen Kämpfern",
-        "kosten": "200 AP; für Helden mit dem Vorteil Beidhändig verbilligt (150 AP)"
+        "kosten": "200 AP; für Helden mit dem Vorteil Beidhändig verbilligt (150 AP)",
+        "erklarung_lang": "Die zweite Ausbaustufe erhöht den Schild-Paradewert um weitere 2 Punkte, sodass sich insgesamt PA-Basis plus Schildmodifikator plus 5 ergeben. Zusätzlich darf der Held in jeder Kampfrunde zwei Schildparaden neben seiner Angriffsaktion einsetzen."
     },
     {
         "id": "ksf_schnellziehen",
@@ -239,7 +263,8 @@
         "beschreibung": "Verkürzt das Ziehen von Waffen und das Anlegen von Schilden deutlich.",
         "voraussetzungen": "GE 12, FF 10",
         "verbreitung": "4, im tulamidischen Raum",
-        "kosten": "200 AP; verbilligt bei Vorteil Schlangenmensch (100 AP)"
+        "kosten": "200 AP; verbilligt bei Vorteil Schlangenmensch (100 AP)",
+        "erklarung_lang": "Der Held zieht Waffen aus einer Gürtelscheide schon mit einer Freien Aktion, aus einer Rückenscheide mit einer Aktion und bringt einen Schild in drei Aktionen vom Rücken an den Arm. Die Sonderfertigkeit gilt auch für Wurfspeere, Wurfäxte und Wurfmesser, wobei Brustgurte und Armscheiden bei Wurfmessern wie Gürtelscheiden zählen. Schnellziehen funktioniert nur bei einer effektiven BE von höchstens 4."
     },
     {
         "id": "ksf_spiessgespann",
@@ -250,7 +275,8 @@
         "beschreibung": "Erlaubt zwei Kämpfern, einen überlangen Spieß gemeinsam zu führen.",
         "voraussetzungen": "TaW Speere 10; SF Sturmangriff",
         "verbreitung": "2, fast nur bei Angroschim",
-        "kosten": "100 AP"
+        "kosten": "100 AP",
+        "erklarung_lang": "Mit dieser Sonderfertigkeit dürfen zwei Kämpfer einen überlangen Spieß gemeinsam einsetzen. Für eine gemeinsame Attacke oder Parade müssen beiden die jeweiligen Proben gelingen. Treffer verursachen den doppelten Waffenschaden, und beide Kämpfer dürfen ihre Körperkraft addieren, um den TP/KK-Bonus zu erreichen. Die Initiative richtet sich nach dem langsameren Beteiligten, und zusätzliche Manöver oder Sonderfertigkeiten funktionieren nur, wenn beide Kämpfer die Voraussetzungen erfüllen."
     },
     {
         "id": "ksf_tod_von_links",
@@ -261,7 +287,8 @@
         "beschreibung": "Gewährt einen zusätzlichen Angriff mit der Parierwaffe pro Kampfrunde.",
         "voraussetzungen": "SF Beidhändiger Kampf I und Parierwaffen II",
         "verbreitung": "3, bei Parierwaffen-Kämpfern (vor allem im Horasreich)",
-        "kosten": "100 AP; für Helden mit dem Vorteil Beidhändig verbilligt (75 AP)"
+        "kosten": "100 AP; für Helden mit dem Vorteil Beidhändig verbilligt (75 AP)",
+        "erklarung_lang": "Der Held kann pro Kampfrunde eine zusätzliche Angriffsaktion mit der Parierwaffe durchführen. Diese Aktion erhöht nicht die Zahl der Freien Aktionen pro Runde und ist nicht kumulativ mit Zusatzaktionen aus Beidhändiger Kampf II oder Parierwaffen II."
     },
     {
         "id": "ksf_unterwasserkampf",
@@ -270,9 +297,10 @@
         "typ": "sonderfertigkeit",
         "seite": "77",
         "beschreibung": "Verhindert die üblichen AT/PA-Abzüge beim Kampf unter Wasser.",
-        "voraussetzungen": "TaW Schwimmen 10",
+        "voraussetzungen": "TaW Schwimmen 10; zur Anwendung dieser SF muss der Held unter Wasser atmen oder lange genug die Luft anhalten können",
         "verbreitung": "1, bei einigen wenigen Seekämpfern, ansonsten nur bei Unterwasserwesen",
-        "kosten": "200 AP"
+        "kosten": "200 AP",
+        "erklarung_lang": "Der Held passt seine Bewegungen dem Wasserwiderstand so gut an, dass die üblichen Unterwasser-Abzüge von AT -6 und PA -6 entfallen. Die Sonderfertigkeit kann nur mit Dolchen, Fechtwaffen, Raufen, Ringen und Speeren eingesetzt werden; unter Wasser bleibt die Zahl möglicher Manöver dennoch eingeschränkt."
     },
     {
         "id": "ksf_waffe_zerbrechen",
@@ -283,7 +311,8 @@
         "beschreibung": "Erlaubt das Zerbrechen gegnerischer Klingen per spezieller Parade.",
         "voraussetzungen": "KK 12; PA-Basis 9; SF Binden",
         "verbreitung": "3, bei Parierwaffen-Kämpfern im yaquirischen oder tulamidischen Umfeld",
-        "kosten": "200 AP"
+        "kosten": "200 AP",
+        "erklarung_lang": "Mit einer dafür geeigneten Parierwaffe kann der Held in einer Parade die gegnerische Klinge auffangen und durch eine schnelle Bewegung zerbrechen. Die Sonderfertigkeit erweitert damit das defensive Repertoire von Linkhand, Hakendolch und Drachenklaue."
     },
     {
         "id": "ksf_waffenmeister",
@@ -292,9 +321,10 @@
         "typ": "sonderfertigkeit",
         "seite": "77",
         "beschreibung": "Meisterschaft für eine konkrete Waffenart oder einen Schild mit spezifischen Vorteilen.",
-        "voraussetzungen": "Je nach Waffe; allgemein mindestens 2.500 AP in Kampf-Sonderfertigkeiten und TaW 18 im zugehörigen Kampf-Talent",
+        "voraussetzungen": "Je nach Waffe; allgemein mindestens 2.500 AP in Kampf-Sonderfertigkeiten, TaW 18 im zugehörigen Kampftalent und meist weitere Eigenschaftsvoraussetzungen",
         "verbreitung": "1–2, je nach Waffe",
-        "kosten": "400 AP"
+        "kosten": "400 AP",
+        "erklarung_lang": "Ein Waffenmeister gehört zu den absoluten Meistern einer bestimmten Waffenart oder eines Schildtyps. Die Sonderfertigkeit wird immer für eine konkrete Waffenart erworben und schaltet den zugehörigen Vorteilskatalog frei, sobald der Held diese Waffe unter den nötigen Bedingungen im Kampf einsetzt."
     },
     {
         "id": "ksf_waffenspezialisierung",
@@ -305,17 +335,18 @@
         "beschreibung": "Gibt AT- und PA-Boni für eine konkrete Waffenart innerhalb eines Kampftalents.",
         "voraussetzungen": "TaW 7 in der zugehörigen Kampftechnik; weitere Spezialisierungen innerhalb desselben Talents ab TaW 14, 21, 28",
         "verbreitung": "2–4, je nach Art und Verbreitung der Waffe oder durch langjährige Praxis",
-        "kosten": "20 mal Aktivierungsfaktor AP; weitere Spezialisierungen kosten ein Mehrfaches"
+        "kosten": "20 mal Aktivierungsfaktor AP; weitere Spezialisierungen kosten ein Mehrfaches",
+        "erklarung_lang": "Der Held spezialisiert sich auf eine bestimmte Waffenart innerhalb eines Kampftalents. Dadurch erhält er mit dieser Waffenart +1 AT und +1 PA, bei Peitschen stattdessen +2 AT. Weitere Spezialisierungen innerhalb desselben Talents sind bei höheren Talentwerten möglich, verändern aber nicht den eigentlichen Talentwert."
     },
     {
         "id": "ksf_bornlaendisch",
-        "name": "Bornl?ndisch",
+        "name": "Bornländisch",
         "gruppe": "kampf",
         "typ": "sonderfertigkeit",
         "stil_typ": "waffenloser_kampfstil",
         "seite": "89",
         "beschreibung": "Freistil-Ringkampf mit schmutzigen, harten Griffen und Fokus auf Ringen.",
-        "erklarung_lang": "Der bornl?ndische Freistil ist eine rohe Mischung aus Ringen, Treten, Bei?en und Zerm?rben. Regeltechnisch verbessert der Stil AT und PA beim Ringen um je 1 Punkt und schaltet einen breiten Satz grober, bodenst?ndiger Man?ver frei.",
+        "erklarung_lang": "Der bornländische Freistil ist eine rohe Mischung aus Ringen, Treten, Beißen und Zermürben. Regeltechnisch verbessert der Stil AT und PA beim Ringen um je 1 Punkt und schaltet einen breiten Satz grober, bodenständiger Manöver frei.",
         "voraussetzungen": "TaW Raufen 5, TaW Ringen 5",
         "verbreitung": "6, trotz des Namens aventurienweit",
         "kosten": "100 AP",
@@ -352,10 +383,10 @@
         "typ": "sonderfertigkeit",
         "stil_typ": "waffenloser_kampfstil",
         "seite": "89",
-        "beschreibung": "Arenastil mit spektakul?ren Schl?gen und w?hlbarem Fokus auf Raufen oder Ringen.",
-        "erklarung_lang": "Der Gladiatorenstil stammt aus den Arenen Fasars und Al?Anfas. Er verbessert AT und PA in genau einem der beiden Talente Raufen oder Ringen um je 1 Punkt und erlaubt es, bis zu 3 Punkte echten Schaden in zus?tzlichen Ausdauerschaden umzuwandeln.",
+        "beschreibung": "Arenastil mit spektakulären Schlägen und wählbarem Fokus auf Raufen oder Ringen.",
+        "erklarung_lang": "Der Gladiatorenstil stammt aus den Arenen Fasars und Al'Anfas. Er verbessert AT und PA in genau einem der beiden Talente Raufen oder Ringen um je 1 Punkt und erlaubt es, bis zu 3 Punkte echten Schaden in zusätzlichen Ausdauerschaden umzuwandeln.",
         "voraussetzungen": "TaW Raufen 7, TaW Ringen 7",
-        "verbreitung": "3, Gladiatoren, Schau- und Jahrmarktsk?mpfer",
+        "verbreitung": "3, Gladiatoren, Schau- und Jahrmarktskämpfer",
         "kosten": "150 AP",
         "aktiviert_manoever_ids": [
             "man_auspendeln",
@@ -396,9 +427,9 @@
         "stil_typ": "waffenloser_kampfstil",
         "seite": "89",
         "beschreibung": "Faustlastiger Boxstil mit harter Schlagkraft und Fokus auf Raufen.",
-        "erklarung_lang": "Hammerfaust ist ein nordwestaventurischer Stil des kr?ftigen Faustkampfs. Er verbessert AT und PA beim Raufen um je 1 Punkt, erlaubt das Besch?digen massiver Gegenst?nde mit blo?en F?usten und ?ffnet den Weg zu einem waffenlosen Ausfall.",
+        "erklarung_lang": "Hammerfaust ist ein nordwestaventurischer Stil des kraftvollen Faustkampfs. Er verbessert AT und PA beim Raufen um je 1 Punkt, erlaubt das Beschädigen massiver Gegenstände mit bloßen Fäusten und öffnet den Weg zu einem waffenlosen Ausfall.",
         "voraussetzungen": "TaW Raufen 7",
-        "verbreitung": "4, aventurischer Nordwesten, Schauk?mpfer",
+        "verbreitung": "4, aventurischer Nordwesten, Schaukämpfer",
         "kosten": "150 AP",
         "aktiviert_manoever_ids": [
             "man_auspendeln",
@@ -427,10 +458,10 @@
         "typ": "sonderfertigkeit",
         "stil_typ": "waffenloser_kampfstil",
         "seite": "90",
-        "beschreibung": "T?nzerischer Waldmenschenstil mit besonders gef?hrlichen Tritten.",
-        "erklarung_lang": "Hruruzat ist ein eleganter, aber ?u?erst gef?hrlicher Trittstil der Waldmenschen und seiner maraskanischen Verwandten. Der Stil verbessert AT und PA beim Raufen um je 1 Punkt; alle Tritte richten 2W6 TP(A) an, und mit einem Zat k?nnen besonders verwundbare Treffer erzielt werden.",
+        "beschreibung": "Tänzerischer Waldmenschenstil mit besonders gefährlichen Tritten.",
+        "erklarung_lang": "Hruruzat ist ein eleganter, aber äußerst gefährlicher Trittstil der Waldmenschen und seiner maraskanischen Verwandten. Der Stil verbessert AT und PA beim Raufen um je 1 Punkt; alle Tritte richten 2W6 TP(A) an, und mit einem Zat können besonders verwundbare Treffer erzielt werden.",
         "voraussetzungen": "TaW Raufen 10, TaW Ringen 7",
-        "verbreitung": "3, Waldmenschen-Kulturen, Maraskan, S?dliche Stadtstaaten",
+        "verbreitung": "3, Waldmenschen-Kulturen, Maraskan, südliche Stadtstaaten",
         "kosten": "200 AP",
         "aktiviert_manoever_ids": [
             "man_auspendeln",
@@ -468,10 +499,10 @@
         "typ": "sonderfertigkeit",
         "stil_typ": "waffenloser_kampfstil",
         "seite": "90",
-        "beschreibung": "S?ldnerstil f?r beengte R?ume und den Kampf in Kombination mit Waffen.",
-        "erklarung_lang": "Mercenario ist auf Gassenk?mpfe, Schiffsgefechte und das Handgemenge mit Waffen ausgelegt. Der Stil verbessert AT und PA beim Raufen um je 1 Punkt und reduziert die Nachteile gegen Bewaffnete im Nahkampf; au?erdem schaltet er mehrere Mischman?ver wie Knaufschlag oder Versteckte Klinge frei.",
+        "beschreibung": "Söldnerstil für beengte Räume und den Kampf in Kombination mit Waffen.",
+        "erklarung_lang": "Mercenario ist auf Gassenkämpfe, Schiffsgefechte und das Handgemenge mit Waffen ausgelegt. Der Stil verbessert AT und PA beim Raufen um je 1 Punkt und reduziert die Nachteile gegen Bewaffnete im Nahkampf; außerdem schaltet er mehrere Mischmanöver wie Knaufschlag oder Versteckte Klinge frei.",
         "voraussetzungen": "TaW Raufen 10, TaW Ringen 7",
-        "verbreitung": "4, S?ldner und Sees?ldner, eher s?daventurisch",
+        "verbreitung": "4, Söldner und Seesöldner, eher südaventurisch",
         "kosten": "200 AP",
         "aktiviert_manoever_ids": [
             "man_auspendeln",
@@ -510,11 +541,11 @@
         "typ": "sonderfertigkeit",
         "stil_typ": "waffenloser_kampfstil",
         "seite": "90",
-        "beschreibung": "Formalisiertes Ringkampfsystem mit Fokus auf Griffe, Halten und W?rfe.",
-        "erklarung_lang": "Die Unauer Schule b?ndelt die siebenundzwanzig erlaubten Griffe von Unau zu einem effektiven, sauberen Ringkampfsystem. Der Stil verbessert AT und PA beim Ringen um je 1 Punkt und erleichtert Entwinden-Man?ver um 2 Punkte.",
+        "beschreibung": "Formalisiertes Ringkampfsystem mit Fokus auf Griffe, Halten und Würfe.",
+        "erklarung_lang": "Die Unauer Schule bündelt die siebenundzwanzig erlaubten Griffe von Unau zu einem effektiven, sauberen Ringkampfsystem. Der Stil verbessert AT und PA beim Ringen um je 1 Punkt und erleichtert Entwinden-Manöver um 2 Punkte.",
         "voraussetzungen": "TaW Ringen 10",
         "verbreitung": "4, Tulamidenlande, vor allem Novadis",
-        "kosten": "150 AP; verbilligt auf 75 AP f?r Helden mit dem Vorteil Schlangenmensch",
+        "kosten": "150 AP; verbilligt auf 75 AP für Helden mit dem Vorteil Schlangenmensch",
         "aktiviert_manoever_ids": [
             "man_auspendeln",
             "man_beinarbeit",

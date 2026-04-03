@@ -233,6 +233,63 @@ void main() {
     expect(roundtrip.kosten, '200 AP');
   });
 
+  test('maneuver neue Felder: Rueckwaertskompatibilitaet — Defaults bei fehlendem JSON', () {
+    const raw = '''
+{
+  "id": "man_alt",
+  "name": "Altmanoever"
+}
+''';
+
+    final map = jsonDecode(raw) as Map<String, dynamic>;
+    final maneuver = ManeuverDef.fromJson(map);
+
+    expect(maneuver.nurFuerTalente, isEmpty);
+    expect(maneuver.mussSeparatErlerntWerden, false);
+    expect(maneuver.giltFuerTalentTyp, '');
+  });
+
+  test('maneuver neue Felder: Lesen aus JSON', () {
+    const raw = '''
+{
+  "id": "man_fk",
+  "name": "Fernkampf-Manoever",
+  "nur_fuer_talente": ["tal_bogen", "tal_armbrust"],
+  "muss_separat_erlernt_werden": true,
+  "gilt_fuer_talent_typ": "fernkampf"
+}
+''';
+
+    final map = jsonDecode(raw) as Map<String, dynamic>;
+    final maneuver = ManeuverDef.fromJson(map);
+
+    expect(maneuver.nurFuerTalente, ['tal_bogen', 'tal_armbrust']);
+    expect(maneuver.mussSeparatErlerntWerden, true);
+    expect(maneuver.giltFuerTalentTyp, 'fernkampf');
+  });
+
+  test('maneuver neue Felder: toJson schreibt nur Nicht-Default-Werte', () {
+    const defaultManeuver = ManeuverDef(id: 'man_x', name: 'X');
+    final defaultJson = defaultManeuver.toJson();
+
+    expect(defaultJson.containsKey('nur_fuer_talente'), false);
+    expect(defaultJson.containsKey('muss_separat_erlernt_werden'), false);
+    expect(defaultJson.containsKey('gilt_fuer_talent_typ'), false);
+
+    const nichtDefaultManeuver = ManeuverDef(
+      id: 'man_y',
+      name: 'Y',
+      nurFuerTalente: ['tal_bogen'],
+      mussSeparatErlerntWerden: true,
+      giltFuerTalentTyp: 'fernkampf',
+    );
+    final nichtDefaultJson = nichtDefaultManeuver.toJson();
+
+    expect(nichtDefaultJson['nur_fuer_talente'], ['tal_bogen']);
+    expect(nichtDefaultJson['muss_separat_erlernt_werden'], true);
+    expect(nichtDefaultJson['gilt_fuer_talent_typ'], 'fernkampf');
+  });
+
   test('combat special ability fields roundtrip correctly', () {
     const raw = '''
 {

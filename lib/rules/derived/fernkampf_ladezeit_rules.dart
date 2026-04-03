@@ -72,27 +72,33 @@ RangedReloadTimeResult computeRangedReloadTime({
     isActive: specialRules.schnellziehen || axxeleratusActive,
     isTemporary: axxeleratusActive && !specialRules.schnellziehen,
   );
+  final ownsBogen = specialRules.activeManeuvers.contains(
+    'man_schnellladen_bogen',
+  );
+  final ownsArmbrust = specialRules.activeManeuvers.contains(
+    'man_schnellladen_armbrust',
+  );
   final schnellladenBogen = CombatSpecialAbilityStatus(
-    isOwned: specialRules.schnellladenBogen,
-    isActive: specialRules.schnellladenBogen || axxeleratusActive,
-    isTemporary: axxeleratusActive && !specialRules.schnellladenBogen,
+    isOwned: ownsBogen,
+    isActive: ownsBogen || axxeleratusActive,
+    isTemporary: axxeleratusActive && !ownsBogen,
   );
   final schnellladenArmbrust = CombatSpecialAbilityStatus(
-    isOwned: specialRules.schnellladenArmbrust,
-    isActive: specialRules.schnellladenArmbrust || axxeleratusActive,
-    isTemporary: axxeleratusActive && !specialRules.schnellladenArmbrust,
+    isOwned: ownsArmbrust,
+    isActive: ownsArmbrust || axxeleratusActive,
+    isTemporary: axxeleratusActive && !ownsArmbrust,
   );
 
   var effectiveReloadTime = switch (weaponKind) {
     _RangedReloadKind.bogen => _computeBogenReloadTime(
       baseReloadTime: baseReloadTime,
-      hasOwnedAbility: specialRules.schnellladenBogen,
+      hasOwnedAbility: ownsBogen,
       hasActiveAbility: schnellladenBogen.isActive,
       axxeleratusActive: axxeleratusActive,
     ),
     _RangedReloadKind.armbrust => _computeArmbrustReloadTime(
       baseReloadTime: baseReloadTime,
-      hasOwnedAbility: specialRules.schnellladenArmbrust,
+      hasOwnedAbility: ownsArmbrust,
       hasActiveAbility: schnellladenArmbrust.isActive,
       axxeleratusActive: axxeleratusActive,
     ),

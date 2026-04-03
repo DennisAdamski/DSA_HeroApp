@@ -2,15 +2,14 @@
 ///
 /// Alle boolean-Felder sind standardmaessig `false`.
 /// Aktive Manoever werden als deduplizierte, leerzeichen-bereinigte String-Liste
-/// in [activeManeuvers] gespeichert.
+/// in [activeManeuvers] gespeichert. Per-Talent-Manoever verwenden das Format
+/// '<maneuverId>::<talentId>' (z. B. 'man_scharfschuetze::tal_bogen').
 /// Unveraenderlich; Aktualisierungen erfolgen ueber [copyWith].
 class CombatSpecialRules {
   const CombatSpecialRules({
     this.kampfreflexe = false,
     this.kampfgespuer = false,
     this.schnellziehen = false,
-    this.schnellladenBogen = false,
-    this.schnellladenArmbrust = false,
     this.ausweichenI = false,
     this.ausweichenII = false,
     this.ausweichenIII = false,
@@ -37,12 +36,6 @@ class CombatSpecialRules {
 
   /// Sonderfertigkeit Schnellziehen aktiv.
   final bool schnellziehen;
-
-  /// Sonderfertigkeit Schnellladen (Bogen) aktiv.
-  final bool schnellladenBogen;
-
-  /// Sonderfertigkeit Schnellladen (Armbrust) aktiv.
-  final bool schnellladenArmbrust;
 
   /// Ausweichen I aktiv.
   final bool ausweichenI;
@@ -102,8 +95,6 @@ class CombatSpecialRules {
     bool? kampfreflexe,
     bool? kampfgespuer,
     bool? schnellziehen,
-    bool? schnellladenBogen,
-    bool? schnellladenArmbrust,
     bool? ausweichenI,
     bool? ausweichenII,
     bool? ausweichenIII,
@@ -125,8 +116,6 @@ class CombatSpecialRules {
       kampfreflexe: kampfreflexe ?? this.kampfreflexe,
       kampfgespuer: kampfgespuer ?? this.kampfgespuer,
       schnellziehen: schnellziehen ?? this.schnellziehen,
-      schnellladenBogen: schnellladenBogen ?? this.schnellladenBogen,
-      schnellladenArmbrust: schnellladenArmbrust ?? this.schnellladenArmbrust,
       ausweichenI: ausweichenI ?? this.ausweichenI,
       ausweichenII: ausweichenII ?? this.ausweichenII,
       ausweichenIII: ausweichenIII ?? this.ausweichenIII,
@@ -157,8 +146,6 @@ class CombatSpecialRules {
       'kampfreflexe': kampfreflexe,
       'kampfgespuer': kampfgespuer,
       'schnellziehen': schnellziehen,
-      'schnellladenBogen': schnellladenBogen,
-      'schnellladenArmbrust': schnellladenArmbrust,
       'ausweichenI': ausweichenI,
       'ausweichenII': ausweichenII,
       'ausweichenIII': ausweichenIII,
@@ -185,12 +172,18 @@ class CombatSpecialRules {
   /// Tolerant bei fehlenden Feldern (Standardwerte werden gesetzt).
   static CombatSpecialRules fromJson(Map<String, dynamic> json) {
     bool getBool(String key) => (json[key] as bool?) ?? false;
+    // Legacy-Migration: Schnellladen-Booleans -> activeManeuvers
+    final rawManeuvers = List<dynamic>.from(
+      (json['activeManeuvers'] as List?) ?? const <dynamic>[],
+    );
+    if (getBool('schnellladenBogen')) rawManeuvers.add('man_schnellladen_bogen');
+    if (getBool('schnellladenArmbrust')) {
+      rawManeuvers.add('man_schnellladen_armbrust');
+    }
     return CombatSpecialRules(
       kampfreflexe: getBool('kampfreflexe'),
       kampfgespuer: getBool('kampfgespuer'),
       schnellziehen: getBool('schnellziehen'),
-      schnellladenBogen: getBool('schnellladenBogen'),
-      schnellladenArmbrust: getBool('schnellladenArmbrust'),
       ausweichenI: getBool('ausweichenI'),
       ausweichenII: getBool('ausweichenII'),
       ausweichenIII: getBool('ausweichenIII'),
@@ -209,9 +202,7 @@ class CombatSpecialRules {
       ),
       gladiatorStyleTalent:
           (json['gladiatorStyleTalent'] as String?)?.trim() ?? '',
-      activeManeuvers: _normalizeStringList(
-        (json['activeManeuvers'] as List?) ?? const <dynamic>[],
-      ),
+      activeManeuvers: _normalizeStringList(rawManeuvers),
     );
   }
 }

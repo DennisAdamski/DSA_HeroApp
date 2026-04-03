@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/animated_dice_row.dart';
 
 /// Oeffnet den gemeinsamen Dialog fuer die Wuerfel-Engine.
 Future<void> showProbeDialog({
@@ -31,11 +32,14 @@ class ProbeDialog extends StatefulWidget {
 
 class _ProbeDialogState extends State<ProbeDialog> {
   final DiceRoller _roller = RandomDiceRoller();
+  final DiceRollController _diceController = DiceRollController();
   late ProbeRollMode _mode;
   late bool _specializationApplied;
   late final TextEditingController _modifierController;
   late final List<TextEditingController> _manualDiceControllers;
   ProbeResult? _result;
+  List<int>? _lastDigitalValues;
+  bool _isAnimating = false;
 
   @override
   void initState() {
@@ -49,7 +53,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
       widget.request.diceSpec.count,
       (_) => TextEditingController(),
     );
-    _rollDigital();
+    // Kein Auto-Wurf beim Oeffnen – der Nutzer startet den Wurf manuell.
   }
 
   @override
@@ -64,10 +68,57 @@ class _ProbeDialogState extends State<ProbeDialog> {
   int get _situationalModifier =>
       int.tryParse(_modifierController.text.trim()) ?? 0;
 
-  void _rollDigital() {
+  // ---------------------------------------------------------------------------
+  // Wurf-Logik
+  // ---------------------------------------------------------------------------
+
+  /// Startet den animierten Digitalwurf.
+  void _startDigitalRoll() {
+    if (_isAnimating) return;
+
+    // Fester Wurf: keine Animation nötig.
+    if (widget.request.fixedRollTotal != null) {
+      final input = createDigitalProbeRollInput(
+        widget.request,
+        roller: _roller,
+        situationalModifier: _situationalModifier,
+        specializationApplied: _specializationApplied,
+      );
+      setState(() {
+        _result = evaluateProbe(widget.request, input);
+      });
+      return;
+    }
+
+    // Würfelwerte vorausberechnen (werden erst nach Animation angezeigt).
     final input = createDigitalProbeRollInput(
       widget.request,
       roller: _roller,
+      situationalModifier: _situationalModifier,
+      specializationApplied: _specializationApplied,
+    );
+    _lastDigitalValues = input.diceValues.toList();
+    setState(() {
+      _isAnimating = true;
+      _result = null;
+    });
+    _diceController.startRoll(_lastDigitalValues!);
+  }
+
+  /// Wird vom AnimatedDiceRow aufgerufen, sobald die Animation abgeschlossen ist.
+  void _onRollComplete() {
+    if (!mounted) return;
+    _applyDigitalResult();
+    setState(() => _isAnimating = false);
+  }
+
+  /// Wertet den letzten Digitalwurf mit den aktuellen Modifikatoren aus.
+  void _applyDigitalResult() {
+    final values = _lastDigitalValues;
+    if (values == null) return;
+    final input = ProbeRollInput(
+      mode: ProbeRollMode.digital,
+      diceValues: List<int>.unmodifiable(values),
       situationalModifier: _situationalModifier,
       specializationApplied: _specializationApplied,
     );
@@ -105,27 +156,48 @@ class _ProbeDialogState extends State<ProbeDialog> {
     });
   }
 
-  void _setMode(ProbeRollMode mode) {
-    if (_mode == mode) {
+  /// Aktualisiert das Ergebnis bei Modifikator-/Spezialisierungsänderungen,
+  /// ohne einen neuen Digitalwurf auszulösen.
+  void _liveRefresh() {
+    if (_mode == ProbeRollMode.manual) {
+      _updateManualResult();
       return;
+    }
+    // Digital: vorhandene Würfelwerte neu auswerten (kein neuer Wurf).
+    if (_lastDigitalValues != null && !_isAnimating) {
+      _applyDigitalResult();
+    }
+  }
+
+  void _setMode(ProbeRollMode mode) {
+    if (_mode == mode) return;
+    if (mode == ProbeRollMode.manual) {
+      _diceController.reset();
     }
     setState(() {
       _mode = mode;
-      if (_mode == ProbeRollMode.digital) {
-        _rollDigital();
-      } else {
-        _updateManualResult();
+      _isAnimating = false;
+      if (mode != ProbeRollMode.manual) {
+        // Wechsel zu Digital: Idle-Zustand, kein Autowurf.
+        _result = null;
       }
     });
+    if (mode == ProbeRollMode.manual) {
+      _updateManualResult();
+    }
   }
 
-  void _refreshResult() {
+  void _onActionButton() {
     if (_mode == ProbeRollMode.digital) {
-      _rollDigital();
-      return;
+      _startDigitalRoll();
+    } else {
+      _updateManualResult();
     }
-    _updateManualResult();
   }
+
+  // ---------------------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +222,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
               _buildSummary(),
               const SizedBox(height: 12),
               _buildControls(),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               _buildDiceSection(),
               const SizedBox(height: 12),
               _buildResultSection(result),
@@ -164,10 +236,10 @@ class _ProbeDialogState extends State<ProbeDialog> {
           child: const Text('Schließen'),
         ),
         FilledButton.icon(
-          onPressed: _refreshResult,
+          onPressed: _isAnimating ? null : _onActionButton,
           icon: const Icon(Icons.casino_outlined),
           label: Text(
-            _mode == ProbeRollMode.digital ? 'Neu würfeln' : 'Auswerten',
+            _mode == ProbeRollMode.digital ? 'Würfeln' : 'Auswerten',
           ),
         ),
       ],
@@ -220,7 +292,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
             border: OutlineInputBorder(),
             helperText: 'Positive Werte erleichtern, negative erschweren.',
           ),
-          onChanged: (_) => _refreshResult(),
+          onChanged: (_) => _liveRefresh(),
         ),
         if (widget.request.supportsSpecialization) ...[
           const SizedBox(height: 8),
@@ -235,7 +307,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
               setState(() {
                 _specializationApplied = value;
               });
-              _refreshResult();
+              _liveRefresh();
             },
           ),
         ],
@@ -255,29 +327,24 @@ class _ProbeDialogState extends State<ProbeDialog> {
         ),
       );
     }
+
     if (_mode == ProbeRollMode.digital) {
-      final values = _result?.diceValues ?? const <int>[];
       return Card(
         child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: List<Widget>.generate(widget.request.diceSpec.count, (
-              index,
-            ) {
-              final value = index < values.length ? values[index].toString() : '?';
-              return Chip(
-                label: Text(
-                  'W${widget.request.diceSpec.sides} #${index + 1}: $value',
-                ),
-              );
-            }),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+          child: Center(
+            child: AnimatedDiceRow(
+              diceSpec: widget.request.diceSpec,
+              controller: _diceController,
+              onRollComplete: _onRollComplete,
+              probeType: widget.request.type,
+            ),
           ),
         ),
       );
     }
 
+    // Manueller Modus: Texteingabe-Felder
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -310,9 +377,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
   }
 
   Widget _buildResultSection(ProbeResult? result) {
-    if (result == null) {
-      return const Text('Noch keine gültige Auswertung vorhanden.');
-    }
+    if (result == null) return const SizedBox.shrink();
 
     final lines = <String>[];
     if (widget.request.usesCompensationPool) {
@@ -349,25 +414,29 @@ class _ProbeDialogState extends State<ProbeDialog> {
         ? 'Ergebnis'
         : (result.success ? 'Erfolg' : 'Misslungen');
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              headline,
-              key: const ValueKey<String>('probe-dialog-result-headline'),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            ...lines.map(
-              (line) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(line),
+    return AnimatedOpacity(
+      opacity: 1,
+      duration: const Duration(milliseconds: 300),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                headline,
+                key: const ValueKey<String>('probe-dialog-result-headline'),
+                style: Theme.of(context).textTheme.titleMedium,
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              ...lines.map(
+                (line) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(line),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
