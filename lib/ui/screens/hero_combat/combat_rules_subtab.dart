@@ -559,8 +559,8 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     ];
   }
 
-  /// Rendert Fernkampf-Manöver — nur sichtbar wenn aktive Haupthand ein
-  /// FK-Talent hat. Per-Talent-Manöver zeigen den Talentnamen im Label.
+  /// Rendert alle Fernkampf-Manöver. Per-Talent-Manöver (mussSeparatErlerntWerden)
+  /// werden fuer jedes passende FK-Talent einzeln angezeigt.
   List<Widget> _buildFernkampfManeuverCards({
     required RulesCatalog catalog,
     required CombatSpecialRules rules,
@@ -568,26 +568,16 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     required bool isEditing,
     required Map<String, _ManeuverSupportStatus> supportByManeuver,
   }) {
-    final activeTalentDef = _selectedCombatTalentDef(catalog);
-    if (activeTalentDef == null ||
-        activeTalentDef.type.toLowerCase() != 'fernkampf') {
-      return const <Widget>[];
-    }
-
-    final activeTalentId = activeTalentDef.id;
-    final activeTalentName = activeTalentDef.name;
-
     final fernkampfManeuvers = catalog.maneuvers
         .where((m) => m.gruppe == 'fernkampf')
-        .where(
-          (m) =>
-              m.nurFuerTalente.isEmpty ||
-              m.nurFuerTalente.contains(activeTalentId),
-        )
         .toList()
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     if (fernkampfManeuvers.isEmpty) return const <Widget>[];
+
+    final fkTalents = catalog.talents
+        .where((t) => t.type.toLowerCase() == 'fernkampf')
+        .toList();
 
     final widgets = <Widget>[
       Text(
@@ -598,83 +588,109 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     ];
 
     for (final maneuver in fernkampfManeuvers) {
-      final String toggleId;
-      final String displayName;
-
-      if (maneuver.mussSeparatErlerntWerden) {
-        toggleId = '${maneuver.id}::$activeTalentId';
-        displayName = '${maneuver.name} ($activeTalentName)';
-      } else {
-        toggleId = maneuver.id;
-        displayName = maneuver.name;
-      }
-
-      final isActive = activeManeuverIds.contains(toggleId);
       final support =
           supportByManeuver[maneuver.id] ?? _ManeuverSupportStatus.unverifiable;
 
-      widgets.add(
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(displayName),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _buildManeuverMetaChips(
-                          maneuverDef: maneuver,
-                          isActive: isActive,
-                          support: support,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'Details',
-                  onPressed: () => _showCombatManeuverDetailsDialog(
-                    context: context,
-                    maneuver: maneuver,
-                  ),
-                  icon: const Icon(Icons.info_outline),
-                ),
-                Switch(
-                  value: isActive,
-                  onChanged: !isEditing
-                      ? null
-                      : (value) {
-                          final active = List<String>.from(
-                            rules.activeManeuvers,
-                          );
-                          if (value) {
-                            active.add(toggleId);
-                          } else {
-                            active.removeWhere((entry) => entry == toggleId);
-                          }
-                          _draftCombatConfig = _draftCombatConfig.copyWith(
-                            specialRules: rules.copyWith(
-                              activeManeuvers: active,
-                            ),
-                          );
-                          _markFieldChanged();
-                        },
-                ),
-              ],
+      if (maneuver.mussSeparatErlerntWerden) {
+        final applicableTalents = maneuver.nurFuerTalente.isEmpty
+            ? fkTalents
+            : fkTalents
+                .where((t) => maneuver.nurFuerTalente.contains(t.id))
+                .toList();
+        for (final talent in applicableTalents) {
+          final toggleId = '${maneuver.id}::${talent.id}';
+          widgets.add(
+            _buildFernkampfManeuverCard(
+              maneuver: maneuver,
+              toggleId: toggleId,
+              displayName: '${maneuver.name} (${talent.name})',
+              isActive: activeManeuverIds.contains(toggleId),
+              support: support,
+              rules: rules,
+              isEditing: isEditing,
             ),
+          );
+        }
+      } else {
+        widgets.add(
+          _buildFernkampfManeuverCard(
+            maneuver: maneuver,
+            toggleId: maneuver.id,
+            displayName: maneuver.name,
+            isActive: activeManeuverIds.contains(maneuver.id),
+            support: support,
+            rules: rules,
+            isEditing: isEditing,
           ),
-        ),
-      );
+        );
+      }
     }
 
     widgets.add(const SizedBox(height: 12));
     return widgets;
+  }
+
+  Widget _buildFernkampfManeuverCard({
+    required ManeuverDef maneuver,
+    required String toggleId,
+    required String displayName,
+    required bool isActive,
+    required _ManeuverSupportStatus support,
+    required CombatSpecialRules rules,
+    required bool isEditing,
+  }) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(displayName),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _buildManeuverMetaChips(
+                      maneuverDef: maneuver,
+                      isActive: isActive,
+                      support: support,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+              tooltip: 'Details',
+              onPressed: () => _showCombatManeuverDetailsDialog(
+                context: context,
+                maneuver: maneuver,
+              ),
+              icon: const Icon(Icons.info_outline),
+            ),
+            Switch(
+              value: isActive,
+              onChanged: !isEditing
+                  ? null
+                  : (value) {
+                      final active = List<String>.from(rules.activeManeuvers);
+                      if (value) {
+                        active.add(toggleId);
+                      } else {
+                        active.removeWhere((entry) => entry == toggleId);
+                      }
+                      _draftCombatConfig = _draftCombatConfig.copyWith(
+                        specialRules: rules.copyWith(activeManeuvers: active),
+                      );
+                      _markFieldChanged();
+                    },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
