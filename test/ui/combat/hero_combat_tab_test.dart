@@ -171,8 +171,39 @@ void main() {
           erschwernis: 'Attacke +4',
           erklarung: 'Waffenloser Angriff.',
         ),
+        ManeuverDef(
+          id: 'man_entwaffnen_meisterlich',
+          name: 'Entwaffnen (Meisterlich)',
+          gruppe: 'bewaffnet',
+          typ: 'Angriffsmanöver',
+          erschwernis: 'Attacke +8',
+          erklarung: 'Erweitert Entwaffnen auf Zweihandwaffen.',
+        ),
       ],
       combatSpecialAbilities: <CombatSpecialAbilityDef>[
+        CombatSpecialAbilityDef(
+          id: 'ksf_blindkampf',
+          name: 'Blindkampf',
+          beschreibung: 'Begrenzt Sichtabzüge im Nahkampf auf maximal -2/-2.',
+          erklarungLang:
+              'Der Held kann auch bei schlechter Sicht noch erstaunlich sicher kämpfen.',
+        ),
+        CombatSpecialAbilityDef(
+          id: 'ksf_meisterliches_entwaffnen',
+          name: 'Meisterliches Entwaffnen',
+          beschreibung:
+              'Erlaubt Entwaffnen gegen Zweihandwaffen und erschwert die KK-Probe weiter.',
+          erklarungLang:
+              'Der Held darf auch Gegner mit zweihändig geführten Waffen entwaffnen.',
+          aktiviertManoeverIds: <String>['man_entwaffnen_meisterlich'],
+        ),
+        CombatSpecialAbilityDef(
+          id: 'ksf_finte',
+          name: 'Finte',
+          beschreibung: 'Soll nicht zusätzlich zur Manöverkarte erscheinen.',
+          erklarungLang:
+              'Diese Karte dürfte durch den Manöverfilter verborgen bleiben.',
+        ),
         CombatSpecialAbilityDef(
           id: 'ksf_hammerfaust',
           name: 'Hammerfaust',
@@ -626,7 +657,7 @@ void main() {
   });
 
   testWidgets(
-    'special rules tab stores new Schnellladen and Schnellziehen flags',
+    'special rules tab stores Schnellziehen flag',
     (tester) async {
       final repo = FakeRepository(
         heroes: [buildHero()],
@@ -650,16 +681,6 @@ void main() {
         keyName: 'combat-special-rule-schnellziehen',
         value: true,
       );
-      await setSwitchByKey(
-        tester,
-        keyName: 'combat-special-rule-schnellladen-bogen',
-        value: true,
-      );
-      await setSwitchByKey(
-        tester,
-        keyName: 'combat-special-rule-schnellladen-armbrust',
-        value: true,
-      );
 
       await actions.save();
       await tester.pumpAndSettle();
@@ -668,8 +689,6 @@ void main() {
         (entry) => entry.id == 'demo',
       );
       expect(hero.combatConfig.specialRules.schnellziehen, isTrue);
-      expect(hero.combatConfig.specialRules.schnellladenBogen, isTrue);
-      expect(hero.combatConfig.specialRules.schnellladenArmbrust, isTrue);
     },
   );
 
@@ -730,7 +749,103 @@ void main() {
   );
 
   testWidgets(
-    'Axxeleratus shows temporary Schnellladen and Schnellziehen status',
+    'combat rules tab shows generic catalog abilities without maneuver duplicates',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final actions = await openCombatTab(tester, repo);
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+      await tapTab(tester, 'Kampfregeln');
+
+      expect(find.text('Weitere Kampf-Sonderfertigkeiten'), findsOneWidget);
+      expect(
+        find.byKey(
+          const ValueKey<String>('combat-special-ability-ksf_blindkampf'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('combat-special-ability-ksf_finte')),
+        findsNothing,
+      );
+
+      await setSwitchByKey(
+        tester,
+        keyName: 'combat-special-ability-ksf_blindkampf',
+        value: true,
+      );
+
+      await actions.save();
+      await tester.pumpAndSettle();
+
+      final hero = (await repo.listHeroes()).firstWhere(
+        (entry) => entry.id == 'demo',
+      );
+      expect(
+        hero.combatConfig.specialRules.activeCombatSpecialAbilityIds,
+        contains('ksf_blindkampf'),
+      );
+    },
+  );
+
+  testWidgets(
+    'generic combat special ability details show long text and activated maneuvers',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openCombatTab(tester, repo);
+      await tapTab(tester, 'Kampfregeln');
+
+      final card = find
+          .ancestor(
+            of: find.text('Meisterliches Entwaffnen'),
+            matching: find.byType(Card),
+          )
+          .first;
+      final detailButton = find.descendant(
+        of: card,
+        matching: find.byIcon(Icons.info_outline),
+      );
+      await tester.ensureVisible(detailButton);
+      await tester.pumpAndSettle();
+      await tester.tap(detailButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Lange Erklärung'), findsOneWidget);
+      expect(
+        find.text(
+          'Der Held darf auch Gegner mit zweihändig geführten Waffen entwaffnen.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Aktivierte Manöver'), findsOneWidget);
+      expect(find.text('Entwaffnen (Meisterlich)'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Axxeleratus shows temporary Schnellziehen status',
     (tester) async {
       final repo = FakeRepository(
         heroes: [buildHero()],
@@ -750,8 +865,8 @@ void main() {
       await openCombatTab(tester, repo);
       await tapTab(tester, 'Kampfregeln');
 
-      expect(find.text('Aktiv durch Axxeleratus'), findsNWidgets(3));
-      expect(find.text('Temporär aktiv'), findsNWidgets(3));
+      expect(find.text('Aktiv durch Axxeleratus'), findsOneWidget);
+      expect(find.text('Temporär aktiv'), findsOneWidget);
     },
   );
 
