@@ -584,7 +584,9 @@ void main() {
     );
     final withOwnedAbility = base.copyWith(
       combatConfig: base.combatConfig.copyWith(
-        specialRules: const CombatSpecialRules(schnellladenBogen: true),
+        specialRules: const CombatSpecialRules(
+          activeManeuvers: ['man_schnellladen_bogen'],
+        ),
       ),
     );
 
@@ -635,7 +637,9 @@ void main() {
     );
     final withOwnedAbility = base.copyWith(
       combatConfig: base.combatConfig.copyWith(
-        specialRules: const CombatSpecialRules(schnellladenArmbrust: true),
+        specialRules: const CombatSpecialRules(
+          activeManeuvers: ['man_schnellladen_armbrust'],
+        ),
       ),
     );
 
@@ -686,7 +690,9 @@ void main() {
     );
     final reduced = base.copyWith(
       combatConfig: base.combatConfig.copyWith(
-        specialRules: const CombatSpecialRules(schnellladenBogen: true),
+        specialRules: const CombatSpecialRules(
+          activeManeuvers: ['man_schnellladen_bogen'],
+        ),
       ),
     );
 

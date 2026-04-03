@@ -18,8 +18,6 @@ const Set<String> _hardcodedCatalogCombatSpecialAbilityIds = <String>{
   'ksf_schildkampf_i',
   'ksf_schildkampf_ii',
   'ksf_schnellziehen',
-  'ksf_schnellladen_bogen',
-  'ksf_schnellladen_armbrust',
   'ksf_waffenmeister',
   'ksf_waffenspezialisierung',
 };
