@@ -177,6 +177,10 @@ Ergaenzungen zur aktuellen Struktur:
   strukturierte Kampf-Sonderfertigkeiten mit Voraussetzungen, Verbreitung,
   Kosten sowie optionalen Stilfeldern wie `stil_typ`,
   `aktiviert_manoever_ids` und `kampfwert_boni`.
+- Manöverartige Einträge bleiben exklusiv in
+  `assets/catalogs/house_rules_v1/manoever.json`; die Kampf-SF-Datei enthält
+  nur eigenständige Sonderfertigkeiten und keine Duplikate bereits
+  modellierter Manöver.
 - `lib/catalog/catalog_section_id.dart` definiert die editierbaren
   Katalogsektionen der Settings-Verwaltung samt Anzeigenamen,
   Verzeichnisnamen und Basis-Templates.
@@ -395,6 +399,10 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 - Katalogbasierte waffenlose Kampfstile koennen dort ebenfalls aktiviert
   werden; ihre festen Boni und freigeschalteten Manoever werden in Vorschau
   und Manoeverlisten automatisch beruecksichtigt.
+- Der Bereich `Kampfregeln` zeigt zusätzliche katalogbasierte
+  Kampf-Sonderfertigkeiten nur dann als eigene Schalter an, wenn sie weder
+  bereits fest verdrahtete Regeloptionen noch bereits katalogisierte Manöver
+  duplizieren.
 
 ### Update 2026-03-10
 
