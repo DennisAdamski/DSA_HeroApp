@@ -657,7 +657,7 @@ void main() {
   });
 
   testWidgets(
-    'special rules tab stores new Schnellladen and Schnellziehen flags',
+    'special rules tab stores Schnellziehen flag',
     (tester) async {
       final repo = FakeRepository(
         heroes: [buildHero()],
@@ -681,16 +681,6 @@ void main() {
         keyName: 'combat-special-rule-schnellziehen',
         value: true,
       );
-      await setSwitchByKey(
-        tester,
-        keyName: 'combat-special-rule-schnellladen-bogen',
-        value: true,
-      );
-      await setSwitchByKey(
-        tester,
-        keyName: 'combat-special-rule-schnellladen-armbrust',
-        value: true,
-      );
 
       await actions.save();
       await tester.pumpAndSettle();
@@ -699,8 +689,6 @@ void main() {
         (entry) => entry.id == 'demo',
       );
       expect(hero.combatConfig.specialRules.schnellziehen, isTrue);
-      expect(hero.combatConfig.specialRules.schnellladenBogen, isTrue);
-      expect(hero.combatConfig.specialRules.schnellladenArmbrust, isTrue);
     },
   );
 
@@ -857,7 +845,7 @@ void main() {
   );
 
   testWidgets(
-    'Axxeleratus shows temporary Schnellladen and Schnellziehen status',
+    'Axxeleratus shows temporary Schnellziehen status',
     (tester) async {
       final repo = FakeRepository(
         heroes: [buildHero()],
@@ -877,8 +865,8 @@ void main() {
       await openCombatTab(tester, repo);
       await tapTab(tester, 'Kampfregeln');
 
-      expect(find.text('Aktiv durch Axxeleratus'), findsNWidgets(3));
-      expect(find.text('Temporär aktiv'), findsNWidgets(3));
+      expect(find.text('Aktiv durch Axxeleratus'), findsOneWidget);
+      expect(find.text('Temporär aktiv'), findsOneWidget);
     },
   );
 
