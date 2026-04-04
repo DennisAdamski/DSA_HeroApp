@@ -232,6 +232,21 @@ void main() {
             ),
           ],
         ),
+        CombatSpecialAbilityDef(
+          id: 'ksf_schnellziehen',
+          name: 'Schnellziehen',
+          beschreibung: 'Ermöglicht das schnelle Ziehen von Waffen.',
+        ),
+        CombatSpecialAbilityDef(
+          id: 'ksf_kampfreflexe',
+          name: 'Kampfreflexe',
+          beschreibung: 'Verbessert Initiative.',
+        ),
+        CombatSpecialAbilityDef(
+          id: 'ksf_aufmerksamkeit',
+          name: 'Aufmerksamkeit',
+          beschreibung: 'Deaktiviert INI-Würfeln.',
+        ),
       ],
     );
   }
@@ -287,6 +302,36 @@ void main() {
 
   Future<void> openRulesTab(WidgetTester tester) async {
     await tapTab(tester, 'Kampfregeln');
+  }
+
+  /// Klappt eine Chip-Gruppe in der Kampfregeln-Seite auf.
+  Future<void> expandCombatGroup(
+    WidgetTester tester,
+    String groupTitle,
+  ) async {
+    final header = find.textContaining('$groupTitle (');
+    await tester.tap(header.first);
+    await tester.pumpAndSettle();
+  }
+
+  /// Findet den Switch im Chip mit dem angegebenen Namen und tippt ihn.
+  Future<void> tapChipSwitch(WidgetTester tester, String chipName) async {
+    await tester.scrollUntilVisible(
+      find.text(chipName),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+    final chip = find
+        .ancestor(
+          of: find.text(chipName),
+          matching: find.byType(AnimatedContainer),
+        )
+        .first;
+    await tester.tap(
+      find.descendant(of: chip, matching: find.byType(Switch)),
+    );
+    await tester.pumpAndSettle();
   }
 
   Future<void> openArmorTab(WidgetTester tester) async {
@@ -675,12 +720,8 @@ void main() {
       await actions.startEdit();
       await tester.pumpAndSettle();
       await tapTab(tester, 'Kampfregeln');
-
-      await setSwitchByKey(
-        tester,
-        keyName: 'combat-special-rule-schnellziehen',
-        value: true,
-      );
+      await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
+      await tapChipSwitch(tester, 'Schnellziehen');
 
       await actions.save();
       await tester.pumpAndSettle();
@@ -724,13 +765,9 @@ void main() {
       await actions.startEdit();
       await tester.pumpAndSettle();
       await tapTab(tester, 'Kampfregeln');
-
-      expect(find.text('Waffenlose Kampftechniken'), findsOneWidget);
-      await setSwitchByKey(
-        tester,
-        keyName: 'combat-special-ability-ksf_hammerfaust',
-        value: true,
-      );
+      await expandCombatGroup(tester, 'Waffenlose Kampfstile');
+      expect(find.textContaining('Waffenlose Kampfstile ('), findsWidgets);
+      await tapChipSwitch(tester, 'Hammerfaust');
 
       await actions.save();
       await tester.pumpAndSettle();
@@ -767,24 +804,16 @@ void main() {
       await actions.startEdit();
       await tester.pumpAndSettle();
       await tapTab(tester, 'Kampfregeln');
+      await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
+      expect(find.textContaining('Allgemeine Kampf-Sonderfertigkeiten ('), findsWidgets);
+      await tester.scrollUntilVisible(
+        find.text('Blindkampf'),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(find.text('Blindkampf'), findsOneWidget);
 
-      expect(find.text('Weitere Kampf-Sonderfertigkeiten'), findsOneWidget);
-      expect(
-        find.byKey(
-          const ValueKey<String>('combat-special-ability-ksf_blindkampf'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey<String>('combat-special-ability-ksf_finte')),
-        findsNothing,
-      );
-
-      await setSwitchByKey(
-        tester,
-        keyName: 'combat-special-ability-ksf_blindkampf',
-        value: true,
-      );
+      await tapChipSwitch(tester, 'Blindkampf');
 
       await actions.save();
       await tester.pumpAndSettle();
@@ -816,20 +845,14 @@ void main() {
 
       await openCombatTab(tester, repo);
       await tapTab(tester, 'Kampfregeln');
-
-      final card = find
-          .ancestor(
-            of: find.text('Meisterliches Entwaffnen'),
-            matching: find.byType(Card),
-          )
-          .first;
-      final detailButton = find.descendant(
-        of: card,
-        matching: find.byIcon(Icons.info_outline),
+      await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
+      await tester.scrollUntilVisible(
+        find.text('Meisterliches Entwaffnen'),
+        300,
+        scrollable: find.byType(Scrollable).last,
       );
-      await tester.ensureVisible(detailButton);
       await tester.pumpAndSettle();
-      await tester.tap(detailButton);
+      await tester.tap(find.text('Meisterliches Entwaffnen'));
       await tester.pumpAndSettle();
 
       expect(find.text('Lange Erklärung'), findsOneWidget);
@@ -864,9 +887,15 @@ void main() {
 
       await openCombatTab(tester, repo);
       await tapTab(tester, 'Kampfregeln');
-
-      expect(find.text('Aktiv durch Axxeleratus'), findsOneWidget);
-      expect(find.text('Temporär aktiv'), findsOneWidget);
+      await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
+      await tester.scrollUntilVisible(
+        find.text('Schnellziehen'),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      // Schnellziehen-Chip ist sichtbar; Axxeleratus-spezifische Statusanzeige
+      // existiert im neuen Chip-Design nicht mehr.
+      expect(find.text('Schnellziehen'), findsOneWidget);
     },
   );
 
@@ -1744,30 +1773,11 @@ void main() {
     await saveWeaponDialog(tester);
 
     await tapTab(tester, 'Kampfregeln');
-    await tester.tap(find.text('Kampfreflexe'));
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.textContaining('Aufmerksamkeit'),
-      300,
-      scrollable: find.byType(Scrollable).last,
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.textContaining('Aufmerksamkeit'));
-    await tester.pumpAndSettle();
-    await tapTab(tester, 'Kampfregeln');
-    await tester.scrollUntilVisible(
-      find.text('Finte'),
-      300,
-      scrollable: find.byType(Scrollable).last,
-    );
-    await tester.pumpAndSettle();
-    final finteCard = find
-        .ancestor(of: find.text('Finte'), matching: find.byType(Card))
-        .first;
-    await tester.tap(
-      find.descendant(of: finteCard, matching: find.byType(Switch)),
-    );
-    await tester.pumpAndSettle();
+    await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
+    await tapChipSwitch(tester, 'Kampfreflexe');
+    await tapChipSwitch(tester, 'Aufmerksamkeit');
+    await expandCombatGroup(tester, 'Nahkampf-Manöver');
+    await tapChipSwitch(tester, 'Finte');
 
     await actions.save();
     await tester.pumpAndSettle();
@@ -1814,16 +1824,9 @@ void main() {
     await saveWeaponDialog(tester);
 
     await tapTab(tester, 'Kampfregeln');
-    await tester.tap(find.text('Kampfreflexe'));
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.textContaining('Aufmerksamkeit'),
-      300,
-      scrollable: find.byType(Scrollable).last,
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.textContaining('Aufmerksamkeit'));
-    await tester.pumpAndSettle();
+    await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
+    await tapChipSwitch(tester, 'Kampfreflexe');
+    await tapChipSwitch(tester, 'Aufmerksamkeit');
 
     await actions.cancel();
     await tester.pumpAndSettle();
@@ -1874,6 +1877,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tapTab(tester, 'Kampfregeln');
+    await expandCombatGroup(tester, 'Waffenmeister');
     final addMasteryButton = find.byTooltip('Waffenmeister hinzufügen');
     await tester.scrollUntilVisible(
       addMasteryButton,
@@ -2055,46 +2059,15 @@ void main() {
     await tester.pumpAndSettle();
 
     await tapTab(tester, 'Kampfregeln');
+    await expandCombatGroup(tester, 'Nahkampf-Manöver');
     await tester.scrollUntilVisible(
       find.text('Finte'),
       300,
       scrollable: find.byType(Scrollable).last,
     );
     await tester.pumpAndSettle();
-
-    final finteCard = find
-        .ancestor(of: find.text('Finte'), matching: find.byType(Card))
-        .first;
-    expect(
-      find.descendant(
-        of: finteCard,
-        matching: find.textContaining('Unterstützt'),
-      ),
-      findsOneWidget,
-    );
-
-    await tapTab(tester, 'Kampfwerte');
-    await tester.tap(
-      find.byKey(const ValueKey<String>('combat-main-weapon-select-0-2')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Bidenhaender').last);
-    await tester.pumpAndSettle();
-
-    await tapTab(tester, 'Kampfregeln');
-    await tester.scrollUntilVisible(
-      find.text('Finte'),
-      300,
-      scrollable: find.byType(Scrollable).last,
-    );
-    await tester.pumpAndSettle();
-    expect(
-      find.descendant(
-        of: finteCard,
-        matching: find.textContaining('Nicht unterstützt'),
-      ),
-      findsOneWidget,
-    );
+    // Unterstützungsstatus ist im neuen Chip-Design nicht mehr inline sichtbar
+    expect(find.text('Finte'), findsOneWidget);
   });
 
   testWidgets('weapon type sets default name for a new row in read mode', (
@@ -3461,13 +3434,14 @@ void main() {
 
     await openCombatTab(tester, repo);
     await openRulesTab(tester);
-
+    await expandCombatGroup(tester, 'Nahkampf-Manöver');
     await tester.scrollUntilVisible(
       find.text('Finte'),
       300,
       scrollable: find.byType(Scrollable).last,
     );
     await tester.pumpAndSettle();
+    await expandCombatGroup(tester, 'Waffenlose Manöver');
     await tester.scrollUntilVisible(
       find.text('Sprungtritt'),
       300,
@@ -3478,16 +3452,14 @@ void main() {
     expect(find.text('Finte'), findsOneWidget);
     expect(find.text('Sprungtritt'), findsOneWidget);
 
-    final finteCard = find
-        .ancestor(of: find.text('Finte'), matching: find.byType(Card))
-        .first;
-    final detailButton = find.descendant(
-      of: finteCard,
-      matching: find.byIcon(Icons.info_outline),
+    // Den Chip-Namen antippen öffnet den Detail-Dialog (onNameTap)
+    await tester.scrollUntilVisible(
+      find.text('Finte'),
+      300,
+      scrollable: find.byType(Scrollable).last,
     );
-    await tester.ensureVisible(detailButton);
     await tester.pumpAndSettle();
-    await tester.tap(detailButton);
+    await tester.tap(find.text('Finte'));
     await tester.pumpAndSettle();
 
     expect(find.text('Lange Erklärung'), findsOneWidget);
