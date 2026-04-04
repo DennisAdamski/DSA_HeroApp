@@ -24,6 +24,113 @@ const Set<String> _hardcodedCatalogCombatSpecialAbilityIds = <String>{
 
 /// Gemeinsame UI-Helfer fuer die Sonderfertigkeiten im Kampfregeln-Tab.
 extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
+  /// Liefert den Aktivzustand einer SF anhand ihrer Katalog-ID.
+  /// Liest sowohl dedizierte boolean-Felder als auch [activeCombatSpecialAbilityIds].
+  bool _isCatalogSfActive(String id) {
+    final rules = _draftCombatConfig.specialRules;
+    final armor = _draftCombatConfig.armor;
+    return switch (id) {
+      'ksf_kampfreflexe' => rules.kampfreflexe,
+      'ksf_kampfgespuer' => rules.kampfgespuer,
+      'ksf_schnellziehen' => rules.schnellziehen,
+      'ksf_ausweichen_i' => rules.ausweichenI,
+      'ksf_ausweichen_ii' => rules.ausweichenII,
+      'ksf_ausweichen_iii' => rules.ausweichenIII,
+      'ksf_linkhand' => rules.linkhandActive,
+      'ksf_schildkampf_i' => rules.schildkampfI,
+      'ksf_schildkampf_ii' => rules.schildkampfII,
+      'ksf_parierwaffen_i' => rules.parierwaffenI,
+      'ksf_parierwaffen_ii' => rules.parierwaffenII,
+      'ksf_klingentaenzer' => rules.klingentaenzer,
+      'ksf_aufmerksamkeit' => rules.aufmerksamkeit,
+      'ksf_ruestungsgewoehnung_i' => armor.globalArmorTrainingLevel >= 1,
+      'ksf_ruestungsgewoehnung_ii' => armor.globalArmorTrainingLevel >= 2,
+      'ksf_ruestungsgewoehnung_iii' => armor.globalArmorTrainingLevel >= 3,
+      _ => rules.activeCombatSpecialAbilityIds.contains(id),
+    };
+  }
+
+  /// Schaltet eine SF anhand ihrer Katalog-ID — dispatcht auf das richtige Feld.
+  void _toggleCombatSfById(String id, bool value) {
+    final rules = _draftCombatConfig.specialRules;
+    final armor = _draftCombatConfig.armor;
+    switch (id) {
+      case 'ksf_kampfreflexe':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+            specialRules: rules.copyWith(kampfreflexe: value));
+      case 'ksf_kampfgespuer':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+            specialRules: rules.copyWith(kampfgespuer: value));
+      case 'ksf_schnellziehen':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+            specialRules: rules.copyWith(schnellziehen: value));
+      case 'ksf_ausweichen_i':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+            specialRules: rules.copyWith(ausweichenI: value));
+      case 'ksf_ausweichen_ii':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+            specialRules: rules.copyWith(ausweichenII: value));
+      case 'ksf_ausweichen_iii':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+            specialRules: rules.copyWith(ausweichenIII: value));
+      case 'ksf_linkhand':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+            specialRules: rules.copyWith(linkhandActive: value));
+      case 'ksf_schildkampf_i':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+            specialRules: rules.copyWith(schildkampfI: value));
+      case 'ksf_schildkampf_ii':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+            specialRules: rules.copyWith(schildkampfII: value));
+      case 'ksf_parierwaffen_i':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+            specialRules: rules.copyWith(parierwaffenI: value));
+      case 'ksf_parierwaffen_ii':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+            specialRules: rules.copyWith(parierwaffenII: value));
+      case 'ksf_klingentaenzer':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+            specialRules: rules.copyWith(klingentaenzer: value));
+      case 'ksf_aufmerksamkeit':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+            specialRules: rules.copyWith(aufmerksamkeit: value));
+      case 'ksf_ruestungsgewoehnung_i':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+          armor: armor.copyWith(
+            globalArmorTrainingLevel: value
+                ? (armor.globalArmorTrainingLevel < 1
+                    ? 1
+                    : armor.globalArmorTrainingLevel)
+                : 0,
+          ),
+        );
+      case 'ksf_ruestungsgewoehnung_ii':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+          armor: armor.copyWith(
+            globalArmorTrainingLevel: value
+                ? (armor.globalArmorTrainingLevel < 2
+                    ? 2
+                    : armor.globalArmorTrainingLevel)
+                : (armor.globalArmorTrainingLevel > 1 ? 1 : armor.globalArmorTrainingLevel),
+          ),
+        );
+      case 'ksf_ruestungsgewoehnung_iii':
+        _draftCombatConfig = _draftCombatConfig.copyWith(
+          armor: armor.copyWith(
+            globalArmorTrainingLevel: value
+                ? 3
+                : (armor.globalArmorTrainingLevel > 2
+                    ? 2
+                    : armor.globalArmorTrainingLevel),
+          ),
+        );
+      default:
+        _toggleCatalogCombatSpecialAbility(
+            rules: rules, abilityId: id, isActive: value);
+    }
+    _markFieldChanged();
+  }
+
   Widget _ruleToggle({
     required String label,
     required bool value,
@@ -406,6 +513,85 @@ class _CombatSpecialAbilityDetailsDialog extends StatelessWidget {
           child: const Text('Schließen'),
         ),
       ],
+    );
+  }
+}
+
+/// Kompaktes Chip-Widget fuer eine Kampf-SF oder ein Manoever.
+/// Name ist tappbar und oeffnet einen Detail-Dialog.
+/// Toggle-Switch rechts schaltet aktiv/inaktiv (nur im Edit-Modus).
+class _CombatRuleChip extends StatelessWidget {
+  const _CombatRuleChip({
+    required this.name,
+    required this.beschreibung,
+    required this.isActive,
+    required this.isEditing,
+    required this.onToggle,
+    required this.onNameTap,
+  });
+
+  final String name;
+  final String beschreibung;
+  final bool isActive;
+  final bool isEditing;
+  final ValueChanged<bool>? onToggle;
+  final VoidCallback onNameTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      decoration: BoxDecoration(
+        color: isActive
+            ? colorScheme.primaryContainer
+            : colorScheme.surfaceContainerHighest,
+        border: Border.all(
+          color: isActive ? colorScheme.primary : theme.dividerColor,
+          width: isActive ? 2.0 : 1.0,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.fromLTRB(10, 6, 4, 6),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: onNameTap,
+                  child: Text(
+                    name,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: isActive ? colorScheme.primary : null,
+                      decoration: TextDecoration.underline,
+                      decorationColor:
+                          isActive ? colorScheme.primary : theme.hintColor,
+                    ),
+                  ),
+                ),
+                if (beschreibung.trim().isNotEmpty)
+                  Text(
+                    beschreibung.trim(),
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.hintColor),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
+          ),
+          Switch(
+            value: isActive,
+            onChanged: isEditing ? onToggle : null,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ],
+      ),
     );
   }
 }
