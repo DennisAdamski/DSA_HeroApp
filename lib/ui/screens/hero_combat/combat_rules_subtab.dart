@@ -693,4 +693,177 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
       ),
     );
   }
+
+  /// Rendert eine Gruppe von Nahkampf- oder Waffenlosen-Manövern als Chip-Wrap.
+  Widget _buildManeuverChipWrap({
+    required List<ManeuverDef> maneuvers,
+    required CombatSpecialRules rules,
+    required Set<String> activeManeuverIds,
+    required bool isEditing,
+    required Map<String, _ManeuverSupportStatus> supportByManeuver,
+    required RulesCatalog catalog,
+  }) {
+    if (maneuvers.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: Text('Keine Einträge vorhanden.'),
+      );
+    }
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: maneuvers.map((maneuver) {
+        final isActive = activeManeuverIds.contains(maneuver.id);
+        final typStr = maneuver.typ.trim();
+        final erschStr = maneuver.erschwernis.trim();
+        final beschreibung = [typStr, erschStr]
+            .where((s) => s.isNotEmpty)
+            .join(' · ');
+        return ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 160, maxWidth: 260),
+          child: _CombatRuleChip(
+            name: maneuver.name,
+            beschreibung: beschreibung,
+            isActive: isActive,
+            isEditing: isEditing,
+            onToggle: (value) {
+              final active = List<String>.from(rules.activeManeuvers);
+              if (value) {
+                active.add(maneuver.id);
+              } else {
+                active.removeWhere((e) => e == maneuver.id);
+              }
+              _draftCombatConfig = _draftCombatConfig.copyWith(
+                specialRules: rules.copyWith(activeManeuvers: active),
+              );
+              _markFieldChanged();
+            },
+            onNameTap: () => _showCombatManeuverDetailsDialog(
+              context: context,
+              maneuver: maneuver,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  /// Zählt die tatsächlich angezeigten FK-Chip-Einträge (per-Talent aufgespalten).
+  int _countFernkampfEntries(
+    List<ManeuverDef> maneuvers,
+    List<TalentDef> fkTalents,
+  ) {
+    var count = 0;
+    for (final m in maneuvers) {
+      if (m.mussSeparatErlerntWerden) {
+        count += m.nurFuerTalente.isEmpty
+            ? fkTalents.length
+            : m.nurFuerTalente
+                .where((id) => fkTalents.any((t) => t.id == id))
+                .length;
+      } else {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  /// Rendert Fernkampf-Manöver als Chip-Wrap.
+  /// Per-Talent-Manöver (mussSeparatErlerntWerden) werden fuer jedes FK-Talent
+  /// einzeln als eigener Chip angezeigt; Toggle-ID: '<id>::<talentId>'.
+  Widget _buildFernkampfManeuverChipWrap({
+    required RulesCatalog catalog,
+    required List<ManeuverDef> fernkampfManeuver,
+    required List<TalentDef> fkTalents,
+    required CombatSpecialRules rules,
+    required Set<String> activeManeuverIds,
+    required bool isEditing,
+    required Map<String, _ManeuverSupportStatus> supportByManeuver,
+  }) {
+    if (fernkampfManeuver.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: Text('Keine Fernkampf-Manöver im Katalog.'),
+      );
+    }
+
+    final chips = <Widget>[];
+
+    for (final maneuver in fernkampfManeuver) {
+      final typStr = maneuver.typ.trim();
+      final erschStr = maneuver.erschwernis.trim();
+      final beschreibung =
+          [typStr, erschStr].where((s) => s.isNotEmpty).join(' · ');
+
+      if (maneuver.mussSeparatErlerntWerden) {
+        final applicableTalents = maneuver.nurFuerTalente.isEmpty
+            ? fkTalents
+            : fkTalents
+                .where((t) => maneuver.nurFuerTalente.contains(t.id))
+                .toList();
+        for (final talent in applicableTalents) {
+          final toggleId = '${maneuver.id}::${talent.id}';
+          final isActive = activeManeuverIds.contains(toggleId);
+          chips.add(
+            ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 160, maxWidth: 260),
+              child: _CombatRuleChip(
+                name: '${maneuver.name} (${talent.name})',
+                beschreibung: beschreibung,
+                isActive: isActive,
+                isEditing: isEditing,
+                onToggle: (value) {
+                  final active = List<String>.from(rules.activeManeuvers);
+                  if (value) {
+                    active.add(toggleId);
+                  } else {
+                    active.removeWhere((e) => e == toggleId);
+                  }
+                  _draftCombatConfig = _draftCombatConfig.copyWith(
+                    specialRules: rules.copyWith(activeManeuvers: active),
+                  );
+                  _markFieldChanged();
+                },
+                onNameTap: () => _showCombatManeuverDetailsDialog(
+                  context: context,
+                  maneuver: maneuver,
+                ),
+              ),
+            ),
+          );
+        }
+      } else {
+        final isActive = activeManeuverIds.contains(maneuver.id);
+        chips.add(
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 160, maxWidth: 260),
+            child: _CombatRuleChip(
+              name: maneuver.name,
+              beschreibung: beschreibung,
+              isActive: isActive,
+              isEditing: isEditing,
+              onToggle: (value) {
+                final active = List<String>.from(rules.activeManeuvers);
+                if (value) {
+                  active.add(maneuver.id);
+                } else {
+                  active.removeWhere((e) => e == maneuver.id);
+                }
+                _draftCombatConfig = _draftCombatConfig.copyWith(
+                  specialRules: rules.copyWith(activeManeuvers: active),
+                );
+                _markFieldChanged();
+              },
+              onNameTap: () => _showCombatManeuverDetailsDialog(
+                context: context,
+                maneuver: maneuver,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return Wrap(spacing: 8, runSpacing: 8, children: chips);
+  }
 }
