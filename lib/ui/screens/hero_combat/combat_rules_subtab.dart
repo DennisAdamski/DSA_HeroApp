@@ -700,8 +700,6 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     required CombatSpecialRules rules,
     required Set<String> activeManeuverIds,
     required bool isEditing,
-    required Map<String, _ManeuverSupportStatus> supportByManeuver,
-    required RulesCatalog catalog,
   }) {
     if (maneuvers.isEmpty) {
       return const Padding(
@@ -770,15 +768,13 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
 
   /// Rendert Fernkampf-Manöver als Chip-Wrap.
   /// Per-Talent-Manöver (mussSeparatErlerntWerden) werden fuer jedes FK-Talent
-  /// einzeln als eigener Chip angezeigt; Toggle-ID: '<id>::<talentId>'.
+  /// einzeln als eigener Chip angezeigt; Toggle-ID: `<id>::<talentId>`.
   Widget _buildFernkampfManeuverChipWrap({
-    required RulesCatalog catalog,
     required List<ManeuverDef> fernkampfManeuver,
     required List<TalentDef> fkTalents,
     required CombatSpecialRules rules,
     required Set<String> activeManeuverIds,
     required bool isEditing,
-    required Map<String, _ManeuverSupportStatus> supportByManeuver,
   }) {
     if (fernkampfManeuver.isEmpty) {
       return const Padding(
