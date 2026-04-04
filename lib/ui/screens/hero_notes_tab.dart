@@ -10,11 +10,15 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/adventure_rewards_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 
 part 'hero_notes/hero_notes_sections.dart';
+part 'hero_notes/hero_adventure_controller.dart';
+part 'hero_notes/hero_adventure_dialogs.dart';
 part 'hero_notes/hero_adventures_section.dart';
 
 const double _notesPagePadding = 16;
@@ -63,6 +67,7 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
   List<HeroNoteEntry> _draftNotes = <HeroNoteEntry>[];
   List<HeroConnectionEntry> _draftConnections = <HeroConnectionEntry>[];
   List<HeroAdventureEntry> _draftAdventures = <HeroAdventureEntry>[];
+  String _selectedAdventureId = '';
 
   @override
   void initState() {
@@ -114,6 +119,7 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     _draftNotes = List<HeroNoteEntry>.from(hero.notes);
     _draftConnections = List<HeroConnectionEntry>.from(hero.connections);
     _draftAdventures = List<HeroAdventureEntry>.from(hero.adventures);
+    _syncSelectedAdventureId(force: force);
   }
 
   Future<void> _startEdit() async {
@@ -158,20 +164,15 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       return;
     }
 
+    _selectedAdventureId = _resolveSelectedAdventureId(
+      sanitizedAdventures,
+      currentId: _selectedAdventureId,
+    );
     _editController.markSaved();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Chroniken, Kontakte & Abenteuer gespeichert'),
       ),
-    );
-  }
-
-  HeroAdventureEntry _sanitizeAdventure(HeroAdventureEntry adventure) {
-    return adventure.copyWith(
-      notes: adventure.notes.where(_hasNoteContent).toList(growable: false),
-      seRewards: adventure.seRewards
-          .where((entry) => entry.hasContent)
-          .toList(growable: false),
     );
   }
 
@@ -203,6 +204,10 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
 
   void _markFieldChanged() {
     _editController.markFieldChanged();
+  }
+
+  void _updateWidgetState(VoidCallback updates) {
+    setState(updates);
   }
 
   Future<void> _startEditIfNeeded() async {
@@ -285,207 +290,6 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       _draftConnections = next;
     });
     _markFieldChanged();
-  }
-
-  Future<void> _addAdventure() async {
-    await _startEditIfNeeded();
-    setState(() {
-      _draftAdventures = List<HeroAdventureEntry>.from(_draftAdventures)
-        ..add(HeroAdventureEntry(id: _uuid.v4()));
-      _innerTabController.animateTo(2);
-    });
-    _markFieldChanged();
-  }
-
-  void _removeAdventure(int index) {
-    final adventure = _draftAdventures[index];
-    if (adventure.rewardsApplied) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Angewendete Abenteuer müssen erst zurückgenommen werden.',
-          ),
-        ),
-      );
-      return;
-    }
-
-    final nextAdventures = List<HeroAdventureEntry>.from(_draftAdventures)
-      ..removeAt(index);
-    setState(() {
-      _draftAdventures = nextAdventures;
-      _draftConnections = cleanupAdventureReferences(
-        connections: _draftConnections,
-        validAdventureIds: nextAdventures.map((entry) => entry.id),
-      );
-    });
-    _markFieldChanged();
-  }
-
-  void _moveAdventure(int index, int direction) {
-    final targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= _draftAdventures.length) {
-      return;
-    }
-    final next = List<HeroAdventureEntry>.from(_draftAdventures);
-    final current = next.removeAt(index);
-    next.insert(targetIndex, current);
-    setState(() {
-      _draftAdventures = next;
-    });
-    _markFieldChanged();
-  }
-
-  void _updateAdventure(
-    int index, {
-    String? title,
-    String? summary,
-    int? apReward,
-    List<HeroNoteEntry>? notes,
-    List<HeroAdventureSeReward>? seRewards,
-  }) {
-    final next = List<HeroAdventureEntry>.from(_draftAdventures);
-    next[index] = next[index].copyWith(
-      title: title,
-      summary: summary,
-      apReward: apReward,
-      notes: notes,
-      seRewards: seRewards,
-    );
-    setState(() {
-      _draftAdventures = next;
-    });
-    _markFieldChanged();
-  }
-
-  void _updateAdventureTitle(int index, String value) {
-    _updateAdventure(index, title: value);
-  }
-
-  void _updateAdventureSummary(int index, String value) {
-    _updateAdventure(index, summary: value);
-  }
-
-  void _updateAdventureApReward(int index, String rawValue) {
-    final parsedValue = int.tryParse(rawValue.trim()) ?? 0;
-    _updateAdventure(index, apReward: parsedValue < 0 ? 0 : parsedValue);
-  }
-
-  void _addAdventureNote(int adventureIndex) {
-    final adventure = _draftAdventures[adventureIndex];
-    final nextNotes = List<HeroNoteEntry>.from(adventure.notes)
-      ..add(const HeroNoteEntry());
-    _updateAdventure(adventureIndex, notes: nextNotes);
-  }
-
-  void _removeAdventureNote(int adventureIndex, int noteIndex) {
-    final adventure = _draftAdventures[adventureIndex];
-    final nextNotes = List<HeroNoteEntry>.from(adventure.notes)
-      ..removeAt(noteIndex);
-    _updateAdventure(adventureIndex, notes: nextNotes);
-  }
-
-  void _updateAdventureNoteTitle(
-    int adventureIndex,
-    int noteIndex,
-    String value,
-  ) {
-    final adventure = _draftAdventures[adventureIndex];
-    final nextNotes = List<HeroNoteEntry>.from(adventure.notes);
-    nextNotes[noteIndex] = nextNotes[noteIndex].copyWith(title: value);
-    _updateAdventure(adventureIndex, notes: nextNotes);
-  }
-
-  void _updateAdventureNoteDescription(
-    int adventureIndex,
-    int noteIndex,
-    String value,
-  ) {
-    final adventure = _draftAdventures[adventureIndex];
-    final nextNotes = List<HeroNoteEntry>.from(adventure.notes);
-    nextNotes[noteIndex] = nextNotes[noteIndex].copyWith(description: value);
-    _updateAdventure(adventureIndex, notes: nextNotes);
-  }
-
-  void _addAdventureSeReward(int adventureIndex) {
-    final adventure = _draftAdventures[adventureIndex];
-    final nextRewards = List<HeroAdventureSeReward>.from(adventure.seRewards)
-      ..add(const HeroAdventureSeReward(count: 1));
-    _updateAdventure(adventureIndex, seRewards: nextRewards);
-  }
-
-  void _removeAdventureSeReward(int adventureIndex, int rewardIndex) {
-    final adventure = _draftAdventures[adventureIndex];
-    final nextRewards = List<HeroAdventureSeReward>.from(adventure.seRewards)
-      ..removeAt(rewardIndex);
-    _updateAdventure(adventureIndex, seRewards: nextRewards);
-  }
-
-  void _updateAdventureSeRewardCount(
-    int adventureIndex,
-    int rewardIndex,
-    String rawValue,
-  ) {
-    final parsedValue = int.tryParse(rawValue.trim()) ?? 0;
-    _updateAdventureSeReward(
-      adventureIndex,
-      rewardIndex,
-      count: parsedValue < 0 ? 0 : parsedValue,
-    );
-  }
-
-  void _updateAdventureSeRewardType(
-    int adventureIndex,
-    int rewardIndex,
-    HeroAdventureSeTargetType targetType, {
-    required HeroSheet hero,
-    RulesCatalog? catalog,
-  }) {
-    final defaultOption = _defaultOptionForTargetType(
-      targetType: targetType,
-      hero: hero,
-      catalog: catalog,
-    );
-    _updateAdventureSeReward(
-      adventureIndex,
-      rewardIndex,
-      targetType: targetType,
-      targetId: defaultOption?.id ?? '',
-      targetLabel: defaultOption?.label ?? '',
-    );
-  }
-
-  void _updateAdventureSeRewardTarget(
-    int adventureIndex,
-    int rewardIndex, {
-    required String targetId,
-    required String targetLabel,
-  }) {
-    _updateAdventureSeReward(
-      adventureIndex,
-      rewardIndex,
-      targetId: targetId,
-      targetLabel: targetLabel,
-    );
-  }
-
-  void _updateAdventureSeReward(
-    int adventureIndex,
-    int rewardIndex, {
-    HeroAdventureSeTargetType? targetType,
-    String? targetId,
-    String? targetLabel,
-    int? count,
-  }) {
-    final adventure = _draftAdventures[adventureIndex];
-    final nextRewards = List<HeroAdventureSeReward>.from(adventure.seRewards);
-    nextRewards[rewardIndex] = nextRewards[rewardIndex].copyWith(
-      targetType: targetType,
-      targetId: targetId,
-      targetLabel: targetLabel,
-      count: count,
-    );
-    _updateAdventure(adventureIndex, seRewards: nextRewards);
   }
 
   Future<void> _applyAdventureRewardsFor(String adventureId) async {
@@ -637,19 +441,6 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     };
   }
 
-  _AdventureTargetOption? _defaultOptionForTargetType({
-    required HeroAdventureSeTargetType targetType,
-    required HeroSheet hero,
-    RulesCatalog? catalog,
-  }) {
-    final options = _targetOptionsForType(
-      targetType: targetType,
-      hero: hero,
-      catalog: catalog,
-    );
-    return options.isEmpty ? null : options.first;
-  }
-
   String _adventureTitle(HeroAdventureEntry? adventure) {
     if (adventure == null || adventure.title.trim().isEmpty) {
       return 'Unbenanntes Abenteuer';
@@ -719,32 +510,44 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
                   ),
                   _AdventuresSection(
                     entries: _draftAdventures,
+                    selectedAdventureId: _selectedAdventureId,
                     isEditing: _editController.isEditing,
-                    onAdd: _addAdventure,
-                    onRemove: _removeAdventure,
-                    onMoveUp: (index) => _moveAdventure(index, -1),
-                    onMoveDown: (index) => _moveAdventure(index, 1),
-                    onTitleChanged: _updateAdventureTitle,
-                    onSummaryChanged: _updateAdventureSummary,
-                    onApRewardChanged: _updateAdventureApReward,
-                    onAddNote: _addAdventureNote,
-                    onRemoveNote: _removeAdventureNote,
-                    onAdventureNoteTitleChanged: _updateAdventureNoteTitle,
-                    onAdventureNoteDescriptionChanged:
-                        _updateAdventureNoteDescription,
-                    onAddSeReward: _addAdventureSeReward,
-                    onRemoveSeReward: _removeAdventureSeReward,
-                    onSeRewardTypeChanged: (adventureIndex, rewardIndex, type) {
-                      _updateAdventureSeRewardType(
-                        adventureIndex,
+                    onAdd: _showAddAdventureDialog,
+                    onSelectAdventure: _selectAdventure,
+                    onRemoveSelected: _removeSelectedAdventure,
+                    onMoveSelectedUp: () => _moveSelectedAdventure(-1),
+                    onMoveSelectedDown: () => _moveSelectedAdventure(1),
+                    onTitleChanged: _updateSelectedAdventureTitle,
+                    onSummaryChanged: _updateSelectedAdventureSummary,
+                    onStatusChanged: _updateSelectedAdventureStatus,
+                    onStartWorldDateChanged:
+                        _updateSelectedAdventureStartWorldDate,
+                    onStartAventurianDateChanged:
+                        _updateSelectedAdventureStartAventurianDate,
+                    onEndWorldDateChanged: _updateSelectedAdventureEndWorldDate,
+                    onEndAventurianDateChanged:
+                        _updateSelectedAdventureEndAventurianDate,
+                    onCurrentAventurianDateChanged:
+                        _updateSelectedAdventureCurrentAventurianDate,
+                    onAddNote: _addNoteForSelectedAdventure,
+                    onOpenNote: _openAdventureNoteDialog,
+                    onAddPerson: _addPersonForSelectedAdventure,
+                    onOpenPerson: _openAdventurePersonDialog,
+                    onApRewardChanged: _updateSelectedAdventureApReward,
+                    onAddSeReward: _addSeRewardToSelectedAdventure,
+                    onRemoveSeReward: _removeSeRewardFromSelectedAdventure,
+                    onSeRewardTypeChanged: (rewardIndex, type) {
+                      _updateSelectedAdventureSeRewardType(
                         rewardIndex,
                         type,
                         hero: hero,
                         catalog: catalog,
                       );
                     },
-                    onSeRewardTargetChanged: _updateAdventureSeRewardTarget,
-                    onSeRewardCountChanged: _updateAdventureSeRewardCount,
+                    onSeRewardTargetChanged:
+                        _updateSelectedAdventureSeRewardTarget,
+                    onSeRewardCountChanged:
+                        _updateSelectedAdventureSeRewardCount,
                     onApplyRewards: _applyAdventureRewardsFor,
                     onRevokeRewards: _revokeAdventureRewardsFor,
                     targetOptionsForType: (type) => _targetOptionsForType(
