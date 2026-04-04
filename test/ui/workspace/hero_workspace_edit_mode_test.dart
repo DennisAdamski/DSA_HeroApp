@@ -824,6 +824,20 @@ void main() {
         find.byKey(const ValueKey<String>('notes-adventure-dialog')),
         findsOneWidget,
       );
+      expect(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-dialog-end-world-day'),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>(
+            'notes-adventure-dialog-current-aventurian-day',
+          ),
+        ),
+        findsNothing,
+      );
       await tester.enterText(
         find.byKey(const ValueKey<String>('notes-adventure-dialog-title')),
         'Die Höhlen von Tairach',
@@ -870,32 +884,6 @@ void main() {
         find.byKey(
           const ValueKey<String>(
             'notes-adventure-dialog-start-aventurian-year',
-          ),
-        ),
-        '1048',
-      );
-      await tester.enterText(
-        find.byKey(
-          const ValueKey<String>(
-            'notes-adventure-dialog-current-aventurian-day',
-          ),
-        ),
-        '8',
-      );
-      await tester.tap(
-        find.byKey(
-          const ValueKey<String>(
-            'notes-adventure-dialog-current-aventurian-month',
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Praios').last);
-      await tester.pumpAndSettle();
-      await tester.enterText(
-        find.byKey(
-          const ValueKey<String>(
-            'notes-adventure-dialog-current-aventurian-year',
           ),
         ),
         '1048',
@@ -1030,7 +1018,8 @@ void main() {
       );
       expect(hero.adventures.single.startWorldDate.month, 'April');
       expect(hero.adventures.single.startAventurianDate.month, 'praios');
-      expect(hero.adventures.single.currentAventurianDate.day, '8');
+      expect(hero.adventures.single.endWorldDate.day, isEmpty);
+      expect(hero.adventures.single.currentAventurianDate.day, isEmpty);
       expect(hero.adventures.single.apReward, 45);
       expect(hero.adventures.single.notes.single.title, 'Schlüsselstelle');
       expect(hero.adventures.single.people.single.name, 'Aldare');
