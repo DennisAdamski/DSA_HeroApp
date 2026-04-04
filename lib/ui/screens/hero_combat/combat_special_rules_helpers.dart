@@ -132,6 +132,64 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
     _markFieldChanged();
   }
 
+  /// Rendert alle SF einer Gruppe als Chip-Wrap.
+  /// [abilities] sind bereits gefiltert (z. B. nur waffenlose Stile).
+  Widget _buildSfChipWrap({
+    required List<CombatSpecialAbilityDef> abilities,
+    required RulesCatalog catalog,
+    required CombatSpecialRules rules,
+    required bool isEditing,
+  }) {
+    if (abilities.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: Text('Keine Einträge vorhanden.'),
+      );
+    }
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: abilities.map((ability) {
+        final isActive = _isCatalogSfActive(ability.id);
+        final String beschreibung;
+        if (ability.isUnarmedCombatStyle) {
+          beschreibung = '${ability.aktiviertManoeverIds.length} Manöver';
+        } else if (ability.beschreibung.trim().isNotEmpty) {
+          beschreibung = ability.beschreibung.trim();
+        } else {
+          beschreibung = 'Kampf-Sonderfertigkeit';
+        }
+        return ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 160, maxWidth: 260),
+          child: _CombatRuleChip(
+            name: ability.name,
+            beschreibung: beschreibung,
+            isActive: isActive,
+            isEditing: isEditing,
+            onToggle: (value) => _toggleCombatSfById(ability.id, value),
+            onNameTap: () => _showCombatSpecialAbilityDetailsDialog(
+              context: context,
+              ability: ability,
+              catalogManeuvers: catalog.maneuvers,
+              onGladiatorStyleChanged:
+                  ability.id == 'ksf_gladiatorenstil' && isEditing
+                      ? (String? value) {
+                          _draftCombatConfig = _draftCombatConfig.copyWith(
+                            specialRules: rules.copyWith(
+                              gladiatorStyleTalent: value ?? '',
+                            ),
+                          );
+                          _markFieldChanged();
+                        }
+                      : null,
+              gladiatorStyleTalent: rules.gladiatorStyleTalent,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   Widget _ruleToggle({
     required String label,
     required bool value,
@@ -381,16 +439,22 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
 }
 
 /// Oeffnet einen adaptiven Detaildialog fuer eine Kampf-Sonderfertigkeit.
+/// [onGladiatorStyleChanged] und [gladiatorStyleTalent] werden nur fuer
+/// ksf_gladiatorenstil im Edit-Modus benoetigt.
 Future<void> _showCombatSpecialAbilityDetailsDialog({
   required BuildContext context,
   required CombatSpecialAbilityDef ability,
   List<ManeuverDef> catalogManeuvers = const <ManeuverDef>[],
+  void Function(String?)? onGladiatorStyleChanged,
+  String gladiatorStyleTalent = '',
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
     builder: (_) => _CombatSpecialAbilityDetailsDialog(
       ability: ability,
       catalogManeuvers: catalogManeuvers,
+      onGladiatorStyleChanged: onGladiatorStyleChanged,
+      gladiatorStyleTalent: gladiatorStyleTalent,
     ),
   );
 }
@@ -400,10 +464,14 @@ class _CombatSpecialAbilityDetailsDialog extends StatelessWidget {
   const _CombatSpecialAbilityDetailsDialog({
     required this.ability,
     this.catalogManeuvers = const <ManeuverDef>[],
+    this.onGladiatorStyleChanged,
+    this.gladiatorStyleTalent = '',
   });
 
   final CombatSpecialAbilityDef ability;
   final List<ManeuverDef> catalogManeuvers;
+  final void Function(String?)? onGladiatorStyleChanged;
+  final String gladiatorStyleTalent;
 
   @override
   Widget build(BuildContext context) {
@@ -502,6 +570,26 @@ class _CombatSpecialAbilityDetailsDialog extends StatelessWidget {
                         ),
                       )
                       .join(', '),
+                ),
+              ],
+              // Gladiatorenstil: Bonus-Talent-Auswahl im Edit-Modus
+              if (ability.id == 'ksf_gladiatorenstil' &&
+                  onGladiatorStyleChanged != null) ...[
+                const SizedBox(height: 16),
+                Text('Bonus-Talent', style: theme.textTheme.titleSmall),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  initialValue: gladiatorStyleTalent.trim().isEmpty
+                      ? null
+                      : gladiatorStyleTalent,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'raufen', child: Text('Raufen')),
+                    DropdownMenuItem(value: 'ringen', child: Text('Ringen')),
+                  ],
+                  onChanged: onGladiatorStyleChanged,
                 ),
               ],
             ],
