@@ -137,7 +137,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `inventoryEntries` | `List<HeroInventoryEntry>` | Ausrüstung/Inventar |
 | `notes` | `List<HeroNoteEntry>` | Freie Chroniken mit Titel und Beschreibung |
 | `connections` | `List<HeroConnectionEntry>` | Kontakte/Verbindungen mit Ort, Sozialstatus, Loyalität, Beschreibung und optionaler Abenteuer-Referenz |
-| `adventures` | `List<HeroAdventureEntry>` | Manuell sortierte Abenteuer-Etappen mit Zusammenfassung, Notizen, AP-Belohnung, festen SE-Zielen und Anwendungsstatus |
+| `adventures` | `List<HeroAdventureEntry>` | Manuell sortierte Abenteuer-Etappen mit Status, weltlichen und aventurischen Datumsfeldern, Notizen, Personen, AP-Belohnung, festen SE-Zielen und Anwendungsstatus |
 | `attributeSePool` | `HeroAttributeSePool` | Persistierte Abenteuer-SE für Eigenschaften (`MU` bis `KK`) |
 | `statSePool` | `HeroStatSePool` | Persistierte Abenteuer-SE für Grundwerte (`LeP`, `Au`, `AsP`, `KaP`, `MR`) |
 | `unknownModifierFragments` | `List<String>` | Unparsbare Modifier-Fragmente (UI-Hinweis) |
@@ -1155,7 +1155,7 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 | `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Kampf (Nah- oder Fernkampf), SF, Manöver und Kampfmeisterschaften |
 | `hero_magic_tab.dart` | `HeroMagicTab` | Zauber, Ritualkategorien/Rituale, Repräsentationen, magische SF und globale Leiteigenschaft |
 | `hero_inventory_tab.dart` | `HeroInventoryTab` | Direkte Inventartabelle mit AppBar-Aktion, Split-Editor und Sofortspeicherung |
-| `hero_notes_tab.dart` | `HeroNotesTab` | Untertabs für Chroniken, Kontakte und Abenteuer mit getrenntem Reward-Workflow |
+| `hero_notes_tab.dart` | `HeroNotesTab` | Untertabs für Chroniken, Kontakte und Abenteuer mit Chip-Workspace, Popups und getrenntem Reward-Workflow |
 | `hero_detail_screen.dart` | `HeroDetailScreen` | Legacy-Platzhalter (nicht eingebunden) |
 
 ### Responsive Layout
@@ -1326,6 +1326,23 @@ ueber die Settings-Katalogverwaltung bearbeitet.
 - `hero_overview_raise_actions.dart` uebergibt Abenteuer-SE fuer
   Eigenschaften und Grundwerte an den gemeinsamen Steigerungsdialog und zieht
   verbrauchte SE aus den persistierten Pools ab.
+
+### Update 2026-04-04: Abenteuer-Workspace mit Chip-Uebersicht
+
+- `HeroAdventureEntry` wurde um `status`, `people`, `startWorldDate`,
+  `startAventurianDate`, `endWorldDate`, `endAventurianDate` und
+  `currentAventurianDate` erweitert; fehlende Werte aus Altbestaenden laden
+  tolerant mit Default `current` beziehungsweise leeren Strukturen.
+- `HeroAdventurePersonEntry` modelliert abenteuerspezifische Personen
+  getrennt von globalen Kontakten.
+- `HeroAdventureDateValue` kapselt strukturierte weltliche und aventurische
+  Datumsangaben fuer Abenteuer.
+- Der Abenteuer-Tab zeigt Abenteuer jetzt als nach Status gruppierte
+  `ChoiceChip`-Uebersicht; standardmaessig wird das erste `Aktuell`-
+  Abenteuer, sonst der erste Eintrag geoeffnet.
+- Abenteuer, Notizen und Personen werden ueber adaptive Popups angelegt oder
+  bearbeitet; im Detailbereich bleiben Titel und Zusammenfassung inline
+  editierbar, waehrend Notizen und Personen als einklappbare Chips erscheinen.
 
 ### Update 2026-03-15: Gefuehrte AP-Steigerungen
 
