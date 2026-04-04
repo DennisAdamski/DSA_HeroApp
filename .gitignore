@@ -64,4 +64,5 @@ assets/catalogs/house_rules_v1/waffenmeister.md
 /docs/mockups/
 .codex/
 .claude/settings.local.json
-docs\superpowers
+.superpowers/
+docs/superpowers/
