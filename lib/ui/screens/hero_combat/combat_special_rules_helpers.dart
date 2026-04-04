@@ -127,6 +127,7 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
       default:
         _toggleCatalogCombatSpecialAbility(
             rules: rules, abilityId: id, isActive: value);
+        return; // _toggleCatalogCombatSpecialAbility already calls _markFieldChanged
     }
     _markFieldChanged();
   }
@@ -562,8 +563,9 @@ class _CombatRuleChip extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                GestureDetector(
+                InkWell(
                   onTap: onNameTap,
+                  borderRadius: BorderRadius.circular(4),
                   child: Text(
                     name,
                     style: theme.textTheme.labelLarge?.copyWith(
