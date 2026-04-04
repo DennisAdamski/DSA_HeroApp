@@ -129,9 +129,6 @@ class _AdventureCreateDialogState extends State<_AdventureCreateDialog> {
   late final TextEditingController _summaryController;
   late final _AdventureDateDraft _startWorldDate;
   late final _AdventureDateDraft _startAventurianDate;
-  late final _AdventureDateDraft _endWorldDate;
-  late final _AdventureDateDraft _endAventurianDate;
-  late final _AdventureDateDraft _currentAventurianDate;
   late HeroAdventureStatus _status;
   String? _errorText;
 
@@ -145,13 +142,6 @@ class _AdventureCreateDialogState extends State<_AdventureCreateDialog> {
     _startAventurianDate = _AdventureDateDraft.aventurian(
       initial.startAventurianDate,
     );
-    _endWorldDate = _AdventureDateDraft.world(initial.endWorldDate);
-    _endAventurianDate = _AdventureDateDraft.aventurian(
-      initial.endAventurianDate,
-    );
-    _currentAventurianDate = _AdventureDateDraft.aventurian(
-      initial.currentAventurianDate,
-    );
     _status = initial.status;
   }
 
@@ -161,9 +151,6 @@ class _AdventureCreateDialogState extends State<_AdventureCreateDialog> {
     _summaryController.dispose();
     _startWorldDate.dispose();
     _startAventurianDate.dispose();
-    _endWorldDate.dispose();
-    _endAventurianDate.dispose();
-    _currentAventurianDate.dispose();
     super.dispose();
   }
 
@@ -183,9 +170,6 @@ class _AdventureCreateDialogState extends State<_AdventureCreateDialog> {
         status: _status,
         startWorldDate: _startWorldDate.buildValue(),
         startAventurianDate: _startAventurianDate.buildValue(),
-        endWorldDate: _endWorldDate.buildValue(),
-        endAventurianDate: _endAventurianDate.buildValue(),
-        currentAventurianDate: _currentAventurianDate.buildValue(),
       ),
     );
   }
@@ -241,23 +225,6 @@ class _AdventureCreateDialogState extends State<_AdventureCreateDialog> {
                     'notes-adventure-dialog-start-aventurian',
                 worldDate: _startWorldDate,
                 aventurianDate: _startAventurianDate,
-                onChanged: () => setState(() {}),
-              ),
-              const SizedBox(height: 16),
-              _AdventureDialogDateSection(
-                title: 'Ende des Abenteuers',
-                worldDateKeyPrefix: 'notes-adventure-dialog-end-world',
-                aventurianDateKeyPrefix:
-                    'notes-adventure-dialog-end-aventurian',
-                worldDate: _endWorldDate,
-                aventurianDate: _endAventurianDate,
-                onChanged: () => setState(() {}),
-              ),
-              const SizedBox(height: 16),
-              _AdventureDialogSingleDateSection(
-                title: 'Aktuelles Datum',
-                keyPrefix: 'notes-adventure-dialog-current-aventurian',
-                date: _currentAventurianDate,
                 onChanged: () => setState(() {}),
               ),
               if (_errorText != null) ...[
@@ -599,31 +566,6 @@ class _AdventureDialogDateSection extends StatelessWidget {
           onChanged: onChanged,
         ),
       ],
-    );
-  }
-}
-
-class _AdventureDialogSingleDateSection extends StatelessWidget {
-  const _AdventureDialogSingleDateSection({
-    required this.title,
-    required this.keyPrefix,
-    required this.date,
-    required this.onChanged,
-  });
-
-  final String title;
-  final String keyPrefix;
-  final _AdventureDateDraft date;
-  final VoidCallback onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return _AdventureDialogDateFields(
-      title: title,
-      keyPrefix: keyPrefix,
-      date: date,
-      usesMonthPicker: true,
-      onChanged: onChanged,
     );
   }
 }
