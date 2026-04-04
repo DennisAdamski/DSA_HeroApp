@@ -1,5 +1,14 @@
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 
+/// Status eines Abenteuers in der Heldenchronik.
+enum HeroAdventureStatus {
+  /// Das Abenteuer läuft aktuell noch.
+  current,
+
+  /// Das Abenteuer wurde abgeschlossen.
+  completed,
+}
+
 /// Zieltyp einer Abenteuer-Sondererfahrung.
 enum HeroAdventureSeTargetType {
   /// Sondererfahrung fuer ein Talent.
@@ -75,14 +84,129 @@ class HeroAdventureSeReward {
   }
 }
 
+/// Strukturierter Datumswert fuer Abenteuerangaben.
+class HeroAdventureDateValue {
+  /// Erzeugt ein persistierbares Abenteuerdatum.
+  const HeroAdventureDateValue({
+    this.day = '',
+    this.month = '',
+    this.year = '',
+  });
+
+  /// Tag des Datums.
+  final String day;
+
+  /// Monat des Datums.
+  final String month;
+
+  /// Jahr des Datums.
+  final String year;
+
+  /// Gibt an, ob mindestens ein Datumsfeld belegt ist.
+  bool get hasContent {
+    return day.trim().isNotEmpty ||
+        month.trim().isNotEmpty ||
+        year.trim().isNotEmpty;
+  }
+
+  /// Liefert eine Kopie mit gezielt ersetzten Feldern.
+  HeroAdventureDateValue copyWith({String? day, String? month, String? year}) {
+    return HeroAdventureDateValue(
+      day: day ?? this.day,
+      month: month ?? this.month,
+      year: year ?? this.year,
+    );
+  }
+
+  /// Serialisiert das Datum fuer Persistenz und Export.
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{'day': day, 'month': month, 'year': year};
+  }
+
+  /// Laedt ein Abenteuerdatum tolerant gegenueber fehlenden Feldern.
+  static HeroAdventureDateValue fromJson(Map<String, dynamic> json) {
+    String getString(String key) => json[key]?.toString() ?? '';
+
+    return HeroAdventureDateValue(
+      day: getString('day'),
+      month: getString('month'),
+      year: getString('year'),
+    );
+  }
+}
+
+/// Beschreibt eine abenteuerspezifische Person oder NSC-Referenz.
+class HeroAdventurePersonEntry {
+  /// Erzeugt einen persistierbaren Personeneintrag.
+  const HeroAdventurePersonEntry({
+    required this.id,
+    this.name = '',
+    this.description = '',
+  });
+
+  /// Stabile ID der Person innerhalb des Abenteuers.
+  final String id;
+
+  /// Anzeigename der Person.
+  final String name;
+
+  /// Kurze Kontextbeschreibung der Person.
+  final String description;
+
+  /// Gibt an, ob der Eintrag fachlich belegt ist.
+  bool get hasContent {
+    return name.trim().isNotEmpty || description.trim().isNotEmpty;
+  }
+
+  /// Liefert eine Kopie mit gezielt ersetzten Feldern.
+  HeroAdventurePersonEntry copyWith({
+    String? id,
+    String? name,
+    String? description,
+  }) {
+    return HeroAdventurePersonEntry(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+    );
+  }
+
+  /// Serialisiert die Person fuer Persistenz und Export.
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'id': id,
+      'name': name,
+      'description': description,
+    };
+  }
+
+  /// Laedt einen Personeneintrag tolerant gegenueber fehlenden Feldern.
+  static HeroAdventurePersonEntry fromJson(Map<String, dynamic> json) {
+    String getString(String key) => json[key]?.toString() ?? '';
+
+    return HeroAdventurePersonEntry(
+      id: getString('id'),
+      name: getString('name'),
+      description: getString('description'),
+    );
+  }
+}
+
 /// Manuell gepflegter Abenteuer-Eintrag eines Helden.
 class HeroAdventureEntry {
   /// Erzeugt ein persistierbares Abenteuer mit stabiler ID.
   const HeroAdventureEntry({
     required this.id,
+    this.status = HeroAdventureStatus.current,
     this.title = '',
     this.summary = '',
     this.notes = const <HeroNoteEntry>[],
+    this.people = const <HeroAdventurePersonEntry>[],
+    this.startWorldDate = const HeroAdventureDateValue(),
+    this.startAventurianDate = const HeroAdventureDateValue(),
+    this.endWorldDate = const HeroAdventureDateValue(),
+    this.endAventurianDate = const HeroAdventureDateValue(),
+    this.currentAventurianDate = const HeroAdventureDateValue(),
     this.apReward = 0,
     this.seRewards = const <HeroAdventureSeReward>[],
     this.rewardsApplied = false,
@@ -90,6 +214,9 @@ class HeroAdventureEntry {
 
   /// Stabile ID des Abenteuers.
   final String id;
+
+  /// Fortschrittsstatus des Abenteuers.
+  final HeroAdventureStatus status;
 
   /// Anzeigename des Abenteuers.
   final String title;
@@ -99,6 +226,24 @@ class HeroAdventureEntry {
 
   /// Abenteuerbezogene Detailnotizen.
   final List<HeroNoteEntry> notes;
+
+  /// Abenteuerspezifische Personen und NSCs.
+  final List<HeroAdventurePersonEntry> people;
+
+  /// Weltliches Startdatum.
+  final HeroAdventureDateValue startWorldDate;
+
+  /// Aventurisches Startdatum.
+  final HeroAdventureDateValue startAventurianDate;
+
+  /// Weltliches Enddatum.
+  final HeroAdventureDateValue endWorldDate;
+
+  /// Aventurisches Enddatum.
+  final HeroAdventureDateValue endAventurianDate;
+
+  /// Aktueller aventurischer Stand innerhalb des Abenteuers.
+  final HeroAdventureDateValue currentAventurianDate;
 
   /// AP-Belohnung fuer das Abenteuer.
   final int apReward;
@@ -117,6 +262,16 @@ class HeroAdventureEntry {
     if (title.trim().isNotEmpty || summary.trim().isNotEmpty) {
       return true;
     }
+    if (people.any((entry) => entry.hasContent)) {
+      return true;
+    }
+    if (startWorldDate.hasContent ||
+        startAventurianDate.hasContent ||
+        endWorldDate.hasContent ||
+        endAventurianDate.hasContent ||
+        currentAventurianDate.hasContent) {
+      return true;
+    }
     if (seRewards.any((entry) => entry.hasContent)) {
       return true;
     }
@@ -131,18 +286,33 @@ class HeroAdventureEntry {
   /// Liefert eine Kopie mit gezielt ersetzten Feldern.
   HeroAdventureEntry copyWith({
     String? id,
+    HeroAdventureStatus? status,
     String? title,
     String? summary,
     List<HeroNoteEntry>? notes,
+    List<HeroAdventurePersonEntry>? people,
+    HeroAdventureDateValue? startWorldDate,
+    HeroAdventureDateValue? startAventurianDate,
+    HeroAdventureDateValue? endWorldDate,
+    HeroAdventureDateValue? endAventurianDate,
+    HeroAdventureDateValue? currentAventurianDate,
     int? apReward,
     List<HeroAdventureSeReward>? seRewards,
     bool? rewardsApplied,
   }) {
     return HeroAdventureEntry(
       id: id ?? this.id,
+      status: status ?? this.status,
       title: title ?? this.title,
       summary: summary ?? this.summary,
       notes: notes ?? this.notes,
+      people: people ?? this.people,
+      startWorldDate: startWorldDate ?? this.startWorldDate,
+      startAventurianDate: startAventurianDate ?? this.startAventurianDate,
+      endWorldDate: endWorldDate ?? this.endWorldDate,
+      endAventurianDate: endAventurianDate ?? this.endAventurianDate,
+      currentAventurianDate:
+          currentAventurianDate ?? this.currentAventurianDate,
       apReward: _normalizeReward(apReward ?? this.apReward),
       seRewards: seRewards ?? this.seRewards,
       rewardsApplied: rewardsApplied ?? this.rewardsApplied,
@@ -153,9 +323,16 @@ class HeroAdventureEntry {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
+      'status': status.name,
       'title': title,
       'summary': summary,
       'notes': notes.map((entry) => entry.toJson()).toList(growable: false),
+      'people': people.map((entry) => entry.toJson()).toList(growable: false),
+      'startWorldDate': startWorldDate.toJson(),
+      'startAventurianDate': startAventurianDate.toJson(),
+      'endWorldDate': endWorldDate.toJson(),
+      'endAventurianDate': endAventurianDate.toJson(),
+      'currentAventurianDate': currentAventurianDate.toJson(),
       'apReward': apReward,
       'seRewards': seRewards
           .map((entry) => entry.toJson())
@@ -167,16 +344,36 @@ class HeroAdventureEntry {
   /// Laedt ein Abenteuer tolerant gegenueber fehlenden Feldern.
   static HeroAdventureEntry fromJson(Map<String, dynamic> json) {
     final rawNotes = (json['notes'] as List?) ?? const <dynamic>[];
+    final rawPeople = (json['people'] as List?) ?? const <dynamic>[];
     final rawSeRewards = (json['seRewards'] as List?) ?? const <dynamic>[];
 
     return HeroAdventureEntry(
       id: (json['id'] as String?) ?? '',
+      status: _parseAdventureStatus(json['status']),
       title: (json['title'] as String?) ?? '',
       summary: (json['summary'] as String?) ?? '',
       notes: rawNotes
           .whereType<Map>()
           .map((entry) => HeroNoteEntry.fromJson(entry.cast<String, dynamic>()))
           .toList(growable: false),
+      people: rawPeople
+          .whereType<Map>()
+          .map(
+            (entry) => HeroAdventurePersonEntry.fromJson(
+              entry.cast<String, dynamic>(),
+            ),
+          )
+          .where((entry) => entry.hasContent)
+          .toList(growable: false),
+      startWorldDate: _parseAdventureDateValue(json['startWorldDate']),
+      startAventurianDate: _parseAdventureDateValue(
+        json['startAventurianDate'],
+      ),
+      endWorldDate: _parseAdventureDateValue(json['endWorldDate']),
+      endAventurianDate: _parseAdventureDateValue(json['endAventurianDate']),
+      currentAventurianDate: _parseAdventureDateValue(
+        json['currentAventurianDate'],
+      ),
       apReward: _normalizeReward((json['apReward'] as num?)?.toInt() ?? 0),
       seRewards: rawSeRewards
           .whereType<Map>()
@@ -191,12 +388,26 @@ class HeroAdventureEntry {
   }
 }
 
+HeroAdventureStatus _parseAdventureStatus(dynamic raw) {
+  return switch ((raw as String?)?.trim().toLowerCase()) {
+    'completed' => HeroAdventureStatus.completed,
+    _ => HeroAdventureStatus.current,
+  };
+}
+
 HeroAdventureSeTargetType _parseAdventureSeTargetType(dynamic raw) {
   return switch ((raw as String?)?.trim().toLowerCase()) {
     'grundwert' => HeroAdventureSeTargetType.grundwert,
     'eigenschaft' => HeroAdventureSeTargetType.eigenschaft,
     _ => HeroAdventureSeTargetType.talent,
   };
+}
+
+HeroAdventureDateValue _parseAdventureDateValue(dynamic raw) {
+  if (raw is Map) {
+    return HeroAdventureDateValue.fromJson(raw.cast<String, dynamic>());
+  }
+  return const HeroAdventureDateValue();
 }
 
 bool _hasAdventureNoteContent(HeroNoteEntry entry) {
