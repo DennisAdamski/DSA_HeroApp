@@ -10,12 +10,12 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 
 /// Alle Reisebericht-Kategorien in Anzeigereihenfolge.
 const reiseberichtKategorien = <String, String>{
-  'kampferfahrungen': 'Meine Kampferfahrungen',
-  'koerperliche_erprobungen': 'Meine körperlichen Erprobungen',
-  'gesellschaftliche_erfahrungen': 'Meine gesellschaftlichen Erfahrungen',
-  'naturerfahrungen': 'Meine Naturerfahrungen',
-  'spirituelle_erfahrungen': 'Meine spirituellen Erfahrungen',
-  'magische_erfahrungen': 'Meine magischen Erfahrungen',
+  'kampferfahrungen': 'Kampferfahrung',
+  'koerperliche_erprobungen': 'Körperliche Erprobung',
+  'gesellschaftliche_erfahrungen': 'Gesellschaftliche Erfahrungen',
+  'naturerfahrungen': 'Naturerfahrungen',
+  'spirituelle_erfahrungen': 'Spirituelle Erfahrungen',
+  'magische_erfahrungen': 'Magische Erfahrungen',
 };
 
 // ---------------------------------------------------------------------------

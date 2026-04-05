@@ -5,12 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/custom_catalog_repository.dart';
+import 'package:dsa_heldenverwaltung/data/hive_gruppen_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/gruppen_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/app_shell.dart';
@@ -43,6 +45,7 @@ class AppStartupGate extends StatefulWidget {
 class _AppStartupGateState extends State<AppStartupGate> {
   Future<_HeroRepositoryBootstrapResult>? _bootstrapFuture;
   HiveHeroRepository? _activeRepository;
+  HiveGruppenRepository? _activeGruppenRepository;
   late AppSettings _settings;
   StreamSubscription<AppSettings>? _settingsSubscription;
   String? _currentConfiguredPath;
@@ -73,6 +76,10 @@ class _AppStartupGateState extends State<AppStartupGate> {
     if (repository != null) {
       // Die Boxen muessen beim Pfadwechsel sauber geschlossen werden.
       unawaited(repository.close());
+    }
+    final gruppenRepository = _activeGruppenRepository;
+    if (gruppenRepository != null) {
+      unawaited(gruppenRepository.close());
     }
     super.dispose();
   }
@@ -105,14 +112,29 @@ class _AppStartupGateState extends State<AppStartupGate> {
     );
     await const StartupHeroImporter().importFromAssets(repository);
 
+    // Gruppen-Repository im Settings-Pfad oeffnen.
+    final settingsPath = await widget.storagePaths.resolveSettingsStoragePath();
+    final gruppenRepository = await HiveGruppenRepository.create(
+      storagePath: settingsPath,
+    );
+
     if (generation != _loadGeneration) {
       await repository.close();
+      await gruppenRepository.close();
       throw StateError('Veralteter Initialisierungslauf fuer Heldendaten.');
     }
 
+    // Altes Gruppen-Repository schliessen, falls vorhanden.
+    final previousGruppen = _activeGruppenRepository;
+    if (previousGruppen != null) {
+      await previousGruppen.close();
+    }
+
     _activeRepository = repository;
+    _activeGruppenRepository = gruppenRepository;
     return _HeroRepositoryBootstrapResult(
       repository: repository,
+      gruppenRepository: gruppenRepository,
       heroStoragePath: heroStoragePath,
     );
   }
@@ -145,6 +167,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
         final result = snapshot.requireData;
         return _buildScope(
           repository: result.repository,
+          gruppenRepository: result.gruppenRepository,
           customCatalogRepository: CustomCatalogRepository(
             heroStoragePath: result.heroStoragePath,
           ),
@@ -157,6 +180,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
   Widget _buildScope({
     required Widget home,
     HiveHeroRepository? repository,
+    HiveGruppenRepository? gruppenRepository,
     CustomCatalogRepository? customCatalogRepository,
   }) {
     final scopeKey = ValueKey<String>(
@@ -176,6 +200,11 @@ class _AppStartupGateState extends State<AppStartupGate> {
     if (repository != null) {
       overrides.add(heroRepositoryProvider.overrideWithValue(repository));
     }
+    if (gruppenRepository != null) {
+      overrides.add(
+        gruppenRepositoryProvider.overrideWithValue(gruppenRepository),
+      );
+    }
 
     return ProviderScope(
       key: scopeKey,
@@ -188,10 +217,12 @@ class _AppStartupGateState extends State<AppStartupGate> {
 class _HeroRepositoryBootstrapResult {
   const _HeroRepositoryBootstrapResult({
     required this.repository,
+    required this.gruppenRepository,
     required this.heroStoragePath,
   });
 
   final HiveHeroRepository repository;
+  final HiveGruppenRepository gruppenRepository;
   final String heroStoragePath;
 }
 
