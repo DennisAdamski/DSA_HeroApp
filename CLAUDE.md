@@ -200,7 +200,9 @@ Ergaenzungen zur aktuellen Struktur:
   Talent-, Zauber-, Eigenschafts- und Grundwert-Steigerungen inklusive
   manueller Komplexitaetskorrektur als Fallback fuer Sonderfaelle.
 - `lib/domain/hero_adventure_entry.dart` definiert persistierte Abenteuer-
-  Etappen inklusive AP-Belohnung, festen SE-Zielen und Anwendungsstatus.
+  Etappen inklusive Status, abenteuerspezifischen Personen, weltlichen und
+  aventurischen Datumsfeldern, AP-Belohnung, festen SE-Zielen und
+  Anwendungsstatus.
 - `lib/domain/hero_adventure_se_pools.dart` kapselt die persistierten
   Sondererfahrungs-Pools fuer Eigenschaften und Grundwerte.
 - `lib/rules/derived/adventure_rewards_rules.dart` kapselt Anwenden,
@@ -216,6 +218,10 @@ Ergaenzungen zur aktuellen Struktur:
   `Kontakte` und `Abenteuer`; der Reisebericht bleibt ein eigener Workspace-Tab.
 - `lib/ui/screens/hero_notes/` enthaelt die ausgelagerten Teilwidgets fuer
   Chroniken, Kontakte und Abenteuer.
+- `lib/ui/screens/hero_notes/hero_adventure_controller.dart` kapselt Auswahl,
+  Dialog-Orchestrierung und Sanitizing fuer den Abenteuer-Workspace.
+- `lib/ui/screens/hero_notes/hero_adventure_dialogs.dart` enthaelt die
+  adaptiven Popups fuer Abenteuer, Abenteuer-Notizen und Personen.
 - `lib/ui/screens/hero_overview/hero_overview_raise_actions.dart` verbraucht
   Abenteuer-SE fuer Eigenschaften und Grundwerte direkt beim Steigern.
 - `lib/catalog/vertrautenmagie_preset.dart` enthaelt das vollstaendige
@@ -690,4 +696,16 @@ The following files are **intentionally kept** but not currently wired into the 
 - Eigenschafts- und Grundwertsteigerungen lesen diese Abenteuer-SE aus
   persistierten Pools und verbrauchen sie direkt im gemeinsamen
   `steigerungs_dialog.dart`.
+
+## Update 2026-04-04
+
+- Der Abenteuer-Bereich nutzt jetzt eine Chip-Uebersicht mit fokussierter
+  Detailansicht statt einer offenen Mehrfachlisten-Bearbeitung.
+- Neue Abenteuer sowie abenteuerbezogene Notizen und Personen werden ueber
+  adaptive Popups angelegt oder bearbeitet.
+- `HeroAdventureEntry` speichert jetzt Status, abenteuerspezifische Personen
+  sowie weltliche und aventurische Start-/Enddaten plus ein aktuelles
+  aventurisches Datum.
+- Das standardmaessig geoeffnete Abenteuer ist das erste mit Status
+  `Aktuell`, sonst das erste Abenteuer in der gespeicherten Reihenfolge.
 

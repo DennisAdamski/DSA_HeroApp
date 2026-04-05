@@ -249,6 +249,7 @@ void main() {
       adventures: const <HeroAdventureEntry>[
         HeroAdventureEntry(
           id: 'adv_jucho',
+          status: HeroAdventureStatus.completed,
           title: 'Feuer über Punin',
           summary: 'Die Gruppe schützt einen Geweihten vor Attentätern.',
           notes: <HeroNoteEntry>[
@@ -257,6 +258,38 @@ void main() {
               description: 'Das Abenteuer beginnt im Hafenviertel.',
             ),
           ],
+          people: <HeroAdventurePersonEntry>[
+            HeroAdventurePersonEntry(
+              id: 'person_jucho',
+              name: 'Jucho',
+              description: 'Kontakt mit Blick auf das Hafenviertel.',
+            ),
+          ],
+          startWorldDate: HeroAdventureDateValue(
+            day: '12',
+            month: 'April',
+            year: '2026',
+          ),
+          startAventurianDate: HeroAdventureDateValue(
+            day: '5',
+            month: 'praios',
+            year: '1048',
+          ),
+          endWorldDate: HeroAdventureDateValue(
+            day: '21',
+            month: 'April',
+            year: '2026',
+          ),
+          endAventurianDate: HeroAdventureDateValue(
+            day: '14',
+            month: 'praios',
+            year: '1048',
+          ),
+          currentAventurianDate: HeroAdventureDateValue(
+            day: '9',
+            month: 'praios',
+            year: '1048',
+          ),
           apReward: 75,
           seRewards: <HeroAdventureSeReward>[
             HeroAdventureSeReward(
@@ -313,9 +346,16 @@ void main() {
     expect(reloaded.connections.single.loyalitaet, 'schwankend');
     expect(reloaded.connections.single.adventureId, 'adv_jucho');
     expect(reloaded.adventures.single.id, 'adv_jucho');
+    expect(reloaded.adventures.single.status, HeroAdventureStatus.completed);
     expect(reloaded.adventures.single.title, 'Feuer über Punin');
     expect(reloaded.adventures.single.summary, contains('Geweihten'));
     expect(reloaded.adventures.single.notes.single.title, 'Ankunft');
+    expect(reloaded.adventures.single.people.single.name, 'Jucho');
+    expect(reloaded.adventures.single.startWorldDate.month, 'April');
+    expect(reloaded.adventures.single.startAventurianDate.month, 'praios');
+    expect(reloaded.adventures.single.endWorldDate.day, '21');
+    expect(reloaded.adventures.single.endAventurianDate.day, '14');
+    expect(reloaded.adventures.single.currentAventurianDate.day, '9');
     expect(reloaded.adventures.single.apReward, 75);
     expect(
       reloaded.adventures.single.seRewards.first.targetType,
