@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -193,6 +194,20 @@ void main() {
     await ensureFinderVisible(tester, target);
     await tester.tap(target);
     await tester.pumpAndSettle();
+  }
+
+  Finder tooltipIn(Finder scope, String tooltip) {
+    return find.descendant(of: scope, matching: find.byTooltip(tooltip));
+  }
+
+  double centerDx(WidgetTester tester, Finder finder) {
+    return tester.getCenter(finder).dx;
+  }
+
+  RenderParagraph paragraphIn(WidgetTester tester, Finder scope, String text) {
+    return tester.renderObject<RenderParagraph>(
+      find.descendant(of: scope, matching: find.text(text)),
+    );
   }
 
   Finder heroDeckToggleButton() {
@@ -1689,6 +1704,80 @@ void main() {
   );
 
   testWidgets(
+    'wide workspace inspector keeps vital control columns stable and long labels visible',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero(vorteileText: 'AE+1')],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+            ueberanstrengung: 1,
+            erschoepfung: 0,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+      final ueberanstrengungRow = find.byKey(
+        const ValueKey<String>('workspace-vital-row-ueberanstrengung'),
+      );
+      final erschoepfungRow = find.byKey(
+        const ValueKey<String>('workspace-vital-row-erschoepfung'),
+      );
+
+      expect(
+        paragraphIn(
+          tester,
+          ueberanstrengungRow,
+          'Überanstrengung',
+        ).didExceedMaxLines,
+        isFalse,
+      );
+      expect(
+        paragraphIn(tester, erschoepfungRow, 'Erschöpfung').didExceedMaxLines,
+        isFalse,
+      );
+
+      final lepMinusBefore = centerDx(tester, find.byTooltip('LeP verringern'));
+      final ueberanstrengungMinusBefore = centerDx(
+        tester,
+        tooltipIn(ueberanstrengungRow, 'Überanstrengung verringern'),
+      );
+      final erschoepfungMinusBefore = centerDx(
+        tester,
+        tooltipIn(erschoepfungRow, 'Erschöpfung verringern'),
+      );
+      final erschoepfungPlusBefore = centerDx(
+        tester,
+        tooltipIn(erschoepfungRow, 'Erschöpfung erhöhen'),
+      );
+
+      expect(ueberanstrengungMinusBefore, closeTo(lepMinusBefore, 0.01));
+      expect(erschoepfungMinusBefore, closeTo(lepMinusBefore, 0.01));
+
+      await tester.tap(tooltipIn(erschoepfungRow, 'Erschöpfung erhöhen'));
+      await tester.pumpAndSettle();
+
+      expect(
+        tooltipIn(erschoepfungRow, 'Erschöpfung zurücksetzen'),
+        findsOneWidget,
+      );
+      expect(
+        centerDx(tester, tooltipIn(erschoepfungRow, 'Erschöpfung verringern')),
+        closeTo(erschoepfungMinusBefore, 0.01),
+      );
+      expect(
+        centerDx(tester, tooltipIn(erschoepfungRow, 'Erschöpfung erhöhen')),
+        closeTo(erschoepfungPlusBefore, 0.01),
+      );
+    },
+  );
+
+  testWidgets(
     'wide workspace rest dialog can full restore resources and wounds',
     (tester) async {
       final repo = FakeRepository(
@@ -1881,6 +1970,52 @@ void main() {
     expect(find.text('Manueller BE'), findsNothing);
     expect(find.text('Entfernen'), findsNothing);
   });
+
+  testWidgets(
+    'wide workspace keeps status control columns stable when reset appears',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero(persistentMods: const StatModifiers(iniBase: 1))],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+      final iniRow = find.byKey(
+        const ValueKey<String>('workspace-status-row-Ini'),
+      );
+      final gsRow = find.byKey(
+        const ValueKey<String>('workspace-status-row-GS'),
+      );
+
+      final iniMinusDx = centerDx(tester, tooltipIn(iniRow, 'Ini verringern'));
+      final gsMinusBefore = centerDx(tester, tooltipIn(gsRow, 'GS verringern'));
+      final gsPlusBefore = centerDx(tester, tooltipIn(gsRow, 'GS erhöhen'));
+
+      expect(gsMinusBefore, closeTo(iniMinusDx, 0.01));
+      expect(tooltipIn(gsRow, 'GS zurücksetzen'), findsNothing);
+
+      await tester.tap(tooltipIn(gsRow, 'GS erhöhen'));
+      await tester.pumpAndSettle();
+
+      expect(tooltipIn(gsRow, 'GS zurücksetzen'), findsOneWidget);
+      expect(
+        centerDx(tester, tooltipIn(gsRow, 'GS verringern')),
+        closeTo(gsMinusBefore, 0.01),
+      );
+      expect(
+        centerDx(tester, tooltipIn(gsRow, 'GS erhöhen')),
+        closeTo(gsPlusBefore, 0.01),
+      );
+    },
+  );
 
   testWidgets('overview shows attributes and derived in responsive section', (
     tester,
