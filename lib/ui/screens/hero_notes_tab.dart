@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/adventure_rewards_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -292,21 +293,48 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     _markFieldChanged();
   }
 
-  Future<void> _applyAdventureRewardsFor(String adventureId) async {
+  Future<void> _completeAdventureFor(String adventureId) async {
     final hero = _latestHero;
     if (hero == null) {
       return;
     }
 
     final adventure = _findAdventureById(hero.adventures, adventureId);
-    if (adventure == null ||
-        !adventure.hasRewards ||
-        adventure.rewardsApplied) {
+    if (adventure == null || adventure.rewardsApplied) {
+      return;
+    }
+
+    final completionEntry = await _showAdventureCompletionDialog(
+      context: context,
+      initial: adventure,
+    );
+    if (!mounted || completionEntry == null) {
+      return;
+    }
+
+    final sanitizedAdventure = _sanitizeAdventure(completionEntry);
+    final preparedHero = hero.copyWith(
+      adventures: _replaceAdventure(
+        hero.adventures,
+        adventureId: adventureId,
+        nextAdventure: sanitizedAdventure,
+      ),
+    );
+    final applyCheck = canApplyAdventureRewards(
+      hero: preparedHero,
+      adventureId: adventureId,
+    );
+    if (!applyCheck.isAllowed) {
+      if (applyCheck.reason.trim().isNotEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(applyCheck.reason)));
+      }
       return;
     }
 
     final updatedHero = applyAdventureRewards(
-      hero: hero,
+      hero: preparedHero,
       adventureId: adventureId,
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
@@ -315,12 +343,13 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     }
 
     _latestHero = updatedHero;
+    _syncDraftFromHero(updatedHero, force: true);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${_adventureTitle(adventure)} angewendet')),
+      SnackBar(content: Text('${_adventureTitle(adventure)} abgeschlossen')),
     );
   }
 
-  Future<void> _revokeAdventureRewardsFor(String adventureId) async {
+  Future<void> _reopenAdventureFor(String adventureId) async {
     final hero = _latestHero;
     if (hero == null) {
       return;
@@ -350,8 +379,9 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
 
     final adventure = _findAdventureById(hero.adventures, adventureId);
     _latestHero = updatedHero;
+    _syncDraftFromHero(updatedHero, force: true);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${_adventureTitle(adventure)} zurückgenommen')),
+      SnackBar(content: Text('${_adventureTitle(adventure)} wieder geöffnet')),
     );
   }
 
@@ -377,6 +407,16 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       return '';
     }
     return _adventureTitle(adventure);
+  }
+
+  List<HeroAdventureEntry> _replaceAdventure(
+    List<HeroAdventureEntry> adventures, {
+    required String adventureId,
+    required HeroAdventureEntry nextAdventure,
+  }) {
+    return adventures
+        .map((entry) => entry.id == adventureId ? nextAdventure : entry)
+        .toList(growable: false);
   }
 
   List<_AdventureTargetOption> _buildTalentTargetOptions(
@@ -519,7 +559,6 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
                     onMoveSelectedDown: () => _moveSelectedAdventure(1),
                     onTitleChanged: _updateSelectedAdventureTitle,
                     onSummaryChanged: _updateSelectedAdventureSummary,
-                    onStatusChanged: _updateSelectedAdventureStatus,
                     onStartWorldDateChanged:
                         _updateSelectedAdventureStartWorldDate,
                     onStartAventurianDateChanged:
@@ -548,8 +587,8 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
                         _updateSelectedAdventureSeRewardTarget,
                     onSeRewardCountChanged:
                         _updateSelectedAdventureSeRewardCount,
-                    onApplyRewards: _applyAdventureRewardsFor,
-                    onRevokeRewards: _revokeAdventureRewardsFor,
+                    onCompleteAdventure: _completeAdventureFor,
+                    onReopenAdventure: _reopenAdventureFor,
                     targetOptionsForType: (type) => _targetOptionsForType(
                       targetType: type,
                       hero: hero,

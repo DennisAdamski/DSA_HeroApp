@@ -156,13 +156,6 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
     _updateSelectedAdventure(summary: value);
   }
 
-  void _updateSelectedAdventureStatus(HeroAdventureStatus status) {
-    _updateSelectedAdventure(
-      status: status,
-      preferDefaultSelection: status == HeroAdventureStatus.completed,
-    );
-  }
-
   void _updateSelectedAdventureStartWorldDate(HeroAdventureDateValue value) {
     _updateSelectedAdventure(startWorldDate: value);
   }
@@ -402,6 +395,10 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
       seRewards: adventure.seRewards
           .where((entry) => entry.hasContent)
           .toList(growable: false),
+      lootRewards: adventure.lootRewards
+          .map(_sanitizeAdventureLoot)
+          .where((entry) => entry.hasContent)
+          .toList(growable: false),
     );
   }
 
@@ -426,6 +423,15 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
       day: value.day.trim(),
       month: value.month.trim(),
       year: value.year.trim(),
+    );
+  }
+
+  HeroAdventureLootEntry _sanitizeAdventureLoot(HeroAdventureLootEntry loot) {
+    return loot.copyWith(
+      name: loot.name.trim(),
+      quantity: loot.quantity.trim(),
+      origin: loot.origin.trim(),
+      description: loot.description.trim(),
     );
   }
 

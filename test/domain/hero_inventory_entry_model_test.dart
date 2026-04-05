@@ -64,6 +64,20 @@ void main() {
       expect(reloaded.sourceRef, 'w:Langschwert');
       expect(reloaded.source, InventoryItemSource.waffe);
     });
+
+    test('abenteuer-Quelle wird korrekt serialisiert und gelesen', () {
+      const entry = HeroInventoryEntry(
+        gegenstand: 'Silberdolch',
+        source: InventoryItemSource.abenteuer,
+        sourceRef: 'adv:adv_1|loot:loot_1',
+        welchesAbenteuer: 'Feuer im Nebel',
+      );
+
+      final reloaded = HeroInventoryEntry.fromJson(entry.toJson());
+      expect(reloaded.source, InventoryItemSource.abenteuer);
+      expect(reloaded.sourceRef, 'adv:adv_1|loot:loot_1');
+      expect(reloaded.welchesAbenteuer, 'Feuer im Nebel');
+    });
   });
 
   group('HeroInventoryEntry.fromJson – Abwaertskompatibilitaet', () {

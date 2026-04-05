@@ -93,7 +93,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 22
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 23
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
@@ -103,7 +103,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 22) | Format-Version für Migrationskompatibilität |
+| `schemaVersion` | `int` (= 23) | Format-Version fuer Migrationskompatibilitaet |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
@@ -137,7 +137,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `inventoryEntries` | `List<HeroInventoryEntry>` | Ausrüstung/Inventar |
 | `notes` | `List<HeroNoteEntry>` | Freie Chroniken mit Titel und Beschreibung |
 | `connections` | `List<HeroConnectionEntry>` | Kontakte/Verbindungen mit Ort, Sozialstatus, Loyalität, Beschreibung und optionaler Abenteuer-Referenz |
-| `adventures` | `List<HeroAdventureEntry>` | Manuell sortierte Abenteuer-Etappen mit Status, weltlichen und aventurischen Datumsfeldern, Notizen, Personen, AP-Belohnung, festen SE-Zielen und Anwendungsstatus |
+| `adventures` | `List<HeroAdventureEntry>` | Manuell sortierte Abenteuer-Etappen mit Status, weltlichen und aventurischen Datumsfeldern, Notizen, Personen, AP-Belohnung, festen SE-Zielen, Abschluss-Dukaten, strukturierter Beute und Anwendungsstatus |
 | `attributeSePool` | `HeroAttributeSePool` | Persistierte Abenteuer-SE für Eigenschaften (`MU` bis `KK`) |
 | `statSePool` | `HeroStatSePool` | Persistierte Abenteuer-SE für Grundwerte (`LeP`, `Au`, `AsP`, `KaP`, `MR`) |
 | `unknownModifierFragments` | `List<String>` | Unparsbare Modifier-Fragmente (UI-Hinweis) |
@@ -521,7 +521,9 @@ JSON-Referenzformat liegt unter
 
 **Datei:** `lib/domain/hero_inventory_entry.dart`
 
-Repräsentiert einen Inventargegenstand (alle Felder `String`, Standard `''`):
+Repraesentiert einen Inventargegenstand. Legacy-Stringfelder bleiben fuer
+Rueckwaertskompatibilitaet erhalten; zusaetzlich existieren typisierte
+Inventarfelder fuer Quelle, Gewicht, Wert und Modifier.
 
 | Feld | Bedeutung |
 |---|---|
@@ -537,6 +539,15 @@ Repräsentiert einen Inventargegenstand (alle Felder `String`, Standard `''`):
 | `woDann` | Aufbewahrungsort |
 | `gruppe` | Gruppe/Kategorie |
 | `beschreibung` | Beschreibung |
+| `itemType` | Typisierte Inventarkategorie (`ausruestung`, `verbrauchsgegenstand`, `wertvolles`, `sonstiges`) |
+| `source` | Herkunft des Eintrags (`manuell`, Kampf-Sync oder `abenteuer`) |
+| `sourceRef` | Stabile Referenz fuer synchronisierte oder abenteuerbezogene Eintraege |
+| `istAusgeruestet` | Steuert, ob Modifier des Eintrags aktiv wirken |
+| `modifiers` | Typisierte Inventar-Modifikatoren |
+| `gewichtGramm` | Numerisches Gewicht in Gramm |
+| `wertSilber` | Numerischer Wert in Silbertalern |
+| `herkunft` | Fundort, Quelle oder Haendler |
+| `traegerTyp` / `traegerId` | Zuordnung zum Helden oder zu einem Begleiter |
 
 ---
 
@@ -1155,7 +1166,7 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 | `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Kampf (Nah- oder Fernkampf), SF, Manöver und Kampfmeisterschaften |
 | `hero_magic_tab.dart` | `HeroMagicTab` | Zauber, Ritualkategorien/Rituale, Repräsentationen, magische SF und globale Leiteigenschaft |
 | `hero_inventory_tab.dart` | `HeroInventoryTab` | Direkte Inventartabelle mit AppBar-Aktion, Split-Editor und Sofortspeicherung |
-| `hero_notes_tab.dart` | `HeroNotesTab` | Untertabs für Chroniken, Kontakte und Abenteuer mit Chip-Workspace, Popups und getrenntem Reward-Workflow |
+| `hero_notes_tab.dart` | `HeroNotesTab` | Untertabs fuer Chroniken, Kontakte und Abenteuer mit Chip-Workspace, Popups und gefuehrtem Abenteuer-Abschluss |
 | `hero_detail_screen.dart` | `HeroDetailScreen` | Legacy-Platzhalter (nicht eingebunden) |
 
 ### Responsive Layout
@@ -1210,7 +1221,7 @@ einem Zielgerät im Profile-Modus.
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` für `HeroSheet` ist **22**, für `HeroState` **5**.
+- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **23**, fuer `HeroState` **5**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 3 wird **strikt** validiert.
 
@@ -1343,6 +1354,24 @@ ueber die Settings-Katalogverwaltung bearbeitet.
 - Abenteuer, Notizen und Personen werden ueber adaptive Popups angelegt oder
   bearbeitet; im Detailbereich bleiben Titel und Zusammenfassung inline
   editierbar, waehrend Notizen und Personen als einklappbare Chips erscheinen.
+
+### Update 2026-04-05: Gefuehrter Abenteuer-Abschluss
+
+- `HeroSheet` nutzt jetzt `schemaVersion` **23**.
+- `HeroAdventureEntry` speichert mit `dukatenReward` und `lootRewards`
+  persistierte Abschlussdaten; `HeroAdventureLootEntry` bildet die manuell
+  erfasste Beute fuer die spaetere Inventaruebernahme ab.
+- `InventoryItemSource` enthaelt jetzt den Ursprung `abenteuer`, damit
+  Abschluss-Gegenstaende im Inventar sichtbar bleiben, aber nicht als
+  kampfverknuepfte Eintraege behandelt werden.
+- `adventure_rewards_rules.dart` wendet AP, feste SE, Dukaten und
+  Abenteuer-Beute atomar an, prueft Ruecknahmen gegen verbrauchte SE,
+  fehlende Gegenstaende und ungueltige Dukatenstaende und setzt dabei den
+  Abenteuerstatus konsistent zwischen `Aktuell` und `Abgeschlossen`.
+- Der Abenteuer-Workspace beendet aktuelle Abenteuer ueber einen
+  `Abschliessen`-Dialog mit Enddaten, Dukaten-Eingabe, Reward-Zusammenfassung
+  und detailierter Gegenstandserfassung; das weltliche Enddatum ist mit dem
+  heutigen Datum vorbelegt.
 
 ### Update 2026-03-15: Gefuehrte AP-Steigerungen
 

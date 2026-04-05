@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
 /// Status eines Abenteuers in der Heldenchronik.
 enum HeroAdventureStatus {
@@ -202,6 +203,112 @@ class HeroAdventurePersonEntry {
   }
 }
 
+/// Persistierte Beutezeile aus dem Abenteuer-Abschluss.
+class HeroAdventureLootEntry {
+  /// Erzeugt eine persistierbare Beutezeile mit stabiler ID.
+  const HeroAdventureLootEntry({
+    required this.id,
+    this.name = '',
+    this.quantity = '',
+    this.itemType = InventoryItemType.sonstiges,
+    this.weightGramm = 0,
+    this.valueSilver = 0,
+    this.origin = '',
+    this.description = '',
+  });
+
+  /// Stabile ID der Beutezeile innerhalb des Abenteuers.
+  final String id;
+
+  /// Anzeigename des Gegenstands.
+  final String name;
+
+  /// Erfasste Anzahl oder Mengennotiz.
+  final String quantity;
+
+  /// Typ des Gegenstands fuer die Inventaruebernahme.
+  final InventoryItemType itemType;
+
+  /// Gewicht in Gramm.
+  final int weightGramm;
+
+  /// Wert in Silbertalern.
+  final int valueSilver;
+
+  /// Herkunft oder Fundnotiz fuer die Inventaranzeige.
+  final String origin;
+
+  /// Freitextbeschreibung des Gegenstands.
+  final String description;
+
+  /// Gibt an, ob die Zeile fachlich belegt ist.
+  bool get hasContent {
+    return name.trim().isNotEmpty ||
+        quantity.trim().isNotEmpty ||
+        weightGramm > 0 ||
+        valueSilver > 0 ||
+        origin.trim().isNotEmpty ||
+        description.trim().isNotEmpty;
+  }
+
+  /// Liefert eine Kopie mit gezielt ersetzten Feldern.
+  HeroAdventureLootEntry copyWith({
+    String? id,
+    String? name,
+    String? quantity,
+    InventoryItemType? itemType,
+    int? weightGramm,
+    int? valueSilver,
+    String? origin,
+    String? description,
+  }) {
+    return HeroAdventureLootEntry(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      quantity: quantity ?? this.quantity,
+      itemType: itemType ?? this.itemType,
+      weightGramm: _normalizeReward(weightGramm ?? this.weightGramm),
+      valueSilver: _normalizeReward(valueSilver ?? this.valueSilver),
+      origin: origin ?? this.origin,
+      description: description ?? this.description,
+    );
+  }
+
+  /// Serialisiert die Beutezeile fuer Persistenz und Export.
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'id': id,
+      'name': name,
+      'quantity': quantity,
+      'itemType': itemType.name,
+      'weightGramm': weightGramm,
+      'valueSilver': valueSilver,
+      'origin': origin,
+      'description': description,
+    };
+  }
+
+  /// Laedt eine Beutezeile tolerant gegenueber fehlenden Feldern.
+  static HeroAdventureLootEntry fromJson(Map<String, dynamic> json) {
+    String getString(String key) => json[key]?.toString() ?? '';
+
+    return HeroAdventureLootEntry(
+      id: getString('id'),
+      name: getString('name'),
+      quantity: getString('quantity'),
+      itemType: _parseInventoryItemType(json['itemType']),
+      weightGramm: _normalizeReward(
+        (json['weightGramm'] as num?)?.toInt() ?? 0,
+      ),
+      valueSilver: _normalizeReward(
+        (json['valueSilver'] as num?)?.toInt() ?? 0,
+      ),
+      origin: getString('origin'),
+      description: getString('description'),
+    );
+  }
+}
+
 /// Manuell gepflegter Abenteuer-Eintrag eines Helden.
 class HeroAdventureEntry {
   /// Erzeugt ein persistierbares Abenteuer mit stabiler ID.
@@ -219,6 +326,8 @@ class HeroAdventureEntry {
     this.currentAventurianDate = const HeroAdventureDateValue(),
     this.apReward = 0,
     this.seRewards = const <HeroAdventureSeReward>[],
+    this.dukatenReward = 0,
+    this.lootRewards = const <HeroAdventureLootEntry>[],
     this.rewardsApplied = false,
   });
 
@@ -261,12 +370,18 @@ class HeroAdventureEntry {
   /// Strukturierte SE-Belohnungen des Abenteuers.
   final List<HeroAdventureSeReward> seRewards;
 
+  /// Numerische Dukaten-Belohnung fuer den Abschluss.
+  final double dukatenReward;
+
+  /// Gegenstaende, die beim Abschluss ins Inventar uebernommen werden.
+  final List<HeroAdventureLootEntry> lootRewards;
+
   /// Kennzeichnet, ob die Belohnungen bereits auf den Helden angewendet wurden.
   final bool rewardsApplied;
 
   /// Gibt an, ob das Abenteuer fachlich gefuellt ist.
   bool get hasContent {
-    if (rewardsApplied || apReward > 0) {
+    if (rewardsApplied || apReward > 0 || dukatenReward > 0) {
       return true;
     }
     if (title.trim().isNotEmpty || summary.trim().isNotEmpty) {
@@ -285,12 +400,18 @@ class HeroAdventureEntry {
     if (seRewards.any((entry) => entry.hasContent)) {
       return true;
     }
+    if (lootRewards.any((entry) => entry.hasContent)) {
+      return true;
+    }
     return notes.any((entry) => _hasAdventureNoteContent(entry));
   }
 
   /// Gibt an, ob das Abenteuer eine anwendbare Belohnung besitzt.
   bool get hasRewards {
-    return apReward > 0 || seRewards.any((entry) => entry.hasContent);
+    return apReward > 0 ||
+        dukatenReward > 0 ||
+        seRewards.any((entry) => entry.hasContent) ||
+        lootRewards.any((entry) => entry.hasContent);
   }
 
   /// Liefert eine Kopie mit gezielt ersetzten Feldern.
@@ -308,6 +429,8 @@ class HeroAdventureEntry {
     HeroAdventureDateValue? currentAventurianDate,
     int? apReward,
     List<HeroAdventureSeReward>? seRewards,
+    double? dukatenReward,
+    List<HeroAdventureLootEntry>? lootRewards,
     bool? rewardsApplied,
   }) {
     return HeroAdventureEntry(
@@ -325,6 +448,10 @@ class HeroAdventureEntry {
           currentAventurianDate ?? this.currentAventurianDate,
       apReward: _normalizeReward(apReward ?? this.apReward),
       seRewards: seRewards ?? this.seRewards,
+      dukatenReward: _normalizeDukatenReward(
+        dukatenReward ?? this.dukatenReward,
+      ),
+      lootRewards: lootRewards ?? this.lootRewards,
       rewardsApplied: rewardsApplied ?? this.rewardsApplied,
     );
   }
@@ -347,6 +474,10 @@ class HeroAdventureEntry {
       'seRewards': seRewards
           .map((entry) => entry.toJson())
           .toList(growable: false),
+      'dukatenReward': dukatenReward,
+      'lootRewards': lootRewards
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
       'rewardsApplied': rewardsApplied,
     };
   }
@@ -356,6 +487,7 @@ class HeroAdventureEntry {
     final rawNotes = (json['notes'] as List?) ?? const <dynamic>[];
     final rawPeople = (json['people'] as List?) ?? const <dynamic>[];
     final rawSeRewards = (json['seRewards'] as List?) ?? const <dynamic>[];
+    final rawLootRewards = (json['lootRewards'] as List?) ?? const <dynamic>[];
 
     return HeroAdventureEntry(
       id: (json['id'] as String?) ?? '',
@@ -393,6 +525,17 @@ class HeroAdventureEntry {
           )
           .where((entry) => entry.hasContent)
           .toList(growable: false),
+      dukatenReward: _normalizeDukatenReward(
+        (json['dukatenReward'] as num?)?.toDouble() ?? 0,
+      ),
+      lootRewards: rawLootRewards
+          .whereType<Map>()
+          .map(
+            (entry) =>
+                HeroAdventureLootEntry.fromJson(entry.cast<String, dynamic>()),
+          )
+          .where((entry) => entry.hasContent)
+          .toList(growable: false),
       rewardsApplied: json['rewardsApplied'] as bool? ?? false,
     );
   }
@@ -420,6 +563,13 @@ HeroAdventureDateValue _parseAdventureDateValue(dynamic raw) {
   return const HeroAdventureDateValue();
 }
 
+InventoryItemType _parseInventoryItemType(dynamic raw) {
+  return InventoryItemType.values.firstWhere(
+    (entry) => entry.name == raw,
+    orElse: () => InventoryItemType.sonstiges,
+  );
+}
+
 bool _hasAdventureNoteContent(HeroNoteEntry entry) {
   return entry.title.trim().isNotEmpty || entry.description.trim().isNotEmpty;
 }
@@ -429,5 +579,9 @@ int _normalizeCount(int value) {
 }
 
 int _normalizeReward(int value) {
+  return value < 0 ? 0 : value;
+}
+
+double _normalizeDukatenReward(double value) {
   return value < 0 ? 0 : value;
 }

@@ -146,6 +146,21 @@ void main() {
       expect(result.first.source, InventoryItemSource.manuell);
     });
 
+    test('abenteuer-eintraege bleiben neben Combat-Sync erhalten', () {
+      const adventureEntry = HeroInventoryEntry(
+        gegenstand: 'Silberdolch',
+        itemType: InventoryItemType.wertvolles,
+        source: InventoryItemSource.abenteuer,
+        sourceRef: 'adv:adv_1|loot:loot_1',
+      );
+      final config = _configWithWeapon('Schwert');
+      final result = reconcileInventoryWithCombat([adventureEntry], config);
+
+      expect(result.first.gegenstand, 'Silberdolch');
+      expect(result.first.source, InventoryItemSource.abenteuer);
+      expect(result[1].source, InventoryItemSource.waffe);
+    });
+
     test('neuer Waffen-Eintrag wird hinzugefuegt', () {
       final config = _configWithWeapon('Axt');
       final result = reconcileInventoryWithCombat([], config);
