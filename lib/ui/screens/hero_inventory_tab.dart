@@ -275,7 +275,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     }
 
     final entry = _entries[index];
-    if (entry.source != InventoryItemSource.manuell) {
+    if (_isCombatLinkedEntry(entry)) {
       return;
     }
 
@@ -373,7 +373,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
 
   int _manualEntryCount(List<HeroInventoryEntry> entries) {
     return entries
-        .where((entry) => entry.source == InventoryItemSource.manuell)
+        .where((entry) => !_isCombatLinkedEntry(entry))
         .length;
   }
 
@@ -423,6 +423,8 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
         return 'Geschoss';
       case InventoryItemSource.nebenhand:
         return 'Nebenhand';
+      case InventoryItemSource.abenteuer:
+        return 'Abenteuer';
     }
   }
 
@@ -452,7 +454,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     final colorScheme = Theme.of(context).colorScheme;
     final widgets = <Widget>[];
 
-    if (entry.sourceRef != null) {
+    if (_isCombatLinkedEntry(entry)) {
       widgets.add(
         _StatusBadge(
           label: 'Verknüpft',
@@ -552,7 +554,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
                     onPressed: () => _openEditEntryAction(context, index),
                     icon: const Icon(Icons.edit_outlined),
                   ),
-                  if (entry.source == InventoryItemSource.manuell)
+                  if (!_isCombatLinkedEntry(entry))
                     IconButton(
                       key: ValueKey<String>('inventory-row-delete-$index'),
                       tooltip: 'Löschen',
@@ -760,6 +762,10 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
 
   @override
   bool get wantKeepAlive => true;
+
+  bool _isCombatLinkedEntry(HeroInventoryEntry entry) {
+    return entry.sourceRef != null && isCombatLinkedInventorySource(entry.source);
+  }
 }
 
 class _StatusBadge extends StatelessWidget {
@@ -786,6 +792,7 @@ class _StatusBadge extends StatelessWidget {
       child: Text(label, style: labelStyle?.copyWith(color: textColor)),
     );
   }
+
 }
 
 class _DukatenField extends StatefulWidget {

@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/adventure_rewards_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -292,21 +293,66 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     _markFieldChanged();
   }
 
-  Future<void> _applyAdventureRewardsFor(String adventureId) async {
+  Future<void> _completeAdventureFor(String adventureId) async {
     final hero = _latestHero;
     if (hero == null) {
       return;
     }
 
     final adventure = _findAdventureById(hero.adventures, adventureId);
-    if (adventure == null ||
-        !adventure.hasRewards ||
-        adventure.rewardsApplied) {
+    if (adventure == null || adventure.rewardsApplied) {
+      return;
+    }
+
+    final catalog = ref.read(rulesCatalogProvider).asData?.value;
+    final completionEntry = await _showAdventureCompletionDialog(
+      context: context,
+      initial: adventure,
+      rewardTargetOptions: _AdventureRewardTargetOptions(
+        talent: _targetOptionsForType(
+          targetType: HeroAdventureSeTargetType.talent,
+          hero: hero,
+          catalog: catalog,
+        ),
+        grundwert: _targetOptionsForType(
+          targetType: HeroAdventureSeTargetType.grundwert,
+          hero: hero,
+          catalog: catalog,
+        ),
+        eigenschaft: _targetOptionsForType(
+          targetType: HeroAdventureSeTargetType.eigenschaft,
+          hero: hero,
+          catalog: catalog,
+        ),
+      ),
+    );
+    if (!mounted || completionEntry == null) {
+      return;
+    }
+
+    final sanitizedAdventure = _sanitizeAdventure(completionEntry);
+    final preparedHero = hero.copyWith(
+      adventures: _replaceAdventure(
+        hero.adventures,
+        adventureId: adventureId,
+        nextAdventure: sanitizedAdventure,
+      ),
+    );
+    final applyCheck = canApplyAdventureRewards(
+      hero: preparedHero,
+      adventureId: adventureId,
+    );
+    if (!applyCheck.isAllowed) {
+      if (applyCheck.reason.trim().isNotEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(applyCheck.reason)));
+      }
       return;
     }
 
     final updatedHero = applyAdventureRewards(
-      hero: hero,
+      hero: preparedHero,
       adventureId: adventureId,
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
@@ -315,12 +361,13 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     }
 
     _latestHero = updatedHero;
+    _syncDraftFromHero(updatedHero, force: true);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${_adventureTitle(adventure)} angewendet')),
+      SnackBar(content: Text('${_adventureTitle(adventure)} abgeschlossen')),
     );
   }
 
-  Future<void> _revokeAdventureRewardsFor(String adventureId) async {
+  Future<void> _reopenAdventureFor(String adventureId) async {
     final hero = _latestHero;
     if (hero == null) {
       return;
@@ -350,8 +397,9 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
 
     final adventure = _findAdventureById(hero.adventures, adventureId);
     _latestHero = updatedHero;
+    _syncDraftFromHero(updatedHero, force: true);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${_adventureTitle(adventure)} zurückgenommen')),
+      SnackBar(content: Text('${_adventureTitle(adventure)} wieder geöffnet')),
     );
   }
 
@@ -377,6 +425,16 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       return '';
     }
     return _adventureTitle(adventure);
+  }
+
+  List<HeroAdventureEntry> _replaceAdventure(
+    List<HeroAdventureEntry> adventures, {
+    required String adventureId,
+    required HeroAdventureEntry nextAdventure,
+  }) {
+    return adventures
+        .map((entry) => entry.id == adventureId ? nextAdventure : entry)
+        .toList(growable: false);
   }
 
   List<_AdventureTargetOption> _buildTalentTargetOptions(
@@ -458,7 +516,6 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
 
     _latestHero = hero;
     _syncDraftFromHero(hero);
-    final catalog = ref.watch(rulesCatalogProvider).asData?.value;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -519,7 +576,6 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
                     onMoveSelectedDown: () => _moveSelectedAdventure(1),
                     onTitleChanged: _updateSelectedAdventureTitle,
                     onSummaryChanged: _updateSelectedAdventureSummary,
-                    onStatusChanged: _updateSelectedAdventureStatus,
                     onStartWorldDateChanged:
                         _updateSelectedAdventureStartWorldDate,
                     onStartAventurianDateChanged:
@@ -533,28 +589,8 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
                     onOpenNote: _openAdventureNoteDialog,
                     onAddPerson: _addPersonForSelectedAdventure,
                     onOpenPerson: _openAdventurePersonDialog,
-                    onApRewardChanged: _updateSelectedAdventureApReward,
-                    onAddSeReward: _addSeRewardToSelectedAdventure,
-                    onRemoveSeReward: _removeSeRewardFromSelectedAdventure,
-                    onSeRewardTypeChanged: (rewardIndex, type) {
-                      _updateSelectedAdventureSeRewardType(
-                        rewardIndex,
-                        type,
-                        hero: hero,
-                        catalog: catalog,
-                      );
-                    },
-                    onSeRewardTargetChanged:
-                        _updateSelectedAdventureSeRewardTarget,
-                    onSeRewardCountChanged:
-                        _updateSelectedAdventureSeRewardCount,
-                    onApplyRewards: _applyAdventureRewardsFor,
-                    onRevokeRewards: _revokeAdventureRewardsFor,
-                    targetOptionsForType: (type) => _targetOptionsForType(
-                      targetType: type,
-                      hero: hero,
-                      catalog: catalog,
-                    ),
+                    onCompleteAdventure: _completeAdventureFor,
+                    onReopenAdventure: _reopenAdventureFor,
                     revokeCheckForAdventure: (adventureId) =>
                         canRevokeAdventureRewards(
                           hero: hero,
@@ -579,6 +615,26 @@ class _AdventureTargetOption {
 
   final String id;
   final String label;
+}
+
+class _AdventureRewardTargetOptions {
+  const _AdventureRewardTargetOptions({
+    required this.talent,
+    required this.grundwert,
+    required this.eigenschaft,
+  });
+
+  final List<_AdventureTargetOption> talent;
+  final List<_AdventureTargetOption> grundwert;
+  final List<_AdventureTargetOption> eigenschaft;
+
+  List<_AdventureTargetOption> optionsForType(HeroAdventureSeTargetType type) {
+    return switch (type) {
+      HeroAdventureSeTargetType.talent => talent,
+      HeroAdventureSeTargetType.grundwert => grundwert,
+      HeroAdventureSeTargetType.eigenschaft => eigenschaft,
+    };
+  }
 }
 
 const List<_AdventureTargetOption> _attributeTargetOptions =

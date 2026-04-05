@@ -201,13 +201,16 @@ Ergaenzungen zur aktuellen Struktur:
   manueller Komplexitaetskorrektur als Fallback fuer Sonderfaelle.
 - `lib/domain/hero_adventure_entry.dart` definiert persistierte Abenteuer-
   Etappen inklusive Status, abenteuerspezifischen Personen, weltlichen und
-  aventurischen Datumsfeldern, AP-Belohnung, festen SE-Zielen und
-  Anwendungsstatus.
+  aventurischen Datumsfeldern, AP-Belohnung, festen SE-Zielen,
+  Abschluss-Dukaten, strukturierter Abenteuer-Beute und Anwendungsstatus.
 - `lib/domain/hero_adventure_se_pools.dart` kapselt die persistierten
   Sondererfahrungs-Pools fuer Eigenschaften und Grundwerte.
 - `lib/rules/derived/adventure_rewards_rules.dart` kapselt Anwenden,
   Ruecknahmepruefung, Ruecknahme und Referenzbereinigung fuer
-  Abenteuer-Belohnungen.
+  Abenteuer-Belohnungen inklusive Dukaten- und Inventaruebernahme.
+- `lib/domain/inventory_item_modifier.dart` enthaelt neben Inventar-
+  Modifikatoren jetzt auch die Quelle `InventoryItemSource.abenteuer`, damit
+  Abschluss-Beute nicht als Kampf-verknuepft behandelt wird.
 - `lib/ui/screens/hero_combat/` enthaelt die aufgeteilten Kampf-Subtabs sowie
   Helper fuer Regeln, Preview und Weapon-Editor.
 - `lib/ui/screens/hero_combat/combat_mastery_section.dart` enthaelt den
@@ -221,7 +224,8 @@ Ergaenzungen zur aktuellen Struktur:
 - `lib/ui/screens/hero_notes/hero_adventure_controller.dart` kapselt Auswahl,
   Dialog-Orchestrierung und Sanitizing fuer den Abenteuer-Workspace.
 - `lib/ui/screens/hero_notes/hero_adventure_dialogs.dart` enthaelt die
-  adaptiven Popups fuer Abenteuer, Abenteuer-Notizen und Personen.
+  adaptiven Popups fuer Abenteuer, Abenteuer-Notizen, Personen und den
+  gefuehrten Abenteuer-Abschluss.
 - `lib/ui/screens/hero_overview/hero_overview_raise_actions.dart` verbraucht
   Abenteuer-SE fuer Eigenschaften und Grundwerte direkt beim Steigern.
 - `lib/catalog/vertrautenmagie_preset.dart` enthaelt das vollstaendige
@@ -516,7 +520,7 @@ python tool/report_unreferenced_dart.py
 - **Screen size limit**: root screen/tab files must stay under **700 LOC**. Split into sub-files (e.g. `hero_combat/` directory) before exceeding this.
 - **ConsumerWidget vs ConsumerStatefulWidget**: use `ConsumerWidget` (stateless) by default; use `ConsumerStatefulWidget` only when local widget state is genuinely needed.
 - **Provider access in UI**: use `.watch` for reactive reads; use `.read` only inside callbacks (e.g. button presses).
-- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **22** for `HeroSheet` and **5** for `HeroState`.
+- **Backward-compatible serialization**: `fromJson` must be lenient (use `?? defaultValue` for every field) to support older hero data schemas. The current `schemaVersion` is **23** for `HeroSheet` and **5** for `HeroState`.
 - **German comments and identifiers**: code-level comments and domain names follow German (rasse, kultur, Held, Talente, etc.).
 - **UI wording**: user-facing German text should prefer real umlauts and `ß` over transliterations such as `ae`, `oe`, `ue`, and `ss`, unless a technical constraint requires ASCII.
 
@@ -708,4 +712,22 @@ The following files are **intentionally kept** but not currently wired into the 
   aventurisches Datum.
 - Das standardmaessig geoeffnete Abenteuer ist das erste mit Status
   `Aktuell`, sonst das erste Abenteuer in der gespeicherten Reihenfolge.
+
+## Update 2026-04-05
+
+- `HeroSheet` nutzt jetzt `schemaVersion` **23**.
+- `HeroAdventureEntry` speichert fuer den Abschluss jetzt auch
+  `dukatenReward` und `lootRewards`; `HeroAdventureLootEntry` kapselt die
+  strukturierte Abenteuer-Beute fuer die Inventaruebernahme.
+- `HeroNotesTab` fuehrt aktuelle Abenteuer ueber einen gefuehrten
+  `Abschliessen`-Dialog zum Status `Abgeschlossen`; das weltliche Enddatum ist
+  dabei mit `DateTime.now()` vorbelegt.
+- AP-Belohnungen und feste Sondererfahrungen werden nicht mehr direkt in der
+  Abenteuer-Detailansicht bearbeitet, sondern zusammen mit Dukaten und Beute
+  im `Abschliessen`-Dialog erfasst.
+- AP, feste SE, Dukaten und Abschluss-Gegenstaende werden atomar ueber
+  `adventure_rewards_rules.dart` angewendet oder fachlich sicher wieder
+  zurueckgenommen.
+- `InventoryItemSource.abenteuer` verhindert, dass Abschluss-Beute vom
+  Kampf-Sync als verknuepfter Kampfeintrag behandelt oder entfernt wird.
 
