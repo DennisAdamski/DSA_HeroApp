@@ -7,8 +7,29 @@ enum InventoryItemType { ausruestung, verbrauchsgegenstand, wertvolles, sonstige
 /// Ursprung eines Inventar-Eintrags.
 ///
 /// Verlinkte Eintraege (nicht [manuell]) werden automatisch aus dem Kampf-Tab
-/// synchronisiert und koennen nicht manuell geloescht werden.
-enum InventoryItemSource { manuell, waffe, ruestung, geschoss, nebenhand }
+/// synchronisiert und koennen nicht manuell geloescht werden. Die Quelle
+/// [abenteuer] bleibt dagegen editierbar und wird ausschliesslich vom
+/// Abenteuer-Abschluss verwendet.
+enum InventoryItemSource {
+  manuell,
+  waffe,
+  ruestung,
+  geschoss,
+  nebenhand,
+  abenteuer,
+}
+
+/// Gibt an, ob der Ursprung aus dem Kampf-Tab stammt und daher technisch
+/// verknuepft behandelt werden muss.
+bool isCombatLinkedInventorySource(InventoryItemSource source) {
+  return switch (source) {
+    InventoryItemSource.waffe ||
+    InventoryItemSource.ruestung ||
+    InventoryItemSource.geschoss ||
+    InventoryItemSource.nebenhand => true,
+    InventoryItemSource.manuell || InventoryItemSource.abenteuer => false,
+  };
+}
 
 /// Ein einzelner Modifikator an einem Inventar-Item, der greift, wenn das Item
 /// als ausgeruest markiert ist.
@@ -37,6 +58,7 @@ class InventoryItemModifier {
   /// Freitext-Quelle (max. 60 Zeichen). Wird beim Serialisieren nicht gekuerzt.
   final String beschreibung;
 
+  /// Liefert eine Kopie mit gezielt ersetzten Modifikatorfeldern.
   InventoryItemModifier copyWith({
     InventoryModifierKind? kind,
     String? targetId,
@@ -51,6 +73,7 @@ class InventoryItemModifier {
     );
   }
 
+  /// Serialisiert den Modifikator fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'kind': kind.name,
@@ -60,6 +83,7 @@ class InventoryItemModifier {
     };
   }
 
+  /// Laedt einen Inventar-Modifikator tolerant gegenueber fehlenden Feldern.
   static InventoryItemModifier fromJson(Map<String, dynamic> json) {
     final kindStr = (json['kind'] as String?) ?? 'stat';
     final kind = InventoryModifierKind.values.firstWhere(

@@ -30,7 +30,7 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 22,
+    this.schemaVersion = 23,
     required this.name,
     required this.level,
     required this.attributes,

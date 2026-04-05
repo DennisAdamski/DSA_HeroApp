@@ -26,6 +26,20 @@ Future<HeroAdventureEntry?> _showAdventureCreateDialog({
   );
 }
 
+Future<HeroAdventureEntry?> _showAdventureCompletionDialog({
+  required BuildContext context,
+  required HeroAdventureEntry initial,
+  required _AdventureRewardTargetOptions rewardTargetOptions,
+}) {
+  return showAdaptiveDetailSheet<HeroAdventureEntry>(
+    context: context,
+    builder: (_) => _AdventureCompletionDialog(
+      initial: initial,
+      rewardTargetOptions: rewardTargetOptions,
+    ),
+  );
+}
+
 Future<_AdventureNoteDialogResult?> _showAdventureNoteDialog({
   required BuildContext context,
   HeroNoteEntry? existing,
@@ -92,6 +106,55 @@ class _AdventureDateDraft {
     dayController.dispose();
     monthController?.dispose();
     yearController.dispose();
+  }
+}
+
+class _AdventureLootDraft {
+  _AdventureLootDraft(HeroAdventureLootEntry initial)
+    : id = initial.id,
+      nameController = TextEditingController(text: initial.name),
+      quantityController = TextEditingController(text: initial.quantity),
+      weightController = TextEditingController(
+        text: initial.weightGramm > 0 ? initial.weightGramm.toString() : '',
+      ),
+      valueController = TextEditingController(
+        text: initial.valueSilver > 0 ? initial.valueSilver.toString() : '',
+      ),
+      originController = TextEditingController(text: initial.origin),
+      descriptionController = TextEditingController(text: initial.description),
+      itemType = initial.itemType;
+
+  final String id;
+  final TextEditingController nameController;
+  final TextEditingController quantityController;
+  final TextEditingController weightController;
+  final TextEditingController valueController;
+  final TextEditingController originController;
+  final TextEditingController descriptionController;
+  InventoryItemType itemType;
+
+  HeroAdventureLootEntry buildValue() {
+    final parsedWeight = int.tryParse(weightController.text.trim()) ?? 0;
+    final parsedValue = int.tryParse(valueController.text.trim()) ?? 0;
+    return HeroAdventureLootEntry(
+      id: id,
+      name: nameController.text.trim(),
+      quantity: quantityController.text.trim(),
+      itemType: itemType,
+      weightGramm: parsedWeight < 0 ? 0 : parsedWeight,
+      valueSilver: parsedValue < 0 ? 0 : parsedValue,
+      origin: originController.text.trim(),
+      description: descriptionController.text.trim(),
+    );
+  }
+
+  void dispose() {
+    nameController.dispose();
+    quantityController.dispose();
+    weightController.dispose();
+    valueController.dispose();
+    originController.dispose();
+    descriptionController.dispose();
   }
 }
 
@@ -249,6 +312,491 @@ class _AdventureCreateDialogState extends State<_AdventureCreateDialog> {
           child: const Text('Speichern'),
         ),
       ],
+    );
+  }
+}
+
+class _AdventureCompletionDialog extends StatefulWidget {
+  const _AdventureCompletionDialog({
+    required this.initial,
+    required this.rewardTargetOptions,
+  });
+
+  final HeroAdventureEntry initial;
+  final _AdventureRewardTargetOptions rewardTargetOptions;
+
+  @override
+  State<_AdventureCompletionDialog> createState() =>
+      _AdventureCompletionDialogState();
+}
+
+class _AdventureCompletionDialogState
+    extends State<_AdventureCompletionDialog> {
+  late final _AdventureDateDraft _endWorldDate;
+  late final _AdventureDateDraft _endAventurianDate;
+  late final TextEditingController _dukatenController;
+  late final List<_AdventureLootDraft> _lootDrafts;
+  late int _apReward;
+  late List<HeroAdventureSeReward> _seRewards;
+  String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initial;
+    final defaultWorldDate = initial.endWorldDate.hasContent
+        ? initial.endWorldDate
+        : HeroAdventureDateValue.fromDateTime(DateTime.now());
+    final defaultAventurianDate = initial.endAventurianDate.hasContent
+        ? initial.endAventurianDate
+        : initial.currentAventurianDate;
+    _endWorldDate = _AdventureDateDraft.world(defaultWorldDate);
+    _endAventurianDate = _AdventureDateDraft.aventurian(defaultAventurianDate);
+    _dukatenController = TextEditingController(
+      text: _formatAdventureDukatenDraft(initial.dukatenReward),
+    );
+    _lootDrafts = initial.lootRewards
+        .map(_AdventureLootDraft.new)
+        .toList(growable: true);
+    _apReward = initial.apReward;
+    _seRewards = List<HeroAdventureSeReward>.from(initial.seRewards);
+  }
+
+  @override
+  void dispose() {
+    _endWorldDate.dispose();
+    _endAventurianDate.dispose();
+    _dukatenController.dispose();
+    for (final draft in _lootDrafts) {
+      draft.dispose();
+    }
+    super.dispose();
+  }
+
+  void _addLootDraft() {
+    setState(() {
+      _lootDrafts.add(
+        _AdventureLootDraft(HeroAdventureLootEntry(id: _uuid.v4())),
+      );
+    });
+  }
+
+  void _removeLootDraft(int index) {
+    if (index < 0 || index >= _lootDrafts.length) {
+      return;
+    }
+    setState(() {
+      final removed = _lootDrafts.removeAt(index);
+      removed.dispose();
+    });
+  }
+
+  HeroAdventureEntry get _rewardDraftEntry {
+    return widget.initial.copyWith(apReward: _apReward, seRewards: _seRewards);
+  }
+
+  void _updateApReward(String rawValue) {
+    final parsedValue = int.tryParse(rawValue.trim()) ?? 0;
+    setState(() {
+      _apReward = parsedValue < 0 ? 0 : parsedValue;
+    });
+  }
+
+  void _addSeReward() {
+    final defaultOption = widget.rewardTargetOptions
+        .optionsForType(HeroAdventureSeTargetType.talent)
+        .firstOrNull;
+    setState(() {
+      _seRewards = List<HeroAdventureSeReward>.from(_seRewards)
+        ..add(
+          HeroAdventureSeReward(
+            targetType: HeroAdventureSeTargetType.talent,
+            targetId: defaultOption?.id ?? '',
+            targetLabel: defaultOption?.label ?? '',
+            count: 1,
+          ),
+        );
+    });
+  }
+
+  void _removeSeReward(int rewardIndex) {
+    if (rewardIndex < 0 || rewardIndex >= _seRewards.length) {
+      return;
+    }
+    setState(() {
+      _seRewards = List<HeroAdventureSeReward>.from(_seRewards)
+        ..removeAt(rewardIndex);
+    });
+  }
+
+  void _updateSeRewardType(
+    int rewardIndex,
+    HeroAdventureSeTargetType targetType,
+  ) {
+    final defaultOption = widget.rewardTargetOptions
+        .optionsForType(targetType)
+        .firstOrNull;
+    _updateSeReward(
+      rewardIndex,
+      targetType: targetType,
+      targetId: defaultOption?.id ?? '',
+      targetLabel: defaultOption?.label ?? '',
+    );
+  }
+
+  void _updateSeRewardTarget(
+    int rewardIndex, {
+    required String targetId,
+    required String targetLabel,
+  }) {
+    _updateSeReward(rewardIndex, targetId: targetId, targetLabel: targetLabel);
+  }
+
+  void _updateSeRewardCount(int rewardIndex, String rawValue) {
+    final parsedValue = int.tryParse(rawValue.trim()) ?? 0;
+    _updateSeReward(rewardIndex, count: parsedValue < 0 ? 0 : parsedValue);
+  }
+
+  void _updateSeReward(
+    int rewardIndex, {
+    HeroAdventureSeTargetType? targetType,
+    String? targetId,
+    String? targetLabel,
+    int? count,
+  }) {
+    if (rewardIndex < 0 || rewardIndex >= _seRewards.length) {
+      return;
+    }
+    setState(() {
+      final nextRewards = List<HeroAdventureSeReward>.from(_seRewards);
+      nextRewards[rewardIndex] = nextRewards[rewardIndex].copyWith(
+        targetType: targetType,
+        targetId: targetId,
+        targetLabel: targetLabel,
+        count: count,
+      );
+      _seRewards = nextRewards;
+    });
+  }
+
+  void _save() {
+    final parsedDukaten = _parseAdventureDukatenDraft(_dukatenController.text);
+    if (parsedDukaten == null || parsedDukaten < 0) {
+      setState(() {
+        _errorText = 'Bitte gib einen numerischen Dukatenwert an.';
+      });
+      return;
+    }
+
+    final nextLoot = _lootDrafts
+        .map((draft) => draft.buildValue())
+        .where((entry) => entry.hasContent)
+        .toList(growable: false);
+    final nextAdventure = widget.initial.copyWith(
+      endWorldDate: _endWorldDate.buildValue(),
+      endAventurianDate: _endAventurianDate.buildValue(),
+      apReward: _apReward,
+      seRewards: _seRewards,
+      dukatenReward: parsedDukaten,
+      lootRewards: nextLoot,
+    );
+    Navigator.of(context).pop(nextAdventure);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      key: const ValueKey<String>('notes-adventure-complete-dialog'),
+      title: Text('${_adventureCompletionTitle(widget.initial)} abschließen'),
+      content: SizedBox(
+        width: kDialogWidthLarge,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _AdventureDialogDateSection(
+                title: 'Ende des Abenteuers',
+                worldDateKeyPrefix: 'notes-adventure-complete-end-world',
+                aventurianDateKeyPrefix:
+                    'notes-adventure-complete-end-aventurian',
+                worldDate: _endWorldDate,
+                aventurianDate: _endAventurianDate,
+                onChanged: () => setState(() {}),
+              ),
+              const SizedBox(height: 16),
+              _AdventureSubsectionHeader(title: 'Belohnungen'),
+              const SizedBox(height: 8),
+              _EditableAdventureRewards(
+                entry: _rewardDraftEntry,
+                rewardLocked: false,
+                targetOptionsForType: widget.rewardTargetOptions.optionsForType,
+                onApRewardChanged: _updateApReward,
+                onAddSeReward: _addSeReward,
+                onRemoveSeReward: _removeSeReward,
+                onSeRewardTypeChanged: _updateSeRewardType,
+                onSeRewardTargetChanged: _updateSeRewardTarget,
+                onSeRewardCountChanged: _updateSeRewardCount,
+              ),
+              const SizedBox(height: 12),
+              _CompletionRewardSummary(entry: _rewardDraftEntry),
+              const SizedBox(height: 16),
+              TextField(
+                key: const ValueKey<String>('notes-adventure-complete-dukaten'),
+                controller: _dukatenController,
+                decoration: const InputDecoration(
+                  labelText: 'Dukaten',
+                  border: OutlineInputBorder(),
+                  hintText: '0',
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _AdventureSubsectionHeader(
+                title: 'Gegenstände',
+                action: TextButton(
+                  key: const ValueKey<String>(
+                    'notes-adventure-complete-add-loot',
+                  ),
+                  onPressed: _addLootDraft,
+                  child: const Text('+ Gegenstand'),
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (_lootDrafts.isEmpty)
+                const _EmptyState(
+                  message: 'Keine zusätzlichen Gegenstände erfasst.',
+                )
+              else
+                Column(
+                  children: [
+                    for (var index = 0; index < _lootDrafts.length; index++)
+                      Padding(
+                        padding: EdgeInsets.only(
+                          top: index == 0 ? 0 : _notesFieldSpacing,
+                        ),
+                        child: _AdventureLootEditorCard(
+                          index: index,
+                          draft: _lootDrafts[index],
+                          onRemove: () => _removeLootDraft(index),
+                        ),
+                      ),
+                  ],
+                ),
+              if (_errorText != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _errorText!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        FilledButton(
+          key: const ValueKey<String>('notes-adventure-complete-dialog-save'),
+          onPressed: _save,
+          child: const Text('Bestätigen'),
+        ),
+      ],
+    );
+  }
+}
+
+class _CompletionRewardSummary extends StatelessWidget {
+  const _CompletionRewardSummary({required this.entry});
+
+  final HeroAdventureEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final rewardChips = <Widget>[
+      if (entry.apReward > 0) Chip(label: Text('+${entry.apReward} AP')),
+      ...entry.seRewards
+          .where((reward) => reward.hasContent)
+          .map(
+            (reward) =>
+                Chip(label: Text('${reward.count}× ${_rewardLabel(reward)}')),
+          ),
+    ];
+    if (rewardChips.isEmpty) {
+      return const Text('Keine AP- oder SE-Belohnungen definiert.');
+    }
+    return Wrap(spacing: 8, runSpacing: 8, children: rewardChips);
+  }
+}
+
+class _AdventureLootEditorCard extends StatelessWidget {
+  const _AdventureLootEditorCard({
+    required this.index,
+    required this.draft,
+    required this.onRemove,
+  });
+
+  final int index;
+  final _AdventureLootDraft draft;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Gegenstand ${index + 1}',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                IconButton(
+                  key: ValueKey<String>(
+                    'notes-adventure-complete-remove-loot-$index',
+                  ),
+                  onPressed: onRemove,
+                  tooltip: 'Gegenstand entfernen',
+                  icon: const Icon(Icons.delete_outline),
+                ),
+              ],
+            ),
+            const SizedBox(height: _notesFieldSpacing),
+            TextField(
+              key: ValueKey<String>(
+                'notes-adventure-complete-loot-name-$index',
+              ),
+              controller: draft.nameController,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: _notesFieldSpacing),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: ValueKey<String>(
+                      'notes-adventure-complete-loot-quantity-$index',
+                    ),
+                    controller: draft.quantityController,
+                    decoration: const InputDecoration(
+                      labelText: 'Anzahl',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: DropdownButtonFormField<InventoryItemType>(
+                    key: ValueKey<String>(
+                      'notes-adventure-complete-loot-type-$index',
+                    ),
+                    initialValue: draft.itemType,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Typ',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: InventoryItemType.ausruestung,
+                        child: Text('Ausrüstung'),
+                      ),
+                      DropdownMenuItem(
+                        value: InventoryItemType.verbrauchsgegenstand,
+                        child: Text('Verbrauchsgegenstand'),
+                      ),
+                      DropdownMenuItem(
+                        value: InventoryItemType.wertvolles,
+                        child: Text('Wertvolles'),
+                      ),
+                      DropdownMenuItem(
+                        value: InventoryItemType.sonstiges,
+                        child: Text('Sonstiges'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        draft.itemType = value;
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: _notesFieldSpacing),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: ValueKey<String>(
+                      'notes-adventure-complete-loot-weight-$index',
+                    ),
+                    controller: draft.weightController,
+                    decoration: const InputDecoration(
+                      labelText: 'Gewicht (g)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    key: ValueKey<String>(
+                      'notes-adventure-complete-loot-value-$index',
+                    ),
+                    controller: draft.valueController,
+                    decoration: const InputDecoration(
+                      labelText: 'Wert (S)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: _notesFieldSpacing),
+            TextField(
+              key: ValueKey<String>(
+                'notes-adventure-complete-loot-origin-$index',
+              ),
+              controller: draft.originController,
+              decoration: const InputDecoration(
+                labelText: 'Herkunft',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: _notesFieldSpacing),
+            TextField(
+              key: ValueKey<String>(
+                'notes-adventure-complete-loot-description-$index',
+              ),
+              controller: draft.descriptionController,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: 'Beschreibung',
+                border: OutlineInputBorder(),
+                alignLabelWithHint: true,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -702,4 +1250,33 @@ String _aventurianMonthLabel(String rawValue) {
       .where((entry) => entry.value == normalizedValue)
       .firstOrNull;
   return option?.label ?? rawValue.trim();
+}
+
+String _adventureCompletionTitle(HeroAdventureEntry entry) {
+  final title = entry.title.trim();
+  return title.isEmpty ? 'Abenteuer' : title;
+}
+
+String _formatAdventureDukatenDraft(double value) {
+  if (value <= 0) {
+    return '';
+  }
+  final isWhole = value == value.roundToDouble();
+  if (isWhole) {
+    return value.round().toString();
+  }
+  final trimmed = value
+      .toStringAsFixed(2)
+      .replaceFirst(RegExp(r'0+$'), '')
+      .replaceFirst(RegExp(r'\.$'), '');
+  return trimmed.replaceAll('.', ',');
+}
+
+double? _parseAdventureDukatenDraft(String rawValue) {
+  final normalized = rawValue.trim();
+  if (normalized.isEmpty) {
+    return 0;
+  }
+  final compact = normalized.replaceAll(' ', '');
+  return double.tryParse(compact.replaceAll(',', '.'));
 }
