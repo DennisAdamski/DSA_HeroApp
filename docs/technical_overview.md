@@ -137,7 +137,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `inventoryEntries` | `List<HeroInventoryEntry>` | Ausrüstung/Inventar |
 | `notes` | `List<HeroNoteEntry>` | Freie Chroniken mit Titel und Beschreibung |
 | `connections` | `List<HeroConnectionEntry>` | Kontakte/Verbindungen mit Ort, Sozialstatus, Loyalität, Beschreibung und optionaler Abenteuer-Referenz |
-| `adventures` | `List<HeroAdventureEntry>` | Manuell sortierte Abenteuer-Etappen mit Status, weltlichen und aventurischen Datumsfeldern, Notizen, Personen, AP-Belohnung, festen SE-Zielen, Abschluss-Dukaten, strukturierter Beute und Anwendungsstatus |
+| `adventures` | `List<HeroAdventureEntry>` | Manuell sortierte Abenteuer-Etappen mit Status, weltlichen und aventurischen Datumsfeldern, Notizen, Personen sowie Abschluss-Belohnungen fuer AP, feste SE-Ziele, Dukaten, strukturierte Beute und Anwendungsstatus |
 | `attributeSePool` | `HeroAttributeSePool` | Persistierte Abenteuer-SE für Eigenschaften (`MU` bis `KK`) |
 | `statSePool` | `HeroStatSePool` | Persistierte Abenteuer-SE für Grundwerte (`LeP`, `Au`, `AsP`, `KaP`, `MR`) |
 | `unknownModifierFragments` | `List<String>` | Unparsbare Modifier-Fragmente (UI-Hinweis) |

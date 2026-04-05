@@ -722,6 +722,9 @@ The following files are **intentionally kept** but not currently wired into the 
 - `HeroNotesTab` fuehrt aktuelle Abenteuer ueber einen gefuehrten
   `Abschliessen`-Dialog zum Status `Abgeschlossen`; das weltliche Enddatum ist
   dabei mit `DateTime.now()` vorbelegt.
+- AP-Belohnungen und feste Sondererfahrungen werden nicht mehr direkt in der
+  Abenteuer-Detailansicht bearbeitet, sondern zusammen mit Dukaten und Beute
+  im `Abschliessen`-Dialog erfasst.
 - AP, feste SE, Dukaten und Abschluss-Gegenstaende werden atomar ueber
   `adventure_rewards_rules.dart` angewendet oder fachlich sicher wieder
   zurueckgenommen.

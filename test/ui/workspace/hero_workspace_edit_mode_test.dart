@@ -943,9 +943,15 @@ void main() {
           (tester.widget<Column>(detailFinder).key! as ValueKey<String>).value;
       final adventureId = detailKey.replaceFirst('notes-adventure-detail-', '');
 
-      await tester.enterText(
+      expect(
         find.byKey(ValueKey<String>('notes-adventure-ap-$adventureId')),
-        '45',
+        findsNothing,
+      );
+      expect(
+        find.text(
+          'AP und Sondererfahrungen werden im Abschließen-Dialog erfasst.',
+        ),
+        findsOneWidget,
       );
       await revealAndTap(
         tester,
@@ -1058,7 +1064,7 @@ void main() {
       expect(hero.adventures.single.startAventurianDate.month, 'praios');
       expect(hero.adventures.single.endWorldDate.day, isEmpty);
       expect(hero.adventures.single.currentAventurianDate.day, isEmpty);
-      expect(hero.adventures.single.apReward, 45);
+      expect(hero.adventures.single.apReward, 0);
       expect(hero.adventures.single.notes.single.title, 'Schlüsselstelle');
       expect(hero.adventures.single.people.single.name, 'Aldare');
 
@@ -1241,7 +1247,9 @@ void main() {
     );
   });
 
-  testWidgets('adventure detail edits summary and dates inline', (tester) async {
+  testWidgets('adventure detail edits summary and dates inline', (
+    tester,
+  ) async {
     final repo = FakeRepository(
       heroes: [
         buildHero(
@@ -1533,10 +1541,43 @@ void main() {
         '1048',
       );
       await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-adventure-ap-adv_1')),
+        '40',
+      );
+      await revealAndTap(
+        tester,
+        find.byKey(const ValueKey<String>('notes-adventure-add-se-adv_1')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('notes-adventure-se-target-adv_1-0')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mut').last);
+      await tester.pumpAndSettle();
+      await revealAndTap(
+        tester,
+        find.byKey(const ValueKey<String>('notes-adventure-add-se-adv_1')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('notes-adventure-se-type-adv_1-1')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Grundwert').last);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('notes-adventure-se-target-adv_1-1')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('LeP').last);
+      await tester.pumpAndSettle();
+      await tester.enterText(
         find.byKey(const ValueKey<String>('notes-adventure-complete-dukaten')),
         '12,5',
       );
-      await tester.tap(
+      await revealAndTap(
+        tester,
         find.byKey(const ValueKey<String>('notes-adventure-complete-add-loot')),
       );
       await tester.pumpAndSettle();

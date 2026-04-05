@@ -112,8 +112,8 @@ Technischer Stack:
 - Freie Chroniken mit Titel und Beschreibung
 - Verbindungen/Kontakte mit Ort, Sozialstatus, Loyalitaet, Beschreibung und optionaler Abenteuer-Zuordnung
 - Abenteuer als Chip-Uebersicht mit fokussierter Detailansicht; neue Abenteuer, Notizen und Personen werden jeweils ueber Popups angelegt oder bearbeitet
-- Abenteuer pflegen Status (`Aktuell` oder `Abgeschlossen`), weltliche und aventurische Start-/Enddaten, ein aktuelles aventurisches Datum, abenteuerbezogene Notizen, Personen, AP-Belohnung, fest zugeordnete Sondererfahrungen sowie persistierte Dukaten- und Beute-Belohnungen
-- Aktuelle Abenteuer werden ueber einen gefuehrten `Abschliessen`-Dialog beendet: Enddaten, Dukaten und Gegenstaende werden dort gemeinsam bestaetigt und anschliessend atomar in AP, SE-Pools, Dukatenstand und Inventar uebernommen
+- Abenteuer pflegen Status (`Aktuell` oder `Abgeschlossen`), weltliche und aventurische Start-/Enddaten, ein aktuelles aventurisches Datum, abenteuerbezogene Notizen und Personen direkt in der Detailansicht
+- AP-Belohnung, fest zugeordnete Sondererfahrungen, Dukaten und Abschluss-Beute werden gesammelt im gefuehrten `Abschliessen`-Dialog gepflegt und anschliessend atomar in AP, SE-Pools, Dukatenstand und Inventar uebernommen
 - Ein Abschluss kann fachlich sicher wieder zurueckgenommen werden; Abenteuer-Beute bleibt dabei bewusst vom Kampf-Inventar entkoppelt
 
 ### Datenimport und Kataloge
