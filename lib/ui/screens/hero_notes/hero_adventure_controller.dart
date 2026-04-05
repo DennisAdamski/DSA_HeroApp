@@ -30,7 +30,10 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
     }
     final createdAdventure = await _showAdventureCreateDialog(
       context: context,
-      initial: HeroAdventureEntry(id: _uuid.v4()),
+      initial: HeroAdventureEntry(
+        id: _uuid.v4(),
+        startWorldDate: HeroAdventureDateValue.fromDateTime(DateTime.now()),
+      ),
     );
     if (!mounted || createdAdventure == null) {
       return;
@@ -112,10 +115,8 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
     HeroAdventureDateValue? endWorldDate,
     HeroAdventureDateValue? endAventurianDate,
     HeroAdventureDateValue? currentAventurianDate,
-    int? apReward,
     List<HeroNoteEntry>? notes,
     List<HeroAdventurePersonEntry>? people,
-    List<HeroAdventureSeReward>? seRewards,
     bool preferDefaultSelection = false,
   }) {
     final selectedIndex = _selectedAdventureIndex;
@@ -133,10 +134,8 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
       endWorldDate: endWorldDate,
       endAventurianDate: endAventurianDate,
       currentAventurianDate: currentAventurianDate,
-      apReward: apReward,
       notes: notes,
       people: people,
-      seRewards: seRewards,
     );
     _setAdventureDrafts(
       nextAdventures,
@@ -151,13 +150,6 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
 
   void _updateSelectedAdventureSummary(String value) {
     _updateSelectedAdventure(summary: value);
-  }
-
-  void _updateSelectedAdventureStatus(HeroAdventureStatus status) {
-    _updateSelectedAdventure(
-      status: status,
-      preferDefaultSelection: status == HeroAdventureStatus.completed,
-    );
   }
 
   void _updateSelectedAdventureStartWorldDate(HeroAdventureDateValue value) {
@@ -182,11 +174,6 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
     HeroAdventureDateValue value,
   ) {
     _updateSelectedAdventure(currentAventurianDate: value);
-  }
-
-  void _updateSelectedAdventureApReward(String rawValue) {
-    final parsedValue = int.tryParse(rawValue.trim()) ?? 0;
-    _updateSelectedAdventure(apReward: parsedValue < 0 ? 0 : parsedValue);
   }
 
   Future<void> _addNoteForSelectedAdventure() async {
@@ -288,93 +275,6 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
     _updateSelectedAdventure(people: nextPeople);
   }
 
-  void _addSeRewardToSelectedAdventure() {
-    final adventure = _selectedAdventure;
-    if (adventure == null) {
-      return;
-    }
-
-    final nextRewards = List<HeroAdventureSeReward>.from(adventure.seRewards)
-      ..add(const HeroAdventureSeReward(count: 1));
-    _updateSelectedAdventure(seRewards: nextRewards);
-  }
-
-  void _removeSeRewardFromSelectedAdventure(int rewardIndex) {
-    final adventure = _selectedAdventure;
-    if (adventure == null ||
-        rewardIndex < 0 ||
-        rewardIndex >= adventure.seRewards.length) {
-      return;
-    }
-
-    final nextRewards = List<HeroAdventureSeReward>.from(adventure.seRewards)
-      ..removeAt(rewardIndex);
-    _updateSelectedAdventure(seRewards: nextRewards);
-  }
-
-  void _updateSelectedAdventureSeRewardCount(int rewardIndex, String rawValue) {
-    final parsedValue = int.tryParse(rawValue.trim()) ?? 0;
-    _updateSelectedAdventureSeReward(
-      rewardIndex,
-      count: parsedValue < 0 ? 0 : parsedValue,
-    );
-  }
-
-  void _updateSelectedAdventureSeRewardType(
-    int rewardIndex,
-    HeroAdventureSeTargetType targetType, {
-    required HeroSheet hero,
-    RulesCatalog? catalog,
-  }) {
-    final defaultOption = _defaultOptionForTargetType(
-      targetType: targetType,
-      hero: hero,
-      catalog: catalog,
-    );
-    _updateSelectedAdventureSeReward(
-      rewardIndex,
-      targetType: targetType,
-      targetId: defaultOption?.id ?? '',
-      targetLabel: defaultOption?.label ?? '',
-    );
-  }
-
-  void _updateSelectedAdventureSeRewardTarget(
-    int rewardIndex, {
-    required String targetId,
-    required String targetLabel,
-  }) {
-    _updateSelectedAdventureSeReward(
-      rewardIndex,
-      targetId: targetId,
-      targetLabel: targetLabel,
-    );
-  }
-
-  void _updateSelectedAdventureSeReward(
-    int rewardIndex, {
-    HeroAdventureSeTargetType? targetType,
-    String? targetId,
-    String? targetLabel,
-    int? count,
-  }) {
-    final adventure = _selectedAdventure;
-    if (adventure == null ||
-        rewardIndex < 0 ||
-        rewardIndex >= adventure.seRewards.length) {
-      return;
-    }
-
-    final nextRewards = List<HeroAdventureSeReward>.from(adventure.seRewards);
-    nextRewards[rewardIndex] = nextRewards[rewardIndex].copyWith(
-      targetType: targetType,
-      targetId: targetId,
-      targetLabel: targetLabel,
-      count: count,
-    );
-    _updateSelectedAdventure(seRewards: nextRewards);
-  }
-
   HeroAdventureEntry _sanitizeAdventure(HeroAdventureEntry adventure) {
     return adventure.copyWith(
       title: adventure.title.trim(),
@@ -397,6 +297,10 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
         adventure.currentAventurianDate,
       ),
       seRewards: adventure.seRewards
+          .where((entry) => entry.hasContent)
+          .toList(growable: false),
+      lootRewards: adventure.lootRewards
+          .map(_sanitizeAdventureLoot)
           .where((entry) => entry.hasContent)
           .toList(growable: false),
     );
@@ -426,6 +330,15 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
     );
   }
 
+  HeroAdventureLootEntry _sanitizeAdventureLoot(HeroAdventureLootEntry loot) {
+    return loot.copyWith(
+      name: loot.name.trim(),
+      quantity: loot.quantity.trim(),
+      origin: loot.origin.trim(),
+      description: loot.description.trim(),
+    );
+  }
+
   HeroAdventureEntry? _findAdventureById(
     List<HeroAdventureEntry> adventures,
     String adventureId,
@@ -436,81 +349,6 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
       }
     }
     return null;
-  }
-
-  List<_AdventureTargetOption> _buildTalentTargetOptions(
-    HeroSheet hero,
-    RulesCatalog? catalog,
-  ) {
-    final optionsById = <String, _AdventureTargetOption>{};
-
-    void addOption(String id, String label) {
-      final normalizedId = id.trim();
-      final normalizedLabel = label.trim();
-      if (normalizedId.isEmpty) {
-        return;
-      }
-      optionsById.putIfAbsent(
-        normalizedId,
-        () => _AdventureTargetOption(
-          id: normalizedId,
-          label: normalizedLabel.isEmpty ? normalizedId : normalizedLabel,
-        ),
-      );
-    }
-
-    if (catalog != null) {
-      final sortedTalents = List<TalentDef>.from(catalog.talents)
-        ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-      for (final talent in sortedTalents) {
-        addOption(talent.id, talent.name);
-      }
-    }
-
-    for (final talentId in hero.talents.keys) {
-      addOption(talentId, talentId);
-    }
-
-    for (final adventure in _draftAdventures) {
-      for (final reward in adventure.seRewards) {
-        if (reward.targetType != HeroAdventureSeTargetType.talent) {
-          continue;
-        }
-        addOption(reward.targetId, reward.targetLabel);
-      }
-    }
-
-    final options = optionsById.values.toList(growable: false)
-      ..sort((a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()));
-    return options;
-  }
-
-  List<_AdventureTargetOption> _targetOptionsForType({
-    required HeroAdventureSeTargetType targetType,
-    required HeroSheet hero,
-    RulesCatalog? catalog,
-  }) {
-    return switch (targetType) {
-      HeroAdventureSeTargetType.talent => _buildTalentTargetOptions(
-        hero,
-        catalog,
-      ),
-      HeroAdventureSeTargetType.grundwert => _grundwertTargetOptions,
-      HeroAdventureSeTargetType.eigenschaft => _attributeTargetOptions,
-    };
-  }
-
-  _AdventureTargetOption? _defaultOptionForTargetType({
-    required HeroAdventureSeTargetType targetType,
-    required HeroSheet hero,
-    RulesCatalog? catalog,
-  }) {
-    final options = _targetOptionsForType(
-      targetType: targetType,
-      hero: hero,
-      catalog: catalog,
-    );
-    return options.isEmpty ? null : options.first;
   }
 
   String _resolveSelectedAdventureId(
