@@ -29,10 +29,14 @@ Future<HeroAdventureEntry?> _showAdventureCreateDialog({
 Future<HeroAdventureEntry?> _showAdventureCompletionDialog({
   required BuildContext context,
   required HeroAdventureEntry initial,
+  required _AdventureRewardTargetOptions rewardTargetOptions,
 }) {
   return showAdaptiveDetailSheet<HeroAdventureEntry>(
     context: context,
-    builder: (_) => _AdventureCompletionDialog(initial: initial),
+    builder: (_) => _AdventureCompletionDialog(
+      initial: initial,
+      rewardTargetOptions: rewardTargetOptions,
+    ),
   );
 }
 
@@ -313,20 +317,27 @@ class _AdventureCreateDialogState extends State<_AdventureCreateDialog> {
 }
 
 class _AdventureCompletionDialog extends StatefulWidget {
-  const _AdventureCompletionDialog({required this.initial});
+  const _AdventureCompletionDialog({
+    required this.initial,
+    required this.rewardTargetOptions,
+  });
 
   final HeroAdventureEntry initial;
+  final _AdventureRewardTargetOptions rewardTargetOptions;
 
   @override
   State<_AdventureCompletionDialog> createState() =>
       _AdventureCompletionDialogState();
 }
 
-class _AdventureCompletionDialogState extends State<_AdventureCompletionDialog> {
+class _AdventureCompletionDialogState
+    extends State<_AdventureCompletionDialog> {
   late final _AdventureDateDraft _endWorldDate;
   late final _AdventureDateDraft _endAventurianDate;
   late final TextEditingController _dukatenController;
   late final List<_AdventureLootDraft> _lootDrafts;
+  late int _apReward;
+  late List<HeroAdventureSeReward> _seRewards;
   String? _errorText;
 
   @override
@@ -347,6 +358,8 @@ class _AdventureCompletionDialogState extends State<_AdventureCompletionDialog> 
     _lootDrafts = initial.lootRewards
         .map(_AdventureLootDraft.new)
         .toList(growable: true);
+    _apReward = initial.apReward;
+    _seRewards = List<HeroAdventureSeReward>.from(initial.seRewards);
   }
 
   @override
@@ -362,7 +375,9 @@ class _AdventureCompletionDialogState extends State<_AdventureCompletionDialog> 
 
   void _addLootDraft() {
     setState(() {
-      _lootDrafts.add(_AdventureLootDraft(HeroAdventureLootEntry(id: _uuid.v4())));
+      _lootDrafts.add(
+        _AdventureLootDraft(HeroAdventureLootEntry(id: _uuid.v4())),
+      );
     });
   }
 
@@ -373,6 +388,94 @@ class _AdventureCompletionDialogState extends State<_AdventureCompletionDialog> 
     setState(() {
       final removed = _lootDrafts.removeAt(index);
       removed.dispose();
+    });
+  }
+
+  HeroAdventureEntry get _rewardDraftEntry {
+    return widget.initial.copyWith(apReward: _apReward, seRewards: _seRewards);
+  }
+
+  void _updateApReward(String rawValue) {
+    final parsedValue = int.tryParse(rawValue.trim()) ?? 0;
+    setState(() {
+      _apReward = parsedValue < 0 ? 0 : parsedValue;
+    });
+  }
+
+  void _addSeReward() {
+    final defaultOption = widget.rewardTargetOptions
+        .optionsForType(HeroAdventureSeTargetType.talent)
+        .firstOrNull;
+    setState(() {
+      _seRewards = List<HeroAdventureSeReward>.from(_seRewards)
+        ..add(
+          HeroAdventureSeReward(
+            targetType: HeroAdventureSeTargetType.talent,
+            targetId: defaultOption?.id ?? '',
+            targetLabel: defaultOption?.label ?? '',
+            count: 1,
+          ),
+        );
+    });
+  }
+
+  void _removeSeReward(int rewardIndex) {
+    if (rewardIndex < 0 || rewardIndex >= _seRewards.length) {
+      return;
+    }
+    setState(() {
+      _seRewards = List<HeroAdventureSeReward>.from(_seRewards)
+        ..removeAt(rewardIndex);
+    });
+  }
+
+  void _updateSeRewardType(
+    int rewardIndex,
+    HeroAdventureSeTargetType targetType,
+  ) {
+    final defaultOption = widget.rewardTargetOptions
+        .optionsForType(targetType)
+        .firstOrNull;
+    _updateSeReward(
+      rewardIndex,
+      targetType: targetType,
+      targetId: defaultOption?.id ?? '',
+      targetLabel: defaultOption?.label ?? '',
+    );
+  }
+
+  void _updateSeRewardTarget(
+    int rewardIndex, {
+    required String targetId,
+    required String targetLabel,
+  }) {
+    _updateSeReward(rewardIndex, targetId: targetId, targetLabel: targetLabel);
+  }
+
+  void _updateSeRewardCount(int rewardIndex, String rawValue) {
+    final parsedValue = int.tryParse(rawValue.trim()) ?? 0;
+    _updateSeReward(rewardIndex, count: parsedValue < 0 ? 0 : parsedValue);
+  }
+
+  void _updateSeReward(
+    int rewardIndex, {
+    HeroAdventureSeTargetType? targetType,
+    String? targetId,
+    String? targetLabel,
+    int? count,
+  }) {
+    if (rewardIndex < 0 || rewardIndex >= _seRewards.length) {
+      return;
+    }
+    setState(() {
+      final nextRewards = List<HeroAdventureSeReward>.from(_seRewards);
+      nextRewards[rewardIndex] = nextRewards[rewardIndex].copyWith(
+        targetType: targetType,
+        targetId: targetId,
+        targetLabel: targetLabel,
+        count: count,
+      );
+      _seRewards = nextRewards;
     });
   }
 
@@ -392,6 +495,8 @@ class _AdventureCompletionDialogState extends State<_AdventureCompletionDialog> 
     final nextAdventure = widget.initial.copyWith(
       endWorldDate: _endWorldDate.buildValue(),
       endAventurianDate: _endAventurianDate.buildValue(),
+      apReward: _apReward,
+      seRewards: _seRewards,
       dukatenReward: parsedDukaten,
       lootRewards: nextLoot,
     );
@@ -422,7 +527,19 @@ class _AdventureCompletionDialogState extends State<_AdventureCompletionDialog> 
               const SizedBox(height: 16),
               _AdventureSubsectionHeader(title: 'Belohnungen'),
               const SizedBox(height: 8),
-              _CompletionRewardSummary(entry: widget.initial),
+              _EditableAdventureRewards(
+                entry: _rewardDraftEntry,
+                rewardLocked: false,
+                targetOptionsForType: widget.rewardTargetOptions.optionsForType,
+                onApRewardChanged: _updateApReward,
+                onAddSeReward: _addSeReward,
+                onRemoveSeReward: _removeSeReward,
+                onSeRewardTypeChanged: _updateSeRewardType,
+                onSeRewardTargetChanged: _updateSeRewardTarget,
+                onSeRewardCountChanged: _updateSeRewardCount,
+              ),
+              const SizedBox(height: 12),
+              _CompletionRewardSummary(entry: _rewardDraftEntry),
               const SizedBox(height: 16),
               TextField(
                 key: const ValueKey<String>('notes-adventure-complete-dukaten'),
@@ -506,9 +623,8 @@ class _CompletionRewardSummary extends StatelessWidget {
       ...entry.seRewards
           .where((reward) => reward.hasContent)
           .map(
-            (reward) => Chip(
-              label: Text('${reward.count}× ${_rewardLabel(reward)}'),
-            ),
+            (reward) =>
+                Chip(label: Text('${reward.count}× ${_rewardLabel(reward)}')),
           ),
     ];
     if (rewardChips.isEmpty) {
@@ -558,7 +674,9 @@ class _AdventureLootEditorCard extends StatelessWidget {
             ),
             const SizedBox(height: _notesFieldSpacing),
             TextField(
-              key: ValueKey<String>('notes-adventure-complete-loot-name-$index'),
+              key: ValueKey<String>(
+                'notes-adventure-complete-loot-name-$index',
+              ),
               controller: draft.nameController,
               decoration: const InputDecoration(
                 labelText: 'Name',

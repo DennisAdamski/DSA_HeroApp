@@ -304,9 +304,27 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       return;
     }
 
+    final catalog = ref.read(rulesCatalogProvider).asData?.value;
     final completionEntry = await _showAdventureCompletionDialog(
       context: context,
       initial: adventure,
+      rewardTargetOptions: _AdventureRewardTargetOptions(
+        talent: _targetOptionsForType(
+          targetType: HeroAdventureSeTargetType.talent,
+          hero: hero,
+          catalog: catalog,
+        ),
+        grundwert: _targetOptionsForType(
+          targetType: HeroAdventureSeTargetType.grundwert,
+          hero: hero,
+          catalog: catalog,
+        ),
+        eigenschaft: _targetOptionsForType(
+          targetType: HeroAdventureSeTargetType.eigenschaft,
+          hero: hero,
+          catalog: catalog,
+        ),
+      ),
     );
     if (!mounted || completionEntry == null) {
       return;
@@ -498,7 +516,6 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
 
     _latestHero = hero;
     _syncDraftFromHero(hero);
-    final catalog = ref.watch(rulesCatalogProvider).asData?.value;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -572,28 +589,8 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
                     onOpenNote: _openAdventureNoteDialog,
                     onAddPerson: _addPersonForSelectedAdventure,
                     onOpenPerson: _openAdventurePersonDialog,
-                    onApRewardChanged: _updateSelectedAdventureApReward,
-                    onAddSeReward: _addSeRewardToSelectedAdventure,
-                    onRemoveSeReward: _removeSeRewardFromSelectedAdventure,
-                    onSeRewardTypeChanged: (rewardIndex, type) {
-                      _updateSelectedAdventureSeRewardType(
-                        rewardIndex,
-                        type,
-                        hero: hero,
-                        catalog: catalog,
-                      );
-                    },
-                    onSeRewardTargetChanged:
-                        _updateSelectedAdventureSeRewardTarget,
-                    onSeRewardCountChanged:
-                        _updateSelectedAdventureSeRewardCount,
                     onCompleteAdventure: _completeAdventureFor,
                     onReopenAdventure: _reopenAdventureFor,
-                    targetOptionsForType: (type) => _targetOptionsForType(
-                      targetType: type,
-                      hero: hero,
-                      catalog: catalog,
-                    ),
                     revokeCheckForAdventure: (adventureId) =>
                         canRevokeAdventureRewards(
                           hero: hero,
@@ -618,6 +615,26 @@ class _AdventureTargetOption {
 
   final String id;
   final String label;
+}
+
+class _AdventureRewardTargetOptions {
+  const _AdventureRewardTargetOptions({
+    required this.talent,
+    required this.grundwert,
+    required this.eigenschaft,
+  });
+
+  final List<_AdventureTargetOption> talent;
+  final List<_AdventureTargetOption> grundwert;
+  final List<_AdventureTargetOption> eigenschaft;
+
+  List<_AdventureTargetOption> optionsForType(HeroAdventureSeTargetType type) {
+    return switch (type) {
+      HeroAdventureSeTargetType.talent => talent,
+      HeroAdventureSeTargetType.grundwert => grundwert,
+      HeroAdventureSeTargetType.eigenschaft => eigenschaft,
+    };
+  }
 }
 
 const List<_AdventureTargetOption> _attributeTargetOptions =
