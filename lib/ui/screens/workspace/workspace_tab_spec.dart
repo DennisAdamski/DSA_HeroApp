@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_magic_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_begleiter_tab.dart';
@@ -41,6 +42,9 @@ abstract final class WorkspaceTabIds {
 
   /// ID des Begleiter-Tabs.
   static const String begleiter = 'begleiter';
+
+  /// ID des Gruppe-Tabs.
+  static const String gruppe = 'gruppe';
 }
 
 /// Callback-Buendel fuer Dirty-/Edit-Integration eines Workspace-Tabs.
@@ -238,6 +242,20 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       icon: Icons.pets_outlined,
       helper: 'Vertraute und Begleiter des Helden',
       buildContent: ({required heroId, required callbacks}) => HeroBegleiterTab(
+        heroId: heroId,
+        onDirtyChanged: callbacks.onDirtyChanged,
+        onEditingChanged: callbacks.onEditingChanged,
+        onRegisterDiscard: callbacks.onRegisterDiscard,
+        onRegisterEditActions: callbacks.onRegisterEditActions,
+      ),
+    ),
+    WorkspaceTabSpec(
+      id: WorkspaceTabIds.gruppe,
+      label: 'Gruppe',
+      icon: Icons.group_outlined,
+      helper: 'Gruppenmitglieder und Einladungen',
+      isEditable: false,
+      buildContent: ({required heroId, required callbacks}) => HeroGruppeTab(
         heroId: heroId,
         onDirtyChanged: callbacks.onDirtyChanged,
         onEditingChanged: callbacks.onEditingChanged,
