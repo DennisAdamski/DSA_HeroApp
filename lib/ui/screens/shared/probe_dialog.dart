@@ -1,8 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/domain/trefferzonen.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/trefferzonen_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/animated_dice_row.dart';
@@ -41,6 +45,12 @@ class _ProbeDialogState extends State<ProbeDialog> {
   List<int>? _lastDigitalValues;
   bool _isAnimating = false;
 
+  // --- Trefferzonen ---
+  final DiceRollController _trefferzonenDiceController = DiceRollController();
+  TrefferzonenErgebnis? _trefferzonenErgebnis;
+  bool _isTrefferzonenAnimating = false;
+  static const DiceSpec _trefferzonenDiceSpec = DiceSpec(count: 1, sides: 20);
+
   @override
   void initState() {
     super.initState();
@@ -75,6 +85,9 @@ class _ProbeDialogState extends State<ProbeDialog> {
   /// Startet den animierten Digitalwurf.
   void _startDigitalRoll() {
     if (_isAnimating) return;
+
+    // Trefferzonen-Ergebnis bei neuem Schadenswurf zuruecksetzen.
+    _resetTrefferzone();
 
     // Fester Wurf: keine Animation nötig.
     if (widget.request.fixedRollTotal != null) {
@@ -196,6 +209,44 @@ class _ProbeDialogState extends State<ProbeDialog> {
   }
 
   // ---------------------------------------------------------------------------
+  // Trefferzonen
+  // ---------------------------------------------------------------------------
+
+  void _rollTrefferzone() {
+    if (_isTrefferzonenAnimating) return;
+    final roll = math.Random().nextInt(20) + 1;
+    final ergebnis = resolveTrefferzone(
+      roll: roll,
+      tabelle: humanoidTrefferzonenTabelle,
+    );
+    setState(() {
+      _isTrefferzonenAnimating = true;
+      _trefferzonenErgebnis = null;
+    });
+    _trefferzonenDiceController.startRoll([roll]);
+    // Ergebnis wird nach Animation in _onTrefferzonenRollComplete gesetzt.
+    _pendingTrefferzonenErgebnis = ergebnis;
+  }
+
+  TrefferzonenErgebnis? _pendingTrefferzonenErgebnis;
+
+  void _onTrefferzonenRollComplete() {
+    if (!mounted) return;
+    setState(() {
+      _isTrefferzonenAnimating = false;
+      _trefferzonenErgebnis = _pendingTrefferzonenErgebnis;
+      _pendingTrefferzonenErgebnis = null;
+    });
+  }
+
+  void _resetTrefferzone() {
+    _trefferzonenDiceController.reset();
+    _trefferzonenErgebnis = null;
+    _pendingTrefferzonenErgebnis = null;
+    _isTrefferzonenAnimating = false;
+  }
+
+  // ---------------------------------------------------------------------------
   // Build
   // ---------------------------------------------------------------------------
 
@@ -226,6 +277,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
               _buildDiceSection(),
               const SizedBox(height: 12),
               _buildResultSection(result),
+              _buildTrefferzonenSection(),
             ],
           ),
         ),
@@ -371,6 +423,106 @@ class _ProbeDialogState extends State<ProbeDialog> {
               ),
             );
           }),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTrefferzonenSection() {
+    // Nur fuer Schadensproben mit vorhandenem Ergebnis anzeigen.
+    if (widget.request.type != ProbeType.damage || _result == null) {
+      return const SizedBox.shrink();
+    }
+
+    final ergebnis = _trefferzonenErgebnis;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        const Divider(),
+        const SizedBox(height: 8),
+        Text(
+          'Trefferzonen',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        // Würfelbereich
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+            child: Center(
+              child: AnimatedDiceRow(
+                diceSpec: _trefferzonenDiceSpec,
+                controller: _trefferzonenDiceController,
+                onRollComplete: _onTrefferzonenRollComplete,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: ergebnis == null
+              ? OutlinedButton.icon(
+                  onPressed:
+                      _isTrefferzonenAnimating ? null : _rollTrefferzone,
+                  icon: const Icon(Icons.casino_outlined),
+                  label: const Text('Trefferzone würfeln'),
+                )
+              : OutlinedButton.icon(
+                  onPressed:
+                      _isTrefferzonenAnimating ? null : _rollTrefferzone,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Neu würfeln'),
+                ),
+        ),
+        // Ergebnis anzeigen
+        if (ergebnis != null) ...[
+          const SizedBox(height: 8),
+          _buildTrefferzonenErgebnis(ergebnis),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildTrefferzonenErgebnis(TrefferzonenErgebnis ergebnis) {
+    final eintrag = ergebnis.eintrag;
+    final gsLabel = eintrag.gezielterSchlagMod > 0
+        ? '+${eintrag.gezielterSchlagMod}'
+        : '${eintrag.gezielterSchlagMod}';
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              ergebnis.label,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'W20: ${ergebnis.roll}'
+              '${ergebnis.roll != ergebnis.effektiverRoll ? ' → ${ergebnis.effektiverRoll}' : ''}'
+              '  •  Gezielter Schlag: $gsLabel',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '1./2. Wunde',
+              style: Theme.of(context).textTheme.labelMedium,
+            ),
+            const SizedBox(height: 2),
+            Text(eintrag.wundEffektBeschreibung),
+            const SizedBox(height: 8),
+            Text(
+              '3. Wunde',
+              style: Theme.of(context).textTheme.labelMedium,
+            ),
+            const SizedBox(height: 2),
+            Text(eintrag.dritteWundeBeschreibung),
+          ],
         ),
       ),
     );
