@@ -115,12 +115,13 @@ List<HeroInventoryEntry> reconcileInventoryWithCombat(
   List<HeroInventoryEntry> existing,
   CombatConfig config,
 ) {
-  final manualEntries =
-      existing.where((e) => e.sourceRef == null).toList(growable: false);
+  final preservedEntries = existing
+      .where((entry) => !_isCombatLinkedInventoryEntry(entry))
+      .toList(growable: false);
 
   // Kopie der verlinkten Eintraege, aus der gefundene Matches entfernt werden
   final unmatched = existing
-      .where((e) => e.sourceRef != null)
+      .where(_isCombatLinkedInventoryEntry)
       .toList();
 
   final expected = buildExpectedLinkedEntries(config);
@@ -141,7 +142,7 @@ List<HeroInventoryEntry> reconcileInventoryWithCombat(
   }
 
   // Verlinkte Eintraege, die nicht mehr erwartet werden, fallen weg (kein append)
-  return <HeroInventoryEntry>[...manualEntries, ...merged];
+  return <HeroInventoryEntry>[...preservedEntries, ...merged];
 }
 
 /// Uebernimmt die editierbaren Felder aus [existing] in [base].
@@ -176,6 +177,10 @@ HeroInventoryEntry _mergeEntry({
     // anzahl: bei Geschossen immer aus CombatConfig (bidirektionaler Sync)
     anzahl: isProjectile ? base.anzahl : existing.anzahl,
   );
+}
+
+bool _isCombatLinkedInventoryEntry(HeroInventoryEntry entry) {
+  return entry.sourceRef != null && isCombatLinkedInventorySource(entry.source);
 }
 
 // ---------------------------------------------------------------------------
