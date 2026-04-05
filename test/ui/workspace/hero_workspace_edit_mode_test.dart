@@ -1216,25 +1216,29 @@ void main() {
     await tester.tap(find.byKey(const ValueKey<String>('notes-add-adventure')));
     await tester.pumpAndSettle();
 
-    final dayField = tester.widget<TextField>(
-      find.byKey(
-        const ValueKey<String>('notes-adventure-dialog-start-world-day'),
-      ),
-    );
-    final monthField = tester.widget<TextField>(
-      find.byKey(
-        const ValueKey<String>('notes-adventure-dialog-start-world-month'),
-      ),
-    );
-    final yearField = tester.widget<TextField>(
-      find.byKey(
-        const ValueKey<String>('notes-adventure-dialog-start-world-year'),
-      ),
-    );
+    String readFieldValue(String key) {
+      final widget = tester.widget<Widget>(find.byKey(ValueKey<String>(key)));
+      if (widget is TextField) {
+        return widget.controller?.text ?? '';
+      }
+      if (widget is TextFormField) {
+        return widget.controller?.text ?? '';
+      }
+      fail('Unerwarteter Feldtyp für $key: ${widget.runtimeType}');
+    }
 
-    expect(dayField.controller?.text, today.day.toString().padLeft(2, '0'));
-    expect(monthField.controller?.text, today.month.toString().padLeft(2, '0'));
-    expect(yearField.controller?.text, today.year.toString());
+    expect(
+      readFieldValue('notes-adventure-dialog-start-world-day'),
+      today.day.toString().padLeft(2, '0'),
+    );
+    expect(
+      readFieldValue('notes-adventure-dialog-start-world-month'),
+      today.month.toString().padLeft(2, '0'),
+    );
+    expect(
+      readFieldValue('notes-adventure-dialog-start-world-year'),
+      today.year.toString(),
+    );
   });
 
   testWidgets('adventure detail edits status and dates inline', (tester) async {
