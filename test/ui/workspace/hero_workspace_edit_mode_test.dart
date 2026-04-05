@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
@@ -168,6 +170,44 @@ void main() {
     );
     await tester.tap(iconButton.first);
     await tester.pumpAndSettle();
+  }
+
+  Future<void> ensureFinderVisible(WidgetTester tester, Finder target) async {
+    expect(target, findsOneWidget);
+    final scrollable = find.ancestor(
+      of: target,
+      matching: find.byType(Scrollable),
+    );
+    if (scrollable.evaluate().isNotEmpty) {
+      await tester.scrollUntilVisible(
+        target,
+        240,
+        scrollable: scrollable.first,
+      );
+      await tester.pumpAndSettle();
+    }
+    await tester.ensureVisible(target);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> revealAndTap(WidgetTester tester, Finder target) async {
+    await ensureFinderVisible(tester, target);
+    await tester.tap(target);
+    await tester.pumpAndSettle();
+  }
+
+  Finder tooltipIn(Finder scope, String tooltip) {
+    return find.descendant(of: scope, matching: find.byTooltip(tooltip));
+  }
+
+  double centerDx(WidgetTester tester, Finder finder) {
+    return tester.getCenter(finder).dx;
+  }
+
+  RenderParagraph paragraphIn(WidgetTester tester, Finder scope, String text) {
+    return tester.renderObject<RenderParagraph>(
+      find.descendant(of: scope, matching: find.text(text)),
+    );
   }
 
   Finder heroDeckToggleButton() {
@@ -482,7 +522,7 @@ void main() {
         },
       );
 
-      await openWorkspace(tester, repo, size: const Size(740, 1100));
+      await openWorkspace(tester, repo, size: const Size(740, 1800));
 
       expect(tabText('Magie'), findsNothing);
       expect(find.textContaining('AsP'), findsNothing);
@@ -515,7 +555,7 @@ void main() {
         },
       );
 
-      await openWorkspace(tester, repo, size: const Size(740, 1100));
+      await openWorkspace(tester, repo, size: const Size(740, 1800));
 
       expect(tabText('Magie'), findsOneWidget);
       expect(find.textContaining('AsP'), findsWidgets);
@@ -756,7 +796,7 @@ void main() {
   });
 
   testWidgets(
-    'notes tab saves notes, contacts and adventures and reveals chronicle titles',
+    'notes tab saves adventure dialogs, people and reveals chronicle titles',
     (tester) async {
       final repo = FakeRepository(
         heroes: [buildHero()],
@@ -770,7 +810,7 @@ void main() {
         },
       );
 
-      await openWorkspace(tester, repo, size: const Size(740, 1100));
+      await openWorkspace(tester, repo, size: const Size(740, 1800));
       await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
       expect(
         find.byKey(const ValueKey<String>('notes-add-note')),
@@ -795,35 +835,137 @@ void main() {
         find.byKey(const ValueKey<String>('notes-add-adventure')),
       );
       await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('notes-adventure-dialog')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-dialog-end-world-day'),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>(
+            'notes-adventure-dialog-current-aventurian-day',
+          ),
+        ),
+        findsNothing,
+      );
       await tester.enterText(
-        find.byKey(const ValueKey<String>('notes-adventure-title-0')),
+        find.byKey(const ValueKey<String>('notes-adventure-dialog-title')),
         'Die Höhlen von Tairach',
       );
       await tester.enterText(
-        find.byKey(const ValueKey<String>('notes-adventure-summary-0')),
+        find.byKey(const ValueKey<String>('notes-adventure-dialog-summary')),
         'Ein gefährlicher Vorstoß in orkisches Gebiet.',
       );
       await tester.enterText(
-        find.byKey(const ValueKey<String>('notes-adventure-ap-0')),
-        '45',
+        find.byKey(
+          const ValueKey<String>('notes-adventure-dialog-start-world-day'),
+        ),
+        '12',
       );
-      await tester.ensureVisible(
-        find.byKey(const ValueKey<String>('notes-adventure-add-note-0')),
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-dialog-start-world-month'),
+        ),
+        'April',
+      );
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-dialog-start-world-year'),
+        ),
+        '2026',
+      );
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-dialog-start-aventurian-day'),
+        ),
+        '5',
       );
       await tester.tap(
-        find.byKey(const ValueKey<String>('notes-adventure-add-note-0')),
+        find.byKey(
+          const ValueKey<String>(
+            'notes-adventure-dialog-start-aventurian-month',
+          ),
+        ),
       );
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Praios').last);
+      await tester.pumpAndSettle();
       await tester.enterText(
-        find.byKey(const ValueKey<String>('notes-adventure-note-title-0-0')),
+        find.byKey(
+          const ValueKey<String>(
+            'notes-adventure-dialog-start-aventurian-year',
+          ),
+        ),
+        '1048',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('notes-adventure-dialog-save')),
+      );
+      await tester.pumpAndSettle();
+
+      final detailFinder = find.byWidgetPredicate(
+        (widget) =>
+            widget is Column &&
+            widget.key is ValueKey<String> &&
+            (widget.key! as ValueKey<String>).value.startsWith(
+              'notes-adventure-detail-',
+            ),
+      );
+      expect(detailFinder, findsOneWidget);
+      final detailKey =
+          (tester.widget<Column>(detailFinder).key! as ValueKey<String>).value;
+      final adventureId = detailKey.replaceFirst('notes-adventure-detail-', '');
+
+      await tester.enterText(
+        find.byKey(ValueKey<String>('notes-adventure-ap-$adventureId')),
+        '45',
+      );
+      await revealAndTap(
+        tester,
+        find.byKey(ValueKey<String>('notes-adventure-add-note-$adventureId')),
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-adventure-note-dialog-title')),
         'Schlüsselstelle',
       );
       await tester.enterText(
         find.byKey(
-          const ValueKey<String>('notes-adventure-note-description-0-0'),
+          const ValueKey<String>('notes-adventure-note-dialog-description'),
         ),
         'Der Eingang wurde mit einem Runenkreis gesichert.',
       );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('notes-adventure-note-dialog-save')),
+      );
+      await tester.pumpAndSettle();
+
+      await revealAndTap(
+        tester,
+        find.byKey(ValueKey<String>('notes-adventure-add-person-$adventureId')),
+      );
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-person-dialog-name'),
+        ),
+        'Aldare',
+      );
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-person-dialog-description'),
+        ),
+        'Verwundet, aber kampfbereit.',
+      );
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-person-dialog-save'),
+        ),
+      );
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Kontakte'));
       await tester.pumpAndSettle();
@@ -889,8 +1031,13 @@ void main() {
         hero.adventures.single.summary,
         'Ein gefährlicher Vorstoß in orkisches Gebiet.',
       );
+      expect(hero.adventures.single.startWorldDate.month, 'April');
+      expect(hero.adventures.single.startAventurianDate.month, 'praios');
+      expect(hero.adventures.single.endWorldDate.day, isEmpty);
+      expect(hero.adventures.single.currentAventurianDate.day, isEmpty);
       expect(hero.adventures.single.apReward, 45);
       expect(hero.adventures.single.notes.single.title, 'Schlüsselstelle');
+      expect(hero.adventures.single.people.single.name, 'Aldare');
 
       await openWorkspace(tester, repo);
       await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
@@ -899,6 +1046,273 @@ void main() {
 
       expect(find.text('Noch 20 Dukaten offen.'), findsNothing);
       expect(find.text('Offene Schuld'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'adventure overview groups chips and selects first current adventure',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            adventures: const <HeroAdventureEntry>[
+              HeroAdventureEntry(
+                id: 'adv_done',
+                status: HeroAdventureStatus.completed,
+                title: 'Vergangene Spuren',
+              ),
+              HeroAdventureEntry(
+                id: 'adv_current_1',
+                status: HeroAdventureStatus.current,
+                title: 'Feuer über Gareth',
+              ),
+              HeroAdventureEntry(
+                id: 'adv_current_2',
+                status: HeroAdventureStatus.current,
+                title: 'Schatten im Moor',
+              ),
+            ],
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo, size: const Size(740, 1800));
+      await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
+      await tester.tap(find.text('Abenteuer'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('notes-adventure-chip-adv_done')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-chip-adv_current_1'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-detail-adv_current_1'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('notes-adventure-chip-adv_done')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('notes-adventure-detail-adv_done')),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('adventure detail edits status and dates inline', (tester) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          adventures: const <HeroAdventureEntry>[
+            HeroAdventureEntry(
+              id: 'adv_inline',
+              title: 'Feuer über Gareth',
+              summary: 'Alte Fassung',
+            ),
+          ],
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openWorkspace(tester, repo, size: const Size(740, 1100));
+    await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
+    await tester.tap(find.text('Abenteuer'));
+    await tester.pumpAndSettle();
+    await tapWorkspaceEditAction(tester);
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('notes-adventure-summary-adv_inline')),
+      'Neue Zusammenfassung',
+    );
+    await tester.tap(
+      find.byKey(
+        const ValueKey<String>('notes-adventure-status-adv_inline-completed'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(
+        const ValueKey<String>('notes-adventure-start-world-adv_inline-day'),
+      ),
+      '12',
+    );
+    await tester.enterText(
+      find.byKey(
+        const ValueKey<String>('notes-adventure-start-world-adv_inline-month'),
+      ),
+      'April',
+    );
+    await tester.enterText(
+      find.byKey(
+        const ValueKey<String>('notes-adventure-start-world-adv_inline-year'),
+      ),
+      '2026',
+    );
+    await tester.enterText(
+      find.byKey(
+        const ValueKey<String>(
+          'notes-adventure-start-aventurian-adv_inline-day',
+        ),
+      ),
+      '5',
+    );
+    await revealAndTap(
+      tester,
+      find.byKey(
+        const ValueKey<String>(
+          'notes-adventure-start-aventurian-adv_inline-month',
+        ),
+      ),
+    );
+    await tester.tap(find.text('Praios').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(
+        const ValueKey<String>(
+          'notes-adventure-start-aventurian-adv_inline-year',
+        ),
+      ),
+      '1048',
+    );
+    await tester.enterText(
+      find.byKey(
+        const ValueKey<String>(
+          'notes-adventure-current-aventurian-adv_inline-day',
+        ),
+      ),
+      '8',
+    );
+    await revealAndTap(
+      tester,
+      find.byKey(
+        const ValueKey<String>(
+          'notes-adventure-current-aventurian-adv_inline-month',
+        ),
+      ),
+    );
+    await tester.tap(find.text('Praios').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(
+        const ValueKey<String>(
+          'notes-adventure-current-aventurian-adv_inline-year',
+        ),
+      ),
+      '1048',
+    );
+
+    await tapWorkspaceSaveAction(tester);
+
+    final hero = findHeroById(await repo.listHeroes(), 'demo');
+    expect(hero, isNotNull);
+    expect(hero!.adventures.single.status, HeroAdventureStatus.completed);
+    expect(hero.adventures.single.summary, 'Neue Zusammenfassung');
+    expect(hero.adventures.single.startWorldDate.month, 'April');
+    expect(hero.adventures.single.startAventurianDate.month, 'praios');
+    expect(hero.adventures.single.currentAventurianDate.day, '8');
+  });
+
+  testWidgets(
+    'adventure note and person chips can be edited and deleted via dialog',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            adventures: const <HeroAdventureEntry>[
+              HeroAdventureEntry(
+                id: 'adv_edit',
+                title: 'Feuer über Gareth',
+                notes: <HeroNoteEntry>[
+                  HeroNoteEntry(title: 'Spur', description: 'Alte Fassung'),
+                ],
+                people: <HeroAdventurePersonEntry>[
+                  HeroAdventurePersonEntry(
+                    id: 'person_1',
+                    name: 'Aldare',
+                    description: 'Wache am Tor.',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo, size: const Size(740, 1100));
+      await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
+      await tester.tap(find.text('Abenteuer'));
+      await tester.pumpAndSettle();
+      await tapWorkspaceEditAction(tester);
+
+      await revealAndTap(
+        tester,
+        find.byKey(
+          const ValueKey<String>('notes-adventure-note-chip-adv_edit-0'),
+        ),
+      );
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-note-dialog-delete'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await revealAndTap(
+        tester,
+        find.byKey(
+          const ValueKey<String>(
+            'notes-adventure-person-chip-adv_edit-person_1',
+          ),
+        ),
+      );
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-person-dialog-delete'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tapWorkspaceSaveAction(tester);
+
+      final hero = findHeroById(await repo.listHeroes(), 'demo');
+      expect(hero, isNotNull);
+      expect(hero!.adventures.single.notes, isEmpty);
+      expect(hero.adventures.single.people, isEmpty);
     },
   );
 
@@ -945,12 +1359,10 @@ void main() {
       await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
       await tester.tap(find.text('Abenteuer'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Feuer im Nebel').first);
-      await tester.pumpAndSettle();
-      await tester.tap(
+      await revealAndTap(
+        tester,
         find.byKey(const ValueKey<String>('notes-adventure-apply-adv_1')),
       );
-      await tester.pumpAndSettle();
 
       var heroes = await repo.listHeroes();
       var hero = findHeroById(heroes, 'demo');
@@ -1292,6 +1704,80 @@ void main() {
   );
 
   testWidgets(
+    'wide workspace inspector keeps vital control columns stable and long labels visible',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero(vorteileText: 'AE+1')],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+            ueberanstrengung: 1,
+            erschoepfung: 0,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+      final ueberanstrengungRow = find.byKey(
+        const ValueKey<String>('workspace-vital-row-ueberanstrengung'),
+      );
+      final erschoepfungRow = find.byKey(
+        const ValueKey<String>('workspace-vital-row-erschoepfung'),
+      );
+
+      expect(
+        paragraphIn(
+          tester,
+          ueberanstrengungRow,
+          'Überanstrengung',
+        ).didExceedMaxLines,
+        isFalse,
+      );
+      expect(
+        paragraphIn(tester, erschoepfungRow, 'Erschöpfung').didExceedMaxLines,
+        isFalse,
+      );
+
+      final lepMinusBefore = centerDx(tester, find.byTooltip('LeP verringern'));
+      final ueberanstrengungMinusBefore = centerDx(
+        tester,
+        tooltipIn(ueberanstrengungRow, 'Überanstrengung verringern'),
+      );
+      final erschoepfungMinusBefore = centerDx(
+        tester,
+        tooltipIn(erschoepfungRow, 'Erschöpfung verringern'),
+      );
+      final erschoepfungPlusBefore = centerDx(
+        tester,
+        tooltipIn(erschoepfungRow, 'Erschöpfung erhöhen'),
+      );
+
+      expect(ueberanstrengungMinusBefore, closeTo(lepMinusBefore, 0.01));
+      expect(erschoepfungMinusBefore, closeTo(lepMinusBefore, 0.01));
+
+      await tester.tap(tooltipIn(erschoepfungRow, 'Erschöpfung erhöhen'));
+      await tester.pumpAndSettle();
+
+      expect(
+        tooltipIn(erschoepfungRow, 'Erschöpfung zurücksetzen'),
+        findsOneWidget,
+      );
+      expect(
+        centerDx(tester, tooltipIn(erschoepfungRow, 'Erschöpfung verringern')),
+        closeTo(erschoepfungMinusBefore, 0.01),
+      );
+      expect(
+        centerDx(tester, tooltipIn(erschoepfungRow, 'Erschöpfung erhöhen')),
+        closeTo(erschoepfungPlusBefore, 0.01),
+      );
+    },
+  );
+
+  testWidgets(
     'wide workspace rest dialog can full restore resources and wounds',
     (tester) async {
       final repo = FakeRepository(
@@ -1484,6 +1970,52 @@ void main() {
     expect(find.text('Manueller BE'), findsNothing);
     expect(find.text('Entfernen'), findsNothing);
   });
+
+  testWidgets(
+    'wide workspace keeps status control columns stable when reset appears',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero(persistentMods: const StatModifiers(iniBase: 1))],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo, size: const Size(1600, 1200));
+
+      final iniRow = find.byKey(
+        const ValueKey<String>('workspace-status-row-Ini'),
+      );
+      final gsRow = find.byKey(
+        const ValueKey<String>('workspace-status-row-GS'),
+      );
+
+      final iniMinusDx = centerDx(tester, tooltipIn(iniRow, 'Ini verringern'));
+      final gsMinusBefore = centerDx(tester, tooltipIn(gsRow, 'GS verringern'));
+      final gsPlusBefore = centerDx(tester, tooltipIn(gsRow, 'GS erhöhen'));
+
+      expect(gsMinusBefore, closeTo(iniMinusDx, 0.01));
+      expect(tooltipIn(gsRow, 'GS zurücksetzen'), findsNothing);
+
+      await tester.tap(tooltipIn(gsRow, 'GS erhöhen'));
+      await tester.pumpAndSettle();
+
+      expect(tooltipIn(gsRow, 'GS zurücksetzen'), findsOneWidget);
+      expect(
+        centerDx(tester, tooltipIn(gsRow, 'GS verringern')),
+        closeTo(gsMinusBefore, 0.01),
+      );
+      expect(
+        centerDx(tester, tooltipIn(gsRow, 'GS erhöhen')),
+        closeTo(gsPlusBefore, 0.01),
+      );
+    },
+  );
 
   testWidgets('overview shows attributes and derived in responsive section', (
     tester,

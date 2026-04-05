@@ -111,7 +111,8 @@ Technischer Stack:
 - Direkt bearbeitbares Inventar als kompakte Tabelle fuer Ausruestung und sonstige Gegenstaende
 - Freie Chroniken mit Titel und Beschreibung
 - Verbindungen/Kontakte mit Ort, Sozialstatus, Loyalitaet, Beschreibung und optionaler Abenteuer-Zuordnung
-- Abenteuer als manuell sortierbare Helden-Etappen mit Zusammenfassung, abenteuerbezogenen Notizen, AP-Belohnung und fest zugeordneten Sondererfahrungen
+- Abenteuer als Chip-Uebersicht mit fokussierter Detailansicht; neue Abenteuer, Notizen und Personen werden jeweils ueber Popups angelegt oder bearbeitet
+- Abenteuer pflegen Status (`Aktuell` oder `Abgeschlossen`), weltliche und aventurische Start-/Enddaten, ein aktuelles aventurisches Datum, abenteuerbezogene Notizen, Personen, AP-Belohnung und fest zugeordnete Sondererfahrungen
 - Abenteuer-Belohnungen lassen sich einmalig anwenden oder zuruecknehmen; der Reisebericht bleibt davon fachlich getrennt
 
 ### Datenimport und Kataloge

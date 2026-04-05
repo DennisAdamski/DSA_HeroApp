@@ -10,7 +10,6 @@ import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/maneuver_rules.dart';
@@ -55,8 +54,6 @@ part 'hero_combat/combat_maneuver_helpers.dart';
 part 'hero_combat/combat_maneuver_dialog.dart';
 part 'hero_combat/combat_state_helpers.dart';
 part 'hero_combat/combat_at_pa_dialog.dart';
-
-enum _ManeuverSupportStatus { supported, notSupported, unverifiable }
 
 class HeroCombatTab extends ConsumerStatefulWidget {
   const HeroCombatTab({
