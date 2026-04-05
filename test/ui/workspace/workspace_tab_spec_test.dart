@@ -29,6 +29,7 @@ void main() {
       WorkspaceTabIds.notes,
       WorkspaceTabIds.reisebericht,
       WorkspaceTabIds.begleiter,
+      WorkspaceTabIds.gruppe,
     ]);
   });
 
