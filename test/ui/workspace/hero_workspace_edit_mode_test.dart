@@ -853,6 +853,28 @@ void main() {
         ),
         findsNothing,
       );
+      expect(
+        tester
+            .widget<ChoiceChip>(
+              find.byKey(
+                const ValueKey<String>('notes-adventure-dialog-status-current'),
+              ),
+            )
+            .selected,
+        isTrue,
+      );
+      expect(
+        tester
+            .widget<ChoiceChip>(
+              find.byKey(
+                const ValueKey<String>(
+                  'notes-adventure-dialog-status-completed',
+                ),
+              ),
+            )
+            .selected,
+        isFalse,
+      );
       await tester.enterText(
         find.byKey(const ValueKey<String>('notes-adventure-dialog-title')),
         'Die Höhlen von Tairach',
@@ -1027,6 +1049,7 @@ void main() {
       expect(hero.connections.single.adventureId, isNotEmpty);
       expect(hero.adventures, hasLength(1));
       expect(hero.adventures.single.title, 'Die Höhlen von Tairach');
+      expect(hero.adventures.single.status, HeroAdventureStatus.current);
       expect(
         hero.adventures.single.summary,
         'Ein gefährlicher Vorstoß in orkisches Gebiet.',
@@ -1168,6 +1191,51 @@ void main() {
       expect(find.text('12'), findsOneWidget);
     },
   );
+
+  testWidgets('new adventure dialog prefills current world date', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final today = DateTime.now().toLocal();
+
+    await openWorkspace(tester, repo, size: const Size(740, 1100));
+    await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
+    await tester.tap(find.text('Abenteuer'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey<String>('notes-add-adventure')));
+    await tester.pumpAndSettle();
+
+    final dayField = tester.widget<TextField>(
+      find.byKey(
+        const ValueKey<String>('notes-adventure-dialog-start-world-day'),
+      ),
+    );
+    final monthField = tester.widget<TextField>(
+      find.byKey(
+        const ValueKey<String>('notes-adventure-dialog-start-world-month'),
+      ),
+    );
+    final yearField = tester.widget<TextField>(
+      find.byKey(
+        const ValueKey<String>('notes-adventure-dialog-start-world-year'),
+      ),
+    );
+
+    expect(dayField.controller?.text, today.day.toString().padLeft(2, '0'));
+    expect(monthField.controller?.text, today.month.toString().padLeft(2, '0'));
+    expect(yearField.controller?.text, today.year.toString());
+  });
 
   testWidgets('adventure detail edits status and dates inline', (tester) async {
     final repo = FakeRepository(
