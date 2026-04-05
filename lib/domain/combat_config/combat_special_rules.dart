@@ -176,7 +176,9 @@ class CombatSpecialRules {
     final rawManeuvers = List<dynamic>.from(
       (json['activeManeuvers'] as List?) ?? const <dynamic>[],
     );
-    if (getBool('schnellladenBogen')) rawManeuvers.add('man_schnellladen_bogen');
+    if (getBool('schnellladenBogen')) {
+      rawManeuvers.add('man_schnellladen_bogen');
+    }
     if (getBool('schnellladenArmbrust')) {
       rawManeuvers.add('man_schnellladen_armbrust');
     }
