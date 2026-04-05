@@ -112,8 +112,9 @@ Technischer Stack:
 - Freie Chroniken mit Titel und Beschreibung
 - Verbindungen/Kontakte mit Ort, Sozialstatus, Loyalitaet, Beschreibung und optionaler Abenteuer-Zuordnung
 - Abenteuer als Chip-Uebersicht mit fokussierter Detailansicht; neue Abenteuer, Notizen und Personen werden jeweils ueber Popups angelegt oder bearbeitet
-- Abenteuer pflegen Status (`Aktuell` oder `Abgeschlossen`), weltliche und aventurische Start-/Enddaten, ein aktuelles aventurisches Datum, abenteuerbezogene Notizen, Personen, AP-Belohnung und fest zugeordnete Sondererfahrungen
-- Abenteuer-Belohnungen lassen sich einmalig anwenden oder zuruecknehmen; der Reisebericht bleibt davon fachlich getrennt
+- Abenteuer pflegen Status (`Aktuell` oder `Abgeschlossen`), weltliche und aventurische Start-/Enddaten, ein aktuelles aventurisches Datum, abenteuerbezogene Notizen und Personen direkt in der Detailansicht
+- AP-Belohnung, fest zugeordnete Sondererfahrungen, Dukaten und Abschluss-Beute werden gesammelt im gefuehrten `Abschliessen`-Dialog gepflegt und anschliessend atomar in AP, SE-Pools, Dukatenstand und Inventar uebernommen
+- Ein Abschluss kann fachlich sicher wieder zurueckgenommen werden; Abenteuer-Beute bleibt dabei bewusst vom Kampf-Inventar entkoppelt
 
 ### Datenimport und Kataloge
 
@@ -148,7 +149,7 @@ Grundprinzipien des Projekts:
 - Regellogik liegt ausschliesslich in `lib/rules/derived/`
 - UI und Provider rufen Regelmodule auf, rechnen aber nicht selbst
 - Katalogdaten werden zur Laufzeit aus Split-JSON geladen
-- `HeroSheet` nutzt Schema-Version `21`, `HeroState` Schema-Version `5`
+- `HeroSheet` nutzt Schema-Version `23`, `HeroState` Schema-Version `5`
 
 ## Schnellstart
 
