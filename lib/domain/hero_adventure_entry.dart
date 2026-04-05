@@ -133,6 +133,16 @@ class HeroAdventureDateValue {
       year: getString('year'),
     );
   }
+
+  /// Wandelt ein `DateTime` in ein weltliches Abenteuerdatum um.
+  static HeroAdventureDateValue fromDateTime(DateTime value) {
+    final localValue = value.toLocal();
+    return HeroAdventureDateValue(
+      day: localValue.day.toString().padLeft(2, '0'),
+      month: localValue.month.toString().padLeft(2, '0'),
+      year: localValue.year.toString(),
+    );
+  }
 }
 
 /// Beschreibt eine abenteuerspezifische Person oder NSC-Referenz.
