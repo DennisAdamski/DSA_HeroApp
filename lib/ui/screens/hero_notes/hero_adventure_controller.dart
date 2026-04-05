@@ -30,7 +30,10 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
     }
     final createdAdventure = await _showAdventureCreateDialog(
       context: context,
-      initial: HeroAdventureEntry(id: _uuid.v4()),
+      initial: HeroAdventureEntry(
+        id: _uuid.v4(),
+        startWorldDate: HeroAdventureDateValue.fromDateTime(DateTime.now()),
+      ),
     );
     if (!mounted || createdAdventure == null) {
       return;
