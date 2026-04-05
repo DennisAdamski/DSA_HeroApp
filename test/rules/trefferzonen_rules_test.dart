@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('humanoidTrefferzonenTabelle', () {
-    test('deckt den gesamten W20-Bereich 1–20 ab', () {
+    test('deckt den gesamten W20-Bereich 1-20 ab', () {
       for (var roll = 1; roll <= 20; roll++) {
         final ergebnis = resolveTrefferzone(
           roll: roll,
@@ -15,7 +15,7 @@ void main() {
       }
     });
 
-    test('Beine: 1–6', () {
+    test('Beine: 1-6', () {
       for (var roll = 1; roll <= 6; roll++) {
         final ergebnis = resolveTrefferzone(
           roll: roll,
@@ -26,7 +26,7 @@ void main() {
       }
     });
 
-    test('Bauch: 7–8', () {
+    test('Bauch: 7-8', () {
       for (var roll = 7; roll <= 8; roll++) {
         final ergebnis = resolveTrefferzone(
           roll: roll,
@@ -38,7 +38,7 @@ void main() {
       }
     });
 
-    test('Arme: 9–14', () {
+    test('Arme: 9-14', () {
       for (var roll = 9; roll <= 14; roll++) {
         final ergebnis = resolveTrefferzone(
           roll: roll,
@@ -48,7 +48,7 @@ void main() {
       }
     });
 
-    test('Brust: 15–18', () {
+    test('Brust: 15-18', () {
       for (var roll = 15; roll <= 18; roll++) {
         final ergebnis = resolveTrefferzone(
           roll: roll,
@@ -60,7 +60,7 @@ void main() {
       }
     });
 
-    test('Kopf: 19–20', () {
+    test('Kopf: 19-20', () {
       for (var roll = 19; roll <= 20; roll++) {
         final ergebnis = resolveTrefferzone(
           roll: roll,
@@ -126,7 +126,7 @@ void main() {
         eintraege: humanoidTrefferzonenTabelle.eintraege,
         rollModifier: 2,
       );
-      // Roll 5 + Modifier 2 = 7 → Bauch
+
       final ergebnis = resolveTrefferzone(roll: 5, tabelle: tabelle)!;
       expect(ergebnis.label, 'Bauch');
       expect(ergebnis.roll, 5);
@@ -139,7 +139,7 @@ void main() {
         eintraege: humanoidTrefferzonenTabelle.eintraege,
         rollModifier: -10,
       );
-      // Roll 15 + Modifier -10 = 5 → Beine
+
       final ergebnis = resolveTrefferzone(roll: 15, tabelle: tabelle)!;
       expect(ergebnis.eintrag.label, 'Beine');
       expect(ergebnis.effektiverRoll, 5);
@@ -151,7 +151,7 @@ void main() {
         eintraege: humanoidTrefferzonenTabelle.eintraege,
         rollModifier: 5,
       );
-      // Roll 20 + Modifier 5 = 25, geclampt auf 20 → Kopf
+
       final ergebnis = resolveTrefferzone(roll: 20, tabelle: tabelle)!;
       expect(ergebnis.effektiverRoll, 20);
       expect(ergebnis.label, 'Kopf');
@@ -163,7 +163,7 @@ void main() {
         eintraege: humanoidTrefferzonenTabelle.eintraege,
         rollModifier: -5,
       );
-      // Roll 1 + Modifier -5 = -4, geclampt auf 1 → Beine
+
       final ergebnis = resolveTrefferzone(roll: 1, tabelle: tabelle)!;
       expect(ergebnis.effektiverRoll, 1);
       expect(ergebnis.eintrag.label, 'Beine');
@@ -171,7 +171,7 @@ void main() {
   });
 
   group('Randwerte', () {
-    test('Roll 1 → Beine', () {
+    test('Roll 1 -> Beine', () {
       final ergebnis = resolveTrefferzone(
         roll: 1,
         tabelle: humanoidTrefferzonenTabelle,
@@ -179,7 +179,7 @@ void main() {
       expect(ergebnis.eintrag.label, 'Beine');
     });
 
-    test('Roll 20 → Kopf', () {
+    test('Roll 20 -> Kopf', () {
       final ergebnis = resolveTrefferzone(
         roll: 20,
         tabelle: humanoidTrefferzonenTabelle,
@@ -194,6 +194,54 @@ void main() {
       )!;
       expect(ergebnis.roll, 12);
       expect(ergebnis.effektiverRoll, 12);
+    });
+  });
+
+  group('resolveTrefferzonenZusatzwuerfe', () {
+    test('Brust skaliert den Extraschaden mit der Wundenanzahl', () {
+      final eintrag = humanoidTrefferzonenTabelle.eintraege.firstWhere(
+        (kandidat) => kandidat.zone == WundZone.brust,
+      );
+
+      final zusatzwuerfe = resolveTrefferzonenZusatzwuerfe(
+        eintrag: eintrag,
+        wunden: 2,
+      );
+
+      expect(zusatzwuerfe, hasLength(1));
+      expect(zusatzwuerfe.first.label, 'Extraschaden');
+      expect(zusatzwuerfe.first.diceSpec.label, '2W6');
+      expect(zusatzwuerfe.first.detailText, '1W6 je Wunde • 2W6 bei 2 Wunden');
+    });
+
+    test('Kopf liefert pro Wunde INI-Malus und bei 3 Wunden Zusatzschaden', () {
+      final eintrag = humanoidTrefferzonenTabelle.eintraege.firstWhere(
+        (kandidat) => kandidat.zone == WundZone.kopf,
+      );
+
+      final zusatzwuerfe = resolveTrefferzonenZusatzwuerfe(
+        eintrag: eintrag,
+        wunden: 3,
+      );
+
+      expect(zusatzwuerfe, hasLength(2));
+      expect(zusatzwuerfe.first.label, 'INI-Malus');
+      expect(zusatzwuerfe.first.diceSpec.label, '6W6');
+      expect(zusatzwuerfe.last.label, '3. Wunde: Extraschaden');
+      expect(zusatzwuerfe.last.diceSpec.label, '2W6');
+    });
+
+    test('Arme haben keine separaten Zusatzwuerfe', () {
+      final eintrag = humanoidTrefferzonenTabelle.eintraege.firstWhere(
+        (kandidat) => kandidat.label == 'Arme',
+      );
+
+      final zusatzwuerfe = resolveTrefferzonenZusatzwuerfe(
+        eintrag: eintrag,
+        wunden: 2,
+      );
+
+      expect(zusatzwuerfe, isEmpty);
     });
   });
 }
