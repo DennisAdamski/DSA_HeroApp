@@ -408,7 +408,6 @@ class _AdventureDetailCard extends StatelessWidget {
             const SizedBox(height: _notesFieldSpacing),
             _AdventureCurrentDateBlock(
               entryId: entry.id,
-              isEditing: isEditing,
               date: entry.currentAventurianDate,
               onChanged: onCurrentAventurianDateChanged,
             ),
@@ -557,13 +556,11 @@ class _AdventureDateBlock extends StatelessWidget {
 class _AdventureCurrentDateBlock extends StatelessWidget {
   const _AdventureCurrentDateBlock({
     required this.entryId,
-    required this.isEditing,
     required this.date,
     required this.onChanged,
   });
 
   final String entryId;
-  final bool isEditing;
   final HeroAdventureDateValue date;
   final ValueChanged<HeroAdventureDateValue> onChanged;
 
@@ -574,20 +571,13 @@ class _AdventureCurrentDateBlock extends StatelessWidget {
       children: [
         _AdventureSubsectionHeader(title: 'Aktuelles Datum'),
         const SizedBox(height: 8),
-        if (isEditing)
-          _AdventureDateEditor(
-            title: 'Aventurisch',
-            keyPrefix: 'notes-adventure-current-aventurian-$entryId',
-            value: date,
-            usesAventurianMonthPicker: true,
-            onChanged: onChanged,
-          )
-        else
-          _ReadOnlyTextBlock(
-            title: 'Aventurisch',
-            value: _formatDateValue(date, usesAventurianMonthLabel: true),
-            emptyValue: 'Nicht gepflegt.',
-          ),
+        _AdventureDateEditor(
+          title: 'Aventurisch',
+          keyPrefix: 'notes-adventure-current-aventurian-$entryId',
+          value: date,
+          usesAventurianMonthPicker: true,
+          onChanged: onChanged,
+        ),
       ],
     );
   }
