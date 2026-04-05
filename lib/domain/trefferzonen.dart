@@ -14,6 +14,32 @@ class TrefferSubZone {
 /// Typ-Alias fuer die Subzonen-Aufloesung anhand des W20-Wurfs.
 typedef SubZoneResolver = TrefferSubZone Function(int roll);
 
+/// Strukturierter Zusatzwurf einer Trefferzone, der separat gewuerfelt wird.
+class TrefferzonenZusatzwurf {
+  const TrefferzonenZusatzwurf({
+    required this.label,
+    required this.diceCount,
+    this.diceSides = 6,
+    this.modifier = 0,
+    this.multipliziertMitWunden = false,
+  });
+
+  /// Anzeigename des Effekts, z. B. `Extraschaden` oder `INI-Malus`.
+  final String label;
+
+  /// Anzahl der Wuerfel des Grundeffekts.
+  final int diceCount;
+
+  /// Seitenzahl der Wuerfel. Standard ist `W6`.
+  final int diceSides;
+
+  /// Optionaler fester Modifikator auf die Summe.
+  final int modifier;
+
+  /// Multipliziert den Effekt mit der gewaehlten Wundenanzahl.
+  final bool multipliziertMitWunden;
+}
+
 /// Ein einzelner Eintrag in einer Trefferzonen-Tabelle.
 class TrefferzonenEintrag {
   const TrefferzonenEintrag({
@@ -24,6 +50,8 @@ class TrefferzonenEintrag {
     required this.rollMax,
     required this.wundEffektBeschreibung,
     required this.dritteWundeBeschreibung,
+    this.zusatzwuerfeErsteBisDritteWunde = const <TrefferzonenZusatzwurf>[],
+    this.zusatzwuerfeDritteWunde = const <TrefferzonenZusatzwurf>[],
     this.subZoneResolver,
   });
 
@@ -47,6 +75,12 @@ class TrefferzonenEintrag {
 
   /// Beschreibung der Effekte bei 3. Wunde.
   final String dritteWundeBeschreibung;
+
+  /// Strukturierte Zusatzwuerfe, die pro erlittener Wunde gelten.
+  final List<TrefferzonenZusatzwurf> zusatzwuerfeErsteBisDritteWunde;
+
+  /// Strukturierte Zusatzwuerfe, die nur bei der 3. Wunde zusaetzlich gelten.
+  final List<TrefferzonenZusatzwurf> zusatzwuerfeDritteWunde;
 
   /// Optionale Funktion zur Aufloesung in konkrete Subzonen
   /// (z.B. Schildarm/Schwertarm, linkes/rechtes Bein).

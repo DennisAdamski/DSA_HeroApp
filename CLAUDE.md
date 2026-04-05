@@ -709,3 +709,14 @@ The following files are **intentionally kept** but not currently wired into the 
 - Das standardmaessig geoeffnete Abenteuer ist das erste mit Status
   `Aktuell`, sonst das erste Abenteuer in der gespeicherten Reihenfolge.
 
+## Update 2026-04-05
+
+- Der gemeinsame `probe_dialog.dart` zeigt bei Schadenswuerfen nach der
+  Trefferzonen-Bestimmung jetzt einen Wunden-Stepper (Standard `1`) fuer
+  separat zu wuerfelnde Trefferzonen-Effekte.
+- Trefferzonen-Zusatzwuerfe wie Kopf-INI-Malus oder Extra-SP aus Brust/Bauch
+  sind strukturiert in `trefferzonen.dart` / `trefferzonen_rules.dart`
+  modelliert und werden nicht mehr aus Beschreibungstexten abgeleitet.
+- Die Trefferzonen-Anzeige blendet den `Gezielten Schlag` im Schadensdialog
+  an dieser Stelle nicht mehr ein.
+
