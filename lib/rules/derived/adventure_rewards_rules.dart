@@ -1,8 +1,22 @@
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+
+/// Ergebnis der Abschlusspruefung fuer Abenteuer-Belohnungen.
+class AdventureRewardApplyCheck {
+  /// Erzeugt ein unveraenderliches Pruefergebnis.
+  const AdventureRewardApplyCheck({required this.isAllowed, this.reason = ''});
+
+  /// Gibt an, ob der Abschluss aktuell fachlich erlaubt ist.
+  final bool isAllowed;
+
+  /// Erklaert die Sperre fuer die UI.
+  final String reason;
+}
 
 /// Ergebnis der Ruecknahmepruefung fuer Abenteuer-Belohnungen.
 class AdventureRewardRevokeCheck {
@@ -16,25 +30,79 @@ class AdventureRewardRevokeCheck {
   final String reason;
 }
 
-/// Wendet die Belohnungen eines Abenteuers einmalig auf den Helden an.
+/// Prueft, ob ein Abenteuer mit den aktuell hinterlegten Abschlussdaten
+/// abgeschlossen werden kann.
+AdventureRewardApplyCheck canApplyAdventureRewards({
+  required HeroSheet hero,
+  required String adventureId,
+}) {
+  final adventureIndex = _findAdventureIndex(hero, adventureId);
+  if (adventureIndex < 0) {
+    return const AdventureRewardApplyCheck(
+      isAllowed: false,
+      reason: 'Abenteuer nicht gefunden.',
+    );
+  }
+
+  final adventure = hero.adventures[adventureIndex];
+  if (adventure.rewardsApplied) {
+    return const AdventureRewardApplyCheck(
+      isAllowed: false,
+      reason: 'Das Abenteuer wurde bereits abgeschlossen.',
+    );
+  }
+
+  if (_requiresNumericDukaten(adventure)) {
+    final currentDukaten = _parseDukatenValue(hero.dukaten);
+    if (currentDukaten == null) {
+      return const AdventureRewardApplyCheck(
+        isAllowed: false,
+        reason: 'Der aktuelle Dukatenstand ist nicht numerisch lesbar.',
+      );
+    }
+  }
+
+  for (final loot in adventure.lootRewards.where((entry) => entry.hasContent)) {
+    final sourceRef = _adventureLootRef(adventure.id, loot.id);
+    final hasConflict = hero.inventoryEntries.any(
+      (entry) => entry.sourceRef == sourceRef,
+    );
+    if (hasConflict) {
+      return AdventureRewardApplyCheck(
+        isAllowed: false,
+        reason:
+            'Für ${_lootLabel(loot)} existiert bereits ein Abschluss-Eintrag.',
+      );
+    }
+  }
+
+  return const AdventureRewardApplyCheck(isAllowed: true);
+}
+
+/// Wendet die Belohnungen eines Abenteuers einmalig auf den Helden an und
+/// markiert das Abenteuer dabei als abgeschlossen.
 HeroSheet applyAdventureRewards({
   required HeroSheet hero,
   required String adventureId,
 }) {
+  final check = canApplyAdventureRewards(hero: hero, adventureId: adventureId);
+  if (!check.isAllowed) {
+    return hero;
+  }
+
   final adventureIndex = _findAdventureIndex(hero, adventureId);
   if (adventureIndex < 0) {
     return hero;
   }
 
   final adventure = hero.adventures[adventureIndex];
-  if (adventure.rewardsApplied) {
-    return hero;
-  }
-
   var nextApTotal = hero.apTotal + _normalizeNonNegative(adventure.apReward);
   var nextTalents = Map<String, HeroTalentEntry>.of(hero.talents);
   var nextAttributeSePool = hero.attributeSePool;
   var nextStatSePool = hero.statSePool;
+  final nextInventoryEntries = List<HeroInventoryEntry>.from(
+    hero.inventoryEntries,
+  );
 
   for (final reward in adventure.seRewards.where((entry) => entry.hasContent)) {
     switch (reward.targetType) {
@@ -56,9 +124,25 @@ HeroSheet applyAdventureRewards({
     }
   }
 
-  final updatedAdventure = adventure.copyWith(rewardsApplied: true);
+  final currentDukaten = _parseDukatenValue(hero.dukaten) ?? 0;
+  final nextDukaten =
+      currentDukaten + _normalizeNonNegativeDukaten(adventure.dukatenReward);
+  final nextDukatenValue = _requiresNumericDukaten(adventure)
+      ? _formatDukatenValue(nextDukaten)
+      : hero.dukaten;
+  for (final loot in adventure.lootRewards.where((entry) => entry.hasContent)) {
+    nextInventoryEntries.add(
+      _buildAdventureLootInventoryEntry(adventure: adventure, loot: loot),
+    );
+  }
+
+  final updatedAdventure = adventure.copyWith(
+    status: HeroAdventureStatus.completed,
+    rewardsApplied: true,
+  );
   return hero.copyWith(
     apTotal: nextApTotal,
+    dukaten: nextDukatenValue,
     talents: nextTalents,
     adventures: _replaceAdventureAt(
       hero.adventures,
@@ -67,10 +151,12 @@ HeroSheet applyAdventureRewards({
     ),
     attributeSePool: nextAttributeSePool,
     statSePool: nextStatSePool,
+    inventoryEntries: List<HeroInventoryEntry>.unmodifiable(nextInventoryEntries),
   );
 }
 
-/// Prueft, ob die Belohnungen eines Abenteuers sicher zurueckgenommen werden koennen.
+/// Prueft, ob die Belohnungen eines Abenteuers sicher zurueckgenommen werden
+/// koennen.
 AdventureRewardRevokeCheck canRevokeAdventureRewards({
   required HeroSheet hero,
   required String adventureId,
@@ -135,10 +221,39 @@ AdventureRewardRevokeCheck canRevokeAdventureRewards({
     }
   }
 
+  if (_requiresNumericDukaten(adventure)) {
+    final currentDukaten = _parseDukatenValue(hero.dukaten);
+    if (currentDukaten == null) {
+      return const AdventureRewardRevokeCheck(
+        isAllowed: false,
+        reason: 'Der aktuelle Dukatenstand ist nicht numerisch lesbar.',
+      );
+    }
+    if (currentDukaten < _normalizeNonNegativeDukaten(adventure.dukatenReward)) {
+      return const AdventureRewardRevokeCheck(
+        isAllowed: false,
+        reason: 'Die vergebenen Dukaten sind nicht mehr vollständig vorhanden.',
+      );
+    }
+  }
+
+  for (final loot in adventure.lootRewards.where((entry) => entry.hasContent)) {
+    final sourceRef = _adventureLootRef(adventure.id, loot.id);
+    final exists = hero.inventoryEntries.any((entry) => entry.sourceRef == sourceRef);
+    if (!exists) {
+      return AdventureRewardRevokeCheck(
+        isAllowed: false,
+        reason:
+            'Der Abschluss-Gegenstand ${_lootLabel(loot)} ist nicht mehr vollständig vorhanden.',
+      );
+    }
+  }
+
   return const AdventureRewardRevokeCheck(isAllowed: true);
 }
 
-/// Nimmt die Belohnungen eines zuvor angewendeten Abenteuers zurueck.
+/// Nimmt die Belohnungen eines zuvor angewendeten Abenteuers zurueck und
+/// oeffnet das Abenteuer wieder.
 HeroSheet revokeAdventureRewards({
   required HeroSheet hero,
   required String adventureId,
@@ -186,9 +301,29 @@ HeroSheet revokeAdventureRewards({
     }
   }
 
-  final updatedAdventure = adventure.copyWith(rewardsApplied: false);
+  final currentDukaten = _parseDukatenValue(hero.dukaten) ?? 0;
+  final nextDukaten =
+      currentDukaten - _normalizeNonNegativeDukaten(adventure.dukatenReward);
+  final nextDukatenValue = _requiresNumericDukaten(adventure)
+      ? _formatDukatenValue(nextDukaten < 0 ? 0 : nextDukaten)
+      : hero.dukaten;
+  final removalRefs = adventure.lootRewards
+      .where((entry) => entry.hasContent)
+      .map((entry) => _adventureLootRef(adventure.id, entry.id))
+      .toSet();
+  final nextInventoryEntries = hero.inventoryEntries
+      .where((entry) => !removalRefs.contains(entry.sourceRef))
+      .toList(growable: false);
+
+  final updatedAdventure = adventure.copyWith(
+    status: HeroAdventureStatus.current,
+    endWorldDate: const HeroAdventureDateValue(),
+    endAventurianDate: const HeroAdventureDateValue(),
+    rewardsApplied: false,
+  );
   return hero.copyWith(
     apTotal: nextApTotal,
+    dukaten: nextDukatenValue,
     talents: nextTalents,
     adventures: _replaceAdventureAt(
       hero.adventures,
@@ -197,6 +332,7 @@ HeroSheet revokeAdventureRewards({
     ),
     attributeSePool: nextAttributeSePool,
     statSePool: nextStatSePool,
+    inventoryEntries: nextInventoryEntries,
   );
 }
 
@@ -235,6 +371,34 @@ List<HeroAdventureEntry> _replaceAdventureAt(
   return List<HeroAdventureEntry>.unmodifiable(next);
 }
 
+HeroInventoryEntry _buildAdventureLootInventoryEntry({
+  required HeroAdventureEntry adventure,
+  required HeroAdventureLootEntry loot,
+}) {
+  final title = adventure.title.trim();
+  final herkunft = loot.origin.trim();
+  final adventureLabel = title.isEmpty ? adventure.id : title;
+  final effectiveOrigin = herkunft.isEmpty
+      ? 'Abenteuer: $adventureLabel'
+      : herkunft;
+  return HeroInventoryEntry(
+    gegenstand: loot.name.trim(),
+    anzahl: loot.quantity.trim(),
+    welchesAbenteuer: adventureLabel,
+    itemType: loot.itemType,
+    source: InventoryItemSource.abenteuer,
+    sourceRef: _adventureLootRef(adventure.id, loot.id),
+    gewichtGramm: _normalizeNonNegative(loot.weightGramm),
+    wertSilber: _normalizeNonNegative(loot.valueSilver),
+    herkunft: effectiveOrigin,
+    beschreibung: loot.description.trim(),
+  );
+}
+
+String _adventureLootRef(String adventureId, String lootId) {
+  return 'adv:${adventureId.trim()}|loot:${lootId.trim()}';
+}
+
 String _rewardLabel(HeroAdventureSeReward reward) {
   final label = reward.targetLabel.trim();
   if (label.isNotEmpty) {
@@ -243,6 +407,44 @@ String _rewardLabel(HeroAdventureSeReward reward) {
   return reward.targetId.trim().isEmpty ? 'dem Zielwert' : reward.targetId;
 }
 
+String _lootLabel(HeroAdventureLootEntry loot) {
+  final label = loot.name.trim();
+  return label.isEmpty ? 'der Gegenstand' : label;
+}
+
+bool _requiresNumericDukaten(HeroAdventureEntry adventure) {
+  return _normalizeNonNegativeDukaten(adventure.dukatenReward) > 0;
+}
+
+double? _parseDukatenValue(String rawValue) {
+  final normalized = rawValue.trim();
+  if (normalized.isEmpty) {
+    return 0;
+  }
+
+  final compact = normalized.replaceAll(' ', '');
+  final decimalNormalized = compact.replaceAll(',', '.');
+  return double.tryParse(decimalNormalized);
+}
+
+String _formatDukatenValue(double value) {
+  final normalized = value < 0 ? 0 : value;
+  final isWhole = normalized == normalized.roundToDouble();
+  if (isWhole) {
+    return normalized.round().toString();
+  }
+
+  final fixed = normalized.toStringAsFixed(2);
+  final trimmed = fixed
+      .replaceFirst(RegExp(r'0+$'), '')
+      .replaceFirst(RegExp(r'\.$'), '');
+  return trimmed.replaceAll('.', ',');
+}
+
 int _normalizeNonNegative(int value) {
+  return value < 0 ? 0 : value;
+}
+
+double _normalizeNonNegativeDukaten(double value) {
   return value < 0 ? 0 : value;
 }

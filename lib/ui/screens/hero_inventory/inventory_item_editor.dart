@@ -76,7 +76,10 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
     super.dispose();
   }
 
-  bool get _isLinked => _draft.sourceRef != null;
+  bool get _isLinked {
+    return _draft.sourceRef != null &&
+        isCombatLinkedInventorySource(_draft.source);
+  }
 
   String get _editorTitle {
     if (widget.isNew) {

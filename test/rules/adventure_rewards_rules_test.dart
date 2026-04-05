@@ -4,8 +4,10 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/adventure_rewards_rules.dart';
 
 void main() {
@@ -14,6 +16,8 @@ void main() {
     Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
     int apTotal = 100,
     int apSpent = 20,
+    String dukaten = '',
+    List<HeroInventoryEntry> inventoryEntries = const <HeroInventoryEntry>[],
     HeroAttributeSePool attributeSePool = const HeroAttributeSePool(),
     HeroStatSePool statSePool = const HeroStatSePool(),
   }) {
@@ -34,6 +38,8 @@ void main() {
         ko: 12,
         kk: 12,
       ),
+      dukaten: dukaten,
+      inventoryEntries: inventoryEntries,
       adventures: adventures,
       talents: talents,
       attributeSePool: attributeSePool,
@@ -65,27 +71,57 @@ void main() {
         count: 1,
       ),
     ],
+    dukatenReward: 12.5,
+    lootRewards: <HeroAdventureLootEntry>[
+      HeroAdventureLootEntry(
+        id: 'loot_1',
+        name: 'Silberdolch',
+        quantity: '1',
+        itemType: InventoryItemType.wertvolles,
+        weightGramm: 250,
+        valueSilver: 180,
+      ),
+    ],
   );
 
   test(
-    'applyAdventureRewards erhoeht AP und verteilt SE auf alle Zieltypen',
+    'applyAdventureRewards schliesst das Abenteuer ab und uebernimmt Dukaten sowie Beute',
     () {
       final hero = buildHero(
         adventures: const <HeroAdventureEntry>[adventure],
         talents: const <String, HeroTalentEntry>{
           'tal_schwerter': HeroTalentEntry(talentValue: 8),
         },
+        dukaten: '10',
       );
 
       final result = applyAdventureRewards(hero: hero, adventureId: 'adv_1');
 
       expect(result.apTotal, 150);
+      expect(result.dukaten, '22,5');
       expect(result.talents['tal_schwerter']?.specialExperiences, 2);
       expect(result.statSePool.lep, 1);
       expect(result.attributeSePool.mu, 1);
+      expect(result.inventoryEntries, hasLength(1));
+      expect(result.inventoryEntries.single.source, InventoryItemSource.abenteuer);
+      expect(result.inventoryEntries.single.sourceRef, 'adv:adv_1|loot:loot_1');
+      expect(result.inventoryEntries.single.herkunft, 'Abenteuer: Das Purpurzeichen');
+      expect(result.adventures.single.status, HeroAdventureStatus.completed);
       expect(result.adventures.single.rewardsApplied, isTrue);
     },
   );
+
+  test('canApplyAdventureRewards blockiert bei nicht numerischem Dukatenstand', () {
+    final hero = buildHero(
+      adventures: const <HeroAdventureEntry>[adventure],
+      dukaten: 'viel',
+    );
+
+    final check = canApplyAdventureRewards(hero: hero, adventureId: 'adv_1');
+
+    expect(check.isAllowed, isFalse);
+    expect(check.reason, contains('Dukaten'));
+  });
 
   test(
     'canRevokeAdventureRewards erlaubt Ruecknahme solange AP und SE ungenutzt sind',
@@ -102,6 +138,15 @@ void main() {
         },
         apTotal: 150,
         apSpent: 20,
+        dukaten: '22,5',
+        inventoryEntries: const <HeroInventoryEntry>[
+          HeroInventoryEntry(
+            gegenstand: 'Silberdolch',
+            source: InventoryItemSource.abenteuer,
+            sourceRef: 'adv:adv_1|loot:loot_1',
+            welchesAbenteuer: 'Das Purpurzeichen',
+          ),
+        ],
         attributeSePool: const HeroAttributeSePool(mu: 1),
         statSePool: const HeroStatSePool(lep: 1),
       );
@@ -111,9 +156,13 @@ void main() {
       expect(check.isAllowed, isTrue);
       final reverted = revokeAdventureRewards(hero: hero, adventureId: 'adv_1');
       expect(reverted.apTotal, 100);
+      expect(reverted.dukaten, '10');
       expect(reverted.talents['tal_schwerter']?.specialExperiences, 0);
       expect(reverted.attributeSePool.mu, 0);
       expect(reverted.statSePool.lep, 0);
+      expect(reverted.inventoryEntries, isEmpty);
+      expect(reverted.adventures.single.status, HeroAdventureStatus.current);
+      expect(reverted.adventures.single.endWorldDate.hasContent, isFalse);
       expect(reverted.adventures.single.rewardsApplied, isFalse);
     },
   );
@@ -169,6 +218,57 @@ void main() {
       expect(check.reason, contains('Schwerter'));
     },
   );
+
+  test('canRevokeAdventureRewards blockiert bei nicht mehr vorhandener Beute', () {
+    final hero = buildHero(
+      adventures: <HeroAdventureEntry>[
+        adventure.copyWith(rewardsApplied: true, status: HeroAdventureStatus.completed),
+      ],
+      talents: const <String, HeroTalentEntry>{
+        'tal_schwerter': HeroTalentEntry(
+          talentValue: 8,
+          specialExperiences: 2,
+        ),
+      },
+      dukaten: '22,5',
+      attributeSePool: const HeroAttributeSePool(mu: 1),
+      statSePool: const HeroStatSePool(lep: 1),
+    );
+
+    final check = canRevokeAdventureRewards(hero: hero, adventureId: 'adv_1');
+
+    expect(check.isAllowed, isFalse);
+    expect(check.reason, contains('Silberdolch'));
+  });
+
+  test('canRevokeAdventureRewards blockiert wenn Dukaten nicht mehr ausreichen', () {
+    final hero = buildHero(
+      adventures: <HeroAdventureEntry>[
+        adventure.copyWith(rewardsApplied: true, status: HeroAdventureStatus.completed),
+      ],
+      talents: const <String, HeroTalentEntry>{
+        'tal_schwerter': HeroTalentEntry(
+          talentValue: 8,
+          specialExperiences: 2,
+        ),
+      },
+      dukaten: '5',
+      inventoryEntries: const <HeroInventoryEntry>[
+        HeroInventoryEntry(
+          gegenstand: 'Silberdolch',
+          source: InventoryItemSource.abenteuer,
+          sourceRef: 'adv:adv_1|loot:loot_1',
+        ),
+      ],
+      attributeSePool: const HeroAttributeSePool(mu: 1),
+      statSePool: const HeroStatSePool(lep: 1),
+    );
+
+    final check = canRevokeAdventureRewards(hero: hero, adventureId: 'adv_1');
+
+    expect(check.isAllowed, isFalse);
+    expect(check.reason, contains('Dukaten'));
+  });
 
   test('cleanupAdventureReferences leert ungueltige Kontakt-Referenzen', () {
     final connections = cleanupAdventureReferences(

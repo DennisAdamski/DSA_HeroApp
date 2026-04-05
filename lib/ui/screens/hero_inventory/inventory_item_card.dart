@@ -28,7 +28,9 @@ class InventoryItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final codex = context.codexTheme;
-    final isLinked = entry.sourceRef != null;
+    final isLinked =
+        entry.sourceRef != null &&
+        isCombatLinkedInventorySource(entry.source);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
@@ -189,6 +191,8 @@ class _SourceIcon extends StatelessWidget {
         icon = Icons.arrow_upward_outlined;
       case InventoryItemSource.manuell:
         icon = Icons.inventory_2_outlined;
+      case InventoryItemSource.abenteuer:
+        icon = Icons.menu_book_outlined;
     }
     return Container(
       width: 36,

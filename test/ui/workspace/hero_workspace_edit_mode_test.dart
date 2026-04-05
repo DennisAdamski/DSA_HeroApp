@@ -1241,7 +1241,7 @@ void main() {
     );
   });
 
-  testWidgets('adventure detail edits status and dates inline', (tester) async {
+  testWidgets('adventure detail edits summary and dates inline', (tester) async {
     final repo = FakeRepository(
       heroes: [
         buildHero(
@@ -1274,12 +1274,6 @@ void main() {
       find.byKey(const ValueKey<String>('notes-adventure-summary-adv_inline')),
       'Neue Zusammenfassung',
     );
-    await tester.tap(
-      find.byKey(
-        const ValueKey<String>('notes-adventure-status-adv_inline-completed'),
-      ),
-    );
-    await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(
         const ValueKey<String>('notes-adventure-start-world-adv_inline-day'),
@@ -1355,7 +1349,7 @@ void main() {
 
     final hero = findHeroById(await repo.listHeroes(), 'demo');
     expect(hero, isNotNull);
-    expect(hero!.adventures.single.status, HeroAdventureStatus.completed);
+    expect(hero!.adventures.single.status, HeroAdventureStatus.current);
     expect(hero.adventures.single.summary, 'Neue Zusammenfassung');
     expect(hero.adventures.single.startWorldDate.month, 'April');
     expect(hero.adventures.single.startAventurianDate.month, 'praios');
@@ -1440,7 +1434,7 @@ void main() {
   );
 
   testWidgets(
-    'adventure rewards can be applied and overview raises consume SE pools',
+    'adventure completion dialog applies rewards and overview raises consume SE pools',
     (tester) async {
       final repo = FakeRepository(
         heroes: [
@@ -1478,22 +1472,111 @@ void main() {
         },
       );
 
+      String readFieldValue(String key) {
+        final widget = tester.widget<Widget>(find.byKey(ValueKey<String>(key)));
+        if (widget is TextField) {
+          return widget.controller?.text ?? '';
+        }
+        throw StateError('Kein TextField mit Key $key gefunden.');
+      }
+
+      final today = DateTime.now().toLocal();
+
       await openWorkspace(tester, repo, size: const Size(740, 1100));
       await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
       await tester.tap(find.text('Abenteuer'));
       await tester.pumpAndSettle();
       await revealAndTap(
         tester,
-        find.byKey(const ValueKey<String>('notes-adventure-apply-adv_1')),
+        find.byKey(const ValueKey<String>('notes-adventure-complete-adv_1')),
       );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('notes-adventure-complete-dialog')),
+        findsOneWidget,
+      );
+      expect(
+        readFieldValue('notes-adventure-complete-end-world-day'),
+        today.day.toString().padLeft(2, '0'),
+      );
+      expect(
+        readFieldValue('notes-adventure-complete-end-world-month'),
+        today.month.toString().padLeft(2, '0'),
+      );
+      expect(
+        readFieldValue('notes-adventure-complete-end-world-year'),
+        today.year.toString(),
+      );
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-complete-end-aventurian-day'),
+        ),
+        '11',
+      );
+      await revealAndTap(
+        tester,
+        find.byKey(
+          const ValueKey<String>(
+            'notes-adventure-complete-end-aventurian-month',
+          ),
+        ),
+      );
+      await tester.tap(find.text('Praios').last);
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>(
+            'notes-adventure-complete-end-aventurian-year',
+          ),
+        ),
+        '1048',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-adventure-complete-dukaten')),
+        '12,5',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('notes-adventure-complete-add-loot')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-complete-loot-name-0'),
+        ),
+        'Silberdolch',
+      );
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-complete-loot-quantity-0'),
+        ),
+        '1',
+      );
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-complete-loot-value-0'),
+        ),
+        '180',
+      );
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-complete-dialog-save'),
+        ),
+      );
+      await tester.pumpAndSettle();
 
       var heroes = await repo.listHeroes();
       var hero = findHeroById(heroes, 'demo');
       expect(hero, isNotNull);
       expect(hero!.apTotal, 1040);
+      expect(hero.dukaten, '12,5');
       expect(hero.attributeSePool.mu, 1);
       expect(hero.statSePool.lep, 1);
+      expect(hero.inventoryEntries.single.gegenstand, 'Silberdolch');
       expect(hero.adventures.single.rewardsApplied, isTrue);
+      expect(hero.adventures.single.status, HeroAdventureStatus.completed);
+      expect(hero.adventures.single.endWorldDate.year, today.year.toString());
+      expect(hero.adventures.single.endAventurianDate.day, '11');
 
       await selectWorkspaceTab(tester, 'Übersicht');
       await tapWorkspaceEditAction(tester);
