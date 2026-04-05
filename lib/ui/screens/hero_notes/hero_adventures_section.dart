@@ -21,15 +21,8 @@ class _AdventuresSection extends StatelessWidget {
     required this.onOpenNote,
     required this.onAddPerson,
     required this.onOpenPerson,
-    required this.onApRewardChanged,
-    required this.onAddSeReward,
-    required this.onRemoveSeReward,
-    required this.onSeRewardTypeChanged,
-    required this.onSeRewardTargetChanged,
-    required this.onSeRewardCountChanged,
     required this.onCompleteAdventure,
     required this.onReopenAdventure,
-    required this.targetOptionsForType,
     required this.revokeCheckForAdventure,
   });
 
@@ -52,22 +45,8 @@ class _AdventuresSection extends StatelessWidget {
   final Future<void> Function(int noteIndex) onOpenNote;
   final Future<void> Function() onAddPerson;
   final Future<void> Function(int personIndex) onOpenPerson;
-  final ValueChanged<String> onApRewardChanged;
-  final VoidCallback onAddSeReward;
-  final void Function(int rewardIndex) onRemoveSeReward;
-  final void Function(int rewardIndex, HeroAdventureSeTargetType type)
-  onSeRewardTypeChanged;
-  final void Function(
-    int rewardIndex, {
-    required String targetId,
-    required String targetLabel,
-  })
-  onSeRewardTargetChanged;
-  final void Function(int rewardIndex, String rawValue) onSeRewardCountChanged;
   final Future<void> Function(String adventureId) onCompleteAdventure;
   final Future<void> Function(String adventureId) onReopenAdventure;
-  final List<_AdventureTargetOption> Function(HeroAdventureSeTargetType type)
-  targetOptionsForType;
   final AdventureRewardRevokeCheck Function(String adventureId)
   revokeCheckForAdventure;
 
@@ -122,7 +101,6 @@ class _AdventuresSection extends StatelessWidget {
                         selectedIndex: selectedIndex,
                         totalEntries: entries.length,
                         isEditing: isEditing,
-                        targetOptionsForType: targetOptionsForType,
                         revokeCheck: revokeCheckForAdventure(selectedEntry.id),
                         onMoveUp: onMoveSelectedUp,
                         onMoveDown: onMoveSelectedDown,
@@ -140,12 +118,6 @@ class _AdventuresSection extends StatelessWidget {
                         onOpenNote: onOpenNote,
                         onAddPerson: onAddPerson,
                         onOpenPerson: onOpenPerson,
-                        onApRewardChanged: onApRewardChanged,
-                        onAddSeReward: onAddSeReward,
-                        onRemoveSeReward: onRemoveSeReward,
-                        onSeRewardTypeChanged: onSeRewardTypeChanged,
-                        onSeRewardTargetChanged: onSeRewardTargetChanged,
-                        onSeRewardCountChanged: onSeRewardCountChanged,
                         onCompleteAdventure: onCompleteAdventure,
                         onReopenAdventure: onReopenAdventure,
                       ),
@@ -208,7 +180,6 @@ class _AdventureDetailCard extends StatelessWidget {
     required this.selectedIndex,
     required this.totalEntries,
     required this.isEditing,
-    required this.targetOptionsForType,
     required this.revokeCheck,
     required this.onMoveUp,
     required this.onMoveDown,
@@ -224,12 +195,6 @@ class _AdventureDetailCard extends StatelessWidget {
     required this.onOpenNote,
     required this.onAddPerson,
     required this.onOpenPerson,
-    required this.onApRewardChanged,
-    required this.onAddSeReward,
-    required this.onRemoveSeReward,
-    required this.onSeRewardTypeChanged,
-    required this.onSeRewardTargetChanged,
-    required this.onSeRewardCountChanged,
     required this.onCompleteAdventure,
     required this.onReopenAdventure,
   });
@@ -238,8 +203,6 @@ class _AdventureDetailCard extends StatelessWidget {
   final int selectedIndex;
   final int totalEntries;
   final bool isEditing;
-  final List<_AdventureTargetOption> Function(HeroAdventureSeTargetType type)
-  targetOptionsForType;
   final AdventureRewardRevokeCheck revokeCheck;
   final VoidCallback onMoveUp;
   final VoidCallback onMoveDown;
@@ -255,18 +218,6 @@ class _AdventureDetailCard extends StatelessWidget {
   final Future<void> Function(int noteIndex) onOpenNote;
   final Future<void> Function() onAddPerson;
   final Future<void> Function(int personIndex) onOpenPerson;
-  final ValueChanged<String> onApRewardChanged;
-  final VoidCallback onAddSeReward;
-  final void Function(int rewardIndex) onRemoveSeReward;
-  final void Function(int rewardIndex, HeroAdventureSeTargetType type)
-  onSeRewardTypeChanged;
-  final void Function(
-    int rewardIndex, {
-    required String targetId,
-    required String targetLabel,
-  })
-  onSeRewardTargetChanged;
-  final void Function(int rewardIndex, String rawValue) onSeRewardCountChanged;
   final Future<void> Function(String adventureId) onCompleteAdventure;
   final Future<void> Function(String adventureId) onReopenAdventure;
 
@@ -310,10 +261,7 @@ class _AdventureDetailCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-                if (!isEditing) ...[
-                  completionAction,
-                  const SizedBox(width: 8),
-                ],
+                if (!isEditing) ...[completionAction, const SizedBox(width: 8)],
                 if (isEditing) ...[
                   IconButton(
                     key: ValueKey<String>(
@@ -439,20 +387,14 @@ class _AdventureDetailCard extends StatelessWidget {
             const SizedBox(height: _notesFieldSpacing),
             _AdventureSubsectionHeader(title: 'Belohnungen'),
             const SizedBox(height: 8),
-            if (isEditing)
-              _EditableAdventureRewards(
-                entry: entry,
-                rewardLocked: rewardLocked,
-                targetOptionsForType: targetOptionsForType,
-                onApRewardChanged: onApRewardChanged,
-                onAddSeReward: onAddSeReward,
-                onRemoveSeReward: onRemoveSeReward,
-                onSeRewardTypeChanged: onSeRewardTypeChanged,
-                onSeRewardTargetChanged: onSeRewardTargetChanged,
-                onSeRewardCountChanged: onSeRewardCountChanged,
-              )
-            else
-              _ReadOnlyAdventureRewards(entry: entry),
+            _ReadOnlyAdventureRewards(entry: entry),
+            if (isEditing) ...[
+              const SizedBox(height: 8),
+              Text(
+                'AP und Sondererfahrungen werden im Abschließen-Dialog erfasst.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
             const SizedBox(height: _notesFieldSpacing),
             _AdventureSubsectionHeader(title: 'Abschluss'),
             const SizedBox(height: 8),
@@ -1140,9 +1082,8 @@ class _ReadOnlyAdventureRewards extends StatelessWidget {
       ...entry.seRewards
           .where((reward) => reward.hasContent)
           .map(
-            (reward) => Chip(
-              label: Text('${reward.count}× ${_rewardLabel(reward)}'),
-            ),
+            (reward) =>
+                Chip(label: Text('${reward.count}× ${_rewardLabel(reward)}')),
           ),
     ];
     if (rewardWidgets.isEmpty) {
@@ -1165,7 +1106,9 @@ class _AdventureCompletionSummary extends StatelessWidget {
         .toList(growable: false);
     final rewardParts = <Widget>[
       if (entry.dukatenReward > 0)
-        Chip(label: Text('${_formatDukatenReward(entry.dukatenReward)} Dukaten')),
+        Chip(
+          label: Text('${_formatDukatenReward(entry.dukatenReward)} Dukaten'),
+        ),
       for (final loot in lootEntries)
         Chip(
           label: Text(
