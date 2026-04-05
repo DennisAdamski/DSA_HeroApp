@@ -1118,6 +1118,57 @@ void main() {
     },
   );
 
+  testWidgets(
+    'adventure current date stays editable without workspace edit mode',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            adventures: const <HeroAdventureEntry>[
+              HeroAdventureEntry(
+                id: 'adv_current_date',
+                title: 'Feuer über Gareth',
+              ),
+            ],
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openWorkspace(tester, repo, size: const Size(740, 1100));
+      await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
+      await tester.tap(find.text('Abenteuer'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(
+          const ValueKey<String>(
+            'notes-adventure-current-aventurian-adv_current_date-day',
+          ),
+        ),
+        findsOneWidget,
+      );
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>(
+            'notes-adventure-current-aventurian-adv_current_date-day',
+          ),
+        ),
+        '12',
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('12'), findsOneWidget);
+    },
+  );
+
   testWidgets('adventure detail edits status and dates inline', (tester) async {
     final repo = FakeRepository(
       heroes: [
