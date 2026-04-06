@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 
@@ -21,6 +22,7 @@ class HeldVisitenkarte {
     this.iniBase = 0,
     this.avatarThumbnailBase64,
     required this.exportedAt,
+    this.istManuell = false,
   });
 
   final String heroId;
@@ -39,6 +41,9 @@ class HeldVisitenkarte {
 
   /// Zeitpunkt, zu dem diese Visitenkarte erstellt wurde.
   final DateTime exportedAt;
+
+  /// `true` wenn der Held manuell angelegt wurde (kein echtes Spielergeraet).
+  final bool istManuell;
 
   /// Erstellt eine Visitenkarte aus berechneten Heldenwerten.
   factory HeldVisitenkarte.fromHeroComputed(
@@ -62,6 +67,25 @@ class HeldVisitenkarte {
     );
   }
 
+  /// Erstellt eine Visitenkarte aus einem manuell angelegten [ExternerHeld].
+  factory HeldVisitenkarte.fromExternerHeld(ExternerHeld held) {
+    return HeldVisitenkarte(
+      heroId: held.id,
+      name: held.name,
+      rasse: held.rasse,
+      kultur: held.kultur,
+      profession: held.profession,
+      level: held.level,
+      maxLep: held.maxLep,
+      maxAsp: held.maxAsp,
+      maxAu: held.maxAu,
+      iniBase: held.iniBase,
+      avatarThumbnailBase64: held.avatarThumbnailBase64,
+      exportedAt: held.updatedAt,
+      istManuell: true,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'heroId': heroId,
@@ -77,6 +101,7 @@ class HeldVisitenkarte {
       if (avatarThumbnailBase64 != null)
         'avatarThumbnailBase64': avatarThumbnailBase64,
       'exportedAt': exportedAt.toUtc().toIso8601String(),
+      if (istManuell) 'istManuell': true,
     };
   }
 
@@ -98,6 +123,7 @@ class HeldVisitenkarte {
       iniBase: (json['iniBase'] as num?)?.toInt() ?? 0,
       avatarThumbnailBase64: json['avatarThumbnailBase64'] as String?,
       exportedAt: exportedAt,
+      istManuell: json['istManuell'] as bool? ?? false,
     );
   }
 }
