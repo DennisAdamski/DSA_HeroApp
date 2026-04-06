@@ -78,6 +78,22 @@ class GruppenSyncService {
   }
 
   // ---------------------------------------------------------------------------
+  // One-Shot-Abfrage
+  // ---------------------------------------------------------------------------
+
+  /// Liest alle Mitglieder einer Gruppe als One-Shot-Abfrage.
+  Future<List<HeldVisitenkarte>> fetchMitglieder(String gruppenCode) async {
+    final snapshot = await _firestore
+        .collection('gruppen')
+        .doc(gruppenCode)
+        .collection('mitglieder')
+        .get();
+    return snapshot.docs
+        .map((doc) => HeldVisitenkarte.fromJson(doc.data()))
+        .toList(growable: false);
+  }
+
+  // ---------------------------------------------------------------------------
   // Echtzeit-Listener
   // ---------------------------------------------------------------------------
 
