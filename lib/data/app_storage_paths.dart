@@ -1,16 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 
 import 'package:dsa_heldenverwaltung/data/storage_directory_tools.dart';
 import 'package:dsa_heldenverwaltung/data/storage_exceptions.dart';
 
+import 'app_support_path_loader_stub.dart'
+    if (dart.library.io) 'app_support_path_loader_io.dart'
+    as app_support_path;
 import 'storage_path_access_stub.dart'
     if (dart.library.io) 'storage_path_access_io.dart' as storage_access;
 
 typedef AppSupportPathLoader = Future<String> Function();
 typedef DirectoryValidator = Future<void> Function(String path);
 typedef DirectoryCreator = Future<void> Function(String path);
+typedef StorageCapabilityChecker = bool Function();
 
 /// Beschreibt den effektiven Speicherort der Heldendaten.
 class HeroStorageLocation {
@@ -53,6 +56,8 @@ class AppStoragePaths {
     this.appSupportPathLoader = _loadAppSupportPath,
     this.directoryValidator = storage_access.validateExistingWritableDirectory,
     this.directoryCreator = storage_access.ensureDirectoryExists,
+    this.customHeroStorageSupport = _supportsCustomHeroStoragePath,
+    this.localDirectorySupport = _supportsLocalDirectoryAccess,
   });
 
   static const String settingsDirectoryName = 'Einstellungen';
@@ -61,30 +66,22 @@ class AppStoragePaths {
   final AppSupportPathLoader appSupportPathLoader;
   final DirectoryValidator directoryValidator;
   final DirectoryCreator directoryCreator;
+  final StorageCapabilityChecker customHeroStorageSupport;
+  final StorageCapabilityChecker localDirectorySupport;
 
   /// Gibt zurueck, ob Desktop-Plattformen einen benutzerdefinierten
   /// Heldenspeicherpfad unterstuetzen.
   bool supportsCustomHeroStoragePath() {
-    if (kIsWeb) return false;
-    // MSIX-Sandbox: Custom Paths werden nicht unterstuetzt.
-    if (storage_access.isMsixPackage()) return false;
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.windows:
-      case TargetPlatform.macOS:
-      case TargetPlatform.linux:
-        return true;
-      case TargetPlatform.android:
-      case TargetPlatform.iOS:
-      case TargetPlatform.fuchsia:
-        return false;
-    }
+    return customHeroStorageSupport();
   }
 
   /// Loest den lokalen Einstellungsordner auf und legt ihn bei Bedarf an.
   Future<String> resolveSettingsStoragePath() async {
     final supportPath = await appSupportPathLoader();
     final targetPath = path.join(supportPath, settingsDirectoryName);
-    await directoryCreator(targetPath);
+    if (_supportsLocalDirectories()) {
+      await directoryCreator(targetPath);
+    }
     return targetPath;
   }
 
@@ -147,7 +144,9 @@ class AppStoragePaths {
       return location.effectivePath;
     }
 
-    await directoryCreator(location.effectivePath);
+    if (_supportsLocalDirectories()) {
+      await directoryCreator(location.effectivePath);
+    }
     return location.effectivePath;
   }
 
@@ -155,9 +154,33 @@ class AppStoragePaths {
   bool canOpenDirectories() {
     return canOpenStorageDirectory();
   }
+
+  /// Gibt zurueck, ob diese Plattform reale lokale Verzeichnisse anbietet.
+  bool _supportsLocalDirectories() {
+    return localDirectorySupport();
+  }
 }
 
 Future<String> _loadAppSupportPath() async {
-  final directory = await getApplicationSupportDirectory();
-  return directory.path;
+  return app_support_path.loadApplicationSupportPath();
+}
+
+bool _supportsCustomHeroStoragePath() {
+  if (kIsWeb) return false;
+  // MSIX-Sandbox: Custom Paths werden nicht unterstuetzt.
+  if (storage_access.isMsixPackage()) return false;
+  switch (defaultTargetPlatform) {
+    case TargetPlatform.windows:
+    case TargetPlatform.macOS:
+    case TargetPlatform.linux:
+      return true;
+    case TargetPlatform.android:
+    case TargetPlatform.iOS:
+    case TargetPlatform.fuchsia:
+      return false;
+  }
+}
+
+bool _supportsLocalDirectoryAccess() {
+  return !kIsWeb;
 }
