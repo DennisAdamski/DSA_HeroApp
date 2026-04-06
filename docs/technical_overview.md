@@ -71,7 +71,9 @@ Seit 2026-03-13 laeuft der Start in zwei Stufen: Zuerst wird ein lokaler
 Einstellungsordner fuer `HiveSettingsRepository` vorbereitet. Danach loest
 `AppStartupGate` den effektiven Heldenspeicherpfad auf, initialisiert
 `HiveHeroRepository` mit diesem Ordner und fuehrt anschliessend den
-Seed-Import aus.
+Seed-Import aus. Auf Web wird statt eines nativen Ordners ein logischer
+`Browser-Speicher`-Pfad verwendet, damit der Start ohne `path_provider`
+funktioniert.
 
 ```
 main()
@@ -1096,6 +1098,8 @@ macOS und Linux kann optional ein benutzerdefinierter Ordner verwendet werden.
   Support-Ordner.
 - `AppSettings` enthaelt optional `heroStoragePath` fuer einen
   benutzerdefinierten Heldenspeicher auf Windows, macOS und Linux.
+- Auf Web werden beide Pfade als logische `Browser-Speicher/...`-Pfade
+  beschrieben; Hive persistiert dort browserlokal statt in nativen Ordnern.
 - Ein ungueltiger benutzerdefinierter Heldenspeicherpfad fuehrt zu einem
   sichtbaren Fehlerzustand; es gibt keinen stillen Rueckfall auf den
   Standardordner.
