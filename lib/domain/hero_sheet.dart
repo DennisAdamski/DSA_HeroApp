@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
@@ -68,6 +69,7 @@ class HeroSheet {
     this.attributeSePool = const HeroAttributeSePool(),
     this.statSePool = const HeroStatSePool(),
     this.companions = const <HeroCompanion>[],
+    this.gruppen = const <HeroGruppenMitgliedschaft>[],
     this.reisebericht = const HeroReisebericht(),
     this.statModifiers = const <String, List<HeroTalentModifier>>{},
     this.attributeModifiers = const <String, List<HeroTalentModifier>>{},
@@ -124,6 +126,9 @@ class HeroSheet {
   /// Begleiter und Vertraute des Helden.
   final List<HeroCompanion> companions;
 
+  /// Gruppenmitgliedschaften des Helden (Firebase-Sync).
+  final List<HeroGruppenMitgliedschaft> gruppen;
+
   /// Reisebericht-Zustand (abgehakte Erfahrungen und Belohnungen).
   final HeroReisebericht reisebericht;
 
@@ -175,6 +180,7 @@ class HeroSheet {
     HeroAttributeSePool? attributeSePool,
     HeroStatSePool? statSePool,
     List<HeroCompanion>? companions,
+    List<HeroGruppenMitgliedschaft>? gruppen,
     HeroReisebericht? reisebericht,
     Map<String, List<HeroTalentModifier>>? statModifiers,
     Map<String, List<HeroTalentModifier>>? attributeModifiers,
@@ -225,6 +231,7 @@ class HeroSheet {
       attributeSePool: attributeSePool ?? this.attributeSePool,
       statSePool: statSePool ?? this.statSePool,
       companions: companions ?? this.companions,
+      gruppen: gruppen ?? this.gruppen,
       reisebericht: reisebericht ?? this.reisebericht,
       statModifiers: statModifiers ?? this.statModifiers,
       attributeModifiers: attributeModifiers ?? this.attributeModifiers,
@@ -291,6 +298,9 @@ class HeroSheet {
       'companions': companions
           .map((entry) => entry.toJson())
           .toList(growable: false),
+      'gruppen': gruppen
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
       'reisebericht': reisebericht.toJson(),
       'statModifiers': statModifiers.map(
         (key, list) => MapEntry(
@@ -321,6 +331,7 @@ class HeroSheet {
     final rawConnections = (json['connections'] as List?) ?? const <dynamic>[];
     final rawAdventures = (json['adventures'] as List?) ?? const <dynamic>[];
     final rawCompanions = (json['companions'] as List?) ?? const <dynamic>[];
+    final rawGruppen = (json['gruppen'] as List?) ?? const <dynamic>[];
     final rawMetaTalents = (json['metaTalents'] as List?) ?? const <dynamic>[];
     final rawHiddenTalentIds =
         (json['hiddenTalentIds'] as List?) ?? const <dynamic>[];
@@ -481,6 +492,14 @@ class HeroSheet {
       companions: rawCompanions
           .whereType<Map>()
           .map((entry) => HeroCompanion.fromJson(entry.cast<String, dynamic>()))
+          .toList(growable: false),
+      gruppen: rawGruppen
+          .whereType<Map>()
+          .map(
+            (entry) => HeroGruppenMitgliedschaft.fromJson(
+              entry.cast<String, dynamic>(),
+            ),
+          )
           .toList(growable: false),
       reisebericht: HeroReisebericht.fromJson(
         (json['reisebericht'] as Map?)?.cast<String, dynamic>() ?? const {},
