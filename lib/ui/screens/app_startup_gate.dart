@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/custom_catalog_repository.dart';
+import 'package:dsa_heldenverwaltung/data/hive_externe_helden_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_gruppen_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
@@ -46,6 +47,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
   Future<_HeroRepositoryBootstrapResult>? _bootstrapFuture;
   HiveHeroRepository? _activeRepository;
   HiveGruppenRepository? _activeGruppenRepository;
+  HiveExterneHeldenRepository? _activeExterneHeldenRepository;
   late AppSettings _settings;
   StreamSubscription<AppSettings>? _settingsSubscription;
   String? _currentConfiguredPath;
@@ -80,6 +82,10 @@ class _AppStartupGateState extends State<AppStartupGate> {
     final gruppenRepository = _activeGruppenRepository;
     if (gruppenRepository != null) {
       unawaited(gruppenRepository.close());
+    }
+    final externeHeldenRepository = _activeExterneHeldenRepository;
+    if (externeHeldenRepository != null) {
+      unawaited(externeHeldenRepository.close());
     }
     super.dispose();
   }
@@ -118,23 +124,35 @@ class _AppStartupGateState extends State<AppStartupGate> {
       storagePath: settingsPath,
     );
 
+    // Externe-Helden-Repository im Heldenspeicher oeffnen.
+    final externeHeldenRepository = await HiveExterneHeldenRepository.create(
+      storagePath: heroStoragePath,
+    );
+
     if (generation != _loadGeneration) {
       await repository.close();
       await gruppenRepository.close();
+      await externeHeldenRepository.close();
       throw StateError('Veralteter Initialisierungslauf fuer Heldendaten.');
     }
 
-    // Altes Gruppen-Repository schliessen, falls vorhanden.
+    // Alte Repositories schliessen, falls vorhanden.
     final previousGruppen = _activeGruppenRepository;
     if (previousGruppen != null) {
       await previousGruppen.close();
     }
+    final previousExterneHelden = _activeExterneHeldenRepository;
+    if (previousExterneHelden != null) {
+      await previousExterneHelden.close();
+    }
 
     _activeRepository = repository;
     _activeGruppenRepository = gruppenRepository;
+    _activeExterneHeldenRepository = externeHeldenRepository;
     return _HeroRepositoryBootstrapResult(
       repository: repository,
       gruppenRepository: gruppenRepository,
+      externeHeldenRepository: externeHeldenRepository,
       heroStoragePath: heroStoragePath,
     );
   }
@@ -168,6 +186,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
         return _buildScope(
           repository: result.repository,
           gruppenRepository: result.gruppenRepository,
+          externeHeldenRepository: result.externeHeldenRepository,
           customCatalogRepository: CustomCatalogRepository(
             heroStoragePath: result.heroStoragePath,
           ),
@@ -181,6 +200,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
     required Widget home,
     HiveHeroRepository? repository,
     HiveGruppenRepository? gruppenRepository,
+    HiveExterneHeldenRepository? externeHeldenRepository,
     CustomCatalogRepository? customCatalogRepository,
   }) {
     final scopeKey = ValueKey<String>(
@@ -205,6 +225,13 @@ class _AppStartupGateState extends State<AppStartupGate> {
         gruppenRepositoryProvider.overrideWithValue(gruppenRepository),
       );
     }
+    if (externeHeldenRepository != null) {
+      overrides.add(
+        externeHeldenRepositoryProvider.overrideWithValue(
+          externeHeldenRepository,
+        ),
+      );
+    }
 
     return ProviderScope(
       key: scopeKey,
@@ -218,11 +245,13 @@ class _HeroRepositoryBootstrapResult {
   const _HeroRepositoryBootstrapResult({
     required this.repository,
     required this.gruppenRepository,
+    required this.externeHeldenRepository,
     required this.heroStoragePath,
   });
 
   final HiveHeroRepository repository;
   final HiveGruppenRepository gruppenRepository;
+  final HiveExterneHeldenRepository externeHeldenRepository;
   final String heroStoragePath;
 }
 

@@ -25,6 +25,9 @@ Visible UI text should use proper German umlauts and `ß` instead of translitera
 - Heldendaten nutzen einen getrennten Ordner und koennen auf Desktop-
   Plattformen ueber `AppSettings.heroStoragePath` auf einen benutzerdefinierten
   Pfad umgestellt werden.
+- Web nutzt keinen nativen Dateisystempfad; dort landen Einstellungen und
+  Heldendaten im browserlokalen Speicher und werden in der UI als
+  `Browser-Speicher/...` beschrieben.
 - Der app-spezifische Support-Ordner ist bereits die Wurzel; darunter liegen
   nur noch die Unterordner `Einstellungen` und `Helden`.
 - `lib/data/app_storage_paths.dart` kapselt Default- und Override-Pfade.
@@ -571,6 +574,9 @@ The following files are **intentionally kept** but not currently wired into the 
 - **Priority platforms**: The app is primarily developed for mobile (Android, iOS) and desktop.
 - **Platform directories** (`android/`, `ios/`, `macos/`, `windows/`, `linux/`, `web/`): modify only when there is a clear platform-specific need. Avoid mass-edits to generated platform files.
 - **Web**: `hero_transfer_file_gateway_web.dart` provides a web-specific implementation of file I/O via conditional imports (`_stub.dart` / `_io.dart` / `_web.dart` pattern).
+- **Web-Speicherpfade**: `lib/data/app_storage_paths.dart` nutzt im Web einen
+  logischen `Browser-Speicher`-Pfad und vermeidet `path_provider`, da
+  `getApplicationSupportDirectory()` dort nicht verfuegbar ist.
 
 ---
 

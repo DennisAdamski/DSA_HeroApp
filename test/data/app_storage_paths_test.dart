@@ -74,4 +74,34 @@ void main() {
     expect(location.validationError, 'Pfad nicht beschreibbar.');
     expect(location.effectivePath, '/cloud/heroes');
   });
+
+  test(
+    'uses logical browser storage paths without creating local directories',
+    () async {
+      var directoryCreateCalls = 0;
+      final storagePaths = AppStoragePaths(
+        appSupportPathLoader: () async => 'Browser-Speicher',
+        directoryCreator: (path) async {
+          directoryCreateCalls++;
+        },
+        customHeroStorageSupport: () => false,
+        localDirectorySupport: () => false,
+      );
+
+      final settingsPath = await storagePaths.resolveSettingsStoragePath();
+      final heroPath = await storagePaths.prepareHeroStoragePath(
+        configuredPath: '/cloud/heroes',
+      );
+      final location = await storagePaths.describeHeroStorageLocation(
+        configuredPath: '/cloud/heroes',
+      );
+
+      expect(settingsPath.endsWith(r'Browser-Speicher\Einstellungen'), isTrue);
+      expect(heroPath.endsWith(r'Browser-Speicher\Helden'), isTrue);
+      expect(directoryCreateCalls, 0);
+      expect(location.customPathSupported, isFalse);
+      expect(location.usesCustomPath, isFalse);
+      expect(location.effectivePath, heroPath);
+    },
+  );
 }
