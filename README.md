@@ -49,6 +49,9 @@ Technischer Stack:
   `Application Support` bzw. auf Windows in `AppData`
 - Heldendaten nutzen standardmaessig einen eigenen Unterordner und koennen auf
   Desktop-Plattformen auf einen frei gewaehlten Ordner umgestellt werden
+- Auf Web-Zielplattformen liegen Einstellungen und Heldendaten stattdessen im
+  browserlokalen Speicher; die UI zeigt dafuer den logischen Pfad
+  `Browser-Speicher/...` an
 - Custom-Kataloge werden im aktiven Heldenspeicher unter
   `custom_catalogs/<katalogversion>/<sektion>/<id>.json` gespeichert und
   koennen dadurch ueber einen synchronisierten Cloud-Ordner mitlaufen
