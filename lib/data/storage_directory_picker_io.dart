@@ -5,7 +5,7 @@ import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 class _IoStorageDirectoryPicker implements StorageDirectoryPicker {
   @override
   Future<String?> pickDirectory({required String dialogTitle}) {
-    return FilePicker.platform.getDirectoryPath(
+    return FilePicker.getDirectoryPath(
       dialogTitle: dialogTitle,
       lockParentWindow: true,
     );

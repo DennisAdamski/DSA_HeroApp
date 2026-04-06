@@ -13,7 +13,7 @@ class IoHeroTransferFileGateway implements HeroTransferFileGateway {
 
   @override
   Future<String?> pickImportJson() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: const <String>['json'],
       withData: true,
@@ -44,7 +44,7 @@ class IoHeroTransferFileGateway implements HeroTransferFileGateway {
     final fileName = '$safeName.dsa-hero.json';
 
     if (_isDesktopPlatform()) {
-      final targetPath = await FilePicker.platform.saveFile(
+      final targetPath = await FilePicker.saveFile(
         dialogTitle: 'Held exportieren',
         fileName: fileName,
         type: FileType.custom,
