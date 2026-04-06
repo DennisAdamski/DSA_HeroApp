@@ -5,7 +5,7 @@ Future<void> _pickAndUploadImage(
   WidgetRef ref,
   String heroId,
 ) async {
-  final result = await FilePicker.platform.pickFiles(
+  final result = await FilePicker.pickFiles(
     type: FileType.image,
     withData: true,
   );

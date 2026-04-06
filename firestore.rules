@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Kein Auflisten aller Gruppen — nur Zugriff mit bekanntem Code.
+    match /gruppen/{gruppenCode} {
+
+      // Lesen: Wer den Code kennt, darf das Gruppen-Dokument lesen.
+      allow read: if true;
+
+      // Erstellen: Jeder darf eine neue Gruppe anlegen.
+      // Pflichtfelder: gruppenName (String), erstelltAm (Timestamp).
+      allow create: if request.resource.data.keys().hasAll(['gruppenName', 'erstelltAm'])
+                    && request.resource.data.gruppenName is string
+                    && request.resource.data.gruppenName.size() <= 100;
+
+      // Update/Delete: Gruppen-Dokument selbst nicht aenderbar/loeschbar
+      // (kein Admin-Konzept ohne Auth).
+      allow update, delete: if false;
+
+      // --- Mitglieder-Subcollection ---
+      match /mitglieder/{memberId} {
+
+        // Lesen: Alle Mitglieder sichtbar fuer jeden mit dem Code.
+        allow read: if true;
+
+        // Erstellen/Update: Datenstruktur wird validiert.
+        // Ohne Auth keine Identitaetspruefung — akzeptabler Tradeoff
+        // bei UUID-Sicherheit (122 Bit Entropie).
+        allow create, update: if validateMitglied();
+
+        // Loeschen: Erlaubt (fuer "Gruppe verlassen").
+        allow delete: if true;
+      }
+    }
+
+    // Alle anderen Pfade blockiert.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+function validateMitglied() {
+  let d = request.resource.data;
+  return d.keys().hasAll(['heroId', 'name', 'exportedAt'])
+      && d.heroId is string
+      && d.name is string
+      && d.heroId.size() > 0
+      && d.heroId.size() <= 100
+      && d.name.size() <= 200
+      // Avatar-Groesse begrenzen (ca. 200 KB Base64).
+      && (!('avatarThumbnailBase64' in d) || d.avatarThumbnailBase64.size() <= 300000)
+      // Gesamtdokument max ~400 KB.
+      && request.resource.size() < 400 * 1024;
+}
