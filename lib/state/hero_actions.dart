@@ -766,6 +766,73 @@ class HeroActions {
     }
   }
 
+  /// Fuehrt einen vollstaendigen Sync fuer alle Gruppen des Helden durch:
+  /// 1. Eigene Visitenkarte pushen
+  /// 2. Manuell angelegte Helden pushen
+  /// 3. Fremde Mitglieder abholen und lokal ueberschreiben
+  Future<void> syncGruppen(String heroId) async {
+    final hero = await _loadHeroById(heroId);
+    if (hero.gruppen.isEmpty) return;
+
+    final syncService = _ref.read(gruppenSyncServiceProvider);
+    final externeRepo = _ref.read(externeHeldenRepositoryProvider);
+
+    for (final gruppe in hero.gruppen) {
+      final gruppenCode = gruppe.gruppenCode;
+
+      // 1. Eigene Visitenkarte pushen.
+      await _pushEigeneVisitenkarte(
+        heroId: heroId,
+        gruppenCode: gruppenCode,
+      );
+
+      // 2. Manuelle Helden dieser Gruppe pushen.
+      for (final extId in gruppe.externeHeldIds) {
+        final ext = externeRepo.loadById(extId);
+        if (ext != null && ext.istManuell) {
+          final karte = HeldVisitenkarte.fromExternerHeld(ext);
+          await syncService.pushVisitenkarte(gruppenCode, karte);
+        }
+      }
+
+      // 3. Alle Mitglieder abholen und lokal ueberschreiben.
+      final remoteMitglieder =
+          await syncService.fetchMitglieder(gruppenCode);
+      final neueExterneIds = <String>[...gruppe.externeHeldIds];
+
+      for (final karte in remoteMitglieder) {
+        // Eigenen Helden ueberspringen.
+        if (karte.heroId == heroId) continue;
+
+        final externer = ExternerHeld.fromVisitenkarte(karte);
+        await externeRepo.save(externer);
+
+        if (!neueExterneIds.contains(karte.heroId)) {
+          neueExterneIds.add(karte.heroId);
+        }
+      }
+
+      // Aktualisierte externeHeldIds speichern, falls neue Mitglieder.
+      if (neueExterneIds.length != gruppe.externeHeldIds.length) {
+        final aktualisierterHero = await _loadHeroById(heroId);
+        final neueGruppen = List<HeroGruppenMitgliedschaft>.from(
+          aktualisierterHero.gruppen,
+        );
+        final idx = neueGruppen.indexWhere(
+          (g) => g.gruppenCode == gruppenCode,
+        );
+        if (idx >= 0) {
+          neueGruppen[idx] = neueGruppen[idx].copyWith(
+            externeHeldIds: neueExterneIds,
+          );
+          await saveHero(
+            aktualisierterHero.copyWith(gruppen: neueGruppen),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _pushEigeneVisitenkarte({
     required String heroId,
     required String gruppenCode,

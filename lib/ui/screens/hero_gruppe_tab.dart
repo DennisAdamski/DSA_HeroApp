@@ -243,7 +243,7 @@ class _GruppenDetailAnsicht extends ConsumerWidget {
 }
 
 /// Aktionsbuttons unterhalb der Mitgliederliste.
-class _AktionsLeiste extends ConsumerWidget {
+class _AktionsLeiste extends ConsumerStatefulWidget {
   const _AktionsLeiste({
     required this.heroId,
     required this.gruppenCode,
@@ -253,18 +253,58 @@ class _AktionsLeiste extends ConsumerWidget {
   final String gruppenCode;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_AktionsLeiste> createState() => _AktionsLeisteState();
+}
+
+class _AktionsLeisteState extends ConsumerState<_AktionsLeiste> {
+  bool _isSyncing = false;
+
+  Future<void> _sync() async {
+    setState(() => _isSyncing = true);
+    try {
+      await ref.read(heroActionsProvider).syncGruppen(widget.heroId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Synchronisierung abgeschlossen'),
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Sync fehlgeschlagen: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSyncing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
+        FilledButton.icon(
+          onPressed: _isSyncing ? null : _sync,
+          icon: _isSyncing
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.sync),
+          label: const Text('Synchronisieren'),
+        ),
         FilledButton.tonalIcon(
-          onPressed: () => _addManuell(context, ref),
+          onPressed: () => _addManuell(),
           icon: const Icon(Icons.person_add_outlined),
           label: const Text('Manuell hinzufügen'),
         ),
         OutlinedButton.icon(
-          onPressed: () => _codeTeilen(context),
+          onPressed: () => _codeTeilen(),
           icon: const Icon(Icons.share_outlined),
           label: const Text('Code teilen'),
         ),
@@ -272,17 +312,17 @@ class _AktionsLeiste extends ConsumerWidget {
     );
   }
 
-  Future<void> _addManuell(BuildContext context, WidgetRef ref) async {
+  Future<void> _addManuell() async {
     await showManuellerHeldDialog(
       context: context,
       ref: ref,
-      heroId: heroId,
-      gruppenCode: gruppenCode,
+      heroId: widget.heroId,
+      gruppenCode: widget.gruppenCode,
     );
   }
 
-  void _codeTeilen(BuildContext context) {
-    Clipboard.setData(ClipboardData(text: gruppenCode));
+  void _codeTeilen() {
+    Clipboard.setData(ClipboardData(text: widget.gruppenCode));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Gruppencode kopiert')),
     );
