@@ -128,6 +128,7 @@ class _BegleiterDetailView extends StatelessWidget {
     required this.onBack,
     required this.onChanged,
     required this.onDelete,
+    required this.onSaveImmediate,
     this.vertrautenmagieKategorie,
   });
 
@@ -136,6 +137,7 @@ class _BegleiterDetailView extends StatelessWidget {
   final VoidCallback onBack;
   final ValueChanged<HeroCompanion> onChanged;
   final VoidCallback onDelete;
+  final ValueChanged<HeroCompanion> onSaveImmediate;
   final HeroRitualCategory? vertrautenmagieKategorie;
 
   @override
@@ -194,6 +196,15 @@ class _BegleiterDetailView extends StatelessWidget {
                   isEditing: isEditing,
                   onChanged: onChanged,
                 ),
+                if (companion.typ == BegleiterTyp.vertrauter) ...[
+                  const SizedBox(height: _sectionSpacing),
+                  _SteigerungSection(
+                    companion: companion,
+                    isEditing: isEditing,
+                    onChanged: onChanged,
+                    onSaveImmediate: onSaveImmediate,
+                  ),
+                ],
                 const SizedBox(height: _sectionSpacing),
                 _AngriffseSection(
                   companion: companion,
