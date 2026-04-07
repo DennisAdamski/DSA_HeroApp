@@ -126,6 +126,7 @@ extension _WeaponEditorStateHelpers on WeaponEditorScreenState {
           : _readInt(_tpDiceCountController, _draftWeapon.tpDiceCount),
       tpFlat: _readInt(_tpFlatController, _draftWeapon.tpFlat),
       artifactDescription: _artifactDescriptionController.text.trim(),
+      geweihtDescription: _geweihtDescriptionController.text.trim(),
       rangedProfile: _rangedProfileFromControllers(),
     );
   }

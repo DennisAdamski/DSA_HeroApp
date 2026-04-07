@@ -13,6 +13,8 @@ class OffhandEquipmentEntry {
     this.paMod = 0,
     this.isArtifact = false,
     this.artifactDescription = '',
+    this.isGeweiht = false,
+    this.geweihtDescription = '',
   });
 
   /// Anzeigename des Eintrags.
@@ -42,6 +44,12 @@ class OffhandEquipmentEntry {
   /// Freitext-Beschreibung fuer das Artefakt.
   final String artifactDescription;
 
+  /// Kennzeichnet Schild oder Parierwaffe als geweiht.
+  final bool isGeweiht;
+
+  /// Freitext-Beschreibung fuer den geweihten Gegenstand.
+  final String geweihtDescription;
+
   /// Gibt an, ob der Eintrag ein Schild ist.
   bool get isShield => type == OffhandEquipmentType.shield;
 
@@ -56,6 +64,8 @@ class OffhandEquipmentEntry {
     int? paMod,
     bool? isArtifact,
     String? artifactDescription,
+    bool? isGeweiht,
+    String? geweihtDescription,
   }) {
     return OffhandEquipmentEntry(
       name: name ?? this.name,
@@ -67,6 +77,8 @@ class OffhandEquipmentEntry {
       paMod: paMod ?? this.paMod,
       isArtifact: isArtifact ?? this.isArtifact,
       artifactDescription: artifactDescription ?? this.artifactDescription,
+      isGeweiht: isGeweiht ?? this.isGeweiht,
+      geweihtDescription: geweihtDescription ?? this.geweihtDescription,
     );
   }
 
@@ -82,6 +94,8 @@ class OffhandEquipmentEntry {
       'paMod': paMod,
       'isArtifact': isArtifact,
       'artifactDescription': artifactDescription,
+      'isGeweiht': isGeweiht,
+      'geweihtDescription': geweihtDescription,
     };
   }
 
@@ -98,6 +112,8 @@ class OffhandEquipmentEntry {
       paMod: getInt('paMod'),
       isArtifact: (json['isArtifact'] as bool?) ?? false,
       artifactDescription: (json['artifactDescription'] as String?) ?? '',
+      isGeweiht: (json['isGeweiht'] as bool?) ?? false,
+      geweihtDescription: (json['geweihtDescription'] as String?) ?? '',
     );
   }
 }

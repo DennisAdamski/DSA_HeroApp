@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/catalog/talent_def.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
@@ -29,9 +30,14 @@ class InventoryModifierAggregation {
 /// [InventoryModifierKind.stat] → [InventoryModifierAggregation.statMods]
 /// [InventoryModifierKind.attribut] → [InventoryModifierAggregation.attributeMods]
 /// [InventoryModifierKind.talent] → [InventoryModifierAggregation.talentMods]
+/// [InventoryModifierKind.talentgruppe] → aufgeloest auf alle Talente der
+///   Gruppe in [InventoryModifierAggregation.talentMods]
+///
+/// [talents] wird fuer die Aufloesung von Talentgruppen benoetigt.
 InventoryModifierAggregation aggregateInventoryModifiers(
-  List<HeroInventoryEntry> entries,
-) {
+  List<HeroInventoryEntry> entries, {
+  List<TalentDef> talents = const [],
+}) {
   var statMods = const StatModifiers();
   var attributeMods = const AttributeModifiers();
   final talentMods = <String, int>{};
@@ -53,6 +59,14 @@ InventoryModifierAggregation aggregateInventoryModifiers(
         case InventoryModifierKind.talent:
           talentMods[mod.targetId] =
               (talentMods[mod.targetId] ?? 0) + mod.wert;
+        case InventoryModifierKind.talentgruppe:
+          final groupKey = mod.targetId.toLowerCase().trim();
+          for (final talent in talents) {
+            if (talent.group.toLowerCase().trim() == groupKey) {
+              talentMods[talent.id] =
+                  (talentMods[talent.id] ?? 0) + mod.wert;
+            }
+          }
       }
     }
   }
