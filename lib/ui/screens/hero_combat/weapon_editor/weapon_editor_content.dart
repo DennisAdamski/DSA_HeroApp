@@ -43,11 +43,13 @@ extension _WeaponEditorContent on WeaponEditorScreenState {
                 WeaponBasicInfoSection(
                   nameController: _nameController,
                   artifactDescriptionController: _artifactDescriptionController,
+                  geweihtDescriptionController: _geweihtDescriptionController,
                   distanceClassController: _distanceClassController,
                   combatType: _draftWeapon.combatType,
                   weaponType: currentWeaponType,
                   isOneHanded: _draftWeapon.isOneHanded,
                   isArtifact: _draftWeapon.isArtifact,
+                  isGeweiht: _draftWeapon.isGeweiht,
                   weaponTypeOptions: weaponTypeOptions,
                   talentOptions: talentOptions,
                   selectedTalentId: selectedTalentId,
@@ -100,6 +102,11 @@ extension _WeaponEditorContent on WeaponEditorScreenState {
                       _setDraftWeapon(_draftWeapon.copyWith(isArtifact: value)),
                   onArtifactDescriptionChanged: (value) => _setDraftWeapon(
                     _draftWeapon.copyWith(artifactDescription: value),
+                  ),
+                  onGeweihtChanged: (value) =>
+                      _setDraftWeapon(_draftWeapon.copyWith(isGeweiht: value)),
+                  onGeweihtDescriptionChanged: (value) => _setDraftWeapon(
+                    _draftWeapon.copyWith(geweihtDescription: value),
                   ),
                 ),
                 const SizedBox(height: 12),
