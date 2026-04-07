@@ -168,7 +168,10 @@ final heroComputedProvider =
       );
 
       // Inventar-Modifikatoren aus ausgeruesteten Items aggregieren
-      final inventoryMods = aggregateInventoryModifiers(hero.inventoryEntries);
+      final inventoryMods = aggregateInventoryModifiers(
+        hero.inventoryEntries,
+        talents: catalogTalents,
+      );
 
       final namedAttrMods = aggregateNamedAttributeModifiers(
         hero.attributeModifiers,
