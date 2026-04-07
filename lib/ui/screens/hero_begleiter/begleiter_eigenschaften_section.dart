@@ -82,7 +82,11 @@ class _EigenschaftenSection extends StatelessWidget {
       runSpacing: 4,
       children: [
         for (final (label, key) in defined)
-          _AttrChip(label: label, value: _valueFor(key)!),
+          _AttrChip(
+            label: label,
+            value: companionEffektivwert(companion, key) ?? _valueFor(key)!,
+            hasSteigerung: companionSteigerung(companion, key) > 0,
+          ),
       ],
     );
   }
@@ -115,14 +119,25 @@ class _EigenschaftenSection extends StatelessWidget {
 }
 
 class _AttrChip extends StatelessWidget {
-  const _AttrChip({required this.label, required this.value});
+  const _AttrChip({
+    required this.label,
+    required this.value,
+    this.hasSteigerung = false,
+  });
   final String label;
   final int value;
+  final bool hasSteigerung;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Chip(
-      label: Text('$label $value'),
+      label: Text(
+        '$label $value',
+        style: hasSteigerung
+            ? TextStyle(color: theme.colorScheme.primary)
+            : null,
+      ),
       visualDensity: VisualDensity.compact,
     );
   }

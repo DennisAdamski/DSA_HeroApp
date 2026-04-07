@@ -8,6 +8,8 @@ class HeroCompanionAttack {
     this.pa,
     this.tp = '',
     this.beschreibung = '',
+    this.steigerungAt = 0,
+    this.steigerungPa = 0,
   });
 
   /// Stabiler Schluessel des Angriffs.
@@ -31,6 +33,12 @@ class HeroCompanionAttack {
   /// Optionale Beschreibung des Angriffsmodus.
   final String beschreibung;
 
+  /// Gekaufte AT-Steigerungen (Komplexitaet F).
+  final int steigerungAt;
+
+  /// Gekaufte PA-Steigerungen (Komplexitaet F).
+  final int steigerungPa;
+
   HeroCompanionAttack copyWith({
     String? id,
     String? name,
@@ -39,6 +47,8 @@ class HeroCompanionAttack {
     Object? pa = _keepNull,
     String? tp,
     String? beschreibung,
+    int? steigerungAt,
+    int? steigerungPa,
   }) {
     return HeroCompanionAttack(
       id: id ?? this.id,
@@ -48,6 +58,8 @@ class HeroCompanionAttack {
       pa: identical(pa, _keepNull) ? this.pa : pa as int?,
       tp: tp ?? this.tp,
       beschreibung: beschreibung ?? this.beschreibung,
+      steigerungAt: steigerungAt ?? this.steigerungAt,
+      steigerungPa: steigerungPa ?? this.steigerungPa,
     );
   }
 
@@ -59,6 +71,8 @@ class HeroCompanionAttack {
     if (pa != null) 'pa': pa,
     'tp': tp,
     'beschreibung': beschreibung,
+    if (steigerungAt != 0) 'steigerungAt': steigerungAt,
+    if (steigerungPa != 0) 'steigerungPa': steigerungPa,
   };
 
   static HeroCompanionAttack fromJson(Map<String, dynamic> json) {
@@ -70,6 +84,8 @@ class HeroCompanionAttack {
       pa: (json['pa'] as num?)?.toInt(),
       tp: (json['tp'] as String?) ?? '',
       beschreibung: (json['beschreibung'] as String?) ?? '',
+      steigerungAt: (json['steigerungAt'] as num?)?.toInt() ?? 0,
+      steigerungPa: (json['steigerungPa'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -83,11 +99,14 @@ class HeroCompanionAttack {
           at == other.at &&
           pa == other.pa &&
           tp == other.tp &&
-          beschreibung == other.beschreibung;
+          beschreibung == other.beschreibung &&
+          steigerungAt == other.steigerungAt &&
+          steigerungPa == other.steigerungPa;
 
   @override
   int get hashCode =>
-      Object.hash(id, name, dk, at, pa, tp, beschreibung);
+      Object.hash(id, name, dk, at, pa, tp, beschreibung, steigerungAt,
+          steigerungPa);
 }
 
 /// Sentinel-Wert fuer nullable copyWith-Felder.
