@@ -17,6 +17,19 @@ class _KampfWerteSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Im View-Modus effektive Werte anzeigen (Basis + Steigerung).
+    final iniView = isEditing
+        ? companion.ini
+        : companionEffektivwert(companion, 'ini') ?? companion.ini;
+    final mrView = isEditing
+        ? companion.magieresistenz
+        : companionEffektiverPoolwert(companion, 'mr') ??
+            companion.magieresistenz;
+    final loyView = isEditing
+        ? companion.loyalitaet
+        : companionEffektivwert(companion, 'loyalitaet') ??
+            companion.loyalitaet;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -27,7 +40,7 @@ class _KampfWerteSection extends StatelessWidget {
             Expanded(
               child: _NullableIntField(
                 label: 'INI',
-                value: companion.ini,
+                value: iniView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(ini: v)),
               ),
@@ -36,7 +49,7 @@ class _KampfWerteSection extends StatelessWidget {
             Expanded(
               child: _NullableIntField(
                 label: 'Magieresistenz',
-                value: companion.magieresistenz,
+                value: mrView,
                 isEditing: isEditing,
                 onChanged: (v) =>
                     onChanged(companion.copyWith(magieresistenz: v)),
@@ -46,7 +59,7 @@ class _KampfWerteSection extends StatelessWidget {
             Expanded(
               child: _NullableIntField(
                 label: 'Loyalität',
-                value: companion.loyalitaet,
+                value: loyView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(loyalitaet: v)),
               ),
@@ -285,6 +298,14 @@ class _LepSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Im View-Modus effektive Pool-Werte anzeigen.
+    final lepView = isEditing
+        ? companion.maxLep
+        : companionEffektiverPoolwert(companion, 'lep') ?? companion.maxLep;
+    final aspView = isEditing
+        ? companion.maxAsp
+        : companionEffektiverPoolwert(companion, 'asp') ?? companion.maxAsp;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -294,7 +315,7 @@ class _LepSection extends StatelessWidget {
             Expanded(
               child: _NullableIntField(
                 label: 'LeP (max)',
-                value: companion.maxLep,
+                value: lepView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(maxLep: v)),
               ),
@@ -312,7 +333,7 @@ class _LepSection extends StatelessWidget {
             Expanded(
               child: _NullableIntField(
                 label: 'AsP (max)',
-                value: companion.maxAsp,
+                value: aspView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(maxAsp: v)),
               ),

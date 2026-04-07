@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import 'dart:math' as math;
+
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart' show ArmorPiece;
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/companion_steigerung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrautenmagie_preset.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -15,6 +18,7 @@ import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_field.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 part 'hero_begleiter/begleiter_helpers.dart';
@@ -25,6 +29,7 @@ part 'hero_begleiter/begleiter_ruestung_section.dart';
 part 'hero_begleiter/begleiter_angriff_section.dart';
 part 'hero_begleiter/begleiter_sonderfertigkeiten_section.dart';
 part 'hero_begleiter/vertrautenmagie_section.dart';
+part 'hero_begleiter/begleiter_steigerung_section.dart';
 
 /// Begleiter-Tab mit Auswahl- und Detailansicht fuer Vertraute/Begleiter.
 class HeroBegleiterTab extends ConsumerStatefulWidget {
@@ -124,9 +129,29 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
     _editController.startEdit();
   }
 
+  /// Initialisiert Startwerte fuer Pool-Steigerungen, falls noch nicht gesetzt.
+  HeroCompanion _initStartwerte(HeroCompanion c) {
+    var updated = c;
+    if (updated.startLep == null && updated.maxLep != null) {
+      updated = updated.copyWith(startLep: updated.maxLep);
+    }
+    if (updated.startAsp == null && updated.maxAsp != null) {
+      updated = updated.copyWith(startAsp: updated.maxAsp);
+    }
+    if (updated.startMr == null && updated.magieresistenz != null) {
+      updated = updated.copyWith(startMr: updated.magieresistenz);
+    }
+    return updated;
+  }
+
   Future<void> _saveChanges() async {
     final hero = _latestHero;
     if (hero == null) return;
+    // Startwerte fuer Vertraute initialisieren.
+    final finalized = _draftCompanions
+        .map((c) => c.typ == BegleiterTyp.vertrauter ? _initStartwerte(c) : c)
+        .toList();
+    _draftCompanions = finalized;
     // Vertrautenmagie aus Hero-Ritualkategorien entfernen (lebt jetzt im Companion).
     final heroRituals = hero.ritualCategories
         .where((c) => c.id != 'vertrautenmagie')
@@ -135,7 +160,7 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
         .read(heroActionsProvider)
         .saveHero(
           hero.copyWith(
-            companions: List.unmodifiable(_draftCompanions),
+            companions: List.unmodifiable(finalized),
             ritualCategories: List.unmodifiable(heroRituals),
           ),
         );
@@ -158,6 +183,33 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   }
 
   void _markFieldChanged() => _editController.markFieldChanged();
+
+  /// Speichert einen gestiegerten Companion sofort persistent, ohne den
+  /// Edit-Mode-Draft zu beruehren. Wird von der Steigerungs-Sektion
+  /// aufgerufen, damit AP-Verbrauch nicht verloren geht.
+  Future<void> _saveCompanionImmediate(HeroCompanion updated) async {
+    final hero = _latestHero;
+    if (hero == null) return;
+    final initialized = _initStartwerte(updated);
+    setState(() {
+      _draftCompanions = _draftCompanions
+          .map((c) => c.id == initialized.id ? initialized : c)
+          .toList();
+    });
+    final heroRituals = hero.ritualCategories
+        .where((c) => c.id != 'vertrautenmagie')
+        .toList();
+    await ref.read(heroActionsProvider).saveHero(
+      hero.copyWith(
+        companions: List.unmodifiable(_draftCompanions),
+        ritualCategories: List.unmodifiable(heroRituals),
+      ),
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Steigerung gespeichert')),
+    );
+  }
 
   Future<void> _addCompanion() async {
     if (!_editController.isEditing) {
@@ -286,6 +338,7 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
               onBack: _navigateBack,
               onChanged: _updateCompanion,
               onDelete: () => _deleteCompanion(activeCompanion.id),
+              onSaveImmediate: _saveCompanionImmediate,
               vertrautenmagieKategorie: vertrautenmagieKat,
             ),
           ),
