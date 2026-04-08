@@ -86,6 +86,7 @@ class HeroCompanion {
     // Steigerungen (nur fuer Vertraute).
     this.steigerungen = const <String, int>{},
     this.startLep,
+    this.startAup,
     this.startAsp,
     this.startMr,
   });
@@ -232,6 +233,9 @@ class HeroCompanion {
   /// Steigerungsmaximum (1,5 × Startwert).
   final int? startLep;
 
+  /// Startwert fuer AuP (analog zu startLep).
+  final int? startAup;
+
   /// Startwert fuer AsP (analog zu startLep).
   final int? startAsp;
 
@@ -280,6 +284,7 @@ class HeroCompanion {
     List<HeroRitualCategory>? ritualCategories,
     Map<String, int>? steigerungen,
     Object? startLep = _keepNull,
+    Object? startAup = _keepNull,
     Object? startAsp = _keepNull,
     Object? startMr = _keepNull,
   }) {
@@ -331,6 +336,9 @@ class HeroCompanion {
       startLep: identical(startLep, _keepNull)
           ? this.startLep
           : startLep as int?,
+      startAup: identical(startAup, _keepNull)
+          ? this.startAup
+          : startAup as int?,
       startAsp: identical(startAsp, _keepNull)
           ? this.startAsp
           : startAsp as int?,
@@ -390,6 +398,7 @@ class HeroCompanion {
             ritualCategories.map((c) => c.toJson()).toList(growable: false),
       if (steigerungen.isNotEmpty) 'steigerungen': steigerungen,
       if (startLep != null) 'startLep': startLep,
+      if (startAup != null) 'startAup': startAup,
       if (startAsp != null) 'startAsp': startAsp,
       if (startMr != null) 'startMr': startMr,
     };
@@ -475,6 +484,7 @@ class HeroCompanion {
       steigerungen: ((json['steigerungen'] as Map?) ?? const <String, dynamic>{})
           .map((k, v) => MapEntry(k as String, (v as num).toInt())),
       startLep: (json['startLep'] as num?)?.toInt(),
+      startAup: (json['startAup'] as num?)?.toInt(),
       startAsp: (json['startAsp'] as num?)?.toInt(),
       startMr: (json['startMr'] as num?)?.toInt(),
     );
@@ -525,6 +535,7 @@ class HeroCompanion {
           _listEqual(ritualCategories, other.ritualCategories) &&
           _mapEqual(steigerungen, other.steigerungen) &&
           startLep == other.startLep &&
+          startAup == other.startAup &&
           startAsp == other.startAsp &&
           startMr == other.startMr;
 
@@ -571,6 +582,7 @@ class HeroCompanion {
     ...ritualCategories,
     ...steigerungen.entries.map((e) => '${e.key}:${e.value}'),
     startLep,
+    startAup,
     startAsp,
     startMr,
   ]);
