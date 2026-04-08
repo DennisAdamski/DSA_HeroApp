@@ -53,6 +53,12 @@ DerivedStats computeDerivedStats(HeroSheet sheet, HeroState state) {
   final namedAttrMods = aggregateNamedAttributeModifiers(
     sheet.attributeModifiers,
   );
+  // Permanente Attribute ohne temporaere Boni (fuer LeP/Au/AsP-Maxima).
+  final permanentAttributes = applyAttributeModifiers(
+    sheet.attributes,
+    parsed.attributeMods + namedAttrMods,
+  );
+  // Effektive Attribute inkl. temporaerer Boni (fuer AT/PA/INI/GS/MR/FK).
   final effectiveAttributes = applyAttributeModifiers(
     sheet.attributes,
     parsed.attributeMods + namedAttrMods + state.tempAttributeMods,
@@ -62,6 +68,7 @@ DerivedStats computeDerivedStats(HeroSheet sheet, HeroState state) {
     state: state,
     parsedModifiers: parsed,
     effectiveAttributes: effectiveAttributes,
+    permanentAttributes: permanentAttributes,
   );
 }
 
@@ -70,10 +77,18 @@ DerivedStats computeDerivedStatsFromInputs({
   required HeroState state,
   required ModifierParseResult parsedModifiers,
   required Attributes effectiveAttributes,
+  // Attribute ohne temporaere Boni (Attributo etc.) fuer Ressourcen-Maxima
+  // (LeP/Au/AsP). Faellt auf effectiveAttributes zurueck wenn nicht angegeben.
+  Attributes? permanentAttributes,
   StatModifiers inventoryStatMods = const StatModifiers(),
   StatModifiers wundStatMods = const StatModifiers(),
 }) {
   final effectiveSheet = sheet.copyWith(attributes: effectiveAttributes);
+  // Ressourcen-Maxima (LeP/Au/AsP) nutzen permanente Attribute ohne temporaere
+  // Zauber-Boni, da Attributo keinen Einfluss auf die Ressourcen-Obergrenze hat.
+  final permanentSheet = sheet.copyWith(
+    attributes: permanentAttributes ?? effectiveAttributes,
+  );
   final namedStatMods = aggregateNamedStatModifiers(sheet.statModifiers);
   final mods =
       sheet.persistentMods +
@@ -111,10 +126,10 @@ DerivedStats computeDerivedStatsFromInputs({
   }
 
   return DerivedStats(
-    maxLep: computeMaxLep(effectiveSheet, mods),
-    maxAu: computeMaxAu(effectiveSheet, mods),
-    maxAsp: computeMaxAsp(effectiveSheet, mods),
-    maxKap: computeMaxKap(effectiveSheet, mods),
+    maxLep: computeMaxLep(permanentSheet, mods),
+    maxAu: computeMaxAu(permanentSheet, mods),
+    maxAsp: computeMaxAsp(permanentSheet, mods),
+    maxKap: computeMaxKap(permanentSheet, mods),
     mr: computeMr(effectiveSheet, mods),
     iniBase: iniBase + iniBaseBonus,
     atBase: computeAt(effectiveSheet, mods),
