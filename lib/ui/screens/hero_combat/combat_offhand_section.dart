@@ -316,9 +316,11 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
   late final TextEditingController _atController;
   late final TextEditingController _paController;
   late final TextEditingController _artifactDescriptionController;
+  late final TextEditingController _geweihtDescriptionController;
   late OffhandEquipmentType _type;
   late ShieldSize _shieldSize;
   late bool _isArtifact;
+  late bool _isGeweiht;
 
   @override
   void initState() {
@@ -339,9 +341,13 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
     _artifactDescriptionController = TextEditingController(
       text: widget.initialEntry.artifactDescription,
     );
+    _geweihtDescriptionController = TextEditingController(
+      text: widget.initialEntry.geweihtDescription,
+    );
     _type = widget.initialEntry.type;
     _shieldSize = widget.initialEntry.shieldSize;
     _isArtifact = widget.initialEntry.isArtifact;
+    _isGeweiht = widget.initialEntry.isGeweiht;
   }
 
   @override
@@ -352,6 +358,7 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
     _atController.dispose();
     _paController.dispose();
     _artifactDescriptionController.dispose();
+    _geweihtDescriptionController.dispose();
     super.dispose();
   }
 
@@ -490,6 +497,30 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
               border: OutlineInputBorder(),
             ),
           ),
+          SwitchListTile(
+            key: const ValueKey<String>('combat-offhand-form-geweiht'),
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Geweiht'),
+            value: _isGeweiht,
+            onChanged: (value) {
+              setState(() {
+                _isGeweiht = value;
+              });
+            },
+          ),
+          TextField(
+            key: const ValueKey<String>(
+              'combat-offhand-form-geweiht-description',
+            ),
+            controller: _geweihtDescriptionController,
+            enabled: _isGeweiht,
+            minLines: 2,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              labelText: 'Beschreibung (geweiht)',
+              border: OutlineInputBorder(),
+            ),
+          ),
           const SizedBox(height: 12),
           Wrap(
             alignment: WrapAlignment.end,
@@ -528,6 +559,8 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
         paMod: parsedPa,
         isArtifact: _isArtifact,
         artifactDescription: _artifactDescriptionController.text.trim(),
+        isGeweiht: _isGeweiht,
+        geweihtDescription: _geweihtDescriptionController.text.trim(),
       ),
     );
   }

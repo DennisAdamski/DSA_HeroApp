@@ -10,9 +10,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 // ---------------------------------------------------------------------------
 
 CombatConfig _configWithWeapon(String name) {
-  return CombatConfig(
-    weapons: [MainWeaponSlot(name: name)],
-  );
+  return CombatConfig(weapons: [MainWeaponSlot(name: name)]);
 }
 
 CombatConfig _configWithRangedWeapon(
@@ -36,7 +34,17 @@ void main() {
   // -------------------------------------------------------------------------
   group('buildExpectedLinkedEntries', () {
     test('Waffe erzeugt Ausruestungs-Eintrag', () {
-      final config = _configWithWeapon('Langschwert');
+      final config = CombatConfig(
+        weapons: const [
+          MainWeaponSlot(
+            name: 'Langschwert',
+            isArtifact: true,
+            artifactDescription: 'Flammende Klinge',
+            isGeweiht: true,
+            geweihtDescription: 'Praiosweihe',
+          ),
+        ],
+      );
       final entries = buildExpectedLinkedEntries(config);
 
       expect(entries.length, 1);
@@ -45,6 +53,10 @@ void main() {
       expect(entries[0].sourceRef, 'w:Langschwert');
       expect(entries[0].itemType, InventoryItemType.ausruestung);
       expect(entries[0].istAusgeruestet, isTrue);
+      expect(entries[0].isMagisch, isTrue);
+      expect(entries[0].magischDescription, 'Flammende Klinge');
+      expect(entries[0].isGeweiht, isTrue);
+      expect(entries[0].geweihtDescription, 'Praiosweihe');
     });
 
     test('Fernkampfwaffe erzeugt Waffen- und Geschoss-Eintraege', () {
@@ -110,9 +122,7 @@ void main() {
 
     test('Nebenhand-Eintrag wird korrekt erzeugt', () {
       final config = CombatConfig(
-        offhandEquipment: [
-          const OffhandEquipmentEntry(name: 'Rundschild'),
-        ],
+        offhandEquipment: [const OffhandEquipmentEntry(name: 'Rundschild')],
       );
       final entries = buildExpectedLinkedEntries(config);
 
@@ -146,6 +156,21 @@ void main() {
       expect(result.first.source, InventoryItemSource.manuell);
     });
 
+    test('abenteuer-eintraege bleiben neben Combat-Sync erhalten', () {
+      const adventureEntry = HeroInventoryEntry(
+        gegenstand: 'Silberdolch',
+        itemType: InventoryItemType.wertvolles,
+        source: InventoryItemSource.abenteuer,
+        sourceRef: 'adv:adv_1|loot:loot_1',
+      );
+      final config = _configWithWeapon('Schwert');
+      final result = reconcileInventoryWithCombat([adventureEntry], config);
+
+      expect(result.first.gegenstand, 'Silberdolch');
+      expect(result.first.source, InventoryItemSource.abenteuer);
+      expect(result[1].source, InventoryItemSource.waffe);
+    });
+
     test('neuer Waffen-Eintrag wird hinzugefuegt', () {
       final config = _configWithWeapon('Axt');
       final result = reconcileInventoryWithCombat([], config);
@@ -155,34 +180,37 @@ void main() {
       expect(result[0].source, InventoryItemSource.waffe);
     });
 
-    test('editierbare Felder eines bestehenden Eintrags werden beibehalten', () {
-      const existingLinked = HeroInventoryEntry(
-        gegenstand: 'Dolch',
-        source: InventoryItemSource.waffe,
-        sourceRef: 'w:Dolch',
-        itemType: InventoryItemType.ausruestung,
-        beschreibung: 'Erbstueck meines Vaters',
-        gewichtGramm: 450,
-        wertSilber: 12,
-        herkunft: 'Familie',
-        modifiers: [
-          InventoryItemModifier(
-            kind: InventoryModifierKind.stat,
-            targetId: 'at',
-            wert: 1,
-          ),
-        ],
-      );
-      final config = _configWithWeapon('Dolch');
-      final result = reconcileInventoryWithCombat([existingLinked], config);
+    test(
+      'editierbare Felder eines bestehenden Eintrags werden beibehalten',
+      () {
+        const existingLinked = HeroInventoryEntry(
+          gegenstand: 'Dolch',
+          source: InventoryItemSource.waffe,
+          sourceRef: 'w:Dolch',
+          itemType: InventoryItemType.ausruestung,
+          beschreibung: 'Erbstueck meines Vaters',
+          gewichtGramm: 450,
+          wertSilber: 12,
+          herkunft: 'Familie',
+          modifiers: [
+            InventoryItemModifier(
+              kind: InventoryModifierKind.stat,
+              targetId: 'at',
+              wert: 1,
+            ),
+          ],
+        );
+        final config = _configWithWeapon('Dolch');
+        final result = reconcileInventoryWithCombat([existingLinked], config);
 
-      expect(result.length, 1);
-      expect(result[0].beschreibung, 'Erbstueck meines Vaters');
-      expect(result[0].gewichtGramm, 450);
-      expect(result[0].wertSilber, 12);
-      expect(result[0].herkunft, 'Familie');
-      expect(result[0].modifiers.length, 1);
-    });
+        expect(result.length, 1);
+        expect(result[0].beschreibung, 'Erbstueck meines Vaters');
+        expect(result[0].gewichtGramm, 450);
+        expect(result[0].wertSilber, 12);
+        expect(result[0].herkunft, 'Familie');
+        expect(result[0].modifiers.length, 1);
+      },
+    );
 
     test('entfernter Kampf-Eintrag verschwindet aus Inventar', () {
       const linkedEntry = HeroInventoryEntry(
@@ -215,17 +243,18 @@ void main() {
     });
 
     test(
-        'zwei gleichnamige Waffen erzeugen zwei separate Inventar-Eintraege',
-        () {
-      final config = CombatConfig(
-        weapons: [
-          const MainWeaponSlot(name: 'Schwert'),
-          const MainWeaponSlot(name: 'Schwert'),
-        ],
-      );
-      final result = reconcileInventoryWithCombat([], config);
-      expect(result.length, 2);
-    });
+      'zwei gleichnamige Waffen erzeugen zwei separate Inventar-Eintraege',
+      () {
+        final config = CombatConfig(
+          weapons: [
+            const MainWeaponSlot(name: 'Schwert'),
+            const MainWeaponSlot(name: 'Schwert'),
+          ],
+        );
+        final result = reconcileInventoryWithCombat([], config);
+        expect(result.length, 2);
+      },
+    );
 
     test('Reihenfolge: manuell zuerst, dann verlinkt', () {
       const manual = HeroInventoryEntry(
@@ -249,7 +278,11 @@ void main() {
       final config = _configWithRangedWeapon('Bogen', [
         const RangedProjectile(name: 'Pfeil', count: 10),
       ]);
-      final updated = applyAmmoCountChangeToConfig(config, 'w:Bogen|p:Pfeil', 25);
+      final updated = applyAmmoCountChangeToConfig(
+        config,
+        'w:Bogen|p:Pfeil',
+        25,
+      );
 
       final updatedSlot = updated.weaponSlots[0];
       expect(updatedSlot.rangedProfile.projectiles[0].count, 25);
@@ -273,7 +306,11 @@ void main() {
       final config = _configWithRangedWeapon('Bogen', [
         const RangedProjectile(name: 'Pfeil', count: 5),
       ]);
-      final updated = applyAmmoCountChangeToConfig(config, 'w:Bogen|p:Pfeil', -3);
+      final updated = applyAmmoCountChangeToConfig(
+        config,
+        'w:Bogen|p:Pfeil',
+        -3,
+      );
       expect(updated.weaponSlots[0].rangedProfile.projectiles[0].count, 0);
     });
 
@@ -288,9 +325,96 @@ void main() {
           ),
         ),
       );
-      final updated =
-          applyAmmoCountChangeToConfig(config, 'w:Armbrust|p:Bolzen', 8);
+      final updated = applyAmmoCountChangeToConfig(
+        config,
+        'w:Armbrust|p:Bolzen',
+        8,
+      );
       expect(updated.mainWeapon.rangedProfile.projectiles[0].count, 8);
+    });
+  });
+
+  group('applyLinkedInventoryDetailsToConfig', () {
+    test('uebernimmt magisch/geweiht fuer Waffe, Ruestung und Nebenhand', () {
+      final config = CombatConfig(
+        weapons: const [MainWeaponSlot(name: 'Bannschwert')],
+        armor: const ArmorConfig(pieces: [ArmorPiece(name: 'Kettenhemd')]),
+        offhandEquipment: const [OffhandEquipmentEntry(name: 'Rundschild')],
+      );
+      final entries = const <HeroInventoryEntry>[
+        HeroInventoryEntry(
+          gegenstand: 'Bannschwert',
+          source: InventoryItemSource.waffe,
+          sourceRef: 'w:Bannschwert',
+          isMagisch: true,
+          magischDescription: 'Arkan versiegelt',
+          isGeweiht: true,
+          geweihtDescription: 'Boron',
+        ),
+        HeroInventoryEntry(
+          gegenstand: 'Kettenhemd',
+          source: InventoryItemSource.ruestung,
+          sourceRef: 'a:Kettenhemd',
+          isMagisch: true,
+          magischDescription: 'Kaltglanz',
+        ),
+        HeroInventoryEntry(
+          gegenstand: 'Rundschild',
+          source: InventoryItemSource.nebenhand,
+          sourceRef: 'oh:Rundschild',
+          isGeweiht: true,
+          geweihtDescription: 'Tempelweihung',
+        ),
+      ];
+
+      final updated = applyLinkedInventoryDetailsToConfig(config, entries);
+
+      expect(updated.weaponSlots.single.isArtifact, isTrue);
+      expect(
+        updated.weaponSlots.single.artifactDescription,
+        'Arkan versiegelt',
+      );
+      expect(updated.weaponSlots.single.isGeweiht, isTrue);
+      expect(updated.weaponSlots.single.geweihtDescription, 'Boron');
+      expect(updated.armor.pieces.single.isArtifact, isTrue);
+      expect(updated.armor.pieces.single.artifactDescription, 'Kaltglanz');
+      expect(updated.offhandEquipment.single.isGeweiht, isTrue);
+      expect(
+        updated.offhandEquipment.single.geweihtDescription,
+        'Tempelweihung',
+      );
+    });
+
+    test('gleiche Namen werden stabil in Reihenfolge gematcht', () {
+      final config = CombatConfig(
+        weapons: const [
+          MainWeaponSlot(name: 'Schwert'),
+          MainWeaponSlot(name: 'Schwert'),
+        ],
+      );
+      final entries = const <HeroInventoryEntry>[
+        HeroInventoryEntry(
+          gegenstand: 'Schwert',
+          source: InventoryItemSource.waffe,
+          sourceRef: 'w:Schwert',
+          isMagisch: true,
+          magischDescription: 'Erstes',
+        ),
+        HeroInventoryEntry(
+          gegenstand: 'Schwert',
+          source: InventoryItemSource.waffe,
+          sourceRef: 'w:Schwert',
+          isGeweiht: true,
+          geweihtDescription: 'Zweites',
+        ),
+      ];
+
+      final updated = applyLinkedInventoryDetailsToConfig(config, entries);
+
+      expect(updated.weaponSlots[0].isArtifact, isTrue);
+      expect(updated.weaponSlots[0].artifactDescription, 'Erstes');
+      expect(updated.weaponSlots[1].isGeweiht, isTrue);
+      expect(updated.weaponSlots[1].geweihtDescription, 'Zweites');
     });
   });
 }

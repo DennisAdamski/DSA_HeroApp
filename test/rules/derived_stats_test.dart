@@ -47,11 +47,61 @@ void main() {
     final d = computeDerivedStats(hero, state);
 
     expect(d.maxLep, 45);
-    expect(d.maxAu, 86);
-    expect(d.maxAsp, 86);
+    // Au und AsP nutzen permanente Attribute (ohne tempAttributeMods MU+4):
+    // Au  = round((14+14+12)/2) + 2 + 2 + 60 = 84
+    // AsP = round((14+13+11)/2) + 2 + 3 + 60 = 84
+    expect(d.maxAu, 84);
+    expect(d.maxAsp, 84);
     expect(d.maxKap, 6);
+    // MR nutzt effektive Attribute (mit MU+4): round((18+12+14)/5) + 2 + 5 = 16
     expect(d.mr, 16);
+    // INI nutzt effektive Attribute (mit MU+4): round((18+18+13+12)/5) + 2 = 14
     expect(d.iniBase, 14);
+  });
+
+  test('tempAttributeMods beeinflussen LeP/Au/AsP nicht, aber AT und INI schon', () {
+    // Attributo: MU+4 und KO+3 – Ressourcen-Maxima bleiben an permanenten
+    // Attributen, Kampfwerte werden mit den effektiven Attributen berechnet.
+    const hero = HeroSheet(
+      id: 'h3',
+      name: 'Attributo-Held',
+      level: 0,
+      attributes: Attributes(
+        mu: 14,
+        kl: 12,
+        inn: 13,
+        ch: 11,
+        ff: 10,
+        ge: 12,
+        ko: 14,
+        kk: 13,
+      ),
+      bought: BoughtStats(),
+      persistentMods: StatModifiers(),
+    );
+    const state = HeroState(
+      currentLep: 0,
+      currentAsp: 0,
+      currentKap: 0,
+      currentAu: 0,
+      tempAttributeMods: AttributeModifiers(mu: 4, ko: 3),
+    );
+
+    final d = computeDerivedStats(hero, state);
+
+    // Ressourcen-Maxima: permanente Attribute (ohne Attributo-Boni)
+    // LeP = round((14+14+13)/2) = round(20.5) = 21
+    expect(d.maxLep, 21);
+    // Au  = round((14+14+12)/2) = round(20.0) = 20
+    expect(d.maxAu, 20);
+    // AsP = round((14+13+11)/2) = round(19.0) = 19
+    expect(d.maxAsp, 19);
+
+    // Kampfwerte: effektive Attribute (mit MU+4, KO+3)
+    // INI = round((18+18+13+12)/5) = round(12.2) = 12
+    expect(d.iniBase, 12);
+    // AT  = round((18+12+13)/5)  = round(8.6)  = 9
+    expect(d.atBase, 9);
   });
 
   test('negative resources are clamped to zero', () {
