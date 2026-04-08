@@ -65,6 +65,7 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
   late final TextEditingController _tpDiceCountController;
   late final TextEditingController _tpFlatController;
   late final TextEditingController _artifactDescriptionController;
+  late final TextEditingController _geweihtDescriptionController;
   late final TextEditingController _reloadTimeController;
   late final List<TextEditingController> _distanceLabelControllers;
   late final List<TextEditingController> _distanceTpModControllers;
@@ -88,6 +89,7 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
     _tpDiceCountController = TextEditingController();
     _tpFlatController = TextEditingController();
     _artifactDescriptionController = TextEditingController();
+    _geweihtDescriptionController = TextEditingController();
     _reloadTimeController = TextEditingController();
     _distanceLabelControllers = List<TextEditingController>.generate(
       5,
@@ -136,6 +138,7 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
     _tpDiceCountController.dispose();
     _tpFlatController.dispose();
     _artifactDescriptionController.dispose();
+    _geweihtDescriptionController.dispose();
     _reloadTimeController.dispose();
     for (final controller in _distanceLabelControllers) {
       controller.dispose();
@@ -181,6 +184,7 @@ class WeaponEditorScreenState extends ConsumerState<WeaponEditorScreen> {
     _tpDiceCountController.text = _draftWeapon.tpDiceCount.toString();
     _tpFlatController.text = _draftWeapon.tpFlat.toString();
     _artifactDescriptionController.text = _draftWeapon.artifactDescription;
+    _geweihtDescriptionController.text = _draftWeapon.geweihtDescription;
     _reloadTimeController.text = _draftWeapon.rangedProfile.reloadTime
         .toString();
     final distanceBands = _draftWeapon.rangedProfile.distanceBands;

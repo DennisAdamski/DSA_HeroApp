@@ -49,19 +49,23 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
   HeroInventoryEntry? _pendingNewEntry;
   int _editorRevision = 0;
 
-  static const List<AdaptiveTableColumnSpec> _columnSpecs =
-      <AdaptiveTableColumnSpec>[
-        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 280, flex: 2), // Gegenstand
-        AdaptiveTableColumnSpec(minWidth: 130, maxWidth: 180, flex: 1), // Typ
-        AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 150, flex: 1), // Quelle
-        AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 1), // Träger
-        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 92),             // Anzahl
-        AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120),            // Gewicht
-        AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120),            // Wert
-        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 280, flex: 2), // Status
-        AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 280, flex: 2), // Herkunft
-        AdaptiveTableColumnSpec.fixed(88),                               // Aktion
-      ];
+  static const List<AdaptiveTableColumnSpec>
+  _columnSpecs = <AdaptiveTableColumnSpec>[
+    AdaptiveTableColumnSpec(
+      minWidth: 180,
+      maxWidth: 280,
+      flex: 2,
+    ), // Gegenstand
+    AdaptiveTableColumnSpec(minWidth: 130, maxWidth: 180, flex: 1), // Typ
+    AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 150, flex: 1), // Quelle
+    AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 1), // Träger
+    AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 92), // Anzahl
+    AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120), // Gewicht
+    AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120), // Wert
+    AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 280, flex: 2), // Status
+    AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 280, flex: 2), // Herkunft
+    AdaptiveTableColumnSpec.fixed(88), // Aktion
+  ];
 
   @override
   void initState() {
@@ -320,7 +324,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
 
     final updatedHero = hero.copyWith(
       inventoryEntries: entries,
-      combatConfig: _applyAmmoCounts(hero, entries),
+      combatConfig: _applyInventoryChangesToCombat(hero, entries),
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     if (!mounted) {
@@ -348,11 +352,14 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     });
   }
 
-  CombatConfig _applyAmmoCounts(
+  CombatConfig _applyInventoryChangesToCombat(
     HeroSheet hero,
     List<HeroInventoryEntry> entries,
   ) {
-    var updatedConfig = hero.combatConfig;
+    var updatedConfig = applyLinkedInventoryDetailsToConfig(
+      hero.combatConfig,
+      entries,
+    );
     for (final entry in entries) {
       final isProjectile =
           entry.source == InventoryItemSource.geschoss &&
@@ -372,9 +379,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
   }
 
   int _manualEntryCount(List<HeroInventoryEntry> entries) {
-    return entries
-        .where((entry) => !_isCombatLinkedEntry(entry))
-        .length;
+    return entries.where((entry) => !_isCombatLinkedEntry(entry)).length;
   }
 
   Future<void> _saveDukaten(String value) async {
@@ -481,6 +486,26 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
           label: '${entry.modifiers.length} Mod.',
           color: colorScheme.surfaceContainerHighest,
           textColor: colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
+
+    if (entry.isMagisch) {
+      widgets.add(
+        _StatusBadge(
+          label: 'Magisch',
+          color: colorScheme.tertiaryContainer,
+          textColor: colorScheme.onTertiaryContainer,
+        ),
+      );
+    }
+
+    if (entry.isGeweiht) {
+      widgets.add(
+        _StatusBadge(
+          label: 'Geweiht',
+          color: colorScheme.secondaryContainer,
+          textColor: colorScheme.onSecondaryContainer,
         ),
       );
     }
@@ -764,7 +789,8 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
   bool get wantKeepAlive => true;
 
   bool _isCombatLinkedEntry(HeroInventoryEntry entry) {
-    return entry.sourceRef != null && isCombatLinkedInventorySource(entry.source);
+    return entry.sourceRef != null &&
+        isCombatLinkedInventorySource(entry.source);
   }
 }
 
@@ -792,7 +818,6 @@ class _StatusBadge extends StatelessWidget {
       child: Text(label, style: labelStyle?.copyWith(color: textColor)),
     );
   }
-
 }
 
 class _DukatenField extends StatefulWidget {

@@ -3597,7 +3597,7 @@ void main() {
         find.byKey(const ValueKey<String>('combat-artifact-summary-card')),
         findsNothing,
       );
-      expect(find.text('Artefakte'), findsNothing);
+      expect(find.text('Artefakte & Geweihtes'), findsNothing);
     },
   );
 
@@ -3666,7 +3666,7 @@ void main() {
       );
       expect(find.text('Gebundener Dschinn'), findsNothing);
 
-      await tester.tap(find.text('Artefakte'));
+      await tester.tap(find.text('Artefakte & Geweihtes'));
       await tester.pumpAndSettle();
 
       final artifactCard = find.byKey(
@@ -3754,7 +3754,7 @@ void main() {
     await openCombatTab(tester, repo);
     await openMeleeTab(tester);
 
-    await tester.tap(find.text('Artefakte'));
+    await tester.tap(find.text('Artefakte & Geweihtes'));
     await tester.pumpAndSettle();
 
     final artifactCard = find.byKey(
