@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
+import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
@@ -76,6 +79,9 @@ void main() {
           overrides: [
             heroRepositoryProvider.overrideWithValue(repo),
             heroTransferFileGatewayProvider.overrideWithValue(fakeGateway),
+            catalogRuntimeDataProvider.overrideWith(
+              (ref) async => _buildRuntimeData(),
+            ),
           ],
           child: const MaterialApp(home: HeroesHomeScreen()),
         ),
@@ -124,12 +130,15 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          heroRepositoryProvider.overrideWithValue(repo),
-          heroTransferFileGatewayProvider.overrideWithValue(fakeGateway),
-        ],
-        child: const MaterialApp(home: HeroesHomeScreen()),
-      ),
+          overrides: [
+            heroRepositoryProvider.overrideWithValue(repo),
+            heroTransferFileGatewayProvider.overrideWithValue(fakeGateway),
+            catalogRuntimeDataProvider.overrideWith(
+              (ref) async => _buildRuntimeData(),
+            ),
+          ],
+          child: const MaterialApp(home: HeroesHomeScreen()),
+        ),
     );
     await tester.pumpAndSettle();
 
@@ -186,12 +195,15 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          heroRepositoryProvider.overrideWithValue(repo),
-          heroTransferFileGatewayProvider.overrideWithValue(fakeGateway),
-        ],
-        child: const MaterialApp(home: HeroesHomeScreen()),
-      ),
+          overrides: [
+            heroRepositoryProvider.overrideWithValue(repo),
+            heroTransferFileGatewayProvider.overrideWithValue(fakeGateway),
+            catalogRuntimeDataProvider.overrideWith(
+              (ref) async => _buildRuntimeData(),
+            ),
+          ],
+          child: const MaterialApp(home: HeroesHomeScreen()),
+        ),
     );
     await tester.pumpAndSettle();
 
@@ -200,4 +212,21 @@ void main() {
 
     expect(find.text('Import Held'), findsWidgets);
   });
+}
+
+CatalogRuntimeData _buildRuntimeData() {
+  final baseData = CatalogSourceData(
+    version: 'house_rules_v1',
+    source: 'tests',
+    metadata: const <String, dynamic>{},
+    sections: <CatalogSectionId, List<Map<String, dynamic>>>{
+      for (final section in editableCatalogSections)
+        section: const <Map<String, dynamic>>[],
+    },
+    reisebericht: const <Map<String, dynamic>>[],
+  );
+  return CatalogRuntimeData.resolve(
+    baseData: baseData,
+    customSnapshot: const CustomCatalogSnapshot(),
+  );
 }
