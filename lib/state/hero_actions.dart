@@ -26,7 +26,7 @@ import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart'
-    show avatarFileStorageProvider;
+    show avatarFileStorageProvider, avatarThumbnailEncoderProvider;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/gruppen_providers.dart';
@@ -238,34 +238,20 @@ class HeroActions {
           (await repo.loadHeroState(heroId)) ?? const HeroState.empty();
       final derivedStats = computeDerivedStats(hero, state);
 
-      String? avatarBase64;
-      if (hero.appearance.avatarFileName.isNotEmpty) {
-        try {
-          final heroStoragePath = await _resolveHeroStoragePath();
-          final storage = _ref.read(avatarFileStorageProvider);
-          final bytes = await storage.loadAvatarBytes(
-            heroStoragePath: heroStoragePath,
-            avatarFileName: hero.appearance.avatarFileName,
-          );
-          if (bytes != null) {
-            avatarBase64 = base64Encode(bytes);
-          }
-        } on Exception {
-          // Avatar nicht verfuegbar — Visitenkarte ohne Bild erstellen.
-        }
-      }
-
+      final avatarThumbnailBase64 = await _loadAvatarThumbnailBase64(hero);
       visitenkarten.add(
         HeldVisitenkarte.fromHeroComputed(
           hero,
           derivedStats,
-          avatarBase64: avatarBase64,
+          avatarThumbnailBase64: avatarThumbnailBase64,
         ),
       );
     }
 
     final snapshot = GruppenSnapshot(
-      gruppenName: gruppenName.trim().isEmpty ? 'Meine Gruppe' : gruppenName.trim(),
+      gruppenName: gruppenName.trim().isEmpty
+          ? 'Meine Gruppe'
+          : gruppenName.trim(),
       exportedAt: DateTime.now().toUtc(),
       helden: visitenkarten,
     );
@@ -664,9 +650,7 @@ class HeroActions {
     final syncService = _ref.read(gruppenSyncServiceProvider);
     final existiert = await syncService.gruppeExistiert(gruppenCode);
     if (!existiert) {
-      throw StateError(
-        'Gruppe mit Code "$gruppenCode" existiert nicht.',
-      );
+      throw StateError('Gruppe mit Code "$gruppenCode" existiert nicht.');
     }
 
     final gruppenName = await syncService.ladeGruppenName(gruppenCode);
@@ -717,9 +701,7 @@ class HeroActions {
     // Referenz in der Gruppenconfig des Helden hinzufuegen.
     final hero = await _loadHeroById(heroId);
     final neueGruppen = List<HeroGruppenMitgliedschaft>.from(hero.gruppen);
-    final index = neueGruppen.indexWhere(
-      (g) => g.gruppenCode == gruppenCode,
-    );
+    final index = neueGruppen.indexWhere((g) => g.gruppenCode == gruppenCode);
     if (index < 0) return;
 
     final mitgliedschaft = neueGruppen[index];
@@ -744,9 +726,7 @@ class HeroActions {
   }) async {
     final hero = await _loadHeroById(heroId);
     final neueGruppen = List<HeroGruppenMitgliedschaft>.from(hero.gruppen);
-    final index = neueGruppen.indexWhere(
-      (g) => g.gruppenCode == gruppenCode,
-    );
+    final index = neueGruppen.indexWhere((g) => g.gruppenCode == gruppenCode);
     if (index < 0) return;
 
     final mitgliedschaft = neueGruppen[index];
@@ -786,10 +766,7 @@ class HeroActions {
       final gruppenCode = gruppe.gruppenCode;
 
       // 1. Eigene Visitenkarte pushen.
-      await _pushEigeneVisitenkarte(
-        heroId: heroId,
-        gruppenCode: gruppenCode,
-      );
+      await _pushEigeneVisitenkarte(heroId: heroId, gruppenCode: gruppenCode);
 
       // 2. Manuelle Helden dieser Gruppe pushen.
       for (final extId in gruppe.externeHeldIds) {
@@ -801,8 +778,7 @@ class HeroActions {
       }
 
       // 3. Alle Mitglieder abholen und lokal aktualisieren.
-      final remoteMitglieder =
-          await syncService.fetchMitglieder(gruppenCode);
+      final remoteMitglieder = await syncService.fetchMitglieder(gruppenCode);
       final neueExterneIds = <String>[...gruppe.externeHeldIds];
 
       // IDs lokal verwalteter manueller Helden — nicht ueberschreiben.
@@ -833,16 +809,12 @@ class HeroActions {
         final neueGruppen = List<HeroGruppenMitgliedschaft>.from(
           aktualisierterHero.gruppen,
         );
-        final idx = neueGruppen.indexWhere(
-          (g) => g.gruppenCode == gruppenCode,
-        );
+        final idx = neueGruppen.indexWhere((g) => g.gruppenCode == gruppenCode);
         if (idx >= 0) {
           neueGruppen[idx] = neueGruppen[idx].copyWith(
             externeHeldIds: neueExterneIds,
           );
-          await saveHero(
-            aktualisierterHero.copyWith(gruppen: neueGruppen),
-          );
+          await saveHero(aktualisierterHero.copyWith(gruppen: neueGruppen));
         }
       }
     }
@@ -857,31 +829,38 @@ class HeroActions {
     final derivedStats = computed.valueOrNull?.derivedStats;
     if (derivedStats == null) return;
 
-    String? avatarBase64;
-    try {
-      if (hero.appearance.avatarFileName.isNotEmpty) {
-        final avatarStorage = _ref.read(avatarFileStorageProvider);
-        final heroStoragePath = await _resolveHeroStoragePath();
-        final avatarBytes = await avatarStorage.loadAvatarBytes(
-          heroStoragePath: heroStoragePath,
-          avatarFileName: hero.appearance.avatarFileName,
-        );
-        if (avatarBytes != null) {
-          avatarBase64 = base64Encode(avatarBytes);
-        }
-      }
-    } on Exception {
-      // Avatar-Fehler ignorieren.
-    }
+    final avatarThumbnailBase64 = await _loadAvatarThumbnailBase64(hero);
 
     final karte = HeldVisitenkarte.fromHeroComputed(
       hero,
       derivedStats,
-      avatarBase64: avatarBase64,
+      avatarThumbnailBase64: avatarThumbnailBase64,
     );
 
     final syncService = _ref.read(gruppenSyncServiceProvider);
     await syncService.pushVisitenkarte(gruppenCode, karte);
+  }
+
+  /// Laedt das aktive Avatarbild und reduziert es auf ein kompaktes
+  /// Gruppen-Thumbnail fuer Export und Firestore-Sync.
+  Future<String?> _loadAvatarThumbnailBase64(HeroSheet hero) async {
+    if (hero.appearance.avatarFileName.isEmpty) return null;
+
+    try {
+      final heroStoragePath = await _resolveHeroStoragePath();
+      final storage = _ref.read(avatarFileStorageProvider);
+      final avatarBytes = await storage.loadAvatarBytes(
+        heroStoragePath: heroStoragePath,
+        avatarFileName: hero.appearance.avatarFileName,
+      );
+      if (avatarBytes == null) return null;
+
+      final encoder = _ref.read(avatarThumbnailEncoderProvider);
+      return encoder.createThumbnailBase64(imageBytes: avatarBytes);
+    } on Exception {
+      // Avatar-Fehler ignorieren, damit der Sync nicht blockiert.
+      return null;
+    }
   }
 
   /// Ermittelt den aktuell wirksamen Heldenspeicherpfad.

@@ -3,7 +3,7 @@
 /// Alle boolean-Felder sind standardmaessig `false`.
 /// Aktive Manoever werden als deduplizierte, leerzeichen-bereinigte String-Liste
 /// in [activeManeuvers] gespeichert. Per-Talent-Manoever verwenden das Format
-/// '<maneuverId>::<talentId>' (z. B. 'man_scharfschuetze::tal_bogen').
+/// `'<maneuverId>::<talentId>'` (z. B. `man_scharfschuetze::tal_bogen`).
 /// Unveraenderlich; Aktualisierungen erfolgen ueber [copyWith].
 class CombatSpecialRules {
   const CombatSpecialRules({
@@ -176,7 +176,9 @@ class CombatSpecialRules {
     final rawManeuvers = List<dynamic>.from(
       (json['activeManeuvers'] as List?) ?? const <dynamic>[],
     );
-    if (getBool('schnellladenBogen')) rawManeuvers.add('man_schnellladen_bogen');
+    if (getBool('schnellladenBogen')) {
+      rawManeuvers.add('man_schnellladen_bogen');
+    }
     if (getBool('schnellladenArmbrust')) {
       rawManeuvers.add('man_schnellladen_armbrust');
     }
