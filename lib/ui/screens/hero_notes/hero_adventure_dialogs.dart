@@ -408,7 +408,8 @@ class _AdventureCompletionDialogState
         .firstOrNull;
     setState(() {
       _seRewards = List<HeroAdventureSeReward>.from(_seRewards)
-        ..add(
+        ..insert(
+          0,
           HeroAdventureSeReward(
             targetType: HeroAdventureSeTargetType.talent,
             targetId: defaultOption?.id ?? '',
