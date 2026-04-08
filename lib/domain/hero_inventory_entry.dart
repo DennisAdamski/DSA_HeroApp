@@ -10,7 +10,12 @@ enum InventoryTraeger {
   begleiter,
 }
 
+/// Persistierter Inventar-Eintrag eines Helden.
+///
+/// Bewahrt Legacy-Stringfelder für Abwärtskompatibilität und ergänzt sie um
+/// typisierte Metadaten für Quelle, Träger und besondere Eigenschaften.
 class HeroInventoryEntry {
+  /// Erstellt einen serialisierbaren Inventar-Eintrag.
   const HeroInventoryEntry({
     this.gegenstand = '',
     this.woGetragen = '',
@@ -33,6 +38,10 @@ class HeroInventoryEntry {
     this.gewichtGramm = 0,
     this.wertSilber = 0,
     this.herkunft = '',
+    this.isMagisch = false,
+    this.magischDescription = '',
+    this.isGeweiht = false,
+    this.geweihtDescription = '',
     // Träger-Felder (v19)
     this.traegerTyp = InventoryTraeger.held,
     this.traegerId,
@@ -45,6 +54,8 @@ class HeroInventoryEntry {
   final String welchesAbenteuer;
   final String gewicht;
   final String wert;
+
+  /// Legacy-Freitext für frühere Artefakt-Kennzeichnung.
   final String artefakt;
   final String anzahl;
   final String amKoerper;
@@ -89,6 +100,18 @@ class HeroInventoryEntry {
   /// Herkunft / Fundort / Haendler des Items.
   final String herkunft;
 
+  /// Kennzeichnet den Gegenstand als magisch.
+  final bool isMagisch;
+
+  /// Freitext-Beschreibung für den magischen Gegenstand.
+  final String magischDescription;
+
+  /// Kennzeichnet den Gegenstand als geweiht.
+  final bool isGeweiht;
+
+  /// Freitext-Beschreibung für den geweihten Gegenstand.
+  final String geweihtDescription;
+
   // --- Träger-Felder (v19) ---
 
   /// Wer dieses Inventarstück trägt.
@@ -98,6 +121,7 @@ class HeroInventoryEntry {
   /// Null, wenn der Held das Item trägt.
   final String? traegerId;
 
+  /// Gibt eine Kopie mit selektiv überschriebenen Feldern zurück.
   HeroInventoryEntry copyWith({
     String? gegenstand,
     String? woGetragen,
@@ -119,6 +143,10 @@ class HeroInventoryEntry {
     int? gewichtGramm,
     int? wertSilber,
     String? herkunft,
+    bool? isMagisch,
+    String? magischDescription,
+    bool? isGeweiht,
+    String? geweihtDescription,
     InventoryTraeger? traegerTyp,
     Object? traegerId = keepFieldValue,
   }) {
@@ -137,18 +165,34 @@ class HeroInventoryEntry {
       beschreibung: beschreibung ?? this.beschreibung,
       itemType: itemType ?? this.itemType,
       source: source ?? this.source,
-      sourceRef: sourceRef == keepFieldValue ? this.sourceRef : sourceRef as String?,
+      sourceRef: sourceRef == keepFieldValue
+          ? this.sourceRef
+          : sourceRef as String?,
       istAusgeruestet: istAusgeruestet ?? this.istAusgeruestet,
       modifiers: modifiers ?? this.modifiers,
       gewichtGramm: gewichtGramm ?? this.gewichtGramm,
       wertSilber: wertSilber ?? this.wertSilber,
       herkunft: herkunft ?? this.herkunft,
+      isMagisch: isMagisch ?? this.isMagisch,
+      magischDescription: magischDescription ?? this.magischDescription,
+      isGeweiht: isGeweiht ?? this.isGeweiht,
+      geweihtDescription: geweihtDescription ?? this.geweihtDescription,
       traegerTyp: traegerTyp ?? this.traegerTyp,
-      traegerId: traegerId == keepFieldValue ? this.traegerId : traegerId as String?,
+      traegerId: traegerId == keepFieldValue
+          ? this.traegerId
+          : traegerId as String?,
     );
   }
 
+  /// Serialisiert den Eintrag in ein JSON-kompatibles Map.
   Map<String, dynamic> toJson() {
+    final normalizedMagischDescription = magischDescription.trim();
+    final legacyArtifactValue = _legacyArtifactValue(
+      isMagisch: isMagisch,
+      magischDescription: normalizedMagischDescription,
+      legacyArtifact: artefakt.trim(),
+    );
+
     return <String, dynamic>{
       'gegenstand': gegenstand,
       'woGetragen': woGetragen,
@@ -156,7 +200,7 @@ class HeroInventoryEntry {
       'welchesAbenteuer': welchesAbenteuer,
       'gewicht': gewicht,
       'wert': wert,
-      'artefakt': artefakt,
+      'artefakt': legacyArtifactValue,
       'anzahl': anzahl,
       'amKoerper': amKoerper,
       'woDann': woDann,
@@ -171,12 +215,17 @@ class HeroInventoryEntry {
       'gewichtGramm': gewichtGramm,
       'wertSilber': wertSilber,
       'herkunft': herkunft,
+      'isMagisch': isMagisch,
+      'magischDescription': normalizedMagischDescription,
+      'isGeweiht': isGeweiht,
+      'geweihtDescription': geweihtDescription,
       // v19
       'traegerTyp': traegerTyp.name,
       if (traegerId != null) 'traegerId': traegerId,
     };
   }
 
+  /// Deserialisiert einen Inventar-Eintrag aus einem JSON-Map.
   static HeroInventoryEntry fromJson(Map<String, dynamic> json) {
     String getString(String key) => (json[key] as String?) ?? '';
 
@@ -197,10 +246,17 @@ class HeroInventoryEntry {
     final modifiersRaw = json['modifiers'];
     final modifiers = modifiersRaw is List
         ? modifiersRaw
-            .whereType<Map<String, dynamic>>()
-            .map(InventoryItemModifier.fromJson)
-            .toList(growable: false)
+              .whereType<Map<String, dynamic>>()
+              .map(InventoryItemModifier.fromJson)
+              .toList(growable: false)
         : const <InventoryItemModifier>[];
+    final legacyArtifact = getString('artefakt').trim();
+    final hasMagischDescription =
+        json.containsKey('magischDescription') &&
+        json['magischDescription'] != null;
+    final magischDescription = hasMagischDescription
+        ? getString('magischDescription')
+        : legacyArtifact;
 
     return HeroInventoryEntry(
       gegenstand: getString('gegenstand'),
@@ -209,7 +265,7 @@ class HeroInventoryEntry {
       welchesAbenteuer: getString('welchesAbenteuer'),
       gewicht: getString('gewicht'),
       wert: getString('wert'),
-      artefakt: getString('artefakt'),
+      artefakt: legacyArtifact,
       anzahl: getString('anzahl'),
       amKoerper: getString('amKoerper'),
       woDann: getString('woDann'),
@@ -224,6 +280,10 @@ class HeroInventoryEntry {
       gewichtGramm: (json['gewichtGramm'] as num?)?.toInt() ?? 0,
       wertSilber: (json['wertSilber'] as num?)?.toInt() ?? 0,
       herkunft: getString('herkunft'),
+      isMagisch: (json['isMagisch'] as bool?) ?? legacyArtifact.isNotEmpty,
+      magischDescription: magischDescription,
+      isGeweiht: (json['isGeweiht'] as bool?) ?? false,
+      geweihtDescription: getString('geweihtDescription'),
       // v19 – lenient defaults
       traegerTyp: InventoryTraeger.values.firstWhere(
         (e) => e.name == json['traegerTyp'],
@@ -232,4 +292,21 @@ class HeroInventoryEntry {
       traegerId: json['traegerId'] as String?,
     );
   }
+}
+
+String _legacyArtifactValue({
+  required bool isMagisch,
+  required String magischDescription,
+  required String legacyArtifact,
+}) {
+  if (!isMagisch) {
+    return '';
+  }
+  if (magischDescription.isNotEmpty) {
+    return magischDescription;
+  }
+  if (legacyArtifact.isNotEmpty) {
+    return legacyArtifact;
+  }
+  return 'magisch';
 }
