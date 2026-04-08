@@ -41,6 +41,10 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
         source: InventoryItemSource.waffe,
         sourceRef: weaponRef(name),
         istAusgeruestet: true,
+        isMagisch: slot.isArtifact,
+        magischDescription: slot.artifactDescription,
+        isGeweiht: slot.isGeweiht,
+        geweihtDescription: slot.geweihtDescription,
       ),
     );
 
@@ -72,6 +76,10 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
         source: InventoryItemSource.ruestung,
         sourceRef: armorRef(name),
         istAusgeruestet: piece.isActive,
+        isMagisch: piece.isArtifact,
+        magischDescription: piece.artifactDescription,
+        isGeweiht: piece.isGeweiht,
+        geweihtDescription: piece.geweihtDescription,
       ),
     );
   }
@@ -86,6 +94,10 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
         source: InventoryItemSource.nebenhand,
         sourceRef: offhandRef(name),
         istAusgeruestet: true,
+        isMagisch: equipment.isArtifact,
+        magischDescription: equipment.artifactDescription,
+        isGeweiht: equipment.isGeweiht,
+        geweihtDescription: equipment.geweihtDescription,
       ),
     );
   }
@@ -120,9 +132,7 @@ List<HeroInventoryEntry> reconcileInventoryWithCombat(
       .toList(growable: false);
 
   // Kopie der verlinkten Eintraege, aus der gefundene Matches entfernt werden
-  final unmatched = existing
-      .where(_isCombatLinkedInventoryEntry)
-      .toList();
+  final unmatched = existing.where(_isCombatLinkedInventoryEntry).toList();
 
   final expected = buildExpectedLinkedEntries(config);
   final merged = <HeroInventoryEntry>[];
@@ -172,8 +182,9 @@ HeroInventoryEntry _mergeEntry({
     wertSilber: existing.wertSilber,
     herkunft: existing.herkunft,
     // istAusgeruestet: bei Ausruestung aus Kampf-Config; bei Geschoss beibehalten
-    istAusgeruestet:
-        isProjectile ? existing.istAusgeruestet : base.istAusgeruestet,
+    istAusgeruestet: isProjectile
+        ? existing.istAusgeruestet
+        : base.istAusgeruestet,
     // anzahl: bei Geschossen immer aus CombatConfig (bidirektionaler Sync)
     anzahl: isProjectile ? base.anzahl : existing.anzahl,
   );
@@ -181,6 +192,137 @@ HeroInventoryEntry _mergeEntry({
 
 bool _isCombatLinkedInventoryEntry(HeroInventoryEntry entry) {
   return entry.sourceRef != null && isCombatLinkedInventorySource(entry.source);
+}
+
+/// Uebernimmt magische und geweihte Markierungen aus verlinkten Inventar-Eintraegen.
+///
+/// Verarbeitet nur Eintraege mit [HeroInventoryEntry.sourceRef], deren Quelle
+/// mit dem Kampf-Tab verknuepft ist. Bei mehrfach gleichen Namen erfolgt das
+/// Matching stabil in Listenreihenfolge.
+CombatConfig applyLinkedInventoryDetailsToConfig(
+  CombatConfig config,
+  List<HeroInventoryEntry> entries,
+) {
+  final weaponEntries = _groupLinkedEntries(entries, InventoryItemSource.waffe);
+  final armorEntries = _groupLinkedEntries(
+    entries,
+    InventoryItemSource.ruestung,
+  );
+  final offhandEntries = _groupLinkedEntries(
+    entries,
+    InventoryItemSource.nebenhand,
+  );
+
+  final updatedWeaponSlots = config.weaponSlots
+      .map((slot) {
+        final entry = _takeNextLinkedEntry(weaponEntries, weaponRef(slot.name));
+        return _applyInventoryDetailsToWeapon(slot, entry);
+      })
+      .toList(growable: false);
+  final updatedArmorPieces = config.armor.pieces
+      .map((piece) {
+        final entry = _takeNextLinkedEntry(armorEntries, armorRef(piece.name));
+        return _applyInventoryDetailsToArmor(piece, entry);
+      })
+      .toList(growable: false);
+  final updatedOffhandEntries = config.offhandEquipment
+      .map((equipment) {
+        final entry = _takeNextLinkedEntry(
+          offhandEntries,
+          offhandRef(equipment.name),
+        );
+        return _applyInventoryDetailsToOffhand(equipment, entry);
+      })
+      .toList(growable: false);
+
+  final updatedArmor = config.armor.copyWith(pieces: updatedArmorPieces);
+  if (config.weapons.isNotEmpty) {
+    return config.copyWith(
+      weapons: updatedWeaponSlots,
+      armor: updatedArmor,
+      offhandEquipment: updatedOffhandEntries,
+    );
+  }
+  return config.copyWith(
+    mainWeapon: updatedWeaponSlots.firstOrNull ?? const MainWeaponSlot(),
+    armor: updatedArmor,
+    offhandEquipment: updatedOffhandEntries,
+  );
+}
+
+Map<String, List<HeroInventoryEntry>> _groupLinkedEntries(
+  List<HeroInventoryEntry> entries,
+  InventoryItemSource source,
+) {
+  final groupedEntries = <String, List<HeroInventoryEntry>>{};
+  for (final entry in entries) {
+    final ref = entry.sourceRef;
+    if (entry.source != source || ref == null) {
+      continue;
+    }
+    groupedEntries.putIfAbsent(ref, () => <HeroInventoryEntry>[]).add(entry);
+  }
+  return groupedEntries;
+}
+
+HeroInventoryEntry? _takeNextLinkedEntry(
+  Map<String, List<HeroInventoryEntry>> groupedEntries,
+  String ref,
+) {
+  final entries = groupedEntries[ref];
+  if (entries == null || entries.isEmpty) {
+    return null;
+  }
+  final nextEntry = entries.removeAt(0);
+  if (entries.isEmpty) {
+    groupedEntries.remove(ref);
+  }
+  return nextEntry;
+}
+
+MainWeaponSlot _applyInventoryDetailsToWeapon(
+  MainWeaponSlot slot,
+  HeroInventoryEntry? entry,
+) {
+  if (entry == null) {
+    return slot;
+  }
+  return slot.copyWith(
+    isArtifact: entry.isMagisch,
+    artifactDescription: entry.magischDescription,
+    isGeweiht: entry.isGeweiht,
+    geweihtDescription: entry.geweihtDescription,
+  );
+}
+
+ArmorPiece _applyInventoryDetailsToArmor(
+  ArmorPiece piece,
+  HeroInventoryEntry? entry,
+) {
+  if (entry == null) {
+    return piece;
+  }
+  return piece.copyWith(
+    isArtifact: entry.isMagisch,
+    artifactDescription: entry.magischDescription,
+    isGeweiht: entry.isGeweiht,
+    geweihtDescription: entry.geweihtDescription,
+  );
+}
+
+OffhandEquipmentEntry _applyInventoryDetailsToOffhand(
+  OffhandEquipmentEntry equipment,
+  HeroInventoryEntry? entry,
+) {
+  if (entry == null) {
+    return equipment;
+  }
+  return equipment.copyWith(
+    isArtifact: entry.isMagisch,
+    artifactDescription: entry.magischDescription,
+    isGeweiht: entry.isGeweiht,
+    geweihtDescription: entry.geweihtDescription,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -219,13 +361,15 @@ CombatConfig applyAmmoCountChangeToConfig(
   if (!slot.isRanged) return config;
 
   final profile = slot.rangedProfile;
-  final projIdx =
-      profile.projectiles.indexWhere((p) => p.name.trim() == projName);
+  final projIdx = profile.projectiles.indexWhere(
+    (p) => p.name.trim() == projName,
+  );
   if (projIdx < 0) return config;
 
   final updatedProjectiles = List<RangedProjectile>.from(profile.projectiles);
-  updatedProjectiles[projIdx] =
-      profile.projectiles[projIdx].copyWith(count: newCount.clamp(0, 9999));
+  updatedProjectiles[projIdx] = profile.projectiles[projIdx].copyWith(
+    count: newCount.clamp(0, 9999),
+  );
 
   final updatedProfile = profile.copyWith(projectiles: updatedProjectiles);
   final updatedSlot = slot.copyWith(rangedProfile: updatedProfile);

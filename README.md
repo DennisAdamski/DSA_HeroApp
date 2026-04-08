@@ -111,7 +111,7 @@ Technischer Stack:
 
 ### Inventar, Chroniken, Kontakte und Abenteuer
 
-- Direkt bearbeitbares Inventar als kompakte Tabelle fuer Ausruestung und sonstige Gegenstaende
+- Direkt bearbeitbares Inventar als kompakte Tabelle fuer Ausruestung und sonstige Gegenstaende inklusive magischer und geweihter Markierungen
 - Freie Chroniken mit Titel und Beschreibung
 - Verbindungen/Kontakte mit Ort, Sozialstatus, Loyalitaet, Beschreibung und optionaler Abenteuer-Zuordnung
 - Abenteuer als Chip-Uebersicht mit fokussierter Detailansicht; neue Abenteuer, Notizen und Personen werden jeweils ueber Popups angelegt oder bearbeitet
