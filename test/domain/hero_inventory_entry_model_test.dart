@@ -5,51 +5,62 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
 void main() {
   group('HeroInventoryEntry – Roundtrip', () {
-    test('alle neuen Felder werden korrekt serialisiert und deserialisiert', () {
-      final entry = HeroInventoryEntry(
-        gegenstand: 'Jaegerstiefel',
-        beschreibung: 'Robuste Lederstiefel',
-        itemType: InventoryItemType.ausruestung,
-        source: InventoryItemSource.manuell,
-        sourceRef: null,
-        istAusgeruestet: true,
-        modifiers: const [
-          InventoryItemModifier(
-            kind: InventoryModifierKind.stat,
-            targetId: 'gs',
-            wert: 2,
-            beschreibung: 'Jaegerstiefel',
-          ),
-          InventoryItemModifier(
-            kind: InventoryModifierKind.talent,
-            targetId: 'tal_schleichen',
-            wert: 3,
-          ),
-        ],
-        gewichtGramm: 800,
-        wertSilber: 15,
-        herkunft: 'Haendler in Ferdok',
-      );
+    test(
+      'alle neuen Felder werden korrekt serialisiert und deserialisiert',
+      () {
+        final entry = HeroInventoryEntry(
+          gegenstand: 'Jaegerstiefel',
+          beschreibung: 'Robuste Lederstiefel',
+          itemType: InventoryItemType.ausruestung,
+          source: InventoryItemSource.manuell,
+          sourceRef: null,
+          istAusgeruestet: true,
+          modifiers: const [
+            InventoryItemModifier(
+              kind: InventoryModifierKind.stat,
+              targetId: 'gs',
+              wert: 2,
+              beschreibung: 'Jaegerstiefel',
+            ),
+            InventoryItemModifier(
+              kind: InventoryModifierKind.talent,
+              targetId: 'tal_schleichen',
+              wert: 3,
+            ),
+          ],
+          gewichtGramm: 800,
+          wertSilber: 15,
+          herkunft: 'Haendler in Ferdok',
+          isMagisch: true,
+          magischDescription: 'Mit Zauberklinge belegt',
+          isGeweiht: true,
+          geweihtDescription: 'Tempelweihe des Praios',
+        );
 
-      final json = entry.toJson();
-      final reloaded = HeroInventoryEntry.fromJson(json);
+        final json = entry.toJson();
+        final reloaded = HeroInventoryEntry.fromJson(json);
 
-      expect(reloaded.gegenstand, 'Jaegerstiefel');
-      expect(reloaded.beschreibung, 'Robuste Lederstiefel');
-      expect(reloaded.itemType, InventoryItemType.ausruestung);
-      expect(reloaded.source, InventoryItemSource.manuell);
-      expect(reloaded.sourceRef, isNull);
-      expect(reloaded.istAusgeruestet, isTrue);
-      expect(reloaded.modifiers.length, 2);
-      expect(reloaded.modifiers[0].kind, InventoryModifierKind.stat);
-      expect(reloaded.modifiers[0].targetId, 'gs');
-      expect(reloaded.modifiers[0].wert, 2);
-      expect(reloaded.modifiers[1].kind, InventoryModifierKind.talent);
-      expect(reloaded.modifiers[1].targetId, 'tal_schleichen');
-      expect(reloaded.gewichtGramm, 800);
-      expect(reloaded.wertSilber, 15);
-      expect(reloaded.herkunft, 'Haendler in Ferdok');
-    });
+        expect(reloaded.gegenstand, 'Jaegerstiefel');
+        expect(reloaded.beschreibung, 'Robuste Lederstiefel');
+        expect(reloaded.itemType, InventoryItemType.ausruestung);
+        expect(reloaded.source, InventoryItemSource.manuell);
+        expect(reloaded.sourceRef, isNull);
+        expect(reloaded.istAusgeruestet, isTrue);
+        expect(reloaded.modifiers.length, 2);
+        expect(reloaded.modifiers[0].kind, InventoryModifierKind.stat);
+        expect(reloaded.modifiers[0].targetId, 'gs');
+        expect(reloaded.modifiers[0].wert, 2);
+        expect(reloaded.modifiers[1].kind, InventoryModifierKind.talent);
+        expect(reloaded.modifiers[1].targetId, 'tal_schleichen');
+        expect(reloaded.gewichtGramm, 800);
+        expect(reloaded.wertSilber, 15);
+        expect(reloaded.herkunft, 'Haendler in Ferdok');
+        expect(reloaded.isMagisch, isTrue);
+        expect(reloaded.magischDescription, 'Mit Zauberklinge belegt');
+        expect(reloaded.isGeweiht, isTrue);
+        expect(reloaded.geweihtDescription, 'Tempelweihe des Praios');
+      },
+    );
 
     test('sourceRef wird korrekt gesetzt und gelesen', () {
       final entry = HeroInventoryEntry(
@@ -107,9 +118,25 @@ void main() {
       expect(entry.gewichtGramm, 0);
       expect(entry.wertSilber, 0);
       expect(entry.herkunft, '');
+      expect(entry.isMagisch, isFalse);
+      expect(entry.magischDescription, '');
+      expect(entry.isGeweiht, isFalse);
+      expect(entry.geweihtDescription, '');
       // Alte String-Felder unveraendert
       expect(entry.gegenstand, 'Schwert');
       expect(entry.gewicht, '1500');
+    });
+
+    test('legacy artefakt-Feld aktiviert magisch-Status', () {
+      final json = const <String, dynamic>{
+        'gegenstand': 'Amulett',
+        'artefakt': 'Altes Schutzartefakt',
+      };
+
+      final entry = HeroInventoryEntry.fromJson(json);
+
+      expect(entry.isMagisch, isTrue);
+      expect(entry.magischDescription, 'Altes Schutzartefakt');
     });
 
     test('unbekannter itemType-String faellt auf sonstiges zurueck', () {
@@ -122,9 +149,7 @@ void main() {
     });
 
     test('unbekannter source-String faellt auf manuell zurueck', () {
-      final json = const <String, dynamic>{
-        'source': 'nichtExistent',
-      };
+      final json = const <String, dynamic>{'source': 'nichtExistent'};
       final entry = HeroInventoryEntry.fromJson(json);
       expect(entry.source, InventoryItemSource.manuell);
     });
