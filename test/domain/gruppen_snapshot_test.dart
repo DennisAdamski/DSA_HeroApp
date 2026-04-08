@@ -56,6 +56,27 @@ void main() {
       final json = held.toJson();
       expect(json.containsKey('avatarThumbnailBase64'), isFalse);
     });
+
+    test(
+      'toFirestoreJson entfernt uebergrosse Thumbnails und behaelt Rest',
+      () {
+        final held = HeldVisitenkarte(
+          heroId: 'id',
+          name: 'Name',
+          avatarThumbnailBase64:
+              'a' * (HeldVisitenkarte.avatarThumbnailBase64MaxLength + 1),
+          exportedAt: DateTime.utc(2026),
+          istManuell: true,
+        );
+
+        final json = held.toFirestoreJson();
+
+        expect(json['heroId'], 'id');
+        expect(json['name'], 'Name');
+        expect(json['istManuell'], isTrue);
+        expect(json.containsKey('avatarThumbnailBase64'), isFalse);
+      },
+    );
   });
 
   group('GruppenSnapshot', () {

@@ -9,6 +9,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 /// auf ihren Geraeten sehen koennen. Design ist offen fuer kuenftige
 /// Echtzeit-Erweiterung (z.B. Firebase/Supabase).
 class HeldVisitenkarte {
+  /// Firestore-Obergrenze fuer Base64-Avatar-Thumbnails in Visitenkarten.
+  static const int avatarThumbnailBase64MaxLength = 200000;
+
   const HeldVisitenkarte({
     required this.heroId,
     required this.name,
@@ -49,7 +52,7 @@ class HeldVisitenkarte {
   factory HeldVisitenkarte.fromHeroComputed(
     HeroSheet hero,
     DerivedStats derivedStats, {
-    String? avatarBase64,
+    String? avatarThumbnailBase64,
   }) {
     return HeldVisitenkarte(
       heroId: hero.id,
@@ -62,7 +65,7 @@ class HeldVisitenkarte {
       maxAsp: derivedStats.maxAsp,
       maxAu: derivedStats.maxAu,
       iniBase: derivedStats.iniBase,
-      avatarThumbnailBase64: avatarBase64,
+      avatarThumbnailBase64: avatarThumbnailBase64,
       exportedAt: DateTime.now().toUtc(),
     );
   }
@@ -105,10 +108,22 @@ class HeldVisitenkarte {
     };
   }
 
+  /// Serialisiert die Visitenkarte fuer Firestore und entfernt uebergrosse
+  /// Thumbnail-Payloads, damit der Rest der Karte weiter synchronisiert wird.
+  Map<String, dynamic> toFirestoreJson() {
+    final json = toJson();
+    final thumbnailBase64 = avatarThumbnailBase64;
+    if (thumbnailBase64 != null &&
+        thumbnailBase64.length > avatarThumbnailBase64MaxLength) {
+      json.remove('avatarThumbnailBase64');
+    }
+    return json;
+  }
+
   static HeldVisitenkarte fromJson(Map<String, dynamic> json) {
     final rawExportedAt = json['exportedAt'] as String? ?? '';
-    final exportedAt = DateTime.tryParse(rawExportedAt)?.toUtc() ??
-        DateTime.now().toUtc();
+    final exportedAt =
+        DateTime.tryParse(rawExportedAt)?.toUtc() ?? DateTime.now().toUtc();
 
     return HeldVisitenkarte(
       heroId: json['heroId'] as String? ?? '',
@@ -152,9 +167,7 @@ class GruppenSnapshot {
       'snapshotSchemaVersion': snapshotSchemaVersion,
       'gruppenName': gruppenName,
       'exportedAt': exportedAt.toUtc().toIso8601String(),
-      'helden': helden
-          .map((held) => held.toJson())
-          .toList(growable: false),
+      'helden': helden.map((held) => held.toJson()).toList(growable: false),
     };
   }
 
@@ -176,8 +189,8 @@ class GruppenSnapshot {
     }
 
     final rawExportedAt = json['exportedAt'] as String? ?? '';
-    final exportedAt = DateTime.tryParse(rawExportedAt)?.toUtc() ??
-        DateTime.now().toUtc();
+    final exportedAt =
+        DateTime.tryParse(rawExportedAt)?.toUtc() ?? DateTime.now().toUtc();
 
     final rawHelden = json['helden'] as List? ?? const [];
     final helden = rawHelden
