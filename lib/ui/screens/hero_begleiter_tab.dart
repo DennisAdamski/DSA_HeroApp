@@ -29,7 +29,6 @@ part 'hero_begleiter/begleiter_ruestung_section.dart';
 part 'hero_begleiter/begleiter_angriff_section.dart';
 part 'hero_begleiter/begleiter_sonderfertigkeiten_section.dart';
 part 'hero_begleiter/vertrautenmagie_section.dart';
-part 'hero_begleiter/begleiter_steigerung_section.dart';
 
 /// Begleiter-Tab mit Auswahl- und Detailansicht fuer Vertraute/Begleiter.
 class HeroBegleiterTab extends ConsumerStatefulWidget {
@@ -134,6 +133,9 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
     var updated = c;
     if (updated.startLep == null && updated.maxLep != null) {
       updated = updated.copyWith(startLep: updated.maxLep);
+    }
+    if (updated.startAup == null && updated.maxAup != null) {
+      updated = updated.copyWith(startAup: updated.maxAup);
     }
     if (updated.startAsp == null && updated.maxAsp != null) {
       updated = updated.copyWith(startAsp: updated.maxAsp);
@@ -294,6 +296,167 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
     _markFieldChanged();
   }
 
+  // ---------------------------------------------------------------------------
+  // Steigerung (inline, nur Vertraute)
+  // ---------------------------------------------------------------------------
+
+  bool get _canRaise =>
+      _editController.isEditing && !_editController.isDirty;
+
+  HeroCompanion? get _activeCompanion => _activeCompanionId != null
+      ? _draftCompanions.cast<HeroCompanion?>().firstWhere(
+            (c) => c!.id == _activeCompanionId,
+            orElse: () => null,
+          )
+      : null;
+
+  bool _canRaiseFor(HeroCompanion c) =>
+      _canRaise && c.typ == BegleiterTyp.vertrauter;
+
+  Future<void> _raiseRegular(String key, String label) async {
+    final c = _activeCompanion;
+    if (c == null || !_canRaiseFor(c)) return;
+    final stg = companionSteigerung(c, key);
+    final apVerf = companionApVerfuegbar(c);
+    final maxWert = regMaxSteigerung(
+      aktuellerSteigerungswert: stg,
+      verfuegbareAp: apVerf,
+    );
+    final result = await showSteigerungsDialog(
+      context: context,
+      bezeichnung: '$label (Vertrauter)',
+      aktuellerWert: stg,
+      maxWert: maxWert,
+      effektiveKomplexitaet: kVertrauterKomplexitaet,
+      verfuegbareAp: apVerf,
+    );
+    if (result == null) return;
+    final neueSteigerungen = Map<String, int>.from(c.steigerungen);
+    neueSteigerungen[key] = result.neuerWert;
+    _saveCompanionImmediate(c.copyWith(
+      steigerungen: neueSteigerungen,
+      apAusgegeben: (c.apAusgegeben ?? 0) + result.apKosten,
+    ));
+  }
+
+  Future<void> _raisePool(String key, String label) async {
+    final c = _activeCompanion;
+    if (c == null || !_canRaiseFor(c)) return;
+    final startwert =
+        companionPoolStartwert(c, key) ?? companionPoolBasiswert(c, key);
+    if (startwert == null) return;
+    final stg = companionSteigerung(c, key);
+    final maxStg = poolMaxSteigerung(startwert);
+    if (stg >= maxStg) return;
+    final apVerf = companionApVerfuegbar(c);
+    final effektivMax = math.min(
+      maxStg,
+      regMaxSteigerung(
+        aktuellerSteigerungswert: stg,
+        verfuegbareAp: apVerf,
+      ),
+    );
+    final result = await showSteigerungsDialog(
+      context: context,
+      bezeichnung: '$label (Vertrauter)',
+      aktuellerWert: stg,
+      maxWert: effektivMax,
+      effektiveKomplexitaet: kVertrauterKomplexitaet,
+      verfuegbareAp: apVerf,
+    );
+    if (result == null) return;
+    final neueSteigerungen = Map<String, int>.from(c.steigerungen);
+    neueSteigerungen[key] = result.neuerWert;
+    _saveCompanionImmediate(c.copyWith(
+      steigerungen: neueSteigerungen,
+      apAusgegeben: (c.apAusgegeben ?? 0) + result.apKosten,
+    ));
+  }
+
+  Future<void> _raiseAngriffAt(String attackId) async {
+    final c = _activeCompanion;
+    if (c == null || !_canRaiseFor(c)) return;
+    final angriff = c.angriffe.where((a) => a.id == attackId).firstOrNull;
+    if (angriff == null || angriff.at == null) return;
+    final apVerf = companionApVerfuegbar(c);
+    final maxWert = regMaxSteigerung(
+      aktuellerSteigerungswert: angriff.steigerungAt,
+      verfuegbareAp: apVerf,
+    );
+    final result = await showSteigerungsDialog(
+      context: context,
+      bezeichnung: '${angriff.name} AT (Vertrauter)',
+      aktuellerWert: angriff.steigerungAt,
+      maxWert: maxWert,
+      effektiveKomplexitaet: kVertrauterKomplexitaet,
+      verfuegbareAp: apVerf,
+    );
+    if (result == null) return;
+    final updatedAngriffe = c.angriffe
+        .map((a) =>
+            a.id == attackId ? a.copyWith(steigerungAt: result.neuerWert) : a)
+        .toList();
+    _saveCompanionImmediate(c.copyWith(
+      angriffe: updatedAngriffe,
+      apAusgegeben: (c.apAusgegeben ?? 0) + result.apKosten,
+    ));
+  }
+
+  Future<void> _raiseAngriffPa(String attackId) async {
+    final c = _activeCompanion;
+    if (c == null || !_canRaiseFor(c)) return;
+    final angriff = c.angriffe.where((a) => a.id == attackId).firstOrNull;
+    if (angriff == null || angriff.pa == null) return;
+    final apVerf = companionApVerfuegbar(c);
+    final maxWert = regMaxSteigerung(
+      aktuellerSteigerungswert: angriff.steigerungPa,
+      verfuegbareAp: apVerf,
+    );
+    final result = await showSteigerungsDialog(
+      context: context,
+      bezeichnung: '${angriff.name} PA (Vertrauter)',
+      aktuellerWert: angriff.steigerungPa,
+      maxWert: maxWert,
+      effektiveKomplexitaet: kVertrauterKomplexitaet,
+      verfuegbareAp: apVerf,
+    );
+    if (result == null) return;
+    final updatedAngriffe = c.angriffe
+        .map((a) =>
+            a.id == attackId ? a.copyWith(steigerungPa: result.neuerWert) : a)
+        .toList();
+    _saveCompanionImmediate(c.copyWith(
+      angriffe: updatedAngriffe,
+      apAusgegeben: (c.apAusgegeben ?? 0) + result.apKosten,
+    ));
+  }
+
+  Future<void> _raiseRk() async {
+    final c = _activeCompanion;
+    if (c == null || !_canRaiseFor(c)) return;
+    final stg = companionSteigerung(c, 'rk');
+    final apVerf = companionApVerfuegbar(c);
+    final maxWert = regMaxSteigerung(
+      aktuellerSteigerungswert: stg,
+      verfuegbareAp: apVerf,
+    );
+    final result = await showSteigerungsDialog(
+      context: context,
+      bezeichnung: 'Ritualkenntnis (Vertrauter)',
+      aktuellerWert: stg,
+      maxWert: maxWert,
+      effektiveKomplexitaet: kVertrauterKomplexitaet,
+      verfuegbareAp: apVerf,
+    );
+    if (result == null) return;
+    final neueSteigerungen = Map<String, int>.from(c.steigerungen);
+    neueSteigerungen['rk'] = result.neuerWert;
+    _saveCompanionImmediate(c.copyWith(
+      steigerungen: neueSteigerungen,
+      apAusgegeben: (c.apAusgegeben ?? 0) + result.apKosten,
+    ));
+  }
+
   void _navigateBack() {
     setState(() {
       _activeCompanionId = null;
@@ -323,6 +486,7 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
       final vertrautenmagieKat = activeCompanion.ritualCategories
           .where((c) => c.id == 'vertrautenmagie')
           .firstOrNull;
+      final canRaise = _canRaiseFor(activeCompanion);
       return Column(
         children: [
           const CodexTabHeader(
@@ -335,10 +499,16 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
             child: _BegleiterDetailView(
               companion: activeCompanion,
               isEditing: isEditing,
+              canRaise: canRaise,
               onBack: _navigateBack,
               onChanged: _updateCompanion,
               onDelete: () => _deleteCompanion(activeCompanion.id),
               onSaveImmediate: _saveCompanionImmediate,
+              onRaiseRegular: canRaise ? _raiseRegular : null,
+              onRaisePool: canRaise ? _raisePool : null,
+              onRaiseAngriffAt: canRaise ? _raiseAngriffAt : null,
+              onRaiseAngriffPa: canRaise ? _raiseAngriffPa : null,
+              onRaiseRk: canRaise ? _raiseRk : null,
               vertrautenmagieKategorie: vertrautenmagieKat,
             ),
           ),

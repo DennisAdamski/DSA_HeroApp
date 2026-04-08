@@ -1,7 +1,7 @@
 /// Steigerungsregeln fuer Vertrautentiere.
 ///
 /// Alle Werte des Vertrauten werden nach Komplexitaet F gesteigert.
-/// Bei LeP, AsP und MR wird ab 0 gesteigert; das Maximum liegt bei
+/// Bei LeP, AuP, AsP und MR wird ab 0 gesteigert; das Maximum liegt bei
 /// 1,5 × Startwert.
 library;
 
@@ -15,7 +15,7 @@ const LearnCost kVertrauterKomplexitaet = LearnCost.f;
 int companionApVerfuegbar(HeroCompanion c) =>
     (c.apGesamt ?? 0) - (c.apAusgegeben ?? 0);
 
-/// Maximale Steigerungsstufe fuer Pool-Werte (LeP, AsP, MR).
+/// Maximale Steigerungsstufe fuer Pool-Werte (LeP, AuP, AsP, MR).
 ///
 /// Steigerung beginnt bei 0. Das Maximum ist `(1.5 * startwert).floor()`.
 int poolMaxSteigerung(int startwert) => (startwert * 1.5).floor();
@@ -57,11 +57,12 @@ const List<(String label, String key)> kCompanionKampfwertKeys = [
 /// Schluessel der Pool-Werte (Steigerung ab 0, Max = 1,5 × Startwert).
 const List<(String label, String key)> kCompanionPoolKeys = [
   ('LeP', 'lep'),
+  ('AuP', 'aup'),
   ('AsP', 'asp'),
   ('MR', 'mr'),
 ];
 
-/// Liest den Basiswert einer Eigenschaft vom Companion.
+/// Liest den Basiswert einer regulaeren Eigenschaft/Kampfwert vom Companion.
 int? companionBasiswert(HeroCompanion c, String key) {
   return switch (key) {
     'mu' => c.mu,
@@ -82,6 +83,7 @@ int? companionBasiswert(HeroCompanion c, String key) {
 int? companionPoolStartwert(HeroCompanion c, String key) {
   return switch (key) {
     'lep' => c.startLep,
+    'aup' => c.startAup,
     'asp' => c.startAsp,
     'mr' => c.startMr,
     _ => null,
@@ -92,6 +94,7 @@ int? companionPoolStartwert(HeroCompanion c, String key) {
 int? companionPoolBasiswert(HeroCompanion c, String key) {
   return switch (key) {
     'lep' => c.maxLep,
+    'aup' => c.maxAup,
     'asp' => c.maxAsp,
     'mr' => c.magieresistenz,
     _ => null,
@@ -119,3 +122,7 @@ int? companionEffektiverPoolwert(HeroCompanion c, String key) {
   if (startwert == null) return null;
   return startwert + companionSteigerung(c, key);
 }
+
+/// Effektiver RK-Wert (Basis-RK + Steigerung).
+int companionEffektiverRk(HeroCompanion c, int basisRk) =>
+    basisRk + companionSteigerung(c, 'rk');

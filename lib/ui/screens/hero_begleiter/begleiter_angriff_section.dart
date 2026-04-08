@@ -9,11 +9,15 @@ class _AngriffseSection extends StatelessWidget {
     required this.companion,
     required this.isEditing,
     required this.onChanged,
+    this.onRaiseAngriffAt,
+    this.onRaiseAngriffPa,
   });
 
   final HeroCompanion companion;
   final bool isEditing;
   final ValueChanged<HeroCompanion> onChanged;
+  final void Function(String attackId)? onRaiseAngriffAt;
+  final void Function(String attackId)? onRaiseAngriffPa;
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +86,12 @@ class _AngriffseSection extends StatelessWidget {
             _AngriffRow(
               angriff: angriffe[i],
               isEditing: isEditing,
+              onRaiseAt: onRaiseAngriffAt != null
+                  ? () => onRaiseAngriffAt!(angriffe[i].id)
+                  : null,
+              onRaisePa: onRaiseAngriffPa != null
+                  ? () => onRaiseAngriffPa!(angriffe[i].id)
+                  : null,
               onEdit: () async {
                 final ctx = context;
                 if (!ctx.mounted) return;
@@ -135,15 +145,29 @@ class _AngriffRow extends StatelessWidget {
     required this.isEditing,
     required this.onEdit,
     required this.onDelete,
+    this.onRaiseAt,
+    this.onRaisePa,
   });
 
   final HeroCompanionAttack angriff;
   final bool isEditing;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback? onRaiseAt;
+  final VoidCallback? onRaisePa;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // Effektive AT/PA: Basis + Steigerung (nur im View-Modus anzeigen).
+    final effAt = angriff.at != null
+        ? angriff.at! + angriff.steigerungAt
+        : null;
+    final effPa = angriff.pa != null
+        ? angriff.pa! + angriff.steigerungPa
+        : null;
+    final showAt = isEditing ? angriff.at : effAt;
+    final showPa = isEditing ? angriff.pa : effPa;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Column(
@@ -155,7 +179,7 @@ class _AngriffRow extends StatelessWidget {
                 flex: 3,
                 child: Text(
                   angriff.name.isEmpty ? '–' : angriff.name,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: theme.textTheme.bodyMedium,
                 ),
               ),
               SizedBox(
@@ -166,17 +190,45 @@ class _AngriffRow extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                width: 36,
-                child: Text(
-                  angriff.at != null ? '${angriff.at}' : '–',
-                  textAlign: TextAlign.center,
+                width: onRaiseAt != null ? 60 : 36,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      showAt != null ? '$showAt' : '–',
+                      textAlign: TextAlign.center,
+                      style: angriff.steigerungAt > 0
+                          ? TextStyle(color: theme.colorScheme.primary)
+                          : null,
+                    ),
+                    if (onRaiseAt != null && angriff.at != null)
+                      _RaiseIconButton(
+                        tooltip: 'AT steigern',
+                        onPressed: onRaiseAt!,
+                      ),
+                  ],
                 ),
               ),
               SizedBox(
-                width: 36,
-                child: Text(
-                  angriff.pa != null ? '${angriff.pa}' : '–',
-                  textAlign: TextAlign.center,
+                width: onRaisePa != null ? 60 : 36,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      showPa != null ? '$showPa' : '–',
+                      textAlign: TextAlign.center,
+                      style: angriff.steigerungPa > 0
+                          ? TextStyle(color: theme.colorScheme.primary)
+                          : null,
+                    ),
+                    if (onRaisePa != null && angriff.pa != null)
+                      _RaiseIconButton(
+                        tooltip: 'PA steigern',
+                        onPressed: onRaisePa!,
+                      ),
+                  ],
                 ),
               ),
               Expanded(
