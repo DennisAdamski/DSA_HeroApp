@@ -191,6 +191,10 @@ Ergaenzungen zur aktuellen Struktur:
   Custom-Dateien und den wirksamen Laufzeitkatalog.
 - `lib/data/custom_catalog_repository.dart` verwaltet synchronisierbare
   Custom-Katalogdateien im aktiven Heldenspeicher.
+- `lib/data/avatar_thumbnail_encoder.dart` reduziert lokale Avatar-PNGs
+  fuer Gruppen-Snapshots und Firestore-Sync auf kompakte Vorschaubilder;
+  wenn selbst das kleinste Thumbnail zu gross bleibt, wird kein Bild
+  synchronisiert.
 - `lib/ui/screens/catalog_management_screen.dart` und
   `lib/ui/screens/catalog_entry_editor_screen.dart` bilden die
   Settings-Katalogverwaltung inklusive JSON-Editor fuer

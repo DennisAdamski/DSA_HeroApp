@@ -12,16 +12,15 @@ import 'package:dsa_heldenverwaltung/domain/gruppen_snapshot.dart';
 /// Verwaltet die Firestore-Collection `gruppen/{gruppenCode}/mitglieder`
 /// und synchronisiert Visitenkarten zwischen Geraeten.
 class GruppenSyncService {
-  GruppenSyncService({
-    FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+  GruppenSyncService({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
   static const _uuid = Uuid();
 
   /// Aktive Listener pro gruppenCode.
   final Map<String, StreamSubscription<QuerySnapshot<Map<String, dynamic>>>>
-      _activeListeners = {};
+  _activeListeners = {};
 
   // ---------------------------------------------------------------------------
   // Gruppe erstellen / pruefen
@@ -64,7 +63,7 @@ class GruppenSyncService {
         .doc(gruppenCode)
         .collection('mitglieder')
         .doc(karte.heroId)
-        .set(karte.toJson());
+        .set(karte.toFirestoreJson());
   }
 
   /// Entfernt einen Helden aus einer Firestore-Gruppe.
@@ -117,25 +116,25 @@ class GruppenSyncService {
         .collection('mitglieder')
         .snapshots()
         .listen((snapshot) {
-      for (final change in snapshot.docChanges) {
-        final data = change.doc.data();
-        if (data == null) continue;
+          for (final change in snapshot.docChanges) {
+            final data = change.doc.data();
+            if (data == null) continue;
 
-        final heroId = data['heroId'] as String? ?? change.doc.id;
-        if (heroId == eigenerHeroId) continue;
+            final heroId = data['heroId'] as String? ?? change.doc.id;
+            if (heroId == eigenerHeroId) continue;
 
-        if (change.type == DocumentChangeType.removed) {
-          // Entfernter Held — nur aus lokalem Cache loeschen, wenn keine
-          // andere Gruppe ihn referenziert. Das kann der Caller steuern.
-          continue;
-        }
+            if (change.type == DocumentChangeType.removed) {
+              // Entfernter Held — nur aus lokalem Cache loeschen, wenn keine
+              // andere Gruppe ihn referenziert. Das kann der Caller steuern.
+              continue;
+            }
 
-        // Visitenkarte als ExternerHeld speichern.
-        final karte = HeldVisitenkarte.fromJson(data);
-        final externer = ExternerHeld.fromVisitenkarte(karte);
-        externeHeldenRepo.save(externer);
-      }
-    });
+            // Visitenkarte als ExternerHeld speichern.
+            final karte = HeldVisitenkarte.fromJson(data);
+            final externer = ExternerHeld.fromVisitenkarte(karte);
+            externeHeldenRepo.save(externer);
+          }
+        });
 
     _activeListeners[gruppenCode] = subscription;
     return subscription;

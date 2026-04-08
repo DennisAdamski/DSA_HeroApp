@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/data/avatar_api_client.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_file_storage.dart';
+import 'package:dsa_heldenverwaltung/data/avatar_thumbnail_encoder.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_snapshot_diff.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -31,14 +32,21 @@ final avatarFileStorageProvider = Provider<AvatarFileStorage>((ref) {
   return const AvatarFileStorage();
 });
 
+/// Erzeugt kompakte PNG-Thumbnails fuer Gruppen-Sync und -Export.
+final avatarThumbnailEncoderProvider = Provider<AvatarThumbnailEncoder>((ref) {
+  return const AvatarThumbnailEncoder();
+});
+
 /// Ob der aktive Provider Referenzbild-basierte Generierung unterstuetzt.
 final avatarSupportsReferenceProvider = Provider<bool>((ref) {
   return ref.watch(avatarApiClientProvider)?.supportsReferenceImage ?? false;
 });
 
 /// Laedt die PNG-Bytes des Primaerbilds eines Helden.
-final primaerbildBytesProvider =
-    FutureProvider.family<List<int>?, String>((ref, heroId) async {
+final primaerbildBytesProvider = FutureProvider.family<List<int>?, String>((
+  ref,
+  heroId,
+) async {
   final hero = ref.watch(heroByIdProvider(heroId));
   if (hero == null) return null;
 
@@ -59,13 +67,14 @@ final primaerbildBytesProvider =
 });
 
 /// Berechnet den Snapshot-Diff zwischen Primaerbild-Snapshot und aktuellem Held.
-final avatarSnapshotDiffProvider =
-    Provider.family<AvatarSnapshotDiff?, String>((ref, heroId) {
-  final hero = ref.watch(heroByIdProvider(heroId));
-  if (hero == null) return null;
+final avatarSnapshotDiffProvider = Provider.family<AvatarSnapshotDiff?, String>(
+  (ref, heroId) {
+    final hero = ref.watch(heroByIdProvider(heroId));
+    if (hero == null) return null;
 
-  final snapshot = hero.appearance.avatarSnapshot;
-  if (snapshot == null) return null;
+    final snapshot = hero.appearance.avatarSnapshot;
+    if (snapshot == null) return null;
 
-  return computeAvatarSnapshotDiff(snapshot, hero);
-});
+    return computeAvatarSnapshotDiff(snapshot, hero);
+  },
+);

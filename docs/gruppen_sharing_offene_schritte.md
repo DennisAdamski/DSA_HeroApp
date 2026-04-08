@@ -41,6 +41,13 @@ cd macos && pod install && cd ..
 
 Aktuell existieren keine Sicherheitsregeln. Die Datenbank ist vollstaendig offen.
 
+Hinweis zum aktuellen Payload-Verhalten:
+- `avatarThumbnailBase64` wird beim Sync nur noch als kompaktes PNG-Thumbnail
+  uebertragen.
+- Wenn selbst das kleinste Thumbnail die sichere Groessenobergrenze
+  ueberschreitet, wird das Feld weggelassen und die UI zeigt einen
+  Platzhalter-Avatar.
+
 ### Was zu tun ist
 In der Firebase-Konsole oder via `firestore.rules` im Projekt:
 
