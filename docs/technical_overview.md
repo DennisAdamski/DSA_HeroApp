@@ -285,6 +285,8 @@ In `HeroSheet` werden `persistentMods` (aus geparsten Vor-/Nachteilen, dauerhaft
 | `isOneHanded` | `bool` | Einhändig vs. zweihändig |
 | `isArtifact` | `bool` | Markiert die Waffe als Artefakt |
 | `artifactDescription` | `String` | Freitext-Beschreibung des Artefakts |
+| `isGeweiht` | `bool` | Markiert die Waffe als geweiht |
+| `geweihtDescription` | `String` | Freitext-Beschreibung der Weihe |
 | `rangedProfile` | `RangedWeaponProfile?` | Zusatzdaten für Distanzstufen, Ladezeit und Geschosse |
 
 `CombatConfig.weaponSlots` gibt `[mainWeapon]` zurück falls `weapons` leer ist (Legacy-
@@ -525,7 +527,7 @@ JSON-Referenzformat liegt unter
 
 Repraesentiert einen Inventargegenstand. Legacy-Stringfelder bleiben fuer
 Rueckwaertskompatibilitaet erhalten; zusaetzlich existieren typisierte
-Inventarfelder fuer Quelle, Gewicht, Wert und Modifier.
+Inventarfelder fuer Quelle, Gewicht, Wert, Modifier und magisch/geweiht.
 
 | Feld | Bedeutung |
 |---|---|
@@ -535,7 +537,7 @@ Inventarfelder fuer Quelle, Gewicht, Wert und Modifier.
 | `welchesAbenteuer` | In welchem Abenteuer erworben |
 | `gewicht` | Gewicht |
 | `wert` | Wert |
-| `artefakt` | Artefakt-Kennzeichnung |
+| `artefakt` | Legacy-Artefakt-Kennzeichnung fuer Altbestaende |
 | `anzahl` | Menge |
 | `amKoerper` | Am Körper getragen? |
 | `woDann` | Aufbewahrungsort |
@@ -549,6 +551,8 @@ Inventarfelder fuer Quelle, Gewicht, Wert und Modifier.
 | `gewichtGramm` | Numerisches Gewicht in Gramm |
 | `wertSilber` | Numerischer Wert in Silbertalern |
 | `herkunft` | Fundort, Quelle oder Haendler |
+| `isMagisch` / `magischDescription` | Magische Markierung und Beschreibung |
+| `isGeweiht` / `geweihtDescription` | Geweihte Markierung und Beschreibung |
 | `traegerTyp` / `traegerId` | Zuordnung zum Helden oder zu einem Begleiter |
 
 ---

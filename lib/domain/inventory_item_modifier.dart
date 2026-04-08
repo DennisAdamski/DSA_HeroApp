@@ -1,5 +1,5 @@
-/// Art eines Inventar-Modifikators: Stat, Attribut oder Talent.
-enum InventoryModifierKind { stat, attribut, talent }
+/// Art eines Inventar-Modifikators: Stat, Attribut, Talent oder Talentgruppe.
+enum InventoryModifierKind { stat, attribut, talent, talentgruppe }
 
 /// Kategorie eines Inventar-Eintrags.
 enum InventoryItemType { ausruestung, verbrauchsgegenstand, wertvolles, sonstiges }
@@ -40,6 +40,9 @@ bool isCombatLinkedInventorySource(InventoryItemSource source) {
 /// - [InventoryModifierKind.attribut]: [targetId] ist ein Attribut-Key
 ///   (`'mu'`, `'kl'`, `'inn'`, `'ch'`, `'ff'`, `'ge'`, `'ko'`, `'kk'`).
 /// - [InventoryModifierKind.talent]: [targetId] ist eine Talent-ID.
+/// - [InventoryModifierKind.talentgruppe]: [targetId] ist ein Gruppenname
+///   (z. B. `'Körperliche Talente'`); der Bonus gilt fuer alle Talente
+///   dieser Gruppe.
 class InventoryItemModifier {
   const InventoryItemModifier({
     required this.kind,

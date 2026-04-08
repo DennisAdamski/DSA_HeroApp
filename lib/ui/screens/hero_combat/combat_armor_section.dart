@@ -127,6 +127,8 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
             Text(widget.armor.pieces[i].isActive ? 'Ja' : 'Nein'),
             Text(widget.armor.pieces[i].isArtifact ? 'Ja' : 'Nein'),
             Text(_artifactDescriptionText(widget.armor.pieces[i])),
+            Text(widget.armor.pieces[i].isGeweiht ? 'Ja' : 'Nein'),
+            Text(_geweihtDescriptionText(widget.armor.pieces[i])),
             if (showPieceRg1)
               Text(widget.armor.pieces[i].rg1Active ? 'Ja' : 'Nein'),
             IconButton(
@@ -174,6 +176,8 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
                     const Text('Aktiv'),
                     const Text('Artefakt'),
                     const Text('Artefaktbeschreibung'),
+                    const Text('Geweiht'),
+                    const Text('Beschreibung (geweiht)'),
                     if (showPieceRg1) const Text('RG I'),
                     const Text('Aktion'),
                   ],
@@ -233,6 +237,8 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
       const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100),            // Aktiv
       const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),            // Artefakt
       const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2), // Artefaktbeschreibung
+      const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),            // Geweiht
+      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2), // Beschreibung (geweiht)
       if (showPieceRg1)
         const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100),          // RG I aktiv
       const AdaptiveTableColumnSpec.fixed(56),                               // Aktion
@@ -374,9 +380,11 @@ class _ArmorPieceEditorPanelState extends State<_ArmorPieceEditorPanel> {
   late final TextEditingController _rsController;
   late final TextEditingController _beController;
   late final TextEditingController _artifactDescriptionController;
+  late final TextEditingController _geweihtDescriptionController;
   late bool _isActive;
   late bool _rg1Active;
   late bool _isArtifact;
+  late bool _isGeweiht;
   String? _validationMessage;
 
   @override
@@ -392,9 +400,13 @@ class _ArmorPieceEditorPanelState extends State<_ArmorPieceEditorPanel> {
     _artifactDescriptionController = TextEditingController(
       text: widget.initialPiece.artifactDescription,
     );
+    _geweihtDescriptionController = TextEditingController(
+      text: widget.initialPiece.geweihtDescription,
+    );
     _isActive = widget.initialPiece.isActive;
     _rg1Active = widget.initialPiece.rg1Active;
     _isArtifact = widget.initialPiece.isArtifact;
+    _isGeweiht = widget.initialPiece.isGeweiht;
   }
 
   @override
@@ -403,6 +415,7 @@ class _ArmorPieceEditorPanelState extends State<_ArmorPieceEditorPanel> {
     _rsController.dispose();
     _beController.dispose();
     _artifactDescriptionController.dispose();
+    _geweihtDescriptionController.dispose();
     super.dispose();
   }
 
@@ -492,6 +505,30 @@ class _ArmorPieceEditorPanelState extends State<_ArmorPieceEditorPanel> {
               border: OutlineInputBorder(),
             ),
           ),
+          SwitchListTile(
+            key: const ValueKey<String>('combat-armor-form-geweiht'),
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Geweiht'),
+            value: _isGeweiht,
+            onChanged: (value) {
+              setState(() {
+                _isGeweiht = value;
+              });
+            },
+          ),
+          TextField(
+            key: const ValueKey<String>(
+              'combat-armor-form-geweiht-description',
+            ),
+            controller: _geweihtDescriptionController,
+            enabled: _isGeweiht,
+            minLines: 2,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              labelText: 'Beschreibung (geweiht)',
+              border: OutlineInputBorder(),
+            ),
+          ),
           if (widget.showRg1Toggle)
             SwitchListTile(
               key: const ValueKey<String>('combat-armor-form-rg1'),
@@ -554,6 +591,8 @@ class _ArmorPieceEditorPanelState extends State<_ArmorPieceEditorPanel> {
         be: parsedBe < 0 ? 0 : parsedBe,
         isArtifact: _isArtifact,
         artifactDescription: _artifactDescriptionController.text.trim(),
+        isGeweiht: _isGeweiht,
+        geweihtDescription: _geweihtDescriptionController.text.trim(),
       ),
     );
   }
@@ -584,6 +623,17 @@ String _artifactDescriptionText(ArmorPiece piece) {
     return '-';
   }
   final description = piece.artifactDescription.trim();
+  if (description.isEmpty) {
+    return '-';
+  }
+  return description;
+}
+
+String _geweihtDescriptionText(ArmorPiece piece) {
+  if (!piece.isGeweiht) {
+    return '-';
+  }
+  final description = piece.geweihtDescription.trim();
   if (description.isEmpty) {
     return '-';
   }
