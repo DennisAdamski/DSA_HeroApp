@@ -122,6 +122,9 @@ Technischer Stack:
 ### Datenimport und Kataloge
 
 - Import und Export kompletter Helden als JSON-Bundle
+- Gruppen-Snapshots und Firestore-Sync uebertragen Avatarbilder nur als
+  kompakte Vorschaubilder; wenn kein kleines Thumbnail erzeugt werden kann,
+  erscheint auf anderen Geraeten stattdessen der Platzhalter
 - Konfliktbehandlung beim Import vorhandener Helden
 - Katalogdaten aus `assets/catalogs/house_rules_v1/`
 - Settings-Bereich `Katalogverwaltung` zum Einsehen aller Basisdaten sowie zum

@@ -58,6 +58,9 @@ class ExternerHeld {
   bool get istManuell => !istVerknuepft;
 
   /// Erstellt einen [ExternerHeld] aus einer [HeldVisitenkarte].
+  ///
+  /// Manuell angelegte Helden (`karte.istManuell`) behalten
+  /// `quelleHeroId == null`, damit [istManuell] korrekt bleibt.
   factory ExternerHeld.fromVisitenkarte(
     HeldVisitenkarte karte, {
     String? id,
@@ -74,7 +77,7 @@ class ExternerHeld {
       maxAu: karte.maxAu,
       iniBase: karte.iniBase,
       avatarThumbnailBase64: karte.avatarThumbnailBase64,
-      quelleHeroId: karte.heroId,
+      quelleHeroId: karte.istManuell ? null : karte.heroId,
       updatedAt: karte.exportedAt,
     );
   }
