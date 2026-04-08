@@ -26,6 +26,8 @@ class MainWeaponSlot {
     this.isOneHanded = true,
     this.isArtifact = false,
     this.artifactDescription = '',
+    this.isGeweiht = false,
+    this.geweihtDescription = '',
     this.rangedProfile = const RangedWeaponProfile(),
   });
 
@@ -83,6 +85,12 @@ class MainWeaponSlot {
   /// Freitext-Beschreibung fuer das Artefakt.
   final String artifactDescription;
 
+  /// Kennzeichnet die Waffe als geweiht.
+  final bool isGeweiht;
+
+  /// Freitext-Beschreibung fuer den geweihten Gegenstand.
+  final String geweihtDescription;
+
   /// Zusatzprofil fuer Fernkampfwaffen.
   final RangedWeaponProfile rangedProfile;
 
@@ -111,6 +119,8 @@ class MainWeaponSlot {
     bool? isOneHanded,
     bool? isArtifact,
     String? artifactDescription,
+    bool? isGeweiht,
+    String? geweihtDescription,
     RangedWeaponProfile? rangedProfile,
   }) {
     return MainWeaponSlot(
@@ -133,6 +143,8 @@ class MainWeaponSlot {
       isOneHanded: isOneHanded ?? this.isOneHanded,
       isArtifact: isArtifact ?? this.isArtifact,
       artifactDescription: artifactDescription ?? this.artifactDescription,
+      isGeweiht: isGeweiht ?? this.isGeweiht,
+      geweihtDescription: geweihtDescription ?? this.geweihtDescription,
       rangedProfile: rangedProfile ?? this.rangedProfile,
     );
   }
@@ -159,6 +171,8 @@ class MainWeaponSlot {
       'isOneHanded': isOneHanded,
       'isArtifact': isArtifact,
       'artifactDescription': artifactDescription,
+      'isGeweiht': isGeweiht,
+      'geweihtDescription': geweihtDescription,
       'rangedProfile': rangedProfile.toJson(),
     };
   }
@@ -207,6 +221,8 @@ class MainWeaponSlot {
       isOneHanded: (json['isOneHanded'] as bool?) ?? true,
       isArtifact: (json['isArtifact'] as bool?) ?? false,
       artifactDescription: getString('artifactDescription'),
+      isGeweiht: (json['isGeweiht'] as bool?) ?? false,
+      geweihtDescription: getString('geweihtDescription'),
       rangedProfile: RangedWeaponProfile.fromJson(getMap('rangedProfile')),
     );
   }

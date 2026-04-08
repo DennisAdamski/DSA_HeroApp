@@ -11,11 +11,13 @@ class WeaponBasicInfoSection extends StatelessWidget {
     super.key,
     required this.nameController,
     required this.artifactDescriptionController,
+    required this.geweihtDescriptionController,
     required this.combatType,
     required this.weaponType,
     required this.distanceClassController,
     required this.isOneHanded,
     required this.isArtifact,
+    required this.isGeweiht,
     required this.weaponTypeOptions,
     required this.talentOptions,
     required this.selectedTalentId,
@@ -27,15 +29,19 @@ class WeaponBasicInfoSection extends StatelessWidget {
     required this.onOneHandedChanged,
     required this.onArtifactChanged,
     required this.onArtifactDescriptionChanged,
+    required this.onGeweihtChanged,
+    required this.onGeweihtDescriptionChanged,
   });
 
   final TextEditingController nameController;
   final TextEditingController artifactDescriptionController;
+  final TextEditingController geweihtDescriptionController;
   final TextEditingController distanceClassController;
   final WeaponCombatType combatType;
   final String weaponType;
   final bool isOneHanded;
   final bool isArtifact;
+  final bool isGeweiht;
   final List<String> weaponTypeOptions;
   final List<TalentDef> talentOptions;
   final String selectedTalentId;
@@ -47,6 +53,8 @@ class WeaponBasicInfoSection extends StatelessWidget {
   final ValueChanged<bool> onOneHandedChanged;
   final ValueChanged<bool> onArtifactChanged;
   final ValueChanged<String> onArtifactDescriptionChanged;
+  final ValueChanged<bool> onGeweihtChanged;
+  final ValueChanged<String> onGeweihtDescriptionChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -205,6 +213,28 @@ class WeaponBasicInfoSection extends StatelessWidget {
               border: OutlineInputBorder(),
             ),
             onChanged: (value) => onArtifactDescriptionChanged(value.trim()),
+          ),
+          const SizedBox(height: 12),
+          SwitchListTile(
+            key: const ValueKey<String>('combat-weapon-form-geweiht'),
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Geweiht'),
+            value: isGeweiht,
+            onChanged: onGeweihtChanged,
+          ),
+          TextField(
+            key: const ValueKey<String>(
+              'combat-weapon-form-geweiht-description',
+            ),
+            controller: geweihtDescriptionController,
+            enabled: isGeweiht,
+            minLines: 2,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              labelText: 'Beschreibung (geweiht)',
+              border: OutlineInputBorder(),
+            ),
+            onChanged: (value) => onGeweihtDescriptionChanged(value.trim()),
           ),
         ],
       ),

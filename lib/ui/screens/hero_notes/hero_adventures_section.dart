@@ -12,7 +12,6 @@ class _AdventuresSection extends StatelessWidget {
     required this.onMoveSelectedDown,
     required this.onTitleChanged,
     required this.onSummaryChanged,
-    required this.onStatusChanged,
     required this.onStartWorldDateChanged,
     required this.onStartAventurianDateChanged,
     required this.onEndWorldDateChanged,
@@ -22,15 +21,8 @@ class _AdventuresSection extends StatelessWidget {
     required this.onOpenNote,
     required this.onAddPerson,
     required this.onOpenPerson,
-    required this.onApRewardChanged,
-    required this.onAddSeReward,
-    required this.onRemoveSeReward,
-    required this.onSeRewardTypeChanged,
-    required this.onSeRewardTargetChanged,
-    required this.onSeRewardCountChanged,
-    required this.onApplyRewards,
-    required this.onRevokeRewards,
-    required this.targetOptionsForType,
+    required this.onCompleteAdventure,
+    required this.onReopenAdventure,
     required this.revokeCheckForAdventure,
   });
 
@@ -44,7 +36,6 @@ class _AdventuresSection extends StatelessWidget {
   final VoidCallback onMoveSelectedDown;
   final ValueChanged<String> onTitleChanged;
   final ValueChanged<String> onSummaryChanged;
-  final ValueChanged<HeroAdventureStatus> onStatusChanged;
   final ValueChanged<HeroAdventureDateValue> onStartWorldDateChanged;
   final ValueChanged<HeroAdventureDateValue> onStartAventurianDateChanged;
   final ValueChanged<HeroAdventureDateValue> onEndWorldDateChanged;
@@ -54,22 +45,8 @@ class _AdventuresSection extends StatelessWidget {
   final Future<void> Function(int noteIndex) onOpenNote;
   final Future<void> Function() onAddPerson;
   final Future<void> Function(int personIndex) onOpenPerson;
-  final ValueChanged<String> onApRewardChanged;
-  final VoidCallback onAddSeReward;
-  final void Function(int rewardIndex) onRemoveSeReward;
-  final void Function(int rewardIndex, HeroAdventureSeTargetType type)
-  onSeRewardTypeChanged;
-  final void Function(
-    int rewardIndex, {
-    required String targetId,
-    required String targetLabel,
-  })
-  onSeRewardTargetChanged;
-  final void Function(int rewardIndex, String rawValue) onSeRewardCountChanged;
-  final Future<void> Function(String adventureId) onApplyRewards;
-  final Future<void> Function(String adventureId) onRevokeRewards;
-  final List<_AdventureTargetOption> Function(HeroAdventureSeTargetType type)
-  targetOptionsForType;
+  final Future<void> Function(String adventureId) onCompleteAdventure;
+  final Future<void> Function(String adventureId) onReopenAdventure;
   final AdventureRewardRevokeCheck Function(String adventureId)
   revokeCheckForAdventure;
 
@@ -124,14 +101,12 @@ class _AdventuresSection extends StatelessWidget {
                         selectedIndex: selectedIndex,
                         totalEntries: entries.length,
                         isEditing: isEditing,
-                        targetOptionsForType: targetOptionsForType,
                         revokeCheck: revokeCheckForAdventure(selectedEntry.id),
                         onMoveUp: onMoveSelectedUp,
                         onMoveDown: onMoveSelectedDown,
                         onRemove: onRemoveSelected,
                         onTitleChanged: onTitleChanged,
                         onSummaryChanged: onSummaryChanged,
-                        onStatusChanged: onStatusChanged,
                         onStartWorldDateChanged: onStartWorldDateChanged,
                         onStartAventurianDateChanged:
                             onStartAventurianDateChanged,
@@ -143,14 +118,8 @@ class _AdventuresSection extends StatelessWidget {
                         onOpenNote: onOpenNote,
                         onAddPerson: onAddPerson,
                         onOpenPerson: onOpenPerson,
-                        onApRewardChanged: onApRewardChanged,
-                        onAddSeReward: onAddSeReward,
-                        onRemoveSeReward: onRemoveSeReward,
-                        onSeRewardTypeChanged: onSeRewardTypeChanged,
-                        onSeRewardTargetChanged: onSeRewardTargetChanged,
-                        onSeRewardCountChanged: onSeRewardCountChanged,
-                        onApplyRewards: onApplyRewards,
-                        onRevokeRewards: onRevokeRewards,
+                        onCompleteAdventure: onCompleteAdventure,
+                        onReopenAdventure: onReopenAdventure,
                       ),
                   ],
                 ),
@@ -211,14 +180,12 @@ class _AdventureDetailCard extends StatelessWidget {
     required this.selectedIndex,
     required this.totalEntries,
     required this.isEditing,
-    required this.targetOptionsForType,
     required this.revokeCheck,
     required this.onMoveUp,
     required this.onMoveDown,
     required this.onRemove,
     required this.onTitleChanged,
     required this.onSummaryChanged,
-    required this.onStatusChanged,
     required this.onStartWorldDateChanged,
     required this.onStartAventurianDateChanged,
     required this.onEndWorldDateChanged,
@@ -228,29 +195,20 @@ class _AdventureDetailCard extends StatelessWidget {
     required this.onOpenNote,
     required this.onAddPerson,
     required this.onOpenPerson,
-    required this.onApRewardChanged,
-    required this.onAddSeReward,
-    required this.onRemoveSeReward,
-    required this.onSeRewardTypeChanged,
-    required this.onSeRewardTargetChanged,
-    required this.onSeRewardCountChanged,
-    required this.onApplyRewards,
-    required this.onRevokeRewards,
+    required this.onCompleteAdventure,
+    required this.onReopenAdventure,
   });
 
   final HeroAdventureEntry entry;
   final int selectedIndex;
   final int totalEntries;
   final bool isEditing;
-  final List<_AdventureTargetOption> Function(HeroAdventureSeTargetType type)
-  targetOptionsForType;
   final AdventureRewardRevokeCheck revokeCheck;
   final VoidCallback onMoveUp;
   final VoidCallback onMoveDown;
   final VoidCallback onRemove;
   final ValueChanged<String> onTitleChanged;
   final ValueChanged<String> onSummaryChanged;
-  final ValueChanged<HeroAdventureStatus> onStatusChanged;
   final ValueChanged<HeroAdventureDateValue> onStartWorldDateChanged;
   final ValueChanged<HeroAdventureDateValue> onStartAventurianDateChanged;
   final ValueChanged<HeroAdventureDateValue> onEndWorldDateChanged;
@@ -260,24 +218,33 @@ class _AdventureDetailCard extends StatelessWidget {
   final Future<void> Function(int noteIndex) onOpenNote;
   final Future<void> Function() onAddPerson;
   final Future<void> Function(int personIndex) onOpenPerson;
-  final ValueChanged<String> onApRewardChanged;
-  final VoidCallback onAddSeReward;
-  final void Function(int rewardIndex) onRemoveSeReward;
-  final void Function(int rewardIndex, HeroAdventureSeTargetType type)
-  onSeRewardTypeChanged;
-  final void Function(
-    int rewardIndex, {
-    required String targetId,
-    required String targetLabel,
-  })
-  onSeRewardTargetChanged;
-  final void Function(int rewardIndex, String rawValue) onSeRewardCountChanged;
-  final Future<void> Function(String adventureId) onApplyRewards;
-  final Future<void> Function(String adventureId) onRevokeRewards;
+  final Future<void> Function(String adventureId) onCompleteAdventure;
+  final Future<void> Function(String adventureId) onReopenAdventure;
 
   @override
   Widget build(BuildContext context) {
     final rewardLocked = entry.rewardsApplied;
+    final completionAction = switch (entry.status) {
+      HeroAdventureStatus.current => FilledButton.icon(
+        key: ValueKey<String>('notes-adventure-complete-${entry.id}'),
+        onPressed: () => onCompleteAdventure(entry.id),
+        icon: const Icon(Icons.check_circle_outline),
+        label: const Text('Abschließen'),
+      ),
+      HeroAdventureStatus.completed => Tooltip(
+        message: revokeCheck.isAllowed
+            ? 'Abschluss zurücknehmen'
+            : revokeCheck.reason,
+        child: FilledButton.tonalIcon(
+          key: ValueKey<String>('notes-adventure-reopen-${entry.id}'),
+          onPressed: revokeCheck.isAllowed
+              ? () => onReopenAdventure(entry.id)
+              : null,
+          icon: const Icon(Icons.undo),
+          label: const Text('Abschluss zurücknehmen'),
+        ),
+      ),
+    };
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -294,6 +261,7 @@ class _AdventureDetailCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
+                if (!isEditing) ...[completionAction, const SizedBox(width: 8)],
                 if (isEditing) ...[
                   IconButton(
                     key: ValueKey<String>(
@@ -327,7 +295,7 @@ class _AdventureDetailCard extends StatelessWidget {
             if (rewardLocked && isEditing) ...[
               const SizedBox(height: 8),
               Text(
-                'Belohnungen wurden bereits angewendet. AP und Sondererfahrungen sind gesperrt, bis sie zurückgenommen werden.',
+                'Belohnungen, Dukaten und Abschluss-Gegenstände sind gesperrt, bis der Abschluss zurückgenommen wird.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -369,18 +337,11 @@ class _AdventureDetailCard extends StatelessWidget {
               ),
             ],
             const SizedBox(height: _notesFieldSpacing),
-            if (isEditing)
-              _AdventureStatusField(
-                currentValue: entry.status,
-                fieldKeyPrefix: 'notes-adventure-status-${entry.id}',
-                onChanged: onStatusChanged,
-              )
-            else
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [Chip(label: Text(_statusLabel(entry.status)))],
-              ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [Chip(label: Text(_statusLabel(entry.status)))],
+            ),
             const SizedBox(height: _notesFieldSpacing),
             _AdventureDateBlock(
               title: 'Start des Abenteuers',
@@ -397,7 +358,7 @@ class _AdventureDetailCard extends StatelessWidget {
             _AdventureDateBlock(
               title: 'Ende des Abenteuers',
               entryId: entry.id,
-              isEditing: isEditing,
+              isEditing: false,
               worldDate: entry.endWorldDate,
               aventurianDate: entry.endAventurianDate,
               worldPrefix: 'notes-adventure-end-world',
@@ -408,7 +369,6 @@ class _AdventureDetailCard extends StatelessWidget {
             const SizedBox(height: _notesFieldSpacing),
             _AdventureCurrentDateBlock(
               entryId: entry.id,
-              isEditing: isEditing,
               date: entry.currentAventurianDate,
               onChanged: onCurrentAventurianDateChanged,
             ),
@@ -427,25 +387,18 @@ class _AdventureDetailCard extends StatelessWidget {
             const SizedBox(height: _notesFieldSpacing),
             _AdventureSubsectionHeader(title: 'Belohnungen'),
             const SizedBox(height: 8),
-            if (isEditing)
-              _EditableAdventureRewards(
-                entry: entry,
-                rewardLocked: rewardLocked,
-                targetOptionsForType: targetOptionsForType,
-                onApRewardChanged: onApRewardChanged,
-                onAddSeReward: onAddSeReward,
-                onRemoveSeReward: onRemoveSeReward,
-                onSeRewardTypeChanged: onSeRewardTypeChanged,
-                onSeRewardTargetChanged: onSeRewardTargetChanged,
-                onSeRewardCountChanged: onSeRewardCountChanged,
-              )
-            else
-              _ReadOnlyAdventureRewards(
-                entry: entry,
-                revokeCheck: revokeCheck,
-                onApplyRewards: onApplyRewards,
-                onRevokeRewards: onRevokeRewards,
+            _ReadOnlyAdventureRewards(entry: entry),
+            if (isEditing) ...[
+              const SizedBox(height: 8),
+              Text(
+                'AP und Sondererfahrungen werden im Abschließen-Dialog erfasst.',
+                style: Theme.of(context).textTheme.bodySmall,
               ),
+            ],
+            const SizedBox(height: _notesFieldSpacing),
+            _AdventureSubsectionHeader(title: 'Abschluss'),
+            const SizedBox(height: 8),
+            _AdventureCompletionSummary(entry: entry),
           ],
         ),
       ),
@@ -557,13 +510,11 @@ class _AdventureDateBlock extends StatelessWidget {
 class _AdventureCurrentDateBlock extends StatelessWidget {
   const _AdventureCurrentDateBlock({
     required this.entryId,
-    required this.isEditing,
     required this.date,
     required this.onChanged,
   });
 
   final String entryId;
-  final bool isEditing;
   final HeroAdventureDateValue date;
   final ValueChanged<HeroAdventureDateValue> onChanged;
 
@@ -574,20 +525,13 @@ class _AdventureCurrentDateBlock extends StatelessWidget {
       children: [
         _AdventureSubsectionHeader(title: 'Aktuelles Datum'),
         const SizedBox(height: 8),
-        if (isEditing)
-          _AdventureDateEditor(
-            title: 'Aventurisch',
-            keyPrefix: 'notes-adventure-current-aventurian-$entryId',
-            value: date,
-            usesAventurianMonthPicker: true,
-            onChanged: onChanged,
-          )
-        else
-          _ReadOnlyTextBlock(
-            title: 'Aventurisch',
-            value: _formatDateValue(date, usesAventurianMonthLabel: true),
-            emptyValue: 'Nicht gepflegt.',
-          ),
+        _AdventureDateEditor(
+          title: 'Aventurisch',
+          keyPrefix: 'notes-adventure-current-aventurian-$entryId',
+          value: date,
+          usesAventurianMonthPicker: true,
+          onChanged: onChanged,
+        ),
       ],
     );
   }
@@ -1007,11 +951,6 @@ class _EditableAdventureSeRewardCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final targetValue = entry.targetId.trim();
-    final resolvedTargetValue =
-        targetOptions.any((option) => option.id == targetValue)
-        ? targetValue
-        : null;
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -1070,38 +1009,67 @@ class _EditableAdventureSeRewardCard extends StatelessWidget {
                     },
             ),
             const SizedBox(height: _notesFieldSpacing),
-            DropdownButtonFormField<String>(
+            Autocomplete<_AdventureTargetOption>(
               key: ValueKey<String>(
-                'notes-adventure-se-target-$adventureId-$rewardIndex',
+                'notes-adventure-se-target-$adventureId-$rewardIndex-${entry.targetType.name}-${entry.targetId}',
               ),
-              initialValue: resolvedTargetValue,
-              decoration: const InputDecoration(
-                labelText: 'Ziel',
-                border: OutlineInputBorder(),
+              initialValue: TextEditingValue(
+                text: entry.targetLabel.isNotEmpty
+                    ? entry.targetLabel
+                    : entry.targetId,
               ),
-              items: targetOptions
-                  .map(
-                    (option) => DropdownMenuItem<String>(
-                      value: option.id,
-                      child: Text(option.label),
-                    ),
-                  )
-                  .toList(growable: false),
-              onChanged: rewardLocked
+              displayStringForOption: (o) => o.label,
+              optionsBuilder: (value) {
+                if (value.text.isEmpty) return targetOptions;
+                final query = value.text.toLowerCase();
+                return targetOptions.where(
+                  (o) =>
+                      o.label.toLowerCase().contains(query) ||
+                      o.id.toLowerCase().contains(query),
+                );
+              },
+              onSelected: rewardLocked
                   ? null
-                  : (value) {
-                      if (value == null) {
-                        return;
-                      }
-                      final option = targetOptions
-                          .where((candidate) => candidate.id == value)
-                          .firstOrNull;
-                      onTargetChanged(
+                  : (option) => onTargetChanged(
                         rewardIndex,
-                        targetId: value,
-                        targetLabel: option?.label ?? value,
-                      );
-                    },
+                        targetId: option.id,
+                        targetLabel: option.label,
+                      ),
+              fieldViewBuilder: (context, ctrl, focusNode, onSubmitted) {
+                return TextField(
+                  controller: ctrl,
+                  focusNode: focusNode,
+                  enabled: !rewardLocked,
+                  decoration: const InputDecoration(
+                    labelText: 'Ziel',
+                    border: OutlineInputBorder(),
+                  ),
+                );
+              },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 4,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 220),
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        itemBuilder: (_, i) {
+                          final o = options.elementAt(i);
+                          return ListTile(
+                            dense: true,
+                            title: Text(o.label),
+                            onTap: () => onSelected(o),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: _notesFieldSpacing),
             TextFormField(
@@ -1127,65 +1095,59 @@ class _EditableAdventureSeRewardCard extends StatelessWidget {
 }
 
 class _ReadOnlyAdventureRewards extends StatelessWidget {
-  const _ReadOnlyAdventureRewards({
-    required this.entry,
-    required this.revokeCheck,
-    required this.onApplyRewards,
-    required this.onRevokeRewards,
-  });
+  const _ReadOnlyAdventureRewards({required this.entry});
 
   final HeroAdventureEntry entry;
-  final AdventureRewardRevokeCheck revokeCheck;
-  final Future<void> Function(String adventureId) onApplyRewards;
-  final Future<void> Function(String adventureId) onRevokeRewards;
 
   @override
   Widget build(BuildContext context) {
-    if (!entry.hasRewards) {
-      return const Text('Keine Belohnungen definiert.');
+    final rewardWidgets = <Widget>[
+      if (entry.apReward > 0) Chip(label: Text('+${entry.apReward} AP')),
+      ...entry.seRewards
+          .where((reward) => reward.hasContent)
+          .map(
+            (reward) =>
+                Chip(label: Text('${reward.count}× ${_rewardLabel(reward)}')),
+          ),
+    ];
+    if (rewardWidgets.isEmpty) {
+      return const Text('Keine AP- oder SE-Belohnungen definiert.');
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            if (entry.apReward > 0) Chip(label: Text('+${entry.apReward} AP')),
-            ...entry.seRewards
-                .where((reward) => reward.hasContent)
-                .map(
-                  (reward) => Chip(
-                    label: Text('${reward.count}× ${_rewardLabel(reward)}'),
-                  ),
-                ),
-          ],
+    return Wrap(spacing: 8, runSpacing: 8, children: rewardWidgets);
+  }
+}
+
+class _AdventureCompletionSummary extends StatelessWidget {
+  const _AdventureCompletionSummary({required this.entry});
+
+  final HeroAdventureEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final lootEntries = entry.lootRewards
+        .where((loot) => loot.hasContent)
+        .toList(growable: false);
+    final rewardParts = <Widget>[
+      if (entry.dukatenReward > 0)
+        Chip(
+          label: Text('${_formatDukatenReward(entry.dukatenReward)} Dukaten'),
         ),
-        const SizedBox(height: 12),
-        if (entry.rewardsApplied)
-          Tooltip(
-            message: revokeCheck.isAllowed
-                ? 'Belohnungen zurücknehmen'
-                : revokeCheck.reason,
-            child: FilledButton.tonalIcon(
-              key: ValueKey<String>('notes-adventure-revoke-${entry.id}'),
-              onPressed: revokeCheck.isAllowed
-                  ? () => onRevokeRewards(entry.id)
-                  : null,
-              icon: const Icon(Icons.undo),
-              label: const Text('Belohnungen zurücknehmen'),
-            ),
-          )
-        else
-          FilledButton.icon(
-            key: ValueKey<String>('notes-adventure-apply-${entry.id}'),
-            onPressed: () => onApplyRewards(entry.id),
-            icon: const Icon(Icons.check_circle_outline),
-            label: const Text('Belohnungen anwenden'),
+      for (final loot in lootEntries)
+        Chip(
+          label: Text(
+            loot.quantity.trim().isEmpty
+                ? _lootRewardLabel(loot)
+                : '${loot.quantity.trim()}× ${_lootRewardLabel(loot)}',
           ),
-      ],
-    );
+        ),
+    ];
+
+    if (rewardParts.isEmpty) {
+      return const Text('Keine Dukaten oder Gegenstände hinterlegt.');
+    }
+
+    return Wrap(spacing: 8, runSpacing: 8, children: rewardParts);
   }
 }
 
@@ -1222,13 +1184,33 @@ class _AdventureSubsectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(title, style: Theme.of(context).textTheme.titleSmall),
-        ),
-        ...?action == null ? null : <Widget>[action!],
-      ],
+    if (action == null) {
+      return Text(title, style: Theme.of(context).textTheme.titleSmall);
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final shouldStackAction = constraints.maxWidth <= 320;
+        if (shouldStackAction) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(height: 4),
+              Align(alignment: Alignment.centerRight, child: action!),
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(
+              child: Text(title, style: Theme.of(context).textTheme.titleSmall),
+            ),
+            action!,
+          ],
+        );
+      },
     );
   }
 }
@@ -1286,4 +1268,21 @@ String _rewardLabel(HeroAdventureSeReward reward) {
     return label;
   }
   return reward.targetId.trim().isEmpty ? 'Zielwert' : reward.targetId;
+}
+
+String _lootRewardLabel(HeroAdventureLootEntry loot) {
+  final label = loot.name.trim();
+  return label.isEmpty ? 'Gegenstand' : label;
+}
+
+String _formatDukatenReward(double value) {
+  final isWhole = value == value.roundToDouble();
+  if (isWhole) {
+    return value.round().toString();
+  }
+  final trimmed = value
+      .toStringAsFixed(2)
+      .replaceFirst(RegExp(r'0+$'), '')
+      .replaceFirst(RegExp(r'\.$'), '');
+  return trimmed.replaceAll('.', ',');
 }

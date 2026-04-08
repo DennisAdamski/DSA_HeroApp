@@ -48,6 +48,8 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
   late TextEditingController _wertCtrl;
   late TextEditingController _herkunftCtrl;
   late TextEditingController _beschreibungCtrl;
+  late TextEditingController _magischDescriptionCtrl;
+  late TextEditingController _geweihtDescriptionCtrl;
 
   @override
   void initState() {
@@ -63,6 +65,12 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
     );
     _herkunftCtrl = TextEditingController(text: _draft.herkunft);
     _beschreibungCtrl = TextEditingController(text: _draft.beschreibung);
+    _magischDescriptionCtrl = TextEditingController(
+      text: _draft.magischDescription,
+    );
+    _geweihtDescriptionCtrl = TextEditingController(
+      text: _draft.geweihtDescription,
+    );
   }
 
   @override
@@ -73,10 +81,15 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
     _wertCtrl.dispose();
     _herkunftCtrl.dispose();
     _beschreibungCtrl.dispose();
+    _magischDescriptionCtrl.dispose();
+    _geweihtDescriptionCtrl.dispose();
     super.dispose();
   }
 
-  bool get _isLinked => _draft.sourceRef != null;
+  bool get _isLinked {
+    return _draft.sourceRef != null &&
+        isCombatLinkedInventorySource(_draft.source);
+  }
 
   String get _editorTitle {
     if (widget.isNew) {
@@ -100,6 +113,8 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
       wertSilber: int.tryParse(_wertCtrl.text) ?? 0,
       herkunft: _herkunftCtrl.text.trim(),
       beschreibung: _beschreibungCtrl.text.trim(),
+      magischDescription: _magischDescriptionCtrl.text.trim(),
+      geweihtDescription: _geweihtDescriptionCtrl.text.trim(),
     );
 
     setState(() => _isSaving = true);
@@ -168,6 +183,10 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
           _SectionTitle('Stammdaten'),
           const SizedBox(height: 8),
           _buildStammdaten(context),
+          const SizedBox(height: _fieldSpacing * 2),
+          _SectionTitle('Magisch & Geweiht'),
+          const SizedBox(height: 8),
+          _buildBesonderheiten(),
           const SizedBox(height: _fieldSpacing * 2),
           _SectionTitle('Wert & Gewicht'),
           const SizedBox(height: 8),
@@ -290,6 +309,57 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
     );
   }
 
+  Widget _buildBesonderheiten() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile.adaptive(
+          key: const ValueKey<String>('inventory-editor-magisch'),
+          value: _draft.isMagisch,
+          onChanged: (value) =>
+              setState(() => _draft = _draft.copyWith(isMagisch: value)),
+          title: const Text('Magisch'),
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+        ),
+        TextField(
+          key: const ValueKey<String>('inventory-editor-magisch-description'),
+          controller: _magischDescriptionCtrl,
+          enabled: _draft.isMagisch,
+          minLines: 2,
+          maxLines: 4,
+          decoration: const InputDecoration(
+            labelText: 'Beschreibung (magisch)',
+            border: OutlineInputBorder(),
+            isDense: true,
+          ),
+        ),
+        const SizedBox(height: _fieldSpacing),
+        SwitchListTile.adaptive(
+          key: const ValueKey<String>('inventory-editor-geweiht'),
+          value: _draft.isGeweiht,
+          onChanged: (value) =>
+              setState(() => _draft = _draft.copyWith(isGeweiht: value)),
+          title: const Text('Geweiht'),
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+        ),
+        TextField(
+          key: const ValueKey<String>('inventory-editor-geweiht-description'),
+          controller: _geweihtDescriptionCtrl,
+          enabled: _draft.isGeweiht,
+          minLines: 2,
+          maxLines: 4,
+          decoration: const InputDecoration(
+            labelText: 'Beschreibung (geweiht)',
+            border: OutlineInputBorder(),
+            isDense: true,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildWertGewicht() {
     return Row(
       children: [
@@ -407,7 +477,7 @@ class _LinkedHint extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              '$gegenstand (verknüpft – bearbeite im Kampf-Tab)',
+              '$gegenstand (verknüpft – Name und Quelle kommen aus dem Kampf-Tab)',
               style: bodySmall,
             ),
           ),

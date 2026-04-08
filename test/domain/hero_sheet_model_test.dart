@@ -15,10 +15,10 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
-import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
 void main() {
   test('hero sheet roundtrip with expanded basis fields', () {
@@ -311,6 +311,19 @@ void main() {
               count: 1,
             ),
           ],
+          dukatenReward: 12.5,
+          lootRewards: <HeroAdventureLootEntry>[
+            HeroAdventureLootEntry(
+              id: 'loot_1',
+              name: 'Silberdolch',
+              quantity: '1',
+              itemType: InventoryItemType.wertvolles,
+              weightGramm: 250,
+              valueSilver: 180,
+              origin: 'Abenteuerbeute',
+              description: 'Mit schwarzer Scheide.',
+            ),
+          ],
           rewardsApplied: true,
         ),
       ],
@@ -323,7 +336,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.background.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 22);
+    expect(reloaded.schemaVersion, 23);
     expect(reloaded.background.kultur, 'Mittelreich');
     expect(reloaded.background.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -362,6 +375,12 @@ void main() {
       HeroAdventureSeTargetType.talent,
     );
     expect(reloaded.adventures.single.seRewards.first.count, 2);
+    expect(reloaded.adventures.single.dukatenReward, 12.5);
+    expect(reloaded.adventures.single.lootRewards.single.name, 'Silberdolch');
+    expect(
+      reloaded.adventures.single.lootRewards.single.itemType,
+      InventoryItemType.wertvolles,
+    );
     expect(reloaded.adventures.single.rewardsApplied, isTrue);
     expect(reloaded.attributeSePool.mu, 1);
     expect(reloaded.attributeSePool.ge, 2);
@@ -806,7 +825,7 @@ void main() {
     },
   );
 
-  test('schemaVersion ist 22 nach toJson (v22-Default)', () {
+  test('schemaVersion ist 23 nach toJson (v23-Default)', () {
     const hero = HeroSheet(
       id: 'version-check',
       name: 'Versionstest',
@@ -823,8 +842,8 @@ void main() {
       ),
     );
     final json = hero.toJson();
-    expect(json['schemaVersion'], 22);
-    expect(HeroSheet.fromJson(json).schemaVersion, 22);
+    expect(json['schemaVersion'], 23);
+    expect(HeroSheet.fromJson(json).schemaVersion, 23);
   });
 
   test(

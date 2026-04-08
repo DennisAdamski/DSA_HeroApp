@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
@@ -14,6 +15,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 HeroSheet _buildHero({
   List<HeroInventoryEntry> inventoryEntries = const <HeroInventoryEntry>[],
   String dukaten = '',
+  CombatConfig combatConfig = const CombatConfig(),
 }) {
   return HeroSheet(
     id: 'hero-1',
@@ -31,6 +33,7 @@ HeroSheet _buildHero({
       kk: 12,
     ),
     inventoryEntries: inventoryEntries,
+    combatConfig: combatConfig,
   );
 }
 
@@ -287,6 +290,80 @@ void main() {
       final heroes = await repo.listHeroes();
       final hero = heroes.single;
       expect(hero.inventoryEntries.single.gegenstand, 'Seil, 20 m');
+    });
+
+    testWidgets('verknüpfter Eintrag pflegt magisch und geweiht im Inventar', (
+      tester,
+    ) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          _buildHero(
+            combatConfig: const CombatConfig(
+              weapons: [MainWeaponSlot(name: 'Langschwert')],
+            ),
+            inventoryEntries: const <HeroInventoryEntry>[
+              HeroInventoryEntry(
+                gegenstand: 'Langschwert',
+                itemType: InventoryItemType.ausruestung,
+                source: InventoryItemSource.waffe,
+                sourceRef: 'w:Langschwert',
+                istAusgeruestet: true,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await _openTab(tester, repo);
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('inventory-row-open-0')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('inventory-editor-magisch')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('inventory-editor-magisch-description'),
+        ),
+        'Runenätzung',
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('inventory-editor-geweiht')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('inventory-editor-geweiht-description'),
+        ),
+        'Rahjaweihe',
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('inventory-editor-save')),
+      );
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.single;
+      expect(hero.inventoryEntries.single.isMagisch, isTrue);
+      expect(hero.inventoryEntries.single.magischDescription, 'Runenätzung');
+      expect(hero.inventoryEntries.single.isGeweiht, isTrue);
+      expect(hero.inventoryEntries.single.geweihtDescription, 'Rahjaweihe');
+      expect(hero.combatConfig.weaponSlots.single.isArtifact, isTrue);
+      expect(
+        hero.combatConfig.weaponSlots.single.artifactDescription,
+        'Runenätzung',
+      );
+      expect(hero.combatConfig.weaponSlots.single.isGeweiht, isTrue);
+      expect(
+        hero.combatConfig.weaponSlots.single.geweihtDescription,
+        'Rahjaweihe',
+      );
     });
 
     testWidgets('manuellen Eintrag löschen entfernt ihn nach Bestätigung', (

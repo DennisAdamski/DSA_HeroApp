@@ -35,7 +35,7 @@ msix_config:
   publisher_display_name: Adamski
   identity_name: Adamski.Heldenverwaltung
   publisher: CN=1CE2B320-2BCD-4E40-9D73-3F57CE79C640
-  msix_version: 1.0.2.0
+  msix_version: 1.0.4.0
   logo_path: assets/msix/heldenmanager_icon_500.png
   capabilities: internetClient
   languages: de-DE, en-US
