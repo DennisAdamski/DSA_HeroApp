@@ -729,6 +729,11 @@ class HeroActions {
       externeHeldIds: [...mitgliedschaft.externeHeldIds, held.id],
     );
     await saveHero(hero.copyWith(gruppen: neueGruppen));
+
+    // Manuellen Helden direkt nach Firestore pushen.
+    final syncService = _ref.read(gruppenSyncServiceProvider);
+    final karte = HeldVisitenkarte.fromExternerHeld(held);
+    await syncService.pushVisitenkarte(gruppenCode, karte);
   }
 
   /// Entfernt einen externen Helden aus einer Gruppe.
@@ -795,14 +800,24 @@ class HeroActions {
         }
       }
 
-      // 3. Alle Mitglieder abholen und lokal ueberschreiben.
+      // 3. Alle Mitglieder abholen und lokal aktualisieren.
       final remoteMitglieder =
           await syncService.fetchMitglieder(gruppenCode);
       final neueExterneIds = <String>[...gruppe.externeHeldIds];
 
+      // IDs lokal verwalteter manueller Helden — nicht ueberschreiben.
+      final lokaleManuelleIds = <String>{
+        for (final extId in gruppe.externeHeldIds)
+          if (externeRepo.loadById(extId)?.istManuell ?? false) extId,
+      };
+
       for (final karte in remoteMitglieder) {
         // Eigenen Helden ueberspringen.
         if (karte.heroId == heroId) continue;
+
+        // Lokal manuell angelegte Helden nicht mit Remote-Daten
+        // ueberschreiben — sie werden nur gepusht, nie gepullt.
+        if (lokaleManuelleIds.contains(karte.heroId)) continue;
 
         final externer = ExternerHeld.fromVisitenkarte(karte);
         await externeRepo.save(externer);
