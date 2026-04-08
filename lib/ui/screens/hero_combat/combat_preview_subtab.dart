@@ -138,6 +138,14 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   value: preview.at.toString(),
                   icon: Icons.gps_fixed,
                   highlight: true,
+                  onTap: () => showProbeDialog(
+                    context: context,
+                    request: buildCombatCheckProbeRequest(
+                      type: ProbeType.combatAttack,
+                      title: 'Kampfprobe: AT',
+                      targetValue: preview.at,
+                    ),
+                  ),
                 ),
               ),
               if (!preview.isRangedWeapon)
@@ -147,6 +155,14 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                     label: 'PA',
                     value: preview.paMitIniParadeMod.toString(),
                     icon: Icons.shield_outlined,
+                    onTap: () => showProbeDialog(
+                      context: context,
+                      request: buildCombatCheckProbeRequest(
+                        type: ProbeType.combatParry,
+                        title: 'Kampfprobe: PA',
+                        targetValue: preview.paMitIniParadeMod,
+                      ),
+                    ),
                   ),
                 ),
               SizedBox(
@@ -155,6 +171,13 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   label: 'TP',
                   value: preview.tpExpression,
                   icon: Icons.whatshot_outlined,
+                  onTap: () => showProbeDialog(
+                    context: context,
+                    request: buildDamageProbeRequest(
+                      title: 'Schadenswurf',
+                      diceSpec: preview.damageDiceSpec,
+                    ),
+                  ),
                 ),
               ),
               SizedBox(
@@ -163,6 +186,14 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   label: 'Kampf-INI',
                   value: preview.kampfInitiative.toString(),
                   icon: Icons.flash_on_outlined,
+                  onTap: () => showProbeDialog(
+                    context: context,
+                    request: buildInitiativeProbeRequest(
+                      title: 'Initiativwurf',
+                      diceSpec: preview.initiativeDiceSpec,
+                      fixedRollTotal: preview.initiativeFixedRollTotal,
+                    ),
+                  ),
                 ),
               ),
               SizedBox(
@@ -171,6 +202,14 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   label: 'Ausweichen',
                   value: preview.ausweichen.toString(),
                   icon: Icons.directions_run_outlined,
+                  onTap: () => showProbeDialog(
+                    context: context,
+                    request: buildCombatCheckProbeRequest(
+                      type: ProbeType.dodge,
+                      title: 'Kampfprobe: Ausweichen',
+                      targetValue: preview.ausweichen,
+                    ),
+                  ),
                 ),
               ),
               SizedBox(
@@ -189,63 +228,16 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   icon: Icons.balance_outlined,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          CombatQuickStats(
-            at: preview.at,
-            pa: preview.isRangedWeapon ? null : preview.paMitIniParadeMod,
-            tpExpression: preview.tpExpression,
-            kampfInitiative: preview.kampfInitiative,
-            ausweichen: preview.ausweichen,
-            rs: preview.rsTotal,
-            ebe: preview.ebe,
-            isRanged: preview.isRangedWeapon,
-            ladezeit: preview.isRangedWeapon ? preview.reloadTimeDisplay : null,
-            geschosse: preview.isRangedWeapon
-                ? preview.activeProjectileCount
-                : null,
-            onRollAt: () => showProbeDialog(
-              context: context,
-              request: buildCombatCheckProbeRequest(
-                type: ProbeType.combatAttack,
-                title: 'Kampfprobe: AT',
-                targetValue: preview.at,
-              ),
-            ),
-            onRollPa: preview.isRangedWeapon
-                ? null
-                : () => showProbeDialog(
-                    context: context,
-                    request: buildCombatCheckProbeRequest(
-                      type: ProbeType.combatParry,
-                      title: 'Kampfprobe: PA',
-                      targetValue: preview.paMitIniParadeMod,
-                    ),
+              if (preview.isRangedWeapon)
+                SizedBox(
+                  width: 160,
+                  child: CodexMetricTile(
+                    label: 'Ladezeit',
+                    value: preview.reloadTimeDisplay,
+                    icon: Icons.timer_outlined,
                   ),
-            onRollDamage: () => showProbeDialog(
-              context: context,
-              request: buildDamageProbeRequest(
-                title: 'Schadenswurf',
-                diceSpec: preview.damageDiceSpec,
-              ),
-            ),
-            onRollInitiative: () => showProbeDialog(
-              context: context,
-              request: buildInitiativeProbeRequest(
-                title: 'Initiativwurf',
-                diceSpec: preview.initiativeDiceSpec,
-                fixedRollTotal: preview.initiativeFixedRollTotal,
-              ),
-            ),
-            onRollAusweichen: () => showProbeDialog(
-              context: context,
-              request: buildCombatCheckProbeRequest(
-                type: ProbeType.dodge,
-                title: 'Kampfprobe: Ausweichen',
-                targetValue: preview.ausweichen,
-              ),
-            ),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -256,6 +248,12 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                 Chip(label: Text('Distanz: $activeDistanceLabel')),
               if (hasHeldRangedWeapon)
                 Chip(label: Text('Geschoss: $activeProjectileName')),
+              if (preview.isRangedWeapon)
+                Chip(
+                  label: Text(
+                    'Geschosse: ${preview.activeProjectileCount}',
+                  ),
+                ),
               ..._buildWaffenmeisterPreviewChips(preview: preview),
             ],
           ),
