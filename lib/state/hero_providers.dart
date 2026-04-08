@@ -176,6 +176,14 @@ final heroComputedProvider =
       final namedAttrMods = aggregateNamedAttributeModifiers(
         hero.attributeModifiers,
       );
+      // Permanente Attribute ohne temporaere Boni (fuer LeP/Au/AsP-Maxima).
+      // Attributo und aehnliche Zauber-Effekte sollen die Ressourcen-Obergrenzen
+      // nicht veraendern.
+      final permanent = applyAttributeModifiers(
+        hero.attributes,
+        parsed.attributeMods + namedAttrMods + inventoryMods.attributeMods,
+      );
+      // Effektive Attribute inkl. temporaerer Boni (fuer AT/PA/INI/GS/MR/FK).
       final effective = applyAttributeModifiers(
         hero.attributes,
         parsed.attributeMods +
@@ -203,6 +211,7 @@ final heroComputedProvider =
         state: state,
         parsedModifiers: parsed,
         effectiveAttributes: effective,
+        permanentAttributes: permanent,
         inventoryStatMods: inventoryMods.statMods,
         wundStatMods: wundStatMods,
       );
