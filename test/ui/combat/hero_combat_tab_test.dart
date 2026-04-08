@@ -693,7 +693,7 @@ void main() {
 
     await openCombatTab(tester, repo);
 
-    final atChip = find.textContaining('AT:').first;
+    final atChip = find.textContaining('AT ').first;
     await tester.ensureVisible(atChip);
     await tester.tap(atChip);
     await tester.pumpAndSettle();
@@ -2248,11 +2248,11 @@ void main() {
       await openCombatTab(tester, repo);
       await tapTab(tester, 'Kampfwerte');
 
-      // CombatQuickStats zeigt AT/PA/TP/INI-Chips
-      expect(find.textContaining('AT:'), findsAtLeastNWidgets(1));
-      expect(find.textContaining('PA:'), findsAtLeastNWidgets(1));
-      expect(find.textContaining('TP:'), findsAtLeastNWidgets(1));
-      expect(find.textContaining('Kampf INI:'), findsAtLeastNWidgets(1));
+      // Kampfwert-Kacheln zeigen AT/PA/TP/INI
+      expect(find.textContaining('AT '), findsAtLeastNWidgets(1));
+      expect(find.textContaining('PA '), findsAtLeastNWidgets(1));
+      expect(find.textContaining('TP '), findsAtLeastNWidgets(1));
+      expect(find.textContaining('Kampf-INI '), findsAtLeastNWidgets(1));
 
       // Waffe wechseln ueber Dropdown
       await tester.tap(
@@ -2262,8 +2262,8 @@ void main() {
       await tester.tap(find.text('Bidenhaender').last);
       await tester.pumpAndSettle();
 
-      // CombatQuickStats aktualisiert sich
-      expect(find.textContaining('AT:'), findsAtLeastNWidgets(1));
+      // Kampfwert-Kacheln aktualisieren sich
+      expect(find.textContaining('AT '), findsAtLeastNWidgets(1));
     },
   );
 
@@ -2313,8 +2313,8 @@ void main() {
     await tapTab(tester, 'Kampfwerte');
 
     expect(
-      find.widgetWithText(Chip, 'PA: ${expectedPreview.paMitIniParadeMod}'),
-      findsOneWidget,
+      find.textContaining('PA ${expectedPreview.paMitIniParadeMod}'),
+      findsAtLeastNWidgets(1),
     );
     expect(find.text('Ini Parade Mod'), findsNothing);
   });
@@ -2350,8 +2350,8 @@ void main() {
       await openCombatTab(tester, repo);
       await tapTab(tester, 'Kampfwerte');
 
-      // CombatQuickStats zeigt Kampf-INI als Chip
-      expect(find.textContaining('Kampf INI:'), findsOneWidget);
+      // Kampfwert-Kachel zeigt Kampf-INI
+      expect(find.textContaining('Kampf-INI '), findsOneWidget);
       // INI-Wurf-Editor ist fuer Nahkampfwaffen sichtbar
       expect(
         find.byKey(
@@ -2556,10 +2556,10 @@ void main() {
       await openCombatTab(tester, repo);
       await tapTab(tester, 'Kampfwerte');
 
-      // CombatQuickStats zeigt AT-Chip fuer Fernkampf
-      expect(find.textContaining('AT:'), findsOneWidget);
-      // Ladezeit-Chip in CombatQuickStats
-      expect(find.textContaining('Ladezeit:'), findsOneWidget);
+      // Kampfwert-Kachel zeigt AT fuer Fernkampf
+      expect(find.textContaining('AT '), findsAtLeastNWidgets(1));
+      // Ladezeit-Kachel
+      expect(find.textContaining('Ladezeit '), findsOneWidget);
       // Geschoss-Dropdown
       expect(
         find.byKey(
