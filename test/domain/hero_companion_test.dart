@@ -359,7 +359,7 @@ void main() {
     }
 
     test('schemaVersion ist 21', () {
-      expect(buildSheet().schemaVersion, 21);
+      expect(buildSheet().schemaVersion, 22);
     });
 
     test('Roundtrip mit leerem companions', () {
