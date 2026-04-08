@@ -226,14 +226,21 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
                       value: InventoryModifierKind.talent,
                       child: Text('Talent'),
                     ),
+                    DropdownMenuItem(
+                      value: InventoryModifierKind.talentgruppe,
+                      child: Text('Talentgruppe'),
+                    ),
                   ],
                   onChanged: (kind) {
                     if (kind == null) return;
+                    final talentGroups = _talentGroups(talents);
                     final defaultId = switch (kind) {
                       InventoryModifierKind.stat => 'gs',
                       InventoryModifierKind.attribut => 'ge',
                       InventoryModifierKind.talent =>
                         talents.isNotEmpty ? talents.first.id : '',
+                      InventoryModifierKind.talentgruppe =>
+                        talentGroups.isNotEmpty ? talentGroups.first : '',
                     };
                     _emit(kind: kind, targetId: defaultId);
                   },
@@ -301,6 +308,21 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
         ],
       ),
     );
+  }
+
+  static List<String> _talentGroups(List<TalentDef> talents) {
+    final groups = <String>{};
+    for (final talent in talents) {
+      final group = talent.group.trim();
+      if (group.isNotEmpty &&
+          !group.toLowerCase().contains('kampf') &&
+          talent.type != 'nahkampf' &&
+          talent.type != 'fernkampf') {
+        groups.add(group);
+      }
+    }
+    final sorted = groups.toList()..sort();
+    return sorted;
   }
 
   Widget _buildTargetField(InventoryItemModifier mod, List<TalentDef> talents) {
@@ -383,6 +405,28 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
                 ),
               ),
             );
+          },
+        );
+
+      case InventoryModifierKind.talentgruppe:
+        final groups = _talentGroups(talents);
+        final resolved =
+            groups.contains(mod.targetId) ? mod.targetId : (groups.isNotEmpty ? groups.first : '');
+        return DropdownButtonFormField<String>(
+          key: ValueKey<String>('target-talentgruppe-${mod.targetId}'),
+          isExpanded: true,
+          initialValue: resolved,
+          decoration: const InputDecoration(
+            labelText: 'Talentgruppe',
+            border: OutlineInputBorder(),
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          ),
+          items: groups
+              .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+              .toList(),
+          onChanged: (id) {
+            if (id != null) _emit(targetId: id);
           },
         );
     }

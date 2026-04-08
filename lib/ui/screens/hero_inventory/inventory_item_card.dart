@@ -28,7 +28,8 @@ class InventoryItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final codex = context.codexTheme;
-    final isLinked = entry.sourceRef != null;
+    final isLinked =
+        entry.sourceRef != null && isCombatLinkedInventorySource(entry.source);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
@@ -112,6 +113,22 @@ class InventoryItemCard extends StatelessWidget {
                             textColor: theme.colorScheme.onSurfaceVariant,
                           ),
                         ],
+                        if (entry.isMagisch) ...[
+                          const SizedBox(width: 4),
+                          _SmallChip(
+                            label: 'Magisch',
+                            color: theme.colorScheme.tertiaryContainer,
+                            textColor: theme.colorScheme.onTertiaryContainer,
+                          ),
+                        ],
+                        if (entry.isGeweiht) ...[
+                          const SizedBox(width: 4),
+                          _SmallChip(
+                            label: 'Geweiht',
+                            color: theme.colorScheme.secondaryContainer,
+                            textColor: theme.colorScheme.onSecondaryContainer,
+                          ),
+                        ],
                         if (traegerName != null) ...[
                           const SizedBox(width: 4),
                           _SmallChip(
@@ -189,6 +206,8 @@ class _SourceIcon extends StatelessWidget {
         icon = Icons.arrow_upward_outlined;
       case InventoryItemSource.manuell:
         icon = Icons.inventory_2_outlined;
+      case InventoryItemSource.abenteuer:
+        icon = Icons.menu_book_outlined;
     }
     return Container(
       width: 36,

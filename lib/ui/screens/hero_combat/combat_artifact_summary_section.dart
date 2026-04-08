@@ -20,6 +20,15 @@ extension _CombatArtifactSummarySection on _HeroCombatTabState {
     if (mainhandArtifact != null) {
       mainhandEntries.add(mainhandArtifact);
     }
+    final mainhandGeweiht = _geweihtEntryForWeapon(
+      weapon: mainhandWeapon,
+      sectionLabel: 'Haupthand',
+      entryType: null,
+      fallbackLabel: 'Waffe',
+    );
+    if (mainhandGeweiht != null) {
+      mainhandEntries.add(mainhandGeweiht);
+    }
 
     final offhandWeaponArtifact = _artifactEntryForWeapon(
       weapon: offhandWeapon,
@@ -30,6 +39,15 @@ extension _CombatArtifactSummarySection on _HeroCombatTabState {
     if (offhandWeaponArtifact != null) {
       offhandEntries.add(offhandWeaponArtifact);
     }
+    final offhandWeaponGeweiht = _geweihtEntryForWeapon(
+      weapon: offhandWeapon,
+      sectionLabel: 'Nebenhand',
+      entryType: 'Waffe',
+      fallbackLabel: 'Waffe',
+    );
+    if (offhandWeaponGeweiht != null) {
+      offhandEntries.add(offhandWeaponGeweiht);
+    }
 
     final offhandEquipmentArtifact = _artifactEntryForEquipment(
       equipment: offhandEquipment,
@@ -37,11 +55,21 @@ extension _CombatArtifactSummarySection on _HeroCombatTabState {
     if (offhandEquipmentArtifact != null) {
       offhandEntries.add(offhandEquipmentArtifact);
     }
+    final offhandEquipmentGeweiht = _geweihtEntryForEquipment(
+      equipment: offhandEquipment,
+    );
+    if (offhandEquipmentGeweiht != null) {
+      offhandEntries.add(offhandEquipmentGeweiht);
+    }
 
     for (final piece in _draftCombatConfig.armor.pieces) {
       final armorArtifact = _artifactEntryForArmor(piece);
       if (armorArtifact != null) {
         armorEntries.add(armorArtifact);
+      }
+      final armorGeweiht = _geweihtEntryForArmor(piece);
+      if (armorGeweiht != null) {
+        armorEntries.add(armorGeweiht);
       }
     }
 
@@ -56,8 +84,8 @@ extension _CombatArtifactSummarySection on _HeroCombatTabState {
     final totalEntries =
         mainhandEntries.length + offhandEntries.length + armorEntries.length;
     final subtitle = totalEntries == 1
-        ? '1 aktiver Artefakteintrag'
-        : '$totalEntries aktive Artefakteinträge';
+        ? '1 aktiver Eintrag'
+        : '$totalEntries aktive Einträge';
 
     return Card(
       key: const ValueKey<String>('combat-artifact-summary-card'),
@@ -67,7 +95,7 @@ extension _CombatArtifactSummarySection on _HeroCombatTabState {
         tilePadding: const EdgeInsets.symmetric(horizontal: 12),
         childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
         title: Text(
-          'Artefakte',
+          'Artefakte & Geweihtes',
           key: const ValueKey<String>('combat-artifact-summary-title'),
           style: Theme.of(context).textTheme.titleMedium,
         ),
@@ -218,6 +246,73 @@ extension _CombatArtifactSummarySection on _HeroCombatTabState {
           'combat-artifact-summary-entry-armor-${_normalizeArtifactKey(label)}',
       label: label,
       entryType: 'Rüstung',
+      description: description,
+    );
+  }
+
+  /// Erzeugt einen Geweiht-Eintrag fuer eine Waffe, falls angezeigt werden soll.
+  _ArtifactSummaryEntry? _geweihtEntryForWeapon({
+    required MainWeaponSlot? weapon,
+    required String sectionLabel,
+    required String? entryType,
+    required String fallbackLabel,
+  }) {
+    if (weapon == null || !weapon.isGeweiht) {
+      return null;
+    }
+    final description = weapon.geweihtDescription.trim();
+    if (description.isEmpty) {
+      return null;
+    }
+    final label = weapon.name.trim().isEmpty ? fallbackLabel : weapon.name.trim();
+    return _ArtifactSummaryEntry(
+      keyName:
+          'combat-geweiht-summary-entry-${sectionLabel.toLowerCase()}-${_normalizeArtifactKey(label)}',
+      label: label,
+      entryType: entryType != null ? '$entryType (geweiht)' : 'Geweiht',
+      description: description,
+    );
+  }
+
+  /// Erzeugt einen Geweiht-Eintrag fuer Schild oder Parierwaffe.
+  _ArtifactSummaryEntry? _geweihtEntryForEquipment({
+    required OffhandEquipmentEntry? equipment,
+  }) {
+    if (equipment == null || !equipment.isGeweiht) {
+      return null;
+    }
+    final description = equipment.geweihtDescription.trim();
+    if (description.isEmpty) {
+      return null;
+    }
+    final label = equipment.name.trim().isEmpty
+        ? (equipment.isShield ? 'Schild' : 'Parierwaffe')
+        : equipment.name.trim();
+    final typeLabel = equipment.isShield ? 'Schild' : 'Parierwaffe';
+    return _ArtifactSummaryEntry(
+      keyName:
+          'combat-geweiht-summary-entry-offhand-${_normalizeArtifactKey(label)}',
+      label: label,
+      entryType: '$typeLabel (geweiht)',
+      description: description,
+    );
+  }
+
+  /// Erzeugt einen Geweiht-Eintrag fuer ein aktives Ruestungsteil.
+  _ArtifactSummaryEntry? _geweihtEntryForArmor(ArmorPiece piece) {
+    if (!piece.isActive || !piece.isGeweiht) {
+      return null;
+    }
+    final description = piece.geweihtDescription.trim();
+    if (description.isEmpty) {
+      return null;
+    }
+    final label = piece.name.trim().isEmpty ? 'Rüstungsteil' : piece.name.trim();
+    return _ArtifactSummaryEntry(
+      keyName:
+          'combat-geweiht-summary-entry-armor-${_normalizeArtifactKey(label)}',
+      label: label,
+      entryType: 'Rüstung (geweiht)',
       description: description,
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
 void main() {
   group('HeroAdventureEntry', () {
@@ -49,6 +50,19 @@ void main() {
           month: 'praios',
           year: '1048',
         ),
+        dukatenReward: 12.5,
+        lootRewards: <HeroAdventureLootEntry>[
+          HeroAdventureLootEntry(
+            id: 'loot_1',
+            name: 'Mondsilberring',
+            quantity: '1',
+            itemType: InventoryItemType.wertvolles,
+            weightGramm: 25,
+            valueSilver: 80,
+            origin: 'Punin',
+            description: 'Belohnung des Geweihten.',
+          ),
+        ],
       );
 
       final reloaded = HeroAdventureEntry.fromJson(entry.toJson());
@@ -61,6 +75,9 @@ void main() {
       expect(reloaded.endAventurianDate.day, '11');
       expect(reloaded.currentAventurianDate.year, '1048');
       expect(reloaded.notes.single.title, 'Schlüsselstelle');
+      expect(reloaded.dukatenReward, 12.5);
+      expect(reloaded.lootRewards.single.name, 'Mondsilberring');
+      expect(reloaded.lootRewards.single.itemType, InventoryItemType.wertvolles);
     });
 
     test('loads legacy payloads with current status and empty new fields', () {
@@ -77,6 +94,8 @@ void main() {
       expect(entry.endWorldDate.hasContent, isFalse);
       expect(entry.endAventurianDate.hasContent, isFalse);
       expect(entry.currentAventurianDate.hasContent, isFalse);
+      expect(entry.dukatenReward, 0);
+      expect(entry.lootRewards, isEmpty);
     });
   });
 }

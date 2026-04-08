@@ -10,6 +10,8 @@ class ArmorPiece {
     this.be = 0,
     this.isArtifact = false,
     this.artifactDescription = '',
+    this.isGeweiht = false,
+    this.geweihtDescription = '',
   });
 
   /// Anzeigename des Ruestungsstuecks.
@@ -33,6 +35,12 @@ class ArmorPiece {
   /// Freitext-Beschreibung fuer das Artefakt.
   final String artifactDescription;
 
+  /// Kennzeichnet das Ruestungsstueck als geweiht.
+  final bool isGeweiht;
+
+  /// Freitext-Beschreibung fuer den geweihten Gegenstand.
+  final String geweihtDescription;
+
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   ArmorPiece copyWith({
     String? name,
@@ -42,6 +50,8 @@ class ArmorPiece {
     int? be,
     bool? isArtifact,
     String? artifactDescription,
+    bool? isGeweiht,
+    String? geweihtDescription,
   }) {
     return ArmorPiece(
       name: name ?? this.name,
@@ -51,6 +61,8 @@ class ArmorPiece {
       be: be ?? this.be,
       isArtifact: isArtifact ?? this.isArtifact,
       artifactDescription: artifactDescription ?? this.artifactDescription,
+      isGeweiht: isGeweiht ?? this.isGeweiht,
+      geweihtDescription: geweihtDescription ?? this.geweihtDescription,
     );
   }
 
@@ -64,6 +76,8 @@ class ArmorPiece {
       'be': be,
       'isArtifact': isArtifact,
       'artifactDescription': artifactDescription,
+      'isGeweiht': isGeweiht,
+      'geweihtDescription': geweihtDescription,
     };
   }
 
@@ -80,6 +94,8 @@ class ArmorPiece {
       be: getInt('be'),
       isArtifact: (json['isArtifact'] as bool?) ?? false,
       artifactDescription: (json['artifactDescription'] as String?) ?? '',
+      isGeweiht: (json['isGeweiht'] as bool?) ?? false,
+      geweihtDescription: (json['geweihtDescription'] as String?) ?? '',
     );
   }
 
@@ -93,7 +109,9 @@ class ArmorPiece {
           rs == other.rs &&
           be == other.be &&
           isArtifact == other.isArtifact &&
-          artifactDescription == other.artifactDescription;
+          artifactDescription == other.artifactDescription &&
+          isGeweiht == other.isGeweiht &&
+          geweihtDescription == other.geweihtDescription;
 
   @override
   int get hashCode => Object.hash(
@@ -104,5 +122,7 @@ class ArmorPiece {
     be,
     isArtifact,
     artifactDescription,
+    isGeweiht,
+    geweihtDescription,
   );
 }
