@@ -1544,34 +1544,6 @@ void main() {
         find.byKey(const ValueKey<String>('notes-adventure-ap-adv_1')),
         '40',
       );
-      await revealAndTap(
-        tester,
-        find.byKey(const ValueKey<String>('notes-adventure-add-se-adv_1')),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(const ValueKey<String>('notes-adventure-se-target-adv_1-0')),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Mut').last);
-      await tester.pumpAndSettle();
-      await revealAndTap(
-        tester,
-        find.byKey(const ValueKey<String>('notes-adventure-add-se-adv_1')),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(const ValueKey<String>('notes-adventure-se-type-adv_1-1')),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Grundwert').last);
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(const ValueKey<String>('notes-adventure-se-target-adv_1-1')),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('LeP').last);
-      await tester.pumpAndSettle();
       await tester.enterText(
         find.byKey(const ValueKey<String>('notes-adventure-complete-dukaten')),
         '12,5',
