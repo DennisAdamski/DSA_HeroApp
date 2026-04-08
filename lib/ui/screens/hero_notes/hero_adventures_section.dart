@@ -951,11 +951,6 @@ class _EditableAdventureSeRewardCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final targetValue = entry.targetId.trim();
-    final resolvedTargetValue =
-        targetOptions.any((option) => option.id == targetValue)
-        ? targetValue
-        : null;
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -1014,38 +1009,67 @@ class _EditableAdventureSeRewardCard extends StatelessWidget {
                     },
             ),
             const SizedBox(height: _notesFieldSpacing),
-            DropdownButtonFormField<String>(
+            Autocomplete<_AdventureTargetOption>(
               key: ValueKey<String>(
-                'notes-adventure-se-target-$adventureId-$rewardIndex',
+                'notes-adventure-se-target-$adventureId-$rewardIndex-${entry.targetType.name}-${entry.targetId}',
               ),
-              initialValue: resolvedTargetValue,
-              decoration: const InputDecoration(
-                labelText: 'Ziel',
-                border: OutlineInputBorder(),
+              initialValue: TextEditingValue(
+                text: entry.targetLabel.isNotEmpty
+                    ? entry.targetLabel
+                    : entry.targetId,
               ),
-              items: targetOptions
-                  .map(
-                    (option) => DropdownMenuItem<String>(
-                      value: option.id,
-                      child: Text(option.label),
-                    ),
-                  )
-                  .toList(growable: false),
-              onChanged: rewardLocked
+              displayStringForOption: (o) => o.label,
+              optionsBuilder: (value) {
+                if (value.text.isEmpty) return targetOptions;
+                final query = value.text.toLowerCase();
+                return targetOptions.where(
+                  (o) =>
+                      o.label.toLowerCase().contains(query) ||
+                      o.id.toLowerCase().contains(query),
+                );
+              },
+              onSelected: rewardLocked
                   ? null
-                  : (value) {
-                      if (value == null) {
-                        return;
-                      }
-                      final option = targetOptions
-                          .where((candidate) => candidate.id == value)
-                          .firstOrNull;
-                      onTargetChanged(
+                  : (option) => onTargetChanged(
                         rewardIndex,
-                        targetId: value,
-                        targetLabel: option?.label ?? value,
-                      );
-                    },
+                        targetId: option.id,
+                        targetLabel: option.label,
+                      ),
+              fieldViewBuilder: (context, ctrl, focusNode, onSubmitted) {
+                return TextField(
+                  controller: ctrl,
+                  focusNode: focusNode,
+                  enabled: !rewardLocked,
+                  decoration: const InputDecoration(
+                    labelText: 'Ziel',
+                    border: OutlineInputBorder(),
+                  ),
+                );
+              },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 4,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 220),
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        itemBuilder: (_, i) {
+                          final o = options.elementAt(i);
+                          return ListTile(
+                            dense: true,
+                            title: Text(o.label),
+                            onTap: () => onSelected(o),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: _notesFieldSpacing),
             TextFormField(
