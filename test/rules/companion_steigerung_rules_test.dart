@@ -128,5 +128,63 @@ void main() {
       const c = HeroCompanion(id: 'a');
       expect(companionEffektiverPoolwert(c, 'asp'), isNull);
     });
+
+    test('AuP nutzt startAup + Steigerung', () {
+      const c = HeroCompanion(
+        id: 'a',
+        maxAup: 30,
+        startAup: 25,
+        steigerungen: {'aup': 4},
+      );
+      expect(companionEffektiverPoolwert(c, 'aup'), 29);
+    });
+
+    test('AuP faellt auf maxAup zurueck wenn startAup null', () {
+      const c = HeroCompanion(
+        id: 'a',
+        maxAup: 20,
+        steigerungen: {'aup': 2},
+      );
+      expect(companionEffektiverPoolwert(c, 'aup'), 22);
+    });
+
+    test('AuP gibt null wenn kein Basiswert gesetzt', () {
+      const c = HeroCompanion(id: 'a');
+      expect(companionEffektiverPoolwert(c, 'aup'), isNull);
+    });
+  });
+
+  group('companionEffektiverRk', () {
+    test('addiert Basis-RK und Steigerung', () {
+      const c = HeroCompanion(
+        id: 'a',
+        steigerungen: {'rk': 3},
+      );
+      expect(companionEffektiverRk(c, 5), 8);
+    });
+
+    test('ohne Steigerung gibt Basis-RK zurueck', () {
+      const c = HeroCompanion(id: 'a');
+      expect(companionEffektiverRk(c, 7), 7);
+    });
+  });
+
+  group('companionPoolStartwert', () {
+    test('liest startAup', () {
+      const c = HeroCompanion(id: 'a', startAup: 18);
+      expect(companionPoolStartwert(c, 'aup'), 18);
+    });
+
+    test('gibt null fuer unbekannten Key', () {
+      const c = HeroCompanion(id: 'a');
+      expect(companionPoolStartwert(c, 'xyz'), isNull);
+    });
+  });
+
+  group('companionPoolBasiswert', () {
+    test('liest maxAup', () {
+      const c = HeroCompanion(id: 'a', maxAup: 22);
+      expect(companionPoolBasiswert(c, 'aup'), 22);
+    });
   });
 }

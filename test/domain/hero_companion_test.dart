@@ -343,10 +343,12 @@ void main() {
         typ: BegleiterTyp.vertrauter,
         mu: 12,
         maxLep: 20,
+        maxAup: 15,
         maxAsp: 10,
         magieresistenz: 4,
-        steigerungen: const {'mu': 2, 'lep': 5, 'asp': 3, 'mr': 1},
+        steigerungen: const {'mu': 2, 'lep': 5, 'aup': 2, 'asp': 3, 'mr': 1},
         startLep: 20,
+        startAup: 15,
         startAsp: 10,
         startMr: 4,
       );
@@ -355,7 +357,9 @@ void main() {
       expect(restored, equals(companion));
       expect(restored.steigerungen['mu'], 2);
       expect(restored.steigerungen['lep'], 5);
+      expect(restored.steigerungen['aup'], 2);
       expect(restored.startLep, 20);
+      expect(restored.startAup, 15);
       expect(restored.startAsp, 10);
       expect(restored.startMr, 4);
     });
@@ -364,6 +368,7 @@ void main() {
       final companion = HeroCompanion.fromJson({'id': 'x'});
       expect(companion.steigerungen, isEmpty);
       expect(companion.startLep, isNull);
+      expect(companion.startAup, isNull);
       expect(companion.startAsp, isNull);
       expect(companion.startMr, isNull);
     });
@@ -376,9 +381,15 @@ void main() {
     });
 
     test('toJson mit Startwerten serialisiert diese', () {
-      const companion = HeroCompanion(id: 'b', startLep: 15, startMr: 3);
+      const companion = HeroCompanion(
+        id: 'b',
+        startLep: 15,
+        startAup: 12,
+        startMr: 3,
+      );
       final json = companion.toJson();
       expect(json['startLep'], 15);
+      expect(json['startAup'], 12);
       expect(json['startMr'], 3);
       expect(json.containsKey('startAsp'), isFalse);
     });
