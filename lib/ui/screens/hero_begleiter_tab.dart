@@ -316,23 +316,26 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   Future<void> _raiseRegular(String key, String label) async {
     final c = _activeCompanion;
     if (c == null || !_canRaiseFor(c)) return;
+    final basis = companionBasiswert(c, key);
+    if (basis == null) return;
     final stg = companionSteigerung(c, key);
+    final effWert = basis + stg;
     final apVerf = companionApVerfuegbar(c);
     final maxWert = regMaxSteigerung(
-      aktuellerSteigerungswert: stg,
+      aktuellerSteigerungswert: effWert,
       verfuegbareAp: apVerf,
     );
     final result = await showSteigerungsDialog(
       context: context,
       bezeichnung: '$label (Vertrauter)',
-      aktuellerWert: stg,
+      aktuellerWert: effWert,
       maxWert: maxWert,
       effektiveKomplexitaet: kVertrauterKomplexitaet,
       verfuegbareAp: apVerf,
     );
     if (result == null) return;
     final neueSteigerungen = Map<String, int>.from(c.steigerungen);
-    neueSteigerungen[key] = result.neuerWert;
+    neueSteigerungen[key] = result.neuerWert - basis;
     _saveCompanionImmediate(c.copyWith(
       steigerungen: neueSteigerungen,
       apAusgegeben: (c.apAusgegeben ?? 0) + result.apKosten,
@@ -378,23 +381,26 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
     if (c == null || !_canRaiseFor(c)) return;
     final angriff = c.angriffe.where((a) => a.id == attackId).firstOrNull;
     if (angriff == null || angriff.at == null) return;
+    final basisAt = angriff.at!;
+    final effAt = basisAt + angriff.steigerungAt;
     final apVerf = companionApVerfuegbar(c);
     final maxWert = regMaxSteigerung(
-      aktuellerSteigerungswert: angriff.steigerungAt,
+      aktuellerSteigerungswert: effAt,
       verfuegbareAp: apVerf,
     );
     final result = await showSteigerungsDialog(
       context: context,
       bezeichnung: '${angriff.name} AT (Vertrauter)',
-      aktuellerWert: angriff.steigerungAt,
+      aktuellerWert: effAt,
       maxWert: maxWert,
       effektiveKomplexitaet: kVertrauterKomplexitaet,
       verfuegbareAp: apVerf,
     );
     if (result == null) return;
+    final neueSteigerungAt = result.neuerWert - basisAt;
     final updatedAngriffe = c.angriffe
         .map((a) =>
-            a.id == attackId ? a.copyWith(steigerungAt: result.neuerWert) : a)
+            a.id == attackId ? a.copyWith(steigerungAt: neueSteigerungAt) : a)
         .toList();
     _saveCompanionImmediate(c.copyWith(
       angriffe: updatedAngriffe,
@@ -407,23 +413,26 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
     if (c == null || !_canRaiseFor(c)) return;
     final angriff = c.angriffe.where((a) => a.id == attackId).firstOrNull;
     if (angriff == null || angriff.pa == null) return;
+    final basisPa = angriff.pa!;
+    final effPa = basisPa + angriff.steigerungPa;
     final apVerf = companionApVerfuegbar(c);
     final maxWert = regMaxSteigerung(
-      aktuellerSteigerungswert: angriff.steigerungPa,
+      aktuellerSteigerungswert: effPa,
       verfuegbareAp: apVerf,
     );
     final result = await showSteigerungsDialog(
       context: context,
       bezeichnung: '${angriff.name} PA (Vertrauter)',
-      aktuellerWert: angriff.steigerungPa,
+      aktuellerWert: effPa,
       maxWert: maxWert,
       effektiveKomplexitaet: kVertrauterKomplexitaet,
       verfuegbareAp: apVerf,
     );
     if (result == null) return;
+    final neueSteigerungPa = result.neuerWert - basisPa;
     final updatedAngriffe = c.angriffe
         .map((a) =>
-            a.id == attackId ? a.copyWith(steigerungPa: result.neuerWert) : a)
+            a.id == attackId ? a.copyWith(steigerungPa: neueSteigerungPa) : a)
         .toList();
     _saveCompanionImmediate(c.copyWith(
       angriffe: updatedAngriffe,
@@ -434,23 +443,29 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   Future<void> _raiseRk() async {
     final c = _activeCompanion;
     if (c == null || !_canRaiseFor(c)) return;
+    final basisRk = c.ritualCategories
+        .where((k) => k.id == 'vertrautenmagie')
+        .firstOrNull
+        ?.ownKnowledge
+        ?.value ?? 0;
     final stg = companionSteigerung(c, 'rk');
+    final effRk = basisRk + stg;
     final apVerf = companionApVerfuegbar(c);
     final maxWert = regMaxSteigerung(
-      aktuellerSteigerungswert: stg,
+      aktuellerSteigerungswert: effRk,
       verfuegbareAp: apVerf,
     );
     final result = await showSteigerungsDialog(
       context: context,
       bezeichnung: 'Ritualkenntnis (Vertrauter)',
-      aktuellerWert: stg,
+      aktuellerWert: effRk,
       maxWert: maxWert,
       effektiveKomplexitaet: kVertrauterKomplexitaet,
       verfuegbareAp: apVerf,
     );
     if (result == null) return;
     final neueSteigerungen = Map<String, int>.from(c.steigerungen);
-    neueSteigerungen['rk'] = result.neuerWert;
+    neueSteigerungen['rk'] = result.neuerWert - basisRk;
     _saveCompanionImmediate(c.copyWith(
       steigerungen: neueSteigerungen,
       apAusgegeben: (c.apAusgegeben ?? 0) + result.apKosten,
