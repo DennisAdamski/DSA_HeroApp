@@ -17,111 +17,6 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
     return grouped;
   }
 
-  /// Ermittelt die im Kampf-Preview sichtbaren aktiven Manöver.
-  List<String> _activePreviewManeuverIds(
-    RulesCatalog catalog,
-    CombatPreviewStats preview,
-  ) {
-    final seen = <String>{};
-    final ids = <String>[];
-    final weapon = _findMatchedCatalogWeapon(catalog);
-    final selectedWeapon = _draftCombatConfig.selectedWeapon;
-    final selectedTalent = _selectedCombatTalentDef(catalog);
-    final selectedTalentName = selectedTalent?.name ?? '';
-    final isUnarmedContext =
-        weapon == null || _isUnarmedTalentName(selectedTalentName);
-    final wmEffects = computeWaffenmeisterEffects(
-      waffenmeisterschaften: _draftCombatConfig.waffenmeisterschaften,
-      activeWeaponType: selectedWeapon.weaponType.trim().isEmpty
-          ? selectedWeapon.name
-          : selectedWeapon.weaponType,
-      activeTalentId: selectedWeapon.talentId,
-    );
-    final styleEffects = computeActiveUnarmedStyleEffects(
-      specialRules: _draftCombatConfig.specialRules,
-      catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
-      catalogManeuvers: catalog.maneuvers,
-      activeTalentName: selectedTalentName,
-    );
-    if (isUnarmedContext) {
-      for (final maneuverId in styleEffects.activatedManeuverIds) {
-        if (seen.add(maneuverId)) {
-          ids.add(maneuverId);
-        }
-      }
-    }
-    if (weapon == null) {
-      ids.sort((a, b) {
-        final left = displayNameForManeuverId(
-          a,
-          catalogManeuvers: catalog.maneuvers,
-        );
-        final right = displayNameForManeuverId(
-          b,
-          catalogManeuvers: catalog.maneuvers,
-        );
-        return left.toLowerCase().compareTo(right.toLowerCase());
-      });
-      return ids;
-    }
-
-    final supportedIds = <String>{};
-    for (final raw in weapon.possibleManeuvers) {
-      final id = canonicalManeuverIdFromName(
-        raw,
-        catalogManeuvers: catalog.maneuvers,
-      );
-      if (id.isNotEmpty) {
-        supportedIds.add(id);
-      }
-    }
-    for (final raw in weapon.activeManeuvers) {
-      final id = canonicalManeuverIdFromName(
-        raw,
-        catalogManeuvers: catalog.maneuvers,
-      );
-      if (id.isNotEmpty) {
-        supportedIds.add(id);
-      }
-    }
-    for (final raw in wmEffects.additionalManeuvers) {
-      final id = canonicalManeuverIdFromName(
-        raw,
-        catalogManeuvers: catalog.maneuvers,
-      );
-      if (id.isNotEmpty) {
-        supportedIds.add(id);
-        if (seen.add(id)) {
-          ids.add(id);
-        }
-      }
-    }
-    for (final raw in _draftCombatConfig.specialRules.activeManeuvers) {
-      final id = canonicalManeuverIdFromName(
-        raw,
-        catalogManeuvers: catalog.maneuvers,
-      );
-      if (id.isEmpty || !supportedIds.contains(id)) {
-        continue;
-      }
-      if (seen.add(id)) {
-        ids.add(id);
-      }
-    }
-    ids.sort((a, b) {
-      final left = displayNameForManeuverId(
-        a,
-        catalogManeuvers: catalog.maneuvers,
-      );
-      final right = displayNameForManeuverId(
-        b,
-        catalogManeuvers: catalog.maneuvers,
-      );
-      return left.toLowerCase().compareTo(right.toLowerCase());
-    });
-    return ids;
-  }
-
   /// Liefert alle effektiv aktiven Manöver aus manueller Auswahl und Stil-SF.
   Set<String> _effectiveActiveManeuverIds(RulesCatalog catalog) {
     final ids = <String>{
@@ -161,41 +56,6 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
       maneuverId,
       catalogManeuvers: catalog.maneuvers,
     );
-  }
-
-  /// Sucht die aktive Heldenwaffe im Katalog, sofern sie eindeutig auflösbar ist.
-  WeaponDef? _findMatchedCatalogWeapon(RulesCatalog catalog) {
-    final selectedWeapon = _draftCombatConfig.selectedWeapon;
-    final weaponTypeToken = _normalizeToken(
-      selectedWeapon.weaponType.trim().isEmpty
-          ? selectedWeapon.name
-          : selectedWeapon.weaponType,
-    );
-    final talentId = selectedWeapon.talentId.trim();
-    if (weaponTypeToken.isEmpty || talentId.isEmpty) {
-      return null;
-    }
-
-    TalentDef? talent;
-    for (final entry in catalog.talents) {
-      if (entry.id == talentId) {
-        talent = entry;
-        break;
-      }
-    }
-    if (talent == null) {
-      return null;
-    }
-
-    final talentToken = _normalizeToken(talent.name);
-    final candidates = catalog.weapons
-        .where((weapon) => _normalizeToken(weapon.combatSkill) == talentToken)
-        .where((weapon) => _normalizeToken(weapon.name) == weaponTypeToken)
-        .toList(growable: false);
-    if (candidates.length != 1) {
-      return null;
-    }
-    return candidates.first;
   }
 
   /// Liefert das aktuell ausgewaehlte Kampftalent aus dem Katalog.
@@ -239,4 +99,184 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
     final normalized = _normalizeToken(raw);
     return normalized == 'raufen' || normalized == 'ringen';
   }
+
+  /// Sucht eine beliebige Waffe im Katalog (generalisiert fuer HH und NH).
+  WeaponDef? _findMatchedCatalogWeaponForSlot(
+    RulesCatalog catalog,
+    MainWeaponSlot slot,
+  ) {
+    final weaponTypeToken = _normalizeToken(
+      slot.weaponType.trim().isEmpty ? slot.name : slot.weaponType,
+    );
+    final talentId = slot.talentId.trim();
+    if (weaponTypeToken.isEmpty || talentId.isEmpty) {
+      return null;
+    }
+    TalentDef? talent;
+    for (final entry in catalog.talents) {
+      if (entry.id == talentId) {
+        talent = entry;
+        break;
+      }
+    }
+    if (talent == null) {
+      return null;
+    }
+    final talentToken = _normalizeToken(talent.name);
+    final candidates = catalog.weapons
+        .where((weapon) => _normalizeToken(weapon.combatSkill) == talentToken)
+        .where((weapon) => _normalizeToken(weapon.name) == weaponTypeToken)
+        .toList(growable: false);
+    if (candidates.length != 1) {
+      return null;
+    }
+    return candidates.first;
+  }
+
+  /// Sammelt die Manoever-IDs fuer einen einzelnen Waffen-Slot.
+  Set<String> _maneuverIdsForSlot(
+    RulesCatalog catalog,
+    MainWeaponSlot slot,
+  ) {
+    final weapon = _findMatchedCatalogWeaponForSlot(catalog, slot);
+    final talentDef = _talentDefForSlot(catalog, slot);
+    final talentName = talentDef?.name ?? '';
+    final isUnarmed = weapon == null || _isUnarmedTalentName(talentName);
+    final ids = <String>{};
+
+    if (isUnarmed) {
+      final styleEffects = computeActiveUnarmedStyleEffects(
+        specialRules: _draftCombatConfig.specialRules,
+        catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
+        catalogManeuvers: catalog.maneuvers,
+        activeTalentName: talentName,
+      );
+      ids.addAll(styleEffects.activatedManeuverIds);
+      if (weapon == null) {
+        return ids;
+      }
+    }
+
+    final resolvedWeapon = weapon;
+    final supportedIds = <String>{};
+    for (final raw in resolvedWeapon.possibleManeuvers) {
+      final id = canonicalManeuverIdFromName(
+        raw,
+        catalogManeuvers: catalog.maneuvers,
+      );
+      if (id.isNotEmpty) {
+        supportedIds.add(id);
+      }
+    }
+    for (final raw in weapon.activeManeuvers) {
+      final id = canonicalManeuverIdFromName(
+        raw,
+        catalogManeuvers: catalog.maneuvers,
+      );
+      if (id.isNotEmpty) {
+        supportedIds.add(id);
+      }
+    }
+
+    final wmEffects = computeWaffenmeisterEffects(
+      waffenmeisterschaften: _draftCombatConfig.waffenmeisterschaften,
+      activeWeaponType: slot.weaponType.trim().isEmpty
+          ? slot.name
+          : slot.weaponType,
+      activeTalentId: slot.talentId,
+    );
+    for (final raw in wmEffects.additionalManeuvers) {
+      final id = canonicalManeuverIdFromName(
+        raw,
+        catalogManeuvers: catalog.maneuvers,
+      );
+      if (id.isNotEmpty) {
+        supportedIds.add(id);
+        ids.add(id);
+      }
+    }
+
+    for (final raw in _draftCombatConfig.specialRules.activeManeuvers) {
+      final id = canonicalManeuverIdFromName(
+        raw,
+        catalogManeuvers: catalog.maneuvers,
+      );
+      if (id.isEmpty || !supportedIds.contains(id)) {
+        continue;
+      }
+      ids.add(id);
+    }
+    return ids;
+  }
+
+  TalentDef? _talentDefForSlot(RulesCatalog catalog, MainWeaponSlot slot) {
+    final talentId = slot.talentId.trim();
+    if (talentId.isEmpty) {
+      return null;
+    }
+    for (final entry in catalog.talents) {
+      if (entry.id == talentId) {
+        return entry;
+      }
+    }
+    return null;
+  }
+
+  /// Ermittelt Manoever mit Hand-Zuordnung (HH, NH, HH+NH).
+  List<PreviewManeuverEntry> _activePreviewManeuverEntries(
+    RulesCatalog catalog,
+    CombatPreviewStats preview,
+  ) {
+    final mainIds = _maneuverIdsForSlot(
+      catalog,
+      _draftCombatConfig.selectedWeapon,
+    );
+
+    final offhandWeapon = _offhandWeaponOrNull();
+    final offhandIds = offhandWeapon != null
+        ? _maneuverIdsForSlot(catalog, offhandWeapon)
+        : <String>{};
+
+    final allIds = <String>{...mainIds, ...offhandIds};
+    final entries = <PreviewManeuverEntry>[];
+    for (final id in allIds) {
+      final inMain = mainIds.contains(id);
+      final inOff = offhandIds.contains(id);
+      final availability = inMain && inOff
+          ? ManeuverHandAvailability.both
+          : inMain
+              ? ManeuverHandAvailability.mainOnly
+              : ManeuverHandAvailability.offhandOnly;
+      entries.add(PreviewManeuverEntry(
+        maneuverId: id,
+        availableHands: availability,
+      ));
+    }
+    entries.sort((a, b) {
+      final left = displayNameForManeuverId(
+        a.maneuverId,
+        catalogManeuvers: catalog.maneuvers,
+      );
+      final right = displayNameForManeuverId(
+        b.maneuverId,
+        catalogManeuvers: catalog.maneuvers,
+      );
+      return left.toLowerCase().compareTo(right.toLowerCase());
+    });
+    return entries;
+  }
+}
+
+/// Hand-Zuordnung eines Manoevers.
+enum ManeuverHandAvailability { mainOnly, offhandOnly, both }
+
+/// Manoever mit Zuordnung zu Haupt- und/oder Nebenhand.
+class PreviewManeuverEntry {
+  const PreviewManeuverEntry({
+    required this.maneuverId,
+    required this.availableHands,
+  });
+
+  final String maneuverId;
+  final ManeuverHandAvailability availableHands;
 }
