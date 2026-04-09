@@ -136,50 +136,57 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
 
   /// Globale Kampfwerte: INI, Ausweichen, RS.
   Widget _buildGlobalCombatValues({required CombatPreviewStats preview}) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 160,
-          child: CodexMetricTile(
-            label: 'Kampf-INI',
-            value: preview.kampfInitiative.toString(),
-            icon: Icons.flash_on_outlined,
-            onTap: () => showProbeDialog(
-              context: context,
-              request: buildInitiativeProbeRequest(
-                title: 'Initiativwurf',
-                diceSpec: preview.initiativeDiceSpec,
-                fixedRollTotal: preview.initiativeFixedRollTotal,
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            SizedBox(
+              width: 160,
+              child: CodexMetricTile(
+                label: 'Kampf-INI',
+                value: preview.kampfInitiative.toString(),
+                icon: Icons.flash_on_outlined,
+                onTap: () => showProbeDialog(
+                  context: context,
+                  request: buildInitiativeProbeRequest(
+                    title: 'Initiativwurf',
+                    diceSpec: preview.initiativeDiceSpec,
+                    fixedRollTotal: preview.initiativeFixedRollTotal,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-        SizedBox(
-          width: 150,
-          child: CodexMetricTile(
-            label: 'Ausweichen',
-            value: preview.ausweichen.toString(),
-            icon: Icons.directions_run_outlined,
-            onTap: () => showProbeDialog(
-              context: context,
-              request: buildCombatCheckProbeRequest(
-                type: ProbeType.dodge,
-                title: 'Kampfprobe: Ausweichen',
-                targetValue: preview.ausweichen,
+            SizedBox(
+              width: 150,
+              child: CodexMetricTile(
+                label: 'Ausweichen',
+                value: preview.ausweichen.toString(),
+                icon: Icons.directions_run_outlined,
+                onTap: () => showProbeDialog(
+                  context: context,
+                  request: buildCombatCheckProbeRequest(
+                    type: ProbeType.dodge,
+                    title: 'Kampfprobe: Ausweichen',
+                    targetValue: preview.ausweichen,
+                  ),
+                ),
               ),
             ),
-          ),
+            SizedBox(
+              width: 130,
+              child: CodexMetricTile(
+                label: 'RS',
+                value: preview.rsTotal.toString(),
+                icon: Icons.health_and_safety_outlined,
+              ),
+            ),
+          ],
         ),
-        SizedBox(
-          width: 130,
-          child: CodexMetricTile(
-            label: 'RS',
-            value: preview.rsTotal.toString(),
-            icon: Icons.health_and_safety_outlined,
-          ),
-        ),
+        const SizedBox(height: 8),
+        _initiativeRollEditor(preview),
       ],
     );
   }
@@ -755,9 +762,6 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   ),
                 ],
               ),
-            ] else if (hasActiveWeapon && !preview.isRangedWeapon) ...[
-              const SizedBox(height: 8),
-              _activeWeaponIniRollEditor(preview),
             ],
           ],
         ),
