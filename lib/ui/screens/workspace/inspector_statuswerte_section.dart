@@ -22,6 +22,9 @@ class _StatuswerteCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mods = hero.persistentMods;
+    final talentBeOverride = ref.watch(talentBeOverrideProvider(heroId));
+    final activeTalentBe = talentBeOverride ?? combat.beKampf;
+    final manualBeModifier = activeTalentBe - combat.beKampf;
     return CodexSectionCard(
       title: 'Statuswerte',
       subtitle: 'Kampf-, Abwehr- und Bewegungswerte im Schnellzugriff',
@@ -110,10 +113,27 @@ class _StatuswerteCard extends ConsumerWidget {
                 : null,
           ),
           const SizedBox(height: 6),
-          _ReadOnlyValueRow(
+          _InspectorValueRow(
             key: const ValueKey<String>('workspace-status-row-be'),
             label: 'BE',
-            value: combat.beKampf,
+            modifier: manualBeModifier,
+            result: activeTalentBe,
+            onDecrement: () {
+              final nextBe = activeTalentBe > 0 ? activeTalentBe - 1 : 0;
+              ref.read(talentBeOverrideProvider(heroId).notifier).state =
+                  nextBe == combat.beKampf ? null : nextBe;
+            },
+            onIncrement: () {
+              final nextBe = activeTalentBe + 1;
+              ref.read(talentBeOverrideProvider(heroId).notifier).state =
+                  nextBe == combat.beKampf ? null : nextBe;
+            },
+            onReset: talentBeOverride != null
+                ? () {
+                    ref.read(talentBeOverrideProvider(heroId).notifier).state =
+                        null;
+                  }
+                : null,
           ),
         ],
       ),
