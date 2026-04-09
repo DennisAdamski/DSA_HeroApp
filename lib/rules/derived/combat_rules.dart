@@ -103,6 +103,7 @@ class CombatPreviewStats {
     required this.waffenmeisterAdditionalManeuvers,
     required this.waffenmeisterReloadTimeHalved,
     required this.waffenmeisterManeuverReductions,
+    this.offhandPreview,
   });
 
   final int rsTotal;
@@ -207,6 +208,87 @@ class CombatPreviewStats {
 
   /// Manoever-Erschwernis-Reduktionen durch Waffenmeisterschaft.
   final Map<String, int> waffenmeisterManeuverReductions;
+
+  /// Eigenstaendige Nebenhand-Vorschau; `null` = keine Nebenhand belegt.
+  final OffhandCombatPreview? offhandPreview;
+}
+
+/// Eigenstaendige Kampfwerte fuer die Nebenhand (Waffe, Schild oder
+/// Parierwaffe).
+class OffhandCombatPreview {
+  const OffhandCombatPreview({
+    required this.displayName,
+    this.isWeapon = false,
+    this.isShield = false,
+    this.isParryWeapon = false,
+    this.isRangedWeapon = false,
+    this.at,
+    this.pa,
+    this.paMitIniParadeMod,
+    this.tpExpression,
+    this.tpCalc,
+    this.damageDiceSpec,
+    this.ebe,
+    this.beMod,
+    this.specApplies = false,
+    this.reloadTime,
+    this.reloadTimeDisplay,
+    this.activeDistanceLabel,
+    this.activeProjectileName,
+    this.activeProjectileCount,
+    this.mainPaMod,
+    this.shieldPa,
+    this.atMod,
+    this.iniMod,
+    this.waffenmeisterActive = false,
+    this.waffenmeisterName = '',
+    this.waffenmeisterAdditionalManeuvers = const <String>[],
+    this.waffenmeisterManeuverReductions = const <String, int>{},
+    this.requiresLinkhandViolation = false,
+    this.weaponInitiative,
+  });
+
+  final String displayName;
+  final bool isWeapon;
+  final bool isShield;
+  final bool isParryWeapon;
+  final bool isRangedWeapon;
+
+  // Eigenstaendige Werte (nur bei Waffe)
+  final int? at;
+  final int? pa;
+  final int? paMitIniParadeMod;
+  final String? tpExpression;
+  final int? tpCalc;
+  final DiceSpec? damageDiceSpec;
+  final int? ebe;
+  final int? beMod;
+  final bool specApplies;
+
+  // Fernkampf (nur bei Fernkampf-Nebenhand)
+  final int? reloadTime;
+  final String? reloadTimeDisplay;
+  final String? activeDistanceLabel;
+  final String? activeProjectileName;
+  final int? activeProjectileCount;
+
+  // Modifikator-basiert (Parierwaffe/Schild)
+  final int? mainPaMod;
+  final int? shieldPa;
+  final int? atMod;
+  final int? iniMod;
+
+  // Waffenmeister
+  final bool waffenmeisterActive;
+  final String waffenmeisterName;
+  final List<String> waffenmeisterAdditionalManeuvers;
+  final Map<String, int> waffenmeisterManeuverReductions;
+
+  // Warnungen
+  final bool requiresLinkhandViolation;
+
+  // Waffen-INI (fuer Referenz)
+  final int? weaponInitiative;
 }
 
 CombatPreviewStats computeCombatPreviewStats(
@@ -486,6 +568,24 @@ CombatPreviewStats computeCombatPreviewStats(
     axxeleratusActive: axxeleratusActive,
   );
 
+  // --- Nebenhand-Vorschau ---
+  final offhandPreview = _buildOffhandPreview(
+    offhandWeapon: offhandWeapon,
+    offhandEquipment: offhandEquipment,
+    offhandModifiers: offhandModifiers,
+    talents: talents,
+    catalogTalents: catalogTalents,
+    config: config,
+    effectiveSheet: effectiveSheet,
+    derived: derived,
+    beKampf: beKampf,
+    atBase: atBase,
+    paBase: paBase,
+    iniParadeMod: iniParadeMod,
+    axxeleratusActive: axxeleratusActive,
+    axxTpBonus: axxTpBonus,
+  );
+
   return CombatPreviewStats(
     rsTotal: clampNonNegative(rsTotal),
     beTotalRaw: clampNonNegative(beTotalRaw),
@@ -578,6 +678,237 @@ CombatPreviewStats computeCombatPreviewStats(
     waffenmeisterAdditionalManeuvers: wmEffects.additionalManeuvers,
     waffenmeisterReloadTimeHalved: wmEffects.reloadTimeHalved,
     waffenmeisterManeuverReductions: wmEffects.maneuverReductions,
+    offhandPreview: offhandPreview,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Nebenhand-Vorschau: Waffe, Schild oder Parierwaffe
+// ---------------------------------------------------------------------------
+
+OffhandCombatPreview? _buildOffhandPreview({
+  required MainWeaponSlot? offhandWeapon,
+  required OffhandEquipmentEntry? offhandEquipment,
+  required OffhandModifierSnapshot offhandModifiers,
+  required Map<String, HeroTalentEntry> talents,
+  required List<TalentDef> catalogTalents,
+  required CombatConfig config,
+  required HeroSheet effectiveSheet,
+  required DerivedStats derived,
+  required int beKampf,
+  required int atBase,
+  required int paBase,
+  required int iniParadeMod,
+  required bool axxeleratusActive,
+  required int axxTpBonus,
+}) {
+  if (offhandWeapon != null) {
+    return _computeOffhandWeaponPreview(
+      slot: offhandWeapon,
+      talents: talents,
+      catalogTalents: catalogTalents,
+      config: config,
+      effectiveSheet: effectiveSheet,
+      derived: derived,
+      beKampf: beKampf,
+      atBase: atBase,
+      paBase: paBase,
+      iniParadeMod: iniParadeMod,
+      axxeleratusActive: axxeleratusActive,
+      axxTpBonus: axxTpBonus,
+    );
+  }
+  if (offhandEquipment != null) {
+    return _computeOffhandEquipmentPreview(
+      offhandModifiers: offhandModifiers,
+      equipment: offhandEquipment,
+    );
+  }
+  return null;
+}
+
+OffhandCombatPreview _computeOffhandWeaponPreview({
+  required MainWeaponSlot slot,
+  required Map<String, HeroTalentEntry> talents,
+  required List<TalentDef> catalogTalents,
+  required CombatConfig config,
+  required HeroSheet effectiveSheet,
+  required DerivedStats derived,
+  required int beKampf,
+  required int atBase,
+  required int paBase,
+  required int iniParadeMod,
+  required bool axxeleratusActive,
+  required int axxTpBonus,
+}) {
+  final selectedTalent = _findTalentDefById(catalogTalents, slot.talentId);
+  final legacyRanged = isRangedCombatTalent(selectedTalent);
+  final isRanged = slot.isRanged || legacyRanged;
+
+  // eBE (talentabhaengig)
+  final beMod = selectedTalent == null
+      ? slot.beTalentMod
+      : parseBeModifier(selectedTalent.be);
+  final ebe = computeEbe(beKampf: beKampf, beMod: beMod);
+  final atEbePart = computeAtEbePart(ebe);
+  final paEbePart = computePaEbePart(ebe);
+
+  // Waffenmeister
+  final wmEffects = computeWaffenmeisterEffects(
+    waffenmeisterschaften: config.waffenmeisterschaften,
+    activeWeaponType: slot.weaponType.trim().isEmpty
+        ? slot.name
+        : slot.weaponType,
+    activeTalentId: slot.talentId,
+  );
+
+  // Spezialisierung
+  final specApplies = hasCombatSpecialization(
+    talents: talents,
+    talentId: slot.talentId,
+    weaponType: slot.weaponType.trim().isEmpty ? slot.name : slot.weaponType,
+  );
+  final atSpecBonus = specApplies ? (isRanged ? 2 : 1) : 0;
+  final paSpecBonus = specApplies && !isRanged ? 1 : 0;
+
+  // TP/KK
+  final wmKkBase = slot.kkBase + wmEffects.tpKkBaseReduction;
+  final wmKkThreshold = slot.kkThreshold + wmEffects.tpKkThresholdReduction;
+  final usesTpKk = _usesTpKkThreshold(
+    kkBase: slot.kkBase,
+    kkThreshold: slot.kkThreshold,
+  );
+  final kkThreshold = usesTpKk && wmKkThreshold < 1 ? 1 : wmKkThreshold;
+  final tpKk = usesTpKk
+      ? computeTpKk(
+          kk: effectiveSheet.attributes.kk,
+          kkBase: wmKkBase,
+          kkThreshold: kkThreshold,
+        )
+      : 0;
+
+  // Fernkampf-spezifisch
+  final activeDistanceBand = slot.rangedProfile.selectedDistanceBand;
+  final activeProjectile = slot.rangedProfile.selectedProjectileOrNull;
+  final distanceTpMod = isRanged ? activeDistanceBand.tpMod : 0;
+  final projectileTpMod = isRanged ? (activeProjectile?.tpMod ?? 0) : 0;
+  final projectileAtMod = isRanged ? (activeProjectile?.atMod ?? 0) : 0;
+
+  final baseTpCalc = slot.tpFlat + tpKk + (isRanged ? 0 : axxTpBonus);
+  final tpCalc = isRanged
+      ? computeRangedTpCalc(
+          baseTpCalc: baseTpCalc,
+          distanceTpMod: distanceTpMod,
+          projectileTpMod: projectileTpMod,
+        )
+      : baseTpCalc;
+
+  // Talent AT/PA
+  final talentEntry = slot.talentId.trim().isEmpty
+      ? null
+      : talents[slot.talentId.trim()];
+  final talentAt = talentEntry?.atValue ?? 0;
+  final talentPa = talentEntry?.paValue ?? 0;
+  final rangedAtBase = isRanged ? derived.fkBase : 0;
+  final rangedAtEbePart = isRanged ? ebe : atEbePart;
+
+  final at = isRanged
+      ? computeRangedAtValue(
+          rangedAtBase: rangedAtBase,
+          talentAtValue: talentAt,
+          weaponAtMod: slot.wmAt,
+          ebeAttackPart: rangedAtEbePart,
+          specializationBonus: atSpecBonus,
+          projectileAtMod: projectileAtMod,
+          manualAtMod: 0,
+        )
+      : talentAt +
+            atBase +
+            slot.wmAt +
+            wmEffects.atWmBonus +
+            atEbePart +
+            atSpecBonus;
+  final pa = isRanged
+      ? 0
+      : talentPa +
+            paBase +
+            slot.wmPa +
+            wmEffects.paWmBonus +
+            paEbePart +
+            paSpecBonus;
+  final paMitIniParadeMod = isRanged ? 0 : pa + iniParadeMod;
+
+  // Ladezeit
+  final reloadTimeResult = computeRangedReloadTime(
+    weapon: slot,
+    specialRules: config.specialRules,
+    axxeleratusActive: axxeleratusActive,
+    talentName: selectedTalent?.name,
+    reloadDivisor: wmEffects.reloadTimeHalved ? 2 : 1,
+  );
+
+  // Initiative (nur fuer Referenz)
+  final iniSnapshot = _computeWeaponInitiativeSnapshot(
+    slot: slot,
+    heldenInitiative: 0, // nur relative Waffen-INI relevant
+    effectiveGe: effectiveSheet.attributes.ge,
+    catalogTalents: catalogTalents,
+    waffenmeisterschaften: config.waffenmeisterschaften,
+  );
+
+  final weaponTypeLabel = slot.weaponType.trim().isEmpty
+      ? slot.name
+      : slot.weaponType;
+
+  return OffhandCombatPreview(
+    displayName: slot.name.trim().isEmpty ? 'Nebenhand' : slot.name,
+    isWeapon: true,
+    isRangedWeapon: isRanged,
+    at: at,
+    pa: pa,
+    paMitIniParadeMod: paMitIniParadeMod,
+    tpExpression: buildTpExpression(slot, tpCalc),
+    tpCalc: tpCalc,
+    damageDiceSpec: DiceSpec(
+      count: slot.tpDiceCount < 1 ? 1 : slot.tpDiceCount,
+      sides: slot.tpDiceSides < 1 ? 6 : slot.tpDiceSides,
+      modifier: tpCalc,
+    ),
+    ebe: ebe,
+    beMod: beMod,
+    specApplies: specApplies,
+    reloadTime: isRanged ? reloadTimeResult.effectiveReloadTime : null,
+    reloadTimeDisplay: isRanged ? reloadTimeResult.displayLabel : null,
+    activeDistanceLabel: isRanged ? activeDistanceBand.label : null,
+    activeProjectileName: isRanged ? (activeProjectile?.name ?? '') : null,
+    activeProjectileCount: isRanged ? (activeProjectile?.count ?? 0) : null,
+    waffenmeisterActive: wmEffects.isActive,
+    waffenmeisterName: wmEffects.isActive
+        ? 'Waffenmeister ($weaponTypeLabel)'
+        : '',
+    waffenmeisterAdditionalManeuvers: wmEffects.additionalManeuvers,
+    waffenmeisterManeuverReductions: wmEffects.maneuverReductions,
+    weaponInitiative: iniSnapshot.kombinierteIni,
+  );
+}
+
+OffhandCombatPreview _computeOffhandEquipmentPreview({
+  required OffhandModifierSnapshot offhandModifiers,
+  required OffhandEquipmentEntry equipment,
+}) {
+  return OffhandCombatPreview(
+    displayName: offhandModifiers.displayName.trim().isEmpty
+        ? (equipment.isShield ? 'Schild' : 'Parierwaffe')
+        : offhandModifiers.displayName,
+    isShield: offhandModifiers.isShield,
+    isParryWeapon: offhandModifiers.isParryWeapon,
+    shieldPa: offhandModifiers.isShield ? offhandModifiers.shieldPa : null,
+    mainPaMod: offhandModifiers.isParryWeapon
+        ? offhandModifiers.mainPaMod
+        : null,
+    atMod: offhandModifiers.atMod != 0 ? offhandModifiers.atMod : null,
+    iniMod: offhandModifiers.iniMod != 0 ? offhandModifiers.iniMod : null,
+    requiresLinkhandViolation: offhandModifiers.requiresLinkhandViolation,
   );
 }
 
