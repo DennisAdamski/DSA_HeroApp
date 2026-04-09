@@ -359,7 +359,12 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
             : null,
         raiseTooltip: 'Talent steigern',
       ),
-      _talentModifierCell(talent: talent, entry: entry, isEditing: isEditing),
+      _talentModifierCell(
+        talent: talent,
+        entry: entry,
+        isEditing: isEditing,
+        inventoryMod: inventoryMod,
+      ),
       _intInputCell(
         talentId: talent.id,
         field: 'specialExperiences',
