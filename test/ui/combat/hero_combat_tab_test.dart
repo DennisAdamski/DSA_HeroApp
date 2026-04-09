@@ -2352,7 +2352,7 @@ void main() {
 
       // Kampfwert-Kachel zeigt Kampf-INI
       expect(find.textContaining('Kampf-INI '), findsOneWidget);
-      // INI-Wurf-Editor ist fuer Nahkampfwaffen sichtbar
+      // INI-Wurf-Editor ist global sichtbar
       expect(
         find.byKey(
           const ValueKey<String>('combat-active-weapon-info-ini-roll'),
@@ -2452,7 +2452,7 @@ void main() {
     expect(find.textContaining('Aufmerksamkeit aktiv'), findsOneWidget);
   });
 
-  testWidgets('melee info panel shows empty state when no weapon is selected', (
+  testWidgets('global initiative panel stays visible when no weapon is selected', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -2490,10 +2490,10 @@ void main() {
 
     // Haupthand-Dropdown zeigt 'Keine Waffe' bei selectedWeaponIndex == -1
     expect(find.text('Keine Waffe'), findsWidgets);
-    // INI-Wurf-Editor ist nicht sichtbar wenn keine Waffe gewaehlt
+    // INI-Wurf-Editor bleibt als globaler Wert sichtbar
     expect(
       find.byKey(const ValueKey<String>('combat-active-weapon-info-ini-roll')),
-      findsNothing,
+      findsOneWidget,
     );
   });
 
