@@ -9,14 +9,31 @@ class _KampfWerteSection extends StatelessWidget {
     required this.companion,
     required this.isEditing,
     required this.onChanged,
+    this.onRaiseRegular,
+    this.onRaisePool,
   });
 
   final HeroCompanion companion;
   final bool isEditing;
   final ValueChanged<HeroCompanion> onChanged;
+  final void Function(String key, String label)? onRaiseRegular;
+  final void Function(String key, String label)? onRaisePool;
 
   @override
   Widget build(BuildContext context) {
+    // Im View-Modus effektive Werte anzeigen (Basis + Steigerung).
+    final iniView = isEditing
+        ? companion.ini
+        : companionEffektivwert(companion, 'ini') ?? companion.ini;
+    final mrView = isEditing
+        ? companion.magieresistenz
+        : companionEffektiverPoolwert(companion, 'mr') ??
+            companion.magieresistenz;
+    final loyView = isEditing
+        ? companion.loyalitaet
+        : companionEffektivwert(companion, 'loyalitaet') ??
+            companion.loyalitaet;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -27,28 +44,49 @@ class _KampfWerteSection extends StatelessWidget {
             Expanded(
               child: _NullableIntField(
                 label: 'INI',
-                value: companion.ini,
+                value: iniView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(ini: v)),
+                suffixIcon: onRaiseRegular != null && companion.ini != null
+                    ? _RaiseIconButton(
+                        tooltip: 'INI steigern',
+                        onPressed: () => onRaiseRegular!('ini', 'INI'),
+                      )
+                    : null,
               ),
             ),
             const SizedBox(width: _fieldSpacing),
             Expanded(
               child: _NullableIntField(
                 label: 'Magieresistenz',
-                value: companion.magieresistenz,
+                value: mrView,
                 isEditing: isEditing,
                 onChanged: (v) =>
                     onChanged(companion.copyWith(magieresistenz: v)),
+                suffixIcon:
+                    onRaisePool != null && companion.magieresistenz != null
+                        ? _RaiseIconButton(
+                            tooltip: 'MR steigern',
+                            onPressed: () => onRaisePool!('mr', 'MR'),
+                          )
+                        : null,
               ),
             ),
             const SizedBox(width: _fieldSpacing),
             Expanded(
               child: _NullableIntField(
                 label: 'Loyalität',
-                value: companion.loyalitaet,
+                value: loyView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(loyalitaet: v)),
+                suffixIcon:
+                    onRaiseRegular != null && companion.loyalitaet != null
+                        ? _RaiseIconButton(
+                            tooltip: 'Loyalität steigern',
+                            onPressed: () =>
+                                onRaiseRegular!('loyalitaet', 'Loyalität'),
+                          )
+                        : null,
               ),
             ),
           ],
@@ -112,12 +150,14 @@ class _NullableIntField extends StatelessWidget {
     required this.value,
     required this.isEditing,
     required this.onChanged,
+    this.suffixIcon,
   });
 
   final String label;
   final int? value;
   final bool isEditing;
   final ValueChanged<int?> onChanged;
+  final Widget? suffixIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +172,13 @@ class _NullableIntField extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          Text(value?.toString() ?? '–'),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(value?.toString() ?? '–'),
+              if (suffixIcon != null) ?suffixIcon,
+            ],
+          ),
         ],
       );
     }
@@ -142,6 +188,10 @@ class _NullableIntField extends StatelessWidget {
         labelText: label,
         border: const OutlineInputBorder(),
         isDense: true,
+        suffixIcon: suffixIcon,
+        suffixIconConstraints: suffixIcon != null
+            ? const BoxConstraints(minWidth: 32, minHeight: 32)
+            : null,
       ),
       keyboardType: TextInputType.number,
       onChanged: (v) => onChanged(int.tryParse(v)),
@@ -277,14 +327,27 @@ class _LepSection extends StatelessWidget {
     required this.companion,
     required this.isEditing,
     required this.onChanged,
+    this.onRaisePool,
   });
 
   final HeroCompanion companion;
   final bool isEditing;
   final ValueChanged<HeroCompanion> onChanged;
+  final void Function(String key, String label)? onRaisePool;
 
   @override
   Widget build(BuildContext context) {
+    // Im View-Modus effektive Pool-Werte anzeigen.
+    final lepView = isEditing
+        ? companion.maxLep
+        : companionEffektiverPoolwert(companion, 'lep') ?? companion.maxLep;
+    final aupView = isEditing
+        ? companion.maxAup
+        : companionEffektiverPoolwert(companion, 'aup') ?? companion.maxAup;
+    final aspView = isEditing
+        ? companion.maxAsp
+        : companionEffektiverPoolwert(companion, 'asp') ?? companion.maxAsp;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -294,27 +357,45 @@ class _LepSection extends StatelessWidget {
             Expanded(
               child: _NullableIntField(
                 label: 'LeP (max)',
-                value: companion.maxLep,
+                value: lepView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(maxLep: v)),
+                suffixIcon: onRaisePool != null && companion.maxLep != null
+                    ? _RaiseIconButton(
+                        tooltip: 'LeP steigern',
+                        onPressed: () => onRaisePool!('lep', 'LeP'),
+                      )
+                    : null,
               ),
             ),
             const SizedBox(width: _fieldSpacing),
             Expanded(
               child: _NullableIntField(
                 label: 'AuP (max)',
-                value: companion.maxAup,
+                value: aupView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(maxAup: v)),
+                suffixIcon: onRaisePool != null && companion.maxAup != null
+                    ? _RaiseIconButton(
+                        tooltip: 'AuP steigern',
+                        onPressed: () => onRaisePool!('aup', 'AuP'),
+                      )
+                    : null,
               ),
             ),
             const SizedBox(width: _fieldSpacing),
             Expanded(
               child: _NullableIntField(
                 label: 'AsP (max)',
-                value: companion.maxAsp,
+                value: aspView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(maxAsp: v)),
+                suffixIcon: onRaisePool != null && companion.maxAsp != null
+                    ? _RaiseIconButton(
+                        tooltip: 'AsP steigern',
+                        onPressed: () => onRaisePool!('asp', 'AsP'),
+                      )
+                    : null,
               ),
             ),
           ],
