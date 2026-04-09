@@ -3393,7 +3393,9 @@ void main() {
       await openCombatTab(tester, repo);
       await openMeleeTab(tester);
 
-      expect(find.text('Distanz: -'), findsOneWidget);
+      // Fernkampf-Chips erscheinen jetzt in der Nebenhand-Sektion mit
+      // den tatsaechlichen Werten der Nebenhand-Waffe.
+      expect(find.text('Distanz: Distanz 1'), findsOneWidget);
       expect(find.text('Geschoss: -'), findsOneWidget);
     },
   );
