@@ -125,17 +125,31 @@ class _BegleiterDetailView extends StatelessWidget {
   const _BegleiterDetailView({
     required this.companion,
     required this.isEditing,
+    required this.canRaise,
     required this.onBack,
     required this.onChanged,
     required this.onDelete,
+    required this.onSaveImmediate,
+    this.onRaiseRegular,
+    this.onRaisePool,
+    this.onRaiseAngriffAt,
+    this.onRaiseAngriffPa,
+    this.onRaiseRk,
     this.vertrautenmagieKategorie,
   });
 
   final HeroCompanion companion;
   final bool isEditing;
+  final bool canRaise;
   final VoidCallback onBack;
   final ValueChanged<HeroCompanion> onChanged;
   final VoidCallback onDelete;
+  final ValueChanged<HeroCompanion> onSaveImmediate;
+  final void Function(String key, String label)? onRaiseRegular;
+  final void Function(String key, String label)? onRaisePool;
+  final void Function(String attackId)? onRaiseAngriffAt;
+  final void Function(String attackId)? onRaiseAngriffPa;
+  final VoidCallback? onRaiseRk;
   final HeroRitualCategory? vertrautenmagieKategorie;
 
   @override
@@ -187,24 +201,30 @@ class _BegleiterDetailView extends StatelessWidget {
                   companion: companion,
                   isEditing: isEditing,
                   onChanged: onChanged,
+                  onRaiseRegular: onRaiseRegular,
                 ),
                 const SizedBox(height: _sectionSpacing),
                 _KampfWerteSection(
                   companion: companion,
                   isEditing: isEditing,
                   onChanged: onChanged,
+                  onRaiseRegular: onRaiseRegular,
+                  onRaisePool: onRaisePool,
                 ),
                 const SizedBox(height: _sectionSpacing),
                 _AngriffseSection(
                   companion: companion,
                   isEditing: isEditing,
                   onChanged: onChanged,
+                  onRaiseAngriffAt: onRaiseAngriffAt,
+                  onRaiseAngriffPa: onRaiseAngriffPa,
                 ),
                 const SizedBox(height: _sectionSpacing),
                 _LepSection(
                   companion: companion,
                   isEditing: isEditing,
                   onChanged: onChanged,
+                  onRaisePool: onRaisePool,
                 ),
                 const SizedBox(height: _sectionSpacing),
                 _WeiteresSection(
@@ -236,6 +256,8 @@ class _BegleiterDetailView extends StatelessWidget {
                   _VertrautenmagieSection(
                     kategorie: vertrautenmagieKategorie!,
                     isEditing: isEditing,
+                    onRaiseRk: onRaiseRk,
+                    rkSteigerung: companionSteigerung(companion, 'rk'),
                     onChanged: (updatedKat) => onChanged(
                       companion.copyWith(
                         ritualCategories: companion.ritualCategories

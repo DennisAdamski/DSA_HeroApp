@@ -18,11 +18,15 @@ class _VertrautenmagieSection extends StatelessWidget {
     required this.kategorie,
     required this.isEditing,
     required this.onChanged,
+    this.onRaiseRk,
+    this.rkSteigerung = 0,
   });
 
   final HeroRitualCategory kategorie;
   final bool isEditing;
   final ValueChanged<HeroRitualCategory> onChanged;
+  final VoidCallback? onRaiseRk;
+  final int rkSteigerung;
 
   void _removeRitual(int index) {
     final updated = List<HeroRitualEntry>.from(kategorie.rituals)
@@ -52,30 +56,59 @@ class _VertrautenmagieSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rk = kategorie.ownKnowledge?.value ?? 0;
+    final basisRk = kategorie.ownKnowledge?.value ?? 0;
+    final effRk = basisRk + rkSteigerung;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _SectionHeader('Vertrautenmagie'),
         isEditing
-            ? EditAwareIntField(
-                label: 'Ritualkenntnis (RK)',
-                value: rk,
-                isEditing: true,
-                onChanged: (v) => onChanged(
-                  kategorie.copyWith(
-                    ownKnowledge: (kategorie.ownKnowledge ??
-                            const HeroRitualKnowledge(
-                              name: 'Vertrautenmagie',
-                              value: 0,
-                              learningComplexity: 'E',
-                            ))
-                        .copyWith(value: v ?? 0),
+            ? Row(
+                children: [
+                  Expanded(
+                    child: EditAwareIntField(
+                      label: 'Ritualkenntnis (RK)',
+                      value: basisRk,
+                      isEditing: true,
+                      onChanged: (v) => onChanged(
+                        kategorie.copyWith(
+                          ownKnowledge: (kategorie.ownKnowledge ??
+                                  const HeroRitualKnowledge(
+                                    name: 'Vertrautenmagie',
+                                    value: 0,
+                                    learningComplexity: 'E',
+                                  ))
+                              .copyWith(value: v ?? 0),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  if (onRaiseRk != null)
+                    _RaiseIconButton(
+                      tooltip: 'RK steigern',
+                      onPressed: onRaiseRk!,
+                    ),
+                ],
               )
-            : Wrap(
-                children: [Chip(label: Text('RK: $rk'))],
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Chip(
+                    label: Text(
+                      'RK: $effRk',
+                      style: rkSteigerung > 0
+                          ? TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                            )
+                          : null,
+                    ),
+                  ),
+                  if (onRaiseRk != null)
+                    _RaiseIconButton(
+                      tooltip: 'RK steigern',
+                      onPressed: onRaiseRk!,
+                    ),
+                ],
               ),
         const SizedBox(height: 8),
         ...kategorie.rituals.asMap().entries.map(

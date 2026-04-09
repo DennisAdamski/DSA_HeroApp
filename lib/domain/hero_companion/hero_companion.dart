@@ -83,6 +83,12 @@ class HeroCompanion {
     this.ruestungsgewoehnung = 0,
     // Ritualkategorien (nur fuer Vertraute: Vertrautenmagie).
     this.ritualCategories = const <HeroRitualCategory>[],
+    // Steigerungen (nur fuer Vertraute).
+    this.steigerungen = const <String, int>{},
+    this.startLep,
+    this.startAup,
+    this.startAsp,
+    this.startMr,
   });
 
   /// Stabiler Schluessel des Begleiters.
@@ -217,6 +223,25 @@ class HeroCompanion {
   /// Leer fuer Nicht-Vertraute.
   final List<HeroRitualCategory> ritualCategories;
 
+  // ---- Steigerungen (Vertraute) ---------------------------------------------
+
+  /// Gekaufte Steigerungen pro Wert-Schluessel (Komplexitaet F).
+  /// Keys: 'mu','kl','inn','ch','ff','ge','ko','kk','ini','mr','loyalitaet','lep','asp'.
+  final Map<String, int> steigerungen;
+
+  /// Startwert fuer LeP — wird einmalig festgehalten und bestimmt das
+  /// Steigerungsmaximum (1,5 × Startwert).
+  final int? startLep;
+
+  /// Startwert fuer AuP (analog zu startLep).
+  final int? startAup;
+
+  /// Startwert fuer AsP (analog zu startLep).
+  final int? startAsp;
+
+  /// Startwert fuer MR (analog zu startLep).
+  final int? startMr;
+
   HeroCompanion copyWith({
     String? id,
     String? name,
@@ -257,6 +282,11 @@ class HeroCompanion {
     List<ArmorPiece>? ruestungsTeile,
     int? ruestungsgewoehnung,
     List<HeroRitualCategory>? ritualCategories,
+    Map<String, int>? steigerungen,
+    Object? startLep = _keepNull,
+    Object? startAup = _keepNull,
+    Object? startAsp = _keepNull,
+    Object? startMr = _keepNull,
   }) {
     return HeroCompanion(
       id: id ?? this.id,
@@ -302,6 +332,18 @@ class HeroCompanion {
       ruestungsTeile: ruestungsTeile ?? this.ruestungsTeile,
       ruestungsgewoehnung: ruestungsgewoehnung ?? this.ruestungsgewoehnung,
       ritualCategories: ritualCategories ?? this.ritualCategories,
+      steigerungen: steigerungen ?? this.steigerungen,
+      startLep: identical(startLep, _keepNull)
+          ? this.startLep
+          : startLep as int?,
+      startAup: identical(startAup, _keepNull)
+          ? this.startAup
+          : startAup as int?,
+      startAsp: identical(startAsp, _keepNull)
+          ? this.startAsp
+          : startAsp as int?,
+      startMr:
+          identical(startMr, _keepNull) ? this.startMr : startMr as int?,
     );
   }
 
@@ -354,6 +396,11 @@ class HeroCompanion {
       if (ritualCategories.isNotEmpty)
         'ritualCategories':
             ritualCategories.map((c) => c.toJson()).toList(growable: false),
+      if (steigerungen.isNotEmpty) 'steigerungen': steigerungen,
+      if (startLep != null) 'startLep': startLep,
+      if (startAup != null) 'startAup': startAup,
+      if (startAsp != null) 'startAsp': startAsp,
+      if (startMr != null) 'startMr': startMr,
     };
   }
 
@@ -434,6 +481,12 @@ class HeroCompanion {
                 (m) => HeroRitualCategory.fromJson(m.cast<String, dynamic>()),
               )
               .toList(growable: false),
+      steigerungen: ((json['steigerungen'] as Map?) ?? const <String, dynamic>{})
+          .map((k, v) => MapEntry(k as String, (v as num).toInt())),
+      startLep: (json['startLep'] as num?)?.toInt(),
+      startAup: (json['startAup'] as num?)?.toInt(),
+      startAsp: (json['startAsp'] as num?)?.toInt(),
+      startMr: (json['startMr'] as num?)?.toInt(),
     );
   }
 
@@ -479,7 +532,12 @@ class HeroCompanion {
           _listEqual(sonderfertigkeiten, other.sonderfertigkeiten) &&
           _armorListEqual(ruestungsTeile, other.ruestungsTeile) &&
           ruestungsgewoehnung == other.ruestungsgewoehnung &&
-          _listEqual(ritualCategories, other.ritualCategories);
+          _listEqual(ritualCategories, other.ritualCategories) &&
+          _mapEqual(steigerungen, other.steigerungen) &&
+          startLep == other.startLep &&
+          startAup == other.startAup &&
+          startAsp == other.startAsp &&
+          startMr == other.startMr;
 
   @override
   int get hashCode => Object.hashAll([
@@ -522,6 +580,11 @@ class HeroCompanion {
     ...ruestungsTeile,
     ruestungsgewoehnung,
     ...ritualCategories,
+    ...steigerungen.entries.map((e) => '${e.key}:${e.value}'),
+    startLep,
+    startAup,
+    startAsp,
+    startMr,
   ]);
 }
 
@@ -551,6 +614,14 @@ bool _listEqual<T>(List<T> a, List<T> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {
     if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
+bool _mapEqual(Map<String, int> a, Map<String, int> b) {
+  if (a.length != b.length) return false;
+  for (final entry in a.entries) {
+    if (b[entry.key] != entry.value) return false;
   }
   return true;
 }

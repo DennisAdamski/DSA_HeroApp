@@ -9,11 +9,13 @@ class _EigenschaftenSection extends StatelessWidget {
     required this.companion,
     required this.isEditing,
     required this.onChanged,
+    this.onRaiseRegular,
   });
 
   final HeroCompanion companion;
   final bool isEditing;
   final ValueChanged<HeroCompanion> onChanged;
+  final void Function(String key, String label)? onRaiseRegular;
 
   static const _attrs = <(String, String)>[
     ('MU', 'mu'),
@@ -82,7 +84,14 @@ class _EigenschaftenSection extends StatelessWidget {
       runSpacing: 4,
       children: [
         for (final (label, key) in defined)
-          _AttrChip(label: label, value: _valueFor(key)!),
+          _AttrChip(
+            label: label,
+            value: companionEffektivwert(companion, key) ?? _valueFor(key)!,
+            hasSteigerung: companionSteigerung(companion, key) > 0,
+            onRaise: onRaiseRegular != null
+                ? () => onRaiseRegular!(key, label)
+                : null,
+          ),
       ],
     );
   }
@@ -103,6 +112,13 @@ class _EigenschaftenSection extends StatelessWidget {
                       value: _valueFor(_attrs[j].$2),
                       onChanged: (v) =>
                           onChanged(_setAttr(_attrs[j].$2, v)),
+                      onRaise: onRaiseRegular != null &&
+                              _valueFor(_attrs[j].$2) != null
+                          ? () => onRaiseRegular!(
+                                _attrs[j].$2,
+                                _attrs[j].$1,
+                              )
+                          : null,
                     ),
                   ),
                 ],
@@ -115,15 +131,46 @@ class _EigenschaftenSection extends StatelessWidget {
 }
 
 class _AttrChip extends StatelessWidget {
-  const _AttrChip({required this.label, required this.value});
+  const _AttrChip({
+    required this.label,
+    required this.value,
+    this.hasSteigerung = false,
+    this.onRaise,
+  });
   final String label;
   final int value;
+  final bool hasSteigerung;
+  final VoidCallback? onRaise;
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      label: Text('$label $value'),
-      visualDensity: VisualDensity.compact,
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Chip(
+          label: Text(
+            '$label $value',
+            style: hasSteigerung
+                ? TextStyle(color: theme.colorScheme.primary)
+                : null,
+          ),
+          visualDensity: VisualDensity.compact,
+        ),
+        if (onRaise != null)
+          IconButton(
+            icon: Icon(
+              Icons.trending_up,
+              size: 18,
+              color: theme.colorScheme.primary,
+            ),
+            tooltip: '$label steigern',
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            onPressed: onRaise,
+          ),
+      ],
     );
   }
 }
@@ -133,11 +180,13 @@ class _AttrEditField extends StatefulWidget {
     required this.label,
     required this.value,
     required this.onChanged,
+    this.onRaise,
   });
 
   final String label;
   final int? value;
   final ValueChanged<int?> onChanged;
+  final VoidCallback? onRaise;
 
   @override
   State<_AttrEditField> createState() => _AttrEditFieldState();
@@ -210,6 +259,21 @@ class _AttrEditFieldState extends State<_AttrEditField> {
             labelText: widget.label,
             border: const OutlineInputBorder(),
             isDense: true,
+            suffixIcon: widget.onRaise != null && _enabled
+                ? IconButton(
+                    icon: Icon(
+                      Icons.trending_up,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    tooltip: '${widget.label} steigern',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: widget.onRaise,
+                  )
+                : null,
+            suffixIconConstraints: widget.onRaise != null && _enabled
+                ? const BoxConstraints(minWidth: 32, minHeight: 32)
+                : null,
           ),
           keyboardType: TextInputType.number,
           onChanged: (v) {

@@ -336,6 +336,108 @@ void main() {
     });
   });
 
+  group('HeroCompanion – Steigerungen', () {
+    test('Roundtrip mit steigerungen und Startwerten', () {
+      final companion = HeroCompanion(
+        id: 'stg-1',
+        typ: BegleiterTyp.vertrauter,
+        mu: 12,
+        maxLep: 20,
+        maxAup: 15,
+        maxAsp: 10,
+        magieresistenz: 4,
+        steigerungen: const {'mu': 2, 'lep': 5, 'aup': 2, 'asp': 3, 'mr': 1},
+        startLep: 20,
+        startAup: 15,
+        startAsp: 10,
+        startMr: 4,
+      );
+      final json = companion.toJson();
+      final restored = HeroCompanion.fromJson(json);
+      expect(restored, equals(companion));
+      expect(restored.steigerungen['mu'], 2);
+      expect(restored.steigerungen['lep'], 5);
+      expect(restored.steigerungen['aup'], 2);
+      expect(restored.startLep, 20);
+      expect(restored.startAup, 15);
+      expect(restored.startAsp, 10);
+      expect(restored.startMr, 4);
+    });
+
+    test('fromJson ohne steigerungen ergibt leere Map', () {
+      final companion = HeroCompanion.fromJson({'id': 'x'});
+      expect(companion.steigerungen, isEmpty);
+      expect(companion.startLep, isNull);
+      expect(companion.startAup, isNull);
+      expect(companion.startAsp, isNull);
+      expect(companion.startMr, isNull);
+    });
+
+    test('toJson schreibt steigerungen nur bei nicht-leerer Map', () {
+      const companion = HeroCompanion(id: 'a');
+      final json = companion.toJson();
+      expect(json.containsKey('steigerungen'), isFalse);
+      expect(json.containsKey('startLep'), isFalse);
+    });
+
+    test('toJson mit Startwerten serialisiert diese', () {
+      const companion = HeroCompanion(
+        id: 'b',
+        startLep: 15,
+        startAup: 12,
+        startMr: 3,
+      );
+      final json = companion.toJson();
+      expect(json['startLep'], 15);
+      expect(json['startAup'], 12);
+      expect(json['startMr'], 3);
+      expect(json.containsKey('startAsp'), isFalse);
+    });
+
+    test('copyWith aktualisiert steigerungen', () {
+      const companion = HeroCompanion(id: 'c');
+      final updated = companion.copyWith(
+        steigerungen: const {'mu': 1},
+        startLep: 20,
+      );
+      expect(updated.steigerungen['mu'], 1);
+      expect(updated.startLep, 20);
+      expect(companion.steigerungen, isEmpty);
+    });
+  });
+
+  group('HeroCompanionAttack – Steigerungen', () {
+    test('Roundtrip mit steigerungAt und steigerungPa', () {
+      const attack = HeroCompanionAttack(
+        id: 'atk-stg',
+        name: 'Beißen',
+        at: 14,
+        pa: 7,
+        tp: '1W6+4',
+        steigerungAt: 3,
+        steigerungPa: 1,
+      );
+      final json = attack.toJson();
+      final restored = HeroCompanionAttack.fromJson(json);
+      expect(restored, equals(attack));
+      expect(restored.steigerungAt, 3);
+      expect(restored.steigerungPa, 1);
+    });
+
+    test('fromJson ohne steigerung-Felder ergibt 0', () {
+      final attack = HeroCompanionAttack.fromJson({'id': 'x'});
+      expect(attack.steigerungAt, 0);
+      expect(attack.steigerungPa, 0);
+    });
+
+    test('toJson schreibt steigerung nur bei != 0', () {
+      const attack = HeroCompanionAttack(id: 'x', at: 10);
+      final json = attack.toJson();
+      expect(json.containsKey('steigerungAt'), isFalse);
+      expect(json.containsKey('steigerungPa'), isFalse);
+    });
+  });
+
   group('HeroSheet mit companions', () {
     const testAttributes = Attributes(
       mu: 8,
