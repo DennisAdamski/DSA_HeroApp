@@ -497,6 +497,97 @@ extension _CombatStateHelpers on _HeroCombatTabState {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // Nebenhand-Fernkampf-Steuerelemente
+  // ---------------------------------------------------------------------------
+
+  int _offhandWeaponIndex() {
+    final assignment = _draftCombatConfig.offhandAssignment;
+    if (!assignment.usesWeapon) {
+      return -1;
+    }
+    return assignment.weaponIndex;
+  }
+
+  Future<void> _updateOffhandRangedDistance(
+    int nextDistanceIndex, {
+    required RulesCatalog catalog,
+  }) async {
+    final idx = _offhandWeaponIndex();
+    final combatTalents = sortedCombatTalents(
+      catalog.talents.where(isCombatTalentDef).toList(growable: false),
+    );
+    await _updateWeaponSlot(
+      idx,
+      (current) => current.copyWith(
+        rangedProfile: current.rangedProfile.copyWith(
+          selectedDistanceIndex: nextDistanceIndex,
+        ),
+      ),
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _updateOffhandRangedProjectile(
+    int nextProjectileIndex, {
+    required RulesCatalog catalog,
+  }) async {
+    final idx = _offhandWeaponIndex();
+    final combatTalents = sortedCombatTalents(
+      catalog.talents.where(isCombatTalentDef).toList(growable: false),
+    );
+    await _updateWeaponSlot(
+      idx,
+      (current) => current.copyWith(
+        rangedProfile: current.rangedProfile.copyWith(
+          selectedProjectileIndex: nextProjectileIndex,
+        ),
+      ),
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
+  Future<void> _adjustOffhandProjectileCount(
+    int delta, {
+    required RulesCatalog catalog,
+  }) async {
+    final idx = _offhandWeaponIndex();
+    if (idx < 0 || idx >= _draftCombatConfig.weaponSlots.length) {
+      return;
+    }
+    final weapon = _draftCombatConfig.weaponSlots[idx];
+    final projectileIndex = weapon.rangedProfile.selectedProjectileIndex;
+    if (projectileIndex < 0 ||
+        projectileIndex >= weapon.rangedProfile.projectiles.length) {
+      return;
+    }
+    final combatTalents = sortedCombatTalents(
+      catalog.talents.where(isCombatTalentDef).toList(growable: false),
+    );
+    await _updateWeaponSlot(
+      idx,
+      (current) {
+        final updatedProjectiles = List<RangedProjectile>.from(
+          current.rangedProfile.projectiles,
+        );
+        final currentProjectile = updatedProjectiles[projectileIndex];
+        final nextCount = (currentProjectile.count + delta).clamp(0, 9999);
+        updatedProjectiles[projectileIndex] = currentProjectile.copyWith(
+          count: nextCount,
+        );
+        return current.copyWith(
+          rangedProfile: current.rangedProfile.copyWith(
+            projectiles: updatedProjectiles,
+          ),
+        );
+      },
+      catalog: catalog,
+      combatTalents: combatTalents,
+    );
+  }
+
   Future<void> _saveWeaponSlot({
     required MainWeaponSlot slot,
     required RulesCatalog catalog,
