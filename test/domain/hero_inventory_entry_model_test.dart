@@ -166,6 +166,30 @@ void main() {
       final entry = HeroInventoryEntry.fromJson(json);
       expect(entry.traegerTyp, InventoryTraeger.held);
     });
+
+    test('generisch typisierte Modifier-Maps werden tolerant geladen', () {
+      final json = <String, dynamic>{
+        'gegenstand': 'Stiefel',
+        'itemType': 'ausruestung',
+        'istAusgeruestet': true,
+        'modifiers': <Map<dynamic, dynamic>>[
+          <dynamic, dynamic>{
+            'kind': 'stat',
+            'targetId': 'gs',
+            'wert': 2,
+            'beschreibung': 'Leicht',
+          },
+        ],
+      };
+
+      final entry = HeroInventoryEntry.fromJson(json);
+
+      expect(entry.modifiers, hasLength(1));
+      expect(entry.modifiers.first.kind, InventoryModifierKind.stat);
+      expect(entry.modifiers.first.targetId, 'gs');
+      expect(entry.modifiers.first.wert, 2);
+      expect(entry.modifiers.first.beschreibung, 'Leicht');
+    });
   });
 
   group('InventoryTraeger – Roundtrip', () {
