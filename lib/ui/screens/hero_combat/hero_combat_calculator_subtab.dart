@@ -2,7 +2,8 @@ part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 
 /// Gemeinsame Helfer fuer den Kampf-Preview (INI-Wurf-Editor).
 extension _HeroCombatCalculatorHelpers on _HeroCombatTabState {
-  Widget _activeWeaponIniRollEditor(CombatPreviewStats preview) {
+  /// Baut den globalen Editor fuer den aktuellen INI-Wurf.
+  Widget _initiativeRollEditor(CombatPreviewStats preview) {
     final maxRoll = preview.iniDiceCount * 6;
     final isAuto = _draftCombatConfig.specialRules.aufmerksamkeit;
     final effectiveRoll = _effectiveIniRollForConfig(_draftCombatConfig);
