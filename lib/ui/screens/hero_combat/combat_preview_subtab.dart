@@ -105,21 +105,13 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
     );
   }
 
-  /// Zeigt die aktuellen Kampfwerte in einer kompakten Übersicht.
+  /// Zeigt die aktuellen Kampfwerte in einer kompakten Übersicht, aufgeteilt
+  /// in globale Werte, Haupthand und optionale Nebenhand.
   Widget _buildCombatPreviewValuesCard({
     required CombatPreviewStats preview,
     required MainWeaponSlot? offhandWeapon,
   }) {
-    final hasHeldRangedWeapon = _hasHeldRangedWeapon(
-      preview: preview,
-      offhandWeapon: offhandWeapon,
-    );
-    final activeDistanceLabel = preview.activeDistanceLabel.trim().isEmpty
-        ? '-'
-        : preview.activeDistanceLabel;
-    final activeProjectileName = preview.activeProjectileName.trim().isEmpty
-        ? '-'
-        : preview.activeProjectileName;
+    final offhandPreview = preview.offhandPreview;
     return CodexSectionCard(
       title: 'Aktuelle Kampfwerte',
       subtitle:
@@ -127,147 +119,392 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              SizedBox(
-                width: 140,
-                child: CodexMetricTile(
-                  label: 'AT',
-                  value: preview.at.toString(),
-                  icon: Icons.gps_fixed,
-                  highlight: true,
-                  onTap: () => showProbeDialog(
-                    context: context,
-                    request: buildCombatCheckProbeRequest(
-                      type: ProbeType.combatAttack,
-                      title: 'Kampfprobe: AT',
-                      targetValue: preview.at,
-                    ),
-                  ),
-                ),
-              ),
-              if (!preview.isRangedWeapon)
-                SizedBox(
-                  width: 140,
-                  child: CodexMetricTile(
-                    label: 'PA',
-                    value: preview.paMitIniParadeMod.toString(),
-                    icon: Icons.shield_outlined,
-                    onTap: () => showProbeDialog(
-                      context: context,
-                      request: buildCombatCheckProbeRequest(
-                        type: ProbeType.combatParry,
-                        title: 'Kampfprobe: PA',
-                        targetValue: preview.paMitIniParadeMod,
-                      ),
-                    ),
-                  ),
-                ),
-              SizedBox(
-                width: 160,
-                child: CodexMetricTile(
-                  label: 'TP',
-                  value: preview.tpExpression,
-                  icon: Icons.whatshot_outlined,
-                  onTap: () => showProbeDialog(
-                    context: context,
-                    request: buildDamageProbeRequest(
-                      title: 'Schadenswurf',
-                      diceSpec: preview.damageDiceSpec,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 160,
-                child: CodexMetricTile(
-                  label: 'Kampf-INI',
-                  value: preview.kampfInitiative.toString(),
-                  icon: Icons.flash_on_outlined,
-                  onTap: () => showProbeDialog(
-                    context: context,
-                    request: buildInitiativeProbeRequest(
-                      title: 'Initiativwurf',
-                      diceSpec: preview.initiativeDiceSpec,
-                      fixedRollTotal: preview.initiativeFixedRollTotal,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 150,
-                child: CodexMetricTile(
-                  label: 'Ausweichen',
-                  value: preview.ausweichen.toString(),
-                  icon: Icons.directions_run_outlined,
-                  onTap: () => showProbeDialog(
-                    context: context,
-                    request: buildCombatCheckProbeRequest(
-                      type: ProbeType.dodge,
-                      title: 'Kampfprobe: Ausweichen',
-                      targetValue: preview.ausweichen,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 130,
-                child: CodexMetricTile(
-                  label: 'RS',
-                  value: preview.rsTotal.toString(),
-                  icon: Icons.health_and_safety_outlined,
-                ),
-              ),
-              SizedBox(
-                width: 130,
-                child: CodexMetricTile(
-                  label: 'eBE',
-                  value: preview.ebe.toString(),
-                  icon: Icons.balance_outlined,
-                ),
-              ),
-              if (preview.isRangedWeapon)
-                SizedBox(
-                  width: 160,
-                  child: CodexMetricTile(
-                    label: 'Ladezeit',
-                    value: preview.reloadTimeDisplay,
-                    icon: Icons.timer_outlined,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              if (hasHeldRangedWeapon)
-                Chip(label: Text('Distanz: $activeDistanceLabel')),
-              if (hasHeldRangedWeapon)
-                Chip(label: Text('Geschoss: $activeProjectileName')),
-              if (preview.isRangedWeapon)
-                Chip(
-                  label: Text(
-                    'Geschosse: ${preview.activeProjectileCount}',
-                  ),
-                ),
-              ..._buildWaffenmeisterPreviewChips(preview: preview),
-            ],
-          ),
+          // --- Globale / waffenunabhängige Werte ---
+          _buildGlobalCombatValues(preview: preview),
+          const Divider(height: 24),
+          // --- Haupthand ---
+          _buildMainHandValues(preview: preview),
+          // --- Nebenhand (konditionell) ---
+          if (offhandPreview != null) ...[
+            const Divider(height: 24),
+            _buildOffhandValues(offhandPreview: offhandPreview),
+          ],
         ],
       ),
     );
   }
 
-  /// Zeigt die zur aktuellen Waffe möglichen Manöver.
+  /// Globale Kampfwerte: INI, Ausweichen, RS.
+  Widget _buildGlobalCombatValues({required CombatPreviewStats preview}) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        SizedBox(
+          width: 160,
+          child: CodexMetricTile(
+            label: 'Kampf-INI',
+            value: preview.kampfInitiative.toString(),
+            icon: Icons.flash_on_outlined,
+            onTap: () => showProbeDialog(
+              context: context,
+              request: buildInitiativeProbeRequest(
+                title: 'Initiativwurf',
+                diceSpec: preview.initiativeDiceSpec,
+                fixedRollTotal: preview.initiativeFixedRollTotal,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 150,
+          child: CodexMetricTile(
+            label: 'Ausweichen',
+            value: preview.ausweichen.toString(),
+            icon: Icons.directions_run_outlined,
+            onTap: () => showProbeDialog(
+              context: context,
+              request: buildCombatCheckProbeRequest(
+                type: ProbeType.dodge,
+                title: 'Kampfprobe: Ausweichen',
+                targetValue: preview.ausweichen,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 130,
+          child: CodexMetricTile(
+            label: 'RS',
+            value: preview.rsTotal.toString(),
+            icon: Icons.health_and_safety_outlined,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Haupthand-spezifische Kampfwerte: AT, PA, TP, eBE, Fernkampf-Chips.
+  Widget _buildMainHandValues({required CombatPreviewStats preview}) {
+    final mainName = _draftCombatConfig.selectedWeapon.name.trim();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Haupthand${mainName.isEmpty ? '' : ': $mainName'}',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            SizedBox(
+              width: 140,
+              child: CodexMetricTile(
+                label: 'AT',
+                value: preview.at.toString(),
+                icon: Icons.gps_fixed,
+                highlight: true,
+                onTap: () => showProbeDialog(
+                  context: context,
+                  request: buildCombatCheckProbeRequest(
+                    type: ProbeType.combatAttack,
+                    title: 'Kampfprobe: AT',
+                    targetValue: preview.at,
+                  ),
+                ),
+              ),
+            ),
+            if (!preview.isRangedWeapon)
+              SizedBox(
+                width: 140,
+                child: CodexMetricTile(
+                  label: 'PA',
+                  value: preview.paMitIniParadeMod.toString(),
+                  icon: Icons.shield_outlined,
+                  onTap: () => showProbeDialog(
+                    context: context,
+                    request: buildCombatCheckProbeRequest(
+                      type: ProbeType.combatParry,
+                      title: 'Kampfprobe: PA',
+                      targetValue: preview.paMitIniParadeMod,
+                    ),
+                  ),
+                ),
+              ),
+            SizedBox(
+              width: 160,
+              child: CodexMetricTile(
+                label: 'TP',
+                value: preview.tpExpression,
+                icon: Icons.whatshot_outlined,
+                onTap: () => showProbeDialog(
+                  context: context,
+                  request: buildDamageProbeRequest(
+                    title: 'Schadenswurf',
+                    diceSpec: preview.damageDiceSpec,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 130,
+              child: CodexMetricTile(
+                label: 'eBE',
+                value: preview.ebe.toString(),
+                icon: Icons.balance_outlined,
+              ),
+            ),
+            if (preview.isRangedWeapon)
+              SizedBox(
+                width: 160,
+                child: CodexMetricTile(
+                  label: 'Ladezeit',
+                  value: preview.reloadTimeDisplay,
+                  icon: Icons.timer_outlined,
+                ),
+              ),
+          ],
+        ),
+        if (preview.isRangedWeapon) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              Chip(
+                label: Text(
+                  'Distanz: ${preview.activeDistanceLabel.trim().isEmpty ? '-' : preview.activeDistanceLabel}',
+                ),
+              ),
+              Chip(
+                label: Text(
+                  'Geschoss: ${preview.activeProjectileName.trim().isEmpty ? '-' : preview.activeProjectileName}',
+                ),
+              ),
+              Chip(
+                label: Text(
+                  'Geschosse: ${preview.activeProjectileCount}',
+                ),
+              ),
+            ],
+          ),
+        ],
+        if (preview.waffenmeisterActive) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _buildWaffenmeisterPreviewChips(preview: preview),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Nebenhand-spezifische Kampfwerte – Inhalt abhaengig vom Nebenhand-Typ.
+  Widget _buildOffhandValues({required OffhandCombatPreview offhandPreview}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Nebenhand: ${offhandPreview.displayName}',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: 8),
+        if (offhandPreview.isWeapon)
+          _buildOffhandWeaponValues(offhandPreview: offhandPreview)
+        else if (offhandPreview.isShield)
+          _buildOffhandShieldValues(offhandPreview: offhandPreview)
+        else if (offhandPreview.isParryWeapon)
+          _buildOffhandParryWeaponValues(offhandPreview: offhandPreview),
+      ],
+    );
+  }
+
+  /// Nebenhand = zweite Waffe: volle AT/PA/TP/eBE.
+  Widget _buildOffhandWeaponValues({
+    required OffhandCombatPreview offhandPreview,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            if (offhandPreview.at != null)
+              SizedBox(
+                width: 140,
+                child: CodexMetricTile(
+                  label: 'AT',
+                  value: offhandPreview.at.toString(),
+                  icon: Icons.gps_fixed,
+                  onTap: () => showProbeDialog(
+                    context: context,
+                    request: buildCombatCheckProbeRequest(
+                      type: ProbeType.combatAttack,
+                      title: 'Kampfprobe: AT (NH)',
+                      targetValue: offhandPreview.at!,
+                    ),
+                  ),
+                ),
+              ),
+            if (offhandPreview.pa != null && !offhandPreview.isRangedWeapon)
+              SizedBox(
+                width: 140,
+                child: CodexMetricTile(
+                  label: 'PA',
+                  value: (offhandPreview.paMitIniParadeMod ??
+                          offhandPreview.pa!)
+                      .toString(),
+                  icon: Icons.shield_outlined,
+                  onTap: () => showProbeDialog(
+                    context: context,
+                    request: buildCombatCheckProbeRequest(
+                      type: ProbeType.combatParry,
+                      title: 'Kampfprobe: PA (NH)',
+                      targetValue: offhandPreview.paMitIniParadeMod ??
+                          offhandPreview.pa!,
+                    ),
+                  ),
+                ),
+              ),
+            if (offhandPreview.tpExpression != null)
+              SizedBox(
+                width: 160,
+                child: CodexMetricTile(
+                  label: 'TP',
+                  value: offhandPreview.tpExpression!,
+                  icon: Icons.whatshot_outlined,
+                  onTap: offhandPreview.damageDiceSpec == null
+                      ? null
+                      : () => showProbeDialog(
+                            context: context,
+                            request: buildDamageProbeRequest(
+                              title: 'Schadenswurf (NH)',
+                              diceSpec: offhandPreview.damageDiceSpec!,
+                            ),
+                          ),
+                ),
+              ),
+            if (offhandPreview.ebe != null)
+              SizedBox(
+                width: 130,
+                child: CodexMetricTile(
+                  label: 'eBE',
+                  value: offhandPreview.ebe.toString(),
+                  icon: Icons.balance_outlined,
+                ),
+              ),
+            if (offhandPreview.isRangedWeapon &&
+                offhandPreview.reloadTimeDisplay != null)
+              SizedBox(
+                width: 160,
+                child: CodexMetricTile(
+                  label: 'Ladezeit',
+                  value: offhandPreview.reloadTimeDisplay!,
+                  icon: Icons.timer_outlined,
+                ),
+              ),
+          ],
+        ),
+        if (offhandPreview.isRangedWeapon) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              if (offhandPreview.activeDistanceLabel != null)
+                Chip(
+                  label: Text(
+                    'Distanz: ${offhandPreview.activeDistanceLabel!.trim().isEmpty ? '-' : offhandPreview.activeDistanceLabel}',
+                  ),
+                ),
+              if (offhandPreview.activeProjectileName != null)
+                Chip(
+                  label: Text(
+                    'Geschoss: ${offhandPreview.activeProjectileName!.trim().isEmpty ? '-' : offhandPreview.activeProjectileName}',
+                  ),
+                ),
+              if (offhandPreview.activeProjectileCount != null)
+                Chip(
+                  label: Text(
+                    'Geschosse: ${offhandPreview.activeProjectileCount}',
+                  ),
+                ),
+            ],
+          ),
+        ],
+        if (offhandPreview.waffenmeisterActive) ...[
+          const SizedBox(height: 8),
+          Chip(label: Text(offhandPreview.waffenmeisterName)),
+        ],
+      ],
+    );
+  }
+
+  /// Nebenhand = Schild: Schild-PA.
+  Widget _buildOffhandShieldValues({
+    required OffhandCombatPreview offhandPreview,
+  }) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        if (offhandPreview.shieldPa != null)
+          SizedBox(
+            width: 160,
+            child: CodexMetricTile(
+              label: 'Schild-PA',
+              value: offhandPreview.shieldPa.toString(),
+              icon: Icons.shield,
+              onTap: () => showProbeDialog(
+                context: context,
+                request: buildCombatCheckProbeRequest(
+                  type: ProbeType.combatParry,
+                  title: 'Kampfprobe: Schild-PA',
+                  targetValue: offhandPreview.shieldPa!,
+                ),
+              ),
+            ),
+          ),
+        if (offhandPreview.atMod != null)
+          Chip(label: Text('AT-Mod: ${offhandPreview.atMod}')),
+        if (offhandPreview.iniMod != null)
+          Chip(label: Text('INI-Mod: ${offhandPreview.iniMod}')),
+      ],
+    );
+  }
+
+  /// Nebenhand = Parierwaffe: PA-Mod und Linkhand-Warnung.
+  Widget _buildOffhandParryWeaponValues({
+    required OffhandCombatPreview offhandPreview,
+  }) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        if (offhandPreview.mainPaMod != null)
+          Chip(label: Text('PA-Mod: ${offhandPreview.mainPaMod}')),
+        if (offhandPreview.atMod != null)
+          Chip(label: Text('AT-Mod: ${offhandPreview.atMod}')),
+        if (offhandPreview.iniMod != null)
+          Chip(label: Text('INI-Mod: ${offhandPreview.iniMod}')),
+        if (offhandPreview.requiresLinkhandViolation)
+          const Chip(label: Text('Linkhand erforderlich')),
+      ],
+    );
+  }
+
+  /// Zeigt die zur aktuellen Waffe möglichen Manöver mit Hand-Zuordnung.
   Widget _buildPossibleManeuversPreviewCard({
     required RulesCatalog catalog,
     required CombatPreviewStats preview,
   }) {
-    final maneuverIds = _activePreviewManeuverIds(catalog, preview);
+    final entries = _activePreviewManeuverEntries(catalog, preview);
+    final hasOffhand = preview.offhandPreview != null;
 
     return Card(
       child: Padding(
@@ -280,12 +517,12 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            if (maneuverIds.isEmpty)
+            if (entries.isEmpty)
               const Text(
-                'Für die aktive Waffe sind aktuell keine nutzbaren Manöver hinterlegt.',
+                'Für die aktive Waffenhaltung sind aktuell keine nutzbaren Manöver hinterlegt.',
               ),
-            ...maneuverIds.map((maneuverId) {
-              final maneuver = _maneuverById(catalog, maneuverId);
+            ...entries.map((entry) {
+              final maneuver = _maneuverById(catalog, entry.maneuverId);
               return Card(
                 margin: const EdgeInsets.only(bottom: 6),
                 child: ListTile(
@@ -301,14 +538,17 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                           context: context,
                           maneuver: maneuver,
                         ),
-                  title: Text(_maneuverLabel(catalog, maneuverId)),
+                  title: Text(_maneuverLabel(catalog, entry.maneuverId)),
                   subtitle: Text(
                     _buildPreviewManeuverSummary(
                       preview: preview,
-                      maneuverId: maneuverId,
+                      maneuverId: entry.maneuverId,
                       maneuverDef: maneuver,
                     ),
                   ),
+                  trailing: hasOffhand
+                      ? _buildHandBadge(entry.availableHands)
+                      : null,
                 ),
               );
             }),
@@ -318,16 +558,24 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
     );
   }
 
-  /// Kennzeichnet, ob aktuell in Haupt- oder Nebenhand eine Fernkampfwaffe
-  /// gehalten wird.
-  bool _hasHeldRangedWeapon({
-    required CombatPreviewStats preview,
-    required MainWeaponSlot? offhandWeapon,
-  }) {
-    if (preview.isRangedWeapon) {
-      return true;
-    }
-    return offhandWeapon?.isRanged ?? false;
+  /// Kleiner Badge fuer die Hand-Zuordnung eines Manoevers.
+  Widget _buildHandBadge(ManeuverHandAvailability availability) {
+    final label = switch (availability) {
+      ManeuverHandAvailability.mainOnly => 'HH',
+      ManeuverHandAvailability.offhandOnly => 'NH',
+      ManeuverHandAvailability.both => 'HH+NH',
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall,
+      ),
+    );
   }
 
   /// Kennzeichnet im Preview nur, dass eine passende Waffenmeisterschaft aktiv ist.
@@ -604,7 +852,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
               },
             ),
             const SizedBox(height: 8),
-            if (offhandWeapon != null)
+            if (offhandWeapon != null) ...[
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -618,8 +866,109 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   ),
                   Chip(label: Text(combatTypeLabel(offhandWeapon.combatType))),
                 ],
-              )
-            else if (offhandEquipment != null)
+              ),
+              if (offhandWeapon.isRanged &&
+                  offhandWeapon.rangedProfile.distanceBands.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                DropdownButtonFormField<int>(
+                  key: const ValueKey<String>(
+                    'combat-offhand-weapon-distance-select',
+                  ),
+                  initialValue:
+                      offhandWeapon.rangedProfile.selectedDistanceIndex,
+                  decoration: const InputDecoration(
+                    labelText: 'Entfernung (NH)',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    for (
+                      var i = 0;
+                      i < offhandWeapon.rangedProfile.distanceBands.length;
+                      i++
+                    )
+                      DropdownMenuItem<int>(
+                        value: i,
+                        child: Text(
+                          offhandWeapon.rangedProfile.distanceBands[i].label
+                                  .trim()
+                                  .isEmpty
+                              ? 'Distanz ${i + 1}'
+                              : offhandWeapon
+                                  .rangedProfile.distanceBands[i].label,
+                        ),
+                      ),
+                  ],
+                  onChanged: (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    _updateOffhandRangedDistance(value, catalog: catalog);
+                  },
+                ),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<int?>(
+                  key: const ValueKey<String>(
+                    'combat-offhand-weapon-projectile-select',
+                  ),
+                  initialValue:
+                      offhandWeapon.rangedProfile.selectedProjectileIndex < 0
+                      ? null
+                      : offhandWeapon.rangedProfile.selectedProjectileIndex,
+                  decoration: const InputDecoration(
+                    labelText: 'Geschoss (NH)',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    const DropdownMenuItem<int?>(
+                      value: null,
+                      child: Text('Kein Geschoss'),
+                    ),
+                    for (
+                      var i = 0;
+                      i < offhandWeapon.rangedProfile.projectiles.length;
+                      i++
+                    )
+                      DropdownMenuItem<int?>(
+                        value: i,
+                        child: Text(
+                          offhandWeapon.rangedProfile.projectiles[i].name
+                                  .trim()
+                                  .isEmpty
+                              ? 'Geschoss ${i + 1}'
+                              : offhandWeapon.rangedProfile.projectiles[i].name,
+                        ),
+                      ),
+                  ],
+                  onChanged: (value) {
+                    _updateOffhandRangedProjectile(
+                      value ?? -1,
+                      catalog: catalog,
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    IconButton(
+                      key: const ValueKey<String>(
+                        'combat-offhand-weapon-projectile-count-decrement',
+                      ),
+                      onPressed: () =>
+                          _adjustOffhandProjectileCount(-1, catalog: catalog),
+                      icon: const Icon(Icons.remove),
+                    ),
+                    IconButton(
+                      key: const ValueKey<String>(
+                        'combat-offhand-weapon-projectile-count-increment',
+                      ),
+                      onPressed: () =>
+                          _adjustOffhandProjectileCount(1, catalog: catalog),
+                      icon: const Icon(Icons.add),
+                    ),
+                  ],
+                ),
+              ],
+            ] else if (offhandEquipment != null)
               Wrap(
                 spacing: 8,
                 runSpacing: 8,

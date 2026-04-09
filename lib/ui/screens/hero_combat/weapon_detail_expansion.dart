@@ -10,22 +10,30 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
     final weapon = _draftCombatConfig.selectedWeapon;
     final manual = _draftCombatConfig.manualMods;
     final theme = Theme.of(context);
+    final offhandPreview = preview.offhandPreview;
 
-    return ExpansionTile(
-      key: const ValueKey<String>('combat-weapon-calculation-details'),
-      tilePadding: const EdgeInsets.symmetric(horizontal: 4),
-      title: Text('Berechnungsschritte', style: theme.textTheme.titleSmall),
-      initiallyExpanded: false,
+    return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-          child: preview.isRangedWeapon
-              ? _buildRangedDetails(
-                  preview: preview,
-                  weapon: weapon,
-                  manual: manual,
-                )
-              : Column(
+        ExpansionTile(
+          key: const ValueKey<String>('combat-weapon-calculation-details'),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 4),
+          title: Text(
+            offhandPreview != null
+                ? 'Berechnungsschritte (Haupthand)'
+                : 'Berechnungsschritte',
+            style: theme.textTheme.titleSmall,
+          ),
+          initiallyExpanded: false,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: preview.isRangedWeapon
+                  ? _buildRangedDetails(
+                      preview: preview,
+                      weapon: weapon,
+                      manual: manual,
+                    )
+                  : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _calcSection(
@@ -194,6 +202,100 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                     ),
                   ],
                 ),
+        ),
+      ],
+    ),
+    if (offhandPreview != null && offhandPreview.isWeapon)
+      _buildOffhandCalculationDetails(
+        offhandPreview: offhandPreview,
+        theme: theme,
+      ),
+      ],
+    );
+  }
+
+  /// Aufklappbare Berechnungsschritte fuer die Nebenhand-Waffe.
+  Widget _buildOffhandCalculationDetails({
+    required OffhandCombatPreview offhandPreview,
+    required ThemeData theme,
+  }) {
+    final offhandWeapon = _offhandWeaponOrNull();
+    if (offhandWeapon == null) {
+      return const SizedBox.shrink();
+    }
+    final talentAt = _talentAtValue(offhandWeapon.talentId);
+    final talentPa = _talentPaValue(offhandWeapon.talentId);
+    final ebe = offhandPreview.ebe ?? 0;
+
+    return ExpansionTile(
+      key: const ValueKey<String>('combat-offhand-calculation-details'),
+      tilePadding: const EdgeInsets.symmetric(horizontal: 4),
+      title: Text(
+        'Berechnungsschritte (Nebenhand)',
+        style: theme.textTheme.titleSmall,
+      ),
+      initiallyExpanded: false,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (offhandPreview.at != null)
+                _calcSection(
+                  title: offhandPreview.isRangedWeapon
+                      ? 'Fernkampf (AT)'
+                      : 'Attacke (AT)',
+                  result: offhandPreview.at!,
+                  steps: [
+                    _calcStep('Talent AT-Anteil', talentAt),
+                    _calcStep('WM AT (Waffe)', offhandWeapon.wmAt),
+                    _calcStep(
+                      'eBE AT-Anteil',
+                      offhandPreview.isRangedWeapon
+                          ? ebe
+                          : _atEbePart(ebe),
+                    ),
+                    if (offhandPreview.specApplies)
+                      _calcStep(
+                        'Spezialisierung',
+                        offhandPreview.isRangedWeapon ? 2 : 1,
+                      ),
+                  ],
+                ),
+              if (offhandPreview.pa != null && !offhandPreview.isRangedWeapon) ...[
+                const Divider(),
+                _calcSection(
+                  title: 'Parade (PA)',
+                  result: offhandPreview.paMitIniParadeMod ??
+                      offhandPreview.pa!,
+                  steps: [
+                    _calcStep('Talent PA-Anteil', talentPa),
+                    _calcStep('WM PA (Waffe)', offhandWeapon.wmPa),
+                    _calcStep('eBE PA-Anteil', _paEbePart(ebe)),
+                    if (offhandPreview.specApplies)
+                      _calcStep('Spezialisierung', 1),
+                  ],
+                ),
+              ],
+              if (offhandPreview.tpExpression != null) ...[
+                const Divider(),
+                _calcSection(
+                  title: 'Trefferpunkte (TP)',
+                  resultLabel: offhandPreview.tpExpression!,
+                  steps: [
+                    _calcStep(
+                      'Wuerfel',
+                      null,
+                      label:
+                          '${offhandWeapon.tpDiceCount}W${offhandWeapon.tpDiceSides}',
+                    ),
+                    _calcStep('TP Grundwert', offhandWeapon.tpFlat),
+                  ],
+                ),
+              ],
+            ],
+          ),
         ),
       ],
     );
