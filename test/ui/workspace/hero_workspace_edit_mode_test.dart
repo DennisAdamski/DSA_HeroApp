@@ -2190,6 +2190,70 @@ void main() {
     expect(find.text('Entfernen'), findsNothing);
   });
 
+  testWidgets('wide workspace inspector BE stays synced with manual override', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    final container = ProviderContainer(
+      overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+    );
+    addTearDown(container.dispose);
+
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = const Size(1600, 1200);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: HeroesHomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final heroTile = find.widgetWithText(ListTile, 'Rondra');
+    if (heroTile.evaluate().isNotEmpty) {
+      await tester.tap(heroTile.first);
+    } else {
+      await tester.tap(find.text('Rondra').first);
+    }
+    await tester.pumpAndSettle();
+
+    expect(container.read(talentBeOverrideProvider('demo')), isNull);
+
+    await tester.tap(find.byTooltip('BE erhöhen'));
+    await tester.pumpAndSettle();
+
+    expect(container.read(talentBeOverrideProvider('demo')), 1);
+    expect(find.byTooltip('BE zurücksetzen'), findsOneWidget);
+
+    await tester.tap(heroDeckToggleButton());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Talente').last);
+    await tester.pumpAndSettle();
+    final beDialogOpenButton = find.byKey(
+      const ValueKey<String>('talents-be-screen-open'),
+    );
+    await tester.tap(beDialogOpenButton);
+    await tester.pumpAndSettle();
+
+    final overrideField = tester.widget<TextField>(
+      find.byKey(const ValueKey<String>('talents-be-override-field')),
+    );
+    expect(overrideField.controller?.text, '1');
+  });
+
   testWidgets(
     'wide workspace keeps status control columns stable when reset appears',
     (tester) async {
