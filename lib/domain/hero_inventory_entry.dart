@@ -246,8 +246,11 @@ class HeroInventoryEntry {
     final modifiersRaw = json['modifiers'];
     final modifiers = modifiersRaw is List
         ? modifiersRaw
-              .whereType<Map<String, dynamic>>()
-              .map(InventoryItemModifier.fromJson)
+              .whereType<Map>()
+              .map(
+                (entry) =>
+                    InventoryItemModifier.fromJson(entry.cast<String, dynamic>()),
+              )
               .toList(growable: false)
         : const <InventoryItemModifier>[];
     final legacyArtifact = getString('artefakt').trim();
