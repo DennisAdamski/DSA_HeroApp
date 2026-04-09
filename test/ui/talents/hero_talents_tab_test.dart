@@ -5,9 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -24,6 +26,7 @@ void main() {
     Map<String, HeroTalentEntry> talents = const <String, HeroTalentEntry>{},
     List<HeroMetaTalent> metaTalents = const <HeroMetaTalent>[],
     CombatConfig combatConfig = const CombatConfig(),
+    List<HeroInventoryEntry> inventoryEntries = const <HeroInventoryEntry>[],
   }) {
     return HeroSheet(
       id: 'demo',
@@ -42,6 +45,7 @@ void main() {
       talents: talents,
       metaTalents: metaTalents,
       combatConfig: combatConfig,
+      inventoryEntries: inventoryEntries,
     );
   }
 
@@ -805,6 +809,64 @@ void main() {
       expect(hero.talents['tal_a']?.talentModifiers.length, 2);
     },
   );
+
+  testWidgets('inventory talent modifiers are shown directly in the mod column', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(talentValue: 5),
+          },
+          inventoryEntries: const <HeroInventoryEntry>[
+            HeroInventoryEntry(
+              gegenstand: 'Kletterhandschuhe',
+              itemType: InventoryItemType.ausruestung,
+              istAusgeruestet: true,
+              modifiers: <InventoryItemModifier>[
+                InventoryItemModifier(
+                  kind: InventoryModifierKind.talent,
+                  targetId: 'tal_a',
+                  wert: 2,
+                  beschreibung: 'Kletterhandschuhe',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openTalentsTab(tester, repo, buildCatalog());
+
+    expect(
+      find.descendant(
+        of: find.byKey(
+          const ValueKey<String>('talents-field-tal_a-modifier-total'),
+        ),
+        matching: find.text('2'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(
+          const ValueKey<String>('talents-field-tal_a-computed-taw'),
+        ),
+        matching: find.text('7'),
+      ),
+      findsOneWidget,
+    );
+  });
 
   testWidgets(
     'modifier dialog truncates descriptions, skips empty entries and shows details',

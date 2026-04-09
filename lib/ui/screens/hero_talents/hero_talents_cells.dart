@@ -215,8 +215,10 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     required TalentDef talent,
     required HeroTalentEntry entry,
     required bool isEditing,
+    required int inventoryMod,
   }) {
     final theme = Theme.of(context);
+    final totalModifier = entry.modifier + inventoryMod;
     return InkWell(
       key: ValueKey<String>('talents-field-${talent.id}-modifier-total'),
       onTap: () => _openTalentModifiersDialog(talent: talent, entry: entry),
@@ -226,7 +228,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              _formatWholeNumber(entry.modifier),
+              _formatWholeNumber(totalModifier),
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(width: 4),
