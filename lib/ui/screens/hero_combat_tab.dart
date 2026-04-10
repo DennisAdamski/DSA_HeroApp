@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/maneuver_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/two_weapon_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/unarmed_style_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffenmeister_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -90,10 +91,20 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   Set<String> _invalidCombatTalentIds = <String>{};
   CombatConfig _draftCombatConfig = const CombatConfig();
   int? _temporaryIniRoll;
+  TwoWeaponActionType _selectedTwoWeaponAction = TwoWeaponActionType.none;
   String _weaponFilterTalentId = '';
   String _weaponFilterCombatType = '';
   String _weaponFilterType = '';
   String _weaponFilterDistanceClass = '';
+
+  void _selectTwoWeaponAction(TwoWeaponActionType value) {
+    if (_selectedTwoWeaponAction == value) {
+      return;
+    }
+    setState(() {
+      _selectedTwoWeaponAction = value;
+    });
+  }
 
   @override
   void initState() {

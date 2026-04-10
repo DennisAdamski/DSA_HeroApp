@@ -84,6 +84,7 @@ Technischer Stack:
 - Pflege von Nah- und Fernkampfwaffen in einer gemeinsamen Kampfkonfiguration
 - Unterstuetzung fuer Nebenhand, Parierwaffen, Schilde und Ruestungen
 - Kampfvorschau mit AT, PA, TP, INI, Ladezeit, Distanzstufen und Geschossen
+- Aktionskarte fuer beidhändigen Kampf mit Falsche-Hand-Mali, Doppelangriff und Zusatzaktionen aus Beidhändigem Kampf beziehungsweise Parierwaffen
 - Verwaltung aktiver Manoever und katalogbasierter Kampf-Sonderfertigkeiten
 - Kampf-Sonderfertigkeiten und Manöver bleiben als getrennte Katalogquellen modelliert; die Kampf-UI filtert Doppelungen anhand der Manöver-Namen aus
 - Waffenmeister-Baukasten mit Voraussetzungen, Boni und Vorschau der Wirkung
