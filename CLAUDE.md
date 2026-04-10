@@ -283,6 +283,14 @@ Ergaenzungen zur aktuellen Struktur:
   Ueberanstrengung.
 - `lib/ui/screens/workspace/rest_dialog.dart` bildet die Lagerfeuer-Aktion
   des Workspace-Inspectors; der Trigger sitzt direkt in den Vitalwerten.
+- `tool/pdf_catalog_agent/` enthaelt ein lokales Python-CLI fuer PDF-Ingestion,
+  SQLite/FTS5-Suche, Konfliktberichte und App-Vorschlaege aus DSA-Quellen.
+- `tool/pdf_catalog_agent/config/sources.json` definiert die festen DSA-
+  Quellordner samt Prioritaet und Quelltyp des PDF-Agenten.
+- `.codex/pdf_catalog/` ist der lokale, nicht versionierte Artefaktordner fuer
+  `catalog.db`, `manifest.json`, Reports und JSON-Exporte des PDF-Agenten.
+- `docs/pdf_agent_workflow.md` dokumentiert den kompletten Workflow des
+  lokalen PDF-Agenten.
 
 ---
 
@@ -512,6 +520,13 @@ python tool/export_rule_cells.py
 
 # Report unreferenced Dart files in lib/
 python tool/report_unreferenced_dart.py
+
+# Build and query the local PDF knowledge base
+python tool/pdf_catalog_agent/cli.py ingest
+python tool/pdf_catalog_agent/cli.py search --query "Kampf Hausregel"
+python tool/pdf_catalog_agent/cli.py propose --topic kampf
+python tool/pdf_catalog_agent/cli.py conflicts --topic kampf
+python tool/pdf_catalog_agent/cli.py review
 ```
 
 ---
