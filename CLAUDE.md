@@ -464,6 +464,9 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
   zusaetzlich AT, Ladezeit, fuenf Distanzstufen und persistente Geschosse.
 - Parierwaffen modifizieren nur die Hauptwaffe; Schilde liefern eine eigene
   `Schild-PA` auf Basis von `PA-Basiswert + Schildmod + SF-Bonus`.
+- `lib/rules/derived/two_weapon_combat_rules.dart` leitet fuer echte
+  Nebenhand-Waffen die Falsche-Hand-Mali sowie die Vorschau fuer
+  `Doppelangriff`, Zusatzangriffe und Zusatzparaden ab.
 - Der Untertab `Kampf` zeigt je nach aktiver Waffe dynamisch Nahkampfwerte
   (`AT`/`PA`) oder Fernkampfwerte (`AT`, TP, Ladezeit, Geschosse).
 - Distanz- und Geschoss-Chips erscheinen im Kampf-Preview nur, wenn in Haupt-

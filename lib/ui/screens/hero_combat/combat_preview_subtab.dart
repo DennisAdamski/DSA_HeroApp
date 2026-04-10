@@ -54,6 +54,11 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
         preview: preview,
         offhandWeapon: offhandWeapon,
       ),
+      if (_buildTwoWeaponActionCard(preview: preview)
+          case final actionCard?) ...[
+        const SizedBox(height: 12),
+        actionCard,
+      ],
       if (preview.axxAttackDefenseHint.isNotEmpty) ...[
         const SizedBox(height: 8),
         Text(preview.axxAttackDefenseHint),
@@ -290,11 +295,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   'Geschoss: ${preview.activeProjectileName.trim().isEmpty ? '-' : preview.activeProjectileName}',
                 ),
               ),
-              Chip(
-                label: Text(
-                  'Geschosse: ${preview.activeProjectileCount}',
-                ),
-              ),
+              Chip(label: Text('Geschosse: ${preview.activeProjectileCount}')),
             ],
           ),
         ],
@@ -363,16 +364,17 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                 width: 140,
                 child: CodexMetricTile(
                   label: 'PA',
-                  value: (offhandPreview.paMitIniParadeMod ??
-                          offhandPreview.pa!)
-                      .toString(),
+                  value:
+                      (offhandPreview.paMitIniParadeMod ?? offhandPreview.pa!)
+                          .toString(),
                   icon: Icons.shield_outlined,
                   onTap: () => showProbeDialog(
                     context: context,
                     request: buildCombatCheckProbeRequest(
                       type: ProbeType.combatParry,
                       title: 'Kampfprobe: PA (NH)',
-                      targetValue: offhandPreview.paMitIniParadeMod ??
+                      targetValue:
+                          offhandPreview.paMitIniParadeMod ??
                           offhandPreview.pa!,
                     ),
                   ),
@@ -388,12 +390,12 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   onTap: offhandPreview.damageDiceSpec == null
                       ? null
                       : () => showProbeDialog(
-                            context: context,
-                            request: buildDamageProbeRequest(
-                              title: 'Schadenswurf (NH)',
-                              diceSpec: offhandPreview.damageDiceSpec!,
-                            ),
+                          context: context,
+                          request: buildDamageProbeRequest(
+                            title: 'Schadenswurf (NH)',
+                            diceSpec: offhandPreview.damageDiceSpec!,
                           ),
+                        ),
                 ),
               ),
             if (offhandPreview.ebe != null)
@@ -447,6 +449,16 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
         if (offhandPreview.waffenmeisterActive) ...[
           const SizedBox(height: 8),
           Chip(label: Text(offhandPreview.waffenmeisterName)),
+        ],
+        if (offhandPreview.falseHandLabel != null &&
+            (offhandPreview.falseHandAtMod != null ||
+                offhandPreview.falseHandPaMod != null)) ...[
+          const SizedBox(height: 8),
+          Chip(
+            label: Text(
+              '${offhandPreview.falseHandLabel}: AT ${offhandPreview.falseHandAtMod}, PA ${offhandPreview.falseHandPaMod}',
+            ),
+          ),
         ],
       ],
     );
@@ -506,6 +518,132 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
   }
 
   /// Zeigt die zur aktuellen Waffe möglichen Manöver mit Hand-Zuordnung.
+  /// Zeigt verfuegbare Zusatzaktionen fuer beidhändigen Kampf und Parierwaffen.
+  Widget? _buildTwoWeaponActionCard({required CombatPreviewStats preview}) {
+    final snapshot = preview.twoWeaponCombat;
+    if (snapshot == null || !snapshot.isRelevant || snapshot.options.isEmpty) {
+      return null;
+    }
+    final selectedType = _effectiveTwoWeaponAction(preview);
+    final selectedOption =
+        snapshot.optionFor(selectedType) ?? snapshot.options.first;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Nebenhand-Aktionen',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: snapshot.options
+                  .map(
+                    (option) => ChoiceChip(
+                      label: Text(option.label),
+                      selected: selectedOption.type == option.type,
+                      onSelected: (_) => _selectTwoWeaponAction(option.type),
+                    ),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              selectedOption.description,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            if (!selectedOption.isAvailable)
+              Text(
+                selectedOption.availabilityReason,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            if (selectedOption.isAvailable)
+              _buildTwoWeaponActionMetrics(option: selectedOption),
+            if (selectedOption.exclusionNotes.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              ...selectedOption.exclusionNotes.map(
+                (note) => Text(
+                  '- $note',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ],
+            if (snapshot.notes.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              ...snapshot.notes.map(
+                (note) => Text(
+                  '- $note',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Verdichtet die Zielwerte fuer die aktuell ausgewaehlte Nebenhand-Aktion.
+  Widget _buildTwoWeaponActionMetrics({required TwoWeaponActionOption option}) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        if (option.mainAttackTarget != null)
+          SizedBox(
+            width: 140,
+            child: CodexMetricTile(
+              label: 'HH-AT',
+              value: option.mainAttackTarget.toString(),
+              icon: Icons.gps_fixed,
+            ),
+          ),
+        if (option.offhandAttackTarget != null)
+          SizedBox(
+            width: 140,
+            child: CodexMetricTile(
+              label: 'NH-AT',
+              value: option.offhandAttackTarget.toString(),
+              icon: Icons.gps_not_fixed,
+            ),
+          ),
+        if (option.offhandParryTarget != null)
+          SizedBox(
+            width: 140,
+            child: CodexMetricTile(
+              label: 'NH-PA',
+              value: option.offhandParryTarget.toString(),
+              icon: Icons.shield_outlined,
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Hält eine sinnvolle Default-Auswahl fuer die Aktionskarte stabil.
+  TwoWeaponActionType _effectiveTwoWeaponAction(CombatPreviewStats preview) {
+    final snapshot = preview.twoWeaponCombat;
+    if (snapshot == null || snapshot.options.isEmpty) {
+      return TwoWeaponActionType.none;
+    }
+    final current = snapshot.optionFor(_selectedTwoWeaponAction);
+    if (current != null) {
+      return current.type;
+    }
+    for (final option in snapshot.options) {
+      if (option.isAvailable) {
+        return option.type;
+      }
+    }
+    return snapshot.options.first.type;
+  }
+
   Widget _buildPossibleManeuversPreviewCard({
     required RulesCatalog catalog,
     required CombatPreviewStats preview,
@@ -578,10 +716,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall,
-      ),
+      child: Text(label, style: Theme.of(context).textTheme.labelSmall),
     );
   }
 
@@ -898,7 +1033,9 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                                   .isEmpty
                               ? 'Distanz ${i + 1}'
                               : offhandWeapon
-                                  .rangedProfile.distanceBands[i].label,
+                                    .rangedProfile
+                                    .distanceBands[i]
+                                    .label,
                         ),
                       ),
                   ],
