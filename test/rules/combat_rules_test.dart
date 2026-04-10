@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/two_weapon_combat_rules.dart';
 
 void main() {
   const state = HeroState(
@@ -868,6 +869,162 @@ void main() {
     expect(withPw2.offhandPaBonus, 4);
   });
 
+  test(
+    'offhand weapon applies false hand penalties based on active abilities',
+    () {
+      final baseHero = hero(
+        talents: const {
+          'tal_schwert': HeroTalentEntry(atValue: 8, paValue: 7),
+          'tal_dolch': HeroTalentEntry(atValue: 8, paValue: 7),
+        },
+        combatConfig: const CombatConfig(
+          weapons: <MainWeaponSlot>[
+            MainWeaponSlot(
+              name: 'Kurzschwert',
+              talentId: 'tal_schwert',
+              weaponType: 'Kurzschwert',
+            ),
+            MainWeaponSlot(
+              name: 'Dolch',
+              talentId: 'tal_dolch',
+              weaponType: 'Dolch',
+            ),
+          ],
+          selectedWeaponIndex: 0,
+          offhandAssignment: OffhandAssignment(weaponIndex: 1),
+        ),
+      );
+
+      final noSf = preview(baseHero);
+      final withLinkhand = preview(
+        baseHero.copyWith(
+          combatConfig: baseHero.combatConfig.copyWith(
+            specialRules: const CombatSpecialRules(linkhandActive: true),
+          ),
+        ),
+      );
+      final withBhk1 = preview(
+        baseHero.copyWith(
+          combatConfig: baseHero.combatConfig.copyWith(
+            specialRules: const CombatSpecialRules(
+              linkhandActive: true,
+              activeCombatSpecialAbilityIds: <String>[
+                'ksf_beidhaendiger_kampf_i',
+              ],
+            ),
+          ),
+        ),
+      );
+      final withBhk2 = preview(
+        baseHero.copyWith(
+          combatConfig: baseHero.combatConfig.copyWith(
+            specialRules: const CombatSpecialRules(
+              linkhandActive: true,
+              activeCombatSpecialAbilityIds: <String>[
+                'ksf_beidhaendiger_kampf_ii',
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(noSf.offhandPreview, isNotNull);
+      expect(noSf.offhandPreview!.falseHandAtMod, -9);
+      expect(noSf.offhandPreview!.falseHandPaMod, -9);
+      expect(withLinkhand.offhandPreview!.falseHandAtMod, -6);
+      expect(withBhk1.offhandPreview!.falseHandAtMod, -3);
+      expect(withBhk2.offhandPreview!.falseHandAtMod, 0);
+      expect(withLinkhand.offhandPreview!.at, noSf.offhandPreview!.at! + 3);
+      expect(withBhk1.offhandPreview!.at, noSf.offhandPreview!.at! + 6);
+      expect(withBhk2.offhandPreview!.at, noSf.offhandPreview!.at! + 9);
+      expect(withLinkhand.offhandPreview!.pa, noSf.offhandPreview!.pa! + 3);
+      expect(withBhk1.offhandPreview!.pa, noSf.offhandPreview!.pa! + 6);
+      expect(withBhk2.offhandPreview!.pa, noSf.offhandPreview!.pa! + 9);
+    },
+  );
+
+  test(
+    'two weapon snapshot exposes doppelangriff values for a weapon pair',
+    () {
+      final sheet = hero(
+        talents: const {
+          'tal_schwert': HeroTalentEntry(atValue: 8, paValue: 7),
+          'tal_dolch': HeroTalentEntry(atValue: 8, paValue: 7),
+        },
+        combatConfig: const CombatConfig(
+          weapons: <MainWeaponSlot>[
+            MainWeaponSlot(
+              name: 'Kurzschwert',
+              talentId: 'tal_schwert',
+              weaponType: 'Kurzschwert',
+              distanceClass: 'N',
+            ),
+            MainWeaponSlot(
+              name: 'Dolch',
+              talentId: 'tal_dolch',
+              weaponType: 'Dolch',
+              distanceClass: 'N',
+            ),
+          ],
+          selectedWeaponIndex: 0,
+          offhandAssignment: OffhandAssignment(weaponIndex: 1),
+          specialRules: CombatSpecialRules(
+            linkhandActive: true,
+            activeCombatSpecialAbilityIds: <String>[
+              'ksf_beidhaendiger_kampf_i',
+            ],
+            activeManeuvers: <String>['man_doppelangriff'],
+          ),
+        ),
+      );
+
+      final result = preview(sheet);
+      final snapshot = result.twoWeaponCombat;
+      final option = snapshot?.optionFor(TwoWeaponActionType.doubleAttack);
+
+      expect(snapshot, isNotNull);
+      expect(snapshot!.attackCapablePair, isTrue);
+      expect(option, isNotNull);
+      expect(option!.isAvailable, isTrue);
+      expect(option.mainAttackTarget, result.at - 2);
+      expect(option.offhandAttackTarget, result.offhandPreview!.at! - 6);
+    },
+  );
+
+  test('two weapon snapshot exposes extra parry from parierwaffen ii', () {
+    final sheet = hero(
+      talents: const {'tal_waffe': HeroTalentEntry(atValue: 6, paValue: 6)},
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(
+          talentId: 'tal_waffe',
+          name: 'Waffe',
+          weaponType: 'Waffe',
+        ),
+        offhandAssignment: OffhandAssignment(equipmentIndex: 0),
+        offhandEquipment: <OffhandEquipmentEntry>[
+          OffhandEquipmentEntry(
+            name: 'Parierdolch',
+            type: OffhandEquipmentType.parryWeapon,
+            paMod: 2,
+          ),
+        ],
+        specialRules: CombatSpecialRules(
+          linkhandActive: true,
+          parierwaffenII: true,
+        ),
+      ),
+    );
+
+    final result = preview(sheet);
+    final option = result.twoWeaponCombat?.optionFor(
+      TwoWeaponActionType.extraOffhandParry,
+    );
+
+    expect(option, isNotNull);
+    expect(option!.isAvailable, isTrue);
+    expect(option.offhandParryTarget, result.paMitIniParadeMod);
+  });
+
   test('shield creates its own shield parade and does not change main PA', () {
     final baseHero = hero(
       talents: const {'tal_waffe': HeroTalentEntry(atValue: 6, paValue: 6)},
@@ -1398,11 +1555,7 @@ void main() {
       final sheet = hero(
         combatConfig: CombatConfig(
           weapons: const <MainWeaponSlot>[
-            MainWeaponSlot(
-              name: 'Schwert',
-              kkBase: 12,
-              kkThreshold: 4,
-            ),
+            MainWeaponSlot(name: 'Schwert', kkBase: 12, kkThreshold: 4),
             MainWeaponSlot(
               name: 'Wurfmesser',
               combatType: WeaponCombatType.ranged,

@@ -305,10 +305,7 @@ void main() {
   }
 
   /// Klappt eine Chip-Gruppe in der Kampfregeln-Seite auf.
-  Future<void> expandCombatGroup(
-    WidgetTester tester,
-    String groupTitle,
-  ) async {
+  Future<void> expandCombatGroup(WidgetTester tester, String groupTitle) async {
     final header = find.textContaining('$groupTitle (');
     await tester.tap(header.first);
     await tester.pumpAndSettle();
@@ -328,9 +325,7 @@ void main() {
           matching: find.byType(AnimatedContainer),
         )
         .first;
-    await tester.tap(
-      find.descendant(of: chip, matching: find.byType(Switch)),
-    );
+    await tester.tap(find.descendant(of: chip, matching: find.byType(Switch)));
     await tester.pumpAndSettle();
   }
 
@@ -701,37 +696,34 @@ void main() {
     expect(find.text('Kampfprobe: AT'), findsOneWidget);
   });
 
-  testWidgets(
-    'special rules tab stores Schnellziehen flag',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero()],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 0,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
+  testWidgets('special rules tab stores Schnellziehen flag', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
 
-      final actions = await openCombatTab(tester, repo);
-      await actions.startEdit();
-      await tester.pumpAndSettle();
-      await tapTab(tester, 'Kampfregeln');
-      await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
-      await tapChipSwitch(tester, 'Schnellziehen');
+    final actions = await openCombatTab(tester, repo);
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfregeln');
+    await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
+    await tapChipSwitch(tester, 'Schnellziehen');
 
-      await actions.save();
-      await tester.pumpAndSettle();
+    await actions.save();
+    await tester.pumpAndSettle();
 
-      final hero = (await repo.listHeroes()).firstWhere(
-        (entry) => entry.id == 'demo',
-      );
-      expect(hero.combatConfig.specialRules.schnellziehen, isTrue);
-    },
-  );
+    final hero = (await repo.listHeroes()).firstWhere(
+      (entry) => entry.id == 'demo',
+    );
+    expect(hero.combatConfig.specialRules.schnellziehen, isTrue);
+  });
 
   testWidgets(
     'combat rules tab stores active unarmed styles and preview shows granted maneuvers',
@@ -805,7 +797,10 @@ void main() {
       await tester.pumpAndSettle();
       await tapTab(tester, 'Kampfregeln');
       await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
-      expect(find.textContaining('Allgemeine Kampf-Sonderfertigkeiten ('), findsWidgets);
+      expect(
+        find.textContaining('Allgemeine Kampf-Sonderfertigkeiten ('),
+        findsWidgets,
+      );
       await tester.scrollUntilVisible(
         find.text('Blindkampf'),
         300,
@@ -867,37 +862,36 @@ void main() {
     },
   );
 
-  testWidgets(
-    'Axxeleratus shows temporary Schnellziehen status',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero()],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 0,
-            currentKap: 0,
-            currentAu: 10,
-            activeSpellEffects: ActiveSpellEffectsState(
-              activeEffectIds: <String>[activeSpellEffectAxxeleratus],
-            ),
+  testWidgets('Axxeleratus shows temporary Schnellziehen status', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+          activeSpellEffects: ActiveSpellEffectsState(
+            activeEffectIds: <String>[activeSpellEffectAxxeleratus],
           ),
-        },
-      );
+        ),
+      },
+    );
 
-      await openCombatTab(tester, repo);
-      await tapTab(tester, 'Kampfregeln');
-      await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
-      await tester.scrollUntilVisible(
-        find.text('Schnellziehen'),
-        300,
-        scrollable: find.byType(Scrollable).last,
-      );
-      // Schnellziehen-Chip ist sichtbar; Axxeleratus-spezifische Statusanzeige
-      // existiert im neuen Chip-Design nicht mehr.
-      expect(find.text('Schnellziehen'), findsOneWidget);
-    },
-  );
+    await openCombatTab(tester, repo);
+    await tapTab(tester, 'Kampfregeln');
+    await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
+    await tester.scrollUntilVisible(
+      find.text('Schnellziehen'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    // Schnellziehen-Chip ist sichtbar; Axxeleratus-spezifische Statusanzeige
+    // existiert im neuen Chip-Design nicht mehr.
+    expect(find.text('Schnellziehen'), findsOneWidget);
+  });
 
   testWidgets('legacy Axxeleratus state still shows melee hint in combat tab', (
     tester,
@@ -2452,50 +2446,53 @@ void main() {
     expect(find.textContaining('Aufmerksamkeit aktiv'), findsOneWidget);
   });
 
-  testWidgets('global initiative panel stays visible when no weapon is selected', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [
-        buildHero(
-          combatConfig: const CombatConfig(
-            weapons: <MainWeaponSlot>[
-              MainWeaponSlot(
-                name: 'Kurzschwert',
-                talentId: 'tal_nah',
-                weaponType: 'Kurzschwert',
-              ),
-              MainWeaponSlot(
-                name: 'Bidenhaender',
-                talentId: 'tal_nah',
-                weaponType: 'Bidenhaender',
-              ),
-            ],
-            selectedWeaponIndex: -1,
+  testWidgets(
+    'global initiative panel stays visible when no weapon is selected',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            combatConfig: const CombatConfig(
+              weapons: <MainWeaponSlot>[
+                MainWeaponSlot(
+                  name: 'Kurzschwert',
+                  talentId: 'tal_nah',
+                  weaponType: 'Kurzschwert',
+                ),
+                MainWeaponSlot(
+                  name: 'Bidenhaender',
+                  talentId: 'tal_nah',
+                  weaponType: 'Bidenhaender',
+                ),
+              ],
+              selectedWeaponIndex: -1,
+            ),
           ),
-        ),
-      ],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
 
-    await openCombatTab(tester, repo);
-    await tapTab(tester, 'Kampfwerte');
+      await openCombatTab(tester, repo);
+      await tapTab(tester, 'Kampfwerte');
 
-    // Haupthand-Dropdown zeigt 'Keine Waffe' bei selectedWeaponIndex == -1
-    expect(find.text('Keine Waffe'), findsWidgets);
-    // INI-Wurf-Editor bleibt als globaler Wert sichtbar
-    expect(
-      find.byKey(const ValueKey<String>('combat-active-weapon-info-ini-roll')),
-      findsOneWidget,
-    );
-  });
+      // Haupthand-Dropdown zeigt 'Keine Waffe' bei selectedWeaponIndex == -1
+      expect(find.text('Keine Waffe'), findsWidgets);
+      // INI-Wurf-Editor bleibt als globaler Wert sichtbar
+      expect(
+        find.byKey(
+          const ValueKey<String>('combat-active-weapon-info-ini-roll'),
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets(
     'ranged info panel shows AT, distance, projectile data and updates ammo count',
@@ -3338,6 +3335,77 @@ void main() {
 
     expect(find.textContaining('Distanz:'), findsNothing);
     expect(find.textContaining('Geschoss:'), findsNothing);
+  });
+
+  testWidgets('combat preview shows two weapon action card for doppelangriff', (
+    tester,
+  ) async {
+    setTestSurfaceSize(tester, const Size(1280, 900));
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const {
+            'tal_nah': HeroTalentEntry(atValue: 8, paValue: 7),
+            'tal_dolch': HeroTalentEntry(atValue: 8, paValue: 7),
+          },
+          combatConfig: const CombatConfig(
+            weapons: <MainWeaponSlot>[
+              MainWeaponSlot(
+                name: 'Kurzschwert',
+                weaponType: 'Kurzschwert',
+                talentId: 'tal_nah',
+                distanceClass: 'N',
+                tpDiceCount: 1,
+                tpDiceSides: 6,
+                tpFlat: 2,
+              ),
+              MainWeaponSlot(
+                name: 'Dolch',
+                weaponType: 'Dolch',
+                talentId: 'tal_dolch',
+                distanceClass: 'N',
+                tpDiceCount: 1,
+                tpDiceSides: 6,
+                tpFlat: 1,
+              ),
+            ],
+            selectedWeaponIndex: 0,
+            offhandAssignment: OffhandAssignment(weaponIndex: 1),
+            specialRules: CombatSpecialRules(
+              linkhandActive: true,
+              activeCombatSpecialAbilityIds: <String>[
+                'ksf_beidhaendiger_kampf_i',
+              ],
+              activeManeuvers: <String>['man_doppelangriff'],
+            ),
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openMeleeTab(tester);
+
+    expect(find.text('Nebenhand-Aktionen'), findsOneWidget);
+    expect(find.textContaining('HH-AT'), findsOneWidget);
+    expect(find.textContaining('NH-AT'), findsOneWidget);
+    expect(
+      find.textContaining(
+        'Doppelangriff schließt Zusatzangriffe und Zusatzparaden',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets(
