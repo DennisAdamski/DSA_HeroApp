@@ -1,0 +1,64 @@
+[
+  {
+    "id": "regelbuecher",
+    "title": "DSA Regelbücher",
+    "path": "C:\\Users\\denni\\OneDrive\\Rollenspiel\\DSA\\Regelbücher",
+    "sourceType": "regelbuch",
+    "priority": 20,
+    "normativeWeight": 300,
+    "enabled": true,
+    "defaultTopics": [
+      "heldenbogen",
+      "eigenschaften",
+      "talente",
+      "kampf",
+      "magie",
+      "sonderfertigkeiten",
+      "inventar"
+    ]
+  },
+  {
+    "id": "regionalbuecher",
+    "title": "DSA Regionalbücher",
+    "path": "C:\\Users\\denni\\OneDrive\\Rollenspiel\\DSA\\Bücher\\Regionalbücher",
+    "sourceType": "regionalbuch",
+    "priority": 30,
+    "normativeWeight": 200,
+    "enabled": true,
+    "defaultTopics": [
+      "orte_regionen",
+      "weltwissen",
+      "reisebericht"
+    ]
+  },
+  {
+    "id": "zusatzinformationen",
+    "title": "DSA Zusatzinformationen",
+    "path": "C:\\Users\\denni\\OneDrive\\Rollenspiel\\DSA\\Zusatzinformationen",
+    "sourceType": "zusatzinfo",
+    "priority": 40,
+    "normativeWeight": 150,
+    "enabled": true,
+    "defaultTopics": [
+      "weltwissen",
+      "magie",
+      "orte_regionen"
+    ]
+  },
+  {
+    "id": "hausregeln",
+    "title": "DSA Hausregeln",
+    "path": "C:\\Users\\denni\\OneDrive\\Rollenspiel\\DSA\\hausregeln",
+    "sourceType": "hausregeln",
+    "priority": 10,
+    "normativeWeight": 400,
+    "enabled": true,
+    "defaultTopics": [
+      "hausregel_abweichung",
+      "reisebericht",
+      "talente",
+      "kampf",
+      "magie"
+    ]
+  }
+]

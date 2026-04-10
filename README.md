@@ -197,6 +197,7 @@ Fuer die konkrete Umsetzung im Projekt sind diese Dokus die besten Einstiege:
 
 - `docs/technical_overview.md` fuer Architektur, Datenfluss und Modellschichten
 - `docs/catalog_import_workflow.md` fuer den Weg von Excel nach Runtime-JSON
+- `docs/pdf_agent_workflow.md` fuer den lokalen PDF-Agenten und die DSA-Wissensbasis
 - `docs/rules_mapping_house_rules_v1.md` fuer die fachliche Zuordnung der Hausregeln
 - `docs/test_strategy.md` fuer Testaufbau und Qualitaetssicherung
 
@@ -218,6 +219,7 @@ assets/
 
 tool/
   Python- und Shell-Helfer fuer Import, Analyse und Wartung
+  pdf_catalog_agent/  Lokaler PDF-Agent fuer Wissensbasis, Suche und Reports
 
 docs/
   Technische und prozessuale Projektdokumentation
@@ -231,6 +233,7 @@ Empfohlene Standardbefehle:
 flutter analyze
 flutter test
 python tool/check_screen_loc_budget.py --max-lines 700
+python -m unittest tool.test_pdf_catalog_agent
 ```
 
 Zusatzlich vorhanden:
@@ -250,6 +253,7 @@ Weitere Referenzen:
 
 - `docs/technical_overview.md`
 - `docs/catalog_import_workflow.md`
+- `docs/pdf_agent_workflow.md`
 - `docs/rules_mapping_house_rules_v1.md`
 - `docs/test_strategy.md`
 - `docs/ui_performance_measurements.md`
