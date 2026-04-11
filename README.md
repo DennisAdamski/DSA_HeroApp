@@ -242,7 +242,7 @@ assets/
 
 tool/
   Python- und Shell-Helfer fuer Import, Analyse und Wartung
-  pdf_catalog_agent/  Lokaler PDF-Agent fuer Wissensbasis, Suche und Reports
+  pdf_catalog_agent/  Lokaler Dokument-Agent fuer PDF-, DOCX- und ODT-Wissensbasis
 
 docs/
   Technische und prozessuale Projektdokumentation
