@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/shield_parry_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/two_weapon_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffenmeister_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/unarmed_style_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffen_rules.dart';
@@ -104,6 +105,7 @@ class CombatPreviewStats {
     required this.waffenmeisterReloadTimeHalved,
     required this.waffenmeisterManeuverReductions,
     this.offhandPreview,
+    this.twoWeaponCombat,
   });
 
   final int rsTotal;
@@ -211,6 +213,9 @@ class CombatPreviewStats {
 
   /// Eigenstaendige Nebenhand-Vorschau; `null` = keine Nebenhand belegt.
   final OffhandCombatPreview? offhandPreview;
+
+  /// Verdichtete Aktions- und Konfliktinformation fuer beidhändigen Kampf.
+  final TwoWeaponCombatSnapshot? twoWeaponCombat;
 }
 
 /// Eigenstaendige Kampfwerte fuer die Nebenhand (Waffe, Schild oder
@@ -246,6 +251,9 @@ class OffhandCombatPreview {
     this.waffenmeisterManeuverReductions = const <String, int>{},
     this.requiresLinkhandViolation = false,
     this.weaponInitiative,
+    this.falseHandAtMod,
+    this.falseHandPaMod,
+    this.falseHandLabel,
   });
 
   final String displayName;
@@ -289,6 +297,11 @@ class OffhandCombatPreview {
 
   // Waffen-INI (fuer Referenz)
   final int? weaponInitiative;
+
+  // Falsche-Hand-Mali fuer attackefaehige Nebenhandwaffen.
+  final int? falseHandAtMod;
+  final int? falseHandPaMod;
+  final String? falseHandLabel;
 }
 
 CombatPreviewStats computeCombatPreviewStats(
@@ -341,6 +354,7 @@ CombatPreviewStats computeCombatPreviewStats(
   final armor = config.armor;
   final special = config.specialRules;
   final manualMods = config.manualMods;
+  final falseHandModifiers = computeFalseHandModifiers(specialRules: special);
   final axxeleratusActive = isAxxeleratusEffectActive(
     sheet: sheet,
     state: state,
@@ -573,6 +587,7 @@ CombatPreviewStats computeCombatPreviewStats(
     offhandWeapon: offhandWeapon,
     offhandEquipment: offhandEquipment,
     offhandModifiers: offhandModifiers,
+    falseHandModifiers: falseHandModifiers,
     talents: talents,
     catalogTalents: catalogTalents,
     config: config,
@@ -585,6 +600,24 @@ CombatPreviewStats computeCombatPreviewStats(
     axxeleratusActive: axxeleratusActive,
     axxTpBonus: axxTpBonus,
   );
+  final offhandAttackTarget = offhandPreview?.at;
+  final offhandParryTarget =
+      offhandPreview?.paMitIniParadeMod ?? offhandPreview?.pa;
+  final twoWeaponCombat = (offhandWeapon == null && offhandEquipment == null)
+      ? null
+      : computeTwoWeaponCombatSnapshot(
+          specialRules: special,
+          mainWeapon: main,
+          offhandWeapon: offhandWeapon,
+          offhandEquipment: offhandEquipment,
+          falseHandModifiers: falseHandModifiers,
+          mainAttackTarget: at,
+          mainParryTarget: paMitIniParadeMod,
+          offhandAttackTarget: offhandAttackTarget,
+          offhandParryTarget: offhandParryTarget,
+          offhandRequiresLinkhandViolation:
+              offhandModifiers.requiresLinkhandViolation,
+        );
 
   return CombatPreviewStats(
     rsTotal: clampNonNegative(rsTotal),
@@ -679,6 +712,7 @@ CombatPreviewStats computeCombatPreviewStats(
     waffenmeisterReloadTimeHalved: wmEffects.reloadTimeHalved,
     waffenmeisterManeuverReductions: wmEffects.maneuverReductions,
     offhandPreview: offhandPreview,
+    twoWeaponCombat: twoWeaponCombat,
   );
 }
 
@@ -690,6 +724,7 @@ OffhandCombatPreview? _buildOffhandPreview({
   required MainWeaponSlot? offhandWeapon,
   required OffhandEquipmentEntry? offhandEquipment,
   required OffhandModifierSnapshot offhandModifiers,
+  required FalseHandModifiers falseHandModifiers,
   required Map<String, HeroTalentEntry> talents,
   required List<TalentDef> catalogTalents,
   required CombatConfig config,
@@ -708,6 +743,7 @@ OffhandCombatPreview? _buildOffhandPreview({
       talents: talents,
       catalogTalents: catalogTalents,
       config: config,
+      falseHandModifiers: falseHandModifiers,
       effectiveSheet: effectiveSheet,
       derived: derived,
       beKampf: beKampf,
@@ -732,6 +768,7 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
   required Map<String, HeroTalentEntry> talents,
   required List<TalentDef> catalogTalents,
   required CombatConfig config,
+  required FalseHandModifiers falseHandModifiers,
   required HeroSheet effectiveSheet,
   required DerivedStats derived,
   required int beKampf,
@@ -827,7 +864,8 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
             slot.wmAt +
             wmEffects.atWmBonus +
             atEbePart +
-            atSpecBonus;
+            atSpecBonus +
+            falseHandModifiers.atMod;
   final pa = isRanged
       ? 0
       : talentPa +
@@ -835,7 +873,8 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
             slot.wmPa +
             wmEffects.paWmBonus +
             paEbePart +
-            paSpecBonus;
+            paSpecBonus +
+            falseHandModifiers.paMod;
   final paMitIniParadeMod = isRanged ? 0 : pa + iniParadeMod;
 
   // Ladezeit
@@ -889,6 +928,9 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
     waffenmeisterAdditionalManeuvers: wmEffects.additionalManeuvers,
     waffenmeisterManeuverReductions: wmEffects.maneuverReductions,
     weaponInitiative: iniSnapshot.kombinierteIni,
+    falseHandAtMod: isRanged ? null : falseHandModifiers.atMod,
+    falseHandPaMod: isRanged ? null : falseHandModifiers.paMod,
+    falseHandLabel: isRanged ? null : falseHandModifiers.label,
   );
 }
 
