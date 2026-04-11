@@ -39,6 +39,8 @@ class WeaponDef {
     this.source = '',
     this.active = true,
     this.ruleMeta,
+    this.hausregel = false,
+    this.nurEpisch = false,
   });
 
   final String id;
@@ -67,6 +69,8 @@ class WeaponDef {
   final String source; // Quellreferenz
   final bool active; // Im App verfuegbar und anzeigbar?
   final RuleMeta? ruleMeta; // Strukturierte Herkunfts- und Freischaltmetadaten
+  final bool hausregel; // Eintrag stammt aus einer Hausregel
+  final bool nurEpisch; // Nur fuer episch eingestufte Helden verfuegbar
 
   factory WeaponDef.fromJson(Map<String, dynamic> json) {
     final type = readCatalogString(json, 'type', fallback: '');
@@ -124,6 +128,8 @@ class WeaponDef {
       source: readCatalogString(json, 'source', fallback: ''),
       active: readCatalogBool(json, 'active', fallback: true),
       ruleMeta: ruleMetaJson == null ? null : RuleMeta.fromJson(ruleMetaJson),
+      hausregel: readCatalogBool(json, 'hausregel', fallback: false),
+      nurEpisch: readCatalogBool(json, 'nurEpisch', fallback: false),
     );
   }
 
@@ -159,6 +165,8 @@ class WeaponDef {
       'source': source,
       'active': active,
       if (ruleMeta != null) 'ruleMeta': ruleMeta!.toJson(),
+      if (hausregel) 'hausregel': true,
+      if (nurEpisch) 'nurEpisch': true,
     };
   }
 }

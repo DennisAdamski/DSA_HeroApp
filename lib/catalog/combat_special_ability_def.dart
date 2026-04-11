@@ -22,6 +22,9 @@ class CombatSpecialAbilityDef {
     this.aktiviertManoeverIds = const [],
     this.kampfwertBoni = const [],
     this.ruleMeta,
+    this.quelle = '',
+    this.hausregel = false,
+    this.nurEpisch = false,
   });
 
   final String id; // Eindeutige ID (z. B. 'ksf_aufmerksamkeit')
@@ -38,6 +41,9 @@ class CombatSpecialAbilityDef {
   final List<String> aktiviertManoeverIds; // Freigeschaltete Manoever-IDs
   final List<CombatSpecialAbilityBonusDef> kampfwertBoni; // Direkte Boni
   final RuleMeta? ruleMeta; // Strukturierte Herkunfts- und Freischaltmetadaten
+  final String quelle; // Freitext-Quellreferenz (z. B. 'Wege des Schwerts S. 112')
+  final bool hausregel; // Eintrag stammt aus einer Hausregel
+  final bool nurEpisch; // Nur fuer episch eingestufte Helden verfuegbar
 
   /// Gibt an, ob der Eintrag einen regelwirksamen waffenlosen Kampfstil darstellt.
   bool get isUnarmedCombatStyle => stilTyp.trim() == 'waffenloser_kampfstil';
@@ -71,6 +77,9 @@ class CombatSpecialAbilityDef {
           )
           .toList(growable: false),
       ruleMeta: ruleMetaJson == null ? null : RuleMeta.fromJson(ruleMetaJson),
+      quelle: readCatalogString(json, 'quelle', fallback: ''),
+      hausregel: readCatalogBool(json, 'hausregel', fallback: false),
+      nurEpisch: readCatalogBool(json, 'nurEpisch', fallback: false),
     );
   }
 
@@ -93,6 +102,9 @@ class CombatSpecialAbilityDef {
           .map((entry) => entry.toJson())
           .toList(growable: false),
       if (ruleMeta != null) 'ruleMeta': ruleMeta!.toJson(),
+      if (quelle.isNotEmpty) 'quelle': quelle,
+      if (hausregel) 'hausregel': true,
+      if (nurEpisch) 'nurEpisch': true,
     };
   }
 }
