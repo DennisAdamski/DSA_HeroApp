@@ -47,6 +47,18 @@ Visible UI text should use proper German umlauts and `ß` instead of translitera
   `assets/catalogs/reiseberichte/house_rules_v1/reisebericht.json` und gehoeren
   nicht zur editierbaren Katalogverwaltung.
 
+### Firebase Fallback Update 2026-04-11
+
+- `lib/data/firebase_bootstrap.dart` initialisiert Firebase optional und laesst
+  die App bei Fehlern im Local-Only-Modus weiterlaufen.
+- `lib/state/firebase_providers.dart` stellt den Bootstrap-Status fuer UI und
+  Schreibaktionen bereit.
+- Der Gruppen-Tab deaktiviert Cloud-Aktionen sichtbar, solange Firebase nicht
+  verfuegbar ist; die lokale Heldenverwaltung bleibt davon unberuehrt.
+- Fuer iOS-Tests auf dem eigenen Geraet gilt weiterhin: persoenliches Signing
+  in Xcode braucht meist einen eigenen Bundle Identifier; danach sollte fuer
+  Firebase-Sync `flutterfire configure` erneut laufen.
+
 ---
 
 ## Technology Stack
@@ -167,6 +179,10 @@ DSA_HeroApp/
 
 Ergaenzungen zur aktuellen Struktur:
 
+- `lib/data/firebase_bootstrap.dart` kapselt die optionale Firebase-
+  Initialisierung mit kontrolliertem Local-Only-Fallback.
+- `lib/state/firebase_providers.dart` exponiert den Firebase-Status fuer
+  UI-Hinweise und Guard-Checks in Actions.
 - `lib/domain/combat_mastery.dart` definiert persistierte Kampfmeisterschaften
   mit Zielbereich, Anforderungen und Effekten.
 - `lib/rules/derived/combat_mastery_rules.dart` kapselt Punktbudget,

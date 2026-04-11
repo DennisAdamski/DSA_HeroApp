@@ -42,10 +42,21 @@ Do not commit generated ephemeral iOS files.
    - a unique `Bundle Identifier` (for example `com.yourname.dsaheldenverwaltung`)
    - your Apple Team under `Signing & Capabilities`
    - `Automatically manage signing` enabled
-3. Connect iPad, unlock it, and trust the computer.
-4. Choose the iPad as the run target and run the app.
-5. On first install with free Apple ID, trust the developer app certificate on the iPad:
+3. If you changed the Bundle Identifier and want Firebase-backed group sync,
+   re-run `flutterfire configure` afterwards so `lib/firebase_options.dart`
+   matches the new iOS app identifier.
+4. Connect iPad, unlock it, and trust the computer.
+5. Choose the iPad as the run target and run the app.
+6. On first install with free Apple ID, trust the developer app certificate on the iPad:
    - `Settings > General > VPN & Device Management > Developer App > Trust`
+
+## Local-Only Fallback
+
+If Firebase initialization fails, the app still starts in local-only mode.
+This is intentional so on-device iPad testing is still possible for the core
+hero management workflow. In that fallback state, group sync and other
+Firebase-backed features remain disabled until Firebase is configured
+correctly again.
 
 ## Troubleshooting
 
@@ -62,6 +73,14 @@ Do not commit generated ephemeral iOS files.
 - Ensure Bundle Identifier is unique.
 - Re-select Team in `Signing & Capabilities`.
 - For free Apple ID, device install provisioning is temporary and may need periodic reinstall.
+
+### Group sync stays disabled on device
+
+- Check whether the Bundle Identifier in Xcode still matches your generated
+  Firebase configuration.
+- Re-run `flutterfire configure` after changing the iOS app identifier.
+- Verify that the app was bootstrapped via `bash tool/ios_bootstrap_spm.sh`
+  on a Mac, so the SPM-based iOS plugin integration is present.
 
 ### `ios/Podfile` appears unexpectedly
 
