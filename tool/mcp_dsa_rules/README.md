@@ -20,6 +20,7 @@ und Embedding-Caches liegen nutzerlokal unter `%LOCALAPPDATA%/dsa-rules-mcp/`
 
 Der Server liest aus vier festen Kategorien. Pfade koennen per Env-Var
 ueberschrieben werden; sonst gelten die unten gezeigten Defaults.
+Unterstuetzt werden derzeit `pdf`, `odt` und `docx`.
 
 | Kategorie-ID            | Env-Var                         | Default-Pfad                                                       | Prio |
 |-------------------------|---------------------------------|--------------------------------------------------------------------|------|
@@ -53,7 +54,7 @@ dsa-rules-cli refresh --source hausregeln  # nur eine Kategorie
 dsa-rules-cli refresh --force              # komplettes Rebuild
 ```
 
-`refresh` erkennt neue, geaenderte und entfernte PDFs anhand von `mtime` und
+`refresh` erkennt neue, geaenderte und entfernte Quelldokumente anhand von `mtime` und
 `sha256`. Die Aktion ist wiederholbar und ein zweiter Lauf ohne Aenderungen
 ist ein No-Op.
 
@@ -77,7 +78,7 @@ Der Server stellt dann folgende MCP-Tools bereit:
 |------------------|-------------------------------------------------------------------------------|
 | `search_rules`   | Hybrid-Suche (FTS5 + Vektor) ueber ausgewaehlte Quellen.                      |
 | `get_context`    | Vollen Text eines Treffers + benachbarter Chunks zurueckgeben.                |
-| `list_sources`   | Listet alle indexierten PDFs je Kategorie.                                    |
+| `list_sources`   | Listet alle indexierten Quelldokumente je Kategorie.                          |
 | `refresh_index`  | Inkrementeller oder vollstaendiger Neu-Index.                                 |
 | `find_topic`     | Thematisch gebuendelte Treffer fuer Anforderungs-Brainstorming.               |
 

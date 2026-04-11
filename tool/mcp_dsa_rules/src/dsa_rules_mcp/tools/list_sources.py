@@ -1,4 +1,4 @@
-"""MCP-Tool: Listet alle indexierten PDFs je Kategorie."""
+"""MCP-Tool: Listet alle indexierten Quelldokumente je Kategorie."""
 
 from __future__ import annotations
 

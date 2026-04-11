@@ -13,7 +13,11 @@ from typing import Callable, Sequence
 from dsa_rules_mcp.config import McpConfig, SourceConfig
 from dsa_rules_mcp.indexer.chunker import Chunk, PageText, chunk_pages
 from dsa_rules_mcp.indexer.embedder import Embedder, embedding_to_bytes
-from dsa_rules_mcp.indexer.pdf_extract import ExtractedPage, extract_pages
+from dsa_rules_mcp.indexer.pdf_extract import (
+    ExtractedPage,
+    extract_pages,
+    supported_document_suffixes,
+)
 from dsa_rules_mcp.store.db import (
     delete_source,
     delete_source_by_path,
@@ -115,7 +119,13 @@ def refresh_index(
             connection.commit()
             continue
 
-        for pdf_path in sorted(target.path.rglob("*.pdf")):
+        document_paths = sorted(
+            path
+            for suffix in supported_document_suffixes()
+            for path in target.path.rglob(f"*{suffix}")
+        )
+
+        for pdf_path in document_paths:
             abs_path = str(pdf_path.resolve())
             seen_paths.add(abs_path)
             try:
