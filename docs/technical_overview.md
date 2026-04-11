@@ -360,6 +360,11 @@ TP-/INI-/AT-Zwischenwerte sind dort als read-only Vorschau sichtbar.
 | `OffhandEquipmentEntry.atMod` | AT-Modifikator auf die Hauptwaffe |
 | `OffhandEquipmentEntry.paMod` | PA-Modifikator fuer Parierwaffe oder Schild-Parade |
 
+Fuer echte Nebenhand-Waffen leitet die Kampfvorschau zusaetzlich die Mali der
+`falschen Hand` sowie moegliche Aktionsoptionen wie `Doppelangriff`,
+`Zusatzangriff links` und `Zusatzparade links` ueber
+`lib/rules/derived/two_weapon_combat_rules.dart` ab.
+
 #### `ArmorConfig` & `ArmorPiece`
 
 **Datei:** `lib/domain/combat_config/armor_config.dart`,
@@ -401,6 +406,11 @@ Aktivierungsstatus von Kampf-Sonderfertigkeiten (alle `bool`):
 | `activeCombatSpecialAbilityIds` | `List<String>` — Aktiv geschaltete katalogbasierte Kampf-Sonderfertigkeiten ohne bereits separat modellierte Manöver oder fest verdrahtete Regel-Schalter |
 | `gladiatorStyleTalent` | `String` | Talentwahl fuer den Gladiatorenstil (`raufen` oder `ringen`) |
 | `activeManeuvers` | `List<String>` — Manuell aktivierte Manöver-IDs |
+
+Beidhaendiger Kampf I/II und `Tod von Links` werden fuer die Regellogik ueber
+`activeCombatSpecialAbilityIds` ausgewertet, damit die Kampf-UI diese
+Katalog-Sonderfertigkeiten ohne zusaetzliches Persistenzfeld in die
+Nebenhand-Aktionskarte uebernehmen kann.
 
 Waffenmeisterschaften sind bewusst **nicht** Teil von `CombatSpecialRules`,
 sondern liegen in `CombatConfig.waffenmeisterschaften`.
@@ -845,7 +855,8 @@ zusaetzlich um weitere `+2`.
 `lib/rules/derived/fernkampf_rules.dart`,
 `lib/rules/derived/fernkampf_ladezeit_rules.dart`,
 `lib/rules/derived/combat_mastery_rules.dart`,
-`lib/rules/derived/maneuver_rules.dart`
+`lib/rules/derived/maneuver_rules.dart`,
+`lib/rules/derived/two_weapon_combat_rules.dart`
 
 ```
 tpKk = truncate((KK − kkBase) / kkThreshold)   # Kraftbonus auf TP
@@ -882,6 +893,10 @@ Dabei gilt:
 - `maneuver_rules.dart` normalisiert Manoever-Namen und UI-Texte auf stabile
   IDs, damit Kampfmeisterschaften dieselben Referenzen wie Katalog und UI
   nutzen koennen.
+- `two_weapon_combat_rules.dart` leitet die Mali der falschen Hand
+  (`AT/PA -9`, `-6`, `-3` oder `0`) sowie die verfuegbaren
+  beidhÃ¤ndigen Aktionsoptionen fuer zweite Waffe, Parierwaffe und
+  `Doppelangriff` ab.
 - `combat_mastery_rules.dart` bewertet Punktbudget und Voraussetzungen,
   prueft die Anwendbarkeit fuer Hauptwaffe, Schild oder Parierwaffe und leitet
   automatisch wirksame Modifikatoren fuer die Kampfvorschau ab.
@@ -918,6 +933,10 @@ Manoever-Erleichterungen und freigeschaltete Zusatz-Manoever fuer die UI; im
 Kampf-Preview wird die aktive Waffenmeisterschaft selbst nur kompakt markiert.
 Distanz- und Geschoss-Chips werden dort nur angezeigt, wenn in Haupt- oder
 Nebenhand eine Fernkampfwaffe gehalten wird.
+Fuer beidhÃ¤ndigen Nahkampf enthaelt der Snapshot ausserdem einen strukturierten
+Aktions-Block mit Regelhinweisen, Quellen der Zusatzaktionen und den
+kontextbezogenen Zielwerten fuer `Doppelangriff`, Zusatzangriffe und
+Zusatzparaden.
 Ein TP/KK-Wert von `0/0` wird dabei als bewusste Deaktivierung behandelt; in
 diesem Fall entfallen TP/KK- und INI/GE-Berechnungen fuer die Waffe.
 
