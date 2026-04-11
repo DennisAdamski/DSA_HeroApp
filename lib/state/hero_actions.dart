@@ -29,6 +29,7 @@ import 'package:dsa_heldenverwaltung/state/avatar_providers.dart'
     show avatarFileStorageProvider, avatarThumbnailEncoderProvider;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
 import 'package:dsa_heldenverwaltung/state/gruppen_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart'
@@ -623,6 +624,7 @@ class HeroActions {
     required String heroId,
     required String gruppenName,
   }) async {
+    _requireGruppenSyncAvailable();
     final syncService = _ref.read(gruppenSyncServiceProvider);
     final gruppenCode = await syncService.erstelleGruppe(gruppenName);
 
@@ -647,6 +649,7 @@ class HeroActions {
     required String heroId,
     required String gruppenCode,
   }) async {
+    _requireGruppenSyncAvailable();
     final syncService = _ref.read(gruppenSyncServiceProvider);
     final existiert = await syncService.gruppeExistiert(gruppenCode);
     if (!existiert) {
@@ -677,6 +680,7 @@ class HeroActions {
     required String heroId,
     required String gruppenCode,
   }) async {
+    _requireGruppenSyncAvailable();
     final syncService = _ref.read(gruppenSyncServiceProvider);
     await syncService.leaveGruppe(gruppenCode, heroId);
     await syncService.stopListenerFuerGruppe(gruppenCode);
@@ -694,6 +698,7 @@ class HeroActions {
     required String gruppenCode,
     required ExternerHeld held,
   }) async {
+    _requireGruppenSyncAvailable();
     // Externen Helden persistieren.
     final externeRepo = _ref.read(externeHeldenRepositoryProvider);
     await externeRepo.save(held);
@@ -740,6 +745,7 @@ class HeroActions {
 
   /// Aktualisiert die eigene Visitenkarte in allen Gruppen des Helden.
   Future<void> syncVisitenkarten(String heroId) async {
+    _requireGruppenSyncAvailable();
     final hero = await _loadHeroById(heroId);
     if (hero.gruppen.isEmpty) return;
 
@@ -756,6 +762,7 @@ class HeroActions {
   /// 2. Manuell angelegte Helden pushen
   /// 3. Fremde Mitglieder abholen und lokal ueberschreiben
   Future<void> syncGruppen(String heroId) async {
+    _requireGruppenSyncAvailable();
     final hero = await _loadHeroById(heroId);
     if (hero.gruppen.isEmpty) return;
 
@@ -824,6 +831,7 @@ class HeroActions {
     required String heroId,
     required String gruppenCode,
   }) async {
+    _requireGruppenSyncAvailable();
     final hero = await _loadHeroById(heroId);
     final computed = _ref.read(heroComputedProvider(heroId));
     final derivedStats = computed.valueOrNull?.derivedStats;
@@ -879,6 +887,18 @@ class HeroActions {
       return hero;
     }
     throw StateError('Held mit ID "$heroId" wurde nicht gefunden.');
+  }
+
+  /// Stellt sicher, dass optionale Cloud-Funktionen aktuell verfügbar sind.
+  void _requireGruppenSyncAvailable() {
+    final firebaseBootstrap = _ref.read(firebaseBootstrapProvider);
+    if (firebaseBootstrap.isAvailable) {
+      return;
+    }
+    throw StateError(
+      firebaseBootstrap.userMessage ??
+          'Gruppen-Sync ist derzeit nicht verfügbar.',
+    );
   }
 }
 
