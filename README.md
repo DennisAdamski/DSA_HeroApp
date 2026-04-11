@@ -259,6 +259,9 @@ python tool/check_screen_loc_budget.py --max-lines 700
 python -m unittest tool.test_pdf_catalog_agent
 ```
 
+Fuer AES-verschluesselte PDFs im `pdf_catalog_agent` wird zusaetzlich
+`cryptography>=3.1` in der aktiven Python-Laufzeit benoetigt.
+
 Zusatzlich vorhanden:
 
 - Widget- und State-Tests fuer UI, Provider und Regeln
