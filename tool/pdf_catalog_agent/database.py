@@ -126,7 +126,7 @@ class CatalogDatabase:
         self.connection.close()
 
     def get_source_state(self, path: str) -> sqlite3.Row | None:
-        """Liefert den zuletzt bekannten Datenbankeintrag fuer eine PDF-Datei."""
+        """Liefert den zuletzt bekannten Datenbankeintrag fuer eine Quelldatei."""
 
         cursor = self.connection.execute(
             'SELECT * FROM sources WHERE path = ?',
@@ -138,7 +138,7 @@ class CatalogDatabase:
         """Ersetzt alle gespeicherten Artefakte einer Quelldatei atomar."""
 
         cursor = self.connection.cursor()
-        existing = self.get_source_state(str(ingest_result.pdf_path))
+        existing = self.get_source_state(str(ingest_result.source_path))
         if existing is not None:
             source_id = int(existing['id'])
             chunk_ids = [
@@ -181,8 +181,8 @@ class CatalogDatabase:
                 ingest_result.config.id,
                 ingest_result.config.title,
                 ingest_result.config.source_type,
-                str(ingest_result.pdf_path),
-                ingest_result.pdf_path.name,
+                str(ingest_result.source_path),
+                ingest_result.source_path.name,
                 ingest_result.file_hash,
                 ingest_result.file_size,
                 ingest_result.modified_time,

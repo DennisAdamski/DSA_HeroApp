@@ -311,8 +311,9 @@ Ergaenzungen zur aktuellen Struktur:
   Ueberanstrengung.
 - `lib/ui/screens/workspace/rest_dialog.dart` bildet die Lagerfeuer-Aktion
   des Workspace-Inspectors; der Trigger sitzt direkt in den Vitalwerten.
-- `tool/pdf_catalog_agent/` enthaelt ein lokales Python-CLI fuer PDF-Ingestion,
-  SQLite/FTS5-Suche, Konfliktberichte und App-Vorschlaege aus DSA-Quellen.
+- `tool/pdf_catalog_agent/` enthaelt ein lokales Python-CLI fuer Ingestion von
+  PDF-, DOCX- und ODT-Dateien, SQLite/FTS5-Suche, Konfliktberichte und
+  App-Vorschlaege aus DSA-Quellen.
 - `tool/pdf_catalog_agent/config/sources.json` definiert die festen DSA-
   Quellordner samt Prioritaet und Quelltyp des PDF-Agenten.
 - `.codex/pdf_catalog/` ist der lokale, nicht versionierte Artefaktordner fuer
