@@ -5,16 +5,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
-/// Zeigt Gruppenname, Code und Aktionen (Code kopieren, Gruppe verlassen).
+/// Zeigt Gruppenname, Code und Aktionen wie Kopieren oder Verlassen.
 class GruppeDetailsSection extends ConsumerWidget {
+  /// Erstellt die kompakte Detailkarte einer Gruppenmitgliedschaft.
   const GruppeDetailsSection({
     super.key,
     required this.heroId,
     required this.mitgliedschaft,
+    required this.syncAvailable,
   });
 
+  /// ID des lokalen Helden.
   final String heroId;
+
+  /// Aktuell geöffnete Gruppenmitgliedschaft.
   final HeroGruppenMitgliedschaft mitgliedschaft;
+
+  /// Gibt an, ob Cloud-Sync-Aktionen derzeit erlaubt sind.
+  final bool syncAvailable;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,8 +48,7 @@ class GruppeDetailsSection extends ConsumerWidget {
                   ),
                 ),
                 PopupMenuButton<_GruppeAktion>(
-                  onSelected: (aktion) =>
-                      _handleAktion(context, ref, aktion),
+                  onSelected: (aktion) => _handleAktion(context, ref, aktion),
                   itemBuilder: (_) => [
                     const PopupMenuItem(
                       value: _GruppeAktion.codeKopieren,
@@ -51,9 +58,10 @@ class GruppeDetailsSection extends ConsumerWidget {
                         dense: true,
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: _GruppeAktion.verlassen,
-                      child: ListTile(
+                      enabled: syncAvailable,
+                      child: const ListTile(
                         leading: Icon(Icons.logout),
                         title: Text('Gruppe verlassen'),
                         dense: true,
@@ -152,7 +160,9 @@ class GruppeDetailsSection extends ConsumerWidget {
         ],
       ),
     );
-    if (bestaetigt != true || !context.mounted) return;
+    if (bestaetigt != true || !context.mounted) {
+      return;
+    }
 
     await ref.read(heroActionsProvider).verlasseGruppe(
           heroId: heroId,

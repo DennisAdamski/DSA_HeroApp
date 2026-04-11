@@ -4,18 +4,27 @@ Stand nach dem initialen Commit auf `claude/hero-group-sharing-PV6f8`.
 
 ---
 
-## 1. Firebase-Projekt einrichten (Blocker)
+## 1. Firebase-Projekt einrichten (Blocker fuer Cloud-Sync, nicht fuer den App-Start)
 
-Die App kann ohne Firebase-Projekt nicht starten. Alles Weitere haengt davon ab.
+Die App startet inzwischen auch ohne erfolgreiche Firebase-Initialisierung im
+Local-Only-Modus weiter. Ohne Firebase bleiben aber Gruppen-Sync und andere
+Cloud-Funktionen deaktiviert.
 
-### Was fehlt
-- `lib/firebase_options.dart` enthaelt nur Platzhalter (`'PLACEHOLDER'`)
+### Was aktuell gilt
+- `lib/firebase_options.dart` enthaelt reale Projektwerte.
+- `lib/data/firebase_bootstrap.dart` faengt Initialisierungsfehler ab und
+  laesst die App lokal weiterlaufen.
+- `lib/state/firebase_providers.dart` stellt den Laufzeitstatus fuer UI und
+  Aktionen bereit; der Gruppen-Tab deaktiviert Cloud-Aktionen bei Bedarf.
+
+### Was weiterhin fehlen kann
 - Plattform-Konfigurationsdateien fehlen komplett:
   - Android: `android/app/google-services.json`
   - iOS: `ios/Runner/GoogleService-Info.plist`
   - macOS: `macos/Runner/GoogleService-Info.plist`
 - Android-Build: `com.google.gms.google-services`-Plugin fehlt in `android/app/build.gradle.kts`
-- iOS/macOS: Keine Firebase-Pods konfiguriert (Podfiles fehlen oder unvollstaendig)
+- iOS/macOS: Die SPM-basierte Plugin-Integration muss auf dem Ziel-Mac einmal
+  via `bash tool/ios_bootstrap_spm.sh` eingespielt werden
 
 ### Was zu tun ist
 ```bash
@@ -30,9 +39,11 @@ dart pub global activate flutterfire_cli
 #    und erzeugt plattformspezifische Dateien)
 flutterfire configure --project=<dein-firebase-projekt-id>
 
-# 4. iOS/macOS: Pods installieren
-cd ios && pod install && cd ..
-cd macos && pod install && cd ..
+# 4. iOS/macOS: SPM-Setup auf dem Mac aktualisieren
+bash tool/ios_bootstrap_spm.sh
+
+# 5. Falls du fuer persoenliches Signing den iOS-Bundle-Identifier geaendert
+#    hast: flutterfire configure erneut ausfuehren, damit die iOS-App-ID passt
 ```
 
 ---
