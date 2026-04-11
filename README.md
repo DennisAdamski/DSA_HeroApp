@@ -183,6 +183,19 @@ bash tool/ios_bootstrap_spm.sh
 
 Details dazu stehen in `docs/ios_xcode_setup.md`.
 
+Wichtig fuer Tests auf dem eigenen iPad:
+
+- Der erste iOS-Bootstrap muss auf einem Mac mit Xcode 15+ laufen und
+  aktualisiert dabei das Xcode-Projekt fuer den SPM-Workflow.
+- In Xcode brauchst du fuer persoenliches Signing einen eigenen, eindeutigen
+  Bundle Identifier.
+- Wenn du den Bundle Identifier aenderst und den Gruppen-Sync ueber Firebase
+  nutzen willst, solltest du anschliessend `flutterfire configure` erneut
+  ausfuehren, damit `lib/firebase_options.dart` wieder dazu passt.
+- Schlaegt die Firebase-Initialisierung fehl, startet die App trotzdem im
+  lokalen Modus weiter; nur Gruppen-Sync und andere Cloud-Funktionen bleiben
+  deaktiviert.
+
 ## Wie eine solche App aufgebaut werden kann
 
 Wenn du diese App erweitern oder eine aehnliche DSA- oder Charakterverwaltungs-App bauen willst, ist die vorhandene Struktur bereits ein brauchbares Referenzmuster:

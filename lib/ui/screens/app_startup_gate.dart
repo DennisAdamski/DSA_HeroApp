@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/custom_catalog_repository.dart';
+import 'package:dsa_heldenverwaltung/data/firebase_bootstrap.dart';
 import 'package:dsa_heldenverwaltung/data/hive_externe_helden_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_gruppen_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
@@ -13,6 +14,7 @@ import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
 import 'package:dsa_heldenverwaltung/state/gruppen_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
@@ -28,6 +30,7 @@ class AppStartupGate extends StatefulWidget {
     required this.settingsRepository,
     required this.storagePaths,
     required this.storageDirectoryPicker,
+    required this.firebaseBootstrap,
   });
 
   /// Persistenz fuer lokale App-Einstellungen.
@@ -38,6 +41,9 @@ class AppStartupGate extends StatefulWidget {
 
   /// Native Ordnerauswahl fuer Desktop-Speicherpfade.
   final StorageDirectoryPicker storageDirectoryPicker;
+
+  /// Ergebnis der optionalen Firebase-Initialisierung beim App-Start.
+  final FirebaseBootstrapResult firebaseBootstrap;
 
   @override
   State<AppStartupGate> createState() => _AppStartupGateState();
@@ -212,6 +218,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
         widget.storageDirectoryPicker,
       ),
       appStoragePathsProvider.overrideWithValue(widget.storagePaths),
+      firebaseBootstrapProvider.overrideWithValue(widget.firebaseBootstrap),
       customCatalogRepositoryProvider.overrideWithValue(
         customCatalogRepository ??
             const CustomCatalogRepository(heroStoragePath: ''),
