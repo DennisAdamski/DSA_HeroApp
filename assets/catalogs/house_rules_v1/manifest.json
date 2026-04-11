@@ -12,6 +12,9 @@
                   "magie":  "magie.json",
                   "manoever":  "manoever.json",
                   "kampf_sonderfertigkeiten":  "kampf_sonderfertigkeiten.json",
+                  "allgemeine_sonderfertigkeiten":  "allgemeine_sonderfertigkeiten.json",
+                  "magische_sonderfertigkeiten":  "magische_sonderfertigkeiten.json",
+                  "karmale_sonderfertigkeiten":  "karmale_sonderfertigkeiten.json",
                   "sprachen":  "sprachen.json",
                   "schriften":  "schriften.json",
                   "reisebericht": "../reiseberichte/house_rules_v1/reisebericht.json"

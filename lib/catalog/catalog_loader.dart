@@ -79,6 +79,9 @@ class CatalogLoader {
     for (final section in const <CatalogSectionId>[
       CatalogSectionId.maneuvers,
       CatalogSectionId.combatSpecialAbilities,
+      CatalogSectionId.generalSpecialAbilities,
+      CatalogSectionId.magicSpecialAbilities,
+      CatalogSectionId.karmalSpecialAbilities,
       CatalogSectionId.sprachen,
       CatalogSectionId.schriften,
     ]) {
@@ -116,6 +119,15 @@ class CatalogLoader {
     final maneuvers = sourceData.entriesFor(CatalogSectionId.maneuvers);
     final combatSpecialAbilities = sourceData.entriesFor(
       CatalogSectionId.combatSpecialAbilities,
+    );
+    final generalSpecialAbilities = sourceData.entriesFor(
+      CatalogSectionId.generalSpecialAbilities,
+    );
+    final magicSpecialAbilities = sourceData.entriesFor(
+      CatalogSectionId.magicSpecialAbilities,
+    );
+    final karmalSpecialAbilities = sourceData.entriesFor(
+      CatalogSectionId.karmalSpecialAbilities,
     );
     final sprachen = sourceData.entriesFor(CatalogSectionId.sprachen);
     final schriften = sourceData.entriesFor(CatalogSectionId.schriften);
@@ -161,6 +173,21 @@ class CatalogLoader {
       assetPath: assetPathForErrors,
     );
     _validateUniqueIds(
+      entries: generalSpecialAbilities,
+      domainName: 'general special abilities',
+      assetPath: assetPathForErrors,
+    );
+    _validateUniqueIds(
+      entries: magicSpecialAbilities,
+      domainName: 'magic special abilities',
+      assetPath: assetPathForErrors,
+    );
+    _validateUniqueIds(
+      entries: karmalSpecialAbilities,
+      domainName: 'karmal special abilities',
+      assetPath: assetPathForErrors,
+    );
+    _validateUniqueIds(
       entries: sprachen,
       domainName: 'sprachen',
       assetPath: assetPathForErrors,
@@ -194,6 +221,15 @@ class CatalogLoader {
           .toList(growable: false),
       combatSpecialAbilities: combatSpecialAbilities
           .map((entry) => CombatSpecialAbilityDef.fromJson(entry))
+          .toList(growable: false),
+      generalSpecialAbilities: generalSpecialAbilities
+          .map((entry) => SpecialAbilityDef.fromJson(entry))
+          .toList(growable: false),
+      magicSpecialAbilities: magicSpecialAbilities
+          .map((entry) => SpecialAbilityDef.fromJson(entry))
+          .toList(growable: false),
+      karmalSpecialAbilities: karmalSpecialAbilities
+          .map((entry) => SpecialAbilityDef.fromJson(entry))
           .toList(growable: false),
       sprachen: sprachen
           .map((entry) => SpracheDef.fromJson(entry))
