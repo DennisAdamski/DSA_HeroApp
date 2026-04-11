@@ -196,6 +196,10 @@ Ergaenzungen zur aktuellen Struktur:
   strukturierte Kampf-Sonderfertigkeiten mit Voraussetzungen, Verbreitung,
   Kosten sowie optionalen Stilfeldern wie `stil_typ`,
   `aktiviert_manoever_ids` und `kampfwert_boni`.
+- `lib/catalog/rule_meta.dart` kapselt strukturierte Herkunfts-, Beleg- und
+  Epik-Metadaten fuer katalogisierte Regelobjekte; die Felder haengen als
+  optionales `ruleMeta` an Talenten, Waffen, Zaubern, Manoevern und
+  Kampf-Sonderfertigkeiten.
 - Manöverartige Einträge bleiben exklusiv in
   `assets/catalogs/house_rules_v1/manoever.json`; die Kampf-SF-Datei enthält
   nur eigenständige Sonderfertigkeiten und keine Duplikate bereits

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from zipfile import ZipFile
 
 import numpy as np
 import pytest
@@ -34,6 +35,34 @@ class FakeEmbedder:
 
 def _write_fake_pdf(path: Path, payload: bytes) -> None:
     path.write_bytes(b"%PDF-1.4\n" + payload + b"\n%%EOF")
+
+
+def _write_fake_docx(path: Path, text: str) -> None:
+    document_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p><w:r><w:t>{text}</w:t></w:r></w:p>
+  </w:body>
+</w:document>
+"""
+    with ZipFile(path, "w") as archive:
+        archive.writestr("word/document.xml", document_xml)
+
+
+def _write_fake_odt(path: Path, text: str) -> None:
+    content_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<office:document-content
+  xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+  xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0">
+  <office:body>
+    <office:text>
+      <text:p>{text}</text:p>
+    </office:text>
+  </office:body>
+</office:document-content>
+"""
+    with ZipFile(path, "w") as archive:
+        archive.writestr("content.xml", content_xml)
 
 
 def _make_config(tmp_path: Path, regelbuecher_dir: Path) -> McpConfig:
@@ -156,5 +185,29 @@ def test_force_refresh_reindexes_everything(tmp_path: Path, fake_extract):
         assert len(stats.updated) == 1
         assert not stats.skipped
         assert not stats.removed
+    finally:
+        connection.close()
+
+
+def test_office_documents_are_indexed_like_pdfs(tmp_path: Path, fake_extract):
+    regelbuecher_dir = tmp_path / "regelbuecher"
+    regelbuecher_dir.mkdir()
+    _write_fake_pdf(regelbuecher_dir / "regelwerk_gamma.pdf", b"gamma-content-v1")
+    _write_fake_docx(regelbuecher_dir / "regelwerk_delta.docx", "Delta")
+    _write_fake_odt(regelbuecher_dir / "regelwerk_epsilon.odt", "Epsilon")
+
+    config = _make_config(tmp_path, regelbuecher_dir)
+    connection = open_database(config.db_path)
+    try:
+        embedder = FakeEmbedder()
+        stats = pipeline.refresh_index(connection, config, embedder=embedder)
+
+        assert len(stats.processed) == 3
+        source_titles = [row.title for row in list_sources(connection)]
+        assert source_titles == [
+            "regelwerk_delta",
+            "regelwerk_epsilon",
+            "regelwerk_gamma",
+        ]
     finally:
         connection.close()

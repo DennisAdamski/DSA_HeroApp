@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
+import 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
 
 /// Definition eines Talents aus dem Regelkatalog.
 ///
@@ -24,6 +25,7 @@ class TalentDef {
     this.source = '',
     this.description = '',
     this.active = true,
+    this.ruleMeta,
   });
 
   final String id; // Eindeutige ID (z. B. 'tal_empathie')
@@ -38,8 +40,10 @@ class TalentDef {
   final String source; // Quellreferenz (Seitenzahl o. Ae.)
   final String description; // Regelbeschreibung als Freitext
   final bool active; // Im App verfuegbar und anzeigbar?
+  final RuleMeta? ruleMeta; // Strukturierte Herkunfts- und Freischaltmetadaten
 
   factory TalentDef.fromJson(Map<String, dynamic> json) {
+    final ruleMetaJson = readCatalogObject(json, 'ruleMeta');
     return TalentDef(
       id: readCatalogString(json, 'id', fallback: ''),
       name: readCatalogString(json, 'name', fallback: ''),
@@ -53,6 +57,7 @@ class TalentDef {
       source: readCatalogString(json, 'source', fallback: ''),
       description: readCatalogString(json, 'description', fallback: ''),
       active: readCatalogBool(json, 'active', fallback: true),
+      ruleMeta: ruleMetaJson == null ? null : RuleMeta.fromJson(ruleMetaJson),
     );
   }
 
@@ -70,6 +75,7 @@ class TalentDef {
       'source': source,
       'description': description,
       'active': active,
+      if (ruleMeta != null) 'ruleMeta': ruleMeta!.toJson(),
     };
   }
 }
