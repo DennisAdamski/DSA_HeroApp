@@ -42,6 +42,13 @@ gedacht:
 
 ## Befehle
 
+Falls AES-verschluesselte PDFs in den Quellordnern liegen, zuerst die benoetigte
+Laufzeitabhaengigkeit fuer `pypdf` installieren:
+
+```bash
+python -m pip install --user cryptography>=3.1
+```
+
 Index aufbauen oder aktualisieren:
 
 ```bash
@@ -83,9 +90,9 @@ python tool/pdf_catalog_agent/cli.py review
 - Primaere Extraktion erfolgt ueber `pypdf`.
 - Wenn Text schlecht oder leer extrahierbar ist, markiert der Agent die Datei
   als `ocr_required`, stoppt den Lauf aber nicht.
-- AES-verschluesselte PDFs koennen zusaetzlich das Python-Paket
-  `cryptography>=3.1` benoetigen. Solche Fehler werden im `manifest.json`
-  protokolliert.
+- AES-verschluesselte PDFs werden ueber `pypdf` gelesen, benoetigen dafuer aber
+  das Python-Paket `cryptography>=3.1` in derselben Laufzeit.
+- Fehlt diese Abhaengigkeit, wird der Fehler im `manifest.json` protokolliert.
 - `tesseract` ist als optionaler spaeterer Fallback vorgesehen. Ohne
   installierten OCR-Stack bleibt v1 trotzdem voll benutzbar.
 
