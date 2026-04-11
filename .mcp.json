@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "dsa-rules": {
+      "command": "c:\\VS Code Projekte\\Flutter test\\flutter_application_1\\tool\\mcp_dsa_rules\\.venv\\Scripts\\dsa-rules-mcp.exe",
+      "args": []
+    }
+  }
+}
