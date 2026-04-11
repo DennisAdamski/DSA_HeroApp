@@ -291,6 +291,13 @@ Ergaenzungen zur aktuellen Struktur:
   `catalog.db`, `manifest.json`, Reports und JSON-Exporte des PDF-Agenten.
 - `docs/pdf_agent_workflow.md` dokumentiert den kompletten Workflow des
   lokalen PDF-Agenten.
+- `tool/mcp_dsa_rules/` stellt einen lokalen MCP-Server bereit, der dieselben
+  DSA-PDF-Quellordner hybrid (SQLite FTS5 + lokale `sentence-transformers`-
+  Vektoren) durchsucht und Claude Code die Tools `search_rules`,
+  `get_context`, `list_sources`, `refresh_index` und `find_topic` anbietet.
+  Installation und Einbindung stehen in `tool/mcp_dsa_rules/README.md`; der
+  Index liegt nutzerlokal unter `%LOCALAPPDATA%/dsa-rules-mcp/` und ist nicht
+  im Repo.
 
 ---
 
