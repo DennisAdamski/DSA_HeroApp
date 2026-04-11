@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
+import 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
 
 /// Definition eines Zauberspruchs aus dem Regelkatalog.
 ///
@@ -27,6 +28,7 @@ class SpellDef {
     this.category = '',
     this.source = '',
     this.active = true,
+    this.ruleMeta,
   });
 
   final String id;
@@ -48,8 +50,10 @@ class SpellDef {
   final String category; // Zauberkategorie
   final String source; // Quellreferenz (z. B. 'Liber Cantiones S. 36')
   final bool active; // Im App verfuegbar und anzeigbar?
+  final RuleMeta? ruleMeta; // Strukturierte Herkunfts- und Freischaltmetadaten
 
   factory SpellDef.fromJson(Map<String, dynamic> json) {
+    final ruleMetaJson = readCatalogObject(json, 'ruleMeta');
     return SpellDef(
       id: readCatalogString(json, 'id', fallback: ''),
       name: readCatalogString(json, 'name', fallback: ''),
@@ -70,6 +74,7 @@ class SpellDef {
       category: readCatalogString(json, 'category', fallback: ''),
       source: readCatalogString(json, 'source', fallback: ''),
       active: readCatalogBool(json, 'active', fallback: true),
+      ruleMeta: ruleMetaJson == null ? null : RuleMeta.fromJson(ruleMetaJson),
     );
   }
 
@@ -94,6 +99,7 @@ class SpellDef {
       'category': category,
       'source': source,
       'active': active,
+      if (ruleMeta != null) 'ruleMeta': ruleMeta!.toJson(),
     };
   }
 }

@@ -128,6 +128,9 @@ Technischer Stack:
   erscheint auf anderen Geraeten stattdessen der Platzhalter
 - Konfliktbehandlung beim Import vorhandener Helden
 - Katalogdaten aus `assets/catalogs/house_rules_v1/`
+- Katalogeintraege koennen strukturierte Herkunfts- und Freischaltmetadaten
+  (`ruleMeta`) fuer offizielle Regeln, Hausregeln, Quellbelege und epische
+  Opt-in-Inhalte tragen
 - Settings-Bereich `Katalogverwaltung` zum Einsehen aller Basisdaten sowie zum
   Anlegen, Bearbeiten und Loeschen synchronisierbarer Custom-Eintraege
 - Hero-Exporte koennen benoetigte Custom-Katalogeintraege mitsenden, damit

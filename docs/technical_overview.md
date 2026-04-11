@@ -622,6 +622,12 @@ Basisdaten mit konfliktfreien Custom-Dateien aus dem aktiven Heldenspeicher.
 `CatalogAdminSnapshot` bildet daraus die Settings-Ansicht fuer die
 Katalogverwaltung.
 
+Katalogisierte Regelobjekte koennen optional ein strukturiertes `ruleMeta`
+tragen. Darin liegen maschinenlesbare Herkunft (`official` oder
+`house_rule`), zitierbare Belege, optionale Verweise auf ueberschriebene
+Basiseintraege sowie epische Freischaltmetadaten
+(`requiresOptIn`, `eligibleFromLevel`).
+
 ### `TalentDef`
 
 | Feld | Bedeutung |
@@ -635,6 +641,7 @@ Katalogverwaltung.
 | `be` | BE-Anforderung (`'-'`, `'-2'`, `'xBE'`, …) |
 | `weaponCategory` | Zugehörige Waffenkategorien (kommagetrennt) |
 | `alternatives` | Alternative Kategorienamen |
+| `ruleMeta` | Optionale Herkunfts-, Beleg- und Epik-Metadaten |
 | `active` | Im App verfügbar? |
 
 Kampftalente erkennt man an: `group == 'Kampftalent'` **oder** `weaponCategory != ''`
@@ -664,6 +671,7 @@ Kampftalente erkennt man an: `group == 'Kampftalent'` **oder** `weaponCategory !
 | `reloadTimeText` | Arsenal-Rohladezeit inklusive Zusatznotationen |
 | `rangedDistanceBands` | Optionale Vorlage für die 5 Distanzstufen einer Fernkampfwaffe |
 | `rangedProjectiles` | Optionale Geschoss-Vorlagen |
+| `ruleMeta` | Optionale Herkunfts-, Beleg- und Epik-Metadaten |
 | `active` | Im App verfügbar? |
 
 ### `SpellDef`
@@ -686,6 +694,7 @@ Kampftalente erkennt man an: `group == 'Kampftalent'` **oder** `weaponCategory !
 | `variants` | Definierte Zauber-Varianten |
 | `source` | Quellenangabe, beim LC-Import die erste Zauberseite |
 | `traits` | Zaubereigenschaften |
+| `ruleMeta` | Optionale Herkunfts-, Beleg- und Epik-Metadaten |
 | `active` | Im App verfügbar? |
 
 ### `ManeuverDef`
