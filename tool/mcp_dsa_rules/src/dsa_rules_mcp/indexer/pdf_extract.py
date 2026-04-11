@@ -1,9 +1,11 @@
-"""PDF-Extraktion mit PyMuPDF inklusive einfacher Layout-Rekonstruktion."""
+"""Dokument-Extraktion fuer PDF-, ODT- und DOCX-Quellen."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from xml.etree import ElementTree
+from zipfile import ZipFile
 
 
 @dataclass(frozen=True)
@@ -13,13 +15,28 @@ class ExtractedPage:
 
 
 def extract_pages(pdf_path: Path) -> list[ExtractedPage]:
-    """Liest ein PDF und liefert gereinigten Text pro Seite.
+    """Liest ein unterstuetztes Dokument und liefert gereinigte Textbloecke.
 
-    Verwendet PyMuPDFs Block-Extraktion und sortiert nach (Spalte, y, x),
-    damit zweispaltiger Satz nicht seitenweise ineinander rutscht. Kopf- und
-    Fusszeilen im oberen/unteren ~5%-Bereich werden entfernt.
+    PDFs behalten ihre physischen Seiten. ODT- und DOCX-Dateien werden in
+    aufeinanderfolgende Textbloecke mit pseudo-seitigen Nummern zerlegt, damit
+    das restliche Chunking und die Fundstellenmetadaten unveraendert bleiben.
     """
 
+    suffix = pdf_path.suffix.lower()
+    if suffix == ".pdf":
+        return _extract_pdf_pages(pdf_path)
+    if suffix in {".odt", ".docx"}:
+        return _extract_office_pages(pdf_path)
+    raise ValueError(f"Nicht unterstuetzter Dokumenttyp: {pdf_path.suffix}")
+
+
+def supported_document_suffixes() -> tuple[str, ...]:
+    """Liste der vom Indexer eingelesenen Dateiendungen."""
+
+    return (".pdf", ".odt", ".docx")
+
+
+def _extract_pdf_pages(pdf_path: Path) -> list[ExtractedPage]:
     import fitz  # type: ignore[import-not-found]
 
     pages: list[ExtractedPage] = []
@@ -59,7 +76,89 @@ def _extract_page_text(page) -> str:  # type: ignore[no-untyped-def]
 
 
 def count_pages(pdf_path: Path) -> int:
-    import fitz  # type: ignore[import-not-found]
+    suffix = pdf_path.suffix.lower()
+    if suffix == ".pdf":
+        import fitz  # type: ignore[import-not-found]
 
-    with fitz.open(str(pdf_path)) as document:
-        return int(document.page_count)
+        with fitz.open(str(pdf_path)) as document:
+            return int(document.page_count)
+    return len(extract_pages(pdf_path))
+
+
+def _extract_office_pages(document_path: Path) -> list[ExtractedPage]:
+    inner_path = _office_inner_path(document_path)
+    with ZipFile(document_path) as archive:
+        root = ElementTree.fromstring(archive.read(inner_path))
+    paragraphs = _extract_office_paragraphs(root)
+    if not paragraphs:
+        return []
+    return _group_paragraphs_as_pages(paragraphs)
+
+
+def _office_inner_path(document_path: Path) -> str:
+    suffix = document_path.suffix.lower()
+    if suffix == ".docx":
+        return "word/document.xml"
+    if suffix == ".odt":
+        return "content.xml"
+    raise ValueError(f"Nicht unterstuetzter Office-Dokumenttyp: {suffix}")
+
+
+def _extract_office_paragraphs(root: ElementTree.Element) -> list[str]:
+    paragraphs: list[str] = []
+    for element in root.iter():
+        local_name = _local_name(element.tag)
+        if local_name not in {"p", "h"}:
+            continue
+        text = _normalize_paragraph_text("".join(element.itertext()))
+        if text:
+            paragraphs.append(text)
+    return paragraphs
+
+
+def _local_name(tag: str) -> str:
+    if "}" in tag:
+        return tag.rsplit("}", maxsplit=1)[-1]
+    return tag
+
+
+def _normalize_paragraph_text(text: str) -> str:
+    lines = [line.strip() for line in text.splitlines()]
+    collapsed = " ".join(line for line in lines if line)
+    return " ".join(collapsed.split())
+
+
+def _group_paragraphs_as_pages(
+    paragraphs: list[str],
+    *,
+    max_paragraphs: int = 12,
+    max_chars: int = 4000,
+) -> list[ExtractedPage]:
+    pages: list[ExtractedPage] = []
+    buffer: list[str] = []
+    current_len = 0
+
+    def commit() -> None:
+        nonlocal buffer, current_len
+        if not buffer:
+            return
+        pages.append(
+            ExtractedPage(
+                page_number=len(pages) + 1,
+                text="\n\n".join(buffer),
+            )
+        )
+        buffer = []
+        current_len = 0
+
+    for paragraph in paragraphs:
+        prospective_len = current_len + len(paragraph)
+        if buffer and (
+            len(buffer) >= max_paragraphs or prospective_len > max_chars
+        ):
+            commit()
+        buffer.append(paragraph)
+        current_len += len(paragraph)
+
+    commit()
+    return pages
