@@ -24,6 +24,9 @@ class ManeuverDef {
     this.mussSeparatErlerntWerden = false,
     this.giltFuerTalentTyp = '',
     this.ruleMeta,
+    this.quelle = '',
+    this.hausregel = false,
+    this.nurEpisch = false,
   });
 
   final String id;
@@ -49,6 +52,9 @@ class ManeuverDef {
   /// Talenttyp-Filter fuer [mussSeparatErlerntWerden] (z. B. 'fernkampf').
   final String giltFuerTalentTyp;
   final RuleMeta? ruleMeta; // Strukturierte Herkunfts- und Freischaltmetadaten
+  final String quelle; // Freitext-Quellreferenz (z. B. 'Wege des Schwerts S. 112')
+  final bool hausregel; // Eintrag stammt aus einer Hausregel
+  final bool nurEpisch; // Nur fuer episch eingestufte Helden verfuegbar
 
   factory ManeuverDef.fromJson(Map<String, dynamic> json) {
     final ruleMetaJson = readCatalogObject(json, 'ruleMeta');
@@ -76,6 +82,9 @@ class ManeuverDef {
         fallback: '',
       ),
       ruleMeta: ruleMetaJson == null ? null : RuleMeta.fromJson(ruleMetaJson),
+      quelle: readCatalogString(json, 'quelle', fallback: ''),
+      hausregel: readCatalogBool(json, 'hausregel', fallback: false),
+      nurEpisch: readCatalogBool(json, 'nurEpisch', fallback: false),
     );
   }
 
@@ -97,6 +106,9 @@ class ManeuverDef {
       if (giltFuerTalentTyp.isNotEmpty)
         'gilt_fuer_talent_typ': giltFuerTalentTyp,
       if (ruleMeta != null) 'ruleMeta': ruleMeta!.toJson(),
+      if (quelle.isNotEmpty) 'quelle': quelle,
+      if (hausregel) 'hausregel': true,
+      if (nurEpisch) 'nurEpisch': true,
     };
   }
 }

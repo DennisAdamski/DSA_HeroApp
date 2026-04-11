@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/catalog/combat_special_ability_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/maneuver_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/schrift_def.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/sprache_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/talent_def.dart';
@@ -14,6 +15,9 @@ enum CatalogSectionId {
   spells,
   maneuvers,
   combatSpecialAbilities,
+  generalSpecialAbilities,
+  magicSpecialAbilities,
+  karmalSpecialAbilities,
   sprachen,
   schriften,
 }
@@ -26,6 +30,9 @@ const List<CatalogSectionId> editableCatalogSections = <CatalogSectionId>[
   CatalogSectionId.spells,
   CatalogSectionId.maneuvers,
   CatalogSectionId.combatSpecialAbilities,
+  CatalogSectionId.generalSpecialAbilities,
+  CatalogSectionId.magicSpecialAbilities,
+  CatalogSectionId.karmalSpecialAbilities,
   CatalogSectionId.sprachen,
   CatalogSectionId.schriften,
 ];
@@ -43,6 +50,10 @@ extension CatalogSectionIdX on CatalogSectionId {
     CatalogSectionId.spells => 'magie',
     CatalogSectionId.maneuvers => 'manoever',
     CatalogSectionId.combatSpecialAbilities => 'kampf_sonderfertigkeiten',
+    CatalogSectionId.generalSpecialAbilities =>
+      'allgemeine_sonderfertigkeiten',
+    CatalogSectionId.magicSpecialAbilities => 'magische_sonderfertigkeiten',
+    CatalogSectionId.karmalSpecialAbilities => 'karmale_sonderfertigkeiten',
     CatalogSectionId.sprachen => 'sprachen',
     CatalogSectionId.schriften => 'schriften',
   };
@@ -58,6 +69,9 @@ extension CatalogSectionIdX on CatalogSectionId {
     CatalogSectionId.spells => 'Zauber',
     CatalogSectionId.maneuvers => 'Manöver',
     CatalogSectionId.combatSpecialAbilities => 'Kampf-Sonderfertigkeiten',
+    CatalogSectionId.generalSpecialAbilities => 'Allgemeine Sonderfertigkeiten',
+    CatalogSectionId.magicSpecialAbilities => 'Magische Sonderfertigkeiten',
+    CatalogSectionId.karmalSpecialAbilities => 'Karmale Sonderfertigkeiten',
     CatalogSectionId.sprachen => 'Sprachen',
     CatalogSectionId.schriften => 'Schriften',
   };
@@ -70,12 +84,19 @@ extension CatalogSectionIdX on CatalogSectionId {
     CatalogSectionId.spells => 'Zauber',
     CatalogSectionId.maneuvers => 'Manöver',
     CatalogSectionId.combatSpecialAbilities => 'Kampf-Sonderfertigkeit',
+    CatalogSectionId.generalSpecialAbilities => 'Allgemeine Sonderfertigkeit',
+    CatalogSectionId.magicSpecialAbilities => 'Magische Sonderfertigkeit',
+    CatalogSectionId.karmalSpecialAbilities => 'Karmale Sonderfertigkeit',
     CatalogSectionId.sprachen => 'Sprache',
     CatalogSectionId.schriften => 'Schrift',
   };
 
   /// Ob die Sektion in v1 bewusst ueber einen JSON-Editor gepflegt wird.
-  bool get usesJsonEditor => this == CatalogSectionId.combatSpecialAbilities;
+  bool get usesJsonEditor =>
+      this == CatalogSectionId.combatSpecialAbilities ||
+      this == CatalogSectionId.generalSpecialAbilities ||
+      this == CatalogSectionId.magicSpecialAbilities ||
+      this == CatalogSectionId.karmalSpecialAbilities;
 }
 
 /// Loest einen Verzeichnisnamen zu einer Katalogsektion auf.
@@ -196,6 +217,45 @@ Map<String, dynamic> defaultCatalogEntryTemplate(CatalogSectionId section) {
       'aktiviert_manoever_ids': <String>[],
       'kampfwert_boni': <Map<String, dynamic>>[],
     },
+    CatalogSectionId.generalSpecialAbilities => const <String, dynamic>{
+      'id': '',
+      'name': '',
+      'gruppe': 'allgemein',
+      'typ': 'sonderfertigkeit',
+      'kategorie': '',
+      'seite': '',
+      'beschreibung': '',
+      'erklarung_lang': '',
+      'voraussetzungen': '',
+      'verbreitung': '',
+      'kosten': '',
+    },
+    CatalogSectionId.magicSpecialAbilities => const <String, dynamic>{
+      'id': '',
+      'name': '',
+      'gruppe': 'magisch',
+      'typ': 'sonderfertigkeit',
+      'kategorie': '',
+      'seite': '',
+      'beschreibung': '',
+      'erklarung_lang': '',
+      'voraussetzungen': '',
+      'verbreitung': '',
+      'kosten': '',
+    },
+    CatalogSectionId.karmalSpecialAbilities => const <String, dynamic>{
+      'id': '',
+      'name': '',
+      'gruppe': 'karmal',
+      'typ': 'sonderfertigkeit',
+      'kategorie': '',
+      'seite': '',
+      'beschreibung': '',
+      'erklarung_lang': '',
+      'voraussetzungen': '',
+      'verbreitung': '',
+      'kosten': '',
+    },
     CatalogSectionId.sprachen => const <String, dynamic>{
       'id': '',
       'name': '',
@@ -231,6 +291,10 @@ Map<String, dynamic> canonicalizeCatalogEntry(
     CatalogSectionId.combatSpecialAbilities => CombatSpecialAbilityDef.fromJson(
       raw,
     ).toJson(),
+    CatalogSectionId.generalSpecialAbilities ||
+    CatalogSectionId.magicSpecialAbilities ||
+    CatalogSectionId.karmalSpecialAbilities =>
+      SpecialAbilityDef.fromJson(raw).toJson(),
     CatalogSectionId.sprachen => SpracheDef.fromJson(raw).toJson(),
     CatalogSectionId.schriften => SchriftDef.fromJson(raw).toJson(),
   };
