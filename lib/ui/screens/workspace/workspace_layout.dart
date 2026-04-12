@@ -25,17 +25,19 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
     required AppLayoutClass layout,
   }) {
     final activeTab = _activeTabSpec();
+    final showTabletDesktopHeader =
+        layout != AppLayoutClass.compact && activeTab != null;
     return CodexPageScaffold(
       child: Column(
         children: [
-          if (layout != AppLayoutClass.compact && activeTab != null)
+          if (showTabletDesktopHeader)
             WorkspaceHeroHeader(
+              heroId: widget.heroId,
               hero: hero,
               activeAreaLabel: activeTab.label,
-              activeAreaHelper: activeTab.helper,
-              isCompact: layout == AppLayoutClass.tabletPortrait,
             ),
-          WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
+          if (!showTabletDesktopHeader)
+            WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
           Expanded(child: _buildWorkspaceTabView()),
         ],
       ),
@@ -44,7 +46,8 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
 
   /// Liefert den aktuellen Expansionszustand des Command-Decks je Layout.
   bool _isHeroDeckExpandedFor(AppLayoutClass layout) {
-    if (!_heroDeckManualPreference && layout == AppLayoutClass.tabletLandscape) {
+    if (!_heroDeckManualPreference &&
+        layout == AppLayoutClass.tabletLandscape) {
       return true;
     }
     return _heroDeckExpanded;
@@ -52,10 +55,7 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
 
   /// Klassisches Smartphone-Layout ohne permanente Seitenleisten.
   Widget _buildCompactWorkspaceBody(HeroSheet hero) {
-    return _buildWorkspaceContentShell(
-      hero,
-      layout: AppLayoutClass.compact,
-    );
+    return _buildWorkspaceContentShell(hero, layout: AppLayoutClass.compact);
   }
 
   /// Tablet-Portrait: Icon-Rail links, Fokusinhalt mittig.

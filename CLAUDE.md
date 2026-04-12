@@ -220,6 +220,9 @@ Ergaenzungen zur aktuellen Struktur:
   `desktopWide` fuer das iPad- und Desktop-Layout.
 - `lib/ui/widgets/codex_split_view.dart` kapselt die wiederverwendbare
   Split-View-Struktur fuer Home- und Workspace-Master-Detail-Layouts.
+- `lib/ui/screens/workspace/workspace_header_stat_rail.dart` kapselt die
+  gemeinsame Kernwerte-Rail fuer den kompakten Mobil-Header und den
+  kombinierten iPad-/Desktop-Workspace-Header.
 - `lib/ui/widgets/combat_quick_stats.dart` enthaelt die kompakte Kampfwerte-Quickview.
 - `lib/domain/learn/learn_complexity.dart` und
   `lib/domain/learn/learn_rules.dart` kapseln die AP-Steigerungslogik
@@ -518,6 +521,13 @@ Linting is configured in `analysis_options.yaml` (extends `flutter_lints/flutter
 - Der `HeroWorkspaceScreen` nutzt ab `1280 dp` das breite **Helden-Deck**-
   Layout; die linke Navigationsleiste und die rechte Detailleiste koennen
   dort unabhaengig eingeklappt werden.
+- Tablet- und Desktop-Layouts des Workspace nutzen einen kompakten
+  zweizeiligen Header: oben Identitaet mit optionalem PrimÃ¤rbild und unten
+  eine eingebettete Kernwerte-Rail fuer Eigenschaften, Ressourcen, BE und
+  Wunden.
+- `AvatarGalleryEntry` speichert optional `headerFocusX` und `headerFocusY`,
+  damit der Bildausschnitt des PrimÃ¤rbilds fuer den Workspace-Header pro
+  Galerieeintrag festgelegt werden kann.
 
 ### LOC Budget Check (screens)
 
