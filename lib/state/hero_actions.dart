@@ -495,6 +495,40 @@ class HeroActions {
     await saveHero(updated);
   }
 
+  /// Speichert einen Fokuspunkt fuer den kompakten Workspace-Header.
+  Future<void> setAvatarHeaderFocus({
+    required String heroId,
+    required String galleryEntryId,
+    required double focusX,
+    required double focusY,
+  }) async {
+    final hero = await _loadHeroById(heroId);
+    final normalizedFocusX = focusX.clamp(0.0, 1.0).toDouble();
+    final normalizedFocusY = focusY.clamp(0.0, 1.0).toDouble();
+    var didUpdate = false;
+    final updatedGallery = hero.appearance.avatarGallery
+        .map((entry) {
+          if (entry.id != galleryEntryId) {
+            return entry;
+          }
+          didUpdate = true;
+          return entry.copyWith(
+            headerFocusX: normalizedFocusX,
+            headerFocusY: normalizedFocusY,
+          );
+        })
+        .toList(growable: false);
+
+    if (!didUpdate) {
+      return;
+    }
+
+    final updated = hero.copyWith(
+      appearance: hero.appearance.copyWith(avatarGallery: updatedGallery),
+    );
+    await saveHero(updated);
+  }
+
   /// Setzt ein Gallery-Bild als aktiv angezeigten Avatar.
   Future<void> setActiveAvatar({
     required String heroId,

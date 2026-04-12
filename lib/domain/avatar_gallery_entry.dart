@@ -7,6 +7,8 @@ class AvatarGalleryEntry {
     this.stilId = '',
     this.erstelltAm = '',
     this.promptAuszug = '',
+    this.headerFocusX,
+    this.headerFocusY,
   });
 
   /// Eindeutige ID (UUID).
@@ -27,6 +29,12 @@ class AvatarGalleryEntry {
   /// Gekuerzter Prompt (optional, fuer KI-generierte Bilder).
   final String promptAuszug;
 
+  /// Optionaler normalisierter Fokuspunkt fuer den Workspace-Header (0..1).
+  final double? headerFocusX;
+
+  /// Optionaler normalisierter Fokuspunkt fuer den Workspace-Header (0..1).
+  final double? headerFocusY;
+
   AvatarGalleryEntry copyWith({
     String? id,
     String? fileName,
@@ -34,6 +42,8 @@ class AvatarGalleryEntry {
     String? stilId,
     String? erstelltAm,
     String? promptAuszug,
+    double? headerFocusX,
+    double? headerFocusY,
   }) {
     return AvatarGalleryEntry(
       id: id ?? this.id,
@@ -42,17 +52,21 @@ class AvatarGalleryEntry {
       stilId: stilId ?? this.stilId,
       erstelltAm: erstelltAm ?? this.erstelltAm,
       promptAuszug: promptAuszug ?? this.promptAuszug,
+      headerFocusX: headerFocusX ?? this.headerFocusX,
+      headerFocusY: headerFocusY ?? this.headerFocusY,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'fileName': fileName,
-        'quelle': quelle,
-        'stilId': stilId,
-        'erstelltAm': erstelltAm,
-        'promptAuszug': promptAuszug,
-      };
+    'id': id,
+    'fileName': fileName,
+    'quelle': quelle,
+    'stilId': stilId,
+    'erstelltAm': erstelltAm,
+    'promptAuszug': promptAuszug,
+    if (headerFocusX != null) 'headerFocusX': headerFocusX,
+    if (headerFocusY != null) 'headerFocusY': headerFocusY,
+  };
 
   static AvatarGalleryEntry fromJson(Map<String, dynamic> json) {
     return AvatarGalleryEntry(
@@ -62,6 +76,25 @@ class AvatarGalleryEntry {
       stilId: (json['stilId'] as String?) ?? '',
       erstelltAm: (json['erstelltAm'] as String?) ?? '',
       promptAuszug: (json['promptAuszug'] as String?) ?? '',
+      headerFocusX: _readNormalizedFocusValue(json['headerFocusX']),
+      headerFocusY: _readNormalizedFocusValue(json['headerFocusY']),
     );
   }
+}
+
+double? _readNormalizedFocusValue(Object? rawValue) {
+  final numericValue = switch (rawValue) {
+    num value => value.toDouble(),
+    _ => null,
+  };
+  if (numericValue == null) {
+    return null;
+  }
+  if (numericValue < 0) {
+    return 0;
+  }
+  if (numericValue > 1) {
+    return 1;
+  }
+  return numericValue;
 }
