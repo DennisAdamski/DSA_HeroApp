@@ -36,12 +36,12 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
     super.key,
     required this.heroId,
     required this.isExpanded,
-    required this.onToggleExpanded,
+    this.onToggleExpanded,
   });
 
   final String heroId;
   final bool isExpanded;
-  final VoidCallback onToggleExpanded;
+  final VoidCallback? onToggleExpanded;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,27 +58,29 @@ class WorkspaceInspectorPanel extends ConsumerWidget {
         : 'Details einblenden';
 
     final codex = context.codexTheme;
-    final dragBar = GestureDetector(
-      key: const ValueKey<String>('workspace-details-toggle'),
-      onTap: onToggleExpanded,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Center(
-          child: Tooltip(
-            message: toggleTooltip,
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
+    final dragBar = onToggleExpanded == null
+        ? const SizedBox(height: 10)
+        : GestureDetector(
+            key: const ValueKey<String>('workspace-details-toggle'),
+            onTap: onToggleExpanded,
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Center(
+                child: Tooltip(
+                  message: toggleTooltip,
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-      ),
-    );
+          );
 
     return ClipRRect(
       borderRadius: BorderRadius.only(
