@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
+
 // ---------------------------------------------------------------------------
 // Plattform-Erkennung (testbar ueber Theme.of, kein dart:io)
 // ---------------------------------------------------------------------------
@@ -16,16 +18,16 @@ bool isApplePlatform(BuildContext context) {
 // ---------------------------------------------------------------------------
 
 /// iPhone und kleine Fenster.
-const double kCompactBreakpoint = 600;
+const double kCompactBreakpoint = kTabletPortraitBreakpoint;
 
 /// iPad Mini Portrait.
-const double kMediumBreakpoint = 744;
+const double kMediumBreakpoint = kTabletPortraitBreakpoint;
 
 /// iPad Landscape / kleiner Desktop — Sidebar ausgeklappt.
-const double kTabletBreakpoint = 1024;
+const double kTabletBreakpoint = kTabletLandscapeBreakpoint;
 
 /// Vollstaendiges Helden-Deck (drei Spalten).
-const double kHeroDeckBreakpoint = 1280;
+const double kHeroDeckBreakpoint = kDesktopWideBreakpoint;
 
 // ---------------------------------------------------------------------------
 // Adaptive Touch-Targets (Apple HIG: min 44pt)

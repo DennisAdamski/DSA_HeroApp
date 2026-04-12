@@ -69,6 +69,39 @@ void main() {
     expect(find.text('Neuer Held'), findsOneWidget);
   });
 
+  testWidgets('ipad landscape shows hero preview beside the archive', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = const Size(1194, 834);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repo = FakeRepository(
+      heroes: [hero],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+        child: const MaterialApp(home: HeroesHomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Heldenarchiv'), findsOneWidget);
+    expect(find.text('Held öffnen'), findsOneWidget);
+    expect(find.byKey(const ValueKey<String>('workspace-back-button')), findsNothing);
+  });
+
   testWidgets('create dialog captures raw start attributes and creates hero', (
     tester,
   ) async {
@@ -82,10 +115,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final createButton = tester.widget<FloatingActionButton>(
-      find.byType(FloatingActionButton),
-    );
-    createButton.onPressed!.call();
+    await tester.tap(find.text('Ersten Helden anlegen'));
     await tester.pumpAndSettle();
 
     expect(find.text('Neuen Helden anlegen'), findsOneWidget);
@@ -144,7 +174,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      tester.widget<ListTile>(find.widgetWithText(ListTile, 'Rondra')).onTap!();
+      await tester.tap(find.text('Rondra').first);
       await tester.pumpAndSettle();
 
       final tabLabels = tester
