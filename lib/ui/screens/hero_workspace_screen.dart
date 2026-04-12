@@ -4,11 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_page_scaffold.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_split_view.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_bottom_navigation.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_command_deck_panel.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_core_attributes_header.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_hero_header.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_inspector_panel.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_navigation_guard.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_registry.dart';
@@ -46,6 +49,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   bool _revertingTabChange = false;
   bool _runningEditAction = false;
   bool _heroDeckExpanded = false;
+  bool _heroDeckManualPreference = false;
   bool _workspaceDetailsExpanded = true;
 
   @override
@@ -427,10 +431,11 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
-  /// Schaltet das linke Helden-Deck zwischen ein- und ausgefahren um.
-  void _toggleHeroDeckExpanded() {
+  /// Schaltet das linke Helden-Deck je Layout zwischen ein- und ausgefahren um.
+  void _toggleHeroDeckExpanded(AppLayoutClass layout) {
     setState(() {
-      _heroDeckExpanded = !_heroDeckExpanded;
+      _heroDeckManualPreference = true;
+      _heroDeckExpanded = !_isHeroDeckExpandedFor(layout);
     });
   }
 
@@ -444,8 +449,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   @override
   Widget build(BuildContext context) {
     final hero = ref.watch(heroByIdProvider(widget.heroId));
-    final width = MediaQuery.sizeOf(context).width;
-    final layout = _layoutForWidth(width);
+    final layout = appLayoutOf(context);
 
     if (hero == null) {
       return Scaffold(
@@ -465,11 +469,10 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
 
     final apple = isApplePlatform(context);
     final hasVisibleTabs = _visibleTabs.isNotEmpty;
-    final isCompactLayout = layout == WorkspaceLayout.compact;
+    final isCompactLayout = layout == AppLayoutClass.compact;
     final useBottomNav = isCompactLayout && apple && hasVisibleTabs;
     final showTabBar = isCompactLayout && !apple && hasVisibleTabs;
-    final showInspectorAction =
-        layout == WorkspaceLayout.medium || layout == WorkspaceLayout.expanded;
+    final showInspectorAction = layout == AppLayoutClass.tabletPortrait;
 
     return PopScope(
       canPop: false,
@@ -522,10 +525,11 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
               )
             : null,
         body: switch (layout) {
-          WorkspaceLayout.compact => _buildClassicWorkspaceBody(hero),
-          WorkspaceLayout.medium => _buildMediumWorkspaceBody(hero),
-          WorkspaceLayout.expanded => _buildExpandedWorkspaceBody(hero),
-          WorkspaceLayout.heroDeck => _buildHeroDeckWorkspaceBody(hero),
+          AppLayoutClass.compact => _buildCompactWorkspaceBody(hero),
+          AppLayoutClass.tabletPortrait => _buildTabletPortraitWorkspaceBody(hero),
+          AppLayoutClass.tabletLandscape =>
+            _buildTabletLandscapeWorkspaceBody(hero),
+          AppLayoutClass.desktopWide => _buildDesktopWideWorkspaceBody(hero),
         },
       ),
     );

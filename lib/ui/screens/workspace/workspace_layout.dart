@@ -1,38 +1,40 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_workspace_screen.dart';
 
-/// Layout-Stufen fuer den Workspace je nach verfuegbarer Breite.
-enum WorkspaceLayout {
-  /// iPhone / schmales Fenster (< 744dp): TabBar oder Bottom Nav.
-  compact,
+/// Breite der eingeklappten Command-Deck-Rail auf Tablet und Desktop.
+const double _commandDeckCollapsedWidth = 64;
 
-  /// iPad Portrait / mittelbreit (744-1023dp): Collapsed Sidebar + Content.
-  medium,
+/// Breite des ausgefahrenen Command-Decks im iPad-Landscape-Layout.
+const double _tabletLandscapeCommandDeckWidth = 200;
 
-  /// iPad Landscape / breit (1024-1279dp): Ausgeklappte Sidebar + Content.
-  expanded,
+/// Breite des ausgefahrenen Command-Decks auf sehr breiten Screens.
+const double _desktopWideCommandDeckWidth = 248;
 
-  /// Desktop / sehr breit (>= 1280dp): Drei-Spalten Helden-Deck.
-  heroDeck,
-}
+/// Standardbreite des permanenten Inspectors im iPad-Landscape-Layout.
+const double _tabletLandscapeInspectorWidth = 220;
 
-/// Breite der ausgefahrenen Helden-Deck-Navigationsleiste in Pixeln.
-const double _heroDeckNavigationWidth = 240;
+/// Standardbreite des permanenten Inspectors auf sehr breiten Screens.
+const double _desktopWideInspectorWidth = 320;
 
-/// Breite der eingeklappten Helden-Deck-Umschaltleiste in Pixeln.
-const double _heroDeckCollapsedWidth = 56;
-
-/// Breite des ausgefahrenen rechten Workspace-Panels in Pixeln.
-const double _heroDeckInspectorWidth = 300;
-
-/// Breite der eingeklappten rechten Workspace-Umschaltleiste in Pixeln.
-const double _heroDeckInspectorCollapsedWidth = 56;
+/// Eingeklappte Breite des rechten Inspectors auf sehr breiten Screens.
+const double _desktopWideInspectorCollapsedWidth = 64;
 
 extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
-  /// Klassisches Layout: Attribut-Header oben, darunter der Tab-Inhalt.
-  Widget _buildClassicWorkspaceBody(HeroSheet hero) {
+  /// Liefert den aktiven Inhaltsbereich als ruhigen digitalen Heldenbogen.
+  Widget _buildWorkspaceContentShell(
+    HeroSheet hero, {
+    required AppLayoutClass layout,
+  }) {
+    final activeTab = _activeTabSpec();
     return CodexPageScaffold(
       child: Column(
         children: [
+          if (layout != AppLayoutClass.compact && activeTab != null)
+            WorkspaceHeroHeader(
+              hero: hero,
+              activeAreaLabel: activeTab.label,
+              activeAreaHelper: activeTab.helper,
+              isCompact: layout == AppLayoutClass.tabletPortrait,
+            ),
           WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
           Expanded(child: _buildWorkspaceTabView()),
         ],
@@ -40,166 +42,130 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
     );
   }
 
-  /// Helden-Deck-Layout: Navigation links, Inhalt mittig, Detailpanel rechts.
-  Widget _buildHeroDeckWorkspaceBody(HeroSheet hero) {
+  /// Liefert den aktuellen Expansionszustand des Command-Decks je Layout.
+  bool _isHeroDeckExpandedFor(AppLayoutClass layout) {
+    if (!_heroDeckManualPreference && layout == AppLayoutClass.tabletLandscape) {
+      return true;
+    }
+    return _heroDeckExpanded;
+  }
+
+  /// Klassisches Smartphone-Layout ohne permanente Seitenleisten.
+  Widget _buildCompactWorkspaceBody(HeroSheet hero) {
+    return _buildWorkspaceContentShell(
+      hero,
+      layout: AppLayoutClass.compact,
+    );
+  }
+
+  /// Tablet-Portrait: Icon-Rail links, Fokusinhalt mittig.
+  Widget _buildTabletPortraitWorkspaceBody(HeroSheet hero) {
     final activeTabIndex = _activeTabIndex();
-    final navigationWidth = _heroDeckExpanded
-        ? _heroDeckNavigationWidth
-        : _heroDeckCollapsedWidth;
+    return CodexSplitView(
+      railWidth: _commandDeckCollapsedWidth,
+      rail: WorkspaceCommandDeckNavigationPanel(
+        tabs: _visibleTabs,
+        activeTabIndex: activeTabIndex,
+        isExpanded: false,
+        isDirty: _tabRegistry.isDirty,
+        onToggleExpanded: null,
+        onSelectTab: (index) {
+          if (_tabController.index == index) {
+            return;
+          }
+          _tabController.animateTo(index);
+        },
+      ),
+      primary: _buildWorkspaceContentShell(
+        hero,
+        layout: AppLayoutClass.tabletPortrait,
+      ),
+    );
+  }
+
+  /// Tablet-Landscape: ausgeklapptes Command-Deck plus permanenter Inspector.
+  Widget _buildTabletLandscapeWorkspaceBody(HeroSheet hero) {
+    final activeTabIndex = _activeTabIndex();
+    final heroDeckExpanded = _isHeroDeckExpandedFor(
+      AppLayoutClass.tabletLandscape,
+    );
+    final navigationWidth = heroDeckExpanded
+        ? _tabletLandscapeCommandDeckWidth
+        : _commandDeckCollapsedWidth;
+    return CodexSplitView(
+      railWidth: navigationWidth,
+      rail: WorkspaceCommandDeckNavigationPanel(
+        tabs: _visibleTabs,
+        activeTabIndex: activeTabIndex,
+        isExpanded: heroDeckExpanded,
+        isDirty: _tabRegistry.isDirty,
+        onToggleExpanded: () =>
+            _toggleHeroDeckExpanded(AppLayoutClass.tabletLandscape),
+        onSelectTab: (index) {
+          if (_tabController.index == index) {
+            return;
+          }
+          _tabController.animateTo(index);
+        },
+      ),
+      primary: _buildWorkspaceContentShell(
+        hero,
+        layout: AppLayoutClass.tabletLandscape,
+      ),
+      secondaryWidth: _tabletLandscapeInspectorWidth,
+      secondary: WorkspaceInspectorPanel(
+        heroId: widget.heroId,
+        isExpanded: true,
+      ),
+    );
+  }
+
+  /// Sehr breites Layout mit zuschaltbarem Inspector.
+  Widget _buildDesktopWideWorkspaceBody(HeroSheet hero) {
+    final activeTabIndex = _activeTabIndex();
+    final heroDeckExpanded = _isHeroDeckExpandedFor(AppLayoutClass.desktopWide);
+    final navigationWidth = heroDeckExpanded
+        ? _desktopWideCommandDeckWidth
+        : _commandDeckCollapsedWidth;
     final detailsWidth = _workspaceDetailsExpanded
-        ? _heroDeckInspectorWidth
-        : _heroDeckInspectorCollapsedWidth;
-    return Row(
-      children: [
-        SizedBox(
-          width: navigationWidth,
-          child: WorkspaceCommandDeckNavigationPanel(
-            tabs: _visibleTabs,
-            activeTabIndex: activeTabIndex,
-            isExpanded: _heroDeckExpanded,
-            isDirty: _tabRegistry.isDirty,
-            onToggleExpanded: _toggleHeroDeckExpanded,
-            onSelectTab: (index) {
-              if (_tabController.index == index) {
-                return;
-              }
-              _tabController.animateTo(index);
-            },
-          ),
-        ),
-        const VerticalDivider(width: 1),
-        Expanded(
-          child: CodexPageScaffold(
-            child: Column(
-              children: [
-                WorkspaceCoreAttributesHeader(
-                  heroId: widget.heroId,
-                  hero: hero,
-                ),
-                Expanded(child: _buildWorkspaceTabView()),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(
-          width: detailsWidth,
-          child: WorkspaceInspectorPanel(
-            heroId: widget.heroId,
-            isExpanded: _workspaceDetailsExpanded,
-            onToggleExpanded: _toggleWorkspaceDetailsExpanded,
-          ),
-        ),
-      ],
+        ? _desktopWideInspectorWidth
+        : _desktopWideInspectorCollapsedWidth;
+    return CodexSplitView(
+      railWidth: navigationWidth,
+      rail: WorkspaceCommandDeckNavigationPanel(
+        tabs: _visibleTabs,
+        activeTabIndex: activeTabIndex,
+        isExpanded: heroDeckExpanded,
+        isDirty: _tabRegistry.isDirty,
+        onToggleExpanded: () =>
+            _toggleHeroDeckExpanded(AppLayoutClass.desktopWide),
+        onSelectTab: (index) {
+          if (_tabController.index == index) {
+            return;
+          }
+          _tabController.animateTo(index);
+        },
+      ),
+      primary: _buildWorkspaceContentShell(
+        hero,
+        layout: AppLayoutClass.desktopWide,
+      ),
+      secondaryWidth: detailsWidth,
+      secondary: WorkspaceInspectorPanel(
+        heroId: widget.heroId,
+        isExpanded: _workspaceDetailsExpanded,
+        onToggleExpanded: _toggleWorkspaceDetailsExpanded,
+      ),
     );
   }
 
-  /// Ermittelt das passende Layout anhand der verfuegbaren Breite.
-  WorkspaceLayout _layoutForWidth(double width) {
-    if (width >= kHeroDeckBreakpoint) {
-      return WorkspaceLayout.heroDeck;
-    }
-    if (width >= kTabletBreakpoint) {
-      return WorkspaceLayout.expanded;
-    }
-    if (width >= kMediumBreakpoint) {
-      return WorkspaceLayout.medium;
-    }
-    return WorkspaceLayout.compact;
-  }
-
-  /// Medium-Layout: Collapsed Sidebar (Icon-only) + Content-Bereich.
-  Widget _buildMediumWorkspaceBody(HeroSheet hero) {
-    final activeTabIndex = _activeTabIndex();
-    return Row(
-      children: [
-        SizedBox(
-          width: _heroDeckCollapsedWidth,
-          child: WorkspaceCommandDeckNavigationPanel(
-            tabs: _visibleTabs,
-            activeTabIndex: activeTabIndex,
-            isExpanded: false,
-            isDirty: _tabRegistry.isDirty,
-            onToggleExpanded: () {},
-            onSelectTab: (index) {
-              if (_tabController.index == index) {
-                return;
-              }
-              _tabController.animateTo(index);
-            },
-          ),
-        ),
-        const VerticalDivider(width: 1),
-        Expanded(
-          child: CodexPageScaffold(
-            child: Column(
-              children: [
-                WorkspaceCoreAttributesHeader(
-                  heroId: widget.heroId,
-                  hero: hero,
-                ),
-                Expanded(child: _buildWorkspaceTabView()),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Expanded-Layout: ausgeklappte Sidebar + Content, kein Inspector.
-  Widget _buildExpandedWorkspaceBody(HeroSheet hero) {
-    final activeTabIndex = _activeTabIndex();
-    final navigationWidth = _heroDeckExpanded
-        ? _heroDeckNavigationWidth
-        : _heroDeckCollapsedWidth;
-    return Row(
-      children: [
-        SizedBox(
-          width: navigationWidth,
-          child: WorkspaceCommandDeckNavigationPanel(
-            tabs: _visibleTabs,
-            activeTabIndex: activeTabIndex,
-            isExpanded: _heroDeckExpanded,
-            isDirty: _tabRegistry.isDirty,
-            onToggleExpanded: _toggleHeroDeckExpanded,
-            onSelectTab: (index) {
-              if (_tabController.index == index) {
-                return;
-              }
-              _tabController.animateTo(index);
-            },
-          ),
-        ),
-        const VerticalDivider(width: 1),
-        Expanded(
-          child: CodexPageScaffold(
-            child: Column(
-              children: [
-                WorkspaceCoreAttributesHeader(
-                  heroId: widget.heroId,
-                  hero: hero,
-                ),
-                Expanded(child: _buildWorkspaceTabView()),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Zeigt den Inspector als BottomSheet fuer Medium/Expanded ohne Spalte.
+  /// Zeigt den Inspector auf iPad Portrait als grosses Detail-Sheet.
   void _showInspectorSheet() {
-    showModalBottomSheet<void>(
+    showAdaptiveDetailSheet<void>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (_) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.7,
-        minChildSize: 0.3,
-        maxChildSize: 0.95,
-        builder: (sheetContext, scrollController) => WorkspaceInspectorPanel(
+      builder: (sheetContext) => Padding(
+        padding: const EdgeInsets.all(18),
+        child: WorkspaceInspectorPanel(
           heroId: widget.heroId,
           isExpanded: true,
           onToggleExpanded: () => Navigator.of(sheetContext).pop(),

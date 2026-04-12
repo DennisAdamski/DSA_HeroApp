@@ -15,7 +15,7 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
     required this.activeTabIndex,
     required this.isExpanded,
     required this.isDirty,
-    required this.onToggleExpanded,
+    this.onToggleExpanded,
     required this.onSelectTab,
   });
 
@@ -32,7 +32,7 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
   final bool Function(String tabId) isDirty;
 
   /// Schaltet den Ein-/Ausfahrzustand des Helden-Decks um.
-  final VoidCallback onToggleExpanded;
+  final VoidCallback? onToggleExpanded;
 
   /// Callback beim Auswaehlen eines Tabs.
   final ValueChanged<int> onSelectTab;
@@ -47,6 +47,7 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
     final toggleIcon = isExpanded
         ? Icons.keyboard_double_arrow_left
         : Icons.keyboard_double_arrow_right;
+    final showToggle = onToggleExpanded != null;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -73,22 +74,25 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                         ),
-                        IconButton(
-                          key: const ValueKey<String>('hero-deck-toggle'),
-                          tooltip: toggleTooltip,
-                          onPressed: onToggleExpanded,
-                          icon: Icon(toggleIcon),
-                        ),
+                        if (showToggle)
+                          IconButton(
+                            key: const ValueKey<String>('hero-deck-toggle'),
+                            tooltip: toggleTooltip,
+                            onPressed: onToggleExpanded,
+                            icon: Icon(toggleIcon),
+                          ),
                       ],
                     )
-                  : Center(
+                  : showToggle
+                  ? Center(
                       child: IconButton(
                         key: const ValueKey<String>('hero-deck-toggle'),
                         tooltip: toggleTooltip,
                         onPressed: onToggleExpanded,
                         icon: Icon(toggleIcon),
                       ),
-                    ),
+                    )
+                  : const SizedBox(height: 12),
             ),
             if (isExpanded)
               Expanded(

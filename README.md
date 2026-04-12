@@ -109,6 +109,7 @@ Technischer Stack:
 - Dauerhafte Verwaltung von Erschoepfung und Ueberanstrengung im `HeroState`
 - Optionaler Fullrestore fuer lange Abwesenheiten: alle Vitalwerte auf Maximum und keine Wunden mehr
 - Vorschau und Sammeluebernahme der Rast-Ergebnisse direkt im Workspace
+- Tablet-Layouts fuer iPad und breite Fenster: Icon-Rail im Portrait, permanenter Inspector im Landscape und heroischer Workspace-Kopf mit aktivem Bereich
 
 ### Inventar, Chroniken, Kontakte und Abenteuer
 
@@ -148,6 +149,11 @@ UI (lib/ui/)
     -> Regelmodule (lib/rules/derived/)
     -> Repository/Data Layer (lib/data/)
     -> Katalog-Layer (lib/catalog/)
+
+Die UI nutzt seit dem iPad-Redesign ein gemeinsames Layoutmodell aus
+`lib/ui/config/app_layout.dart` und wiederverwendbare Split-Views aus
+`lib/ui/widgets/codex_split_view.dart`, damit Home und Workspace auf
+Tablet-Breiten konsistent zwischen Fokusansicht und Master-Detail wechseln.
 ```
 
 Grundprinzipien des Projekts:

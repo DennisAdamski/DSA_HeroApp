@@ -102,10 +102,29 @@ class WorkspaceHeroHeader extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: useCondensedLayout ? 8 : 12),
+                    Text(
+                      'Aktiver Bereich',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: const Color(0xFFEADCC5),
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      activeAreaLabel,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: useCondensedLayout ? 8 : 10),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
+                        CodexBadge(
+                          label: activeAreaLabel,
+                          tone: CodexBadgeTone.accent,
+                        ),
                         if (hero.background.rasse.trim().isNotEmpty)
                           CodexBadge(label: hero.background.rasse),
                         if (hero.background.kultur.trim().isNotEmpty)
@@ -170,7 +189,7 @@ class WorkspaceHeroHeader extends StatelessWidget {
     if (parts.isEmpty) {
       return 'Unbeschriebener Held';
     }
-    return parts.join(' | ');
+    return parts.join(' · ');
   }
 }
 
