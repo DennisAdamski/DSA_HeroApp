@@ -40,13 +40,16 @@ technische UI-Aspekte getrennt getestet werden.
 | `test/ui/talents/hero_talents_tab_test.dart` | ui | Talents-UI-Interaktion |
 | `test/ui/workspace/hero_workspace_edit_mode_test.dart` | ui | Workspace-Edit-Flow |
 | `test/ui/workspace/hero_workspace_import_export_test.dart` | ui | Workspace Import/Export UI |
+| `test/ui/workspace/workspace_header_test.dart` | ui | Kompakter Tablet-/Desktop-Workspace-Header inkl. Bild-Fallback |
 | `test/ui/home/heroes_home_screen_test.dart` | ui | Startscreen/Navigation |
 | `test/ui/performance/ui_rebuild_guardrails_test.dart` | ui | Rebuild-Guardrail |
 | `test/ui/smoke/widget_test.dart` | ui | Minimaler App-Start bis zum leeren Startscreen |
+| `test/state/hero_actions_avatar_focus_test.dart` | state | Persistenz des Header-Fokuspunkts fuer Avatarbilder |
 | `test/state/hero_by_id_provider_test.dart` | state | Provider-ID-Lookup |
 | `test/state/hero_computed_snapshot_test.dart` | state | Combined compute pipeline |
 | `test/state/hero_provider_lookup_strategy_test.dart` | state | Lookup-Strategie ohne Listenscan |
 | `test/state/hero_repository_stream_test.dart` | state | Repository-Streams |
+| `test/domain/avatar_gallery_entry_test.dart` | domain | Fokuspunkt-Roundtrip fuer Avatar-Galerieeintraege |
 | `test/data/catalog_loader_test.dart` | data | Katalog-Loading/Validierung |
 | `test/data/catalog_model_test.dart` | data | Katalogmodell Roundtrip |
 | `test/data/hero_actions_import_export_test.dart` | data | Actions Import/Export |

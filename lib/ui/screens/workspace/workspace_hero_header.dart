@@ -1,20 +1,26 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_header_stat_rail.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
-import 'package:dsa_heldenverwaltung/ui/widgets/codex_badge.dart';
-import 'package:dsa_heldenverwaltung/ui/widgets/codex_metric_tile.dart';
 
-/// Heroischer Workspace-Kopf mit Heldenidentitaet und Kurzstatus.
-class WorkspaceHeroHeader extends StatelessWidget {
-  /// Erstellt den Header fuer den aktiven Helden und Bereich.
+/// Kompakter Workspace-Header fuer Tablet- und Desktop-Layouts.
+class WorkspaceHeroHeader extends ConsumerWidget {
+  /// Erstellt den kombinierten Header aus Identitaetszeile und Kernwerte-Rail.
   const WorkspaceHeroHeader({
     super.key,
+    required this.heroId,
     required this.hero,
     required this.activeAreaLabel,
-    required this.activeAreaHelper,
-    this.isCompact = false,
   });
+
+  /// ID des aktuell angezeigten Helden.
+  final String heroId;
 
   /// Aktueller Held.
   final HeroSheet hero;
@@ -22,150 +28,148 @@ class WorkspaceHeroHeader extends StatelessWidget {
   /// Label des aktiven Workspace-Bereichs.
   final String activeAreaLabel;
 
-  /// Kurzbeschreibung des aktiven Bereichs.
-  final String activeAreaHelper;
-
-  /// Aktiviert eine kompaktere Darstellung fuer schmale Layouts.
-  final bool isCompact;
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final codex = context.codexTheme;
     final theme = Theme.of(context);
-    final roleText = _roleText(hero);
+    final portraitBytesAsync = ref.watch(primaerbildBytesProvider(heroId));
+    final primaryEntry = _resolvePrimaryEntry(hero);
 
     return Container(
+      key: const ValueKey<String>('workspace-hero-header'),
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(
-        18,
-        isCompact ? 14 : 18,
-        18,
-        isCompact ? 16 : 20,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
       decoration: BoxDecoration(
         gradient: codex.heroGradient,
         border: Border(
-          bottom: BorderSide(color: codex.rule.withValues(alpha: 0.85)),
+          bottom: BorderSide(color: codex.rule.withValues(alpha: 0.88)),
         ),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final useWideLayout = !isCompact && constraints.maxWidth >= 920;
-          final useCondensedLayout = isCompact || constraints.maxWidth < 744;
-          final summary = Wrap(
-            spacing: useCondensedLayout ? 8 : 10,
-            runSpacing: useCondensedLayout ? 8 : 10,
-            children: [
-              CodexMetricTile(
-                label: 'Level',
-                value: hero.level.toString(),
-                icon: Icons.workspace_premium_outlined,
-              ),
-              if (!useCondensedLayout)
-                CodexMetricTile(
-                  label: 'AP Gesamt',
-                  value: hero.apTotal.toString(),
-                  icon: Icons.auto_stories_outlined,
-                ),
-              CodexMetricTile(
-                label: 'AP frei',
-                value: hero.apAvailable.toString(),
-                icon: Icons.account_balance_wallet_outlined,
-                highlight: hero.apAvailable > 0,
-              ),
-            ],
+          final width = constraints.maxWidth;
+          final isPortraitTablet = width < 1024;
+          final isDesktopWide = width >= 1366;
+          final portraitWidth = isDesktopWide
+              ? 124.0
+              : isPortraitTablet
+              ? 88.0
+              : 104.0;
+          final portraitHeight = isDesktopWide
+              ? 82.0
+              : isPortraitTablet
+              ? 64.0
+              : 72.0;
+          final titleStyle =
+              (isPortraitTablet
+                      ? theme.textTheme.headlineSmall
+                      : theme.textTheme.headlineMedium)
+                  ?.copyWith(color: Colors.white);
+          final subtitleStyle = theme.textTheme.bodyMedium?.copyWith(
+            color: const Color(0xFFF4E7CF),
+            height: 1.25,
           );
 
-          final head = Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _PortraitMedallion(
-                heroName: hero.name,
-                size: useCondensedLayout ? 72 : 88,
-              ),
-              SizedBox(width: useCondensedLayout ? 14 : 18),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      hero.name,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      roleText,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: const Color(0xFFF4E7CF),
-                      ),
-                    ),
-                    SizedBox(height: useCondensedLayout ? 8 : 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        if (hero.background.rasse.trim().isNotEmpty)
-                          CodexBadge(label: hero.background.rasse),
-                        if (hero.background.kultur.trim().isNotEmpty)
-                          CodexBadge(label: hero.background.kultur),
-                      ],
-                    ),
-                    if (!useCondensedLayout) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        activeAreaHelper,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: const Color(0xFFEADCC5),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              if (useWideLayout) ...[
-                const SizedBox(width: 16),
-                Opacity(
-                  opacity: 0.88,
-                  child: Image.asset(
-                    'assets/ui/codex/hero_banner_crest.png',
-                    width: 120,
-                    height: 120,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ],
-            ],
-          );
-
-          if (useWideLayout) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(flex: 3, child: head),
-                const SizedBox(width: 18),
-                Expanded(flex: 2, child: summary),
-              ],
-            );
-          }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [head, const SizedBox(height: 16), summary],
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _WorkspaceHeroPortrait(
+                    heroName: hero.name,
+                    primaryEntry: primaryEntry,
+                    portraitBytesAsync: portraitBytesAsync,
+                    width: portraitWidth,
+                    height: portraitHeight,
+                  ),
+                  SizedBox(width: isPortraitTablet ? 12 : 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          hero.name,
+                          maxLines: isPortraitTablet ? 2 : 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: titleStyle,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _roleText(hero),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: subtitleStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: isPortraitTablet ? 10 : 16),
+                  Flexible(
+                    flex: isPortraitTablet ? 3 : 2,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Wrap(
+                        alignment: WrapAlignment.end,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _HeaderInfoChip(
+                            label: 'Bereich',
+                            value: activeAreaLabel,
+                            icon: Icons.dashboard_outlined,
+                          ),
+                          _HeaderInfoChip(
+                            label: 'Stufe',
+                            value: hero.level.toString(),
+                            icon: Icons.workspace_premium_outlined,
+                          ),
+                          _HeaderInfoChip(
+                            label: 'AP frei',
+                            value: hero.apAvailable.toString(),
+                            icon: Icons.account_balance_wallet_outlined,
+                            highlight: hero.apAvailable > 0,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              WorkspaceHeaderStatRail(
+                heroId: heroId,
+                hero: hero,
+                variant: WorkspaceHeaderStatRailVariant.embedded,
+              ),
+            ],
           );
         },
       ),
     );
   }
 
+  AvatarGalleryEntry? _resolvePrimaryEntry(HeroSheet hero) {
+    final primaryId = hero.appearance.primaerbildId;
+    if (primaryId.isEmpty) {
+      return null;
+    }
+    for (final entry in hero.appearance.avatarGallery) {
+      if (entry.id == primaryId) {
+        return entry;
+      }
+    }
+    return null;
+  }
+
   String _roleText(HeroSheet hero) {
-    final profession = hero.background.profession.trim();
-    final kultur = hero.background.kultur.trim();
-    final rasse = hero.background.rasse.trim();
     final parts = <String>[
-      if (profession.isNotEmpty) profession,
-      if (kultur.isNotEmpty) kultur,
-      if (rasse.isNotEmpty) rasse,
+      if (hero.background.profession.trim().isNotEmpty)
+        hero.background.profession.trim(),
+      if (hero.background.kultur.trim().isNotEmpty)
+        hero.background.kultur.trim(),
+      if (hero.background.rasse.trim().isNotEmpty) hero.background.rasse.trim(),
     ];
     if (parts.isEmpty) {
       return 'Unbeschriebener Held';
@@ -174,11 +178,105 @@ class WorkspaceHeroHeader extends StatelessWidget {
   }
 }
 
-class _PortraitMedallion extends StatelessWidget {
-  const _PortraitMedallion({required this.heroName, required this.size});
+/// Flacher Portraet-Slot fuer den kompakten Workspace-Header.
+class _WorkspaceHeroPortrait extends StatelessWidget {
+  const _WorkspaceHeroPortrait({
+    required this.heroName,
+    required this.primaryEntry,
+    required this.portraitBytesAsync,
+    required this.width,
+    required this.height,
+  });
 
   final String heroName;
-  final double size;
+  final AvatarGalleryEntry? primaryEntry;
+  final AsyncValue<List<int>?> portraitBytesAsync;
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final codex = context.codexTheme;
+
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: Colors.white.withValues(alpha: 0.08),
+        border: Border.all(
+          color: const Color(0xFFD8B985).withValues(alpha: 0.84),
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: portraitBytesAsync.when(
+        data: (bytes) {
+          if (bytes == null || bytes.isEmpty) {
+            return _InitialsPortrait(heroName: heroName);
+          }
+          return _HeaderPortraitImage(bytes: bytes, primaryEntry: primaryEntry);
+        },
+        loading: () => Center(
+          child: SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: codex.brass,
+            ),
+          ),
+        ),
+        error: (_, _) => _InitialsPortrait(heroName: heroName),
+      ),
+    );
+  }
+}
+
+/// Zeigt das Primärbild mit gespeichertem Fokuspunkt als breiten Header-Ausschnitt.
+class _HeaderPortraitImage extends StatelessWidget {
+  const _HeaderPortraitImage({required this.bytes, required this.primaryEntry});
+
+  final List<int> bytes;
+  final AvatarGalleryEntry? primaryEntry;
+
+  @override
+  Widget build(BuildContext context) {
+    final focusX = primaryEntry?.headerFocusX ?? 0.5;
+    final focusY = primaryEntry?.headerFocusY ?? 0.5;
+    final alignment = Alignment((focusX * 2) - 1, (focusY * 2) - 1);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.memory(
+          Uint8List.fromList(bytes),
+          key: const ValueKey<String>('workspace-header-portrait-image'),
+          fit: BoxFit.cover,
+          alignment: alignment,
+          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.black.withValues(alpha: 0.06),
+                Colors.black.withValues(alpha: 0.26),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Fallback-Karte mit Initialen, wenn kein Primärbild verfügbar ist.
+class _InitialsPortrait extends StatelessWidget {
+  const _InitialsPortrait({required this.heroName});
+
+  final String heroName;
 
   @override
   Widget build(BuildContext context) {
@@ -190,37 +288,92 @@ class _PortraitMedallion extends StatelessWidget {
         .map((part) => part.substring(0, 1).toUpperCase())
         .join();
 
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white.withValues(alpha: 0.08),
-        border: Border.all(
-          color: const Color(0xFFD8B985).withValues(alpha: 0.8),
-        ),
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Opacity(
-            opacity: 0.18,
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Image.asset(
-                'assets/ui/codex/arcane_seal.png',
-                fit: BoxFit.contain,
-              ),
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Opacity(
+          opacity: 0.18,
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Image.asset(
+              'assets/ui/codex/arcane_seal.png',
+              fit: BoxFit.contain,
             ),
           ),
-          Center(
-            child: Text(
-              initials.isEmpty ? '?' : initials,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: Colors.white,
-                fontFamily: 'Cinzel',
-              ),
+        ),
+        Center(
+          child: Text(
+            key: const ValueKey<String>('workspace-header-portrait-initials'),
+            initials.isEmpty ? '?' : initials,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Colors.white,
+              fontFamily: 'Cinzel',
             ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Kleine Kennzahl-Kachel für die Identitätszeile des Headers.
+class _HeaderInfoChip extends StatelessWidget {
+  const _HeaderInfoChip({
+    required this.label,
+    required this.value,
+    this.icon,
+    this.highlight = false,
+  });
+
+  final String label;
+  final String value;
+  final IconData? icon;
+  final bool highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final borderColor = highlight
+        ? const Color(0xFFD8B985).withValues(alpha: 0.62)
+        : Colors.white.withValues(alpha: 0.18);
+    final backgroundColor = highlight
+        ? const Color(0xFFD0A35A).withValues(alpha: 0.2)
+        : Colors.white.withValues(alpha: 0.06);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 14, color: const Color(0xFFEADCC5)),
+            const SizedBox(width: 6),
+          ],
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: '$label ',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: const Color(0xFFEADCC5),
+                    letterSpacing: 0.4,
+                  ),
+                ),
+                TextSpan(
+                  text: value,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

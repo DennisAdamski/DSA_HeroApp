@@ -101,6 +101,16 @@ void main() {
       await tester.tap(find.text('Rondra').first);
     }
     await tester.pumpAndSettle();
+    if (find.byKey(const ValueKey<String>('workspace-back-button')).evaluate().isEmpty) {
+      final openButton = find.text('Held öffnen');
+      final fallbackOpenButton = find.text('Im Workspace öffnen');
+      if (openButton.evaluate().isNotEmpty) {
+        await tester.tap(openButton.first);
+      } else if (fallbackOpenButton.evaluate().isNotEmpty) {
+        await tester.tap(fallbackOpenButton.first);
+      }
+      await tester.pumpAndSettle();
+    }
   }
 
   HeroSheet? findHeroById(List<HeroSheet> heroes, String id) {
@@ -1606,7 +1616,7 @@ void main() {
         240,
         scrollable: verticalScrollable,
       );
-      await tester.tap(muRaiseButton);
+      await revealAndTap(tester, muRaiseButton);
       await tester.pumpAndSettle();
       expect(find.textContaining('Mit 1 SE: 1 Schritt als G'), findsOneWidget);
       await tester.tap(find.text('Steigern'));
@@ -1617,7 +1627,7 @@ void main() {
         240,
         scrollable: verticalScrollable,
       );
-      await tester.tap(lepRaiseButton);
+      await revealAndTap(tester, lepRaiseButton);
       await tester.pumpAndSettle();
       expect(find.textContaining('Mit 1 SE: 1 Schritt als G'), findsOneWidget);
       await tester.tap(find.text('Steigern'));
@@ -1764,7 +1774,7 @@ void main() {
       },
     );
 
-    await openWorkspace(tester, repo, size: const Size(1024, 1400));
+    await openWorkspace(tester, repo, size: const Size(1600, 1400));
 
     final nameFinder = find.byKey(
       const ValueKey<String>('overview-field-name'),
@@ -1818,7 +1828,6 @@ void main() {
     expect(find.text('Vitalwerte'), findsOneWidget);
     expect(heroDeckToggleButton(), findsOneWidget);
     expect(find.byTooltip('Helden-Deck einblenden'), findsOneWidget);
-    expect(find.text('Übersicht'), findsNothing);
     expect(workspaceDetailsToggleButton(), findsOneWidget);
   });
 
@@ -2064,7 +2073,6 @@ void main() {
     await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
     expect(find.text('Helden Deck'), findsNothing);
-    expect(find.text('Übersicht'), findsNothing);
     expect(find.text('Vitalwerte'), findsOneWidget);
 
     await tester.tap(heroDeckToggleButton());
@@ -2072,7 +2080,6 @@ void main() {
 
     expect(find.text('Helden Deck'), findsOneWidget);
     expect(find.byTooltip('Helden-Deck ausblenden'), findsOneWidget);
-    expect(find.text('Übersicht'), findsWidgets);
     expect(find.text('Vitalwerte'), findsOneWidget);
     expect(find.text('Basisinformationen'), findsOneWidget);
 
@@ -2081,7 +2088,6 @@ void main() {
 
     expect(find.text('Helden Deck'), findsNothing);
     expect(find.byTooltip('Helden-Deck einblenden'), findsOneWidget);
-    expect(find.text('Übersicht'), findsNothing);
   });
 
   testWidgets('wide workspace can collapse and expand right details panel', (
@@ -2229,6 +2235,16 @@ void main() {
       await tester.tap(find.text('Rondra').first);
     }
     await tester.pumpAndSettle();
+    if (find.byKey(const ValueKey<String>('workspace-back-button')).evaluate().isEmpty) {
+      final openButton = find.text('Held öffnen');
+      final fallbackOpenButton = find.text('Im Workspace öffnen');
+      if (openButton.evaluate().isNotEmpty) {
+        await tester.tap(openButton.first);
+      } else if (fallbackOpenButton.evaluate().isNotEmpty) {
+        await tester.tap(fallbackOpenButton.first);
+      }
+      await tester.pumpAndSettle();
+    }
 
     expect(container.read(talentBeOverrideProvider('demo')), isNull);
 
@@ -2315,7 +2331,7 @@ void main() {
       },
     );
 
-    await openWorkspace(tester, repo, size: const Size(1200, 1400));
+    await openWorkspace(tester, repo, size: const Size(1600, 1400));
 
     final verticalScrollable = activeTabVerticalScrollable();
     final attributesHeader = find.text('Eigenschaften');

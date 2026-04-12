@@ -84,6 +84,24 @@ main()
   5. DsaApp (Material 3, Seed-Color #2A5A73, Font Merriweather)
 ```
 
+### App-weites Tablet-Layout
+
+Seit 2026-04-12 nutzt die UI ein gemeinsames Layoutmodell für breite
+Oberflächen:
+
+- `lib/ui/config/app_layout.dart` klassifiziert Fenster in `compact`,
+  `tabletPortrait`, `tabletLandscape` und `desktopWide`.
+- `lib/ui/widgets/codex_split_view.dart` kapselt wiederverwendbare
+  Split-Layouts für Master-Detail-Ansichten.
+- `HeroesHomeScreen` nutzt auf iPad-Landscape ein persistentes
+  Archiv-/Vorschau-Layout.
+- `HeroWorkspaceScreen` trennt zwischen kompakter Mobilansicht,
+  iPad-Portrait mit Icon-Rail, iPad-Landscape mit permanentem Inspector
+  und einem breiten Desktop-Wide-Modus.
+- Tablet- und Desktop-Workspaces nutzen einen kompakten zweizeiligen Header:
+  oben Identitaet mit aktivem Bereich und optionalem PrimÃ¤rbild, darunter
+  eine eingebettete Rail fuer Eigenschaften, Ressourcen, BE und Wunden.
+
 ---
 
 ## 2. Datenmodelle (Domain Layer)

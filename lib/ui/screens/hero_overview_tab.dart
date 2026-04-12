@@ -54,8 +54,8 @@ part 'hero_overview/hero_overview_raise_actions.dart';
 const double _pagePadding = 16;
 const double _sectionSpacing = 16;
 const double _gridSpacing = 12;
-const double _standardTwoColumnBreakpoint = 700;
-const double _largeTwoColumnBreakpoint = 900;
+const double _standardTwoColumnBreakpoint = 560;
+const double _largeTwoColumnBreakpoint = 760;
 
 class HeroOverviewTab extends ConsumerStatefulWidget {
   const HeroOverviewTab({
