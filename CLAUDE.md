@@ -215,6 +215,11 @@ Ergaenzungen zur aktuellen Struktur:
   `lib/ui/screens/catalog_entry_editor_screen.dart` bilden die
   Settings-Katalogverwaltung inklusive JSON-Editor fuer
   Kampf-Sonderfertigkeiten.
+- `lib/ui/config/app_layout.dart` definiert die app-weiten
+  Groessenklassen `compact`, `tabletPortrait`, `tabletLandscape` und
+  `desktopWide` fuer das iPad- und Desktop-Layout.
+- `lib/ui/widgets/codex_split_view.dart` kapselt die wiederverwendbare
+  Split-View-Struktur fuer Home- und Workspace-Master-Detail-Layouts.
 - `lib/ui/widgets/combat_quick_stats.dart` enthaelt die kompakte Kampfwerte-Quickview.
 - `lib/domain/learn/learn_complexity.dart` und
   `lib/domain/learn/learn_rules.dart` kapseln die AP-Steigerungslogik
