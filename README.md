@@ -109,7 +109,7 @@ Technischer Stack:
 - Dauerhafte Verwaltung von Erschoepfung und Ueberanstrengung im `HeroState`
 - Optionaler Fullrestore fuer lange Abwesenheiten: alle Vitalwerte auf Maximum und keine Wunden mehr
 - Vorschau und Sammeluebernahme der Rast-Ergebnisse direkt im Workspace
-- Tablet-Layouts fuer iPad und breite Fenster: Icon-Rail im Portrait, permanenter Inspector im Landscape und heroischer Workspace-Kopf mit aktivem Bereich
+- Tablet-Layouts fuer iPad und breite Fenster: Icon-Rail im Portrait, permanenter Inspector im Landscape und ein kompakter zweizeiliger Workspace-Header mit aktivem Bereich, Bildausschnitt und Kernwerten
 
 ### Inventar, Chroniken, Kontakte und Abenteuer
 

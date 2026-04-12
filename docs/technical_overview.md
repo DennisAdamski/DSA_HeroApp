@@ -98,6 +98,9 @@ Oberflächen:
 - `HeroWorkspaceScreen` trennt zwischen kompakter Mobilansicht,
   iPad-Portrait mit Icon-Rail, iPad-Landscape mit permanentem Inspector
   und einem breiten Desktop-Wide-Modus.
+- Tablet- und Desktop-Workspaces nutzen einen kompakten zweizeiligen Header:
+  oben Identitaet mit aktivem Bereich und optionalem PrimÃ¤rbild, darunter
+  eine eingebettete Rail fuer Eigenschaften, Ressourcen, BE und Wunden.
 
 ---
 
