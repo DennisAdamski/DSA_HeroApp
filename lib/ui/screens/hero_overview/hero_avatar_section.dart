@@ -13,17 +13,13 @@ Future<void> _pickAndUploadImage(
   final bytes = result.files.first.bytes;
   if (bytes == null || bytes.isEmpty) return;
   if (!context.mounted) return;
-  await ref.read(heroActionsProvider).uploadHeroImage(
-    heroId: heroId,
-    imageBytes: bytes,
-  );
+  await ref
+      .read(heroActionsProvider)
+      .uploadHeroImage(heroId: heroId, imageBytes: bytes);
 }
 
 class _AvatarDisplay extends ConsumerWidget {
-  const _AvatarDisplay({
-    required this.heroId,
-    required this.avatarFileName,
-  });
+  const _AvatarDisplay({required this.heroId, required this.avatarFileName});
 
   final String heroId;
   final String avatarFileName;
@@ -238,19 +234,13 @@ class _HasAvatarActions extends ConsumerWidget {
   void _openAlbum(BuildContext context) {
     showDialog<void>(
       context: context,
-      builder: (context) => _AvatarAlbumDialog(
-        heroId: heroId,
-        hero: hero,
-      ),
+      builder: (context) => _AvatarAlbumDialog(heroId: heroId, hero: hero),
     );
   }
 }
 
 class _AvatarAlbumDialog extends ConsumerWidget {
-  const _AvatarAlbumDialog({
-    required this.heroId,
-    required this.hero,
-  });
+  const _AvatarAlbumDialog({required this.heroId, required this.hero});
 
   final String heroId;
   final HeroSheet hero;
@@ -310,11 +300,11 @@ class _AvatarAlbumDialog extends ConsumerWidget {
                       shrinkWrap: true,
                       gridDelegate:
                           const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 200,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        childAspectRatio: 0.72,
-                      ),
+                            maxCrossAxisExtent: 200,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 0.72,
+                          ),
                       itemCount: gallery.length,
                       itemBuilder: (context, index) {
                         final entry = gallery[index];
@@ -414,14 +404,20 @@ class _AlbumCard extends ConsumerWidget {
               onPressed: () => _openFullscreen(context),
             ),
             IconButton(
+              tooltip: 'Header-Ausschnitt',
+              icon: const Icon(Icons.filter_center_focus),
+              iconSize: 20,
+              visualDensity: VisualDensity.compact,
+              onPressed: () => _openHeaderFocusDialog(context),
+            ),
+            IconButton(
               tooltip: 'Als aktives Bild setzen',
               icon: const Icon(Icons.image_outlined),
               iconSize: 20,
               visualDensity: VisualDensity.compact,
-              onPressed: () => ref.read(heroActionsProvider).setActiveAvatar(
-                heroId: heroId,
-                galleryEntryId: entry.id,
-              ),
+              onPressed: () => ref
+                  .read(heroActionsProvider)
+                  .setActiveAvatar(heroId: heroId, galleryEntryId: entry.id),
             ),
             IconButton(
               tooltip: isPrimaer ? 'Ist Primärbild' : 'Als Primärbild setzen',
@@ -431,10 +427,12 @@ class _AlbumCard extends ConsumerWidget {
               color: isPrimaer ? colorScheme.primary : null,
               onPressed: isPrimaer
                   ? null
-                  : () => ref.read(heroActionsProvider).setPrimaerbild(
-                        heroId: heroId,
-                        galleryEntryId: entry.id,
-                      ),
+                  : () => ref
+                        .read(heroActionsProvider)
+                        .setPrimaerbild(
+                          heroId: heroId,
+                          galleryEntryId: entry.id,
+                        ),
             ),
             IconButton(
               tooltip: 'Entfernen',
@@ -453,6 +451,14 @@ class _AlbumCard extends ConsumerWidget {
     showDialog<void>(
       context: context,
       builder: (context) => _AvatarFullscreenDialog(imagePath: path),
+    );
+  }
+
+  void _openHeaderFocusDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) =>
+          _HeaderFocusDialog(heroId: heroId, entry: entry, imagePath: path),
     );
   }
 
@@ -476,10 +482,231 @@ class _AlbumCard extends ConsumerWidget {
     );
     if (confirmed != true) return;
     if (!context.mounted) return;
-    await ref.read(heroActionsProvider).removeGalleryImage(
-      heroId: heroId,
-      galleryEntryId: entry.id,
+    await ref
+        .read(heroActionsProvider)
+        .removeGalleryImage(heroId: heroId, galleryEntryId: entry.id);
+  }
+}
+
+class _HeaderFocusDialog extends ConsumerStatefulWidget {
+  const _HeaderFocusDialog({
+    required this.heroId,
+    required this.entry,
+    required this.imagePath,
+  });
+
+  final String heroId;
+  final AvatarGalleryEntry entry;
+  final String imagePath;
+
+  @override
+  ConsumerState<_HeaderFocusDialog> createState() => _HeaderFocusDialogState();
+}
+
+class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
+  late Offset _focusPoint;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusPoint = Offset(
+      widget.entry.headerFocusX ?? 0.5,
+      widget.entry.headerFocusY ?? 0.5,
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Dialog(
+      insetPadding: const EdgeInsets.all(16),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 760, maxHeight: 680),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Header-Ausschnitt', style: theme.textTheme.headlineSmall),
+              const SizedBox(height: 8),
+              Text(
+                'Tippe im Bild auf den Bereich, der im kompakten Workspace-Header sichtbar sein soll.',
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              Text('Vorschau', style: theme.textTheme.titleSmall),
+              const SizedBox(height: 8),
+              AspectRatio(
+                aspectRatio: 4.8,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest,
+                    ),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.file(
+                          io.File(widget.imagePath),
+                          fit: BoxFit.cover,
+                          alignment: Alignment(
+                            (_focusPoint.dx * 2) - 1,
+                            (_focusPoint.dy * 2) - 1,
+                          ),
+                          errorBuilder: (_, _, _) => const Center(
+                            child: Icon(Icons.broken_image_outlined, size: 32),
+                          ),
+                        ),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.black.withValues(alpha: 0.06),
+                                Colors.black.withValues(alpha: 0.26),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text('Fokuspunkt setzen', style: theme.textTheme.titleSmall),
+              const SizedBox(height: 8),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTapDown: (details) {
+                          final width = constraints.maxWidth;
+                          final height = constraints.maxHeight;
+                          if (width <= 0 || height <= 0) {
+                            return;
+                          }
+                          setState(() {
+                            _focusPoint = Offset(
+                              (details.localPosition.dx / width)
+                                  .clamp(0.0, 1.0)
+                                  .toDouble(),
+                              (details.localPosition.dy / height)
+                                  .clamp(0.0, 1.0)
+                                  .toDouble(),
+                            );
+                          });
+                        },
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Image.file(
+                              io.File(widget.imagePath),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color:
+                                      theme.colorScheme.surfaceContainerHighest,
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.broken_image_outlined,
+                                    size: 40,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.12),
+                              ),
+                            ),
+                            Positioned(
+                              left:
+                                  (_focusPoint.dx * constraints.maxWidth) - 16,
+                              top:
+                                  (_focusPoint.dy * constraints.maxHeight) - 16,
+                              child: IgnorePointer(
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white.withValues(alpha: 0.16),
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.center_focus_strong,
+                                    size: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: _saving
+                        ? null
+                        : () => Navigator.of(context).pop(),
+                    child: const Text('Abbrechen'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: _saving ? null : _saveFocus,
+                    child: Text(_saving ? 'Speichert...' : 'Übernehmen'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveFocus() async {
+    setState(() {
+      _saving = true;
+    });
+    try {
+      await ref
+          .read(heroActionsProvider)
+          .setAvatarHeaderFocus(
+            heroId: widget.heroId,
+            galleryEntryId: widget.entry.id,
+            focusX: _focusPoint.dx,
+            focusY: _focusPoint.dy,
+          );
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _saving = false;
+        });
+      }
+    }
   }
 }
 
@@ -504,10 +731,8 @@ class _AvatarFullscreenDialog extends StatelessWidget {
               child: Image.file(
                 io.File(imagePath),
                 fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => const Icon(
-                  Icons.broken_image_outlined,
-                  size: 64,
-                ),
+                errorBuilder: (_, _, _) =>
+                    const Icon(Icons.broken_image_outlined, size: 64),
               ),
             ),
           ),

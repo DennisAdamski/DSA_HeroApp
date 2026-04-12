@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,183 +8,292 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
+import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/gruppen_uebersicht_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/home/hero_home_tablet_panels.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_workspace_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_import_export_actions.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_empty_state.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_page_scaffold.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_split_view.dart';
 
+/// Startscreen fuer die Heldenauswahl mit iPad-tauglicher Vorschau.
 class HeroesHomeScreen extends ConsumerWidget {
+  /// Erstellt die Heldenzentrale mit adaptivem Tablet-Layout.
   const HeroesHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final heroesAsync = ref.watch(heroListProvider);
-    final selectedHeroId = ref.watch(selectedHeroIdProvider); // fuer Markierung der aktiven Zeile
+    final selectedHeroId = ref.watch(selectedHeroIdProvider);
     const importExportActions = WorkspaceImportExportActions();
-
     final apple = isApplePlatform(context);
+    final layout = appLayoutOf(context);
 
     Future<void> createHero() async {
       final draft = await _showCreateHeroDialog(context);
       if (draft == null || !context.mounted) {
         return;
       }
-      final navigator = Navigator.of(context);
       final id = await ref
           .read(heroActionsProvider)
           .createHero(
             name: draft.name,
             rawStartAttributes: draft.rawStartAttributes,
           );
+      ref.read(selectedHeroIdProvider.notifier).state = id;
       if (!context.mounted) {
         return;
       }
-      navigator.push(
+      Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => HeroWorkspaceScreen(heroId: id)),
+      );
+    }
+
+    Future<void> openHeroWorkspace(String heroId) async {
+      ref.read(selectedHeroIdProvider.notifier).state = heroId;
+      if (!context.mounted) {
+        return;
+      }
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => HeroWorkspaceScreen(heroId: heroId)),
+      );
+    }
+
+    Future<void> showHeroPreviewSheet(HeroSheet hero) async {
+      ref.read(selectedHeroIdProvider.notifier).state = hero.id;
+      await showAdaptiveDetailSheet<void>(
+        context: context,
+        builder: (_) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: HeroHomePreviewPanel(
+              hero: hero,
+              onOpenWorkspace: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                openHeroWorkspace(hero.id);
+              },
+              onExportHero: () => _exportSelectedHero(
+                context: context,
+                ref: ref,
+                hero: hero,
+                importExportActions: importExportActions,
+              ),
+              onDeleteHero: () => _deleteSelectedHero(
+                context: context,
+                ref: ref,
+                hero: hero,
+              ),
+            ),
+          ),
+        ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('DSA Helden'),
-        actions: [
-          if (apple)
-            IconButton(
-              tooltip: 'Neuer Held',
-              onPressed: createHero,
-              icon: const Icon(Icons.add),
-            ),
-          const SizedBox(width: 8),
-          IconButton(
-            tooltip: 'Importieren',
-            onPressed: () => _importHero(
-              context: context,
-              ref: ref,
-              importExportActions: importExportActions,
-            ),
-            icon: const Icon(Icons.download),
+        actions: _buildAppBarActions(
+          layout: layout,
+          apple: apple,
+          onCreateHero: createHero,
+          onImportHero: () => _importHero(
+            context: context,
+            ref: ref,
+            importExportActions: importExportActions,
           ),
-          const SizedBox(width: 8),
-          PopupMenuButton<String>(
-            tooltip: 'Gruppe',
-            icon: const Icon(Icons.group),
-            onSelected: (value) {
-              switch (value) {
-                case 'teilen':
-                  _showGruppenExportDialog(
-                    context: context,
-                    ref: ref,
-                    importExportActions: importExportActions,
-                  );
-                case 'uebersicht':
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const GruppenUebersichtScreen(),
-                    ),
-                  );
-              }
-            },
-            itemBuilder: (context) => const [
-              PopupMenuItem(
-                value: 'teilen',
-                child: ListTile(
-                  leading: Icon(Icons.share),
-                  title: Text('Gruppe teilen'),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              PopupMenuItem(
-                value: 'uebersicht',
-                child: ListTile(
-                  leading: Icon(Icons.people_outline),
-                  title: Text('Gruppenübersicht'),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-            ],
+          onOpenSettings: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const SettingsScreen()),
           ),
-          const SizedBox(width: 8),
-          IconButton(
-            tooltip: 'Einstellungen',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const SettingsScreen(),
-              ),
-            ),
-            icon: const Icon(Icons.settings),
+          onOpenGroupOverview: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const GruppenUebersichtScreen()),
           ),
-          const SizedBox(width: 12),
-        ],
+          onShareGroup: () => _showGruppenExportDialog(
+            context: context,
+            ref: ref,
+            importExportActions: importExportActions,
+          ),
+        ),
       ),
-      floatingActionButton: apple
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: createHero,
-              icon: const Icon(Icons.add),
-              label: const Text('Neuer Held'),
-            ),
+      floatingActionButton:
+          layout == AppLayoutClass.compact && !apple
+              ? FloatingActionButton.extended(
+                  onPressed: createHero,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Neuer Held'),
+                )
+              : null,
       body: heroesAsync.when(
         data: (heroes) {
           if (heroes.isEmpty) {
-            return const Center(
-              child: Text(
-                'Noch keine Helden angelegt. Erstelle deinen ersten Helden.',
+            return CodexPageScaffold(
+              padding: EdgeInsets.all(layout.contentPadding),
+              child: Center(
+                child: CodexEmptyState(
+                  title: 'Dein Heldenarchiv ist noch leer',
+                  message:
+                      'Lege deinen ersten Helden an oder importiere einen bestehenden Bogen, um auf dem iPad mit einem digitalen Heldenbogen zu arbeiten.',
+                  assetPath: 'assets/ui/codex/empty_ledger.png',
+                  action: FilledButton.icon(
+                    onPressed: createHero,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Ersten Helden anlegen'),
+                  ),
+                ),
               ),
             );
           }
 
-          return ListView.separated(
-            itemCount: heroes.length,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final hero = heroes[index];
-              return ListTile(
-                selected: selectedHeroId == hero.id,
-                title: Text(hero.name),
-                subtitle: Text('Level ${hero.level}'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      tooltip: 'Held exportieren',
-                      icon: const Icon(Icons.upload_file),
-                      onPressed: () => _exportSelectedHero(
-                        context: context,
-                        ref: ref,
-                        hero: hero,
-                        importExportActions: importExportActions,
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: 'Held löschen',
-                      icon: const Icon(Icons.delete_outline),
-                      onPressed: () => _deleteSelectedHero(
-                        context: context,
-                        ref: ref,
-                        hero: hero,
-                      ),
-                    ),
-                    const Icon(Icons.chevron_right),
-                  ],
-                ),
-                onTap: () {
-                  ref.read(selectedHeroIdProvider.notifier).state = hero.id;
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => HeroWorkspaceScreen(heroId: hero.id),
-                    ),
-                  );
-                },
-              );
+          final selectedHero = _resolveSelectedHero(
+            heroes: heroes,
+            selectedHeroId: selectedHeroId,
+          );
+          final archivePane = HeroHomeArchivePane(
+            heroes: heroes,
+            selectedHeroId: selectedHero?.id,
+            layout: layout,
+            onSelectHero: (hero) {
+              if (layout.hasPersistentDetailPane) {
+                ref.read(selectedHeroIdProvider.notifier).state = hero.id;
+                return;
+              }
+              if (layout == AppLayoutClass.tabletPortrait) {
+                showHeroPreviewSheet(hero);
+                return;
+              }
+              openHeroWorkspace(hero.id);
             },
+            onExportHero: (hero) => _exportSelectedHero(
+              context: context,
+              ref: ref,
+              hero: hero,
+              importExportActions: importExportActions,
+            ),
+            onDeleteHero: (hero) => _deleteSelectedHero(
+              context: context,
+              ref: ref,
+              hero: hero,
+            ),
+          );
+
+          if (!layout.hasPersistentDetailPane) {
+            return archivePane;
+          }
+
+          return CodexSplitView(
+            primaryWidth: layout == AppLayoutClass.desktopWide ? 420 : 360,
+            primary: archivePane,
+            secondary: CodexPageScaffold(
+              padding: EdgeInsets.all(layout.contentPadding),
+              child: HeroHomePreviewPanel(
+                hero: selectedHero!,
+                onOpenWorkspace: () => openHeroWorkspace(selectedHero.id),
+                onExportHero: () => _exportSelectedHero(
+                  context: context,
+                  ref: ref,
+                  hero: selectedHero,
+                  importExportActions: importExportActions,
+                ),
+                onDeleteHero: () => _deleteSelectedHero(
+                  context: context,
+                  ref: ref,
+                  hero: selectedHero,
+                ),
+              ),
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(child: Text('Fehler: $error')),
       ),
     );
+  }
+
+  List<Widget> _buildAppBarActions({
+    required AppLayoutClass layout,
+    required bool apple,
+    required Future<void> Function() onCreateHero,
+    required Future<void> Function() onImportHero,
+    required VoidCallback onOpenSettings,
+    required VoidCallback onOpenGroupOverview,
+    required Future<void> Function() onShareGroup,
+  }) {
+    if (layout == AppLayoutClass.compact) {
+      return [
+        if (apple)
+          IconButton(
+            tooltip: 'Neuer Held',
+            onPressed: onCreateHero,
+            icon: const Icon(Icons.add),
+          ),
+        IconButton(
+          tooltip: 'Importieren',
+          onPressed: onImportHero,
+          icon: const Icon(Icons.download),
+        ),
+        _HomeGroupMenuButton(
+          compact: true,
+          onOpenGroupOverview: onOpenGroupOverview,
+          onShareGroup: onShareGroup,
+        ),
+        IconButton(
+          tooltip: 'Einstellungen',
+          onPressed: onOpenSettings,
+          icon: const Icon(Icons.settings),
+        ),
+        const SizedBox(width: 12),
+      ];
+    }
+
+    return [
+      const SizedBox(width: 8),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: FilledButton.tonalIcon(
+          onPressed: onCreateHero,
+          icon: const Icon(Icons.add),
+          label: const Text('Neuer Held'),
+        ),
+      ),
+      const SizedBox(width: 8),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: OutlinedButton.icon(
+          onPressed: onImportHero,
+          icon: const Icon(Icons.download),
+          label: const Text('Importieren'),
+        ),
+      ),
+      _HomeGroupMenuButton(
+        compact: false,
+        onOpenGroupOverview: onOpenGroupOverview,
+        onShareGroup: onShareGroup,
+      ),
+      IconButton(
+        tooltip: 'Einstellungen',
+        onPressed: onOpenSettings,
+        icon: const Icon(Icons.settings),
+      ),
+      const SizedBox(width: 12),
+    ];
+  }
+
+  HeroSheet? _resolveSelectedHero({
+    required List<HeroSheet> heroes,
+    required String? selectedHeroId,
+  }) {
+    for (final hero in heroes) {
+      if (hero.id == selectedHeroId) {
+        return hero;
+      }
+    }
+    if (heroes.isEmpty) {
+      return null;
+    }
+    return heroes.first;
   }
 
   Future<void> _deleteSelectedHero({
@@ -270,13 +379,13 @@ class HeroesHomeScreen extends ConsumerWidget {
         context: context,
         ref: ref,
       );
-      if (result == null || !context.mounted) return;
+      if (result == null || !context.mounted) {
+        return;
+      }
 
       if (result.type == ImportResult.gruppe) {
         Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => const GruppenUebersichtScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const GruppenUebersichtScreen()),
         );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Gruppe erfolgreich importiert')),
@@ -285,6 +394,7 @@ class HeroesHomeScreen extends ConsumerWidget {
       }
 
       if (result.heroId != null) {
+        ref.read(selectedHeroIdProvider.notifier).state = result.heroId;
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => HeroWorkspaceScreen(heroId: result.heroId!),
@@ -295,12 +405,16 @@ class HeroesHomeScreen extends ConsumerWidget {
         );
       }
     } on FormatException catch (error) {
-      if (!context.mounted) return;
+      if (!context.mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Import ungültig: ${error.message}')),
       );
     } on Exception catch (error) {
-      if (!context.mounted) return;
+      if (!context.mounted) {
+        return;
+      }
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Import fehlgeschlagen: $error')));
@@ -324,7 +438,9 @@ class HeroesHomeScreen extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => _GruppenExportDialog(heroes: heroes),
     );
-    if (result == null || !context.mounted) return;
+    if (result == null || !context.mounted) {
+      return;
+    }
 
     try {
       final outcome = await importExportActions.exportGruppenSnapshot(
@@ -332,13 +448,19 @@ class HeroesHomeScreen extends ConsumerWidget {
         gruppenName: result.gruppenName,
         heroIds: result.heroIds,
       );
-      if (!context.mounted) return;
-      if (outcome.result == HeroTransferExportResult.canceled) return;
+      if (!context.mounted) {
+        return;
+      }
+      if (outcome.result == HeroTransferExportResult.canceled) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Gruppe exportiert und geteilt')),
       );
     } on Exception catch (error) {
-      if (!context.mounted) return;
+      if (!context.mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Export fehlgeschlagen: $error')),
       );
@@ -349,6 +471,75 @@ class HeroesHomeScreen extends ConsumerWidget {
     return showAdaptiveDetailSheet<_CreateHeroDraft>(
       context: context,
       builder: (dialogContext) => const _CreateHeroDialog(),
+    );
+  }
+}
+
+class _HomeGroupMenuButton extends StatelessWidget {
+  const _HomeGroupMenuButton({
+    required this.compact,
+    required this.onOpenGroupOverview,
+    required this.onShareGroup,
+  });
+
+  final bool compact;
+  final VoidCallback onOpenGroupOverview;
+  final Future<void> Function() onShareGroup;
+
+  @override
+  Widget build(BuildContext context) {
+    final trigger = compact
+        ? const Icon(Icons.group)
+        : Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Theme.of(context).dividerColor),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.group, size: 18),
+                SizedBox(width: 8),
+                Text('Gruppe'),
+              ],
+            ),
+          );
+
+    return PopupMenuButton<String>(
+      tooltip: 'Gruppe',
+      onSelected: (value) {
+        switch (value) {
+          case 'teilen':
+            onShareGroup();
+          case 'uebersicht':
+            onOpenGroupOverview();
+        }
+      },
+      itemBuilder: (context) => const [
+        PopupMenuItem(
+          value: 'teilen',
+          child: ListTile(
+            leading: Icon(Icons.share),
+            title: Text('Gruppe teilen'),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+        PopupMenuItem(
+          value: 'uebersicht',
+          child: ListTile(
+            leading: Icon(Icons.people_outline),
+            title: Text('Gruppenübersicht'),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+      ],
+      child: compact
+          ? trigger
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: trigger,
+            ),
     );
   }
 }
@@ -532,9 +723,7 @@ class _GruppenExportDialogState extends State<_GruppenExportDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: 'Meine Gruppe');
-    _selectedHeroes = {
-      for (final hero in widget.heroes) hero.id: true,
-    };
+    _selectedHeroes = {for (final hero in widget.heroes) hero.id: true};
   }
 
   @override
