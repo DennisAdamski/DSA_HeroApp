@@ -64,13 +64,6 @@ class SpellDef {
 
   factory SpellDef.fromJson(Map<String, dynamic> json) {
     final ruleMetaJson = readCatalogObject(json, 'ruleMeta');
-    // Varianten koennen als verschluesselter String vorliegen.
-    final rawVariants = json['variants'];
-    final variantsEncrypted =
-        isEncryptedValue(rawVariants) ? rawVariants as String : null;
-    final variants =
-        variantsEncrypted != null ? const <String>[] : readCatalogStringList(json, 'variants');
-
     return SpellDef(
       id: readCatalogString(json, 'id', fallback: ''),
       name: readCatalogString(json, 'name', fallback: ''),
