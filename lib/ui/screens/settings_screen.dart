@@ -329,15 +329,14 @@ class _HeroStorageSection extends ConsumerWidget {
   }
 }
 
-/// Abschnitt fuer das Katalog-Inhaltspasswort.
+/// Abschnitt fuer den Katalog-Inhaltsschutz.
 class _CatalogContentPasswordSection extends ConsumerWidget {
   const _CatalogContentPasswordSection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final configured = ref.watch(catalogContentPasswordConfiguredProvider);
-    final unlocked = ref.watch(catalogContentUnlockedProvider);
+    final visible = ref.watch(catalogContentVisibleProvider);
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -347,351 +346,68 @@ class _CatalogContentPasswordSection extends ConsumerWidget {
           Text('Katalog-Inhaltsschutz', style: theme.textTheme.titleLarge),
           const SizedBox(height: 8),
           Text(
-            'Geschützte Kataloginhalte (lange Erklärungen, Wirkung, '
-            'Varianten) können mit einem Passwort gesperrt werden. '
+            'Bestimmte Kataloginhalte (lange Erklärungen, Wirkung, '
+            'Varianten) sind verschlüsselt und können mit dem '
+            'passenden Passwort freigeschaltet werden. '
             'Eigens erstellte Einträge sind davon nicht betroffen.',
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
-          if (!configured) ...[
-            FilledButton.icon(
-              onPressed: () => _showSetPasswordDialog(context, ref),
-              icon: const Icon(Icons.lock_outline),
-              label: const Text('Passwort setzen'),
-            ),
-          ] else ...[
+          if (visible) ...[
             Row(
               children: [
-                Icon(
-                  unlocked ? Icons.lock_open : Icons.lock,
-                  color: unlocked
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.error,
-                ),
+                Icon(Icons.lock_open, color: theme.colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
-                  unlocked ? 'Inhalte freigeschaltet' : 'Inhalte gesperrt',
+                  'Katalog-Inhalte freigeschaltet',
                   style: theme.textTheme.bodyLarge,
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                if (!unlocked)
-                  FilledButton.icon(
-                    onPressed: () =>
-                        showCatalogUnlockDialog(context: context, ref: ref),
-                    icon: const Icon(Icons.lock_open),
-                    label: const Text('Freischalten'),
-                  )
-                else
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      ref.read(catalogContentUnlockedProvider.notifier).state =
-                          false;
-                    },
-                    icon: const Icon(Icons.lock),
-                    label: const Text('Sperren'),
-                  ),
-                OutlinedButton.icon(
-                  onPressed: () => _showChangePasswordDialog(context, ref),
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Passwort ändern'),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () => _showRemovePasswordDialog(context, ref),
-                  icon: const Icon(Icons.delete_outline),
-                  label: const Text('Passwort entfernen'),
-                ),
-              ],
+            OutlinedButton.icon(
+              onPressed: () => _removePassword(context, ref),
+              icon: const Icon(Icons.delete_outline),
+              label: const Text('Passwort entfernen'),
             ),
-          ],
+          ] else
+            FilledButton.icon(
+              onPressed: () =>
+                  showCatalogUnlockDialog(context: context, ref: ref),
+              icon: const Icon(Icons.lock_open),
+              label: const Text('Inhalte freischalten'),
+            ),
         ],
       ),
     );
   }
 
-  Future<void> _showSetPasswordDialog(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
-    final result = await showDialog<String>(
-      context: context,
-      builder: (_) => const _SetPasswordDialog(),
-    );
-    if (result == null || result.isEmpty) return;
-    await ref.read(settingsActionsProvider).setCatalogContentPassword(result);
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Katalog-Passwort gesetzt.')),
-    );
-  }
-
-  Future<void> _showChangePasswordDialog(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
-    final stored =
-        ref.read(appSettingsProvider).valueOrNull?.catalogContentPassword;
-    if (stored == null) return;
-    final result = await showDialog<String>(
-      context: context,
-      builder: (_) => _ChangePasswordDialog(currentPassword: stored),
-    );
-    if (result == null || result.isEmpty) return;
-    await ref.read(settingsActionsProvider).setCatalogContentPassword(result);
-    // Session bleibt freigeschaltet falls sie es war.
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Katalog-Passwort geändert.')),
-    );
-  }
-
-  Future<void> _showRemovePasswordDialog(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
-    final stored =
-        ref.read(appSettingsProvider).valueOrNull?.catalogContentPassword;
-    if (stored == null) return;
+  Future<void> _removePassword(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => _ConfirmCurrentPasswordDialog(currentPassword: stored),
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Passwort entfernen?'),
+        content: const Text(
+          'Geschützte Kataloginhalte werden danach wieder '
+          'als gesperrt angezeigt.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Entfernen'),
+          ),
+        ],
+      ),
     );
     if (confirmed != true) return;
     await ref.read(settingsActionsProvider).setCatalogContentPassword(null);
-    ref.read(catalogContentUnlockedProvider.notifier).state = false;
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Katalog-Passwort entfernt.')),
-    );
-  }
-}
-
-class _SetPasswordDialog extends StatefulWidget {
-  const _SetPasswordDialog();
-
-  @override
-  State<_SetPasswordDialog> createState() => _SetPasswordDialogState();
-}
-
-class _SetPasswordDialogState extends State<_SetPasswordDialog> {
-  final _pw1 = TextEditingController();
-  final _pw2 = TextEditingController();
-  String? _error;
-
-  @override
-  void dispose() {
-    _pw1.dispose();
-    _pw2.dispose();
-    super.dispose();
-  }
-
-  void _submit() {
-    final pw = _pw1.text.trim();
-    if (pw.isEmpty) {
-      setState(() => _error = 'Passwort darf nicht leer sein.');
-      return;
-    }
-    if (pw != _pw2.text.trim()) {
-      setState(() => _error = 'Passwörter stimmen nicht überein.');
-      return;
-    }
-    Navigator.of(context).pop(pw);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Passwort setzen'),
-      content: SizedBox(
-        width: 320,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _pw1,
-              obscureText: true,
-              autofocus: true,
-              decoration: const InputDecoration(
-                labelText: 'Passwort',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _pw2,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Passwort bestätigen',
-                border: const OutlineInputBorder(),
-                errorText: _error,
-              ),
-              onSubmitted: (_) => _submit(),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(onPressed: _submit, child: const Text('Setzen')),
-      ],
-    );
-  }
-}
-
-class _ChangePasswordDialog extends StatefulWidget {
-  const _ChangePasswordDialog({required this.currentPassword});
-
-  final String currentPassword;
-
-  @override
-  State<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
-}
-
-class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
-  final _current = TextEditingController();
-  final _pw1 = TextEditingController();
-  final _pw2 = TextEditingController();
-  String? _error;
-
-  @override
-  void dispose() {
-    _current.dispose();
-    _pw1.dispose();
-    _pw2.dispose();
-    super.dispose();
-  }
-
-  void _submit() {
-    if (_current.text.trim() != widget.currentPassword) {
-      setState(() => _error = 'Aktuelles Passwort ist falsch.');
-      return;
-    }
-    final pw = _pw1.text.trim();
-    if (pw.isEmpty) {
-      setState(() => _error = 'Neues Passwort darf nicht leer sein.');
-      return;
-    }
-    if (pw != _pw2.text.trim()) {
-      setState(() => _error = 'Neue Passwörter stimmen nicht überein.');
-      return;
-    }
-    Navigator.of(context).pop(pw);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Passwort ändern'),
-      content: SizedBox(
-        width: 320,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _current,
-              obscureText: true,
-              autofocus: true,
-              decoration: const InputDecoration(
-                labelText: 'Aktuelles Passwort',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _pw1,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Neues Passwort',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _pw2,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Neues Passwort bestätigen',
-                border: const OutlineInputBorder(),
-                errorText: _error,
-              ),
-              onSubmitted: (_) => _submit(),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(onPressed: _submit, child: const Text('Ändern')),
-      ],
-    );
-  }
-}
-
-class _ConfirmCurrentPasswordDialog extends StatefulWidget {
-  const _ConfirmCurrentPasswordDialog({required this.currentPassword});
-
-  final String currentPassword;
-
-  @override
-  State<_ConfirmCurrentPasswordDialog> createState() =>
-      _ConfirmCurrentPasswordDialogState();
-}
-
-class _ConfirmCurrentPasswordDialogState
-    extends State<_ConfirmCurrentPasswordDialog> {
-  final _controller = TextEditingController();
-  String? _error;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _submit() {
-    if (_controller.text.trim() != widget.currentPassword) {
-      setState(() => _error = 'Falsches Passwort.');
-      return;
-    }
-    Navigator.of(context).pop(true);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Passwort bestätigen'),
-      content: SizedBox(
-        width: 320,
-        child: TextField(
-          controller: _controller,
-          obscureText: true,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: 'Aktuelles Passwort eingeben',
-            border: const OutlineInputBorder(),
-            errorText: _error,
-          ),
-          onSubmitted: (_) => _submit(),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(onPressed: _submit, child: const Text('Bestätigen')),
-      ],
     );
   }
 }
