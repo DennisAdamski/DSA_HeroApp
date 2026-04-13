@@ -401,29 +401,54 @@ class _RitualEntryDialogState extends State<_RitualEntryDialog> {
     for (final value in entry.additionalFieldValues) {
       additionalValuesById[value.fieldDefId] = value;
     }
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildReadOnlyRow('Name', entry.name),
-        _buildReadOnlyRow('Wirkung', entry.wirkung),
-        _buildReadOnlyRow('Kosten', entry.kosten),
-        _buildReadOnlyRow('Wirkungsdauer', entry.wirkungsdauer),
-        _buildReadOnlyRow('Merkmale', entry.merkmale),
-        _buildReadOnlyRow('Zauberdauer', entry.zauberdauer),
-        _buildReadOnlyRow('Zielobjekt', entry.zielobjekt),
-        _buildReadOnlyRow('Reichweite', entry.reichweite),
-        _buildReadOnlyRow('Technik', entry.technik),
-        ...widget.category.additionalFieldDefs.map((fieldDef) {
-          final value = additionalValuesById[fieldDef.id];
-          final displayValue = switch (fieldDef.type) {
-            HeroRitualFieldType.text => value?.textValue ?? '',
-            HeroRitualFieldType.threeAttributes =>
-              (value?.attributeCodes ?? []).join('/'),
-          };
-          return _buildReadOnlyRow(fieldDef.label, displayValue);
-        }),
-      ],
+    return Consumer(
+      builder: (context, ref, _) {
+        final visible = ref.watch(catalogContentVisibleProvider);
+        final password = ref
+            .watch(appSettingsProvider)
+            .valueOrNull
+            ?.catalogContentPassword;
+        final resolvedWirkung = resolveProtectedValue(
+          raw: entry.wirkung,
+          unlocked: visible,
+          password: password,
+        );
+        final resolvedTechnik = resolveProtectedValue(
+          raw: entry.technik,
+          unlocked: visible,
+          password: password,
+        );
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildReadOnlyRow('Name', entry.name),
+            _buildReadOnlyRow(
+              'Wirkung',
+              resolvedWirkung ?? lockedContentHint,
+            ),
+            _buildReadOnlyRow('Kosten', entry.kosten),
+            _buildReadOnlyRow('Wirkungsdauer', entry.wirkungsdauer),
+            _buildReadOnlyRow('Merkmale', entry.merkmale),
+            _buildReadOnlyRow('Zauberdauer', entry.zauberdauer),
+            _buildReadOnlyRow('Zielobjekt', entry.zielobjekt),
+            _buildReadOnlyRow('Reichweite', entry.reichweite),
+            _buildReadOnlyRow(
+              'Technik',
+              resolvedTechnik ?? lockedContentHint,
+            ),
+            ...widget.category.additionalFieldDefs.map((fieldDef) {
+              final value = additionalValuesById[fieldDef.id];
+              final displayValue = switch (fieldDef.type) {
+                HeroRitualFieldType.text => value?.textValue ?? '',
+                HeroRitualFieldType.threeAttributes =>
+                  (value?.attributeCodes ?? []).join('/'),
+              };
+              return _buildReadOnlyRow(fieldDef.label, displayValue);
+            }),
+          ],
+        );
+      },
     );
   }
 

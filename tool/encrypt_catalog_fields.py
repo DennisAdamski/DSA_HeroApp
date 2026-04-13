@@ -51,6 +51,10 @@ PROTECTED_FIELDS: dict[str, dict[str, str]] = {
         'wirkung': 'string',
         'variants': 'list',
     },
+    'vertrautenmagie_rituale.json': {
+        'wirkung': 'string',
+        'technik': 'string',
+    },
 }
 
 
@@ -110,12 +114,17 @@ def process_file(
     with open(file_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    if not isinstance(data, list):
-        print(f'  Warnung: {file_path.name} ist kein Array, uebersprungen.', file=sys.stderr)
+    # Eintraege ermitteln: Top-Level-Array oder verschachteltes 'rituals'-Array.
+    if isinstance(data, list):
+        entries = data
+    elif isinstance(data, dict) and isinstance(data.get('rituals'), list):
+        entries = data['rituals']
+    else:
+        print(f'  Warnung: {file_path.name} hat kein bekanntes Format, uebersprungen.', file=sys.stderr)
         return 0
 
     changed = 0
-    for entry in data:
+    for entry in entries:
         if not isinstance(entry, dict):
             continue
         for field_name, field_type in fields.items():
@@ -133,7 +142,7 @@ def process_file(
                     else:
                         print(
                             f'  Warnung: Entschluesselung fehlgeschlagen fuer '
-                            f'{entry.get("id", "?")}:{field_name}',
+                            f'{entry.get("id", entry.get("name", "?"))}:{field_name}',
                             file=sys.stderr,
                         )
                 elif field_type == 'list' and is_encrypted(value):
@@ -145,13 +154,13 @@ def process_file(
                         except json.JSONDecodeError:
                             print(
                                 f'  Warnung: JSON-Parse fehlgeschlagen fuer '
-                                f'{entry.get("id", "?")}:{field_name}',
+                                f'{entry.get("id", entry.get("name", "?"))}:{field_name}',
                                 file=sys.stderr,
                             )
                     else:
                         print(
                             f'  Warnung: Entschluesselung fehlgeschlagen fuer '
-                            f'{entry.get("id", "?")}:{field_name}',
+                            f'{entry.get("id", entry.get("name", "?"))}:{field_name}',
                             file=sys.stderr,
                         )
             else:
