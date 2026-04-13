@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 
 /// Definition eines Zauberspruchs aus dem Regelkatalog.
@@ -24,6 +25,7 @@ class SpellDef {
     this.modifications = '',
     this.wirkung = '',
     this.variants = const [],
+    this.rawVariantsEncrypted,
     this.category = '',
     this.source = '',
     this.active = true,
@@ -45,11 +47,22 @@ class SpellDef {
   final String modifications; // Modifikationsoptionen fuer den Zauber
   final String wirkung; // Wirkungsbeschreibung (Langtext aus dem Regelwerk)
   final List<String> variants; // Definierte Varianten des Zaubers
+
+  /// Verschluesselter Roh-String fuer Varianten (nur gesetzt bei `enc:`-Werten).
+  final String? rawVariantsEncrypted;
+
   final String category; // Zauberkategorie
   final String source; // Quellreferenz (z. B. 'Liber Cantiones S. 36')
   final bool active; // Im App verfuegbar und anzeigbar?
 
   factory SpellDef.fromJson(Map<String, dynamic> json) {
+    // Varianten koennen als verschluesselter String vorliegen.
+    final rawVariants = json['variants'];
+    final variantsEncrypted =
+        isEncryptedValue(rawVariants) ? rawVariants as String : null;
+    final variants =
+        variantsEncrypted != null ? const <String>[] : readCatalogStringList(json, 'variants');
+
     return SpellDef(
       id: readCatalogString(json, 'id', fallback: ''),
       name: readCatalogString(json, 'name', fallback: ''),
@@ -66,7 +79,8 @@ class SpellDef {
       duration: readCatalogString(json, 'duration', fallback: ''),
       modifications: readCatalogString(json, 'modifications', fallback: ''),
       wirkung: readCatalogString(json, 'wirkung', fallback: ''),
-      variants: readCatalogStringList(json, 'variants'),
+      variants: variants,
+      rawVariantsEncrypted: variantsEncrypted,
       category: readCatalogString(json, 'category', fallback: ''),
       source: readCatalogString(json, 'source', fallback: ''),
       active: readCatalogBool(json, 'active', fallback: true),

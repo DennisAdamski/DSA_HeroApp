@@ -6,7 +6,16 @@
       "Bash(flutter test test/ui/combat/hero_combat_tab_test.dart)",
       "Bash(flutter test test/ui/performance/ui_rebuild_guardrails_test.dart)",
       "Bash(flutter test test/ui/combat/hero_combat_tab_test.dart --name \"armor pieces\")",
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(bash:*)",
+      "Bash(sort -t- -k2 -n)",
+      "mcp__dsa-rules__search_rules",
+      "mcp__dsa-rules__list_sources",
+      "mcp__dsa-rules__get_context"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "dsa-rules"
+  ]
 }

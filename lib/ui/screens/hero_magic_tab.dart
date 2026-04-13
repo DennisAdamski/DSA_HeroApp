@@ -30,6 +30,9 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 import 'package:uuid/uuid.dart';
 
@@ -436,6 +439,8 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             merkmalskenntnisse: _draftMerkmalskenntnisse,
                             heroRepresentationen: _draftRepresentationen,
                             isEditing: _editController.isEditing,
+                            contentUnlocked: ref.watch(catalogContentVisibleProvider),
+                            contentPassword: ref.watch(appSettingsProvider).valueOrNull?.catalogContentPassword,
                             onSpellValueChanged: _updateSpellValue,
                             onModifierChanged: _updateSpellModifier,
                             onHauszauberChanged: _updateHauszauber,

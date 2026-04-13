@@ -258,7 +258,29 @@ class _CombatSpecialAbilityDetailsDialog extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text('Lange Erklärung', style: theme.textTheme.titleSmall),
                 const SizedBox(height: 6),
-                Text(ability.erklarungLang.trim()),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final visible = ref.watch(catalogContentVisibleProvider);
+                    final password = ref
+                        .watch(appSettingsProvider)
+                        .valueOrNull
+                        ?.catalogContentPassword;
+                    final resolved = resolveProtectedValue(
+                      raw: ability.erklarungLang.trim(),
+                      unlocked: visible,
+                      password: password,
+                    );
+                    if (resolved == null) {
+                      return Text(
+                        lockedContentHint,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontStyle: FontStyle.italic,
+                        ),
+                      );
+                    }
+                    return Text(resolved);
+                  },
+                ),
               ],
               if (ability.voraussetzungen.trim().isNotEmpty) ...[
                 const SizedBox(height: 16),
