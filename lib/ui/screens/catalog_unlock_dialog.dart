@@ -1,28 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 
-/// Oeffnet einen Dialog zur Eingabe des Katalog-Inhaltspassworts.
+/// Oeffnet einen Dialog zur Eingabe des Katalog-Entschluesselungspassworts.
 ///
-/// Gibt `true` zurueck wenn das Passwort korrekt war und die Session
-/// freigeschaltet wurde, sonst `false`.
+/// Das Passwort wird durch Probe-Entschluesselung eines verschluesselten
+/// Katalogwerts validiert. Bei Erfolg wird es in den App-Einstellungen
+/// persistiert und der Dialog gibt `true` zurueck.
 Future<bool> showCatalogUnlockDialog({
   required BuildContext context,
   required WidgetRef ref,
 }) async {
+  // Ersten verschluesselten Wert aus dem Katalog als Probe verwenden.
+  final catalog = ref.read(rulesCatalogProvider).valueOrNull;
+  String? probeValue;
+  if (catalog != null) {
+    for (final m in catalog.maneuvers) {
+      if (isEncryptedValue(m.erklarungLang)) {
+        probeValue = m.erklarungLang;
+        break;
+      }
+    }
+    if (probeValue == null) {
+      for (final a in catalog.combatSpecialAbilities) {
+        if (isEncryptedValue(a.erklarungLang)) {
+          probeValue = a.erklarungLang;
+          break;
+        }
+      }
+    }
+    if (probeValue == null) {
+      for (final s in catalog.spells) {
+        if (isEncryptedValue(s.wirkung)) {
+          probeValue = s.wirkung;
+          break;
+        }
+      }
+    }
+  }
+
+  if (probeValue == null) {
+    // Kein verschluesselter Inhalt vorhanden — nichts zu entsperren.
+    return false;
+  }
+
+  if (!context.mounted) return false;
   final result = await showDialog<bool>(
     context: context,
-    builder: (_) => _CatalogUnlockDialog(ref: ref),
+    builder: (_) => _CatalogUnlockDialog(ref: ref, probeValue: probeValue!),
   );
   return result ?? false;
 }
 
 class _CatalogUnlockDialog extends StatefulWidget {
-  const _CatalogUnlockDialog({required this.ref});
+  const _CatalogUnlockDialog({
+    required this.ref,
+    required this.probeValue,
+  });
 
   final WidgetRef ref;
+  final String probeValue;
 
   @override
   State<_CatalogUnlockDialog> createState() => _CatalogUnlockDialogState();
@@ -38,19 +79,22 @@ class _CatalogUnlockDialogState extends State<_CatalogUnlockDialog> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final input = _controller.text.trim();
-    final stored = widget.ref
-        .read(appSettingsProvider)
-        .valueOrNull
-        ?.catalogContentPassword;
-    if (stored == null || stored.isEmpty) {
-      Navigator.of(context).pop(false);
+    if (input.isEmpty) {
+      setState(() {
+        _errorText = 'Bitte Passwort eingeben.';
+      });
       return;
     }
-    if (input == stored) {
-      widget.ref.read(catalogContentUnlockedProvider.notifier).state = true;
-      Navigator.of(context).pop(true);
+    // Validierung durch Probe-Entschluesselung.
+    final decrypted = decryptCatalogValue(widget.probeValue, input);
+    if (decrypted != null) {
+      // Passwort korrekt — dauerhaft persistieren.
+      await widget.ref
+          .read(settingsActionsProvider)
+          .setCatalogContentPassword(input);
+      if (mounted) Navigator.of(context).pop(true);
     } else {
       setState(() {
         _errorText = 'Falsches Passwort.';

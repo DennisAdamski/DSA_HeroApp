@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
@@ -59,21 +58,11 @@ final summaryRailCollapsedProvider = Provider<bool>((ref) {
       ?? false;
 });
 
-/// Ob ein Katalog-Inhaltspasswort konfiguriert ist.
-final catalogContentPasswordConfiguredProvider = Provider<bool>((ref) {
+/// true wenn ein gueltiges Entschluesselungspasswort gespeichert ist.
+/// Damit sind geschuetzte Kataloginhalte dauerhaft freigeschaltet.
+final catalogContentVisibleProvider = Provider<bool>((ref) {
   final pw = ref.watch(appSettingsProvider).valueOrNull?.catalogContentPassword;
   return pw != null && pw.isNotEmpty;
-});
-
-/// Session-Freischaltung fuer geschuetzte Kataloginhalte.
-/// Nicht persistiert – wird bei App-Neustart automatisch zurueckgesetzt.
-final catalogContentUnlockedProvider = StateProvider<bool>((ref) => false);
-
-/// Kombinierter Provider: true wenn Inhalte sichtbar sein duerfen.
-/// Entweder kein Passwort konfiguriert ODER Session freigeschaltet.
-final catalogContentVisibleProvider = Provider<bool>((ref) {
-  if (!ref.watch(catalogContentPasswordConfiguredProvider)) return true;
-  return ref.watch(catalogContentUnlockedProvider);
 });
 
 /// Aktuelle Beschreibung des wirksamen Heldenspeicherorts.
