@@ -217,7 +217,7 @@ class _VertrautenmagiePickerDialog extends StatelessWidget {
 }
 
 // Detail-Dialog: zeigt alle Felder eines Rituals.
-class _VertrautenmagieDetailDialog extends StatelessWidget {
+class _VertrautenmagieDetailDialog extends ConsumerWidget {
   const _VertrautenmagieDetailDialog({required this.ritual});
 
   final HeroRitualEntry ritual;
@@ -230,11 +230,29 @@ class _VertrautenmagieDetailDialog extends StatelessWidget {
       '';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final visible = ref.watch(catalogContentVisibleProvider);
+    final password = ref
+        .watch(appSettingsProvider)
+        .valueOrNull
+        ?.catalogContentPassword;
+
+    final resolvedWirkung = resolveProtectedValue(
+      raw: ritual.wirkung,
+      unlocked: visible,
+      password: password,
+    );
+    final resolvedTechnik = resolveProtectedValue(
+      raw: ritual.technik,
+      unlocked: visible,
+      password: password,
+    );
+
     final probe = _ritualProbeText(ritual);
     final rows = <(String, String)>[
       if (probe.isNotEmpty) ('Ritualprobe', probe),
-      if (ritual.technik.isNotEmpty) ('Technik', ritual.technik),
+      if (ritual.technik.isNotEmpty && resolvedTechnik != null)
+        ('Technik', resolvedTechnik),
       if (ritual.zauberdauer.isNotEmpty)
         ('Zauberdauer', ritual.zauberdauer),
       if (ritual.kosten.isNotEmpty) ('Ritualkosten', ritual.kosten),
@@ -258,8 +276,42 @@ class _VertrautenmagieDetailDialog extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (ritual.wirkung.isNotEmpty) ...[
-                Text(ritual.wirkung),
+                if (resolvedWirkung != null)
+                  Text(resolvedWirkung)
+                else
+                  Text(
+                    lockedContentHint,
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 const SizedBox(height: 12),
+              ],
+              if (ritual.technik.isNotEmpty && resolvedTechnik == null) ...[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(
+                      width: 110,
+                      child: Text(
+                        'Technik:',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        lockedContentHint,
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
               ],
               ...rows.map(
                 (row) => Padding(
