@@ -18,6 +18,7 @@ class AppSettings {
     this.avatarApiConfig = const AvatarApiConfig(),
     this.uiVariante = UiVariante.codex,
     this.summaryRailCollapsed = false,
+    this.catalogContentPassword,
   });
 
   final bool debugModus;
@@ -33,6 +34,9 @@ class AppSettings {
   /// Ob die Kernwerte-Rail im Workspace zugeklappt ist.
   final bool summaryRailCollapsed;
 
+  /// Passwort fuer den Zugriff auf geschuetzte Kataloginhalte.
+  final String? catalogContentPassword;
+
   /// Erstellt eine angepasste Kopie der Einstellungen.
   AppSettings copyWith({
     bool? debugModus,
@@ -41,6 +45,7 @@ class AppSettings {
     AvatarApiConfig? avatarApiConfig,
     UiVariante? uiVariante,
     bool? summaryRailCollapsed,
+    Object? catalogContentPassword = _copySentinel,
   }) {
     return AppSettings(
       debugModus: debugModus ?? this.debugModus,
@@ -51,6 +56,9 @@ class AppSettings {
       avatarApiConfig: avatarApiConfig ?? this.avatarApiConfig,
       uiVariante: uiVariante ?? this.uiVariante,
       summaryRailCollapsed: summaryRailCollapsed ?? this.summaryRailCollapsed,
+      catalogContentPassword: identical(catalogContentPassword, _copySentinel)
+          ? this.catalogContentPassword
+          : catalogContentPassword as String?,
     );
   }
 
@@ -61,6 +69,7 @@ class AppSettings {
     'avatarApiConfig': avatarApiConfig.toJson(),
     'uiVariante': uiVariante.name,
     'summaryRailCollapsed': summaryRailCollapsed,
+    'catalogContentPassword': catalogContentPassword,
   };
 
   static AppSettings fromJson(Map<String, dynamic> json) {
@@ -84,7 +93,16 @@ class AppSettings {
       ),
       uiVariante: uiVariante,
       summaryRailCollapsed: json['summaryRailCollapsed'] as bool? ?? false,
+      catalogContentPassword: _parseNullableString(
+        json['catalogContentPassword'],
+      ),
     );
+  }
+
+  static String? _parseNullableString(dynamic raw) {
+    if (raw is! String) return null;
+    final trimmed = raw.trim();
+    return trimmed.isEmpty ? null : trimmed;
   }
 }
 

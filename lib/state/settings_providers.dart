@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
@@ -56,6 +57,23 @@ final uiVarianteProvider = Provider<UiVariante>((ref) {
 final summaryRailCollapsedProvider = Provider<bool>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.summaryRailCollapsed
       ?? false;
+});
+
+/// Ob ein Katalog-Inhaltspasswort konfiguriert ist.
+final catalogContentPasswordConfiguredProvider = Provider<bool>((ref) {
+  final pw = ref.watch(appSettingsProvider).valueOrNull?.catalogContentPassword;
+  return pw != null && pw.isNotEmpty;
+});
+
+/// Session-Freischaltung fuer geschuetzte Kataloginhalte.
+/// Nicht persistiert – wird bei App-Neustart automatisch zurueckgesetzt.
+final catalogContentUnlockedProvider = StateProvider<bool>((ref) => false);
+
+/// Kombinierter Provider: true wenn Inhalte sichtbar sein duerfen.
+/// Entweder kein Passwort konfiguriert ODER Session freigeschaltet.
+final catalogContentVisibleProvider = Provider<bool>((ref) {
+  if (!ref.watch(catalogContentPasswordConfiguredProvider)) return true;
+  return ref.watch(catalogContentUnlockedProvider);
 });
 
 /// Aktuelle Beschreibung des wirksamen Heldenspeicherorts.
@@ -117,6 +135,18 @@ class SettingsActions {
   Future<void> saveAvatarApiConfig(AvatarApiConfig config) async {
     final current = _repo.load();
     await _repo.save(current.copyWith(avatarApiConfig: config));
+  }
+
+  /// Setzt oder entfernt das Katalog-Inhaltspasswort.
+  Future<void> setCatalogContentPassword(String? password) async {
+    final current = _repo.load();
+    final trimmed = password?.trim();
+    await _repo.save(
+      current.copyWith(
+        catalogContentPassword:
+            (trimmed == null || trimmed.isEmpty) ? null : trimmed,
+      ),
+    );
   }
 
   /// Schaltet den Collapse-Zustand der Kernwerte-Rail um.

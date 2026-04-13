@@ -7,6 +7,8 @@ Future<_SpellDetailsDialogResult?> _showSpellDetailsDialog({
   required HeroSpellEntry entry,
   required bool isEditing,
   required Attributes effectiveAttributes,
+  bool contentUnlocked = true,
+  String? contentPassword,
 }) {
   return showAdaptiveDetailSheet<_SpellDetailsDialogResult>(
     context: context,
@@ -15,6 +17,8 @@ Future<_SpellDetailsDialogResult?> _showSpellDetailsDialog({
       entry: entry,
       isEditing: isEditing,
       effectiveAttributes: effectiveAttributes,
+      contentUnlocked: contentUnlocked,
+      contentPassword: contentPassword,
     ),
   );
 }
@@ -36,17 +40,50 @@ class _ResolvedSpellDetails {
   factory _ResolvedSpellDetails.fromSpell({
     required SpellDef def,
     required HeroSpellEntry entry,
+    bool contentUnlocked = true,
+    String? contentPassword,
   }) {
     final overrides = entry.textOverrides;
+
+    // Wirkung: Override hat Vorrang; sonst ggf. entschluesseln.
+    String resolvedWirkung;
+    if (overrides?.wirkung != null) {
+      resolvedWirkung = overrides!.wirkung!;
+    } else {
+      resolvedWirkung = resolveProtectedValue(
+            raw: def.wirkung,
+            unlocked: contentUnlocked,
+            password: contentPassword,
+          ) ??
+          lockedContentHint;
+    }
+
+    // Varianten: Override hat Vorrang; sonst ggf. entschluesseln.
+    List<String> resolvedVariants;
+    if (overrides?.variants != null) {
+      resolvedVariants = List<String>.from(overrides!.variants!);
+    } else {
+      // def.variants ist normalerweise List<String>, kann aber als
+      // verschluesselter String im Rohfeld stehen.
+      final dynamic rawVariants = def.rawVariantsEncrypted ?? def.variants;
+      final decrypted = resolveProtectedList(
+        raw: rawVariants,
+        unlocked: contentUnlocked,
+        password: contentPassword,
+      );
+      resolvedVariants =
+          decrypted ?? <String>[lockedContentHint];
+    }
+
     return _ResolvedSpellDetails(
       aspCost: overrides?.aspCost ?? def.aspCost,
       targetObject: overrides?.targetObject ?? def.targetObject,
       range: overrides?.range ?? def.range,
       duration: overrides?.duration ?? def.duration,
       castingTime: overrides?.castingTime ?? def.castingTime,
-      wirkung: overrides?.wirkung ?? def.wirkung,
+      wirkung: resolvedWirkung,
       modifications: overrides?.modifications ?? def.modifications,
-      variants: List<String>.from(overrides?.variants ?? def.variants),
+      variants: resolvedVariants,
       source: def.source,
     );
   }
@@ -76,12 +113,16 @@ class _SpellDetailsDialog extends StatefulWidget {
     required this.entry,
     required this.isEditing,
     required this.effectiveAttributes,
+    this.contentUnlocked = true,
+    this.contentPassword,
   });
 
   final SpellDef def;
   final HeroSpellEntry entry;
   final bool isEditing;
   final Attributes effectiveAttributes;
+  final bool contentUnlocked;
+  final String? contentPassword;
 
   @override
   State<_SpellDetailsDialog> createState() => _SpellDetailsDialogState();
@@ -124,6 +165,8 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
     final resolved = _ResolvedSpellDetails.fromSpell(
       def: widget.def,
       entry: widget.entry,
+      contentUnlocked: widget.contentUnlocked,
+      contentPassword: widget.contentPassword,
     );
     _aspCostController = TextEditingController(text: resolved.aspCost);
     _targetObjectController = TextEditingController(
@@ -279,6 +322,8 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
     if (!widget.isEditing) {
       final resolved = _ResolvedSpellDetails.fromSpell(
         def: widget.def,
+        contentUnlocked: widget.contentUnlocked,
+        contentPassword: widget.contentPassword,
         entry: widget.entry,
       );
       return Column(
@@ -370,6 +415,8 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
     final resolved = _ResolvedSpellDetails.fromSpell(
       def: widget.def,
       entry: widget.entry,
+      contentUnlocked: widget.contentUnlocked,
+      contentPassword: widget.contentPassword,
     );
     final content = <Widget>[
       _buildReadOnlyField(

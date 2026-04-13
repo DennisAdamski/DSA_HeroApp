@@ -19,6 +19,8 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     required this.onRemoveSpell,
     required this.controllerFor,
     required this.canRaiseValues,
+    this.contentUnlocked = true,
+    this.contentPassword,
     this.onRaiseSpell,
     this.onAddSpell,
     this.onRollSpell,
@@ -43,6 +45,8 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final TextEditingController Function(String id, String field, String initial)
   controllerFor;
   final bool canRaiseValues;
+  final bool contentUnlocked;
+  final String? contentPassword;
   final Future<void> Function(String spellId, SpellDef spell)? onRaiseSpell;
   final VoidCallback? onAddSpell;
   final void Function(String spellId, SpellDef spell, HeroSpellEntry entry)?
@@ -60,6 +64,8 @@ class _MagicActiveSpellsTable extends StatelessWidget {
       entry: entry,
       isEditing: isEditing,
       effectiveAttributes: effectiveAttributes,
+      contentUnlocked: contentUnlocked,
+      contentPassword: contentPassword,
     );
     if (result == null) {
       return;
@@ -240,6 +246,8 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                       final resolved = _ResolvedSpellDetails.fromSpell(
                         def: def,
                         entry: entry,
+                        contentUnlocked: contentUnlocked,
+                        contentPassword: contentPassword,
                       );
                       final currentAvailabilityEntry =
                           entry.learnedRepresentation == null

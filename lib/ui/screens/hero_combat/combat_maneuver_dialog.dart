@@ -75,7 +75,29 @@ class _CombatManeuverDetailsDialog extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text('Lange Erklärung', style: theme.textTheme.titleSmall),
                 const SizedBox(height: 6),
-                Text(maneuver.erklarungLang.trim()),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final visible = ref.watch(catalogContentVisibleProvider);
+                    final password = ref
+                        .watch(appSettingsProvider)
+                        .valueOrNull
+                        ?.catalogContentPassword;
+                    final resolved = resolveProtectedValue(
+                      raw: maneuver.erklarungLang.trim(),
+                      unlocked: visible,
+                      password: password,
+                    );
+                    if (resolved == null) {
+                      return Text(
+                        lockedContentHint,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontStyle: FontStyle.italic,
+                        ),
+                      );
+                    }
+                    return Text(resolved);
+                  },
+                ),
               ],
             ],
           ),

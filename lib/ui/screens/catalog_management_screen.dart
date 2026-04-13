@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
+import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -432,10 +433,17 @@ class CatalogEntryDetailScreen extends ConsumerWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               const SizedBox(height: 16),
-              _InfoCard(
-                title: 'JSON',
-                child: SelectableText(encoder.convert(resolvedEntry.data)),
-              ),
+              Builder(builder: (context) {
+                final visible = resolvedEntry.isCustom ||
+                    ref.watch(catalogContentVisibleProvider);
+                final displayData = visible
+                    ? resolvedEntry.data
+                    : _redactEncryptedFields(resolvedEntry.data);
+                return _InfoCard(
+                  title: 'JSON',
+                  child: SelectableText(encoder.convert(displayData)),
+                );
+              }),
             ],
           );
         },
@@ -449,6 +457,19 @@ class CatalogEntryDetailScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Ersetzt verschluesselte `enc:`-Werte durch `[gesperrt]`.
+Map<String, dynamic> _redactEncryptedFields(Map<String, dynamic> data) {
+  final redacted = <String, dynamic>{};
+  for (final entry in data.entries) {
+    if (isEncryptedValue(entry.value)) {
+      redacted[entry.key] = '[gesperrt]';
+    } else {
+      redacted[entry.key] = entry.value;
+    }
+  }
+  return redacted;
 }
 
 enum _CatalogEntrySourceFilter { all, base, custom }
