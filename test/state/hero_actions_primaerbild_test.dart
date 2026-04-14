@@ -10,7 +10,7 @@ import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 
 void main() {
   test(
-    'setAvatarHeaderFocus stores normalized focus values on the gallery entry',
+    'setPrimaerbild sets primaerbildId and leaves aktivesBildId untouched',
     () async {
       final repo = FakeRepository(
         heroes: [
@@ -29,9 +29,11 @@ void main() {
               kk: 12,
             ),
             appearance: HeroAppearance(
-              primaerbildId: 'bild-1',
+              avatarFileName: 'demo.png',
+              aktivesBildId: 'bild-aktiv',
               avatarGallery: [
-                AvatarGalleryEntry(id: 'bild-1', fileName: 'demo_bild-1.png'),
+                AvatarGalleryEntry(id: 'bild-aktiv', fileName: 'demo.png'),
+                AvatarGalleryEntry(id: 'bild-neu', fileName: 'demo_neu.png'),
               ],
             ),
           ),
@@ -44,20 +46,14 @@ void main() {
 
       await container
           .read(heroActionsProvider)
-          .setAvatarHeaderFocus(
-            heroId: 'demo',
-            galleryEntryId: 'bild-1',
-            focusX: 1.3,
-            focusY: -0.4,
-            zoom: 12,
-          );
+          .setPrimaerbild(heroId: 'demo', galleryEntryId: 'bild-neu');
 
       final hero = await repo.loadHeroById('demo');
       expect(hero, isNotNull);
-      final entry = hero!.appearance.avatarGallery.single;
-      expect(entry.headerFocusX, 1);
-      expect(entry.headerFocusY, 0);
-      expect(entry.headerZoom, 8);
+      expect(hero!.appearance.primaerbildId, 'bild-neu');
+      expect(hero.appearance.aktivesBildId, 'bild-aktiv');
+      expect(hero.appearance.avatarFileName, 'demo.png');
+      expect(hero.appearance.avatarSnapshot, isNotNull);
     },
   );
 }

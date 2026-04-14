@@ -9,6 +9,7 @@ class AvatarGalleryEntry {
     this.promptAuszug = '',
     this.headerFocusX,
     this.headerFocusY,
+    this.headerZoom,
   });
 
   /// Eindeutige ID (UUID).
@@ -35,6 +36,10 @@ class AvatarGalleryEntry {
   /// Optionaler normalisierter Fokuspunkt fuer den Workspace-Header (0..1).
   final double? headerFocusY;
 
+  /// Optionaler Zoom-Faktor fuer den Workspace-Header-Ausschnitt (>= 1.0).
+  /// `null` oder `1.0` entsprechen dem Default-Cover-Ausschnitt.
+  final double? headerZoom;
+
   AvatarGalleryEntry copyWith({
     String? id,
     String? fileName,
@@ -44,6 +49,7 @@ class AvatarGalleryEntry {
     String? promptAuszug,
     double? headerFocusX,
     double? headerFocusY,
+    double? headerZoom,
   }) {
     return AvatarGalleryEntry(
       id: id ?? this.id,
@@ -54,6 +60,7 @@ class AvatarGalleryEntry {
       promptAuszug: promptAuszug ?? this.promptAuszug,
       headerFocusX: headerFocusX ?? this.headerFocusX,
       headerFocusY: headerFocusY ?? this.headerFocusY,
+      headerZoom: headerZoom ?? this.headerZoom,
     );
   }
 
@@ -66,6 +73,7 @@ class AvatarGalleryEntry {
     'promptAuszug': promptAuszug,
     if (headerFocusX != null) 'headerFocusX': headerFocusX,
     if (headerFocusY != null) 'headerFocusY': headerFocusY,
+    if (headerZoom != null) 'headerZoom': headerZoom,
   };
 
   static AvatarGalleryEntry fromJson(Map<String, dynamic> json) {
@@ -78,8 +86,26 @@ class AvatarGalleryEntry {
       promptAuszug: (json['promptAuszug'] as String?) ?? '',
       headerFocusX: _readNormalizedFocusValue(json['headerFocusX']),
       headerFocusY: _readNormalizedFocusValue(json['headerFocusY']),
+      headerZoom: _readHeaderZoomValue(json['headerZoom']),
     );
   }
+}
+
+double? _readHeaderZoomValue(Object? rawValue) {
+  final numericValue = switch (rawValue) {
+    num value => value.toDouble(),
+    _ => null,
+  };
+  if (numericValue == null) {
+    return null;
+  }
+  if (numericValue < 1) {
+    return 1;
+  }
+  if (numericValue > 8) {
+    return 8;
+  }
+  return numericValue;
 }
 
 double? _readNormalizedFocusValue(Object? rawValue) {
