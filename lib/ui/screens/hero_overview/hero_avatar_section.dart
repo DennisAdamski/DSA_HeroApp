@@ -393,8 +393,8 @@ class _AlbumCard extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        Wrap(
+          alignment: WrapAlignment.spaceEvenly,
           children: [
             IconButton(
               tooltip: 'Vergrößern',
@@ -455,10 +455,12 @@ class _AlbumCard extends ConsumerWidget {
   }
 
   void _openHeaderFocusDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) =>
-          _HeaderFocusDialog(heroId: heroId, entry: entry, imagePath: path),
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (context) =>
+            _HeaderFocusDialog(heroId: heroId, entry: entry, imagePath: path),
+      ),
     );
   }
 
@@ -504,8 +506,15 @@ class _HeaderFocusDialog extends ConsumerStatefulWidget {
 }
 
 class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
+  static const double _headerAspectRatio = 104.0 / 72.0;
+  static const double _previewMaxWidth = 360.0;
+
   late Offset _focusPoint;
   bool _saving = false;
+  Size? _imageSize;
+  ImageStream? _imageStream;
+  ImageStreamListener? _imageStreamListener;
+  late final FileImage _imageProvider;
 
   @override
   void initState() {
@@ -514,171 +523,302 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
       widget.entry.headerFocusX ?? 0.5,
       widget.entry.headerFocusY ?? 0.5,
     );
+    _imageProvider = FileImage(io.File(widget.imagePath));
+    _resolveImageSize();
+  }
+
+  void _resolveImageSize() {
+    final stream = _imageProvider.resolve(const ImageConfiguration());
+    final listener = ImageStreamListener((info, _) {
+      if (!mounted) return;
+      setState(() {
+        _imageSize = Size(
+          info.image.width.toDouble(),
+          info.image.height.toDouble(),
+        );
+      });
+    }, onError: (_, _) {});
+    _imageStream = stream;
+    _imageStreamListener = listener;
+    stream.addListener(listener);
+  }
+
+  @override
+  void dispose() {
+    if (_imageStream != null && _imageStreamListener != null) {
+      _imageStream!.removeListener(_imageStreamListener!);
+    }
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Dialog(
-      insetPadding: const EdgeInsets.all(16),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 760, maxHeight: 680),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Header-Ausschnitt'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          tooltip: 'Abbrechen',
+          onPressed: _saving ? null : () => Navigator.of(context).pop(),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: FilledButton(
+              onPressed: _saving ? null : _saveFocus,
+              child: Text(_saving ? 'Speichert...' : 'Übernehmen'),
+            ),
+          ),
+        ],
+      ),
+      body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Header-Ausschnitt', style: theme.textTheme.headlineSmall),
-              const SizedBox(height: 8),
-              Text(
+          padding: const EdgeInsets.all(16),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final wide = constraints.maxWidth >= 720;
+              final hint = Text(
                 'Tippe im Bild auf den Bereich, der im kompakten Workspace-Header sichtbar sein soll.',
                 style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 16),
-              Text('Vorschau', style: theme.textTheme.titleSmall),
-              const SizedBox(height: 8),
-              AspectRatio(
-                aspectRatio: 4.8,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                    ),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.file(
-                          io.File(widget.imagePath),
-                          fit: BoxFit.cover,
-                          alignment: Alignment(
-                            (_focusPoint.dx * 2) - 1,
-                            (_focusPoint.dy * 2) - 1,
-                          ),
-                          errorBuilder: (_, _, _) => const Center(
-                            child: Icon(Icons.broken_image_outlined, size: 32),
-                          ),
-                        ),
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.black.withValues(alpha: 0.06),
-                                Colors.black.withValues(alpha: 0.26),
+              );
+              final editorLabel = Text(
+                'Fokuspunkt setzen',
+                style: theme.textTheme.titleSmall,
+              );
+              final previewLabel = Text(
+                'Vorschau',
+                style: theme.textTheme.titleSmall,
+              );
+              final editor = _buildFocusEditor(theme);
+              final preview = _buildPreview(theme);
+
+              if (wide) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    hint,
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                editorLabel,
+                                const SizedBox(height: 8),
+                                Expanded(child: editor),
                               ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 24),
+                          SizedBox(
+                            width: _previewMaxWidth,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                previewLabel,
+                                const SizedBox(height: 8),
+                                preview,
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text('Fokuspunkt setzen', style: theme.textTheme.titleSmall),
-              const SizedBox(height: 8),
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTapDown: (details) {
-                          final width = constraints.maxWidth;
-                          final height = constraints.maxHeight;
-                          if (width <= 0 || height <= 0) {
-                            return;
-                          }
-                          setState(() {
-                            _focusPoint = Offset(
-                              (details.localPosition.dx / width)
-                                  .clamp(0.0, 1.0)
-                                  .toDouble(),
-                              (details.localPosition.dy / height)
-                                  .clamp(0.0, 1.0)
-                                  .toDouble(),
-                            );
-                          });
-                        },
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Image.file(
-                              io.File(widget.imagePath),
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color:
-                                      theme.colorScheme.surfaceContainerHighest,
-                                ),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.broken_image_outlined,
-                                    size: 40,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.12),
-                              ),
-                            ),
-                            Positioned(
-                              left:
-                                  (_focusPoint.dx * constraints.maxWidth) - 16,
-                              top:
-                                  (_focusPoint.dy * constraints.maxHeight) - 16,
-                              child: IgnorePointer(
-                                child: Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white.withValues(alpha: 0.16),
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: const Icon(
-                                    Icons.center_focus_strong,
-                                    size: 16,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                  ],
+                );
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextButton(
-                    onPressed: _saving
-                        ? null
-                        : () => Navigator.of(context).pop(),
-                    child: const Text('Abbrechen'),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: _saving ? null : _saveFocus,
-                    child: Text(_saving ? 'Speichert...' : 'Übernehmen'),
+                  hint,
+                  const SizedBox(height: 12),
+                  editorLabel,
+                  const SizedBox(height: 8),
+                  Expanded(child: editor),
+                  const SizedBox(height: 16),
+                  previewLabel,
+                  const SizedBox(height: 8),
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: _previewMaxWidth,
+                      ),
+                      child: preview,
+                    ),
                   ),
                 ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPreview(ThemeData theme) {
+    return AspectRatio(
+      aspectRatio: _headerAspectRatio,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHighest,
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image(
+                image: _imageProvider,
+                fit: BoxFit.cover,
+                alignment: Alignment(
+                  (_focusPoint.dx * 2) - 1,
+                  (_focusPoint.dy * 2) - 1,
+                ),
+                errorBuilder: (_, _, _) => const Center(
+                  child: Icon(Icons.broken_image_outlined, size: 32),
+                ),
+              ),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withValues(alpha: 0.06),
+                      Colors.black.withValues(alpha: 0.26),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFocusEditor(ThemeData theme) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final size = constraints.biggest;
+            final imageSize = _imageSize;
+            Rect? fittedRect;
+            if (imageSize != null &&
+                imageSize.width > 0 &&
+                imageSize.height > 0 &&
+                size.width > 0 &&
+                size.height > 0) {
+              final fitted = applyBoxFit(BoxFit.contain, imageSize, size);
+              final dstSize = fitted.destination;
+              final dx = (size.width - dstSize.width) / 2;
+              final dy = (size.height - dstSize.height) / 2;
+              fittedRect = Rect.fromLTWH(
+                dx,
+                dy,
+                dstSize.width,
+                dstSize.height,
+              );
+            }
+
+            return GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: (details) {
+                final rect = fittedRect;
+                if (rect == null || rect.width <= 0 || rect.height <= 0) {
+                  return;
+                }
+                final localX = (details.localPosition.dx - rect.left)
+                    .clamp(0.0, rect.width)
+                    .toDouble();
+                final localY = (details.localPosition.dy - rect.top)
+                    .clamp(0.0, rect.height)
+                    .toDouble();
+                setState(() {
+                  _focusPoint = Offset(
+                    (localX / rect.width).clamp(0.0, 1.0).toDouble(),
+                    (localY / rect.height).clamp(0.0, 1.0).toDouble(),
+                  );
+                });
+              },
+              onPanUpdate: (details) {
+                final rect = fittedRect;
+                if (rect == null || rect.width <= 0 || rect.height <= 0) {
+                  return;
+                }
+                final localX = (details.localPosition.dx - rect.left)
+                    .clamp(0.0, rect.width)
+                    .toDouble();
+                final localY = (details.localPosition.dy - rect.top)
+                    .clamp(0.0, rect.height)
+                    .toDouble();
+                setState(() {
+                  _focusPoint = Offset(
+                    (localX / rect.width).clamp(0.0, 1.0).toDouble(),
+                    (localY / rect.height).clamp(0.0, 1.0).toDouble(),
+                  );
+                });
+              },
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Center(
+                    child: Image(
+                      image: _imageProvider,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => const Center(
+                        child: Icon(Icons.broken_image_outlined, size: 40),
+                      ),
+                    ),
+                  ),
+                  if (fittedRect != null)
+                    Positioned(
+                      left:
+                          fittedRect.left +
+                          (_focusPoint.dx * fittedRect.width) -
+                          16,
+                      top:
+                          fittedRect.top +
+                          (_focusPoint.dy * fittedRect.height) -
+                          16,
+                      child: IgnorePointer(
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.24),
+                            border: Border.all(color: Colors.white, width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.center_focus_strong,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
