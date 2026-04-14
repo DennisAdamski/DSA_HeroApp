@@ -411,6 +411,7 @@ class HeroActions {
       appearance: hero.appearance.copyWith(
         avatarFileName: '$heroId.png',
         avatarGallery: updatedGallery,
+        aktivesBildId: entryId,
       ),
     );
     await saveHero(updated);
@@ -453,6 +454,7 @@ class HeroActions {
       appearance: hero.appearance.copyWith(
         avatarFileName: '$heroId.png',
         avatarGallery: updatedGallery,
+        aktivesBildId: entryId,
       ),
     );
     await saveHero(updated);
@@ -501,10 +503,12 @@ class HeroActions {
     required String galleryEntryId,
     required double focusX,
     required double focusY,
+    double? zoom,
   }) async {
     final hero = await _loadHeroById(heroId);
     final normalizedFocusX = focusX.clamp(0.0, 1.0).toDouble();
     final normalizedFocusY = focusY.clamp(0.0, 1.0).toDouble();
+    final normalizedZoom = zoom?.clamp(1.0, 8.0).toDouble();
     var didUpdate = false;
     final updatedGallery = hero.appearance.avatarGallery
         .map((entry) {
@@ -515,6 +519,7 @@ class HeroActions {
           return entry.copyWith(
             headerFocusX: normalizedFocusX,
             headerFocusY: normalizedFocusY,
+            headerZoom: normalizedZoom,
           );
         })
         .toList(growable: false);
@@ -557,7 +562,10 @@ class HeroActions {
     }
 
     final updated = hero.copyWith(
-      appearance: hero.appearance.copyWith(avatarFileName: '$heroId.png'),
+      appearance: hero.appearance.copyWith(
+        avatarFileName: '$heroId.png',
+        aktivesBildId: galleryEntryId,
+      ),
     );
     await saveHero(updated);
   }
@@ -589,6 +597,11 @@ class HeroActions {
         ? ''
         : hero.appearance.primaerbildId;
 
+    // Aktiv-Referenz aufraeumen falls betroffen
+    var aktivesBildId = hero.appearance.aktivesBildId == galleryEntryId
+        ? ''
+        : hero.appearance.aktivesBildId;
+
     // Wenn letztes Bild entfernt → auch Haupt-Avatar loeschen
     var avatarFileName = hero.appearance.avatarFileName;
     if (updatedGallery.isEmpty && avatarFileName.isNotEmpty) {
@@ -597,6 +610,7 @@ class HeroActions {
         avatarFileName: avatarFileName,
       );
       avatarFileName = '';
+      aktivesBildId = '';
     }
 
     final updated = hero.copyWith(
@@ -604,6 +618,7 @@ class HeroActions {
         avatarFileName: avatarFileName,
         avatarGallery: updatedGallery,
         primaerbildId: primaerbildId,
+        aktivesBildId: aktivesBildId,
         avatarSnapshot: primaerbildId.isEmpty ? () => null : null,
       ),
     );
@@ -641,6 +656,7 @@ class HeroActions {
         avatarFileName: '',
         avatarGallery: const [],
         primaerbildId: '',
+        aktivesBildId: '',
         avatarSnapshot: () => null,
       ),
     );

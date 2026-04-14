@@ -14,6 +14,7 @@ class HeroAppearance {
     this.avatarFileName = '',
     this.avatarGallery = const [],
     this.primaerbildId = '',
+    this.aktivesBildId = '',
     this.avatarSnapshot,
   });
 
@@ -32,7 +33,11 @@ class HeroAppearance {
   final List<AvatarGalleryEntry> avatarGallery;
 
   /// ID des Primaerbilds in der Galerie (leer = keins gesetzt).
+  /// Das Primaerbild dient als Referenz fuer KI-Prompts.
   final String primaerbildId;
+
+  /// ID des sichtbar gesetzten Bildes in der Galerie (Header + Uebersicht).
+  final String aktivesBildId;
 
   /// Heldendaten-Snapshot zum Zeitpunkt der Primaerbild-Festlegung.
   final AvatarSnapshot? avatarSnapshot;
@@ -48,6 +53,7 @@ class HeroAppearance {
     String? avatarFileName,
     List<AvatarGalleryEntry>? avatarGallery,
     String? primaerbildId,
+    String? aktivesBildId,
     AvatarSnapshot? Function()? avatarSnapshot,
   }) {
     return HeroAppearance(
@@ -61,6 +67,7 @@ class HeroAppearance {
       avatarFileName: avatarFileName ?? this.avatarFileName,
       avatarGallery: avatarGallery ?? this.avatarGallery,
       primaerbildId: primaerbildId ?? this.primaerbildId,
+      aktivesBildId: aktivesBildId ?? this.aktivesBildId,
       avatarSnapshot:
           avatarSnapshot != null ? avatarSnapshot() : this.avatarSnapshot,
     );
@@ -79,6 +86,7 @@ class HeroAppearance {
         'avatarGallery':
             avatarGallery.map((e) => e.toJson()).toList(growable: false),
         'primaerbildId': primaerbildId,
+        'aktivesBildId': aktivesBildId,
         if (avatarSnapshot != null)
           'avatarSnapshot': avatarSnapshot!.toJson(),
       };
@@ -108,6 +116,31 @@ class HeroAppearance {
       ];
     }
 
+    final primaerbildId = (json['primaerbildId'] as String?) ?? '';
+    var aktivesBildId = (json['aktivesBildId'] as String?) ?? '';
+
+    // Migration: wenn kein aktives Bild gesetzt, Gallery-Eintrag anhand
+    // des Haupt-Avatar-Dateinamens bestimmen, sonst Primaerbild, sonst erstes.
+    if (aktivesBildId.isEmpty && gallery.isNotEmpty) {
+      if (avatarFileName.isNotEmpty) {
+        final match = gallery
+            .where((e) => e.fileName == avatarFileName)
+            .firstOrNull;
+        if (match != null) {
+          aktivesBildId = match.id;
+        }
+      }
+      if (aktivesBildId.isEmpty && primaerbildId.isNotEmpty) {
+        final match = gallery.where((e) => e.id == primaerbildId).firstOrNull;
+        if (match != null) {
+          aktivesBildId = match.id;
+        }
+      }
+      if (aktivesBildId.isEmpty) {
+        aktivesBildId = gallery.first.id;
+      }
+    }
+
     final rawSnapshot = (json['avatarSnapshot'] as Map?)?.cast<String, dynamic>();
 
     return HeroAppearance(
@@ -120,7 +153,8 @@ class HeroAppearance {
       aussehen: (json['aussehen'] as String?) ?? '',
       avatarFileName: avatarFileName,
       avatarGallery: gallery,
-      primaerbildId: (json['primaerbildId'] as String?) ?? '',
+      primaerbildId: primaerbildId,
+      aktivesBildId: aktivesBildId,
       avatarSnapshot:
           rawSnapshot != null ? AvatarSnapshot.fromJson(rawSnapshot) : null,
     );

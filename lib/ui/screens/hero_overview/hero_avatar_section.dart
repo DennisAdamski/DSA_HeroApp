@@ -247,15 +247,23 @@ class _AvatarAlbumDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final gallery = hero.appearance.avatarGallery;
-    final primaerbildId = hero.appearance.primaerbildId;
+    // Live am aktuellen Held bleiben, damit Stern- und Aktiv-Markierung
+    // nach Aktionen sofort aktualisieren.
+    final liveHero = ref.watch(heroByIdProvider(heroId)) ?? hero;
+    final gallery = liveHero.appearance.avatarGallery;
+    final primaerbildId = liveHero.appearance.primaerbildId;
+    final aktivesBildId = liveHero.appearance.aktivesBildId;
     final locationAsync = ref.watch(heroStorageLocationProvider);
     final snapshotDiff = ref.watch(avatarSnapshotDiffProvider(heroId));
 
+    final screenSize = MediaQuery.of(context).size;
+    final maxWidth = (screenSize.width * 0.92).clamp(320.0, 1200.0);
+    final maxHeight = (screenSize.height * 0.92).clamp(400.0, 900.0);
+
     return Dialog(
-      insetPadding: const EdgeInsets.all(16),
+      insetPadding: const EdgeInsets.all(24),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 720, maxHeight: 600),
+        constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -292,23 +300,23 @@ class _AvatarAlbumDialog extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              Flexible(
+              Expanded(
                 child: locationAsync.when(
                   data: (location) {
                     final storage = ref.read(avatarFileStorageProvider);
                     return GridView.builder(
-                      shrinkWrap: true,
                       gridDelegate:
                           const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 200,
-                            mainAxisSpacing: 12,
-                            crossAxisSpacing: 12,
-                            childAspectRatio: 0.72,
+                            maxCrossAxisExtent: 280,
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 16,
+                            childAspectRatio: 0.78,
                           ),
                       itemCount: gallery.length,
                       itemBuilder: (context, index) {
                         final entry = gallery[index];
                         final isPrimaer = entry.id == primaerbildId;
+                        final isAktiv = entry.id == aktivesBildId;
                         final path = storage.resolveAvatarPath(
                           heroStoragePath: location.effectivePath,
                           avatarFileName: entry.fileName,
@@ -318,6 +326,7 @@ class _AvatarAlbumDialog extends ConsumerWidget {
                           entry: entry,
                           path: path,
                           isPrimaer: isPrimaer,
+                          isAktiv: isAktiv,
                         );
                       },
                     );
@@ -343,12 +352,14 @@ class _AlbumCard extends ConsumerWidget {
     required this.entry,
     required this.path,
     required this.isPrimaer,
+    required this.isAktiv,
   });
 
   final String heroId;
   final AvatarGalleryEntry entry;
   final String path;
   final bool isPrimaer;
+  final bool isAktiv;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -372,6 +383,40 @@ class _AlbumCard extends ConsumerWidget {
                   ),
                 ),
               ),
+              if (isAktiv)
+                Positioned(
+                  top: 4,
+                  left: 4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondaryContainer,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.visibility,
+                          size: 12,
+                          color: colorScheme.onSecondaryContainer,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Aktiv',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: colorScheme.onSecondaryContainer,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               if (isPrimaer)
                 Positioned(
                   top: 4,
@@ -411,16 +456,23 @@ class _AlbumCard extends ConsumerWidget {
               onPressed: () => _openHeaderFocusDialog(context),
             ),
             IconButton(
-              tooltip: 'Als aktives Bild setzen',
-              icon: const Icon(Icons.image_outlined),
+              tooltip: isAktiv
+                  ? 'Bereits aktiv (Header + Übersicht)'
+                  : 'Als aktives Bild setzen (Header + Übersicht)',
+              icon: Icon(isAktiv ? Icons.visibility : Icons.visibility_outlined),
               iconSize: 20,
               visualDensity: VisualDensity.compact,
-              onPressed: () => ref
-                  .read(heroActionsProvider)
-                  .setActiveAvatar(heroId: heroId, galleryEntryId: entry.id),
+              color: isAktiv ? colorScheme.primary : null,
+              onPressed: isAktiv
+                  ? null
+                  : () => ref
+                      .read(heroActionsProvider)
+                      .setActiveAvatar(heroId: heroId, galleryEntryId: entry.id),
             ),
             IconButton(
-              tooltip: isPrimaer ? 'Ist Primärbild' : 'Als Primärbild setzen',
+              tooltip: isPrimaer
+                  ? 'Ist Primärbild (KI-Referenz)'
+                  : 'Als Primärbild setzen (KI-Referenz)',
               icon: Icon(isPrimaer ? Icons.star : Icons.star_outline),
               iconSize: 20,
               visualDensity: VisualDensity.compact,
@@ -509,12 +561,18 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
   static const double _headerAspectRatio = 104.0 / 72.0;
   static const double _previewMaxWidth = 360.0;
 
+  static const double _minZoom = 1.0;
+  static const double _maxZoom = 4.0;
+
   late Offset _focusPoint;
+  late double _zoom;
+  double _gestureStartZoom = 1.0;
   bool _saving = false;
   Size? _imageSize;
   ImageStream? _imageStream;
   ImageStreamListener? _imageStreamListener;
   late final FileImage _imageProvider;
+  PointerDeviceKind _lastPointerKind = PointerDeviceKind.touch;
 
   @override
   void initState() {
@@ -523,6 +581,7 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
       widget.entry.headerFocusX ?? 0.5,
       widget.entry.headerFocusY ?? 0.5,
     );
+    _zoom = (widget.entry.headerZoom ?? 1.0).clamp(_minZoom, _maxZoom);
     _imageProvider = FileImage(io.File(widget.imagePath));
     _resolveImageSize();
   }
@@ -580,8 +639,30 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
             builder: (context, constraints) {
               final wide = constraints.maxWidth >= 720;
               final hint = Text(
-                'Tippe im Bild auf den Bereich, der im kompakten Workspace-Header sichtbar sein soll.',
+                'Tippe oder ziehe im Bild den gewuenschten Fokuspunkt. '
+                'Mausrad oder Pinch-Geste zoomt den Header-Ausschnitt. '
+                'Doppeltipp setzt Fokus und Zoom zurueck.',
                 style: theme.textTheme.bodyMedium,
+              );
+              final zoomSlider = Row(
+                children: [
+                  const Icon(Icons.zoom_out, size: 18),
+                  Expanded(
+                    child: Slider(
+                      value: _zoom,
+                      min: _minZoom,
+                      max: _maxZoom,
+                      divisions: 30,
+                      label: '${_zoom.toStringAsFixed(2)}x',
+                      onChanged: (value) {
+                        setState(() {
+                          _zoom = value;
+                        });
+                      },
+                    ),
+                  ),
+                  const Icon(Icons.zoom_in, size: 18),
+                ],
               );
               final editorLabel = Text(
                 'Fokuspunkt setzen',
@@ -611,6 +692,7 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
                                 editorLabel,
                                 const SizedBox(height: 8),
                                 Expanded(child: editor),
+                                zoomSlider,
                               ],
                             ),
                           ),
@@ -641,6 +723,7 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
                   editorLabel,
                   const SizedBox(height: 8),
                   Expanded(child: editor),
+                  zoomSlider,
                   const SizedBox(height: 16),
                   previewLabel,
                   const SizedBox(height: 8),
@@ -662,6 +745,10 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
   }
 
   Widget _buildPreview(ThemeData theme) {
+    final alignment = Alignment(
+      (_focusPoint.dx * 2) - 1,
+      (_focusPoint.dy * 2) - 1,
+    );
     return AspectRatio(
       aspectRatio: _headerAspectRatio,
       child: ClipRRect(
@@ -673,15 +760,18 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image(
-                image: _imageProvider,
-                fit: BoxFit.cover,
-                alignment: Alignment(
-                  (_focusPoint.dx * 2) - 1,
-                  (_focusPoint.dy * 2) - 1,
-                ),
-                errorBuilder: (_, _, _) => const Center(
-                  child: Icon(Icons.broken_image_outlined, size: 32),
+              ClipRect(
+                child: Transform.scale(
+                  scale: _zoom,
+                  alignment: alignment,
+                  child: Image(
+                    image: _imageProvider,
+                    fit: BoxFit.cover,
+                    alignment: alignment,
+                    errorBuilder: (_, _, _) => const Center(
+                      child: Icon(Icons.broken_image_outlined, size: 32),
+                    ),
+                  ),
                 ),
               ),
               DecoratedBox(
@@ -732,45 +822,84 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
               );
             }
 
-            return GestureDetector(
+            return Listener(
               behavior: HitTestBehavior.opaque,
-              onTapDown: (details) {
-                final rect = fittedRect;
-                if (rect == null || rect.width <= 0 || rect.height <= 0) {
-                  return;
-                }
-                final localX = (details.localPosition.dx - rect.left)
-                    .clamp(0.0, rect.width)
-                    .toDouble();
-                final localY = (details.localPosition.dy - rect.top)
-                    .clamp(0.0, rect.height)
-                    .toDouble();
+              onPointerDown: (event) {
+                _lastPointerKind = event.kind;
+              },
+              onPointerSignal: (event) {
+                if (event is! PointerScrollEvent) return;
+                _lastPointerKind = event.kind;
+                final factor = event.scrollDelta.dy > 0 ? 0.9 : 1.1;
                 setState(() {
-                  _focusPoint = Offset(
-                    (localX / rect.width).clamp(0.0, 1.0).toDouble(),
-                    (localY / rect.height).clamp(0.0, 1.0).toDouble(),
-                  );
+                  _zoom = (_zoom * factor).clamp(_minZoom, _maxZoom);
                 });
               },
-              onPanUpdate: (details) {
-                final rect = fittedRect;
-                if (rect == null || rect.width <= 0 || rect.height <= 0) {
-                  return;
-                }
-                final localX = (details.localPosition.dx - rect.left)
-                    .clamp(0.0, rect.width)
-                    .toDouble();
-                final localY = (details.localPosition.dy - rect.top)
-                    .clamp(0.0, rect.height)
-                    .toDouble();
-                setState(() {
-                  _focusPoint = Offset(
-                    (localX / rect.width).clamp(0.0, 1.0).toDouble(),
-                    (localY / rect.height).clamp(0.0, 1.0).toDouble(),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onDoubleTap: () {
+                  setState(() {
+                    _focusPoint = const Offset(0.5, 0.5);
+                    _zoom = _minZoom;
+                  });
+                },
+                onTapDown: (details) {
+                  final rect = fittedRect;
+                  if (rect == null || rect.width <= 0 || rect.height <= 0) {
+                    return;
+                  }
+                  final localX = (details.localPosition.dx - rect.left)
+                      .clamp(0.0, rect.width)
+                      .toDouble();
+                  final localY = (details.localPosition.dy - rect.top)
+                      .clamp(0.0, rect.height)
+                      .toDouble();
+                  setState(() {
+                    _focusPoint = Offset(
+                      (localX / rect.width).clamp(0.0, 1.0).toDouble(),
+                      (localY / rect.height).clamp(0.0, 1.0).toDouble(),
+                    );
+                  });
+                },
+                onScaleStart: (_) {
+                  _gestureStartZoom = _zoom;
+                },
+                onScaleUpdate: (details) {
+                  final rect = fittedRect;
+                  if (rect == null || rect.width <= 0 || rect.height <= 0) {
+                    return;
+                  }
+                  final newZoom = (_gestureStartZoom * details.scale).clamp(
+                    _minZoom,
+                    _maxZoom,
                   );
-                });
-              },
-              child: Stack(
+                  final delta = details.focalPointDelta;
+                  // Effektive Pan-Skala steigt mit Zoom (bei hohem Zoom decken
+                  // kleine Fingerbewegungen einen kleineren Bildbereich ab).
+                  final dxNorm = delta.dx / (rect.width * newZoom);
+                  final dyNorm = delta.dy / (rect.height * newZoom);
+                  // Touch: Karten-Pan (Drag rechts => Fokus links).
+                  // Maus/Trackpad/Stylus: Fokus folgt Cursor (Drag rechts =>
+                  // Fokus rechts).
+                  final isPointer =
+                      _lastPointerKind == PointerDeviceKind.mouse ||
+                          _lastPointerKind == PointerDeviceKind.trackpad ||
+                          _lastPointerKind == PointerDeviceKind.stylus ||
+                          _lastPointerKind == PointerDeviceKind.invertedStylus;
+                  final sign = isPointer ? 1.0 : -1.0;
+                  setState(() {
+                    _zoom = newZoom;
+                    _focusPoint = Offset(
+                      (_focusPoint.dx + sign * dxNorm)
+                          .clamp(0.0, 1.0)
+                          .toDouble(),
+                      (_focusPoint.dy + sign * dyNorm)
+                          .clamp(0.0, 1.0)
+                          .toDouble(),
+                    );
+                  });
+                },
+                child: Stack(
                 fit: StackFit.expand,
                 children: [
                   Center(
@@ -817,6 +946,7 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
                     ),
                 ],
               ),
+              ),
             );
           },
         ),
@@ -836,6 +966,7 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
             galleryEntryId: widget.entry.id,
             focusX: _focusPoint.dx,
             focusY: _focusPoint.dy,
+            zoom: _zoom,
           );
       if (mounted) {
         Navigator.of(context).pop();

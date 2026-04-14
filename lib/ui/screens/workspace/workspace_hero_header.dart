@@ -32,8 +32,8 @@ class WorkspaceHeroHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final codex = context.codexTheme;
     final theme = Theme.of(context);
-    final portraitBytesAsync = ref.watch(primaerbildBytesProvider(heroId));
-    final primaryEntry = _resolvePrimaryEntry(hero);
+    final portraitBytesAsync = ref.watch(activeAvatarBytesProvider(heroId));
+    final activeEntry = _resolveActiveEntry(hero);
 
     return Container(
       key: const ValueKey<String>('workspace-hero-header'),
@@ -78,7 +78,7 @@ class WorkspaceHeroHeader extends ConsumerWidget {
                 children: [
                   _WorkspaceHeroPortrait(
                     heroName: hero.name,
-                    primaryEntry: primaryEntry,
+                    activeEntry: activeEntry,
                     portraitBytesAsync: portraitBytesAsync,
                     width: portraitWidth,
                     height: portraitHeight,
@@ -150,14 +150,26 @@ class WorkspaceHeroHeader extends ConsumerWidget {
     );
   }
 
-  AvatarGalleryEntry? _resolvePrimaryEntry(HeroSheet hero) {
-    final primaryId = hero.appearance.primaerbildId;
-    if (primaryId.isEmpty) {
-      return null;
+  AvatarGalleryEntry? _resolveActiveEntry(HeroSheet hero) {
+    final gallery = hero.appearance.avatarGallery;
+    if (gallery.isEmpty) return null;
+
+    final aktivesBildId = hero.appearance.aktivesBildId;
+    if (aktivesBildId.isNotEmpty) {
+      for (final entry in gallery) {
+        if (entry.id == aktivesBildId) return entry;
+      }
     }
-    for (final entry in hero.appearance.avatarGallery) {
-      if (entry.id == primaryId) {
-        return entry;
+    final avatarFileName = hero.appearance.avatarFileName;
+    if (avatarFileName.isNotEmpty) {
+      for (final entry in gallery) {
+        if (entry.fileName == avatarFileName) return entry;
+      }
+    }
+    final primaerbildId = hero.appearance.primaerbildId;
+    if (primaerbildId.isNotEmpty) {
+      for (final entry in gallery) {
+        if (entry.id == primaerbildId) return entry;
       }
     }
     return null;
@@ -182,14 +194,14 @@ class WorkspaceHeroHeader extends ConsumerWidget {
 class _WorkspaceHeroPortrait extends StatelessWidget {
   const _WorkspaceHeroPortrait({
     required this.heroName,
-    required this.primaryEntry,
+    required this.activeEntry,
     required this.portraitBytesAsync,
     required this.width,
     required this.height,
   });
 
   final String heroName;
-  final AvatarGalleryEntry? primaryEntry;
+  final AvatarGalleryEntry? activeEntry;
   final AsyncValue<List<int>?> portraitBytesAsync;
   final double width;
   final double height;
@@ -214,7 +226,7 @@ class _WorkspaceHeroPortrait extends StatelessWidget {
           if (bytes == null || bytes.isEmpty) {
             return _InitialsPortrait(heroName: heroName);
           }
-          return _HeaderPortraitImage(bytes: bytes, primaryEntry: primaryEntry);
+          return _HeaderPortraitImage(bytes: bytes, activeEntry: activeEntry);
         },
         loading: () => Center(
           child: SizedBox(
@@ -232,28 +244,35 @@ class _WorkspaceHeroPortrait extends StatelessWidget {
   }
 }
 
-/// Zeigt das Primärbild mit gespeichertem Fokuspunkt als breiten Header-Ausschnitt.
+/// Zeigt das aktive Avatar-Bild mit gespeichertem Fokuspunkt als breiten Header-Ausschnitt.
 class _HeaderPortraitImage extends StatelessWidget {
-  const _HeaderPortraitImage({required this.bytes, required this.primaryEntry});
+  const _HeaderPortraitImage({required this.bytes, required this.activeEntry});
 
   final List<int> bytes;
-  final AvatarGalleryEntry? primaryEntry;
+  final AvatarGalleryEntry? activeEntry;
 
   @override
   Widget build(BuildContext context) {
-    final focusX = primaryEntry?.headerFocusX ?? 0.5;
-    final focusY = primaryEntry?.headerFocusY ?? 0.5;
+    final focusX = activeEntry?.headerFocusX ?? 0.5;
+    final focusY = activeEntry?.headerFocusY ?? 0.5;
+    final zoom = (activeEntry?.headerZoom ?? 1.0).clamp(1.0, 8.0);
     final alignment = Alignment((focusX * 2) - 1, (focusY * 2) - 1);
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.memory(
-          Uint8List.fromList(bytes),
-          key: const ValueKey<String>('workspace-header-portrait-image'),
-          fit: BoxFit.cover,
-          alignment: alignment,
-          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+        ClipRect(
+          child: Transform.scale(
+            scale: zoom,
+            alignment: alignment,
+            child: Image.memory(
+              Uint8List.fromList(bytes),
+              key: const ValueKey<String>('workspace-header-portrait-image'),
+              fit: BoxFit.cover,
+              alignment: alignment,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
         ),
         DecoratedBox(
           decoration: BoxDecoration(

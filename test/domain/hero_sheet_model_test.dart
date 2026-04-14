@@ -336,7 +336,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.background.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 23);
+    expect(reloaded.schemaVersion, 24);
     expect(reloaded.background.kultur, 'Mittelreich');
     expect(reloaded.background.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -825,7 +825,7 @@ void main() {
     },
   );
 
-  test('schemaVersion ist 23 nach toJson (v23-Default)', () {
+  test('schemaVersion ist 24 nach toJson (v24-Default)', () {
     const hero = HeroSheet(
       id: 'version-check',
       name: 'Versionstest',
@@ -842,8 +842,8 @@ void main() {
       ),
     );
     final json = hero.toJson();
-    expect(json['schemaVersion'], 23);
-    expect(HeroSheet.fromJson(json).schemaVersion, 23);
+    expect(json['schemaVersion'], 24);
+    expect(HeroSheet.fromJson(json).schemaVersion, 24);
   });
 
   test(

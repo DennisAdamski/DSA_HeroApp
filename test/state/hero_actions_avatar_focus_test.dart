@@ -49,6 +49,7 @@ void main() {
             galleryEntryId: 'bild-1',
             focusX: 1.3,
             focusY: -0.4,
+            zoom: 12,
           );
 
       final hero = await repo.loadHeroById('demo');
@@ -56,6 +57,7 @@ void main() {
       final entry = hero!.appearance.avatarGallery.single;
       expect(entry.headerFocusX, 1);
       expect(entry.headerFocusY, 0);
+      expect(entry.headerZoom, 8);
     },
   );
 }

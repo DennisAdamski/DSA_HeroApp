@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_api_client.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_file_storage.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_thumbnail_encoder.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_snapshot_diff.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -56,6 +57,44 @@ final primaerbildBytesProvider = FutureProvider.family<List<int>?, String>((
   final entry = hero.appearance.avatarGallery
       .where((e) => e.id == primaerbildId)
       .firstOrNull;
+  if (entry == null) return null;
+
+  final location = await ref.read(heroStorageLocationProvider.future);
+  final storage = ref.read(avatarFileStorageProvider);
+  return storage.loadGalleryImageBytes(
+    heroStoragePath: location.effectivePath,
+    fileName: entry.fileName,
+  );
+});
+
+/// Laedt die PNG-Bytes des aktiv angezeigten Bildes (Header + Uebersicht).
+///
+/// Fallbacks: aktivesBildId -> Match auf avatarFileName -> Primaerbild.
+final activeAvatarBytesProvider = FutureProvider.family<List<int>?, String>((
+  ref,
+  heroId,
+) async {
+  final hero = ref.watch(heroByIdProvider(heroId));
+  if (hero == null) return null;
+
+  final gallery = hero.appearance.avatarGallery;
+  if (gallery.isEmpty) return null;
+
+  AvatarGalleryEntry? entry;
+  final aktivesBildId = hero.appearance.aktivesBildId;
+  if (aktivesBildId.isNotEmpty) {
+    entry = gallery.where((e) => e.id == aktivesBildId).firstOrNull;
+  }
+  if (entry == null && hero.appearance.avatarFileName.isNotEmpty) {
+    entry = gallery
+        .where((e) => e.fileName == hero.appearance.avatarFileName)
+        .firstOrNull;
+  }
+  if (entry == null && hero.appearance.primaerbildId.isNotEmpty) {
+    entry = gallery
+        .where((e) => e.id == hero.appearance.primaerbildId)
+        .firstOrNull;
+  }
   if (entry == null) return null;
 
   final location = await ref.read(heroStorageLocationProvider.future);

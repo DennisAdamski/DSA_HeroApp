@@ -201,6 +201,9 @@ void main() {
           primaerbildBytesProvider.overrideWith(
             (ref, heroId) async => imageBytes,
           ),
+          activeAvatarBytesProvider.overrideWith(
+            (ref, heroId) async => imageBytes,
+          ),
         ],
         child: MaterialApp(
           home: Scaffold(
