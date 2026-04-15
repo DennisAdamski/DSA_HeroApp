@@ -6,11 +6,10 @@ import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
-import 'package:dsa_heldenverwaltung/data/gruppen_snapshot_codec.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
-import 'package:dsa_heldenverwaltung/domain/gruppen_snapshot.dart';
+import 'package:dsa_heldenverwaltung/domain/held_visitenkarte.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -20,7 +19,6 @@ import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
@@ -30,7 +28,7 @@ import 'package:dsa_heldenverwaltung/state/avatar_providers.dart'
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
-import 'package:dsa_heldenverwaltung/state/gruppen_providers.dart';
+import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart'
     show heroComputedProvider;
@@ -219,44 +217,6 @@ class HeroActions {
           : transferCatalogEntries,
     );
     return codec.encode(bundle);
-  }
-
-  /// Erstellt einen Gruppen-Snapshot-JSON-String fuer die angegebenen Helden.
-  ///
-  /// Laedt fuer jeden Helden Sheet, State und abgeleitete Werte und baut
-  /// daraus kompakte [HeldVisitenkarte]-Eintraege.
-  Future<String> buildGruppenExportJson({
-    required String gruppenName,
-    required List<String> heroIds,
-  }) async {
-    final repo = _ref.read(heroRepositoryProvider);
-    final visitenkarten = <HeldVisitenkarte>[];
-
-    for (final heroId in heroIds) {
-      final hero = await repo.loadHeroById(heroId);
-      if (hero == null) continue;
-      final state =
-          (await repo.loadHeroState(heroId)) ?? const HeroState.empty();
-      final derivedStats = computeDerivedStats(hero, state);
-
-      final avatarThumbnailBase64 = await _loadAvatarThumbnailBase64(hero);
-      visitenkarten.add(
-        HeldVisitenkarte.fromHeroComputed(
-          hero,
-          derivedStats,
-          avatarThumbnailBase64: avatarThumbnailBase64,
-        ),
-      );
-    }
-
-    final snapshot = GruppenSnapshot(
-      gruppenName: gruppenName.trim().isEmpty
-          ? 'Meine Gruppe'
-          : gruppenName.trim(),
-      exportedAt: DateTime.now().toUtc(),
-      helden: visitenkarten,
-    );
-    return const GruppenSnapshotCodec().encode(snapshot);
   }
 
   /// Parst einen Import-JSON-String zu einem [HeroTransferBundle].

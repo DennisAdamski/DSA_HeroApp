@@ -5,7 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/data/hive_externe_helden_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
-import 'package:dsa_heldenverwaltung/domain/gruppen_snapshot.dart';
+import 'package:dsa_heldenverwaltung/domain/held_visitenkarte.dart';
 
 /// Firebase-Sync-Service fuer Heldengruppen.
 ///

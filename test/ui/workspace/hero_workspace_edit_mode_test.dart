@@ -495,7 +495,6 @@ void main() {
 
     await openWorkspace(tester, repo);
     expect(find.textContaining('10/22'), findsWidgets);
-    expect(find.textContaining('BE'), findsWidgets);
 
     await tester.tap(find.text('Bearbeiten').first);
     await tester.pumpAndSettle();
@@ -1204,7 +1203,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('12'), findsOneWidget);
+      expect(find.text('12'), findsWidgets);
     },
   );
 

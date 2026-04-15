@@ -1,4 +1,4 @@
-import 'package:dsa_heldenverwaltung/domain/gruppen_snapshot.dart';
+import 'package:dsa_heldenverwaltung/domain/held_visitenkarte.dart';
 
 /// Externes Gruppenmitglied — entweder manuell angelegt oder ueber
 /// Firebase mit einem anderen Spieler verknuepft.

@@ -5,13 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
-import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/gruppen_uebersicht_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/home/hero_home_tablet_panels.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_workspace_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
@@ -107,14 +105,6 @@ class HeroesHomeScreen extends ConsumerWidget {
           ),
           onOpenSettings: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const SettingsScreen()),
-          ),
-          onOpenGroupOverview: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const GruppenUebersichtScreen()),
-          ),
-          onShareGroup: () => _showGruppenExportDialog(
-            context: context,
-            ref: ref,
-            importExportActions: importExportActions,
           ),
         ),
       ),
@@ -218,8 +208,6 @@ class HeroesHomeScreen extends ConsumerWidget {
     required Future<void> Function() onCreateHero,
     required Future<void> Function() onImportHero,
     required VoidCallback onOpenSettings,
-    required VoidCallback onOpenGroupOverview,
-    required Future<void> Function() onShareGroup,
   }) {
     if (layout == AppLayoutClass.compact) {
       return [
@@ -233,11 +221,6 @@ class HeroesHomeScreen extends ConsumerWidget {
           tooltip: 'Importieren',
           onPressed: onImportHero,
           icon: const Icon(Icons.download),
-        ),
-        _HomeGroupMenuButton(
-          compact: true,
-          onOpenGroupOverview: onOpenGroupOverview,
-          onShareGroup: onShareGroup,
         ),
         IconButton(
           tooltip: 'Einstellungen',
@@ -266,11 +249,6 @@ class HeroesHomeScreen extends ConsumerWidget {
           icon: const Icon(Icons.download),
           label: const Text('Importieren'),
         ),
-      ),
-      _HomeGroupMenuButton(
-        compact: false,
-        onOpenGroupOverview: onOpenGroupOverview,
-        onShareGroup: onShareGroup,
       ),
       IconButton(
         tooltip: 'Einstellungen',
@@ -375,35 +353,20 @@ class HeroesHomeScreen extends ConsumerWidget {
     required WorkspaceImportExportActions importExportActions,
   }) async {
     try {
-      final result = await importExportActions.importSmartData(
+      final heroId = await importExportActions.importHeroData(
         context: context,
         ref: ref,
       );
-      if (result == null || !context.mounted) {
+      if (heroId == null || !context.mounted) {
         return;
       }
-
-      if (result.type == ImportResult.gruppe) {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const GruppenUebersichtScreen()),
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gruppe erfolgreich importiert')),
-        );
-        return;
-      }
-
-      if (result.heroId != null) {
-        ref.read(selectedHeroIdProvider.notifier).state = result.heroId;
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => HeroWorkspaceScreen(heroId: result.heroId!),
-          ),
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Held erfolgreich importiert')),
-        );
-      }
+      ref.read(selectedHeroIdProvider.notifier).state = heroId;
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => HeroWorkspaceScreen(heroId: heroId)),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Held erfolgreich importiert')),
+      );
     } on FormatException catch (error) {
       if (!context.mounted) {
         return;
@@ -421,125 +384,10 @@ class HeroesHomeScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _showGruppenExportDialog({
-    required BuildContext context,
-    required WidgetRef ref,
-    required WorkspaceImportExportActions importExportActions,
-  }) async {
-    final heroes = ref.read(heroListProvider).valueOrNull ?? const [];
-    if (heroes.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Keine Helden zum Teilen vorhanden')),
-      );
-      return;
-    }
-
-    final result = await showAdaptiveDetailSheet<_GruppenExportDraft>(
-      context: context,
-      builder: (dialogContext) => _GruppenExportDialog(heroes: heroes),
-    );
-    if (result == null || !context.mounted) {
-      return;
-    }
-
-    try {
-      final outcome = await importExportActions.exportGruppenSnapshot(
-        ref: ref,
-        gruppenName: result.gruppenName,
-        heroIds: result.heroIds,
-      );
-      if (!context.mounted) {
-        return;
-      }
-      if (outcome.result == HeroTransferExportResult.canceled) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gruppe exportiert und geteilt')),
-      );
-    } on Exception catch (error) {
-      if (!context.mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Export fehlgeschlagen: $error')),
-      );
-    }
-  }
-
   Future<_CreateHeroDraft?> _showCreateHeroDialog(BuildContext context) async {
     return showAdaptiveDetailSheet<_CreateHeroDraft>(
       context: context,
       builder: (dialogContext) => const _CreateHeroDialog(),
-    );
-  }
-}
-
-class _HomeGroupMenuButton extends StatelessWidget {
-  const _HomeGroupMenuButton({
-    required this.compact,
-    required this.onOpenGroupOverview,
-    required this.onShareGroup,
-  });
-
-  final bool compact;
-  final VoidCallback onOpenGroupOverview;
-  final Future<void> Function() onShareGroup;
-
-  @override
-  Widget build(BuildContext context) {
-    final trigger = compact
-        ? const Icon(Icons.group)
-        : Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Theme.of(context).dividerColor),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.group, size: 18),
-                SizedBox(width: 8),
-                Text('Gruppe'),
-              ],
-            ),
-          );
-
-    return PopupMenuButton<String>(
-      tooltip: 'Gruppe',
-      onSelected: (value) {
-        switch (value) {
-          case 'teilen':
-            onShareGroup();
-          case 'uebersicht':
-            onOpenGroupOverview();
-        }
-      },
-      itemBuilder: (context) => const [
-        PopupMenuItem(
-          value: 'teilen',
-          child: ListTile(
-            leading: Icon(Icons.share),
-            title: Text('Gruppe teilen'),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-        PopupMenuItem(
-          value: 'uebersicht',
-          child: ListTile(
-            leading: Icon(Icons.people_outline),
-            title: Text('Gruppenübersicht'),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-      ],
-      child: compact
-          ? trigger
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: trigger,
-            ),
     );
   }
 }
@@ -696,102 +544,3 @@ class _CreateHeroDraft {
   final Attributes rawStartAttributes;
 }
 
-class _GruppenExportDraft {
-  const _GruppenExportDraft({
-    required this.gruppenName,
-    required this.heroIds,
-  });
-
-  final String gruppenName;
-  final List<String> heroIds;
-}
-
-class _GruppenExportDialog extends StatefulWidget {
-  const _GruppenExportDialog({required this.heroes});
-
-  final List<HeroSheet> heroes;
-
-  @override
-  State<_GruppenExportDialog> createState() => _GruppenExportDialogState();
-}
-
-class _GruppenExportDialogState extends State<_GruppenExportDialog> {
-  late final TextEditingController _nameController;
-  late final Map<String, bool> _selectedHeroes;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: 'Meine Gruppe');
-    _selectedHeroes = {for (final hero in widget.heroes) hero.id: true};
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final selectedCount = _selectedHeroes.values.where((v) => v).length;
-
-    return AlertDialog(
-      title: const Text('Gruppe teilen'),
-      content: SingleChildScrollView(
-        child: SizedBox(
-          width: kDialogWidthSmall,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Gruppenname',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ...widget.heroes.map(
-                (hero) => CheckboxListTile(
-                  value: _selectedHeroes[hero.id] ?? false,
-                  title: Text(hero.name),
-                  subtitle: Text('Level ${hero.level}'),
-                  dense: true,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedHeroes[hero.id] = value ?? false;
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(
-          onPressed: selectedCount == 0
-              ? null
-              : () {
-                  final heroIds = _selectedHeroes.entries
-                      .where((entry) => entry.value)
-                      .map((entry) => entry.key)
-                      .toList(growable: false);
-                  Navigator.of(context).pop(
-                    _GruppenExportDraft(
-                      gruppenName: _nameController.text.trim(),
-                      heroIds: heroIds,
-                    ),
-                  );
-                },
-          child: Text('Teilen ($selectedCount)'),
-        ),
-      ],
-    );
-  }
-}

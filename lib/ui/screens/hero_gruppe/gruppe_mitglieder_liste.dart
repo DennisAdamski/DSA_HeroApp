@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
-import 'package:dsa_heldenverwaltung/state/gruppen_providers.dart';
+import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
 /// Zeigt die Mitglieder einer Gruppe als Karten-Liste an.

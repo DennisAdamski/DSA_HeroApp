@@ -34,7 +34,6 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
             WorkspaceHeroHeader(
               heroId: widget.heroId,
               hero: hero,
-              activeAreaLabel: activeTab.label,
             ),
           if (!showTabletDesktopHeader)
             WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
