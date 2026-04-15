@@ -52,35 +52,8 @@ class HeroHomeArchivePane extends StatelessWidget {
               label: '${heroes.length} ${heroes.length == 1 ? 'Held' : 'Helden'}',
               tone: CodexBadgeTone.accent,
             ),
-            child: Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                CodexMetricTile(
-                  label: 'Archiv',
-                  value: heroes.length.toString(),
-                  icon: Icons.auto_stories_outlined,
-                ),
-                CodexMetricTile(
-                  label: 'Fokus',
-                  value: selectedHeroId == null ? 'Offen' : '1 gewählt',
-                  icon: Icons.visibility_outlined,
-                  highlight: selectedHeroId != null,
-                ),
-                CodexMetricTile(
-                  label: 'Layout',
-                  value: switch (layout) {
-                    AppLayoutClass.compact => 'Mobil',
-                    AppLayoutClass.tabletPortrait => 'iPad Portrait',
-                    AppLayoutClass.tabletLandscape => 'iPad Landscape',
-                    AppLayoutClass.desktopWide => 'Breit',
-                  },
-                  icon: Icons.tablet_mac_outlined,
-                ),
-              ],
-            ),
+            child: const SizedBox.shrink(),
           ),
-          const SizedBox(height: 16),
           Expanded(
             child: ListView.separated(
               itemCount: heroes.length,

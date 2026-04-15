@@ -13,6 +13,7 @@ class CodexMetricTile extends StatelessWidget {
     this.helper,
     this.highlight = false,
     this.compact = false,
+    this.labelHidden = false,
     this.onTap,
   });
 
@@ -33,6 +34,9 @@ class CodexMetricTile extends StatelessWidget {
 
   /// Aktiviert die kompakte einzeilige Darstellung.
   final bool compact;
+
+  /// Blendet das Label aus und zeigt nur Icon und Wert (nur im compact-Modus).
+  final bool labelHidden;
 
   /// Tap-Handler fuer interaktive Kacheln.
   final VoidCallback? onTap;
@@ -80,13 +84,14 @@ class CodexMetricTile extends StatelessWidget {
           child: Text.rich(
             TextSpan(
               children: [
-                TextSpan(
-                  text: '$label ',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: codex.inkMuted,
-                    letterSpacing: 0.5,
+                if (!labelHidden)
+                  TextSpan(
+                    text: '$label ',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: codex.inkMuted,
+                      letterSpacing: 0.5,
+                    ),
                   ),
-                ),
                 TextSpan(
                   text: value,
                   style: theme.textTheme.bodyMedium?.copyWith(

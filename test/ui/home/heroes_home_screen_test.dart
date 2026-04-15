@@ -182,9 +182,7 @@ void main() {
           .map((tab) => (tab.text ?? '').trim())
           .toList(growable: false);
       expect(tabLabels, expectedWorkspaceTabLabels());
-      expect(find.textContaining('MU'), findsWidgets);
       expect(find.textContaining('14'), findsWidgets);
-      expect(find.textContaining('LeP'), findsWidgets);
       expect(find.textContaining('10/22'), findsWidgets);
     },
   );

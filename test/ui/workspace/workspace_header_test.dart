@@ -122,10 +122,6 @@ void main() {
           findsOneWidget,
         );
         expect(
-          find.descendant(of: header, matching: find.textContaining('Bereich')),
-          findsWidgets,
-        );
-        expect(
           find.descendant(of: header, matching: find.textContaining('Stufe')),
           findsWidgets,
         );
@@ -135,7 +131,9 @@ void main() {
         );
 
         final headerSize = tester.getSize(header);
-        expect(headerSize.height, lessThan(180));
+        // Bei schmalem Tablet-Hochformat kann die Stat-Rail in zwei Zeilen
+        // umbrechen, was den Header auf ca. 200 px anwachsen lässt.
+        expect(headerSize.height, lessThan(220));
       }
     },
   );
@@ -210,7 +208,6 @@ void main() {
             body: WorkspaceHeroHeader(
               heroId: 'demo',
               hero: hero,
-              activeAreaLabel: 'Übersicht',
             ),
           ),
         ),

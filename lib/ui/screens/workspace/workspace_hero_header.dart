@@ -16,7 +16,6 @@ class WorkspaceHeroHeader extends ConsumerWidget {
     super.key,
     required this.heroId,
     required this.hero,
-    required this.activeAreaLabel,
   });
 
   /// ID des aktuell angezeigten Helden.
@@ -24,9 +23,6 @@ class WorkspaceHeroHeader extends ConsumerWidget {
 
   /// Aktueller Held.
   final HeroSheet hero;
-
-  /// Label des aktiven Workspace-Bereichs.
-  final String activeAreaLabel;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -106,34 +102,23 @@ class WorkspaceHeroHeader extends ConsumerWidget {
                     ),
                   ),
                   SizedBox(width: isPortraitTablet ? 10 : 16),
-                  Flexible(
-                    flex: isPortraitTablet ? 3 : 2,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Wrap(
-                        alignment: WrapAlignment.end,
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _HeaderInfoChip(
-                            label: 'Bereich',
-                            value: activeAreaLabel,
-                            icon: Icons.dashboard_outlined,
-                          ),
-                          _HeaderInfoChip(
-                            label: 'Stufe',
-                            value: hero.level.toString(),
-                            icon: Icons.workspace_premium_outlined,
-                          ),
-                          _HeaderInfoChip(
-                            label: 'AP frei',
-                            value: hero.apAvailable.toString(),
-                            icon: Icons.account_balance_wallet_outlined,
-                            highlight: hero.apAvailable > 0,
-                          ),
-                        ],
+                  Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _HeaderInfoChip(
+                        label: 'Stufe',
+                        value: hero.level.toString(),
+                        icon: Icons.workspace_premium_outlined,
                       ),
-                    ),
+                      _HeaderInfoChip(
+                        label: 'AP frei',
+                        value: hero.apAvailable.toString(),
+                        icon: Icons.account_balance_wallet_outlined,
+                        highlight: hero.apAvailable > 0,
+                      ),
+                    ],
                   ),
                 ],
               ),

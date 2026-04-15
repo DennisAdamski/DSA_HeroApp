@@ -3,11 +3,10 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 
 /// Kompakte Visitenkarte eines Helden fuer geraeteuebergreifendes
-/// Gruppen-Sharing.
+/// Gruppen-Sharing via Firestore.
 ///
 /// Enthaelt nur die wichtigsten Basisdaten, die andere Gruppenmitglieder
-/// auf ihren Geraeten sehen koennen. Design ist offen fuer kuenftige
-/// Echtzeit-Erweiterung (z.B. Firebase/Supabase).
+/// auf ihren Geraeten sehen koennen.
 class HeldVisitenkarte {
   /// Firestore-Obergrenze fuer Base64-Avatar-Thumbnails in Visitenkarten.
   static const int avatarThumbnailBase64MaxLength = 200000;
@@ -139,69 +138,6 @@ class HeldVisitenkarte {
       avatarThumbnailBase64: json['avatarThumbnailBase64'] as String?,
       exportedAt: exportedAt,
       istManuell: json['istManuell'] as bool? ?? false,
-    );
-  }
-}
-
-/// Container fuer eine Heldengruppe mit kompakten Visitenkarten.
-///
-/// Wird als `.dsa-gruppe.json`-Datei zwischen Geraeten geteilt und
-/// lokal in einer Hive-Box persistiert.
-class GruppenSnapshot {
-  const GruppenSnapshot({
-    required this.gruppenName,
-    required this.exportedAt,
-    this.helden = const <HeldVisitenkarte>[],
-  });
-
-  static const String kind = 'dsa.gruppe.snapshot';
-  static const int snapshotSchemaVersion = 1;
-
-  final String gruppenName;
-  final DateTime exportedAt;
-  final List<HeldVisitenkarte> helden;
-
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'kind': kind,
-      'snapshotSchemaVersion': snapshotSchemaVersion,
-      'gruppenName': gruppenName,
-      'exportedAt': exportedAt.toUtc().toIso8601String(),
-      'helden': helden.map((held) => held.toJson()).toList(growable: false),
-    };
-  }
-
-  static GruppenSnapshot fromJson(Map<String, dynamic> json) {
-    final rawKind = json['kind'];
-    if (rawKind != kind) {
-      throw const FormatException(
-        'Ungültiger Dateityp: erwartet "dsa.gruppe.snapshot".',
-      );
-    }
-
-    final rawVersion = json['snapshotSchemaVersion'];
-    final version = rawVersion is num ? rawVersion.toInt() : null;
-    if (version == null || version < 1 || version > snapshotSchemaVersion) {
-      throw FormatException(
-        'Unbekannte Gruppen-Version: nur Version 1-$snapshotSchemaVersion '
-        'wird unterstützt.',
-      );
-    }
-
-    final rawExportedAt = json['exportedAt'] as String? ?? '';
-    final exportedAt =
-        DateTime.tryParse(rawExportedAt)?.toUtc() ?? DateTime.now().toUtc();
-
-    final rawHelden = json['helden'] as List? ?? const [];
-    final helden = rawHelden
-        .whereType<Map>()
-        .map((m) => HeldVisitenkarte.fromJson(m.cast<String, dynamic>()))
-        .toList(growable: false);
-
-    return GruppenSnapshot(
-      gruppenName: json['gruppenName'] as String? ?? '',
-      exportedAt: exportedAt,
-      helden: helden,
     );
   }
 }

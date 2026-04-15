@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/avatar_thumbnail_encoder.dart';
-import 'package:dsa_heldenverwaltung/domain/gruppen_snapshot.dart';
+import 'package:dsa_heldenverwaltung/domain/held_visitenkarte.dart';
 
 import '../test_support/avatar_test_image.dart';
 

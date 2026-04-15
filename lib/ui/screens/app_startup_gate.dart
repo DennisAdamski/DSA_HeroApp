@@ -7,15 +7,14 @@ import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/custom_catalog_repository.dart';
 import 'package:dsa_heldenverwaltung/data/firebase_bootstrap.dart';
 import 'package:dsa_heldenverwaltung/data/hive_externe_helden_repository.dart';
-import 'package:dsa_heldenverwaltung/data/hive_gruppen_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
-import 'package:dsa_heldenverwaltung/state/gruppen_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/app_shell.dart';
@@ -52,7 +51,6 @@ class AppStartupGate extends StatefulWidget {
 class _AppStartupGateState extends State<AppStartupGate> {
   Future<_HeroRepositoryBootstrapResult>? _bootstrapFuture;
   HiveHeroRepository? _activeRepository;
-  HiveGruppenRepository? _activeGruppenRepository;
   HiveExterneHeldenRepository? _activeExterneHeldenRepository;
   late AppSettings _settings;
   StreamSubscription<AppSettings>? _settingsSubscription;
@@ -84,10 +82,6 @@ class _AppStartupGateState extends State<AppStartupGate> {
     if (repository != null) {
       // Die Boxen muessen beim Pfadwechsel sauber geschlossen werden.
       unawaited(repository.close());
-    }
-    final gruppenRepository = _activeGruppenRepository;
-    if (gruppenRepository != null) {
-      unawaited(gruppenRepository.close());
     }
     final externeHeldenRepository = _activeExterneHeldenRepository;
     if (externeHeldenRepository != null) {
@@ -124,12 +118,6 @@ class _AppStartupGateState extends State<AppStartupGate> {
     );
     await const StartupHeroImporter().importFromAssets(repository);
 
-    // Gruppen-Repository im Settings-Pfad oeffnen.
-    final settingsPath = await widget.storagePaths.resolveSettingsStoragePath();
-    final gruppenRepository = await HiveGruppenRepository.create(
-      storagePath: settingsPath,
-    );
-
     // Externe-Helden-Repository im Heldenspeicher oeffnen.
     final externeHeldenRepository = await HiveExterneHeldenRepository.create(
       storagePath: heroStoragePath,
@@ -137,27 +125,20 @@ class _AppStartupGateState extends State<AppStartupGate> {
 
     if (generation != _loadGeneration) {
       await repository.close();
-      await gruppenRepository.close();
       await externeHeldenRepository.close();
       throw StateError('Veralteter Initialisierungslauf fuer Heldendaten.');
     }
 
-    // Alte Repositories schliessen, falls vorhanden.
-    final previousGruppen = _activeGruppenRepository;
-    if (previousGruppen != null) {
-      await previousGruppen.close();
-    }
+    // Altes Repository schliessen, falls vorhanden.
     final previousExterneHelden = _activeExterneHeldenRepository;
     if (previousExterneHelden != null) {
       await previousExterneHelden.close();
     }
 
     _activeRepository = repository;
-    _activeGruppenRepository = gruppenRepository;
     _activeExterneHeldenRepository = externeHeldenRepository;
     return _HeroRepositoryBootstrapResult(
       repository: repository,
-      gruppenRepository: gruppenRepository,
       externeHeldenRepository: externeHeldenRepository,
       heroStoragePath: heroStoragePath,
     );
@@ -191,7 +172,6 @@ class _AppStartupGateState extends State<AppStartupGate> {
         final result = snapshot.requireData;
         return _buildScope(
           repository: result.repository,
-          gruppenRepository: result.gruppenRepository,
           externeHeldenRepository: result.externeHeldenRepository,
           customCatalogRepository: CustomCatalogRepository(
             heroStoragePath: result.heroStoragePath,
@@ -205,7 +185,6 @@ class _AppStartupGateState extends State<AppStartupGate> {
   Widget _buildScope({
     required Widget home,
     HiveHeroRepository? repository,
-    HiveGruppenRepository? gruppenRepository,
     HiveExterneHeldenRepository? externeHeldenRepository,
     CustomCatalogRepository? customCatalogRepository,
   }) {
@@ -227,11 +206,6 @@ class _AppStartupGateState extends State<AppStartupGate> {
     if (repository != null) {
       overrides.add(heroRepositoryProvider.overrideWithValue(repository));
     }
-    if (gruppenRepository != null) {
-      overrides.add(
-        gruppenRepositoryProvider.overrideWithValue(gruppenRepository),
-      );
-    }
     if (externeHeldenRepository != null) {
       overrides.add(
         externeHeldenRepositoryProvider.overrideWithValue(
@@ -251,13 +225,11 @@ class _AppStartupGateState extends State<AppStartupGate> {
 class _HeroRepositoryBootstrapResult {
   const _HeroRepositoryBootstrapResult({
     required this.repository,
-    required this.gruppenRepository,
     required this.externeHeldenRepository,
     required this.heroStoragePath,
   });
 
   final HiveHeroRepository repository;
-  final HiveGruppenRepository gruppenRepository;
   final HiveExterneHeldenRepository externeHeldenRepository;
   final String heroStoragePath;
 }

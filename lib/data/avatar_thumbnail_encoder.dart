@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:dsa_heldenverwaltung/domain/gruppen_snapshot.dart';
+import 'package:dsa_heldenverwaltung/domain/held_visitenkarte.dart';
 
 /// Erzeugt kompakte Base64-PNG-Thumbnails fuer Gruppen-Sync und -Export.
 class AvatarThumbnailEncoder {

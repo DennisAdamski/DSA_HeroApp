@@ -1,19 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/data/gruppen_snapshot_codec.dart';
 import 'package:dsa_heldenverwaltung/data/gruppen_sync_service.dart';
 import 'package:dsa_heldenverwaltung/data/hive_externe_helden_repository.dart';
-import 'package:dsa_heldenverwaltung/data/hive_gruppen_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
-import 'package:dsa_heldenverwaltung/domain/gruppen_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
-/// Repository fuer Gruppen-Snapshots (wird beim App-Start uebersteuert).
-final gruppenRepositoryProvider = Provider<HiveGruppenRepository>((ref) {
-  throw UnimplementedError(
-    'GruppenRepository muss beim App-Start übersteuert werden.',
-  );
+/// Firebase-Sync-Service fuer Heldengruppen.
+final gruppenSyncServiceProvider = Provider<GruppenSyncService>((ref) {
+  return GruppenSyncService();
 });
 
 /// Repository fuer externe Helden (wird beim App-Start uebersteuert).
@@ -22,22 +17,6 @@ final externeHeldenRepositoryProvider =
   throw UnimplementedError(
     'ExterneHeldenRepository muss beim App-Start übersteuert werden.',
   );
-});
-
-/// Firebase-Sync-Service fuer Heldengruppen.
-final gruppenSyncServiceProvider = Provider<GruppenSyncService>((ref) {
-  return GruppenSyncService();
-});
-
-/// Codec fuer Gruppen-Snapshot-JSON.
-final gruppenSnapshotCodecProvider = Provider<GruppenSnapshotCodec>((ref) {
-  return const GruppenSnapshotCodec();
-});
-
-/// Reaktiver Stream des aktiven Gruppen-Snapshots (nullable).
-final gruppenSnapshotProvider = StreamProvider<GruppenSnapshot?>((ref) {
-  final repo = ref.watch(gruppenRepositoryProvider);
-  return repo.watchGruppe();
 });
 
 /// Reaktiver Stream aller externen Helden.

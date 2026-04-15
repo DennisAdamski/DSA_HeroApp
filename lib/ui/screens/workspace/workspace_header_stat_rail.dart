@@ -174,7 +174,6 @@ class WorkspaceHeaderStatRail extends ConsumerWidget {
         label: debugModus ? 'currentLep/maxLep' : 'LeP',
         value: resourceText(state?.currentLep, derived?.maxLep),
         icon: Icons.favorite_outline,
-        highlight: true,
         onTap: resourceTap(ResourceType.lep),
       ),
       _WorkspaceHeaderStatItem(
@@ -219,14 +218,54 @@ class WorkspaceHeaderStatRail extends ConsumerWidget {
   }
 }
 
+enum _StatRailMode { full, dense, wrapped }
+
 /// Scrollbare Zeile aus kompakten Metrik-Karten fuer den Workspace-Header.
 class _WorkspaceHeaderStatRailBody extends StatelessWidget {
   const _WorkspaceHeaderStatRailBody({required this.items});
 
   final List<_WorkspaceHeaderStatItem> items;
 
+  static const double _kTileFullWidth = 70.0;
+  static const double _kTileDenseWidth = 52.0;
+  static const double _kTileGap = 6.0;
+
+  /// Minimalbreite pro Kachel im Umbruch-Modus (Icon + Wert ohne Label).
+  static const double _kTileWrappedMinWidth = 50.0;
+
+  /// Mindestbreite fuer den Umbruch-Modus: 8 Attribut-Kacheln muessen passen.
+  static const double _kWrappedMinWidth = 8 * _kTileWrappedMinWidth;
+
+  static double _rowWidth(int count, double tileWidth) =>
+      count * tileWidth + (count - 1) * _kTileGap;
+
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final available = constraints.maxWidth;
+        final t1 = _rowWidth(items.length, _kTileFullWidth);
+        final t2 = _rowWidth(items.length, _kTileDenseWidth);
+        final mode = available >= t1
+            ? _StatRailMode.full
+            : available >= t2
+                ? _StatRailMode.dense
+                : available >= _kWrappedMinWidth
+                    ? _StatRailMode.wrapped
+                    : _StatRailMode.dense;
+        return _buildLayout(context, mode);
+      },
+    );
+  }
+
+  Widget _buildLayout(BuildContext context, _StatRailMode mode) {
+    if (mode == _StatRailMode.wrapped) {
+      return _buildWrapped(context);
+    }
+    return _buildSingleRow(context, labelHidden: mode == _StatRailMode.dense);
+  }
+
+  Widget _buildSingleRow(BuildContext context, {required bool labelHidden}) {
     return Row(
       children: [
         Expanded(
@@ -235,13 +274,14 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
             child: Row(
               children: [
                 for (var index = 0; index < items.length; index++) ...[
-                  if (index > 0) const SizedBox(width: 6),
+                  if (index > 0) const SizedBox(width: _kTileGap),
                   CodexMetricTile(
                     label: items[index].label,
                     value: items[index].value,
                     icon: items[index].icon,
                     highlight: items[index].highlight,
                     compact: true,
+                    labelHidden: labelHidden,
                     onTap: items[index].onTap,
                   ),
                 ],
@@ -249,6 +289,55 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
             ),
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildWrapped(BuildContext context) {
+    final attrItems = items.sublist(0, items.length < 8 ? items.length : 8);
+    final vitalItems = items.length > 8 ? items.sublist(8) : <_WorkspaceHeaderStatItem>[];
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            for (var i = 0; i < attrItems.length; i++) ...[
+              if (i > 0) const SizedBox(width: _kTileGap),
+              Expanded(
+                child: CodexMetricTile(
+                  label: attrItems[i].label,
+                  value: attrItems[i].value,
+                  icon: attrItems[i].icon,
+                  highlight: attrItems[i].highlight,
+                  compact: true,
+                  labelHidden: true,
+                  onTap: attrItems[i].onTap,
+                ),
+              ),
+            ],
+          ],
+        ),
+        if (vitalItems.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              for (var i = 0; i < vitalItems.length; i++) ...[
+                if (i > 0) const SizedBox(width: _kTileGap),
+                CodexMetricTile(
+                  label: vitalItems[i].label,
+                  value: vitalItems[i].value,
+                  icon: vitalItems[i].icon,
+                  highlight: vitalItems[i].highlight,
+                  compact: true,
+                  labelHidden: true,
+                  onTap: vitalItems[i].onTap,
+                ),
+              ],
+            ],
+          ),
+        ],
       ],
     );
   }
