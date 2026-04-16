@@ -1,6 +1,7 @@
-import 'dart:io';
-
 import 'package:path/path.dart' as p;
+
+import 'avatar_file_ops_stub.dart'
+    if (dart.library.io) 'avatar_file_ops_io.dart' as file_ops;
 
 /// Speichert und laedt Avatar-Bilder im Heldenspeicher-Verzeichnis.
 class AvatarFileStorage {
@@ -14,14 +15,12 @@ class AvatarFileStorage {
     required String heroId,
     required List<int> pngBytes,
   }) async {
-    final dir = Directory(p.join(heroStoragePath, _avatarDir));
-    if (!dir.existsSync()) {
-      await dir.create(recursive: true);
-    }
     final fileName = '$heroId.png';
-    final file = File(p.join(dir.path, fileName));
-    await file.writeAsBytes(pngBytes, flush: true);
-    return fileName;
+    return file_ops.saveImageFile(
+      directoryPath: p.join(heroStoragePath, _avatarDir),
+      fileName: fileName,
+      pngBytes: pngBytes,
+    );
   }
 
   /// Loest den vollstaendigen Pfad einer Avatar-Datei auf.
@@ -39,14 +38,12 @@ class AvatarFileStorage {
     required String avatarFileName,
   }) async {
     if (avatarFileName.isEmpty) return null;
-    final file = File(
-      resolveAvatarPath(
+    return file_ops.loadImageFileBytes(
+      filePath: resolveAvatarPath(
         heroStoragePath: heroStoragePath,
         avatarFileName: avatarFileName,
       ),
     );
-    if (!file.existsSync()) return null;
-    return file.readAsBytes();
   }
 
   /// Loescht die Avatar-Datei eines Helden.
@@ -55,15 +52,12 @@ class AvatarFileStorage {
     required String avatarFileName,
   }) async {
     if (avatarFileName.isEmpty) return;
-    final file = File(
-      resolveAvatarPath(
+    return file_ops.deleteImageFile(
+      filePath: resolveAvatarPath(
         heroStoragePath: heroStoragePath,
         avatarFileName: avatarFileName,
       ),
     );
-    if (file.existsSync()) {
-      await file.delete();
-    }
   }
 
   // ---------------------------------------------------------------------------
@@ -77,14 +71,12 @@ class AvatarFileStorage {
     required String entryId,
     required List<int> pngBytes,
   }) async {
-    final dir = Directory(p.join(heroStoragePath, _avatarDir));
-    if (!dir.existsSync()) {
-      await dir.create(recursive: true);
-    }
     final fileName = '${heroId}_$entryId.png';
-    final file = File(p.join(dir.path, fileName));
-    await file.writeAsBytes(pngBytes, flush: true);
-    return fileName;
+    return file_ops.saveImageFile(
+      directoryPath: p.join(heroStoragePath, _avatarDir),
+      fileName: fileName,
+      pngBytes: pngBytes,
+    );
   }
 
   /// Loescht ein einzelnes Gallery-Bild.
@@ -93,10 +85,9 @@ class AvatarFileStorage {
     required String fileName,
   }) async {
     if (fileName.isEmpty) return;
-    final file = File(p.join(heroStoragePath, _avatarDir, fileName));
-    if (file.existsSync()) {
-      await file.delete();
-    }
+    return file_ops.deleteImageFile(
+      filePath: p.join(heroStoragePath, _avatarDir, fileName),
+    );
   }
 
   /// Laedt die Bytes eines Gallery-Bildes (fuer Export).
@@ -105,8 +96,8 @@ class AvatarFileStorage {
     required String fileName,
   }) async {
     if (fileName.isEmpty) return null;
-    final file = File(p.join(heroStoragePath, _avatarDir, fileName));
-    if (!file.existsSync()) return null;
-    return file.readAsBytes();
+    return file_ops.loadImageFileBytes(
+      filePath: p.join(heroStoragePath, _avatarDir, fileName),
+    );
   }
 }

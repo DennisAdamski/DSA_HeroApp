@@ -1,9 +1,11 @@
-import 'dart:io' as io;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/data/avatar_file_ops_stub.dart'
+    if (dart.library.io) 'package:dsa_heldenverwaltung/data/avatar_file_ops_io.dart'
+    as file_ops;
 import 'package:dsa_heldenverwaltung/domain/avatar_style.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_prompt_rules.dart';
@@ -439,7 +441,7 @@ class _AvatarGenerationDialogState
         heroStoragePath: location.effectivePath,
         avatarFileName: '${widget.heroId}.png',
       );
-      FileImage(io.File(path)).evict();
+      file_ops.evictFileImage(path);
 
       if (!mounted) return;
       Navigator.pop(context);

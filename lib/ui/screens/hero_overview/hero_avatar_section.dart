@@ -45,12 +45,13 @@ class _AvatarDisplay extends ConsumerWidget {
             borderRadius: BorderRadius.circular(12),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 350),
-              child: Image.file(
-                io.File(path),
+              child: buildFileImage(
+                path,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
                   return const _SketchedAvatarPlaceholder();
                 },
+                fallback: const _SketchedAvatarPlaceholder(),
               ),
             ),
           ),
@@ -373,10 +374,14 @@ class _AlbumCard extends ConsumerWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.file(
-                  io.File(path),
+                child: buildFileImage(
+                  path,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) => Container(
+                    color: colorScheme.surfaceContainerHighest,
+                    child: const Icon(Icons.broken_image_outlined, size: 32),
+                  ),
+                  fallback: Container(
                     color: colorScheme.surfaceContainerHighest,
                     child: const Icon(Icons.broken_image_outlined, size: 32),
                   ),
@@ -501,8 +506,8 @@ class _AvatarFullscreenDialog extends StatelessWidget {
             child: InteractiveViewer(
               minScale: 0.5,
               maxScale: 4.0,
-              child: Image.file(
-                io.File(imagePath),
+              child: buildFileImage(
+                imagePath,
                 fit: BoxFit.contain,
                 errorBuilder: (_, _, _) => const Icon(
                   Icons.broken_image_outlined,
