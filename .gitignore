@@ -1,3 +1,6 @@
+# Worktrees
+.worktrees/
+
 # Miscellaneous
 *.class
 *.log
@@ -66,6 +69,7 @@ assets/catalogs/house_rules_v1/waffenmeister.md
 .claude/settings.local.json
 .superpowers/
 docs/superpowers/
+.superpowers\brainstorm
 
 # Python build artefacts (fuer tool/mcp_dsa_rules)
 tool/mcp_dsa_rules/.venv/
