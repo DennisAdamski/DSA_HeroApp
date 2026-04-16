@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
@@ -9,6 +10,11 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 
 void main() {
+  setUpAll(() {
+    // Aktiviert den In-Memory-Mock fuer flutter_secure_storage in Unit-Tests.
+    FlutterSecureStorage.setMockInitialValues({});
+  });
+
   test('stores settings and heroes in separate directories', () async {
     final root = await Directory.systemTemp.createTemp(
       'dsa_storage_split_test_',
