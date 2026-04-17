@@ -1257,6 +1257,11 @@ flutter test
 # Einzelner Guardrail-Test
 flutter test test/ui/performance/ui_rebuild_guardrails_test.dart
 
+# Windows-Artefakt fuer AV-/Signaturpruefung dokumentieren
+pwsh -File tool/audit_windows_artifact.ps1 `
+  -ArtifactPath build\windows\x64\runner\Release\flutter_application_1.exe `
+  -AsJson
+
 ```
 
 Für echte Frame-Messungen wird kein dedizierter Integration-Test mehr
@@ -1309,6 +1314,15 @@ Excel-Quelldateien (`*.xlsx`) im Repo-Root sind die **Upstream-Quelle**; JSON-Da
 Synchronisierbare Benutzererweiterungen liegen stattdessen im aktiven
 Heldenspeicher unter `custom_catalogs/<version>/<sektion>/<id>.json` und werden
 ueber die Settings-Katalogverwaltung bearbeitet.
+
+### Windows-Antivirus- und Release-Pruefung
+
+- `docs/windows_antivirus_audit.md` dokumentiert den statischen Audit fuer
+  Windows-Desktop und Laufzeitcode.
+- `tool/audit_windows_artifact.ps1` sammelt fuer ein gebautes EXE- oder
+  MSIX-Artefakt Hash, Versionsinfos, Authenticode-Status und optional einen
+  lokalen Defender-Scan.
+- Diese Pruefung ergaenzt den Quellcode-Audit, ersetzt ihn aber nicht.
 
 ### Update 2026-03-07: Begabung & Lernkomplexitaet
 
