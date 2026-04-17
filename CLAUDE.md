@@ -6,7 +6,7 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 
 - `AGENTS.md` ist die verbindliche Agentenrichtlinie.
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
-- Detaildokumentation liegt bei Bedarf in `docs/technical_overview.md`, `docs/test_strategy.md`, `docs/catalog_import_workflow.md`, `docs/pdf_agent_workflow.md` und `docs/ios_xcode_setup.md`.
+- Detaildokumentation liegt bei Bedarf in `docs/technical_overview.md`, `docs/test_strategy.md`, `docs/catalog_import_workflow.md`, `docs/pdf_agent_workflow.md`, `docs/ios_xcode_setup.md` und `docs/windows_antivirus_audit.md`.
 
 ## Projektkontext
 
@@ -16,6 +16,7 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Die kanonische Katalogquelle bleibt `assets/catalogs/house_rules_v1/`.
 - Reisebericht-Daten bleiben separat unter `assets/catalogs/reiseberichte/house_rules_v1/`.
 - Projektsprache ist Deutsch; sichtbare UI-Texte sollen echte Umlaute und das Eszett verwenden, wenn technisch moeglich.
+- Der Windows-Release-Audit fuer EXE/MSIX-Artefakte ist in `docs/windows_antivirus_audit.md` beschrieben; der zugehoerige Helfer liegt unter `tool/audit_windows_artifact.ps1`.
 
 ## Pflegehinweis
 
