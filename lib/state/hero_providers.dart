@@ -165,6 +165,7 @@ final heroComputedProvider =
       );
       final attributeMaximums = computeAttributeMaximums(
         effectiveStartAttributes,
+        epicBonus: hero.epicAttributeMaxBonus,
       );
 
       // Inventar-Modifikatoren aus ausgeruesteten Items aggregieren
