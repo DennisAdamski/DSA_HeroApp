@@ -20,6 +20,11 @@ add_executable(${BINARY_NAME} WIN32
 # that need different build settings.
 apply_standard_settings(${BINARY_NAME})
 
+# Suppress LNK4099: Firebase's prebuilt firebase_app.lib bundles libcurl without
+# shipping the corresponding PDB files (libcurl-d.pdb). This is a known upstream
+# limitation; the warning is benign but noisy.
+target_link_options(${BINARY_NAME} PRIVATE /ignore:4099)
+
 # Flutter erwartet den eigentlichen Target-Output unter dem internen Namen.
 # Fuer manuelle Nutzung erzeugen wir zusaetzlich eine zweite EXE mit dem
 # sichtbaren Produktnamen.
