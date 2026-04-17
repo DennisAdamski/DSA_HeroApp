@@ -1,0 +1,65 @@
+wing: flutter_application_1
+rooms:
+- name: android
+  description: Files from android/
+  keywords:
+  - android
+  - android
+- name: design
+  description: Files from assets/
+  keywords:
+  - design
+  - assets
+- name: documentation
+  description: Files from docs/
+  keywords:
+  - documentation
+  - docs
+- name: ios
+  description: Files from ios/
+  keywords:
+  - ios
+  - ios
+- name: lib
+  description: Files from lib/
+  keywords:
+  - lib
+  - lib
+- name: linux
+  description: Files from linux/
+  keywords:
+  - linux
+  - linux
+- name: macos
+  description: Files from macos/
+  keywords:
+  - macos
+  - macos
+- name: testing
+  description: Files from test/
+  keywords:
+  - testing
+  - test
+- name: tool
+  description: Files from tool/
+  keywords:
+  - tool
+  - tool
+- name: web
+  description: Files from web/
+  keywords:
+  - web
+  - web
+- name: windows
+  description: Files from windows/
+  keywords:
+  - windows
+  - windows
+- name: frontend
+  description: Files from ui/
+  keywords:
+  - frontend
+  - ui
+- name: general
+  description: Files that don't fit other rooms
+  keywords: []
