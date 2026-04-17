@@ -46,5 +46,24 @@ void main() {
       final loaded = repo.load();
       expect(loaded.catalogContentPassword, pw);
     });
+
+    test('API-Key und Passwort landen nicht im Hive-Klartext', () async {
+      final repo = await HiveSettingsRepository.create(storagePath: root.path);
+      addTearDown(repo.close);
+
+      await repo.save(const AppSettings(
+        avatarApiConfig: AvatarApiConfig(apiKey: 'sk-geheim'),
+        catalogContentPassword: 'pw-geheim',
+      ));
+
+      // Hive-Box-Datei nach sensiblen Strings durchsuchen
+      final hiveFile = File('${root.path}/app_settings_v1.hive');
+      if (await hiveFile.exists()) {
+        final bytes = await hiveFile.readAsBytes();
+        final content = String.fromCharCodes(bytes.where((b) => b >= 32 && b < 127));
+        expect(content, isNot(contains('sk-geheim')));
+        expect(content, isNot(contains('pw-geheim')));
+      }
+    });
   });
 }
