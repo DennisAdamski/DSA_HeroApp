@@ -11,5 +11,16 @@ void main() {
       final decrypted = decryptCatalogValue(encrypted, password);
       expect(decrypted, plaintext);
     });
+
+    test('Verschlüsselter Wert beginnt mit enc:2:', () {
+      final encrypted = encryptCatalogValue(plaintext, password);
+      expect(encrypted, startsWith('enc:2:'));
+    });
+
+    test('Zwei Verschlüsselungen desselben Texts sind unterschiedlich (zufälliges Salt)', () {
+      final a = encryptCatalogValue(plaintext, password);
+      final b = encryptCatalogValue(plaintext, password);
+      expect(a, isNot(equals(b)));
+    });
   });
 }
