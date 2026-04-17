@@ -23,4 +23,22 @@ void main() {
       expect(a, isNot(equals(b)));
     });
   });
+
+  group('Fehlerfälle', () {
+    test('Falsches Passwort liefert null', () {
+      final encrypted = encryptCatalogValue(plaintext, password);
+      final result = decryptCatalogValue(encrypted, 'falsch!');
+      expect(result, isNull);
+    });
+
+    test('Leerer Plaintext bleibt leer (kein enc:-Präfix)', () {
+      final encrypted = encryptCatalogValue('', password);
+      expect(encrypted, '');
+    });
+
+    test('Unverschlüsselter Wert wird unverändert zurückgegeben', () {
+      const raw = 'kein enc: hier';
+      expect(decryptCatalogValue(raw, password), raw);
+    });
+  });
 }
