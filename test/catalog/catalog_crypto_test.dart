@@ -81,4 +81,24 @@ void main() {
       expect(decryptCatalogValue(v1, 'falsch!'), isNull);
     });
   });
+
+  group('encryptCatalogList / decryptCatalogList', () {
+    test('Roundtrip einer nicht-leeren Liste', () {
+      const list = ['Stufe 1', 'Stufe 2', 'Stufe 3'];
+      final encrypted = encryptCatalogList(list, password);
+      final decrypted = decryptCatalogList(encrypted, password);
+      expect(decrypted, list);
+    });
+
+    test('Leere Liste wird als JSON gespeichert, nicht als enc:-Wert', () {
+      final encrypted = encryptCatalogList([], password);
+      expect(encrypted, isNot(startsWith('enc:')));
+    });
+
+    test('Falsches Passwort liefert null', () {
+      const list = ['a', 'b'];
+      final encrypted = encryptCatalogList(list, password);
+      expect(decryptCatalogList(encrypted, 'falsch'), isNull);
+    });
+  });
 }
