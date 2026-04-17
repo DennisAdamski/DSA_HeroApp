@@ -10,6 +10,7 @@ import 'package:pointycastle/key_derivators/pbkdf2.dart';
 import 'package:pointycastle/macs/hmac.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 
 // Repliziert den v1-Algorithmus aus catalog_crypto.dart für Test-Fixtures.
 String _encryptV1(String plaintext, String password) {
@@ -99,6 +100,58 @@ void main() {
       const list = ['a', 'b'];
       final encrypted = encryptCatalogList(list, password);
       expect(decryptCatalogList(encrypted, 'falsch'), isNull);
+    });
+  });
+
+  group('resolveProtectedValue', () {
+    test('Unverschlüsselter Wert wird direkt zurückgegeben', () {
+      expect(
+        resolveProtectedValue(raw: 'offen', unlocked: false, password: null),
+        'offen',
+      );
+    });
+
+    test('Verschlüsselt + gesperrt → null', () {
+      final enc = encryptCatalogValue('geheim', password);
+      expect(
+        resolveProtectedValue(raw: enc, unlocked: false, password: password),
+        isNull,
+      );
+    });
+
+    test('Verschlüsselt + entsperrt → Klartext', () {
+      final enc = encryptCatalogValue('geheim', password);
+      expect(
+        resolveProtectedValue(raw: enc, unlocked: true, password: password),
+        'geheim',
+      );
+    });
+  });
+
+  group('resolveProtectedList', () {
+    test('Klartextliste wird durchgereicht', () {
+      expect(
+        resolveProtectedList(raw: ['a', 'b'], unlocked: false, password: null),
+        ['a', 'b'],
+      );
+    });
+
+    test('Verschlüsselte Liste + entsperrt → entschlüsselt', () {
+      const list = ['x', 'y'];
+      final enc = encryptCatalogList(list, password);
+      expect(
+        resolveProtectedList(raw: enc, unlocked: true, password: password),
+        list,
+      );
+    });
+
+    test('Verschlüsselte Liste + gesperrt → null', () {
+      const list = ['x', 'y'];
+      final enc = encryptCatalogList(list, password);
+      expect(
+        resolveProtectedList(raw: enc, unlocked: false, password: null),
+        isNull,
+      );
     });
   });
 }
