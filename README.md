@@ -6,14 +6,28 @@ Die App ist auf eine moeglichst umfangreiche Heldenverwaltung ausgelegt: Eigensc
 
 ## Inhalt
 
-- [Projektueberblick](#projektueberblick)
-- [Funktionsumfang](#funktionsumfang)
-- [Technischer Aufbau](#technischer-aufbau)
-- [Schnellstart](#schnellstart)
-- [Wie eine solche App aufgebaut werden kann](#wie-eine-solche-app-aufgebaut-werden-kann)
-- [Projektstruktur](#projektstruktur)
-- [Tests und Qualitaet](#tests-und-qualitaet)
-- [Weiterfuehrende Dokumentation](#weiterfuehrende-dokumentation)
+- [DSA Heldenverwaltung](#dsa-heldenverwaltung)
+  - [Inhalt](#inhalt)
+  - [Projektueberblick](#projektueberblick)
+  - [Funktionsumfang](#funktionsumfang)
+    - [Heldenverwaltung](#heldenverwaltung)
+    - [Speicherung](#speicherung)
+    - [Uebersicht und Stammdaten](#uebersicht-und-stammdaten)
+    - [Talente und Sprachen](#talente-und-sprachen)
+    - [Kampf](#kampf)
+    - [Magie](#magie)
+    - [Workspace und Regeneration](#workspace-und-regeneration)
+    - [Inventar, Chroniken, Kontakte und Abenteuer](#inventar-chroniken-kontakte-und-abenteuer)
+    - [Datenimport und Kataloge](#datenimport-und-kataloge)
+  - [Technischer Aufbau](#technischer-aufbau)
+  - [Schnellstart](#schnellstart)
+  - [Wie eine solche App aufgebaut werden kann](#wie-eine-solche-app-aufgebaut-werden-kann)
+  - [Projektstruktur](#projektstruktur)
+  - [Tests und Qualitaet](#tests-und-qualitaet)
+  - [Windows-Antivirus-Audit](#windows-antivirus-audit)
+  - [Erstellen einer Windows App](#erstellen-einer-windows-app)
+  - [Weiterfuehrende Dokumentation](#weiterfuehrende-dokumentation)
+  - [Hinweise](#hinweise)
 
 ## Projektueberblick
 
@@ -269,6 +283,25 @@ Weitere Referenzen:
 - `assets/catalogs/house_rules_v1/vertrautenmagie_rituale.json` enthaelt das
   passende JSON-Snippet derselben Daten fuer Import, Review und Referenz.
 
+## Windows-Antivirus-Audit
+
+Fuer Release-Pruefungen auf Windows gibt es eine eigene Dokumentation unter
+`docs/windows_antivirus_audit.md`. Sie fasst die statischen Audit-Befunde,
+heuristisch auffaellige, aber legitime Laufzeitfunktionen und den empfohlenen
+Pruefablauf fuer EXE- oder MSIX-Artefakte zusammen.
+
+Fuer die optionale Artefaktpruefung liegt ein PowerShell-Helfer unter
+`tool/audit_windows_artifact.ps1`. Er dokumentiert SHA-256, Dateimetadaten,
+Authenticode-Status und optional einen lokalen Microsoft-Defender-Scan.
+
+## Erstellen einer Windows App
+
+```bash
+flutter pub get
+flutter build windows --release
+flutter pub run msix:create
+```
+
 ## Weiterfuehrende Dokumentation
 
 - `docs/technical_overview.md`
@@ -278,6 +311,7 @@ Weitere Referenzen:
 - `docs/test_strategy.md`
 - `docs/ui_performance_measurements.md`
 - `docs/ios_xcode_setup.md`
+- `docs/windows_antivirus_audit.md`
 
 ## Hinweise
 
