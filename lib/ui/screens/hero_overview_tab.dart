@@ -44,6 +44,7 @@ import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_generation_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/epic_activation_dialog.dart';
 
 part 'hero_overview/hero_avatar_section.dart';
 part 'hero_overview/hero_overview_base_info_section.dart';
@@ -51,6 +52,7 @@ part 'hero_overview/hero_overview_ap_resources_section.dart';
 part 'hero_overview/hero_overview_stats_section.dart';
 part 'hero_overview/hero_overview_form_fields.dart';
 part 'hero_overview/hero_overview_raise_actions.dart';
+part 'hero_overview/hero_overview_epic_section.dart';
 
 const double _pagePadding = 16;
 const double _sectionSpacing = 16;
@@ -484,6 +486,8 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
                 _buildAdvantagesSection(),
                 const SizedBox(height: _sectionSpacing),
                 _buildApSection(hero),
+                const SizedBox(height: _sectionSpacing),
+                _buildEpicSection(hero),
                 if (kShowParserWarnings &&
                     hero.unknownModifierFragments.isNotEmpty) ...[
                   const SizedBox(height: _sectionSpacing),

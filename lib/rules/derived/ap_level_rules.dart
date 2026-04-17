@@ -14,6 +14,24 @@ int computeLevelFromSpentAp(int spentAp) {
   return level < 1 ? 1 : level;
 }
 
+/// AP-Kosten pro epischer Stufe (entspricht dem Abstand zwischen Stufe 21 und 22).
+const int epicApCostPerLevel = 2100;
+
+/// Gibt die aktuelle epische Stufe zurueck (1-basiert), oder 0 wenn nicht episch.
+int computeEpicLevel(bool isEpisch, int apSpent, int epicStartAp) {
+  if (!isEpisch) return 0;
+  final delta = apSpent - epicStartAp;
+  return 1 + (delta < 0 ? 0 : delta ~/ epicApCostPerLevel);
+}
+
+/// Gibt die AP bis zur naechsten epischen Stufe zurueck (0 wenn nicht episch).
+int computeApUntilNextEpicLevel(bool isEpisch, int apSpent, int epicStartAp) {
+  if (!isEpisch) return 0;
+  final delta = apSpent - epicStartAp;
+  if (delta < 0) return epicApCostPerLevel;
+  return epicApCostPerLevel - (delta % epicApCostPerLevel);
+}
+
 /// Berechnet die verbleibenden (verfuegbaren) Abenteuerpunkte.
 ///
 /// Beide Eingaben werden auf 0 begrenzt, damit negative Rohwerte

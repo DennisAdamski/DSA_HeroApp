@@ -26,16 +26,21 @@ Attributes computeEffectiveStartAttributes(
 /// Berechnet die Eigenschaftsmaxima aus den effektiven Starteigenschaften.
 ///
 /// Die Hausregel lautet `ceil(start * 1.5)`.
-Attributes computeAttributeMaximums(Attributes effectiveStartAttributes) {
+/// Epische Charaktere koennen zusaetzlich bis zu 5 Punkte (max. +2 pro Eigenschaft)
+/// dauerhaft auf ihre Obergrenzen erhalten ([epicBonus]).
+Attributes computeAttributeMaximums(
+  Attributes effectiveStartAttributes, {
+  Attributes epicBonus = const Attributes.zero(),
+}) {
   return Attributes(
-    mu: _computeAttributeMaximum(effectiveStartAttributes.mu),
-    kl: _computeAttributeMaximum(effectiveStartAttributes.kl),
-    inn: _computeAttributeMaximum(effectiveStartAttributes.inn),
-    ch: _computeAttributeMaximum(effectiveStartAttributes.ch),
-    ff: _computeAttributeMaximum(effectiveStartAttributes.ff),
-    ge: _computeAttributeMaximum(effectiveStartAttributes.ge),
-    ko: _computeAttributeMaximum(effectiveStartAttributes.ko),
-    kk: _computeAttributeMaximum(effectiveStartAttributes.kk),
+    mu: _computeAttributeMaximum(effectiveStartAttributes.mu) + epicBonus.mu,
+    kl: _computeAttributeMaximum(effectiveStartAttributes.kl) + epicBonus.kl,
+    inn: _computeAttributeMaximum(effectiveStartAttributes.inn) + epicBonus.inn,
+    ch: _computeAttributeMaximum(effectiveStartAttributes.ch) + epicBonus.ch,
+    ff: _computeAttributeMaximum(effectiveStartAttributes.ff) + epicBonus.ff,
+    ge: _computeAttributeMaximum(effectiveStartAttributes.ge) + epicBonus.ge,
+    ko: _computeAttributeMaximum(effectiveStartAttributes.ko) + epicBonus.ko,
+    kk: _computeAttributeMaximum(effectiveStartAttributes.kk) + epicBonus.kk,
   );
 }
 

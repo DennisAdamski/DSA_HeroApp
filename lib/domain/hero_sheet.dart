@@ -31,7 +31,7 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 24,
+    this.schemaVersion = 25,
     required this.name,
     required this.level,
     required this.attributes,
@@ -74,6 +74,9 @@ class HeroSheet {
     this.statModifiers = const <String, List<HeroTalentModifier>>{},
     this.attributeModifiers = const <String, List<HeroTalentModifier>>{},
     this.unknownModifierFragments = const <String>[],
+    this.isEpisch = false,
+    this.epicStartAp = 0,
+    this.epicAttributeMaxBonus = const Attributes.zero(),
   }) : rawStartAttributes = rawStartAttributes ?? startAttributes ?? attributes,
        startAttributes = startAttributes ?? attributes;
 
@@ -140,6 +143,15 @@ class HeroSheet {
 
   final List<String> unknownModifierFragments;
 
+  /// Ob dieser Held den epischen Status erreicht hat.
+  final bool isEpisch;
+
+  /// AP-Stand (apSpent) zum Zeitpunkt der epischen Aktivierung.
+  final int epicStartAp;
+
+  /// Verteilung der 5 epischen Obergrenzen-Bonus-Punkte (0–2 pro Eigenschaft, Summe ≤ 5).
+  final Attributes epicAttributeMaxBonus;
+
   /// Immutable Update fuer gezielte Feldanpassungen.
   HeroSheet copyWith({
     String? id,
@@ -185,6 +197,9 @@ class HeroSheet {
     Map<String, List<HeroTalentModifier>>? statModifiers,
     Map<String, List<HeroTalentModifier>>? attributeModifiers,
     List<String>? unknownModifierFragments,
+    bool? isEpisch,
+    int? epicStartAp,
+    Attributes? epicAttributeMaxBonus,
   }) {
     return HeroSheet(
       id: id ?? this.id,
@@ -237,6 +252,9 @@ class HeroSheet {
       attributeModifiers: attributeModifiers ?? this.attributeModifiers,
       unknownModifierFragments:
           unknownModifierFragments ?? this.unknownModifierFragments,
+      isEpisch: isEpisch ?? this.isEpisch,
+      epicStartAp: epicStartAp ?? this.epicStartAp,
+      epicAttributeMaxBonus: epicAttributeMaxBonus ?? this.epicAttributeMaxBonus,
     );
   }
 
@@ -315,6 +333,9 @@ class HeroSheet {
         ),
       ),
       'unknownModifierFragments': unknownModifierFragments,
+      'isEpisch': isEpisch,
+      'epicStartAp': epicStartAp,
+      'epicAttributeMaxBonus': epicAttributeMaxBonus.toJson(),
     };
   }
 
@@ -514,6 +535,11 @@ class HeroSheet {
       unknownModifierFragments: rawUnknown
           .map((entry) => entry.toString())
           .toList(growable: false),
+      isEpisch: (json['isEpisch'] as bool?) ?? false,
+      epicStartAp: (json['epicStartAp'] as num?)?.toInt() ?? 0,
+      epicAttributeMaxBonus: Attributes.fromJson(
+        (json['epicAttributeMaxBonus'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
     );
   }
 }
