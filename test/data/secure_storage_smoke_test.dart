@@ -58,12 +58,12 @@ void main() {
 
       // Hive-Box-Datei nach sensiblen Strings durchsuchen
       final hiveFile = File('${root.path}/app_settings_v1.hive');
-      if (await hiveFile.exists()) {
-        final bytes = await hiveFile.readAsBytes();
-        final content = String.fromCharCodes(bytes.where((b) => b >= 32 && b < 127));
-        expect(content, isNot(contains('sk-geheim')));
-        expect(content, isNot(contains('pw-geheim')));
-      }
+      expect(await hiveFile.exists(), isTrue,
+          reason: 'app_settings_v1.hive muss nach save() existieren');
+      final bytes = await hiveFile.readAsBytes();
+      final content = String.fromCharCodes(bytes.where((b) => b >= 32 && b < 127));
+      expect(content, isNot(contains('sk-geheim')));
+      expect(content, isNot(contains('pw-geheim')));
     });
   });
 }
