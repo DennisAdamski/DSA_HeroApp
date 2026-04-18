@@ -91,10 +91,18 @@ class _CatalogUnlockDialogState extends State<_CatalogUnlockDialog> {
     final decrypted = decryptCatalogValue(widget.probeValue, input);
     if (decrypted != null) {
       // Passwort korrekt — dauerhaft persistieren.
-      await widget.ref
-          .read(settingsActionsProvider)
-          .setCatalogContentPassword(input);
-      if (mounted) Navigator.of(context).pop(true);
+      try {
+        await widget.ref
+            .read(settingsActionsProvider)
+            .setCatalogContentPassword(input);
+        if (mounted) Navigator.of(context).pop(true);
+      } catch (_) {
+        if (mounted) {
+          setState(() {
+            _errorText = 'Speichern fehlgeschlagen. Bitte erneut versuchen.';
+          });
+        }
+      }
     } else {
       setState(() {
         _errorText = 'Falsches Passwort.';
