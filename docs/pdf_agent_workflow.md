@@ -1,13 +1,15 @@
 # PDF-Agent Workflow
 
 Der PDF-Agent ist ein lokales Repo-Tool fuer die Katalogisierung externer
-DSA-PDFs als zitierbare Wissensbasis. Er aendert keine Runtime-Kataloge direkt,
+DSA-Dokumente (`pdf`, `docx`, `odt`) als zitierbare Wissensbasis. Er aendert
+keine Runtime-Kataloge direkt,
 sondern erzeugt Suchindex, Konflikt-Hinweise, Reports und App-Vorschlaege.
 
 ## Standardquellen
 
 Die Default-Konfiguration liegt in `tool/pdf_catalog_agent/config/sources.json`
-und verarbeitet diese Ordner:
+und verarbeitet diese Ordner fuer Dateien mit den Endungen `pdf`, `docx` und
+`odt`:
 
 - `C:\Users\denni\OneDrive\Rollenspiel\DSA\Regelbuecher`
 - `C:\Users\denni\OneDrive\Rollenspiel\DSA\Buecher\Regionalbuecher`
@@ -39,6 +41,13 @@ gedacht:
 - `exports/*.json`: exportierte Konflikte, Reviews und Vorschlaege
 
 ## Befehle
+
+Falls AES-verschluesselte PDFs in den Quellordnern liegen, zuerst die benoetigte
+Laufzeitabhaengigkeit fuer `pypdf` installieren:
+
+```bash
+python -m pip install --user cryptography>=3.1
+```
 
 Index aufbauen oder aktualisieren:
 
@@ -81,9 +90,9 @@ python tool/pdf_catalog_agent/cli.py review
 - Primaere Extraktion erfolgt ueber `pypdf`.
 - Wenn Text schlecht oder leer extrahierbar ist, markiert der Agent die Datei
   als `ocr_required`, stoppt den Lauf aber nicht.
-- AES-verschluesselte PDFs koennen zusaetzlich das Python-Paket
-  `cryptography>=3.1` benoetigen. Solche Fehler werden im `manifest.json`
-  protokolliert.
+- AES-verschluesselte PDFs werden ueber `pypdf` gelesen, benoetigen dafuer aber
+  das Python-Paket `cryptography>=3.1` in derselben Laufzeit.
+- Fehlt diese Abhaengigkeit, wird der Fehler im `manifest.json` protokolliert.
 - `tesseract` ist als optionaler spaeterer Fallback vorgesehen. Ohne
   installierten OCR-Stack bleibt v1 trotzdem voll benutzbar.
 

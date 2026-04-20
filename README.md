@@ -143,6 +143,9 @@ Technischer Stack:
   erscheint auf anderen Geraeten stattdessen der Platzhalter
 - Konfliktbehandlung beim Import vorhandener Helden
 - Katalogdaten aus `assets/catalogs/house_rules_v1/`
+- Katalogeintraege koennen strukturierte Herkunfts- und Freischaltmetadaten
+  (`ruleMeta`) fuer offizielle Regeln, Hausregeln, Quellbelege und epische
+  Opt-in-Inhalte tragen
 - Settings-Bereich `Katalogverwaltung` zum Einsehen aller Basisdaten sowie zum
   Anlegen, Bearbeiten und Loeschen synchronisierbarer Custom-Eintraege
 - Hero-Exporte koennen benoetigte Custom-Katalogeintraege mitsenden, damit
@@ -253,7 +256,7 @@ assets/
 
 tool/
   Python- und Shell-Helfer fuer Import, Analyse und Wartung
-  pdf_catalog_agent/  Lokaler PDF-Agent fuer Wissensbasis, Suche und Reports
+  pdf_catalog_agent/  Lokaler Dokument-Agent fuer PDF-, DOCX- und ODT-Wissensbasis
 
 docs/
   Technische und prozessuale Projektdokumentation
@@ -269,6 +272,9 @@ flutter test
 python tool/check_screen_loc_budget.py --max-lines 700
 python -m unittest tool.test_pdf_catalog_agent
 ```
+
+Fuer AES-verschluesselte PDFs im `pdf_catalog_agent` wird zusaetzlich
+`cryptography>=3.1` in der aktiven Python-Laufzeit benoetigt.
 
 Zusatzlich vorhanden:
 

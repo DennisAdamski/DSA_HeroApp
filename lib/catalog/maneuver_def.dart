@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
+import 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
 
 /// Definition eines Kampfmanoeuvers aus dem Regelkatalog.
 ///
@@ -22,6 +23,10 @@ class ManeuverDef {
     this.nurFuerTalente = const <String>[],
     this.mussSeparatErlerntWerden = false,
     this.giltFuerTalentTyp = '',
+    this.ruleMeta,
+    this.quelle = '',
+    this.hausregel = false,
+    this.nurEpisch = false,
   });
 
   final String id;
@@ -46,8 +51,13 @@ class ManeuverDef {
 
   /// Talenttyp-Filter fuer [mussSeparatErlerntWerden] (z. B. 'fernkampf').
   final String giltFuerTalentTyp;
+  final RuleMeta? ruleMeta; // Strukturierte Herkunfts- und Freischaltmetadaten
+  final String quelle; // Freitext-Quellreferenz (z. B. 'Wege des Schwerts S. 112')
+  final bool hausregel; // Eintrag stammt aus einer Hausregel
+  final bool nurEpisch; // Nur fuer episch eingestufte Helden verfuegbar
 
   factory ManeuverDef.fromJson(Map<String, dynamic> json) {
+    final ruleMetaJson = readCatalogObject(json, 'ruleMeta');
     return ManeuverDef(
       id: readCatalogString(json, 'id', fallback: ''),
       name: readCatalogString(json, 'name', fallback: ''),
@@ -57,11 +67,7 @@ class ManeuverDef {
       seite: readCatalogString(json, 'seite', fallback: ''),
       erklarung: readCatalogString(json, 'erklarung', fallback: ''),
       erklarungLang: readCatalogString(json, 'erklarung_lang', fallback: ''),
-      voraussetzungen: readCatalogString(
-        json,
-        'voraussetzungen',
-        fallback: '',
-      ),
+      voraussetzungen: readCatalogString(json, 'voraussetzungen', fallback: ''),
       verbreitung: readCatalogString(json, 'verbreitung', fallback: ''),
       kosten: readCatalogString(json, 'kosten', fallback: ''),
       nurFuerTalente: readCatalogStringList(json, 'nur_fuer_talente'),
@@ -75,6 +81,10 @@ class ManeuverDef {
         'gilt_fuer_talent_typ',
         fallback: '',
       ),
+      ruleMeta: ruleMetaJson == null ? null : RuleMeta.fromJson(ruleMetaJson),
+      quelle: readCatalogString(json, 'quelle', fallback: ''),
+      hausregel: readCatalogBool(json, 'hausregel', fallback: false),
+      nurEpisch: readCatalogBool(json, 'nurEpisch', fallback: false),
     );
   }
 
@@ -93,7 +103,12 @@ class ManeuverDef {
       'kosten': kosten,
       if (nurFuerTalente.isNotEmpty) 'nur_fuer_talente': nurFuerTalente,
       if (mussSeparatErlerntWerden) 'muss_separat_erlernt_werden': true,
-      if (giltFuerTalentTyp.isNotEmpty) 'gilt_fuer_talent_typ': giltFuerTalentTyp,
+      if (giltFuerTalentTyp.isNotEmpty)
+        'gilt_fuer_talent_typ': giltFuerTalentTyp,
+      if (ruleMeta != null) 'ruleMeta': ruleMeta!.toJson(),
+      if (quelle.isNotEmpty) 'quelle': quelle,
+      if (hausregel) 'hausregel': true,
+      if (nurEpisch) 'nurEpisch': true,
     };
   }
 }

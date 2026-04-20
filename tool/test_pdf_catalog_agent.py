@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 import sys
+from zipfile import ZipFile
 
 from pypdf import PdfWriter
 
@@ -72,6 +73,54 @@ def _write_blank_pdf(path: Path) -> None:
         writer.write(handle)
 
 
+def _write_docx(path: Path, paragraphs: list[str]) -> None:
+    content_types = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>'''
+    relationships = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>'''
+    paragraph_xml = ''.join(
+        f'<w:p><w:r><w:t>{line}</w:t></w:r></w:p>'
+        for line in paragraphs
+    )
+    document = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+        f'<w:body>{paragraph_xml}</w:body>'
+        '</w:document>'
+    )
+    with ZipFile(path, 'w') as archive:
+        archive.writestr('[Content_Types].xml', content_types)
+        archive.writestr('_rels/.rels', relationships)
+        archive.writestr('word/document.xml', document)
+
+
+def _write_odt(path: Path, paragraphs: list[str]) -> None:
+    manifest = '''<?xml version="1.0" encoding="UTF-8"?>
+<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0">
+  <manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.text"/>
+  <manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>
+</manifest:manifest>'''
+    body = ''.join(f'<text:p>{line}</text:p>' for line in paragraphs)
+    content = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<office:document-content '
+        'xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" '
+        'xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0">'
+        f'<office:body><office:text>{body}</office:text></office:body>'
+        '</office:document-content>'
+    )
+    with ZipFile(path, 'w') as archive:
+        archive.writestr('mimetype', 'application/vnd.oasis.opendocument.text')
+        archive.writestr('META-INF/manifest.xml', manifest)
+        archive.writestr('content.xml', content)
+
+
 class PdfCatalogAgentTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tempdir = tempfile.TemporaryDirectory()
@@ -98,15 +147,15 @@ class PdfCatalogAgentTest(unittest.TestCase):
                 'Heldenbogen und Eigenschaften fuer Helden.',
             ],
         )
-        _write_text_pdf(
-            self.regional_dir / 'regional.pdf',
+        _write_docx(
+            self.regional_dir / 'regional.docx',
             [
                 'Region Gareth',
                 'Kampftraditionen der Stadt und Orte Regionen.',
             ],
         )
-        _write_text_pdf(
-            self.zusatz_dir / 'zusatz.pdf',
+        _write_odt(
+            self.zusatz_dir / 'zusatz.odt',
             [
                 'Magie Akademie Hintergrund',
                 'Kampf und Weltwissen in Zusatzinformationen.',
@@ -223,9 +272,22 @@ class PdfCatalogAgentTest(unittest.TestCase):
             agent.close()
 
         self.assertTrue(results)
-        self.assertTrue(results[0].path.endswith('.pdf'))
+        self.assertIn(Path(results[0].path).suffix, {'.pdf', '.docx', '.odt'})
         self.assertGreaterEqual(results[0].page_start, 1)
         self.assertIn('quelle', results[0].to_dict())
+
+    def test_ingest_supports_docx_and_odt_sources(self) -> None:
+        agent = self._agent()
+        try:
+            manifest = agent.ingest()
+            regional_results = agent.search(query='Gareth', limit=10)
+            zusatz_results = agent.search(query='Akademie', limit=10)
+        finally:
+            agent.close()
+
+        self.assertEqual(manifest['summary']['sources'], 4)
+        self.assertTrue(any(result.path.endswith('.docx') for result in regional_results))
+        self.assertTrue(any(result.path.endswith('.odt') for result in zusatz_results))
 
     def test_propose_requires_evidence_and_exposes_conflicts(self) -> None:
         agent = self._agent()

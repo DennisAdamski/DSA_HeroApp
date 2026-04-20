@@ -161,7 +161,10 @@ class _CatalogEntryEditorScreenState
         CatalogSectionId.maneuvers => _buildManeuverFields(),
         CatalogSectionId.sprachen => _buildSpracheFields(),
         CatalogSectionId.schriften => _buildSchriftFields(),
-        CatalogSectionId.combatSpecialAbilities => const <Widget>[],
+        CatalogSectionId.combatSpecialAbilities ||
+        CatalogSectionId.generalSpecialAbilities ||
+        CatalogSectionId.magicSpecialAbilities ||
+        CatalogSectionId.karmalSpecialAbilities => const <Widget>[],
       },
     );
   }
@@ -575,6 +578,9 @@ class _CatalogEntryEditorScreenState
         _setControllerText('hinweise', _stringValue('hinweise'));
         break;
       case CatalogSectionId.combatSpecialAbilities:
+      case CatalogSectionId.generalSpecialAbilities:
+      case CatalogSectionId.magicSpecialAbilities:
+      case CatalogSectionId.karmalSpecialAbilities:
         break;
     }
   }
@@ -811,7 +817,10 @@ class _CatalogEntryEditorScreenState
         'verbreitung': _readText('verbreitung'),
         'kosten': _readText('kosten'),
       },
-      CatalogSectionId.combatSpecialAbilities => _buildEntryFromJson(),
+      CatalogSectionId.combatSpecialAbilities ||
+      CatalogSectionId.generalSpecialAbilities ||
+      CatalogSectionId.magicSpecialAbilities ||
+      CatalogSectionId.karmalSpecialAbilities => _buildEntryFromJson(),
       CatalogSectionId.sprachen => <String, dynamic>{
         'id': _readText('id'),
         'name': _readText('name'),
