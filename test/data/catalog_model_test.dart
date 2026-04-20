@@ -17,6 +17,17 @@ void main() {
       "group": "Koerper",
       "steigerung": "B",
       "attributes": ["MU", "GE", "KK"],
+      "ruleMeta": {
+        "origin": "official",
+        "sourceKey": "wege_des_helden",
+        "citations": [
+          {
+            "source": "Wege der Helden",
+            "locator": "S. 118",
+            "excerpt": "Talentbeschreibung Klettern"
+          }
+        ]
+      },
       "active": true
     }
   ],
@@ -34,6 +45,15 @@ void main() {
       "wirkung": "Heilt LeP.",
       "source": "Liber Cantiones S. 12",
       "variants": ["Selbst", "Fremdheilung"],
+      "ruleMeta": {
+        "origin": "house_rule",
+        "sourceKey": "epische_stufen",
+        "supersedesEntryId": "spell_balsam_basis",
+        "epic": {
+          "requiresOptIn": true,
+          "eligibleFromLevel": 21
+        }
+      },
       "active": true
     }
   ],
@@ -128,7 +148,16 @@ void main() {
     expect(catalog.maneuvers.length, 1);
     expect(catalog.combatSpecialAbilities.length, 1);
     expect(catalog.talents.first.name, 'Klettern');
+    expect(catalog.talents.first.ruleMeta?.origin, 'official');
+    expect(catalog.talents.first.ruleMeta?.citations.single.locator, 'S. 118');
     expect(catalog.spells.first.targetObject, 'Lebewesen');
+    expect(catalog.spells.first.ruleMeta?.origin, 'house_rule');
+    expect(
+      catalog.spells.first.ruleMeta?.supersedesEntryId,
+      'spell_balsam_basis',
+    );
+    expect(catalog.spells.first.ruleMeta?.epic?.requiresOptIn, true);
+    expect(catalog.spells.first.ruleMeta?.epic?.eligibleFromLevel, 21);
     expect(catalog.weapons.first.breakFactor, '1');
     expect(catalog.weapons.first.weight, '80');
     expect(catalog.weapons.first.length, '95');
@@ -165,6 +194,8 @@ void main() {
     expect(roundtrip.spells.first.targetObject, 'Lebewesen');
     expect(roundtrip.spells.first.source, 'Liber Cantiones S. 12');
     expect(roundtrip.spells.first.variants, ['Selbst', 'Fremdheilung']);
+    expect(roundtrip.spells.first.ruleMeta?.origin, 'house_rule');
+    expect(roundtrip.spells.first.ruleMeta?.epic?.requiresOptIn, true);
     expect(roundtrip.maneuvers.first.verbreitung, '6, fast ueberall');
     expect(roundtrip.combatSpecialAbilities.first.kosten, '200 AP');
   });
@@ -197,6 +228,7 @@ void main() {
     expect(weapon.reloadTime, 0);
     expect(weapon.reloadTimeText, '');
     expect(weapon.rangedDistanceBands, isEmpty);
+    expect(weapon.ruleMeta, isNull);
   });
 
   test('maneuver fields roundtrip correctly', () {
@@ -233,21 +265,24 @@ void main() {
     expect(roundtrip.kosten, '200 AP');
   });
 
-  test('maneuver neue Felder: Rueckwaertskompatibilitaet — Defaults bei fehlendem JSON', () {
-    const raw = '''
+  test(
+    'maneuver neue Felder: Rueckwaertskompatibilitaet — Defaults bei fehlendem JSON',
+    () {
+      const raw = '''
 {
   "id": "man_alt",
   "name": "Altmanoever"
 }
 ''';
 
-    final map = jsonDecode(raw) as Map<String, dynamic>;
-    final maneuver = ManeuverDef.fromJson(map);
+      final map = jsonDecode(raw) as Map<String, dynamic>;
+      final maneuver = ManeuverDef.fromJson(map);
 
-    expect(maneuver.nurFuerTalente, isEmpty);
-    expect(maneuver.mussSeparatErlerntWerden, false);
-    expect(maneuver.giltFuerTalentTyp, '');
-  });
+      expect(maneuver.nurFuerTalente, isEmpty);
+      expect(maneuver.mussSeparatErlerntWerden, false);
+      expect(maneuver.giltFuerTalentTyp, '');
+    },
+  );
 
   test('maneuver neue Felder: Lesen aus JSON', () {
     const raw = '''
@@ -339,5 +374,42 @@ void main() {
       roundtrip.beschreibung,
       'Beschleunigt Orientierung und verbessert Reaktionen.',
     );
+  });
+
+  test('rule meta roundtrip keeps citations and epic gating', () {
+    const raw = '''
+{
+  "id": "man_episch",
+  "name": "Episches Manoever",
+  "ruleMeta": {
+    "origin": "house_rule",
+    "sourceKey": "epische_stufen",
+    "citations": [
+      {
+        "source": "Epische Stufen",
+        "locator": "Abschnitt 3.1",
+        "excerpt": "Epische Kampf-Sonderfertigkeiten"
+      }
+    ],
+    "epic": {
+      "requiresOptIn": true,
+      "eligibleFromLevel": 21
+    }
+  }
+}
+''';
+
+    final map = jsonDecode(raw) as Map<String, dynamic>;
+    final maneuver = ManeuverDef.fromJson(map);
+
+    expect(maneuver.ruleMeta?.origin, 'house_rule');
+    expect(maneuver.ruleMeta?.sourceKey, 'epische_stufen');
+    expect(maneuver.ruleMeta?.citations.single.source, 'Epische Stufen');
+    expect(maneuver.ruleMeta?.epic?.requiresOptIn, true);
+    expect(maneuver.ruleMeta?.epic?.eligibleFromLevel, 21);
+
+    final roundtrip = ManeuverDef.fromJson(maneuver.toJson());
+    expect(roundtrip.ruleMeta?.citations.single.locator, 'Abschnitt 3.1');
+    expect(roundtrip.ruleMeta?.epic?.requiresOptIn, true);
   });
 }

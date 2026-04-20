@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/catalog/combat_special_ability_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/maneuver_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/reisebericht_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/schrift_def.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/sprache_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/talent_def.dart';
@@ -12,7 +13,9 @@ import 'package:dsa_heldenverwaltung/catalog/weapon_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/catalog_constants.dart';
 export 'package:dsa_heldenverwaltung/catalog/combat_special_ability_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/maneuver_def.dart';
+export 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
 export 'package:dsa_heldenverwaltung/catalog/schrift_def.dart';
+export 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/sprache_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/talent_def.dart';
@@ -34,6 +37,9 @@ class RulesCatalog {
     required this.weapons,
     this.maneuvers = const [],
     this.combatSpecialAbilities = const [],
+    this.generalSpecialAbilities = const [],
+    this.magicSpecialAbilities = const [],
+    this.karmalSpecialAbilities = const [],
     this.sprachen = const [],
     this.schriften = const [],
     this.reisebericht = const [],
@@ -48,6 +54,12 @@ class RulesCatalog {
   final List<ManeuverDef> maneuvers; // Kampfmanöver (optional, kann leer sein)
   final List<CombatSpecialAbilityDef>
   combatSpecialAbilities; // Kampf-Sonderfertigkeiten
+  final List<SpecialAbilityDef>
+  generalSpecialAbilities; // Allgemeine Sonderfertigkeiten
+  final List<SpecialAbilityDef>
+  magicSpecialAbilities; // Magische Sonderfertigkeiten
+  final List<SpecialAbilityDef>
+  karmalSpecialAbilities; // Karmale Sonderfertigkeiten
   final List<SpracheDef> sprachen; // Sprachdefinitionen
   final List<SchriftDef> schriften; // Schriftdefinitionen
   final List<ReiseberichtDef> reisebericht; // Reisebericht-Eintraege
@@ -69,6 +81,12 @@ class RulesCatalog {
     final maneuversRaw = (json['maneuvers'] as List?) ?? const [];
     final combatSpecialAbilitiesRaw =
         (json['combatSpecialAbilities'] as List?) ?? const [];
+    final generalSpecialAbilitiesRaw =
+        (json['generalSpecialAbilities'] as List?) ?? const [];
+    final magicSpecialAbilitiesRaw =
+        (json['magicSpecialAbilities'] as List?) ?? const [];
+    final karmalSpecialAbilitiesRaw =
+        (json['karmalSpecialAbilities'] as List?) ?? const [];
     final sprachenRaw = (json['sprachen'] as List?) ?? const [];
     final schriftenRaw = (json['schriften'] as List?) ?? const [];
     final reiseberichtRaw = (json['reisebericht'] as List?) ?? const [];
@@ -99,6 +117,27 @@ class RulesCatalog {
                 CombatSpecialAbilityDef.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
+      generalSpecialAbilities: generalSpecialAbilitiesRaw
+          .whereType<Map>()
+          .map(
+            (entry) =>
+                SpecialAbilityDef.fromJson(entry.cast<String, dynamic>()),
+          )
+          .toList(growable: false),
+      magicSpecialAbilities: magicSpecialAbilitiesRaw
+          .whereType<Map>()
+          .map(
+            (entry) =>
+                SpecialAbilityDef.fromJson(entry.cast<String, dynamic>()),
+          )
+          .toList(growable: false),
+      karmalSpecialAbilities: karmalSpecialAbilitiesRaw
+          .whereType<Map>()
+          .map(
+            (entry) =>
+                SpecialAbilityDef.fromJson(entry.cast<String, dynamic>()),
+          )
+          .toList(growable: false),
       sprachen: sprachenRaw
           .whereType<Map>()
           .map((entry) => SpracheDef.fromJson(entry.cast<String, dynamic>()))
@@ -110,12 +149,10 @@ class RulesCatalog {
       reisebericht: reiseberichtRaw
           .whereType<Map>()
           .map(
-            (entry) =>
-                ReiseberichtDef.fromJson(entry.cast<String, dynamic>()),
+            (entry) => ReiseberichtDef.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
-      metadata:
-          (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
+      metadata: (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
 
@@ -131,6 +168,15 @@ class RulesCatalog {
           .map((entry) => entry.toJson())
           .toList(growable: false),
       'combatSpecialAbilities': combatSpecialAbilities
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
+      'generalSpecialAbilities': generalSpecialAbilities
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
+      'magicSpecialAbilities': magicSpecialAbilities
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
+      'karmalSpecialAbilities': karmalSpecialAbilities
           .map((entry) => entry.toJson())
           .toList(growable: false),
       'sprachen': sprachen
