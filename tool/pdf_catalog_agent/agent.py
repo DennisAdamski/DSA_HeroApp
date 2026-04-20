@@ -7,6 +7,8 @@ import json
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
+from xml.etree import ElementTree
+from zipfile import ZipFile
 
 from pypdf import PdfReader
 
@@ -90,6 +92,10 @@ TOPIC_TEMPLATES: dict[str, dict[str, str]] = {
     },
 }
 
+SUPPORTED_DOCUMENT_SUFFIXES = ('.pdf', '.docx', '.odt')
+DOCX_NAMESPACE = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+ODT_NAMESPACE = {'text': 'urn:oasis:names:tc:opendocument:xmlns:text:1.0'}
+
 
 class PdfCatalogAgent:
     """Stellt das lokale CLI-Backend fuer PDF-Katalogisierung und Recherche bereit."""
@@ -124,18 +130,18 @@ class PdfCatalogAgent:
         for config in self.source_configs:
             if not config.enabled:
                 continue
-            for pdf_path in sorted(config.path.rglob('*.pdf')):
+            for source_path in self._iter_source_documents(config.path):
                 try:
-                    file_hash = self._file_hash(pdf_path)
-                    state = self.db.get_source_state(str(pdf_path))
+                    file_hash = self._file_hash(source_path)
+                    state = self.db.get_source_state(str(source_path))
                     if not force and state is not None and state['file_hash'] == file_hash:
                         skipped += 1
                         continue
-                    ingest_result = self._ingest_pdf(config, pdf_path, file_hash)
+                    ingest_result = self._ingest_document(config, source_path, file_hash)
                     self.db.replace_source(ingest_result, ingested_at=started_at)
                     processed += 1
                 except Exception as exc:  # pragma: no cover - defensive CLI path
-                    errors.append(f'{pdf_path}: {exc}')
+                    errors.append(f'{source_path}: {exc}')
 
         conflicts = self._build_conflicts()
         self.db.replace_conflicts(conflicts, created_at=started_at)
@@ -301,20 +307,19 @@ class PdfCatalogAgent:
         self._write_markdown_report('review.md', self._render_review_markdown(review))
         return review
 
-    def _ingest_pdf(
+    def _ingest_document(
         self,
         config: SourceConfig,
-        pdf_path: Path,
+        source_path: Path,
         file_hash: str,
     ) -> SourceIngestResult:
-        reader = PdfReader(str(pdf_path))
+        page_texts = self._extract_document_pages(source_path)
         page_records: list[PageRecord] = []
         chunk_records: list[ChunkRecord] = []
         extracted_pages = 0
         total_chars = 0
 
-        for page_number, page in enumerate(reader.pages, start=1):
-            raw_text = page.extract_text() or ''
+        for page_number, raw_text in enumerate(page_texts, start=1):
             normalized = normalize_text(raw_text)
             char_count = len(normalized)
             ratio = alpha_ratio(normalized)
@@ -324,7 +329,7 @@ class PdfCatalogAgent:
 
             section_title = guess_section_title(
                 normalized,
-                fallback=f'{pdf_path.stem} S. {page_number}',
+                fallback=f'{source_path.stem} S. {page_number}',
             )
             topics = detect_topics(
                 normalized,
@@ -359,15 +364,18 @@ class PdfCatalogAgent:
                     ),
                 )
 
-        ocr_required = extracted_pages == 0 or total_chars < max(len(reader.pages) * 200, 400)
-        extraction_status = 'ocr_required' if ocr_required else 'complete'
+        ocr_required = (
+            source_path.suffix.lower() == '.pdf'
+            and (extracted_pages == 0 or total_chars < max(len(page_texts) * 200, 400))
+        )
+        extraction_status = 'empty' if total_chars == 0 else 'ocr_required' if ocr_required else 'complete'
         return SourceIngestResult(
             config=config,
-            pdf_path=pdf_path,
+            source_path=source_path,
             file_hash=file_hash,
-            file_size=pdf_path.stat().st_size,
-            modified_time=pdf_path.stat().st_mtime,
-            pages_count=len(reader.pages),
+            file_size=source_path.stat().st_size,
+            modified_time=source_path.stat().st_mtime,
+            pages_count=len(page_texts),
             extracted_pages=extracted_pages,
             total_chars=total_chars,
             extraction_status=extraction_status,
@@ -375,6 +383,66 @@ class PdfCatalogAgent:
             page_records=tuple(page_records),
             chunk_records=tuple(chunk_records),
         )
+
+    def _iter_source_documents(self, source_root: Path) -> list[Path]:
+        """Liefert alle unterstuetzten Dokumente eines Quellordners stabil sortiert."""
+
+        documents = [
+            path
+            for path in source_root.rglob('*')
+            if path.is_file() and path.suffix.lower() in SUPPORTED_DOCUMENT_SUFFIXES
+        ]
+        return sorted(documents)
+
+    def _extract_document_pages(self, source_path: Path) -> list[str]:
+        """Extrahiert Dokumenttext und normalisiert ihn in seitenartige Abschnitte."""
+
+        suffix = source_path.suffix.lower()
+        if suffix == '.pdf':
+            return self._extract_pdf_pages(source_path)
+        if suffix == '.docx':
+            return self._extract_docx_pages(source_path)
+        if suffix == '.odt':
+            return self._extract_odt_pages(source_path)
+        raise ValueError(f'Nicht unterstuetztes Dateiformat: {source_path.suffix}')
+
+    def _extract_pdf_pages(self, source_path: Path) -> list[str]:
+        """Extrahiert alle Textseiten eines PDFs ueber `pypdf`."""
+
+        reader = PdfReader(str(source_path))
+        return [page.extract_text() or '' for page in reader.pages]
+
+    def _extract_docx_pages(self, source_path: Path) -> list[str]:
+        """Extrahiert Abschnitte aus einem DOCX als pseudo-seitenartige Texte."""
+
+        with ZipFile(source_path) as archive:
+            document_xml = archive.read('word/document.xml')
+        root = ElementTree.fromstring(document_xml)
+        paragraphs: list[str] = []
+        for paragraph in root.findall('.//w:p', DOCX_NAMESPACE):
+            fragments = [
+                node.text or ''
+                for node in paragraph.findall('.//w:t', DOCX_NAMESPACE)
+            ]
+            combined = ''.join(fragments).strip()
+            if combined:
+                paragraphs.append(combined)
+        return paragraphs or ['']
+
+    def _extract_odt_pages(self, source_path: Path) -> list[str]:
+        """Extrahiert Abschnitte aus einer ODT-Datei als pseudo-seitenartige Texte."""
+
+        with ZipFile(source_path) as archive:
+            content_xml = archive.read('content.xml')
+        root = ElementTree.fromstring(content_xml)
+        paragraphs: list[str] = []
+        for tag_name in ('h', 'p'):
+            nodes = root.findall(f'.//text:{tag_name}', ODT_NAMESPACE)
+            for node in nodes:
+                combined = ''.join(node.itertext()).strip()
+                if combined:
+                    paragraphs.append(combined)
+        return paragraphs or ['']
 
     def _build_conflicts(self) -> list[ConflictRecord]:
         records: list[ConflictRecord] = []

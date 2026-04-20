@@ -30,7 +30,7 @@ KNOWN_TOPICS = (
 
 @dataclass(frozen=True)
 class SourceConfig:
-    """Beschreibt einen statischen PDF-Quellordner des Agenten."""
+    """Beschreibt einen statischen Quellordner des Agenten."""
 
     id: str
     title: str
@@ -44,10 +44,10 @@ class SourceConfig:
 
 @dataclass(frozen=True)
 class SourceIngestResult:
-    """Haelt die zusammengefassten Extraktionsdaten einer PDF-Datei."""
+    """Haelt die zusammengefassten Extraktionsdaten einer Quelldatei."""
 
     config: SourceConfig
-    pdf_path: Path
+    source_path: Path
     file_hash: str
     file_size: int
     modified_time: float
@@ -62,7 +62,7 @@ class SourceIngestResult:
 
 @dataclass(frozen=True)
 class PageRecord:
-    """Repraesentiert eine extrahierte PDF-Seite."""
+    """Repraesentiert eine extrahierte Seite oder Absatzgruppe."""
 
     page_number: int
     text: str
