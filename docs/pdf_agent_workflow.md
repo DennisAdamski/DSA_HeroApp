@@ -1,13 +1,15 @@
 # PDF-Agent Workflow
 
 Der PDF-Agent ist ein lokales Repo-Tool fuer die Katalogisierung externer
-DSA-PDFs als zitierbare Wissensbasis. Er aendert keine Runtime-Kataloge direkt,
+DSA-Dokumente (`pdf`, `docx`, `odt`) als zitierbare Wissensbasis. Er aendert
+keine Runtime-Kataloge direkt,
 sondern erzeugt Suchindex, Konflikt-Hinweise, Reports und App-Vorschlaege.
 
 ## Standardquellen
 
 Die Default-Konfiguration liegt in `tool/pdf_catalog_agent/config/sources.json`
-und verarbeitet diese Ordner:
+und verarbeitet diese Ordner fuer Dateien mit den Endungen `pdf`, `docx` und
+`odt`:
 
 - `C:\Users\denni\OneDrive\Rollenspiel\DSA\Regelbuecher`
 - `C:\Users\denni\OneDrive\Rollenspiel\DSA\Buecher\Regionalbuecher`
