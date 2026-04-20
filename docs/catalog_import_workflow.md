@@ -62,6 +62,10 @@ Examples:
   - Weapon entries may also include raw Arsenal metadata such as
     `weight`, `length`, `breakFactor`, `price`, `remarks`,
     `reloadTimeText`, `rangedDistanceBands`, and `rangedProjectiles`.
+- Catalog entries for talents, weapons, spells, maneuvers, and combat special
+  abilities may additionally carry optional structured `ruleMeta` data for
+  origin layering (`official` vs. `house_rule`), citations, and epic opt-in
+  gating.
 - `magie.json`:
   - Contains spells only.
   - Spell detail fields from `Liber Cantiones.pdf` are maintained via
@@ -82,6 +86,7 @@ The catalog loader validates the split structure at runtime:
 - Duplicate IDs inside each domain throw `FormatException`.
 - The manifest may resolve files outside its own directory, which is used for
   the separate Reisebericht asset path.
+- Missing `ruleMeta` remains valid and keeps older JSON files fully readable.
 
 Custom catalog loading validates additional invariants:
 

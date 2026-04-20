@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/catalog/weapon_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/catalog_constants.dart';
 export 'package:dsa_heldenverwaltung/catalog/combat_special_ability_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/maneuver_def.dart';
+export 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
 export 'package:dsa_heldenverwaltung/catalog/schrift_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/sprache_def.dart';
@@ -110,12 +111,10 @@ class RulesCatalog {
       reisebericht: reiseberichtRaw
           .whereType<Map>()
           .map(
-            (entry) =>
-                ReiseberichtDef.fromJson(entry.cast<String, dynamic>()),
+            (entry) => ReiseberichtDef.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
-      metadata:
-          (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
+      metadata: (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
 
