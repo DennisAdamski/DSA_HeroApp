@@ -26,7 +26,7 @@ void main() {
 
     expect(find.text('DSA Helden'), findsOneWidget);
     expect(
-      find.text('Noch keine Helden angelegt. Erstelle deinen ersten Helden.'),
+      find.text('Dein Heldenarchiv ist noch leer'),
       findsOneWidget,
     );
     expect(find.text('Neuer Held'), findsOneWidget);
