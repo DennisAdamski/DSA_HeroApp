@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import logging
 import sqlite3
+import sys
+import time
 from typing import Any
 
 from dsa_rules_mcp.config import DEFAULT_SEARCH_SOURCES, McpConfig, ensure_data_dirs, load_config
@@ -13,6 +16,9 @@ from dsa_rules_mcp.tools.get_context import run_get_context
 from dsa_rules_mcp.tools.list_sources import run_list_sources
 from dsa_rules_mcp.tools.refresh_index import run_refresh_index
 from dsa_rules_mcp.tools.search_rules import run_search_rules
+
+
+logger = logging.getLogger("dsa_rules_mcp")
 
 
 class ServerContext:
@@ -69,13 +75,17 @@ def _build_mcp() -> Any:
             limit: Maximale Treffer (1..50).
         """
 
-        return run_search_rules(
-            _context.connection,
-            embedder=_context.embedder,
-            query=query,
-            sources=sources,
-            limit=limit,
-        )
+        t0 = time.perf_counter()
+        try:
+            return run_search_rules(
+                _context.connection,
+                embedder=_context.embedder,
+                query=query,
+                sources=sources,
+                limit=limit,
+            )
+        finally:
+            logger.info("search_rules done in %.2fs (query=%r, limit=%d)", time.perf_counter() - t0, query, limit)
 
     @mcp.tool()
     def get_context(chunk_id: int, window: int = 1) -> dict[str, object]:
@@ -86,21 +96,29 @@ def _build_mcp() -> Any:
             window: Anzahl benachbarter Chunks vor und nach dem Treffer (0..5).
         """
 
-        return run_get_context(
-            _context.connection,
-            chunk_id=chunk_id,
-            window=window,
-        )
+        t0 = time.perf_counter()
+        try:
+            return run_get_context(
+                _context.connection,
+                chunk_id=chunk_id,
+                window=window,
+            )
+        finally:
+            logger.info("get_context done in %.2fs (chunk_id=%d, window=%d)", time.perf_counter() - t0, chunk_id, window)
 
     @mcp.tool()
     def list_sources(category: str | None = None) -> dict[str, object]:
         """Listet indexierte PDFs je Kategorie oder fuer eine bestimmte Kategorie."""
 
-        return run_list_sources(
-            _context.connection,
-            _context.config,
-            category=category,
-        )
+        t0 = time.perf_counter()
+        try:
+            return run_list_sources(
+                _context.connection,
+                _context.config,
+                category=category,
+            )
+        finally:
+            logger.info("list_sources done in %.2fs (category=%r)", time.perf_counter() - t0, category)
 
     @mcp.tool()
     def refresh_index(
@@ -114,13 +132,17 @@ def _build_mcp() -> Any:
             force: True erzwingt komplettes Neu-Indexieren.
         """
 
-        return run_refresh_index(
-            _context.connection,
-            _context.config,
-            embedder=_context.embedder,
-            source=source,
-            force=force,
-        )
+        t0 = time.perf_counter()
+        try:
+            return run_refresh_index(
+                _context.connection,
+                _context.config,
+                embedder=_context.embedder,
+                source=source,
+                force=force,
+            )
+        finally:
+            logger.info("refresh_index done in %.2fs (source=%r, force=%s)", time.perf_counter() - t0, source, force)
 
     @mcp.tool()
     def find_topic(
@@ -136,13 +158,17 @@ def _build_mcp() -> Any:
             limit: Maximale Treffer gesamt (1..50).
         """
 
-        return run_find_topic(
-            _context.connection,
-            embedder=_context.embedder,
-            topic=topic,
-            sources=sources,
-            limit=limit,
-        )
+        t0 = time.perf_counter()
+        try:
+            return run_find_topic(
+                _context.connection,
+                embedder=_context.embedder,
+                topic=topic,
+                sources=sources,
+                limit=limit,
+            )
+        finally:
+            logger.info("find_topic done in %.2fs (topic=%r, limit=%d)", time.perf_counter() - t0, topic, limit)
 
     return mcp
 
@@ -150,7 +176,21 @@ def _build_mcp() -> Any:
 def main() -> None:
     """Startet den stdio-basierten MCP-Server."""
 
+    logging.basicConfig(
+        level=logging.INFO,
+        stream=sys.stderr,
+        format="[dsa-rules] %(asctime)s %(levelname)s %(message)s",
+    )
+
     mcp = _build_mcp()
+
+    try:
+        t0 = time.perf_counter()
+        dim = _context.embedder.dim
+        logger.info("embedder ready in %.2fs (dim=%d)", time.perf_counter() - t0, dim)
+    except Exception as exc:
+        logger.error("embedder warm-up failed: %s (continuing without vector search)", exc, exc_info=True)
+
     mcp.run()
 
 
