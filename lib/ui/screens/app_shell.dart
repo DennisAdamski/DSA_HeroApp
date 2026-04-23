@@ -78,15 +78,20 @@ class DsaAppShell extends ConsumerWidget {
                 top: MediaQuery.of(context).padding.top + 4,
                 left: 8,
                 child: IgnorePointer(
-                  child: Chip(
-                    label: Text(label),
-                    visualDensity: VisualDensity.compact,
-                    backgroundColor:
-                        Theme.of(context).colorScheme.tertiaryContainer,
-                    labelStyle: TextStyle(
-                      color:
-                          Theme.of(context).colorScheme.onTertiaryContainer,
-                      fontSize: 11,
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Chip(
+                      label: Text(label),
+                      visualDensity: VisualDensity.compact,
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.tertiaryContainer,
+                      labelStyle: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onTertiaryContainer,
+                        fontSize: 11,
+                      ),
                     ),
                   ),
                 ),

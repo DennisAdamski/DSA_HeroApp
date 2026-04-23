@@ -94,7 +94,8 @@ Oberflächen:
 - `lib/ui/widgets/codex_split_view.dart` kapselt wiederverwendbare
   Split-Layouts für Master-Detail-Ansichten.
 - `HeroesHomeScreen` nutzt auf iPad-Landscape ein persistentes
-  Archiv-/Vorschau-Layout.
+  Archiv-/Vorschau-Layout und stellt die zuletzt gespeicherte
+  Heldenauswahl beim Start wieder her.
 - `HeroWorkspaceScreen` trennt zwischen kompakter Mobilansicht,
   iPad-Portrait mit Icon-Rail, iPad-Landscape mit permanentem Inspector
   und einem breiten Desktop-Wide-Modus.
@@ -752,6 +753,9 @@ schriften.json         ← Schriften (optional)
 
 Hausregel-Pakete koennen zusaetzlich direkt in der App unter
 `Einstellungen > Hausregeln > Hausregelverwaltung` gepflegt werden.
+Der Settings-Bereich selbst nutzt adaptive Unterseiten: schmale Layouts fuehren
+per Drilldown in einzelne Bereiche, breite Layouts zeigen links die Bereiche
+und rechts die jeweilige Detailseite.
 Der Editor bietet eine strukturierte Manifest-Ansicht, einen JSON-Tab sowie
 Import/Export einzelner Paketdateien; eingebaute Pakete bleiben read-only und
 koennen nur als Vorlage geklont werden.

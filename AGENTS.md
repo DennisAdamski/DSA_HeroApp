@@ -103,6 +103,18 @@ Hinweis zu `flutter clean`:
 - Neue, noch nicht beschriebene Konzepte oder Dateien sind in CLAUDE.md
   (Verzeichnisstruktur / Architektur) nachzufuehren.
 
+## Wissensspeicher mit Mempalace
+- Relevante Entscheidungen, wiederverwendbares Projektwissen, wichtige
+  Debug-Erkenntnisse und bewusst offen gelassene Punkte sind nach
+  abgeschlossenen Aenderungen in Mempalace zu hinterlegen.
+- Vor dem Ablegen ist nach moeglichen Duplikaten zu pruefen, damit keine
+  redundanten Eintraege entstehen.
+- Fuer dieses Repository ist in Mempalace bevorzugt der Wing
+  `flutter_application_1` zu nutzen; der Room soll zum Inhalt passen, z. B.
+  `decisions`, `architecture`, `workflows` oder `bugs`.
+- Wenn vorhanden, soll der Eintrag den zugehoerigen Commit sowie wichtige
+  Abgrenzungen enthalten (z. B. bewusst nicht mitgeaenderte Dateien).
+
 ## Kommentarpflicht fuer Funktionen und Methoden
 - Jede oeffentliche Funktion, Methode oder Klasse muss einen erklaerenden
   Dart-Doc-Kommentar (///) tragen, der Zweck und Verhalten beschreibt.

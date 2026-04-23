@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,11 +26,34 @@ void main() {
     await tester.pump();
 
     expect(find.text('DSA Helden'), findsOneWidget);
-    expect(
-      find.text('Dein Heldenarchiv ist noch leer'),
-      findsOneWidget,
-    );
+    expect(find.text('Dein Heldenarchiv ist noch leer'), findsOneWidget);
     expect(find.text('Neuer Held'), findsOneWidget);
     expect(find.byTooltip('Einstellungen'), findsOneWidget);
+  });
+
+  testWidgets('Debug-Overlay rendert mit Material-Kontext', (
+    WidgetTester tester,
+  ) async {
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = const Size(390, 844);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          dunkelModusProvider.overrideWith((ref) => false),
+          uiVarianteProvider.overrideWith((ref) => UiVariante.codex),
+          debugModusProvider.overrideWith((ref) => true),
+        ],
+        child: const DsaAppShell(
+          home: Scaffold(body: Center(child: Text('Start'))),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Mobil'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }
