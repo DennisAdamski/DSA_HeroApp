@@ -146,6 +146,9 @@ Technischer Stack:
 - Katalogeintraege koennen strukturierte Herkunfts- und Freischaltmetadaten
   (`ruleMeta`) fuer offizielle Regeln, Hausregeln, Quellbelege und epische
   Opt-in-Inhalte tragen
+- Hausregeln werden als global aktivierbare Paket-Manifeste geladen; eingebaute
+  Pakete liegen unter `assets/catalogs/house_rules_v1/packs/`, importierte
+  Pakete im Heldenspeicher unter `house_rule_packs/<version>/<packId>/`
 - Settings-Bereich `Katalogverwaltung` zum Einsehen aller Basisdaten sowie zum
   Anlegen, Bearbeiten und Loeschen synchronisierbarer Custom-Eintraege
 - Hero-Exporte koennen benoetigte Custom-Katalogeintraege mitsenden, damit

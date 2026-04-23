@@ -8,6 +8,7 @@ class RuleMeta {
     this.sourceKey = '',
     this.citations = const <RuleCitation>[],
     this.supersedesEntryId = '',
+    this.ruleTags = const <String>[],
     this.epic,
   });
 
@@ -22,6 +23,9 @@ class RuleMeta {
 
   /// Referenz auf einen offiziell ueberschriebenen Basiseintrag.
   final String supersedesEntryId;
+
+  /// Stabile Regel-Tags fuer Bulk-Patches und Filter.
+  final List<String> ruleTags;
 
   /// Optionale Metadaten fuer episch freischaltbare Inhalte.
   final EpicRuleMeta? epic;
@@ -44,6 +48,7 @@ class RuleMeta {
         'supersedesEntryId',
         fallback: '',
       ),
+      ruleTags: readCatalogStringList(json, 'ruleTags'),
       epic: rawEpic == null ? null : EpicRuleMeta.fromJson(rawEpic),
     );
   }
@@ -58,6 +63,7 @@ class RuleMeta {
             .map((entry) => entry.toJson())
             .toList(growable: false),
       if (supersedesEntryId.isNotEmpty) 'supersedesEntryId': supersedesEntryId,
+      if (ruleTags.isNotEmpty) 'ruleTags': ruleTags,
       if (epic != null) 'epic': epic!.toJson(),
     };
   }

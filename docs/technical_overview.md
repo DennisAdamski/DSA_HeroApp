@@ -747,6 +747,9 @@ schriften.json         ← Schriften (optional)
 **Synchronisierbare Custom-Dateien im Heldenspeicher:**
 `<hero-storage>/custom_catalogs/<version>/<sektion>/<id>.json`
 
+**Synchronisierbare Hausregel-Pakete im Heldenspeicher:**
+`<hero-storage>/house_rule_packs/<version>/<packId>/manifest.json`
+
 Hinweis:
 `manoever.json` bleibt die kanonische Quelle für manöverartige
 Kampfoptionen. `kampf_sonderfertigkeiten.json` enthält nur eigenständige
@@ -761,8 +764,10 @@ Namensdopplungen gegen den Manöverkatalog heraus.
 3. **Kampf-Split validieren**: `talente.json` darf keine `'Kampftalent'`-Einträge enthalten;
    `waffentalente.json` muss ausschließlich `'Kampftalent'`-Einträge enthalten
 4. **IDs validieren**: Jede Sektion muss eindeutige, nicht-leere IDs haben
-5. Basisdaten mit konfliktfreien Custom-Dateien aus dem Heldenspeicher mergen
-6. Zusammengeführten `RulesCatalog` zurückgeben
+5. Eingebaute und importierte Hausregel-Pakete laden
+6. Basisdaten mit aktiven Hausregel-Patches auflösen
+7. Aufgelöste Basisdaten mit konfliktfreien Custom-Dateien aus dem Heldenspeicher mergen
+8. Zusammengeführten `RulesCatalog` zurückgeben
 
 ---
 

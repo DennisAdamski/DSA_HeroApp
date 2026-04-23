@@ -59,11 +59,10 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     }
 
     final entry = _entryForTalent(talent.id);
-    final effektiveKomplexitaet = effectiveTalentLernkomplexitaet(
-      basisKomplexitaet: talent.steigerung,
-      gifted: entry.gifted,
+    final complexityResolution = _resolveTalentComplexity(talent, entry);
+    final learnCost = learnCostFromKomplexitaet(
+      complexityResolution.effectiveKomplexitaet,
     );
-    final learnCost = learnCostFromKomplexitaet(effektiveKomplexitaet);
     if (learnCost == null) {
       if (!mounted) {
         return;
@@ -72,7 +71,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
         SnackBar(
           content: Text(
             'Unbekannte Lernkomplexität für ${talent.name}: '
-            '$effektiveKomplexitaet',
+            '${complexityResolution.effectiveKomplexitaet}',
           ),
         ),
       );
@@ -90,6 +89,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       aktuellerWert: entry.talentValue ?? -1,
       maxWert: maxWert,
       effektiveKomplexitaet: learnCost,
+      komplexitaetsHinweis: complexityResolution.houseRuleHint,
       verfuegbareAp: hero.apAvailable,
       seAnzahl: entry.specialExperiences,
       lehrmeisterVerfuegbar: true,
@@ -167,20 +167,39 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     required bool isEditing,
   }) {
     return <AdaptiveTableColumnSpec>[
-      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2), // Talent-Name
-      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2), // Waffengattung
-      const AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2), // Ersatzweise
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),             // Kompl.
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72),             // BE
+      const AdaptiveTableColumnSpec(
+        minWidth: 160,
+        maxWidth: 240,
+        flex: 2,
+      ), // Talent-Name
+      const AdaptiveTableColumnSpec(
+        minWidth: 180,
+        maxWidth: 320,
+        flex: 2,
+      ), // Waffengattung
+      const AdaptiveTableColumnSpec(
+        minWidth: 160,
+        maxWidth: 240,
+        flex: 2,
+      ), // Ersatzweise
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80), // Kompl.
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72), // BE
       if (isEditing)
-        const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 110)           // TaW (edit: breiter)
+        const AdaptiveTableColumnSpec(
+          minWidth: 80,
+          maxWidth: 110,
+        ) // TaW (edit: breiter)
       else
-        const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),           // TaW
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),             // AT
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90),             // PA
-      const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 100),            // max TaW
-      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 3), // Spezialisierung
-      if (isEditing) const AdaptiveTableColumnSpec.fixed(90),                // Begabung
+        const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90), // TaW
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90), // AT
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90), // PA
+      const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 100), // max TaW
+      const AdaptiveTableColumnSpec(
+        minWidth: 180,
+        maxWidth: 320,
+        flex: 3,
+      ), // Spezialisierung
+      if (isEditing) const AdaptiveTableColumnSpec.fixed(90), // Begabung
     ];
   }
 
@@ -234,6 +253,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                     child: _CombatTalentCatalogTable(
                       allTalents: allCombatTalents,
                       activeTalentIds: localActiveIds,
+                      ruleResolver: _latestCatalogRuleResolver,
                       onToggleTalent: (id, activate) {
                         _toggleCombatTalent(id, activate);
                         setSheetState(() {
@@ -424,10 +444,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
   }) {
     final entry = _entryForTalent(talent.id);
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
-    final effectiveKomplexitaet = effectiveTalentLernkomplexitaet(
-      basisKomplexitaet: talent.steigerung,
-      gifted: entry.gifted,
-    );
+    final complexityResolution = _resolveTalentComplexity(talent, entry);
     final maxTaw = computeCombatTalentMaxValue(
       effectiveAttributes: effectiveAttributes,
       talentType: talent.type,
@@ -438,7 +455,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       _textCell(talent.name, key: ValueKey<String>('talents-row-${talent.id}')),
       _textCell(_fallback(talent.weaponCategory)),
       _textCell(_fallback(talent.alternatives)),
-      _textCell(_fallback(effectiveKomplexitaet)),
+      _complexityCell(complexityResolution),
       _textCell(_fallback(talent.be)),
       _intInputCell(
         talentId: talent.id,
@@ -517,6 +534,42 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       key: key,
       padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
       child: Align(alignment: Alignment.centerLeft, child: Text(text)),
+    );
+  }
+
+  Widget _complexityCell(TalentComplexityResolution resolution, {Key? key}) {
+    final theme = Theme.of(context);
+    final highlighted =
+        resolution.effectiveKomplexitaet != resolution.baseKomplexitaet;
+    final style = highlighted
+        ? TextStyle(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.w600,
+          )
+        : null;
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(resolution.effectiveKomplexitaet, style: style),
+            if (resolution.houseRuleHint != null) ...[
+              const SizedBox(width: 4),
+              Tooltip(
+                message: resolution.houseRuleHint!,
+                child: Icon(
+                  Icons.rule_outlined,
+                  size: 14,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 

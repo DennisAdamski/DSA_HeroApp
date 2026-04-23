@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
@@ -90,6 +91,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
       <String, TextEditingController>{};
 
   HeroSheet? _latestHero;
+  CatalogRuleResolver _latestCatalogRuleResolver = const CatalogRuleResolver();
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   Set<String> _invalidCombatTalentIds = <String>{};
   CombatConfig _draftCombatConfig = const CombatConfig();
@@ -239,6 +241,16 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     });
   }
 
+  TalentComplexityResolution _resolveTalentComplexity(
+    TalentDef talent,
+    HeroTalentEntry entry,
+  ) {
+    return _latestCatalogRuleResolver.resolveTalentComplexity(
+      talent: talent,
+      gifted: entry.gifted,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -267,6 +279,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
         error: (error, stackTrace) =>
             Center(child: Text('Katalog-Fehler: $error')),
         data: (catalog) {
+          _latestCatalogRuleResolver = catalog.ruleResolver;
           return ValueListenableBuilder<int>(
             valueListenable: _viewRevision,
             builder: (context, revision, child) {

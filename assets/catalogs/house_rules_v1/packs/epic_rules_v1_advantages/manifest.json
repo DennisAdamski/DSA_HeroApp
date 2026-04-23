@@ -1,0 +1,8 @@
+{
+  "id": "epic_rules_v1.advantages",
+  "parentPackId": "epic_rules_v1",
+  "title": "Vorteile des epischen Status",
+  "description": "Haupteigenschafts-Boni, 2:1-Erschwernis-Umlage und erhöhte Eigenschaftsobergrenzen.",
+  "priority": 100,
+  "patches": []
+}
