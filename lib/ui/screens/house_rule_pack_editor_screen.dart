@@ -465,31 +465,65 @@ class _HouseRulePackEditorScreenState
   }
 
   void _loadStructuredState(Map<String, dynamic> manifestJson) {
-    final manifest = HouseRulePackManifest.fromJson(manifestJson);
-    _idController.text = manifest.id;
-    _titleController.text = manifest.title;
-    _descriptionController.text = manifest.description;
-    _parentPackIdController.text = manifest.parentPackId;
-    _priorityController.text = manifest.priority == 0
-        ? ''
-        : manifest.priority.toString();
+    _idController.text = manifestJson['id']?.toString() ?? '';
+    _titleController.text = manifestJson['title']?.toString() ?? '';
+    _descriptionController.text = manifestJson['description']?.toString() ?? '';
+    _parentPackIdController.text =
+        manifestJson['parentPackId']?.toString() ?? '';
+    _priorityController.text = manifestJson['priority']?.toString() ?? '';
 
-    for (final patch in _patches) {
-      patch.dispose();
-    }
-    _patches
-      ..clear()
-      ..addAll(
-        manifest.patches.map(
-          (patch) =>
-              _PatchDraftControllers.fromPatch(patch, encoder: _jsonEncoder),
-        ),
+    final rawPatches = manifestJson['patches'];
+    if (rawPatches != null && rawPatches is! List) {
+      throw const FormatException(
+        'Hausregel-Paket erwartet eine JSON-Liste in "patches".',
       );
+    }
+    final patchDrafts = <_PatchDraftControllers>[];
+    for (final rawPatch in rawPatches as List? ?? const <Object?>[]) {
+      if (rawPatch is Map<String, dynamic>) {
+        patchDrafts.add(
+          _PatchDraftControllers.fromDraftJson(rawPatch, encoder: _jsonEncoder),
+        );
+        continue;
+      }
+      if (rawPatch is Map) {
+        patchDrafts.add(
+          _PatchDraftControllers.fromDraftJson(
+            rawPatch.cast<String, dynamic>(),
+            encoder: _jsonEncoder,
+          ),
+        );
+        continue;
+      }
+      throw const FormatException(
+        'Hausregel-Paket darf in "patches" nur JSON-Objekte enthalten.',
+      );
+    }
+
+    final obsoletePatches = <_PatchDraftControllers>[];
+    while (_patches.length > patchDrafts.length) {
+      obsoletePatches.add(_patches.removeLast());
+    }
+    for (var index = 0; index < patchDrafts.length; index++) {
+      final draft = patchDrafts[index];
+      if (index < _patches.length) {
+        _patches[index].overwriteFrom(draft);
+        draft.dispose();
+        continue;
+      }
+      _patches.add(draft);
+    }
+    if (obsoletePatches.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        for (final patch in obsoletePatches) {
+          patch.dispose();
+        }
+      });
+    }
   }
 
   void _syncStructuredToJson() {
-    final manifestJson = _buildStructuredManifestJson();
-    _jsonController.text = _jsonEncoder.convert(manifestJson);
+    _jsonController.text = _jsonEncoder.convert(_buildStructuredManifestJson());
     _errorText = '';
   }
 
@@ -535,7 +569,7 @@ class _HouseRulePackEditorScreenState
       );
     }
 
-    return HouseRulePackManifest.fromJson(manifestJson).toJson();
+    return manifestJson;
   }
 
   Future<void> _runValidation() async {
@@ -628,9 +662,7 @@ class _HouseRulePackEditorScreenState
         _jsonController.text,
         fieldLabel: 'Manifest-JSON',
       );
-      _jsonController.text = _jsonEncoder.convert(
-        HouseRulePackManifest.fromJson(manifestJson).toJson(),
-      );
+      _jsonController.text = _jsonEncoder.convert(manifestJson);
       setState(() => _errorText = '');
     } on FormatException catch (error) {
       setState(() => _errorText = error.message);

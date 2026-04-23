@@ -35,31 +35,55 @@ class _PatchDraftControllers {
     );
   }
 
-  factory _PatchDraftControllers.fromPatch(
-    HouseRulePatch patch, {
+  factory _PatchDraftControllers.fromDraftJson(
+    Map<String, dynamic> json, {
     required JsonEncoder encoder,
   }) {
-    final selector = patch.selector;
-    final hasTags = selector?.hasTags.join('\n') ?? '';
+    final sectionName = (json['section'] as String? ?? '').trim();
+    final section = houseRuleSectionIdFromString(sectionName);
+    if (section == null) {
+      throw FormatException(
+        'Patch erwartet eine gültige section, erhielt "$sectionName".',
+      );
+    }
+
+    final selectorJson = json['selector'];
+    if (selectorJson != null && selectorJson is! Map) {
+      throw const FormatException('Patch selector erwartet ein JSON-Objekt.');
+    }
+    final selector = selectorJson is Map
+        ? HouseRuleSelector.fromJson(selectorJson.cast<String, dynamic>())
+        : null;
+    final setFields = _coerceDraftJsonObject(
+      json['setFields'],
+      fieldLabel: 'setFields',
+    );
+    final addEntries = _coerceDraftJsonObjectList(
+      json['addEntries'],
+      fieldLabel: 'addEntries',
+    );
+
     return _PatchDraftControllers(
-      section: patch.section,
+      section: section,
       priorityController: TextEditingController(
-        text: patch.priority?.toString() ?? '',
+        text: _coerceDraftText(json['priority']),
       ),
       entryIdController: TextEditingController(text: selector?.entryId ?? ''),
-      hasTagsController: TextEditingController(text: hasTags),
+      hasTagsController: TextEditingController(
+        text: selector?.hasTags.join('\n') ?? '',
+      ),
       fieldEqualsController: TextEditingController(
         text: encoder.convert(
           selector?.fieldEquals ?? const <String, dynamic>{},
         ),
       ),
       setFieldsController: TextEditingController(
-        text: encoder.convert(patch.setFields),
+        text: encoder.convert(setFields),
       ),
       addEntriesController: TextEditingController(
-        text: encoder.convert(patch.addEntries),
+        text: encoder.convert(addEntries),
       ),
-      deactivateEntries: patch.deactivateEntries,
+      deactivateEntries: json['deactivateEntries'] == true,
     );
   }
 
@@ -80,6 +104,17 @@ class _PatchDraftControllers {
       ),
       deactivateEntries: deactivateEntries,
     );
+  }
+
+  void overwriteFrom(_PatchDraftControllers other) {
+    section = other.section;
+    priorityController.text = other.priorityController.text;
+    entryIdController.text = other.entryIdController.text;
+    hasTagsController.text = other.hasTagsController.text;
+    fieldEqualsController.text = other.fieldEqualsController.text;
+    setFieldsController.text = other.setFieldsController.text;
+    addEntriesController.text = other.addEntriesController.text;
+    deactivateEntries = other.deactivateEntries;
   }
 
   Map<String, dynamic> buildJson() {
@@ -135,7 +170,7 @@ class _PatchDraftControllers {
       patchJson['priority'] = priority;
     }
 
-    return HouseRulePatch.fromJson(patchJson).toJson();
+    return patchJson;
   }
 
   void dispose() {
@@ -185,6 +220,54 @@ class _PatchDraftControllers {
     }
     final result = <Map<String, dynamic>>[];
     for (final entry in decoded) {
+      if (entry is Map<String, dynamic>) {
+        result.add(entry);
+        continue;
+      }
+      if (entry is Map) {
+        result.add(entry.cast<String, dynamic>());
+        continue;
+      }
+      throw FormatException('$fieldLabel darf nur JSON-Objekte enthalten.');
+    }
+    return result;
+  }
+
+  static String _coerceDraftText(Object? value) {
+    if (value == null) {
+      return '';
+    }
+    return value.toString();
+  }
+
+  static Map<String, dynamic> _coerceDraftJsonObject(
+    Object? value, {
+    required String fieldLabel,
+  }) {
+    if (value == null) {
+      return const <String, dynamic>{};
+    }
+    if (value is Map<String, dynamic>) {
+      return value;
+    }
+    if (value is Map) {
+      return value.cast<String, dynamic>();
+    }
+    throw FormatException('$fieldLabel erwartet ein JSON-Objekt.');
+  }
+
+  static List<Map<String, dynamic>> _coerceDraftJsonObjectList(
+    Object? value, {
+    required String fieldLabel,
+  }) {
+    if (value == null) {
+      return const <Map<String, dynamic>>[];
+    }
+    if (value is! List) {
+      throw FormatException('$fieldLabel erwartet eine JSON-Liste.');
+    }
+    final result = <Map<String, dynamic>>[];
+    for (final entry in value) {
       if (entry is Map<String, dynamic>) {
         result.add(entry);
         continue;
