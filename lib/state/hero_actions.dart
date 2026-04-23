@@ -87,7 +87,7 @@ class HeroActions {
         currentAu: 0,
       ),
     );
-    _ref.read(selectedHeroIdProvider.notifier).state = id;
+    await _ref.read(selectedHeroSelectionActionsProvider).selectHero(id);
     return id;
   }
 
@@ -151,7 +151,7 @@ class HeroActions {
     await repo.deleteHero(heroId);
     final selected = _ref.read(selectedHeroIdProvider);
     if (selected == heroId) {
-      _ref.read(selectedHeroIdProvider.notifier).state = null;
+      await _ref.read(selectedHeroSelectionActionsProvider).clearSelection();
     }
   }
 
@@ -322,7 +322,7 @@ class HeroActions {
       }
     }
 
-    _ref.read(selectedHeroIdProvider.notifier).state = heroId;
+    await _ref.read(selectedHeroSelectionActionsProvider).selectHero(heroId);
     return heroId;
   }
 

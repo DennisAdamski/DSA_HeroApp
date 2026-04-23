@@ -26,6 +26,23 @@ void main() {
     expect(updated.heroStoragePath, isNull);
   });
 
+  test('last selected hero id round-trips through json', () {
+    const settings = AppSettings(lastSelectedHeroId: 'hero-alrik');
+
+    final json = settings.toJson();
+    final restored = AppSettings.fromJson(json);
+
+    expect(restored.lastSelectedHeroId, 'hero-alrik');
+  });
+
+  test('copyWith can clear last selected hero id explicitly', () {
+    const settings = AppSettings(lastSelectedHeroId: 'hero-alrik');
+
+    final updated = settings.copyWith(lastSelectedHeroId: null);
+
+    expect(updated.lastSelectedHeroId, isNull);
+  });
+
   test('disabled house rule pack ids round-trip through json', () {
     const settings = AppSettings(
       disabledHouseRulePackIds: {'epic_rules_v1', 'epic_rules_v1.advantages'},

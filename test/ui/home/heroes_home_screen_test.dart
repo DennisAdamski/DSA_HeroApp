@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
+import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
@@ -25,6 +30,21 @@ void main() {
       ge: 12,
       ko: 14,
       kk: 13,
+    ),
+  );
+  final secondHero = HeroSheet(
+    id: 'alrik',
+    name: 'Alrik',
+    level: 3,
+    attributes: const Attributes(
+      mu: 12,
+      kl: 14,
+      inn: 12,
+      ch: 13,
+      ff: 11,
+      ge: 11,
+      ko: 10,
+      kk: 10,
     ),
   );
 
@@ -99,8 +119,58 @@ void main() {
 
     expect(find.text('Heldenarchiv'), findsOneWidget);
     expect(find.text('Held öffnen'), findsOneWidget);
-    expect(find.byKey(const ValueKey<String>('workspace-back-button')), findsNothing);
+    expect(
+      find.byKey(const ValueKey<String>('workspace-back-button')),
+      findsNothing,
+    );
   });
+
+  testWidgets(
+    'ipad landscape restores the last selected hero into the preview',
+    (tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(1194, 834);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final repo = FakeRepository(
+        heroes: [hero, secondHero],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+          'alrik': const HeroState(
+            currentLep: 8,
+            currentAsp: 4,
+            currentKap: 0,
+            currentAu: 7,
+          ),
+        },
+      );
+      final settingsRepository = _FakeSettingsRepository(
+        initialSettings: const AppSettings(lastSelectedHeroId: 'alrik'),
+      );
+      addTearDown(settingsRepository.close);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            heroRepositoryProvider.overrideWithValue(repo),
+            settingsRepositoryProvider.overrideWithValue(settingsRepository),
+          ],
+          child: const MaterialApp(home: HeroesHomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Alrik'), findsNWidgets(2));
+      expect(find.text('Rondra'), findsOneWidget);
+      expect(find.byType(FilledButton), findsWidgets);
+    },
+  );
 
   testWidgets('create dialog captures raw start attributes and creates hero', (
     tester,
@@ -193,3 +263,33 @@ void _noopBool(bool value) {}
 void _noopDiscard(WorkspaceAsyncAction action) {}
 
 void _noopEditActions(WorkspaceTabEditActions actions) {}
+
+class _FakeSettingsRepository implements HiveSettingsRepository {
+  _FakeSettingsRepository({required AppSettings initialSettings})
+    : _settings = initialSettings;
+
+  final StreamController<AppSettings> _controller =
+      StreamController<AppSettings>.broadcast();
+  AppSettings _settings;
+
+  @override
+  Future<void> close() async {
+    await _controller.close();
+  }
+
+  @override
+  AppSettings load() {
+    return _settings;
+  }
+
+  @override
+  Future<void> save(AppSettings settings) async {
+    _settings = settings;
+    _controller.add(settings);
+  }
+
+  @override
+  Stream<AppSettings> watch() {
+    return _controller.stream;
+  }
+}
