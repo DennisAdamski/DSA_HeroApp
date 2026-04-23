@@ -1,0 +1,210 @@
+{
+  "id": "regelwerk_ueberarbeitung_v1.combat",
+  "parentPackId": "regelwerk_ueberarbeitung_v1",
+  "title": "Kampf",
+  "description": "Nah- und Fernkampf-Sonderfertigkeiten sowie optionale Manöver aus Kapitel 2.",
+  "priority": 100,
+  "patches": [
+    {
+      "section": "kampf_sonderfertigkeiten",
+      "addEntries": [
+        {
+          "id": "ksf_tierkampf",
+          "name": "Tierkampf",
+          "gruppe": "kampf",
+          "typ": "sonderfertigkeit",
+          "seite": "12",
+          "beschreibung": "Erlaubt es, in Tierform Raufen oder Ringen statt der ZBA-Werte für AT und PA zu verwenden.",
+          "erklarung_lang": "Anders als man aufgrund des Namens annehmen könnte, geht diese SF nicht um den Kampf mit Tieren, sondern als Tier. Diese SF ermöglicht, dass man Raufen oder Ringen zur Berechnung der AT/PA-Werte in Tierform verwenden kann anstatt die Werte aus dem Zoo Botanica Aventurica zu nutzen.",
+          "voraussetzungen": "KL > IN oder KL 15 oder Selbstbeherrschung 15",
+          "verbreitung": "3, vor allem bei Geweihten mit kämpferischen Tierformen, Elfenkämpfern und Gjalskerländer Tierkriegern",
+          "kosten": "200 AP, halbe Kosten für Elfen, kostenlos für Tierkrieger",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 12",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 12",
+                "excerpt": "Tierkampf"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ksf_zweihaendiger_kampf_i",
+          "name": "Zweihändiger Kampf I",
+          "gruppe": "kampf",
+          "typ": "sonderfertigkeit",
+          "seite": "12",
+          "beschreibung": "Lässt große Gegner mit Zweihandwaffen parieren und wandelt deren Schaden zu TP(A) ab.",
+          "erklarung_lang": "Verbessert alle Zweihandwaffen dahingehend, dass mit ihnen von nun an auch Attacken von großen Gegnern pariert werden können, wodurch deren TP aber nur zu TP(A) abgemildert werden. Große Gegner, die ohne Waffe attackieren, erhalten außerdem wie üblich den halben Waffenschaden. Nach Meistermaßgabe kann auch ein erschwerter Bruchtest für die parierende Zweihandwaffe anfallen.",
+          "voraussetzungen": "KK 12, SF Linkhand",
+          "verbreitung": "5, vor allem bei Zwergen, Rittern, Stammes- und Ordenskriegern",
+          "kosten": "200 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 12",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 12",
+                "excerpt": "Zweihändiger Kampf I"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ksf_zweihaendiger_kampf_ii",
+          "name": "Zweihändiger Kampf II",
+          "gruppe": "kampf",
+          "typ": "sonderfertigkeit",
+          "seite": "12",
+          "beschreibung": "Erleichtert Gegenhalten mit Zweihandwaffen und verschärft Distanz- und Niederwerfen-Effekte.",
+          "erklarung_lang": "Zweihandwaffen mit den DK NS, S, SP oder P haben keine 4 Punkte Erschwernis durch Gegenhalten mehr, wenn sie einen Gegner auflaufen lassen. Versucht ein Gegner die Distanzklasse durch höhere Initiative zu Beginn des Kampfes anzupassen, so benötigt er 6 statt 4 INI mehr pro Distanzklasse. Zweihandwaffen mit DK N erschweren die KK-Probe gegen Niederwerfen 50 % mehr durch freiwillige Zusatzansagen.",
+          "voraussetzungen": "GE 13, KK 15, SF Zweihändiger Kampf I",
+          "verbreitung": "4, vor allem bei Zwergen, Rittern, Stammes- und Ordenskriegern",
+          "kosten": "200 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 12",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 12",
+                "excerpt": "Zweihändiger Kampf II"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ksf_zweihaendiger_kampf_iii",
+          "name": "Zweihändiger Kampf III",
+          "gruppe": "kampf",
+          "typ": "sonderfertigkeit",
+          "seite": "12",
+          "beschreibung": "Erweitert Hammerschlag und Befreiungsschlag und verleiht Sonderregeln für Speere, Stäbe und Kettenstäbe.",
+          "erklarung_lang": "Die letzte Aufwertung des zweihändigen Kampfes verbessert den Hammerschlag, der von nun an gegen sehr große Ziele eingesetzt werden kann, was den Schaden jedoch nur verdoppelt und nicht verdreifacht. Der Befreiungsschlag ist nun gegen bis zu 4 Ziele in Reichweite möglich. Speere dürfen bei gezielten Stichen Wuchtschläge ansagen und Festnageln bringt 50 % höhere Erschwernisse für Feinde mit sich. Stäbe und Kettenstäbe erschweren bei einem Treffer die nächste Aktion des Gegners um 4 Punkte, nicht gegen sehr große Ziele.",
+          "voraussetzungen": "KK 18, GE 14, SF Zweihändiger Kampf II",
+          "verbreitung": "3, vor allem bei Zwergen, Rittern, Stammes- und Ordenskriegern",
+          "kosten": "300 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 12",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 12",
+                "excerpt": "Zweihändiger Kampf III"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ksf_handmagazin",
+          "name": "Handmagazin",
+          "gruppe": "kampf",
+          "typ": "sonderfertigkeit",
+          "seite": "14",
+          "beschreibung": "Hält mehrere Geschosse in der Nebenhand bereit und verkürzt so Ladezeiten deutlich.",
+          "erklarung_lang": "Geübte Fernkämpfer sind in der Lage, mehrere Projektile in der Nebenhand bereit zu halten. Dadurch verkürzt sich die Ladezeit jedes Bogens auf 0, solange der Schütze noch Pfeile auf der Hand hat. Bei Armbrüsten mit Ladehilfen verkürzt sich die Ladezeit nur um 2 Aktionen nach Einrechnung anderer Verkürzungen und nicht kumulativ mit Magazinen. Es können maximal FF/5 Projektile mit dieser Technik gehalten werden. Neue Projektile auf die Hand zu nehmen dauert Ladezeit Aktionen bei Bögen und 2 Aktionen bei Armbrüsten.",
+          "voraussetzungen": "FF 18, SF Meisterschütze, SF Schnellladen",
+          "kosten": "300 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 14",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 14",
+                "excerpt": "Handmagazin"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ksf_haeuserkaempfer",
+          "name": "Häuserkämpfer",
+          "gruppe": "kampf",
+          "typ": "sonderfertigkeit",
+          "seite": "14",
+          "beschreibung": "Verbessert Deckung in Stellungskämpfen, wenn die vorhandene Deckung ohnehin stark erschwert.",
+          "erklarung_lang": "Ein Schütze erhält 2 Punkte zusätzliche Deckung, wenn diese zumindest 4 Punkte Erschwernis für einen potentiell angreifenden Fernkämpfer bedeutet.",
+          "voraussetzungen": "SF Ausweichen II, IN 15",
+          "kosten": "200 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 14",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 14",
+                "excerpt": "Häuserkämpfer"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ksf_nahkampfschuetze",
+          "name": "Nahkampfschütze",
+          "gruppe": "kampf",
+          "typ": "sonderfertigkeit",
+          "seite": "14",
+          "beschreibung": "Erlaubt Schüsse nach freiem Ausweichen ohne Orientieren und verbessert verschleierte Wurfmesserangriffe mit Schild.",
+          "erklarung_lang": "Ein Schütze darf nach einem freien Ausweichen schießen, ohne sich vorher orientieren zu müssen. Er darf dann jedoch nur Schnellschüsse bis Reichweite nah abfeuern. Außerdem darf das von ihm attackierte Ziel keinen Passierschlag gegen ihn führen. Für Charaktere mit Wurfmessern gilt zusätzlich, dass sie einen Schild in der anderen Hand nutzen können, um ihren Angriff zu verschleiern und die Reaktionszeit des Ziels zu verkürzen. Je größer der Schild, desto besser funktioniert dieser Angriff; der Effekt erfordert die SF Schildkampf I.",
+          "voraussetzungen": "GE 16, SF Scharfschütze",
+          "kosten": "250 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 14",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 14",
+                "excerpt": "Nahkampfschütze"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ksf_pfeilhagel",
+          "name": "Pfeilhagel",
+          "gruppe": "kampf",
+          "typ": "sonderfertigkeit",
+          "seite": "14",
+          "beschreibung": "Bogenäquivalent zum Eisenhagel: feuert alle bereitgehaltenen Pfeile innerhalb einer KR ab.",
+          "erklarung_lang": "Das Äquivalent zum Eisenhagel für Bögen: Alle Pfeile, die sich auf der Hand befinden, werden innerhalb einer KR abgefeuert. Jeder Pfeil nach dem ersten ist jedoch um je 3 Punkte zusätzlich zum vorherigen erschwert und um 4 INI-Phasen versetzt. Kein einziger Pfeil kann dabei mit TP+ angesagt werden, aber die Pfeile können auf mehrere Ziele verteilt werden. Es dauert Ladezeit des Bogens, um neue Pfeile auf die Hand zu nehmen.",
+          "voraussetzungen": "FF 20, SF Handmagazin, SF Waffenmeister (beliebiger Bogen)",
+          "kosten": "400 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 14",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 14",
+                "excerpt": "Pfeilhagel"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

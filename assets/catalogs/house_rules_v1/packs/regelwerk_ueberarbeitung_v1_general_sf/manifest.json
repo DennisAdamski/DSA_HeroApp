@@ -1,0 +1,160 @@
+{
+  "id": "regelwerk_ueberarbeitung_v1.general_sf",
+  "parentPackId": "regelwerk_ueberarbeitung_v1",
+  "title": "Allgemeine Sonderfertigkeiten",
+  "description": "Neue allgemeine Sonderfertigkeiten und Empathie-Erweiterungen aus Kapitel 2.",
+  "priority": 100,
+  "patches": [
+    {
+      "section": "allgemeine_sonderfertigkeiten",
+      "addEntries": [
+        {
+          "id": "asf_berufsgeheimnis_perpetuatoren",
+          "name": "Berufsgeheimnis Perpetuatoren",
+          "gruppe": "allgemein",
+          "typ": "sonderfertigkeit",
+          "seite": "5",
+          "beschreibung": "Erschließt alchimistische Perpetuatoren als schwächeres, dauerhaftes Gegenstück zum Infinitum.",
+          "erklarung_lang": "Nicht nur die Magie birgt viele Geheimnisse, auch in der Alchimie gibt es verschollene Anwendungen, die Faszinierendes bewerkstelligen können. Eine davon sind Perpetuatoren. Dabei handelt es sich einfach gesprochen um eine Art alchimistischen Infinitum, auch wenn dieser Vergleich irreführend ist. Ein Perpetuator besteht aus einer alchimistischen Verbindung zwischen einer Flüssigkeit und einem Feststoff, von denen zumindest eines magisch aufgeladen ist. Die Suspension bildet einen Käfig für ein alchimistisches Produkt, wodurch dieses in einer geschwächten Form permanent anhält und je nach Qualität passende Vorteile, Sonderfertigkeiten oder Talentboni verleihen kann.",
+          "voraussetzungen": "Alchimie 21, Rechnen 15",
+          "verbreitung": "1, weitgehend unbekannt; eventuell in den Archiven von Al'Anfa oder Methumis rekonstruierbar",
+          "kosten": "400 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 5-9",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.general_sf",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 5-9",
+                "excerpt": "Berufsgeheimnis Perpetuatoren"
+              }
+            ]
+          }
+        },
+        {
+          "id": "asf_furchtlos",
+          "name": "Furchtlos",
+          "gruppe": "allgemein",
+          "typ": "sonderfertigkeit",
+          "seite": "9",
+          "beschreibung": "Macht immun gegen Schreckgestalt I und stärkt die MR gegen angstverursachende Magie.",
+          "erklarung_lang": "Wer sich mit Aventuriens Scheußlichkeiten angelegt hat, kann so abgehärtet und routiniert werden, dass er selbst extrem gefährlichen Feinden gegenüber stehen kann, ohne zu wanken: Er ist immun gegen Schreckgestalt I, und Schreckgestalt II gilt für ihn wie normalerweise Schreckgestalt I. Seine MR ist gegen Zauber, die Furcht erzeugen sollen, um 3 erhöht.",
+          "voraussetzungen": "MU 19, mindestens drei Gegnern mit Schreckgestalt I begegnet, keine Ängste",
+          "verbreitung": "2, durch Praxis",
+          "kosten": "250 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 9",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.general_sf",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 9",
+                "excerpt": "Furchtlos"
+              }
+            ]
+          }
+        },
+        {
+          "id": "asf_gefuehle_aufnehmen",
+          "name": "Gefühle Aufnehmen",
+          "gruppe": "allgemein",
+          "typ": "sonderfertigkeit",
+          "seite": "17",
+          "beschreibung": "Ein Empath kann Schlechte Eigenschaften einer Person zeitweise selbst tragen.",
+          "erklarung_lang": "Ermöglicht es, Schlechte Eigenschaften bis zum TaW in Empathie an GP einer Person aufzunehmen und sie an ihrer statt zu tragen, solange es notwendig ist. Diese SF erfordert zwar theoretisch keine Selbstbeherrschung, es ist jedoch empfohlen, einen sehr hohen TaW in diesem Talent zu haben. Zauberdauer: 1 SR pro 1 GP. Wirkungsdauer: so lange der Empath es will.",
+          "voraussetzungen": "CH 18, Überreden oder Überzeugen 21, Gabe Empathie 7",
+          "kosten": "300 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 17",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.general_sf",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 17",
+                "excerpt": "Gefühle Aufnehmen"
+              }
+            ]
+          }
+        },
+        {
+          "id": "asf_grosse_seelenheilung",
+          "name": "Große Seelenheilung",
+          "gruppe": "allgemein",
+          "typ": "sonderfertigkeit",
+          "seite": "17-18",
+          "beschreibung": "Heilt selbst tiefe seelische Schäden und stellt Sirkaryan wieder her.",
+          "erklarung_lang": "Von nun an kann geheilt werden, was sonst nicht mit Worten und Einfühlung zu heilen ist: Man kann innerhalb von 3 Stunden Behandlung und unter Einsatz von 2W6 Punkten Erschöpfung einen Punkt Sirkaryan wiederherstellen.",
+          "voraussetzungen": "CH 19, Heilkunde Seele 21, Gabe Empathie 8",
+          "kosten": "300 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 17-18",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.general_sf",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 17-18",
+                "excerpt": "Große Seelenheilung"
+              }
+            ]
+          }
+        },
+        {
+          "id": "asf_gefuehle_vermitteln",
+          "name": "Gefühle vermitteln",
+          "gruppe": "allgemein",
+          "typ": "sonderfertigkeit",
+          "seite": "18",
+          "beschreibung": "Überflutet ein Ziel mit störenden Gedanken und erschwert so Konzentration, Manöver und Zauber.",
+          "erklarung_lang": "Der Empath flutet die Wahrnehmung seines Gegenübers mit unnötigen, nebensächlichen Gedanken und stört so seine Konzentration. Manöver im Kampf sind doppelt so stark erschwert wie normal, Zauber mit einer Dauer von über einer Aktion und alle auf Klugheit abzulegenden Talente sind um die TaP erschwert. Hält bis zu TaP KR an und kostet 1W6 Ausdauer pro KR. Zauberdauer 3 Aktionen.",
+          "voraussetzungen": "MU 18, Überreden oder Überzeugen 21, Gabe Empathie 10",
+          "kosten": "400 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 18",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.general_sf",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 18",
+                "excerpt": "Gefühle vermitteln"
+              }
+            ]
+          }
+        },
+        {
+          "id": "asf_naehe",
+          "name": "Nähe",
+          "gruppe": "allgemein",
+          "typ": "sonderfertigkeit",
+          "seite": "18",
+          "beschreibung": "Löst beim Ziel einen emotionalen Gefühlsausbruch aus, der dieses bloßstellen kann.",
+          "erklarung_lang": "Ist die emotionale, nicht-sexuelle Variante des Levthans Feuer und sollte ebenso behutsam eingesetzt werden: Es wird ein Gefühlsausbruch beim Ziel ausgelöst, was zur unpassenden Zeit den Betroffenen bloßstellen kann und was dieser dann entsprechend, je nach Charakter, vergelten könnte. Das Gedächtnis des Opfers wird nämlich nicht gelöscht.",
+          "voraussetzungen": "CH 20, Überzeugen 21, Vorteil Empathie",
+          "kosten": "250 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 18",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.general_sf",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 18",
+                "excerpt": "Nähe"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

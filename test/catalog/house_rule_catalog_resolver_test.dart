@@ -24,6 +24,14 @@ void main() {
             'active': true,
           },
           <String, dynamic>{
+            'id': 'tal_akrobatik',
+            'name': 'Akrobatik',
+            'group': 'Koerperliche Talente',
+            'steigerung': 'D',
+            'attributes': <String>['MU', 'GE', 'KK'],
+            'active': true,
+          },
+          <String, dynamic>{
             'id': 'tal_sagen',
             'name': 'Sagen & Legenden',
             'group': 'Wissenstalente',
@@ -201,6 +209,62 @@ void main() {
       ),
       hasLength(1),
     );
+  });
+
+  test('regelwerk talents pack patches Akrobatik to A* with provenance', () {
+    const packCatalog = HouseRulePackCatalog(
+      packs: <HouseRulePackManifest>[
+        HouseRulePackManifest(
+          id: 'regelwerk_ueberarbeitung_v1',
+          title: 'Regelwerk-Überarbeitung',
+          description: 'Root',
+          patches: <HouseRulePatch>[],
+        ),
+        HouseRulePackManifest(
+          id: 'regelwerk_ueberarbeitung_v1.talents_learning',
+          parentPackId: 'regelwerk_ueberarbeitung_v1',
+          title: 'Körperliche Talente',
+          description: 'Kapitel 5',
+          patches: <HouseRulePatch>[
+            HouseRulePatch(
+              section: CatalogSectionId.talents,
+              selector: HouseRuleSelector(entryId: 'tal_akrobatik'),
+              setFields: <String, dynamic>{'steigerung': 'A*'},
+              addEntries: <Map<String, dynamic>>[],
+              deactivateEntries: false,
+            ),
+          ],
+        ),
+      ],
+    );
+
+    final result = HouseRuleCatalogResolver.resolve(
+      baseData: buildBaseData(),
+      packCatalog: packCatalog,
+      activePackIds: const <String>{
+        'regelwerk_ueberarbeitung_v1',
+        'regelwerk_ueberarbeitung_v1.talents_learning',
+      },
+    );
+
+    final akrobatik = findEntry(
+      result.resolvedBaseData,
+      CatalogSectionId.talents,
+      'tal_akrobatik',
+    );
+    expect(akrobatik['steigerung'], 'A*');
+
+    final resolver = CatalogRuleResolver(
+      provenanceIndex: result.provenanceIndex,
+    );
+    final resolution = resolver.resolveTalentComplexity(
+      talent: TalentDef.fromJson(akrobatik),
+      gifted: true,
+    );
+    expect(resolution.baseKomplexitaet, 'D');
+    expect(resolution.houseRuleKomplexitaet, 'A*');
+    expect(resolution.effectiveKomplexitaet, 'A*');
+    expect(resolution.packId, 'regelwerk_ueberarbeitung_v1.talents_learning');
   });
 
   test(

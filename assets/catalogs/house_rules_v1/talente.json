@@ -165,7 +165,7 @@
         "id":  "tal_athletik",
         "name":  "Athletik",
         "group":  "Körperliche Talente",
-        "steigerung":  "C",
+        "steigerung":  "D",
         "attributes":  [
                            "Gewandheit",
                            "Konstitution",
@@ -175,9 +175,19 @@
         "be":  "x2",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_klettern",
@@ -193,9 +203,19 @@
         "be":  "x2",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_koerperbeherrschung",
@@ -211,15 +231,25 @@
         "be":  "x2",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_schleichen",
         "name":  "Schleichen",
         "group":  "Körperliche Talente",
-        "steigerung":  "C",
+        "steigerung":  "D",
         "attributes":  [
                            "Mut",
                            "Intuition",
@@ -229,9 +259,19 @@
         "be":  "x1",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_schwimmen",
@@ -247,9 +287,19 @@
         "be":  "x2",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_selbstbeherrschung",
@@ -265,15 +315,25 @@
         "be":  "-",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_sich_verstecken",
         "name":  "Sich Verstecken",
         "group":  "Körperliche Talente",
-        "steigerung":  "C",
+        "steigerung":  "D",
         "attributes":  [
                            "Mut",
                            "Intuition",
@@ -283,15 +343,25 @@
         "be":  "-2",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_singen",
         "name":  "Singen",
         "group":  "Körperliche Talente",
-        "steigerung":  "C",
+        "steigerung":  "D",
         "attributes":  [
                            "Intuition",
                            "Charisma",
@@ -301,9 +371,19 @@
         "be":  "-3",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_sinnesschaerfe",
@@ -319,15 +399,25 @@
         "be":  "spez.",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_tanzen",
         "name":  "Tanzen",
         "group":  "Körperliche Talente",
-        "steigerung":  "B",
+        "steigerung":  "D",
         "attributes":  [
                            "Charisma",
                            "Gewandheit",
@@ -337,15 +427,25 @@
         "be":  "x2",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_zechen",
         "name":  "Zechen",
         "group":  "Körperliche Talente",
-        "steigerung":  "B",
+        "steigerung":  "D",
         "attributes":  [
                            "Intuition",
                            "Konstitution",
@@ -355,15 +455,25 @@
         "be":  "-",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_akrobatik",
         "name":  "Akrobatik",
         "group":  "Körperliche Talente",
-        "steigerung":  "A",
+        "steigerung":  "D",
         "attributes":  [
                            "Mut",
                            "Gewandheit",
@@ -373,9 +483,19 @@
         "be":  "x2",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_fliegen",
@@ -391,15 +511,25 @@
         "be":  "x1",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_gaukeleien",
         "name":  "Gaukeleien",
         "group":  "Körperliche Talente",
-        "steigerung":  "C",
+        "steigerung":  "D",
         "attributes":  [
                            "Mut",
                            "Charisma",
@@ -409,9 +539,19 @@
         "be":  "x2",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_reiten",
@@ -427,15 +567,25 @@
         "be":  "-2",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_skifahren",
         "name":  "Skifahren",
         "group":  "Körperliche Talente",
-        "steigerung":  "B",
+        "steigerung":  "D",
         "attributes":  [
                            "Gewandheit",
                            "Gewandheit",
@@ -445,15 +595,25 @@
         "be":  "-2",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_stimmen_imitieren",
         "name":  "Stimmen Imitieren",
         "group":  "Körperliche Talente",
-        "steigerung":  "C",
+        "steigerung":  "D",
         "attributes":  [
                            "Klugheit",
                            "Intuition",
@@ -463,15 +623,25 @@
         "be":  "-4",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_taschendiebstahl",
         "name":  "Taschendiebstahl",
         "group":  "Körperliche Talente",
-        "steigerung":  "C",
+        "steigerung":  "D",
         "attributes":  [
                            "Mut",
                            "Intuition",
@@ -481,9 +651,19 @@
         "be":  "x2",
         "weaponCategory":  "",
         "alternatives":  "",
-        "source":  "ListeTalente.xlsx:Tabelle1",
+        "source":  "Wege der Helden S. 316",
         "description":  "",
-        "active":  true
+        "active":  true,
+        "ruleMeta":  {
+                         "origin":  "official",
+                         "citations":  [
+                                           {
+                                               "source":  "Wege der Helden.pdf",
+                                               "locator":  "S. 316",
+                                               "excerpt":  "Körperliche Talente"
+                                           }
+                                       ]
+                     }
     },
     {
         "id":  "tal_goetter_kulte",

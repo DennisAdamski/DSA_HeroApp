@@ -1,0 +1,64 @@
+{
+  "id": "regelwerk_ueberarbeitung_v1.talents_learning",
+  "parentPackId": "regelwerk_ueberarbeitung_v1",
+  "title": "Körperliche Talente",
+  "description": "Überarbeitet die Lernkomplexitäten körperlicher Talente gemäß Kapitel 5 des Hausregel-PDFs.",
+  "priority": 100,
+  "patches": [
+    {
+      "section": "talents",
+      "selector": { "entryId": "tal_akrobatik" },
+      "setFields": { "steigerung": "A*" }
+    },
+    {
+      "section": "talents",
+      "selector": { "entryId": "tal_athletik" },
+      "setFields": { "steigerung": "C" }
+    },
+    {
+      "section": "talents",
+      "selector": { "entryId": "tal_gaukeleien" },
+      "setFields": { "steigerung": "C" }
+    },
+    {
+      "section": "talents",
+      "selector": { "entryId": "tal_schleichen" },
+      "setFields": { "steigerung": "C" }
+    },
+    {
+      "section": "talents",
+      "selector": { "entryId": "tal_sich_verstecken" },
+      "setFields": { "steigerung": "C" }
+    },
+    {
+      "section": "talents",
+      "selector": { "entryId": "tal_skifahren" },
+      "setFields": { "steigerung": "B" }
+    },
+    {
+      "section": "talents",
+      "selector": { "entryId": "tal_singen" },
+      "setFields": { "steigerung": "C" }
+    },
+    {
+      "section": "talents",
+      "selector": { "entryId": "tal_stimmen_imitieren" },
+      "setFields": { "steigerung": "C" }
+    },
+    {
+      "section": "talents",
+      "selector": { "entryId": "tal_tanzen" },
+      "setFields": { "steigerung": "B" }
+    },
+    {
+      "section": "talents",
+      "selector": { "entryId": "tal_taschendiebstahl" },
+      "setFields": { "steigerung": "C" }
+    },
+    {
+      "section": "talents",
+      "selector": { "entryId": "tal_zechen" },
+      "setFields": { "steigerung": "B" }
+    }
+  ]
+}

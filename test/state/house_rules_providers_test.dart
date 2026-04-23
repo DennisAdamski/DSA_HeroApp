@@ -33,12 +33,27 @@ void main() {
     description: 'Child',
     patches: <HouseRulePatch>[],
   );
+  const regelwerkMaster = HouseRulePackManifest(
+    id: 'regelwerk_ueberarbeitung_v1',
+    title: 'Regelwerk-Überarbeitung',
+    description: 'Root',
+    patches: <HouseRulePatch>[],
+  );
+  const regelwerkTalents = HouseRulePackManifest(
+    id: 'regelwerk_ueberarbeitung_v1.talents_learning',
+    parentPackId: 'regelwerk_ueberarbeitung_v1',
+    title: 'Körperliche Talente',
+    description: 'Child',
+    patches: <HouseRulePatch>[],
+  );
   const packCatalog = HouseRulePackCatalog(
     packs: <HouseRulePackManifest>[
       epicMaster,
       epicAdvantages,
       epicDisadvantages,
       epicCombat,
+      regelwerkMaster,
+      regelwerkTalents,
     ],
   );
 
@@ -70,7 +85,8 @@ void main() {
     final container = buildContainer(const {'epic_rules_v1'});
     await container.read(houseRulePackCatalogProvider.future);
     final active = container.read(activeHouseRulePackIdsProvider);
-    expect(active, isEmpty);
+    expect(active, contains('regelwerk_ueberarbeitung_v1'));
+    expect(active, contains('regelwerk_ueberarbeitung_v1.talents_learning'));
     expect(container.read(isHouseRuleActiveProvider('epic_rules_v1')), isFalse);
     expect(
       container.read(isHouseRuleActiveProvider('epic_rules_v1.combat_sf')),
@@ -78,6 +94,24 @@ void main() {
     );
     expect(
       container.read(isHouseRuleActiveProvider('epic_rules_v1.advantages')),
+      isFalse,
+    );
+  });
+
+  test('disabling one root does not affect another root hierarchy', () async {
+    final container = buildContainer(const {'regelwerk_ueberarbeitung_v1'});
+    await container.read(houseRulePackCatalogProvider.future);
+    expect(container.read(isHouseRuleActiveProvider('epic_rules_v1')), isTrue);
+    expect(
+      container.read(isHouseRuleActiveProvider('regelwerk_ueberarbeitung_v1')),
+      isFalse,
+    );
+    expect(
+      container.read(
+        isHouseRuleActiveProvider(
+          'regelwerk_ueberarbeitung_v1.talents_learning',
+        ),
+      ),
       isFalse,
     );
   });
