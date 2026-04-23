@@ -56,6 +56,9 @@ Examples:
 - House rule packs are loaded between the official base catalog and
   `custom_catalogs`.
 - Built-in packs come from `assets/catalogs/house_rules_v1/packs/`.
+- Every built-in `manifest.json` must also be listed explicitly in
+  `pubspec.yaml`, otherwise Flutter will not bundle it and the settings screen
+  will not offer the pack for activation.
 - Imported packs are discovered in
   `<hero-storage>/house_rule_packs/<version>/<packId>/manifest.json`.
 - Packs may override fields, add entries or deactivate entries; custom catalogs

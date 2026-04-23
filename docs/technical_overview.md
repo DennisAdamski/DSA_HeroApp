@@ -772,6 +772,9 @@ Namensdopplungen gegen den Manöverkatalog heraus.
 ### Eingebaute Hausregel-Pakete
 
 - Eingebaute Packs liegen unter `assets/catalogs/house_rules_v1/packs/<packId>/manifest.json`.
+- Jedes eingebaute `manifest.json` muss zusaetzlich in `pubspec.yaml` als
+  Flutter-Asset registriert sein; sonst wird das Paket nicht gebuendelt und
+  taucht im Settings-Screen nicht als aktivierbare Hausregel auf.
 - Reine Opt-in-Einträge koennen direkt im Basiskatalog liegen, solange ihr
   `ruleMeta.sourceKey` auf eine bekannte Pack-ID zeigt. Der Resolver blendet
   solche Eintraege aus, sobald das zugehoerige Pack deaktiviert ist.
