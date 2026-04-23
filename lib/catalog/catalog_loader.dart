@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
 
+import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
+import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
@@ -29,6 +31,61 @@ class CatalogLoader {
   /// Laedt die Rohdaten des Standard-Katalogs aus [defaultAssetPath].
   Future<CatalogSourceData> loadDefaultSourceData() {
     return loadSourceData(defaultAssetPath);
+  }
+
+  /// Laedt alle eingebauten Hausregel-Pakete fuer eine Katalogversion.
+  Future<HouseRulePackSourceSnapshot> loadBuiltInHouseRulePacks({
+    required String catalogVersion,
+  }) async {
+    final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+    final assets = manifest.listAssets();
+    final prefix = 'assets/catalogs/$catalogVersion/packs/';
+    final manifestPaths =
+        assets
+            .where(
+              (assetPath) =>
+                  assetPath.startsWith(prefix) &&
+                  assetPath.endsWith('/manifest.json'),
+            )
+            .toList(growable: false)
+          ..sort();
+
+    final packs = <HouseRulePackManifest>[];
+    final issues = <HouseRulePackIssue>[];
+    final seenIds = <String>{};
+
+    for (final assetPath in manifestPaths) {
+      try {
+        final json = await _loadJsonObject(assetPath);
+        final manifest = HouseRulePackManifest.fromJson(
+          json,
+          filePath: assetPath,
+          isBuiltIn: true,
+        );
+        if (!seenIds.add(manifest.id)) {
+          issues.add(
+            HouseRulePackIssue(
+              packId: manifest.id,
+              packTitle: manifest.title,
+              filePath: assetPath,
+              message:
+                  'Doppelte eingebaute Paket-ID; das spaetere Manifest wird ignoriert.',
+            ),
+          );
+          continue;
+        }
+        packs.add(manifest);
+      } on FormatException catch (error) {
+        issues.add(
+          HouseRulePackIssue(filePath: assetPath, message: error.message),
+        );
+      }
+    }
+
+    return HouseRulePackSourceSnapshot(
+      packs: List<HouseRulePackManifest>.unmodifiable(packs),
+      issues: List<HouseRulePackIssue>.unmodifiable(issues),
+    );
   }
 
   /// Laedt einen Katalog aus der angegebenen Manifest-Datei.
@@ -111,6 +168,7 @@ class CatalogLoader {
   RulesCatalog buildCatalogFromSourceData(
     CatalogSourceData sourceData, {
     String assetPathForErrors = 'catalog',
+    CatalogRuleResolver ruleResolver = const CatalogRuleResolver(),
   }) {
     final talents = sourceData.entriesFor(CatalogSectionId.talents);
     final combatTalents = sourceData.entriesFor(CatalogSectionId.combatTalents);
@@ -240,6 +298,7 @@ class CatalogLoader {
       reisebericht: sourceData.reisebericht
           .map((entry) => ReiseberichtDef.fromJson(entry))
           .toList(growable: false),
+      ruleResolver: ruleResolver,
     );
   }
 }

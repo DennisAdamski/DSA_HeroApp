@@ -47,12 +47,14 @@ class _TalentCatalogTable extends StatefulWidget {
     required this.allTalents,
     required this.activeTalentIds,
     required this.lockedTalentIds,
+    required this.ruleResolver,
     required this.onToggleTalent,
   });
 
   final List<TalentDef> allTalents;
   final Set<String> activeTalentIds;
   final Set<String> lockedTalentIds;
+  final CatalogRuleResolver ruleResolver;
   final void Function(String talentId, bool activate) onToggleTalent;
 
   @override
@@ -170,6 +172,11 @@ class _TalentCatalogTableState extends State<_TalentCatalogTable> {
                             final isLocked =
                                 isActive &&
                                 widget.lockedTalentIds.contains(talent.id);
+                            final complexityResolution = widget.ruleResolver
+                                .resolveTalentComplexity(
+                                  talent: talent,
+                                  gifted: false,
+                                );
                             return DataRow(
                               cells: [
                                 DataCell(
@@ -228,9 +235,28 @@ class _TalentCatalogTableState extends State<_TalentCatalogTable> {
                                   ),
                                 ),
                                 DataCell(
-                                  Text(
-                                    talent.steigerung,
-                                    style: theme.textTheme.bodySmall,
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        complexityResolution
+                                            .effectiveKomplexitaet,
+                                        style: theme.textTheme.bodySmall,
+                                      ),
+                                      if (complexityResolution.houseRuleHint !=
+                                          null) ...[
+                                        const SizedBox(width: 4),
+                                        Tooltip(
+                                          message: complexityResolution
+                                              .houseRuleHint!,
+                                          child: Icon(
+                                            Icons.rule_outlined,
+                                            size: 14,
+                                            color: theme.colorScheme.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ),
                                 DataCell(

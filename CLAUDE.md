@@ -14,6 +14,10 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Die App nutzt lokale Persistenz, katalogbasierte Inhalte und getrennte Regellogik.
 - Regellogik gehoert nach `lib/rules/derived/`.
 - Die kanonische Katalogquelle bleibt `assets/catalogs/house_rules_v1/`.
+- Aktivierbare Hausregel-Pakete liegen eingebaut unter
+  `assets/catalogs/house_rules_v1/packs/<packId>/manifest.json`.
+- Importierte Hausregel-Pakete liegen im Heldenspeicher unter
+  `house_rule_packs/<version>/<packId>/manifest.json`.
 - Reisebericht-Daten bleiben separat unter `assets/catalogs/reiseberichte/house_rules_v1/`.
 - Projektsprache ist Deutsch; sichtbare UI-Texte sollen echte Umlaute und das Eszett verwenden, wenn technisch moeglich.
 - Der Windows-Release-Audit fuer EXE/MSIX-Artefakte ist in `docs/windows_antivirus_audit.md` beschrieben; der zugehoerige Helfer liegt unter `tool/audit_windows_artifact.ps1`.

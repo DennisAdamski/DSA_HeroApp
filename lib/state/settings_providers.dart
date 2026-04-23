@@ -4,7 +4,8 @@ import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
-import 'package:dsa_heldenverwaltung/domain/avatar_config.dart' show AvatarApiConfig;
+import 'package:dsa_heldenverwaltung/domain/avatar_config.dart'
+    show AvatarApiConfig;
 export 'package:dsa_heldenverwaltung/domain/app_settings.dart' show UiVariante;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 
@@ -48,14 +49,14 @@ final dunkelModusProvider = Provider<bool>((ref) {
 
 /// Schnellzugriff auf die aktive UI-Variante.
 final uiVarianteProvider = Provider<UiVariante>((ref) {
-  return ref.watch(appSettingsProvider).valueOrNull?.uiVariante
-      ?? UiVariante.codex;
+  return ref.watch(appSettingsProvider).valueOrNull?.uiVariante ??
+      UiVariante.codex;
 });
 
 /// Ob die Kernwerte-Rail im Workspace zugeklappt ist.
 final summaryRailCollapsedProvider = Provider<bool>((ref) {
-  return ref.watch(appSettingsProvider).valueOrNull?.summaryRailCollapsed
-      ?? false;
+  return ref.watch(appSettingsProvider).valueOrNull?.summaryRailCollapsed ??
+      false;
 });
 
 /// true wenn ein gueltiges Entschluesselungspasswort gespeichert ist.
@@ -68,7 +69,10 @@ final catalogContentVisibleProvider = Provider<bool>((ref) {
 /// Aktuelle Beschreibung des wirksamen Heldenspeicherorts.
 final heroStorageLocationProvider = FutureProvider<HeroStorageLocation>((ref) {
   final storagePaths = ref.watch(appStoragePathsProvider);
-  final configuredPath = ref.watch(appSettingsProvider).valueOrNull?.heroStoragePath;
+  final configuredPath = ref
+      .watch(appSettingsProvider)
+      .valueOrNull
+      ?.heroStoragePath;
   return storagePaths.describeHeroStorageLocation(
     configuredPath: configuredPath,
   );
@@ -132,8 +136,9 @@ class SettingsActions {
     final trimmed = password?.trim();
     await _repo.save(
       current.copyWith(
-        catalogContentPassword:
-            (trimmed == null || trimmed.isEmpty) ? null : trimmed,
+        catalogContentPassword: (trimmed == null || trimmed.isEmpty)
+            ? null
+            : trimmed,
       ),
     );
   }
@@ -143,6 +148,25 @@ class SettingsActions {
     final current = _repo.load();
     await _repo.save(
       current.copyWith(summaryRailCollapsed: !current.summaryRailCollapsed),
+    );
+  }
+
+  /// Aktiviert oder deaktiviert ein Hausregel-Paket per Pack-ID.
+  ///
+  /// Semantik: Die persistierte Menge ist Opt-out (leer = alles aktiv).
+  /// `enabled = true` entfernt die ID, `false` fuegt sie hinzu.
+  Future<void> setHouseRuleEnabled(String packId, bool enabled) async {
+    final current = _repo.load();
+    final next = Set<String>.of(current.disabledHouseRulePackIds);
+    if (enabled) {
+      if (!next.remove(packId)) return;
+    } else {
+      if (!next.add(packId)) return;
+    }
+    await _repo.save(
+      current.copyWith(
+        disabledHouseRulePackIds: Set<String>.unmodifiable(next),
+      ),
     );
   }
 }

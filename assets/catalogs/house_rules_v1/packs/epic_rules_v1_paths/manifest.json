@@ -1,0 +1,8 @@
+{
+  "id": "epic_rules_v1.paths",
+  "parentPackId": "epic_rules_v1",
+  "title": "Pfade der Erleuchteten",
+  "description": "Göttliche Pfade für Geweihte nach dem epischen Aufstieg.",
+  "priority": 100,
+  "patches": []
+}

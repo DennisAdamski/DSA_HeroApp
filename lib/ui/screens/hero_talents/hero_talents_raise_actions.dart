@@ -65,11 +65,10 @@ extension _HeroTalentsRaiseActions on _HeroTalentTableTabState {
 
     final entry = _entryForTalent(talentId);
     final maxWert = _maxWertFuerTalent(talent, entry);
-    final effektiveKomplexitaet = effectiveTalentLernkomplexitaet(
-      basisKomplexitaet: talent.steigerung,
-      gifted: entry.gifted,
+    final complexityResolution = _resolveTalentComplexity(talent, entry);
+    final learnCost = learnCostFromKomplexitaet(
+      complexityResolution.effectiveKomplexitaet,
     );
-    final learnCost = learnCostFromKomplexitaet(effektiveKomplexitaet);
     if (learnCost == null) {
       if (!mounted) {
         return;
@@ -77,7 +76,8 @@ extension _HeroTalentsRaiseActions on _HeroTalentTableTabState {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Unbekannte Lernkomplexität für ${talent.name}: $effektiveKomplexitaet',
+            'Unbekannte Lernkomplexität für ${talent.name}: '
+            '${complexityResolution.effectiveKomplexitaet}',
           ),
         ),
       );
@@ -90,6 +90,7 @@ extension _HeroTalentsRaiseActions on _HeroTalentTableTabState {
       aktuellerWert: entry.talentValue ?? -1,
       maxWert: maxWert,
       effektiveKomplexitaet: learnCost,
+      komplexitaetsHinweis: complexityResolution.houseRuleHint,
       verfuegbareAp: hero.apAvailable,
       seAnzahl: entry.specialExperiences,
       lehrmeisterVerfuegbar: true,

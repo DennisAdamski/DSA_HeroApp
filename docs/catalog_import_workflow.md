@@ -8,6 +8,7 @@ files in the active hero storage.
 Base assets:
 
 - `assets/catalogs/house_rules_v1/manifest.json`
+- `assets/catalogs/house_rules_v1/packs/<packId>/manifest.json`
 - `assets/catalogs/house_rules_v1/talente.json`
 - `assets/catalogs/house_rules_v1/waffentalente.json`
 - `assets/catalogs/house_rules_v1/waffen.json`
@@ -24,6 +25,7 @@ Separate runtime catalog:
 Synchronizable custom entries in hero storage:
 
 - `<hero-storage>/custom_catalogs/house_rules_v1/<sektion>/<id>.json`
+- `<hero-storage>/house_rule_packs/house_rules_v1/<packId>/manifest.json`
 
 Examples:
 
@@ -48,6 +50,17 @@ Examples:
 - Each custom entry is stored as its own JSON file to reduce sync conflicts.
 - Changes from external sync tools are picked up after app restart or
   `Katalog neu laden`.
+
+### House rule packs
+
+- House rule packs are loaded between the official base catalog and
+  `custom_catalogs`.
+- Built-in packs come from `assets/catalogs/house_rules_v1/packs/`.
+- Imported packs are discovered in
+  `<hero-storage>/house_rule_packs/<version>/<packId>/manifest.json`.
+- Packs may override fields, add entries or deactivate entries; custom catalogs
+  remain additive and must not replace IDs that are already present after pack
+  resolution.
 
 ## Split rules
 

@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_tools.dart';
+import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_management_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_unlock_dialog.dart';
@@ -50,8 +53,222 @@ class SettingsScreen extends ConsumerWidget {
           const Divider(height: 1),
           const _CatalogContentPasswordSection(),
           const Divider(height: 1),
+          const _HouseRulesSection(),
+          const Divider(height: 1),
           const _AvatarApiSection(),
         ],
+      ),
+    );
+  }
+}
+
+/// Abschnitt zum Ein- und Ausschalten registrierter Hausregel-Gruppen.
+class _HouseRulesSection extends ConsumerWidget {
+  const _HouseRulesSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final disabled = ref.watch(disabledHouseRulePackIdsProvider);
+    final actions = ref.read(settingsActionsProvider);
+    final packCatalogAsync = ref.watch(houseRulePackCatalogProvider);
+    final issuesAsync = ref.watch(houseRuleIssueSnapshotProvider);
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Hausregeln', style: theme.textTheme.titleLarge),
+          const SizedBox(height: 8),
+          Text(
+            'Optionale Regelpakete liegen ueber dem offiziellen Katalog. '
+            'Deaktivierte Pakete blenden ihre Inhalte und Ueberschreibungen aus, '
+            'ohne bestehende Heldendaten zu loeschen.',
+            style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 8),
+          packCatalogAsync.when(
+            data: (catalog) {
+              final roots = catalog.roots;
+              if (roots.isEmpty) {
+                return Text(
+                  'Keine Hausregel-Pakete gefunden.',
+                  style: theme.textTheme.bodySmall,
+                );
+              }
+              return Column(
+                children: [
+                  ...roots.map(
+                    (root) => _HouseRuleGroup(
+                      root: root,
+                      catalog: catalog,
+                      disabled: disabled,
+                      onToggle: (packId, enabled) =>
+                          actions.setHouseRuleEnabled(packId, enabled),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  issuesAsync.maybeWhen(
+                    data: (issues) {
+                      if (issues.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return _HouseRuleIssuesCard(issues: issues);
+                    },
+                    orElse: () => const SizedBox.shrink(),
+                  ),
+                ],
+              );
+            },
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (error, stackTrace) => Text(
+              'Hausregel-Pakete konnten nicht geladen werden: $error',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Darstellung einer Hausregel-Gruppe (Root + Kinder).
+class _HouseRuleGroup extends StatelessWidget {
+  const _HouseRuleGroup({
+    required this.root,
+    required this.catalog,
+    required this.disabled,
+    required this.onToggle,
+  });
+
+  final HouseRulePackManifest root;
+  final HouseRulePackCatalog catalog;
+  final Set<String> disabled;
+  final void Function(String packId, bool enabled) onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final rootEnabled = !disabled.contains(root.id);
+    final children = catalog.childrenOf(root.id);
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SwitchListTile(
+            title: Text(root.title),
+            subtitle: Text(
+              root.isBuiltIn
+                  ? root.description
+                  : '${root.description}\nImportiertes Paket',
+            ),
+            value: rootEnabled,
+            onChanged: (value) => onToggle(root.id, value),
+          ),
+          if (children.isNotEmpty) ...[
+            const Divider(height: 1),
+            ...children.map(
+              (child) => _HouseRuleChildTile(
+                child: child,
+                childDisabled: disabled.contains(child.id),
+                parentEnabled: rootEnabled,
+                onToggle: onToggle,
+                captionStyle: theme.textTheme.bodySmall,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Eine Unter-Hausregel. Bei deaktiviertem Parent nicht bedienbar,
+/// behaelt aber den gespeicherten Zustand.
+class _HouseRuleChildTile extends StatelessWidget {
+  const _HouseRuleChildTile({
+    required this.child,
+    required this.childDisabled,
+    required this.parentEnabled,
+    required this.onToggle,
+    required this.captionStyle,
+  });
+
+  final HouseRulePackManifest child;
+  final bool childDisabled;
+  final bool parentEnabled;
+  final void Function(String packId, bool enabled) onToggle;
+  final TextStyle? captionStyle;
+
+  @override
+  Widget build(BuildContext context) {
+    final ownEnabled = !childDisabled;
+    return Padding(
+      padding: const EdgeInsets.only(left: 16),
+      child: SwitchListTile(
+        title: Text(child.title),
+        subtitle: Text(
+          parentEnabled
+              ? child.description
+              : '${child.description}\n(Parent-Regel deaktiviert)',
+          style: captionStyle,
+        ),
+        isThreeLine: !parentEnabled,
+        value: ownEnabled,
+        onChanged: parentEnabled ? (value) => onToggle(child.id, value) : null,
+      ),
+    );
+  }
+}
+
+/// Sichtbare Problemliste fuer Paketkonflikte oder Ladefehler.
+class _HouseRuleIssuesCard extends StatelessWidget {
+  const _HouseRuleIssuesCard({required this.issues});
+
+  final List<HouseRulePackIssue> issues;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      color: theme.colorScheme.errorContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Probleme in Hausregel-Paketen',
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: theme.colorScheme.onErrorContainer,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...issues.map(
+              (issue) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(
+                  [
+                    if (issue.packTitle.isNotEmpty) issue.packTitle,
+                    issue.message,
+                    if (issue.entryId.isNotEmpty) 'Eintrag: ${issue.entryId}',
+                  ].join(' • '),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onErrorContainer,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -406,9 +623,9 @@ class _CatalogContentPasswordSection extends ConsumerWidget {
     if (confirmed != true) return;
     await ref.read(settingsActionsProvider).setCatalogContentPassword(null);
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Katalog-Passwort entfernt.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Katalog-Passwort entfernt.')));
   }
 }
 

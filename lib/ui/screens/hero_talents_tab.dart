@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -112,6 +113,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
 
   HeroSheet? _latestHero;
   List<TalentDef> _latestCatalogTalents = const <TalentDef>[];
+  CatalogRuleResolver _latestCatalogRuleResolver = const CatalogRuleResolver();
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   List<HeroMetaTalent> _draftMetaTalents = <HeroMetaTalent>[];
   Set<String> _invalidCombatTalentIds = <String>{};
@@ -300,6 +302,16 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     return _draftTalents[talentId] ?? const HeroTalentEntry();
   }
 
+  TalentComplexityResolution _resolveTalentComplexity(
+    TalentDef talent,
+    HeroTalentEntry entry,
+  ) {
+    return _latestCatalogRuleResolver.resolveTalentComplexity(
+      talent: talent,
+      gifted: entry.gifted,
+    );
+  }
+
   void _updateIntField(String talentId, String field, String raw) {
     final parsed = int.tryParse(raw.trim()) ?? 0;
     final current = _entryForTalent(talentId);
@@ -407,6 +419,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       allTalents: allTalents,
                       activeTalentIds: localActiveIds,
                       lockedTalentIds: lockedTalentIds,
+                      ruleResolver: _latestCatalogRuleResolver,
                       onToggleTalent: (id, activate) {
                         _toggleTalent(id, activate);
                         setSheetState(() {
@@ -494,6 +507,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
             Center(child: Text('Katalog-Fehler: $error')),
         data: (catalog) {
           _latestCatalogTalents = catalog.talents;
+          _latestCatalogRuleResolver = catalog.ruleResolver;
           final combatBaseBe = widget.scope == _TalentTabScope.nonCombat
               ? computeCombatPreviewStats(
                   hero,
@@ -640,19 +654,18 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       _subTabController?.index == 0)
                     ...groups.expand((group) {
                       final allGroupTalents =
-                          List<TalentDef>.from(grouped[group]!)
-                            ..sort(
-                              (a, b) => a.name.toLowerCase().compareTo(
-                                b.name.toLowerCase(),
-                              ),
-                            );
+                          List<TalentDef>.from(grouped[group]!)..sort(
+                            (a, b) => a.name.toLowerCase().compareTo(
+                              b.name.toLowerCase(),
+                            ),
+                          );
                       final talents = filterQuery.isEmpty
                           ? allGroupTalents
                           : allGroupTalents
                                 .where(
-                                  (t) => t.name
-                                      .toLowerCase()
-                                      .contains(filterQuery),
+                                  (t) => t.name.toLowerCase().contains(
+                                    filterQuery,
+                                  ),
                                 )
                                 .toList(growable: false);
                       if (talents.isEmpty) return const <Widget>[];
@@ -693,9 +706,9 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                             ? _draftMetaTalents
                             : _draftMetaTalents
                                   .where(
-                                    (m) => m.name
-                                        .toLowerCase()
-                                        .contains(filterQuery),
+                                    (m) => m.name.toLowerCase().contains(
+                                      filterQuery,
+                                    ),
                                   )
                                   .toList(growable: false);
                         if (visibleMeta.isEmpty) {
