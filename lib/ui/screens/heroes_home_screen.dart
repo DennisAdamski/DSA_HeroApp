@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -42,7 +42,6 @@ class HeroesHomeScreen extends ConsumerWidget {
             name: draft.name,
             rawStartAttributes: draft.rawStartAttributes,
           );
-      ref.read(selectedHeroIdProvider.notifier).state = id;
       if (!context.mounted) {
         return;
       }
@@ -52,7 +51,7 @@ class HeroesHomeScreen extends ConsumerWidget {
     }
 
     Future<void> openHeroWorkspace(String heroId) async {
-      ref.read(selectedHeroIdProvider.notifier).state = heroId;
+      await ref.read(selectedHeroSelectionActionsProvider).selectHero(heroId);
       if (!context.mounted) {
         return;
       }
@@ -62,7 +61,10 @@ class HeroesHomeScreen extends ConsumerWidget {
     }
 
     Future<void> showHeroPreviewSheet(HeroSheet hero) async {
-      ref.read(selectedHeroIdProvider.notifier).state = hero.id;
+      await ref.read(selectedHeroSelectionActionsProvider).selectHero(hero.id);
+      if (!context.mounted) {
+        return;
+      }
       await showAdaptiveDetailSheet<void>(
         context: context,
         builder: (_) => SafeArea(
@@ -80,11 +82,8 @@ class HeroesHomeScreen extends ConsumerWidget {
                 hero: hero,
                 importExportActions: importExportActions,
               ),
-              onDeleteHero: () => _deleteSelectedHero(
-                context: context,
-                ref: ref,
-                hero: hero,
-              ),
+              onDeleteHero: () =>
+                  _deleteSelectedHero(context: context, ref: ref, hero: hero),
             ),
           ),
         ),
@@ -103,19 +102,18 @@ class HeroesHomeScreen extends ConsumerWidget {
             ref: ref,
             importExportActions: importExportActions,
           ),
-          onOpenSettings: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const SettingsScreen()),
-          ),
+          onOpenSettings: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
         ),
       ),
-      floatingActionButton:
-          layout == AppLayoutClass.compact && !apple
-              ? FloatingActionButton.extended(
-                  onPressed: createHero,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Neuer Held'),
-                )
-              : null,
+      floatingActionButton: layout == AppLayoutClass.compact && !apple
+          ? FloatingActionButton.extended(
+              onPressed: createHero,
+              icon: const Icon(Icons.add),
+              label: const Text('Neuer Held'),
+            )
+          : null,
       body: heroesAsync.when(
         data: (heroes) {
           if (heroes.isEmpty) {
@@ -147,7 +145,9 @@ class HeroesHomeScreen extends ConsumerWidget {
             layout: layout,
             onSelectHero: (hero) {
               if (layout.hasPersistentDetailPane) {
-                ref.read(selectedHeroIdProvider.notifier).state = hero.id;
+                ref
+                    .read(selectedHeroSelectionActionsProvider)
+                    .selectHero(hero.id);
                 return;
               }
               if (layout == AppLayoutClass.tabletPortrait) {
@@ -162,11 +162,8 @@ class HeroesHomeScreen extends ConsumerWidget {
               hero: hero,
               importExportActions: importExportActions,
             ),
-            onDeleteHero: (hero) => _deleteSelectedHero(
-              context: context,
-              ref: ref,
-              hero: hero,
-            ),
+            onDeleteHero: (hero) =>
+                _deleteSelectedHero(context: context, ref: ref, hero: hero),
           );
 
           if (!layout.hasPersistentDetailPane) {
@@ -360,7 +357,10 @@ class HeroesHomeScreen extends ConsumerWidget {
       if (heroId == null || !context.mounted) {
         return;
       }
-      ref.read(selectedHeroIdProvider.notifier).state = heroId;
+      await ref.read(selectedHeroSelectionActionsProvider).selectHero(heroId);
+      if (!context.mounted) {
+        return;
+      }
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => HeroWorkspaceScreen(heroId: heroId)),
       );
@@ -543,4 +543,3 @@ class _CreateHeroDraft {
   final String name;
   final Attributes rawStartAttributes;
 }
-
