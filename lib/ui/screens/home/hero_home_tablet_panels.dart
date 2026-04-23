@@ -46,10 +46,10 @@ class HeroHomeArchivePane extends StatelessWidget {
         children: [
           CodexSectionCard(
             title: 'Heldenarchiv',
-            subtitle:
-                'Wähle einen Helden aus, um ihn im Workspace zu öffnen oder auf dem iPad zuerst in Ruhe zu prüfen.',
+            subtitle: 'Wähle einen Helden aus, um ihn im Workspace zu öffnen.',
             trailing: CodexBadge(
-              label: '${heroes.length} ${heroes.length == 1 ? 'Held' : 'Helden'}',
+              label:
+                  '${heroes.length} ${heroes.length == 1 ? 'Held' : 'Helden'}',
               tone: CodexBadgeTone.accent,
             ),
             child: const SizedBox.shrink(),
@@ -196,8 +196,6 @@ class HeroHomePreviewPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return ListView(
       children: [
         CodexSectionCard(
@@ -253,11 +251,6 @@ class HeroHomePreviewPanel extends StatelessWidget {
                     icon: Icons.account_balance_outlined,
                   ),
                 ],
-              ),
-              const SizedBox(height: 18),
-              Text(
-                'Diese Vorschau dient auf dem iPad als ruhiger Lesezustand. Der vollständige digitale Heldenbogen bleibt einen Schritt tiefer im Workspace erreichbar.',
-                style: theme.textTheme.bodyMedium,
               ),
             ],
           ),
