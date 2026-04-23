@@ -1,1 +1,322 @@
-[]
+[
+  {
+    "id": "easf_charmeur",
+    "name": "Charmeur",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 22",
+    "beschreibung": "SO-Differenz wirkt bei Betören-Proben als Bonus statt als Malus.",
+    "voraussetzungen": "CH 20, TaW Betören 21",
+    "kosten": "300 AP",
+    "erklarung_lang": "Gegensätze ziehen sich an: Es gibt nicht nur keine Abzüge mehr für zu hohen oder niedrigen SO, sondern der Held hat gelernt, seine Andersartigkeit als positives Alleinstellungsmerkmal herauszuarbeiten, so dass er bei Betören-Proben die SO-Differenz als Bonus erhält.",
+    "quelle": "Epische Stufen S. 22",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 22", "excerpt": "Charmeur" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_falleninstinkt",
+    "name": "Falleninstinkt",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 22",
+    "beschreibung": "Intuitives Ausweichen einer ausgelösten Falle oder eines Hinterhalts per IN-Probe.",
+    "voraussetzungen": "IN 21",
+    "kosten": "300 AP",
+    "erklarung_lang": "Erlaubt ein intuitives Ausweichen einer bereits ausgelösten Falle, wenn eine IN-Probe gelingt, die um die Hälfte der Sinnesschärfe-Probe erschwert ist, die notwendig gewesen wäre, die Falle zu entdecken. Erschwernis des Ausweichens je nach Fallenart. Gilt auch für Angriffe aus dem Hinterhalt (nicht zu verwechseln mit Angriffen von hinten).",
+    "quelle": "Epische Stufen S. 22",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 22", "excerpt": "Falleninstinkt" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_gefuehlsmime",
+    "name": "Gefühlsmime",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 22",
+    "beschreibung": "Menschenkenntnis-Proben zum Durchschauen des Helden sind 50 % stärker erschwert.",
+    "voraussetzungen": "IN 16, CH 18, TaW Selbstbeherrschung 15, TaW Überreden 20",
+    "kosten": "400 AP",
+    "erklarung_lang": "Man wirkt absolut glaubwürdig bei der Darstellung seiner Gefühle; alle Menschenkenntnis-Proben, um den Helden zu durchschauen, sind 50 % mehr erschwert.",
+    "quelle": "Epische Stufen S. 22",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 22", "excerpt": "Gefühlsmime" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_geist_ueberwaeltigen",
+    "name": "Geist Überwältigen",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 23",
+    "beschreibung": "Empath fokussiert angeeignete Emotionen und Nachteile auf ein einziges Ziel und zerdrückt es geistig.",
+    "voraussetzungen": "MU 20, TaW Überreden oder Überzeugen 21, SF Gefühle vermitteln, TaW Gabe Empathie 12",
+    "kosten": "500 AP",
+    "erklarung_lang": "Alle zurzeit vom Empathen kontrollierten (d. h. von anderen angeeigneten) Emotionen, psychischen Krankheiten (z. B. Blutrausch, Einbildungen, Wahnvorstellungen) und Schlechten Eigenschaften kann er auf ein einziges Ziel fokussieren, welches für die nächsten TaP Minuten unter dieser Last zerdrückt wird: Alle Proben sind TaP/2 erschwert; alle 5 KR eine Probe auf Selbstbeherrschung + TaP. Bei Misslingen kompletter mentaler Zusammenbruch (Apathie, manischer Wahn, Blutrausch etc.). Am Ende verliert der Empath für 1 SR das Bewusstsein, alle Störungen kehren zu ihren ursprünglichen Besitzern zurück. Zauberdauer 10 Aktionen; Kosten: restliche Ausdauer, mindestens 30 AuP. Die TaP können nicht über den Nachteils-GP liegen, die auf den Gegner „losgelassen\" werden.",
+    "quelle": "Epische Stufen S. 23",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 23", "excerpt": "Geist Überwältigen" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_inquisitor",
+    "name": "Inquisitor",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 24",
+    "beschreibung": "Wer verhört wird, kann nur unter erschwerter MU-Probe lügen.",
+    "voraussetzungen": "TaW Menschenkenntnis 22, CH 20, TaW Überreden 21, SF Silberzunge",
+    "kosten": "350 AP",
+    "erklarung_lang": "Wer von jemandem mit dieser SF verhört wird, kann nur dann lügen, wenn ihm eine MU-Probe gelingt, die jede Stunde neu abgelegt werden muss und für jede Stunde der Befragung um 2 Punkte erschwert ist.",
+    "quelle": "Epische Stufen S. 24",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 24", "excerpt": "Inquisitor" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_meister_der_anpassung",
+    "name": "Meister der Anpassung",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 24",
+    "beschreibung": "Keine gesellschaftlichen Vor-/Nachteile durch epische Merkmale; wird nicht wiedererkannt, wenn nicht gewünscht.",
+    "voraussetzungen": "IN 18, TaW Menschenkenntnis, Etikette, Sich Verkleiden und Gassenwissen 15",
+    "kosten": "400 AP",
+    "erklarung_lang": "Dem Helden entstehen bei Bedarf keine gesellschaftlichen Vor- und Nachteile mehr durch epische Merkmale, d. h. er wird nicht wiedererkannt, wenn er es nicht will (außer durch Personen, die ihn persönlich kennen).",
+    "quelle": "Epische Stufen S. 24",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 24", "excerpt": "Meister der Anpassung" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_meisterliches_abrichten",
+    "name": "Meisterliches Abrichten",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 24",
+    "beschreibung": "Tiere können mit Manövern wie Finte, Wuchtschlag, gezielter Biss, Sturmangriff u. a. ausgebildet werden.",
+    "voraussetzungen": "CH 18, TaW Abrichten und Tierkunde 18 (alle VR -2 bei Tierfreund; nur Abrichten bei Tierempathie)",
+    "kosten": "400 AP",
+    "erklarung_lang": "Der Ausbilder kann Tieren deutlich mehr beibringen als ein normaler Abrichter: Manöver wie Finte, Wuchtschlag, gezielter Biss, Gegenhalten, Sturmangriff oder Verbeißen können (nach Meisterentscheid angepasst) vermittelt werden. Sturmangriffe erhalten z. B. nicht grundsätzlich GS/2 mehr TP, sondern sind auch von der Masse des Tieres abhängig.",
+    "quelle": "Epische Stufen S. 24",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 24", "excerpt": "Meisterliches Abrichten" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_permanente_traenke",
+    "name": "Permanente Tränke",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 24–27",
+    "beschreibung": "Alchimistische Meister brauen Tränke mit permanenter Wirkung aus Titaniumstaub, Qualitätselixier und mächtigen Zutaten.",
+    "voraussetzungen": "SF Vollendetes Handwerk (Alchimie); Speziallabor (ca. 1500 D); vollendetes Labor (5000 D) erleichtert um 3",
+    "kosten": "600 AP",
+    "erklarung_lang": "Die permanente Wirkung wird durch drei Zutaten erzielt: 1 Skrupel hochreiner Titaniumstaub (200–300 D), ein Elixier der Qualitätsstufe F und eine mächtige Zutat (ggf. mehrere). Basiserschwernis 15; jede Zutat erschwert die Alchimie-Probe um 3. Mächtige Zutaten tragen Punktwerte 1–5 bei (Eigenschaft +1 = 5 Punkte; LeP = 2/Punkt; AuP = 0,5/Punkt; AsP = 1/Punkt; Vorteile = GP × 2; Nachteile = GP). Chaos-Faktor (%): pro Zutat wird auf den summierten CF gewürfelt; fällt der Wurf in den chaotischen Bereich, pervertiert die Zutat. Chaos-Faktor wirkt dreifach als Bonus auf das Endergebnis (gewünscht oder pervertiert). Beispiele für chaotische Auswirkungen: Fellwuchs (12), Vernarbung (2W6), Schattenverlust (12), Mehrfache Schatten (5), Transparenz (1 je 5 %), Wachstumsverschiebung (1 je 2 %), Krallen (5), Sonar (15), übernatürliche Fähigkeiten (12). Ob die SF für Helden zugänglich ist, sollte besonders gut überlegt sein.",
+    "quelle": "Epische Stufen S. 24–27",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 24–27", "excerpt": "Permanente Tränke" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_ueberragende_agilitaet",
+    "name": "Überragende Agilität",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 27",
+    "beschreibung": "Bewegung wie ein Akrobat ohne Proben; akrobatische Einlagen kosten keine Extra-Zeit; Aufstehen ohne GE-Probe.",
+    "voraussetzungen": "TaW Körperbeherrschung 18, TaW Akrobatik 15, TaW Athletik 15, TaW Klettern 15, SF Standfest",
+    "kosten": "450 AP",
+    "erklarung_lang": "Der Held kann sich wie ein Akrobat bewegen, ohne dass dafür Proben notwendig werden (z. B. beim Balancieren, Überwinden kleinerer Hindernisse wie Kisten oder Mäuerchen), solange die Bewegung nicht halsbrecherisch gefährlich ist oder während eines Kampfes / einer Flucht stattfindet. Akrobatische Einlagen – z. B. während einer Verfolgungsjagd – benötigen praktisch keine zusätzliche Zeit zur Überwindung von Hindernissen. Wer auf dem Boden liegt, kann ohne GE-Probe in einer Aktion aufstehen.",
+    "quelle": "Epische Stufen S. 27",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 27", "excerpt": "Überragende Agilität" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_revolutionaer",
+    "name": "Revolutionär",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 28",
+    "beschreibung": "CH-Proben zum Aufwiegeln dürfen wiederholt werden; Heilkunde Seele als Unterstützung für Überzeugen/Menschenkenntnis.",
+    "voraussetzungen": "CH 20, TaW Überzeugen 21, TaW Heilkunde Seele 15 (passende Kulturkunde)",
+    "kosten": "300 AP",
+    "erklarung_lang": "Charme und psychologische Kenntnisse: CH-Proben zum Aufwiegeln dürfen wiederholt werden (Eigenschafts- oder Talentprobe). Heilkunde Seele kann als Unterstützungstalent für Überzeugen- und Menschenkenntnis-Proben eingesetzt werden. Die Fähigkeit ist nur einsetzbar, wenn man über die entsprechende Kulturkunde verfügt.",
+    "quelle": "Epische Stufen S. 28",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 28", "excerpt": "Revolutionär" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_schattenlaeufer",
+    "name": "Schattenläufer",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 28",
+    "beschreibung": "Mit Schleichen-TaW/10 GS bewegen und als stillstehend wahrgenommen werden; halbe GS ohne Schleichen-Abzug.",
+    "voraussetzungen": "TaW Schleichen 18, TaW Sich Verstecken 15",
+    "kosten": "400 AP",
+    "erklarung_lang": "Dies ist die Fähigkeit, sich quasi ungesehen bewegen zu können. Regeltechnisch kann sich jeder mit dieser SF mit einem Zehntel seines Schleichen-TaW in GS bewegen und wird trotzdem so wahrgenommen, als würde er stillstehen. Bedeutsam bei schlechter Beleuchtung und dem Chamelioni Mimikri, wo es darauf ankommt, einen praktisch Unsichtbaren zu sehen. Außerdem darf man sich mit bis zu halber GS bewegen, ohne dass Erschwernisse auf Schleichen anfallen.",
+    "quelle": "Epische Stufen S. 28",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 28", "excerpt": "Schattenläufer" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_silberzunge",
+    "name": "Silberzunge",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 28",
+    "beschreibung": "Umfangreiche Boni für Aufwiegeln, Betteln, Feilschen und Lügen.",
+    "voraussetzungen": "TaW Überreden 21, CH 19",
+    "kosten": "450 AP",
+    "erklarung_lang": "Aufwiegeln: Nur halbe Erschwernisse durch schlechten Ruf, SO, äußere Umstände etc. Betteln: Einnahmen verdoppelt; soll durch Betteln ein bestimmtes Ziel erreicht werden, ist die Probe nur um drei Viertel der Punkte erschwert. Feilschen: Bis zu 60 % Preisnachlass; verkaufte Ware bis zu 95 % des erwarteten Weiterverkaufspreises. Lügen: Vor jeder Lüge wird zwischen Lügner und Belogenem eine vergleichende Menschenkenntnis-Probe gewürfelt; nur wenn der Belogene gewinnt, darf er eine weitere Probe ablegen, um den Wahrheitsgehalt zu schätzen.",
+    "quelle": "Epische Stufen S. 28",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 28", "excerpt": "Silberzunge" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_sumus_kind",
+    "name": "Sumus Kind",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 29",
+    "beschreibung": "Reduziert Hitze-/Kälteschaden um 1 TP; immun gegen natürliche Wildnis-Krankheiten.",
+    "voraussetzungen": "KO 20 (18 bei Resistenz gegen Krankheiten), TaW Wildnisleben 18",
+    "kosten": "300 AP (halbiert bei Haupteigenschaft KO)",
+    "erklarung_lang": "Wer lange genug in der Natur zugebracht hat, erhält einen TP weniger durch Hitze/Kälte und wird von keiner Krankheit mehr befallen, die man sich durch Umgang in der Natur zuziehen kann (z. B. Flinker Difar, Brabaker Schweiß). Nicht Tollwut oder Krankheiten durch giftige/infizierte Tiere und Pflanzen.",
+    "quelle": "Epische Stufen S. 29",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 29", "excerpt": "Sumus Kind" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_vollendetes_handwerk",
+    "name": "Vollendetes Handwerk",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 29–34",
+    "beschreibung": "Meisterung eines Handwerks- oder Wissenstalents mit talentspezifischen Boni (separat je Talent zu zahlen).",
+    "voraussetzungen": "Entsprechendes Talent auf TaW 24; beteiligte Eigenschaften insgesamt auf 50 (je ≥ 15; bei zwei Eigenschaften zusammen ≥ 38); alle Hilfstalente TaW ≥ 15",
+    "kosten": "600 AP (pro gewähltem Talent)",
+    "erklarung_lang": "Boni je Talent (Auswahl): Abrichten – +1 AT/PA/INI/TP bei Kampf, +10 % KK bei Zug/Trage, +1 GS/AU sonst; LO-Max +2. Alchimie – ein Bonus pro Trank wählbar. Bergbau – Grundriss-Einschätzung vor Betreten. Bogenbau – Seilzug-Bogen oder verdoppelte Pfeileffektivität. Boote fahren – höhere GS oder -50 % Manöver-Erschwernis. Brauer – Bier exzellent, Zusätze kaschierbar. Fahrzeug lenken – Gespann-GS 1:1, einhändig. Falschspiel – Gewinnchance bis +35 %. Feinmechanik – Prothesen, Armbrust-Repeater, Mechanik-TaW ≥ 18. Gerber/Kürschner – Leder +1 RS, feuer-/säurefest. Glaskunst – Fernrohre, Zielfernrohr-AT +2. Grobschmied – Waffen +4 TP/+8 BF/+2 Personalisierung; Platten/Ketten-Boni. Heilkunde Gift – Giftschaden rückgängig, Immunisierung. Heilkunde Krankheiten – Schaden -20 %. Heilkunde Seele – doppelte Geschwindigkeit Nachteile abbauen. Heilkunde Wunden – halbierte Wundabzüge. Holzbearbeitung – Schild-Boni (+1 PA klein, +1 AT sehr groß). Instrumentbauer – Zauber in Instrumente einarbeiten (pAsP-Kosten). Kartographie – Karten tarnen. Kristallzucht – Edelstein-Magieeffekte verdoppelt. Malen/Zeichnen – Technische Zeichnungen erleichtern Proben um TaP/3. Maurer – Härte/Struktur durch freiwillige Erschwernis. Musizieren – Elfenlieder +50 %, TaW/3 Erleichterung auf gesellschaftliche Proben. Schlösser Knacken – zweite Probe ohne Bruch. Schneidern – Kleidung +1 RS (3× Zeit). Seiler – +30 % Tragfähigkeit. Stoffe Färben – Tarnkleidung. Tätowieren – lebende 3D-Bilder. Webkunst – wasserdicht, +1 Kälteschutz. Winzer – wie Brauer. Zimmermann – wie Maurer für Schiffe.",
+    "quelle": "Epische Stufen S. 29–34",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 29–34", "excerpt": "Vollendetes Handwerk" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_wandlauf",
+    "name": "Wandlauf",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 34",
+    "beschreibung": "Tilgt Abzüge auf Schleichen-Proben während des Kletterns durch das Klettern selbst.",
+    "voraussetzungen": "TaW Klettern 18, TaW Schleichen 18, GE 20",
+    "kosten": "300 AP",
+    "erklarung_lang": "Tilgt alle Abzüge auf Schleichen-Proben während des Kletterns, die durch das Klettern an sich entstehen. Der Untergrund spielt nach wie vor eine Rolle, aber nicht mehr als würde der Spezialagent darüber hinweggehen.",
+    "quelle": "Epische Stufen S. 34",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 34", "excerpt": "Wandlauf" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "easf_zustand_isolieren",
+    "name": "Zustand Isolieren",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 34",
+    "beschreibung": "Schlechte Eigenschaften in Höhe von Selbstbeherrschung-GP können ignoriert werden.",
+    "voraussetzungen": "MU 18, TaW Selbstbeherrschung 18, Vorteil Empathie",
+    "kosten": "250 AP",
+    "erklarung_lang": "Diese Fähigkeit erweitert die Möglichkeiten zur Absorption von psychischen Verletzungen: In Zukunft können Schlechte Eigenschaften in Höhe von Selbstbeherrschung-GP ignoriert werden.",
+    "quelle": "Epische Stufen S. 34",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 34", "excerpt": "Zustand Isolieren" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  }
+]

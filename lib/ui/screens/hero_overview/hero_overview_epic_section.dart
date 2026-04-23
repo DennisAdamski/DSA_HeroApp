@@ -85,16 +85,25 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
   }
 
   Future<void> _activateEpicStatus(HeroSheet hero) async {
-    final result = await showDialog<Attributes>(
+    final result = await showDialog<EpicActivationResult>(
       context: context,
       barrierDismissible: false,
       builder: (_) => const EpicActivationDialog(),
     );
     if (result == null || !mounted) return;
+    final unactivatedTalentIds = <String>{};
+    for (final entry in hero.talents.entries) {
+      if (entry.value.talentValue == null) {
+        unactivatedTalentIds.add(entry.key);
+      }
+    }
     final updated = hero.copyWith(
       isEpisch: true,
       epicStartAp: hero.apSpent,
-      epicAttributeMaxBonus: result,
+      epicAttributeMaxBonus: result.maxBonus,
+      epicMainAttributes: result.mainAttributes,
+      epicActivationPolicy: result.policy,
+      epicUnactivatedTalentIds: Set<String>.unmodifiable(unactivatedTalentIds),
     );
     await ref.read(heroActionsProvider).saveHero(updated);
     if (!mounted) return;
