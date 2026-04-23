@@ -752,6 +752,9 @@ schriften.json         ← Schriften (optional)
 
 Hausregel-Pakete koennen zusaetzlich direkt in der App unter
 `Einstellungen > Hausregeln > Hausregelverwaltung` gepflegt werden.
+Der Settings-Bereich selbst nutzt adaptive Unterseiten: schmale Layouts fuehren
+per Drilldown in einzelne Bereiche, breite Layouts zeigen links die Bereiche
+und rechts die jeweilige Detailseite.
 Der Editor bietet eine strukturierte Manifest-Ansicht, einen JSON-Tab sowie
 Import/Export einzelner Paketdateien; eingebaute Pakete bleiben read-only und
 koennen nur als Vorlage geklont werden.

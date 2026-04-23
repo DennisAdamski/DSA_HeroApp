@@ -160,6 +160,9 @@ Technischer Stack:
   schreibgeschuetzt und koennen nur als Vorlage geklont werden
 - Settings-Bereich `Katalogverwaltung` zum Einsehen aller Basisdaten sowie zum
   Anlegen, Bearbeiten und Loeschen synchronisierbarer Custom-Eintraege
+- Der Settings-Bereich nutzt adaptive Unterseiten: auf schmalen Layouts als
+  Drilldown-Navigation, ab Tablet-Landscape mit linker Bereichsliste und
+  rechter Detailansicht
 - Hero-Exporte koennen benoetigte Custom-Katalogeintraege mitsenden, damit
   referenzierte Hausregeln beim Import direkt wieder aufloesbar sind
 - Reisebericht-Daten liegen bewusst separat unter
