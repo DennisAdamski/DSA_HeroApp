@@ -96,6 +96,21 @@ class HouseRuleSelector {
   bool get isEmpty =>
       entryId.trim().isEmpty && fieldEquals.isEmpty && hasTags.isEmpty;
 
+  /// Serialisiert den Selektor zurueck in das JSON-Format.
+  Map<String, dynamic> toJson() {
+    final json = <String, dynamic>{};
+    if (entryId.trim().isNotEmpty) {
+      json['entryId'] = entryId.trim();
+    }
+    if (fieldEquals.isNotEmpty) {
+      json['fieldEquals'] = _cloneJsonMap(fieldEquals);
+    }
+    if (hasTags.isNotEmpty) {
+      json['hasTag'] = List<String>.unmodifiable(hasTags);
+    }
+    return json;
+  }
+
   /// Prueft, ob ein Eintrag vom Selektor erfasst wird.
   bool matches({
     required CatalogSectionId section,
@@ -207,6 +222,30 @@ class HouseRulePatch {
 
   /// Liefert die wirksame Prioritaet dieses Patches.
   int effectivePriority(int packPriority) => priority ?? packPriority;
+
+  /// Serialisiert den Patch zurueck in das JSON-Format.
+  Map<String, dynamic> toJson() {
+    final json = <String, dynamic>{'section': section.name};
+    final selectorJson = selector?.toJson() ?? const <String, dynamic>{};
+    if (selectorJson.isNotEmpty) {
+      json['selector'] = selectorJson;
+    }
+    if (setFields.isNotEmpty) {
+      json['setFields'] = _cloneJsonMap(setFields);
+    }
+    if (addEntries.isNotEmpty) {
+      json['addEntries'] = addEntries
+          .map((entry) => _cloneJsonMap(entry))
+          .toList(growable: false);
+    }
+    if (deactivateEntries) {
+      json['deactivateEntries'] = true;
+    }
+    if (priority != null) {
+      json['priority'] = priority;
+    }
+    return json;
+  }
 }
 
 /// Manifest eines aktivierbaren Hausregel-Pakets.
@@ -295,6 +334,23 @@ class HouseRulePackManifest {
       filePath: filePath,
       isBuiltIn: isBuiltIn,
     );
+  }
+
+  /// Serialisiert das Manifest zurueck in das JSON-Format.
+  Map<String, dynamic> toJson() {
+    final json = <String, dynamic>{
+      'id': id,
+      'title': title,
+      'description': description,
+      'patches': patches.map((patch) => patch.toJson()).toList(growable: false),
+    };
+    if (parentPackId.trim().isNotEmpty) {
+      json['parentPackId'] = parentPackId.trim();
+    }
+    if (priority != 0) {
+      json['priority'] = priority;
+    }
+    return json;
   }
 }
 
@@ -551,4 +607,23 @@ bool _valuesMatch(Object? left, Object? right) {
     return left == right;
   }
   return left.toString().trim() == right.toString().trim();
+}
+
+Map<String, dynamic> _cloneJsonMap(Map<String, dynamic> value) {
+  return value.map<String, dynamic>(
+    (key, nestedValue) => MapEntry(key, _cloneJsonValue(nestedValue)),
+  );
+}
+
+dynamic _cloneJsonValue(Object? value) {
+  if (value is Map<String, dynamic>) {
+    return _cloneJsonMap(value);
+  }
+  if (value is Map) {
+    return _cloneJsonMap(value.cast<String, dynamic>());
+  }
+  if (value is List) {
+    return value.map(_cloneJsonValue).toList(growable: false);
+  }
+  return value;
 }

@@ -750,6 +750,12 @@ schriften.json         ← Schriften (optional)
 **Synchronisierbare Hausregel-Pakete im Heldenspeicher:**
 `<hero-storage>/house_rule_packs/<version>/<packId>/manifest.json`
 
+Hausregel-Pakete koennen zusaetzlich direkt in der App unter
+`Einstellungen > Hausregeln > Hausregelverwaltung` gepflegt werden.
+Der Editor bietet eine strukturierte Manifest-Ansicht, einen JSON-Tab sowie
+Import/Export einzelner Paketdateien; eingebaute Pakete bleiben read-only und
+koennen nur als Vorlage geklont werden.
+
 Hinweis:
 `manoever.json` bleibt die kanonische Quelle für manöverartige
 Kampfoptionen. `kampf_sonderfertigkeiten.json` enthält nur eigenständige

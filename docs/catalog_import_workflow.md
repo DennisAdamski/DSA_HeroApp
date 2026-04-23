@@ -61,9 +61,14 @@ Examples:
   will not offer the pack for activation.
 - Imported packs are discovered in
   `<hero-storage>/house_rule_packs/<version>/<packId>/manifest.json`.
+- Imported packs can now also be created and maintained directly inside the app
+  under `Einstellungen > Hausregeln > Hausregelverwaltung öffnen`.
 - Packs may override fields, add entries or deactivate entries; custom catalogs
   remain additive and must not replace IDs that are already present after pack
   resolution.
+- The in-app pack editor writes exactly the same `manifest.json` structure that
+  the repository loader consumes; import and export also operate on single-pack
+  manifest files.
 - Built-in packs may also gate base entries directly via `ruleMeta.sourceKey`
   without needing `addEntries`. This is used by
   `regelwerk_ueberarbeitung_v1` for optional maneuvers and Sonderfertigkeiten.

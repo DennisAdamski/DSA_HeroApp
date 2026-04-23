@@ -20,6 +20,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   als Flutter-Assets registriert sein, damit der Settings-Screen sie laden kann.
 - Importierte Hausregel-Pakete liegen im Heldenspeicher unter
   `house_rule_packs/<version>/<packId>/manifest.json`.
+- Die App besitzt dafuer eine eigene In-App-Verwaltung unter
+  `Einstellungen > Hausregeln > Hausregelverwaltung`.
 - Reisebericht-Daten bleiben separat unter `assets/catalogs/reiseberichte/house_rules_v1/`.
 - Projektsprache ist Deutsch; sichtbare UI-Texte sollen echte Umlaute und das Eszett verwenden, wenn technisch moeglich.
 - Der Windows-Release-Audit fuer EXE/MSIX-Artefakte ist in `docs/windows_antivirus_audit.md` beschrieben; der zugehoerige Helfer liegt unter `tool/audit_windows_artifact.ps1`.
