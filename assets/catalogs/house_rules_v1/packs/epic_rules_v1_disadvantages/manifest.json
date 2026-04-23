@@ -1,0 +1,8 @@
+{
+  "id": "epic_rules_v1.disadvantages",
+  "parentPackId": "epic_rules_v1",
+  "title": "Nachteile des epischen Status",
+  "description": "AP-Aufschläge, reduzierte AsP-Stufenboni und weitere Nachteile epischer Helden.",
+  "priority": 100,
+  "patches": []
+}

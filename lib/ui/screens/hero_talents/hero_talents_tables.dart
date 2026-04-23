@@ -276,11 +276,8 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     int inventoryMod = 0,
   }) {
     final entry = _entryForTalent(talent.id);
+    final complexityResolution = _resolveTalentComplexity(talent, entry);
     final ebe = computeTalentEbe(baseBe: activeBaseBe, talentBeRule: talent.be);
-    final effectiveKomplexitaet = effectiveTalentLernkomplexitaet(
-      basisKomplexitaet: talent.steigerung,
-      gifted: entry.gifted,
-    );
     final computedTaw = computeTalentComputedTaw(
       talentValue: entry.talentValue,
       modifier: entry.modifier,
@@ -300,6 +297,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           builder: (_) => _TalentDetailDialog(
             talent: talent,
             entry: entry,
+            complexityResolution: complexityResolution,
             effectiveAttributes: effectiveAttributes,
             activeBaseBe: activeBaseBe,
             inventoryMod: inventoryMod,
@@ -341,10 +339,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         key: ValueKey<String>('talents-field-${talent.id}-computed-taw'),
         highlighted: true,
       ),
-      _textCell(
-        _fallback(effectiveKomplexitaet),
-        highlighted: effectiveKomplexitaet != talent.steigerung,
-      ),
+      _complexityCell(complexityResolution),
       _textCell(
         _formatWholeNumber(ebe),
         key: ValueKey<String>('talents-field-${talent.id}-ebe-display'),
@@ -402,10 +397,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   }) {
     final entry = _entryForTalent(talent.id);
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
-    final effectiveKomplexitaet = effectiveTalentLernkomplexitaet(
-      basisKomplexitaet: talent.steigerung,
-      gifted: entry.gifted,
-    );
+    final complexityResolution = _resolveTalentComplexity(talent, entry);
 
     final effective = _latestHero != null
         ? computeEffectiveAttributes(_latestHero!)
@@ -429,6 +421,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           builder: (_) => _TalentDetailDialog(
             talent: talent,
             entry: entry,
+            complexityResolution: complexityResolution,
             effectiveAttributes: effective,
             activeBaseBe: 0,
           ),
@@ -436,10 +429,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       ),
       _textCell(_fallback(talent.weaponCategory)),
       _textCell(_fallback(talent.alternatives)),
-      _textCell(
-        _fallback(effectiveKomplexitaet),
-        highlighted: effectiveKomplexitaet != talent.steigerung,
-      ),
+      _complexityCell(complexityResolution),
       _intInputCell(
         talentId: talent.id,
         field: 'talentValue',

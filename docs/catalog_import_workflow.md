@@ -8,6 +8,7 @@ files in the active hero storage.
 Base assets:
 
 - `assets/catalogs/house_rules_v1/manifest.json`
+- `assets/catalogs/house_rules_v1/packs/<packId>/manifest.json`
 - `assets/catalogs/house_rules_v1/talente.json`
 - `assets/catalogs/house_rules_v1/waffentalente.json`
 - `assets/catalogs/house_rules_v1/waffen.json`
@@ -24,6 +25,7 @@ Separate runtime catalog:
 Synchronizable custom entries in hero storage:
 
 - `<hero-storage>/custom_catalogs/house_rules_v1/<sektion>/<id>.json`
+- `<hero-storage>/house_rule_packs/house_rules_v1/<packId>/manifest.json`
 
 Examples:
 
@@ -48,6 +50,32 @@ Examples:
 - Each custom entry is stored as its own JSON file to reduce sync conflicts.
 - Changes from external sync tools are picked up after app restart or
   `Katalog neu laden`.
+
+### House rule packs
+
+- House rule packs are loaded between the official base catalog and
+  `custom_catalogs`.
+- Built-in packs come from `assets/catalogs/house_rules_v1/packs/`.
+- Every built-in `manifest.json` must also be listed explicitly in
+  `pubspec.yaml`, otherwise Flutter will not bundle it and the settings screen
+  will not offer the pack for activation.
+- Imported packs are discovered in
+  `<hero-storage>/house_rule_packs/<version>/<packId>/manifest.json`.
+- Imported packs can now also be created and maintained directly inside the app
+  under `Einstellungen > Hausregeln > Hausregelverwaltung öffnen`.
+- Packs may override fields, add entries or deactivate entries; custom catalogs
+  remain additive and must not replace IDs that are already present after pack
+  resolution.
+- The in-app pack editor writes exactly the same `manifest.json` structure that
+  the repository loader consumes; import and export also operate on single-pack
+  manifest files.
+- Built-in packs may also gate base entries directly via `ruleMeta.sourceKey`
+  without needing `addEntries`. This is used by
+  `regelwerk_ueberarbeitung_v1` for optional maneuvers and Sonderfertigkeiten.
+- Official baseline values and opt-in house-rule overlays may intentionally be
+  split: for example the affected `Körperliche Talente` live officially in
+  `talente.json`, while only the PDF deviations are reapplied through
+  `regelwerk_ueberarbeitung_v1.talents_learning`.
 
 ## Split rules
 

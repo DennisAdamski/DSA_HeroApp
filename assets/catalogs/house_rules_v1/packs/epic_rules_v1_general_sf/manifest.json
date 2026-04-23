@@ -1,0 +1,8 @@
+{
+  "id": "epic_rules_v1.general_sf",
+  "parentPackId": "epic_rules_v1",
+  "title": "Epische Allgemeine Sonderfertigkeiten",
+  "description": "Nicht-kampfbezogene epische Sonderfertigkeiten.",
+  "priority": 100,
+  "patches": []
+}

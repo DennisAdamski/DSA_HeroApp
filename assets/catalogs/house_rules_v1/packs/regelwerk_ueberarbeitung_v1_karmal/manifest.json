@@ -1,0 +1,38 @@
+{
+  "id": "regelwerk_ueberarbeitung_v1.karmal",
+  "parentPackId": "regelwerk_ueberarbeitung_v1",
+  "title": "Geweiht",
+  "description": "Karmale Inhalte aus Kapitel 2.5, soweit sie in bestehende Datenmodelle passen.",
+  "priority": 100,
+  "patches": [
+    {
+      "section": "karmale_sonderfertigkeiten",
+      "addEntries": [
+        {
+          "id": "kasf_goettlicher_begleiter",
+          "name": "Göttlicher Begleiter",
+          "gruppe": "karmal",
+          "typ": "sonderfertigkeit",
+          "seite": "17",
+          "beschreibung": "Bindet ein heiliges Tier an einen Geweihten ähnlich wie ein Vertrautentier.",
+          "erklarung_lang": "Viele Geweihte suchen die Nähe ihrer Gottheit durch die Haltung eines oder mehrerer heiliger Tiere. Manchmal passiert es, dass eines dieser Tiere eine besondere Bindung zu einem Geweihten aufbaut, die in etwa der zwischen einer Hexe und ihrem Vertrauten entspricht. Das Tier erhält künftig AP wie ein Vertrautentier und kann diese für die Erhöhung seiner Attribute einsetzen. Es erhält außerdem einen Liturgiekenntniswert von 1, den es zum Mitbeten verwenden kann, als wäre es ein Akoluth. Stirbt ein solches Tier, verliert der Geweihte permanent einen Punkt Karmaenergie und muss mindestens ein Jahr warten, bevor er eine neue Bindung aufbauen kann.",
+          "voraussetzungen": "CH 15, TaW Abrichten 16",
+          "kosten": "150 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 17",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.karmal",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 17",
+                "excerpt": "Göttlicher Begleiter"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

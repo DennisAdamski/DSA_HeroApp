@@ -1,0 +1,135 @@
+{
+  "id": "regelwerk_ueberarbeitung_v1.magic",
+  "parentPackId": "regelwerk_ueberarbeitung_v1",
+  "title": "Magie",
+  "description": "Magische Sonderfertigkeiten aus Kapitel 2.4 des Hausregel-PDFs.",
+  "priority": 100,
+  "patches": [
+    {
+      "section": "magische_sonderfertigkeiten",
+      "addEntries": [
+        {
+          "id": "msf_arkane_sensitivitaet_i",
+          "name": "Arkane Sensitivität I",
+          "gruppe": "magisch",
+          "typ": "sonderfertigkeit",
+          "seite": "15",
+          "beschreibung": "Erkennt jeden Verzauberungsversuch gegen den Helden und die dabei erzielten ZfP.",
+          "erklarung_lang": "Trotz seiner Widerstandskraft gegen Magie lernt der Held mit dieser SF zu bemerken, wann immer jemand versucht hat, ihn zu verzaubern, und kann die ZfP genau erkennen.",
+          "voraussetzungen": "IN 16",
+          "kosten": "50 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 15",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.magic",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 15",
+                "excerpt": "Arkane Sensitivität I"
+              }
+            ]
+          }
+        },
+        {
+          "id": "msf_arkane_sensitivitaet_ii",
+          "name": "Arkane Sensitivität II",
+          "gruppe": "magisch",
+          "typ": "sonderfertigkeit",
+          "seite": "15",
+          "beschreibung": "Ortet zusätzlich den Magier und erlaubt einen reflexhaften Schnellschuss auf dessen Position.",
+          "erklarung_lang": "Zusätzlich zur Erkennbarkeit des Zaubers kann mit der zweiten Stufe sogar der Aufenthaltsort des Magiers bis auf einen Schritt genau ermittelt werden, bei Reichweite Horizont bis auf 5 % der Entfernung. Verfügt man über die SF Kampfgespür und eine geladene Waffe, so kann nun ein Schnellschuss auf den Magier abgefeuert werden, dem dieser nur ausweichen kann, wenn ihm eine Probe auf IN oder Gefahreninstinkt gelingt.",
+          "voraussetzungen": "IN 18",
+          "kosten": "100 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 15",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.magic",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 15",
+                "excerpt": "Arkane Sensitivität II"
+              }
+            ]
+          }
+        },
+        {
+          "id": "msf_astralbrand",
+          "name": "Astralbrand",
+          "gruppe": "magisch",
+          "typ": "sonderfertigkeit",
+          "seite": "15",
+          "beschreibung": "Zwingt gegnerische Zauberer bei an der MR gescheiterten Zaubern trotzdem zu vollen AsP-Kosten.",
+          "erklarung_lang": "Wenn ein Magiekundiger versucht, einen Zauber gegen die Magieresistenz einer Person zu wirken, die über die SF Astralbrand verfügt, dann müssen auch bei Misslingen des Zaubers die vollen AsP-Kosten bezahlt werden, wenn der Zauber an der Magieresistenz gescheitert ist.",
+          "voraussetzungen": "MU 18, SF Eiserner Wille II",
+          "kosten": "300 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 15",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.magic",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 15",
+                "excerpt": "Astralbrand"
+              }
+            ]
+          }
+        },
+        {
+          "id": "msf_ueberwaeltigende_zauberkraft",
+          "name": "Überwältigende Zauberkraft",
+          "gruppe": "magisch",
+          "typ": "sonderfertigkeit",
+          "seite": "15",
+          "beschreibung": "Garantiert selbst gegen sehr magieresistente Wesen eine Mindestwirkung gelungener Zauber.",
+          "erklarung_lang": "Mit dieser SF erlernt ein Zauberer, selbst gegen sehr magieresistente Wesen noch eine sichtbare Wirkung mit einem gelungenen Zauber zu erzielen: Jeder gelungene Zauber wirkt mindestens mit Leiteigenschaft/2 ZfP. Alternativ können Stufe/4 ZfP hinzuaddiert werden, wenn man damit auf ein besseres Ergebnis kommt. Diese SF wirkt nur bei Zaubern mit einem ZfW von 18+ und kann die ZfP nicht über den ZfW hinaus steigern.",
+          "voraussetzungen": "Leiteigenschaft 18, 1000 AP in magischen SF",
+          "verbreitung": "2",
+          "kosten": "400 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 15",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.magic",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 15",
+                "excerpt": "Überwältigende Zauberkraft"
+              }
+            ]
+          }
+        },
+        {
+          "id": "msf_zaubersaenger",
+          "name": "Zaubersänger",
+          "gruppe": "magisch",
+          "typ": "sonderfertigkeit",
+          "seite": "16",
+          "beschreibung": "Wirkt Zauber über Musik oder Gesang, erweitert sie auf Zuhörer und bindet ihre Dauer an die Darbietung.",
+          "erklarung_lang": "Zaubersänger haben gelernt, ihre Magie in musikalische Schwingungen zu übersetzen, womit sie jeden Zauber, den sie beherrschen, auch durch Spielen eines Instrumentes oder Gesang wirken können. Vor der Zauberprobe muss eine Probe auf Musizieren oder Singen gelingen; deren TaP begrenzen den verwendbaren ZfW. Die anschließende Zauberprobe ist um die Hälfte der Musikprobe erleichtert. Gelingt sie, dann kann ihr Effekt auch auf Personen in Hörweite erweitert werden, selbst wenn der Zauber dies eigentlich nicht gestattet. Die Wirkungsdauer ist verdoppelt, hält aber nur bis die Musik endet.",
+          "voraussetzungen": "Viertelzauberer, Musizieren oder Singen 7, Meisterhandwerk Musizieren oder Singen",
+          "kosten": "300 AP",
+          "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 16",
+          "hausregel": true,
+          "ruleMeta": {
+            "origin": "house_rule",
+            "sourceKey": "regelwerk_ueberarbeitung_v1.magic",
+            "citations": [
+              {
+                "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+                "locator": "S. 16",
+                "excerpt": "Zaubersänger"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

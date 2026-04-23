@@ -1,1 +1,466 @@
-[]
+[
+  {
+    "id": "easf_charmeur",
+    "name": "Charmeur",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 22",
+    "beschreibung": "SO-Differenz wirkt bei Betören-Proben als Bonus statt als Malus.",
+    "voraussetzungen": "CH 20, TaW Betören 21",
+    "kosten": "300 AP",
+    "erklarung_lang": "enc:3:9mmRVfcIquTjaxvRF+0IOYrnGH4aUW37zj8jZWFSWKg07kClA1ZYqH9jn0WgZtPMwcmBBkfyO+E2fYY3sFyn+Ah/EUwceMHLjMwvO9CynSeI5M16R21Y2KyOga3Bt7WH036ZFafu8plhomIvuPMag5USOe7w9DsL5z15ZlnB78sEFEfwprEJTRZMTRcdPictqIXD6w6fmGW/FldFcJpAqioIOjY4918p5bwyDqL+rOJryy7r2XGtAyiLHkwQYprrR3CydF5rrE8gXON4AhS2n7kJ6ePAVC3EDIEUqaHwIS3ZnVKcsSZDmrZUTaU69dLkEleHt0aBImUu/GdmGpQPkvJfeNA6ZzY4U8ObjtxdkFXwriO+ErniwEAUi+DmXegqa7/YdX/8MH1ml0M=",
+    "quelle": "Epische Stufen S. 22",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 22",
+          "excerpt": "Charmeur"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_falleninstinkt",
+    "name": "Falleninstinkt",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 22",
+    "beschreibung": "Intuitives Ausweichen einer ausgelösten Falle oder eines Hinterhalts per IN-Probe.",
+    "voraussetzungen": "IN 21",
+    "kosten": "300 AP",
+    "erklarung_lang": "enc:3:2GRjKlNoxRRG3KAGWpLeExBVGeXaXvLw4jEQoDJRPJ/A0zQtAyEEHnEb55O5ZRJlz0awGXVOo4ASk7v0UaFTef0Y1b2ngGgvOrtHlL3Sb+RqKmyjzIxvG8JWlf4qJByqOEgNS3FBocHPX0kHi74F7OGScUaEbHKCScyi9RcEI/2ZrXzeUe07LfNFX5VZTzXV94LurHjH6Txe9v6rxGOMDY7la4r7g0xnuZfe57NRGAyMVfwoz6tlQS1OmSkLkPssEiv8k4yJQr9o4dKoxyGGFKg6YUQKCom9DMeZs1o8peGArTb6hGwhApFWjqJ3iXSznvaIMsHd/dr8dG656v31jc3MB1yzgFoyE3Hlz/JDKur+Hqq2VcJqxuTO3n5PG71N8Pp2I+aPXhOoBikU9IiGD5pDp0eN1MEcGXtNb//nFLu7lVowlRTrw6HWUsf6AObUNaHeDu0zMJn+ezZBCEgxO97u4mBURwuurmsXALD/Ng9ARPPoErc=",
+    "quelle": "Epische Stufen S. 22",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 22",
+          "excerpt": "Falleninstinkt"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_gefuehlsmime",
+    "name": "Gefühlsmime",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 22",
+    "beschreibung": "Menschenkenntnis-Proben zum Durchschauen des Helden sind 50 % stärker erschwert.",
+    "voraussetzungen": "IN 16, CH 18, TaW Selbstbeherrschung 15, TaW Überreden 20",
+    "kosten": "400 AP",
+    "erklarung_lang": "enc:3:1CBQMXTUuhAVVwHBrs1Wrc9fa00wyPSrvi/1SBo+aW7wAtMgsb4nUZ0n2doh4NBusxqo4ctwhMsc2jJY6ottUbcryaTgum3Z8vW6wJME8cg8QzgNBjgY3Slvbnh6meBA3agn5iKUf78kxTCws9unzQVOnTbAD0cJwlFpXEyUkKCKBRTLzv71KkUpbP6hVwGzyElwMQnye50NwhmdHVPiCsQ5n0/STiQVGaa18IkdjjjJFveJPcc=",
+    "quelle": "Epische Stufen S. 22",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 22",
+          "excerpt": "Gefühlsmime"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_geist_ueberwaeltigen",
+    "name": "Geist Überwältigen",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 23",
+    "beschreibung": "Empath fokussiert angeeignete Emotionen und Nachteile auf ein einziges Ziel und zerdrückt es geistig.",
+    "voraussetzungen": "MU 20, TaW Überreden oder Überzeugen 21, SF Gefühle vermitteln, TaW Gabe Empathie 12",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:DKjZ1W7hd8emG9eCaLT9YfrMl7UeputpZICZ8+/VKNfm7BTJ2eI8cVAckkGVJ0guIWVee1j8vvIfmwJYvAWB5apFw/WjUFANfuccQsU7kKH/r95IwmKPC4sQVB3pqX7PL7c/T49IUIbqDjhb1dN30FpVv+2AlxyjuGTUIajNWiuiDI9rLEW6SgSt2H7zHfaBjONo5b/IoLYH5Qb40BXTT4falUn6V8rK/CFF0/8lguowOoFIO/FvtqRkC+nMMkFttzSIEb0woWrBBGM6/2bQAWXeRcesBfuqD22BjA3CiLkqaFMEtvFr9IMdRvul5KlYhb/oV+drgxcBM3tHKAnf9pkdWzYPevkKSxPlr3GAdpgp1LVZACtIXqHwApDZntwnCsULu+B3c0oSAuPjwGXKKXUzmOXKggrJpaPx11/Y7MgLyLyDbqYgzBciswThQt3RShphHrNROL/of0LgJxfdjqICuwFS0c/s4ycR8WcsOj1ixvLrifEEiPgp+bRqqxVVE5IyugyQvXThmu9M5xvj0ep2hLXU2adAeZbjJw34uj3YNlhqcNGX3+Sp+jBV5kvFaZ5Jg+L4ol62pFIvjMDkAQR+/5fAkTltAGpHgjC/f0iofzh2gIsfBGtR7SgWDuDarsr33o7qmyZbWXuEQYoPumuBgEpx3amh2RF7mQaxrQURxW2nGrSzdfQ4Ar0mekmBwJ2InLc0PRhBsr0vDXCkMp20xwNeVFYLM2NyWXIVVMd0ku2FOrJdaZVldcG2TL3lREvufe2eRj3+xwkD+Miuxcndmbym2TAQbD3zOVh67Lrt0POFPBwJmgvs1CDtDVpasMGjdvxp15oj8kYebVjRxkNabWSYHq1XcWD/1+EfSdT9pe8Yz/HUTZLFt9APe3pMh6D6tmWH1GRIsZS3kItK8msJwsLEh+Nkkv5Q3ad8mky8NIfoR+GHOn/mLQ33tngW9LgGNpxlr7d+qCqj1QA66/l9H4EEctBwQIpUSZGau6NzManyP+fcgG04N8l9C41fKYluPcZdLfGVZIXXPMu/fhBJOsbktrZC/ubR05iNq5nK/A==",
+    "quelle": "Epische Stufen S. 23",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 23",
+          "excerpt": "Geist Überwältigen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_inquisitor",
+    "name": "Inquisitor",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 24",
+    "beschreibung": "Wer verhört wird, kann nur unter erschwerter MU-Probe lügen.",
+    "voraussetzungen": "TaW Menschenkenntnis 22, CH 20, TaW Überreden 21, SF Silberzunge",
+    "kosten": "350 AP",
+    "erklarung_lang": "enc:3:nHhjtz6TPdjv2n2/uGFaFHv7fEgXNmj52a9B995N2LYIM0EX/XgV7BsteI2cc+izgAWXDjLUAIFfBZgVp2B3M3VuqMUySHF+jWxjtwkiW7mHpUy7J5Fgb2RkjxQQmmC/j1RVw6xqlJ5QuVnfUcwunEzepiBjfn7O+ROfYL17kMqrICfY0VPVzluil6bHaCUGmm5BZ6536qPOCpPR3Su4nzkIqgCNbKmpRZ5fXaTotsZdLI3UiBesRxsPWusb9LE0WCXhas8ESK1TEXdCrp8NMMXqAdZtIprZYnXLlofPUnrmj00TGoE=",
+    "quelle": "Epische Stufen S. 24",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 24",
+          "excerpt": "Inquisitor"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_meister_der_anpassung",
+    "name": "Meister der Anpassung",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 24",
+    "beschreibung": "Keine gesellschaftlichen Vor-/Nachteile durch epische Merkmale; wird nicht wiedererkannt, wenn nicht gewünscht.",
+    "voraussetzungen": "IN 18, TaW Menschenkenntnis, Etikette, Sich Verkleiden und Gassenwissen 15",
+    "kosten": "400 AP",
+    "erklarung_lang": "enc:3:NoUN/voTCH0QpeuRwNhak2Ja47M7WiMCyII56z5u177gmuI/SlNvfP1rebWNdUqa3LFWuerrkIxSQIvQYqZdunAIt6MpZQdv5nYLghizWIplFO4x7GsuwKMgOM7z3mOz9WHV2JgQcJbYpzia2ajC0upJ6jhFpsevEhWz6pNlGwDC4iPIjcF7FEF03AqpllI0qzoDdIynmx49OAXUxLXGc5IrQE/LedJtQ8UqfY8jEWG9PPBpctXTHGU5v8uk0n3oji0zNrdOs16yEkVj2AOLU4tuxNLiK405paetBoKk/LMN0VLg6+daU856wbvZRsMZ6y4=",
+    "quelle": "Epische Stufen S. 24",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 24",
+          "excerpt": "Meister der Anpassung"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_meisterliches_abrichten",
+    "name": "Meisterliches Abrichten",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 24",
+    "beschreibung": "Tiere können mit Manövern wie Finte, Wuchtschlag, gezielter Biss, Sturmangriff u. a. ausgebildet werden.",
+    "voraussetzungen": "CH 18, TaW Abrichten und Tierkunde 18 (alle VR -2 bei Tierfreund; nur Abrichten bei Tierempathie)",
+    "kosten": "400 AP",
+    "erklarung_lang": "enc:3:9uMQukQ7GFZuWKpP3ogOeSG8tWq5aTodoVgB8NoBfvvV47EWP0Yg7zlGpXlwS0mXNLkYvX9gwhH/5859pWEgpTnbRD7sIi63umkhPXCpbwri1ypFNOiqQQkEu8IOnBPesz9lesCI/Y5EKD96gq9Vic42i6Ud/6xO0nlOD/8NuOmr85nUAYEaI9K3gcmVi8N6Iwz+uhIspD4tmLcubPRtuBouq7wfjvy7KhZynHircMMq9rDyekdo4wuDaABKSKyBGzdGNQyR8tjEcgjSQipBiMYfki0C/QisdvejgXXXfyQheYt6UMqV25XoVmrP3OUX+rJE0mo6KxGYoRLXnmrsX7PjQWpisPboMJSu5AjIQaJ3IgYr0vVOJGoctrVP3Vk8/uX3NwDvVo20EMcqfLdDHKRhcJe3DTIhcrLgDtiftAkXPejcT6VEvguqZJzUsC3WLa1/V+GdtuYeTPtZuxBaJX9kRxMVJ4yhl0ZDDfvpT2vdN9dP4Xxtwg==",
+    "quelle": "Epische Stufen S. 24",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 24",
+          "excerpt": "Meisterliches Abrichten"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_permanente_traenke",
+    "name": "Permanente Tränke",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 24–27",
+    "beschreibung": "Alchimistische Meister brauen Tränke mit permanenter Wirkung aus Titaniumstaub, Qualitätselixier und mächtigen Zutaten.",
+    "voraussetzungen": "SF Vollendetes Handwerk (Alchimie); Speziallabor (ca. 1500 D); vollendetes Labor (5000 D) erleichtert um 3",
+    "kosten": "600 AP",
+    "erklarung_lang": "enc:3:GuS9wsDT6IoyGCpEWxPIrZMj960Hyl/Ma+QuSYJPh0SyKnM97s64yW+9RGXHH4sJRPloSkG/FJlBcN1DINT8tyFXod8nIoJyApH1wNM9yUEHoxMttmheO5wMOWCwNjoRqVsc5ENl7MAcg1f/Jf3tPas5fh6qBG+5mMjNqQRgLeEW72iCkmN55dml0EekZsvNZvEUN7g6yV1mALBVAfHXoQGLS1pfk8yjgWLUM2Vyb1ShmZaYCowxlkG6lLh9S1Xv+KW1J4dTgZTqLuyzHwWbRnGyazvuPxrIMRey0sFfbMbB1S1RQ9K0OGRxr9ShCBI/UPnJvp0ldJqVQCHxeWRCeEVGULEMhor3vn8/8w5ckK9mtDqLJRj0h/Bd8/1H43HnwOxJ+sTPPK0QSrxX2vOtik+zQE14h9e6/ZSFZAy9hww24/iSoyJ9jytIOAk4OJur5lQsafZOjSx9xryWkSb4OFodfjjPP8XQ3hrjW9x6OSqy4xmq9Whb9Nh67QYE18oqytgRBlcx5Wv3770isvkIRvFS5BuRsaoNO5zedX6xpf4vUFtCMJQrYrAMRRxB/nPW9egQyJnJ9Ce1+eb24/fN5UfB085VKqQEfNAZmHicMwoMBTZD/HIdXKWXZ5lEA7D/Uf3gpyW4nvEcgEuUWiYPorgahyT40kOoCbSgSUFH69VR+ta/YtZKOHNjWeFgUAEYaZ8/l3zSYXvla2r3izzNGBos3oVkFk67ZjTzW94nE3tL4l82uRItN+1Kll8bOHKIyzc2ocbK84UMCtM8CVo0w+H+GpD/pe4RxUWf7GfAhU+U0wHiaE3mWofy4m+YGOyddHNO9s7zlbi6krsYQ6YSXd+BJx5oBsfBMVu32pvjNsXt09eC8YNyEhnCZQAX1PP/NmwYOrTnYnclandk12+xfe4oucC9GuAzKRjJgDZoUkJ6WC3ojoW/pCKa68K9/NCnhaXtanoZeG0jO0njKnyMMPNxPi8co/JlLz2GpaL5j2BDZ30cQ6i5KvLt10/pvEDj7w2WbGxi5ThO117ah98sn6cnBhRpyenLXd6kdSDw0Vh7vFYmTqpXBPYG+3mubglX96iZgNdJqACIOcMICf91KTyWtIGTTZDGLmpIfFm7L/LXs748/zENZyb1UqmN6v7aIBH7riYbFsUCxiEwubb49cz5wuQ1LGhLbgcdko+CnrBFxtuE6kXA4xLpa6pjuYfjKXGjo+kXUDDQZkn6ZviuO3NslZjDIt3W670eAMAtUmtxhTDfg0zIcO7SbGA2fu3RHZmhLTdnFzU6d6M=",
+    "quelle": "Epische Stufen S. 24–27",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 24–27",
+          "excerpt": "Permanente Tränke"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_ueberragende_agilitaet",
+    "name": "Überragende Agilität",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 27",
+    "beschreibung": "Bewegung wie ein Akrobat ohne Proben; akrobatische Einlagen kosten keine Extra-Zeit; Aufstehen ohne GE-Probe.",
+    "voraussetzungen": "TaW Körperbeherrschung 18, TaW Akrobatik 15, TaW Athletik 15, TaW Klettern 15, SF Standfest",
+    "kosten": "450 AP",
+    "erklarung_lang": "enc:3:rxiQvx/BM0e/wBmabZglOQcKCZO+phR6xOWbEaj/oRTR+UbwTVIUR48ru+wxUsnLwmfGtFCj74nw7Pgecwx/TGk7TC1QJ7ZDmuk+a33wDfGvHaqhIdXFmAIYeTm7bECd6gqgn9WvtFEP3hVgoD8y5Gu/snr9CTA/6rSWczCpBg6yNd6JIIfKBvuYCCRAltdxqgN3/6+PUyAQlcAwRl1xjcKdciGpiTVwrbaTG4/1g4CPBqmibLmLdp5bjRWKJJtzbF/20AMNc7ItidKZyvLgKj5S8tflMbYR6gKrSrPrQC3WbQF6s9JA4EEqp9eN7XYN2yFeJHRmnn4aPKfj1eF56yu3Po66Yxfk7Aa1DnEXFESI/1FJgmpjBQC7/MT2jfCHPMynJtwOYES3aJgNY1Th/Pi5aB9PUIqwhPMJ/DUNz/AZPRPC+GkXmM/ESCzpwybc3WjUdki8LVJf7sXu/CA/NqiIn/8lhNCIK74dzW4i7ncLjp2YjYh9tVyP9fYomyIUVinvR2owl8RR8f8loZ9EmZwQdmKYKpeNsXxC6i48KjISu1Hb32inNEB7k7aqgdRy9cK7CqTu8VE580FoRra8Ne541YLYZdWhuLvJijzcTNZLDuoVG3QEXgsO1/QHT+jsIQjc7V0olqfA0Xk6uRI804+03OFtlB0o8b9R6UHdGP/0h8Z2xtz+hp4kFVhs7YIIliVcMmM=",
+    "quelle": "Epische Stufen S. 27",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 27",
+          "excerpt": "Überragende Agilität"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_revolutionaer",
+    "name": "Revolutionär",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 28",
+    "beschreibung": "CH-Proben zum Aufwiegeln dürfen wiederholt werden; Heilkunde Seele als Unterstützung für Überzeugen/Menschenkenntnis.",
+    "voraussetzungen": "CH 20, TaW Überzeugen 21, TaW Heilkunde Seele 15 (passende Kulturkunde)",
+    "kosten": "300 AP",
+    "erklarung_lang": "enc:3:oBLXJKADse9WLwXnGUAj1IV5Em2dlf12DToVnorhuXBMfqejqj6s4VL9EB/Wejb18IheoMwq8IRyVRIL7qEWqaSQGrfMxxK32eNIL2VZsf9fpcrOQPXpu/5lJH0QyOxjhpFX/k5bjaOsEAnYkvdKaX6BkGm2nzPL9ZSlmWj8kz8V1JEzQVRusVVM/GvCTcz7ENr240TEVRBEc49iwpyHs8naHvZ/w4xWxQdDCl8I/yZebxKrmN+6qm7EI+5x5qvuBekhpkM4j2DGT8QPVLsRF2eeeDDWIpaFB2zzU6Yy/wRuN17pFrCLK0MQiz1z/BVJvvbXprxDaBQ+A3k2vfbEefuTF9Ml/HthUVQrNFy0fAYuV98PM05cLeH3bf69mkjSAGEMiMISv1bEG9+vBgMTAottCjdq8w9zBw2wDY6PSMV/YaPj5T+JEkcQW21pBX5k26aVS4fwUJfh3KcBP/hoXw==",
+    "quelle": "Epische Stufen S. 28",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 28",
+          "excerpt": "Revolutionär"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_schattenlaeufer",
+    "name": "Schattenläufer",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 28",
+    "beschreibung": "Mit Schleichen-TaW/10 GS bewegen und als stillstehend wahrgenommen werden; halbe GS ohne Schleichen-Abzug.",
+    "voraussetzungen": "TaW Schleichen 18, TaW Sich Verstecken 15",
+    "kosten": "400 AP",
+    "erklarung_lang": "enc:3:gB7rMwz7wqnH8fhylkIkaL9o9XpNThyKYDFLc/ibZSPQn7V5Bgbxk2Cp7ToVywgU8LKApZUzaimgQfb9zE3cBUYgZHuZY2w0LgNOW8LyOHLIPcqTYUB8+tO1XXERDDHUte7hev/x8ITFpdjcS+C6WwbUP6H899Xlgjc1PqbewTrt+yo2JOQKGHczG//4CKyS74sR4vNb1mQvsH9eJCZnzZsS4KsOT1r8kQmO4zG8DBhycJz6MlthhOAQc+v8GoSKm+PBCPAlJHjvHAghh4IEplZ7iRvtUWRqTWrlnW6HtNEr7jyUIsPkL6U8D1sjKA0VbblOgydKIM4dcalkyvtDJLA98S35brMhb71OqG6GFARwHMDQ7sdPgeDhwXJkcyXqLeZezflUlFmtnY8AuYoMWg5bONkcMApQvVaHqJO2icVUO/5c/gzCj1tvcJJ0hqCfR6kIVU11im/mr/cWfpd6+elXwWNrVJtj98hUBf3POeOP8Wm+jcNR+nNeVQ9lji8aLN0NVjr0XSqbRDEXIO8NkVxksRSOL4BKuiAOAeiArLlPcL2AS1TqP7h8mBcujd9pKLjM5gL5Ucp4Gbpksy98zwlhrdpEV6yGT+QfHzseS6/AGkMOOAE7nHWli3msExdNZ4LU",
+    "quelle": "Epische Stufen S. 28",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 28",
+          "excerpt": "Schattenläufer"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_silberzunge",
+    "name": "Silberzunge",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 28",
+    "beschreibung": "Umfangreiche Boni für Aufwiegeln, Betteln, Feilschen und Lügen.",
+    "voraussetzungen": "TaW Überreden 21, CH 19",
+    "kosten": "450 AP",
+    "erklarung_lang": "enc:3:muP1xBA1mPlj7CN0Dgzv8yEBsN/83LHHG4FhYPcaqXTfmMI+15kkMSAX0WFpmnPYHtpEr5RXGWDhFBIbseJhhULhhI7/n+lTNW8pZ0Kb17KzYnMflD2lWlLTEbzirFXMakGylLclRuws8VY1SuMg5qdBTNhGU4REXehOGV9pxV1CWm0g40swZ4/jOOoh3+7fivLqC6oDACaA3JfjpTwWbX80k/BqjoVP61WNK9W8pL9UJg3REk8hE8wbmf8HWzHuir326N59Wp2a2fyk944Ek/8nfkqenHqC6a7NBs4D6FQK+ubinEuTbRNrEmyI+SdeGy5T4SWFRg+uHI1e5V88pHb/aQSdAMBWY8ym+q5POBQ36vf56880yZom0tSkuoSVV6G3U1FsHoKJlGDXZ3noyRq9VnyKB3LusLeXzYtfseB4qsQyS6alpaVULOBZS1pVquIfoOveNjkD7CSlLrYQ3MidkR+JtjBpqtRbffQUwVpnCPHZ+QGe1Fq25orADdURUpjqNAPmI2VxpDdkQ7HP/nkmrvUCp5Ql+PdtrbA8vk5j+OwnN2cZXEbxcKgJIa5KHswhDEFXEupg5fTSnFHyM6f80PHbimyeOLPnJtOaFaBzzleools/asfBzB+34SZbGOtkUVLdvljUctHtmeqPKTZmt2yEute+oGOA1cIyMELa/jCVUHXLce/LqvAwQGLKpZYnWtgtP3+J5iMIwYDc76YY2vTZVXHAxd+kScZqYRCG06pdE/4vvkLdtSDmBjt12Q==",
+    "quelle": "Epische Stufen S. 28",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 28",
+          "excerpt": "Silberzunge"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_sumus_kind",
+    "name": "Sumus Kind",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 29",
+    "beschreibung": "Reduziert Hitze-/Kälteschaden um 1 TP; immun gegen natürliche Wildnis-Krankheiten.",
+    "voraussetzungen": "KO 20 (18 bei Resistenz gegen Krankheiten), TaW Wildnisleben 18",
+    "kosten": "300 AP (halbiert bei Haupteigenschaft KO)",
+    "erklarung_lang": "enc:3:EoQii+pVf9aqv4hujBERP6jUV9kl4VKdaQKEqVPW5Jea+td7o7Sbjauo/B6HfmGYmCwQ0wO2iRN2l/ClWDih/BqfN/YOvicNp9dmTcs0C6a3+BJo51bYhBcItNFB4eBO9BvsDc7iMB/dMygccV9fUQ4aolMw/KfI4XQ9JgggJHo8+oZVePSJRF8h/YZDUJYNStXfMg35tSu9Dgn4H55rKD7y660yCUPwHqtB0dp5KnyekLzXvAobD8tRiZ7mgh6+jliXYQgp6gLjxrq8tzcfrGU9ViTLPQx+167PhmL/yyUJDTKzUJU+swTvWnSqDFCdS3+W8WzRwPuZr9ND6PNia0nApLfc1KeGnLmAu/5Bc9LztFVSsVRW0DdQ4kZvWIKNgGJ7uKkFgP2HXF4uuGmWtFD1uxOTuilwnWtH41JUyw8UMihY9PJD/U5qeso=",
+    "quelle": "Epische Stufen S. 29",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 29",
+          "excerpt": "Sumus Kind"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_vollendetes_handwerk",
+    "name": "Vollendetes Handwerk",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 29–34",
+    "beschreibung": "Meisterung eines Handwerks- oder Wissenstalents mit talentspezifischen Boni (separat je Talent zu zahlen).",
+    "voraussetzungen": "Entsprechendes Talent auf TaW 24; beteiligte Eigenschaften insgesamt auf 50 (je ≥ 15; bei zwei Eigenschaften zusammen ≥ 38); alle Hilfstalente TaW ≥ 15",
+    "kosten": "600 AP (pro gewähltem Talent)",
+    "erklarung_lang": "enc:3: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",
+    "quelle": "Epische Stufen S. 29–34",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 29–34",
+          "excerpt": "Vollendetes Handwerk"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_wandlauf",
+    "name": "Wandlauf",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 34",
+    "beschreibung": "Tilgt Abzüge auf Schleichen-Proben während des Kletterns durch das Klettern selbst.",
+    "voraussetzungen": "TaW Klettern 18, TaW Schleichen 18, GE 20",
+    "kosten": "300 AP",
+    "erklarung_lang": "enc:3:HPG4PiW9zNZPUrwcQ2HNmuErS+0ElwRMV3t2rxF1Wzmzfxbfta6+S29uFCkldINjt9dmiWfUA4DUxx3kUg78pjs+oHFhUHZbZbEDKmT/shHejn3SXypplQS3Nu/MZ9PQCOzVwITlqrBU0JewUztR9i+KKUeNwwBz09zPKaJuF3Cb0DTaSj0385b3qjOF0KoeQUD7xlAAZGmzOpwzOTvsNB4P7qIHrj7BKk5+w6KYI6ki68QF1AhKZysosF7MtYQ+Fo0z3OxE5N7pIArOLe8fMs+tucofCw3uPM6AaXHBhJuuHhWmYM/npOJ+To6KQpprDPFEIK5Qlg==",
+    "quelle": "Epische Stufen S. 34",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 34",
+          "excerpt": "Wandlauf"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "easf_zustand_isolieren",
+    "name": "Zustand Isolieren",
+    "gruppe": "allgemein",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 34",
+    "beschreibung": "Schlechte Eigenschaften in Höhe von Selbstbeherrschung-GP können ignoriert werden.",
+    "voraussetzungen": "MU 18, TaW Selbstbeherrschung 18, Vorteil Empathie",
+    "kosten": "250 AP",
+    "erklarung_lang": "enc:3:4hNgmJcpemyjr1S07P9WGRphOwGmQLtzr759t7y/nVqUyqltl9l+KjPd1AfKY9ltRKSl2nBcvsKZ8WHL/i9c+arFWESitcoJxSpZ69rXF3KuCMsma7SmGCh4syNbyqTw4+nIhPKSc8FOXuVXxKpqeApu96kprTBxnEufkXB7zfrXs4XRGX++6o1sYe5p1Qgm6bf5Pxv95irC5Yiea591nMNOY/SHqBcC5rlDqQ9T+XOgzl3KC9hwFjDg08m8eTFrY1jO3++mneuoN705+EQII4t7NxnK9A==",
+    "quelle": "Epische Stufen S. 34",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.general_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 34",
+          "excerpt": "Zustand Isolieren"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  }
+]

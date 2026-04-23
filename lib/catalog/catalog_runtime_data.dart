@@ -1,4 +1,6 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
+import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
+import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 
 /// Beschreibt ein Problem in einer benutzerdefinierten Katalogdatei.
 class CatalogIssue {
@@ -105,13 +107,21 @@ class CatalogRuntimeData {
   /// Erstellt die aufgeloesten Laufzeitdaten.
   const CatalogRuntimeData({
     required this.baseData,
+    required this.resolvedBaseData,
     required this.customSnapshot,
     required this.effectiveData,
     required this.issues,
+    required this.packCatalog,
+    required this.activeHouseRulePackIds,
+    required this.houseRuleProvenanceIndex,
+    required this.houseRuleIssues,
   });
 
   /// Unveraenderte Basisdaten aus den Assets.
   final CatalogSourceData baseData;
+
+  /// Basisdaten nach Anwendung aktiver Hausregel-Pakete.
+  final CatalogSourceData resolvedBaseData;
 
   /// Snapshot aller geladenen benutzerdefinierten Dateien.
   final CustomCatalogSnapshot customSnapshot;
@@ -122,20 +132,41 @@ class CatalogRuntimeData {
   /// Alle bekannten Probleme inklusive Konflikten gegen Basisdaten.
   final List<CatalogIssue> issues;
 
+  /// Alle bekannten Hausregel-Pakete.
+  final HouseRulePackCatalog packCatalog;
+
+  /// Wirksame Paket-IDs fuer diesen Laufzeitkatalog.
+  final Set<String> activeHouseRulePackIds;
+
+  /// Feld-Provenienz aus Hausregel-Patches.
+  final HouseRuleProvenanceIndex houseRuleProvenanceIndex;
+
+  /// Probleme aus dem Hausregel-Resolver.
+  final List<HouseRulePackIssue> houseRuleIssues;
+
   /// Baut die effektiven Laufzeitdaten aus Basisdaten und Custom-Dateien.
   factory CatalogRuntimeData.resolve({
     required CatalogSourceData baseData,
+    CatalogSourceData? resolvedBaseData,
     required CustomCatalogSnapshot customSnapshot,
+    HouseRulePackCatalog packCatalog = const HouseRulePackCatalog(),
+    Set<String> activeHouseRulePackIds = const <String>{},
+    HouseRuleProvenanceIndex houseRuleProvenanceIndex =
+        const HouseRuleProvenanceIndex(),
+    List<HouseRulePackIssue> houseRuleIssues = const <HouseRulePackIssue>[],
   }) {
+    final effectiveBaseData = resolvedBaseData ?? baseData;
     final issues = <CatalogIssue>[...customSnapshot.issues];
     final effectiveSections = <CatalogSectionId, List<Map<String, dynamic>>>{
       for (final section in editableCatalogSections)
-        section: List<Map<String, dynamic>>.from(baseData.entriesFor(section)),
+        section: List<Map<String, dynamic>>.from(
+          effectiveBaseData.entriesFor(section),
+        ),
     };
 
     final baseIds = <CatalogSectionId, Set<String>>{
       for (final section in editableCatalogSections)
-        section: baseData
+        section: effectiveBaseData
             .entriesFor(section)
             .map((entry) => (entry['id'] as String? ?? '').trim())
             .where((id) => id.isNotEmpty)
@@ -160,6 +191,7 @@ class CatalogRuntimeData {
 
     return CatalogRuntimeData(
       baseData: baseData,
+      resolvedBaseData: effectiveBaseData,
       customSnapshot: customSnapshot,
       effectiveData: CatalogSourceData(
         version: baseData.version,
@@ -169,6 +201,10 @@ class CatalogRuntimeData {
         reisebericht: baseData.reisebericht,
       ),
       issues: List<CatalogIssue>.unmodifiable(issues),
+      packCatalog: packCatalog,
+      activeHouseRulePackIds: Set<String>.unmodifiable(activeHouseRulePackIds),
+      houseRuleProvenanceIndex: houseRuleProvenanceIndex,
+      houseRuleIssues: List<HouseRulePackIssue>.unmodifiable(houseRuleIssues),
     );
   }
 }
@@ -261,7 +297,7 @@ class CatalogAdminSnapshot {
     };
     final baseIds = <CatalogSectionId, Set<String>>{
       for (final section in editableCatalogSections)
-        section: runtimeData.baseData
+        section: runtimeData.resolvedBaseData
             .entriesFor(section)
             .map((entry) => (entry['id'] as String? ?? '').trim())
             .where((id) => id.isNotEmpty)
@@ -271,7 +307,7 @@ class CatalogAdminSnapshot {
     final sections = <CatalogSectionId, CatalogSectionAdminSnapshot>{};
     for (final section in editableCatalogSections) {
       final baseEntries =
-          runtimeData.baseData
+          runtimeData.resolvedBaseData
               .entriesFor(section)
               .map(
                 (entry) => CatalogAdminEntry(

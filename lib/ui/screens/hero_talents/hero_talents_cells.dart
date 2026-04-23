@@ -47,10 +47,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
                 ),
               ),
             ),
-            if (trailing != null) ...[
-              const SizedBox(width: 4),
-              trailing,
-            ],
+            if (trailing != null) ...[const SizedBox(width: 4), trailing],
           ],
         ),
       ),
@@ -71,6 +68,42 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(text, style: style),
+      ),
+    );
+  }
+
+  Widget _complexityCell(TalentComplexityResolution resolution, {Key? key}) {
+    final theme = Theme.of(context);
+    final highlighted =
+        resolution.effectiveKomplexitaet != resolution.baseKomplexitaet;
+    final style = highlighted
+        ? TextStyle(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.w600,
+          )
+        : null;
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(resolution.effectiveKomplexitaet, style: style),
+            if (resolution.houseRuleHint != null) ...[
+              const SizedBox(width: 4),
+              Tooltip(
+                message: resolution.houseRuleHint!,
+                child: Icon(
+                  Icons.rule_outlined,
+                  size: 14,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

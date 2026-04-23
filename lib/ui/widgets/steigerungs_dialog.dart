@@ -49,6 +49,7 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
   required int maxWert,
   int seAnzahl = 0,
   bool lehrmeisterVerfuegbar = false,
+  String? komplexitaetsHinweis,
 }) {
   return showAdaptiveDetailSheet<SteigerungsErgebnis>(
     context: context,
@@ -61,6 +62,7 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
         verfuegbareAp: verfuegbareAp,
         seAnzahl: seAnzahl,
         lehrmeisterVerfuegbar: lehrmeisterVerfuegbar,
+        komplexitaetsHinweis: komplexitaetsHinweis,
       );
     },
   );
@@ -75,6 +77,7 @@ class _SteigerungsDialog extends StatefulWidget {
     required this.verfuegbareAp,
     required this.seAnzahl,
     required this.lehrmeisterVerfuegbar,
+    this.komplexitaetsHinweis,
   });
 
   final String bezeichnung;
@@ -84,6 +87,7 @@ class _SteigerungsDialog extends StatefulWidget {
   final int verfuegbareAp;
   final int seAnzahl;
   final bool lehrmeisterVerfuegbar;
+  final String? komplexitaetsHinweis;
 
   @override
   State<_SteigerungsDialog> createState() => _SteigerungsDialogState();
@@ -216,6 +220,10 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
 
   String? _komplexitaetsHinweisText() {
     final hinweise = <String>[];
+    final externalHint = widget.komplexitaetsHinweis?.trim();
+    if (externalHint != null && externalHint.isNotEmpty) {
+      hinweise.add(externalHint);
+    }
     if (_ausgewaehlteKomplexitaet != widget.effektiveKomplexitaet) {
       final standardLabel = komplexitaetLabel(widget.effektiveKomplexitaet);
       hinweise.add('Standard: $standardLabel');

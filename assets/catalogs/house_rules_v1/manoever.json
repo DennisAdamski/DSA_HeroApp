@@ -257,17 +257,51 @@
     "id": "man_offensiver_distanzklassenwechsel",
     "name": "Offensiver Distanzklassenwechsel",
     "gruppe": "bewaffnet",
-    "erschwernis": "",
-    "seite": "",
-    "erklarung": ""
+    "erschwernis": "Angriff +4 zzgl. DK-Erschwernis der angestrebten Distanzklasse",
+    "seite": "10",
+    "erklarung": "Kombiniert einen Angriff mit einem Distanzklassenwechsel innerhalb derselben Aktion.",
+    "erklarung_lang": "enc:3:geBYlw9FYp2Q6oyHX0FBQzAedhQXmo6olh7fb8DJrdR3wD1q482z668YHZneiWcjZ79S4Wl/vwVOmwj2Vlof90AbRzYgfWizrbeDiaLJFM3leiq4uWfCmbVOBd/OZmOFfQYHeSixcL4JezKQEZQ5ru1qWawpR46j9IZgeGGrQ+lRpyYlxKWD3gevg1gFPGzhcesRVa9X3ndi1ZhKxViFo9NDyWRurhQzQ0avaUt1agHnP7l3LHLokvyf3OKLEg6YQm503XxxKv6rqJm/mx9oD7ydpnqen2ofm5jafOgD437R03B7Gw7lkCgBFRK78aDXdsAQ6+9tofx0qdH4smrI0ddFTF+HAbAtbZoIhORctGeaEFETalhyCKd3vqI0u7LyIJ7wmiQ9MVRNxtVRbz7xBKkXN8ep53fj8NTkeeUeXNnpoH0uI4Qq3kkZ0Jgw759MCZD8B7R/jRo6vzr74E3Y2wDpopscDXg3F6C8mXRMK2L2rSFOlI4pPe8APZ3KiV/x9svsN5ZRNEFdnMMHhCNEL+lqvIqGkbwHRr8xXXTHcayjrdUB5qFaO/gkILBAqsI9H8rWJtO5RLcwwfK2x3ZD+IheXMz/KBKZjdslpGp1r+ntsaopoNovMSL8pt/Brin24iPfHEP9meWN4Ccx+Xiz9Dl50+AbILFij0SH4snyrOS1Ynom8bsQxUaohOzXpAFjiEHSqHVxEY1y7uWEEvIJuyDuPloL8FRl+8jFRXBK3+oTMGomUsaWLYSo/0mKAlupaaG5Dc5OeIV0zVbyxORyExQOLCpAm9Z3RH91",
+    "voraussetzungen": "GE 20; SF Klingentänzer",
+    "verbreitung": "1-2, vor allem bei Elfenkämpfern und Meuchlern",
+    "kosten": "300 AP",
+    "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 10",
+    "hausregel": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+      "citations": [
+        {
+          "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+          "locator": "S. 10",
+          "excerpt": "Offensiver Distanzklassenwechsel"
+        }
+      ]
+    }
   },
   {
     "id": "man_offensiver_kampfstil",
     "name": "Offensiver Kampfstil",
     "gruppe": "bewaffnet",
-    "erschwernis": "",
-    "seite": "",
-    "erklarung": ""
+    "erschwernis": "Entfällt die übliche +4-Erschwernis beim Umwandeln einer Parade in eine Attacke",
+    "seite": "10",
+    "erklarung": "Erlaubt das offensive Umwandeln einer Parade in eine Attacke ohne den sonst üblichen Zuschlag.",
+    "erklarung_lang": "enc:3:OY+L74ChqcHtt7bDzlx85n2eljlzrvSBYsnNN+7oXpk8dfWMwl62ookcc39LzyoVZNMu8IP0NkPWCGDru2RuIqvIYJFNy6zdPMWvdewjlGJLmjmC4Lufqxqo0u+IJfLCr8Xmz0fxmkX4QTfC5+VlS7fNCNpgHEkyuqcJH6iBr52nx4ouz2DHvyVtoW2zmj3+7n2M73s9z48Ri+n9Kn9IAiTE9bCQikIqrVYe0q25XIGqZt8BUNt86KCNCvb5s007sGGtkB9xc/+i+A4BTGEP/g==",
+    "voraussetzungen": "MU 15, GE 12",
+    "verbreitung": "4",
+    "kosten": "100 AP",
+    "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 10",
+    "hausregel": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+      "citations": [
+        {
+          "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+          "locator": "S. 10",
+          "excerpt": "Offensiver Kampfstil"
+        }
+      ]
+    }
   },
   {
     "id": "man_schildspalter",
@@ -287,8 +321,25 @@
     "name": "Seitenwechsel",
     "gruppe": "bewaffnet",
     "erschwernis": "Ausweichen oder Binden +4 (Dauer abhängig von DK und Größe des Gegners)",
-    "seite": "Hausregel Philipp",
-    "erklarung": "Das Manöver baut auf einem ähnlichen Prinzip auf wie Binden oder Windmühle: Der Kämpfer leitet die Kraft eines gegnerischen Angriffs in eine ungefährliche Richtung um sich daraus einen Vorteil zu verschaffen. Dieser besteht in diesem Fall darin, dass er schnell an seinem Gegner vorbeischlüpfen kann um hinter ihm zu stehen was je nach Umgebung nutzlos bis lebensrettend sein kann. Das Manöver erfordert ein vorheriges Binden oder gezieltes Ausweichen um sich in eine günstige Position zu bringen und ist 4 Punkte erschwert. Die Anzahl der benötigten zusätzlichen Aktionen ist abhängig von der DK und der Größe des Gegners: ein Seitenwechsel in der DK H benötigt eine Freie Aktion, N benötigt 2 Freie Aktionen, S eine normale Aktion, P ist nicht möglich. Ein großer Gegner zählt automatisch als eine Kategorie weiter entfernt. Bei sehr großen Gegnern ist das Manöver nur mit Meisterzustimmung möglich. Verfügt man über die SF Beidhändiger Kampf II oder Tod von Links, so kann der Seitenwechsel noch mit einem Angriff aus der Zweithand kombiniert werden, was den Seitenwechsel um 4 weitere Punkte erschwert. Eine Parade gegen dieses Manöver ist nur zulässig, wenn die SF Kampfgespür erlernt, und eine Aktion aufgespart wurde. Das Manöver ist übrigens ebenfalls dazu geeignet einen Sturmangriff ins leere laufen zu lassen oder einen Ausfall zu stoppen. Das Manöver ist nur möglich wenn die INI des Anwenders über der seines Feindes liegt. Befindet sich neben dem Gegner ein weiterer Feind, dann steht diesem bei der Aktion unter Umständen ein Passierschlag zu."
+    "seite": "10",
+    "erklarung": "Leitet einen gegnerischen Angriff um und erlaubt es, an ihm vorbeizuschlüpfen und hinter ihm Stellung zu beziehen.",
+    "erklarung_lang": "enc:3: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",
+    "voraussetzungen": "GE 18; SF Klingentänzer",
+    "verbreitung": "2, vor allem bei Duellkämpfern und professionellen Schaukämpfern",
+    "kosten": "150 AP",
+    "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 10",
+    "hausregel": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+      "citations": [
+        {
+          "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+          "locator": "S. 10",
+          "excerpt": "Seitenwechsel"
+        }
+      ]
+    }
   },
   {
     "id": "man_stumpfer_schlag",

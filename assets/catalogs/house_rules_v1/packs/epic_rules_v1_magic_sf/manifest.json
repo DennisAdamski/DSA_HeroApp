@@ -1,0 +1,8 @@
+{
+  "id": "epic_rules_v1.magic_sf",
+  "parentPackId": "epic_rules_v1",
+  "title": "Epische Magische Sonderfertigkeiten",
+  "description": "Epische Sonderfertigkeiten für Zauberer.",
+  "priority": 100,
+  "patches": []
+}

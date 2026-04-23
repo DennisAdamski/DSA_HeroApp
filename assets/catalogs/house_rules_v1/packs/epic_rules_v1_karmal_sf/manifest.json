@@ -1,0 +1,8 @@
+{
+  "id": "epic_rules_v1.karmal_sf",
+  "parentPackId": "epic_rules_v1",
+  "title": "Epische Geweihten-Sonderfertigkeiten",
+  "description": "Epische Sonderfertigkeiten für Geweihte.",
+  "priority": 100,
+  "patches": []
+}

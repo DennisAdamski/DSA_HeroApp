@@ -1,0 +1,8 @@
+{
+  "id": "epic_rules_v1.liturgies",
+  "parentPackId": "epic_rules_v1",
+  "title": "Epische Liturgien",
+  "description": "Liturgien mit epischer Wirkung aus dem Hausregelpaket.",
+  "priority": 100,
+  "patches": []
+}

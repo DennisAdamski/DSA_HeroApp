@@ -48,6 +48,23 @@ flutter:
   uses-material-design: true
   assets:
     - assets/catalogs/house_rules_v1/
+    - assets/catalogs/house_rules_v1/packs/epic_rules_v1/manifest.json
+    - assets/catalogs/house_rules_v1/packs/epic_rules_v1_advantages/manifest.json
+    - assets/catalogs/house_rules_v1/packs/epic_rules_v1_combat_sf/manifest.json
+    - assets/catalogs/house_rules_v1/packs/epic_rules_v1_disadvantages/manifest.json
+    - assets/catalogs/house_rules_v1/packs/epic_rules_v1_general_sf/manifest.json
+    - assets/catalogs/house_rules_v1/packs/epic_rules_v1_karmal_sf/manifest.json
+    - assets/catalogs/house_rules_v1/packs/epic_rules_v1_liturgies/manifest.json
+    - assets/catalogs/house_rules_v1/packs/epic_rules_v1_magic_sf/manifest.json
+    - assets/catalogs/house_rules_v1/packs/epic_rules_v1_paths/manifest.json
+    - assets/catalogs/house_rules_v1/packs/regelwerk_ueberarbeitung_v1/manifest.json
+    - assets/catalogs/house_rules_v1/packs/regelwerk_ueberarbeitung_v1_combat/manifest.json
+    - assets/catalogs/house_rules_v1/packs/regelwerk_ueberarbeitung_v1_economy/manifest.json
+    - assets/catalogs/house_rules_v1/packs/regelwerk_ueberarbeitung_v1_general_sf/manifest.json
+    - assets/catalogs/house_rules_v1/packs/regelwerk_ueberarbeitung_v1_karmal/manifest.json
+    - assets/catalogs/house_rules_v1/packs/regelwerk_ueberarbeitung_v1_magic/manifest.json
+    - assets/catalogs/house_rules_v1/packs/regelwerk_ueberarbeitung_v1_system/manifest.json
+    - assets/catalogs/house_rules_v1/packs/regelwerk_ueberarbeitung_v1_talents_learning/manifest.json
     - assets/catalogs/reiseberichte/house_rules_v1/
     - assets/heroes/
     - assets/ui/codex/

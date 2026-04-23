@@ -80,6 +80,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
     );
     final attributeMaximums = computeAttributeMaximums(
       effectiveStartAttributes,
+      epicBonus: hero.epicAttributeMaxBonus,
     );
     return readAttributeValue(attributeMaximums, code);
   }
