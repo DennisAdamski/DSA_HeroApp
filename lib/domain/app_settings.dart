@@ -15,6 +15,7 @@ class AppSettings {
     this.debugModus = false,
     this.dunkelModus = false,
     this.heroStoragePath,
+    this.lastSelectedHeroId,
     this.avatarApiConfig = const AvatarApiConfig(),
     this.uiVariante = UiVariante.codex,
     this.summaryRailCollapsed = false,
@@ -28,6 +29,9 @@ class AppSettings {
   final bool debugModus;
   final bool dunkelModus;
   final String? heroStoragePath;
+
+  /// Zuletzt auf der Startseite ausgewaehlte Helden-ID.
+  final String? lastSelectedHeroId;
 
   /// Konfiguration fuer die KI-Bildgenerierungs-API.
   final AvatarApiConfig avatarApiConfig;
@@ -53,6 +57,7 @@ class AppSettings {
     bool? debugModus,
     bool? dunkelModus,
     Object? heroStoragePath = _copySentinel,
+    Object? lastSelectedHeroId = _copySentinel,
     AvatarApiConfig? avatarApiConfig,
     UiVariante? uiVariante,
     bool? summaryRailCollapsed,
@@ -67,6 +72,9 @@ class AppSettings {
       heroStoragePath: identical(heroStoragePath, _copySentinel)
           ? this.heroStoragePath
           : heroStoragePath as String?,
+      lastSelectedHeroId: identical(lastSelectedHeroId, _copySentinel)
+          ? this.lastSelectedHeroId
+          : lastSelectedHeroId as String?,
       avatarApiConfig: avatarApiConfig ?? this.avatarApiConfig,
       uiVariante: uiVariante ?? this.uiVariante,
       summaryRailCollapsed: summaryRailCollapsed ?? this.summaryRailCollapsed,
@@ -84,6 +92,7 @@ class AppSettings {
     'debugModus': debugModus,
     'dunkelModus': dunkelModus,
     'heroStoragePath': heroStoragePath,
+    'lastSelectedHeroId': lastSelectedHeroId,
     'avatarApiConfig': avatarApiConfig.toJson(),
     'uiVariante': uiVariante.name,
     'summaryRailCollapsed': summaryRailCollapsed,
@@ -98,6 +107,7 @@ class AppSettings {
     final heroStoragePath = rawHeroStoragePath is String
         ? rawHeroStoragePath.trim()
         : null;
+    final lastSelectedHeroId = _parseNullableString(json['lastSelectedHeroId']);
     final rawVariante = json['uiVariante'] as String?;
     final uiVariante =
         UiVariante.values.where((v) => v.name == rawVariante).firstOrNull ??
@@ -109,6 +119,7 @@ class AppSettings {
       heroStoragePath: heroStoragePath == null || heroStoragePath.isEmpty
           ? null
           : heroStoragePath,
+      lastSelectedHeroId: lastSelectedHeroId,
       avatarApiConfig: AvatarApiConfig.fromJson(
         (json['avatarApiConfig'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),

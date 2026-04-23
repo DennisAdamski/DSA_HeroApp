@@ -56,6 +56,8 @@ Technischer Stack:
 - Separate Speicherung des Laufzeitzustands wie aktuelle LeP, AsP, KaP und Ausdauer
 - Seed-Import von Beispielhelden aus `assets/heroes/`
 - Optionaler eigener Heldenspeicherordner auf Windows, macOS und Linux
+- Die Startseite merkt sich den zuletzt ausgewaehlten Helden und zeigt ihn
+  direkt wieder in der Vorschau an
 
 ### Speicherung
 

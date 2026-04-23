@@ -94,7 +94,8 @@ Oberflächen:
 - `lib/ui/widgets/codex_split_view.dart` kapselt wiederverwendbare
   Split-Layouts für Master-Detail-Ansichten.
 - `HeroesHomeScreen` nutzt auf iPad-Landscape ein persistentes
-  Archiv-/Vorschau-Layout.
+  Archiv-/Vorschau-Layout und stellt die zuletzt gespeicherte
+  Heldenauswahl beim Start wieder her.
 - `HeroWorkspaceScreen` trennt zwischen kompakter Mobilansicht,
   iPad-Portrait mit Icon-Rail, iPad-Landscape mit permanentem Inspector
   und einem breiten Desktop-Wide-Modus.
