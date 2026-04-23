@@ -1,1 +1,684 @@
-[]
+[
+  {
+    "id": "eksf_blick_des_makels",
+    "name": "Blick des Makels",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 51",
+    "beschreibung": "Automatische Seelenprüfung bei jedem Blickkontakt (ab 35 Entrückung).",
+    "voraussetzungen": "—",
+    "kosten": "500 AP (300 AP bei Praios)",
+    "erklarung_lang": "enc:3:n+PorM5v1sPQzaNKajlCibKiYfjonZI/xbzjf8bVwiwDtBmGUDVJ81O+n6x0LvnYY8VYhEcO6XbZlLdD2yrQtHeoW1QYSTh5QN+GroPP/c19wCWGwM7drdmwn+lOG8mJE1twAu/WTBvUWM4ua5x+zbAbX3tGI8mBOPN007JKAFCOHnN6RRv2qA2Okkk8gsvf0plR3l4ADAbr3XdFvmWtsh4Po8w64VuJD0Ig4jL2V10Ur018fRkS8brvdWuchjM0aS8I7V4sMOTmbyOuIq8vv3g3jBiS2rECdyciZmrSpRWE9pWOxLt+fTFleVynXCjN9ZPKk/jp14Y29g9osiBtLOSLAN94c8ix181sOAhZWIb5rxBmv0LDCj8H2xU3bFdAUb3Nz5evcNCX/4dPeQZAM5UMKe2x9wvkZjkiMCY5XHjTu/fY6lP+Jn3LquDlT1H1SZBDodbZRe6m3mtnSm5i1boPI36v9v+3d8k+mvAPyrQ6VzOs4Hysy4hciLoRKMlf8/iPnW/aCQ59ZfdQi/SzBunCz5U5UbQfR482JlB9YcGIF0Mkz+uf0g==",
+    "quelle": "Epische Stufen S. 51",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 51",
+          "excerpt": "Blick des Makels"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "eksf_furchtbringer",
+    "name": "Furchtbringer",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 51",
+    "beschreibung": "Geweihter wirkt auf Dämonen und Paktierer der Nemesis wie Schreckgestalt I (ab 50 Entrückung).",
+    "voraussetzungen": "CH 18",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:eWpaOvOgrmANIEKKR//HpsYoYkb0T40Kd/nTX6WbHvLrpAhbhDbDtN9+VC6FskUGMgqdszYW+OGWXxFbX4ca5E1Vuz03Grl9zqwhbV4LCG8wmEzbYjQ5n1BcC7HYFrUegYYaBFsYrLD3adA8L82deaNcDnI4Co1VTEG+HK8G9k5SZUMX2pzg9XxZmOcEHXy7f1OmaXAGqa779v/3TbElPPEOw6JSyK+Omg2olTB4pjMS83ms7okbSCO4qIyq4l8Ta96X52G9QKu9rqwzfWX78ja3bFuwunKAEJXfqiR+8su3YHgXN2HHE1LKotBpldDfPdlCoIltkZCk/iMrJhlVY44aml1XXyQldC2uLEm28xBN+8PYJMjHoVR9CoZ6vEYvl62H09dvdzJDMZoY5n5cRxLD589oBZ/alLmK0K2vChFPOtbZviVJ0iqvi7pPDNCUlwLxbFTG2C6XIvuFUJNSGMM+spaNirrXEhxxsP0bTMDrYp0CdSMPd1W42+6s8JzqYOPlnAq/ycP/s8ImrR8cAOIeyOXT4bDu05BUwNUmdioIn7WUvKHEGJxaDGbUrnal4g==",
+    "quelle": "Epische Stufen S. 51",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 51",
+          "excerpt": "Furchtbringer"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "eksf_goettliche_beruehrung",
+    "name": "Göttliche Berührung",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 51",
+    "beschreibung": "Dämonen durch Hautkontakt exorzieren; Paktierern LeP gleich investierter KaP entziehen.",
+    "voraussetzungen": "MU 20, SF Karmale Substitution, SF Heilige Hand",
+    "kosten": "400 AP",
+    "erklarung_lang": "enc:3:ExcNpKMD5ne3L03hgWdGgIxH+/v/Q5j0u7fqCgTE8XCwrU0cys1+Dk9yany5GKDLDSheLF7mUNx5A+HR7eoe72NO0u3I8E/bHEgIpmIqWBBHTJ38NJTYKjmu04vdCn16ECq6BlmGn7mQZLNWArRxp5OFN6G/aDDSzv9W39GC/qXP8FkchkqHfyN/6BJovGRbAnkFP9ewnXjjhxXTOE3jK6JuiwnKrQa0T0nqRW7ycsW94M88ybaH5lk3o6CoIEXeOlllh6yUcoglaiEeAGkhXlUQQSXH7TBt+sQEqcA8KCcE0soHSPlqOKuPsxY8tvAMPZx1kLnbSzfG0eheGoJpasrINvxKg6GuAVlxjrlGwImWSDaMh+A8T4kziZvKdtfRQZj9EscqVJEcmzh4OX8WKkSUhpe4BgdiWeiOZMIiLN0LEXgOiJYxsS5K6XoH2vFl1YB6sjr3ZKR7Oe2IDij8j1VH8OW0DPL2wp4U0LaZTlr8KvhUEoqoj/16RqqjWvRXhLoVDwVqXmmg6TpYpzg6JzgF0eOmJgPRiEBN9B1FR3/vyvJi",
+    "quelle": "Epische Stufen S. 51",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 51",
+          "excerpt": "Göttliche Berührung"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "eksf_heilige_hand",
+    "name": "Heilige Hand",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 51",
+    "beschreibung": "Jede Waffe in der Hand des Geweihten gilt als geweiht und verletzend.",
+    "voraussetzungen": "—",
+    "kosten": "400 AP (300 AP bei Kor und Rondra)",
+    "erklarung_lang": "enc:3:ZdZJ0JVkRwhS5+cKED4WtPJNdJTYs4BwII/xNaz5EmXvNMUjcUMr02J005vtxsQaAg2eniDyyWkviTrGOaNzg7/gEPra1Hp0djaMaHi8JgNoKpmuJpp/qLfjPKYwb2Z+Ka6WmdMFqMuxYyH31LrHflCwRKuI59F/n0UXzYdlGJa+bjHMLLu+9cn31nqbpVcFaB5FQOf668BFdIg6JR8/8DtUJpf+ZBP8d+iY5hwDiiPgd28eJr5C8trEG/JmmcFjn/uuq91JAsFsBZmy/EZkohJkt/r/mgkKz5WX",
+    "quelle": "Epische Stufen S. 51",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 51",
+          "excerpt": "Heilige Hand"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "eksf_hingebungsvoll",
+    "name": "Hingebungsvoll",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 52",
+    "beschreibung": "Generiert Entrückung 20 % schneller.",
+    "voraussetzungen": "SF Göttliche Berührung",
+    "kosten": "300 AP",
+    "erklarung_lang": "enc:3:OnZHVCCRsoGteS/vGChMN3N3OvaVWJP5aoeBTE2H9YFFiAvbpvZypyxR0iVCpZTtWLF75Tzn0NohZACZR35wb+3D35k8Ke8y8wWInGh2",
+    "quelle": "Epische Stufen S. 52",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 52",
+          "excerpt": "Hingebungsvoll"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "eksf_inspirierende_aura",
+    "name": "Inspirierende Aura",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 52",
+    "beschreibung": "Überträgt Entrückung auf Lebewesen in CH/2 Schritt Umkreis mit halber Stärke.",
+    "voraussetzungen": "CH oder MU 18",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:G1jN3H5+XCvuL8XhNQCqKkDcjO2+yb5qv2qUsJ8yjvpMH6w0FYVUkBEWRJS28woVrpbnUX+EHFv5p98JWOqyDOcrG2RKxCVcEabZg0UW2UBQAJu4a36rOeg6XWWJXawTPrcbAQ6BjlqJ+SjxMf4uMP2P1yaWa7VnjkybrElXKq5a0UN4uBbwDgIOkp+yggCI1ITLO6fGqJtbnKm9zzJ641K8Az+HZYmi4i9GkoVVSj7mQOLStqncrF0EgCqr4DvlpG0DPeZL94UhBmbeCKJk+fgPkZcTiklDt9JWaRbJe+ayQgd0LQCqlGVMEdfzeK37ctvCK6ORd1rPeTGTiNi13eVhTrcogf2iGOYsX9A17e79voPuu6B6/ve7AbL95rHPyAnqXh958e/fV0buWGIFEUp9/lK0rgd+A9kyy1XQPbDZVp5WJWM6HDfwA1Fv1yNGx7xE4o4aIEE5ddrrwDdbJpJUTtkt8DCoFtInotBxqD6zlvLQHNOalEaX/4qBcSzjHAfHsffZklV5kNsyEC7dUJY3t4mBWA2VuuQnvXS6x6XEhnXkIQN7aLJ1GdS3Q7VuECaDXKzZYCqG0Hl4XQE21tK903gIeWek0TKzjleN2VaGsw18Hq1f18Tg9qnqyqh6hqmlDU8FfqjoMYA5hnsERVmPYt1cJn7E3Q==",
+    "quelle": "Epische Stufen S. 52",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 52",
+          "excerpt": "Inspirierende Aura"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "eksf_karmale_substitution",
+    "name": "Karmale Substitution",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 52",
+    "beschreibung": "Ersetzt 1 pKaP durch 5 weitere KaP bei Liturgien (nur ein pKaP pro Probe).",
+    "voraussetzungen": "LkW 21",
+    "kosten": "400 AP",
+    "erklarung_lang": "enc:3:hB5iz/prCMPrxZQw1qK0nCONbbJzF/l/RxOqLuuyiIu2Ym0Nk5f0fFjaO5UV+BiuWmLAWkc+xTh0IEABAoNUWpN2+xU4H/8karY3ln3oJ7NLzGjFdvaIJGhJsR/6y+4GcZMLSRQ2vqX9Cvn1fUz7GYvmNcs0n4V1Ur57JBg8FiEoyeiml3bKK3Zky10Ykk3C2o5DUPVRbFNxjOz62w9OMs7EY6YqNj9MVA1VnMozqB9hhPCxOlc3nuRhC90LCETUFaJcD0jbDQBxxoueLf5XhR0EmdJo5zIdIXT/TkQT0TznT7pXlzAxRGiFbC9R0OpbDBsiDj44XDd4kXcXJhn9/zfkycU2C+w07SzkqNxELVDhVug5sQB1kPkgWsBA9Twj4fzqRxYJT1bpdtosuF/xH1cDWNnt",
+    "quelle": "Epische Stufen S. 52",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 52",
+          "excerpt": "Karmale Substitution"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "eksf_liturgischer_meister",
+    "name": "Liturgischer Meister",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 52",
+    "beschreibung": "Die zusätzliche Erschwernis von +2 beim Aufstufen von Liturgien entfällt.",
+    "voraussetzungen": "Liturgiekenntnis 21+, mindestens 10 Jahre Erfahrung als Geweihter",
+    "kosten": "350 AP",
+    "erklarung_lang": "enc:3:q9ilp426pCfGGT8DP1z1JiBzsbdx3cad0ThD7/cpozKooUdNhkWUliN18Bngt2N/rueF5fbs88fwQ5s6dKj8gZ3tUiq9rmAllJis/T7ky3bjqr0axu9O3dCY+5kNGD8psCxm2yBoHCtwcfIM+lALMCDairjFn2ldvVico4fl2QyVSnG/fRUnLktozs3dJn5h8w7J653Im2I1ZT7vLBi1FRpXiujTwMjr2+Ck+bZzcRwoGrKOkkJsRQ1cf8s8Kog7YVxW/U+lnFWti+m/q1ZZifJELbQCCYfzfp2mgkmnO2Fza882lIQuoF7QZQ4jpCOyKRK7s5PwnS52S1rS7iuMkoSPC6Z6srisXejAf9mrRGbfSrL5NwSabnMtNo5IFBaw1jzAtILXF6D0GwX0YC6TqfqpKUnGceOnKxCKcWswv80COJA=",
+    "quelle": "Epische Stufen S. 52",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 52",
+          "excerpt": "Liturgischer Meister"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "eli_ausgleichssegen",
+    "name": "Ausgleichssegen",
+    "gruppe": "karmal",
+    "typ": "liturgie",
+    "kategorie": "Epische Liturgie",
+    "seite": "Epische Stufen S. 52",
+    "beschreibung": "Stoßgebet (2), V/G/allgemein: Zusatzaktionen zur Parade je zusätzlichem Gegner.",
+    "voraussetzungen": "Zwölfgötterkult",
+    "kosten": "—",
+    "erklarung_lang": "enc:3:zak7TJ3+68GsRmlyEvb0X1VwFUOfJBLdcnwOaFvLfHkacGLrfwJ0gd+5mRs7sg8FZAbM5ZpmJvbBlO/661OFU2fhGS0ul6+E8kVSHxUVgrD2i1xNGSO5EMKAq1qz6j4ftZYRPPGZyoBy+5rKQvVXtPwvLjd9ZvZ0//OPsqBo0XEbsn+HWwW0UFhi7YCbFkG4xJY27f9gKA6uBhomBOkhjYbx/rcIx8wqgx4rYSGa8Og8z9q7CKIvbSi0RQQfyHr79L6S6kTkjxrIs+rfKdGR1eTLZaZU2hnVtrZymG7Q3WEhhqcCg3yaJTayz23IicK1lKYYlYu0WqPqFKZGRr6jITF70VWxOrUC4OjykB6G8BisbqBY/GGtl1+Hd2IJiB5BfX9NjGHvnz9HusQJIdrgWLU4STZbX0FU4akpNO7U09IvdEYsedNVF2HYRIVqY5A5KSbnIMOkH8wVOnDJYCuFf1HbBiKKPdNnI5HJPcWELdPHX6umaUW10H7FSCv2bNZEBzNqF1LfyXgIt2CU4ojwOOBkF9ug8yFQieowwKk8DRgyZRIXTfmJtx0qAmvzIzK/o8eQe2n7ZNLgddIc3tFhO+9It/Ik4kg3CGw/lS9x8Zk3SR4hUne6lGOCUMOzkN0ToRr2/Q==",
+    "quelle": "Epische Stufen S. 52",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.liturgies",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 52",
+          "excerpt": "Ausgleichssegen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "eli_goettlicher_schild",
+    "name": "Göttlicher Schild",
+    "gruppe": "karmal",
+    "typ": "liturgie",
+    "kategorie": "Epische Liturgie",
+    "seite": "Epische Stufen S. 52–54",
+    "beschreibung": "Götter-spezifische Schutzliturgie (Praios, Rondra, Efferd, Firun, Hesinde, Travia, Boron, Peraine, Tsa, Phex, Ingerimm, Rahja).",
+    "voraussetzungen": "Gottheit-spezifisch (siehe Beschreibung)",
+    "kosten": "—",
+    "erklarung_lang": "enc:3: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",
+    "quelle": "Epische Stufen S. 52–54",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.liturgies",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 52–54",
+          "excerpt": "Göttlicher Schild"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "eli_karmale_explosion",
+    "name": "Karmale Explosion",
+    "gruppe": "karmal",
+    "typ": "liturgie",
+    "kategorie": "Epische Liturgie",
+    "seite": "Epische Stufen S. 56",
+    "beschreibung": "Grad III, Gebet: Ultimative Waffe gegen Dämonen – bündelt alle KaP in einer Welle.",
+    "voraussetzungen": "MU 18",
+    "kosten": "400 AP",
+    "erklarung_lang": "enc:3:Vz0AiYo1ldwcufYcIIZ596uCDHTgNUyGqoOoK53grcDl2ZmFVYXLt8mJHaI6ENNjG4XDRcgB47mBPJH2bHAwmA24j4rXmNiez3wj4NRy1qBE/Tq4mCONCwNQqLvXpr4HhSSR511DgcUGyVaRgyVUIYuFaMRxNmtXC+Zi5TKVnU0oYNChEQLuVKDithHyb5Fk5OVF8w0JNpUqUVg25Z+O9o3oNc+JRMv7dTes8O6FuFqPQ29VfVNf+HwECgSSJNJOKFgt5+oa6/FzteufP1p/d2wmdwKU2siUsqYzpSqjKxMx3uY8PuingsulvvKiZXP1wQ5CZJfHoMJ0nEEf5whKYtm8sepY7s3mojle51ue1KqKKRoWBq8jUONnV+lGYl4S7loJrtYN0AWDxT9NtJDpK8cx5YA99BZPveE0K5t73NStMmhTOwI4agob0wdE+rqH3cAZD7aXyCbmqsx/AsRZSfh6pejnHJ78O6gapwcMD+8m8wRoP+O9WyKRoJEpE5/oNlFBHwOwinSDXBp9r45jsYFAU2qv/iANnUkroBLMay/KYSIwTyGZxHU75D7kgZgo6DjPk/DBus+wbkW9kPvX0AmfXjfJesRdWm+XHdhVKkLpXTMNmZsmwGRm7n07DCIerzQuHCDqI4JyPyYjHMJmwH9mBR5o0eAnorq1Li/u5v8my7M2TGuAbohaW6YpPycS0OjaWOHS7v8DKJrBEVTEtEtlBisCtH5XrqZbe8cpykc4cgAs",
+    "quelle": "Epische Stufen S. 56",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.liturgies",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 56",
+          "excerpt": "Karmale Explosion"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "epfad_praios",
+    "name": "Pfad der Erleuchteten – Praios",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 57",
+    "beschreibung": "Entrückungsstufen 20/40/60/80/100: Durchdringender Blick, Zauberabsorption, Wahrer Blick, Zauberverzerrung, Aura der Herrschaft.",
+    "voraussetzungen": "Geweihter des Praios; Entrückungsstufen ab 20; Stufen in Reihenfolge kaufen",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "enc:3:+pY30YZltle0rUyIeJijuBTRNcti2Oy9ZaWEZviVRbgy+rGCFtlfnK/2VFPtpe7bPu2FaFp5PrIC74AVWL5vFc+WdxcDF59NBZYDawwuqpG1xz4dUgy54h6nblLkMTubx01L6/HfuvvPWHZ+HIKl3Zp45PckA8/RQyrSddUfZzxuRdrGltG1uak1ixIJuQPeAhHnHFKFGfNqA+3oDLXVm+Me9TS8aM4ibDTWf6UrEl6iYM21V0jipyPSnVkFv0/VMb0o6FQz55X4qSr3gDjQuKRhIXmhZsYWK26KvBPcnb9LXsJs58HCAF1zuAxRhJoOCoYOEQZeIX++ZI5Q9otarKracu5iUCc0CL4/glrznDKKoFyJ7ZfiMEr61TSqVPWVeAgtp39ZrYTHy+tF6OPTC3AYEVDrqfj3+ehUSV1lLzW/yi/VLHFJUtDRepd2eVdfTpcKBbZpcqyf84OaCWRDmBblmQSDU2zUyAneodc/LRLy4eGT4lhyxHjsHCcIODyvM6/RdlElsQ6pLsThz7rxKpcy1nkt1n4tBQ96N6HrYrxgTBm6s/imvvV0gHWEb90sHUVqJ2RsQnGtdOMLdBbxP13RFDkWpq2wNAUme04ehO5Lmr29iSd0E4ngSQFKiT6wH5y4BETDI1vwHw2IcG4RH3fkT2exafRiGqNJjItxim5xoq9gergkXDs0KkTa/eMOLf0xxLA4JBraKlB4EFCpAdSz2AYQvJ97src2prVLyTMLGMAS/YWqJwr9EfUdSSzy+tU/hVAVb9K2esJxqwqUMNUgYatf6fYgMqAMJeAT5lWY/XKNCBAQmWrC4GnzJlysq8MCYGrbezlKtiZNAwiVbUllgZ/SOpkH0kjeZ/e1mLo=",
+    "quelle": "Epische Stufen S. 57",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 57",
+          "excerpt": "Praios' Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "epfad_rondra",
+    "name": "Pfad der Erleuchteten – Rondra",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 58",
+    "beschreibung": "20/40/60/80/100: Projektilschutz, Perfekter Angriff, Demoralisierung, Blitzschild, Aura des Löwen.",
+    "voraussetzungen": "Geweihter der Rondra; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "enc:3:nqNfX3p5+18t1zlrZfvnGy43BTPxQFDVeXmXmHvT64GIPjYUKh9odGIKVP7qe4ua86SOufY93OeKuy7/G7OSgAJaDVmZ/2PHhZBQzmGIs02Ds80QAc3PrPnFUmMnOYwSwOPzX+MExp/ASifEwSVP7f9pnOnuH/dv9yr2EdB/9bKHriRG6tbeXKt0PO5J0R5JswaLMmEEM4QRyDvZNpeZPY3yh/wZaQa9a6il8vjYWdQ0WknkA5Vzp/GnsZ9DyPQsXagHWVaGs8iQF5ZYMUOIKXxxtFTWgKLFo20GRHdMxxCiJ2oKqzzKEUNrEapZkYRSOWKK0yPTJ32S6Cz/mgsgh0uC3mTO5wMMjIDSqP2v1gTpoBjrB4RWCprIT4UIqjC9Vw8IFi83KUVktAtfPR7F6Udy+/75Mc+iIfdUHBNAVhO7ZLUpj33NvPRaxr8GiA9OKsVx48vchc+BybPu6RxSunfyfM9IsWXSubgnfPl/MYSoayDuOPIKHBZXiTRwONlrAcEKIzn0jfiB9q2JVgtJfqP9Dkn4wPCgE0BnusoNOGuKKixKHRPrUZCHTDZWAgHnmtBLJcySDk6mrpYZAmAyfrJNnABst5tcVWHdtXc4Jh3u4HONPCy2X1hj6DdOSt9KJJqiJA5kO8cLnzayPSarGfjoY4LFc2AlTtJPxLsUGIzJ7ZAMu+Q40HiUFfFjEfkJCVxzCKeH32rrV0wh/88TPS3rgRcDoRYFnEIHJqVlckl/kxbzFobNisZenf5nsApEAru/2BaId1/rzdxiCOSiNGcdnizhxKhcuqSPpBGk6kfIvYx12/CEL9nVQa1i3S8NH1P7WtIBVsjiQjemMNX5nw+sHPCqKeGykKjriZzHGdDuXGUFJVCaLS8ShUISw/KxqVlSUQ==",
+    "quelle": "Epische Stufen S. 58",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 58",
+          "excerpt": "Rondras Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "epfad_efferd",
+    "name": "Pfad der Erleuchteten – Efferd",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 58–59",
+    "beschreibung": "20/40/60/80/100: Sturmsprint, Zorn der See, Temporäre Formlosigkeit, Sturmflug, Meister der Formen.",
+    "voraussetzungen": "Geweihter des Efferd; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "enc:3:VH9cca9GUT//igTZgVv+a9IYWAGTLMc8YFkYxD6CHpXA7nk4qsO0G1UHNwjo0IDH7pV+DOOBGeqzxX/D/pGLlM0cXBbSBEFGpB8Gdx2jycpJg/zj7L/MjsL/+eZ2Uci/8EfAJD7T90R0stvjcfkGBS0R/QvzPnBM15z5N/9TW5DGwejOZCgcgxcvvzJ4w6Rw9imVmr4i1Vyvt1QykArtZatOs0/fepJ9lf8qLESm98vKn9fT4o+GtUAx07vwT5TC9V389OeglS3zjz+/+6oKYD6o1w3cl1aqhvEGBboaah+uM/mzvb0gMSs/FcQSJs1XW4gSZIIABXUhHrYcYgFgev2BYuVwk/94KM34MByxl0KL7OqQfmTh0kG7mQbV7YchV4GozyJBRPcIfZICgbSAGUQxt7BuQceti94F954ABft1UlSNxGfvl50WNwK1in5HuRmO8rVX/IwBu78e+k4nEu6M69LaIIYBWAtpPWnF/X2LqROI2D1/zpvTRxrlUdu4nWS79gIIOvj2h9Cnir/8sniK7LxD33HF6RYouNpoCdNdsdelLGAOCYuaTS/kaKsNeG0DIK2VB1Z/pJdBtgy+zvKfF8FejBw67LyKPxMx9AEGC/IxyFLmFz5B1b/CWUsVk7IgaZVyJ4fPy9Fso2i7Ntv8Ocx5XLg1du0bmMBZ4OWFDO+fCPk6Pb4YeHPdDzo7jeB4LWthdKDhflfSEEeXnuLNK3t84gkLmFxlU+I1VZc8QUaOcrGsZXyZTSpqQo5ZxmldPRxKQOEWwcU/AhaudAY/Ci2UwbajgKMXXUvuUWXGYxCtSEe5oR728/7WHnYOKSyTodxyc2hUEwZZo/DFItzRjg4peQtJVO6V63jnJA1gcPOQ0imZ/sCYYqfri15UzjA9wr9Wi2wk1SIgFV648I9COOPGWAW7s9oyM/rNmjmrZed91Gec+mYgWLFu7k0=",
+    "quelle": "Epische Stufen S. 58–59",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 58–59",
+          "excerpt": "Efferds Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "epfad_travia",
+    "name": "Pfad der Erleuchteten – Travia",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 59–60",
+    "beschreibung": "20/40/60/80/100: Bund der Aufnahme, Band der Treue, Band der Einheit, Zorn des Herdfeuers, Travias Trutzburg.",
+    "voraussetzungen": "Geweihter der Travia; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "enc:3:e90ig4u9UVFxq5AxSmoOAW8YLovfXugC58p9AHOcUJRSYS54KCz/Vq0Ou83VqA+P6WgMs/9v7cZM0cHZ377HAfWE+zFoJ3rSBrXf/XWa2io+EE6a8OVbMX3JGUEcrcJBEVNxZDJ+V0fgMJyfFnfvTEoZVvs468gPIt3hIvMWaUJI9EZvotVeU3lJH96uvWDmG1H6YTKR+rbmSm9Wqv3y73+gK63S/2XBlFoZsiGDS+ez1P/C40ZyFZzszWukDoc6DgfgARRyRS4wQMbAsKWL+kfmxniAP0/ncceK9UEBVuvKbPHyaZLDdWQUwVq1Dvf75cVS2ADUYJo5+y4khZGTtLrMIiRouc9pWHblaKDQY4hfN4pXnPyues+mT77d2UOFyjZn/rW5oe5UNsjZmlKn0ea7bMmuj3UMexdB45rQsHwqj0IiauhdbB8YPnSi0qT4KsLZPOB/6wpDtbByo0KYLko0aa1nJdai416DDaSXMG6L0s/NULYFNxMKNzRRsoh2PA7eS1LLXL59Gqqi/zmnGEE8SQ6Kk4i0D/YROeav2lIYSpiVAaWazxP6B8W8VEmrY/NlFdmFNylYvqKmyqUi7OmXy22Iala4gHUHS914cuKxuiuWkmQDmRswQrlzgjKS7NdlrNnPAwp32plH3PrmgoWdSdJBcSVM6LIndTzBKT88+ONPBHiIiydyyYI0BYoEiFeU3wWIAat6GcMsAIYwCynXTLYKrTL+Nh3KW7TaMGFG3rQjgJS4vYOO/aI7m0RaIpyUKhYIiHM3/L5o4AJG7m5yR+nxmajgYql0IpvhHtcmC2USiEcq7GG+nRm/kXm7C+/VxPlm485bNnUJwxMNYtaMWxhpUBZptTEmujlVmQJxWtSpQI/jNsilTPexy2Is/KjZRCP+DX37zyc1WNmRE21zZpUv4/9Fdb1KZlxtipekgoRNWG8yHKMwbZ/GQOpSaxqEMgPyO6OgaQEkbeSk6G4I5cUqJv87PYWX3yVE83WjFkoHCBPmbmIEwutqHviXAH4=",
+    "quelle": "Epische Stufen S. 59–60",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 59–60",
+          "excerpt": "Travias Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "epfad_boron",
+    "name": "Pfad der Erleuchteten – Boron",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 61",
+    "beschreibung": "20/40/60/80/100: Borons Ruhe, Vergessen, Traumversteck, Seelenhirte, Borons Urteil.",
+    "voraussetzungen": "Geweihter des Boron; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "enc:3:hMOSGeM2fyheFJH9L0lTWbiOMLB4dchwShTgLts8fOo459h6gfU+NE2QpWLr1HYiW/a7jYdq0nqzTotr0Z76koXjVQlqD93ANauu8a05AOu5jSai7nDrsxcPHybyx6nSp6eVrSN1AkqyMoONOzAAaiqMM1AAaL7l4Q5Q4xmYM36rb1kqkf496E8MHY6OmsO3oTEeP/EQarI1+XK5voZfvkWKPmlmZMN22+vZbJRnwUY7mkSPkp21+tb1wLiNF/O4jiLDf8nBMohVpWbwKXSbOdiXnDgSM/r3+NUfACUUoktIfPn8ZHDekgoA5PStpTz5OVZFjPZe8TwEk/269a3sE0ITfWb36kToGmvd4k821YkB0LQgfd3baTSBP9TQQtqwKn8byLPcFgn0bThd3xTOB9Zm14PZzuV2PwROY/JPQJH+IH9GMwFI7fsLFgVYFXkL9XFLZcjS4nNmsfaxXPQKpA6+Bvy8ygTFSEvXfkliWUlclWAK8WuvaYq6gyIVxFLiVKWp7nx2a7jFRRzSyOGyXlKRrq9LxwbFenjKiIDia6xX2RK4vI8mVmTJgrueqQ6kphDEUNdD17zOQ9YrKo3siLMY9PffpHUXZ73z1iAEPgg+NGD9OxG/FVP4/rakkxCD9g6LIVBgrTyagWKlyBXeeoGX2G2VPY+w2Mdd1O/tfOm9rfLeCsKTEl4+WWbyfB39IAKaNsorTEZ9OcsrQ9ecz+2oqQX8vIN3IlSWn3TuDUWC0e88dp7r0UNBrY3xvlUB/AImQpuFrqoq1PjdhA8NCQZA1cihGQ4pXsYB+6psMAKd+2JoEfa7thO2VqKNp4HuCpm0/4kmbXRkWV1Oh+ygGB/hwV3pNzwlu2kb5ZeJJmaYK/hRcGoaqfxnBMQSVsogXxEYBd33TJCZDXwwJe5g+DGORQPvH0FxWIGTkW5U/awsCsogF+d7fbxFkpUPffB+yP1vfMQlsJ1fJ/MPuGkHaluxDYPFvExQPa05rxjSMGW5q+KPx/9wzfU7lGeIQRI8QaymwfZDQNPRWFX7J1H0tuyDoURE9md3accxqqN7kylFYpHyPtCor6kp/ba29FQQIkLxSJqNNw6H1QDbDoFuEHWb881BPUnBRK0FmqNbMSkBPLLX9hqMeyk2p+iqkVHomRucPWKnkbBBQwhDIXOUsUpyJL/Er/3whLb+V0rEm8sgYPzEc65y7AxlKJKuuT801VwKjYR4AG0=",
+    "quelle": "Epische Stufen S. 61",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 61",
+          "excerpt": "Borons Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "epfad_hesinde",
+    "name": "Pfad der Erleuchteten – Hesinde",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 62",
+    "beschreibung": "20/40/60/80/100: Gedächtnispalast, Präzisionsblick, Magisches Auge, Zauberblock, Elementarherrschaft.",
+    "voraussetzungen": "Geweihter der Hesinde; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "enc:3:UqNBdjDvMLVEhrzIovuDAmfYI5HdhqOK9ib4J0FvIL9eIzCaPTKkDU9zgoVOK08/i8irZg0f+upjS5s8Dzs36ljayay18dCwinBbfwV8zpirpyvTrqn0uJ45bTOjNTaJ+r+VrDABViSvT+PZghmerDMBUCciMRgm4ag3ReYRM+KcR4CT8HC14MK+fvAl5fDhswHNW6ckvHX4OKTb5LsadXyYi18+iakVhkxcbBXUHEr0Fkm7wJy2wO7IbNZufv8Vao45lrvOlbQwuDomGb052mWVO80qSJNGS0hfJm5gjLDMhTbOfcbUL5a1WqA73MQsI0NWVphujFuHdWW0UCm6XVklgeb6kxc5Q+Ll71qSPR7BSFVy/ntjF5Vmmzbg35M5zfrI2wJI905ZvrovtOZoVQxDKcLbl8+ntCJygglmVyP7pWekgvYWzoDg9LaTlFy8mAnGvz+XBlXEi2aGdyAEi6HHQzRjFAX7CkdK5QqfJ2b0mJfPGDNW84fvAr+7HzjD/Osb9bSXkKXBJfynLqzIRNn1YDLFoFwa3rQ52VvT/OqaoLgQX9ovlO7UnbIUG3XS5MJc/I4cSYgmTYLVaYF3KHzTB2hOA/HOQZauQDr0XCfMgwxZbI2tXwIZhKwmFTgS9RQb8asPsUqS3e7GK/IGsO1Ma47t9BKFIZfZv2+IpJsBVGUSFqiXHn6ubJkwlzscpeY2PDAoUHyNyHAiKqrnElNnlJexbGkU9t+WWtNGvK3qnoK1uyMQpFa1HGresNBeEpmGl1Cwv5v+sw3/ufNdt79opaF4OAlSV9aYry+R2tCatVtObQRJDrSsXI0qUwI5d/UPeyl/dDUpwxzU/b46TTmkfYb1dLscOEAyL1hI+zriUPm5NNFkSdJwe/fkVJorPgf1J0OdduEV+rF66pon7VwLM7pLs2I2T6SZL8jhC6hm5Zg/7VUh/OsxM+La",
+    "quelle": "Epische Stufen S. 62",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 62",
+          "excerpt": "Hesindes Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "epfad_firun",
+    "name": "Pfad der Erleuchteten – Firun",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 63",
+    "beschreibung": "20/40/60/80/100: Eins mit der Natur, Adlerauge, Entsagung, Jagdinstinkt, Unverwüstliche Aura.",
+    "voraussetzungen": "Geweihter des Firun; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "enc:3:N44mwqCFp003Lr2OEquqSKx2Lt5awkYrURcPe9irsTPWnfwdSkolcAXzC8nI/2iqybQo4Hjq4iWAlaqSaXCVCMJbL2fgrg5h/I2t7tLQI3W7WVZKObpkqyEe2aXCaAPwXY1FKDlkVVxsvfGBT1Kh+dA/aHJCGYwMQbzO1xXJAb24OTbl1K5r3FhlGAkc/bIA7cYTrVzkvy7Z5nLSZ0JiA6U51ye3XQia1/T7rm0T40CrdfP8UkPuzLHqOLgOJgJAmkgxNGoeawZLf3ow5t+e3TQrh1fEOiCspn77rOHUUPMpQFJmxZ2AiCliBXaPvls+rTNtcRNgU/dEHT67yjOu45Wthmr1J/6iWq8MkurkBTRz1CJDl6CjGE8guuvWj9EsMB7XiOKsHv6C7f5hgFMTTfJ6lJiAwynXpoOpheOE2KevR0bZHjj9Uwq2VJu7uL6cSRyqhlbQA2e9L4T21xN4VJDc001S+Ybps48p73IQfO2mSZHWQazTbqcrLgxmwQgzeHgWN+/vw8r8snxYfhzC8ZS5v2wU3Lp4wpkj/MY+cG3km68Qpfenwn5pVxRIaUNiK1kC0jFTngshecXhAnnzFQAXxML5hvWGm6k2m2XkBvH58n5OeGFu86hKkIYSAuoAUwgpX5mH1ARPGHMqN/fAqQQBREjAKQgVsD9tq4JPwZKArSAr+Y0bp4Di6tA/WOoS5imycoG25lNmBLCZljqyt96QPVRh25J5dSR+7qhzZK1/6s1E3TOCIJNCQhf+2Ur8cp1ESqUunIOo4S2aVxZkHBZBkBlDiLa4ZMvnqnV0cjnYaVeZ8MzVU5cvZIWCBK7lIQ9j6xs0rFSXRx5ozxcgIWM+qSoslEbZOydLd3uIIYP4B0ehPli5+8wsYWFTyZKUuSN1RdhrHXz8kKEzPJYsAwjO0dw1NsgEFTBkobZB4/1B9deEZNlDwF9tl2riL0f1met6jjVEejG+gUPIGl9S29pC+g==",
+    "quelle": "Epische Stufen S. 63",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 63",
+          "excerpt": "Firuns Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "epfad_tsa",
+    "name": "Pfad der Erleuchteten – Tsa",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 64",
+    "beschreibung": "20/40/60/80/100: Friedenstauben, Echsenhaut, Tsas Ohrfeige, Unbeschwert, Lebenshauch.",
+    "voraussetzungen": "Geweihter der Tsa; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "enc:3:HqXIrLR9UpgqxwMHwxKh27n6z6t3tWUbwPj0w1Ah8ydqzAwA9KoKQN+Hd3AR0WWN/DgzaNvAaeJrVQ1/2FAzmeveiCA2v+Ec/ZEJJsSor5lyfXMwLtVUyYASOm7/HdOOpFlMAbWI0BiovdOAb1aZ6YuF1YyaQKjqd8fJdnwuACWBO1NcAw7eu1SF/yO3sI0mR5TqRKfRQvqpiSo4LjlLLTT1kX2Kssp01GssYy2oiZebNqe0IjZmHseY26DO2JK52e5iKHE5c57IYsi/lXr138GjPhRfngfEVBhzz0bKDn8X7xK9tzDI6z4aEW57beCCFlmGRdpuqn5XN8KfhUa/nSpxGVTBL+TBhQ4oWlrSmIcKtX6FdIYF9z/AeB8e0TaT0PXcmdqEoYblmmYcGY8/t1Fzpr7hrap26csJHTDdFaVMRL1nilKYwMM14CZBR04qGHVAhWclGfKdkQIExX3IYiyMBSEZnjy3OG/UKBXVAPD+x6MQtnsTHt7NbpozUphqbFEplsyTfcJs2vNK+UQKHqWru1vA33STlPqkGURoc0MI00f1khAC3hx04nSYv94leulyO5L+d/Z9AreLTnlM9q+FrfRqdQ6QRuumcHd7+1X8T3SwgJBnMygL/IQ/ppDqabzJIcFfcaiHueThVjyOTDz6ijcgdNtrUEcg0BXlOA5NvX3Mai3ojueuzSdoPVDX+iXMnkXFAnd+P/jcTWVqO0IUvO/8dx7s8N9u5kssj7Z8Qqf4H7BmD4p/dVQPGeg6N+SLQw/KP6BkwCEybVC+yatolQwtui72cD+8+xyPSW7ztIzc9h/9Y1iOJubfzDsuiaSaZEiBqBcyFJ5HQX4kTnKNZdBNS5DS89hlvG3+5dVRaNUPVdf2IFkm87ChZ1OAQPyHyyZPXSZ2IDyZpikoXILrAoShE9zZeZbnBNT4oXNgqu4OThwRoffX2oNK2pUwSHXJ+nbFtjmgpX5PTMTyf4RJCWQgkJdAmg5tNGoDuSkOtm8TcyebGfxxodnPB6JM6o/2d8mgjTgk/WfXxcUaaBMmgE6w+Y5oXxRKXkE1Tv4LxKjFDMOrNEl6CizLYRFxCUQ/",
+    "quelle": "Epische Stufen S. 64",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 64",
+          "excerpt": "Tsas Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "epfad_phex",
+    "name": "Pfad der Erleuchteten – Phex",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 65",
+    "beschreibung": "20/40/60/80/100: Herausgefordert, Sternenflug, Mysterium, Enigmatisch, Glücksbringer.",
+    "voraussetzungen": "Geweihter des Phex; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "enc:3:uD8tYKlxJsbmFl3Be5QVH22NcXHzzjTFd8TWfMfFyAHKCpaN2uuIoUt/oIAPCj15ONkIDgt8DysAI8xXUFpDcIX0mzk1rLJBFz3ukZJMVFDSAN2gTC+PFG9Rwv4P9g3W4tS4H3anAx3HvKqW2z+QIT4nIHflWrmGcxfjzInPUKDUyckbPuvTr2NOI4/eSfCwD17X+tRwUwaR6oCVtdsdSc3wYAY/7vFMo5NXquzbiqdTLR+BAWnmfwoDQgPnyrtlCHM8sd7ByVikxxwcAxm42H1GR2FIIc4vqBqtGLhiiuAOIusTD68B0X5VfjK3ncq+Esj4wBIAF3XDjq9SoDMk+gz8C/ECZll1mpoobMmA7gAjfTSOZD3UcacgtPFrmmodCDNQpvHVVpLCHxDmbILRU+Wsj0AsS8GaDlBYQCSiS947TUlexBBk5imrXtbN79/wocqolFXbNtmv7yvi/cJWWJTjlZvEuSBcwdXReDesfj528n6VEh13S6BnkDizeMTrludTysNbFwjZPSFBrZb2/HV2frqyKRmdMzWyN4MTCtJHUFvqXvm9ojk71qmgNI9A+RfzmWvPWNlANs3mEPVhO+EMl14C5aaPf5A+5RYZ/Qx4rT/y2tW90vhyWnuCN5ldeF1HV032MEZyeGH/OIALxCXiakm4b3FyssCqrNwkaUTTuR2ln0o0UvYs6wyvRgJ7qsXvTvdlQ/dUXD4m/5uOLfZDS93J8C7IPBrfwNp0ajs0NVoLE+M/IezkmqRLodwNrtYxoUwgvFjMFIzyPJ1phFAgyphLE33gMksOdgouooRhJyg8ZodM/A4/tSfCEVKEyRPKYG0K50pemqtRSf1f7aqSBt8d/Nxm9idqEgbXIqdN3AN8tj43KK6AY8rfGUfpWgI2tfIPVAEMut60ACUUoo7N+nHdSwVMFgtvgL0x5a6M6kgtzBbvIO1x4bSCTdznDmel/bsRVrzH3ICvqW9ik9Hj5Sa1iPg9sPTE0b2zvfVs8p/p2yTdDxrxdbCMfE6YAO3JFZxZuFuEtW2udG6pAtpBhgPemtYd30HVze0O61JytlUY+1uAeeuZRGh/JWYGd6ePSV4mxRbh8sVKGKnhPaYrWGvES1MN7Rgl63/0hDUAvXqxb2uTFmmKvo+hbYjJ9CwdbK7qzB6pVuD2ylPEliSkSJAr",
+    "quelle": "Epische Stufen S. 65",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 65",
+          "excerpt": "Phexens Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "epfad_peraine",
+    "name": "Pfad der Erleuchteten – Peraine",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 66",
+    "beschreibung": "20/40/60/80/100: Humushand, Robuste Gesundheit, Heilende Berührung, Rache der Natur, Fluss der Heilung.",
+    "voraussetzungen": "Geweihter der Peraine; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "enc:3:3jux8XjhDPB1dubADIdNv9mvTwZ4QAsZdg3QmfedQvxjOZC7A0nwown/pX1ziItOPQ4KeS4dOeXFfyy38qJHD1CNUFiunPy2Q53NwmBlp+N5GBig3MFw2hbfCJWVN90lIrUGrfcoaKT/nX3TyNfBMyA7GbJMXrsqlNf8F6bhhp4CbkF+zh94KEQkW26R7Bd8KusoobzIJb40+xe+LYMfZRDBoOJ9+272Y9kCQduDwtR/xHa3e6T8LmGOQBM1irQDJKEQ7Ndhrr3ilBqPnBkSWKkptyxugnM0ocmX3gTXB94AVt302rWeSwj2Itm9AiFo2knoB8BIsNbyF2yYDvQe8xKMFd17UYGCRbOxMAgpBmpzejt0FmXgZHG2NKom5xJKAyV+WQ97DriZkqdirWJPIBP46+KROheK0llgpPX/0r4l9L4NadaJ2FQhhKE5Yn00xXMyXJVJ0UX/loY/jNlQlnXjYPkW9s4NZend8w95Vju/373P41T9WY8vLCcC7rKNC2myvP0ZxSKV0eO1llF4WTBERYG0hr175wEzxhPDW1kheDE9dBHVLZo0jGOmUau90z8VUsvXcXSkjaTFNQ3WeK2jgvMJwwzo2mfLjnsIktHGf3nw7EfndXqMClBorp/U0KiRXPJ9gC382tWSp+JbhZ2CwrfC/hPZT2MYgMvQg2/XBq3LuMdq250ZtfOvVeh/+FxKIfnWj5pv5zwK34UgdRG64c7meIAxH1VC/8BUwIg3PKxqlVKWN8espycbqdp8rRnv1ZPAjaNvesYATRTd+tpN9uNOkNuaELSIRRWlcCBNy0F412XTAwdnKmoEDATjC/pVHfqv23Q9NlK9fX+hHNKWAkrMC/AG/UDqfC187N5/B/J2BDFA2dHkWEdltCRUv59mMEIq5d1mOvc=",
+    "quelle": "Epische Stufen S. 66",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 66",
+          "excerpt": "Peraines Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "epfad_ingerimm",
+    "name": "Pfad der Erleuchteten – Ingerimm",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 67–68",
+    "beschreibung": "20/40/60/80/100: Erz und Flammen, Meister der Werkbank, Meister der Schmiede, Esse und Rammbock, Herrscher über Feuer und Stahl.",
+    "voraussetzungen": "Geweihter des Ingerimm; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "enc:3:6+OlbUrHx374vZzM4aU/MlHZuWp5xQWnfaF5XDNFa+Km96MoMI/uFqmZGdLenBCe7sGWXDbv/JINSkP0v4D9VEv6ew+GWnlY7Skt3lsTOxinmdb/9oKyfohB1MXnp1r3mBvu3V4mlpMGPq3SCY1Dj8mnFRj5sQtAjJ+e6/4ELHobZU5qIvyHNOkX9CBKnietznYoOSgeKWtex/IdoBP4yh9/Wz+8s4cPNGEkTuB2c7Fgc2MaCrnPkx2DRywc76mICRDnA9YHyy7/xcBskWtLFwzmYmIR8/t8v1mQVkdpaT83csK0ydPDd7hM51D5BUqBHnievVz6Dxq5eaK1RSwMwXJIm/xh+KVkWI2WjWxJA+c3vNRk68qPbB9L33EIGWJmxEDYnLtmiiLW6/fu3DLRPMDIf0/l3qUAD+H9Si+dp2FCOlbJWmFM4ZUAoEqx85XInHYuowl77uZoM9gI/oQYhmQqJyc4pL85XqNhEOBZ4lFtNNgzSJ7tiEgynvTBUSuNqSfY90mdvhbXbB31YjXPvhnSML+pFJIkiGexOmxGMwAHe8rEwix5LteDSaIS0fDIEAUpH9HTlT5RsoMygpz2bqwmknsPvgxd+OrJ+OoBCYMMI/zBTQ2r24t2g/ev1aabrlb7a2OGcEdYR9yi1TRI6OCOt1YPFoTQrqeg55Z1KW+enOKKeT9mJnzv11JO5ydFBld5YKGzTNvrqYCyimN4EYokbN1WGAwQTDsVwMV66Ax5pjqv7yJS70txpD+OGsEUlaEKAnB5lma/rStLSjJNIS3G+d7bkC5Ouw81v+mOPtd43zl+QQWqs8iQVSbXbxksjyQMSAma/dU+0B/TflBx1Oj5Vw4Wuc9xWWyd+fwVetlKTX5uxoeMYYMr35e//rNLThb4kNAnf9EfVAXgIEB4EzaALAQpmu4P8JOav75lc7/xp0Vr7fbkrE3lbbcQI8jlVTpEhab8GKMHtDl5mL780WtsptrjhgMunsCu9nh4LbJZKQ/wydlNAmfFBjc8jteUx96CUsBZJunIOnFOWpqVelAH8xXyKP+xN6TbcrIuus3hZmyI71aR0hDw92scy6mxUPpjHg8p3kCTsgQCKU8JtDGaBTRGMmy0iGamKWbBItRAZg/fCRUh+BKbopHtbsx2A50M4ef6MqjXdAVUMsnWtcYxkgir3YaOio2v7PYieujazyV4gtB3L2mzFJuwJeDgEfdyqsU7",
+    "quelle": "Epische Stufen S. 67–68",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 67–68",
+          "excerpt": "Ingerimms Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "epfad_rahja",
+    "name": "Pfad der Erleuchteten – Rahja",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 68",
+    "beschreibung": "20/40/60/80/100: Göttliche Anmut, Rahjas Leidenschaft, Königin der Nacht, Rahjas Verführung, Aura der Harmonie.",
+    "voraussetzungen": "Geweihter der Rahja; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "enc:3:VQw9r9RCM4x63ZWKqbPxSaluQM2olyjPA3B+uB/JnlVL0+aorIDvZZpvLH0nmDCPVBDK/QgmzUK7GqS753jLCu5FDPE5rLf1b8ns/W88WSmLnnmMPMlobrK41m/L+5PUrHA3NKHJbqaSGhXWnBp7u3lbZLG0cFn04bjgfTSK9jwn1pK8VFXVBrN827/VHGYO9WooY9bX3P9JSL8o11s9ZpAYKWq9CTNzRWU7bat/OFudr/vy180CrxSccgWB0y02lvDBqyyt9bVK9tXSYCeAU4RWeP6aRqVmtM+9Q8Mgan3dUa7muANJspNm8nD2RfvJi9KE4UG9SMoB3s6F7KIZwrjNb4+cXSl9Ndo1OFRxB3gTOoSIptyn4HKfhrOOZ9VPHuB6gSex4JdkTzHfavhx0p+asGxmCtCzVlmsM++5W9aMbUDsDMj+F5n2gnx8q3sqFHXBKZzbe1hr96jravR0GcZgxOSJWdeYpRLo4ivUDtLQsMpvWTBuI2NtAHTix3Si56vNLM6zyJQhbdvwZH+clZfaqSJVFvr4KZMAsdt682vrRWs7het6DpO0iR8V6dcqPdaXXk7p68KFKHSue+AyaYO8cy0vkhYbTLfJ/FFzB7uUT0a5dD2gKG/FJbHJ1Bg81b6SVRwnq8LaStCeEW5ygzrg3z1f7EBLb4wHNUW311BgT1npxxt+bj1bSP4e0rbH3Ch7MZx5zDa79poLnpbD6VZdeNTYvGmE7GEJ+B0ZQDp90hlBQhuPN3+7JGg6n4P4FG4ldNlKwe9cwByDb5+/uOpFRGMRIDx2BoLr/5QehiklsNg1jsH/b0wDYC30yoC/ffb7IBIpInLLpAA9eX/LUx7NoQwWnw84JzozPuhCqElsqT53Iwc3h4hkuCSkiO46ABYkOh02X1FX0fBZvYfrIJosT6F1EWRgF17smXOjSPQ4jxZ5phphJvqYfyHtJaGJook0ktTDqvU3epd7jYL4luPETqCSZ8DTFIv9vRdBtD6Y0DgZNBTXA7tHKgZdP1bIIjieHb2RueCdb0Jsn99/syVmBz2MQFSmicTkvzhNB+VXG2/mKNp4k6MQCWYbeq3sndVpa1wfDS3ji2EshOb32BW8YlpwzylPnA0f+W8iLgYt0+wfWT1ZKCdlaD4xqiwrxLGzB9scyt/Sak0Zqb+yWDAlPpUC5xxk7ph/z9fowwr8T/QrSKqziWEArooZB7lGneeBdyg=",
+    "quelle": "Epische Stufen S. 68",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 68",
+          "excerpt": "Rahjas Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  }
+]

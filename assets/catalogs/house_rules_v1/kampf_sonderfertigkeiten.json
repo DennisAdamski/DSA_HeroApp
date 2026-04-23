@@ -566,5 +566,1578 @@
         "ini_mod": 0
       }
     ]
+  },
+  {
+    "id": "esf_berserkerfinesse",
+    "name": "Berserkerfinesse",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 6",
+    "beschreibung": "Erlaubt einem Berserker, auch im Rausch Manöver wie Finte, Meisterparade oder Doppelangriff einzusetzen.",
+    "voraussetzungen": "Selbstbeherrschung 15, Vorteil Kampfrausch oder Nachteil Blutrausch; TaW Selbstbeherrschung muss viermal höher als die Gesamtanzahl der dazugelernten Manöver sein",
+    "kosten": "AP-Kosten des verwendeten Manövers × 2",
+    "erklarung_lang": "enc:3:5NBuZRzjC/k09YisZemnn3EI86KQloWcUV5dW3+M90Fr0EXP3L62SpsZEtnAf/lrwMVm3wMw89MpaUwsr7vJmoAUViOmUwXtnxQYNFhm2zaRGYM6pdxSYPle9+7R4R8LQe+HUYZ4FJeJBfa4mC4N6+24/OzsTOWDLc4FrGHNKZT65mQh4jZW6A9E2HYeOapJHK+lOpIlaujJBan76sWh7+WWupodCpwxX4N75ILNd+mDvbbMSEn/IX9k6MhcyAiL4Qtwevjy81ytcgXSopSqRdhK+Ak3DBZMTlRx3zQ4tTNHmXNV56/psJohbpgSDAzcZx1Ozc3Hnk1WaKpYW3rzLeQkDXB9IhoLMmcNEmbkyP1GeSG4hL0u0hmtg66VevuHoQ91WsB50J3W38i7fA6j/5bGqXiiLP3bkJBYmdiJCAaRkXdbw4xEXxJt4nuFCA0CNw+liAsyeQ/IDrg5xn5oeKY/PVc570oH0iqewN2vw8EdqH3TSnKYN8USuMXj1M61UD3nrBleuvF3aVIlB1b6DrgjT6oJLBVKs0mbXhvv7o9+yWGIX2o01q1ZzRsoJkeWG9T7lHaKNWyeJBbQCU85Tgt3pSmZnaS9Hdsw",
+    "quelle": "Epische Stufen S. 6",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 6",
+          "excerpt": "Berserkerfinesse"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_doppelter_schutz",
+    "name": "Doppelter Schutz",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 6",
+    "beschreibung": "Ein Klingentänzer kann Ausweichen und Parade gleichzeitig einsetzen, um einen Angriff abzuwehren.",
+    "voraussetzungen": "IN 20, SF Klingentänzer, Maximale BE 0",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:hjLx/mqGKY8RtiBERgI8JJKK/3KxZgXaEToQP1MJ+VhqiB5mgGgXR2AgHpGBFEZEcpGpvHqGKVnqA1M9pZurpPTV2tEAi7GHmHJqYEtHLszQSXyqHnAr8flkJqMLU1FSIpfHpgoUFPoGBsrejvY6KTosKqQZTdECkYYIhgtn9y55rtNOG2R+q1QV9hGgo/cE7My89QGfpYZKhymGMSWT4iA7PsghnKrAEfghABpZ/8xRYkU7jMCSso9XH+sR25TbjWz+UPBf991PYNTy9tB+nlMbBiy0XYgc83QgAynIDlAyo5DnS138APLFnLXbitT7+H6JIsYkF1z2+4CYjjH8AfLCcqRcEG2D9tp8/hUW9NSJr7vK7NXRmJry64Nc17PwxSCRinj2CNyzgqBvny7HK+YNRi9JSXH4d8PNiwHFgms7wiJRJeE+TurJ6u2GgQDzXEoWjrRJtZRb7TZQCLG2IFNE4/qLGYvyJeLMphugQF+pSC/Y3HAHmA==",
+    "quelle": "Epische Stufen S. 6",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 6",
+          "excerpt": "Doppelter Schutz"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_erweiterter_formationskampf",
+    "name": "Erweiterter Formationskampf",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 6",
+    "beschreibung": "Gewährt den direkten Mitstreitern einer Formation zusätzliche PA-Boni.",
+    "voraussetzungen": "SF Formation, TaW Kriegskunst 21",
+    "kosten": "250 AP",
+    "erklarung_lang": "enc:3:s8U+9LzB9aI66exAGR7sQW/83W4eO3zyMMr+R8wQTEPkQpnF7YlfOvF+MC/BeMHZ6rsYfCZv50/L2NmDg2x0QKtv+4MMhB4lOYx8f3BwiAbSn5mINAmU9okaG30ESWTEwe0HP76TwLaXw/7xjjcQ/AZ6e7dp0ZgurqEBIoPZjGTaF5H2d4yMdUK1h9PsVTHfcdUnhDs3jc56tAUvIVBl7HcOgMlSk8GivbtuPK40HfI2h6wswUaMLBAPl3+wYGG9OpJruJZC97Mh9Xv0RUBOrm+QWcPx8rnZccn/89zoX0zEMmWJWC0A+WSrSCEY/uqky7MrXVAGzJaeV4O/sZnodtEZQZgFZi3tcM5TTOynoi2Hm+S74gSj1nny2m0LPD+QhECbq11OMTjvwHWKbL/3n5fqdzOyW9Ja30Vg+GOzXRGENJ/JXJLOBPNKowmzO29p8qT5pU6sV4+NjfdXJ1HmlleliwKRk2kk+F+vWLWKjR6E2bbmZdLCBybcuDHR4BcDj+vOQ01mnidMbzVgQ6ewRN3nizcqkg3yhovibU44V3r978JncGRPQb9yBp2QXVJ+EZDEb2X2RD8DpuexOQySDeLnSmOx8yw3ub6ty9k9s8FLxkNvyXJKCWn+ymybldNeRHWCDma6rFLLWIEEck3etnc8+lxDDJMcZqjq7kS3ympFHHkPgSTTcAB1v323DHyxV5sv6t9Zzc89P5xBf2l6JFMmjAUJg5X8iqdOhAxYawClFDdrY/ruS44FhMaC",
+    "quelle": "Epische Stufen S. 6",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 6",
+          "excerpt": "Erweiterter Formationskampf"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_fortgeschrittene_monsterparade",
+    "name": "Fortgeschrittene Monsterparade",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 7",
+    "beschreibung": "Erlaubt das Parieren großer Gegner mit Zweihandwaffen und sehr großer mit Schilden.",
+    "voraussetzungen": "Waffenmeister (Schild) oder Zweihändiger Kampf III, KK 20",
+    "kosten": "400 AP",
+    "erklarung_lang": "enc:3:qjuaiZBWrwJdK6jc1zJ3qxTI6xOWDQJvCni/ry265qX25kencQPD0lgeqGi1TY54roGpuKiduTjY/7njX9SJqTpCiFymusf78x1Nse6yiPxbRe+WXGetvCRIYWxnOVL2EJjJBv4wtV7N4o+dA8DRtt6dj5QthYeQszXuH/JLIDcxe2DgnMwUbjf7tOeOF5sQhmjD4alXS1l/JlGuIAjLrhrC6ZVwFkJ72pWNzkX1g1RQLTXwL9webwVNoIrMhHKz13s+c8PbVImxmi3EN1pzMpnI02bK2Nn7L39bmIVl0h517Q4QUHk7Rk8oOg3LkxJiz8Mtr6gqZ8zinKicFg==",
+    "quelle": "Epische Stufen S. 7",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 7",
+          "excerpt": "Fortgeschrittene Monsterparade"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_kalter_griff",
+    "name": "Kalter Griff",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 7",
+    "beschreibung": "Erlaubt nach gelungenem Ringen-Griff eine unparierbare Folge-Attacke in derselben Kampfrunde.",
+    "voraussetzungen": "TaW Ringen 21, SF Schmutzige Tricks",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:8r8Uxs2k35vRabkfCyJC1mc+HRHJwxEyF81pa8knPw4eq2IlAGQkHOPW20cIIMxJWPRVwFleZjNTXpbhZOnDjEN9fkyTT5fAS2h848Ojq9DotjB8UaVRgYiD1b5xlIrk0gmPSkYmp8VI/+RDjmWHYN5v9r8wP3oKVzneMbU3pH3h6k6Xy1IZc4Gs505qlYA/y//z0aBr7FLiE1uWlZGMimar61nrZHQz/3I8Jcs9/kNnYCZwUFY06u65bCJ34S9zvnNob7OQwPW4DtyMMYlPElz6j9cYPm3pQywvFeL3qRCxJUaXxKzxB49zf1uugicK2+o7jnbR53687s/2QvsfM3NtdoP/wqUy8UY6uiwA0ef0KN8=",
+    "quelle": "Epische Stufen S. 7",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 7",
+          "excerpt": "Kalter Griff"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_konterangriff",
+    "name": "Konterangriff",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 7",
+    "beschreibung": "Gelingt einem Klingentänzer eine Parade auf den halben Wert, steht ihm ein Passierschlag zu.",
+    "voraussetzungen": "IN 20, Maximale BE 1, SF Klingentänzer",
+    "kosten": "400 AP",
+    "erklarung_lang": "enc:3:RnyU9EFmCMFaQ1aDIRP//ywW7HqERYb9hHbxqWFJczuRI53/aFEWC0dDJsT1r1zuictS1Nh4ibH18wWAC2iploDsb6VXkFB4yPy135aUJxpy0RGw2YbqEyFhWwMWdCg2w7cn7aXlUORV6HpJh7pUV+7sPdtgbnvMXxcnToaNpjyidCUAwDsBDlfA7wPfVJkzIcDMyBfx4jwzcJ7r5K7yhHLEOQ2U37okqShD5Zbh8PQkJMSIcxV57msBdgnWZFwPb80cDG4IiONuXs4FdDsL6qsB3CvHiU+u9QJQpHU=",
+    "quelle": "Epische Stufen S. 7",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 7",
+          "excerpt": "Konterangriff"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_mehrfachangriff",
+    "name": "Mehrfachangriff",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 7",
+    "beschreibung": "Ein Klingentänzer kann seinen Klingensturm bis zu 3-mal gegen dasselbe Ziel richten.",
+    "voraussetzungen": "FF 17, GE 21, Maximale BE 1",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:Usz3nM9ayiNaSzu75Fz0/eGMvRIYhdcqZCEjh292OUNgFF6W4OZS8Y5afjQcx6khngz4tJQsdkhEVSUs29+utEc3imfnm9tFN8fYHqnbnxq4ycgh9JqL7MoQDIHOq9dWZCqHwkHflEYw4MewqNpTeKZNivLohMg8Rd+ugpNmSZR4bHQLzc+JZ2xPnpj/XF4BJkQK/UyZAeF+MnAnOz3/MjrhXVbXIx8Qm5agiNy2JsIb2TYMRcHWVKVZMPaggYYC1R6gNX/6gt0uBvhpxCL8Xo/wQlVJOy3RgVIGKW728DXGCHvCIDfx71o1GWSBdBoBDZ9y8+UK3SCdIpdaPwfHc7HQwaz/AuVqv+6hBTGvH5wuh5DwyShjf60wK4c8VlpUNr9TbN24WIp7bbA+rw==",
+    "quelle": "Epische Stufen S. 7",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 7",
+          "excerpt": "Mehrfachangriff"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_meisterliche_waffenfuehrung_nahkampf",
+    "name": "Meisterliche Waffenführung (Nahkampf)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 7",
+    "beschreibung": "Verbessert die Chance auf glückliche Attacken oder Paraden im Nahkampf auf 2 oder niedriger (mehrstufig).",
+    "voraussetzungen": "AT/PA-Basis 10, TaW eines Waffentalents 18 (Stufe II: AT/PA-Basis 11, TaW 21; Stufe III: AT/PA-Basis 12, TaW 24)",
+    "kosten": "600 AP; jede weitere Stufe jeweils 200 AP teurer (800, 1000, 1200 …)",
+    "erklarung_lang": "enc:3:8HsSvosVLdI/z4VWspqxm0NoI+dboPB+m2lB1LCr3aApldmq39A2l4F73e/IVcXvdj29hmwOSV2ydgmvtbZLDzgQMBvF2xB78FY5vbObUhWDFwgBwXoWT7bW7HAUhytwSkwS8TjysLEmNQNXUvCZOVk4QX3fWDXyaTWpVrcse8FoyAlH3Ma/R3G5O4soS4omQIXe9q1vNhVPdy/pPp/W4QEXcBoFcnPXRQOVNmuTwbbtfToBvajgjKYiUfeAGGGXY1K7d4f3yzHPMtZZYYZT/X+KxgojVTUdEhNJfbkcQbP7mYBN3mSX1TBb7uuYi3Y8wt0MOljaaZGuF+Qpwy4uaEFog+sgdk+SCnLXw0QNa+o0kz2hwBrd1NHnwE5n/WDLfsXic6EoyeFXcUcad/VEwcojkC1Fuz7VwLG09s+YsmKw7n7U41B3bcvm7nvHHqokA1UgBFKVYh5rPtAAz0p6y2WIBVe2n1pmIbNHQ4CdYiG2UVithJbrh36JIoYaAn1kObbz3U4LtPFu4hqdkfHiWN7JSfqSy7BEqK/f6QeqOkpv339p/GUbob36XKVYCizpHF9MVpXQj+qAAq/UuukFCh0ktu7Gxv7W+n4PGywXXODKiXwaNDcWGHFpXrkYil+Xe0mdqA7PIYaB9dKnZnr+kwNC08VS7ntJWchuqtPgjNxBAIyKF0tzHYz+6XV4MpN4OWAG56Hen2KcR/gvmeZ8jtXljTucJo/yZmzJyO3SbjlzDv8GZNDDoXOiudGBi0VLQSMjPeNc+AT49292eOqXF91TtlKhLAXuG1DIO8oli8R8JDRqFkQTplBCex9lHJ1ekDxM6TklDCLA8wOHql4pAsxEnraOZrdPQSQVcEOvwxBvo8q1p9aW82oBkyQOjr1fmoNV9iEd2X+pogunTJy8",
+    "quelle": "Epische Stufen S. 7",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 7",
+          "excerpt": "Meisterliche Waffenführung (Nahkampf)"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_meisterliche_waffenfuehrung_fernkampf",
+    "name": "Meisterliche Waffenführung (Fernkampf)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 7",
+    "beschreibung": "Separater Fernkampf-Zweig der Meisterlichen Waffenführung; nutzt FK-Basis statt AT/PA-Basis.",
+    "voraussetzungen": "FK-Basis 10, TaW eines Waffentalents 18 (Stufe II: FK-Basis 11, TaW 21; Stufe III: FK-Basis 12, TaW 24)",
+    "kosten": "600 AP; jede weitere Stufe jeweils 200 AP teurer",
+    "erklarung_lang": "enc:3:J5AfLHKjIgDENiLSUBRxcIveImfLxh9QeoMCrWJT2NYKgRzvUECPIXLKkR0K3Zn1pGJQn5EoGyOL7sNlQ5NdyXD7Inx3injHWpS1KsqQHnQzyjTcOQsRFQxKhe6k+1t8Kj6KeMSoAtZDEPJj/Betjki0BnlVy2lyah92rgpmkRLtHMgSTh8As9efXUG2HAJqENheifQQ5ipg/2yMiFIECqqkiVGUBhrvRQzSofVBnXbBdLhnAVLSHPFCt0k3R3jN/e4ui1QKyaWW2GZkUewn8Nw4XRbArVVC",
+    "quelle": "Epische Stufen S. 7",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 7",
+          "excerpt": "Meisterliche Waffenführung (Fernkampf)"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_perfekte_reflexe",
+    "name": "Perfekte Reflexe",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 8",
+    "beschreibung": "Elfischer Klingentänzer erhält unter Axxeleratus eine zusätzliche, kumulative Aktion pro KR.",
+    "voraussetzungen": "IN 19, GE 22, ZfW Axxeleratus 15, Maximale BE 0, Rasse Elf",
+    "kosten": "700 AP",
+    "erklarung_lang": "enc:3:gTFq8YhH7DI9bYGD5XTZCLyfhbUqKEHfUS17yj8B3n/KsM+Iyo0Pcl5zP4nmMPQIYsbNRmxfRTgIy1CGh4zOdB80gV8NsUkyNzwH9TcPwmBve2AJ/PyaGxBf4zRtNCc+gM0aIlwrNHH3+fGqYEMAg6zqzjGMqjQh8YsWpD/MFKZXHPr+eX2B4cw7D4N9bzfYZa+lDsSjFoxSUDwYA6ZrvlzdmPra+KA28TblREgMwOOFYmw1yK/aEObLcmiGaBJEqI2uNU1rhuFWXSS1VEHcNw+RPJM40iLPgb1KJ6Tla7GqvHK78GpjwIJ5WMci90UIU3dj2fNYDzy03ppemETdwiQZghdV3LnnO9EzhxGx8OFKMw==",
+    "quelle": "Epische Stufen S. 8",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 8",
+          "excerpt": "Perfekte Reflexe"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_projektilblock",
+    "name": "Projektilblock",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 8",
+    "beschreibung": "Parade gegen Fernkampfprojektile; bei Erfolg zusätzlich Einschüchtern-Option.",
+    "voraussetzungen": "MU 16, IN 18 (oder umgekehrt), TaW Sinnesschärfe 15, PA-Basis 10",
+    "verbreitung": "2, fast nur bei entsprechenden Waffenmeistern",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:An8PQz1ZqYgJ/gtS4LyqbemCoIMKVNYaW2cLu6BmLq0NUlQcz5owNy2WI0pb+1NwfZgkUF3HcYQKn9mjsWTosWodcUTOEiuhIjjIo17Urq3BG744+h/hlcGWHBJGbN5Hm9glcv7yikUuupxiclCFpQ2OGSRxZGOyUiLn5+1ZvEn3ndA5vWiVo/QWYv66OAwEfh4/uEif5O3DpF30xM+mGAayHZvoZGXq7OybrIcn8vXMexGzej/3xOkKCWSE8lAeiByleoR4pIwZ6XVWuR/5G6BtKhkteHF+YVX2TUrs6Uw5BNzg6VgmzhBivYVV6yAKm4uM/p8+lXzJU6tNLQp0yaaHtgbKdJw+uXZQGZ2PRvCUA9816zjFunvarxQriz0pqAdOT8t13aWKCgpyc0OWIIaIwNTyZLftTeQVdZd1LMuZHdJFivZw1E+vUHvfHqhp2CEwNV118aeAIvGUStMwp1G2yXusyCmF6aZNjQYwCtiJQBszMBIBkhY3HBDOCf6H5URDYnBKkkUx2rzJIl4AH/oFLezDBM4n20aYwh3OVtHqHrVvDMqrf5L0/p+6+idwB/j8JTfoiKun6kkCBhQDgeNkbsQxUvI4W208MdzaayKWmSBiLWDnHosSG/suAlmwAHs9ugkJgSKZvTzFhNBqVxP03bIlQhRAjQ4hXh8HqUYs2DuqJAWjYYPqXIfDKloEd7sbzv+m0ubvcc4QtCu186nRo5V1aQBSeNoAmXkNjhnpOWf4+KNkhfh25RIgxoaoIt591bQyK7uI+IGZArO9zJUSbI4su0nmEQ4/r7UAuJ1BGKKwAP8WMStEUZDmgGcjtqMefe6oyd0ryaK6Z92MFvSfy1g0S8b1B6jZzjjvQjwAZkANH6xAZCReFVdRPbVCgixm91B9slZZobk04qLs1PQuKsY8HcYiK8BFCdEBWmHCEs4NkQJ8W+aONS8s5E1ihvx0DTGmU6HjJBnVmr1v7d8zH5to6qKcDMJN6OxzQN3bPHUWQ/tV+4GKpemv3O0HP+o43QYeIs2O7F9Aenvm34dmebyuKpbl4oGSK9cvcnKDfMHXauAFOBVcWUBObtWALnrAbZTJsywMbhAPzlvo5Rmn/1WJwNR2bJO9thSWRaufTAcVvsbMf6f9bO789aWqG5/M75a2TlSm1bdsgW1e7ElR",
+    "quelle": "Epische Stufen S. 8",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 8",
+          "excerpt": "Projektilblock"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_reaktive_klingenwand",
+    "name": "Reaktive Klingenwand",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 8",
+    "beschreibung": "Gelungene Klingenwand gewährt den Rest des Paradepools als Erleichterung auf die Folge-Attacke.",
+    "voraussetzungen": "SF Klingenwand; mindestens 6 Punkte je Parade; nicht gegen Einzelangriff",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:/EzHTQ590+bo8+CDbaU182aAhNZXiYpKAkOapKsVwF8CjFoLcjIxapE8bG2HPlGBSneRAe0311K5cOcLgaPP8DuNd3DMybmUHo//mt+qZ8NALC7GELm+WUqNbBzk8uKaD4ErZZHuRqQDUNlsb2U6gW823Fe5F4dxGssvlyfPiUQ6G8a+1Qn1QHtKusg6Z1wdAq7bNLSpY861Ook7qkA6nZiENUrtbxpTOdjaOJM6q5a2dN5Iy6QCKyC57bnH2fTQmTicy10MbI10o0JHW7mGyAHNXRlYnGYiERmGP5xE2h8oKQAAPkgXx5wJNaDYOJGvRlQP6r8rdC/puMnvEk0fRTd0zw66TGVE+hR1E6/K6WBv8NokbRRhSgjopbv8aHXxerHcEMKKqleyPKo2IKVEp5sbTREnIoEV2//g+91J2THXv4SCiRKnIBkHV8Z/rfQnC6U+sph9HAdqc06RdR0WDZejzLxzJDSVju2oyEPueGa+gJD3xvWgGyyoTDBDRQhl2h2v5c0lA3OpNoyu4Di/fOypZPkqPI1HAfyZ2wA8hC77RU3eX/2NQJwCv5fnv1WCW/BEaoHvvmtIrc/ldtb+b8PXTCtbec7xl8qNb8mHysa02cK6CfL4sRKnhg==",
+    "quelle": "Epische Stufen S. 8",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 8",
+          "excerpt": "Reaktive Klingenwand"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_rittmeister",
+    "name": "Rittmeister",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 9",
+    "beschreibung": "Erlaubt weitere Manöver zu Pferd und verbessert die Werte des Reittiers.",
+    "voraussetzungen": "TaW Reiten 19, kein Zwerg",
+    "kosten": "350 AP",
+    "erklarung_lang": "enc:3:eL6JSIfGNwbOmKvZVyV/A5FqT99Bu2vzc0vXD89Up0KrrYxjQpZ1kdFuwZ1eow9qiXMzi27GoZ/cgii37AO+lJS6FJT+WNjZ1mWJLEG+mCoLkNFwowdwscwCF92Co3IpxbnBq6xN0DxdFVlJfuwbiXE4VEs3oZngTcRUAEIUAdnJaQOxFyTPLKM2EDLjgUQAVrRLfP/fU/1TouIWu/qp2wde/Dys0mBJwcG0ptXP0FSWhUg7wtP3jCam1O6rvfWlpDVwESJIsM+VOAAa1wXE6ZdP5YseRnHcr92ogzVGTe8rML0TBcapOoe34psuMMc1c6x899H8mjWcKuU1DxP3rRCH5AzbC8bMsqfYGXFsGKJjdFH6+cj0alSIccob3C0qPX4s2ZWk/qqoKlnHU5AnaPAW24KCXCNSAFi12D+cSwshiYtMQJsosJBRFUEgCZHbUiyYBYA9zZ4C/BXTJKG4YBk07Z3hFEX/A5IxfNRGkM6jJhquKvBAbJ60yZN6yFHpCXUrqNp2TA==",
+    "quelle": "Epische Stufen S. 9",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 9",
+          "excerpt": "Rittmeister"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_ruestungsgewoehnung_iv",
+    "name": "Rüstungsgewöhnung IV",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 9",
+    "beschreibung": "Verdoppelt die maximal erlaubte BE bei der Manöver-Einschränkung; mehrfach erlernbar.",
+    "voraussetzungen": "SF Rüstungsgewöhnung III, Rasse Zwerg",
+    "kosten": "100 AP, jede weitere Anwendung +100 AP (200, 300, 400 …)",
+    "erklarung_lang": "enc:3:BCwNbf0Yd9c4SBY2/HjXAql+x3LpSk7CZAZx2u86Aa9ly50HFzaFHLVUAlMa05tUwJb/nSsHegPsmPu6787dU14JL016CO0EIK8Fu+8ZdJeG0iXir4vo2iGl8q8xHUjKc0VWSJn+zG+HSxG8uSg5K4alXhmgjvJKPoGxbEHkPZLWnwZaIKHCYyiUeN+8CdePOQI1GHayNUvSPtYS+9aZfNy/RbTuNthuRJ4cvJ1hi+Cb+reOQil3rdygoaTLUVO/mdqK5oXJZjqXBZ1AxAkYt/2aeLyQVFxQtStZRnK4R5pa5N9uQgT5UZZ9kBcSjGDQicuT5KtcxJflU4Eo7PqpYLOJbHy+AvswDyhQeaIGLDgMyPwGSLA/ZSu5sKrHvmuc0Ta0lD3T+sr4WeZZeh/ngKoWut2KIFD4PIWwDPpPQSt/T7QjeHFOpApaEKx+b3ZyIpr0zgpgNc1DX4sBZHBIhnxqEbQG/kLbY0beUCIUtXJxT4wbSNZgkRVJr3V61ZqB/MTMAWEekqyB3A==",
+    "quelle": "Epische Stufen S. 9",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 9",
+          "excerpt": "Rüstungsgewöhnung IV"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_schattendolch",
+    "name": "Schattendolch",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 9",
+    "beschreibung": "Kleine Waffen werden bei Kampfbeginn blitzartig gezogen und nehmen dem Gegner die Abwehr.",
+    "voraussetzungen": "SF Schnellziehen, FF 20",
+    "kosten": "250 AP",
+    "erklarung_lang": "enc:3:FPn14FyCrDrY5jGFYdE+1xeeq1ddZLaos5Tc4eGrnhX8qDSpTpCZpL5L7lqdnhg8fdLBOne8TqWH1rRVmc7Z8NVzkJlbseR8FQ8vRflMdwXNCedWNRdp999aOgvdbwA5C/6hf31QGQLhLkwgMm7AaJWMW4hdP9ACVw/1BCL8ICPda0R6/0tlAQIOubw7Q3XoJ+FA5FyMUCYryntlt1+7Og2qNc4hsNx7Or5Il08fOB5psrTghqR1X3I7CDai6f83S6sorJNl4wvmG5ddEHo3jqd5KkUOXjSmj76CGTQwXQuyBNjJfLfx1cTFKJPqgmI0GUa5Rq67jYjDf9ncU9oVvCJ2XFDEUEWbJ5MAbY6pcxBUJzjL7JNAlreQNH6t6X4vn/zyQCiJBjpqq7hM2yeadtHqnl4j6pgCELMRkOL7VUcBG/5GSWgwCq7j/9xQkK8h4hSTKwHYJ4oIjRMPPXEe8+XIPauatr5EyOm+llNuYE3DuUQxEgoSARNc15Bd9WkPbVkfXZ+YtlUd1bWWrCkzHbVawxqhlGX/t1GoTuyP3APsP2/wGI6d6Me+kgrE5xtXmA==",
+    "quelle": "Epische Stufen S. 9",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 9",
+          "excerpt": "Schattendolch"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_stampfen",
+    "name": "Stampfen",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 9",
+    "beschreibung": "Gezielter Tritt auf einen am Boden liegenden Gegner mit hoher TP-Verstärkung.",
+    "voraussetzungen": "TaW Raufen 21, ein Waffenloser Kampfstil auf Raufen-Basis",
+    "kosten": "400 AP",
+    "erklarung_lang": "enc:3:jlc49bwbp7X3Ovs/BK8lY7FW5cbOIIO5GUZUz4dNvy8NgZsW0ZJE+U7IPBqEctKAbn8AXIgLudfOiUXnErwUOvysPuYx1TmKnGED0A2oj3+A7A55PSZUkD4LRqHu9pBQMhwwFDFXAY/jUp7wuhcKpWbPAinpgh4+jJBF0FtuJWEN5aiesW48pog0A/7F0gtJSKWRwbw7f8jBP1otvFXTCa9l8nJKgv8xfGAfV0jRQgb3GiLNiPHLBY4iS1TPVvpbAVK1JSlGkALLroNzv0YrtZolTNCkq9DTZMkaEXZ6YgmwtRMLxkuGDnr8jk6ZAPISCKmi6zrLNK32DLcxhCXy27bVr1jBk5tz/7WZCNhuTqt9O8Z1/NLld0cLYO1JlqSm4uxz7KrSxpoh9ThE4UUvV5zOXg14pRTItFeOnI6NUTpKCTnGga3LHc+et8tJ1BAUjTZu89a8eMlnRRpirrN3iKPPbr8+wX9TVxi8OQi/RPG84yC9uwo3mwWxjLUhEjuuRW7nv9rJBo1qF+vM9R9VjRGEvO/Mmdz78thckSwXk0WCGinylU/VPgOt8EP/Dzvc1Eja9PONX4gkqGNmWO2p5AQ46gFsrn0U7Wot9fVPxduQKL05dNyPrT5ONdfgQDUu2POFrToC7eV9GDTDHd3UZA/OP3leqTIUYVsMOn6QY0Q+UBp31I29ry4B8b9jTtYjkLN6jvdOaq7T9Iwaqdeu8/N6vjbSb07s",
+    "quelle": "Epische Stufen S. 9",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 9",
+          "excerpt": "Stampfen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_ueberwaeltigen",
+    "name": "Überwältigen",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 10",
+    "beschreibung": "Ringen/Raufen-AT mit Sturmangriffs-ähnlicher Wirkung; kombinierbar mit Schwinger und Gerade.",
+    "voraussetzungen": "GE 16, KK 20, SF Rüstungsgewöhnung III",
+    "kosten": "250 AP",
+    "erklarung_lang": "enc:3:mLnYxC/sL5rHFUwXHxZ4cjbO4ZIbxQXbZFrlCgng144WNhd80quzy3U2XlKm1IgnysJX7uhXZGEzdk0cgdEGbACMxLTDnGNZeDMwGPHRVYUJA3r5p3x+w3wDhuLCahMWJQtEfLfRksyupl3lok5w3lqwvqRzFdHsWP4jaaFusFVPYC4lJy5mnTtecrMrWJRTXo3jpMTuomL94x3GgQH0fxrYQghTGXE/3OYvOqCGpHZQxd1xLJBa5mrXZo9H2mkzI0ewFAEWfdv1pYyKTyyNivmU7DL4c8hHMzMHOsEBdu/fkLxY63Rx7EZtTMdTeeC1Wmk/L+afvxNd1b/dCjR9XhJNN9edaFCdL8zrAkq11I02DGfeVaQkmxo4wmxCQgJa9gP61sK/htWqyB6VDS3wjkk/Sz30ryqgEhPM8/9Sf9aT65R8boIR/Q4ZK6ccriM2b/mMi2XWJ9n2spdhZ/tmhXXWULZW3QeIJ5uj0N2PQg==",
+    "quelle": "Epische Stufen S. 10",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 10",
+          "excerpt": "Überwältigen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_unaufhaltbar",
+    "name": "Unaufhaltbar",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 10",
+    "beschreibung": "Berserker erhält bei einem getroffenen Angriff vollen Schaden, auch wenn ein Gegenhalten besser gelingt.",
+    "voraussetzungen": "MU 20, Vorteil Eisern",
+    "kosten": "300 AP",
+    "erklarung_lang": "enc:3:iiTgY+4XNPOw5gT9eWDUgjrSLWuaixLUcQU45J1N2LTbGBMrvCAnENyo4rf0d/QntaPGIALrsx50zcni1ZOHRZmtpYDKbLLs2qeye5akaaS8qQQbCUgwGp3r/u5Re4uIxF9Qhj4+KSmUm2eBx188AXWDCji84ZLx/l9in9yumcFnEFyGQdgbiKlTLkA+tqZf8bxUbkqcQ1h+simk+A4FytwSKeHE017QY0GJHk6sT5AEPDbNfPJD658N5RVNWV8QxmHrqPSJtwMnXtAVor/Q9Be4V/TkfSOLxHutR3mCHbkPjw/JLCM3OYICqzkLdIhr4CbROGot2D6QUEiotH+pqCfxYPGTBnW4PG/JRiqEVP3hGZevxmZcnbY03vVyggVUE4V+U1QXKbVHxdXl7nKAtH/7Tw6DdTxcx8Ruu9ZCoL//9uBKJv8VjAz+w+c=",
+    "quelle": "Epische Stufen S. 10",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 10",
+          "excerpt": "Unaufhaltbar"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_kampfstil_bluthund",
+    "name": "Al'Anfanischer Kampfstil „Bluthund\"",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffenloser Kampfstil",
+    "seite": "Epische Stufen S. 11",
+    "beschreibung": "Waffenloser Kampfstil mit Neunschwänziger und Stachel-Kampfhandschuh; verursacht Blutungen und Furcht.",
+    "voraussetzungen": "GE 20, KK 15, TaW Raufen 18, TaW Ringen 18, TaW Anatomie 10, Kampfstil: Gladiatorenstil",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:ZjVmnEBQBFS4dYmHzq5JXlIPEXuta3GhjniRO0KAWMAtZVJ5wAx/56WLigIXl22HfGidibroz1q6jsMFwxpSyuNY/UTek1x841I5FwLvEdEQEOov52DavMCdXdx11SWHx65ZyvP7DT3pM9cw9Lc8bGly7J8xobq7RfgLF2yRISuguv3TpCUd0YyiXuqC7dy+/Tv0FXqoWvn8cu2QGBD37PASvZ0khdH4rDz5AKFbb40NkEUZFAxbPx75NQoF4cmVjmWVrFeKSLAykzhbaJANHPGZUhsM5l4pWnF8icAbjfZ175/H/LIO9IGDRw+FG7TGLio+NT454kqsT4yXhvlICsxbY12oueY0AHeSn87wxxyItM1qYY0vVYvqDjA6Li7ZBVJcjBdU6lk3x6I1bwk82Px/dmJL9uHtpgcUH/i+/U7RaK0UVxsobYgCAKxQ1YdrQUSk9SvmBtqWYsIsr3X3PyrJlAp/sF01paLF3yGx0n+wbNhYgYgdIb0SohUc59ztl1+zx/eCuoTq1lU38ekcUiyj5B4q+8YYm9xnwqU5eOPQXc8y0mlypk7KH2fRDz9peMa8zJVakWnIFf2kvufAGLXm3focFQnY+hPujPWBJMGK+6icbK31qLwRhpg5MgraC93Ibkvky7adjjpaRG/HOSNAjsYPti7t+aXDWnEfkKOWRo4x+pjspcC0XXr7eP7Krvw+eMKAg00EcaJHVNaGSSH9RDwLkrwH99cOA2Wz5G7G7v0nnVFurxqufsWVboP+Q6X9OePsXroSyMCTMJ2P0Li15eJk3vx+22bveTVLUikGe3IfNqW1wNDK//AQ2ZBBVKu26hqe0+PHDqM5Huqmx4lR8bEOaHSHCqdWMcRc4eUsT3Sv84epbG76fNBB85zBT+i4bev0zNBUBy/ortzvRZw+BfOmswnIMMPyJ995dzinCboRDaanmqDfkS+tO6cGib7QMayVuslBrog8HlB8BwSazjZR7PRbhhzOfXBpm/+X65g7l3Vw4oL/TPyy5FEvvy1YrrBoDJTbpQSIs8YHcmXP2p5s2qrxs6a9JgTPC3xhYxQZgC3oOP8oavfm2jIgAxIuw6YEnt2y6qAO3csL0xv15pRthiKRhzPxVddDc54qs14lDZVCdFqCsri6o1oy0hR836M828mFM0qgreKJod1SMLtabv4iG7JyIvF91DrYlAbyNUHX02SIkTNhmu0=",
+    "quelle": "Epische Stufen S. 11",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 11",
+          "excerpt": "Al'Anfanischer Kampfstil Bluthund"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_kampfstil_adlerkralle",
+    "name": "Aquilae Horathi – Kampfstil „Adlerkralle\"",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffenloser Kampfstil",
+    "seite": "Epische Stufen S. 12",
+    "beschreibung": "Horasischer Kampfstil für den Kampf gegen mehrere Bewaffnete; erlaubt Windmühle als Raufen-Manöver.",
+    "voraussetzungen": "FF 17, GE 16, TaW Raufen 18, TaW Ringen 12, Kampfstil: Mercenario",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:R1B2PiXtDf4Z7d/V0rL41ecF7LR9FpuiEteZIIl3QOqxtuzB7nlwANRM3Cp+KqYzB+tMg46Uh/jnk1PUEA4Is7OahG6X3RP1bKvClpZUoGinqIyrQb1N+38Nj4aRxwODsocqWaUBq/1eMxpgFdGTNdtarrYWSvn/mPVyR3UwjJAc8Ey44+LG8vQ1f+/VCmb4I0OLVDlehlAxoBVCRerGhWFSdjrlpFCdIn3UEko+QHTnMTXCmPZm3m+2sZ4hizblFkHw0USIK+wmAixaiiJXSzqN9fKcf3F6fPJDaPqVXQUX6rDZQm4E3pwuhSAAOhV+cPs80l3VZMyKLngvD61KilEimygYpvi5z6ijwD4Sx2EoPnhwKaqZ7OrJiD1b7ArYufa2qqIS1sQPWSD923G/Rnf1Gy2XK+2RrPwIql3/4jr2VR/1OxhHlcDBuKoOFTpF8IELTbxKgFjTViqSgKUUwQje0CfYRAZRvP2r1PKWVW1YPHkHwUupZjz1wnA6SpKXC3D7L+D3ZkypFuGf+xXaC9FtFubXs55AULQT0m6GjV6jSPdFLv5YXas0+2jaZ15lQpvacfb8sHDEwTLTP5BT2DJRMAPB85vTU6OPWz/PA7iVjg4VJDD70kKTI/2W1Pt6vXWFp+o9LnSL80gkZP10N7D9jZgIxpslbpd5U0pOysT1E3BqtGVxj6kKA3UVXrf2JIe1qwPY4BMb/eabVJQjGnWiq1fx0OBqHneOzcpVBYRzrMdzjcExuIOnUgbY8gzySis+Sm9dGhhSbG6RguMKHCzwaW173f6MJ1kR+LnTeuStp/kdK0DIFQkrpUuajf61L9aZ36GXMvAdKM2P+1J6wzMLuTtcZg805mLPF8qhhNi7zCbFvq7LxyjBO9W56g==",
+    "quelle": "Epische Stufen S. 12",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 12",
+          "excerpt": "Aquilae Horathi Adlerkralle"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_kampfstil_wut_roter_maran",
+    "name": "Maraskanischer Kampfstil „Wut des Roten Marans\"",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffenloser Kampfstil",
+    "seite": "Epische Stufen S. 12",
+    "beschreibung": "Weiterentwicklung des Hruruzat mit mörderischen Kniestößen und lähmenden Handtechniken.",
+    "voraussetzungen": "GE 19, FF 15, KK 14, TaW Raufen 22, TaW Ringen 10, TaW Anatomie 15, Kampfstil: Hruruzat",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:7F8fXWhJm+U15y2WdiyiC9imZDoTxdFwP74XLFRfwIJ01rXZN1Fhrr2RU6L7VPp5sfW3OyKGd4f+hDHCh43M++xWvgCenZhbdrXaS4Y8WSuCOEgibDDkR/jvhFgdAU+Jecsl7QnO9zksGXXml3nKIUT9UBIPyBxh0bqY4v9Qou9yVMh0H/6tjjQuypwvcG+IHAPE3vhFtW1jKeH0oFK1tjQ/u2xZsbMOOPt3Say6SS1IRT4LE0gnvBTNvv8iY5OMwzGj+XxE3b4roJPoyjYBQl+VSnSlVKUx1MtFn2CC7hfgAuaBLYiivQad4X+yWq/dN2Ohofp06NWoxXLqT7UfPn5Fzpzd42DA3nuwgmplUSNutnxcDkApXIvDrK0+xHIBzCJ3N0Jp5i1LjLoalVs4PBpyI55J42MODk0S78e96QicLEwHj7tP+J+Y/Soggt8FhkRNJPGAOQg5LATHwxIyws2x0LcLuisLfD4L93U2eM7in6vz8gzilkHvEm+l+d1eb+GdnXavkFa5LaIVO16rGzV83Q==",
+    "quelle": "Epische Stufen S. 12",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 12",
+          "excerpt": "Wut des Roten Marans"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_kampfstil_baerenfaust",
+    "name": "Nordländischer Kampfstil „Bärenfaust\"",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffenloser Kampfstil",
+    "seite": "Epische Stufen S. 12",
+    "beschreibung": "Nordländischer Stil mit enormer Durchschlagskraft gegen Rüstungen; Trümmerschlag desorientiert Gegner.",
+    "voraussetzungen": "KK 20, TaW Raufen 23, Kampfstil: Hammerfaust",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:WZAK+MvbJNUbuH7DbPu5RZJAUPZYBzJ2KL33c1K2hROphOnAtab0LeUu6NaKH/sCqzac2376Bczgcu28WBbyQDKquJeyiDeIAO9tQzrpSmwkZ+eFIqPs4cjVXzHVfo8hp6Jzww2+VfCx891QbLp7vtwWY6R5C7uIsZTdgnFk5myDXJFK0k29zWaOKrF/57UX1LRvq+wilFQ7gu963zz/v1bc9oZePHBwQYLB1L69Rshb7BUKVBxvytK2v10wq9D3bgqbPNYge4gqQZ20m/jzcQNi5TM4LVoemMs6g/Ys4TxjjrltfniCsPP2V5nlqEtEaFkmwpGvHDxP8m/41w1J16bsgvWET7T7xlxN8Y9A5xxCmDl+4Si3rxSgHyT6wHmW4a/oGodgv0A+8DmNqCgESAM7VR1w4SYwKRTZNh+MnHrF7RKSy/9RtQDt5c+u6JitgHoOk0KpBHfWt/o7yIFSN09fXKQd3dqvbYUJmYounzfvw41TDhRu/+ix6M0nW6/9KaLwrjyFpqTtTrLl8OFtidNnVQ==",
+    "quelle": "Epische Stufen S. 12",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 12",
+          "excerpt": "Bärenfaust"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_kampfstil_wuestenloewe",
+    "name": "Tulamidischer Kampfstil „Wüstenlöwe\"",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffenloser Kampfstil",
+    "seite": "Epische Stufen S. 13",
+    "beschreibung": "Weiterentwicklung der Unauer Schule; nutzt Schwung und Rotation, um Gegner als Wurfwaffe einzusetzen.",
+    "voraussetzungen": "GE 18, KK 18, TaW Ringen 21, Kampfstil: Unauer Schule",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:Pb/0rYiaKpuWTMIyaKamS7CCwDtbo/sfLksFaBGO9TR0PxtMrQAeqosYRJqXcO36KK5vUvli4aowzS2Ar4DhO3NsZ+SZ5eNjYKimYlurw9yw6CqQLi8xwYPt2SJtfFHC45Iw2wKmlAbqHB1CPIJYku0m3Qgk/QcH/Ak9h2eFJv0nyvE/HW6ImYotQ5ut45/8cm7rmYLbmehY216k+09XMLNXmL1zCRzFWhXV5ca5V5rbONTp4XMMCeqn6YfnYRr2OM8ddJLjaH2wwJS8sU177XV70s9yAa2fTCjbVkiaxQhIzjcfYfNhp0t53ML1CDlsvfalMAb6nYN28AQfIf8Ad4mjRXiSe5y9BauOwwNcQBVAkqmMc+dCEu4/DNvml4gLHTfZmUiDQzsxKriBBHO9F7qMAaMh7Q8HMCdTG64K07QxfkJf8Ye1n3G7WiPCYEglS05tC3u6Z9hxmPMwD/n75fETNp5v76acGqd2xPAKH/oHzP62ojipr8Mize8upkb4ygVG6+JaZpalM0kGyE+Vmx7SGGD3dIfmJoVJxiHSVOn43JJXQhHX6kREwamKG5YvifJQwxJvZBM703lDWpQgHJbIsY/lljNhQXN55PVgRB/txedanO2cAJMtIBtUletDIIQWHvuM933b/tyxrq8555gigcOzwPMk6LmZdYrwjQ==",
+    "quelle": "Epische Stufen S. 13",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 13",
+          "excerpt": "Wüstenlöwe"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_anderthalbhaender",
+    "name": "Waffen-Großmeister (Anderthalbhänder)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 14",
+    "beschreibung": "Zusätzliche Aktion pro KR; Waffe bis zu 3 KR einhändig führbar.",
+    "voraussetzungen": "Waffenmeister (Anderthalbhänder); Eigenschaften insg. 5 Punkte über Waffenmeister (bzw. AT/PA-Basis +1); TaW Anderthalbhänder mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:l5/1oqDxtMH3W+MAxvrixnuVTb7H0bRfurHo2Z0sS/YMK+wobHjLlyBOw62oQX9IREGJUjQ21JijWYAKGa8ElEziWbPtHGoNxzjjYOuPIys4/faRL7v31jOvVjcelvk4wBx01vSTi1O9aSpMHMm25WCh2rmAh5ZghzZBc70XbfRWm/1XL0opNsoKo1HCejQdkGe6GkPcfK9NAZk+wxvbjWzXvnHMkowg+iDE95hq3sNJV4Ye18fNDvpUkadKcd9t+s/WAY2q5viNUQV1+A0tLXZosmdZ+ie4byAcBrPoqkX+xVHd++bJKAdDc5E60rOZJKL9Zek2ECzDfnNG+qUt5EdeS6bSjY8s68PtkwBQfnnjkC93hfxBMR7rPQj/x78XDTDwRYZRFqk7KprDF3i//jiUi40exVoliYj4Z0OK5AyYCSZhft8RFsyN2/AunLglQ8bY44YS",
+    "quelle": "Epische Stufen S. 14",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 14",
+          "excerpt": "Anderthalbhänder"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_armbrust",
+    "name": "Waffen-Großmeister (Armbrust)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 14",
+    "beschreibung": "Reduziert FK-Erschwernisse durch Zielaktionen; 3 TP/2 Erschwernis bei Schadensansage.",
+    "voraussetzungen": "Waffenmeister (Armbrust); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Armbrust mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:SPMD5K4mWFBSqPYNGLpaW51AerIzwj2uy4buMqxPGge78j0/swswTEupevbtUc3qNOM7k9FjLamKKh5LUp59C0FN++HtHi33QvGgf1o3AACtqXSnQX1rzk4xYTxCxKXnTnhr46m+w+eQsFguUWBKACaEOrsAUah8eWUOth4udR758gjURqc7MJhkzXtgmuEHVpJOQzwoeVG3X+ry8HRQFKS9JO+ZSLgwysXrYqflWRzbJHEQ4LSorkvbIlyOtP4y3K4/z4lyIAKDXBqtCr7ODSFXP9r1hrj7s6TZXFTGqMe2EvVWIj++dtLwYzQlR4MS8TMJ9+d9af2zJJUpz6bSplf4pFCuAQl/pfkBkfpkfsDuJaX2COuzYTQp3Ut/toqXhMQ/0Bal8FX+ooHZJdnbbmvS6EI0YG64H4iEgig8NOKTCAlCLOOh4IiEC9fF3k2THFoJNo9Hd/C3W6xgGcWshItJ5FAkIPkXZdYwB0MKgBrdWYhA2jkzm0Z6llANi/XoKskaBbu6KLHnz3Ik2bja7fidBQQVK+iMRCZSrgJSbeBfkt/Lh2qfkXY641Y=",
+    "quelle": "Epische Stufen S. 14",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 14",
+          "excerpt": "Armbrust"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_blasrohr",
+    "name": "Waffen-Großmeister (Blasrohr)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 15",
+    "beschreibung": "Sichere Handhabung von Atem-/Kontaktgiften; glückliche AT ignoriert RS; unbemerkte Treffer.",
+    "voraussetzungen": "Waffenmeister (Blasrohr); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Blasrohr mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:shpwLccwIbdDPc6K6fAEwKwdkjfO1V5wlfDYOcGX/kyrevkKgQXLoZ57sTZ8rY+dgqlMYM1pgbw3CdKIU+03Asevi1TdMRqVdUwquXkkhXBcaNKgmzu61uTRRWvRwSD/pce2XpWHILRRm7OcpiljyLDhWmDAjser7VAJ7hBLiZq7xy5tWqMZCaLY+C4O5ISbnhiAMDd7fR5DQZQYUGwWt2f+GCf32GqH6FYdBLJ8ZfejnlIarQYrvbwHZCov83QByviKu8OuzNFjbW+pIsire9mAyTHN9HIZ/Gy38D3KoYBLrgqzyWgMB4go7DWk+0b5OxDukSh5Amo81ToVKx0OwGrhdA+pzRJWfwjNt+CPCPKAydY26zGpYfo3+JGO610epEcm9A==",
+    "quelle": "Epische Stufen S. 15",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 15",
+          "excerpt": "Blasrohr"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_bogen",
+    "name": "Waffen-Großmeister (Bogen)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 15",
+    "beschreibung": "Verkürzte Ladezeit; Kurzbogen-Ansagen kostenlos; halbierte Mehrfachschuss-Erschwernis.",
+    "voraussetzungen": "Waffenmeister (Bogen); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Bogen mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:mADXbdg+BztS5YFmAzFRmD9+Vr+KF8Z4gD7/kJpApsqOwBNW/ZGs0OXqDOcFzj5uLQDDvDkcrlVXcCR+5cuhSMNDMyqnA8A8QIJxgxfDFxc8jmjSVyzyymY3HjCpZkMAiD3EPK6nsOAoMAEnY5NPB/qUB5iiQNH1lVkal+0+t7QtsYcg3zBDysE9t0fc4lDg94ZWi+Mjly3hHSzCecMoe0hukvdi2magkZuWtMgC7DiqANAI/upJgqV93tXCbsamqFxetpKfjlj7lLfkqmDUXc/5lGxdkF78JPTgPyc8nNzKAdCY4OXPAXRt1d9sVxm62WckTHMGznmZndvKF1lh2bX4EfNQFZQwIEWJpv4QdUN+Gkjv3tT9n4Bax3jhRFa/BZlN3lpdEw==",
+    "quelle": "Epische Stufen S. 15",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 15",
+          "excerpt": "Bogen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_diskus",
+    "name": "Waffen-Großmeister (Diskus)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 15",
+    "beschreibung": "Zwei Diskusse auf einmal werfen; zusätzliche Erschwernis für Abwehr.",
+    "voraussetzungen": "Waffenmeister (Diskus); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Diskus mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:Y/u+VODF1Rx9FD8sWh9Hkwj5MZs7vnYi0z9CcSB46ZbS9MTLKOuEudE1QhNkzSCMyiRonM59UEvLV3AJih1ekddoPESGXsRJcmG73JnmZBvi00KYSkPIq9fFpepyieF1jFaT8+b+6j301/okNZJtO4z4N3yiz0R3lZNDh0GaKh1FKDZx/7pCtRMbb0de3QdvC88eOnoLysEm1SMwacY3OtCKsmx0+JyJUp9M1KDAYdhdEg4NLrNmK2GNJEN06RpWDrHHEl0uZ+r+doyedQ+Vd1avngEry6HA2/zI8BgiPYChJLQwti6q35oqZw2flTuFPcdRtrahx7b+kk8v6sS9A4x6ZB9RShqhG427V5wfAWxG3EoekJvz+F+nCZnioZo1DdRZRwk3zm/bwrIx5cgh/rFfR/g0dymn6dsONDEEAd88LpiSYey1JOq66EiRAHAKl9hxyryEgM4KJinvfLIqMKFDfjdhHFxm/N/yk05bSxveHkCamHDsV9UOp+evwTuYLb6AVtWkB32wjVtFez5pDlhZaVOS0KgynG7GOhFaDzLRqJIzqBHGDqMTwANMiGk9HtqUwQWfRqeM",
+    "quelle": "Epische Stufen S. 15",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 15",
+          "excerpt": "Diskus"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_dolche",
+    "name": "Waffen-Großmeister (Dolche)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 15",
+    "beschreibung": "Zusatzaktion mit falscher Hand; beidhändig pariert jede Nahkampfwaffe; Meucheln von hinten.",
+    "voraussetzungen": "Waffenmeister (Dolche); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Dolche mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:9bZjegovR4/A9KPFp1hhbwFc+N84FflNbamh1c/iKw5ily/jZvveFo7C1akFCeJyLZ58h7wefcyXsUZHZaFUTVq0nCgG5qDqlTWawgaBFbhSE6xQmjSqDlS4trBmCnLaJ/NCbMH55GXDQa5qTFS95dViHSmJBmKDzWWI8OolcB4z/xWm6dSz0EnEZWG6YFO3PJg08AM+7aAmlm93nD+wZYTzWkQCAZlgupN3nsMXNLj8dZF9DWrvvqRqRXJEZxoT+pV5Z4PRuvqbkR6T+gUHzGbP5aTD35MxYRho2/mslo40H9JUY8/6sM4LtQzOcuKsR+J52mB4FWwfbh5evHYBrse8pjlvl/WnkFNPEKh9Xo+MSKEYXww7fW9M91cIQL8GdkAlLwVVCwUKu4c6dyEc1Lj1wMzTd4TZQ0GCDInzsPhnyIoLKE3RqeAhfPiCBUcq1IOqV9Lk/bi+qoJsq7DnQ3lF",
+    "quelle": "Epische Stufen S. 15",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 15",
+          "excerpt": "Dolche"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_fechtwaffen",
+    "name": "Waffen-Großmeister (Fechtwaffen)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 15",
+    "beschreibung": "Zusatzaktion pro KR; DK-Wechsel ohne AT-Probe; +3 Erschwernis für Angreifer.",
+    "voraussetzungen": "Waffenmeister (Fechtwaffen); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Fechtwaffen mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:DrbF6lRDRYNPga9iZJc+zBWR0vil3QNqpujTNP63t4P+ZdIksJ7s6CEmQuDZZBKSiux4LDzeJcCFjpUkr+zN6oeOH1GjiSEA85w72Sklg9fUhK7MoStGhbW03WVFgFeAwG1HT88csew/6W+sHM7LS/OWhX0a6zIB3mqedBmrH6pSo8iJp9vrd1Tx6E171VmvCd9DhLcueh/MqXDbuIsUZZWpYHGwnJvwkZ/d/TlnLL6hDD/QppxbRu+3rwCUHKpJbCSBynROC9tUEkgVtUhAkpfcIUlRPXWN0coj/8oxZ+KP/0Ko3hCiGBe6kqIbarihxf1r5miymrqjy+ED//ndZs+2IfNtzeZSUjAEYkgoKYFXPEbLXCbcqZdJdpCrq+qVItj0+D+9wxARGW2WZso2nIzi+np/37jsaFRXv051bu646uBl7LjV0UbHBANBzkGAn9y1lgeLUlr9pjzawkDTk6eMwIFobaYce9C1RkGdW5j9qoVPBwbzmLmUJBLSPkSNs92SrTlmrYEJzAXL+aG0bPxfEUKrI0lkhvB5OpWWWYQ=",
+    "quelle": "Epische Stufen S. 15",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 15",
+          "excerpt": "Fechtwaffen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_hiebwaffen",
+    "name": "Waffen-Großmeister (Hiebwaffen)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 16",
+    "beschreibung": "Schilde werden zermürbt; Schläge gelten als zweihändig; Äxte bluten, Hämmer verwunden schwerer.",
+    "voraussetzungen": "Waffenmeister (Hiebwaffen); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Hiebwaffen mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:qoFO9Dl4NmPxc4FDMbZqLXLPFz7yvzrIEvoGcxcCt05AG5BG24OrhhF9FqxljZT7zA+akko/p0LXC4zwZgL+aUllGP9N/N6RsGnnR8z5+4LzEjtySdqLE4QjzLynBDHunUY6SHqyx7cMFNwXeFVTgz0RFFdBvDelgkzeeDjgO2NU2RuiApaXYrrOwpWhie0vdSv0A/yOj3GoEv6/kniO9kManiwnYOjx5M73mLxgoXkBp2pXvymmNWLjUxXx21wDX9muKejcuhicuvRpE2QYNw7yXOEe6Y2/J08umH+1z3wIneXeZA6qCJ5PUKcI4U0/ia0/xhX03COK6AuBb5XyxUomgyJjpbzoXQEFGVVmyVtofd6YQwucuq2+HSKsM/uVXf+DbzIxVw0n3D3f6yP/huQ28nhktwimcLZ3dK5YN5NteTnmulJFBJQjrZUV/+eXhKLe6GPS3ZTYXmUmhS625DyR93iplsFKGf/esr5doWDd8nLoE1/oTWYbQCAjuUK3bOd/0npHAxZdRVFJlOFO62p/aPLh",
+    "quelle": "Epische Stufen S. 16",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 16",
+          "excerpt": "Hiebwaffen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_infanteriewaffen",
+    "name": "Waffen-Großmeister (Infanteriewaffen)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 17",
+    "beschreibung": "Ansagen beim Gegenhalten zählen nur halb für die vergleichende Probe.",
+    "voraussetzungen": "Waffenmeister (Infanteriewaffen); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Infanteriewaffen mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:kBddvH0qoJhm8PVuHeRB+S0aQKAeOvDKljZAOMwTlBMOvoQv4lpRG6hEGv4KwctVHo4SmUr1f9aX2a3YGeQYmjRE4VVtbn1oFN6yRegDUiXAEC5IbMoHN1irCNhekcbxwCvORTHN4LWxCO1jlC9Fkj386nawN2GU/lUe+5puPGAT1/cda+/mhiMlrWSLn3R2/X+WpUScZ6T6vAs9/WrzwoL4BEWnZZSSexkhYWJzdAny+BFrBpAjQKg7efjYLOF3PRNytierO9C/F06He2Ofnk/NYPU6cQO2IZfDEocohSOgLicACBYgHbc3nJMmn0lx0Ubpk/icf3t3P1qQtqySsnahI8b9oKoF9LLV7XKn+/gUhapOUcaP/UZxSYN39GS2jSlBuok=",
+    "quelle": "Epische Stufen S. 17",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 17",
+          "excerpt": "Infanteriewaffen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_kettenstaebe",
+    "name": "Waffen-Großmeister (Kettenstäbe)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 17",
+    "beschreibung": "Würgegriff um Hals oder Kopf; 3 Wunden bei gewonnener KK/KO-Probe.",
+    "voraussetzungen": "Waffenmeister (Kettenstäbe); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Kettenstäbe mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:j2Z/bhvn/ZxUmVJidlyi9uhsmx2HYPFObTb97qL/r5qkd5JrU/JHje4jL4pZWIrWLlxzu3TLiAjuCnrsqryo9vzv35VpyhFHJ1WSAdjNRwyDR9UmLX0fLKYaDveJphtRJaFigPSXRVhfZyXav0vpGM2Y+wSgtOrWdw9S56MJqWPHQFBP/RGk0Mm3J0cWeepdYtI11CK2YgQxGi5R+71EHxJ/gjk3OKRqcJz1A0ntWHFmlg6pNfCRo9zlZpMwmKPQ8UgI3q3DBLYKmlqm9emWkGSNIz1NfFCacFapmfCubowHb3h0gfC6HBtob76EJaqo6a7lNT+N+h4SwkJbr9HhJjPwN4tzNoFMXk7peaH17o2QYvS2i+6eDS3KM1Wd0pQwtbLmRQu857/i723Ejew4UHYJ73ZUVPy+N+MbX47qEmrWJPdC9IG0ICmEYRHvxOu10w55nnFVk88qx6Qh3dkH9D2p9foNuq5AfAbClCJ1CdS2r93ZAOsSfGA5XtGtYajerCGorBZolFiNbOMWTOepPXmwVHZzyPh8c38cOWSKMNQqdzsbUg24X0AcAFo56RAQmYDOI2UrzzmxlkYS7QoW7+g0nTSy72mVqfC6DJQB1eEY6EHlQJ5YDdabfiW9LA==",
+    "quelle": "Epische Stufen S. 17",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 17",
+          "excerpt": "Kettenstäbe"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_kettenwaffen",
+    "name": "Waffen-Großmeister (Kettenwaffen)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 17",
+    "beschreibung": "Schlag ist nicht parierbar; 19 statt Patzer; Rüstung zermürbt; Ohnmachtsgefahr.",
+    "voraussetzungen": "Waffenmeister (Kettenwaffen); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Kettenwaffen mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:DEYvgORCD7H2zYgKFC9LLkLEXxcCGEPzavUhlI9xkfacy8Bx5vZzly6aNKxzKEXS5ErOTjVFQpnsu8FPCB1fHXmhofVUeoMHaqpnW/b9+7U03NoDGkBcc+M/6emxf9d6+DiM6A7d36r/SxYv9HKhBpGJJ807p0168z7CxTPKsyBci8+VWIrgkjBxdL7AWWnYNlfr5G8ykH0CbS7zSw+Vk217RkLp+KK0+LvBMhmeCQjTNDxBn0PfsrZucj161H7IbHRVe8rVmLCYIfNl03zoF0TZ6zGnWQlKjseGHDHd0ZHnfnjaXNlZBdSIOXZZrIGvJ7sWsAq01ZJg78zSxfvve+KTfQnJZ+8GaZYHR4kxd+h4IVYb2jCUkmbPICrh8RxwnC1g92o2f2u5Bke/fx7dHjTW6InzWeb5lBvhI4IoYzcqigx4MTQeNnFCzB0XD4WXVKQSRv2UJqk+KDHN/GWCefloEZzvVNQY+4I+tL9C/wHBSwpcgYhtGKVRGjLcf7ZC9NssI68T5WvpLiv8x3nsbviEbTinFWWi0iYaNhcLWCsJAKSYLWtXClOlNT81rjecGcXGZf8ShgVUVMRm4ypf+V1dHsFV6vM=",
+    "quelle": "Epische Stufen S. 17",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 17",
+          "excerpt": "Kettenwaffen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_lanzenreiten",
+    "name": "Waffen-Großmeister (Lanzenreiten)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 17",
+    "beschreibung": "Kein Bruchtest gegen kleinere Ziele; zusätzliche Wunde; Gegner wird aus dem Sattel geworfen.",
+    "voraussetzungen": "Waffenmeister (Lanzenreiten); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Lanzenreiten mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:gc7nMydSddCOFlF2qM+vFxyeqv6sHhgCwWmrd3scaL9l4S42VMrPUhKgYjUEDpsxfd3AGrcVBeNOTcyFBRbqvkCmip4MhpAjyu5RMLnyS7D6mB77TSKEO34aW+MnkyJEQIL9IQ4ZY1KjsrW805Uc1NVbi6YrzPmlxDGxtJc2/zvhymBDJT7DbN3FbnMxm3kcb8hKVnbzpTlz2SdYN8JR3kl1PbDqCjWQ3sSGO3vyUBtEQXwCLhCyxjsmQtPD662jY8nbytvVT0YBgII3kClw/+oXYept9vrMcqUbDSrOMYYwpnQ8O3qn9pzz4vlnHlSK/mwG9EgTPtPal5bJWwWfGB3Xbw1kniqdQM7PQ5BNdwMr+U+L7Ez34TYEs+9veszrjVZ5zXUwm+MUSa7zFOI6svSwGUEi6ujeqG5TGmJUXVSwoXuoYojEGEPIBMToerW7N0kZ+A3lwdYKlGh3kstBdgS9//R0eA==",
+    "quelle": "Epische Stufen S. 17",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 17",
+          "excerpt": "Lanzenreiten"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_peitsche",
+    "name": "Waffen-Großmeister (Peitsche)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 17",
+    "beschreibung": "Arm-Lähmung bei gezieltem Schlag; Würge-Umschlingung am Hals (AT+8).",
+    "voraussetzungen": "Waffenmeister (Peitsche); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Peitsche mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:Ukby+/Wf57xIsqXVbr6WMXZdPEPQu9xuaeXkVSgqIQ/XjGnNH+FtGdiGJc6cOaJUAHZ8Gxi8Wx434k3id42rh/FW5vrelEhOPAixSdLclk3VHq9EywAApXqOQi4XVCFxuoQLG0xkyPYhGNOhQ37wxC5Uv8NQdVTcGFjpBjyH3r1Zzew3tBMLj9DOLu2WMq3YpH1LpHTRKJew7CjWLuOaR9TVRDFsBgvKOXbx9L/VpDFW7Q/Osl98c+sgp1b/TMwEE/DnVt445Ahhbre3U2h/RWMT8gGAJAUNpmzbtmQUK8pY5b9HR7LuZ3sEFn2ZJpvdyoRgSKbNa1JSCnyLgneNex15VNSi8Xl93M0RFVvu9iH9gyDVkBjOGaMgN75A9+gsi2/m4wb/to704cqorZsDGamPsKabqIK9ISTSlcv1ctWjt3Fq4ZQ=",
+    "quelle": "Epische Stufen S. 17",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 17",
+          "excerpt": "Peitsche"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_raufen",
+    "name": "Waffen-Großmeister (Raufen)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 18",
+    "beschreibung": "Boni je nach Kampfstil: Gladiator/Hammerfaust/Hruruzat/Mercenario.",
+    "voraussetzungen": "Waffenmeister (Raufen); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Raufen mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:4bm64fNhgRVv6A+yDeexN7znXUf7Cwnnww+2ZqLZKveK83rmRbhZgyfZFEFod5voRz3mrjynxxGAUV1dPhdRsZbAiWlBPeErNo5/7YFhGdJ5Gikm6iuD60RNlS0TwJFJjC1N0JRogv5+GS/PnmJJxW9zbqj4w2kgwIk7/lHWtO9dlh6WLYj4h+zaJwrd6+EZxZMu6KrsfdH22I/9UqJMghwZOzcwJ1na9loR5HUaot08rwaLto0EbBnRFiXPsSW8cuJUTfLy53udgcfhMtnJfBuWeTy8mN5RuDfmilUm21IumqHw9T4OwpAIDzb33XgBTz9LYTYIlDmg5Sj36ANnzTdv71w1JZiOXreFyusYJUA+d4aK6fqIC+jNbuMvGfTeuxxukYTBmLULlF/ZQ/OjIx/nwg6pguUsktO4BYkfa+Zi1Z7A71tdBXuG",
+    "quelle": "Epische Stufen S. 18",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 18",
+          "excerpt": "Raufen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_ringen",
+    "name": "Waffen-Großmeister (Ringen)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 18",
+    "beschreibung": "Stil-abhängige Boni; keine DK-Erschwernis beim Ausweichen unbewaffnet.",
+    "voraussetzungen": "Waffenmeister (Ringen); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Ringen mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:3YtEFkFqLoOxpjC5METSHL6JWjbS5wNKypsYimJHxV0MB7LQi2mA9McVSGlrFChfP+RltD3mJ2VwKQXRJIIX91FGBiQdlaftSkLWt49xPCEqMHAGI17+71dMAJDKT95u85YWpdfKOqzhg8CWGCgjKH1GejI7QP8oK4H4RhukE5S/SOEvuCEojZDJSu0DtquTcQcrvvi5QkR9AGkfe2wLf2pVl/ivzoyrVMMaZKi+oFUHzPUwwRqUHVnjPPsvIKfTu6XXjFEZ3Tc17LGo4l0gLjt0kk61eDwqT0yBDdkXkMxg8w1wtMPH3bbpfahFQqrfpay/P7S0KXQCEgXDs/YC7hN25n48p/wujPyeHo+/GR+Q6XRfoHPSMvheUjRZ41Pa4zsimWj0zrgJlOM5/bso6iaGkP6uP/VQ/jsBrN29Yt+BCinuIOCN7U/1wQ==",
+    "quelle": "Epische Stufen S. 18",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 18",
+          "excerpt": "Ringen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_saebel",
+    "name": "Waffen-Großmeister (Säbel)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 18",
+    "beschreibung": "Wuchtartige Säbel: +1/-1 TP/KK + Hammerschlag/Schildspalter; andere: Manöver-Boni aus GE/INI-Pool.",
+    "voraussetzungen": "Waffenmeister (Säbel); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Säbel mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:SQ88HFzmUwS5KoXA+Eg0jJ6Ems2wc8nnUz7GNcl/eD89n2Erykl7NXB3pDA4QTchs2uKUfU3VrnEGN9Cx3C75dt4QITwmHPJAPLmq0dWCvP/3+0KLM1JNlpHiPGStMdZ6mvL4BnERmcfUKCCHjEN+FOSSaNgQVkTJRzJNzuyf2QRjY9b8M57ExQQxP3ADGvtMDWG5diw1Q1xd11WXcNJipy1BraW9ljQIPttW1wca9g9fOrM0dBI5uLUZdb4gakrvcDvQQtmMz1/qh2kNosCvmfBuvAHIQkVNLG0RcmvP+KzxwYHr73ZqEd1vsx9RDz2BxGTAbpNCq/bGfGq8iZpCcV+RLjTNSGY8S0cYllTL3CRQVWexZp285RwLoGIov5C9Kg7yd4nZOWrvzW7C4gLrb1bE1ytdySSPoKRiusr/8a/9+sTAXBtVoWc4qyRoBsoHda73Az/C6DxhYgRudIjmZtPCqkJeE/BUpeNi7IP67EZA7w887RltO1Z40c1XaG1bxRNi/BO7jPf8LK4DRqKoeOUOUfck/INm0aOAPQxkyvHHI8KkLeA21pnXlBZmGEfZbcpv3GIaYNslGXUrxUnLu5jTLPSX1cmTeJYScSlV38VVV/SPEUwdVXj46gTFokzGqqrp6fcAeBjTg9bxe6BWGOBtfvl8rtnCZfopKX9o823GGT+wD1wsomsX4tF6WfwwlSoxFUH7uAMgSa9zHLYA2uTobTS2w51lR5Kxfo7/mIaMlegeQ3YRNsHmTB+r4yE9Ya1cMLiOA6ZvRwGzvHDzvIlbkPPMqcTsg==",
+    "quelle": "Epische Stufen S. 18",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 18",
+          "excerpt": "Säbel"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_schleuder",
+    "name": "Waffen-Großmeister (Schleuder)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 18",
+    "beschreibung": "Bonus-TP nach KK-Schlüssel; erhöhte Entfesseln-Erschwernis bei Wurfnetzen.",
+    "voraussetzungen": "Waffenmeister (Schleuder); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Schleuder mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:1RyehjTbM86+FqPdpZ9PyzY7e4aKiSGOtWZSRUqBLcAf2dpBGcIejlL0FrARTO9VRg2ScVyn/kOGikPHObTQqUXfDRazGDeit1cYaVLd1VHvkBKgHM1h2FiVVUNVH9skBBKzPG4x7vpCWTDfw2Q18Eujp4p8twctRVDjl3WaIhLDTeYv91mOO5m0GavmzK5k3IVFSbwNmJlBPVpqtGhiG4RfHBnjPk59CY7icsSP9r0Mukv7rwlcwN7k8pOvt1EHI3wt5iKQp9Ks",
+    "quelle": "Epische Stufen S. 18",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 18",
+          "excerpt": "Schleuder"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_schwerter",
+    "name": "Waffen-Großmeister (Schwerter)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 19",
+    "beschreibung": "Anderthalbhänder einhändig ohne Abzüge; Manöver-Erschwernisse um 1 reduziert.",
+    "voraussetzungen": "Waffenmeister (Schwerter); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Schwerter mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:vmtNdjTakOk1v9HzYlI7xkRk3J/2PqhWVfi8QZ6jeZr+Sb9TUfbJZ63tCf4Oy/4waaIJH239IithtHoDFsd3ow6Njt7eAJixnemJ82ZXfHc4Gnvp58EjyanUwq2qmoai7oULy5tyjNGvfpVcKR6VthwGTNH6yHp2Gwm6jPiIoM8vccrvjGDXkakAPRXITf8VH2xJfFHyaI5ld6ieUT2LHlQ8/WqszmZ4H11GKJvqKcOnqD5YeRS0tS248yo0LyHL40z+vB71kakh5RpHpFUugPbw6j0YPpNDSCDF2G2iQ/8SPdYdKxP8+bxabxfrZKlPt85Cv4K1uFLg8PJrKFR+BxeyM3YxDorN8m86OcrhvOkXQs4mjBh2vV4OPRVkkPtoSvu6ZLYpTGjquJCemuW3087I319b9Nw5IWGWoykxdQ8BpxlL9cIJJlNsHGeL6WHY6/cLncfIphwHyG8DyvcogpgTpRywfhLJXDSzjYYvxOz52qpI6GAjo+yhp6k/lX585zzm9SNb0Z78P2iEBvFm",
+    "quelle": "Epische Stufen S. 19",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 19",
+          "excerpt": "Schwerter"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_speere",
+    "name": "Waffen-Großmeister (Speere)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 19",
+    "beschreibung": "Attacken in angrenzenden DK; Gegner kontrollieren mit steckendem Speer.",
+    "voraussetzungen": "Waffenmeister (Speere); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Speere mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:l1IwREWwG2i0lvy5ppFRVt+Y9fLAK+/1YtD2gLPRK25WyeUTxKZ7s8lGF+I4IBFN10kOuboO/gLeF1VSakgNUhOyS0ocJF4sREWbxakWjfrd6aHwfjbOKHjDSggp/VTV7NkPbpbVVJf5JTyZtrtKQsTkQ0fFCGDo1qQyYksWuon8Sxz4N+gEMH28ZoQx8wZHoGCdljHQdcKibZmsgk6HUmkzDDF8tHI8PLfy4vvbEfKcuo7i27WA1EjijnpJy+uMbh9GgngvxkfukrCnqwIBeNVy7j9RePPXxLQY9wPnEhEwqEouqhvzy04Zyy4rzwJFW6/vjNvsQ/W/ey4Uft5iwI+plfrwg81Rsyzk/OR0e5MpuMe1ggYvBoO13IO5E7Q2eUvZFpoWCJFhJTOXHz0scdH2UTfDPnhNrUOpGNFhSO+lPvSAab6IydACWJCmqtq9SZYFKDG3uCPfUO1jJFsS3KTsCjXoyQLYHdxYMD+0Q4CsTmHjLJiFqeY73t0Wqk1Rb1rDiUcFSOLW3NL5zq/sv1bqxx4PPWOp3nx5vmLv4j93j9pB7c+sDyMb0O1l+N6MwUJezeuvh/h7JFq75FkhQssLi8zWNAS2jHvVPU2hSceY+/u1CF+dUizlLMf6fYNn7O3Lyucp4PkdNnBjVCjDw+4DARSmTW2O1a2Ul4iFdg+dvRcPgeGN+j7f",
+    "quelle": "Epische Stufen S. 19",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 19",
+          "excerpt": "Speere"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_staebe",
+    "name": "Waffen-Großmeister (Stäbe)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 19",
+    "beschreibung": "Dritte Aktion pro KR; Ausfall-TP wachsen; kostenlose Reaktive Klingenwand.",
+    "voraussetzungen": "Waffenmeister (Stäbe); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Stäbe mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:ieexTdBxG7D4O7vY59b0dAkp/OPaxi50MfG+oCxksUeyJyW9xaoOyenfYbGgJQOW6aQA1x9sZGygy7vFmC2rwujXvyjq41dbtOF8aSYWKhp/Rd5zqZJqCwmPGqpqY9rUFOxaE2x4yLjIwbioOjy5HHYNGzqHxm77vINGrmNVNjbEKg7lwnzb5ShxXBW0e5aTy96zyx7Au4E/Y0hZWBmdXZo0O17d2z0ILeQq+k/ghmfro5dggucWvlBmXd2w1AjKQ/rm6SaoRLL1dRsvxZCH7kzG1Et0n2iiEc9bb5eLf0U0g2Mt1yuuQBa1tWVN/Y4i5S/s55uOfNiiFj0hdLS0i3vQslQzk5eMx5JeBxrHSRyI2HttDLysIa0g0dzIjKHbbIpGTyauoML0F4aCSkxH6oLnYbCSjFdHIp/IXmVAIw3hboxt+d+Df6HRF7WhY+d/tRpnCPh0HdvfdegB15rUTsICDYzb6fNZq8VqdckAnlDCWIznsn9ekr4SJ2sB9EUU1RRK7VCtEd6wFwlfZGhxK3X06OcEzuMmES4O35lm9lGC3rXVLoLL4q5BvuvR5EvGXRiLW/zAAS1uMnexS95BgjhBmrn+hqw+kqX+2JEtCSF/1ryBkJj46seJA5pagJRPvlFjIXvzl2avmuWGvdzy8t01kpEuia4JKPcTHyQoeY5oP/EuXnPdvK4LVlv5ChmCVfUnON8G/ImYtcLQzvLiv9haNuJrfpPRYToimQAL8Up+qMRe9nZ7aw==",
+    "quelle": "Epische Stufen S. 19",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 19",
+          "excerpt": "Stäbe"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_wurfbeile",
+    "name": "Waffen-Großmeister (Wurfbeile)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 19",
+    "beschreibung": "Keine Mindestreichweite; -2 Wundschwelle; Schneidzahn-Wirkung für alle Wurfbeile.",
+    "voraussetzungen": "Waffenmeister (Wurfbeile); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Wurfbeile mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:ilf/OjYwMTgEbFDzIcEnnPDlmor6NsRFboU9MGwRdgeK3gzWDIbPzztvSf3SZhx2UOAUdvkaAlrGqoVmusjXmm2NIsJvYA8Odt2DCzsEXnZzFpORKe52KuwO185zyG6L2FjliiPBPwrOY+oi/tPXre9PXIhMoIn1+jpGdJIt++9CE+9DbXDvYtcDY11KfdLokJtgicIRGZS3saWV4Pbqm0FQuvQH2GgD3GnQ3JQybAP/WYLsWj97uwkmYL8Nd+0Oq4WZV2ydEQwqa88OnCKLw5N0t4oYi1BVhNVOl/n07zY6ikrs+h0YLI6+V7OUwAXzykXFzvlb7ha349lCoR5F7ZnQWVrcm8AGD+s8vxCj+jBO6flP6JwgisyVYr4ln7xsycUrVHUNg2E+2ZHJTPySgbVYWElo2/3X8i8Heh1kn6CLFgAoPZpqhMhff3rqSuhFrem9VmphqXHwg06u9+GZNLalkUMXsOZ5wA1R1SSTj2knH/PP51JQvxNBuHttbENBIUjsdk0HMPdZ",
+    "quelle": "Epische Stufen S. 19",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 19",
+          "excerpt": "Wurfbeile"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_wurfmesser",
+    "name": "Waffen-Großmeister (Wurfmesser)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 20",
+    "beschreibung": "Nur freie Aktion für normalen Wurf; Eisenhagel halbe Zuschläge; halbierte Entfernungsabzüge.",
+    "voraussetzungen": "Waffenmeister (Wurfmesser); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Wurfmesser mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:mcKjSmeUkbz9YeuYKBlJYZOqmTAAhBxlzYIvq6BQbjhpArDGMzhWZWKgyfZV2Bj8EdELjebAOBaUzMeSKsAfgopwv36fJjri/bUjc4mkcRf0Fk7JPH3Io7fsNkU1C2qsGXkwzuM3nzUM5AgaYlj6Ff1kvonr0C6r/9TDnI+zkGQHEiYAy/8RtR+s2TeXf4mZQKLn2+oc6eD5M9AP75BJU1ZI+56GDGuj75A01cJuqWzvdLgbHDhZvsm/P8zZ38kOe5UZVfUdHHwNCuDBG8ukF/R5hq4BbGeNdbpXPQI48S487AVbvALsJfj7yTzD/nk0qeUo/xSrVMq4igwFxAQK5sm+cpZszzHQupM4pkU9ADjP1yT1+IGPx6A4H6NIuHHV0ktvjNhMfX410mMNuqi6D3pIyKtj8+p/vYdPZI4dXUjy0l6JKsLzf/iXAYdvzq7jgMmI/lIgz67NJHfCjKVkZ/ulgYlsdoIqwgevL4V6Yt2mg3meudstiCI4H0hoiVK6yu6HBcMoEY7xu6fMiSg9692i5tRTv0DvdwOvtrih6x9+DfdIY5TLNg9RBwFDy9ANJ+LawpOxB02DRG4TEvIxhfIUcgZVYKpD3cfPEC2spLaXEnXdE9Gn9W2sXEr040IeXywmBZpOEjqA6AA=",
+    "quelle": "Epische Stufen S. 20",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 20",
+          "excerpt": "Wurfmesser"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_wurfspeere",
+    "name": "Waffen-Großmeister (Wurfspeere)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 20",
+    "beschreibung": "Zusätzliche Wunde bei Anlauf; Schilddurchschlag; TP/KK 12/2.",
+    "voraussetzungen": "Waffenmeister (Wurfspeere); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Wurfspeere mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:mhXUcDZlf67MGIDWxJWV55mkWn8kfsHfWLmcqzoY0eYi3Gjqe9o68xoK7eHHS2bwQyr3Vg/krr6OTo5yM8MpXYXRjhXI9lbdY8uRtRiJw+VdNawTV3eGdXSSe6cqTQO1z6zQQ40oLa7KS0Zl1ACBt0b+mtmAeex1QMRCjNPIjXKzMeXw+hjnJKwqq+2fDIXXnLpInuWy+dnG67IQAVbGo9HmHPYQ0ow9s54epNp50iHjUD4yyxWiJOqX6JxhQuafZR1Q26N2CrZUXJmtT+MOPx5Il9NqtVUT+qh/g6eJ0n7IUxli2ZuG88PsUFvCV/bHftByGYfRIHOXlcerOJxskV2bfIV+7W3V1hdtQuG/NGEZuZ7+EW45K/vFQe0ILGh0QoEo9Mcqlad6mwFhm6dsvhEqLWa0i9wkIVJNtK6jq7ILWIc2cOE8TlaOZcPweqgHTPhdHEH6YPprOZEeih3uhOp5lf2K0sokFkRsSrlcWQ4kDwF3E6qpttbc89LHB5gEVRLmbnCei5XZu++Om/Mjy4HF/A066QHauZs=",
+    "quelle": "Epische Stufen S. 20",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 20",
+          "excerpt": "Wurfspeere"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_zweihandflegel",
+    "name": "Waffen-Großmeister (Zweihandflegel)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 20",
+    "beschreibung": "Umreißen erlaubt oder um 4 Punkte erleichtert; zusätzliche Kettenwaffen-Boni.",
+    "voraussetzungen": "Waffenmeister (Zweihandflegel); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Zweihandflegel mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:DgyaObPMhWWQyDIi82P5S1w27Kf3HGryChprJ38RANYgwuB4zwytoXkyDY8bxtadxu9JyxRu4voO0P1sKY2FdcwIEtg6YQPrEuyv9zh/ol3qlrFh8oJLSgYO04umuY2C1CksFPbvY2gVC3cGYogCKE+tHTQKh/0NMWbgYyanZ9XYsyZLU54a/p4MVDa7oQK4T6w488d2GN3xb+AT91hJlX8I/rUBlY8gza3WyUbKkl6Ccr1lJyUFEFegSHjvQeGcoBSWDyc=",
+    "quelle": "Epische Stufen S. 20",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 20",
+          "excerpt": "Zweihandflegel"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_zweihandhiebwaffen",
+    "name": "Waffen-Großmeister (Zweihandhiebwaffen)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 20",
+    "beschreibung": "KK-Differenz wird von PA abgezogen; erfolgreiche Parade → Bruchtest; Axt-/Hammer-Effekte.",
+    "voraussetzungen": "Waffenmeister (Zweihandhiebwaffen); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Zweihandhiebwaffen mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:SMtnTd8IC+5X035mi3kJnt9og1zvwHTujJk3w/KJOdviYrKFgM9KVvVmdImgX2rsxkn0vlcNYJRlTjqbV5s5iucSDRlbXh1aif1/HflXeWkDZH3iKSE4UP8YyGvdqQHJ/WKVv+CgmSOBa73LWFU+oQjz1/kf3APg9iYWbOjdFnvDZogZFOu2tKnqjVtwe/QnhYcQuXH8nAdt9bf6+XrC0DteW5Qo/QNQvhMWPsk31Zrl6Vf8JonUGATx1HNPFaoLCNCKNz56cH7pcWEpjTOZjhuGvZqYI4CDcaw2bZwjVCdPjvrXBtWDxk7gtXNBZ43mG9gV9XPw9su4K0iMEqvvQkoIo10WOp43cnnrqSM9RLaJtvIr85n4U80ymKGj9+gp/+1Gl4ooGkr1N7bLb/iPriuaLg3eDjjDieA0Ju/I/nKng4rB1O0RDLUKh76ozwP2wYUfEymdMCWSNbPYTGSt9v0wgZZcRNluDEJ0l5MW",
+    "quelle": "Epische Stufen S. 20",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 20",
+          "excerpt": "Zweihandhiebwaffen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_grossmeister_zweihandschwerter",
+    "name": "Waffen-Großmeister (Zweihandschwerter)",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Waffen-Großmeister",
+    "seite": "Epische Stufen S. 20",
+    "beschreibung": "TP/KK +1/-1 aller beidhändig geführten Schwerter; Halbschwert-Kampfstil ohne Abzüge.",
+    "voraussetzungen": "Waffenmeister (Zweihandschwerter); Eigenschaften insg. 5 Punkte über Waffenmeister; TaW Zweihandschwerter mind. 24",
+    "kosten": "800 AP",
+    "erklarung_lang": "enc:3:zHL/RTf6Ns4O3arBsyRTUhvYKJt049O1ipQRWOb/0yObNJP3YbutH0rzlXQMkjzZLHfQPtxYg+jsK9piC2WzE6/xzZ41GNzMYHW3Xnm/VKtNZW6ay1L+M/SZ9HQj8Uy6/d9zVIBDeRVEGIp9xbAD3pCEUebjKBUychhKfU9akOy0B2tYxWdC3EU/FgFBfqYU3WbXLzYEr5k3oF/9Dd1nuMKizgSugrj3bGPMgyDt6WsWu06N9SkOpwA88Pl7gs18DILbOkDZq9/2E5buOGhtxAjJI4itFlK9/8v1EWZIEzGpwDjTMa66sJnb0k9QpxColE69M08m1d1CuDcHXO/KoMEmiEQw8HkGVJgkTm1gAIwYsTZVITIknJjlEw==",
+    "quelle": "Epische Stufen S. 20",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 20",
+          "excerpt": "Zweihandschwerter"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_schildmeister",
+    "name": "Schildmeister",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Allgemeine Waffenmeisterschaft",
+    "seite": "Epische Stufen S. 21",
+    "beschreibung": "Kleine Schilde als Waffenlose-SF einsetzbar; große Schilde mit Deckungsbonus und Gegenhalten.",
+    "voraussetzungen": "SF Kampfgespür, Waffenmeister (Schild), Defensiver Kampfstil",
+    "kosten": "1000 AP",
+    "erklarung_lang": "enc:3:gv+WrcQG0fUSd9w/rnkcXzSXrKBK8uVHfPLVdylzcmcE//3tQxFKEiOhPZmuFFz97A49KAorA6MNdUBD8Cv5YiDv2DQK7B5WT7uTygb0YJmKX5cKOpmqRmIEAAT7FPSfjI3+O/nPICpQjR5IoU8ZjOuxGgEuVyNAz4KFhtfocOhtDOrOnY+TdYcKPtVjsQ7BmsdsVPgMD2rsw80G1RX9YLJzxmM1B3dn/tvdudGtPc6XQ1t4wIArghtkvhHj1CsRpVqdBm5A8lIRcS5Y+IyRJFTBB9vRJCh6DmtgeiOiQJPmDqkPmbVgfsZR51Nf7XL9BML81kEpAC5Y0NOEznVEXiGcQheaza3Tlg81svhQi2h0nchRxrHg171BnwhFb18PPalq7YaaVaR/0Pai7YNcXfMOU0MtM5QSpGTRNZZTQUId5T8itHAHhvS3myuxqQrIkA9KVDoy52296h8BHIqKeywUyAmQqoZ4n9TZEJwbGLA5GZukirsYBT5UMizd5YtH1tcWyBw8V14dfUsuptciBqMDIfEEkZuoojKIWW0DyQ9zLqs9agjZcbRfPwVfTwfNNfEWANo98nW6T6lsxnbahTHQ+RmcuYoWZ+bYgADOlGk2I0WQ9CZiKzrAEXTamncGZFZsTqqzr1mkukGHLh2ggwcxk1KRd8tVlfNE3z+9KoGHlgWbh/BB9SyyoXMA6Wm0nwtME5ehzX0T7j6XsYHyYV757b2P4xaNzhh22fqqh1jDZhfW/BqZPCGj/MWs84VSqkJJ6LEnMJWedZ9d8ldesyyxzTs/Ha4no5Lp7o8pjKvAb4BrF6vY7wYMOGYEL1KjpU5VhufYrAspyjMEH1Z5M8ca2+tDvdoO0O6ZYZTBpnT6GX3n57i5qydQz+4RNKhTKXD/cwHhmvA=",
+    "quelle": "Epische Stufen S. 21",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 21",
+          "excerpt": "Schildmeister"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_einhandmeister",
+    "name": "Einhandmeister",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Allgemeine Waffenmeisterschaft",
+    "seite": "Epische Stufen S. 21",
+    "beschreibung": "Raufen/Ringen mit freier Zweithand; Entwaffnen nimmt die Waffe des Gegners; Windmühle allgemein.",
+    "voraussetzungen": "FF 18, GE 18, SF Kampfgespür, Waffenmeister (Nahkampfwaffe), Meisterliches Entwaffnen",
+    "kosten": "1000 AP",
+    "erklarung_lang": "enc:3:/PUTHXgj8wu8D+tMXt9jm2w9OUoSlyHENAph54Au+OM30bHwL/eZyyGEsQLkvdl/1rU0mP+PidPsMldMQ8DHTJqGMb/6tbmhb20V2Qsi14or2ql0/KCP5X3/62/X5/tSpsRZw7wbIeJft+tdRd0TengfI+rlTrGQkRHDTLDix3P3i0gQXpvRXyhUWpYqDqjTBJd3MSB59byN7U3ZBXyXQRdPs/1EUDf0N5cOUXsVinj/CXF+kxjVjTx7uEg9aaPQ+KGquD3aEveRaaJul6K/Rauf65lObIytyaDctM/fh/GdCX9r8lXCH2LiNmclyI1UYg7w65/7znQLFBvxpbWpSczF3HIoW415vg7pQS5A0R1yDt9MEPQBYm4B5VYPkONZ+BJmPwrNHdUYydaZM4QBCuzG1v0TFyNam9UDI2/W1m8MuJY+lWIzVoPMFvOj9lJX++CjS7BGIorY2dGdG21TCVe//gF1mXeX4QN7euNWApU5SJxCup+4T45Us34HCg==",
+    "quelle": "Epische Stufen S. 21",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 21",
+          "excerpt": "Einhandmeister"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_zweihandmeister",
+    "name": "Zweihandmeister",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Allgemeine Waffenmeisterschaft",
+    "seite": "Epische Stufen S. 21",
+    "beschreibung": "Gegner taumeln bei Treffer; Stäbe/Kettenstäbe +Aktion; Speere werden rüstungsbrechend.",
+    "voraussetzungen": "KK 21 oder GE 21, SF Zweihändiger Kampf III, Hammerschlag oder Todesstoß, Waffenmeister (beliebige Zweihandwaffe)",
+    "kosten": "1000 AP",
+    "erklarung_lang": "enc:3:I9J25vtNkKvbMt/b3QdWZIeWg7in3fjpKgLlHwf283lrQ+zOwqKA9YvKb7JsgrVbvmaCE8DT5O3jy5Z3GrdXVlxlh2/AhMcfbKzyL4zLUHj3MykdG7z6x+mK3zw+VI0piJ94SozHjk3ZSvFXnWzVb6nOoG8MU6Zj8dlcQa0M5rM6Eg+UozDU7woFwtPNW3Ah6N7YsCsRo/4qJGKyk6+EnyS6LhwdopMC3Awy7WZFNEDbSIMLwVi/2O3GEsRUh/Lpd7kGdFBhvpSwOrMezX6p5UKMVkmKytIsZiN8Mw1x5RrNDNdawsLj+f1hZBqKyc8TFZZv2uE0y9jaH/uaYGPn6UAi0piipgR0gIQKnxx/T/Ab6NtAHGK4Zd3Sl2wfC39IIdgKZFiXchL/RhZyma7YL/imcs4lcC+bdwMSkpSt3AVPptV+4Kk52LxYnro/C25set0Uj8eZTdnOXnODRzV0dg4jggzpNTd9DMel61XLYoQj3bcoZjm6udb8G/WzJOK8/tOg2dcxdjMR5v4HevVW+Fe2EzLkA0roRhyX20Wnq+qQ4vMjJBt4x4oWEHuv/6p4gu9h2GZKcKHg6MNeFeU8iPw/dtnirV3DYcsK+qFWYmNxKG0F0jisurK8IwXm87rEJBfaAM88poLcNJlJBOvZeCV7DR5KzHykJHjA+/UCienvvFJJBZZtWcw6JyDYMxL7hF7Lbut4CzEGv5XW4MZai/OVZmMsvNI=",
+    "quelle": "Epische Stufen S. 21",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 21",
+          "excerpt": "Zweihandmeister"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "esf_zwei_waffen_meister",
+    "name": "Zwei-Waffen-Meister",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Allgemeine Waffenmeisterschaft",
+    "seite": "Epische Stufen S. 22",
+    "beschreibung": "Aufhebung vieler Beschränkungen für Zusatz-Aktionen mit der Zweithand.",
+    "voraussetzungen": "GE 22, SF Beidhändiger Kampf II oder Parierwaffen II, Waffenmeister (beliebig)",
+    "kosten": "1000 AP",
+    "erklarung_lang": "enc:3:HW9x8NkNlDCLY2F3SVvyVl4C1DOzZag2TFoiuWQ2hBCdeFys+uVMOQlvMRZz9LY3W01Qv+QwfHQYndy4EURdP8SC/q1BGLk1MXs3itMdSCkeHgpOGWJa6dQ0mq9xvTo84y/Fuw1PgTse4nXhHEdD9bNNW38qhatMsls/LwdoDBGHWs1M2xQ6DEI5JYXr4uBAke0HDoC6zs/TeKHFEJ2QXBGhBQfwPGR2kris2k1oR6dp2VFW9TyKw2ZjKbSvdnhlDAnMNxkPoSqbW2y/4Cw0VTvd412tLwzw4cnXi4RmVm6xD3G6QBzIIlxO/9X8lZAFGgXBuOmNqRFKnjyCpASbocKBESopMJvAEJWlhq01cjk1fRt9E4ir4r4bJLGVB6r1BXglQqywMIRpU3k+lsqdqIqwuRPtiduXdhe7uCBcj2cyjfCZ8oNDN5o3kuX6S0jl9P4Up/nax1sEOsQaMH2Qb7WFvIhBF7ZU/9ST378oIBtwGscYLEH3SxHjN3AFf00Gkfl51mbsNs6kPUgofBA8iGz1CQRQHuKyY1UGwco+3gEVpSRlnJqVNJ4k7KGAh3MXLWBGRmVNPErf8+m+1z7j9bMDbqYNltahJJw+l/GXCS9AbsAbQyn9hNujLQ3JUVScP4dU5IstxEOrM1n283MQGqP+x+i1mw4wsOzP3OGV79A=",
+    "quelle": "Epische Stufen S. 22",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.combat_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 22",
+          "excerpt": "Zwei-Waffen-Meister"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
   }
 ]

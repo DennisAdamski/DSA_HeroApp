@@ -1,1 +1,524 @@
-[]
+[
+  {
+    "id": "emsf_arkane_meisterschaft",
+    "name": "Arkane Meisterschaft",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 35",
+    "beschreibung": "Erhöht die ZfP des verwendeten Zaubers um 1 (bei Ein-Merkmal-Zaubern sogar +2); kann ZfW übersteigen.",
+    "voraussetzungen": "KL oder IN 20 (jede weitere Meisterschaft +1 auf die Eigenschaft), SF Merkmalskenntnis [entsprechendes Merkmal]",
+    "kosten": "400 / 550 / 700 AP (je nach Merkmalsklassifikation I/II/III)",
+    "erklarung_lang": "enc:3:n8dDVeh53/nZl1cRZajo6Q+b7TbILuHlCLfQO1OGT8LSd8zSAJzC8skwo4LVynvhlzEH8BE4IIsG9k3rpWvLpE3t13kzuhNV4XoLgs/BqhsykQF4Gt+CUY0QuglDNTYMdLvU4vyvd2T0rxBL55uCfsqjxu47NCbgiOt1eeRRA5ugUPMMuQrX2WUyKeTzYawrckXt6xq+enLRKybCDUHOG7ssRshyMkBoiIwRcU+I+3Gg37YW2QQQwPnSm4uKBI9wtZ+MNKzpxmW1vbnySxcZPKrD8xZ1pCY0kD/mxJoJsyk0B6f2goGFNsS0quURikBWVv5tcxaOePcnqoE6QzsAUqVJ14z/1X+0dU9PqYvscMRdB5hw",
+    "quelle": "Epische Stufen S. 35",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 35",
+          "excerpt": "Arkane Meisterschaft"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_artefaktsicherung",
+    "name": "Artefaktsicherung",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 35",
+    "beschreibung": "Halbiert die Wahrscheinlichkeit einer Beseelung oder Besessenheit eines erstellten Artefakts.",
+    "voraussetzungen": "KL 18, ZfW Arcanovi 21",
+    "kosten": "250 AP",
+    "erklarung_lang": "enc:3:/KlfYuzrHfZZk1RUNmkGWhlb3kGqHWLXaRrLQM94jXgukPZFEAO++kXKH1bgpRqWxthI4bQDWwa2p2iZUDH3bhGo5yDDEYBrdU0CMZvtjH7hqGaRD/Vl+CHlNEva2KoBBvRIgjLJzyLC49xM9an4FXTMMbukX5N38g==",
+    "quelle": "Epische Stufen S. 35",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 35",
+          "excerpt": "Artefaktsicherung"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_astrale_entladung",
+    "name": "Astrale Entladung",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 35",
+    "beschreibung": "Totale Konzentration aller AsP in einem Zauber; Wirkung extrapoliert, Magier danach bewusstlos.",
+    "voraussetzungen": "MU 19, SF Eiserner Wille II, SF Wirkungsmaximierung",
+    "kosten": "400 AP",
+    "erklarung_lang": "enc:3:Rn9D+gSSjBj4AWWtOWyqfaHghY+HdVJgzuSDsJ0EBp1KR4R/w2t2wtZapAGrfVCgHDdYYg8rWI/ZEXmjIgadEXx87gb+SZQzLkBFYU/cAvDZ0HLjshmWIEbVWfbKIXpSW9SH2p758WmEJkCLB6Gc+I8O0VSIMnRtq8llKkBGo/Yiqlum6Godjfv/kU/xyzNhRp+MzjTejSH/hziL7+wTC+/GyrpDk+VcNCCBbK5VV3JyWWmDM+BcHRAp8KX64/vH8olEnxWs9eGFfU0lFLNhBoMzVvPVCR9sHOe3JnIUxP3XAZDjygKppZo9Q1ElT3vS1yVST4FUaq9b7TG9nOXw6gbNEjyl4HEyoQESYfFFsBmjmA8QVXlB1r04+V7Z6O5I32C0GHL+F1nXtV3aY6qi6iwGZHTkKRH7khl2p2YDoUIybETf9Mgz3IyPV+frUAY6vllptTFOaU0So7okIr3Mug6KeaT88TfIspOy7eIZ/FPFPqWayH0cpjZB8D4z1DtETAxVj5cJg18pqjYfJYHdIe61VYbtnF/5RoXFb52cAIsmyhS2Vq0ZPWZv",
+    "quelle": "Epische Stufen S. 35",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 35",
+          "excerpt": "Astrale Entladung"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_aura_des_drachenerbes",
+    "name": "Aura des Drachenerbes",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 35",
+    "beschreibung": "Achaz erhält halbe TaP auf alle Gesellschaftstalente mit Geschuppten; Reptilien-Abrichten -7.",
+    "voraussetzungen": "CH 18, TaW Überreden/Überzeugen/Etikette/Gassenwissen je 18, Rasse Achaz",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:j6O79H2luxjcEOVGTJsd3yv2mFE5WpkSa+uiD9CdE19+URdmRt8Kuhz0t+b/F+mc5pKeGP3UccQ5buZDCCGyR0gPAlyEndA3Ldmj0eCKFpNHaD0LDSAFjcyhFfL2hohVhaW3ciJOy93D2lyKR5NAqvaqsbp6UGdW/EVhKpKXGXMeLGTlUScEBSGHO18Vs14okjgOmD8hpsGIjrcQiiixJEIBOFKD7qnncd3l0ut+1Zf4AiPtksoE89qvBI/a3JAKo37P4lXOF+80hmYZChNRMi7MPWCwrAT5N24DoVXVB2+ZfTSihV46lonmi/CGtvortg==",
+    "quelle": "Epische Stufen S. 35",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 35",
+          "excerpt": "Aura des Drachenerbes"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_aurapanzer_ii",
+    "name": "Aurapanzer II",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 36",
+    "beschreibung": "Reflektiert halben magischen Schaden auf den Verursacher; bei vollständiger Absorption ganzer Schaden. Alternativ: halber Schaden als AsP absorbieren.",
+    "voraussetzungen": "MU 21, KL 18, SF Aurapanzer",
+    "kosten": "450 AP",
+    "erklarung_lang": "enc:3:2kRp4s8bhjKkvMlJXO2pKrDlX4rDhgMjFTfLj1FWDqovvA/aDLdxVaaCLpUVVSdROAG9n8ULxwvN570WotlZ6G/CWx4ThHr/GN5QaZCrNYeZXmT9vuZRzvLBHAPNXKQdR5kcVlj1N0hQ02mVE2mbvrgrrlWnqMfbqTrLDi+oPg+FsKHiKMJKivGXhQqeJFJQafgbJ7esk/eDi2GP8ClLZxM6AVYAZF7rY7qA7hbVFMYX9X8HPwpAWUciIokoRAHDs9AFvaBeXxA8moENXUCL05myoRjkKKu8uPnZbz195z552kshmSpblfFWpEUTN5s/s0jUL31pEH3kOMA56/srwf0XEdHilZEoR2NzEL14Gq5k47ZLpJ9ogTqYsYXfbyoJwM/XrPLDLF5NaEVFJTHLCDAkQv1fx1oXDg8mnDztGVUtxNA/AJxxDuiAuN6X9ukQGOlxaZn1kGarsV8RAR0i28I31RCG20ntoFShXgffl0WtGja39Bm6lgWFdXcSmNolDvXfPYBjzb5jXT+GoaBkWyHBRntjcDgvikZCMevu32m57TeOeWT7E6EzvfwYDvNipwLRu43o2elccg==",
+    "quelle": "Epische Stufen S. 36",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 36",
+          "excerpt": "Aurapanzer II"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_band_in_die_lichtwelt",
+    "name": "Band in die Lichtwelt",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 36",
+    "beschreibung": "Elf wird teilweise halbstofflich: Resistenz gegen profane Waffen, Paraphysikalität I, Elfenzauber +3 ZfP.",
+    "voraussetzungen": "IN 23, Rasse Elf",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:RksXUkRWF4z5tDMPZ9e5W3/8D/DzUELs8rQ90Se4ddZS5Z+Y6EcGUbz9i7Fqd7zl4jwU4VzK+NBOBv3s/vy5wvXgXGphv83y6pDcIPI/SUU24kaz2fITQ1Euo/PeRbZQ4lOOPNYogsQSoejrUecWmeVe+j5MAQEeCjQDG8WDrtHCzR7KdHmL3pbZ9OqJjAqIHf1oZmBTkeVndOKNSQfv+GhcyAzAIEazSGDYUvxyWGKAhlKmYk8CcymHHgs+SI9jFnaI/iG0MaTMu/g26tH65Jg5EIbiEchk0e3hDWzddSwNIjLX5aFsu0ar9aOYfdI0dJMfGms8pPfqolPH97CijsLEA7fVvUcx6ULd9+f9WJ9tU+t4ZYPuQMwBbF+cUuJqVrPMJp4Kr2xXq0MgynEmEBaGj6t96BeI1t2nxYwpavHOUZHjsIobNifgNNySS269oVewIwLU7zmlwDZdySV959OOWs5+Tbx6xkzq7fOyrwhJFnYbCBtCMZxH2WXDZgK2W/GVUWfYGaeLGe0GjW0n8pOvRWR5SI1VO629uFkBPjAZT2+wYPUTdeH5Tq07+YHd5UC4zLLVvuBXWleqjLyW6Wv3qOzFWMg09G5+qyR4JJ1hP7TEIBpdJ9Ks8XyqkdYsmkNc1LIIQ/BUlJ98yK6PR4Ny6K+c",
+    "quelle": "Epische Stufen S. 36",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 36",
+          "excerpt": "Band in die Lichtwelt"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_elementaraspekt",
+    "name": "Elementaraspekt",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 36–37",
+    "beschreibung": "Elementares Zaubermuster: +3 ZfP und -25 % AsP für das Element, Gegenelement gesperrt; sechs Varianten (Eis, Erz, Feuer, Humus, Luft, Wasser).",
+    "voraussetzungen": "KL und IN 16 (Leiteigenschaft 18), passende Merkmalskenntnis, zum Element passende Eigenschaft: Eis MU 18 / Erz KK 18 / Feuer CH 18 / Humus KO 18 / Luft GE 18 / Wasser FF 18",
+    "kosten": "250 AP pro Element",
+    "erklarung_lang": "enc:3:muCT57zDC095j23hjYjKFNglCdkFXG5PdwJgrCdu18iJ6GiUVkBAPH3z8FAKZdISiBZp+Pu44PGQ/rWQs71FyPDQyEMwJdeRJIFWv0RrAvgjVJ5D8o2PmRkoAljIfOgrywCvdHQXyuU65tIfhF8b8WJRh0iqI00InsdiV0Xm+v7x1RVRP8PlRWfPi/CqqECpbTxEa9a7Igo+YnIMqC5IzGgZ7hIR5XanJuBZ2/bASiyzpE5h9K+8qtSeIMxi+UUMfZmEqX1gFL4xCAcuG/Vne9cSIg8r1COXYKqT19GCAYhiWDi4qAnHD5XdPV/Hudvu9OtUrdyodjKe0z9oPOtA5VDMzSn8dlvJ+sFhe4APDCJsB0Ida/WEaJ1rniFGn2a75YU2e6wMSnwagBOwN+qn3hPTmcKHhY8PvkYyOiHsdOYTlU3kORi+YQpAqs8feOYRB3CGZmR0AnYeoh2saN7EfccIqBLD+xt1pOyCAxw8xazfL8vy7oEGSXKCnVAJZKfEexTSWKLlMl81tPHTp5cs9nlN2lCFraqyXM6GHdSESBvCXh+aEg1zImNjx7U+yvnzmNlvO9qUfpp0K01wWHcA/k84sxHjrBn26PJbRQlqt0+pMwx0q+KXMwFWVXaeqHTalGhVaddr61YzpVCABlVh1mSDNPvp0GftJC4LAkHGXwW1vurCYilkvxoZdHgMpaWwuqe/N060C+uaUOR8nO1R+Z8KeDAfq3Idt1rEhXldW+bKCvbiwD7rmcF6hqJ1oQCz/Z5yJT824p72OrHRXilupBy44RPAUDy4iyJLdMjmUXNttaQDxTcg/vyE5h6sJtnQ1BLUDlaWsiWmqnbLEFZvqMphH5A/p/LGAs2YhNXL5noTHYSbxh+biMermgNrrIdVZs44QxiitoAOdJwvobtNAgXATuz4AalZ0JvewrGuh+XbpfKajanMOQDSg3z4JLhHYJf1iIHsyTiqa0uW/ZSSWR7gjOyaJjV2oIDGyaNX0YKYpavHzNf1SSef+cec7BEdcnC3U/XzFxlmd5c/2T/GJdw+2sLAYndMR3cH19ZkPuTaPWA8wNGst0Es1TrGVXbiEf/j+bE0vi+z3Cbyogn+BaSuxEOo9A9nWS2GF71bxJWBoypGdzB66X1oGWJIElWCgLUx+bjmtOmGD44+zp4lzIM6JjuWEYC5p9IzG6885Wn7lCc0Yn8tkbX/2gqZ6g8h0clDDHlru5QHXx/PcMD0Wev/xvd8zvQIJterjsZBR/qgNfFt5pcuVRQMpNCBHnILGzFGnr1ISGlFXaJ3+ICNXk08X8O1OhrBPVWISg3+Y3uHble5k3ZSZNVKZFl+Yoqafck8mhJBspBtLJWqwLcRFe1a9rI+QbqXESvV2z4VN6yOABkvY+C52bGQfGaN1ImHdbsSDVCFIe3P0CXMRNGr6FX72kacpMcf8kHKk67kPhcHA2sd8BFlHVcLUS22b17f0L28JX0cEvnqXKfQsv7umiLSwLyf8+mxNTD+5Z1XUCEjNQNRVek3Jr1T2GR+CRjKQdDZo08eQGzPwwi7tOk5aPjQA5PGUHDNHqRy7TTo3ETX/Sq9qdXex40XNxfVVbCexB9xrGFP8V9sbEKrspGznPy+mab39PUR019kTIEptsln8YJP7c0ESn8d1BjLtqB10105kW7PG5ySrkLCt84QWN8k2pZfRdoNkj5z3dpC5n1kAOmq/3/Dc/D6CmzDTroUpXwvURhmbgEC+Vn4lwxyy0NowuI=",
+    "quelle": "Epische Stufen S. 36–37",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 36–37",
+          "excerpt": "Elementaraspekt"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_freizauberei",
+    "name": "Freizauberei",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 38",
+    "beschreibung": "Höchste Magie: Zauber des Merkmals als freie Aktion zu 2/3 Kosten; keine spontane Modifikation außer Schutzbrecher.",
+    "voraussetzungen": "KL 24 und IN 23 (oder IN 26 und KL 20 wenn IN Leiteigenschaft; Hexen: CH statt KL). Magische SF im Wert von 2500 AP; alle Merkmalskenntnisse und alle Zauber des Merkmals in eigener Repräsentation auf ZfW 24 (andere Rep. auf ZfW 12)",
+    "kosten": "1000 AP",
+    "erklarung_lang": "enc:3:difG0jYq2AwlRAvNiJdFJMcH38H1zag7neVDGCkf9BlMF1Ey40GXPFILXesnz9h86IOJUfrqQXFmUDHCROUFnsbMDChI93Ws4HN/M4nT4i2s6W13EcGkSHJE9uIin5qgtVZ8ZBnMnOIwsPtMBS5HHkWY9ucGJQHYdROTloy4mBEVBu9Fs8gUqJXMWNOAN4LBhjwYoFkUNoTfh7w0rHQ76cqVav703UeKBQuF6IH4UzL5F2nhbUtyLt0nxxWTuOC0FH2ti97yK9LIthzP/7e5D4yh++0Zsjh7ShI1eQI7iZnLXr8yLJvwOhoa41IkgyEczEhhKaEbO9TTV3QdJV8E1R0rAa3OO9DwNBrF9PQyqQt6GFy4DmYm9kU9480Fr4WrytJnA8FzqJXMf4tk7K2/1S12KcbsfFq9QifZfFTQg7E2atZWRhNCMD4/DcuVJXUSB+vMcBCs0or52FRynECYMoDTS25x2XxKfsPOz2Hrd9gk2qVVfvX0CCKgbyBwHFsxgBnfW9HiGkFW8d+kkCOHpFTYlH69+coU76p2mZuXA0DmdCVKGbm/aQtEHy1CRpXidZWa2X9vd/8+JNWWo/WyQ1I8OWaGAr3y8uM0Lsu7hdhQ0UAiRe9OPnvK",
+    "quelle": "Epische Stufen S. 38",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 38",
+          "excerpt": "Freizauberei"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_infinitum_runen",
+    "name": "Infinitum-Runen",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 38–41",
+    "beschreibung": "Permanent eingravierte Zauberrune mit Dauerwirkung; umfangreiche Runenliste (Alfenbann-, Bären-, Heil-, Waffenrune u. v. a.).",
+    "voraussetzungen": "ZfW Infinitum 8, TaW Runenkunde oder passende Ritualkenntnis 18; AsP-Kosten: 5× Komplexität, davon 1/10 permanent",
+    "kosten": "500 AP (pro Rune zusätzlich 50–200 AP laut Liste)",
+    "erklarung_lang": "enc:3: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",
+    "quelle": "Epische Stufen S. 38–41",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 38–41",
+          "excerpt": "Infinitum-Runen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_magische_minimierung",
+    "name": "Magische Minimierung",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 41",
+    "beschreibung": "ZfP und Variablen eines Zaubers beliebig nach unten korrigieren; AsP-Kosten passen sich an.",
+    "voraussetzungen": "KL 17, SF Meisterliche Zauberkontrolle II",
+    "kosten": "250 AP",
+    "erklarung_lang": "enc:3:q1488SjAUXSSUhUH+BHeDz2z8JRkHdbx3mWM+yVG9xuhHy1c00uv4GYvPBYazv7s6zjibmqPWUNX6QyXDKCe3AtDuF/8BQvBHVkWt2EKZ2a5jgs8gxqGYJLY1Qm9MgJeGveq2LhVzfoiR3JxYkdh/+rfGYUoA+WHc9+n/42VQwjmdOmhuJS4BpMs52XMIQLeC1j4VczGDhRwCAYMfKA6OuJt4ua2rAfvGj2EQkWjA8oOQGMuCG4U/OZjJCkdYoipFPmKWb3hSkg/+w1/+d7XWcppTu6GZnpTHxL5qxJ9lraxGChfAPgfGchdRXB2UmqyJlP00gwH97pIHHP4b1GdiY3XiQc1Y+NRvkA3bfQVB2NWpik7tYJYbNNif5JjWZvlT9jSloZPu4l6RZM=",
+    "quelle": "Epische Stufen S. 41",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 41",
+          "excerpt": "Magische Minimierung"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_meisterlicher_artefaktschmied",
+    "name": "Meisterlicher Artefaktschmied",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 41",
+    "beschreibung": "Bindet 2 permanente Zauber in einen Gegenstand (gilt als eine Verzauberung).",
+    "voraussetzungen": "KL (für Elfen IN) und FF insgesamt 40, jedoch jeweils mindestens 18, ZfW Infinitum 15, ZfW Arcanovi semipermanenz 21",
+    "kosten": "700 AP",
+    "erklarung_lang": "enc:3:ZLrSmyPHUUx99OFwGTabSxUZKwXS4Xyty4whEPuENjqrHk7zopDWgXOnseaV5ULvekj5ESc3p97RjUZDoaNvj0IoQa63nOXJf7s9rBWV5csS8ZUSVsA9iQO+tNwebB0sjckWocUCilA8kPqkXNcZrQBt4MMXRS0ACs0MhSBBIDlnd9k=",
+    "quelle": "Epische Stufen S. 41",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 41",
+          "excerpt": "Meisterlicher Artefaktschmied"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_merkmalsgrossmeister",
+    "name": "Merkmalsgroßmeister",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 41–48",
+    "beschreibung": "Großmeisterschaft in einem Merkmal; Wirkung variiert stark pro Merkmal (Antimagie, Beschwörung, Dämonisch, Eigenschaften, Einfluss, Elementar, Form, Geisterwesen, Heilung, Hellsicht, Herbeirufung, Herrschaft, Illusion, Kraft, Limbus, Metamagie, Objekt, Schaden, Telekinese, Temporal, Umwelt, Verständigung).",
+    "voraussetzungen": "Leiteigenschaft 17, KL oder IN 15 (das jeweils andere), entsprechende Merkmalskenntnis; ZfP aller Zauber des Merkmals auf 18 (10 wenn nicht in eigener Repräsentation) oder insgesamt 100 ZfP. Gilt nur für Zauber ab ZfW 18. Weitere Großmeisterschaften +3 auf Leiteigenschaft, +2 auf andere",
+    "kosten": "600 / 800 / 1000 AP (Klassifikation I / II / III)",
+    "erklarung_lang": "enc:3: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",
+    "quelle": "Epische Stufen S. 41–48",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 41–48",
+          "excerpt": "Merkmalsgroßmeister"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_pfad_der_uralten",
+    "name": "Pfad der Uralten",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 49",
+    "beschreibung": "Achaz-Ritual unter Kristallomant und Schamane; erweckt drachisches Erbe, Feuerodem als Basisfähigkeit.",
+    "voraussetzungen": "IN 15, KO 15 (je +1 für jeden weiteren Kauf), Rasse Achaz",
+    "kosten": "400 AP (erste Stufe), 150 AP je weitere Verbesserung",
+    "erklarung_lang": "enc:3:DLuaJG1HrdUweemcQ68CsE/KI4cq/hEl64GjUH/Kl8hHN71SBBsnMbnAW4EKRsz9WZqnSEJTQHWuy3WT+UPoys3tSd7FDQiion9A3gNcfuH2hnt+kWdgGnOtlQqwwCeU/c1T7AU82xkng98b/RxFpzO3PutNhWy1zFKPNBMVJwsLhYDh9S5VH/9dwNh5vMoearYYDfzyPSs8aSiL+C5qssAjLSckvXE/+BWz4QR4JGthL4IENGmy3vZienM+KzAqdR3UkpEK8OfkdXKgKQWchrr8OAVhX0ZC7ebA8XGJkoKLCYwGctRPWgz38VL9rdojMwHhmea+3JIxM4QEv+MRVq3/vFX1jOyQ0Kq+ttn6wZnpgFO7itaA4Tp34EKr7pgVqBmEQJ4Taw2ombxIA/08uNR/PJfxl8Bg1k7ig69g4Q==",
+    "quelle": "Epische Stufen S. 49",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 49",
+          "excerpt": "Pfad der Uralten"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_spontane_regeneration",
+    "name": "Spontane Regeneration I–V",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 49",
+    "beschreibung": "Achaz-Regenerationskraft; pro Stufe +1 LeP/Ruhephase, -1 KO-Erschwernis; ab III Finger/Zehen, ab V Gliedmaßen.",
+    "voraussetzungen": "KO 16 (je +1 pro Stufe), SF Pfad der Uralten, kein Nachteil Schlechte Regeneration, Rasse Achaz",
+    "kosten": "300 AP pro Stufe",
+    "erklarung_lang": "enc:3:LZ3T5NU3tylv6j4qo5G+np8SB4SI7fQyb79a/Uuwud/XOzOHiGL7ZAAkyF9Ra3wsQBLfPrutfwAdMc5EzRqiE7LiLMmaIs9x76cZBHnBNwR0ixSaiIame0HGYTaoSrugcHPF5TesgPrDZhmIkm/QlmzO5G4Q/SPc1iM3eNu06rFjKjcOPf9LCGX2IqbmEAIleH97bwSdCU1qyPiWqR3p26+sGCjkcGxuvkRI2RycytgK9/DG5Z2JA7zjUYnNFTgJc3WRMNz0BGNT3ktwtH6IEDKVx9/KN6ritzYLkQA+a9Z48C/OsTDfmwYkLY8ZvPayf9PusgjG+mxFWRhicFRWJLGwot+xJ8ZKbfrdxV4haAAlgLgikfR00QgsvqKjnvEjVg9srrveA4Jl+WYDCbJGF38LJT4hsktoUKRtuV2JFCT8k+Q9noVZ5pDLtT8Wzgg=",
+    "quelle": "Epische Stufen S. 49",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 49",
+          "excerpt": "Spontane Regeneration"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_stachelpanzer",
+    "name": "Stachelpanzer",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 50",
+    "beschreibung": "Achaz-Klauen/Stacheln an Händen, Schwanz, Ellbogen, Wirbelsäule, Knien, Füßen; waffenlose Parade und +2 TP.",
+    "voraussetzungen": "SF Pfad der Uralten, Rasse Achaz",
+    "kosten": "400 AP",
+    "erklarung_lang": "enc:3:SjSOQzPR+if2ShlN4xoOzqgRyFlcf2WSkoXr+JVVrHuhjAqBjsptEg8QCEqeTIG8TYT8+Der1G/JzT+6rbFUCwadgzTtCDCb1JsrP+hWEZajJYqiq91l7q28TjanjGjaPOBrHrskQtFlkeB30j4Z2gu7vfERPo7fBGCqVknZk0kKVfp8WKNdC9GypWH3g5Cs7M9XzezZxMFcaal6trsfQNk/sg9eXyOeXepCPDsbrJPvHrlRya3Y6p8URBMeuphBReOcOa9k0k01boh5u7++K7i+aVCzRX7m/ANB6AwpPL47YB1y2k/pW0D7aiJcV77ZEyBvmp0xFZEz+c4V9RMt2NGM57gz3+PQ7X1L5dr3YR6cs21VgOUh6hMROuq9/qvxcf0xCGatE+SfjA==",
+    "quelle": "Epische Stufen S. 50",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 50",
+          "excerpt": "Stachelpanzer"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_schutzbrecher",
+    "name": "Schutzbrecher",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 50",
+    "beschreibung": "Doppelte AsP-Kosten senken Immunität zu Resistenz; vierfache ignorieren Immunität komplett. MR bleibt.",
+    "voraussetzungen": "MU 19, Leiteigenschaft 21",
+    "kosten": "450 AP",
+    "erklarung_lang": "enc:3:t0snZ4eanufVn6IpeF1r5zwYGRm7K6iB7MsFQ1cMxUVXE/WzCzj3P//TRzgt6usevsTxErhBX/jbNf0ExGuqyatK6C1ejsw6YhvmQEbDyDDxgs+66sNMMO2c2M4gL3cGnx4zomdy5xEYO1CEqD5x6EML1Aj0rGoOaqG1bX/bF7yKScM2G9loru9JnxwNHxaiYVvSCmn1/S38+BnR4uetORoPEWxqCXrmKhjIujDtwz4EXDt9fvsnIknjkcQ+YzYlwd2naIelENi9tLCQTnrl8gEIPVVQ5SYMbtu/IgRMpnK73NP1McIm7yF9DheCZZksPJn9nLojkogHR1Dlt7A3OeHBV/0EZILzWHAUriQpC8Z6eF4DOU/a+XTlMyb1kthTfLfhuQgZII44Lu32m3zW1XGCV7Ie9P7I7fT6IBxNGRbRQI7omGslsl5cfIwMTGlLFrauWQ==",
+    "quelle": "Epische Stufen S. 50",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 50",
+          "excerpt": "Schutzbrecher"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_sirenensang",
+    "name": "Sirenensang",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 50",
+    "beschreibung": "Singen mit AsP bannt Zuhörer; Selbstbeherrschungs-Proben erforderlich, um Befehle abzuwehren.",
+    "voraussetzungen": "TaW Singen 22 (17 bei Wohlklang), Vorteil Zweistimmiger Gesang",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:ZTCuHkb7lp8DPbn79OCHf0KY0UZgdwoWBnidM04tKQDddkPLEpRmsksv1PSg96z/a4A/MoQNfJ39K19hMubkUIp+YkTSse9gH1UNvpaOuJZe8K5L0rh8VtDvvlh7+ISm0swx952enwcLLWHo1CW1rZF+7pXYe2seNbsg9EUk4bfxRAG9MgBE1nN3//cnF00fCvCzEv2EsnaQCupkHmA81Bjz44W5rY0MEvhiSlNVSBwagNOE3GoCQ6TuCHLxLOjG89N71Q3WyGfGnu3T+T5zgik5G6Z4BgGJ5VSvysu5xUcCjlUzh9nj8U0kiYweb7UKAgBs7xRhYe3stlw2ByNU77jLhDUC15nowrhiPCTceNd936M+ItXdc7gmW/bsP4hAovVEDQO2xmtnDnxMF3BRWYm26L3BVKS5qyQbs+LEPC10OkAH/uT+ATf4fp62MRmObGP0QxwJLxSW+ooa1i6FPWUh5F5hLscdB4dy/NqRjLi/qnr4MvRNr6sET3IQLcgji312ZTD5zkcyEpuwVJm7sIEpcNg+CF9s+ZoQBHTNmgZ4rYCsV3rOjyX0EKpqtpADV5QtqxwUgv3bUo3Yeqi+XBdkYo+CyVR/C4q+50y10r/JUM1l915UPzcjDBehe2hqPswoNmAgorN640PosSVXYC2Kz0+2PKWvsGnalblglHm1VCYKizz6TQOVF2V8YjC9TeVMOSzxsdwlP9HZzjxxrKxsrvdRTlLKLdIDFISY6VxWh7dJtm0njvQ7qcYO4EgDRCG9Gf3AHxn/Ve32FdLDUhq8k+UV1KLYSvxP1gBf",
+    "quelle": "Epische Stufen S. 50",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 50",
+          "excerpt": "Sirenensang"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  },
+  {
+    "id": "emsf_wirkungsmaximierung",
+    "name": "Wirkungsmaximierung",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 50",
+    "beschreibung": "Variablen (W6, W20) eines Zaubers dürfen selektiv neu gewürfelt werden.",
+    "voraussetzungen": "MU 16, Leiteigenschaft 20, SF Meisterliche Zauberkontrolle",
+    "kosten": "500 AP",
+    "erklarung_lang": "enc:3:D0fHhTxjQi4mzq8GQA1Kdr9HT1g6GifSVYKd2bpN9iJ7FXe8Pa4wpz3S5hEhga74efHmbsgnpUPIFWUgu1hSDy+2FCMRU2I0ty6gZvKCTqCnYb7JtANC/T5YMybjY8A7NNAETgOA7Fj4eGG6zbKm1CCKRZZIbt99Z8vn4R4oCPIQW65Kj+YrvYA32QzxuNhD7lb9OxPk1g1AfbhLTTgkcMvX6tOA5RwI8ydS9K2ny+JjpSK2SEIWQBp5Cc/0EgdD6rm6/lWJDk3LgzozvxWTjbCA7j7xcA93I13xIaLqTypm05K9Q9L0BGjIFy4d8L346uQw94qU62lgxq80B/WTVKdUelvLCHbMShzCMy9FKMAL5iWpYBKPkvnQCPbWN2ouxF8=",
+    "quelle": "Epische Stufen S. 50",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 50",
+          "excerpt": "Wirkungsmaximierung"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    }
+  }
+]
