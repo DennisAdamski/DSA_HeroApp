@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 
 int _cappedLevel(int level) => level > 21 ? 21 : (level < 0 ? 0 : level);
@@ -14,12 +17,17 @@ int computeMaxLep(HeroSheet sheet, StatModifiers mods) {
 }
 
 // Maximale Ausdauer: round((MU+KO+GE)/2) + level*2 + gekauft + Mod.
+// Epische Charaktere erhalten keinen weiteren stufenweisen Au-Bonus ueber ihren
+// Aktivierungs-Level hinaus.
 int computeMaxAu(HeroSheet sheet, StatModifiers mods) {
   final mu = sheet.attributes.mu;
   final ko = sheet.attributes.ko;
   final ge = sheet.attributes.ge;
   final base = excelRound((mu + ko + ge) / 2);
-  final total = base + mods.au + sheet.bought.au + sheet.level * 2;
+  final levelForAu = sheet.isEpisch
+      ? math.min(computeLevelFromSpentAp(sheet.epicStartAp), sheet.level)
+      : sheet.level;
+  final total = base + mods.au + sheet.bought.au + levelForAu * 2;
   return clampNonNegative(total);
 }
 

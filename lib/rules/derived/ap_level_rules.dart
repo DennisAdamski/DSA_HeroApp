@@ -14,6 +14,24 @@ int computeLevelFromSpentAp(int spentAp) {
   return level < 1 ? 1 : level;
 }
 
+/// AP-Kosten pro epischer Stufe (entspricht dem Abstand zwischen Stufe 21 und 22).
+const int epicApCostPerLevel = 2100;
+
+/// Gibt die aktuelle epische Stufe zurueck (1-basiert), oder 0 wenn nicht episch.
+int computeEpicLevel(bool isEpisch, int apSpent, int epicStartAp) {
+  if (!isEpisch) return 0;
+  final delta = apSpent - epicStartAp;
+  return 1 + (delta < 0 ? 0 : delta ~/ epicApCostPerLevel);
+}
+
+/// Gibt die AP bis zur naechsten epischen Stufe zurueck (0 wenn nicht episch).
+int computeApUntilNextEpicLevel(bool isEpisch, int apSpent, int epicStartAp) {
+  if (!isEpisch) return 0;
+  final delta = apSpent - epicStartAp;
+  if (delta < 0) return epicApCostPerLevel;
+  return epicApCostPerLevel - (delta % epicApCostPerLevel);
+}
+
 /// Berechnet die verbleibenden (verfuegbaren) Abenteuerpunkte.
 ///
 /// Beide Eingaben werden auf 0 begrenzt, damit negative Rohwerte
@@ -23,4 +41,32 @@ int computeAvailableAp(int total, int spent) {
   final normalizedSpent = spent < 0 ? 0 : spent;
   final remaining = normalizedTotal - normalizedSpent;
   return remaining < 0 ? 0 : remaining;
+}
+
+/// Klassifikation eines Helden nach Zauber-Tiefe (fuer epische AsP-Boni).
+enum ZaubererKategorie { keine, viertel, halb, voll }
+
+/// AsP-Stufenbonus fuer epische Stufen.
+///
+/// Regelquelle: Hausregel „Epische Stufen", Kap. 2.2 —
+/// Stufenboni gibt es nur noch auf AsP, und Halbzauberer bekommen
+/// nur 1 AsP je Stufe, Viertelzauberer gar nichts mehr.
+///
+/// Der Standardwert fuer Vollzauberer (6 AsP) entspricht der in den
+/// Grundregeln ueblichen Menge und kann ueber [fullCasterBonus] ueberschrieben
+/// werden, um mit abweichenden Hausregeln kompatibel zu bleiben.
+/// Liefert 0, wenn die Regel inaktiv ist oder der Held nicht episch ist.
+int epicAspStufenbonus({
+  required ZaubererKategorie kategorie,
+  required bool ruleActive,
+  required bool isEpisch,
+  int fullCasterBonus = 6,
+}) {
+  if (!ruleActive || !isEpisch) return 0;
+  return switch (kategorie) {
+    ZaubererKategorie.voll => fullCasterBonus,
+    ZaubererKategorie.halb => 1,
+    ZaubererKategorie.viertel => 0,
+    ZaubererKategorie.keine => 0,
+  };
 }

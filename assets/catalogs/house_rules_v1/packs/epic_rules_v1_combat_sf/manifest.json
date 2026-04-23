@@ -1,0 +1,8 @@
+{
+  "id": "epic_rules_v1.combat_sf",
+  "parentPackId": "epic_rules_v1",
+  "title": "Epische Kampf-Sonderfertigkeiten",
+  "description": "Epische Kampf-Sonderfertigkeiten, Waffen-Großmeister und verwandte Inhalte.",
+  "priority": 100,
+  "patches": []
+}

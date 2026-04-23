@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 import 'package:dsa_heldenverwaltung/catalog/combat_special_ability_def.dart';
+import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 import 'package:dsa_heldenverwaltung/catalog/maneuver_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/reisebericht_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/schrift_def.dart';
@@ -44,6 +45,7 @@ class RulesCatalog {
     this.schriften = const [],
     this.reisebericht = const [],
     this.metadata = const {},
+    this.ruleResolver = const CatalogRuleResolver(),
   });
 
   final String version; // Katalogversion (z. B. 'house_rules_v1')
@@ -64,6 +66,7 @@ class RulesCatalog {
   final List<SchriftDef> schriften; // Schriftdefinitionen
   final List<ReiseberichtDef> reisebericht; // Reisebericht-Eintraege
   final Map<String, dynamic> metadata; // Sonstige Metadaten aus dem Manifest
+  final CatalogRuleResolver ruleResolver; // Hausregel-Provenienz fuer UI/Regeln
 
   /// Sucht ein Manöver anhand des Namens (Groß-/Kleinschreibung wird ignoriert).
   ManeuverDef? maneuverByName(String name) {

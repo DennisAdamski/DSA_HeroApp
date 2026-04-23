@@ -23,13 +23,17 @@ class Embedder:
             return
         os.environ.setdefault("HF_HOME", str(self._cache_dir))
         os.environ.setdefault("SENTENCE_TRANSFORMERS_HOME", str(self._cache_dir))
+        os.environ.setdefault("HF_HUB_OFFLINE", "1")
+        os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
         from sentence_transformers import SentenceTransformer  # type: ignore[import-not-found]
 
         self._cache_dir.mkdir(parents=True, exist_ok=True)
+        offline = os.environ.get("HF_HUB_OFFLINE", "1") == "1"
         self._model = SentenceTransformer(
             self._model_name,
             cache_folder=str(self._cache_dir),
+            local_files_only=offline,
         )
         probe = self._model.encode(["probe"], convert_to_numpy=True)
         self._dim = int(probe.shape[1])

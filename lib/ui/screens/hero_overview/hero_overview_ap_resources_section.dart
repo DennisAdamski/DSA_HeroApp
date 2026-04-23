@@ -10,6 +10,11 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
         : hero.apAvailable;
     final level = isEditing ? computeLevelFromSpentAp(apSpent) : hero.level;
 
+    final epicLevel =
+        computeEpicLevel(hero.isEpisch, apSpent, hero.epicStartAp);
+    final apUntilNext =
+        computeApUntilNextEpicLevel(hero.isEpisch, apSpent, hero.epicStartAp);
+
     final rowItems = <Widget>[
       _buildApValueField(
         label: 'AP Gesamt',
@@ -39,6 +44,18 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
         label: 'Level',
         value: level.toString(),
       ),
+      if (hero.isEpisch) ...[
+        _buildReadOnlyValueField(
+          key: const ValueKey<String>('overview-readonly-epic-level-ap'),
+          label: 'Epische Stufe',
+          value: epicLevel.toString(),
+        ),
+        _buildReadOnlyValueField(
+          key: const ValueKey<String>('overview-readonly-epic-ap-until'),
+          label: 'AP bis nächste Epische Stufe',
+          value: apUntilNext.toString(),
+        ),
+      ],
     ];
 
     return _SectionCard(

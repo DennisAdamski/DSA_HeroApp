@@ -1,0 +1,7 @@
+{
+  "id": "regelwerk_ueberarbeitung_v1",
+  "title": "Regelwerk-Überarbeitung",
+  "description": "Aktivierbares Hausregel-Paket aus dem PDF Erweiterung und Überarbeitung des Regelwerks.",
+  "priority": 100,
+  "patches": []
+}

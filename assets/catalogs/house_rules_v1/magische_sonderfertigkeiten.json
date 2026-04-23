@@ -1,1 +1,362 @@
-[]
+[
+  {
+    "id": "emsf_arkane_meisterschaft",
+    "name": "Arkane Meisterschaft",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 35",
+    "beschreibung": "Erhöht die ZfP des verwendeten Zaubers um 1 (bei Ein-Merkmal-Zaubern sogar +2); kann ZfW übersteigen.",
+    "voraussetzungen": "KL oder IN 20 (jede weitere Meisterschaft +1 auf die Eigenschaft), SF Merkmalskenntnis [entsprechendes Merkmal]",
+    "kosten": "400 / 550 / 700 AP (je nach Merkmalsklassifikation I/II/III)",
+    "erklarung_lang": "Diese SF kann für jedes Merkmal einzeln erlernt werden und erhöht die ZfP des verwendeten Zaubers um 1. Sollte der Zauber nur ein einziges Merkmal haben, steigen die ZfP sogar um 2 Punkte. Diese Boni können die ZfP über den ZfW hinaus erhöhen.",
+    "quelle": "Epische Stufen S. 35",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 35", "excerpt": "Arkane Meisterschaft" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_artefaktsicherung",
+    "name": "Artefaktsicherung",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 35",
+    "beschreibung": "Halbiert die Wahrscheinlichkeit einer Beseelung oder Besessenheit eines erstellten Artefakts.",
+    "voraussetzungen": "KL 18, ZfW Arcanovi 21",
+    "kosten": "250 AP",
+    "erklarung_lang": "Halbiert die Wahrscheinlichkeit einer Beseelung oder Besessenheit eines erstellten Artefakts.",
+    "quelle": "Epische Stufen S. 35",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 35", "excerpt": "Artefaktsicherung" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_astrale_entladung",
+    "name": "Astrale Entladung",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 35",
+    "beschreibung": "Totale Konzentration aller AsP in einem Zauber; Wirkung extrapoliert, Magier danach bewusstlos.",
+    "voraussetzungen": "MU 19, SF Eiserner Wille II, SF Wirkungsmaximierung",
+    "kosten": "400 AP",
+    "erklarung_lang": "Die totale Konzentration sämtlicher AsP in einem Zauber: Zauberdauer verdreifacht (kann nicht mehr verkürzt werden); Wirkung entsprechend der Kosten extrapoliert. Der Magier verliert danach für (eine Stunde − KO) Minuten das Bewusstsein. Beispiel: Ein Magier mit 110 AsP wirkt alle in einen Fulminictus – SP sind automatisch 110 und werden nur noch durch Gardianum oder Aurapanzer reduziert.",
+    "quelle": "Epische Stufen S. 35",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 35", "excerpt": "Astrale Entladung" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_aura_des_drachenerbes",
+    "name": "Aura des Drachenerbes",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 35",
+    "beschreibung": "Achaz erhält halbe TaP auf alle Gesellschaftstalente mit Geschuppten; Reptilien-Abrichten -7.",
+    "voraussetzungen": "CH 18, TaW Überreden/Überzeugen/Etikette/Gassenwissen je 18, Rasse Achaz",
+    "kosten": "500 AP",
+    "erklarung_lang": "Einem Achaz, der zu anderen Geschuppten spricht, gelingen alle Gesellschaftlichen Talente stets mit zumindest halben TaP (falls sie überhaupt gelingen). Reptilien sind für ihn zum Abrichten 7 Punkte erleichtert.",
+    "quelle": "Epische Stufen S. 35",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 35", "excerpt": "Aura des Drachenerbes" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_aurapanzer_ii",
+    "name": "Aurapanzer II",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 36",
+    "beschreibung": "Reflektiert halben magischen Schaden auf den Verursacher; bei vollständiger Absorption ganzer Schaden. Alternativ: halber Schaden als AsP absorbieren.",
+    "voraussetzungen": "MU 21, KL 18, SF Aurapanzer",
+    "kosten": "450 AP",
+    "erklarung_lang": "Der von einem Aurapanzer abgewehrte, magische Schaden eines Zaubers wird zur Hälfte auf den Verursacher reflektiert; bei vollständiger Schadensabsorption wird sogar der ganze Schaden zurückgeworfen. Zurückgeworfener Schaden kann nicht absorbiert oder reflektiert werden. Alternative für Magiebegabte: die Hälfte des abgewehrten Schadens als AsP absorbieren (keine Verbesserung bei kompletter Schadensabwehr).",
+    "quelle": "Epische Stufen S. 36",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 36", "excerpt": "Aurapanzer II" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_band_in_die_lichtwelt",
+    "name": "Band in die Lichtwelt",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 36",
+    "beschreibung": "Elf wird teilweise halbstofflich: Resistenz gegen profane Waffen, Paraphysikalität I, Elfenzauber +3 ZfP.",
+    "voraussetzungen": "IN 23, Rasse Elf",
+    "kosten": "500 AP",
+    "erklarung_lang": "Manche Elfen finden im Laufe ihres langen Lebens ihr verloren geglaubtes Band in die Lichtwelt wieder. Sie können sich teilweise in die Lichtwelt zurückziehen, was ähnlich wirkt, als wären sie nicht-manifestierte Dämonen: Resistenz gegen profane Waffen und Paraphysikalität I. Auf Wucht basierende Manöver im Nahkampf sind nicht mehr möglich, da der Elf nur noch halbstofflich ist. Dafür steigen die ZfP aller gewirkten Elfenzauber um 3, auch über den TaW hinaus.",
+    "quelle": "Epische Stufen S. 36",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 36", "excerpt": "Band in die Lichtwelt" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_elementaraspekt",
+    "name": "Elementaraspekt",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 36–37",
+    "beschreibung": "Elementares Zaubermuster: +3 ZfP und -25 % AsP für das Element, Gegenelement gesperrt; sechs Varianten (Eis, Erz, Feuer, Humus, Luft, Wasser).",
+    "voraussetzungen": "KL und IN 16 (Leiteigenschaft 18), passende Merkmalskenntnis, zum Element passende Eigenschaft: Eis MU 18 / Erz KK 18 / Feuer CH 18 / Humus KO 18 / Luft GE 18 / Wasser FF 18",
+    "kosten": "250 AP pro Element",
+    "erklarung_lang": "Jedes der sechs Zaubermuster erhöht die ZfP um 3 und reduziert die AsP-Kosten um 25 % für sein Element; Gegenelement-Zauber sind gesperrt. Jeder Aspekt bringt zudem Boni auf zwei verwandte Merkmale und blockiert eine spontane Modifikation. Eis: Selbstbeherrschung während des Zauberns verdoppelt; +50 % Schaden; Einflussabzüge +50 %; sperrt „Wirkung erzwingen\". Erz: Zauberdauer verdoppelt, dafür halbe MR ignoriert und dreifache Wirkungsdauer; Antimagie halbiert/+50 %; Herrschaft MU-Differenz als Erleichterung; sperrt „Zauberdauer verkürzen\". Feuer: Zauber- und Wirkungsdauer halbiert, Effekt 50 % stärker (25 % bei augenblicklich); Hellsicht ignoriert 7 Antimagie-Punkte; Herbeigerufene +2 AT / +2 TP; sperrt „Wirkungsdauer verlängern\". Humus: MR-Zauber Erschwernis ZfW/4, dafür ZfP auf ZfW erhöht; Eigenschafts-Boni +1/3; Heilung verdoppelt; sperrt „Kosten einsparen\". Luft: Zauberdauer geviertelt, ±50 % AsP/Wirkung (W6); Freizauberei: Zauber auf zwei Proben mit kombinierten ZfP; Telekinese doppelte GS; Verständigung doppelte Reichweite; sperrt „Kosten einsparen\". Wasser: Identifikation durch Magiekunde/Hellsicht verhindert; Form kombiniert zwei Verwandlungen; Illusion +1/3 Realitätsdichte; sperrt „Zauberdauer verkürzen\". Kein Effekt artefaktbindbar.",
+    "quelle": "Epische Stufen S. 36–37",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 36–37", "excerpt": "Elementaraspekt" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_freizauberei",
+    "name": "Freizauberei",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 38",
+    "beschreibung": "Höchste Magie: Zauber des Merkmals als freie Aktion zu 2/3 Kosten; keine spontane Modifikation außer Schutzbrecher.",
+    "voraussetzungen": "KL 24 und IN 23 (oder IN 26 und KL 20 wenn IN Leiteigenschaft; Hexen: CH statt KL). Magische SF im Wert von 2500 AP; alle Merkmalskenntnisse und alle Zauber des Merkmals in eigener Repräsentation auf ZfW 24 (andere Rep. auf ZfW 12)",
+    "kosten": "1000 AP",
+    "erklarung_lang": "Die höchste Stufe der Magie, die Freizauberei, kann selbst von Verhüllten Meistern nur in einem Merkmal erreicht werden. Alle Zauber dieser Kategorie können von nun an in einer freien Aktion zu 2/3 der Kosten genutzt werden. Die Freizauberei kann allerdings nicht mehr (spontan) modifiziert werden, außer durch den Einsatz der SF Schutzbrecher. Eigeborene Hexen können CH statt KL verwenden, um die Eigenschafts-Voraussetzungen zu erfüllen.",
+    "quelle": "Epische Stufen S. 38",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 38", "excerpt": "Freizauberei" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_infinitum_runen",
+    "name": "Infinitum-Runen",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 38–41",
+    "beschreibung": "Permanent eingravierte Zauberrune mit Dauerwirkung; umfangreiche Runenliste (Alfenbann-, Bären-, Heil-, Waffenrune u. v. a.).",
+    "voraussetzungen": "ZfW Infinitum 8, TaW Runenkunde oder passende Ritualkenntnis 18; AsP-Kosten: 5× Komplexität, davon 1/10 permanent",
+    "kosten": "500 AP (pro Rune zusätzlich 50–200 AP laut Liste)",
+    "erklarung_lang": "Gestattet, eine Zauberrune permanent einzugravieren und aktiv zu lassen (nur Runen, die nicht nach dem ersten Einsatz ihre Macht verlieren). Runenliste (Auswahl; RkP/N: Wert mit Runenkraftpunkten skaliert): Alfenbannrune (8, 200 AP) Feen/Kobolde RkP Schritt ferngehalten; Bärenrune (5, 100) KK+1, Tragkraft +RkP×10 Stein; Blattschussrune (6, 100) Schuss/Wurf +RkP/7 TP, Reichweite +RkP %; Drachenrune (8, 150) Seeungeheuer AT/PA -RkP/2; Entgifterrune (4, 75) Gift -RkP/8 Stufen; Falkenaugrune (6, 100) Sicht +RkP/5; Felsenrune (6, 100) WS +1 je 5 RkP, RS +1; Finsterrune (5, 50) gegenseitige Dunkelheits-Boni; Fluchbannrune (7, 150) RkP/5 schwerer zu verzaubern; Friedensrune (5, 50) Schlechte Eigenschaften -RkP/3; Furchtrune (9, 150) Panik mit ZfP=RkP; Geisterbannrune (8, 200); Gratwandererrune (6, 125) Körperbeherrschung +RkP/6; Heilrune (5, 75) +RkP/8 LeP; Katzenaugenrune (7, 125); Kälteschutzrune (6, 150); Läuferrune (6, 100) GS+1, Fahrzeuge +RkP %; Lebensrune (8, 175) Altersresistenz; Ottarune (5, 0) siehe SF Ottogaldr; Pfeilrune (7, 100) FK +RkP/5 erschwert; Rauschrune (4, 50) Gift +RkP/8 Stufen; Rune der Handwerkskunst (6, 100) Werkzeug +RkP/5; Rune des Nordens (6, 75); Salzwasserrune (4, 100) verwandelt RkP×5 Flux; Schattenrune (6, 100) -RkP/7 zu erkennen; Schutzrunen (8, 150) Kategorien-spezifisch; Seuchenbannrune (7, 150) KO +RkP/4; Waberlohenrune (4, 75) Feuerschaden reduziert; Waffenrune (8, 125) verletzend gegen Wesen des Wahren Namens. Stapelung nach Meisterentscheid.",
+    "quelle": "Epische Stufen S. 38–41",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 38–41", "excerpt": "Infinitum-Runen" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_magische_minimierung",
+    "name": "Magische Minimierung",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 41",
+    "beschreibung": "ZfP und Variablen eines Zaubers beliebig nach unten korrigieren; AsP-Kosten passen sich an.",
+    "voraussetzungen": "KL 17, SF Meisterliche Zauberkontrolle II",
+    "kosten": "250 AP",
+    "erklarung_lang": "Der Zaubermeister darf die ZfP und die Variablen eines Zauberspruchs beliebig nach unten korrigieren (z. B. bei einem Fulminictus mit Schaden 2W6+ZfP kann er bei 9 gewürfelten und 14 übrigen ZfP zwischen 2 und 23 SP wählen). Die AsP-Kosten passen sich entsprechend an.",
+    "quelle": "Epische Stufen S. 41",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 41", "excerpt": "Magische Minimierung" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_meisterlicher_artefaktschmied",
+    "name": "Meisterlicher Artefaktschmied",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 41",
+    "beschreibung": "Bindet 2 permanente Zauber in einen Gegenstand (gilt als eine Verzauberung).",
+    "voraussetzungen": "KL (für Elfen IN) und FF insgesamt 40, jedoch jeweils mindestens 18, ZfW Infinitum 15, ZfW Arcanovi semipermanenz 21",
+    "kosten": "700 AP",
+    "erklarung_lang": "Ermöglicht die Bindung von 2 permanenten Zaubern in einen Gegenstand. Dies gilt als eine Verzauberung.",
+    "quelle": "Epische Stufen S. 41",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 41", "excerpt": "Meisterlicher Artefaktschmied" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_merkmalsgrossmeister",
+    "name": "Merkmalsgroßmeister",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 41–48",
+    "beschreibung": "Großmeisterschaft in einem Merkmal; Wirkung variiert stark pro Merkmal (Antimagie, Beschwörung, Dämonisch, Eigenschaften, Einfluss, Elementar, Form, Geisterwesen, Heilung, Hellsicht, Herbeirufung, Herrschaft, Illusion, Kraft, Limbus, Metamagie, Objekt, Schaden, Telekinese, Temporal, Umwelt, Verständigung).",
+    "voraussetzungen": "Leiteigenschaft 17, KL oder IN 15 (das jeweils andere), entsprechende Merkmalskenntnis; ZfP aller Zauber des Merkmals auf 18 (10 wenn nicht in eigener Repräsentation) oder insgesamt 100 ZfP. Gilt nur für Zauber ab ZfW 18. Weitere Großmeisterschaften +3 auf Leiteigenschaft, +2 auf andere",
+    "kosten": "600 / 800 / 1000 AP (Klassifikation I / II / III)",
+    "erklarung_lang": "Pro Merkmal individuelle Großmeisterschaft (Auswahl): Antimagie – abgewehrter Zauber gilt als misslungen, Wiederholung +3 erschwert; spezifische Antimagie halbe Zauberdauer und kann den gebannten Spruch MU/2 KR halten. Beschwörung – Untote, Golems, Dämonen: umfangreiche Dienst-Boni (Alptraum-Realitätsdichte +50 %, Bann des Elements +18/+12, Bewegung kostenlos, Kampf +2 AT/PA/TP/INI, Wache AsP-Kosten gedrittelt etc.). Dämonisch – LO aller Dämonen +1/3, Beschwörung/Beherrschung -25 %; domänenspezifische Boni (Blakharaz Besitz bei SP>MR, Belhalhar Schadens-Heilung, Lolgramoth +1 Aktion, Thargunitoth profane-Resistenz, Amazeroth +50 % AsP etc.). Eigenschaften – mehrere Ziele, -25 % AsP, Verlängerung ohne Initialkosten, Aufrechterhaltung halbe Erschwernis. Einfluss – ZfP +CH/3; Ziel-MR -CH/3. Elementar gesamt – Resistenz gegen alle Elemente, Elementar-Boni je Element. Elementar einzeln – Sekundäreffekte erweitert. Form – Zaubern in Verwandlung; nur einzelne Aspekte übernehmbar; halbe/gedrittelte/geviertelte AsP, +7 Erschwernis. Geisterwesen – Medium-ähnlich; Zauberkunst von Totengeistern nutzbar. Heilung – Heilzauber wirken präventiv. Hellsicht – Angriffe auswürfeln bevor Reaktion; magischer Gefahreninstinkt TaW 10. Herbeirufung – Elementare/Golemiden-Boni. Herrschaft – Zauber per vergleichender Gesellschafts-Probe gegen Menschenkenntnis; Ziel-MR -TaP. Illusion – max. Realitätsdichte, selektive Einzelpersonen. Kraft – doppelte AsP für +50 % ZfW Wirkung (Kraft-Zauber: 3×/doppelt); Astralspeicher beschädigt. Limbus – Ausweichen in den Limbus; Objekte/Personen (3 AsP/25 Stein) mitnehmen. Metamagie – alle spontanen Modifikationen, eine ohne Erschwernis, ZfW/ZfP-Tausch. Objekt – temporäre Bindung an Objekt (Fernkampfwaffe + Zauber). Schaden – doppelte Würfel, halbe auswählen. Telekinese – Projektile binnen 3 Schritt abwehren; eigene Projektile +1W6/+50 % Reichweite/+4 Abwehr (1 AsP). Temporal – unterdrückte Zauber halten; Nahkampf-Stapelung bis 7/12 Treffer. Umwelt – Kombination zweier Wirkprinzipien. Verständigung – geistige Verbindung zu Verzauberten, Zauber übertragen/tauschen, Sinne teilen.",
+    "quelle": "Epische Stufen S. 41–48",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 41–48", "excerpt": "Merkmalsgroßmeister" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_pfad_der_uralten",
+    "name": "Pfad der Uralten",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 49",
+    "beschreibung": "Achaz-Ritual unter Kristallomant und Schamane; erweckt drachisches Erbe, Feuerodem als Basisfähigkeit.",
+    "voraussetzungen": "IN 15, KO 15 (je +1 für jeden weiteren Kauf), Rasse Achaz",
+    "kosten": "400 AP (erste Stufe), 150 AP je weitere Verbesserung",
+    "erklarung_lang": "Lebensgefährliches Ritual: Der Achaz kann Feuer speien, zunächst 1W6 TP, 3 Schritt Reichweite, alle 5 KR. Mehrfach erlernbar; jeder Kauf verbessert eines: Schaden (1W6+3 → 1W6+6 → 2W6+6 → 3W6+6); Ladezeit (-1 KR je Verbesserung, min. 2 KR); Reichweite (+1 Kategorie: 3/7/21 Schritt).",
+    "quelle": "Epische Stufen S. 49",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 49", "excerpt": "Pfad der Uralten" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_spontane_regeneration",
+    "name": "Spontane Regeneration I–V",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 49",
+    "beschreibung": "Achaz-Regenerationskraft; pro Stufe +1 LeP/Ruhephase, -1 KO-Erschwernis; ab III Finger/Zehen, ab V Gliedmaßen.",
+    "voraussetzungen": "KO 16 (je +1 pro Stufe), SF Pfad der Uralten, kein Nachteil Schlechte Regeneration, Rasse Achaz",
+    "kosten": "300 AP pro Stufe",
+    "erklarung_lang": "Pro Stufe +1 LeP pro Ruhephase und -1 Erschwernis auf KO-Proben zur Heilung von Wunden/Verletzungen. Stufe III ermöglicht das Nachwachsen von Zehen und Fingern, Stufe V das Nachwachsen von Gliedmaßen (gilt wie 5 Wunden auskurieren, nur ohne andere Wunden möglich). Kumulativ zum Vorteil Schnelle Heilung.",
+    "quelle": "Epische Stufen S. 49",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 49", "excerpt": "Spontane Regeneration" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_stachelpanzer",
+    "name": "Stachelpanzer",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 50",
+    "beschreibung": "Achaz-Klauen/Stacheln an Händen, Schwanz, Ellbogen, Wirbelsäule, Knien, Füßen; waffenlose Parade und +2 TP.",
+    "voraussetzungen": "SF Pfad der Uralten, Rasse Achaz",
+    "kosten": "400 AP",
+    "erklarung_lang": "Der Achaz bildet an Handrücken, Schwanz, Ellbogen, Wirbelsäule, Knien und/oder Füßen Klauen bzw. Stacheln aus. Er kann an all diesen Stellen waffenlos parieren ohne Schaden zu erleiden und richtet echte TP +2 an. Ringen-AT gegen ihn erfordern jede KR 1W6 TP Schaden.",
+    "quelle": "Epische Stufen S. 50",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 50", "excerpt": "Stachelpanzer" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_schutzbrecher",
+    "name": "Schutzbrecher",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 50",
+    "beschreibung": "Doppelte AsP-Kosten senken Immunität zu Resistenz; vierfache ignorieren Immunität komplett. MR bleibt.",
+    "voraussetzungen": "MU 19, Leiteigenschaft 21",
+    "kosten": "450 AP",
+    "erklarung_lang": "Der Zauberer kann freiwillig die doppelten, gesamten AsP-Kosten eines Spruches zahlen, um Immunitäten gegen beliebige Merkmale für diesen Zauber auf eine Resistenz zu senken, bzw. eine Resistenz zu streichen. Vierfache Gesamtkosten ignorieren eine Immunität komplett. Magieresistenz wird damit nicht umgangen.",
+    "quelle": "Epische Stufen S. 50",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 50", "excerpt": "Schutzbrecher" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_sirenensang",
+    "name": "Sirenensang",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 50",
+    "beschreibung": "Singen mit AsP bannt Zuhörer; Selbstbeherrschungs-Proben erforderlich, um Befehle abzuwehren.",
+    "voraussetzungen": "TaW Singen 22 (17 bei Wohlklang), Vorteil Zweistimmiger Gesang",
+    "kosten": "500 AP",
+    "erklarung_lang": "Manche Wesen lösen mit ihrer Stimme eine Verzauberung aus: Wenn sie singen, können AsP verströmt werden, die den Gesang für Zuhörer begehrlich erscheinen lassen. Jeder dem eine Selbstbeherrschungs-Probe misslingt (erschwert um eingesetzte AsP/SR; max. AsP in Höhe des Singen-TaW, +5 bei Wohlklang), verfällt dem Bann. Der Gebannte befolgt alle gesungenen Befehle, die nicht sein leibliches Wohl gefährden. Jede SR weitere Probe, +7 erschwert, wenn im Bann. Nach ca. einer halben Stunde erzwungenen Nichtstuns unkontrolliertes Tanzen in Trance. Nicht selektiv einsetzbar.",
+    "quelle": "Epische Stufen S. 50",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 50", "excerpt": "Sirenensang" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "emsf_wirkungsmaximierung",
+    "name": "Wirkungsmaximierung",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 50",
+    "beschreibung": "Variablen (W6, W20) eines Zaubers dürfen selektiv neu gewürfelt werden.",
+    "voraussetzungen": "MU 16, Leiteigenschaft 20, SF Meisterliche Zauberkontrolle",
+    "kosten": "500 AP",
+    "erklarung_lang": "Alle W6 und W20 eines Zauberspruchs, die dem Zauberer nicht passen, dürfen neu gewürfelt werden; das neue Ergebnis ist endgültig. Beim Kulminatio und Magie in der Repräsentation Borbaradianisch müssen beide Würfe neu gewürfelt werden (Schaden und Kosten).",
+    "quelle": "Epische Stufen S. 50",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 50", "excerpt": "Wirkungsmaximierung" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  }
+]

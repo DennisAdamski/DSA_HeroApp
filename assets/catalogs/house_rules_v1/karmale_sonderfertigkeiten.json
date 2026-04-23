@@ -1,1 +1,477 @@
-[]
+[
+  {
+    "id": "eksf_blick_des_makels",
+    "name": "Blick des Makels",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 51",
+    "beschreibung": "Automatische Seelenprüfung bei jedem Blickkontakt (ab 35 Entrückung).",
+    "voraussetzungen": "—",
+    "kosten": "500 AP (300 AP bei Praios)",
+    "erklarung_lang": "Ermöglicht dem Geweihten eine Automatische Seelenprüfung bei jedem, den er ansieht (ab 35 Entrückung oder 1 KaP/SR). Es können nur Identifikationen durchgeführt werden, die mit einer Seelenprüfung Grad III möglich sind; nicht aufstufbar. Die Paktiererfähigkeit Schutz vor göttlichem Wirken ist nutzlos – ein Paktierer mit dem entsprechenden Vorteil bemerkt jedoch den Blick des Makels.",
+    "quelle": "Epische Stufen S. 51",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 51", "excerpt": "Blick des Makels" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "eksf_furchtbringer",
+    "name": "Furchtbringer",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 51",
+    "beschreibung": "Geweihter wirkt auf Dämonen und Paktierer der Nemesis wie Schreckgestalt I (ab 50 Entrückung).",
+    "voraussetzungen": "CH 18",
+    "kosten": "500 AP",
+    "erklarung_lang": "Der Geweihte gilt ab 50 Entrückung als Schreckgestalt I für alle Dämonen und Paktierer seiner Nemesis. Diese müssen eine MU-Probe + Entrückung/10 bestehen, um nicht den Nachteilen der Schreckgestalt zu unterliegen. Bei Wesen ohne angegebenen MU-Wert gilt 7 + GW/2 und falls der Dienst Kampf ausgeführt werden kann, noch einmal +3. Ab 80 Entrückung gilt der Effekt gegen alle Dämonen und Paktierer.",
+    "quelle": "Epische Stufen S. 51",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 51", "excerpt": "Furchtbringer" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "eksf_goettliche_beruehrung",
+    "name": "Göttliche Berührung",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 51",
+    "beschreibung": "Dämonen durch Hautkontakt exorzieren; Paktierern LeP gleich investierter KaP entziehen.",
+    "voraussetzungen": "MU 20, SF Karmale Substitution, SF Heilige Hand",
+    "kosten": "400 AP",
+    "erklarung_lang": "Ein Geweihter kann unter Anwendung dieser Fähigkeit einen Dämon durch Hautkontakt exorzieren (Probe, kein Zeitaufwand; nur 60 % der KaP-Kosten). Manifestierte Dämonen werden dadurch vernichtet (normale Kosten). Paktierern können auf einen Schlag bis zu so vielen LeP entzogen werden, wie der Geweihte an KaP aufwendet. In allen Fällen gelten halbe Kosten bei der erzdämonischen Nemesis.",
+    "quelle": "Epische Stufen S. 51",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 51", "excerpt": "Göttliche Berührung" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "eksf_heilige_hand",
+    "name": "Heilige Hand",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 51",
+    "beschreibung": "Jede Waffe in der Hand des Geweihten gilt als geweiht und verletzend.",
+    "voraussetzungen": "—",
+    "kosten": "400 AP (300 AP bei Kor und Rondra)",
+    "erklarung_lang": "Jede Waffe, die der Geweihte führt, gilt in seiner Hand als geweiht und verletzend, wenn sie der Gottheit nicht prinzipiell widerspricht (z. B. Fernkampf bei Rondra oder jede Waffe bei Tsa).",
+    "quelle": "Epische Stufen S. 51",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 51", "excerpt": "Heilige Hand" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "eksf_hingebungsvoll",
+    "name": "Hingebungsvoll",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 52",
+    "beschreibung": "Generiert Entrückung 20 % schneller.",
+    "voraussetzungen": "SF Göttliche Berührung",
+    "kosten": "300 AP",
+    "erklarung_lang": "Der Geweihte generiert Entrückung 20 % schneller.",
+    "quelle": "Epische Stufen S. 52",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 52", "excerpt": "Hingebungsvoll" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "eksf_inspirierende_aura",
+    "name": "Inspirierende Aura",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 52",
+    "beschreibung": "Überträgt Entrückung auf Lebewesen in CH/2 Schritt Umkreis mit halber Stärke.",
+    "voraussetzungen": "CH oder MU 18",
+    "kosten": "500 AP",
+    "erklarung_lang": "Geweihte können lernen, ihre Entrückung auf andere zu übertragen: Alle von Entrückung beeinflussbaren Lebewesen in seiner Umgebung sind ebenfalls von ihren Effekten betroffen. Die Entrückung gilt innerhalb von CH/2 Schritt mit halber Stärke. Nebeneffekte wie der göttliche Fingerzeig sind nicht inbegriffen, lediglich die Verschiebung der Eigenschaften und Talente. Sollte mit Mitstreitern abgesprochen werden, da Entrückung nicht für jeden ein angenehmer Zustand ist.",
+    "quelle": "Epische Stufen S. 52",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 52", "excerpt": "Inspirierende Aura" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "eksf_karmale_substitution",
+    "name": "Karmale Substitution",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 52",
+    "beschreibung": "Ersetzt 1 pKaP durch 5 weitere KaP bei Liturgien (nur ein pKaP pro Probe).",
+    "voraussetzungen": "LkW 21",
+    "kosten": "400 AP",
+    "erklarung_lang": "Der Geweihte kann statt einem permanenten Karmapunkt fünf weitere normale KaP für eine Liturgie zahlen. Es kann nur ein pKaP pro Liturgie-Probe eingespart werden. Nicht einsetzbar, wenn auch die Wirkung der Liturgie permanent ist. Es wird entsprechend mehr Entrückung generiert.",
+    "quelle": "Epische Stufen S. 52",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 52", "excerpt": "Karmale Substitution" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "eksf_liturgischer_meister",
+    "name": "Liturgischer Meister",
+    "gruppe": "karmal",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 52",
+    "beschreibung": "Die zusätzliche Erschwernis von +2 beim Aufstufen von Liturgien entfällt.",
+    "voraussetzungen": "Liturgiekenntnis 21+, mindestens 10 Jahre Erfahrung als Geweihter",
+    "kosten": "350 AP",
+    "erklarung_lang": "Der Geweihte ist mit den Liturgien seiner Gottheit so gut vertraut, dass die zusätzliche Erschwernis von 2 Punkten bei der Aufstufung von Liturgien entfällt. Eine Grad-II-Liturgie auf Grad III zu steigern (z. B. durch vergrößerte Reichweite) ergibt so eine Erschwernis von 4 Punkten statt 6.",
+    "quelle": "Epische Stufen S. 52",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.karmal_sf",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 52", "excerpt": "Liturgischer Meister" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "eli_ausgleichssegen",
+    "name": "Ausgleichssegen",
+    "gruppe": "karmal",
+    "typ": "liturgie",
+    "kategorie": "Epische Liturgie",
+    "seite": "Epische Stufen S. 52",
+    "beschreibung": "Stoßgebet (2), V/G/allgemein: Zusatzaktionen zur Parade je zusätzlichem Gegner.",
+    "voraussetzungen": "Zwölfgötterkult",
+    "kosten": "—",
+    "erklarung_lang": "Grad V, Reichweite selbst, Stoßgebet (2). Wirkung: Gibt dem Geweihten die Fähigkeit, sich blitzschnell zu bewegen und zu koordinieren: Für jeden zusätzlichen Gegner zum Ersten erhält er eine Zusatzaktion pro KR zur Parade. Diese wird nicht durch Manöver wie Hammerschlag eingeschränkt, die „alle Aktionen einer KR\" benötigen. Die Zusatzaktionen dürfen weder Meisterparaden, Windmühlen noch Gegenhalten-Manöver sein. Wirkungsdauer: LkP × 3 KR.",
+    "quelle": "Epische Stufen S. 52",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.liturgies",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 52", "excerpt": "Ausgleichssegen" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "eli_goettlicher_schild",
+    "name": "Göttlicher Schild",
+    "gruppe": "karmal",
+    "typ": "liturgie",
+    "kategorie": "Epische Liturgie",
+    "seite": "Epische Stufen S. 52–54",
+    "beschreibung": "Götter-spezifische Schutzliturgie (Praios, Rondra, Efferd, Firun, Hesinde, Travia, Boron, Peraine, Tsa, Phex, Ingerimm, Rahja).",
+    "voraussetzungen": "Gottheit-spezifisch (siehe Beschreibung)",
+    "kosten": "—",
+    "erklarung_lang": "Variabler Grad, Reichweite G, Stoßgebet (6). Jede Kirche mit eigener Ausprägung. Praios/Kamaluq (IV): +LkP/2+5 Erschwernis auf nächsten gegnerischen Zauber; bei Misslingen Praios' Fluch (SR lang alle Sinne betäubt; KO-Probe +LkP+5 oder Selbstbeherrschungs-Probe +LkP+15). Rondra (IV): Schild/Umhang reflektiert Hinterhalt-Angriffe durch Blitzstrahlen; max. LkP Angriffe; Rückzug beendet Liturgie. Efferd/Swafnir (III): Wasserblase verhüllt, gezielte Angriffe nicht mehr möglich, Paraden +4 erschwert. Firun (II): +LkP/2 Kälteschutz (Reichweite G, P). Hesinde (IV): +LkP/2 RS gegen Merkmal Elementar; Elementar-Zauber wie Invercano parierbar. Travia (IV, ZZ): Geweihte und Schutzbefohlene +LkP/2 RS (geweiht) und TP, solange sie ihre Heimstatt verteidigen. Boron (IV): Schreckgestalt I gegen Untote; Grad V verstärkt auf Schreckgestalt II oder erweitert auf Thargunitoth-Paktierer; Grad VI beides. Peraine (V): Resistenz gegen alle Schadensquellen außer Dämonisch + Immunität gegen profane Waffen; darf nicht kämpfen und keine Mirakel-Minus-Talente nutzen. Tsa (IV, PP): Geweihter und Schutzbefohlene +LkP/2 RS (geweiht) und Regeneration I (nur neue LeP). Phex (V): LkP/4 Schutzgeister gegen Fallen, unausweichliche Kämpfe, Stürze; schützt nicht vor hinterhältigen Angriffen. Ingerimm (V): Waffen und Schild durchdrungen von Ingerimms Macht; Bruchtests um LkP/2 erschwert, gilt auch für unzerstörbare Waffen. Rahja (V): Feinde in 7 Schritt verfallen in Rausch, Finten und darauf aufbauende Manöver pro Manöver +LkP/2 erschwert.",
+    "quelle": "Epische Stufen S. 52–54",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.liturgies",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 52–54", "excerpt": "Göttlicher Schild" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "eli_karmale_explosion",
+    "name": "Karmale Explosion",
+    "gruppe": "karmal",
+    "typ": "liturgie",
+    "kategorie": "Epische Liturgie",
+    "seite": "Epische Stufen S. 56",
+    "beschreibung": "Grad III, Gebet: Ultimative Waffe gegen Dämonen – bündelt alle KaP in einer Welle.",
+    "voraussetzungen": "MU 18",
+    "kosten": "400 AP",
+    "erklarung_lang": "Grad III, Ritualdauer: Gebet. Sämtliche KaP werden in einer Welle mit LkP Schritt Reichweite gebündelt. Dämonen erleiden insgesamt (LkP+KaP) W6 TP Schaden; Gehörnte die Hälfte. Diener der entgegengesetzten Domäne werden sofort vernichtet (mindere) oder erhalten vollen Schaden (gehörnte). Paktierer: für jede Stufe Schutz vor göttlichem Wirken über III halbierter Schaden; entgegengesetzte Domäne erst ab IV halbieren. Der Gesamtschaden verteilt sich gleichmäßig (vor Modifikationen) auf alle gültigen Ziele in Reichweite.",
+    "quelle": "Epische Stufen S. 56",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.liturgies",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 56", "excerpt": "Karmale Explosion" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "epfad_praios",
+    "name": "Pfad der Erleuchteten – Praios",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 57",
+    "beschreibung": "Entrückungsstufen 20/40/60/80/100: Durchdringender Blick, Zauberabsorption, Wahrer Blick, Zauberverzerrung, Aura der Herrschaft.",
+    "voraussetzungen": "Geweihter des Praios; Entrückungsstufen ab 20; Stufen in Reihenfolge kaufen",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "20 – Durchdringender Blick: Halbierte Abzüge durch Schlechte Sicht. 40 – Zauberabsorption: Wer den Geweihten direkt zu verzaubern versucht, zahlt +50 % AsP und kann nicht mit spontanen Modifikationen sparen. 60 – Wahrer Blick: Immun gegen Illusion, Einfluss und jeden magischen/dämonischen Täuschungseffekt. 80 – Zauberverzerrung: Angreifer-Zauberer erhält Spruchhemmung und Rückschlag. 100 – Aura der Herrschaft: Jeder praiosgefällige Befehl gilt als Heiliger Befehl (Liturgie) mit 20 LkP; Selbstbeherrschungs-Probe zur Widerstand ggf. erleichtert bei Position der Unterlegenheit; Befehlsausführer +MU/4 Bonus.",
+    "quelle": "Epische Stufen S. 57",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 57", "excerpt": "Praios' Pfad" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "epfad_rondra",
+    "name": "Pfad der Erleuchteten – Rondra",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 58",
+    "beschreibung": "20/40/60/80/100: Projektilschutz, Perfekter Angriff, Demoralisierung, Blitzschild, Aura des Löwen.",
+    "voraussetzungen": "Geweihter der Rondra; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "20 – Projektilschutz: Fernkampfangriffe mit Waffen blocken (wie Schild); Projektilblock +2 je Stufe; Schild halbiert Fernkampf-Parade-Erschwernis um 4. 40 – Perfekter Angriff: AT +6 erschwert, darf Schaden (innerhalb des Möglichen) und Zone (Beine/Arme/Körper/Kopf) frei bestimmen. 60 – Demoralisierung: AT +8 erschwert; Getroffener MU-Probe +SP/2, bei Misslingen Ergebung (nicht gegen übernatürliche Wesen). 80 – Blitzschild: Fernkampfangriffe von Blitzen abgewehrt; PA-Wert Entrückung/5, sinkt um 3 je abgewehrtem Pfeil. 100 – Aura des Löwen: Verbündete in CH/2 Schritt immun gegen Furcht und richten MU/3 TP mehr im Nahkampf an.",
+    "quelle": "Epische Stufen S. 58",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 58", "excerpt": "Rondras Pfad" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "epfad_efferd",
+    "name": "Pfad der Erleuchteten – Efferd",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 58–59",
+    "beschreibung": "20/40/60/80/100: Sturmsprint, Zorn der See, Temporäre Formlosigkeit, Sturmflug, Meister der Formen.",
+    "voraussetzungen": "Geweihter des Efferd; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "20 – Sturmsprint: Verdoppelt GS nach Modifikationen; 3/4/5/6-fach bei 40/60/80/100. 40 – Zorn der See: +Entrückung/10 TaW auf Einschüchtern, Aufwiegeln (Überreden/Überzeugen) und Kampfrausch (freiwillig). 60 – Temporäre Formlosigkeit: Kann während Sturmsprint ohne Geschwindigkeitsverlust durch schmale Öffnungen gleiten (Teiler = 1/10 aktuelle GS). 80 – Sturmflug: Fliegen mit GS×2 bei ≥ mittelstarkem Wind (ca. 30 Meilen/h); nicht mit Sturmsprint kombinierbar. 100 – Meister der Formen: Freunde in CH/2 Schritt (und der Geweihte) werden formbar wie Wasser: Ausweichen +3, kämpfen in der nächsthöheren DK ohne Einschränkung, Atmen und Bewegung im Wasser wie an Land.",
+    "quelle": "Epische Stufen S. 58–59",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 58–59", "excerpt": "Efferds Pfad" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "epfad_travia",
+    "name": "Pfad der Erleuchteten – Travia",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 59–60",
+    "beschreibung": "20/40/60/80/100: Bund der Aufnahme, Band der Treue, Band der Einheit, Zorn des Herdfeuers, Travias Trutzburg.",
+    "voraussetzungen": "Geweihter der Travia; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "20 – Bund der Aufnahme: Gastfreundschaft kann nicht abgeschlagen werden, solange Bewirtung möglich ist; Bewirteter zahlt angemessenen Preis. 40 – Band der Treue: Jeder Zwietracht-Versuch um Entrückung/5 erschwert; bestehende Konflikte ruhen je nach Meisterentscheid. 60 – Band der Einheit: Gemeinsame Gruppenarbeit unter Begleitung des Geweihten erhält Entrückung/10 Erleichterung (keine Kampftalente/Mirakel-Talente). 80 – Zorn des Herdfeuers: Alle Feuerquellen in Sichtweite erwachen als Feuerelementare (Geist bis Meister, je nach Flammengröße) bei Angriff; rein defensiv. 100 – Travias Trutzburg: Wie Zorn, aber alle Feuerquellen des Komplexes (Zimmer/Taverne/Dorf/Stadt); Schutz-Proben im Einzugsbereich um 7 erleichtert.",
+    "quelle": "Epische Stufen S. 59–60",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 59–60", "excerpt": "Travias Pfad" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "epfad_boron",
+    "name": "Pfad der Erleuchteten – Boron",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 61",
+    "beschreibung": "20/40/60/80/100: Borons Ruhe, Vergessen, Traumversteck, Seelenhirte, Borons Urteil.",
+    "voraussetzungen": "Geweihter des Boron; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "20 – Borons Ruhe: 1 KR Berührung beruhigt jede Person/jedes nicht-magische Tier; Aggression unterdrückt, Selbstverteidigung möglich. 40 – Vergessen: Permanente Löschung der Erinnerungen Anwesender an das während seiner Anwesenheit Geschehene (muss bei Ereignis-Ende Entrückung ≥ 40 haben). 60 – Traumversteck: Kann Träume durch Berührung betreten, Realitätsdichte frei wählen; verschwindet körperlich und versteckt sich im Bewusstsein des Schlafenden (kein Essen/Trinken möglich). 80 – Seelenhirte: Wird „positives Medium\"; nahe Geisterwesen helfen mit begrenzten Möglichkeiten; +1 bis +7 auf Talentproben. 100 – Borons Urteil: Treffer führen zur Kampfunfähigkeit (Somnigravis 25 ZfP); bei Thargunitoth-Nemesis Tod. Verbündete in CH/2 Schritt +MU/2 gTP gegen Thargunitoths Diener. Schlafende Gegner in Borons Schatten verborgen (nur Sinnesschärfe +20 entdeckt).",
+    "quelle": "Epische Stufen S. 61",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 61", "excerpt": "Borons Pfad" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "epfad_hesinde",
+    "name": "Pfad der Erleuchteten – Hesinde",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 62",
+    "beschreibung": "20/40/60/80/100: Gedächtnispalast, Präzisionsblick, Magisches Auge, Zauberblock, Elementarherrschaft.",
+    "voraussetzungen": "Geweihter der Hesinde; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "20 – Gedächtnispalast: Alles während Entrückung Erlebte bleibt wie Eydeetisches Gedächtnis erhalten. 40 – Präzisionsblick: Sinnesschärfe-Proben zum Aufspüren von Dissonanzen (Architektur, Gerüche, Mechanik) um Entrückung/10 erleichtert; nur Fehler-Wahrnehmung, nicht Hintergrund. 60 – Magisches Auge: Wechsel zwischen normaler Wahrnehmung und Oculus Astralis mit Entrückung/5 ZfP. 80 – Zauberblock: Jeder Zauber per waffenloser PA abwehrbar (+8 erschwert; unsichtbare Zauber erfordern IN-Probe+ZfW/4 vor PA). 100 – Elementarherrschaft: Verbündete in CH/2 Schritt immun gegen magischen Elementarschaden (≥ 1 AsP erzeugt); eigene Elementarmagie kostet 1/3 weniger AsP.",
+    "quelle": "Epische Stufen S. 62",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 62", "excerpt": "Hesindes Pfad" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "epfad_firun",
+    "name": "Pfad der Erleuchteten – Firun",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 63",
+    "beschreibung": "20/40/60/80/100: Eins mit der Natur, Adlerauge, Entsagung, Jagdinstinkt, Unverwüstliche Aura.",
+    "voraussetzungen": "Geweihter des Firun; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "20 – Eins mit der Natur: Chamelioni-ähnliche Tarnung in der Wildnis mit Entrückung/5 ZfP. 40 – Adlerauge: Misslungene Fernkampfangriffe gegen Dämonen/Daimoniden/Paktierer dürfen wiederholt werden. 60 – Entsagung: Muss weder essen, trinken noch schlafen; unendliche Ausdauer. 80 – Jagdinstinkt: Ziel kann nicht entrinnen (Magie oder Verstecke nützen nichts); Geweihter umgeht Fallen, bemerkt Hinterhalte; baut keine Entrückung ab solange auf der Jagd. 100 – Unverwüstliche Aura: Geweihter und Verbündete in CH/2 Schritt immun gegen natürliche Elementargewalt (keine AsP-Zauber); nicht in Extremfällen wie Lava. Kann einzelnen Gegner als Beute markieren; alle Verbündeten richten +IN/2 TP an.",
+    "quelle": "Epische Stufen S. 63",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 63", "excerpt": "Firuns Pfad" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "epfad_tsa",
+    "name": "Pfad der Erleuchteten – Tsa",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 64",
+    "beschreibung": "20/40/60/80/100: Friedenstauben, Echsenhaut, Tsas Ohrfeige, Unbeschwert, Lebenshauch.",
+    "voraussetzungen": "Geweihter der Tsa; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "20 – Friedenstauben: Taubenschwarm wie Duplicatus mit Entrückung/20 Kopien; getroffene Tauben explodieren in prismatischen Strahl (SP wie TP, keine Wunden, LeP-Minimum 3); Schaden verletzend gegen Asfaloth. 40 – Echsenhaut: Schlangenmensch-Biegsamkeit, Körperteile (außer Kopf/Torso) abwerfbar, wachsen binnen der Phase nach. 60 – Tsas Ohrfeige: Raufen/Ringen-AT + vergleichende MU-Probe (mit TP(A) als Bonus); bei Sieg Ergebung unter Flagge des Regenbogens (20 LkP) bis Tagesende. 80 – Unbeschwert: Vollständige Immunität gegen Angriffe auf die Psyche (Magie, Gesellschaftliche Talente etc.). 100 – Lebenshauch: Totenerweckung (Reversalis Schwarz/Rot) oder Wundenheilung durch Berührung; LeP und Wunden regenerieren in 1 KR; bis zu CH mal pro Tag, nicht mehrfach pro Person.",
+    "quelle": "Epische Stufen S. 64",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 64", "excerpt": "Tsas Pfad" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "epfad_phex",
+    "name": "Pfad der Erleuchteten – Phex",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 65",
+    "beschreibung": "20/40/60/80/100: Herausgefordert, Sternenflug, Mysterium, Enigmatisch, Glücksbringer.",
+    "voraussetzungen": "Geweihter des Phex; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "20 – Herausgefordert: Misslingende Proben bei überfordernder Erschwernis (> TaW) dürfen wiederholt werden; im Kampf gegen überlegene Gegner ignoriert er Entrückungs-Malus auf Kampfwerte. 40 – Sternenflug: Gleiten statt Fallen, maximal doppelte Fallhöhe horizontal, immun gegen Sturzschaden. 40 – Mysterium (zweite Stufe bei 40): Setzt Gesprächspartner ein unausweichliches Rätsel (solange keine Lebensgefahr); Lösung durch Ziel wird von Phex mit Geheimnis des Geweihten oder Offenbarung der Absicht belohnt. 80 – Enigmatisch: Konterproben (Paraden, Menschenkenntnis, Gegenargumente) auf Kampf- oder Gesellschaftliche Talente um Entrückung/4 − IN (des Gegners) erschwert. 100 – Glücksbringer: Gefährten in CH/2 Schritt dürfen 1× pro SR (im Kampf pro KR) Probe wiederholen; W20-Wurf 2 zählt als 1 (aber keine Speziellen Erfahrungen).",
+    "quelle": "Epische Stufen S. 65",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 65", "excerpt": "Phexens Pfad" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "epfad_peraine",
+    "name": "Pfad der Erleuchteten – Peraine",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 66",
+    "beschreibung": "20/40/60/80/100: Humushand, Robuste Gesundheit, Heilende Berührung, Rache der Natur, Fluss der Heilung.",
+    "voraussetzungen": "Geweihter der Peraine; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "20 – Humushand: Ranken an berührten Oberflächen; Klettern auf diesen Flächen +Entrückung/10 erleichtert; heilt Pflanzen, macht Boden fruchtbar. 40 – Robuste Gesundheit: +Entrückung/10 auf KO gegen Wundschwelle, Krankheiten, Gifte. 60 – Heilende Berührung: 1W6 LeP/KR durch Direktkontakt (Ziel in Ruhe, nicht krank/vergiftet). 80 – Rache der Natur: Pflanzen in 7 Schritt werden mobilisiert (Bäume, Schlingpflanzen, Giftpflanzen); Angriffe geweiht und verletzend gegen Mishkara-Diener; AT/PA 17/13. 100 – Fluss der Heilung: Verbündete in CH/2 Schritt heilen 1W6 LeP/KR und sind immun gegen Erschöpfung; Heilkunde-Proben um 10 erleichtert.",
+    "quelle": "Epische Stufen S. 66",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 66", "excerpt": "Peraines Pfad" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "epfad_ingerimm",
+    "name": "Pfad der Erleuchteten – Ingerimm",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 67–68",
+    "beschreibung": "20/40/60/80/100: Erz und Flammen, Meister der Werkbank, Meister der Schmiede, Esse und Rammbock, Herrscher über Feuer und Stahl.",
+    "voraussetzungen": "Geweihter des Ingerimm; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "20 – Erz und Flammen: Je Hand ein Element (Erz ignoriert halben RS + Strukturschaden = TP; Feuer +2W6 Feuerschaden + entflammbar); beide bei Zweihändern; Ausrüstung geschützt. 40 – Meister der Werkbank: Berührung zerlegt verklebte/genagelte/vernähte Objekte in Bestandteile (nicht verschmiedet); Zusammenfügen in 1 SR. 60 – Meister der Schmiede: Wie Werkbank, aber auch geschmiedete/komplexe Konstrukte (Uhrwerke, Kettenhemden, Fallen, Schlösser) bis 50 Stein Gewicht. 80 – Esse und Rammbock: Flammenfaust bis ~1500 °C, Erzfaust 3W6+10 Strukturschaden ignoriert Härte; Metallbearbeitung ohne Schmiede (+7 Erleichterung). 100 – Herrscher über Feuer und Stahl: Verbündete in CH/2 Schritt erhalten Erz und Flammen; Geweihter kann Element-Fernangriff (21 Schritt, 6W6 TP Feuer/Erz, 2 Aktionen, kostenlos) und Materie auf 7 Schritt per Esse-und-Rammbock-Regeln manipulieren.",
+    "quelle": "Epische Stufen S. 67–68",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 67–68", "excerpt": "Ingerimms Pfad" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  },
+  {
+    "id": "epfad_rahja",
+    "name": "Pfad der Erleuchteten – Rahja",
+    "gruppe": "karmal",
+    "typ": "pfad_der_erleuchteten",
+    "kategorie": "Pfad der Erleuchteten",
+    "seite": "Epische Stufen S. 68",
+    "beschreibung": "20/40/60/80/100: Göttliche Anmut, Rahjas Leidenschaft, Königin der Nacht, Rahjas Verführung, Aura der Harmonie.",
+    "voraussetzungen": "Geweihter der Rahja; Entrückung 20+; Stufen in Reihenfolge",
+    "kosten": "200 AP pro Stufe (5 Stufen)",
+    "erklarung_lang": "20 – Göttliche Anmut: Entfallen bis zu Entrückung/5 Punkte Erschwernis auf Gesellschaftstalente durch Unangepasstheit (Kleidung, Kultur, Geschlecht). 40 – Rahjas Leidenschaft: Zusätzlich zu vergleichender Menschenkenntnis-Probe ist auch eine Selbstbeherrschungs-Probe in halber Höhe nötig, um sich dem Bann zu entziehen. 60 – Königin der Nacht: Berührung wirkt wie Levthans Feuer (MR ignoriert, Selbstbeherrschungs-Probe+Entrückung/10 zugestanden). 80 – Rahjas Verführung: Blickkontakt (wie Vipernblick); Ziel alle 5 KR Selbstbeherrschungs-Probe (+10, dann +15, dann +20); bei aufrechtem Blick wirkt Misslingen wie Bannbaladin mit max. ZfP für Entrückung/5 Stunden oder bis Entrückung unter 80 fällt. 100 – Aura der Harmonie: Schlechte Eigenschaften jedes Gefährten in CH×2 Schritt sinken um 10 Punkte, insgesamt max. 25 Punkte (möglichst gleichmäßig verteilt).",
+    "quelle": "Epische Stufen S. 68",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.paths",
+      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 68", "excerpt": "Rahjas Pfad" }],
+      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+    }
+  }
+]

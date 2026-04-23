@@ -1,0 +1,8 @@
+{
+  "id": "regelwerk_ueberarbeitung_v1.system",
+  "parentPackId": "regelwerk_ueberarbeitung_v1",
+  "title": "System",
+  "description": "Reservierter Schalter für systemische Kapitel wie Lehrmeister, Spezialisten und SF-Änderungen.",
+  "priority": 100,
+  "patches": []
+}

@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/data/firebase_bootstrap.dart';
 import 'package:dsa_heldenverwaltung/data/hive_externe_helden_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
+import 'package:dsa_heldenverwaltung/data/house_rule_pack_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
@@ -176,6 +177,9 @@ class _AppStartupGateState extends State<AppStartupGate> {
           customCatalogRepository: CustomCatalogRepository(
             heroStoragePath: result.heroStoragePath,
           ),
+          houseRulePackRepository: HouseRulePackRepository(
+            heroStoragePath: result.heroStoragePath,
+          ),
           home: const HeroesHomeScreen(),
         );
       },
@@ -187,6 +191,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
     HiveHeroRepository? repository,
     HiveExterneHeldenRepository? externeHeldenRepository,
     CustomCatalogRepository? customCatalogRepository,
+    HouseRulePackRepository? houseRulePackRepository,
   }) {
     final scopeKey = ValueKey<String>(
       '${repository?.hashCode ?? 'none'}|${_currentConfiguredPath ?? 'default'}',
@@ -201,6 +206,10 @@ class _AppStartupGateState extends State<AppStartupGate> {
       customCatalogRepositoryProvider.overrideWithValue(
         customCatalogRepository ??
             const CustomCatalogRepository(heroStoragePath: ''),
+      ),
+      houseRulePackRepositoryProvider.overrideWithValue(
+        houseRulePackRepository ??
+            const HouseRulePackRepository(heroStoragePath: ''),
       ),
     ];
     if (repository != null) {

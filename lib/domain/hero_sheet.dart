@@ -31,7 +31,7 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 24,
+    this.schemaVersion = 26,
     required this.name,
     required this.level,
     required this.attributes,
@@ -74,6 +74,13 @@ class HeroSheet {
     this.statModifiers = const <String, List<HeroTalentModifier>>{},
     this.attributeModifiers = const <String, List<HeroTalentModifier>>{},
     this.unknownModifierFragments = const <String>[],
+    this.isEpisch = false,
+    this.epicStartAp = 0,
+    this.epicAttributeMaxBonus = const Attributes.zero(),
+    this.epicMainAttributes = const Attributes.zero(),
+    this.epicActivationPolicy,
+    this.epicLockedWaffenmeisterCategories = const <String>{},
+    this.epicUnactivatedTalentIds = const <String>{},
   }) : rawStartAttributes = rawStartAttributes ?? startAttributes ?? attributes,
        startAttributes = startAttributes ?? attributes;
 
@@ -140,6 +147,32 @@ class HeroSheet {
 
   final List<String> unknownModifierFragments;
 
+  /// Ob dieser Held den epischen Status erreicht hat.
+  final bool isEpisch;
+
+  /// AP-Stand (apSpent) zum Zeitpunkt der epischen Aktivierung.
+  final int epicStartAp;
+
+  /// Verteilung der 5 epischen Obergrenzen-Bonus-Punkte (0–2 pro Eigenschaft, Summe ≤ 5).
+  final Attributes epicAttributeMaxBonus;
+
+  /// Wahl der beiden epischen Haupteigenschaften (eine geistige + eine koerperliche).
+  /// Die jeweilige Eigenschaft traegt den Wert 1, alle anderen 0.
+  final Attributes epicMainAttributes;
+
+  /// Policy fuer das Erreichen des epischen Status.
+  /// Werte: `'standard'`, `'elevated_being'`, `'paktierer'`, `'elfisch'` oder `null`.
+  final String? epicActivationPolicy;
+
+  /// Waffenmeister-Kategorien, die beim Epic-Werden nicht erlernbar waren
+  /// und daher auch nachtraeglich gesperrt bleiben.
+  final Set<String> epicLockedWaffenmeisterCategories;
+
+  /// Talent-Ids, die beim Epic-Werden noch nicht aktiviert waren und
+  /// daher nachtraeglich nur noch bis zur niedrigsten beteiligten
+  /// Eigenschaft gesteigert werden duerfen.
+  final Set<String> epicUnactivatedTalentIds;
+
   /// Immutable Update fuer gezielte Feldanpassungen.
   HeroSheet copyWith({
     String? id,
@@ -185,6 +218,13 @@ class HeroSheet {
     Map<String, List<HeroTalentModifier>>? statModifiers,
     Map<String, List<HeroTalentModifier>>? attributeModifiers,
     List<String>? unknownModifierFragments,
+    bool? isEpisch,
+    int? epicStartAp,
+    Attributes? epicAttributeMaxBonus,
+    Attributes? epicMainAttributes,
+    Object? epicActivationPolicy = _copySentinel,
+    Set<String>? epicLockedWaffenmeisterCategories,
+    Set<String>? epicUnactivatedTalentIds,
   }) {
     return HeroSheet(
       id: id ?? this.id,
@@ -237,6 +277,17 @@ class HeroSheet {
       attributeModifiers: attributeModifiers ?? this.attributeModifiers,
       unknownModifierFragments:
           unknownModifierFragments ?? this.unknownModifierFragments,
+      isEpisch: isEpisch ?? this.isEpisch,
+      epicStartAp: epicStartAp ?? this.epicStartAp,
+      epicAttributeMaxBonus: epicAttributeMaxBonus ?? this.epicAttributeMaxBonus,
+      epicMainAttributes: epicMainAttributes ?? this.epicMainAttributes,
+      epicActivationPolicy: identical(epicActivationPolicy, _copySentinel)
+          ? this.epicActivationPolicy
+          : epicActivationPolicy as String?,
+      epicLockedWaffenmeisterCategories: epicLockedWaffenmeisterCategories ??
+          this.epicLockedWaffenmeisterCategories,
+      epicUnactivatedTalentIds:
+          epicUnactivatedTalentIds ?? this.epicUnactivatedTalentIds,
     );
   }
 
@@ -315,6 +366,16 @@ class HeroSheet {
         ),
       ),
       'unknownModifierFragments': unknownModifierFragments,
+      'isEpisch': isEpisch,
+      'epicStartAp': epicStartAp,
+      'epicAttributeMaxBonus': epicAttributeMaxBonus.toJson(),
+      'epicMainAttributes': epicMainAttributes.toJson(),
+      if (epicActivationPolicy != null)
+        'epicActivationPolicy': epicActivationPolicy,
+      'epicLockedWaffenmeisterCategories':
+          epicLockedWaffenmeisterCategories.toList(growable: false),
+      'epicUnactivatedTalentIds':
+          epicUnactivatedTalentIds.toList(growable: false),
     };
   }
 
@@ -514,9 +575,45 @@ class HeroSheet {
       unknownModifierFragments: rawUnknown
           .map((entry) => entry.toString())
           .toList(growable: false),
+      isEpisch: (json['isEpisch'] as bool?) ?? false,
+      epicStartAp: (json['epicStartAp'] as num?)?.toInt() ?? 0,
+      epicAttributeMaxBonus: Attributes.fromJson(
+        (json['epicAttributeMaxBonus'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      epicMainAttributes: Attributes.fromJson(
+        (json['epicMainAttributes'] as Map?)?.cast<String, dynamic>() ??
+            const {},
+      ),
+      epicActivationPolicy: _parseOptionalString(json['epicActivationPolicy']),
+      epicLockedWaffenmeisterCategories: _parseStringSet(
+        json['epicLockedWaffenmeisterCategories'],
+      ),
+      epicUnactivatedTalentIds: _parseStringSet(
+        json['epicUnactivatedTalentIds'],
+      ),
     );
   }
 }
+
+String? _parseOptionalString(dynamic raw) {
+  if (raw is! String) return null;
+  final trimmed = raw.trim();
+  return trimmed.isEmpty ? null : trimmed;
+}
+
+Set<String> _parseStringSet(dynamic raw) {
+  if (raw is! List) return const <String>{};
+  final result = <String>{};
+  for (final entry in raw) {
+    if (entry is String) {
+      final trimmed = entry.trim();
+      if (trimmed.isNotEmpty) result.add(trimmed);
+    }
+  }
+  return Set<String>.unmodifiable(result);
+}
+
+const Object _copySentinel = Object();
 
 List<TalentSpecialAbility> _parseTalentSpecialAbilities(dynamic raw) {
   if (raw is List) {

@@ -5,6 +5,7 @@ class _TalentDetailDialog extends StatelessWidget {
   const _TalentDetailDialog({
     required this.talent,
     required this.entry,
+    required this.complexityResolution,
     required this.effectiveAttributes,
     required this.activeBaseBe,
     this.inventoryMod = 0,
@@ -12,6 +13,7 @@ class _TalentDetailDialog extends StatelessWidget {
 
   final TalentDef talent;
   final HeroTalentEntry entry;
+  final TalentComplexityResolution complexityResolution;
   final Attributes effectiveAttributes;
   final int activeBaseBe;
 
@@ -22,10 +24,6 @@ class _TalentDetailDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isCombat = talent.group.toLowerCase().contains('kampf');
-    final effectiveSteigerung = effectiveTalentLernkomplexitaet(
-      basisKomplexitaet: talent.steigerung,
-      gifted: entry.gifted,
-    );
     final maxTaw = isCombat
         ? computeCombatTalentMaxValue(
             effectiveAttributes: effectiveAttributes,
@@ -57,7 +55,19 @@ class _TalentDetailDialog extends StatelessWidget {
               _sectionTitle(theme, 'Katalog-Daten'),
               _detailRow(theme, 'Gruppe', talent.group),
               if (talent.type.isNotEmpty) _detailRow(theme, 'Typ', talent.type),
-              _detailRow(theme, 'Steigerung', effectiveSteigerung),
+              _detailRow(
+                theme,
+                'Steigerung',
+                complexityResolution.effectiveKomplexitaet,
+              ),
+              if (complexityResolution.isOverridden)
+                _detailRow(
+                  theme,
+                  'Basis',
+                  complexityResolution.baseKomplexitaet,
+                ),
+              if (complexityResolution.isOverridden)
+                _detailRow(theme, 'Hausregel', complexityResolution.packTitle),
               _detailRow(theme, 'Eigenschaften', talent.attributes.join(', ')),
               if (talent.be.isNotEmpty)
                 _detailRow(theme, 'BE-Regel', talent.be),

@@ -747,6 +747,15 @@ schriften.json         ← Schriften (optional)
 **Synchronisierbare Custom-Dateien im Heldenspeicher:**
 `<hero-storage>/custom_catalogs/<version>/<sektion>/<id>.json`
 
+**Synchronisierbare Hausregel-Pakete im Heldenspeicher:**
+`<hero-storage>/house_rule_packs/<version>/<packId>/manifest.json`
+
+Hausregel-Pakete koennen zusaetzlich direkt in der App unter
+`Einstellungen > Hausregeln > Hausregelverwaltung` gepflegt werden.
+Der Editor bietet eine strukturierte Manifest-Ansicht, einen JSON-Tab sowie
+Import/Export einzelner Paketdateien; eingebaute Pakete bleiben read-only und
+koennen nur als Vorlage geklont werden.
+
 Hinweis:
 `manoever.json` bleibt die kanonische Quelle für manöverartige
 Kampfoptionen. `kampf_sonderfertigkeiten.json` enthält nur eigenständige
@@ -761,8 +770,30 @@ Namensdopplungen gegen den Manöverkatalog heraus.
 3. **Kampf-Split validieren**: `talente.json` darf keine `'Kampftalent'`-Einträge enthalten;
    `waffentalente.json` muss ausschließlich `'Kampftalent'`-Einträge enthalten
 4. **IDs validieren**: Jede Sektion muss eindeutige, nicht-leere IDs haben
-5. Basisdaten mit konfliktfreien Custom-Dateien aus dem Heldenspeicher mergen
-6. Zusammengeführten `RulesCatalog` zurückgeben
+5. Eingebaute und importierte Hausregel-Pakete laden
+6. Basisdaten mit aktiven Hausregel-Patches auflösen
+7. Aufgelöste Basisdaten mit konfliktfreien Custom-Dateien aus dem Heldenspeicher mergen
+8. Zusammengeführten `RulesCatalog` zurückgeben
+
+### Eingebaute Hausregel-Pakete
+
+- Eingebaute Packs liegen unter `assets/catalogs/house_rules_v1/packs/<packId>/manifest.json`.
+- Jedes eingebaute `manifest.json` muss zusaetzlich in `pubspec.yaml` als
+  Flutter-Asset registriert sein; sonst wird das Paket nicht gebuendelt und
+  taucht im Settings-Screen nicht als aktivierbare Hausregel auf.
+- Reine Opt-in-Einträge koennen direkt im Basiskatalog liegen, solange ihr
+  `ruleMeta.sourceKey` auf eine bekannte Pack-ID zeigt. Der Resolver blendet
+  solche Eintraege aus, sobald das zugehoerige Pack deaktiviert ist.
+- Feld-Overrides wie Lernkomplexitaeten werden ueber `patches[].setFields`
+  modelliert und im `HouseRuleProvenanceIndex` mitsamt Gewinner-Paket
+  dokumentiert.
+- Das Pack `regelwerk_ueberarbeitung_v1` nutzt diese Schichtung fuer
+  `Körperliche Talente`: Die Baseline in `talente.json` wurde fuer die
+  betroffenen Eintraege auf `Wege der Helden.pdf` S. 316 (`official`)
+  zurueckgefuehrt; das Kind-Pack
+  `regelwerk_ueberarbeitung_v1.talents_learning` legt die Hausregel-
+  Abweichungen aus `Erweiterung und Überarbeitung des Regelwerks.pdf`
+  selektiv wieder darueber.
 
 ---
 
