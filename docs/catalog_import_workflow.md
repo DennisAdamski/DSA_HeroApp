@@ -61,6 +61,13 @@ Examples:
 - Packs may override fields, add entries or deactivate entries; custom catalogs
   remain additive and must not replace IDs that are already present after pack
   resolution.
+- Built-in packs may also gate base entries directly via `ruleMeta.sourceKey`
+  without needing `addEntries`. This is used by
+  `regelwerk_ueberarbeitung_v1` for optional maneuvers and Sonderfertigkeiten.
+- Official baseline values and opt-in house-rule overlays may intentionally be
+  split: for example the affected `Körperliche Talente` live officially in
+  `talente.json`, while only the PDF deviations are reapplied through
+  `regelwerk_ueberarbeitung_v1.talents_learning`.
 
 ## Split rules
 

@@ -769,6 +769,23 @@ Namensdopplungen gegen den Manöverkatalog heraus.
 7. Aufgelöste Basisdaten mit konfliktfreien Custom-Dateien aus dem Heldenspeicher mergen
 8. Zusammengeführten `RulesCatalog` zurückgeben
 
+### Eingebaute Hausregel-Pakete
+
+- Eingebaute Packs liegen unter `assets/catalogs/house_rules_v1/packs/<packId>/manifest.json`.
+- Reine Opt-in-Einträge koennen direkt im Basiskatalog liegen, solange ihr
+  `ruleMeta.sourceKey` auf eine bekannte Pack-ID zeigt. Der Resolver blendet
+  solche Eintraege aus, sobald das zugehoerige Pack deaktiviert ist.
+- Feld-Overrides wie Lernkomplexitaeten werden ueber `patches[].setFields`
+  modelliert und im `HouseRuleProvenanceIndex` mitsamt Gewinner-Paket
+  dokumentiert.
+- Das Pack `regelwerk_ueberarbeitung_v1` nutzt diese Schichtung fuer
+  `Körperliche Talente`: Die Baseline in `talente.json` wurde fuer die
+  betroffenen Eintraege auf `Wege der Helden.pdf` S. 316 (`official`)
+  zurueckgefuehrt; das Kind-Pack
+  `regelwerk_ueberarbeitung_v1.talents_learning` legt die Hausregel-
+  Abweichungen aus `Erweiterung und Überarbeitung des Regelwerks.pdf`
+  selektiv wieder darueber.
+
 ---
 
 ## 4. Berechnungsregeln (Rules Layer)

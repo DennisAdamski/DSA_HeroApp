@@ -257,17 +257,51 @@
     "id": "man_offensiver_distanzklassenwechsel",
     "name": "Offensiver Distanzklassenwechsel",
     "gruppe": "bewaffnet",
-    "erschwernis": "",
-    "seite": "",
-    "erklarung": ""
+    "erschwernis": "Angriff +4 zzgl. DK-Erschwernis der angestrebten Distanzklasse",
+    "seite": "10",
+    "erklarung": "Kombiniert einen Angriff mit einem Distanzklassenwechsel innerhalb derselben Aktion.",
+    "erklarung_lang": "Diese SF erlaubt es, ein Manöver zum Wechseln der DK mit einem Angriff zu kombinieren, sodass ein Kämpfer innerhalb einer Aktion sowohl Schaden anrichten als auch seine DK verändern kann. Die Bewegung ist 4 Punkte zusätzlich zu allen anderen eventuellen Aufschlägen erschwert, außerdem um die Erschwernis die nach dem Positionswechsel anfällt, also als ob er sich bereits in der DK befände, die er mit der Aktion anstrebt. Nur wenn die AT gelingt, wird auch die DK gewechselt. Pariert der Gegner, dann ist eine DK-Erhöhung trotzdem gelungen, eine Verringerung nicht.",
+    "voraussetzungen": "GE 20; SF Klingentänzer",
+    "verbreitung": "1-2, vor allem bei Elfenkämpfern und Meuchlern",
+    "kosten": "300 AP",
+    "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 10",
+    "hausregel": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+      "citations": [
+        {
+          "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+          "locator": "S. 10",
+          "excerpt": "Offensiver Distanzklassenwechsel"
+        }
+      ]
+    }
   },
   {
     "id": "man_offensiver_kampfstil",
     "name": "Offensiver Kampfstil",
     "gruppe": "bewaffnet",
-    "erschwernis": "",
-    "seite": "",
-    "erklarung": ""
+    "erschwernis": "Entfällt die übliche +4-Erschwernis beim Umwandeln einer Parade in eine Attacke",
+    "seite": "10",
+    "erklarung": "Erlaubt das offensive Umwandeln einer Parade in eine Attacke ohne den sonst üblichen Zuschlag.",
+    "erklarung_lang": "Gestattet es, eine Parade in eine Attacke umzuwandeln, ohne die anfallenden 4 Punkte Erschwernis hinnehmen zu müssen. Nicht für Kettenstäbe, Kettenwaffen und Peitschen möglich.",
+    "voraussetzungen": "MU 15, GE 12",
+    "verbreitung": "4",
+    "kosten": "100 AP",
+    "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 10",
+    "hausregel": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+      "citations": [
+        {
+          "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+          "locator": "S. 10",
+          "excerpt": "Offensiver Kampfstil"
+        }
+      ]
+    }
   },
   {
     "id": "man_schildspalter",
@@ -287,8 +321,25 @@
     "name": "Seitenwechsel",
     "gruppe": "bewaffnet",
     "erschwernis": "Ausweichen oder Binden +4 (Dauer abhängig von DK und Größe des Gegners)",
-    "seite": "Hausregel Philipp",
-    "erklarung": "Das Manöver baut auf einem ähnlichen Prinzip auf wie Binden oder Windmühle: Der Kämpfer leitet die Kraft eines gegnerischen Angriffs in eine ungefährliche Richtung um sich daraus einen Vorteil zu verschaffen. Dieser besteht in diesem Fall darin, dass er schnell an seinem Gegner vorbeischlüpfen kann um hinter ihm zu stehen was je nach Umgebung nutzlos bis lebensrettend sein kann. Das Manöver erfordert ein vorheriges Binden oder gezieltes Ausweichen um sich in eine günstige Position zu bringen und ist 4 Punkte erschwert. Die Anzahl der benötigten zusätzlichen Aktionen ist abhängig von der DK und der Größe des Gegners: ein Seitenwechsel in der DK H benötigt eine Freie Aktion, N benötigt 2 Freie Aktionen, S eine normale Aktion, P ist nicht möglich. Ein großer Gegner zählt automatisch als eine Kategorie weiter entfernt. Bei sehr großen Gegnern ist das Manöver nur mit Meisterzustimmung möglich. Verfügt man über die SF Beidhändiger Kampf II oder Tod von Links, so kann der Seitenwechsel noch mit einem Angriff aus der Zweithand kombiniert werden, was den Seitenwechsel um 4 weitere Punkte erschwert. Eine Parade gegen dieses Manöver ist nur zulässig, wenn die SF Kampfgespür erlernt, und eine Aktion aufgespart wurde. Das Manöver ist übrigens ebenfalls dazu geeignet einen Sturmangriff ins leere laufen zu lassen oder einen Ausfall zu stoppen. Das Manöver ist nur möglich wenn die INI des Anwenders über der seines Feindes liegt. Befindet sich neben dem Gegner ein weiterer Feind, dann steht diesem bei der Aktion unter Umständen ein Passierschlag zu."
+    "seite": "10",
+    "erklarung": "Leitet einen gegnerischen Angriff um und erlaubt es, an ihm vorbeizuschlüpfen und hinter ihm Stellung zu beziehen.",
+    "erklarung_lang": "Das Manöver baut auf einem ähnlichen Prinzip auf wie Binden oder Windmühle: Der Kämpfer leitet die Kraft eines gegnerischen Angriffs in eine ungefährliche Richtung um sich daraus einen Vorteil zu verschaffen. Dieser besteht in diesem Fall darin, dass er schnell an seinem Gegner vorbeischlüpfen kann um hinter ihm zu stehen, was je nach Umgebung nutzlos bis lebensrettend sein kann. Das Manöver erfordert ein vorheriges Binden oder gezieltes Ausweichen, um sich in eine günstige Position zu bringen, und ist 4 Punkte erschwert. Die Anzahl der benötigten zusätzlichen Aktionen ist abhängig von der DK und der Größe des Gegners: ein Seitenwechsel in der DK H benötigt eine freie Aktion, N benötigt 2 freie Aktionen, S eine normale Aktion, P ist nicht möglich. Ein großer Gegner zählt automatisch als eine Kategorie weiter entfernt. Bei sehr großen Gegnern ist das Manöver nur mit Meisterzustimmung möglich. Verfügt man über die SF Beidhändiger Kampf II oder Tod von Links, so kann der Seitenwechsel noch mit einem Angriff aus der Zweithand kombiniert werden, was den Seitenwechsel um 4 weitere Punkte erschwert. Eine Parade gegen dieses Manöver ist nur zulässig, wenn die SF Kampfgespür erlernt wurde und eine Aktion aufgespart wurde. Das Manöver ist außerdem dazu geeignet, einen Sturmangriff ins Leere laufen zu lassen oder einen Ausfall zu stoppen. Das Manöver ist nur möglich, wenn die INI des Anwenders über der seines Feindes liegt. Befindet sich neben dem Gegner ein weiterer Feind, dann steht diesem bei der Aktion unter Umständen ein Passierschlag zu.",
+    "voraussetzungen": "GE 18; SF Klingentänzer",
+    "verbreitung": "2, vor allem bei Duellkämpfern und professionellen Schaukämpfern",
+    "kosten": "150 AP",
+    "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 10",
+    "hausregel": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "regelwerk_ueberarbeitung_v1.combat",
+      "citations": [
+        {
+          "source": "Erweiterung und Überarbeitung des Regelwerks.pdf",
+          "locator": "S. 10",
+          "excerpt": "Seitenwechsel"
+        }
+      ]
+    }
   },
   {
     "id": "man_stumpfer_schlag",

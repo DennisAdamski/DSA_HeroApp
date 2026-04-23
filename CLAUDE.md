@@ -6,7 +6,7 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 
 - `AGENTS.md` ist die verbindliche Agentenrichtlinie.
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
-- Detaildokumentation liegt bei Bedarf in `docs/technical_overview.md`, `docs/test_strategy.md`, `docs/catalog_import_workflow.md`, `docs/pdf_agent_workflow.md`, `docs/ios_xcode_setup.md` und `docs/windows_antivirus_audit.md`.
+- Detaildokumentation liegt bei Bedarf in `docs/technical_overview.md`, `docs/test_strategy.md`, `docs/catalog_import_workflow.md`, `docs/pdf_agent_workflow.md`, `docs/rule_audit_regelwerk_ueberarbeitung.md`, `docs/ios_xcode_setup.md` und `docs/windows_antivirus_audit.md`.
 
 ## Projektkontext
 

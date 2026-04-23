@@ -1,0 +1,8 @@
+{
+  "id": "regelwerk_ueberarbeitung_v1.economy",
+  "parentPackId": "regelwerk_ueberarbeitung_v1",
+  "title": "Wirtschaft",
+  "description": "Reservierter Schalter für Investitionen und spätere Wirtschaftsregeln aus dem Hausregel-PDF.",
+  "priority": 100,
+  "patches": []
+}
