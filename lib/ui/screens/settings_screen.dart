@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_management_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_unlock_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/house_rule_pack_management_screen.dart';
 
 /// Einstellungs-Screen fuer globale, heldenunabhaengige Optionen.
 class SettingsScreen extends ConsumerWidget {
@@ -91,21 +92,38 @@ class _HouseRulesSection extends ConsumerWidget {
           packCatalogAsync.when(
             data: (catalog) {
               final roots = catalog.roots;
-              if (roots.isEmpty) {
-                return Text(
-                  'Keine Hausregel-Pakete gefunden.',
-                  style: theme.textTheme.bodySmall,
-                );
-              }
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ...roots.map(
-                    (root) => _HouseRuleGroup(
-                      root: root,
-                      catalog: catalog,
-                      disabled: disabled,
-                      onToggle: (packId, enabled) =>
-                          actions.setHouseRuleEnabled(packId, enabled),
+                  if (roots.isEmpty)
+                    Text(
+                      'Keine Hausregel-Pakete gefunden.',
+                      style: theme.textTheme.bodySmall,
+                    )
+                  else
+                    ...roots.map(
+                      (root) => _HouseRuleGroup(
+                        root: root,
+                        catalog: catalog,
+                        disabled: disabled,
+                        onToggle: (packId, enabled) =>
+                            actions.setHouseRuleEnabled(packId, enabled),
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                const HouseRulePackManagementScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.rule_folder_outlined),
+                      label: const Text('Hausregelverwaltung öffnen'),
                     ),
                   ),
                   const SizedBox(height: 8),
