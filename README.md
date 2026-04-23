@@ -149,6 +149,9 @@ Technischer Stack:
 - Hausregeln werden als global aktivierbare Paket-Manifeste geladen; eingebaute
   Pakete liegen unter `assets/catalogs/house_rules_v1/packs/`, importierte
   Pakete im Heldenspeicher unter `house_rule_packs/<version>/<packId>/`
+- Eingebaute Pack-Manifeste muessen zusaetzlich explizit in `pubspec.yaml`
+  als Flutter-Assets eingetragen sein, damit sie in den Einstellungen
+  waehlbar werden
 - Settings-Bereich `Katalogverwaltung` zum Einsehen aller Basisdaten sowie zum
   Anlegen, Bearbeiten und Loeschen synchronisierbarer Custom-Eintraege
 - Hero-Exporte koennen benoetigte Custom-Katalogeintraege mitsenden, damit
