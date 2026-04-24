@@ -396,7 +396,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               _buildAttributesTableLabelCell(
                 attrDebugModus ? entry.$2 : entry.$1,
                 key,
-                snapshot.hero.isEpisch,
+                _attrBonusValue(snapshot.hero.epicMainAttributes, key) > 0,
               ),
               _buildAttributesComputedCell(
                 keyName: '${key}_start',
@@ -463,15 +463,16 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
 
   /// Baut die Label-Zelle für eine Eigenschaft.
   ///
-  /// Wenn [isEpisch] gesetzt ist, wird ein ⓘ-Icon angehängt, das den
-  /// epischen Haupteigenschafts-Bonus beim Antippen erklärt.
+  /// Wenn [showEpicBonus] gesetzt ist (d. h. diese Eigenschaft ist die
+  /// gewählte Haupteigenschaft des epischen Helden), wird ein ⓘ-Icon
+  /// angehängt, das den aktiven Bonus beim Antippen erklärt.
   Widget _buildAttributesTableLabelCell(
     String text,
     String attrKey,
-    bool isEpisch,
+    bool showEpicBonus,
   ) {
     final theme = Theme.of(context);
-    if (!isEpisch) {
+    if (!showEpicBonus) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
         child: Text(text, style: theme.textTheme.titleSmall),
