@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
 
-/// Ergebnis der epischen Aktivierung: die vom Spieler gewaehlten Punkte,
-/// die beiden Haupteigenschaften (je 1 fuer die gewaehlte geistige und
-/// koerperliche Eigenschaft, sonst 0) und die Aktivierungs-Policy.
+/// Ergebnis der epischen Aktivierung: die vom Spieler gewählten Punkte,
+/// die beiden Haupteigenschaften (je 1 für die gewählte geistige und
+/// körperliche Eigenschaft, sonst 0) und die Aktivierungs-Policy.
 class EpicActivationResult {
   const EpicActivationResult({
     required this.maxBonus,
@@ -20,11 +21,22 @@ class EpicActivationResult {
 /// Einmaliger Dialog zur Aktivierung des epischen Status.
 ///
 /// Der Spieler verteilt 5 Punkte auf die acht Grundeigenschaften
-/// (maximal +2 pro Eigenschaft), waehlt je eine geistige und eine
-/// koerperliche Haupteigenschaft und optional eine Aktivierungs-Policy.
-/// Das Ergebnis ist unveraenderlich.
+/// (maximal +2 pro Eigenschaft), wählt je eine geistige und eine
+/// körperliche Haupteigenschaft und optional eine Aktivierungs-Policy.
+/// Das Ergebnis ist unveränderlich.
+///
+/// [currentValues] sind die aktuellen Eigenschaftswerte des Helden.
+/// [effectiveStartAttributes] werden genutzt, um die neuen Maximalwerte
+/// (ceil(start × 1,5) + Bonus) anzuzeigen.
 class EpicActivationDialog extends StatefulWidget {
-  const EpicActivationDialog({super.key});
+  const EpicActivationDialog({
+    super.key,
+    required this.currentValues,
+    required this.effectiveStartAttributes,
+  });
+
+  final Attributes currentValues;
+  final Attributes effectiveStartAttributes;
 
   @override
   State<EpicActivationDialog> createState() => _EpicActivationDialogState();
@@ -45,7 +57,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
     ('Fingerfertigkeit', 'ff'),
     ('Gewandtheit', 'ge'),
     ('Konstitution', 'ko'),
-    ('Koerperkraft', 'kk'),
+    ('Körperkraft', 'kk'),
   ];
 
   static const List<(String, String)> _attrs = [
@@ -55,7 +67,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
 
   static const List<(String, String)> _policies = [
     ('Standard (Stufe 21-22, 21.000-23.100 AP)', 'standard'),
-    ('Hoeheres Wesen (ab Stufe 18)', 'elevated_being'),
+    ('Höheres Wesen (ab Stufe 18)', 'elevated_being'),
     ('Paktierer (ab Stufe 16)', 'paktierer'),
     ('Elfisch (jederzeit mit Elfischer Weltsicht)', 'elfisch'),
   ];
@@ -81,6 +93,35 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
     if (delta > 0 && _remaining <= 0) return;
     setState(() => _bonus[key] = next);
   }
+
+  /// Berechnet den Basismax-Wert (vor epischem Bonus) aus dem Startwert.
+  int _baseMax(String key) {
+    return (_startValue(key) * 1.5).ceil();
+  }
+
+  int _startValue(String key) => switch (key) {
+    'mu'  => widget.effectiveStartAttributes.mu,
+    'kl'  => widget.effectiveStartAttributes.kl,
+    'inn' => widget.effectiveStartAttributes.inn,
+    'ch'  => widget.effectiveStartAttributes.ch,
+    'ff'  => widget.effectiveStartAttributes.ff,
+    'ge'  => widget.effectiveStartAttributes.ge,
+    'ko'  => widget.effectiveStartAttributes.ko,
+    'kk'  => widget.effectiveStartAttributes.kk,
+    _     => 0,
+  };
+
+  int _currentValue(String key) => switch (key) {
+    'mu'  => widget.currentValues.mu,
+    'kl'  => widget.currentValues.kl,
+    'inn' => widget.currentValues.inn,
+    'ch'  => widget.currentValues.ch,
+    'ff'  => widget.currentValues.ff,
+    'ge'  => widget.currentValues.ge,
+    'ko'  => widget.currentValues.ko,
+    'kk'  => widget.currentValues.kk,
+    _     => 0,
+  };
 
   Attributes _buildBonus() {
     return Attributes(
@@ -118,7 +159,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
     return AlertDialog(
       title: const Text('Epischen Status aktivieren'),
       content: SizedBox(
-        width: 420,
+        width: 480,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -127,8 +168,8 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
               Text(
                 'Verteile $remaining von $_maxTotal Punkten auf die '
                 'Eigenschafts-Obergrenzen (max. +$_maxPerAttr pro Eigenschaft). '
-                'Waehle zusaetzlich je eine geistige und eine koerperliche '
-                'Haupteigenschaft. Diese Auswahl ist unveraenderlich.',
+                'Wähle zusätzlich je eine geistige und eine körperliche '
+                'Haupteigenschaft. Diese Auswahl ist unveränderlich.',
                 style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: 12),
@@ -138,13 +179,28 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
                 final value = _bonus[key]!;
                 final canIncrease = value < _maxPerAttr && remaining > 0;
                 final canDecrease = value > 0;
+                final baseMax = _baseMax(key);
+                final newMax = baseMax + value;
+                final cur = _currentValue(key);
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  padding: const EdgeInsets.symmetric(vertical: 3),
                   child: Row(
                     children: [
                       SizedBox(
-                        width: 140,
-                        child: Text(label, style: theme.textTheme.bodyMedium),
+                        width: 160,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(label, style: theme.textTheme.bodyMedium),
+                            Text(
+                              'Wert $cur  |  Max $baseMax → $newMax',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       IconButton(
                         icon: const Icon(Icons.remove),
@@ -194,33 +250,47 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
               const SizedBox(height: 4),
               Wrap(
                 spacing: 8,
+                runSpacing: 4,
                 children: _mentalAttrs.map((entry) {
                   final label = entry.$1;
                   final key = entry.$2;
-                  return ChoiceChip(
-                    label: Text(label),
-                    selected: _selectedMental == key,
-                    onSelected: (_) =>
-                        setState(() => _selectedMental = key),
+                  final bonusText =
+                      epicMainAttributeBonusDescriptions[key] ?? '';
+                  return Tooltip(
+                    message: bonusText,
+                    preferBelow: true,
+                    child: ChoiceChip(
+                      label: Text(label),
+                      selected: _selectedMental == key,
+                      onSelected: (_) =>
+                          setState(() => _selectedMental = key),
+                    ),
                   );
                 }).toList(),
               ),
               const SizedBox(height: 12),
               Text(
-                'Koerperliche Haupteigenschaft',
+                'Körperliche Haupteigenschaft',
                 style: theme.textTheme.labelMedium,
               ),
               const SizedBox(height: 4),
               Wrap(
                 spacing: 8,
+                runSpacing: 4,
                 children: _physicalAttrs.map((entry) {
                   final label = entry.$1;
                   final key = entry.$2;
-                  return ChoiceChip(
-                    label: Text(label),
-                    selected: _selectedPhysical == key,
-                    onSelected: (_) =>
-                        setState(() => _selectedPhysical = key),
+                  final bonusText =
+                      epicMainAttributeBonusDescriptions[key] ?? '';
+                  return Tooltip(
+                    message: bonusText,
+                    preferBelow: true,
+                    child: ChoiceChip(
+                      label: Text(label),
+                      selected: _selectedPhysical == key,
+                      onSelected: (_) =>
+                          setState(() => _selectedPhysical = key),
+                    ),
                   );
                 }).toList(),
               ),

@@ -18,6 +18,7 @@ import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
@@ -94,12 +95,13 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     ('Fingerfertigkeit', 'ff'),
     ('Gewandtheit', 'ge'),
     ('Konstitution', 'ko'),
-    ('Koerperkraft', 'kk'),
+    ('Körperkraft', 'kk'),
   ];
 
   late final WorkspaceTabEditController _editController;
   HeroSheet? _latestHero;
   HeroState? _latestState;
+  HeroComputedSnapshot? _latestSnapshot;
   bool? _draftMagicEnabledOverride;
   bool? _draftDivineEnabledOverride;
 
@@ -468,6 +470,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         final state = snapshot.state;
         _latestHero = hero;
         _latestState = state;
+        _latestSnapshot = snapshot;
         _syncControllers(hero, state);
         final resourceActivation = _buildCurrentResourceActivation(hero);
         return ValueListenableBuilder<int>(
@@ -486,8 +489,10 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
                 _buildAdvantagesSection(),
                 const SizedBox(height: _sectionSpacing),
                 _buildApSection(hero),
-                const SizedBox(height: _sectionSpacing),
-                _buildEpicSection(hero),
+                if (hero.isEpisch) ...[
+                  const SizedBox(height: _sectionSpacing),
+                  _buildEpicSection(hero),
+                ],
                 if (kShowParserWarnings &&
                     hero.unknownModifierFragments.isNotEmpty) ...[
                   const SizedBox(height: _sectionSpacing),
