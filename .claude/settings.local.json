@@ -13,7 +13,9 @@
       "mcp__dsa-rules__list_sources",
       "mcp__dsa-rules__get_context",
       "Bash(git rebase *)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "mcp__plugin_mempalace_mempalace__mempalace_diary_write",
+      "mcp__plugin_mempalace_mempalace__mempalace_add_drawer"
     ]
   },
   "enableAllProjectMcpServers": true,

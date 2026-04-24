@@ -43,15 +43,6 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
     );
   }
 
-  /// Liefert den aktuellen Expansionszustand des Command-Decks je Layout.
-  bool _isHeroDeckExpandedFor(AppLayoutClass layout) {
-    if (!_heroDeckManualPreference &&
-        layout == AppLayoutClass.tabletLandscape) {
-      return true;
-    }
-    return _heroDeckExpanded;
-  }
-
   /// Klassisches Smartphone-Layout ohne permanente Seitenleisten.
   Widget _buildCompactWorkspaceBody(HeroSheet hero) {
     return _buildWorkspaceContentShell(hero, layout: AppLayoutClass.compact);
@@ -85,9 +76,7 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
   /// Tablet-Landscape: ausgeklapptes Command-Deck plus permanenter Inspector.
   Widget _buildTabletLandscapeWorkspaceBody(HeroSheet hero) {
     final activeTabIndex = _activeTabIndex();
-    final heroDeckExpanded = _isHeroDeckExpandedFor(
-      AppLayoutClass.tabletLandscape,
-    );
+    final heroDeckExpanded = _heroDeckExpanded;
     final navigationWidth = heroDeckExpanded
         ? _tabletLandscapeCommandDeckWidth
         : _commandDeckCollapsedWidth;
@@ -122,7 +111,7 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
   /// Sehr breites Layout mit zuschaltbarem Inspector.
   Widget _buildDesktopWideWorkspaceBody(HeroSheet hero) {
     final activeTabIndex = _activeTabIndex();
-    final heroDeckExpanded = _isHeroDeckExpandedFor(AppLayoutClass.desktopWide);
+    final heroDeckExpanded = _heroDeckExpanded;
     final navigationWidth = heroDeckExpanded
         ? _desktopWideCommandDeckWidth
         : _commandDeckCollapsedWidth;
