@@ -60,6 +60,14 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
 
     return _SectionCard(
       title: 'AP und Level',
+      titleAction: hero.isEpisch
+          ? null
+          : IconButton(
+              key: const ValueKey<String>('overview-action-epic-activate'),
+              tooltip: 'Epischen Status aktivieren',
+              icon: const Icon(Icons.auto_awesome_outlined),
+              onPressed: () => _activateEpicStatus(hero),
+            ),
       child: _buildSingleLineFieldsRow(children: rowItems),
     );
   }

@@ -1,20 +1,8 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 
 extension _HeroOverviewEpicSection on _HeroOverviewTabState {
+  /// Baut die Epischer-Status-Sektion (nur aufgerufen wenn [hero.isEpisch]).
   Widget _buildEpicSection(HeroSheet hero) {
-    if (!hero.isEpisch) {
-      return _SectionCard(
-        title: 'Epischer Status',
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: FilledButton.tonal(
-            onPressed: () => _activateEpicStatus(hero),
-            child: const Text('Epischen Status aktivieren'),
-          ),
-        ),
-      );
-    }
-
     final epicLevel = computeEpicLevel(true, hero.apSpent, hero.epicStartAp);
     final apUntilNext =
         computeApUntilNextEpicLevel(true, hero.apSpent, hero.epicStartAp);
@@ -85,10 +73,18 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
   }
 
   Future<void> _activateEpicStatus(HeroSheet hero) async {
+    final snapshot = _latestSnapshot;
+    final effectiveStart =
+        snapshot?.effectiveStartAttributes ?? const Attributes.zero();
+    final currentValues = snapshot?.effectiveAttributes ?? hero.attributes;
+
     final result = await showDialog<EpicActivationResult>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const EpicActivationDialog(),
+      builder: (_) => EpicActivationDialog(
+        currentValues: currentValues,
+        effectiveStartAttributes: effectiveStart,
+      ),
     );
     if (result == null || !mounted) return;
     final unactivatedTalentIds = <String>{};
