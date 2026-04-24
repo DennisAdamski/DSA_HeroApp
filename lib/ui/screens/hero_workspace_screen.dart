@@ -49,7 +49,6 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   bool _revertingTabChange = false;
   bool _runningEditAction = false;
   bool _heroDeckExpanded = false;
-  bool _heroDeckManualPreference = false;
   bool _workspaceDetailsExpanded = true;
 
   @override
@@ -434,8 +433,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   /// Schaltet das linke Helden-Deck je Layout zwischen ein- und ausgefahren um.
   void _toggleHeroDeckExpanded(AppLayoutClass layout) {
     setState(() {
-      _heroDeckManualPreference = true;
-      _heroDeckExpanded = !_isHeroDeckExpandedFor(layout);
+      _heroDeckExpanded = !_heroDeckExpanded;
     });
   }
 
