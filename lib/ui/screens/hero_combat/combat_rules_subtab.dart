@@ -20,8 +20,11 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
         .where((id) => id.isNotEmpty)
         .toSet();
 
+    // Allgemeine SF: non-episch + epische mit kampfTyp 'allgemein'; Großmeister ausgeschlossen
     final allgemeineSf = catalog.combatSpecialAbilities
         .where((a) => !a.isUnarmedCombatStyle)
+        .where((a) => a.kampfTyp != 'grossmeister')
+        .where((a) => !a.nurEpisch || a.kampfTyp == 'allgemein')
         .where((a) {
           final dupeId = canonicalManeuverIdFromName(
             a.name,
@@ -29,6 +32,16 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
           );
           return !maneuverIdSet.contains(dupeId);
         })
+        .toList();
+
+    final epischeNahkampfSf = catalog.combatSpecialAbilities
+        .where((a) => a.nurEpisch && a.kampfTyp == 'nahkampf')
+        .toList();
+    final epischeFernkampfSf = catalog.combatSpecialAbilities
+        .where((a) => a.nurEpisch && a.kampfTyp == 'fernkampf')
+        .toList();
+    final grossmeisterSf = catalog.combatSpecialAbilities
+        .where((a) => a.kampfTyp == 'grossmeister')
         .toList();
 
     final waffenloseStile = catalog.combatSpecialAbilities
@@ -65,6 +78,9 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
       );
     }
 
+    final combatTalents =
+        catalog.talents.where((t) => t.group == 'Kampftalent').toList();
+
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
@@ -81,24 +97,53 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
         const SizedBox(height: 8),
         buildGroup(
           title: 'Nahkampf-Manöver',
-          count: nahkampfManeuver.length,
-          content: _buildManeuverChipWrap(
-            maneuvers: nahkampfManeuver,
-            rules: rules,
-            activeManeuverIds: activeManeuverIds,
-            isEditing: isEditing,
+          count: nahkampfManeuver.length + epischeNahkampfSf.length,
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildManeuverChipWrap(
+                maneuvers: nahkampfManeuver,
+                rules: rules,
+                activeManeuverIds: activeManeuverIds,
+                isEditing: isEditing,
+              ),
+              if (epischeNahkampfSf.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                _buildSfChipWrap(
+                  abilities: epischeNahkampfSf,
+                  catalog: catalog,
+                  rules: rules,
+                  isEditing: isEditing,
+                ),
+              ],
+            ],
           ),
         ),
         const SizedBox(height: 8),
         buildGroup(
           title: 'Fernkampf-Manöver',
-          count: _countFernkampfEntries(fernkampfManeuver, fkTalents),
-          content: _buildFernkampfManeuverChipWrap(
-            fernkampfManeuver: fernkampfManeuver,
-            fkTalents: fkTalents,
-            rules: rules,
-            activeManeuverIds: activeManeuverIds,
-            isEditing: isEditing,
+          count: _countFernkampfEntries(fernkampfManeuver, fkTalents) +
+              epischeFernkampfSf.length,
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildFernkampfManeuverChipWrap(
+                fernkampfManeuver: fernkampfManeuver,
+                fkTalents: fkTalents,
+                rules: rules,
+                activeManeuverIds: activeManeuverIds,
+                isEditing: isEditing,
+              ),
+              if (epischeFernkampfSf.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                _buildSfChipWrap(
+                  abilities: epischeFernkampfSf,
+                  catalog: catalog,
+                  rules: rules,
+                  isEditing: isEditing,
+                ),
+              ],
+            ],
           ),
         ),
         const SizedBox(height: 8),
@@ -133,7 +178,11 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                child: _buildWaffenmeisterSection(catalog),
+                child: _buildWaffenmeisterSection(
+                  catalog,
+                  grossmeisterSf: grossmeisterSf,
+                  combatTalents: combatTalents,
+                ),
               ),
             ],
           ),
@@ -142,7 +191,11 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     );
   }
 
-  Widget _buildWaffenmeisterSection(RulesCatalog catalog) {
+  Widget _buildWaffenmeisterSection(
+    RulesCatalog catalog, {
+    required List<CombatSpecialAbilityDef> grossmeisterSf,
+    required List<TalentDef> combatTalents,
+  }) {
     final wmList = _draftCombatConfig.waffenmeisterschaften;
     final isEditing = _editController.isEditing;
 
@@ -187,44 +240,62 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
               .firstOrNull;
           final talentName = talentDef?.name ?? wm.talentId;
           final bonusCount = wm.bonuses.length;
-          return Card(
-            child: ListTile(
-              leading: const Icon(Icons.military_tech),
-              title: Text('Waffenmeister (${wm.weaponType})'),
-              subtitle: Text(
-                '$talentName · $bonusCount Boni'
-                '${wm.styleName.isNotEmpty ? ' · ${wm.styleName}' : ''}',
+          final grossmeister = grossmeisterSf
+              .where((g) => g.name == 'Waffen-Großmeister ($talentName)')
+              .firstOrNull;
+          final isGmActive = grossmeister != null &&
+              _isCatalogSfActive(grossmeister.id);
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.military_tech),
+                  title: Text('Waffenmeister (${wm.weaponType})'),
+                  subtitle: Text(
+                    '$talentName · $bonusCount Boni'
+                    '${wm.styleName.isNotEmpty ? ' · ${wm.styleName}' : ''}',
+                  ),
+                  trailing: isEditing
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              tooltip: 'Bearbeiten',
+                              onPressed: () => _openWaffenmeisterEditor(
+                                catalog: catalog,
+                                index: index,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              tooltip: 'Entfernen',
+                              onPressed: () {
+                                final next = List<WaffenmeisterConfig>.from(
+                                  wmList,
+                                )..removeAt(index);
+                                _draftCombatConfig =
+                                    _draftCombatConfig.copyWith(
+                                  waffenmeisterschaften: next,
+                                );
+                                _markFieldChanged();
+                              },
+                            ),
+                          ],
+                        )
+                      : null,
+                ),
               ),
-              trailing: isEditing
-                  ? Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          tooltip: 'Bearbeiten',
-                          onPressed: () => _openWaffenmeisterEditor(
-                            catalog: catalog,
-                            index: index,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          tooltip: 'Entfernen',
-                          onPressed: () {
-                            final next = List<WaffenmeisterConfig>.from(
-                              wmList,
-                            )..removeAt(index);
-                            _draftCombatConfig =
-                                _draftCombatConfig.copyWith(
-                              waffenmeisterschaften: next,
-                            );
-                            _markFieldChanged();
-                          },
-                        ),
-                      ],
-                    )
-                  : null,
-            ),
+              if (grossmeister != null) ...[
+                const SizedBox(height: 4),
+                _buildGrossmeisterTile(
+                  grossmeister: grossmeister,
+                  isActive: isGmActive,
+                  isEditing: isEditing,
+                ),
+              ],
+            ],
           );
         }),
       ],
@@ -437,5 +508,55 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     }
 
     return Wrap(spacing: 8, runSpacing: 8, children: chips);
+  }
+
+  Widget _buildGrossmeisterTile({
+    required CombatSpecialAbilityDef grossmeister,
+    required bool isActive,
+    required bool isEditing,
+  }) {
+    const epicColor = Color(0xFFB8860B);
+    final theme = Theme.of(context);
+    return Card(
+      color: isActive
+          ? Color.alphaBlend(
+              const Color(0x22B8860B),
+              theme.colorScheme.primaryContainer,
+            )
+          : null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isActive ? epicColor : const Color(0x66B8860B),
+          width: isActive ? 2.0 : 1.5,
+        ),
+      ),
+      child: ListTile(
+        leading: const Icon(Icons.auto_awesome, color: epicColor, size: 20),
+        title: Row(
+          children: [
+            Expanded(child: Text(grossmeister.name)),
+          ],
+        ),
+        subtitle: grossmeister.beschreibung.trim().isNotEmpty
+            ? Text(
+                grossmeister.beschreibung.trim(),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              )
+            : null,
+        trailing: Switch(
+          value: isActive,
+          onChanged: isEditing
+              ? (value) => _toggleCombatSfById(grossmeister.id, value)
+              : null,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        onTap: () => _showCombatSpecialAbilityDetailsDialog(
+          context: context,
+          ability: grossmeister,
+        ),
+      ),
+    );
   }
 }
