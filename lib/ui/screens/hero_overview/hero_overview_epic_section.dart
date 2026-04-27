@@ -1,58 +1,67 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 
 extension _HeroOverviewEpicSection on _HeroOverviewTabState {
-  /// Baut die Epischer-Status-Sektion (nur aufgerufen wenn [hero.isEpisch]).
-  Widget _buildEpicSection(HeroSheet hero) {
-    final epicLevel = computeEpicLevel(true, hero.apSpent, hero.epicStartAp);
-    final apUntilNext =
-        computeApUntilNextEpicLevel(true, hero.apSpent, hero.epicStartAp);
-    final bonus = hero.epicAttributeMaxBonus;
-
-    final bonusEntries = <String>[];
-    final attrLabels = {
-      'mu': 'Mut', 'kl': 'Klugheit', 'inn': 'Intuition', 'ch': 'Charisma',
-      'ff': 'Fingerfertigkeit', 'ge': 'Gewandtheit', 'ko': 'Konstitution',
-      'kk': 'Körperkraft',
-    };
-    for (final entry in attrLabels.entries) {
-      final val = _attrBonusValue(bonus, entry.key);
-      if (val > 0) bonusEntries.add('${entry.value} +$val');
-    }
-
+  Widget _buildEpicAdvantagesSection(HeroSheet hero) {
     final theme = Theme.of(context);
+    final advRuleActive = ref.watch(
+      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+    );
+    final disadvRuleActive = ref.watch(
+      isHouseRuleActiveProvider(EpicRuleKeys.disadvantages),
+    );
+    final hints = activeEpicMainAttributeHints(
+      ruleActive: advRuleActive,
+      isEpisch: true,
+      mainAttributes: hero.epicMainAttributes,
+    );
+
+    final labelStyle = theme.textTheme.labelMedium?.copyWith(
+      fontWeight: FontWeight.w700,
+      color: theme.colorScheme.onSurfaceVariant,
+    );
 
     return _SectionCard(
-      title: 'Epischer Status',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      title: 'Epische Vorteile und Nachteile',
+      child: _ResponsiveFieldGrid(
+        breakpoint: _standardTwoColumnBreakpoint,
         children: [
-          _buildSingleLineFieldsRow(children: [
-            _buildReadOnlyValueField(
-              key: const ValueKey<String>('overview-readonly-epic-level'),
-              label: 'Epische Stufe',
-              value: epicLevel.toString(),
-            ),
-            _buildReadOnlyValueField(
-              key: ValueKey<String>('overview-readonly-epic-ap-until-$epicLevel'),
-              label: 'AP bis Epische Stufe ${epicLevel + 1}',
-              value: apUntilNext.toString(),
-            ),
-          ]),
-          const SizedBox(height: 8),
-          Text(
-            'Eigenschafts-Obergrenzen-Bonus',
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Epische Vorteile', style: labelStyle),
+              const SizedBox(height: 4),
+              if (hints.isEmpty)
+                Text(
+                  'Keine Haupteigenschafts-Boni aktiv.',
+                  style: theme.textTheme.bodyMedium,
+                )
+              else
+                for (final hint in hints)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Text('• $hint', style: theme.textTheme.bodyMedium),
+                  ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            bonusEntries.isEmpty
-                ? 'Kein Obergrenzen-Bonus vergeben'
-                : bonusEntries.join(', '),
-            style: theme.textTheme.bodyMedium,
-          ),
+          if (disadvRuleActive)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Epische Nachteile', style: labelStyle),
+                const SizedBox(height: 4),
+                Text(
+                  '• +25 % AP-Aufschlag auf alle nicht-epischen Talente, '
+                  'Zauber und Eigenschaften',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '• Stufenboni für AsP reduziert '
+                  '(Vollzauberer +6, Halbzauberer +1 AsP)',
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ],
+            ),
         ],
       ),
     );
