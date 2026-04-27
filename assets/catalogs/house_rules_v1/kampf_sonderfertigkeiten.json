@@ -580,6 +580,7 @@
     "quelle": "Epische Stufen S. 6",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -600,6 +601,7 @@
     "quelle": "Epische Stufen S. 6",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "allgemein",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -620,6 +622,7 @@
     "quelle": "Epische Stufen S. 6",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "allgemein",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -640,6 +643,7 @@
     "quelle": "Epische Stufen S. 7",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -660,6 +664,7 @@
     "quelle": "Epische Stufen S. 7",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -680,6 +685,7 @@
     "quelle": "Epische Stufen S. 7",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -700,6 +706,7 @@
     "quelle": "Epische Stufen S. 7",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "allgemein",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -720,6 +727,7 @@
     "quelle": "Epische Stufen S. 7",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -740,6 +748,7 @@
     "quelle": "Epische Stufen S. 7",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "fernkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -760,6 +769,7 @@
     "quelle": "Epische Stufen S. 8",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "allgemein",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -781,6 +791,7 @@
     "quelle": "Epische Stufen S. 8",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -801,6 +812,7 @@
     "quelle": "Epische Stufen S. 8",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -821,6 +833,7 @@
     "quelle": "Epische Stufen S. 9",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "allgemein",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -841,6 +854,7 @@
     "quelle": "Epische Stufen S. 9",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "allgemein",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -861,6 +875,7 @@
     "quelle": "Epische Stufen S. 9",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -881,6 +896,7 @@
     "quelle": "Epische Stufen S. 9",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -901,6 +917,7 @@
     "quelle": "Epische Stufen S. 10",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -921,6 +938,7 @@
     "quelle": "Epische Stufen S. 10",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -942,6 +960,7 @@
     "quelle": "Epische Stufen S. 11",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "waffenlos",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -963,6 +982,7 @@
     "quelle": "Epische Stufen S. 12",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "waffenlos",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -984,6 +1004,7 @@
     "quelle": "Epische Stufen S. 12",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "waffenlos",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1005,6 +1026,7 @@
     "quelle": "Epische Stufen S. 12",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "waffenlos",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1026,6 +1048,7 @@
     "quelle": "Epische Stufen S. 13",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "waffenlos",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1047,6 +1070,7 @@
     "quelle": "Epische Stufen S. 14",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1068,6 +1092,7 @@
     "quelle": "Epische Stufen S. 14",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1089,6 +1114,7 @@
     "quelle": "Epische Stufen S. 15",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1110,6 +1136,7 @@
     "quelle": "Epische Stufen S. 15",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1131,6 +1158,7 @@
     "quelle": "Epische Stufen S. 15",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1152,6 +1180,7 @@
     "quelle": "Epische Stufen S. 15",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1173,6 +1202,7 @@
     "quelle": "Epische Stufen S. 15",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1194,6 +1224,7 @@
     "quelle": "Epische Stufen S. 16",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1215,6 +1246,7 @@
     "quelle": "Epische Stufen S. 17",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1236,6 +1268,7 @@
     "quelle": "Epische Stufen S. 17",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1257,6 +1290,7 @@
     "quelle": "Epische Stufen S. 17",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1278,6 +1312,7 @@
     "quelle": "Epische Stufen S. 17",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1299,6 +1334,7 @@
     "quelle": "Epische Stufen S. 17",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1320,6 +1356,7 @@
     "quelle": "Epische Stufen S. 18",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1341,6 +1378,7 @@
     "quelle": "Epische Stufen S. 18",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1362,6 +1400,7 @@
     "quelle": "Epische Stufen S. 18",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1383,6 +1422,7 @@
     "quelle": "Epische Stufen S. 18",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1404,6 +1444,7 @@
     "quelle": "Epische Stufen S. 19",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1425,6 +1466,7 @@
     "quelle": "Epische Stufen S. 19",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1446,6 +1488,7 @@
     "quelle": "Epische Stufen S. 19",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1467,6 +1510,7 @@
     "quelle": "Epische Stufen S. 19",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1488,6 +1532,7 @@
     "quelle": "Epische Stufen S. 20",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1509,6 +1554,7 @@
     "quelle": "Epische Stufen S. 20",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1530,6 +1576,7 @@
     "quelle": "Epische Stufen S. 20",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1551,6 +1598,7 @@
     "quelle": "Epische Stufen S. 20",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1572,6 +1620,7 @@
     "quelle": "Epische Stufen S. 20",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "grossmeister",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1593,6 +1642,7 @@
     "quelle": "Epische Stufen S. 21",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1614,6 +1664,7 @@
     "quelle": "Epische Stufen S. 21",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1635,6 +1686,7 @@
     "quelle": "Epische Stufen S. 21",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
@@ -1656,6 +1708,7 @@
     "quelle": "Epische Stufen S. 22",
     "hausregel": true,
     "nurEpisch": true,
+    "kampfTyp": "nahkampf",
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.combat_sf",
