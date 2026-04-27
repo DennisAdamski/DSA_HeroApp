@@ -15,7 +15,9 @@
       "Bash(git rebase *)",
       "Bash(git stash *)",
       "mcp__plugin_mempalace_mempalace__mempalace_diary_write",
-      "mcp__plugin_mempalace_mempalace__mempalace_add_drawer"
+      "mcp__plugin_mempalace_mempalace__mempalace_add_drawer",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   },
   "enableAllProjectMcpServers": true,
