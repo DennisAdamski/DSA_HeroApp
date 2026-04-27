@@ -23,8 +23,10 @@ import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_feature_flags.dart';
@@ -487,12 +489,12 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
                 _buildBaseInfoSection(hero),
                 const SizedBox(height: _sectionSpacing),
                 _buildAdvantagesSection(),
-                const SizedBox(height: _sectionSpacing),
-                _buildApSection(hero),
                 if (hero.isEpisch) ...[
                   const SizedBox(height: _sectionSpacing),
-                  _buildEpicSection(hero),
+                  _buildEpicAdvantagesSection(hero),
                 ],
+                const SizedBox(height: _sectionSpacing),
+                _buildApSection(hero),
                 if (kShowParserWarnings &&
                     hero.unknownModifierFragments.isNotEmpty) ...[
                   const SizedBox(height: _sectionSpacing),

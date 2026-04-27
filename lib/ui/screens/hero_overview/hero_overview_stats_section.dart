@@ -390,6 +390,8 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
           final key = entry.$2;
           final startValue = _valueByKey(effectiveStartAttributes, key);
           final maximumValue = _valueByKey(attributeMaximums, key);
+          final epicBonusVal =
+              _attrBonusValue(snapshot.hero.epicAttributeMaxBonus, key);
           final effective = _effectiveValueByKey(effectiveAttributes, key);
           return TableRow(
             children: [
@@ -404,7 +406,9 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               ),
               _buildAttributesComputedCell(
                 keyName: '${key}_max',
-                value: maximumValue.toString(),
+                value: epicBonusVal > 0
+                    ? '${maximumValue - epicBonusVal}+$epicBonusVal'
+                    : maximumValue.toString(),
               ),
               _buildAttributesNumericCell(
                 keyName: key,
