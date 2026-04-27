@@ -37,6 +37,11 @@ migrate_working_dir/
 /coverage/
 **/.swiftpm/
 
+# Generated plugin registrants (macOS/iOS)
+macos/Flutter/GeneratedPluginRegistrant.swift
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
+
 # Symbolication related
 app.*.symbols
 
