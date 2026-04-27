@@ -12,8 +12,6 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
 
     final epicLevel =
         computeEpicLevel(hero.isEpisch, apSpent, hero.epicStartAp);
-    final apUntilNext =
-        computeApUntilNextEpicLevel(hero.isEpisch, apSpent, hero.epicStartAp);
 
     final rowItems = <Widget>[
       _buildApValueField(
@@ -39,27 +37,22 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
         label: 'AP Verfügbar',
         value: apAvailable.toString(),
       ),
-      _buildReadOnlyValueField(
-        key: const ValueKey<String>('overview-readonly-level'),
-        label: 'Level',
-        value: level.toString(),
+      _buildLevelField(
+        level: level,
+        epicLevel: hero.isEpisch ? epicLevel : null,
       ),
-      if (hero.isEpisch) ...[
-        _buildReadOnlyValueField(
-          key: const ValueKey<String>('overview-readonly-epic-level-ap'),
-          label: 'Epische Stufe',
-          value: epicLevel.toString(),
-        ),
-        _buildReadOnlyValueField(
-          key: const ValueKey<String>('overview-readonly-epic-ap-until'),
-          label: 'AP bis nächste Epische Stufe',
-          value: apUntilNext.toString(),
-        ),
-      ],
     ];
 
     return _SectionCard(
       title: 'AP und Level',
+      titleAction: hero.isEpisch
+          ? null
+          : IconButton(
+              key: const ValueKey<String>('overview-action-epic-activate'),
+              tooltip: 'Epischen Status aktivieren',
+              icon: const Icon(Icons.auto_awesome_outlined),
+              onPressed: () => _activateEpicStatus(hero),
+            ),
       child: _buildSingleLineFieldsRow(children: rowItems),
     );
   }
@@ -162,6 +155,51 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
     dialogController.dispose();
     if (result == null || !mounted) return;
     await _applyApIncrement(targetKey: targetKey, label: label, increment: result);
+  }
+
+  Widget _buildLevelField({required int level, required int? epicLevel}) {
+    if (epicLevel == null) {
+      return _buildReadOnlyValueField(
+        key: const ValueKey<String>('overview-readonly-level'),
+        label: 'Level',
+        value: level.toString(),
+      );
+    }
+    final theme = Theme.of(context);
+    return Column(
+      key: const ValueKey<String>('overview-readonly-level'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Level',
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              iconSize: 14,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+              tooltip: 'Links: Normales Level | Rechts: Epische Stufe',
+              icon: Icon(
+                Icons.info_outline,
+                size: 14,
+                color: theme.colorScheme.primary,
+              ),
+              onPressed: null,
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text('$level / $epicLevel'),
+      ],
+    );
   }
 
   Widget _buildSingleLineFieldsRow({

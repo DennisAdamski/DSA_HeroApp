@@ -13,6 +13,7 @@ class CombatSpecialAbilityDef {
     this.gruppe = 'kampf',
     this.typ = 'sonderfertigkeit',
     this.stilTyp = '',
+    this.kampfTyp = '',
     this.seite = '',
     this.beschreibung = '',
     this.erklarungLang = '',
@@ -32,6 +33,7 @@ class CombatSpecialAbilityDef {
   final String gruppe; // Obergruppe, aktuell meist 'kampf'
   final String typ; // Typisierung, aktuell 'sonderfertigkeit'
   final String stilTyp; // Optionaler Stiltyp, z. B. 'waffenloser_kampfstil'
+  final String kampfTyp; // Kampfkategorie für epische SF: 'nahkampf', 'fernkampf', 'allgemein', 'waffenlos', 'grossmeister'
   final String seite; // Seitenreferenz im Regelwerk
   final String beschreibung; // Kurze Beschreibung
   final String erklarungLang; // Ausfuehrliche Regelbeschreibung
@@ -58,6 +60,7 @@ class CombatSpecialAbilityDef {
       gruppe: readCatalogString(json, 'gruppe', fallback: 'kampf'),
       typ: readCatalogString(json, 'typ', fallback: 'sonderfertigkeit'),
       stilTyp: readCatalogString(json, 'stil_typ', fallback: ''),
+      kampfTyp: readCatalogString(json, 'kampfTyp', fallback: ''),
       seite: readCatalogString(json, 'seite', fallback: ''),
       beschreibung: readCatalogString(json, 'beschreibung', fallback: ''),
       erklarungLang: readCatalogString(json, 'erklarung_lang', fallback: ''),
@@ -91,6 +94,7 @@ class CombatSpecialAbilityDef {
       'gruppe': gruppe,
       'typ': typ,
       'stil_typ': stilTyp,
+      if (kampfTyp.isNotEmpty) 'kampfTyp': kampfTyp,
       'seite': seite,
       'beschreibung': beschreibung,
       'erklarung_lang': erklarungLang,
