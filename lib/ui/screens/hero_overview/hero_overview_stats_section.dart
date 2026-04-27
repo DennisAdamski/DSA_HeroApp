@@ -201,6 +201,8 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                       children: [
                         _buildAttributesTableLabelCell(
                           debugModus ? entry.variableName : entry.label,
+                          '',
+                          false,
                         ),
                         _buildDerivedValueCell(
                           value:
@@ -388,11 +390,15 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
           final key = entry.$2;
           final startValue = _valueByKey(effectiveStartAttributes, key);
           final maximumValue = _valueByKey(attributeMaximums, key);
+          final epicBonusVal =
+              _attrBonusValue(snapshot.hero.epicAttributeMaxBonus, key);
           final effective = _effectiveValueByKey(effectiveAttributes, key);
           return TableRow(
             children: [
               _buildAttributesTableLabelCell(
                 attrDebugModus ? entry.$2 : entry.$1,
+                key,
+                _attrBonusValue(snapshot.hero.epicMainAttributes, key) > 0,
               ),
               _buildAttributesComputedCell(
                 keyName: '${key}_start',
@@ -400,7 +406,9 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               ),
               _buildAttributesComputedCell(
                 keyName: '${key}_max',
-                value: maximumValue.toString(),
+                value: epicBonusVal > 0
+                    ? '${maximumValue - epicBonusVal}+$epicBonusVal'
+                    : maximumValue.toString(),
               ),
               _buildAttributesNumericCell(
                 keyName: key,
@@ -457,10 +465,64 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     );
   }
 
-  Widget _buildAttributesTableLabelCell(String text) {
+  /// Baut die Label-Zelle für eine Eigenschaft.
+  ///
+  /// Wenn [showEpicBonus] gesetzt ist (d. h. diese Eigenschaft ist die
+  /// gewählte Haupteigenschaft des epischen Helden), wird ein ⓘ-Icon
+  /// angehängt, das den aktiven Bonus beim Antippen erklärt.
+  Widget _buildAttributesTableLabelCell(
+    String text,
+    String attrKey,
+    bool showEpicBonus,
+  ) {
+    final theme = Theme.of(context);
+    if (!showEpicBonus) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
+        child: Text(text, style: theme.textTheme.titleSmall),
+      );
+    }
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
-      child: Text(text, style: Theme.of(context).textTheme.titleSmall),
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Text(text, style: theme.textTheme.titleSmall),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 14,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+            tooltip: 'Epischer Haupteigenschafts-Bonus',
+            icon: Icon(
+              Icons.info_outline,
+              size: 14,
+              color: theme.colorScheme.primary,
+            ),
+            onPressed: () => _showEpicAttrBonusInfo(attrKey, text),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Öffnet einen Dialog mit dem epischen Haupteigenschafts-Bonus für [attrKey].
+  void _showEpicAttrBonusInfo(String attrKey, String label) {
+    final description = epicMainAttributeBonusDescriptions[attrKey] ?? '';
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('$label – Epischer Haupteigenschafts-Bonus'),
+        content: Text(description),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
   }
 

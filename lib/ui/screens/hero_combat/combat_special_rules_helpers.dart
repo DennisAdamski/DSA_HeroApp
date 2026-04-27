@@ -144,6 +144,7 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
             beschreibung: beschreibung,
             isActive: isActive,
             isEditing: isEditing,
+            isEpic: ability.nurEpisch,
             onToggle: (value) => _toggleCombatSfById(ability.id, value),
             onNameTap: () => _showCombatSpecialAbilityDetailsDialog(
               context: context,
@@ -390,6 +391,7 @@ class _CombatRuleChip extends StatelessWidget {
     required this.isEditing,
     required this.onToggle,
     required this.onNameTap,
+    this.isEpic = false,
   });
 
   final String name;
@@ -398,20 +400,30 @@ class _CombatRuleChip extends StatelessWidget {
   final bool isEditing;
   final ValueChanged<bool>? onToggle;
   final VoidCallback onNameTap;
+  final bool isEpic;
+
+  static const _epicColor = Color(0xFFB8860B); // goldenrod
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final borderColor = isEpic
+        ? _epicColor
+        : (isActive ? colorScheme.primary : theme.dividerColor);
+    final bgColor = isActive
+        ? (isEpic
+            ? Color.alphaBlend(
+                const Color(0x22B8860B), colorScheme.primaryContainer)
+            : colorScheme.primaryContainer)
+        : colorScheme.surfaceContainerHighest;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       decoration: BoxDecoration(
-        color: isActive
-            ? colorScheme.primaryContainer
-            : colorScheme.surfaceContainerHighest,
+        color: bgColor,
         border: Border.all(
-          color: isActive ? colorScheme.primary : theme.dividerColor,
-          width: isActive ? 2.0 : 1.0,
+          color: borderColor,
+          width: isActive || isEpic ? 2.0 : 1.0,
         ),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -427,14 +439,30 @@ class _CombatRuleChip extends StatelessWidget {
                 InkWell(
                   onTap: onNameTap,
                   borderRadius: BorderRadius.circular(4),
-                  child: Text(
-                    name,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: isActive ? colorScheme.primary : null,
-                      decoration: TextDecoration.underline,
-                      decorationColor:
-                          isActive ? colorScheme.primary : theme.hintColor,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isEpic) ...[
+                        const Icon(
+                          Icons.auto_awesome,
+                          size: 13,
+                          color: _epicColor,
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                      Flexible(
+                        child: Text(
+                          name,
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: isActive ? colorScheme.primary : null,
+                            decoration: TextDecoration.underline,
+                            decorationColor: isActive
+                                ? colorScheme.primary
+                                : theme.hintColor,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 if (beschreibung.trim().isNotEmpty)
