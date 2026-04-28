@@ -10,7 +10,7 @@ const double _tabletLandscapeCommandDeckWidth = 200;
 const double _desktopWideCommandDeckWidth = 248;
 
 /// Standardbreite des permanenten Inspectors im iPad-Landscape-Layout.
-const double _tabletLandscapeInspectorWidth = 220;
+const double _tabletLandscapeInspectorWidth = 260;
 
 /// Standardbreite des permanenten Inspectors auf sehr breiten Screens.
 const double _desktopWideInspectorWidth = 320;

@@ -377,8 +377,7 @@ class _WundZoneCompactRow extends StatelessWidget {
       height: 28,
       child: Row(
         children: [
-          SizedBox(
-            width: 72,
+          Expanded(
             child: Text(
               label,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -386,6 +385,8 @@ class _WundZoneCompactRow extends StatelessWidget {
                 color: kritisch ? Theme.of(context).colorScheme.error : null,
               ),
               overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              softWrap: false,
             ),
           ),
           for (var i = 0; i < maxWundenProZone; i++)
@@ -401,7 +402,7 @@ class _WundZoneCompactRow extends StatelessWidget {
                         : Theme.of(context).colorScheme.outlineVariant,
               ),
             ),
-          const Spacer(),
+          const SizedBox(width: 6),
           SizedBox(
             width: 24,
             height: 24,
