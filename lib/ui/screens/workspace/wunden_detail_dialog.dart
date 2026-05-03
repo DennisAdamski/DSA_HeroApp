@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
@@ -11,7 +12,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_detail_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_ini_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_unterdrueckung_dialog.dart';
@@ -50,25 +51,36 @@ class _WundenDetailDialog extends ConsumerWidget {
     final wundschwelle = computed.wundschwelle;
     final wundschwellenStufen = computed.wundschwellenStufen;
 
-    Future<void> speichereWundZustand(WundZustand neuerZustand) async {
-      await ref
-          .read(heroActionsProvider)
-          .saveHeroState(heroId, heroState.copyWith(wpiZustand: neuerZustand));
+    Future<void> speichereWundZustand(
+      WundZustand neuerZustand, {
+      List<DiceLogEntry> diceLogEntries = const <DiceLogEntry>[],
+    }) async {
+      final baseState =
+          ref.read(heroStateProvider(heroId)).valueOrNull ?? heroState;
+      final nextState = baseState
+          .copyWith(wpiZustand: neuerZustand)
+          .withAppendedDiceLogEntries(diceLogEntries);
+      await ref.read(heroActionsProvider).saveHeroState(heroId, nextState);
     }
 
     Future<void> wundeHinzufuegen(WundZone zone) async {
       if (wpiZustand.wundenInZone(zone) >= maxWundenProZone) return;
 
       WundZustand neuerZustand;
+      var diceLogEntries = const <DiceLogEntry>[];
       if (zone == WundZone.kopf) {
-        final iniWert = await showWundIniDialog(context);
-        if (iniWert == null || !context.mounted) return;
-        neuerZustand = wpiZustand.mitWundeHinzu(zone, iniWuerfelWert: iniWert);
+        final iniResult = await showWundIniDialog(context);
+        if (iniResult == null || !context.mounted) return;
+        neuerZustand = wpiZustand.mitWundeHinzu(
+          zone,
+          iniWuerfelWert: iniResult.value,
+        );
+        diceLogEntries = <DiceLogEntry>[iniResult.logEntry];
       } else {
         neuerZustand = wpiZustand.mitWundeHinzu(zone);
       }
 
-      await speichereWundZustand(neuerZustand);
+      await speichereWundZustand(neuerZustand, diceLogEntries: diceLogEntries);
 
       if (!context.mounted) return;
       final effekte = computeWundEffekte(neuerZustand);
@@ -78,6 +90,8 @@ class _WundenDetailDialog extends ConsumerWidget {
         wpiZustand: neuerZustand,
         zone: zone,
         wundEffekte: effekte,
+        ref: ref,
+        heroId: heroId,
       );
       if (unterdruecken == true) {
         final aktUnterdrueckt = neuerZustand.unterdrueckteInZone(zone);
@@ -208,6 +222,8 @@ class _WundenDetailDialog extends ConsumerWidget {
               if (wpiZustand.gesamtWunden > 0) ...[
                 const Divider(height: 24),
                 _SbProbeSection(
+                  ref: ref,
+                  heroId: heroId,
                   hero: hero,
                   wpiZustand: wpiZustand,
                   wundEffekte: wundEffekte,
@@ -342,11 +358,15 @@ class _WundschwellenStufenText extends StatelessWidget {
 
 class _SbProbeSection extends StatelessWidget {
   const _SbProbeSection({
+    required this.ref,
+    required this.heroId,
     required this.hero,
     required this.wpiZustand,
     required this.wundEffekte,
   });
 
+  final WidgetRef ref;
+  final String heroId;
   final dynamic hero;
   final WundZustand wpiZustand;
   final WundEffekte wundEffekte;
@@ -406,8 +426,10 @@ class _SbProbeSection extends StatelessWidget {
                         ),
                       )
                       .toList();
-                  showProbeDialog(
+                  showLoggedProbeDialog(
                     context: context,
+                    ref: ref,
+                    heroId: heroId,
                     request: buildTalentProbeRequest(
                       title: 'Selbstbeherrschung (Wunde unterdrücken)',
                       targets: targets,

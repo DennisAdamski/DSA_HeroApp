@@ -7,7 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dar
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/resource_stepper_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wunden_detail_dialog.dart';
@@ -104,8 +104,10 @@ class WorkspaceHeaderStatRail extends ConsumerWidget {
     }
 
     VoidCallback attributeTap(String label, int value) {
-      return () => showProbeDialog(
+      return () => showLoggedProbeDialog(
         context: context,
+        ref: ref,
+        heroId: heroId,
         request: buildAttributeProbeRequest(
           label: label,
           effectiveValue: value,
@@ -249,10 +251,10 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
         final mode = available >= t1
             ? _StatRailMode.full
             : available >= t2
-                ? _StatRailMode.dense
-                : available >= _kWrappedMinWidth
-                    ? _StatRailMode.wrapped
-                    : _StatRailMode.dense;
+            ? _StatRailMode.dense
+            : available >= _kWrappedMinWidth
+            ? _StatRailMode.wrapped
+            : _StatRailMode.dense;
         return _buildLayout(context, mode);
       },
     );
@@ -295,7 +297,9 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
 
   Widget _buildWrapped(BuildContext context) {
     final attrItems = items.sublist(0, items.length < 8 ? items.length : 8);
-    final vitalItems = items.length > 8 ? items.sublist(8) : <_WorkspaceHeaderStatItem>[];
+    final vitalItems = items.length > 8
+        ? items.sublist(8)
+        : <_WorkspaceHeaderStatItem>[];
 
     return Column(
       mainAxisSize: MainAxisSize.min,

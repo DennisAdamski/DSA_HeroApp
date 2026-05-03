@@ -1,7 +1,20 @@
-part of 'workspace_inspector_panel.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class _StatuswerteCard extends ConsumerWidget {
-  const _StatuswerteCard({
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_value_row.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
+
+/// Kompakte Statuswerte-Karte fuer den Vitals-Tab.
+///
+/// Bedienbar: Ini, GS, AW, PA, AT, RS, BE. MR ist read-only.
+class InspectorStatuswerteBlock extends ConsumerWidget {
+  const InspectorStatuswerteBlock({
+    super.key,
     required this.heroId,
     required this.hero,
     required this.derived,
@@ -27,11 +40,11 @@ class _StatuswerteCard extends ConsumerWidget {
     final manualBeModifier = activeTalentBe - combat.beKampf;
     return CodexSectionCard(
       title: 'Statuswerte',
-      subtitle: 'Kampf-, Abwehr- und Bewegungswerte im Schnellzugriff',
+      subtitle: 'Schnellzugriff',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _InspectorValueRow(
+          InspectorValueRow(
             key: const ValueKey<String>('workspace-status-row-Ini'),
             label: 'Ini',
             modifier: mods.iniBase,
@@ -45,75 +58,79 @@ class _StatuswerteCard extends ConsumerWidget {
                 : null,
           ),
           const SizedBox(height: 6),
-          _InspectorValueRow(
+          InspectorValueRow(
             key: const ValueKey<String>('workspace-status-row-GS'),
             label: 'GS',
             modifier: mods.gs,
             result: derived.gs,
-            onDecrement: () => _saveMods(ref, mods.copyWith(gs: mods.gs - 1)),
-            onIncrement: () => _saveMods(ref, mods.copyWith(gs: mods.gs + 1)),
-            onReset: mods.gs != 0
-                ? () => _saveMods(ref, mods.copyWith(gs: 0))
-                : null,
+            onDecrement: () =>
+                _saveMods(ref, mods.copyWith(gs: mods.gs - 1)),
+            onIncrement: () =>
+                _saveMods(ref, mods.copyWith(gs: mods.gs + 1)),
+            onReset:
+                mods.gs != 0 ? () => _saveMods(ref, mods.copyWith(gs: 0)) : null,
           ),
           const SizedBox(height: 6),
-          _InspectorValueRow(
+          InspectorValueRow(
             key: const ValueKey<String>('workspace-status-row-AW'),
             label: 'AW',
             modifier: mods.ausweichen,
             result: combat.ausweichen,
-            onDecrement: () =>
-                _saveMods(ref, mods.copyWith(ausweichen: mods.ausweichen - 1)),
-            onIncrement: () =>
-                _saveMods(ref, mods.copyWith(ausweichen: mods.ausweichen + 1)),
+            onDecrement: () => _saveMods(
+                ref, mods.copyWith(ausweichen: mods.ausweichen - 1)),
+            onIncrement: () => _saveMods(
+                ref, mods.copyWith(ausweichen: mods.ausweichen + 1)),
             onReset: mods.ausweichen != 0
                 ? () => _saveMods(ref, mods.copyWith(ausweichen: 0))
                 : null,
           ),
           const SizedBox(height: 6),
-          _InspectorValueRow(
+          InspectorValueRow(
             key: const ValueKey<String>('workspace-status-row-PA'),
             label: 'PA',
             modifier: mods.pa,
             result: combat.pa,
-            onDecrement: () => _saveMods(ref, mods.copyWith(pa: mods.pa - 1)),
-            onIncrement: () => _saveMods(ref, mods.copyWith(pa: mods.pa + 1)),
-            onReset: mods.pa != 0
-                ? () => _saveMods(ref, mods.copyWith(pa: 0))
-                : null,
+            onDecrement: () =>
+                _saveMods(ref, mods.copyWith(pa: mods.pa - 1)),
+            onIncrement: () =>
+                _saveMods(ref, mods.copyWith(pa: mods.pa + 1)),
+            onReset:
+                mods.pa != 0 ? () => _saveMods(ref, mods.copyWith(pa: 0)) : null,
           ),
           const SizedBox(height: 6),
-          _InspectorValueRow(
+          InspectorValueRow(
             key: const ValueKey<String>('workspace-status-row-AT'),
             label: 'AT',
             modifier: mods.at,
             result: combat.at,
-            onDecrement: () => _saveMods(ref, mods.copyWith(at: mods.at - 1)),
-            onIncrement: () => _saveMods(ref, mods.copyWith(at: mods.at + 1)),
-            onReset: mods.at != 0
-                ? () => _saveMods(ref, mods.copyWith(at: 0))
-                : null,
+            onDecrement: () =>
+                _saveMods(ref, mods.copyWith(at: mods.at - 1)),
+            onIncrement: () =>
+                _saveMods(ref, mods.copyWith(at: mods.at + 1)),
+            onReset:
+                mods.at != 0 ? () => _saveMods(ref, mods.copyWith(at: 0)) : null,
           ),
           const SizedBox(height: 6),
-          _ReadOnlyValueRow(
+          InspectorReadOnlyValueRow(
             key: const ValueKey<String>('workspace-status-row-MR'),
             label: 'MR',
             value: derived.mr,
           ),
           const SizedBox(height: 6),
-          _InspectorValueRow(
+          InspectorValueRow(
             key: const ValueKey<String>('workspace-status-row-RS'),
             label: 'RS',
             modifier: mods.rs,
             result: combat.rsTotal,
-            onDecrement: () => _saveMods(ref, mods.copyWith(rs: mods.rs - 1)),
-            onIncrement: () => _saveMods(ref, mods.copyWith(rs: mods.rs + 1)),
-            onReset: mods.rs != 0
-                ? () => _saveMods(ref, mods.copyWith(rs: 0))
-                : null,
+            onDecrement: () =>
+                _saveMods(ref, mods.copyWith(rs: mods.rs - 1)),
+            onIncrement: () =>
+                _saveMods(ref, mods.copyWith(rs: mods.rs + 1)),
+            onReset:
+                mods.rs != 0 ? () => _saveMods(ref, mods.copyWith(rs: 0)) : null,
           ),
           const SizedBox(height: 6),
-          _InspectorValueRow(
+          InspectorValueRow(
             key: const ValueKey<String>('workspace-status-row-be'),
             label: 'BE',
             modifier: manualBeModifier,

@@ -154,8 +154,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                 label: 'Kampf-INI',
                 value: preview.kampfInitiative.toString(),
                 icon: Icons.flash_on_outlined,
-                onTap: () => showProbeDialog(
+                onTap: () => showLoggedProbeDialog(
                   context: context,
+                  ref: ref,
+                  heroId: widget.heroId,
                   request: buildInitiativeProbeRequest(
                     title: 'Initiativwurf',
                     diceSpec: preview.initiativeDiceSpec,
@@ -170,8 +172,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                 label: 'Ausweichen',
                 value: preview.ausweichen.toString(),
                 icon: Icons.directions_run_outlined,
-                onTap: () => showProbeDialog(
+                onTap: () => showLoggedProbeDialog(
                   context: context,
+                  ref: ref,
+                  heroId: widget.heroId,
                   request: buildCombatCheckProbeRequest(
                     type: ProbeType.dodge,
                     title: 'Kampfprobe: Ausweichen',
@@ -218,8 +222,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                 value: preview.at.toString(),
                 icon: Icons.gps_fixed,
                 highlight: true,
-                onTap: () => showProbeDialog(
+                onTap: () => showLoggedProbeDialog(
                   context: context,
+                  ref: ref,
+                  heroId: widget.heroId,
                   request: buildCombatCheckProbeRequest(
                     type: ProbeType.combatAttack,
                     title: 'Kampfprobe: AT',
@@ -235,8 +241,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   label: 'PA',
                   value: preview.paMitIniParadeMod.toString(),
                   icon: Icons.shield_outlined,
-                  onTap: () => showProbeDialog(
+                  onTap: () => showLoggedProbeDialog(
                     context: context,
+                    ref: ref,
+                    heroId: widget.heroId,
                     request: buildCombatCheckProbeRequest(
                       type: ProbeType.combatParry,
                       title: 'Kampfprobe: PA',
@@ -251,8 +259,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                 label: 'TP',
                 value: preview.tpExpression,
                 icon: Icons.whatshot_outlined,
-                onTap: () => showProbeDialog(
+                onTap: () => showLoggedProbeDialog(
                   context: context,
+                  ref: ref,
+                  heroId: widget.heroId,
                   request: buildDamageProbeRequest(
                     title: 'Schadenswurf',
                     diceSpec: preview.damageDiceSpec,
@@ -349,8 +359,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   label: 'AT',
                   value: offhandPreview.at.toString(),
                   icon: Icons.gps_fixed,
-                  onTap: () => showProbeDialog(
+                  onTap: () => showLoggedProbeDialog(
                     context: context,
+                    ref: ref,
+                    heroId: widget.heroId,
                     request: buildCombatCheckProbeRequest(
                       type: ProbeType.combatAttack,
                       title: 'Kampfprobe: AT (NH)',
@@ -368,8 +380,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                       (offhandPreview.paMitIniParadeMod ?? offhandPreview.pa!)
                           .toString(),
                   icon: Icons.shield_outlined,
-                  onTap: () => showProbeDialog(
+                  onTap: () => showLoggedProbeDialog(
                     context: context,
+                    ref: ref,
+                    heroId: widget.heroId,
                     request: buildCombatCheckProbeRequest(
                       type: ProbeType.combatParry,
                       title: 'Kampfprobe: PA (NH)',
@@ -389,8 +403,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   icon: Icons.whatshot_outlined,
                   onTap: offhandPreview.damageDiceSpec == null
                       ? null
-                      : () => showProbeDialog(
+                      : () => showLoggedProbeDialog(
                           context: context,
+                          ref: ref,
+                          heroId: widget.heroId,
                           request: buildDamageProbeRequest(
                             title: 'Schadenswurf (NH)',
                             diceSpec: offhandPreview.damageDiceSpec!,
@@ -479,8 +495,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
               label: 'Schild-PA',
               value: offhandPreview.shieldPa.toString(),
               icon: Icons.shield,
-              onTap: () => showProbeDialog(
+              onTap: () => showLoggedProbeDialog(
                 context: context,
+                ref: ref,
+                heroId: widget.heroId,
                 request: buildCombatCheckProbeRequest(
                   type: ProbeType.combatParry,
                   title: 'Kampfprobe: Schild-PA',

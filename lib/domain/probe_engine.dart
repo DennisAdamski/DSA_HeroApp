@@ -1,5 +1,6 @@
 /// Gemeinsame Probearten fuer die Wuerfel-Engine.
 enum ProbeType {
+  genericRoll,
   attribute,
   talent,
   spell,
@@ -19,11 +20,7 @@ enum ProbeRollMode { digital, manual }
 /// Rohbeschreibung eines Wuerfelpools wie `3W20` oder `2W6+4`.
 class DiceSpec {
   /// Erzeugt eine immutable Wuerfelbeschreibung.
-  const DiceSpec({
-    required this.count,
-    required this.sides,
-    this.modifier = 0,
-  });
+  const DiceSpec({required this.count, required this.sides, this.modifier = 0});
 
   /// Anzahl der zu wuerfelnden Wuerfel.
   final int count;

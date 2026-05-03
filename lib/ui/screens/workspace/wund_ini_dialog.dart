@@ -3,13 +3,26 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
+
+/// Ergebnis des Kopfwunden-INI-Dialogs inklusive Protokolleintrag.
+class WundIniDialogResult {
+  const WundIniDialogResult({required this.value, required this.logEntry});
+
+  /// Gewuerfelter oder manuell eingegebener INI-Malus.
+  final int value;
+
+  /// Eintrag fuer das Wuerfelprotokoll.
+  final DiceLogEntry logEntry;
+}
+
 /// Leichtgewichtiger Dialog zum Wuerfeln oder manuellen Eingeben
 /// des 2W6-INI-Malus bei einer neuen Kopfwunde.
 ///
 /// Gibt den gewuerfelten oder eingegebenen Wert (2-12) zurueck,
 /// oder `null` bei Abbruch.
-Future<int?> showWundIniDialog(BuildContext context) {
-  return showDialog<int>(
+Future<WundIniDialogResult?> showWundIniDialog(BuildContext context) {
+  return showDialog<WundIniDialogResult>(
     context: context,
     builder: (_) => const _WundIniDialog(),
   );
@@ -26,6 +39,7 @@ class _WundIniDialogState extends State<_WundIniDialog> {
   static final _rng = Random();
 
   int? _ergebnis;
+  List<int>? _digitalDiceValues;
   bool _manuell = false;
   final _controller = TextEditingController();
 
@@ -40,6 +54,7 @@ class _WundIniDialogState extends State<_WundIniDialog> {
     final w2 = _rng.nextInt(6) + 1;
     setState(() {
       _ergebnis = w1 + w2;
+      _digitalDiceValues = <int>[w1, w2];
       _manuell = false;
     });
   }
@@ -48,8 +63,24 @@ class _WundIniDialogState extends State<_WundIniDialog> {
     setState(() {
       _manuell = true;
       _ergebnis = null;
+      _digitalDiceValues = null;
       _controller.clear();
     });
+  }
+
+  WundIniDialogResult _buildResult(int value) {
+    final diceValues = _manuell
+        ? <int>[value]
+        : List<int>.unmodifiable(_digitalDiceValues ?? <int>[value]);
+    return WundIniDialogResult(
+      value: value,
+      logEntry: diceLogEntryFromRoll(
+        title: 'Kopfwunde: INI-Malus',
+        subtitle: _manuell ? '2W6 manuell' : '2W6',
+        diceValues: diceValues,
+        total: value,
+      ),
+    );
   }
 
   @override
@@ -111,7 +142,7 @@ class _WundIniDialogState extends State<_WundIniDialog> {
         ),
         FilledButton(
           onPressed: _ergebnis != null
-              ? () => Navigator.of(context).pop<int>(_ergebnis)
+              ? () => Navigator.of(context).pop(_buildResult(_ergebnis!))
               : null,
           child: const Text('Übernehmen'),
         ),
