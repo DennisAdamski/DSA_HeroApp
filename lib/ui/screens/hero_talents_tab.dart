@@ -31,7 +31,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents/combat_specialization_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_table_cell.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';

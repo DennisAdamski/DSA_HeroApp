@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
 
@@ -109,6 +110,74 @@ void main() {
     );
   });
 
+  testWidgets('onResolved feuert nach digitalem Wurf genau einmal', (
+    tester,
+  ) async {
+    final fired = <ProbeResult>[];
+
+    await tester.pumpWidget(
+      _wrap(ProbeDialog(request: _kAttrRequest, onResolved: fired.add)),
+    );
+    await tester.pumpAndSettle();
+
+    await _rollMainProbe(tester);
+
+    expect(fired, hasLength(1));
+    expect(fired.single.request.type, ProbeType.attribute);
+  });
+
+  testWidgets(
+    'onResolved feuert nicht, wenn nur der Modifikator geändert wird',
+    (tester) async {
+      final fired = <ProbeResult>[];
+
+      await tester.pumpWidget(
+        _wrap(ProbeDialog(request: _kAttrRequest, onResolved: fired.add)),
+      );
+      await tester.pumpAndSettle();
+
+      await _rollMainProbe(tester);
+      expect(fired, hasLength(1));
+
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('probe-dialog-modifier')),
+        '-2',
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        fired,
+        hasLength(1),
+        reason: 'live refresh darf den Logeintrag nicht erneut auslösen',
+      );
+    },
+  );
+
+  testWidgets('onResolved feuert im manuellen Modus nach Auswerten', (
+    tester,
+  ) async {
+    final fired = <ProbeResult>[];
+
+    await tester.pumpWidget(
+      _wrap(ProbeDialog(request: _kAttrRequest, onResolved: fired.add)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Manuell'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('probe-dialog-die-0')),
+      '7',
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Auswerten'));
+    await tester.pumpAndSettle();
+
+    expect(fired, hasLength(1));
+    expect(fired.single.input.mode, ProbeRollMode.manual);
+  });
+
   testWidgets(
     'Schadenswurf zeigt Trefferzonen-Stepper und keinen gezielten Schlag mehr',
     (tester) async {
@@ -141,6 +210,40 @@ void main() {
       expect(find.text('2W6 würfeln'), findsOneWidget);
     },
   );
+
+  testWidgets('onDiceLogEntry feuert fuer Trefferzone und Zusatzwurf', (
+    tester,
+  ) async {
+    final fired = <DiceLogEntry>[];
+
+    await tester.pumpWidget(
+      _wrap(
+        ProbeDialog(
+          request: _kDamageRequest,
+          rollTrefferzone: _rollBrust,
+          onDiceLogEntry: fired.add,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _rollMainProbe(tester);
+    await _rollTrefferzone(tester);
+
+    expect(fired, hasLength(1));
+    expect(fired.single.title, 'Trefferzone');
+    expect(fired.single.isNeutral, isTrue);
+
+    await tester.ensureVisible(find.text('1W6 würfeln'));
+    await tester.tap(find.text('1W6 würfeln'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 1600));
+    await tester.pumpAndSettle();
+
+    expect(fired, hasLength(2));
+    expect(fired.last.title, 'Extraschaden');
+    expect(fired.last.isNeutral, isTrue);
+  });
 }
 
 int _rollBrust() => 15;

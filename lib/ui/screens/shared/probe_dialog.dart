@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/trefferzonen.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
@@ -16,23 +17,46 @@ import 'package:dsa_heldenverwaltung/ui/widgets/animated_dice_row.dart';
 Future<void> showProbeDialog({
   required BuildContext context,
   required ResolvedProbeRequest request,
+  void Function(ProbeResult result)? onResolved,
+  void Function(DiceLogEntry entry)? onDiceLogEntry,
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
-    builder: (_) => ProbeDialog(request: request),
+    builder: (_) => ProbeDialog(
+      request: request,
+      onResolved: onResolved,
+      onDiceLogEntry: onDiceLogEntry,
+    ),
   );
 }
 
 /// Gemeinsamer Dialog fuer digitale und manuelle Probeauswertung.
 class ProbeDialog extends StatefulWidget {
   /// Erzeugt den Dialog fuer eine vollstaendig aufgeloeste Probe.
-  const ProbeDialog({super.key, required this.request, this.rollTrefferzone});
+  const ProbeDialog({
+    super.key,
+    required this.request,
+    this.rollTrefferzone,
+    this.onResolved,
+    this.onDiceLogEntry,
+  });
 
   /// Aufgeloeste Probe inklusive Zielwerte und Wuerfelkonfiguration.
   final ResolvedProbeRequest request;
 
   /// Optionale Test-Hook fuer deterministische Trefferzonen-Wuerfe.
   final int Function()? rollTrefferzone;
+
+  /// Wird einmalig pro abgeschlossener Probe aufgerufen.
+  ///
+  /// Feuert nach einem digitalen Wurf (Animation beendet), nach dem Klick
+  /// auf "Auswerten" im manuellen Modus und beim festen Wurf
+  /// (`fixedRollTotal`). Reine Modifikator-Aenderungen ("live refresh")
+  /// loesen keinen Aufruf aus.
+  final void Function(ProbeResult result)? onResolved;
+
+  /// Wird fuer Nebenwuerfe innerhalb des Dialogs aufgerufen.
+  final void Function(DiceLogEntry entry)? onDiceLogEntry;
 
   @override
   State<ProbeDialog> createState() => _ProbeDialogState();
@@ -52,6 +76,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
 
   TrefferzonenErgebnis? _trefferzonenErgebnis;
   TrefferzonenErgebnis? _pendingTrefferzonenErgebnis;
+  int? _pendingTrefferzonenRoll;
   bool _isTrefferzonenAnimating = false;
   int _trefferzonenWunden = 1;
 
@@ -99,6 +124,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
       setState(() {
         _result = evaluateProbe(widget.request, input);
       });
+      _notifyResolved();
       return;
     }
 
@@ -123,6 +149,15 @@ class _ProbeDialogState extends State<ProbeDialog> {
     setState(() {
       _isAnimating = false;
     });
+    _notifyResolved();
+  }
+
+  /// Feuert `onResolved` einmalig fuer das aktuelle Ergebnis.
+  void _notifyResolved() {
+    final result = _result;
+    final callback = widget.onResolved;
+    if (result == null || callback == null) return;
+    callback(result);
   }
 
   /// Wertet den letzten Digitalwurf mit den aktuellen Modifikatoren aus.
@@ -207,6 +242,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
       return;
     }
     _updateManualResult();
+    _notifyResolved();
   }
 
   int _nextTrefferzonenRoll() =>
@@ -234,15 +270,29 @@ class _ProbeDialogState extends State<ProbeDialog> {
     });
     _trefferzonenDiceController.startRoll([roll]);
     _pendingTrefferzonenErgebnis = ergebnis;
+    _pendingTrefferzonenRoll = roll;
   }
 
   void _onTrefferzonenRollComplete() {
     if (!mounted) return;
+    final ergebnis = _pendingTrefferzonenErgebnis;
+    final roll = _pendingTrefferzonenRoll;
     setState(() {
       _isTrefferzonenAnimating = false;
-      _trefferzonenErgebnis = _pendingTrefferzonenErgebnis;
+      _trefferzonenErgebnis = ergebnis;
       _pendingTrefferzonenErgebnis = null;
+      _pendingTrefferzonenRoll = null;
     });
+    if (ergebnis != null && roll != null) {
+      widget.onDiceLogEntry?.call(
+        diceLogEntryFromRoll(
+          title: 'Trefferzone',
+          subtitle: ergebnis.label,
+          diceValues: <int>[roll],
+          diceSpec: _trefferzonenDiceSpec,
+        ),
+      );
+    }
   }
 
   void _resetTrefferzone() {
@@ -250,6 +300,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
     _trefferzonenWunden = 1;
     _trefferzonenErgebnis = null;
     _pendingTrefferzonenErgebnis = null;
+    _pendingTrefferzonenRoll = null;
     _isTrefferzonenAnimating = false;
   }
 
@@ -527,6 +578,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
                     'trefferzonen-zusatz-${zusatzwurf.label}-${zusatzwurf.diceSpec.label}',
                   ),
                   zusatzwurf: zusatzwurf,
+                  onDiceLogEntry: widget.onDiceLogEntry,
                 ),
                 const SizedBox(height: 8),
               ],
@@ -672,9 +724,14 @@ class _ProbeDialogState extends State<ProbeDialog> {
 
 /// Separater W6-Wurf fuer Trefferzonen-Effekte.
 class _TrefferzonenZusatzwurfCard extends StatefulWidget {
-  const _TrefferzonenZusatzwurfCard({super.key, required this.zusatzwurf});
+  const _TrefferzonenZusatzwurfCard({
+    super.key,
+    required this.zusatzwurf,
+    this.onDiceLogEntry,
+  });
 
   final TrefferzonenZusatzwurfErgebnis zusatzwurf;
+  final void Function(DiceLogEntry entry)? onDiceLogEntry;
 
   @override
   State<_TrefferzonenZusatzwurfCard> createState() =>
@@ -707,6 +764,18 @@ class _TrefferzonenZusatzwurfCardState
     setState(() {
       _isAnimating = false;
     });
+    final values = _values;
+    if (values == null) {
+      return;
+    }
+    widget.onDiceLogEntry?.call(
+      diceLogEntryFromRoll(
+        title: widget.zusatzwurf.label,
+        subtitle: widget.zusatzwurf.diceSpec.label,
+        diceValues: values,
+        diceSpec: widget.zusatzwurf.diceSpec,
+      ),
+    );
   }
 
   int _computeTotal() {

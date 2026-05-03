@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_ini_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_unterdrueckung_dialog.dart';
@@ -36,11 +38,17 @@ class _InspectorWundenSectionState
     extends ConsumerState<InspectorWundenSection> {
   bool _expanded = false;
 
-  Future<void> _speichereWundZustand(WundZustand neuerZustand) async {
-    await ref.read(heroActionsProvider).saveHeroState(
-      widget.heroId,
-      widget.heroState.copyWith(wpiZustand: neuerZustand),
-    );
+  Future<void> _speichereWundZustand(
+    WundZustand neuerZustand, {
+    List<DiceLogEntry> diceLogEntries = const <DiceLogEntry>[],
+  }) async {
+    final baseState =
+        ref.read(heroStateProvider(widget.heroId)).valueOrNull ??
+        widget.heroState;
+    final nextState = baseState
+        .copyWith(wpiZustand: neuerZustand)
+        .withAppendedDiceLogEntries(diceLogEntries);
+    await ref.read(heroActionsProvider).saveHeroState(widget.heroId, nextState);
   }
 
   Future<void> _wundeHinzufuegen(WundZone zone) async {
@@ -48,15 +56,20 @@ class _InspectorWundenSectionState
     if (zustand.wundenInZone(zone) >= maxWundenProZone) return;
 
     WundZustand neuerZustand;
+    var diceLogEntries = const <DiceLogEntry>[];
     if (zone == WundZone.kopf) {
-      final iniWert = await showWundIniDialog(context);
-      if (iniWert == null || !mounted) return;
-      neuerZustand = zustand.mitWundeHinzu(zone, iniWuerfelWert: iniWert);
+      final iniResult = await showWundIniDialog(context);
+      if (iniResult == null || !mounted) return;
+      neuerZustand = zustand.mitWundeHinzu(
+        zone,
+        iniWuerfelWert: iniResult.value,
+      );
+      diceLogEntries = <DiceLogEntry>[iniResult.logEntry];
     } else {
       neuerZustand = zustand.mitWundeHinzu(zone);
     }
 
-    await _speichereWundZustand(neuerZustand);
+    await _speichereWundZustand(neuerZustand, diceLogEntries: diceLogEntries);
 
     if (!mounted) return;
     final hero = ref.read(heroByIdProvider(widget.heroId));
@@ -68,6 +81,8 @@ class _InspectorWundenSectionState
       wpiZustand: neuerZustand,
       zone: zone,
       wundEffekte: effekte,
+      ref: ref,
+      heroId: widget.heroId,
     );
     if (unterdruecken == true) {
       final aktUnterdrueckt = neuerZustand.unterdrueckteInZone(zone);
@@ -128,9 +143,9 @@ class _InspectorWundenSectionState
                 const SizedBox(width: 4),
                 Text(
                   'WS ${widget.wundschwelle}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: secondaryColor,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: secondaryColor),
                 ),
               ],
             ),
@@ -190,12 +205,15 @@ class InspectorWundenCard extends ConsumerWidget {
 
   Future<void> _speichereWundZustand(
     WidgetRef ref,
-    WundZustand neuerZustand,
-  ) async {
-    await ref.read(heroActionsProvider).saveHeroState(
-      heroId,
-      heroState.copyWith(wpiZustand: neuerZustand),
-    );
+    WundZustand neuerZustand, {
+    List<DiceLogEntry> diceLogEntries = const <DiceLogEntry>[],
+  }) async {
+    final baseState =
+        ref.read(heroStateProvider(heroId)).valueOrNull ?? heroState;
+    final nextState = baseState
+        .copyWith(wpiZustand: neuerZustand)
+        .withAppendedDiceLogEntries(diceLogEntries);
+    await ref.read(heroActionsProvider).saveHeroState(heroId, nextState);
   }
 
   Future<void> _wundeHinzufuegen(
@@ -207,15 +225,24 @@ class InspectorWundenCard extends ConsumerWidget {
     if (zustand.wundenInZone(zone) >= maxWundenProZone) return;
 
     WundZustand neuerZustand;
+    var diceLogEntries = const <DiceLogEntry>[];
     if (zone == WundZone.kopf) {
-      final iniWert = await showWundIniDialog(context);
-      if (iniWert == null || !context.mounted) return;
-      neuerZustand = zustand.mitWundeHinzu(zone, iniWuerfelWert: iniWert);
+      final iniResult = await showWundIniDialog(context);
+      if (iniResult == null || !context.mounted) return;
+      neuerZustand = zustand.mitWundeHinzu(
+        zone,
+        iniWuerfelWert: iniResult.value,
+      );
+      diceLogEntries = <DiceLogEntry>[iniResult.logEntry];
     } else {
       neuerZustand = zustand.mitWundeHinzu(zone);
     }
 
-    await _speichereWundZustand(ref, neuerZustand);
+    await _speichereWundZustand(
+      ref,
+      neuerZustand,
+      diceLogEntries: diceLogEntries,
+    );
 
     if (!context.mounted) return;
     final hero = ref.read(heroByIdProvider(heroId));
@@ -227,6 +254,8 @@ class InspectorWundenCard extends ConsumerWidget {
       wpiZustand: neuerZustand,
       zone: zone,
       wundEffekte: effekte,
+      ref: ref,
+      heroId: heroId,
     );
     if (unterdruecken == true) {
       final aktUnterdrueckt = neuerZustand.unterdrueckteInZone(zone);
@@ -275,10 +304,8 @@ class InspectorWundenCard extends ConsumerWidget {
                 padding: EdgeInsets.zero,
                 iconSize: 16,
                 tooltip: 'Wunden-Details',
-                onPressed: () => showWundenDetailDialog(
-                  context: context,
-                  heroId: heroId,
-                ),
+                onPressed: () =>
+                    showWundenDetailDialog(context: context, heroId: heroId),
                 icon: const Icon(Icons.open_in_new),
               ),
             ),
@@ -320,30 +347,36 @@ class _WundEffekteSubtitle extends StatelessWidget {
     }
     final children = <Widget>[];
     if (teile.isNotEmpty) {
-      children.add(Text(
-        teile.join('  '),
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.error,
-          fontWeight: FontWeight.bold,
+      children.add(
+        Text(
+          teile.join('  '),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.error,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ));
+      );
     }
     if (effekte.unterdrueckteGesamt > 0) {
-      children.add(Text(
-        '(${effekte.unterdrueckteGesamt} unterdr.)',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+      children.add(
+        Text(
+          '(${effekte.unterdrueckteGesamt} unterdr.)',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
-      ));
+      );
     }
     if (effekte.kampfunfaehig) {
-      children.add(Text(
-        'Kampfunfähig!',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.error,
-          fontWeight: FontWeight.bold,
+      children.add(
+        Text(
+          'Kampfunfähig!',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.error,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ));
+      );
     }
     if (children.isEmpty) return const SizedBox.shrink();
     return Column(
@@ -398,8 +431,8 @@ class _WundZoneCompactRow extends StatelessWidget {
                 color: i < effektive
                     ? Theme.of(context).colorScheme.error
                     : i < wunden
-                        ? Colors.amber
-                        : Theme.of(context).colorScheme.outlineVariant,
+                    ? Colors.amber
+                    : Theme.of(context).colorScheme.outlineVariant,
               ),
             ),
           const SizedBox(width: 6),
