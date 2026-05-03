@@ -1,14 +1,14 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 
 extension _HeroOverviewStatsSection on _HeroOverviewTabState {
-  static const List<AdaptiveTableColumnSpec> _derivedValueColumnSpecs =
-      <AdaptiveTableColumnSpec>[
-        AdaptiveTableColumnSpec(minWidth: 96, maxWidth: 136), // Wert (LeP, AsP, …)
-        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Start
-        AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 132), // Modifikator
-        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Aktuell
-        AdaptiveTableColumnSpec(minWidth: 82, maxWidth: 120), // Zugekauft
-      ];
+  static const List<AdaptiveTableColumnSpec>
+  _derivedValueColumnSpecs = <AdaptiveTableColumnSpec>[
+    AdaptiveTableColumnSpec(minWidth: 96, maxWidth: 136), // Wert (LeP, AsP, …)
+    AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Start
+    AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 132), // Modifikator
+    AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Aktuell
+    AdaptiveTableColumnSpec(minWidth: 82, maxWidth: 120), // Zugekauft
+  ];
 
   static const List<AdaptiveTableColumnSpec> _attributeColumnSpecs =
       <AdaptiveTableColumnSpec>[
@@ -390,8 +390,10 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
           final key = entry.$2;
           final startValue = _valueByKey(effectiveStartAttributes, key);
           final maximumValue = _valueByKey(attributeMaximums, key);
-          final epicBonusVal =
-              _attrBonusValue(snapshot.hero.epicAttributeMaxBonus, key);
+          final epicBonusVal = _attrBonusValue(
+            snapshot.hero.epicAttributeMaxBonus,
+            key,
+          );
           final effective = _effectiveValueByKey(effectiveAttributes, key);
           return TableRow(
             children: [
@@ -487,9 +489,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Flexible(
-            child: Text(text, style: theme.textTheme.titleSmall),
-          ),
+          Flexible(child: Text(text, style: theme.textTheme.titleSmall)),
           IconButton(
             visualDensity: VisualDensity.compact,
             iconSize: 14,
@@ -698,8 +698,10 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               visualDensity: VisualDensity.compact,
               iconSize: 18,
               tooltip: '$label würfeln',
-              onPressed: () => showProbeDialog(
+              onPressed: () => showLoggedProbeDialog(
                 context: context,
+                ref: ref,
+                heroId: widget.heroId,
                 request: buildAttributeProbeRequest(
                   label: label,
                   effectiveValue: effective,

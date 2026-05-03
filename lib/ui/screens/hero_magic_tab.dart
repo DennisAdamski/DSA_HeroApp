@@ -23,7 +23,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
@@ -439,8 +439,13 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             merkmalskenntnisse: _draftMerkmalskenntnisse,
                             heroRepresentationen: _draftRepresentationen,
                             isEditing: _editController.isEditing,
-                            contentUnlocked: ref.watch(catalogContentVisibleProvider),
-                            contentPassword: ref.watch(appSettingsProvider).valueOrNull?.catalogContentPassword,
+                            contentUnlocked: ref.watch(
+                              catalogContentVisibleProvider,
+                            ),
+                            contentPassword: ref
+                                .watch(appSettingsProvider)
+                                .valueOrNull
+                                ?.catalogContentPassword,
                             onSpellValueChanged: _updateSpellValue,
                             onModifierChanged: _updateSpellModifier,
                             onHauszauberChanged: _updateHauszauber,
@@ -481,8 +486,10 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                   .asData
                                   ?.value
                                   .wundEffekte;
-                              showProbeDialog(
+                              showLoggedProbeDialog(
                                 context: context,
+                                ref: ref,
+                                heroId: widget.heroId,
                                 request: buildSpellProbeRequest(
                                   title: spell.name,
                                   targets: targets,

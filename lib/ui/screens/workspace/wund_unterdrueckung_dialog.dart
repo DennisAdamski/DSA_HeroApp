@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -7,7 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 
 /// Zeigt nach dem Hinzufuegen einer Wunde einen Dialog, der sofortige
@@ -21,6 +22,8 @@ Future<bool?> showWundUnterdrueckungDialog({
   required WundZustand wpiZustand,
   required WundZone zone,
   required WundEffekte wundEffekte,
+  required WidgetRef ref,
+  required String heroId,
 }) {
   return showDialog<bool>(
     context: context,
@@ -29,6 +32,8 @@ Future<bool?> showWundUnterdrueckungDialog({
       wpiZustand: wpiZustand,
       zone: zone,
       wundEffekte: wundEffekte,
+      ref: ref,
+      heroId: heroId,
     ),
   );
 }
@@ -39,12 +44,16 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
     required this.wpiZustand,
     required this.zone,
     required this.wundEffekte,
+    required this.ref,
+    required this.heroId,
   });
 
   final dynamic hero;
   final WundZustand wpiZustand;
   final WundZone zone;
   final WundEffekte wundEffekte;
+  final WidgetRef ref;
+  final String heroId;
 
   @override
   Widget build(BuildContext context) {
@@ -53,8 +62,9 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
       gesamtWunden: gesamtWunden,
     );
 
-    final sbEntry = (hero.talents as Map<String, HeroTalentEntry>?)
-        ?['tal_selbstbeherrschung'];
+    final sbEntry =
+        (hero.talents
+            as Map<String, HeroTalentEntry>?)?['tal_selbstbeherrschung'];
     final hatSb = sbEntry != null && sbEntry.talentValue != null;
     final sbTaw = hatSb
         ? computeTalentComputedTaw(
@@ -88,14 +98,17 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
                       AttributeCode.kk,
                     ];
                     final targets = sbCodes
-                        .map((code) => ProbeTargetValue(
-                              label: code.name.toUpperCase(),
-                              value:
-                                  readAttributeValue(effectiveAttrs, code),
-                            ))
+                        .map(
+                          (code) => ProbeTargetValue(
+                            label: code.name.toUpperCase(),
+                            value: readAttributeValue(effectiveAttrs, code),
+                          ),
+                        )
                         .toList();
-                    showProbeDialog(
+                    showLoggedProbeDialog(
                       context: context,
+                      ref: ref,
+                      heroId: heroId,
                       request: buildTalentProbeRequest(
                         title: 'Selbstbeherrschung (Wunde unterdrücken)',
                         targets: targets,
@@ -107,9 +120,7 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
                   }
                 : null,
             icon: const Icon(Icons.casino),
-            label: Text(hatSb
-                ? 'SB-Probe (TaW $sbTaw)'
-                : 'SB nicht erlernt'),
+            label: Text(hatSb ? 'SB-Probe (TaW $sbTaw)' : 'SB nicht erlernt'),
           ),
         ],
       ),

@@ -1,5 +1,6 @@
-import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 
@@ -9,7 +10,7 @@ import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 /// Modifikatoren, die nicht dauerhaft ins Heldenblatt geschrieben werden.
 class HeroState {
   const HeroState({
-    this.schemaVersion = 5,
+    this.schemaVersion = 6,
     required this.currentLep,
     required this.currentAsp,
     required this.currentKap,
@@ -20,20 +21,25 @@ class HeroState {
     this.tempAttributeMods = const AttributeModifiers(),
     this.activeSpellEffects = const ActiveSpellEffectsState(),
     this.wpiZustand = const WundZustand(),
+    this.diceLog = const <DiceLogEntry>[],
   });
 
   const HeroState.empty()
-      : schemaVersion = 5,
-        currentLep = 0,
-        currentAsp = 0,
-        currentKap = 0,
-        currentAu = 0,
-        erschoepfung = 0,
-        ueberanstrengung = 0,
-        tempMods = const StatModifiers(),
-        tempAttributeMods = const AttributeModifiers(),
-        activeSpellEffects = const ActiveSpellEffectsState(),
-        wpiZustand = const WundZustand();
+    : schemaVersion = 6,
+      currentLep = 0,
+      currentAsp = 0,
+      currentKap = 0,
+      currentAu = 0,
+      erschoepfung = 0,
+      ueberanstrengung = 0,
+      tempMods = const StatModifiers(),
+      tempAttributeMods = const AttributeModifiers(),
+      activeSpellEffects = const ActiveSpellEffectsState(),
+      wpiZustand = const WundZustand(),
+      diceLog = const <DiceLogEntry>[];
+
+  /// Maximale Anzahl persistierter Wuerfelprotokoll-Eintraege pro Held.
+  static const int diceLogMax = 14;
 
   final int schemaVersion;
   final int currentLep;
@@ -49,6 +55,9 @@ class HeroState {
   /// Aktueller Wundenzustand des Helden.
   final WundZustand wpiZustand;
 
+  /// Persistiertes Wuerfelprotokoll, neueste Eintraege am Ende der Liste.
+  final List<DiceLogEntry> diceLog;
+
   /// Immutable Update fuer Teilmengen des Laufzeitzustands.
   HeroState copyWith({
     int? currentLep,
@@ -61,6 +70,7 @@ class HeroState {
     AttributeModifiers? tempAttributeMods,
     ActiveSpellEffectsState? activeSpellEffects,
     WundZustand? wpiZustand,
+    List<DiceLogEntry>? diceLog,
   }) {
     return HeroState(
       schemaVersion: schemaVersion,
@@ -74,7 +84,25 @@ class HeroState {
       tempAttributeMods: tempAttributeMods ?? this.tempAttributeMods,
       activeSpellEffects: activeSpellEffects ?? this.activeSpellEffects,
       wpiZustand: wpiZustand ?? this.wpiZustand,
+      diceLog: diceLog ?? this.diceLog,
     );
+  }
+
+  /// Haengt einen neuen Eintrag an das Wuerfelprotokoll an und trimmt FIFO.
+  HeroState withAppendedDiceLog(DiceLogEntry entry) {
+    return withAppendedDiceLogEntries(<DiceLogEntry>[entry]);
+  }
+
+  /// Haengt mehrere Eintraege an das Wuerfelprotokoll an und trimmt FIFO.
+  HeroState withAppendedDiceLogEntries(List<DiceLogEntry> entries) {
+    if (entries.isEmpty) {
+      return this;
+    }
+    final next = <DiceLogEntry>[...diceLog, ...entries];
+    if (next.length > diceLogMax) {
+      next.removeRange(0, next.length - diceLogMax);
+    }
+    return copyWith(diceLog: List<DiceLogEntry>.unmodifiable(next));
   }
 
   /// Serialisierung fuer Persistenz (eigene State-Box).
@@ -91,14 +119,23 @@ class HeroState {
       'tempAttributeMods': tempAttributeMods.toJson(),
       'activeSpellEffects': activeSpellEffects.toJson(),
       'wpiZustand': wpiZustand.toJson(),
+      'diceLog': diceLog.map((entry) => entry.toJson()).toList(growable: false),
     };
   }
 
   /// Robust gegen fehlende Felder in aelteren Daten.
   static HeroState fromJson(Map<String, dynamic> json) {
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
+    final rawDiceLog = json['diceLog'] as List?;
+    final diceLog = rawDiceLog == null
+        ? const <DiceLogEntry>[]
+        : List<DiceLogEntry>.unmodifiable(
+            rawDiceLog.whereType<Map>().map(
+              (e) => DiceLogEntry.fromJson(e.cast<String, dynamic>()),
+            ),
+          );
     return HeroState(
-      schemaVersion: (json['schemaVersion'] as num?)?.toInt() ?? 1,
+      schemaVersion: 6,
       currentLep: getInt('currentLep'),
       currentAsp: getInt('currentAsp'),
       currentKap: getInt('currentKap'),
@@ -119,6 +156,7 @@ class HeroState {
       wpiZustand: WundZustand.fromJson(
         (json['wpiZustand'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
+      diceLog: diceLog,
     );
   }
 }
