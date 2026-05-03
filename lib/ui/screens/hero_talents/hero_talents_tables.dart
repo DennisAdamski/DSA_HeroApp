@@ -308,8 +308,10 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           visualDensity: VisualDensity.compact,
           iconSize: 18,
           tooltip: '${talent.name} würfeln',
-          onPressed: () => showProbeDialog(
+          onPressed: () => showLoggedProbeDialog(
             context: context,
+            ref: ref,
+            heroId: widget.heroId,
             request: buildTalentProbeRequest(
               title: talent.name,
               targets: _buildProbeTargets(
@@ -527,8 +529,10 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
             visualDensity: VisualDensity.compact,
             iconSize: 18,
             tooltip: '${metaTalent.name} würfeln',
-            onPressed: () => showProbeDialog(
+            onPressed: () => showLoggedProbeDialog(
               context: context,
+              ref: ref,
+              heroId: widget.heroId,
               request: buildTalentProbeRequest(
                 title: metaTalent.name,
                 targets: _buildProbeTargets(

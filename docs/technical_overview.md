@@ -1519,8 +1519,10 @@ ueber die Settings-Katalogverwaltung bearbeitet.
 - `lib/ui/screens/shared/probe_dialog.dart` ist der gemeinsame Dialog fuer
   digitales Wuerfeln und manuelle Eingabe. Er wird ueber Wuerfel-Symbole im
   Uebersichts-, Talente-, Magie- und Kampf-Tab geoeffnet.
-- Wurfergebnisse bleiben bewusst temporaer im Dialog und werden nicht in
-  `HeroSheet` oder `HeroState` persistiert.
+- Wurfergebnisse werden im pro Held persistierten `HeroState.diceLog`
+  protokolliert. `showLoggedProbeDialog` ist der zentrale UI-Einstieg fuer
+  normale Proben; Trefferzonen-, Kopfwunden-INI- und Rast-/Regenerationswuerfe
+  erzeugen neutrale `DiceLogEntry`-Eintraege ohne Erfolgs-/Misslingensstatus.
 
 ### Update 2026-03-19: Rast und strukturierte Regeneration
 
