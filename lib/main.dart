@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/data/firebase_bootstrap.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker_impl.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/app_startup_gate.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/auth/web_auth_gate.dart';
 
 /// Startet die Anwendung und initialisiert die persistenten Heldendaten.
 Future<void> main() async {
@@ -16,11 +17,15 @@ Future<void> main() async {
   );
 
   runApp(
-    AppStartupGate(
-      settingsRepository: settingsRepo,
-      storagePaths: storagePaths,
-      storageDirectoryPicker: createStorageDirectoryPicker(),
+    WebAuthGate(
       firebaseBootstrap: firebaseBootstrap,
+      builder: (context, user) => AppStartupGate(
+        settingsRepository: settingsRepo,
+        storagePaths: storagePaths,
+        storageDirectoryPicker: createStorageDirectoryPicker(),
+        firebaseBootstrap: firebaseBootstrap,
+        authUser: user,
+      ),
     ),
   );
 }

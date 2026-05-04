@@ -4,12 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
+import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 import 'package:dsa_heldenverwaltung/data/custom_catalog_repository.dart';
 import 'package:dsa_heldenverwaltung/data/firebase_bootstrap.dart';
+import 'package:dsa_heldenverwaltung/data/firestore_hero_repository.dart';
+import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_externe_helden_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/house_rule_pack_repository.dart';
+import 'package:dsa_heldenverwaltung/data/hybrid_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
@@ -31,6 +35,7 @@ class AppStartupGate extends StatefulWidget {
     required this.storagePaths,
     required this.storageDirectoryPicker,
     required this.firebaseBootstrap,
+    this.authUser,
   });
 
   /// Persistenz fuer lokale App-Einstellungen.
@@ -45,17 +50,22 @@ class AppStartupGate extends StatefulWidget {
   /// Ergebnis der optionalen Firebase-Initialisierung beim App-Start.
   final FirebaseBootstrapResult firebaseBootstrap;
 
+  /// Eingeloggter Benutzer (falls vorhanden) — aktiviert Firestore-Sync.
+  final AuthUser? authUser;
+
   @override
   State<AppStartupGate> createState() => _AppStartupGateState();
 }
 
 class _AppStartupGateState extends State<AppStartupGate> {
   Future<_HeroRepositoryBootstrapResult>? _bootstrapFuture;
-  HiveHeroRepository? _activeRepository;
+  HiveHeroRepository? _activeHive;
+  HybridHeroRepository? _activeHybrid;
   HiveExterneHeldenRepository? _activeExterneHeldenRepository;
   late AppSettings _settings;
   StreamSubscription<AppSettings>? _settingsSubscription;
   String? _currentConfiguredPath;
+  String? _currentAuthUid;
   int _loadGeneration = 0;
 
   @override
@@ -77,12 +87,24 @@ class _AppStartupGateState extends State<AppStartupGate> {
   }
 
   @override
+  void didUpdateWidget(covariant AppStartupGate oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.authUser?.uid != _currentAuthUid) {
+      _ensureBootstrap();
+    }
+  }
+
+  @override
   void dispose() {
     unawaited(_settingsSubscription?.cancel());
-    final repository = _activeRepository;
-    if (repository != null) {
+    final hybrid = _activeHybrid;
+    if (hybrid != null) {
+      unawaited(hybrid.close());
+    }
+    final hive = _activeHive;
+    if (hive != null) {
       // Die Boxen muessen beim Pfadwechsel sauber geschlossen werden.
-      unawaited(repository.close());
+      unawaited(hive.close());
     }
     final externeHeldenRepository = _activeExterneHeldenRepository;
     if (externeHeldenRepository != null) {
@@ -93,53 +115,81 @@ class _AppStartupGateState extends State<AppStartupGate> {
 
   void _ensureBootstrap() {
     final configuredPath = _settings.heroStoragePath;
-    if (_bootstrapFuture != null && configuredPath == _currentConfiguredPath) {
+    final targetUid = widget.authUser?.uid;
+    if (_bootstrapFuture != null &&
+        configuredPath == _currentConfiguredPath &&
+        targetUid == _currentAuthUid) {
       return;
     }
 
     _currentConfiguredPath = configuredPath;
-    _bootstrapFuture = _bootstrapHeroRepository(configuredPath);
+    _currentAuthUid = targetUid;
+    _bootstrapFuture = _bootstrapHeroRepository(configuredPath, targetUid);
   }
 
   Future<_HeroRepositoryBootstrapResult> _bootstrapHeroRepository(
     String? configuredPath,
+    String? authUid,
   ) async {
     final int generation = ++_loadGeneration;
-    final previousRepository = _activeRepository;
-    _activeRepository = null;
-    if (previousRepository != null) {
-      await previousRepository.close();
+
+    // Vorheriges Hybrid-Repo (Subscription) zuerst schliessen, dann Hive.
+    final previousHybrid = _activeHybrid;
+    _activeHybrid = null;
+    if (previousHybrid != null) {
+      await previousHybrid.close();
+    }
+    final previousHive = _activeHive;
+    _activeHive = null;
+    if (previousHive != null) {
+      await previousHive.close();
     }
 
     final heroStoragePath = await widget.storagePaths.prepareHeroStoragePath(
       configuredPath: configuredPath,
     );
-    final repository = await HiveHeroRepository.create(
+    final hive = await HiveHeroRepository.create(
       storagePath: heroStoragePath,
     );
-    await const StartupHeroImporter().importFromAssets(repository);
+    await const StartupHeroImporter().importFromAssets(hive);
 
     // Externe-Helden-Repository im Heldenspeicher oeffnen.
     final externeHeldenRepository = await HiveExterneHeldenRepository.create(
       storagePath: heroStoragePath,
     );
 
+    // Bei Login + verfuegbarem Firebase: Hybrid-Repo mit Firestore-Sync.
+    HybridHeroRepository? hybrid;
+    HeroRepository heroRepository = hive;
+    if (authUid != null && widget.firebaseBootstrap.isAvailable) {
+      final firestoreRepo = FirestoreHeroRepository(userId: authUid);
+      hybrid = await HybridHeroRepository.create(
+        local: hive,
+        remote: firestoreRepo,
+      );
+      heroRepository = hybrid;
+    }
+
     if (generation != _loadGeneration) {
-      await repository.close();
+      if (hybrid != null) {
+        await hybrid.close();
+      }
+      await hive.close();
       await externeHeldenRepository.close();
       throw StateError('Veralteter Initialisierungslauf fuer Heldendaten.');
     }
 
-    // Altes Repository schliessen, falls vorhanden.
+    // Altes externes Repo schliessen, falls vorhanden.
     final previousExterneHelden = _activeExterneHeldenRepository;
     if (previousExterneHelden != null) {
       await previousExterneHelden.close();
     }
 
-    _activeRepository = repository;
+    _activeHive = hive;
+    _activeHybrid = hybrid;
     _activeExterneHeldenRepository = externeHeldenRepository;
     return _HeroRepositoryBootstrapResult(
-      repository: repository,
+      heroRepository: heroRepository,
       externeHeldenRepository: externeHeldenRepository,
       heroStoragePath: heroStoragePath,
     );
@@ -172,7 +222,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
 
         final result = snapshot.requireData;
         return _buildScope(
-          repository: result.repository,
+          repository: result.heroRepository,
           externeHeldenRepository: result.externeHeldenRepository,
           customCatalogRepository: CustomCatalogRepository(
             heroStoragePath: result.heroStoragePath,
@@ -188,7 +238,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
 
   Widget _buildScope({
     required Widget home,
-    HiveHeroRepository? repository,
+    HeroRepository? repository,
     HiveExterneHeldenRepository? externeHeldenRepository,
     CustomCatalogRepository? customCatalogRepository,
     HouseRulePackRepository? houseRulePackRepository,
@@ -233,12 +283,12 @@ class _AppStartupGateState extends State<AppStartupGate> {
 
 class _HeroRepositoryBootstrapResult {
   const _HeroRepositoryBootstrapResult({
-    required this.repository,
+    required this.heroRepository,
     required this.externeHeldenRepository,
     required this.heroStoragePath,
   });
 
-  final HiveHeroRepository repository;
+  final HeroRepository heroRepository;
   final HiveExterneHeldenRepository externeHeldenRepository;
   final String heroStoragePath;
 }
