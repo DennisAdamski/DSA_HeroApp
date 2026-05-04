@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive/hive.dart';
 
@@ -37,11 +38,21 @@ class HiveSettingsRepository {
   ///
   /// Migriert einmalig vorhandene sensible Felder aus Hive in den
   /// sicheren Speicher, falls dort noch keine Werte hinterlegt sind.
+  ///
+  /// Auf Web wird FlutterSecureStorage uebergangen — sensible Felder
+  /// koennen dort ohnehin nicht durchgehend abgesichert werden, und einige
+  /// Browser werfen bei der Initialisierung Fehler. Stattdessen werden
+  /// Fallback-Defaults gesetzt; Avatar-Generierung und verschluesselte
+  /// Kataloge sind im Web v1 ohnehin nicht aktiv.
   static Future<HiveSettingsRepository> create({
     required String storagePath,
   }) async {
     const secure = FlutterSecureStorage();
     final box = await Hive.openBox<Map>(_boxName, path: storagePath);
+
+    if (kIsWeb) {
+      return HiveSettingsRepository._(box, secure, '', null);
+    }
 
     var cachedApiKey = await secure.read(key: _apiKeySecureKey) ?? '';
     final rawCatalogPw = await secure.read(key: _catalogPasswordSecureKey);
@@ -96,18 +107,23 @@ class HiveSettingsRepository {
   /// Speichert die Einstellungen persistent und benachrichtigt Listener.
   ///
   /// Sensible Felder gehen in den sicheren Speicher; alle anderen in Hive.
+  /// Auf Web wird FlutterSecureStorage uebergangen.
   Future<void> save(AppSettings settings) async {
     _cachedApiKey = settings.avatarApiConfig.apiKey;
     _cachedCatalogPassword = settings.catalogContentPassword;
 
-    await Future.wait([
-      _secure.write(key: _apiKeySecureKey, value: _cachedApiKey),
-      _secure.write(
-        key: _catalogPasswordSecureKey,
-        value: _cachedCatalogPassword ?? '',
-      ),
-      _box.put(_settingsKey, _stripSensitiveFields(settings).toJson()),
-    ]);
+    if (kIsWeb) {
+      await _box.put(_settingsKey, _stripSensitiveFields(settings).toJson());
+    } else {
+      await Future.wait([
+        _secure.write(key: _apiKeySecureKey, value: _cachedApiKey),
+        _secure.write(
+          key: _catalogPasswordSecureKey,
+          value: _cachedCatalogPassword ?? '',
+        ),
+        _box.put(_settingsKey, _stripSensitiveFields(settings).toJson()),
+      ]);
+    }
 
     _controller.add(settings);
   }
