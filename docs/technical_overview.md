@@ -1282,6 +1282,10 @@ Die meisten Tabs verwalten ihren Draft-State lokal (z. B. `_draftTalents`,
 `_draftCombatConfig`) und synchronisieren beim Laden/Speichern mit dem Repository.
 Der Inventar-Tab ist die Ausnahme: Inventaritems und Dukaten werden dort direkt
 pro Aktion gespeichert und nutzen keinen globalen Edit-Modus.
+Der Dukatenstand bleibt ein Freitextfeld, kann aber im Inventar ueber
+Muenztasten fuer Dukaten, Silbertaler und Kreuzer angepasst werden. Die
+Umrechnung und Normalisierung liegt in `lib/rules/derived/currency_rules.dart`,
+damit Widget- und Abenteuerlogik dieselbe Kreuzer-Praezision nutzen.
 
 ---
 
@@ -1471,6 +1475,9 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   Abenteuer-Beute atomar an, prueft Ruecknahmen gegen verbrauchte SE,
   fehlende Gegenstaende und ungueltige Dukatenstaende und setzt dabei den
   Abenteuerstatus konsistent zwischen `Aktuell` und `Abgeschlossen`.
+- `currency_rules.dart` normalisiert Dukaten-, Silbertaler-, Heller- und
+  Kreuzerwerte auf Kreuzer und formatiert sie wieder als kompakten
+  Dukatenwert fuer Persistenz und UI.
 - Der Abenteuer-Workspace beendet aktuelle Abenteuer ueber einen
   `Abschliessen`-Dialog mit Enddaten, Dukaten-Eingabe, Reward-Zusammenfassung
   und detailierter Gegenstandserfassung; das weltliche Enddatum ist mit dem

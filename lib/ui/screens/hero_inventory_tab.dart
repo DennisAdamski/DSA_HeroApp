@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/dukaten_field.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_filter_bar.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_item_editor.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
@@ -709,7 +710,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
                     _pagePadding,
                     0,
                   ),
-                  child: _DukatenField(
+                  child: DukatenField(
                     key: const ValueKey<String>('inventory-dukaten-field'),
                     value: hero.dukaten,
                     onCommit: _saveDukaten,
@@ -763,7 +764,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
             _pagePadding,
             0,
           ),
-          child: _DukatenField(
+          child: DukatenField(
             key: const ValueKey<String>('inventory-dukaten-field'),
             value: hero.dukaten,
             onCommit: _saveDukaten,
@@ -816,82 +817,6 @@ class _StatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(label, style: labelStyle?.copyWith(color: textColor)),
-    );
-  }
-}
-
-class _DukatenField extends StatefulWidget {
-  const _DukatenField({super.key, required this.value, required this.onCommit});
-
-  final String value;
-  final Future<void> Function(String value) onCommit;
-
-  @override
-  State<_DukatenField> createState() => _DukatenFieldState();
-}
-
-class _DukatenFieldState extends State<_DukatenField> {
-  late final TextEditingController _controller;
-  late final FocusNode _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.value);
-    _focusNode = FocusNode()..addListener(_handleFocusChange);
-  }
-
-  @override
-  void didUpdateWidget(covariant _DukatenField oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (_focusNode.hasFocus) {
-      return;
-    }
-    if (oldWidget.value != widget.value && _controller.text != widget.value) {
-      _controller.text = widget.value;
-    }
-  }
-
-  @override
-  void dispose() {
-    _focusNode.removeListener(_handleFocusChange);
-    _focusNode.dispose();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handleFocusChange() {
-    if (!_focusNode.hasFocus) {
-      _commitIfChanged();
-    }
-  }
-
-  Future<void> _commitIfChanged() async {
-    final nextValue = _controller.text.trim();
-    if (nextValue == widget.value.trim()) {
-      return;
-    }
-    await widget.onCommit(nextValue);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 200,
-      child: TextField(
-        controller: _controller,
-        focusNode: _focusNode,
-        decoration: const InputDecoration(
-          labelText: 'Dukaten',
-          border: OutlineInputBorder(),
-          isDense: true,
-        ),
-        onSubmitted: (_) => _commitIfChanged(),
-        onTapOutside: (_) {
-          _commitIfChanged();
-          _focusNode.unfocus();
-        },
-      ),
     );
   }
 }
