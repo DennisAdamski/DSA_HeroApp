@@ -320,6 +320,22 @@ void main() {
       );
       expect(find.byType(TextField), findsNothing);
       expect(find.text('Heldeneintrag'), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey<String>('magic-spell-details-traits')),
+          matching: find.text('Kraft'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(
+            const ValueKey<String>('magic-spell-details-magic-resistance'),
+          ),
+          matching: find.text('Nein, Ziel gilt als freiwillig'),
+        ),
+        findsOneWidget,
+      );
       expect(find.text('Koboldisch. Nur Sprache.'), findsOneWidget);
       expect(find.text('Liber Cantiones S. 36'), findsOneWidget);
     },

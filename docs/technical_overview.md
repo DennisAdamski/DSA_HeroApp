@@ -716,6 +716,11 @@ Kampftalente erkennt man an: `group == 'Kampftalent'` **oder** `weaponCategory !
 | `ruleMeta` | Optionale Herkunfts-, Beleg- und Epik-Metadaten |
 | `active` | Im App verfügbar? |
 
+Der Zauberdetaildialog zeigt Merkmale und einen MR-Hinweis an. Der Hinweis
+wird ueber `describeSpellMagicResistanceProbe` aus expliziten MR-Texten und
+dem Zielobjekt abgeleitet, solange `(+MR)` nicht als eigenes Katalogfeld
+vorliegt.
+
 ### `ManeuverDef`
 
 | Feld | Bedeutung |
@@ -1398,6 +1403,8 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   Zaubers wird bei mehreren Optionen eine Repraesentation ausgewaehlt.
 - Fremdrepraesentation erhoeht die Lernkomplexitaet eines Zaubers um `+2`
   Stufen, bevor Hauszauber, Merkmalskenntnis und Begabung angewendet werden.
+- Der Zauberdetaildialog zeigt zusaetzlich Merkmale und einen abgeleiteten
+  Hinweis, ob Magieresistenz in die Probe einbezogen werden soll.
 
 ### Update 2026-03-08: Rohstart, Startwerte und Eigenschaftsmaximum
 
