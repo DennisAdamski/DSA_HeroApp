@@ -13,6 +13,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - `dsa_heldenverwaltung` ist eine Flutter-App zur Verwaltung von DSA-Helden.
 - Die App nutzt lokale Persistenz, katalogbasierte Inhalte und getrennte Regellogik.
 - Regellogik gehoert nach `lib/rules/derived/`.
+- Aventurische Waehrungsumrechnung fuer Dukaten/Silber/Kreuzer liegt in
+  `lib/rules/derived/currency_rules.dart`.
 - Die kanonische Katalogquelle bleibt `assets/catalogs/house_rules_v1/`.
 - Aktivierbare Hausregel-Pakete liegen eingebaut unter
   `assets/catalogs/house_rules_v1/packs/<packId>/manifest.json`.
