@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
+import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_tools.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
@@ -27,14 +29,27 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   _SettingsDestination _selectedDestination = _SettingsDestination.appearance;
+  final AuthService _authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
     final layout = appLayoutOf(context);
     final showSplitView = layout.hasPersistentDetailPane;
+    final currentUser = _authService.currentUser;
+    final showLogout = kIsWeb && currentUser != null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Einstellungen')),
+      appBar: AppBar(
+        title: const Text('Einstellungen'),
+        actions: [
+          if (showLogout)
+            IconButton(
+              tooltip: 'Abmelden (${currentUser.email ?? 'Konto'})',
+              icon: const Icon(Icons.logout),
+              onPressed: _confirmAndSignOut,
+            ),
+        ],
+      ),
       body: showSplitView
           ? _SettingsSplitView(
               selectedDestination: _selectedDestination,
@@ -46,6 +61,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onToggleDebugMode: _toggleDebugMode,
             ),
     );
+  }
+
+  Future<void> _confirmAndSignOut() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Abmelden?'),
+        content: const Text(
+          'Nach dem Abmelden bleiben deine Helden in der Cloud gespeichert. '
+          'Du kannst dich jederzeit wieder anmelden.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Abmelden'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await _authService.signOut();
+    // Der WebAuthGate beobachtet authStateChanges() und zeigt den
+    // SignInScreen automatisch wieder an.
   }
 
   void _selectDestination(_SettingsDestination destination) {
