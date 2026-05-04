@@ -50,7 +50,8 @@ class _ResolvedSpellDetails {
     if (overrides?.wirkung != null) {
       resolvedWirkung = overrides!.wirkung!;
     } else {
-      resolvedWirkung = resolveProtectedValue(
+      resolvedWirkung =
+          resolveProtectedValue(
             raw: def.wirkung,
             unlocked: contentUnlocked,
             password: contentPassword,
@@ -71,8 +72,7 @@ class _ResolvedSpellDetails {
         unlocked: contentUnlocked,
         password: contentPassword,
       );
-      resolvedVariants =
-          decrypted ?? <String>[lockedContentHint];
+      resolvedVariants = decrypted ?? <String>[lockedContentHint];
     }
 
     return _ResolvedSpellDetails(
@@ -276,10 +276,14 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
   Widget _buildReadOnlyField({
     required String label,
     required String value,
+    String? keyName,
     int minLines = 1,
   }) {
     final displayValue = value.isNotEmpty ? value : '–';
     return Column(
+      key: keyName == null
+          ? null
+          : ValueKey<String>('magic-spell-details-$keyName'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: Theme.of(context).textTheme.labelMedium),
@@ -425,6 +429,20 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
           widget.effectiveAttributes,
           widget.def.attributes,
         ),
+      ),
+      _buildReadOnlyField(
+        label: 'Merkmale',
+        value: widget.def.traits,
+        keyName: 'traits',
+      ),
+      _buildReadOnlyField(
+        label: 'Magieresistenz',
+        value: describeSpellMagicResistanceProbe(
+          targetObject: resolved.targetObject,
+          modifier: widget.def.modifier,
+          modifications: resolved.modifications,
+        ),
+        keyName: 'magic-resistance',
       ),
       if (widget.isEditing)
         _buildEditableField(

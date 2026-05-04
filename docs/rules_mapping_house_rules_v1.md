@@ -57,6 +57,7 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - **Lernkomplexitaeten** (`reduceLernkomplexitaet`, `effectiveTalentLernkomplexitaet`, `effectiveSpellLernkomplexitaet`): Nutzen die geordnete Skala `A* < A < B < C < D < E < F < G < H` und klemmen Reduktionen auf `A*`.
 - **Effektive Steigerung** (`effectiveSteigerung`): Erhoeht die Basis zuerst um `+2`, wenn der Zauber in Fremdrepräsentation gelernt wurde, und reduziert danach additiv um je eine Stufe fuer Hauszauber, passende Merkmalskenntnisse und Begabung.
 - **Merkmale parsen** (`parseSpellTraits`): Splittet Merkmale-Strings wie `"Eigenschaften, Elementar (Erz)"` in eine Liste.
+- **MR-Hinweis für Zauberproben** (`describeSpellMagicResistanceProbe`): Leitet für die Detailanzeige aus expliziten MR-Modifikationstexten und dem Zielobjekt ab, ob die Magieresistenz in die Probe einbezogen werden soll. Da der Katalog den `(+MR)`-Probezusatz noch nicht strukturiert speichert, bleibt die Ableitung bewusst als Hinweis formuliert.
 - **Talent-Maxima** (`computeTalentMaxValue`, `computeCombatTalentMaxValue`): Normale Talente nutzen die hoechste Probe-Eigenschaft, Kampftalente die feste Sonderregel `GE/KK` bzw. `FF/KK` plus `+3` oder `+5` bei Begabung.
 - **Ressourcen-Aktivierung** (`resource_activation_rules.dart`): Aktiviert Magie automatisch bei `AE`/`AsP`-Modifikatoren aus Rasse, Kultur, Profession oder Vorteilen und goettliche Ressourcen bei `KE`/`KaP`; beide Bereiche koennen pro Held manuell uebersteuert werden.
 - **Rast & Regeneration** (`rest_rules.dart`): Liest relevante Vor-/Nachteile aus `vorteileText` und `nachteileText`, wertet `Regeneration I/II` aus Talent-SF sowie `Meisterliche Regeneration` aus magischen SF aus und berechnet Au-, LeP- und AsP-Regeneration inklusive KO-/IN-Proben, Krankheit, Umweltmodifikatoren und Abbau von `Ueberanstrengung` vor `Erschoepfung`.
@@ -75,7 +76,7 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - `SpellDef` enthaelt neben Grunddaten auch Detailfelder aus `Liber Cantiones` wie `source` (erste Zauberseite), `targetObject`, `wirkung`, `modifications` und `variants`.
 - Die importierten Langtexte werden fuer die Laufzeitdarstellung whitespace-normalisiert; PDF-Zeilenumbrueche werden nicht layoutgetreu uebernommen.
 - Offensichtliche OCR-/Silbentrennungsfehler aus der PDF werden im Importer konservativ bereinigt.
-- Im Magie-Tab zeigt der Detaildialog fuer aktivierte Zauber die effektiven Werte aus `SpellDef` plus optionalen `HeroSpellTextOverrides`; `source` bleibt dabei read-only.
+- Im Magie-Tab zeigt der Detaildialog fuer aktivierte Zauber die effektiven Werte aus `SpellDef` plus optionalen `HeroSpellTextOverrides`; `source` bleibt dabei read-only. Merkmale und der abgeleitete MR-Hinweis werden immer aus dem Katalog angezeigt.
 - Konstanten `kRepresentationen` und `kMerkmale` in `rules_catalog.dart` definieren die verfuegbaren Repraesentationen und Merkmale.
 
 ## Rast im Workspace
