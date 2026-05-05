@@ -131,68 +131,80 @@ class _AppStartupGateState extends State<AppStartupGate> {
     String? configuredPath,
     String? authUid,
   ) async {
-    final int generation = ++_loadGeneration;
+    debugPrint('[startup] enter uid=${authUid ?? "null"}');
+    try {
+      final int generation = ++_loadGeneration;
 
-    // Vorheriges Hybrid-Repo (Subscription) zuerst schliessen, dann Hive.
-    final previousHybrid = _activeHybrid;
-    _activeHybrid = null;
-    if (previousHybrid != null) {
-      await previousHybrid.close();
-    }
-    final previousHive = _activeHive;
-    _activeHive = null;
-    if (previousHive != null) {
-      await previousHive.close();
-    }
-
-    final heroStoragePath = await widget.storagePaths.prepareHeroStoragePath(
-      configuredPath: configuredPath,
-    );
-    final hive = await HiveHeroRepository.create(
-      storagePath: heroStoragePath,
-    );
-    await const StartupHeroImporter().importFromAssets(hive);
-
-    // Externe-Helden-Repository im Heldenspeicher oeffnen.
-    final externeHeldenRepository = await HiveExterneHeldenRepository.create(
-      storagePath: heroStoragePath,
-    );
-
-    // Bei Login + verfuegbarem Firebase: Hybrid-Repo mit Firestore-Sync.
-    HybridHeroRepository? hybrid;
-    HeroRepository heroRepository = hive;
-    if (authUid != null && widget.firebaseBootstrap.isAvailable) {
-      final firestoreRepo = FirestoreHeroRepository(userId: authUid);
-      hybrid = await HybridHeroRepository.create(
-        local: hive,
-        remote: firestoreRepo,
-      );
-      heroRepository = hybrid;
-    }
-
-    if (generation != _loadGeneration) {
-      if (hybrid != null) {
-        await hybrid.close();
+      // Vorheriges Hybrid-Repo (Subscription) zuerst schliessen, dann Hive.
+      final previousHybrid = _activeHybrid;
+      _activeHybrid = null;
+      if (previousHybrid != null) {
+        await previousHybrid.close();
       }
-      await hive.close();
-      await externeHeldenRepository.close();
-      throw StateError('Veralteter Initialisierungslauf fuer Heldendaten.');
-    }
+      final previousHive = _activeHive;
+      _activeHive = null;
+      if (previousHive != null) {
+        await previousHive.close();
+      }
 
-    // Altes externes Repo schliessen, falls vorhanden.
-    final previousExterneHelden = _activeExterneHeldenRepository;
-    if (previousExterneHelden != null) {
-      await previousExterneHelden.close();
-    }
+      debugPrint('[startup] prepareHeroStoragePath…');
+      final heroStoragePath = await widget.storagePaths.prepareHeroStoragePath(
+        configuredPath: configuredPath,
+      );
+      debugPrint('[startup] hive.create path=$heroStoragePath');
+      final hive = await HiveHeroRepository.create(
+        storagePath: heroStoragePath,
+      );
+      debugPrint('[startup] importFromAssets…');
+      await const StartupHeroImporter().importFromAssets(hive);
 
-    _activeHive = hive;
-    _activeHybrid = hybrid;
-    _activeExterneHeldenRepository = externeHeldenRepository;
-    return _HeroRepositoryBootstrapResult(
-      heroRepository: heroRepository,
-      externeHeldenRepository: externeHeldenRepository,
-      heroStoragePath: heroStoragePath,
-    );
+      debugPrint('[startup] externe helden…');
+      // Externe-Helden-Repository im Heldenspeicher oeffnen.
+      final externeHeldenRepository = await HiveExterneHeldenRepository.create(
+        storagePath: heroStoragePath,
+      );
+
+      // Bei Login + verfuegbarem Firebase: Hybrid-Repo mit Firestore-Sync.
+      HybridHeroRepository? hybrid;
+      HeroRepository heroRepository = hive;
+      if (authUid != null && widget.firebaseBootstrap.isAvailable) {
+        debugPrint('[startup] hybrid.create for uid=$authUid');
+        final firestoreRepo = FirestoreHeroRepository(userId: authUid);
+        hybrid = await HybridHeroRepository.create(
+          local: hive,
+          remote: firestoreRepo,
+        );
+        heroRepository = hybrid;
+      }
+
+      if (generation != _loadGeneration) {
+        if (hybrid != null) {
+          await hybrid.close();
+        }
+        await hive.close();
+        await externeHeldenRepository.close();
+        throw StateError('Veralteter Initialisierungslauf fuer Heldendaten.');
+      }
+
+      // Altes externes Repo schliessen, falls vorhanden.
+      final previousExterneHelden = _activeExterneHeldenRepository;
+      if (previousExterneHelden != null) {
+        await previousExterneHelden.close();
+      }
+
+      _activeHive = hive;
+      _activeHybrid = hybrid;
+      _activeExterneHeldenRepository = externeHeldenRepository;
+      debugPrint('[startup] done');
+      return _HeroRepositoryBootstrapResult(
+        heroRepository: heroRepository,
+        externeHeldenRepository: externeHeldenRepository,
+        heroStoragePath: heroStoragePath,
+      );
+    } on Object catch (error, stackTrace) {
+      debugPrint('[startup] FAILED: $error\n$stackTrace');
+      rethrow;
+    }
   }
 
   @override
