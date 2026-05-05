@@ -60,6 +60,15 @@ class _WebAuthGateState extends State<WebAuthGate> {
       stream: _authService.watchUser(),
       initialData: _authService.currentUser,
       builder: (context, snapshot) {
+        debugPrint(
+          '[gate] state=${snapshot.connectionState} '
+          'hasData=${snapshot.hasData} '
+          'uid=${snapshot.data?.uid ?? "null"} '
+          'hasError=${snapshot.hasError}',
+        );
+        if (snapshot.hasError) {
+          debugPrint('[gate] error=${snapshot.error}');
+        }
         if (snapshot.connectionState == ConnectionState.waiting &&
             !snapshot.hasData) {
           return const Scaffold(
@@ -68,8 +77,10 @@ class _WebAuthGateState extends State<WebAuthGate> {
         }
         final user = snapshot.data;
         if (user == null) {
+          debugPrint('[gate] showing SignInScreen');
           return SignInScreen(authService: _authService);
         }
+        debugPrint('[gate] showing AppStartupGate for uid=${user.uid}');
         return widget.builder(context, user);
       },
     );
