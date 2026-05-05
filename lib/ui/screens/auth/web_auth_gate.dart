@@ -49,10 +49,12 @@ class _WebAuthGateState extends State<WebAuthGate> {
       return widget.builder(context, null);
     }
     if (!widget.firebaseBootstrap.isAvailable || _authService == null) {
-      return _FirebaseUnavailableScreen(
-        message:
-            widget.firebaseBootstrap.userMessage ??
-            'Login ist derzeit nicht verfuegbar.',
+      return _wrapInApp(
+        _FirebaseUnavailableScreen(
+          message:
+              widget.firebaseBootstrap.userMessage ??
+              'Login ist derzeit nicht verfuegbar.',
+        ),
       );
     }
 
@@ -71,18 +73,30 @@ class _WebAuthGateState extends State<WebAuthGate> {
         }
         if (snapshot.connectionState == ConnectionState.waiting &&
             !snapshot.hasData) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return _wrapInApp(
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
           );
         }
         final user = snapshot.data;
         if (user == null) {
           debugPrint('[gate] showing SignInScreen');
-          return SignInScreen(authService: _authService);
+          return _wrapInApp(SignInScreen(authService: _authService));
         }
         debugPrint('[gate] showing AppStartupGate for uid=${user.uid}');
+        // AppStartupGate liefert ueber DsaAppShell selbst eine MaterialApp.
         return widget.builder(context, user);
       },
+    );
+  }
+
+  /// Schmale MaterialApp-Huelle fuer Auth-Zustaende (Loader, Login, Fehler).
+  /// AppStartupGate hat ueber DsaAppShell seine eigene MaterialApp und wird
+  /// daher NICHT durch diesen Wrapper gefuehrt.
+  Widget _wrapInApp(Widget child) {
+    return MaterialApp(
+      title: 'DSA Heldenverwaltung',
+      debugShowCheckedModeBanner: false,
+      home: child,
     );
   }
 }
