@@ -34,6 +34,40 @@ service cloud.firestore {
       }
     }
 
+    // Pro-User-Bereich fuer privaten Helden-Sync.
+    // Nur der eingeloggte User darf sein eigenes Subtree lesen/schreiben.
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+
+      match /heroes/{heroId} {
+        allow read, delete: if request.auth != null
+                            && request.auth.uid == userId;
+        // Schreibgroesse begrenzen (~400 KB pro Held inkl. Avatar-Base64).
+        allow create, update: if request.auth != null
+                              && request.auth.uid == userId
+                              && request.resource.size() < 500 * 1024;
+      }
+
+      match /hero_states/{heroId} {
+        allow read, delete: if request.auth != null
+                            && request.auth.uid == userId;
+        allow create, update: if request.auth != null
+                              && request.auth.uid == userId
+                              && request.resource.size() < 200 * 1024;
+      }
+
+      // Verschluesselte Settings-Geheimnisse (Katalog-Passwort, API-Key).
+      // Dokument ist klein (~1 KB), nur der eigene User darf zugreifen.
+      match /private/{document=**} {
+        allow read, delete: if request.auth != null
+                            && request.auth.uid == userId;
+        allow create, update: if request.auth != null
+                              && request.auth.uid == userId
+                              && request.resource.size() < 16 * 1024;
+      }
+    }
+
     // Alle anderen Pfade blockiert.
     match /{document=**} {
       allow read, write: if false;

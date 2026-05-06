@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 
 /// Ergebnis der Abschlusspruefung fuer Abenteuer-Belohnungen.
 class AdventureRewardApplyCheck {
@@ -151,7 +152,9 @@ HeroSheet applyAdventureRewards({
     ),
     attributeSePool: nextAttributeSePool,
     statSePool: nextStatSePool,
-    inventoryEntries: List<HeroInventoryEntry>.unmodifiable(nextInventoryEntries),
+    inventoryEntries: List<HeroInventoryEntry>.unmodifiable(
+      nextInventoryEntries,
+    ),
   );
 }
 
@@ -229,7 +232,8 @@ AdventureRewardRevokeCheck canRevokeAdventureRewards({
         reason: 'Der aktuelle Dukatenstand ist nicht numerisch lesbar.',
       );
     }
-    if (currentDukaten < _normalizeNonNegativeDukaten(adventure.dukatenReward)) {
+    if (currentDukaten <
+        _normalizeNonNegativeDukaten(adventure.dukatenReward)) {
       return const AdventureRewardRevokeCheck(
         isAllowed: false,
         reason: 'Die vergebenen Dukaten sind nicht mehr vollständig vorhanden.',
@@ -239,7 +243,9 @@ AdventureRewardRevokeCheck canRevokeAdventureRewards({
 
   for (final loot in adventure.lootRewards.where((entry) => entry.hasContent)) {
     final sourceRef = _adventureLootRef(adventure.id, loot.id);
-    final exists = hero.inventoryEntries.any((entry) => entry.sourceRef == sourceRef);
+    final exists = hero.inventoryEntries.any(
+      (entry) => entry.sourceRef == sourceRef,
+    );
     if (!exists) {
       return AdventureRewardRevokeCheck(
         isAllowed: false,
@@ -417,28 +423,15 @@ bool _requiresNumericDukaten(HeroAdventureEntry adventure) {
 }
 
 double? _parseDukatenValue(String rawValue) {
-  final normalized = rawValue.trim();
-  if (normalized.isEmpty) {
-    return 0;
+  final kreuzer = parseDsaCurrencyToKreuzer(rawValue);
+  if (kreuzer == null) {
+    return null;
   }
-
-  final compact = normalized.replaceAll(' ', '');
-  final decimalNormalized = compact.replaceAll(',', '.');
-  return double.tryParse(decimalNormalized);
+  return kreuzer / dsaKreuzerPerDukat;
 }
 
 String _formatDukatenValue(double value) {
-  final normalized = value < 0 ? 0 : value;
-  final isWhole = normalized == normalized.roundToDouble();
-  if (isWhole) {
-    return normalized.round().toString();
-  }
-
-  final fixed = normalized.toStringAsFixed(2);
-  final trimmed = fixed
-      .replaceFirst(RegExp(r'0+$'), '')
-      .replaceFirst(RegExp(r'\.$'), '');
-  return trimmed.replaceAll('.', ',');
+  return formatDsaCurrencyDukaten(dukatenToDsaKreuzer(value));
 }
 
 int _normalizeNonNegative(int value) {

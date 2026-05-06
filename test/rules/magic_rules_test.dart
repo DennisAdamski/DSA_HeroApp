@@ -283,6 +283,34 @@ void main() {
     );
   });
 
+  test('magic resistance hint uses voluntary targets as no-MR probes', () {
+    final hint = describeSpellMagicResistanceProbe(
+      targetObject: 'Einzelwesen, freiwillig',
+    );
+
+    expect(hint, 'Nein, Ziel gilt als freiwillig');
+  });
+
+  test(
+    'magic resistance hint marks resisting creature targets as MR probes',
+    () {
+      final hint = describeSpellMagicResistanceProbe(
+        targetObject: 'Einzelperson',
+      );
+
+      expect(hint, 'Ja, in die Probe einbeziehen');
+    },
+  );
+
+  test('magic resistance hint prefers explicit MR modification notes', () {
+    final hint = describeSpellMagicResistanceProbe(
+      targetObject: 'Zone',
+      modifications: 'Erzwingen (betrifft dann auch höhere MR)',
+    );
+
+    expect(hint, 'Ja, in die Probe einbeziehen');
+  });
+
   group('describeActiveSpellEffects', () {
     test('returns empty when axxeleratus inactive', () {
       final result = describeActiveSpellEffects(

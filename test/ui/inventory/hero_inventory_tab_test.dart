@@ -418,6 +418,71 @@ void main() {
       expect(hero.dukaten, '12');
     });
 
+    testWidgets('Dukaten lassen sich per Silbertaler-Schritt erhöhen', (
+      tester,
+    ) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[_buildHero(dukaten: '5')],
+      );
+
+      await _openTab(tester, repo);
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('inventory-dukaten-increment-silber'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.single;
+      expect(hero.dukaten, '5,1');
+      expect(find.text('5 D / 1 S'), findsOneWidget);
+    });
+
+    testWidgets('Kreuzer-Schritte erhalten gemischte Münzwerte genau', (
+      tester,
+    ) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[_buildHero(dukaten: '1 D 2 S')],
+      );
+
+      await _openTab(tester, repo);
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('inventory-dukaten-increment-kreuzer'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.single;
+      expect(hero.dukaten, '1,201');
+      expect(find.text('1 D / 2 S / 1 K'), findsOneWidget);
+    });
+
+    testWidgets('Dukaten-Schritte werden beim Senken bei null begrenzt', (
+      tester,
+    ) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[_buildHero(dukaten: '0')],
+      );
+
+      await _openTab(tester, repo);
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('inventory-dukaten-decrement-dukaten'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.single;
+      expect(hero.dukaten, '0');
+    });
+
     testWidgets('Header-Aktion fügt Gegenstand direkt hinzu', (tester) async {
       final repo = FakeRepository(heroes: <HeroSheet>[_buildHero()]);
 

@@ -1,5 +1,3 @@
-import 'dart:io' as io;
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -46,6 +44,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_generation_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_image_evict.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/epic_activation_dialog.dart';
 
