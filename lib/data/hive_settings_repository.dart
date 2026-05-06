@@ -1,10 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive/hive.dart';
 
+import 'package:dsa_heldenverwaltung/data/firestore_secrets_repository.dart';
+import 'package:dsa_heldenverwaltung/data/secrets_cipher.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';
 
 /// Hive-basierte Persistenz fuer globale App-Einstellungen.
 ///
@@ -30,6 +33,10 @@ class HiveSettingsRepository {
 
   String _cachedApiKey;
   String? _cachedCatalogPassword;
+
+  RemoteSecretsRepository? _remote;
+  SecretsCipher? _cipher;
+  String? _attachedUid;
 
   final StreamController<AppSettings> _controller =
       StreamController<AppSettings>.broadcast();
@@ -108,6 +115,8 @@ class HiveSettingsRepository {
   ///
   /// Sensible Felder gehen in den sicheren Speicher; alle anderen in Hive.
   /// Auf Web wird FlutterSecureStorage uebergangen.
+  /// Wenn ein User via [attachUser] verbunden ist, werden die sensiblen
+  /// Felder zusaetzlich verschluesselt nach Firestore geschrieben.
   Future<void> save(AppSettings settings) async {
     _cachedApiKey = settings.avatarApiConfig.apiKey;
     _cachedCatalogPassword = settings.catalogContentPassword;
@@ -125,7 +134,175 @@ class HiveSettingsRepository {
       ]);
     }
 
+    final remote = _remote;
+    final cipher = _cipher;
+    if (remote != null && cipher != null) {
+      try {
+        await remote.save(_buildRemoteSecrets(
+          cipher: cipher,
+          apiKey: _cachedApiKey,
+          catalogPassword: _cachedCatalogPassword,
+          provider: settings.avatarApiConfig.provider,
+        ));
+      } on Object catch (e, st) {
+        // Remote-Fehler blockieren den lokalen Save nicht (siehe HybridHeroRepository).
+        debugPrint('[settings] remote save fehlgeschlagen: $e\n$st');
+      }
+    }
+
     _controller.add(settings);
+  }
+
+  /// Verbindet das Repository mit dem Firestore-Account des eingeloggten Users.
+  ///
+  /// Beim Aufruf wird einmalig ein Sync gemaess Konflikt-Tabelle ausgefuehrt:
+  /// - lokal leer + remote leer: nichts.
+  /// - lokal gefuellt + remote leer: lokale Werte hochladen.
+  /// - lokal leer + remote gefuellt: remote Werte herunterladen.
+  /// - beide gefuellt: remote gewinnt.
+  ///
+  /// In Tests koennen [remote] und [cipher] direkt injiziert werden.
+  /// In Produktion werden sie aus der [uid] erzeugt.
+  Future<void> attachUser(
+    String uid, {
+    RemoteSecretsRepository? remote,
+    SecretsCipher? cipher,
+  }) async {
+    final effectiveRemote =
+        remote ?? FirestoreSecretsRepository(userId: uid);
+    final effectiveCipher = cipher ?? SecretsCipher.forUser(uid);
+
+    _attachedUid = uid;
+    _remote = effectiveRemote;
+    _cipher = effectiveCipher;
+
+    try {
+      await _reconcileWithRemote();
+    } on Object catch (e, st) {
+      debugPrint('[settings] remote reconcile fehlgeschlagen: $e\n$st');
+    }
+  }
+
+  /// Trennt das Repository vom Firestore-Account.
+  ///
+  /// Auf Web wird zusaetzlich der In-Memory-Cache geleert, damit ein
+  /// nachfolgender Login mit anderem User keine alten Werte erbt.
+  Future<void> detachUser() async {
+    _remote = null;
+    _cipher = null;
+    _attachedUid = null;
+
+    if (kIsWeb) {
+      _cachedApiKey = '';
+      _cachedCatalogPassword = null;
+      _controller.add(load());
+    }
+  }
+
+  /// True, sobald [attachUser] erfolgreich aufgerufen wurde.
+  bool get isAttached => _remote != null;
+
+  /// UID des aktuell verbundenen Users (oder `null`).
+  String? get attachedUid => _attachedUid;
+
+  Future<void> _reconcileWithRemote() async {
+    final remote = _remote;
+    final cipher = _cipher;
+    if (remote == null || cipher == null) {
+      return;
+    }
+
+    final localSettings = load();
+    final localApiKey = localSettings.avatarApiConfig.apiKey;
+    final localPassword = localSettings.catalogContentPassword;
+    final localProvider = localSettings.avatarApiConfig.provider;
+
+    final remoteSecrets = await remote.load();
+
+    if (remoteSecrets == null) {
+      // Remote leer: lokale Werte hochladen, falls vorhanden.
+      if (localApiKey.isNotEmpty || (localPassword?.isNotEmpty ?? false)) {
+        await remote.save(_buildRemoteSecrets(
+          cipher: cipher,
+          apiKey: localApiKey,
+          catalogPassword: localPassword,
+          provider: localProvider,
+        ));
+      }
+      return;
+    }
+
+    // Remote vorhanden: Werte entschluesseln und uebernehmen (Remote gewinnt
+    // bei beidseitig gefuellten Werten, Remote setzt auch leere Werte).
+    final remoteApiKey = remoteSecrets.apiKeyCipher.isEmpty
+        ? ''
+        : cipher.decryptString(
+            cipher: remoteSecrets.apiKeyCipher,
+            iv: remoteSecrets.apiKeyIv,
+          );
+    final remotePassword = !remoteSecrets.catalogPasswordSet
+        ? null
+        : remoteSecrets.catalogPasswordCipher.isEmpty
+            ? ''
+            : cipher.decryptString(
+                cipher: remoteSecrets.catalogPasswordCipher,
+                iv: remoteSecrets.catalogPasswordIv,
+              );
+    final remoteProvider =
+        AvatarApiProvider.fromId(remoteSecrets.apiProvider) ?? localProvider;
+
+    // Wenn lokal gefuellt und remote leer (pro Wert): lokale gewinnen — sonst Remote.
+    final mergedApiKey =
+        remoteApiKey.isEmpty && localApiKey.isNotEmpty ? localApiKey : remoteApiKey;
+    final mergedPassword = (remotePassword == null || remotePassword.isEmpty) &&
+            (localPassword?.isNotEmpty ?? false)
+        ? localPassword
+        : remotePassword;
+    final mergedProvider =
+        remoteSecrets.apiProvider.isEmpty ? localProvider : remoteProvider;
+
+    final hasLocalChange =
+        mergedApiKey != localApiKey || mergedPassword != localPassword;
+    if (hasLocalChange) {
+      await save(localSettings.copyWith(
+        avatarApiConfig: localSettings.avatarApiConfig.copyWith(
+          apiKey: mergedApiKey,
+          provider: mergedProvider,
+        ),
+        catalogContentPassword: mergedPassword,
+      ));
+    } else if (mergedApiKey != remoteApiKey ||
+        mergedPassword != remotePassword ||
+        mergedProvider.name != remoteSecrets.apiProvider) {
+      // Remote war unvollstaendig — lokales Bild dorthin schreiben.
+      await remote.save(_buildRemoteSecrets(
+        cipher: cipher,
+        apiKey: mergedApiKey,
+        catalogPassword: mergedPassword,
+        provider: mergedProvider,
+      ));
+    }
+  }
+
+  static RemoteSecrets _buildRemoteSecrets({
+    required SecretsCipher cipher,
+    required String apiKey,
+    required String? catalogPassword,
+    required AvatarApiProvider provider,
+  }) {
+    final apiEnc = cipher.encryptString(apiKey);
+    final pwPlain = catalogPassword ?? '';
+    final pwEnc = cipher.encryptString(pwPlain);
+    return RemoteSecrets(
+      catalogPasswordCipher: pwEnc.cipher,
+      catalogPasswordIv: pwEnc.iv,
+      catalogPasswordSet: catalogPassword != null && catalogPassword.isNotEmpty,
+      apiKeyCipher: apiEnc.cipher,
+      apiKeyIv: apiEnc.iv,
+      apiProvider: provider.name,
+      cipherVersion: 1,
+      lastModified: DateTime.now(),
+    );
   }
 
   /// Stream der Einstellungsaenderungen.

@@ -177,6 +177,16 @@ class _AppStartupGateState extends State<AppStartupGate> {
         heroRepository = hybrid;
       }
 
+      // Settings: User-spezifischen Firestore-Sync fuer Geheimnisse
+      // (Katalog-Passwort, Bildgenerierungs-API-Key) aktivieren/deaktivieren.
+      if (authUid != null && widget.firebaseBootstrap.isAvailable) {
+        debugPrint('[startup] settings.attachUser uid=$authUid');
+        await widget.settingsRepository.attachUser(authUid);
+      } else if (widget.settingsRepository.isAttached) {
+        debugPrint('[startup] settings.detachUser');
+        await widget.settingsRepository.detachUser();
+      }
+
       if (generation != _loadGeneration) {
         if (hybrid != null) {
           await hybrid.close();

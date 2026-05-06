@@ -56,6 +56,16 @@ service cloud.firestore {
                               && request.auth.uid == userId
                               && request.resource.size() < 200 * 1024;
       }
+
+      // Verschluesselte Settings-Geheimnisse (Katalog-Passwort, API-Key).
+      // Dokument ist klein (~1 KB), nur der eigene User darf zugreifen.
+      match /private/{document=**} {
+        allow read, delete: if request.auth != null
+                            && request.auth.uid == userId;
+        allow create, update: if request.auth != null
+                              && request.auth.uid == userId
+                              && request.resource.size() < 16 * 1024;
+      }
     }
 
     // Alle anderen Pfade blockiert.
