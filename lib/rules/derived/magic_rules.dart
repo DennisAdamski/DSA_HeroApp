@@ -238,6 +238,85 @@ List<String> parseSpellTraits(String traits) {
       .toList(growable: false);
 }
 
+/// Beschreibt, ob die Magieresistenz in die Zauberprobe einfliessen sollte.
+///
+/// Die Katalogdaten fuehren den `(+MR)`-Probezusatz noch nicht strukturiert.
+/// Darum nutzt die Anzeige zunaechst explizite MR-Hinweise in Modifikationen
+/// und sonst das Zielobjekt als vorsichtige Ableitung.
+String describeSpellMagicResistanceProbe({
+  required String targetObject,
+  String modifier = '',
+  String modifications = '',
+}) {
+  final normalizedModifier = _normalizeMagicResistanceText(
+    '$modifier $modifications',
+  );
+  if (_mentionsMagicResistance(normalizedModifier)) {
+    return 'Ja, in die Probe einbeziehen';
+  }
+
+  final normalizedTargetObject = _normalizeMagicResistanceText(targetObject);
+  if (normalizedTargetObject.isEmpty) {
+    return 'Unklar (kein Zielobjekt im Katalog)';
+  }
+  if (_isVoluntaryOrSelfTarget(normalizedTargetObject)) {
+    return 'Nein, Ziel gilt als freiwillig';
+  }
+  if (_isResistingCreatureTarget(normalizedTargetObject)) {
+    return 'Ja, in die Probe einbeziehen';
+  }
+  if (_isNonResistingTarget(normalizedTargetObject)) {
+    return 'Nein';
+  }
+  return 'Unklar (Meisterentscheid)';
+}
+
+String _normalizeMagicResistanceText(String text) {
+  return text.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
+}
+
+bool _mentionsMagicResistance(String text) {
+  return RegExp(r'(^|[^a-z])mr([^a-z]|$)').hasMatch(text) ||
+      text.contains('magieresistenz');
+}
+
+bool _isVoluntaryOrSelfTarget(String targetObject) {
+  return targetObject.contains('freiwillig') ||
+      targetObject.contains('selbst') ||
+      targetObject.contains('eigene person');
+}
+
+bool _isResistingCreatureTarget(String targetObject) {
+  const resistingTargets = <String>[
+    'einzelperson',
+    'person',
+    'personen',
+    'einzelwesen',
+    'lebewesen',
+    'wesen',
+    'tier',
+    'tiere',
+    'kulturschaffende',
+    'opfer',
+  ];
+  return resistingTargets.any(targetObject.contains);
+}
+
+bool _isNonResistingTarget(String targetObject) {
+  const nonResistingTargets = <String>[
+    'objekt',
+    'gegenstand',
+    'zone',
+    'umgebung',
+    'nahrungsmenge',
+    'pflanze',
+    'pflanzen',
+    'element',
+    'elemente',
+  ];
+  return nonResistingTargets.any(targetObject.contains);
+}
+
 /// Der feste TP-Bonus des Axxeleratus auf Nahkampfangriffe.
 int computeAxxeleratusTpBonus({required bool axxeleratusActive}) {
   return axxeleratusActive ? 2 : 0;
@@ -290,10 +369,7 @@ String buildAxxeleratusDefenseHint({required bool axxeleratusActive}) {
 
 /// Ergebnis-Typ fuer einen aktiven Zaubereffekt-Chip im Inspector.
 class ActiveSpellEffectChip {
-  const ActiveSpellEffectChip({
-    required this.label,
-    required this.bonusText,
-  });
+  const ActiveSpellEffectChip({required this.label, required this.bonusText});
 
   final String label;
   final String bonusText;
@@ -317,10 +393,9 @@ List<ActiveSpellEffectChip> describeActiveSpellEffects({
     if (axxPaBaseBonus != 0) parts.add('PA+$axxPaBaseBonus');
     if (axxAusweichenBonus != 0) parts.add('AW+$axxAusweichenBonus');
     if (axxTpBonus != 0) parts.add('TP+$axxTpBonus');
-    chips.add(ActiveSpellEffectChip(
-      label: 'Axxeleratus',
-      bonusText: parts.join(' '),
-    ));
+    chips.add(
+      ActiveSpellEffectChip(label: 'Axxeleratus', bonusText: parts.join(' ')),
+    );
   }
   return chips;
 }

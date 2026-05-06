@@ -716,6 +716,11 @@ Kampftalente erkennt man an: `group == 'Kampftalent'` **oder** `weaponCategory !
 | `ruleMeta` | Optionale Herkunfts-, Beleg- und Epik-Metadaten |
 | `active` | Im App verfügbar? |
 
+Der Zauberdetaildialog zeigt Merkmale und einen MR-Hinweis an. Der Hinweis
+wird ueber `describeSpellMagicResistanceProbe` aus expliziten MR-Texten und
+dem Zielobjekt abgeleitet, solange `(+MR)` nicht als eigenes Katalogfeld
+vorliegt.
+
 ### `ManeuverDef`
 
 | Feld | Bedeutung |
@@ -1282,6 +1287,10 @@ Die meisten Tabs verwalten ihren Draft-State lokal (z. B. `_draftTalents`,
 `_draftCombatConfig`) und synchronisieren beim Laden/Speichern mit dem Repository.
 Der Inventar-Tab ist die Ausnahme: Inventaritems und Dukaten werden dort direkt
 pro Aktion gespeichert und nutzen keinen globalen Edit-Modus.
+Der Dukatenstand bleibt ein Freitextfeld, kann aber im Inventar ueber
+Muenztasten fuer Dukaten, Silbertaler und Kreuzer angepasst werden. Die
+Umrechnung und Normalisierung liegt in `lib/rules/derived/currency_rules.dart`,
+damit Widget- und Abenteuerlogik dieselbe Kreuzer-Praezision nutzen.
 
 ---
 
@@ -1394,6 +1403,8 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   Zaubers wird bei mehreren Optionen eine Repraesentation ausgewaehlt.
 - Fremdrepraesentation erhoeht die Lernkomplexitaet eines Zaubers um `+2`
   Stufen, bevor Hauszauber, Merkmalskenntnis und Begabung angewendet werden.
+- Der Zauberdetaildialog zeigt zusaetzlich Merkmale und einen abgeleiteten
+  Hinweis, ob Magieresistenz in die Probe einbezogen werden soll.
 
 ### Update 2026-03-08: Rohstart, Startwerte und Eigenschaftsmaximum
 
@@ -1471,6 +1482,9 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   Abenteuer-Beute atomar an, prueft Ruecknahmen gegen verbrauchte SE,
   fehlende Gegenstaende und ungueltige Dukatenstaende und setzt dabei den
   Abenteuerstatus konsistent zwischen `Aktuell` und `Abgeschlossen`.
+- `currency_rules.dart` normalisiert Dukaten-, Silbertaler-, Heller- und
+  Kreuzerwerte auf Kreuzer und formatiert sie wieder als kompakten
+  Dukatenwert fuer Persistenz und UI.
 - Der Abenteuer-Workspace beendet aktuelle Abenteuer ueber einen
   `Abschliessen`-Dialog mit Enddaten, Dukaten-Eingabe, Reward-Zusammenfassung
   und detailierter Gegenstandserfassung; das weltliche Enddatum ist mit dem

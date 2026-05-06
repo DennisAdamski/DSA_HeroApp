@@ -1,4 +1,4 @@
-import 'dart:io' as io;
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_image_evict.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -439,7 +439,7 @@ class _AvatarGenerationDialogState
         heroStoragePath: location.effectivePath,
         avatarFileName: '${widget.heroId}.png',
       );
-      FileImage(io.File(path)).evict();
+      await evictAvatarImage(path);
 
       if (!mounted) return;
       Navigator.pop(context);
