@@ -292,4 +292,16 @@ class _FakeSettingsRepository implements HiveSettingsRepository {
   Stream<AppSettings> watch() {
     return _controller.stream;
   }
+
+  @override
+  Future<void> attachUser(String uid, {Object? remote, Object? cipher}) async {}
+
+  @override
+  Future<void> detachUser() async {}
+
+  @override
+  bool get isAttached => false;
+
+  @override
+  String? get attachedUid => null;
 }
