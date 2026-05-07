@@ -48,9 +48,11 @@ class HiveSettingsRepository {
   ///
   /// Auf Web wird FlutterSecureStorage uebergangen — sensible Felder
   /// koennen dort ohnehin nicht durchgehend abgesichert werden, und einige
-  /// Browser werfen bei der Initialisierung Fehler. Stattdessen werden
-  /// Fallback-Defaults gesetzt; Avatar-Generierung und verschluesselte
-  /// Kataloge sind im Web v1 ohnehin nicht aktiv.
+  /// Browser werfen bei der Initialisierung Fehler. Der API-Key bleibt
+  /// deshalb auf Web nicht persistiert. Das Katalog-Passwort wird seit
+  /// Web v2 dagegen als Klartext in der Hive-Box (IndexedDB) abgelegt — es
+  /// dient nur als Casual-Schutz vor versehentlichem Lesen geschuetzter
+  /// Inhalte und muss zur Entschluesselung ohnehin im Klartext im RAM liegen.
   static Future<HiveSettingsRepository> create({
     required String storagePath,
   }) async {
@@ -58,7 +60,12 @@ class HiveSettingsRepository {
     final box = await Hive.openBox<Map>(_boxName, path: storagePath);
 
     if (kIsWeb) {
-      return HiveSettingsRepository._(box, secure, '', null);
+      final raw = box.get(_settingsKey);
+      final cachedPassword = raw == null
+          ? null
+          : AppSettings.fromJson(raw.cast<String, dynamic>())
+                .catalogContentPassword;
+      return HiveSettingsRepository._(box, secure, '', cachedPassword);
     }
 
     var cachedApiKey = await secure.read(key: _apiKeySecureKey) ?? '';
@@ -122,7 +129,7 @@ class HiveSettingsRepository {
     _cachedCatalogPassword = settings.catalogContentPassword;
 
     if (kIsWeb) {
-      await _box.put(_settingsKey, _stripSensitiveFields(settings).toJson());
+      await _box.put(_settingsKey, _stripWebSensitiveFields(settings).toJson());
     } else {
       await Future.wait([
         _secure.write(key: _apiKeySecureKey, value: _cachedApiKey),
@@ -317,5 +324,11 @@ class HiveSettingsRepository {
   static AppSettings _stripSensitiveFields(AppSettings s) => s.copyWith(
         avatarApiConfig: s.avatarApiConfig.copyWith(apiKey: ''),
         catalogContentPassword: null,
+      );
+
+  // Auf Web bleibt der API-Key gestrippt, das Katalog-Passwort wird dagegen
+  // bewusst im Klartext in der Hive-Box persistiert (siehe `create`).
+  static AppSettings _stripWebSensitiveFields(AppSettings s) => s.copyWith(
+        avatarApiConfig: s.avatarApiConfig.copyWith(apiKey: ''),
       );
 }
