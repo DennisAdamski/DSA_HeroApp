@@ -508,7 +508,7 @@ class _CollectionOpenTile extends StatelessWidget {
   }
 
   void _showAddDialog(BuildContext context) {
-    showDialog<ReiseberichtOpenItem>(
+    showAdaptiveInputDialog<ReiseberichtOpenItem>(
       context: context,
       builder: (ctx) => _OpenItemAddDialog(def: def),
     ).then((item) {

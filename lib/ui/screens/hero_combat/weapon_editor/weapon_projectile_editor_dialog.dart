@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 
 /// Bearbeitet einen einzelnen Geschosstyp innerhalb des Waffen-Editors.
@@ -69,67 +70,61 @@ class _RangedProjectileEditorDialogState
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(
-        widget.isNew ? 'Geschoss hinzufuegen' : 'Geschoss bearbeiten',
-      ),
-      content: SizedBox(
-        width: kDialogWidthSmall,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+    return AdaptiveInputDialog(
+      title: widget.isNew ? 'Geschoss hinzufuegen' : 'Geschoss bearbeiten',
+      maxWidth: kDialogWidthSmall,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            key: const ValueKey<String>('combat-projectile-form-name'),
+            controller: _nameController,
+            decoration: const InputDecoration(
+              labelText: 'Name',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
-              TextField(
-                key: const ValueKey<String>('combat-projectile-form-name'),
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(),
-                ),
+              _projectileNumberField(
+                keyName: 'combat-projectile-form-count',
+                label: 'Anzahl',
+                controller: _countController,
               ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _projectileNumberField(
-                    keyName: 'combat-projectile-form-count',
-                    label: 'Anzahl',
-                    controller: _countController,
-                  ),
-                  _projectileNumberField(
-                    keyName: 'combat-projectile-form-tp-mod',
-                    label: 'TP Mod',
-                    controller: _tpModController,
-                  ),
-                  _projectileNumberField(
-                    keyName: 'combat-projectile-form-ini-mod',
-                    label: 'INI Mod',
-                    controller: _iniModController,
-                  ),
-                  _projectileNumberField(
-                    keyName: 'combat-projectile-form-at-mod',
-                    label: 'AT Mod',
-                    controller: _atModController,
-                  ),
-                ],
+              _projectileNumberField(
+                keyName: 'combat-projectile-form-tp-mod',
+                label: 'TP Mod',
+                controller: _tpModController,
               ),
-              const SizedBox(height: 10),
-              TextField(
-                key: const ValueKey<String>(
-                  'combat-projectile-form-description',
-                ),
-                controller: _descriptionController,
-                minLines: 2,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  labelText: 'Beschreibung',
-                  border: OutlineInputBorder(),
-                ),
+              _projectileNumberField(
+                keyName: 'combat-projectile-form-ini-mod',
+                label: 'INI Mod',
+                controller: _iniModController,
+              ),
+              _projectileNumberField(
+                keyName: 'combat-projectile-form-at-mod',
+                label: 'AT Mod',
+                controller: _atModController,
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 10),
+          TextField(
+            key: const ValueKey<String>(
+              'combat-projectile-form-description',
+            ),
+            controller: _descriptionController,
+            minLines: 2,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              labelText: 'Beschreibung',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ],
       ),
       actions: [
         TextButton(
