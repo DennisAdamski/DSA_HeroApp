@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 
 /// Zeigt einen Dialog zum Erstellen einer neuen Gruppe.
 ///
@@ -11,7 +12,7 @@ Future<String?> showGruppeErstellenDialog({
   required WidgetRef ref,
   required String heroId,
 }) {
-  return showDialog<String>(
+  return showAdaptiveInputDialog<String>(
     context: context,
     builder: (context) => _GruppeErstellenDialog(
       heroId: heroId,
@@ -46,8 +47,8 @@ class _GruppeErstellenDialogState extends State<_GruppeErstellenDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Neue Gruppe erstellen'),
+    return AdaptiveInputDialog(
+      title: 'Neue Gruppe erstellen',
       content: TextField(
         controller: _controller,
         autofocus: true,

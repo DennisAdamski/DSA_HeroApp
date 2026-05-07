@@ -12,7 +12,7 @@ import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 Future<AttributeModifiers?> showAttributoInputDialog({
   required BuildContext context,
 }) {
-  return showAdaptiveDetailSheet<AttributeModifiers>(
+  return showAdaptiveInputDialog<AttributeModifiers>(
     context: context,
     builder: (_) => const _AttributoInputDialog(),
   );
@@ -127,26 +127,22 @@ class _AttributoInputDialogState extends State<_AttributoInputDialog> {
       }
     }
 
-    return AlertDialog(
-      title: const Text('Attributo – Boni eingeben'),
-      content: SizedBox(
-        width: kDialogWidthSmall,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Gib die temporären Boni für jede Eigenschaft ein (0 für keine Änderung).',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: kDialogSectionSpacing),
-              ...rows,
-            ],
+    return AdaptiveInputDialog(
+      title: 'Attributo – Boni eingeben',
+      maxWidth: kDialogWidthSmall,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Gib die temporären Boni für jede Eigenschaft ein (0 für keine Änderung).',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
-        ),
+          const SizedBox(height: kDialogSectionSpacing),
+          ...rows,
+        ],
       ),
       actions: [
         TextButton(

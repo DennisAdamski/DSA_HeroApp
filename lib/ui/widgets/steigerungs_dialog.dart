@@ -51,7 +51,7 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
   bool lehrmeisterVerfuegbar = false,
   String? komplexitaetsHinweis,
 }) {
-  return showAdaptiveDetailSheet<SteigerungsErgebnis>(
+  return showAdaptiveInputDialog<SteigerungsErgebnis>(
     context: context,
     builder: (dialogContext) {
       return _SteigerungsDialog(
@@ -260,15 +260,13 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
     final basisKosten = _basisKosten;
     final komplexitaetsHinweis = _komplexitaetsHinweisText();
 
-    return AlertDialog(
-      title: Text('${widget.bezeichnung} steigern'),
-      content: SizedBox(
-        width: kDialogWidthSmall,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+    return AdaptiveInputDialog(
+      title: '${widget.bezeichnung} steigern',
+      maxWidth: kDialogWidthSmall,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
               Text(
                 'Aktueller Wert: ${_aktuellerWertLabel()} | '
                 'Maximaler Wert: ${widget.maxWert}',
@@ -453,9 +451,7 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
                   ),
                 ),
               ],
-            ],
-          ),
-        ),
+        ],
       ),
       actions: [
         TextButton(

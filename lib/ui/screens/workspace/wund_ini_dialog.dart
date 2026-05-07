@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 
 /// Ergebnis des Kopfwunden-INI-Dialogs inklusive Protokolleintrag.
 class WundIniDialogResult {
@@ -22,7 +23,7 @@ class WundIniDialogResult {
 /// Gibt den gewuerfelten oder eingegebenen Wert (2-12) zurueck,
 /// oder `null` bei Abbruch.
 Future<WundIniDialogResult?> showWundIniDialog(BuildContext context) {
-  return showDialog<WundIniDialogResult>(
+  return showAdaptiveInputDialog<WundIniDialogResult>(
     context: context,
     builder: (_) => const _WundIniDialog(),
   );
@@ -85,8 +86,8 @@ class _WundIniDialogState extends State<_WundIniDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Kopfwunde: INI-Malus'),
+    return AdaptiveInputDialog(
+      title: 'Kopfwunde: INI-Malus',
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

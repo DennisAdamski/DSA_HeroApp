@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 
 /// Zeigt einen Dialog zum manuellen Hinzufuegen eines externen Helden.
 Future<void> showManuellerHeldDialog({
@@ -13,7 +14,7 @@ Future<void> showManuellerHeldDialog({
   required String heroId,
   required String gruppenCode,
 }) {
-  return showDialog<void>(
+  return showAdaptiveInputDialog<void>(
     context: context,
     builder: (context) => _ManuellerHeldDialog(
       heroId: heroId,
@@ -69,18 +70,17 @@ class _ManuellerHeldDialogState extends State<_ManuellerHeldDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Held manuell hinzufügen'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _nameController,
-              autofocus: true,
-              decoration: const InputDecoration(labelText: 'Name *'),
-              textCapitalization: TextCapitalization.words,
-            ),
+    return AdaptiveInputDialog(
+      title: 'Held manuell hinzufügen',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameController,
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'Name *'),
+            textCapitalization: TextCapitalization.words,
+          ),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -127,16 +127,15 @@ class _ManuellerHeldDialogState extends State<_ManuellerHeldDialog> {
               ],
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _notizenController,
-              decoration: const InputDecoration(
-                labelText: 'Notizen',
-                hintText: 'Optionale Anmerkungen',
-              ),
-              maxLines: 2,
+          TextField(
+            controller: _notizenController,
+            decoration: const InputDecoration(
+              labelText: 'Notizen',
+              hintText: 'Optionale Anmerkungen',
             ),
-          ],
-        ),
+            maxLines: 2,
+          ),
+        ],
       ),
       actions: [
         TextButton(
