@@ -1,11 +1,11 @@
 {
-    "name": "flutter_application_1",
-    "short_name": "flutter_application_1",
+    "name": "DSA Heldenverwaltung",
+    "short_name": "DSA Heldenverwaltung",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#14110E",
+    "theme_color": "#2A5A73",
+    "description": "Dein digitaler Heldenbogen.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

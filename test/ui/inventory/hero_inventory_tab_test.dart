@@ -530,11 +530,11 @@ void main() {
 
       expect(
         find.byKey(const ValueKey<String>('inventory-editor-panel')),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         find.text('Gegenstand auswählen oder oben rechts hinzufügen.'),
-        findsOneWidget,
+        findsNothing,
       );
 
       await tester.tap(
@@ -542,6 +542,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      expect(
+        find.byKey(const ValueKey<String>('inventory-editor-panel')),
+        findsOneWidget,
+      );
       expect(find.text('Gegenstand bearbeiten'), findsOneWidget);
       expect(
         find.byKey(const ValueKey<String>('inventory-editor-name')),

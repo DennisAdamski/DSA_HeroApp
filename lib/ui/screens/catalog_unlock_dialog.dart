@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
-import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 
@@ -15,40 +15,56 @@ Future<bool> showCatalogUnlockDialog({
   required BuildContext context,
   required WidgetRef ref,
 }) async {
-  // Ersten verschluesselten Wert aus dem Katalog als Probe verwenden.
-  final catalog = ref.read(rulesCatalogProvider).valueOrNull;
-  String? probeValue;
-  if (catalog != null) {
-    for (final m in catalog.maneuvers) {
-      if (isEncryptedValue(m.erklarungLang)) {
-        probeValue = m.erklarungLang;
-        break;
-      }
-    }
-    if (probeValue == null) {
-      for (final a in catalog.combatSpecialAbilities) {
-        if (isEncryptedValue(a.erklarungLang)) {
-          probeValue = a.erklarungLang;
-          break;
-        }
-      }
-    }
-    if (probeValue == null) {
-      for (final s in catalog.spells) {
-        if (isEncryptedValue(s.wirkung)) {
-          probeValue = s.wirkung;
-          break;
-        }
-      }
-    }
-  }
-
-  if (probeValue == null) {
-    // Kein verschluesselter Inhalt vorhanden — nichts zu entsperren.
+  // Auf den Katalog warten — sonst greift `valueOrNull` ins Leere, solange der
+  // Provider noch laedt (typisch nach Tab-/App-Start im Web), und der Dialog
+  // wuerde stillschweigend nicht oeffnen.
+  final RulesCatalog catalog;
+  try {
+    catalog = await ref.read(rulesCatalogProvider.future);
+  } on Object {
+    if (!context.mounted) return false;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Katalog konnte nicht geladen werden.')),
+    );
     return false;
   }
 
+  // Ersten verschluesselten Wert aus dem Katalog als Probe verwenden.
+  String? probeValue;
+  for (final m in catalog.maneuvers) {
+    if (isEncryptedValue(m.erklarungLang)) {
+      probeValue = m.erklarungLang;
+      break;
+    }
+  }
+  if (probeValue == null) {
+    for (final a in catalog.combatSpecialAbilities) {
+      if (isEncryptedValue(a.erklarungLang)) {
+        probeValue = a.erklarungLang;
+        break;
+      }
+    }
+  }
+  if (probeValue == null) {
+    for (final s in catalog.spells) {
+      if (isEncryptedValue(s.wirkung)) {
+        probeValue = s.wirkung;
+        break;
+      }
+    }
+  }
+
   if (!context.mounted) return false;
+
+  if (probeValue == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Keine geschuetzten Katalog-Inhalte vorhanden.'),
+      ),
+    );
+    return false;
+  }
+
   final result = await showDialog<bool>(
     context: context,
     builder: (_) => _CatalogUnlockDialog(ref: ref, probeValue: probeValue!),
@@ -71,10 +87,23 @@ class _CatalogUnlockDialog extends StatefulWidget {
 
 class _CatalogUnlockDialogState extends State<_CatalogUnlockDialog> {
   final _controller = TextEditingController();
+  final _focusNode = FocusNode();
   String? _errorText;
 
   @override
+  void initState() {
+    super.initState();
+    // Mobile-Browser ignorieren `autofocus` beim Dialog-Aufbau gerne — Fokus
+    // explizit nach dem ersten Frame anfordern, damit die Soft-Tastatur
+    // zuverlaessig hochkommt.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  @override
   void dispose() {
+    _focusNode.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -110,8 +139,11 @@ class _CatalogUnlockDialogState extends State<_CatalogUnlockDialog> {
         width: 320,
         child: TextField(
           controller: _controller,
+          focusNode: _focusNode,
           obscureText: true,
           autofocus: true,
+          keyboardType: TextInputType.visiblePassword,
+          textInputAction: TextInputAction.done,
           decoration: InputDecoration(
             labelText: 'Passwort',
             border: const OutlineInputBorder(),
