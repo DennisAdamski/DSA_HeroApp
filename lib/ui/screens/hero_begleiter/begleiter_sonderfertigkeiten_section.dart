@@ -38,7 +38,7 @@ class _SonderfertigkeitenSection extends StatelessWidget {
                 final ctx = context;
                 if (!ctx.mounted) return;
                 final result =
-                    await showAdaptiveDetailSheet<HeroCompanionSonderfertigkeit>(
+                    await showAdaptiveInputDialog<HeroCompanionSonderfertigkeit>(
                   context: ctx,
                   builder: (_) => _SonderfertigkeitDialog(initial: sfs[i]),
                 );
@@ -60,7 +60,7 @@ class _SonderfertigkeitenSection extends StatelessWidget {
           const SizedBox(height: 8),
           TextButton.icon(
             onPressed: () async {
-              final result = await showAdaptiveDetailSheet<HeroCompanionSonderfertigkeit>(
+              final result = await showAdaptiveInputDialog<HeroCompanionSonderfertigkeit>(
                 context: context,
                 builder: (_) => const _SonderfertigkeitDialog(),
               );
@@ -175,10 +175,10 @@ class _SonderfertigkeitDialogState extends State<_SonderfertigkeitDialog> {
   @override
   Widget build(BuildContext context) {
     final isNew = widget.initial == null;
-    return AlertDialog(
-      title: Text(
-        isNew ? 'Sonderfertigkeit hinzufügen' : 'Sonderfertigkeit bearbeiten',
-      ),
+    return AdaptiveInputDialog(
+      title: isNew
+          ? 'Sonderfertigkeit hinzufügen'
+          : 'Sonderfertigkeit bearbeiten',
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -189,6 +189,7 @@ class _SonderfertigkeitDialogState extends State<_SonderfertigkeitDialog> {
               border: OutlineInputBorder(),
               isDense: true,
             ),
+            autofocus: true,
           ),
           const SizedBox(height: _fieldSpacing),
           TextField(

@@ -15,7 +15,7 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
   final Future<void> Function()? onEnsureEditing;
 
   Future<void> _editAbility(BuildContext context, int index) async {
-    final result = await showAdaptiveDetailSheet<MagicSpecialAbility>(
+    final result = await showAdaptiveInputDialog<MagicSpecialAbility>(
       context: context,
       builder: (_) => _MagicSpecialAbilityDialog(initial: abilities[index]),
     );
@@ -38,7 +38,7 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
     if (!context.mounted) {
       return;
     }
-    final result = await showAdaptiveDetailSheet<MagicSpecialAbility>(
+    final result = await showAdaptiveInputDialog<MagicSpecialAbility>(
       context: context,
       builder: (_) => const _MagicSpecialAbilityDialog(),
     );
@@ -167,39 +167,34 @@ class _MagicSpecialAbilityDialogState
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(
-        _isNew ? 'Sonderfertigkeit hinzufügen' : 'Sonderfertigkeit bearbeiten',
-      ),
-      content: SizedBox(
-        width: kDialogWidthMedium,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  hintText: 'z. B. Kraftlinienmagie',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                autofocus: true,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _beschreibungController,
-                decoration: const InputDecoration(
-                  labelText: 'Beschreibung',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                maxLines: 4,
-              ),
-            ],
+    return AdaptiveInputDialog(
+      title: _isNew
+          ? 'Sonderfertigkeit hinzufügen'
+          : 'Sonderfertigkeit bearbeiten',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(
+              labelText: 'Name',
+              hintText: 'z. B. Kraftlinienmagie',
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            autofocus: true,
           ),
-        ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _beschreibungController,
+            decoration: const InputDecoration(
+              labelText: 'Beschreibung',
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            maxLines: 4,
+          ),
+        ],
       ),
       actions: [
         TextButton(
