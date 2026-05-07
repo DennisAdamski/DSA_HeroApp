@@ -117,6 +117,13 @@ Empfohlener Ablauf:
 4. Optional das Artefakt bei VirusTotal hochladen.
 5. Eventuelle Treffer mit den oben genannten legitimen Funktionen abgleichen.
 
+Der Windows-Build bindet `flutter_secure_storage_windows` ein. Das Plugin nutzt
+ATL/MFC-Header und Bibliotheken (`atlstr.h`, `atls.lib`); die Pfade werden in
+`windows/CMakeLists.txt` fuer das Plugin-Ziel aufgeloest. Wenn ein Build trotz
+dieser Konfiguration an ATL/MFC scheitert, ist in der von CMake verwendeten
+Visual-Studio- oder Build-Tools-Instanz die Komponente `C++ ATL/MFC`
+nachzuinstallieren.
+
 Fuer Schritt 2 bis 4 liegt ein Helfer unter
 `tool/audit_windows_artifact.ps1`.
 
