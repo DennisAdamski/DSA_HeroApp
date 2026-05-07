@@ -50,6 +50,9 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
   HeroInventoryEntry? _pendingNewEntry;
   int _editorRevision = 0;
 
+  bool get _isDetailPanelVisible =>
+      _selectedIndex != null || _pendingNewEntry != null;
+
   static const List<AdaptiveTableColumnSpec>
   _columnSpecs = <AdaptiveTableColumnSpec>[
     AdaptiveTableColumnSpec(
@@ -689,52 +692,55 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     final table = _buildTable(context);
 
     if (isWide) {
+      final listColumn = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const CodexTabHeader(
+            title: 'Ausrüstungs-Ledger',
+            subtitle:
+                'Traglast, Herkunft und Ausrüstungsstatus in einer direkten Inventartabelle.',
+            assetPath: 'assets/ui/codex/compass_mark.png',
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              _pagePadding,
+              _pagePadding,
+              _pagePadding,
+              0,
+            ),
+            child: DukatenField(
+              key: const ValueKey<String>('inventory-dukaten-field'),
+              value: hero.dukaten,
+              onCommit: _saveDukaten,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: _pagePadding - 4,
+            ),
+            child: filterBar,
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: _pagePadding,
+              ),
+              child: table,
+            ),
+          ),
+        ],
+      );
+
+      if (!_isDetailPanelVisible) {
+        return listColumn;
+      }
+
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const CodexTabHeader(
-                  title: 'Ausrüstungs-Ledger',
-                  subtitle:
-                      'Traglast, Herkunft und Ausrüstungsstatus in einer direkten Inventartabelle.',
-                  assetPath: 'assets/ui/codex/compass_mark.png',
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    _pagePadding,
-                    _pagePadding,
-                    _pagePadding,
-                    0,
-                  ),
-                  child: DukatenField(
-                    key: const ValueKey<String>('inventory-dukaten-field'),
-                    value: hero.dukaten,
-                    onCommit: _saveDukaten,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: _pagePadding - 4,
-                  ),
-                  child: filterBar,
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: _pagePadding,
-                    ),
-                    child: table,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          Expanded(flex: 3, child: listColumn),
           const VerticalDivider(width: 1),
           Expanded(
             flex: 2,
