@@ -27,6 +27,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Die adaptive Settings-Navigation wird von `lib/ui/screens/settings_screen.dart`
   orchestriert; wiederverwendbare Teilseiten liegen unter
   `lib/ui/screens/settings/`.
+- Der Settings-Bereich `Rechtliches` enthaelt den inoffiziellen Fanprojekt-,
+  Marken- und Rechtehinweis fuer DSA und Ulisses Spiele.
 - Reisebericht-Daten bleiben separat unter `assets/catalogs/reiseberichte/house_rules_v1/`.
 - Projektsprache ist Deutsch; sichtbare UI-Texte sollen echte Umlaute und das Eszett verwenden, wenn technisch moeglich.
 - Der Windows-Release-Audit fuer EXE/MSIX-Artefakte ist in `docs/windows_antivirus_audit.md` beschrieben; der zugehoerige Helfer liegt unter `tool/audit_windows_artifact.ps1`.

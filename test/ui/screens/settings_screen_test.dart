@@ -72,13 +72,37 @@ void main() {
       expect(find.text('API-Schlüssel'), findsOneWidget);
 
       await tester.tap(
-        find.byKey(const ValueKey<String>('settings-menu-debugMode')),
+        find.byKey(const ValueKey<String>('settings-menu-legal')),
       );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('settings-detail-legal')),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('inoffizielles Fanprojekt', findRichText: true),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Ulisses Spiele GmbH', findRichText: true),
+        findsOneWidget,
+      );
+
+      final debugModeTile = find.byKey(
+        const ValueKey<String>('settings-menu-debugMode'),
+      );
+      final navigationScrollable = find.ancestor(
+        of: debugModeTile,
+        matching: find.byType(Scrollable),
+      );
+      await tester.drag(navigationScrollable, const Offset(0, -160));
+      await tester.pumpAndSettle();
+      await tester.tap(debugModeTile);
       await tester.pumpAndSettle();
 
       expect(repository.load().debugModus, isTrue);
       expect(
-        find.byKey(const ValueKey<String>('settings-detail-imageGeneration')),
+        find.byKey(const ValueKey<String>('settings-detail-legal')),
         findsOneWidget,
       );
     },
@@ -116,12 +140,40 @@ void main() {
       expect(find.text('Aktiver Heldenspeicher'), findsNothing);
 
       await tester.tap(
-        find.byKey(const ValueKey<String>('settings-menu-debugMode')),
+        find.byKey(const ValueKey<String>('settings-menu-legal')),
       );
       await tester.pumpAndSettle();
 
-      expect(repository.load().debugModus, isTrue);
+      expect(find.text('Rechtliches'), findsOneWidget);
+      expect(
+        find.textContaining('inoffizielles Fanprojekt', findRichText: true),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Ulisses Spiele GmbH', findRichText: true),
+        findsOneWidget,
+      );
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
       expect(find.text('Bereiche'), findsOneWidget);
+      expect(find.text('Rechtehinweis'), findsNothing);
+
+      final debugModeTile = find.byKey(
+        const ValueKey<String>('settings-menu-debugMode'),
+      );
+      final navigationScrollable = find.ancestor(
+        of: debugModeTile,
+        matching: find.byType(Scrollable),
+      );
+      await tester.drag(navigationScrollable, const Offset(0, -160));
+      await tester.pumpAndSettle();
+      await tester.tap(debugModeTile);
+      await tester.pumpAndSettle();
+
+      expect(repository.load().debugModus, isTrue);
+      expect(debugModeTile, findsOneWidget);
       expect(find.text('Aktiver Heldenspeicher'), findsNothing);
     },
   );
