@@ -166,6 +166,8 @@ Technischer Stack:
 - Der Settings-Bereich nutzt adaptive Unterseiten: auf schmalen Layouts als
   Drilldown-Navigation, ab Tablet-Landscape mit linker Bereichsliste und
   rechter Detailansicht
+- Settings-Bereich `Rechtliches` fuer Autor-, Fanprojekt-, Marken- und
+  Rechtehinweise zu DSA und Ulisses Spiele
 - Hero-Exporte koennen benoetigte Custom-Katalogeintraege mitsenden, damit
   referenzierte Hausregeln beim Import direkt wieder aufloesbar sind
 - Reisebericht-Daten liegen bewusst separat unter

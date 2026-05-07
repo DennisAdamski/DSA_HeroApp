@@ -1,5 +1,17 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 
+const String _legalDisclaimerText =
+    'DSA Heldenverwaltung ist ein inoffizielles Fanprojekt von Dennis Adamski. '
+    'Die App steht in keiner Verbindung zu Ulisses Spiele und wird nicht von '
+    'Ulisses Spiele geprüft, unterstützt oder herausgegeben.\n\n'
+    '„DAS SCHWARZE AUGE“, „AVENTURIEN“, „DERE“, „MYRANOR“, „THARUN“, '
+    '„UTHURIA“, „RIESLAND“ und „THE DARK EYE“ sind eingetragene Marken der '
+    'Ulisses Spiele GmbH, Waldems. Offizielle Texte, Grafiken, Logos, Artworks, '
+    'Layouts und sonstige Inhalte zu Das Schwarze Auge sind urheber-, marken- '
+    'und nutzungsrechtlich geschützt. Alle Rechte daran verbleiben bei Ulisses '
+    'Spiele beziehungsweise den jeweiligen Rechteinhabern.\n\n'
+    'App, Code und eigene App-Inhalte: © 2026 Dennis Adamski.';
+
 class _SettingsPageList extends StatelessWidget {
   const _SettingsPageList({required this.children});
 
@@ -742,6 +754,27 @@ class _AvatarApiSettingsPageState
       const SnackBar(
         content: Text('Bildgenerierung-Einstellungen gespeichert.'),
       ),
+    );
+  }
+}
+
+class _LegalSettingsPage extends StatelessWidget {
+  const _LegalSettingsPage();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return _SettingsPageList(
+      children: [
+        _SettingsSectionCard(
+          title: 'Rechtehinweis',
+          child: SelectableText(
+            _legalDisclaimerText,
+            style: theme.textTheme.bodyMedium,
+          ),
+        ),
+      ],
     );
   }
 }
