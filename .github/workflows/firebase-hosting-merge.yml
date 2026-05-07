@@ -1,0 +1,40 @@
+name: Firebase Hosting Deploy (main)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build & Deploy Web
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Flutter einrichten
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Abhaengigkeiten installieren
+        run: flutter pub get
+
+      - name: Web-Release bauen
+        run: flutter build web --release --no-wasm-dry-run
+
+      - name: Build verifizieren
+        run: |
+          test -f build/web/assets/AssetManifest.bin.json
+          test -n "$(ls -A build/web/assets/assets/heroes 2>/dev/null)"
+
+      - name: Firebase Hosting deployen
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HELDENSYNC_CCF0B }}
+          channelId: live
+          projectId: heldensync-ccf0b
