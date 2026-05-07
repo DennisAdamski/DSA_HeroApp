@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 
 /// Zeigt einen Dialog zum Beitreten einer bestehenden Gruppe via Code.
 ///
@@ -11,7 +12,7 @@ Future<String?> showGruppeBeitretenDialog({
   required WidgetRef ref,
   required String heroId,
 }) {
-  return showDialog<String>(
+  return showAdaptiveInputDialog<String>(
     context: context,
     builder: (context) => _GruppeBeitretenDialog(
       heroId: heroId,
@@ -47,8 +48,8 @@ class _GruppeBeitretenDialogState extends State<_GruppeBeitretenDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Gruppe beitreten'),
+    return AdaptiveInputDialog(
+      title: 'Gruppe beitreten',
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

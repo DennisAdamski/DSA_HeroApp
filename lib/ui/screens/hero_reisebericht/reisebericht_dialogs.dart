@@ -106,8 +106,8 @@ class _OpenItemAddDialogState extends State<_OpenItemAddDialog> {
   Widget build(BuildContext context) {
     final hasKlassifikationen = widget.def.klassifikationen.isNotEmpty;
 
-    return AlertDialog(
-      title: Text('${widget.def.name}: Eintrag hinzufuegen'),
+    return AdaptiveInputDialog(
+      title: '${widget.def.name}: Eintrag hinzufuegen',
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,8 +231,8 @@ class _WahlSeDialogState extends State<_WahlSeDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('SE-Ziel wählen: ${widget.entryName}'),
+    return AdaptiveInputDialog(
+      title: 'SE-Ziel wählen: ${widget.entryName}',
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

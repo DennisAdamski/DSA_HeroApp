@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 
 /// Oeffnet einen Dialog zur Eingabe des Katalog-Entschluesselungspassworts.
 ///
@@ -65,7 +66,7 @@ Future<bool> showCatalogUnlockDialog({
     return false;
   }
 
-  final result = await showDialog<bool>(
+  final result = await showAdaptiveInputDialog<bool>(
     context: context,
     builder: (_) => _CatalogUnlockDialog(ref: ref, probeValue: probeValue!),
   );
@@ -133,24 +134,22 @@ class _CatalogUnlockDialogState extends State<_CatalogUnlockDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Katalog-Inhalte freischalten'),
-      content: SizedBox(
-        width: 320,
-        child: TextField(
-          controller: _controller,
-          focusNode: _focusNode,
-          obscureText: true,
-          autofocus: true,
-          keyboardType: TextInputType.visiblePassword,
-          textInputAction: TextInputAction.done,
-          decoration: InputDecoration(
-            labelText: 'Passwort',
-            border: const OutlineInputBorder(),
-            errorText: _errorText,
-          ),
-          onSubmitted: (_) => _submit(),
+    return AdaptiveInputDialog(
+      title: 'Katalog-Inhalte freischalten',
+      maxWidth: 360,
+      content: TextField(
+        controller: _controller,
+        focusNode: _focusNode,
+        obscureText: true,
+        autofocus: true,
+        keyboardType: TextInputType.visiblePassword,
+        textInputAction: TextInputAction.done,
+        decoration: InputDecoration(
+          labelText: 'Passwort',
+          border: const OutlineInputBorder(),
+          errorText: _errorText,
         ),
+        onSubmitted: (_) => _submit(),
       ),
       actions: [
         TextButton(
