@@ -29,14 +29,14 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   _SettingsDestination _selectedDestination = _SettingsDestination.appearance;
-  final AuthService _authService = AuthService();
+  late final AuthService _authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
     final layout = appLayoutOf(context);
     final showSplitView = layout.hasPersistentDetailPane;
-    final currentUser = _authService.currentUser;
-    final showLogout = kIsWeb && currentUser != null;
+    final currentUser = kIsWeb ? _authService.currentUser : null;
+    final showLogout = currentUser != null;
 
     return Scaffold(
       appBar: AppBar(
