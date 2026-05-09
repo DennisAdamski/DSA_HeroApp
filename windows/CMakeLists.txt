@@ -57,6 +57,78 @@ add_subdirectory("runner")
 # them to the application.
 include(flutter/generated_plugins.cmake)
 
+# Finds ATL/MFC paths for plugins whose CMake files do not request them.
+function(RESOLVE_VISUAL_STUDIO_ATL_PATHS OUT_INCLUDE_VAR OUT_LIBRARY_VAR)
+  set(ATL_INSTALLATION_ROOTS)
+
+  if(CMAKE_GENERATOR_INSTANCE)
+    list(APPEND ATL_INSTALLATION_ROOTS "${CMAKE_GENERATOR_INSTANCE}")
+  endif()
+
+  if(DEFINED ENV{VSINSTALLDIR})
+    list(APPEND ATL_INSTALLATION_ROOTS "$ENV{VSINSTALLDIR}")
+  endif()
+
+  set(VSWHERE_PATH
+    "$ENV{ProgramFiles\(x86\)}/Microsoft Visual Studio/Installer/vswhere.exe")
+  if(EXISTS "${VSWHERE_PATH}")
+    execute_process(
+      COMMAND
+        "${VSWHERE_PATH}"
+        -products *
+        -requires Microsoft.VisualStudio.Component.VC.ATL
+        -property installationPath
+      OUTPUT_VARIABLE ATL_INSTALLATION_OUTPUT
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    string(REPLACE "\n" ";" ATL_VSWHERE_ROOTS "${ATL_INSTALLATION_OUTPUT}")
+    list(APPEND ATL_INSTALLATION_ROOTS ${ATL_VSWHERE_ROOTS})
+  endif()
+
+  foreach(ATL_ROOT IN LISTS ATL_INSTALLATION_ROOTS)
+    file(GLOB ATL_INCLUDE_DIRS LIST_DIRECTORIES true
+      "${ATL_ROOT}/VC/Tools/MSVC/*/atlmfc/include")
+    list(SORT ATL_INCLUDE_DIRS)
+    list(REVERSE ATL_INCLUDE_DIRS)
+
+    foreach(ATL_INCLUDE_DIR IN LISTS ATL_INCLUDE_DIRS)
+      get_filename_component(ATL_ATLMFC_DIR "${ATL_INCLUDE_DIR}" DIRECTORY)
+      set(ATL_LIBRARY_DIR "${ATL_ATLMFC_DIR}/lib/${CMAKE_VS_PLATFORM_NAME}")
+
+      if(CMAKE_VS_PLATFORM_NAME STREQUAL "Win32")
+        set(ATL_LIBRARY_DIR "${ATL_ATLMFC_DIR}/lib/x86")
+      endif()
+
+      if(EXISTS "${ATL_INCLUDE_DIR}/atlstr.h"
+          AND EXISTS "${ATL_LIBRARY_DIR}/atls.lib")
+        set(${OUT_INCLUDE_VAR} "${ATL_INCLUDE_DIR}" PARENT_SCOPE)
+        set(${OUT_LIBRARY_VAR} "${ATL_LIBRARY_DIR}" PARENT_SCOPE)
+        return()
+      endif()
+    endforeach()
+  endforeach()
+
+  set(${OUT_INCLUDE_VAR} "" PARENT_SCOPE)
+  set(${OUT_LIBRARY_VAR} "" PARENT_SCOPE)
+endfunction()
+
+if(WIN32 AND MSVC AND TARGET flutter_secure_storage_windows_plugin)
+  RESOLVE_VISUAL_STUDIO_ATL_PATHS(
+    SECURE_STORAGE_ATL_INCLUDE_DIR
+    SECURE_STORAGE_ATL_LIBRARY_DIR)
+
+  if(SECURE_STORAGE_ATL_INCLUDE_DIR AND SECURE_STORAGE_ATL_LIBRARY_DIR)
+    target_include_directories(flutter_secure_storage_windows_plugin
+      PRIVATE "${SECURE_STORAGE_ATL_INCLUDE_DIR}")
+    target_link_directories(flutter_secure_storage_windows_plugin
+      PRIVATE "${SECURE_STORAGE_ATL_LIBRARY_DIR}")
+  else()
+    message(FATAL_ERROR
+      "flutter_secure_storage_windows benoetigt ATL/MFC-Header und "
+      "Bibliotheken. Installiere die Visual-Studio-Komponente 'C++ ATL/MFC'.")
+  endif()
+endif()
+
 
 # === Installation ===
 # Support files are copied into place next to the executable, so that it can

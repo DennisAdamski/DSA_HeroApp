@@ -328,6 +328,14 @@ flutter build windows --release
 flutter pub run msix:create
 ```
 
+Der Windows-Build nutzt `flutter_secure_storage_windows`. Dessen native
+Implementierung benoetigt ATL/MFC-Header und Bibliotheken aus Visual Studio.
+`windows/CMakeLists.txt` loest diese Pfade gezielt fuer das Plugin auf, weil
+CMake bei mehreren Visual-Studio-Installationen sonst eine Build-Tools-Instanz
+ohne ATL/MFC waehlen kann. Falls der Build trotzdem mit `atlstr.h` oder
+`atls.lib` scheitert, in der tatsaechlich verwendeten Visual-Studio- oder
+Build-Tools-Instanz die Komponente `C++ ATL/MFC` nachinstallieren.
+
 ## Weiterfuehrende Dokumentation
 
 - `docs/technical_overview.md`
