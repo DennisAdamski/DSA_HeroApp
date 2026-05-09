@@ -477,34 +477,36 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         return ValueListenableBuilder<int>(
           valueListenable: _viewRevision,
           builder: (context, revision, child) {
-            return ListView(
+            final overviewChildren = <Widget>[
+              if (hero.appearance.avatarFileName.isEmpty) ...[
+                _NoAvatarActions(heroId: hero.id, hero: hero),
+                const SizedBox(height: _sectionSpacing),
+              ],
+              _buildBaseInfoSection(hero),
+              const SizedBox(height: _sectionSpacing),
+              _buildAdvantagesSection(),
+              if (hero.isEpisch) ...[
+                const SizedBox(height: _sectionSpacing),
+                _buildEpicAdvantagesSection(hero),
+              ],
+              const SizedBox(height: _sectionSpacing),
+              _buildApSection(hero),
+              if (kShowParserWarnings &&
+                  hero.unknownModifierFragments.isNotEmpty) ...[
+                const SizedBox(height: _sectionSpacing),
+                _buildParserWarningsSection(hero),
+              ],
+              const SizedBox(height: _sectionSpacing),
+              _buildCombinedStatsAndAttributesSection(
+                snapshot,
+                resourceActivation,
+              ),
+            ];
+            return ListView.builder(
               key: const ValueKey<String>('hero-overview-scroll'),
               padding: const EdgeInsets.all(_pagePadding),
-              children: [
-                if (hero.appearance.avatarFileName.isEmpty) ...[
-                  _NoAvatarActions(heroId: hero.id, hero: hero),
-                  const SizedBox(height: _sectionSpacing),
-                ],
-                _buildBaseInfoSection(hero),
-                const SizedBox(height: _sectionSpacing),
-                _buildAdvantagesSection(),
-                if (hero.isEpisch) ...[
-                  const SizedBox(height: _sectionSpacing),
-                  _buildEpicAdvantagesSection(hero),
-                ],
-                const SizedBox(height: _sectionSpacing),
-                _buildApSection(hero),
-                if (kShowParserWarnings &&
-                    hero.unknownModifierFragments.isNotEmpty) ...[
-                  const SizedBox(height: _sectionSpacing),
-                  _buildParserWarningsSection(hero),
-                ],
-                const SizedBox(height: _sectionSpacing),
-                _buildCombinedStatsAndAttributesSection(
-                  snapshot,
-                  resourceActivation,
-                ),
-              ],
+              itemCount: overviewChildren.length,
+              itemBuilder: (_, index) => overviewChildren[index],
             );
           },
         );

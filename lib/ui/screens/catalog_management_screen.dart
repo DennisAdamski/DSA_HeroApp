@@ -135,9 +135,7 @@ class _CatalogSectionScreenState extends ConsumerState<CatalogSectionScreen> {
         data: (snapshot) {
           final sectionSnapshot = snapshot.section(widget.section);
           final entries = _filteredEntries(sectionSnapshot);
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
+          final sectionChildren = <Widget>[
               _InfoCard(
                 title: widget.section.displayName,
                 child: Column(
@@ -256,7 +254,11 @@ class _CatalogSectionScreenState extends ConsumerState<CatalogSectionScreen> {
                 ),
                 const SizedBox(height: 8),
               ],
-            ],
+          ];
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: sectionChildren.length,
+            itemBuilder: (_, index) => sectionChildren[index],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
