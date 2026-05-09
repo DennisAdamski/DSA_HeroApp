@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
 
@@ -37,6 +38,10 @@ class CatalogLoader {
   Future<HouseRulePackSourceSnapshot> loadBuiltInHouseRulePacks({
     required String catalogVersion,
   }) async {
+    // Eventschleife einmal yielden, damit das App-Shell auf dem Web vor der
+    // sequenziellen IO der Pack-Manifeste den ersten Frame malen kann.
+    // Funktioniert auch in Tests ohne Frame-Pump (im Gegensatz zu endOfFrame).
+    await Future<void>.delayed(Duration.zero);
     final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
     final assets = manifest.listAssets();
     final prefix = 'assets/catalogs/$catalogVersion/packs/';
@@ -303,12 +308,25 @@ class CatalogLoader {
   }
 }
 
+// Schwelle, ab der jsonDecode in einen Web-Worker / Isolate ausgelagert wird.
+// Unter ~32 KB ist der Worker-Spawn-Overhead groesser als der eigentliche Decode.
+const int _jsonDecodeOffThreadThreshold = 32 * 1024;
+
+Object? _decodeJsonTopLevel(String raw) => jsonDecode(raw);
+
+Future<Object?> _decodeJsonAdaptive(String raw) {
+  if (raw.length > _jsonDecodeOffThreadThreshold) {
+    return compute(_decodeJsonTopLevel, raw);
+  }
+  return Future.value(_decodeJsonTopLevel(raw));
+}
+
 /// Laedt eine JSON-Asset-Datei und gibt sie als Map zurueck.
 ///
 /// Wirft [FormatException] wenn der Inhalt kein JSON-Objekt ist.
 Future<Map<String, dynamic>> _loadJsonObject(String assetPath) async {
   final raw = await rootBundle.loadString(assetPath, cache: false);
-  final decoded = jsonDecode(raw);
+  final decoded = await _decodeJsonAdaptive(raw);
   if (decoded is Map<String, dynamic>) {
     return decoded;
   }
@@ -323,7 +341,7 @@ Future<Map<String, dynamic>> _loadJsonObject(String assetPath) async {
 /// Wirft [FormatException] wenn der Inhalt kein JSON-Array aus Objekten ist.
 Future<List<Map<String, dynamic>>> _loadJsonList(String assetPath) async {
   final raw = await rootBundle.loadString(assetPath, cache: false);
-  final decoded = jsonDecode(raw);
+  final decoded = await _decodeJsonAdaptive(raw);
   if (decoded is! List) {
     throw FormatException(
       'Catalog section asset must be a JSON array: $assetPath',
