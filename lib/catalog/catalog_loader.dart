@@ -39,7 +39,7 @@ class CatalogLoader {
     required String catalogVersion,
   }) async {
     // Eventschleife einmal yielden, damit das App-Shell auf dem Web vor der
-    // sequenziellen IO der Pack-Manifeste den ersten Frame malen kann.
+    // Asset-Arbeit der Pack-Manifeste den ersten Frame malen kann.
     // Funktioniert auch in Tests ohne Frame-Pump (im Gegensatz zu endOfFrame).
     await Future<void>.delayed(Duration.zero);
     final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
@@ -58,33 +58,30 @@ class CatalogLoader {
     final packs = <HouseRulePackManifest>[];
     final issues = <HouseRulePackIssue>[];
     final seenIds = <String>{};
+    final loadedManifests = await Future.wait(
+      manifestPaths.map(_loadBuiltInHouseRulePackManifest),
+    );
 
-    for (final assetPath in manifestPaths) {
-      try {
-        final json = await _loadJsonObject(assetPath);
-        final manifest = HouseRulePackManifest.fromJson(
-          json,
-          filePath: assetPath,
-          isBuiltIn: true,
-        );
-        if (!seenIds.add(manifest.id)) {
-          issues.add(
-            HouseRulePackIssue(
-              packId: manifest.id,
-              packTitle: manifest.title,
-              filePath: assetPath,
-              message:
-                  'Doppelte eingebaute Paket-ID; das spaetere Manifest wird ignoriert.',
-            ),
-          );
-          continue;
-        }
-        packs.add(manifest);
-      } on FormatException catch (error) {
-        issues.add(
-          HouseRulePackIssue(filePath: assetPath, message: error.message),
-        );
+    for (final result in loadedManifests) {
+      final loadIssue = result.issue;
+      if (loadIssue != null) {
+        issues.add(loadIssue);
+        continue;
       }
+      final pack = result.manifest!;
+      if (!seenIds.add(pack.id)) {
+        issues.add(
+          HouseRulePackIssue(
+            packId: pack.id,
+            packTitle: pack.title,
+            filePath: result.assetPath,
+            message:
+                'Doppelte eingebaute Paket-ID; das spaetere Manifest wird ignoriert.',
+          ),
+        );
+        continue;
+      }
+      packs.add(pack);
     }
 
     return HouseRulePackSourceSnapshot(
@@ -116,49 +113,30 @@ class CatalogLoader {
     );
     final metadata =
         (manifest['metadata'] as Map?)?.cast<String, dynamic>() ?? const {};
-    final sections = <CatalogSectionId, List<Map<String, dynamic>>>{};
-    sections[CatalogSectionId.talents] = await _loadRequiredSection(
-      files: files,
-      manifestAssetPath: manifestAssetPath,
-      section: CatalogSectionId.talents,
-    );
-    sections[CatalogSectionId.combatTalents] = await _loadRequiredSection(
-      files: files,
-      manifestAssetPath: manifestAssetPath,
-      section: CatalogSectionId.combatTalents,
-    );
-    sections[CatalogSectionId.weapons] = await _loadRequiredSection(
-      files: files,
-      manifestAssetPath: manifestAssetPath,
-      section: CatalogSectionId.weapons,
-    );
-    sections[CatalogSectionId.spells] = await _loadRequiredSection(
-      files: files,
-      manifestAssetPath: manifestAssetPath,
-      section: CatalogSectionId.spells,
-    );
-
-    for (final section in const <CatalogSectionId>[
-      CatalogSectionId.maneuvers,
-      CatalogSectionId.combatSpecialAbilities,
-      CatalogSectionId.generalSpecialAbilities,
-      CatalogSectionId.magicSpecialAbilities,
-      CatalogSectionId.karmalSpecialAbilities,
-      CatalogSectionId.sprachen,
-      CatalogSectionId.schriften,
-    ]) {
-      sections[section] = await _loadOptionalSection(
-        files: files,
-        manifestAssetPath: manifestAssetPath,
-        section: section,
-      );
-    }
-
-    final reisebericht = await _loadOptionalSectionByKey(
+    final sectionResultsFuture = Future.wait([
+      for (final section in _requiredCatalogSections)
+        _loadRequiredSection(
+          files: files,
+          manifestAssetPath: manifestAssetPath,
+          section: section,
+        ).then((entries) => _CatalogSectionLoad(section, entries)),
+      for (final section in _optionalCatalogSections)
+        _loadOptionalSection(
+          files: files,
+          manifestAssetPath: manifestAssetPath,
+          section: section,
+        ).then((entries) => _CatalogSectionLoad(section, entries)),
+    ]);
+    final reiseberichtFuture = _loadOptionalSectionByKey(
       files: files,
       manifestAssetPath: manifestAssetPath,
       manifestKey: reiseberichtManifestKey,
     );
+    final sectionResults = await sectionResultsFuture;
+    final sections = <CatalogSectionId, List<Map<String, dynamic>>>{
+      for (final result in sectionResults) result.section: result.entries,
+    };
+    final reisebericht = await reiseberichtFuture;
 
     return CatalogSourceData(
       version: _readOptionalString(manifest, 'version', fallback: 'unknown'),
@@ -304,6 +282,61 @@ class CatalogLoader {
           .map((entry) => ReiseberichtDef.fromJson(entry))
           .toList(growable: false),
       ruleResolver: ruleResolver,
+    );
+  }
+}
+
+const List<CatalogSectionId> _requiredCatalogSections = <CatalogSectionId>[
+  CatalogSectionId.talents,
+  CatalogSectionId.combatTalents,
+  CatalogSectionId.weapons,
+  CatalogSectionId.spells,
+];
+
+const List<CatalogSectionId> _optionalCatalogSections = <CatalogSectionId>[
+  CatalogSectionId.maneuvers,
+  CatalogSectionId.combatSpecialAbilities,
+  CatalogSectionId.generalSpecialAbilities,
+  CatalogSectionId.magicSpecialAbilities,
+  CatalogSectionId.karmalSpecialAbilities,
+  CatalogSectionId.sprachen,
+  CatalogSectionId.schriften,
+];
+
+class _CatalogSectionLoad {
+  const _CatalogSectionLoad(this.section, this.entries);
+
+  final CatalogSectionId section;
+  final List<Map<String, dynamic>> entries;
+}
+
+class _BuiltInHouseRulePackLoad {
+  const _BuiltInHouseRulePackLoad({
+    required this.assetPath,
+    this.manifest,
+    this.issue,
+  });
+
+  final String assetPath;
+  final HouseRulePackManifest? manifest;
+  final HouseRulePackIssue? issue;
+}
+
+Future<_BuiltInHouseRulePackLoad> _loadBuiltInHouseRulePackManifest(
+  String assetPath,
+) async {
+  try {
+    final json = await _loadJsonObject(assetPath);
+    final manifest = HouseRulePackManifest.fromJson(
+      json,
+      filePath: assetPath,
+      isBuiltIn: true,
+    );
+    return _BuiltInHouseRulePackLoad(assetPath: assetPath, manifest: manifest);
+  } on FormatException catch (error) {
+    return _BuiltInHouseRulePackLoad(
+      assetPath: assetPath,
+      issue: HouseRulePackIssue(filePath: assetPath, message: error.message),
     );
   }
 }
