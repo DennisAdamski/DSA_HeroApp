@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
@@ -50,6 +53,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   bool _runningEditAction = false;
   bool _heroDeckExpanded = false;
   bool _workspaceDetailsExpanded = true;
+  bool _catalogPrewarmScheduled = false;
 
   @override
   void initState() {
@@ -143,6 +147,25 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       return null;
     }
     return _visibleTabs[_activeTabIndex()];
+  }
+
+  /// Waermt den Regelkatalog nach dem ersten Frame fuer spaetere Tabwechsel an.
+  void _scheduleCatalogPrewarmIfNeeded() {
+    if (_catalogPrewarmScheduled ||
+        !_visibleTabs.any((tab) => tab.id == WorkspaceTabIds.magic)) {
+      return;
+    }
+    _catalogPrewarmScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      unawaited(
+        ref
+            .read(rulesCatalogProvider.future)
+            .then<void>((_) {}, onError: (Object error, StackTrace stack) {}),
+      );
+    });
   }
 
   /// Reagiert auf Aenderungen des TabControllers und leitet den Guard ein.
@@ -464,6 +487,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       allTabs.where((tab) => tab.isEditable).map((tab) => tab.id),
     );
     _syncVisibleTabs(visibleWorkspaceTabsForHero(hero: hero, tabs: allTabs));
+    _scheduleCatalogPrewarmIfNeeded();
 
     final apple = isApplePlatform(context);
     final hasVisibleTabs = _visibleTabs.isNotEmpty;
@@ -524,9 +548,12 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
             : null,
         body: switch (layout) {
           AppLayoutClass.compact => _buildCompactWorkspaceBody(hero),
-          AppLayoutClass.tabletPortrait => _buildTabletPortraitWorkspaceBody(hero),
-          AppLayoutClass.tabletLandscape =>
-            _buildTabletLandscapeWorkspaceBody(hero),
+          AppLayoutClass.tabletPortrait => _buildTabletPortraitWorkspaceBody(
+            hero,
+          ),
+          AppLayoutClass.tabletLandscape => _buildTabletLandscapeWorkspaceBody(
+            hero,
+          ),
           AppLayoutClass.desktopWide => _buildDesktopWideWorkspaceBody(hero),
         },
       ),
