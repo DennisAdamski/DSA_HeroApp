@@ -1088,6 +1088,12 @@ apAvailable   = max(0, apTotal − apSpent)
 | `talentsVisibilityModeProvider(id)` | `StateProvider.family<bool>` | Verborgene Talente zeigen |
 | `combatTalentsVisibilityModeProvider(id)` | `StateProvider.family<bool>` | Kampftalente einblenden |
 
+`HeroesHomeScreen` waermt `rulesCatalogProvider.future` einmal nach dem ersten
+Frame mit geladener Heldenliste vor. Beim Oeffnen eines Helden wartet der Screen
+auf diesen Future und zeigt bei Bedarf einen nicht schliessbaren
+Vorbereitungsdialog; der Workspace behaelt sein eigenes Prewarming als Fallback
+fuer Direktnavigation und Sonderfaelle.
+
 ### 5.2 `HeroComputedSnapshot` — Berechnungspipeline
 
 **Datei:** `lib/state/hero_computed_snapshot.dart`

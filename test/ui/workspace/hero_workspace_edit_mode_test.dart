@@ -78,6 +78,15 @@ void main() {
     RulesCatalog? catalog,
   }) async {
     final resolvedSize = size ?? const Size(390, 844);
+    final catalogOverride =
+        catalog ??
+        const RulesCatalog(
+          version: 'test_catalog',
+          source: 'test',
+          talents: <TalentDef>[],
+          spells: <SpellDef>[],
+          weapons: <WeaponDef>[],
+        );
     tester.view.devicePixelRatio = 1.0;
     tester.view.physicalSize = resolvedSize;
     addTearDown(tester.view.resetPhysicalSize);
@@ -87,8 +96,7 @@ void main() {
       ProviderScope(
         overrides: [
           heroRepositoryProvider.overrideWithValue(repo),
-          if (catalog != null)
-            rulesCatalogProvider.overrideWith((ref) async => catalog),
+          rulesCatalogProvider.overrideWith((ref) async => catalogOverride),
         ],
         child: const MaterialApp(home: HeroesHomeScreen()),
       ),
@@ -101,7 +109,10 @@ void main() {
       await tester.tap(find.text('Rondra').first);
     }
     await tester.pumpAndSettle();
-    if (find.byKey(const ValueKey<String>('workspace-back-button')).evaluate().isEmpty) {
+    if (find
+        .byKey(const ValueKey<String>('workspace-back-button'))
+        .evaluate()
+        .isEmpty) {
       final openButton = find.text('Held öffnen');
       final fallbackOpenButton = find.text('Im Workspace öffnen');
       if (openButton.evaluate().isNotEmpty) {
@@ -1824,31 +1835,31 @@ void main() {
     // Veraltet: Inspector hat jetzt einen eigenen TabBar (Vitals/Magie/Rast/Probe);
     // die alte Annahme "no TabBar im wide workspace" gilt nicht mehr.
     'wide workspace shows collapsed Helden Deck instead of TabBar',
-    skip: true, (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [buildHero()],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 10,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
+    skip: true,
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
 
-    await openWorkspace(tester, repo, size: const Size(1600, 1200));
+      await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
-    expect(find.text('Helden Deck'), findsNothing);
-    expect(find.byType(TabBar), findsNothing);
-    expect(find.text('Inspector'), findsNothing);
-    expect(find.text('Vitals'), findsOneWidget);
-    expect(heroDeckToggleButton(), findsOneWidget);
-    expect(find.byTooltip('Helden-Deck einblenden'), findsOneWidget);
-    expect(workspaceDetailsToggleButton(), findsOneWidget);
-  });
+      expect(find.text('Helden Deck'), findsNothing);
+      expect(find.byType(TabBar), findsNothing);
+      expect(find.text('Inspector'), findsNothing);
+      expect(find.text('Vitals'), findsOneWidget);
+      expect(heroDeckToggleButton(), findsOneWidget);
+      expect(find.byTooltip('Helden-Deck einblenden'), findsOneWidget);
+      expect(workspaceDetailsToggleButton(), findsOneWidget);
+    },
+  );
 
   testWidgets('wide workspace inspector opens rest dialog and saves changes', (
     tester,
@@ -1898,10 +1909,16 @@ void main() {
 
     final state = await repo.loadHeroState('demo');
     expect(state, isNotNull);
-    expect(state!.currentAu, greaterThan(10),
-        reason: 'Au regeneriert bei Schlaf');
-    expect(state.ueberanstrengung, 0,
-        reason: '8 h Schlaf bauen 2 Pkt. Überanstrengung locker ab');
+    expect(
+      state!.currentAu,
+      greaterThan(10),
+      reason: 'Au regeneriert bei Schlaf',
+    );
+    expect(
+      state.ueberanstrengung,
+      0,
+      reason: '8 h Schlaf bauen 2 Pkt. Überanstrengung locker ab',
+    );
   });
 
   testWidgets(
@@ -2219,79 +2236,82 @@ void main() {
     // Pre-existing pumpAndSettle-Timeout im Talent-Screen-Flow,
     // verifiziert via git stash bereits vor dem Inspector-Redesign.
     'wide workspace inspector BE stays synced with manual override',
-    skip: true, (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [buildHero()],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 10,
-          currentKap: 0,
-          currentAu: 10,
+    skip: true,
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero()],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+      final container = ProviderContainer(
+        overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+      );
+      addTearDown(container.dispose);
+
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(1600, 1200);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(home: HeroesHomeScreen()),
         ),
-      },
-    );
-    final container = ProviderContainer(
-      overrides: [heroRepositoryProvider.overrideWithValue(repo)],
-    );
-    addTearDown(container.dispose);
+      );
+      await tester.pumpAndSettle();
 
-    tester.view.devicePixelRatio = 1.0;
-    tester.view.physicalSize = const Size(1600, 1200);
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: const MaterialApp(home: HeroesHomeScreen()),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final heroTile = find.widgetWithText(ListTile, 'Rondra');
-    if (heroTile.evaluate().isNotEmpty) {
-      await tester.tap(heroTile.first);
-    } else {
-      await tester.tap(find.text('Rondra').first);
-    }
-    await tester.pumpAndSettle();
-    if (find.byKey(const ValueKey<String>('workspace-back-button')).evaluate().isEmpty) {
-      final openButton = find.text('Held öffnen');
-      final fallbackOpenButton = find.text('Im Workspace öffnen');
-      if (openButton.evaluate().isNotEmpty) {
-        await tester.tap(openButton.first);
-      } else if (fallbackOpenButton.evaluate().isNotEmpty) {
-        await tester.tap(fallbackOpenButton.first);
+      final heroTile = find.widgetWithText(ListTile, 'Rondra');
+      if (heroTile.evaluate().isNotEmpty) {
+        await tester.tap(heroTile.first);
+      } else {
+        await tester.tap(find.text('Rondra').first);
       }
       await tester.pumpAndSettle();
-    }
+      if (find
+          .byKey(const ValueKey<String>('workspace-back-button'))
+          .evaluate()
+          .isEmpty) {
+        final openButton = find.text('Held öffnen');
+        final fallbackOpenButton = find.text('Im Workspace öffnen');
+        if (openButton.evaluate().isNotEmpty) {
+          await tester.tap(openButton.first);
+        } else if (fallbackOpenButton.evaluate().isNotEmpty) {
+          await tester.tap(fallbackOpenButton.first);
+        }
+        await tester.pumpAndSettle();
+      }
 
-    expect(container.read(talentBeOverrideProvider('demo')), isNull);
+      expect(container.read(talentBeOverrideProvider('demo')), isNull);
 
-    await tester.tap(find.byTooltip('BE erhöhen'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('BE erhöhen'));
+      await tester.pumpAndSettle();
 
-    expect(container.read(talentBeOverrideProvider('demo')), 1);
-    expect(find.byTooltip('BE zurücksetzen'), findsOneWidget);
+      expect(container.read(talentBeOverrideProvider('demo')), 1);
+      expect(find.byTooltip('BE zurücksetzen'), findsOneWidget);
 
-    await tester.tap(heroDeckToggleButton());
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Talente').last);
-    await tester.pumpAndSettle();
-    final beDialogOpenButton = find.byKey(
-      const ValueKey<String>('talents-be-screen-open'),
-    );
-    await tester.tap(beDialogOpenButton);
-    await tester.pumpAndSettle();
+      await tester.tap(heroDeckToggleButton());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Talente').last);
+      await tester.pumpAndSettle();
+      final beDialogOpenButton = find.byKey(
+        const ValueKey<String>('talents-be-screen-open'),
+      );
+      await tester.tap(beDialogOpenButton);
+      await tester.pumpAndSettle();
 
-    final overrideField = tester.widget<TextField>(
-      find.byKey(const ValueKey<String>('talents-be-override-field')),
-    );
-    expect(overrideField.controller?.text, '1');
-  });
+      final overrideField = tester.widget<TextField>(
+        find.byKey(const ValueKey<String>('talents-be-override-field')),
+      );
+      expect(overrideField.controller?.text, '1');
+    },
+  );
 
   testWidgets(
     'wide workspace keeps status control columns stable when reset appears',
