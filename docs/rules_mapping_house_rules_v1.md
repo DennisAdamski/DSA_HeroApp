@@ -69,6 +69,10 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
   - `magic_special_abilities_section.dart` — Magische Sonderfertigkeiten verwalten
   - `magic_active_spells_table.dart` — Tabelle aktivierter Zauber (ZfW, Mod, gelernte Repräsentation, effektive Steigerung, Hauszauber, Begabung, Katalog-Varianten)
   - `magic_spell_catalog_table.dart` — Katalog-Zauber filtern, alle Verbreitungen anzeigen und mit Repräsentationswahl aktivieren
+- Geschuetzte Langtexte wie `wirkung` und verschluesselte `variants` werden
+  in der aktiven Zaubertabelle nur als Detail-Hinweis angezeigt und erst im
+  Zauberdetaildialog entschluesselt; heldenspezifische Overrides bleiben direkt
+  sichtbar.
 
 ### Katalog
 
