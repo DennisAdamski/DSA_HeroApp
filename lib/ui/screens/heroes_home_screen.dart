@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
@@ -19,12 +22,85 @@ import 'package:dsa_heldenverwaltung/ui/widgets/codex_page_scaffold.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_split_view.dart';
 
 /// Startscreen fuer die Heldenauswahl mit iPad-tauglicher Vorschau.
-class HeroesHomeScreen extends ConsumerWidget {
+class HeroesHomeScreen extends ConsumerStatefulWidget {
   /// Erstellt die Heldenzentrale mit adaptivem Tablet-Layout.
   const HeroesHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HeroesHomeScreen> createState() => _HeroesHomeScreenState();
+}
+
+class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
+  Future<void>? _catalogPrewarmFuture;
+  bool _catalogPrewarmScheduled = false;
+
+  // Teilt einen einzigen Katalog-Load zwischen Home-Prewarm und Heldenoeffnung.
+  Future<void> _startCatalogPrewarm() {
+    return _catalogPrewarmFuture ??= ref
+        .read(rulesCatalogProvider.future)
+        .then<void>((_) {}, onError: (Object error, StackTrace stack) {});
+  }
+
+  // Startet den Katalog erst nach dem ersten sichtbaren Home-Frame.
+  void _scheduleCatalogPrewarmAfterFrame() {
+    if (_catalogPrewarmScheduled) {
+      return;
+    }
+    _catalogPrewarmScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      unawaited(_startCatalogPrewarm());
+    });
+  }
+
+  // Zeigt den Dialog nur, wenn der vorbereitete Katalog spuerbar laenger laedt.
+  Future<void> _waitForCatalogBeforeOpening(BuildContext context) async {
+    final future = _startCatalogPrewarm();
+    var shouldShowDialog = true;
+    var dialogShown = false;
+
+    unawaited(
+      Future<void>.delayed(const Duration(milliseconds: 120), () {
+        if (!shouldShowDialog || !context.mounted) {
+          return;
+        }
+        dialogShown = true;
+        unawaited(
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const _CatalogPreparationDialog(),
+          ),
+        );
+      }),
+    );
+
+    await future;
+    shouldShowDialog = false;
+    if (dialogShown && context.mounted) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+  }
+
+  // Buendelt Auswahl, Katalogvorbereitung und Navigation fuer alle Oeffnungspfade.
+  Future<void> _openHeroWorkspace(BuildContext context, String heroId) async {
+    await ref.read(selectedHeroSelectionActionsProvider).selectHero(heroId);
+    if (!context.mounted) {
+      return;
+    }
+    await _waitForCatalogBeforeOpening(context);
+    if (!context.mounted) {
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => HeroWorkspaceScreen(heroId: heroId)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final heroesAsync = ref.watch(heroListProvider);
     final selectedHeroId = ref.watch(selectedHeroIdProvider);
     const importExportActions = WorkspaceImportExportActions();
@@ -45,19 +121,11 @@ class HeroesHomeScreen extends ConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => HeroWorkspaceScreen(heroId: id)),
-      );
+      await _openHeroWorkspace(context, id);
     }
 
     Future<void> openHeroWorkspace(String heroId) async {
-      await ref.read(selectedHeroSelectionActionsProvider).selectHero(heroId);
-      if (!context.mounted) {
-        return;
-      }
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => HeroWorkspaceScreen(heroId: heroId)),
-      );
+      await _openHeroWorkspace(context, heroId);
     }
 
     Future<void> showHeroPreviewSheet(HeroSheet hero) async {
@@ -116,6 +184,7 @@ class HeroesHomeScreen extends ConsumerWidget {
           : null,
       body: heroesAsync.when(
         data: (heroes) {
+          _scheduleCatalogPrewarmAfterFrame();
           if (heroes.isEmpty) {
             return CodexPageScaffold(
               padding: EdgeInsets.all(layout.contentPadding),
@@ -357,13 +426,10 @@ class HeroesHomeScreen extends ConsumerWidget {
       if (heroId == null || !context.mounted) {
         return;
       }
-      await ref.read(selectedHeroSelectionActionsProvider).selectHero(heroId);
+      await _openHeroWorkspace(context, heroId);
       if (!context.mounted) {
         return;
       }
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => HeroWorkspaceScreen(heroId: heroId)),
-      );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Held erfolgreich importiert')),
       );
@@ -388,6 +454,31 @@ class HeroesHomeScreen extends ConsumerWidget {
     return showAdaptiveDetailSheet<_CreateHeroDraft>(
       context: context,
       builder: (dialogContext) => const _CreateHeroDialog(),
+    );
+  }
+}
+
+class _CatalogPreparationDialog extends StatelessWidget {
+  const _CatalogPreparationDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return const PopScope(
+      canPop: false,
+      child: AlertDialog(
+        content: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            SizedBox(width: 16),
+            Flexible(child: Text('Regelkatalog wird vorbereitet ...')),
+          ],
+        ),
+      ),
     );
   }
 }
