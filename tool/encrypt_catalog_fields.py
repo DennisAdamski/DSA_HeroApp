@@ -77,10 +77,10 @@ PROTECTED_FIELDS: dict[str, dict[str, str]] = {
         'wirkung': 'string',
         'variants': 'list',
     },
-    'vertrautenmagie_rituale.json': {
-        'wirkung': 'string',
-        'technik': 'string',
-    },
+    # vertrautenmagie_rituale.json wird BEWUSST nicht verschluesselt:
+    # der gleiche Inhalt liegt als Klartext-Preset in
+    # lib/catalog/vertrautenmagie_preset.dart und wird per
+    # vertrautenmagie_preset_test.dart gegen die JSON-Datei abgeglichen.
 }
 
 
