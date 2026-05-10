@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
@@ -34,6 +36,7 @@ class CatalogSourceData {
     required this.metadata,
     required this.sections,
     required this.reisebericht,
+    this.catalogSaltV3,
   });
 
   /// Version des geladenen Katalogs.
@@ -50,6 +53,13 @@ class CatalogSourceData {
 
   /// Reisebericht-Rohdaten, bewusst ausserhalb der Settings-Verwaltung.
   final List<Map<String, dynamic>> reisebericht;
+
+  /// Globaler PBKDF2-Salt fuer v3-verschluesselte Inhalte dieses Katalogs.
+  ///
+  /// Liegt im Manifest als base64 unter `catalog_salt_v3`. `null` bedeutet,
+  /// dass dieser Katalog keine v3-Inhalte enthaelt; das Bulk-Decrypt-System
+  /// faellt dann auf den langsameren Per-Wert-Pfad fuer v2 zurueck.
+  final Uint8List? catalogSaltV3;
 
   /// Liefert die Eintraege einer Katalogsektion.
   List<Map<String, dynamic>> entriesFor(CatalogSectionId section) {
@@ -199,6 +209,7 @@ class CatalogRuntimeData {
         metadata: baseData.metadata,
         sections: effectiveSections,
         reisebericht: baseData.reisebericht,
+        catalogSaltV3: baseData.catalogSaltV3,
       ),
       issues: List<CatalogIssue>.unmodifiable(issues),
       packCatalog: packCatalog,

@@ -137,6 +137,10 @@ class CatalogLoader {
       for (final result in sectionResults) result.section: result.entries,
     };
     final reisebericht = await reiseberichtFuture;
+    final catalogSaltV3 = _decodeOptionalCatalogSaltV3(
+      manifest,
+      assetPath: manifestAssetPath,
+    );
 
     return CatalogSourceData(
       version: _readOptionalString(manifest, 'version', fallback: 'unknown'),
@@ -144,6 +148,7 @@ class CatalogLoader {
       metadata: metadata,
       sections: sections,
       reisebericht: reisebericht,
+      catalogSaltV3: catalogSaltV3,
     );
   }
 
@@ -461,6 +466,26 @@ String? _readOptionalStringFromMap(Map<String, dynamic> json, String key) {
     return value.trim();
   }
   return null;
+}
+
+/// Liest den optionalen base64-codierten v3-Catalog-Salt aus dem Manifest.
+///
+/// Erwartet den Top-Level-Schluessel `catalog_salt_v3` als base64-String.
+/// Gibt `null` zurueck wenn der Schluessel fehlt; wirft [FormatException] bei
+/// fehlerhaftem base64.
+Uint8List? _decodeOptionalCatalogSaltV3(
+  Map<String, dynamic> manifest, {
+  required String assetPath,
+}) {
+  final raw = _readOptionalStringFromMap(manifest, 'catalog_salt_v3');
+  if (raw == null) return null;
+  try {
+    return base64Decode(raw);
+  } on FormatException catch (e) {
+    throw FormatException(
+      'manifest.catalog_salt_v3 is not valid base64 ($assetPath): ${e.message}',
+    );
+  }
 }
 
 /// Berechnet den absoluten Asset-Pfad relativ zur Manifest-Datei.
