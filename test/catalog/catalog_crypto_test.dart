@@ -12,6 +12,11 @@ import 'package:pointycastle/macs/hmac.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 
+Uint8List _randomSalt([int length = 32]) {
+  final rng = Random.secure();
+  return Uint8List.fromList(List.generate(length, (_) => rng.nextInt(256)));
+}
+
 // Repliziert den v1-Algorithmus aus catalog_crypto.dart für Test-Fixtures.
 String _encryptV1(String plaintext, String password) {
   final salt = Uint8List.fromList('dsa_helden_catalog_salt_2026'.codeUnits);
@@ -75,6 +80,70 @@ void main() {
     test('Unverschlüsselter Wert wird unverändert zurückgegeben', () {
       const raw = 'kein enc: hier';
       expect(decryptCatalogValue(raw, password), raw);
+    });
+  });
+
+  group('v3 (globaler Salt, pre-derived Key)', () {
+    test('Roundtrip mit pre-derived Key', () {
+      final salt = _randomSalt();
+      final key = deriveCatalogKey(password: password, salt: salt);
+      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: key);
+      final decrypted = decryptCatalogValueV3(encryptedValue: encrypted, derivedKey: key);
+      expect(decrypted, plaintext);
+    });
+
+    test('Verschlüsselter Wert beginnt mit enc:3:', () {
+      final salt = _randomSalt();
+      final key = deriveCatalogKey(password: password, salt: salt);
+      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: key);
+      expect(encrypted, startsWith('enc:3:'));
+    });
+
+    test('Zwei Verschlüsselungen liefern unterschiedliche Outputs (zufällige Nonce)', () {
+      final salt = _randomSalt();
+      final key = deriveCatalogKey(password: password, salt: salt);
+      final a = encryptCatalogValueV3(plaintext: plaintext, derivedKey: key);
+      final b = encryptCatalogValueV3(plaintext: plaintext, derivedKey: key);
+      expect(a, isNot(equals(b)));
+    });
+
+    test('Falscher Key liefert null', () {
+      final saltA = _randomSalt();
+      final saltB = _randomSalt();
+      final keyA = deriveCatalogKey(password: password, salt: saltA);
+      final keyB = deriveCatalogKey(password: password, salt: saltB);
+      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: keyA);
+      expect(decryptCatalogValueV3(encryptedValue: encrypted, derivedKey: keyB), isNull);
+    });
+
+    test('deriveCatalogKey ist deterministisch fuer dasselbe (Passwort, Salt)', () {
+      final salt = _randomSalt();
+      final keyA = deriveCatalogKey(password: password, salt: salt);
+      final keyB = deriveCatalogKey(password: password, salt: salt);
+      expect(keyA.bytes, keyB.bytes);
+    });
+
+    test('Leerer Plaintext bleibt leer', () {
+      final salt = _randomSalt();
+      final key = deriveCatalogKey(password: password, salt: salt);
+      final encrypted = encryptCatalogValueV3(plaintext: '', derivedKey: key);
+      expect(encrypted, '');
+    });
+
+    test('Listen-Roundtrip', () {
+      final salt = _randomSalt();
+      final key = deriveCatalogKey(password: password, salt: salt);
+      const list = ['Stufe 1', 'Stufe 2', 'Stufe 3'];
+      final encrypted = encryptCatalogListV3(values: list, derivedKey: key);
+      final decrypted = decryptCatalogListV3(encryptedValue: encrypted, derivedKey: key);
+      expect(decrypted, list);
+    });
+
+    test('Leere Liste wird als JSON gespeichert, nicht als enc:-Wert', () {
+      final salt = _randomSalt();
+      final key = deriveCatalogKey(password: password, salt: salt);
+      final encrypted = encryptCatalogListV3(values: const [], derivedKey: key);
+      expect(encrypted, isNot(startsWith('enc:')));
     });
   });
 
