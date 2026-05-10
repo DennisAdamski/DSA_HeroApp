@@ -247,7 +247,7 @@ def load_or_create_manifest_salt(catalog_dir: Path, create_if_missing: bool) -> 
     if not manifest_path.is_file():
         print(f'Fehler: {MANIFEST_NAME} nicht gefunden in {catalog_dir}.', file=sys.stderr)
         sys.exit(1)
-    with open(manifest_path, 'r', encoding='utf-8') as f:
+    with open(manifest_path, 'r', encoding='utf-8-sig') as f:
         manifest = json.load(f)
 
     raw = manifest.get(MANIFEST_SALT_KEY)
@@ -286,7 +286,7 @@ def process_file(
     Wenn [migrate_password] gesetzt ist, werden bestehende `enc:`-Werte
     (auch v1/v2) zuerst entschluesselt und dann im Zielformat re-encryptet.
     """
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, 'r', encoding='utf-8-sig') as f:
         data = json.load(f)
 
     # Eintraege ermitteln: Top-Level-Array oder verschachteltes 'rituals'-Array.
