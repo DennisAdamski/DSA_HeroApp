@@ -6,6 +6,7 @@ Messbare Guardrails fuer Edit-Workflows in den grossen Workspace-Tabs:
 - `Combat`
 - `Talents`
 - `Overview`
+- `Magic`
 
 ## 1) Rebuild-Guardrail (Widget-Test)
 
@@ -19,6 +20,12 @@ Technik:
 - Debug-Counter ueber `UiRebuildObserver` fuer Root-Builds zentraler Tabs.
 - Assertion pro Edit-Szenario auf geringe Root-Rebuilds.
 - Dieser Test bleibt der Standard-Guardrail fuer UI-Performance-Regressionsschutz.
+
+Magie-spezifisch:
+- Geschuetzte Langtexte wie Zauberwirkung und Varianten werden in der aktiven
+  Zaubertabelle nicht mehr beim Tab-Aufbau entschluesselt.
+- Die Tabelle zeigt stattdessen einen Detail-Hinweis; vollstaendige Inhalte
+  werden erst im Zauberdetaildialog aufgeloest und fuer die Sitzung gecached.
 
 ## 2) Ad-hoc Profiling (manuell)
 

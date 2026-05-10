@@ -20,9 +20,13 @@ String _encryptV1(String plaintext, String password) {
   final keyBytes = derivator.process(Uint8List.fromList(utf8.encode(password)));
   final key = enc_pkg.Key(keyBytes);
   final rng = Random.secure();
-  final ivBytes = Uint8List.fromList(List.generate(16, (_) => rng.nextInt(256)));
+  final ivBytes = Uint8List.fromList(
+    List.generate(16, (_) => rng.nextInt(256)),
+  );
   final iv = enc_pkg.IV(ivBytes);
-  final encrypter = enc_pkg.Encrypter(enc_pkg.AES(key, mode: enc_pkg.AESMode.cbc));
+  final encrypter = enc_pkg.Encrypter(
+    enc_pkg.AES(key, mode: enc_pkg.AESMode.cbc),
+  );
   final encrypted = encrypter.encrypt(plaintext, iv: iv);
   final combined = Uint8List(16 + encrypted.bytes.length);
   combined.setAll(0, ivBytes);
@@ -46,11 +50,14 @@ void main() {
       expect(encrypted, startsWith('enc:2:'));
     });
 
-    test('Zwei Verschlüsselungen desselben Texts sind unterschiedlich (zufälliges Salt)', () {
-      final a = encryptCatalogValue(plaintext, password);
-      final b = encryptCatalogValue(plaintext, password);
-      expect(a, isNot(equals(b)));
-    });
+    test(
+      'Zwei Verschlüsselungen desselben Texts sind unterschiedlich (zufälliges Salt)',
+      () {
+        final a = encryptCatalogValue(plaintext, password);
+        final b = encryptCatalogValue(plaintext, password);
+        expect(a, isNot(equals(b)));
+      },
+    );
   });
 
   group('Fehlerfälle', () {
@@ -151,6 +158,44 @@ void main() {
       expect(
         resolveProtectedList(raw: enc, unlocked: false, password: null),
         isNull,
+      );
+    });
+  });
+
+  group('ProtectedContentCache', () {
+    test('cached resolver liefert String- und Listenwerte', () {
+      final cache = ProtectedContentCache();
+      final encryptedValue = encryptCatalogValue('geheim', password);
+      final encryptedList = encryptCatalogList(const <String>[
+        'x',
+        'y',
+      ], password);
+
+      expect(
+        cache.resolveValue(
+          raw: encryptedValue,
+          unlocked: true,
+          password: password,
+        ),
+        'geheim',
+      );
+      expect(
+        cache.resolveList(
+          raw: encryptedList,
+          unlocked: true,
+          password: password,
+        ),
+        const <String>['x', 'y'],
+      );
+
+      cache.clear();
+      expect(
+        cache.resolveValue(
+          raw: encryptedValue,
+          unlocked: true,
+          password: password,
+        ),
+        'geheim',
       );
     });
   });
