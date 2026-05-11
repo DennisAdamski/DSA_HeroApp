@@ -51,4 +51,17 @@ void main() {
     expect(reloaded.learnedRepresentation, isNull);
     expect(reloaded.learnedTradition, isNull);
   });
+
+  test('hero spell entry persists foreign representation combination', () {
+    const entry = HeroSpellEntry(
+      spellValue: 5,
+      learnedRepresentation: 'Mag',
+      learnedTradition: 'Hex',
+    );
+
+    final reloaded = HeroSpellEntry.fromJson(entry.toJson());
+
+    expect(reloaded.learnedRepresentation, 'Mag');
+    expect(reloaded.learnedTradition, 'Hex');
+  });
 }

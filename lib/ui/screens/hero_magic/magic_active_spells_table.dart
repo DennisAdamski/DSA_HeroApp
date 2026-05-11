@@ -255,11 +255,14 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                   entry.learnedRepresentation!,
                               originTradition: entry.learnedTradition,
                             );
-                      final fremdReprPenaltySteps =
+                      final isLearnedAsForeign =
                           currentAvailabilityEntry?.isForeignRepresentation ==
-                              true
-                          ? 2
-                          : 0;
+                              true ||
+                          isForeignLearnedRepresentation(
+                            learnedRepresentation: entry.learnedRepresentation,
+                            learnedTradition: entry.learnedTradition,
+                          );
+                      final fremdReprPenaltySteps = isLearnedAsForeign ? 2 : 0;
                       final probeLabel = _probeWithValuesLabel(
                         effectiveAttributes,
                         def.attributes,
@@ -277,6 +280,9 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                           currentAvailabilityEntry == null
                           ? (entry.learnedRepresentation == null
                                 ? 'Auswahl fehlt'
+                                : isLearnedAsForeign
+                                ? '${entry.learnedRepresentation!} '
+                                      '(fremd: ${entry.learnedTradition})'
                                 : entry.learnedRepresentation!)
                           : _compactRepresentationLabel(
                               currentAvailabilityEntry,
@@ -296,6 +302,23 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                 currentAvailabilityEntry.storageKey,
                           )) {
                         dropdownEntries.add(currentAvailabilityEntry);
+                      }
+                      if (isLearnedAsForeign &&
+                          currentAvailabilityEntry == null &&
+                          entry.learnedTradition != null) {
+                        for (final repr in heroRepresentationen) {
+                          final synthetic = SpellAvailabilityEntry(
+                            tradition: entry.learnedTradition!,
+                            learnedRepresentation: repr,
+                            verbreitung: 0,
+                          );
+                          if (!dropdownEntries.any(
+                            (candidate) =>
+                                candidate.storageKey == synthetic.storageKey,
+                          )) {
+                            dropdownEntries.add(synthetic);
+                          }
+                        }
                       }
                       final preview = _SpellTablePreview.fromSpell(
                         def: def,

@@ -1459,6 +1459,27 @@ ueber die Settings-Katalogverwaltung bearbeitet.
 - Der Zauberdetaildialog zeigt zusaetzlich Merkmale und einen abgeleiteten
   Hinweis, ob Magieresistenz in die Probe einbezogen werden soll.
 
+#### Repraesentations-fremdes Lernen
+
+- Magiebegabte (Helden mit mindestens einer Repraesentation) duerfen auch
+  Zauber aktivieren, deren Verfuegbarkeitsliste keinen Eintrag fuer ihre
+  Tradition enthaelt (DSA-Regel "Zauber einer fremden Repraesentation
+  lernen", WdZ S. 75).
+- Im Katalog (`magic_spell_catalog_table.dart`) markiert ein `+2 K`-Chip
+  solche Zauber.
+- `allLearningOptionsForHero` (`magic_rules.dart`) liefert beim Aktivieren
+  die Gesamtliste aller Lern-Optionen: regulaere Availability-Eintraege
+  plus synthetische `(Herkunft, Helden-Repr)`-Paare fuer fremde Herkuenfte.
+  Sobald die Liste mehr als einen Eintrag hat, oeffnet sich der bestehende
+  `_SpellRepresentationDialog` und der Held waehlt sowohl Herkunfts-
+  Tradition als auch Traeger-Repraesentation.
+- Persistiert wird ohne neue Felder: `HeroSpellEntry.learnedRepresentation`
+  enthaelt die Helden-Repr., `learnedTradition` die Herkunfts-Tradition
+  des Zaubers. Die Bedingung `learnedTradition != learnedRepresentation`
+  wird durch `isForeignLearnedRepresentation` (`magic_rules.dart`) erkannt
+  und triggert in `magic_active_spells_table.dart` denselben `+2`-
+  Komplexitaets-Aufschlag wie regulaere Fremdrepr.-Eintraege.
+
 ### Update 2026-03-08: Rohstart, Startwerte und Eigenschaftsmaximum
 
 - `HeroSheet` speichert jetzt sowohl `rawStartAttributes` als auch `startAttributes`.
