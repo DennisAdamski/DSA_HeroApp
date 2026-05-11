@@ -147,6 +147,64 @@ void main() {
     });
   });
 
+  group('decryptCatalogValue dispatcher mit v3-Support', () {
+    test('entschluesselt v3-Wert wenn saltV3 mitgegeben wird', () {
+      final salt = _randomSalt();
+      final key = deriveCatalogKey(password: password, salt: salt);
+      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: key);
+      expect(decryptCatalogValue(encrypted, password, saltV3: salt), plaintext);
+    });
+
+    test('liefert null bei v3-Wert ohne saltV3', () {
+      final salt = _randomSalt();
+      final key = deriveCatalogKey(password: password, salt: salt);
+      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: key);
+      expect(decryptCatalogValue(encrypted, password), isNull);
+    });
+
+    test('liefert null bei v3-Wert mit falschem Salt', () {
+      final saltA = _randomSalt();
+      final saltB = _randomSalt();
+      final keyA = deriveCatalogKey(password: password, salt: saltA);
+      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: keyA);
+      expect(decryptCatalogValue(encrypted, password, saltV3: saltB), isNull);
+    });
+
+    test('liefert null bei v3-Wert mit falschem Passwort', () {
+      final salt = _randomSalt();
+      final key = deriveCatalogKey(password: password, salt: salt);
+      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: key);
+      expect(decryptCatalogValue(encrypted, 'falsch!', saltV3: salt), isNull);
+    });
+
+    test('v2-Pfad ignoriert mitgegebenen saltV3', () {
+      final encrypted = encryptCatalogValue(plaintext, password);
+      final irrelevantSalt = _randomSalt();
+      expect(
+        decryptCatalogValue(encrypted, password, saltV3: irrelevantSalt),
+        plaintext,
+      );
+    });
+
+    test('decryptCatalogList versteht v3 mit saltV3', () {
+      final salt = _randomSalt();
+      final key = deriveCatalogKey(password: password, salt: salt);
+      const list = ['x', 'y', 'z'];
+      final encrypted = encryptCatalogListV3(values: list, derivedKey: key);
+      expect(decryptCatalogList(encrypted, password, saltV3: salt), list);
+    });
+
+    test('decryptCatalogList liefert null bei v3 ohne saltV3', () {
+      final salt = _randomSalt();
+      final key = deriveCatalogKey(password: password, salt: salt);
+      final encrypted = encryptCatalogListV3(
+        values: const ['a'],
+        derivedKey: key,
+      );
+      expect(decryptCatalogList(encrypted, password), isNull);
+    });
+  });
+
   group('v1-Rückwärtskompatibilität (AES-CBC, fixes Salt)', () {
     test('v1-Wert wird korrekt entschlüsselt', () {
       final v1 = _encryptV1('Das Schwert des Dämons', password);
