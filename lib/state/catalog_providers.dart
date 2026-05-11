@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/catalog_decrypt_runner.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_loader.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_catalog_resolver.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
@@ -48,6 +49,33 @@ final baseCatalogSourceDataProvider = FutureProvider<CatalogSourceData>((
   return loader.loadDefaultSourceData();
 });
 
+/// Basisdaten nach optionalem Bulk-Decrypt aller `enc:`-Werte.
+///
+/// Sobald ein Inhalts-Passwort gespeichert ist, wird der Katalog einmal
+/// komplett entschluesselt (Web: im Web Worker via `compute`). v3-Werte
+/// nutzen den globalen Salt aus dem Manifest und benoetigen nur eine
+/// PBKDF2-Ableitung pro Passwort. Nachgelagerte Provider (Runtime, Rules)
+/// sehen ab dieser Stelle Klartext-Strings statt `enc:`-Praefixen.
+///
+/// Ohne Passwort wird die Quelle unveraendert durchgereicht — geschuetzte
+/// Werte bleiben dann mit `enc:`-Praefix bestehen und werden in der UI als
+/// "gesperrt" angezeigt.
+final decryptedCatalogSourceDataProvider = FutureProvider<CatalogSourceData>((
+  ref,
+) async {
+  final baseData = await ref.watch(baseCatalogSourceDataProvider.future);
+  final password =
+      ref.watch(appSettingsProvider).valueOrNull?.catalogContentPassword;
+  if (password == null || password.isEmpty) {
+    return baseData;
+  }
+  return decryptAllCatalogValues(
+    encrypted: baseData,
+    password: password,
+    globalSaltV3: baseData.catalogSaltV3,
+  );
+});
+
 /// Zusammengefuehrte Hausregel-Pakete aus Assets und Heldenspeicher.
 final houseRulePackCatalogProvider = FutureProvider<HouseRulePackCatalog>((
   ref,
@@ -76,7 +104,7 @@ final catalogRuleResolverProvider = FutureProvider<CatalogRuleResolver>((
 final catalogRuntimeDataProvider = FutureProvider<CatalogRuntimeData>((
   ref,
 ) async {
-  final baseData = await ref.watch(baseCatalogSourceDataProvider.future);
+  final baseData = await ref.watch(decryptedCatalogSourceDataProvider.future);
   final packCatalog = await ref.watch(houseRulePackCatalogProvider.future);
   final repository = ref.watch(customCatalogRepositoryProvider);
   final customSnapshot = await repository.load(

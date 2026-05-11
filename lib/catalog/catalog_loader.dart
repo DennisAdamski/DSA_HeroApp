@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
 
@@ -37,6 +38,10 @@ class CatalogLoader {
   Future<HouseRulePackSourceSnapshot> loadBuiltInHouseRulePacks({
     required String catalogVersion,
   }) async {
+    // Eventschleife einmal yielden, damit das App-Shell auf dem Web vor der
+    // Asset-Arbeit der Pack-Manifeste den ersten Frame malen kann.
+    // Funktioniert auch in Tests ohne Frame-Pump (im Gegensatz zu endOfFrame).
+    await Future<void>.delayed(Duration.zero);
     final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
     final assets = manifest.listAssets();
     final prefix = 'assets/catalogs/$catalogVersion/packs/';
@@ -53,33 +58,30 @@ class CatalogLoader {
     final packs = <HouseRulePackManifest>[];
     final issues = <HouseRulePackIssue>[];
     final seenIds = <String>{};
+    final loadedManifests = await Future.wait(
+      manifestPaths.map(_loadBuiltInHouseRulePackManifest),
+    );
 
-    for (final assetPath in manifestPaths) {
-      try {
-        final json = await _loadJsonObject(assetPath);
-        final manifest = HouseRulePackManifest.fromJson(
-          json,
-          filePath: assetPath,
-          isBuiltIn: true,
-        );
-        if (!seenIds.add(manifest.id)) {
-          issues.add(
-            HouseRulePackIssue(
-              packId: manifest.id,
-              packTitle: manifest.title,
-              filePath: assetPath,
-              message:
-                  'Doppelte eingebaute Paket-ID; das spaetere Manifest wird ignoriert.',
-            ),
-          );
-          continue;
-        }
-        packs.add(manifest);
-      } on FormatException catch (error) {
-        issues.add(
-          HouseRulePackIssue(filePath: assetPath, message: error.message),
-        );
+    for (final result in loadedManifests) {
+      final loadIssue = result.issue;
+      if (loadIssue != null) {
+        issues.add(loadIssue);
+        continue;
       }
+      final pack = result.manifest!;
+      if (!seenIds.add(pack.id)) {
+        issues.add(
+          HouseRulePackIssue(
+            packId: pack.id,
+            packTitle: pack.title,
+            filePath: result.assetPath,
+            message:
+                'Doppelte eingebaute Paket-ID; das spaetere Manifest wird ignoriert.',
+          ),
+        );
+        continue;
+      }
+      packs.add(pack);
     }
 
     return HouseRulePackSourceSnapshot(
@@ -111,48 +113,33 @@ class CatalogLoader {
     );
     final metadata =
         (manifest['metadata'] as Map?)?.cast<String, dynamic>() ?? const {};
-    final sections = <CatalogSectionId, List<Map<String, dynamic>>>{};
-    sections[CatalogSectionId.talents] = await _loadRequiredSection(
-      files: files,
-      manifestAssetPath: manifestAssetPath,
-      section: CatalogSectionId.talents,
-    );
-    sections[CatalogSectionId.combatTalents] = await _loadRequiredSection(
-      files: files,
-      manifestAssetPath: manifestAssetPath,
-      section: CatalogSectionId.combatTalents,
-    );
-    sections[CatalogSectionId.weapons] = await _loadRequiredSection(
-      files: files,
-      manifestAssetPath: manifestAssetPath,
-      section: CatalogSectionId.weapons,
-    );
-    sections[CatalogSectionId.spells] = await _loadRequiredSection(
-      files: files,
-      manifestAssetPath: manifestAssetPath,
-      section: CatalogSectionId.spells,
-    );
-
-    for (final section in const <CatalogSectionId>[
-      CatalogSectionId.maneuvers,
-      CatalogSectionId.combatSpecialAbilities,
-      CatalogSectionId.generalSpecialAbilities,
-      CatalogSectionId.magicSpecialAbilities,
-      CatalogSectionId.karmalSpecialAbilities,
-      CatalogSectionId.sprachen,
-      CatalogSectionId.schriften,
-    ]) {
-      sections[section] = await _loadOptionalSection(
-        files: files,
-        manifestAssetPath: manifestAssetPath,
-        section: section,
-      );
-    }
-
-    final reisebericht = await _loadOptionalSectionByKey(
+    final sectionResultsFuture = Future.wait([
+      for (final section in _requiredCatalogSections)
+        _loadRequiredSection(
+          files: files,
+          manifestAssetPath: manifestAssetPath,
+          section: section,
+        ).then((entries) => _CatalogSectionLoad(section, entries)),
+      for (final section in _optionalCatalogSections)
+        _loadOptionalSection(
+          files: files,
+          manifestAssetPath: manifestAssetPath,
+          section: section,
+        ).then((entries) => _CatalogSectionLoad(section, entries)),
+    ]);
+    final reiseberichtFuture = _loadOptionalSectionByKey(
       files: files,
       manifestAssetPath: manifestAssetPath,
       manifestKey: reiseberichtManifestKey,
+    );
+    final sectionResults = await sectionResultsFuture;
+    final sections = <CatalogSectionId, List<Map<String, dynamic>>>{
+      for (final result in sectionResults) result.section: result.entries,
+    };
+    final reisebericht = await reiseberichtFuture;
+    final catalogSaltV3 = _decodeOptionalCatalogSaltV3(
+      manifest,
+      assetPath: manifestAssetPath,
     );
 
     return CatalogSourceData(
@@ -161,6 +148,7 @@ class CatalogLoader {
       metadata: metadata,
       sections: sections,
       reisebericht: reisebericht,
+      catalogSaltV3: catalogSaltV3,
     );
   }
 
@@ -303,12 +291,80 @@ class CatalogLoader {
   }
 }
 
+const List<CatalogSectionId> _requiredCatalogSections = <CatalogSectionId>[
+  CatalogSectionId.talents,
+  CatalogSectionId.combatTalents,
+  CatalogSectionId.weapons,
+  CatalogSectionId.spells,
+];
+
+const List<CatalogSectionId> _optionalCatalogSections = <CatalogSectionId>[
+  CatalogSectionId.maneuvers,
+  CatalogSectionId.combatSpecialAbilities,
+  CatalogSectionId.generalSpecialAbilities,
+  CatalogSectionId.magicSpecialAbilities,
+  CatalogSectionId.karmalSpecialAbilities,
+  CatalogSectionId.sprachen,
+  CatalogSectionId.schriften,
+];
+
+class _CatalogSectionLoad {
+  const _CatalogSectionLoad(this.section, this.entries);
+
+  final CatalogSectionId section;
+  final List<Map<String, dynamic>> entries;
+}
+
+class _BuiltInHouseRulePackLoad {
+  const _BuiltInHouseRulePackLoad({
+    required this.assetPath,
+    this.manifest,
+    this.issue,
+  });
+
+  final String assetPath;
+  final HouseRulePackManifest? manifest;
+  final HouseRulePackIssue? issue;
+}
+
+Future<_BuiltInHouseRulePackLoad> _loadBuiltInHouseRulePackManifest(
+  String assetPath,
+) async {
+  try {
+    final json = await _loadJsonObject(assetPath);
+    final manifest = HouseRulePackManifest.fromJson(
+      json,
+      filePath: assetPath,
+      isBuiltIn: true,
+    );
+    return _BuiltInHouseRulePackLoad(assetPath: assetPath, manifest: manifest);
+  } on FormatException catch (error) {
+    return _BuiltInHouseRulePackLoad(
+      assetPath: assetPath,
+      issue: HouseRulePackIssue(filePath: assetPath, message: error.message),
+    );
+  }
+}
+
+// Schwelle, ab der jsonDecode in einen Web-Worker / Isolate ausgelagert wird.
+// Unter ~32 KB ist der Worker-Spawn-Overhead groesser als der eigentliche Decode.
+const int _jsonDecodeOffThreadThreshold = 32 * 1024;
+
+Object? _decodeJsonTopLevel(String raw) => jsonDecode(raw);
+
+Future<Object?> _decodeJsonAdaptive(String raw) {
+  if (raw.length > _jsonDecodeOffThreadThreshold) {
+    return compute(_decodeJsonTopLevel, raw);
+  }
+  return Future.value(_decodeJsonTopLevel(raw));
+}
+
 /// Laedt eine JSON-Asset-Datei und gibt sie als Map zurueck.
 ///
 /// Wirft [FormatException] wenn der Inhalt kein JSON-Objekt ist.
 Future<Map<String, dynamic>> _loadJsonObject(String assetPath) async {
   final raw = await rootBundle.loadString(assetPath, cache: false);
-  final decoded = jsonDecode(raw);
+  final decoded = await _decodeJsonAdaptive(raw);
   if (decoded is Map<String, dynamic>) {
     return decoded;
   }
@@ -323,7 +379,7 @@ Future<Map<String, dynamic>> _loadJsonObject(String assetPath) async {
 /// Wirft [FormatException] wenn der Inhalt kein JSON-Array aus Objekten ist.
 Future<List<Map<String, dynamic>>> _loadJsonList(String assetPath) async {
   final raw = await rootBundle.loadString(assetPath, cache: false);
-  final decoded = jsonDecode(raw);
+  final decoded = await _decodeJsonAdaptive(raw);
   if (decoded is! List) {
     throw FormatException(
       'Catalog section asset must be a JSON array: $assetPath',
@@ -410,6 +466,26 @@ String? _readOptionalStringFromMap(Map<String, dynamic> json, String key) {
     return value.trim();
   }
   return null;
+}
+
+/// Liest den optionalen base64-codierten v3-Catalog-Salt aus dem Manifest.
+///
+/// Erwartet den Top-Level-Schluessel `catalog_salt_v3` als base64-String.
+/// Gibt `null` zurueck wenn der Schluessel fehlt; wirft [FormatException] bei
+/// fehlerhaftem base64.
+Uint8List? _decodeOptionalCatalogSaltV3(
+  Map<String, dynamic> manifest, {
+  required String assetPath,
+}) {
+  final raw = _readOptionalStringFromMap(manifest, 'catalog_salt_v3');
+  if (raw == null) return null;
+  try {
+    return base64Decode(raw);
+  } on FormatException catch (e) {
+    throw FormatException(
+      'manifest.catalog_salt_v3 is not valid base64 ($assetPath): ${e.message}',
+    );
+  }
 }
 
 /// Berechnet den absoluten Asset-Pfad relativ zur Manifest-Datei.

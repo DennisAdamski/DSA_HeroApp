@@ -19,6 +19,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     required this.onRemoveSpell,
     required this.controllerFor,
     required this.canRaiseValues,
+    required this.protectedContentCache,
     this.contentUnlocked = true,
     this.contentPassword,
     this.onRaiseSpell,
@@ -45,6 +46,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final TextEditingController Function(String id, String field, String initial)
   controllerFor;
   final bool canRaiseValues;
+  final ProtectedContentCache protectedContentCache;
   final bool contentUnlocked;
   final String? contentPassword;
   final Future<void> Function(String spellId, SpellDef spell)? onRaiseSpell;
@@ -66,6 +68,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
       effectiveAttributes: effectiveAttributes,
       contentUnlocked: contentUnlocked,
       contentPassword: contentPassword,
+      protectedContentCache: protectedContentCache,
     );
     if (result == null) {
       return;
@@ -243,12 +246,6 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                         );
                       }
 
-                      final resolved = _ResolvedSpellDetails.fromSpell(
-                        def: def,
-                        entry: entry,
-                        contentUnlocked: contentUnlocked,
-                        contentPassword: contentPassword,
-                      );
                       final currentAvailabilityEntry =
                           entry.learnedRepresentation == null
                           ? null
@@ -300,6 +297,10 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                           )) {
                         dropdownEntries.add(currentAvailabilityEntry);
                       }
+                      final preview = _SpellTablePreview.fromSpell(
+                        def: def,
+                        entry: entry,
+                      );
 
                       void openDetails() {
                         _openSpellDetails(context, spellId, def, entry);
@@ -346,6 +347,9 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                     children: [
                                       Expanded(
                                         child: TextField(
+                                          key: ValueKey<String>(
+                                            'magic-spells-field-$spellId-spellValue',
+                                          ),
                                           controller: controllerFor(
                                             spellId,
                                             'spellValue',
@@ -391,6 +395,9 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                           isEditing
                               ? DataCell(
                                   TextField(
+                                    key: ValueKey<String>(
+                                      'magic-spells-field-$spellId-modifier',
+                                    ),
                                     controller: controllerFor(
                                       spellId,
                                       'modifier',
@@ -555,31 +562,31 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                           _buildDetailCell(
                             width: layout.contentWidthFor(isEditing ? 9 : 8),
                             context: context,
-                            text: resolved.castingTime,
+                            text: preview.castingTime,
                             onTap: openDetails,
                           ),
                           _buildDetailCell(
                             width: layout.contentWidthFor(isEditing ? 10 : 9),
                             context: context,
-                            text: resolved.aspCost,
+                            text: preview.aspCost,
                             onTap: openDetails,
                           ),
                           _buildDetailCell(
                             width: layout.contentWidthFor(isEditing ? 11 : 10),
                             context: context,
-                            text: resolved.range,
+                            text: preview.range,
                             onTap: openDetails,
                           ),
                           _buildDetailCell(
                             width: layout.contentWidthFor(isEditing ? 12 : 11),
                             context: context,
-                            text: resolved.duration,
+                            text: preview.duration,
                             onTap: openDetails,
                           ),
                           _buildDetailCell(
                             width: layout.contentWidthFor(isEditing ? 13 : 12),
                             context: context,
-                            text: resolved.wirkung,
+                            text: preview.wirkung,
                             maxLines: 2,
                             underline: true,
                             onTap: openDetails,
@@ -587,7 +594,8 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                           _buildVariantsCell(
                             width: layout.contentWidthFor(isEditing ? 14 : 13),
                             context: context,
-                            variants: resolved.variants,
+                            variants: preview.variants,
+                            protectedPreview: preview.variantsProtected,
                             onTap: openDetails,
                           ),
                           if (isEditing)
@@ -612,6 +620,52 @@ class _MagicActiveSpellsTable extends StatelessWidget {
       ),
     );
   }
+}
+
+// Schlanke Tabellenvorschau ohne Entschluesselung geschuetzter Langtexte.
+class _SpellTablePreview {
+  const _SpellTablePreview({
+    required this.aspCost,
+    required this.range,
+    required this.duration,
+    required this.castingTime,
+    required this.wirkung,
+    required this.variants,
+    required this.variantsProtected,
+  });
+
+  factory _SpellTablePreview.fromSpell({
+    required SpellDef def,
+    required HeroSpellEntry entry,
+  }) {
+    final overrides = entry.textOverrides;
+    final protectedWirkung =
+        overrides?.wirkung == null && isProtectedCatalogValue(def.wirkung);
+    final protectedVariants =
+        overrides?.variants == null &&
+        def.rawVariantsEncrypted != null &&
+        isProtectedCatalogValue(def.rawVariantsEncrypted);
+
+    return _SpellTablePreview(
+      aspCost: overrides?.aspCost ?? def.aspCost,
+      range: overrides?.range ?? def.range,
+      duration: overrides?.duration ?? def.duration,
+      castingTime: overrides?.castingTime ?? def.castingTime,
+      wirkung: protectedWirkung
+          ? protectedContentDetailHint
+          : (overrides?.wirkung ?? def.wirkung),
+      variants: overrides?.variants ?? def.variants,
+      variantsProtected: protectedVariants,
+    );
+  }
+
+  final String aspCost;
+  final String range;
+  final String duration;
+  final String castingTime;
+  final String wirkung;
+  final List<String> variants;
+  final bool variantsProtected;
 }
 
 String _compactRepresentationLabel(SpellAvailabilityEntry entry) {
@@ -655,25 +709,37 @@ DataCell _buildVariantsCell({
   required BuildContext context,
   required double width,
   required List<String> variants,
+  bool protectedPreview = false,
   required VoidCallback onTap,
 }) {
   final theme = Theme.of(context);
+  final Widget content;
+  if (protectedPreview) {
+    content = Text(
+      protectedContentDetailHint,
+      style: theme.textTheme.bodySmall?.copyWith(
+        color: theme.colorScheme.primary,
+        decoration: TextDecoration.underline,
+      ),
+      overflow: TextOverflow.ellipsis,
+    );
+  } else if (variants.isEmpty) {
+    content = Text('-', style: theme.textTheme.bodySmall);
+  } else {
+    content = Text(
+      '${variants.length}x ${variants.first}',
+      style: theme.textTheme.bodySmall?.copyWith(
+        color: theme.colorScheme.primary,
+        fontWeight: FontWeight.bold,
+      ),
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
   return DataCell(
     GestureDetector(
       onTap: onTap,
-      child: SizedBox(
-        width: width,
-        child: variants.isEmpty
-            ? Text('-', style: theme.textTheme.bodySmall)
-            : Text(
-                '${variants.length}x ${variants.first}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-      ),
+      child: SizedBox(width: width, child: content),
     ),
   );
 }

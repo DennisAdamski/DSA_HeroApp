@@ -30,6 +30,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Der Settings-Bereich `Rechtliches` enthaelt den inoffiziellen Fanprojekt-,
   Marken- und Rechtehinweis fuer DSA und Ulisses Spiele.
 - Reisebericht-Daten bleiben separat unter `assets/catalogs/reiseberichte/house_rules_v1/`.
+- Geschuetzte Katalog-Felder (Wirkung/Varianten von Zaubern, Erklaerungstexte
+  von Manoevern und Kampf-Sonderfertigkeiten) sind v3-verschluesselt
+  (AES-GCM, globaler Salt im Manifest `catalog_salt_v3`). Beim Unlock
+  entschluesselt `decryptedCatalogSourceDataProvider` den ganzen Katalog
+  einmal — Detail in `docs/technical_overview.md` Abschnitt 5.3. Passwoerter
+  werden vor PBKDF2 NFC-normalisiert, damit Eingaben mit Umlauten
+  unabhaengig von NFC/NFD-Codepoint-Repraesentation funktionieren.
 - Projektsprache ist Deutsch; sichtbare UI-Texte sollen echte Umlaute und das Eszett verwenden, wenn technisch moeglich.
 - Der Windows-Release-Audit fuer EXE/MSIX-Artefakte ist in `docs/windows_antivirus_audit.md` beschrieben; der zugehoerige Helfer liegt unter `tool/audit_windows_artifact.ps1`.
 
