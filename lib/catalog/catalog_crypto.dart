@@ -80,17 +80,29 @@ String encryptCatalogValue(String plaintext, String password) {
 
 /// Entschluesselt einen `enc:`-praefixierten Wert.
 ///
-/// Unterstuetzt v2 (GCM, zufaelliges Salt) und v1 (CBC, festes Salt).
-/// Gibt `null` zurueck bei Fehler (falsches Passwort oder korrupte Daten).
-String? decryptCatalogValue(String encryptedValue, String password) {
+/// Unterstuetzt v3 (GCM, globaler Salt — benoetigt [saltV3]), v2 (GCM,
+/// per-Wert Salt) und v1 (CBC, festes Salt). Gibt `null` zurueck bei
+/// Fehler (falsches Passwort, fehlender Salt fuer v3, oder korrupte Daten).
+String? decryptCatalogValue(
+  String encryptedValue,
+  String password, {
+  Uint8List? saltV3,
+}) {
   if (!encryptedValue.startsWith(encryptedPrefix)) return encryptedValue;
   try {
     final payload = encryptedValue.substring(encryptedPrefix.length);
+    if (payload.startsWith(_v3Marker)) {
+      if (saltV3 == null) return null;
+      final key = deriveCatalogKey(password: password, salt: saltV3);
+      return decryptCatalogValueV3(
+        encryptedValue: encryptedValue,
+        derivedKey: key,
+      );
+    }
     if (payload.startsWith(_v2Marker)) {
       return _decryptV2(payload.substring(_v2Marker.length), password);
-    } else {
-      return _decryptLegacy(payload, password);
     }
+    return _decryptLegacy(payload, password);
   } catch (_) {
     return null;
   }
@@ -221,9 +233,18 @@ String encryptCatalogList(List<String> values, String password) {
 
 /// Entschluesselt einen `enc:`-Wert zurueck in eine String-Liste.
 ///
-/// Gibt `null` bei Fehler zurueck.
-List<String>? decryptCatalogList(String encryptedValue, String password) {
-  final decrypted = decryptCatalogValue(encryptedValue, password);
+/// Gibt `null` bei Fehler zurueck. Fuer v3-Werte muss [saltV3] mitgegeben
+/// werden.
+List<String>? decryptCatalogList(
+  String encryptedValue,
+  String password, {
+  Uint8List? saltV3,
+}) {
+  final decrypted = decryptCatalogValue(
+    encryptedValue,
+    password,
+    saltV3: saltV3,
+  );
   if (decrypted == null) return null;
   try {
     final decoded = jsonDecode(decrypted);
