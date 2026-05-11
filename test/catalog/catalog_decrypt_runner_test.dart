@@ -195,6 +195,39 @@ void main() {
       );
     });
 
+    test('Listen-Felder werden nach Decrypt als List zurueckgeliefert', () async {
+      // Schema wie magie.json `variants`: das ganze Feld ist ein einziger
+      // enc:-String der eine JSON-Liste enthaelt.
+      final salt = _randomSalt();
+      final key = deriveCatalogKey(password: password, salt: salt);
+      final encryptedListField = encryptCatalogListV3(
+        values: const ['Variante A', 'Variante B', 'Variante C'],
+        derivedKey: key,
+      );
+
+      final source = _sourceFrom(
+        sections: <CatalogSectionId, List<Map<String, dynamic>>>{
+          CatalogSectionId.spells: <Map<String, dynamic>>[
+            <String, dynamic>{
+              'id': 'spell.x',
+              'variants': encryptedListField,
+            },
+          ],
+        },
+      );
+
+      final result = await decryptAllCatalogValues(
+        encrypted: source,
+        password: password,
+        globalSaltV3: salt,
+      );
+
+      expect(
+        result.entriesFor(CatalogSectionId.spells).single['variants'],
+        <dynamic>['Variante A', 'Variante B', 'Variante C'],
+      );
+    });
+
     test('Reisebericht-Daten werden ebenfalls entschluesselt', () async {
       final salt = _randomSalt();
       final key = deriveCatalogKey(password: password, salt: salt);
