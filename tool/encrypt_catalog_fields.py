@@ -25,7 +25,18 @@ import hashlib
 import json
 import os
 import sys
+import unicodedata
 from pathlib import Path
+
+
+def _password_bytes(password: str) -> bytes:
+    """UTF-8-Bytes des NFC-normalisierten Passworts.
+
+    Muss mit lib/catalog/catalog_crypto.dart._passwordBytes uebereinstimmen.
+    Verhindert NFC/NFD-Mismatches bei Umlauten oder anderen kombinierbaren
+    Zeichen zwischen Tool- und App-Pfad.
+    """
+    return unicodedata.normalize('NFC', password).encode('utf-8')
 
 # pip install pycryptodome
 try:
@@ -90,7 +101,7 @@ def derive_key_v1(password: str) -> bytes:
     """Leitet einen 256-Bit AES-Schluessel aus dem Passwort ab (Legacy v1)."""
     return hashlib.pbkdf2_hmac(
         'sha256',
-        password.encode('utf-8'),
+        _password_bytes(password),
         LEGACY_SALT,
         LEGACY_PBKDF2_ITERATIONS,
         dklen=KEY_LENGTH,
@@ -145,7 +156,7 @@ def decrypt_value_v2(encrypted: str, password: str) -> str | None:
         tag = body[-16:]
         key = hashlib.pbkdf2_hmac(
             'sha256',
-            password.encode('utf-8'),
+            _password_bytes(password),
             salt,
             V2_PBKDF2_ITERATIONS,
             dklen=KEY_LENGTH,
@@ -163,7 +174,7 @@ def derive_key_v3(password: str, salt: bytes) -> bytes:
     """Leitet einen 256-Bit AES-Schluessel ab (v3, 100k PBKDF2-HMAC-SHA256)."""
     return hashlib.pbkdf2_hmac(
         'sha256',
-        password.encode('utf-8'),
+        _password_bytes(password),
         salt,
         V3_PBKDF2_ITERATIONS,
         dklen=KEY_LENGTH,

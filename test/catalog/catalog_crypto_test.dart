@@ -83,6 +83,45 @@ void main() {
     });
   });
 
+  group('Unicode-Normalisierung (NFC vs NFD)', () {
+    // 'ue' = U+00FC (precomposed, NFC, 1 codepoint)
+    // 'u' + U+0308 = NFD (2 codepoints)
+    // Beide rendern visuell identisch, UTF-8-Bytes sind aber verschieden.
+    final nfcPassword = 'N${String.fromCharCode(0x00FC)}rnberg2026!';
+    final nfdPassword = 'Nu${String.fromCharCode(0x0308)}rnberg2026!';
+
+    test('Source-Strings sind als Codepoints unterschiedlich (sanity)', () {
+      expect(nfcPassword.codeUnits.length, isNot(nfdPassword.codeUnits.length));
+    });
+
+    test('NFC- und NFD-Form erzeugen denselben Key (v3)', () {
+      final salt = _randomSalt();
+      final keyNfc = deriveCatalogKey(password: nfcPassword, salt: salt);
+      final keyNfd = deriveCatalogKey(password: nfdPassword, salt: salt);
+      expect(keyNfc.bytes, keyNfd.bytes);
+    });
+
+    test('NFD-Passwort entschluesselt einen mit NFC verschluesselten v3-Wert',
+        () {
+      final salt = _randomSalt();
+      final keyNfc = deriveCatalogKey(password: nfcPassword, salt: salt);
+      final encrypted = encryptCatalogValueV3(
+        plaintext: 'geheim',
+        derivedKey: keyNfc,
+      );
+      expect(
+        decryptCatalogValue(encrypted, nfdPassword, saltV3: salt),
+        'geheim',
+      );
+    });
+
+    test('NFD-Passwort entschluesselt einen mit NFC verschluesselten v2-Wert',
+        () {
+      final encrypted = encryptCatalogValue('geheim', nfcPassword);
+      expect(decryptCatalogValue(encrypted, nfdPassword), 'geheim');
+    });
+  });
+
   group('v3 (globaler Salt, pre-derived Key)', () {
     test('Roundtrip mit pre-derived Key', () {
       final salt = _randomSalt();
