@@ -200,6 +200,75 @@ bool isForeignSpellRepresentation({
   return entry.isForeignRepresentation;
 }
 
+/// Liefert true, wenn die gespeicherten Felder einen in fremder Repr. gelernten
+/// Zauber beschreiben (auch ohne expliziten Availability-Eintrag im Katalog).
+///
+/// Deckt die DSA-Regel "Zauber einer fremden Repraesentation lernen" ab: Ein
+/// Magiebegabter darf Zauber jeder Repr. erlernen, der Lernkomplexitaets-
+/// Aufschlag betraegt +2 Stufen.
+bool isForeignLearnedRepresentation({
+  required String? learnedRepresentation,
+  required String? learnedTradition,
+}) {
+  if (learnedRepresentation == null || learnedTradition == null) {
+    return false;
+  }
+  if (learnedRepresentation.isEmpty || learnedTradition.isEmpty) {
+    return false;
+  }
+  return learnedRepresentation != learnedTradition;
+}
+
+/// Liefert alle Lern-Optionen, die einem magiebegabten Helden offen stehen.
+///
+/// Enthaelt sowohl regulaere Availability-Eintraege (Tradition passt zu einer
+/// Helden-Repraesentation) als auch synthetische Eintraege fuer das Lernen in
+/// fremder Repraesentation: fuer jede Herkunftstradition aus `availability`,
+/// die der Held nicht selbst beherrscht, wird je eine eigene Helden-Repr. als
+/// moegliche Traeger-Repr. angeboten. Duplikate werden ueber `storageKey`
+/// vermieden.
+List<SpellAvailabilityEntry> allLearningOptionsForHero(
+  String availability,
+  List<String> heroRepresentations,
+) {
+  if (heroRepresentations.isEmpty) {
+    return const [];
+  }
+  final entries = parseSpellAvailability(availability);
+  if (entries.isEmpty) {
+    return const [];
+  }
+
+  final result = <SpellAvailabilityEntry>[];
+  final seenKeys = <String>{};
+
+  for (final entry in entries) {
+    if (heroRepresentations.contains(entry.tradition)) {
+      if (seenKeys.add(entry.storageKey)) {
+        result.add(entry);
+      }
+    }
+  }
+
+  for (final entry in entries) {
+    if (heroRepresentations.contains(entry.tradition)) {
+      continue;
+    }
+    for (final heroRepr in heroRepresentations) {
+      final synthetic = SpellAvailabilityEntry(
+        tradition: entry.tradition,
+        learnedRepresentation: heroRepr,
+        verbreitung: entry.verbreitung,
+      );
+      if (seenKeys.add(synthetic.storageKey)) {
+        result.add(synthetic);
+      }
+    }
+  }
+
+  return result;
+}
+
 /// Berechnet die effektive Steigerungskategorie eines Zaubers.
 ///
 /// Hauszauber, passende Merkmalskenntnisse und Begabung summieren sich jeweils

@@ -149,6 +149,7 @@ class _MagicSpellCatalogTableState extends State<_MagicSpellCatalogTable> {
               ),
               const SizedBox(width: 8),
               FilterChip(
+                key: const ValueKey<String>('magic-spell-catalog-filter-all'),
                 label: const Text('Alle'),
                 selected: _showAll,
                 onSelected: (value) {
@@ -199,7 +200,14 @@ class _MagicSpellCatalogTableState extends State<_MagicSpellCatalogTable> {
                                   spell.availability,
                                   widget.heroRepresentationen,
                                 );
-                            final canActivate = heroEntries.isNotEmpty;
+                            final canActivateRegular = heroEntries.isNotEmpty;
+                            final canActivateForeign =
+                                widget.heroRepresentationen.isNotEmpty &&
+                                spell.availability.trim().isNotEmpty;
+                            final canActivate =
+                                canActivateRegular || canActivateForeign;
+                            final isForeignOnly =
+                                !canActivateRegular && canActivateForeign;
                             final availabilityLabel = formatAvailabilityEntries(
                               spell.availability,
                             );
@@ -225,9 +233,46 @@ class _MagicSpellCatalogTableState extends State<_MagicSpellCatalogTable> {
                                 DataCell(
                                   SizedBox(
                                     width: layout.contentWidthFor(1),
-                                    child: Text(
-                                      spell.name,
-                                      overflow: TextOverflow.ellipsis,
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            spell.name,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (isForeignOnly) ...[
+                                          const SizedBox(width: 4),
+                                          Tooltip(
+                                            message:
+                                                'Fremde Repraesentation: '
+                                                '+2 Komplexitaetsstufen',
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 4,
+                                                    vertical: 1,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: theme.colorScheme
+                                                    .secondaryContainer,
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                '+2 K',
+                                                style: theme
+                                                    .textTheme
+                                                    .labelSmall
+                                                    ?.copyWith(
+                                                      color: theme.colorScheme
+                                                          .onSecondaryContainer,
+                                                    ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ),
                                 ),

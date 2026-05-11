@@ -5,20 +5,23 @@ extension _MagicManagementHelpers on _HeroMagicTabState {
     BuildContext context,
     SpellDef spell,
   ) async {
-    final availableEntries = availableSpellEntriesForRepresentations(
+    final options = allLearningOptionsForHero(
       spell.availability,
       _draftRepresentationen,
     );
-    if (availableEntries.isEmpty) {
+    if (options.isEmpty) {
       return null;
     }
-    if (availableEntries.length == 1) {
-      return availableEntries.single;
+    if (options.length == 1) {
+      return options.single;
     }
     return _showSpellRepresentationDialog(
       context: context,
       spellName: spell.name,
-      entries: availableEntries,
+      entries: options,
+      baseLernkomplexitaet: spell.steigerung,
+      zauberMerkmale: parseSpellTraits(spell.traits),
+      heldMerkmalskenntnisse: _draftMerkmalskenntnisse,
     );
   }
 
