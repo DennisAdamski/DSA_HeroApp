@@ -1117,6 +1117,19 @@ Konsumenten nicht pro Anzeige PBKDF2/AES anwerfen, sitzt zwischen
   einzige PBKDF2-Ableitung pro Passwort, danach AES-GCM pro Wert (<1 ms).
   v2/v1-Werte bleiben rueckwaertskompatibel und laufen ueber den
   langsameren Per-Wert-Pfad bis zur Migration der Assets.
+- Passwoerter werden vor PBKDF2 NFC-normalisiert (`_passwordBytes` in
+  `catalog_crypto.dart` via `package:unorm_dart`). Damit erzeugen `ü` als
+  precomposed (U+00FC) und als `u`+Combining-Diaeresis (NFD) denselben
+  Schluessel — sonst wuerde dasselbe Passwort je nach Eingabequelle
+  (Tastatur vs Copy/Paste, macOS-Dateisystem vs Windows-Tastatur)
+  unterschiedliche Schluessel ergeben. Das Python-Tool spiegelt die
+  Normalisierung in `_password_bytes`.
+- Bei List-Feldern (z.B. `variants` in `magie.json`) verschluesselt das Tool
+  die Liste als JSON-encoded String. Beim Bulk-Decrypt erkennt
+  `_maybeDecodeJsonStructure` JSON-Arrays/Objects (Schnellcheck auf erstes
+  Zeichen `[`/`{`) und liefert sie als `List<dynamic>`/`Map` zurueck,
+  spiegelbildlich zum Encrypt — `SpellDef.fromJson` sieht damit weiterhin
+  eine echte Liste unter `variants`.
 
 `ProtectedContentCache` in `lib/ui/screens/shared/protected_content_helpers.dart`
 sieht nach diesem Schritt nur noch Klartext-Werte und greift seinen
