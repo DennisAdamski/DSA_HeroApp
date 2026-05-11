@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:encrypt/encrypt.dart' show Key;
 import 'package:flutter/foundation.dart' hide Key;
 
@@ -143,25 +145,53 @@ dynamic _walkValue(
 
 /// Entschluesselt einen einzelnen String, falls er ein `enc:`-Praefix traegt.
 ///
+/// Liefert den Klartext zurueck — bei JSON-Array/Object-Inhalt wird er
+/// transparent als `List`/`Map` zurueckgegeben, sodass Tool-seitig per
+/// [encryptCatalogList]/[encryptCatalogListV3] serialisierte Listen
+/// spiegelbildlich wieder zur Liste werden (z.B. `variants` in magie.json).
+///
 /// Bei Fehler wird der Originalstring zurueckgegeben, damit der Loader
 /// weiterhin Daten liefert und die UI einen Locked-Hinweis zeigen kann.
-String _decryptStringIfNeeded(
+dynamic _decryptStringIfNeeded(
   String value, {
   required String password,
   required Key? v3Key,
 }) {
   if (!isEncryptedValue(value)) return value;
+  String? decrypted;
   if (value.startsWith('${encryptedPrefix}3:')) {
     if (v3Key == null) return value;
-    final decrypted = decryptCatalogValueV3(
+    decrypted = decryptCatalogValueV3(
       encryptedValue: value,
       derivedKey: v3Key,
     );
-    return decrypted ?? value;
+  } else {
+    // v2 oder v1 — langsamer Fallback.
+    decrypted = decryptCatalogValue(value, password);
   }
-  // v2 oder v1 — langsamer Fallback.
-  final decrypted = decryptCatalogValue(value, password);
-  return decrypted ?? value;
+  if (decrypted == null) return value;
+  return _maybeDecodeJsonStructure(decrypted);
+}
+
+/// Wenn [plaintext] ein JSON-Array oder -Object ist, liefert die geparste
+/// Struktur zurueck — sonst den unveraenderten String.
+///
+/// Erforderlich weil das Encrypt-Tool `list`-Felder ueber
+/// [encryptCatalogList]/[encryptCatalogListV3] als JSON-encoded String
+/// verschluesselt. Beim Bulk-Decrypt muss diese Strukturinformation
+/// wiederhergestellt werden, sonst sehen Konsumenten wie [SpellDef.fromJson]
+/// ein String-Feld wo eigentlich eine Liste erwartet wird.
+dynamic _maybeDecodeJsonStructure(String plaintext) {
+  if (plaintext.isEmpty) return plaintext;
+  final first = plaintext.codeUnitAt(0);
+  // Schnellcheck: nur Arrays (`[`) und Objects (`{`) heuristisch parsen.
+  // Alles andere ist regulaerer Text und bleibt String.
+  if (first != 0x5B && first != 0x7B) return plaintext;
+  try {
+    return jsonDecode(plaintext);
+  } catch (_) {
+    return plaintext;
+  }
 }
 
 /// Zaehlt alle `enc:`-Praefixe in einer [CatalogSourceData] (rekursiv).
