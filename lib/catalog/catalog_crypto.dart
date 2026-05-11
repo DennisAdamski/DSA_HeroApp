@@ -7,6 +7,18 @@ import 'package:pointycastle/digests/sha256.dart';
 import 'package:pointycastle/key_derivators/api.dart';
 import 'package:pointycastle/key_derivators/pbkdf2.dart';
 import 'package:pointycastle/macs/hmac.dart';
+import 'package:unorm_dart/unorm_dart.dart' as unorm;
+
+/// Liefert die UTF-8-Bytes des NFC-normalisierten Passworts.
+///
+/// Verhindert Mismatches zwischen Plattformen / Eingabequellen: dieselben
+/// Zeichen (z. B. `ü`) koennen als precomposed (NFC, 1 Codepoint) oder
+/// als Basis + Combining Mark (NFD, 2 Codepoints) ankommen. PBKDF2 wuerde
+/// daraus unterschiedliche Schluessel ableiten — Python (das Encrypt-Tool)
+/// und Dart muessen exakt dieselbe Repraesentation sehen.
+Uint8List _passwordBytes(String password) {
+  return Uint8List.fromList(utf8.encode(unorm.nfc(password)));
+}
 
 // ── Legacy-Konstanten (v1: AES-CBC, festes Salt) ─────────────────────────────
 
@@ -46,13 +58,13 @@ Uint8List _randomBytes(int length) {
 Key _deriveKeyLegacy(String password) {
   final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
     ..init(Pbkdf2Parameters(_legacySalt, _legacyIterations, 32));
-  return Key(derivator.process(Uint8List.fromList(utf8.encode(password))));
+  return Key(derivator.process(_passwordBytes(password)));
 }
 
 Key _deriveKeyV2(String password, Uint8List salt) {
   final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
     ..init(Pbkdf2Parameters(salt, _v2Iterations, 32));
-  return Key(derivator.process(Uint8List.fromList(utf8.encode(password))));
+  return Key(derivator.process(_passwordBytes(password)));
 }
 
 // ── Oeffentliche API ──────────────────────────────────────────────────────────
@@ -142,7 +154,7 @@ String? _decryptLegacy(String b64Payload, String password) {
 Key deriveCatalogKey({required String password, required Uint8List salt}) {
   final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
     ..init(Pbkdf2Parameters(salt, _v3Iterations, 32));
-  return Key(derivator.process(Uint8List.fromList(utf8.encode(password))));
+  return Key(derivator.process(_passwordBytes(password)));
 }
 
 /// Verschluesselt einen Klartext-String mit AES-GCM und einem bereits
