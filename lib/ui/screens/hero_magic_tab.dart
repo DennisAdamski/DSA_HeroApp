@@ -22,6 +22,7 @@ import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
@@ -75,8 +76,11 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   final ValueNotifier<int> _tableRevision = ValueNotifier<int>(0);
   final Map<String, TextEditingController> _cellControllers =
       <String, TextEditingController>{};
+  final ProtectedContentCache _protectedContentCache = ProtectedContentCache();
 
   HeroSheet? _latestHero;
+  bool? _lastContentUnlocked;
+  String? _lastContentPassword;
 
   // Draft-Zustand wird nur im Edit-Modus veraendert.
   Map<String, HeroSpellEntry> _draftSpells = <String, HeroSpellEntry>{};
@@ -114,6 +118,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       controller.dispose();
     }
     _tableRevision.dispose();
+    _protectedContentCache.clear();
     super.dispose();
   }
 
@@ -144,6 +149,19 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       hero.magicSpecialAbilities,
     );
     _draftMagicLeadAttribute = hero.magicLeadAttribute;
+  }
+
+  void _syncProtectedContentCache({
+    required bool contentUnlocked,
+    required String? contentPassword,
+  }) {
+    if (_lastContentUnlocked == contentUnlocked &&
+        _lastContentPassword == contentPassword) {
+      return;
+    }
+    _lastContentUnlocked = contentUnlocked;
+    _lastContentPassword = contentPassword;
+    _protectedContentCache.clear();
   }
 
   void _resetCellControllers() {
@@ -366,6 +384,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    UiRebuildObserver.bump('hero_magic_tab');
     final hero = ref.watch(heroByIdProvider(widget.heroId));
     if (hero == null) {
       return const Center(child: Text('Held nicht gefunden.'));
@@ -383,6 +402,15 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
           for (final spell in catalog.spells) spell.id: spell,
         };
         final effectiveAttributes = computeEffectiveAttributes(hero);
+        final contentUnlocked = ref.watch(catalogContentVisibleProvider);
+        final contentPassword = ref
+            .watch(appSettingsProvider)
+            .valueOrNull
+            ?.catalogContentPassword;
+        _syncProtectedContentCache(
+          contentUnlocked: contentUnlocked,
+          contentPassword: contentPassword,
+        );
         return Column(
           children: [
             const CodexTabHeader(
@@ -439,13 +467,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             merkmalskenntnisse: _draftMerkmalskenntnisse,
                             heroRepresentationen: _draftRepresentationen,
                             isEditing: _editController.isEditing,
-                            contentUnlocked: ref.watch(
-                              catalogContentVisibleProvider,
-                            ),
-                            contentPassword: ref
-                                .watch(appSettingsProvider)
-                                .valueOrNull
-                                ?.catalogContentPassword,
+                            contentUnlocked: contentUnlocked,
+                            contentPassword: contentPassword,
+                            protectedContentCache: _protectedContentCache,
                             onSpellValueChanged: _updateSpellValue,
                             onModifierChanged: _updateSpellModifier,
                             onHauszauberChanged: _updateHauszauber,

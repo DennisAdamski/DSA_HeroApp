@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -17,6 +19,13 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dar
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 void main() {
+  const catalog = RulesCatalog(
+    version: 'test_catalog',
+    source: 'test',
+    talents: <TalentDef>[],
+    spells: <SpellDef>[],
+    weapons: <WeaponDef>[],
+  );
   final hero = HeroSheet(
     id: 'demo',
     name: 'Rondra',
@@ -78,7 +87,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) async => catalog),
+        ],
         child: const MaterialApp(home: HeroesHomeScreen()),
       ),
     );
@@ -111,7 +123,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) async => catalog),
+        ],
         child: const MaterialApp(home: HeroesHomeScreen()),
       ),
     );
@@ -159,6 +174,7 @@ void main() {
         ProviderScope(
           overrides: [
             heroRepositoryProvider.overrideWithValue(repo),
+            rulesCatalogProvider.overrideWith((ref) async => catalog),
             settingsRepositoryProvider.overrideWithValue(settingsRepository),
           ],
           child: const MaterialApp(home: HeroesHomeScreen()),
@@ -179,7 +195,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) async => catalog),
+        ],
         child: const MaterialApp(home: HeroesHomeScreen()),
       ),
     );
@@ -238,7 +257,10 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+          overrides: [
+            heroRepositoryProvider.overrideWithValue(repo),
+            rulesCatalogProvider.overrideWith((ref) async => catalog),
+          ],
           child: const MaterialApp(home: HeroesHomeScreen()),
         ),
       );
@@ -256,6 +278,90 @@ void main() {
       expect(find.textContaining('10/22'), findsWidgets);
     },
   );
+
+  testWidgets('preloads rules catalog once the hero list is ready', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [hero],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    final catalogCompleter = Completer<RulesCatalog>();
+    var loadCount = 0;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) {
+            loadCount++;
+            return catalogCompleter.future;
+          }),
+        ],
+        child: const MaterialApp(home: HeroesHomeScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(loadCount, 1);
+
+    catalogCompleter.complete(catalog);
+    await tester.pump();
+  });
+
+  testWidgets('shows preparation dialog while opening waits for catalog', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = const Size(700, 900);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repo = FakeRepository(
+      heroes: [hero],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    final catalogCompleter = Completer<RulesCatalog>();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) => catalogCompleter.future),
+        ],
+        child: const MaterialApp(home: HeroesHomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Rondra').first);
+    await tester.pump(const Duration(milliseconds: 130));
+
+    expect(find.text('Regelkatalog wird vorbereitet ...'), findsOneWidget);
+
+    catalogCompleter.complete(catalog);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('workspace-back-button')),
+      findsOneWidget,
+    );
+  });
 }
 
 void _noopBool(bool value) {}

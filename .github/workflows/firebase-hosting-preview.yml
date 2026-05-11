@@ -1,0 +1,55 @@
+name: Firebase Hosting Preview
+
+on:
+  push:
+    branches-ignore:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy_preview:
+    name: Build & Deploy Preview-Channel
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Flutter einrichten
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Abhaengigkeiten installieren
+        run: flutter pub get
+
+      - name: Web-Release bauen
+        run: flutter build web --release --no-wasm-dry-run
+
+      - name: Build verifizieren
+        run: |
+          test -f build/web/assets/AssetManifest.bin.json
+          test -n "$(ls -A build/web/assets/assets/heroes 2>/dev/null)"
+
+      - name: Channel-ID aus Branch-Name ableiten
+        id: channel
+        run: |
+          raw="${{ github.ref_name }}"
+          slug="$(printf '%s' "$raw" | tr '[:upper:]' '[:lower:]' | sed 's|[^a-z0-9-]|-|g' | sed 's|-\+|-|g' | sed 's|^-||' | sed 's|-$||')"
+          slug="${slug:0:30}"
+          slug="${slug%-}"
+          if [ -z "$slug" ]; then
+            slug="preview"
+          fi
+          echo "id=$slug" >> "$GITHUB_OUTPUT"
+          echo "Preview-Channel-ID: $slug"
+
+      - name: Firebase Hosting Preview deployen
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HELDENSYNC_CCF0B }}
+          projectId: heldensync-ccf0b
+          channelId: ${{ steps.channel.outputs.id }}
+          expires: 7d

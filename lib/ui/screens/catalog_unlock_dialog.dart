@@ -1,8 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
-import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
+import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -16,12 +19,13 @@ Future<bool> showCatalogUnlockDialog({
   required BuildContext context,
   required WidgetRef ref,
 }) async {
-  // Auf den Katalog warten — sonst greift `valueOrNull` ins Leere, solange der
-  // Provider noch laedt (typisch nach Tab-/App-Start im Web), und der Dialog
-  // wuerde stillschweigend nicht oeffnen.
-  final RulesCatalog catalog;
+  // Roh-Quelle benutzen, nicht den bulk-entschluesselten Katalog: hier sind
+  // die Werte garantiert noch verschluesselt, unabhaengig davon ob ein
+  // Passwort gespeichert ist (sonst ware der Dialog nach Setzen des
+  // Passworts nutzlos, weil keine `enc:`-Werte mehr gefunden werden).
+  final CatalogSourceData sourceData;
   try {
-    catalog = await ref.read(rulesCatalogProvider.future);
+    sourceData = await ref.read(baseCatalogSourceDataProvider.future);
   } on Object {
     if (!context.mounted) return false;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -30,30 +34,7 @@ Future<bool> showCatalogUnlockDialog({
     return false;
   }
 
-  // Ersten verschluesselten Wert aus dem Katalog als Probe verwenden.
-  String? probeValue;
-  for (final m in catalog.maneuvers) {
-    if (isEncryptedValue(m.erklarungLang)) {
-      probeValue = m.erklarungLang;
-      break;
-    }
-  }
-  if (probeValue == null) {
-    for (final a in catalog.combatSpecialAbilities) {
-      if (isEncryptedValue(a.erklarungLang)) {
-        probeValue = a.erklarungLang;
-        break;
-      }
-    }
-  }
-  if (probeValue == null) {
-    for (final s in catalog.spells) {
-      if (isEncryptedValue(s.wirkung)) {
-        probeValue = s.wirkung;
-        break;
-      }
-    }
-  }
+  final probeValue = _findProbeEncryptedValue(sourceData);
 
   if (!context.mounted) return false;
 
@@ -68,19 +49,49 @@ Future<bool> showCatalogUnlockDialog({
 
   final result = await showAdaptiveInputDialog<bool>(
     context: context,
-    builder: (_) => _CatalogUnlockDialog(ref: ref, probeValue: probeValue!),
+    builder: (_) => _CatalogUnlockDialog(
+      ref: ref,
+      probeValue: probeValue,
+      saltV3: sourceData.catalogSaltV3,
+    ),
   );
   return result ?? false;
+}
+
+/// Sucht einen `enc:`-Wert in den geschuetzten Asset-Sektionen, der als
+/// Probe fuer die Passwort-Validierung dient.
+///
+/// Reihenfolge: Manoever → Kampf-Sonderfertigkeiten → Zauber. Felder werden
+/// per String-Lookup gepruefft, weil die [CatalogSourceData] Roh-Maps haelt.
+String? _findProbeEncryptedValue(CatalogSourceData sourceData) {
+  const sectionFieldCandidates = <(CatalogSectionId, List<String>)>[
+    (CatalogSectionId.maneuvers, <String>['erklarung_lang']),
+    (CatalogSectionId.combatSpecialAbilities, <String>['erklarung_lang']),
+    (CatalogSectionId.spells, <String>['wirkung', 'variants']),
+  ];
+  for (final (section, fields) in sectionFieldCandidates) {
+    for (final entry in sourceData.entriesFor(section)) {
+      for (final field in fields) {
+        final value = entry[field];
+        if (value is String && isEncryptedValue(value)) {
+          return value;
+        }
+      }
+    }
+  }
+  return null;
 }
 
 class _CatalogUnlockDialog extends StatefulWidget {
   const _CatalogUnlockDialog({
     required this.ref,
     required this.probeValue,
+    required this.saltV3,
   });
 
   final WidgetRef ref;
   final String probeValue;
+  final Uint8List? saltV3;
 
   @override
   State<_CatalogUnlockDialog> createState() => _CatalogUnlockDialogState();
@@ -117,8 +128,13 @@ class _CatalogUnlockDialogState extends State<_CatalogUnlockDialog> {
       });
       return;
     }
-    // Validierung durch Probe-Entschluesselung.
-    final decrypted = decryptCatalogValue(widget.probeValue, input);
+    // Validierung durch Probe-Entschluesselung. Bei v3-Werten wird der
+    // catalog_salt_v3 aus dem Manifest mitgegeben.
+    final decrypted = decryptCatalogValue(
+      widget.probeValue,
+      input,
+      saltV3: widget.saltV3,
+    );
     if (decrypted != null) {
       // Passwort korrekt — dauerhaft persistieren.
       await widget.ref

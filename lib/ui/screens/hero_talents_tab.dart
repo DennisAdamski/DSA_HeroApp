@@ -550,9 +550,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                 });
               final filterQuery = _talentGroupFilter.trim().toLowerCase();
 
-              return ListView(
-                padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
-                children: [
+              final talentTabChildren = <Widget>[
                   if (showTalentsHeader) ...[
                     CodexTabHeader(
                       title: widget.scope == _TalentTabScope.combat
@@ -722,7 +720,11 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                         );
                       },
                     ),
-                ],
+              ];
+              return ListView.builder(
+                padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+                itemCount: talentTabChildren.length,
+                itemBuilder: (_, index) => talentTabChildren[index],
               );
             },
           );

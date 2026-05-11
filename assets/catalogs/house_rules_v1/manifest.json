@@ -1,22 +1,23 @@
-﻿{
-    "version":  "house_rules_v1",
-    "source":  "ListeTalente.xlsx;ListeWaffenUndTalente.xlsx;ListeZaubersprueche.xlsx",
-    "metadata":  {
-                     "generatedBy":  "tool/convert_excel_to_catalog.py",
-                     "note":  "Generated from structured list files."
-                 },
-    "files":  {
-                  "talente":  "talente.json",
-                  "waffentalente":  "waffentalente.json",
-                  "waffen":  "waffen.json",
-                  "magie":  "magie.json",
-                  "manoever":  "manoever.json",
-                  "kampf_sonderfertigkeiten":  "kampf_sonderfertigkeiten.json",
-                  "allgemeine_sonderfertigkeiten":  "allgemeine_sonderfertigkeiten.json",
-                  "magische_sonderfertigkeiten":  "magische_sonderfertigkeiten.json",
-                  "karmale_sonderfertigkeiten":  "karmale_sonderfertigkeiten.json",
-                  "sprachen":  "sprachen.json",
-                  "schriften":  "schriften.json",
-                  "reisebericht": "../reiseberichte/house_rules_v1/reisebericht.json"
-              }
+{
+  "version": "house_rules_v1",
+  "source": "ListeTalente.xlsx;ListeWaffenUndTalente.xlsx;ListeZaubersprueche.xlsx",
+  "metadata": {
+    "generatedBy": "tool/convert_excel_to_catalog.py",
+    "note": "Generated from structured list files."
+  },
+  "files": {
+    "talente": "talente.json",
+    "waffentalente": "waffentalente.json",
+    "waffen": "waffen.json",
+    "magie": "magie.json",
+    "manoever": "manoever.json",
+    "kampf_sonderfertigkeiten": "kampf_sonderfertigkeiten.json",
+    "allgemeine_sonderfertigkeiten": "allgemeine_sonderfertigkeiten.json",
+    "magische_sonderfertigkeiten": "magische_sonderfertigkeiten.json",
+    "karmale_sonderfertigkeiten": "karmale_sonderfertigkeiten.json",
+    "sprachen": "sprachen.json",
+    "schriften": "schriften.json",
+    "reisebericht": "../reiseberichte/house_rules_v1/reisebericht.json"
+  },
+  "catalog_salt_v3": "sgq7s+3Gd0fq9QaO7dE+5/GEVKWYwdM6HFHgGIc21yU="
 }

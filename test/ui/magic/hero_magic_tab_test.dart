@@ -2,18 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
+import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_magic_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
@@ -79,11 +83,18 @@ void main() {
     );
   }
 
-  RulesCatalog buildCatalog() {
-    return const RulesCatalog(
+  RulesCatalog buildCatalog({
+    String axxeleratusWirkung = 'Beschleunigt das Ziel deutlich.',
+    List<String> axxeleratusVariants = const <String>[
+      'Blitzgeschwind (+7). Mehr Tempo.',
+      'Koboldisch. Nur Sprache.',
+    ],
+    String? axxeleratusRawVariantsEncrypted,
+  }) {
+    return RulesCatalog(
       version: 'test_catalog',
       source: 'test',
-      talents: <TalentDef>[
+      talents: const <TalentDef>[
         TalentDef(
           id: 'tal_singen',
           name: 'Singen',
@@ -113,15 +124,13 @@ void main() {
           range: '7 Schritt',
           duration: 'ZfP* Spielrunden',
           castingTime: '2 Aktionen',
-          wirkung: 'Beschleunigt das Ziel deutlich.',
+          wirkung: axxeleratusWirkung,
           modifications: 'Zauberdauer, Reichweite',
           source: 'Liber Cantiones S. 36',
-          variants: <String>[
-            'Blitzgeschwind (+7). Mehr Tempo.',
-            'Koboldisch. Nur Sprache.',
-          ],
+          variants: axxeleratusVariants,
+          rawVariantsEncrypted: axxeleratusRawVariantsEncrypted,
         ),
-        SpellDef(
+        const SpellDef(
           id: 'spell_adlerschwinge',
           name: 'Adlerschwinge Wolfsgestalt',
           tradition: 'Elf',
@@ -139,6 +148,7 @@ void main() {
     WidgetTester tester, {
     FakeRepository? repo,
     RulesCatalog? catalog,
+    AppSettings appSettings = const AppSettings(),
     Size size = const Size(1600, 1200),
   }) async {
     tester.view.devicePixelRatio = 1.0;
@@ -166,6 +176,9 @@ void main() {
         overrides: [
           heroRepositoryProvider.overrideWithValue(effectiveRepo),
           rulesCatalogProvider.overrideWith((ref) async => effectiveCatalog),
+          appSettingsProvider.overrideWith(
+            (ref) => Stream<AppSettings>.value(appSettings),
+          ),
         ],
         child: MaterialApp(
           home: Scaffold(
@@ -340,6 +353,86 @@ void main() {
       expect(find.text('Liber Cantiones S. 36'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'active spell table defers encrypted content until details dialog',
+    (tester) async {
+      const password = 'katalog-passwort';
+      final catalog = buildCatalog(
+        axxeleratusWirkung: encryptCatalogValue('Geheime Wirkung.', password),
+        axxeleratusVariants: const <String>[],
+        axxeleratusRawVariantsEncrypted: encryptCatalogList(const <String>[
+          'Geheime Variante.',
+        ], password),
+      );
+
+      await openMagicTab(
+        tester,
+        catalog: catalog,
+        appSettings: const AppSettings(catalogContentPassword: password),
+      );
+
+      expect(find.text('Geheime Wirkung.'), findsNothing);
+      expect(find.text('Geheime Variante.'), findsNothing);
+      expect(find.text('Details öffnen'), findsWidgets);
+
+      await tester.tap(find.text('Axxeleratus Blitzgeschwind'));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+      expect(find.text('Geheime Wirkung.'), findsOneWidget);
+      expect(find.text('Geheime Variante.'), findsOneWidget);
+    },
+  );
+
+  testWidgets('active spell table keeps heldenspezifische overrides visible', (
+    tester,
+  ) async {
+    const password = 'katalog-passwort';
+    final catalog = buildCatalog(
+      axxeleratusWirkung: encryptCatalogValue('Geheime Wirkung.', password),
+      axxeleratusVariants: const <String>[],
+      axxeleratusRawVariantsEncrypted: encryptCatalogList(const <String>[
+        'Geheime Variante.',
+      ], password),
+    );
+    final repo = FakeRepository(
+      heroes: <HeroSheet>[
+        buildHero().copyWith(
+          spells: const <String, HeroSpellEntry>{
+            'spell_axxeleratus': HeroSpellEntry(
+              spellValue: 8,
+              learnedRepresentation: 'Mag',
+              learnedTradition: 'Mag',
+              textOverrides: HeroSpellTextOverrides(
+                wirkung: 'Eigene Wirkung.',
+                variants: <String>['Eigene Variante.'],
+              ),
+            ),
+          },
+        ),
+      ],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openMagicTab(
+      tester,
+      repo: repo,
+      catalog: catalog,
+      appSettings: const AppSettings(catalogContentPassword: password),
+    );
+
+    expect(find.text('Eigene Wirkung.'), findsOneWidget);
+    expect(find.text('1x Eigene Variante.'), findsOneWidget);
+    expect(find.text('Geheime Wirkung.'), findsNothing);
+    expect(find.text('Geheime Variante.'), findsNothing);
+  });
 
   testWidgets('active spell row opens shared probe dialog via dice icon', (
     tester,

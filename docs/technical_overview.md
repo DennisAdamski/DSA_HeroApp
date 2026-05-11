@@ -1081,12 +1081,64 @@ apAvailable   = max(0, apTotal − apSpent)
 | `heroActionsProvider` | `Provider<HeroActions>` | Schreiboperationen |
 | `catalogLoaderProvider` | `Provider<CatalogLoader>` | Katalog-Lader |
 | `customCatalogRepositoryProvider` | `Provider<CustomCatalogRepository>` | Datei-I/O fuer synchronisierbare Custom-Kataloge |
+| `baseCatalogSourceDataProvider` | `FutureProvider<CatalogSourceData>` | Roh-Sektionen aus Assets (mit `enc:`-Praefixen) |
+| `decryptedCatalogSourceDataProvider` | `FutureProvider<CatalogSourceData>` | Bulk-entschluesselte Quelle (Pre-Stage vor Runtime, siehe 5.3) |
 | `catalogRuntimeDataProvider` | `FutureProvider<CatalogRuntimeData>` | Basis + Custom + Fehlerzustand |
 | `catalogAdminSnapshotProvider` | `FutureProvider<CatalogAdminSnapshot>` | Settings-Katalogverwaltung |
 | `rulesCatalogProvider` | `FutureProvider<RulesCatalog>` | Geladener Katalog |
 | `talentBeOverrideProvider(id)` | `StateProvider.family<bool?>` | Manuelle BE-Überschreibung |
 | `talentsVisibilityModeProvider(id)` | `StateProvider.family<bool>` | Verborgene Talente zeigen |
 | `combatTalentsVisibilityModeProvider(id)` | `StateProvider.family<bool>` | Kampftalente einblenden |
+
+`HeroesHomeScreen` waermt `rulesCatalogProvider.future` einmal nach dem ersten
+Frame mit geladener Heldenliste vor. Beim Oeffnen eines Helden wartet der Screen
+auf diesen Future und zeigt bei Bedarf einen nicht schliessbaren
+Vorbereitungsdialog; der Workspace behaelt sein eigenes Prewarming als Fallback
+fuer Direktnavigation und Sonderfaelle.
+
+### 5.3 Bulk-Decrypt geschuetzter Kataloginhalte
+
+**Datei:** `lib/catalog/catalog_decrypt_runner.dart`
+
+Geschuetzte Felder in Katalog-Assets sind mit `enc:`-Praefix gespeichert
+(Format-Marker: `enc:` v1, `enc:2:` v2, `enc:3:` v3 — siehe
+`lib/catalog/catalog_crypto.dart`). Damit der Magie-Tab und alle weiteren
+Konsumenten nicht pro Anzeige PBKDF2/AES anwerfen, sitzt zwischen
+`baseCatalogSourceDataProvider` und `catalogRuntimeDataProvider` der neue
+`decryptedCatalogSourceDataProvider`:
+
+- Watcht `appSettingsProvider.catalogContentPassword`. Ohne Passwort wird
+  die Quelle unveraendert durchgereicht; geschuetzte Felder bleiben mit
+  `enc:`-Praefix bestehen und die UI zeigt einen Locked-Hinweis.
+- Mit Passwort ruft er `decryptAllCatalogValues` auf. Der Runner zaehlt die
+  `enc:`-Werte: ab 64 wird der Bulk-Decrypt via `compute()` auf einen Web
+  Worker / Isolate ausgelagert, sonst synchron im aufrufenden Thread.
+- v3-Werte nutzen den globalen Salt aus `manifest.catalog_salt_v3` — eine
+  einzige PBKDF2-Ableitung pro Passwort, danach AES-GCM pro Wert (<1 ms).
+  v2/v1-Werte bleiben rueckwaertskompatibel und laufen ueber den
+  langsameren Per-Wert-Pfad bis zur Migration der Assets.
+- Passwoerter werden vor PBKDF2 NFC-normalisiert (`_passwordBytes` in
+  `catalog_crypto.dart` via `package:unorm_dart`). Damit erzeugen `ü` als
+  precomposed (U+00FC) und als `u`+Combining-Diaeresis (NFD) denselben
+  Schluessel — sonst wuerde dasselbe Passwort je nach Eingabequelle
+  (Tastatur vs Copy/Paste, macOS-Dateisystem vs Windows-Tastatur)
+  unterschiedliche Schluessel ergeben. Das Python-Tool spiegelt die
+  Normalisierung in `_password_bytes`.
+- Bei List-Feldern (z.B. `variants` in `magie.json`) verschluesselt das Tool
+  die Liste als JSON-encoded String. Beim Bulk-Decrypt erkennt
+  `_maybeDecodeJsonStructure` JSON-Arrays/Objects (Schnellcheck auf erstes
+  Zeichen `[`/`{`) und liefert sie als `List<dynamic>`/`Map` zurueck,
+  spiegelbildlich zum Encrypt — `SpellDef.fromJson` sieht damit weiterhin
+  eine echte Liste unter `variants`.
+
+`ProtectedContentCache` in `lib/ui/screens/shared/protected_content_helpers.dart`
+sieht nach diesem Schritt nur noch Klartext-Werte und greift seinen
+Pass-through-Branch — der Cache bleibt als Schutz fuer den Locked-Pfad und
+fuer noch nicht migrierte Assets erhalten.
+
+Re-Encryption / Migration der Asset-Dateien erfolgt mit
+`tool/encrypt_catalog_fields.py --format v3 --migrate --password "..."` (siehe
+Datei-Header).
 
 ### 5.2 `HeroComputedSnapshot` — Berechnungspipeline
 

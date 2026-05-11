@@ -9,6 +9,7 @@ Future<_SpellDetailsDialogResult?> _showSpellDetailsDialog({
   required Attributes effectiveAttributes,
   bool contentUnlocked = true,
   String? contentPassword,
+  ProtectedContentCache? protectedContentCache,
 }) {
   return showAdaptiveDetailSheet<_SpellDetailsDialogResult>(
     context: context,
@@ -19,6 +20,7 @@ Future<_SpellDetailsDialogResult?> _showSpellDetailsDialog({
       effectiveAttributes: effectiveAttributes,
       contentUnlocked: contentUnlocked,
       contentPassword: contentPassword,
+      protectedContentCache: protectedContentCache,
     ),
   );
 }
@@ -42,6 +44,7 @@ class _ResolvedSpellDetails {
     required HeroSpellEntry entry,
     bool contentUnlocked = true,
     String? contentPassword,
+    ProtectedContentCache? protectedContentCache,
   }) {
     final overrides = entry.textOverrides;
 
@@ -50,13 +53,18 @@ class _ResolvedSpellDetails {
     if (overrides?.wirkung != null) {
       resolvedWirkung = overrides!.wirkung!;
     } else {
-      resolvedWirkung =
-          resolveProtectedValue(
-            raw: def.wirkung,
-            unlocked: contentUnlocked,
-            password: contentPassword,
-          ) ??
-          lockedContentHint;
+      final catalogWirkung = protectedContentCache == null
+          ? resolveProtectedValue(
+              raw: def.wirkung,
+              unlocked: contentUnlocked,
+              password: contentPassword,
+            )
+          : protectedContentCache.resolveValue(
+              raw: def.wirkung,
+              unlocked: contentUnlocked,
+              password: contentPassword,
+            );
+      resolvedWirkung = catalogWirkung ?? lockedContentHint;
     }
 
     // Varianten: Override hat Vorrang; sonst ggf. entschluesseln.
@@ -67,12 +75,18 @@ class _ResolvedSpellDetails {
       // def.variants ist normalerweise List<String>, kann aber als
       // verschluesselter String im Rohfeld stehen.
       final dynamic rawVariants = def.rawVariantsEncrypted ?? def.variants;
-      final decrypted = resolveProtectedList(
-        raw: rawVariants,
-        unlocked: contentUnlocked,
-        password: contentPassword,
-      );
-      resolvedVariants = decrypted ?? <String>[lockedContentHint];
+      final catalogVariants = protectedContentCache == null
+          ? resolveProtectedList(
+              raw: rawVariants,
+              unlocked: contentUnlocked,
+              password: contentPassword,
+            )
+          : protectedContentCache.resolveList(
+              raw: rawVariants,
+              unlocked: contentUnlocked,
+              password: contentPassword,
+            );
+      resolvedVariants = catalogVariants ?? <String>[lockedContentHint];
     }
 
     return _ResolvedSpellDetails(
@@ -115,6 +129,7 @@ class _SpellDetailsDialog extends StatefulWidget {
     required this.effectiveAttributes,
     this.contentUnlocked = true,
     this.contentPassword,
+    this.protectedContentCache,
   });
 
   final SpellDef def;
@@ -123,6 +138,7 @@ class _SpellDetailsDialog extends StatefulWidget {
   final Attributes effectiveAttributes;
   final bool contentUnlocked;
   final String? contentPassword;
+  final ProtectedContentCache? protectedContentCache;
 
   @override
   State<_SpellDetailsDialog> createState() => _SpellDetailsDialogState();
@@ -167,6 +183,7 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
       entry: widget.entry,
       contentUnlocked: widget.contentUnlocked,
       contentPassword: widget.contentPassword,
+      protectedContentCache: widget.protectedContentCache,
     );
     _aspCostController = TextEditingController(text: resolved.aspCost);
     _targetObjectController = TextEditingController(
@@ -185,17 +202,24 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
   }
 
   void _resetToCatalogValues() {
-    _aspCostController.text = widget.def.aspCost;
-    _targetObjectController.text = widget.def.targetObject;
-    _rangeController.text = widget.def.range;
-    _durationController.text = widget.def.duration;
-    _castingTimeController.text = widget.def.castingTime;
-    _wirkungController.text = widget.def.wirkung;
-    _modificationsController.text = widget.def.modifications;
+    final resolved = _ResolvedSpellDetails.fromSpell(
+      def: widget.def,
+      entry: const HeroSpellEntry(),
+      contentUnlocked: widget.contentUnlocked,
+      contentPassword: widget.contentPassword,
+      protectedContentCache: widget.protectedContentCache,
+    );
+    _aspCostController.text = resolved.aspCost;
+    _targetObjectController.text = resolved.targetObject;
+    _rangeController.text = resolved.range;
+    _durationController.text = resolved.duration;
+    _castingTimeController.text = resolved.castingTime;
+    _wirkungController.text = resolved.wirkung;
+    _modificationsController.text = resolved.modifications;
     for (final controller in _variantControllers) {
       controller.dispose();
     }
-    _variantControllers = widget.def.variants
+    _variantControllers = resolved.variants
         .map((entry) => TextEditingController(text: entry))
         .toList(growable: true);
     setState(() {});
@@ -329,6 +353,7 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
         contentUnlocked: widget.contentUnlocked,
         contentPassword: widget.contentPassword,
         entry: widget.entry,
+        protectedContentCache: widget.protectedContentCache,
       );
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -421,6 +446,7 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
       entry: widget.entry,
       contentUnlocked: widget.contentUnlocked,
       contentPassword: widget.contentPassword,
+      protectedContentCache: widget.protectedContentCache,
     );
     final content = <Widget>[
       _buildReadOnlyField(
