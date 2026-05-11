@@ -339,4 +339,129 @@ void main() {
       expect(result.first.bonusText, contains('TP+2'));
     });
   });
+
+  group('isForeignLearnedRepresentation', () {
+    test('liefert true bei ungleichen Repraesentationen', () {
+      expect(
+        isForeignLearnedRepresentation(
+          learnedRepresentation: 'Mag',
+          learnedTradition: 'Hex',
+        ),
+        isTrue,
+      );
+    });
+
+    test('liefert false bei gleicher Repraesentation', () {
+      expect(
+        isForeignLearnedRepresentation(
+          learnedRepresentation: 'Mag',
+          learnedTradition: 'Mag',
+        ),
+        isFalse,
+      );
+    });
+
+    test('liefert false bei null-Werten', () {
+      expect(
+        isForeignLearnedRepresentation(
+          learnedRepresentation: null,
+          learnedTradition: 'Hex',
+        ),
+        isFalse,
+      );
+      expect(
+        isForeignLearnedRepresentation(
+          learnedRepresentation: 'Mag',
+          learnedTradition: null,
+        ),
+        isFalse,
+      );
+    });
+
+    test('liefert false bei leeren Strings', () {
+      expect(
+        isForeignLearnedRepresentation(
+          learnedRepresentation: '',
+          learnedTradition: 'Hex',
+        ),
+        isFalse,
+      );
+      expect(
+        isForeignLearnedRepresentation(
+          learnedRepresentation: 'Mag',
+          learnedTradition: '',
+        ),
+        isFalse,
+      );
+    });
+  });
+
+  group('allLearningOptionsForHero', () {
+    test('liefert nur regulaere Optionen, wenn keine fremden Herkuenfte', () {
+      final result = allLearningOptionsForHero(
+        'Mag3',
+        const <String>['Mag'],
+      );
+      expect(result, hasLength(1));
+      expect(result.single.tradition, 'Mag');
+      expect(result.single.learnedRepresentation, 'Mag');
+      expect(result.single.verbreitung, 3);
+    });
+
+    test('liefert regulaere und synthetische fremde Optionen', () {
+      // Held mit Mag-Repr. Zauber 'Mag3, Hex4, Elf2': Mag3 ist regulaer,
+      // Hex und Elf werden als fremde Herkuenfte mit Mag als Traeger angeboten.
+      final result = allLearningOptionsForHero(
+        'Mag3, Hex4, Elf2',
+        const <String>['Mag'],
+      );
+      expect(
+        result.map((e) => e.storageKey).toList(),
+        <String>['Mag->Mag', 'Hex->Mag', 'Elf->Mag'],
+      );
+      expect(result[0].isForeignRepresentation, isFalse);
+      expect(result[1].isForeignRepresentation, isTrue);
+      expect(result[1].verbreitung, 4);
+      expect(result[2].isForeignRepresentation, isTrue);
+      expect(result[2].verbreitung, 2);
+    });
+
+    test('bietet jede Helden-Repraesentation als Traeger an', () {
+      // Held mit Mag und Elf. Zauber rein Hex: zwei synthetische Eintraege.
+      final result = allLearningOptionsForHero(
+        'Hex4',
+        const <String>['Mag', 'Elf'],
+      );
+      expect(
+        result.map((e) => e.storageKey).toSet(),
+        <String>{'Hex->Mag', 'Hex->Elf'},
+      );
+    });
+
+    test('respektiert Dru(Elf)-Notation als regulaer und dedupliziert', () {
+      // Held mit Dru-Repr. Zauber Dru(Elf)2: tradition=Dru ist regulaer.
+      // Synthetische Eintraege mit storageKey Dru->Elf duerfen nicht
+      // zusaetzlich aufgenommen werden.
+      final result = allLearningOptionsForHero(
+        'Dru(Elf)2',
+        const <String>['Dru'],
+      );
+      expect(result, hasLength(1));
+      expect(result.single.storageKey, 'Dru->Elf');
+    });
+
+    test('liefert leere Liste fuer Helden ohne Repraesentationen', () {
+      expect(
+        allLearningOptionsForHero('Mag3', const <String>[]),
+        isEmpty,
+      );
+    });
+
+    test('liefert leere Liste fuer leere Availability', () {
+      expect(
+        allLearningOptionsForHero('', const <String>['Mag']),
+        isEmpty,
+      );
+    });
+  });
 }

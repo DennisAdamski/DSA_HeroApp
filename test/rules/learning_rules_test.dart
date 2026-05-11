@@ -115,6 +115,44 @@ void main() {
         'C',
       );
     });
+
+    test('applies +2 penalty for fremde Repraesentation before reductions', () {
+      // Basis B + Fremdrepr. -> D
+      expect(
+        effectiveSteigerung(
+          basisSteigerung: 'B',
+          istHauszauber: false,
+          zauberMerkmale: const <String>[],
+          heldMerkmalskenntnisse: const <String>[],
+          fremdReprPenaltySteps: 2,
+        ),
+        'D',
+      );
+      // Basis B + Fremdrepr. + Begabung -> C (penalty zuerst, dann -1)
+      expect(
+        effectiveSteigerung(
+          basisSteigerung: 'B',
+          istHauszauber: false,
+          zauberMerkmale: const <String>[],
+          heldMerkmalskenntnisse: const <String>[],
+          istBegabt: true,
+          fremdReprPenaltySteps: 2,
+        ),
+        'C',
+      );
+      // Basis A + Fremdrepr. + alle Reduktionen -> A* (clamp)
+      expect(
+        effectiveSteigerung(
+          basisSteigerung: 'A',
+          istHauszauber: true,
+          zauberMerkmale: const <String>['Kraft'],
+          heldMerkmalskenntnisse: const <String>['Kraft'],
+          istBegabt: true,
+          fremdReprPenaltySteps: 2,
+        ),
+        'A*',
+      );
+    });
   });
 
   group('max value rules', () {
