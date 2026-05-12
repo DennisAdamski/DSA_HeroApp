@@ -85,6 +85,24 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
     return readAttributeValue(attributeMaximums, code);
   }
 
+  Attributes _permanentEffectiveAttributesForBoughtStats(HeroSheet hero) {
+    final parsed = parseModifierTextsForHero(hero);
+    final namedAttrMods = aggregateNamedAttributeModifiers(
+      hero.attributeModifiers,
+    );
+    return applyAttributeModifiers(
+      hero.attributes,
+      parsed.attributeMods + namedAttrMods,
+    );
+  }
+
+  int? _grundwertRegelMaxWert(HeroSheet hero, String key) {
+    return computeBoughtStatMaximum(
+      statKey: key,
+      permanentAttributes: _permanentEffectiveAttributesForBoughtStats(hero),
+    );
+  }
+
   int _eigenschaftSeAnzahl(HeroSheet hero, AttributeCode code) {
     return hero.attributeSePool.valueFor(code);
   }
@@ -190,10 +208,14 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
       return;
     }
     final aktuellerWert = _grundwertValue(hero.bought, key);
-    final maxWert = _grundwertMaxWert(
+    final apMaxWert = _grundwertMaxWert(
       aktuellerWert: aktuellerWert,
       learnCost: learnCost,
       verfuegbareAp: hero.apAvailable,
+    );
+    final maxWert = resolveBoughtStatDialogMaximum(
+      apReachableMaximum: apMaxWert,
+      ruleMaximum: _grundwertRegelMaxWert(hero, key),
     );
 
     final result = await showSteigerungsDialog(

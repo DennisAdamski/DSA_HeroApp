@@ -84,7 +84,8 @@ Technischer Stack:
 - Berechnung effektiver Startwerte und Eigenschaftsmaxima
 - Gefuehrte AP-Steigerung fuer Eigenschaften und kaufbare Grundwerte
 - Abenteuer-Sondererfahrungen fuer Eigenschaften und Grundwerte werden direkt in den Steigerungsdialogen angezeigt und beim Steigern verbraucht
-- Parsing von Modifikator-Texten aus Vor-/Nachteilen sowie R/K/P-Feldern
+- Parsing von Modifikator-Texten aus Vor-/Nachteilen sowie R/K/P-Feldern,
+  inklusive Standardnamen wie Hohe Lebenskraft, Astralmacht oder Kurzatmig
 
 ### Talente und Sprachen
 

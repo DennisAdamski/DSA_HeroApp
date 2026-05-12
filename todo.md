@@ -5,16 +5,16 @@ Aufgaben die notwendig sind für das erreichen des MVP
 ## Aufgaben für die KI (MVP)
 
 - [x] Stelle Modifikatoren im Bereich der Basiswerte und Eigenschaften wie im Talentbereich dar. Es soll ersichtlich sein, woher eine gewisse Modifikation kommt.
-- [ ] Standard-Modifikatoren bilden die folgenden Vor- und Nachteile:
+- [x] Standard-Modifikatoren bilden die folgenden Vor- und Nachteile:
   - [x] Ini-Basis ist mit Kampfreflexe/Gespür
-  - [ ] Magieresistenz + Hohe/Niedrige Magieresistenz
-  - [ ] Lebensenergie + Hohe/Niedrige Lebenskraft
-  - [ ] Ausdauer + Asudauernd/Kurzatmig
-  - [ ] AsP +Astralmacht/Niedrige Astralenergie
-- [ ] MaxWerte für die zukaufbaren Basiswerte
-  - [ ] LeP = KO/2
-  - [ ] Au = KO*2
-  - [ ] MR = MU/2
+  - [x] Magieresistenz + Hohe/Niedrige Magieresistenz
+  - [x] Lebensenergie + Hohe/Niedrige Lebenskraft
+  - [x] Ausdauer + Ausdauernd/Kurzatmig
+  - [x] AsP + Astralmacht/Niedrige Astralenergie
+- [x] MaxWerte für die zukaufbaren Basiswerte
+  - [x] LeP = floor(KO/2)
+  - [x] Au = KO
+  - [x] MR = floor(MU/2)
 - [x] Maximalwerte beim Steigern einblenden
 - [ ] Renaming von verschiedenen Variablen
   - [ ] Der Basiswert von LeP (Lebenspunkte) heißt LE (Lebensenergie).
