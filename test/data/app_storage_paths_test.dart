@@ -1,5 +1,6 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/storage_exceptions.dart';
@@ -25,14 +26,8 @@ void main() {
     final settingsPath = await storagePaths.resolveSettingsStoragePath();
     final heroPath = await storagePaths.resolveDefaultHeroStoragePath();
 
-    expect(
-      settingsPath.endsWith(r'support\Einstellungen'),
-      isTrue,
-    );
-    expect(
-      heroPath.endsWith(r'support\Helden'),
-      isTrue,
-    );
+    expect(settingsPath, p.join('/app/support', 'Einstellungen'));
+    expect(heroPath, p.join('/app/support', 'Helden'));
     expect(createdPaths, <String>[settingsPath]);
   });
 
@@ -96,8 +91,8 @@ void main() {
         configuredPath: '/cloud/heroes',
       );
 
-      expect(settingsPath.endsWith(r'Browser-Speicher\Einstellungen'), isTrue);
-      expect(heroPath.endsWith(r'Browser-Speicher\Helden'), isTrue);
+      expect(settingsPath, p.join('Browser-Speicher', 'Einstellungen'));
+      expect(heroPath, p.join('Browser-Speicher', 'Helden'));
       expect(directoryCreateCalls, 0);
       expect(location.customPathSupported, isFalse);
       expect(location.usesCustomPath, isFalse);
