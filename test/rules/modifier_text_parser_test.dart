@@ -39,6 +39,84 @@ void main() {
     expect(parsed.unknownFragments, contains('XYZ-4'));
   });
 
+  test('parses standard advantage stat modifiers as effect points', () {
+    final parsed = parseModifierTexts(
+      rasseModText: '',
+      kulturModText: '',
+      professionModText: '',
+      vorteileText:
+          'Hohe Lebenskraft 3; Ausdauernd +4; Astralmacht: 5; '
+          'Hohe Magieresistenz (2)',
+      nachteileText: '',
+    );
+
+    expect(parsed.statMods.lep, 3);
+    expect(parsed.statMods.au, 4);
+    expect(parsed.statMods.asp, 5);
+    expect(parsed.statMods.mr, 2);
+    expect(parsed.unknownFragments, isEmpty);
+  });
+
+  test('parses standard disadvantage stat modifiers as negative effects', () {
+    final parsed = parseModifierTexts(
+      rasseModText: '',
+      kulturModText: '',
+      professionModText: '',
+      vorteileText: '',
+      nachteileText:
+          'Niedrige Lebenskraft 2; Kurzatmig +4; '
+          'Niedrige Astralkraft: 3; Niedrige Magieresistenz (2)',
+    );
+
+    expect(parsed.statMods.lep, -2);
+    expect(parsed.statMods.au, -4);
+    expect(parsed.statMods.asp, -3);
+    expect(parsed.statMods.mr, -2);
+    expect(parsed.unknownFragments, isEmpty);
+  });
+
+  test('parses Niedrige Astralenergie as alias', () {
+    final parsed = parseModifierTexts(
+      rasseModText: '',
+      kulturModText: '',
+      professionModText: '',
+      vorteileText: '',
+      nachteileText: 'Niedrige Astralenergie 4',
+    );
+
+    expect(parsed.statMods.asp, -4);
+  });
+
+  test('caps standard stat modifiers at their rule limits', () {
+    final parsed = parseModifierTexts(
+      rasseModText: '',
+      kulturModText: '',
+      professionModText: '',
+      vorteileText: 'Hohe Lebenskraft 99; Astralmacht 99',
+      nachteileText: 'Kurzatmig 99; Niedrige Magieresistenz 99',
+    );
+
+    expect(parsed.statMods.lep, 6);
+    expect(parsed.statMods.asp, 6);
+    expect(parsed.statMods.au, -6);
+    expect(parsed.statMods.mr, -3);
+  });
+
+  test('keeps standard modifier names without value as unknown fragments', () {
+    final parsed = parseModifierTexts(
+      rasseModText: '',
+      kulturModText: '',
+      professionModText: '',
+      vorteileText: 'Hohe Lebenskraft',
+      nachteileText: 'Niedrige Magieresistenz',
+    );
+
+    expect(parsed.statMods.lep, 0);
+    expect(parsed.statMods.mr, 0);
+    expect(parsed.unknownFragments, contains('Hohe Lebenskraft'));
+    expect(parsed.unknownFragments, contains('Niedrige Magieresistenz'));
+  });
+
   test('detects Flink and Behaebig from vorteile/nachteile tokens', () {
     final parsed = parseModifierTexts(
       rasseModText: '',

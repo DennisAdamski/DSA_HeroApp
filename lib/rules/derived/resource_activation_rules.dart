@@ -30,10 +30,7 @@ class ResourceActivationStatus {
 /// Effektiver Aktivierungsstatus fuer Magie und goettliche Ressourcen.
 class HeroResourceActivation {
   /// Erstellt den kombinierten Aktivierungsstatus.
-  const HeroResourceActivation({
-    required this.magic,
-    required this.divine,
-  });
+  const HeroResourceActivation({required this.magic, required this.divine});
 
   /// Effektiver Status fuer Magie und AsP.
   final ResourceActivationStatus magic;
@@ -81,17 +78,35 @@ bool _hasOriginOrAdvantageModifier(
   HeroSheet hero, {
   required Set<String> recognizedCodes,
 }) {
-  final relevantTexts = <String>[
+  final originTexts = <String>[
     hero.background.rasseModText,
     hero.background.kulturModText,
     hero.background.professionModText,
-    hero.vorteileText,
   ];
-  for (final text in relevantTexts) {
+  for (final text in originTexts) {
     final codes = extractNormalizedStatModifierCodes(text);
     if (codes.any(recognizedCodes.contains)) {
       return true;
     }
+  }
+
+  final advantageCodes = extractNormalizedStatModifierCodes(hero.vorteileText);
+  if (advantageCodes.any(recognizedCodes.contains)) {
+    return true;
+  }
+
+  final advantageMods = parseModifierTexts(
+    rasseModText: '',
+    kulturModText: '',
+    professionModText: '',
+    vorteileText: hero.vorteileText,
+    nachteileText: '',
+  ).statMods;
+  if (recognizedCodes.contains('ASP') && advantageMods.asp != 0) {
+    return true;
+  }
+  if (recognizedCodes.contains('KAP') && advantageMods.kap != 0) {
+    return true;
   }
   return false;
 }
