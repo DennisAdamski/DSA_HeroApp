@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
+import 'package:dsa_heldenverwaltung/catalog/hero_trait_text.dart';
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -108,6 +109,9 @@ class HeroActions {
       normalizedApSpent,
     );
     final parsed = parseModifierTextsForHero(hero);
+    final unknownModifierFragments = await _filterKnownTraitWarnings(
+      parsed.unknownFragments,
+    );
     final originAttributeModifiers = parseOriginAttributeModifiers(hero);
     final effectiveStartAttributes = computeEffectiveStartAttributes(
       hero.rawStartAttributes,
@@ -121,7 +125,7 @@ class HeroActions {
       level: calculatedLevel,
       startAttributes: effectiveStartAttributes,
       ritualCategories: normalizeRitualCategories(hero.ritualCategories),
-      unknownModifierFragments: parsed.unknownFragments,
+      unknownModifierFragments: unknownModifierFragments,
     );
 
     // Inventar mit Kampf-Tab synchronisieren (Waffen, Ruestung, Geschosse)
@@ -140,6 +144,25 @@ class HeroActions {
   Future<void> saveHeroState(String heroId, HeroState state) async {
     final repo = _ref.read(heroRepositoryProvider);
     await repo.saveHeroState(heroId, state);
+  }
+
+  // Katalogisierte Vor-/Nachteile sollen nicht als Parser-Restfragmente
+  // erscheinen; bei Test- oder Bootstrap-Kontexten ohne Katalog bleibt der
+  // bisherige Parserzustand unverändert.
+  Future<List<String>> _filterKnownTraitWarnings(List<String> fragments) async {
+    if (fragments.isEmpty) {
+      return fragments;
+    }
+    try {
+      final catalog = await _ref.read(rulesCatalogProvider.future);
+      return filterKnownHeroTraitFragments(
+        fragments: fragments,
+        advantages: catalog.advantages,
+        disadvantages: catalog.disadvantages,
+      );
+    } on Object {
+      return fragments;
+    }
   }
 
   /// Loescht einen Helden und seinen Zustand dauerhaft aus dem Repository.

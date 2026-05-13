@@ -190,6 +190,8 @@ extension _CatalogEntryDataAccess on _CatalogEntryEditorScreenState {
       case CatalogSectionId.generalSpecialAbilities:
       case CatalogSectionId.magicSpecialAbilities:
       case CatalogSectionId.karmalSpecialAbilities:
+      case CatalogSectionId.advantages:
+      case CatalogSectionId.disadvantages:
         break;
     }
   }
@@ -304,7 +306,9 @@ extension _CatalogEntryDataAccess on _CatalogEntryEditorScreenState {
       CatalogSectionId.combatSpecialAbilities ||
       CatalogSectionId.generalSpecialAbilities ||
       CatalogSectionId.magicSpecialAbilities ||
-      CatalogSectionId.karmalSpecialAbilities => _buildEntryFromJson(),
+      CatalogSectionId.karmalSpecialAbilities ||
+      CatalogSectionId.advantages ||
+      CatalogSectionId.disadvantages => _buildEntryFromJson(),
       CatalogSectionId.sprachen => <String, dynamic>{
         'id': _readText('id'),
         'name': _readText('name'),

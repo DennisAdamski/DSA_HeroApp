@@ -15,6 +15,11 @@ Base assets:
 - `assets/catalogs/house_rules_v1/magie.json`
 - `assets/catalogs/house_rules_v1/manoever.json`
 - `assets/catalogs/house_rules_v1/kampf_sonderfertigkeiten.json`
+- `assets/catalogs/house_rules_v1/allgemeine_sonderfertigkeiten.json`
+- `assets/catalogs/house_rules_v1/magische_sonderfertigkeiten.json`
+- `assets/catalogs/house_rules_v1/karmale_sonderfertigkeiten.json`
+- `assets/catalogs/house_rules_v1/vorteile.json`
+- `assets/catalogs/house_rules_v1/nachteile.json`
 - `assets/catalogs/house_rules_v1/sprachen.json`
 - `assets/catalogs/house_rules_v1/schriften.json`
 
@@ -71,7 +76,9 @@ Examples:
   manifest files.
 - Built-in packs may also gate base entries directly via `ruleMeta.sourceKey`
   without needing `addEntries`. This is used by
-  `regelwerk_ueberarbeitung_v1` for optional maneuvers and Sonderfertigkeiten.
+  `regelwerk_ueberarbeitung_v1` for optional maneuvers and Sonderfertigkeiten,
+  and by epische Vor-/Nachteile entries through
+  `epic_rules_v1.advantages` and `epic_rules_v1.disadvantages`.
 - Official baseline values and opt-in house-rule overlays may intentionally be
   split: for example the affected `Körperliche Talente` live officially in
   `talente.json`, while only the PDF deviations are reapplied through
@@ -90,10 +97,20 @@ Examples:
   - Weapon entries may also include raw Arsenal metadata such as
     `weight`, `length`, `breakFactor`, `price`, `remarks`,
     `reloadTimeText`, `rangedDistanceBands`, and `rangedProjectiles`.
-- Catalog entries for talents, weapons, spells, maneuvers, and combat special
-  abilities may additionally carry optional structured `ruleMeta` data for
-  origin layering (`official` vs. `house_rule`), citations, and epic opt-in
-  gating.
+- `vorteile.json` / `nachteile.json`:
+  - Contain `HeroTraitDef` entries for catalogized advantages and
+    disadvantages.
+  - Store short facts only: name, cost text, value/choice metadata, markers,
+    source and optional `ruleMeta`.
+  - The hero overview serializes selections back into
+    `HeroSheet.vorteileText` and `HeroSheet.nachteileText`, so existing
+    modifier parsers and exports stay compatible.
+  - The settings catalog management uses the JSON editor for these sections
+    because many entries need value, choice or specialization metadata.
+- Catalog entries for talents, weapons, spells, maneuvers, special abilities,
+  advantages and disadvantages may additionally carry optional structured
+  `ruleMeta` data for origin layering (`official` vs. `house_rule`),
+  citations, and epic opt-in gating.
 - `magie.json`:
   - Contains spells only.
   - Spell detail fields from `Liber Cantiones.pdf` are maintained via

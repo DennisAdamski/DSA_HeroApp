@@ -175,6 +175,8 @@ class CatalogLoader {
     final karmalSpecialAbilities = sourceData.entriesFor(
       CatalogSectionId.karmalSpecialAbilities,
     );
+    final advantages = sourceData.entriesFor(CatalogSectionId.advantages);
+    final disadvantages = sourceData.entriesFor(CatalogSectionId.disadvantages);
     final sprachen = sourceData.entriesFor(CatalogSectionId.sprachen);
     final schriften = sourceData.entriesFor(CatalogSectionId.schriften);
 
@@ -234,6 +236,16 @@ class CatalogLoader {
       assetPath: assetPathForErrors,
     );
     _validateUniqueIds(
+      entries: advantages,
+      domainName: 'advantages',
+      assetPath: assetPathForErrors,
+    );
+    _validateUniqueIds(
+      entries: disadvantages,
+      domainName: 'disadvantages',
+      assetPath: assetPathForErrors,
+    );
+    _validateUniqueIds(
       entries: sprachen,
       domainName: 'sprachen',
       assetPath: assetPathForErrors,
@@ -277,6 +289,12 @@ class CatalogLoader {
       karmalSpecialAbilities: karmalSpecialAbilities
           .map((entry) => SpecialAbilityDef.fromJson(entry))
           .toList(growable: false),
+      advantages: advantages
+          .map((entry) => HeroTraitDef.fromJson(entry))
+          .toList(growable: false),
+      disadvantages: disadvantages
+          .map((entry) => HeroTraitDef.fromJson(entry))
+          .toList(growable: false),
       sprachen: sprachen
           .map((entry) => SpracheDef.fromJson(entry))
           .toList(growable: false),
@@ -304,6 +322,8 @@ const List<CatalogSectionId> _optionalCatalogSections = <CatalogSectionId>[
   CatalogSectionId.generalSpecialAbilities,
   CatalogSectionId.magicSpecialAbilities,
   CatalogSectionId.karmalSpecialAbilities,
+  CatalogSectionId.advantages,
+  CatalogSectionId.disadvantages,
   CatalogSectionId.sprachen,
   CatalogSectionId.schriften,
 ];
