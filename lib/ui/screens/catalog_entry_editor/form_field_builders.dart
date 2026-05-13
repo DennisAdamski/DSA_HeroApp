@@ -54,7 +54,9 @@ extension _CatalogEntryFormFieldBuilders on _CatalogEntryEditorScreenState {
         CatalogSectionId.combatSpecialAbilities ||
         CatalogSectionId.generalSpecialAbilities ||
         CatalogSectionId.magicSpecialAbilities ||
-        CatalogSectionId.karmalSpecialAbilities => const <Widget>[],
+        CatalogSectionId.karmalSpecialAbilities ||
+        CatalogSectionId.advantages ||
+        CatalogSectionId.disadvantages => const <Widget>[],
       },
     );
   }

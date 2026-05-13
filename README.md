@@ -81,6 +81,8 @@ Technischer Stack:
 
 - Pflege von Name, Rasse, Kultur, Profession und Biografiedaten
 - Verwaltung von AP, Stufe, Ressourcen und textbasierten Modifikatoren
+- Katalogbasierte Auswahl von Vorteilen und Nachteilen in der Übersicht;
+  gespeichert wird weiterhin kompatibel in den Textfeldern des Helden
 - Berechnung effektiver Startwerte und Eigenschaftsmaxima
 - Gefuehrte AP-Steigerung fuer Eigenschaften und kaufbare Grundwerte
 - Abenteuer-Sondererfahrungen fuer Eigenschaften und Grundwerte werden direkt in den Steigerungsdialogen angezeigt und beim Steigern verbraucht
@@ -147,6 +149,9 @@ Technischer Stack:
   erscheint auf anderen Geraeten stattdessen der Platzhalter
 - Konfliktbehandlung beim Import vorhandener Helden
 - Katalogdaten aus `assets/catalogs/house_rules_v1/`
+- `vorteile.json` und `nachteile.json` katalogisieren die WdH-Uebersichten
+  sowie paketgesteuerte Hausregel-Ergaenzungen mit Kosten-, Marker- und
+  Quellenmetadaten, aber ohne wörtliche Langregeltexte
 - Katalogeintraege koennen strukturierte Herkunfts- und Freischaltmetadaten
   (`ruleMeta`) fuer offizielle Regeln, Hausregeln, Quellbelege und epische
   Opt-in-Inhalte tragen

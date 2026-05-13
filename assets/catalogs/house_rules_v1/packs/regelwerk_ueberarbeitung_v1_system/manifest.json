@@ -4,5 +4,16 @@
   "title": "System",
   "description": "Reservierter Schalter für systemische Kapitel wie Lehrmeister, Spezialisten und SF-Änderungen.",
   "priority": 100,
-  "patches": []
+  "patches": [
+    {
+      "section": "disadvantages",
+      "selector": {
+        "entryId": "dis_verpflichtungen"
+      },
+      "setFields": {
+        "costText": "variabel nach Verbreitung und Häufigkeit der Organisation",
+        "source": "Erweiterung und Überarbeitung des Regelwerks S. 2"
+      }
+    }
+  ]
 }
