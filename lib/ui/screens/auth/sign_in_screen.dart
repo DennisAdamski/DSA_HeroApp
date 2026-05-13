@@ -121,43 +121,59 @@ class _SignInScreenState extends State<SignInScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'E-Mail',
-                      prefixIcon: Icon(Icons.alternate_email),
+                  AutofillGroup(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: const InputDecoration(
+                            labelText: 'E-Mail',
+                            prefixIcon: Icon(Icons.alternate_email),
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          autofillHints: const [
+                            AutofillHints.email,
+                            AutofillHints.username,
+                          ],
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          textInputAction: TextInputAction.next,
+                          validator: (value) {
+                            final v = (value ?? '').trim();
+                            if (v.isEmpty) return 'Bitte E-Mail eingeben.';
+                            if (!v.contains('@') || !v.contains('.')) {
+                              return 'Bitte gültige E-Mail eingeben.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _passwordController,
+                          decoration: const InputDecoration(
+                            labelText: 'Passwort',
+                            prefixIcon: Icon(Icons.lock_outline),
+                          ),
+                          obscureText: true,
+                          autofillHints: [
+                            _isRegisterMode
+                                ? AutofillHints.newPassword
+                                : AutofillHints.password,
+                          ],
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _submit(),
+                          validator: (value) {
+                            final v = value ?? '';
+                            if (v.isEmpty) return 'Bitte Passwort eingeben.';
+                            if (_isRegisterMode && v.length < 6) {
+                              return 'Mindestens 6 Zeichen.';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
                     ),
-                    keyboardType: TextInputType.emailAddress,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    textInputAction: TextInputAction.next,
-                    validator: (value) {
-                      final v = (value ?? '').trim();
-                      if (v.isEmpty) return 'Bitte E-Mail eingeben.';
-                      if (!v.contains('@') || !v.contains('.')) {
-                        return 'Bitte gültige E-Mail eingeben.';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Passwort',
-                      prefixIcon: Icon(Icons.lock_outline),
-                    ),
-                    obscureText: true,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _submit(),
-                    validator: (value) {
-                      final v = value ?? '';
-                      if (v.isEmpty) return 'Bitte Passwort eingeben.';
-                      if (_isRegisterMode && v.length < 6) {
-                        return 'Mindestens 6 Zeichen.';
-                      }
-                      return null;
-                    },
                   ),
                   if (_errorMessage != null) ...[
                     const SizedBox(height: 16),

@@ -16,6 +16,7 @@ import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/bought_stat_limit_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
