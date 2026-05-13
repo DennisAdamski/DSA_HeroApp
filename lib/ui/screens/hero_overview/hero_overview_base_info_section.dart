@@ -179,23 +179,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
   Widget _buildAdvantagesSection() {
     return _SectionCard(
       title: 'Vorteile und Nachteile',
-      child: _ResponsiveFieldGrid(
-        breakpoint: _standardTwoColumnBreakpoint,
-        children: [
-          _buildInputField(
-            label: 'Vorteile',
-            keyName: 'vorteile',
-            minLines: 2,
-            maxLines: null,
-          ),
-          _buildInputField(
-            label: 'Nachteile',
-            keyName: 'nachteile',
-            minLines: 2,
-            maxLines: null,
-          ),
-        ],
-      ),
+      child: _buildTraitSelectionSection(),
     );
   }
 

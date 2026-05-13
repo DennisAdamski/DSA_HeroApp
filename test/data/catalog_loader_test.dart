@@ -52,6 +52,8 @@ void main() {
           'magie': 'magie.json',
           'manoever': 'manoever.json',
           'kampf_sonderfertigkeiten': 'kampf_sonderfertigkeiten.json',
+          'vorteile': 'vorteile.json',
+          'nachteile': 'nachteile.json',
           'reisebericht': '../reiseberichte/house_rules_v1/reisebericht.json',
         },
       }),
@@ -139,6 +141,33 @@ void main() {
           ],
         },
       ]),
+      '$basePath/vorteile.json': jsonEncode([
+        {
+          'id': 'adv_flink',
+          'name': 'Flink',
+          'traitType': 'advantage',
+          'costText': '10 GP',
+          'valueKind': 'binary',
+          'selectionTemplate': 'Flink',
+          'source': 'Wege der Helden S. 14',
+          'active': true,
+        },
+      ]),
+      '$basePath/nachteile.json': jsonEncode([
+        {
+          'id': 'dis_kurzatmig',
+          'name': 'Kurzatmig',
+          'traitType': 'disadvantage',
+          'costText': 'je -1 GP / 2 AuP',
+          'valueKind': 'points',
+          'minValue': 1,
+          'maxValue': 6,
+          'unit': 'AuP',
+          'selectionTemplate': 'Kurzatmig {value}',
+          'source': 'Wege der Helden S. 15',
+          'active': true,
+        },
+      ]),
       reiseberichtPath: jsonEncode([
         {
           'id': 'rb_test',
@@ -181,6 +210,8 @@ void main() {
     expect(catalog.combatSpecialAbilities.first.aktiviertManoeverIds, [
       'man_finte',
     ]);
+    expect(catalog.advantages.map((e) => e.id).toList(), ['adv_flink']);
+    expect(catalog.disadvantages.map((e) => e.id).toList(), ['dis_kurzatmig']);
     expect(
       catalog.combatSpecialAbilities.first.kampfwertBoni.single.giltFuerTalent,
       'raufen',
@@ -366,6 +397,26 @@ void main() {
           (e) => e.message,
           'message',
           contains('Duplicate combat special abilities id'),
+        ),
+      ),
+    );
+  });
+
+  test('throws on duplicate advantage ids', () async {
+    assets = buildValidAssets();
+    assets['$basePath/vorteile.json'] = jsonEncode([
+      {'id': 'adv_flink', 'name': 'Flink', 'traitType': 'advantage'},
+      {'id': 'adv_flink', 'name': 'Flink II', 'traitType': 'advantage'},
+    ]);
+
+    final loader = const CatalogLoader();
+    await expectLater(
+      loader.loadFromAsset(manifestPath),
+      throwsA(
+        isA<FormatException>().having(
+          (e) => e.message,
+          'message',
+          contains('Duplicate advantages id'),
         ),
       ),
     );

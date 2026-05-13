@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 import 'package:dsa_heldenverwaltung/catalog/combat_special_ability_def.dart';
+import 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 import 'package:dsa_heldenverwaltung/catalog/maneuver_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/reisebericht_def.dart';
@@ -13,6 +14,7 @@ import 'package:dsa_heldenverwaltung/catalog/weapon_def.dart';
 // Re-Exports fuer abwaertskompatible Imports.
 export 'package:dsa_heldenverwaltung/catalog/catalog_constants.dart';
 export 'package:dsa_heldenverwaltung/catalog/combat_special_ability_def.dart';
+export 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/maneuver_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
 export 'package:dsa_heldenverwaltung/catalog/schrift_def.dart';
@@ -27,8 +29,8 @@ export 'package:dsa_heldenverwaltung/catalog/weapon_def.dart';
 ///
 /// Wird einmalig beim App-Start durch [CatalogLoader] aus den Split-JSON-
 /// Assets befuellt und dann als unveraenderliches Objekt weitergegeben.
-/// Der Katalog ist die zentrale Quelle fuer Talent-, Waffen-, Zauber- und
-/// Manoeuverdefinitionen.
+/// Der Katalog ist die zentrale Quelle fuer Talent-, Waffen-, Zauber-,
+/// Manoeuver-, Sonderfertigkeits- und Vor-/Nachteildefinitionen.
 class RulesCatalog {
   const RulesCatalog({
     required this.version,
@@ -41,6 +43,8 @@ class RulesCatalog {
     this.generalSpecialAbilities = const [],
     this.magicSpecialAbilities = const [],
     this.karmalSpecialAbilities = const [],
+    this.advantages = const [],
+    this.disadvantages = const [],
     this.sprachen = const [],
     this.schriften = const [],
     this.reisebericht = const [],
@@ -62,6 +66,8 @@ class RulesCatalog {
   magicSpecialAbilities; // Magische Sonderfertigkeiten
   final List<SpecialAbilityDef>
   karmalSpecialAbilities; // Karmale Sonderfertigkeiten
+  final List<HeroTraitDef> advantages; // Katalogisierte Vorteile
+  final List<HeroTraitDef> disadvantages; // Katalogisierte Nachteile
   final List<SpracheDef> sprachen; // Sprachdefinitionen
   final List<SchriftDef> schriften; // Schriftdefinitionen
   final List<ReiseberichtDef> reisebericht; // Reisebericht-Eintraege
@@ -90,6 +96,8 @@ class RulesCatalog {
         (json['magicSpecialAbilities'] as List?) ?? const [];
     final karmalSpecialAbilitiesRaw =
         (json['karmalSpecialAbilities'] as List?) ?? const [];
+    final advantagesRaw = (json['advantages'] as List?) ?? const [];
+    final disadvantagesRaw = (json['disadvantages'] as List?) ?? const [];
     final sprachenRaw = (json['sprachen'] as List?) ?? const [];
     final schriftenRaw = (json['schriften'] as List?) ?? const [];
     final reiseberichtRaw = (json['reisebericht'] as List?) ?? const [];
@@ -141,6 +149,14 @@ class RulesCatalog {
                 SpecialAbilityDef.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
+      advantages: advantagesRaw
+          .whereType<Map>()
+          .map((entry) => HeroTraitDef.fromJson(entry.cast<String, dynamic>()))
+          .toList(growable: false),
+      disadvantages: disadvantagesRaw
+          .whereType<Map>()
+          .map((entry) => HeroTraitDef.fromJson(entry.cast<String, dynamic>()))
+          .toList(growable: false),
       sprachen: sprachenRaw
           .whereType<Map>()
           .map((entry) => SpracheDef.fromJson(entry.cast<String, dynamic>()))
@@ -180,6 +196,12 @@ class RulesCatalog {
           .map((entry) => entry.toJson())
           .toList(growable: false),
       'karmalSpecialAbilities': karmalSpecialAbilities
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
+      'advantages': advantages
+          .map((entry) => entry.toJson())
+          .toList(growable: false),
+      'disadvantages': disadvantages
           .map((entry) => entry.toJson())
           .toList(growable: false),
       'sprachen': sprachen
