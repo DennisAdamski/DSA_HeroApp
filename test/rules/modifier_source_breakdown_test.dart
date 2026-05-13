@@ -10,7 +10,14 @@ import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 
 const _defaultAttributes = Attributes(
-  mu: 10, kl: 10, inn: 10, ch: 10, ff: 10, ge: 10, ko: 10, kk: 10,
+  mu: 10,
+  kl: 10,
+  inn: 10,
+  ch: 10,
+  ff: 10,
+  ge: 10,
+  ko: 10,
+  kk: 10,
 );
 
 HeroSheet _makeHero({
@@ -103,6 +110,20 @@ void main() {
       expect(breakdown.rasseStatMods.lep, 0);
       expect(breakdown.vorteileAttributeMods.mu, 0);
     });
+
+    test('benannte Vor- und Nachteile erscheinen in ihren Quellen', () {
+      final hero = _makeHero(
+        vorteileText: 'Hohe Lebenskraft 2, Astralmacht 3',
+        nachteileText: 'Kurzatmig 4, Niedrige Magieresistenz 1',
+      );
+      final breakdown = computeModifierSourceBreakdown(hero);
+
+      expect(breakdown.vorteileStatMods.lep, 2);
+      expect(breakdown.vorteileStatMods.asp, 3);
+      expect(breakdown.nachteileStatMods.au, -4);
+      expect(breakdown.nachteileStatMods.mr, -1);
+      expect(breakdown.rasseStatMods.lep, 0);
+    });
   });
 
   group('aggregateNamedStatModifiers', () {
@@ -112,9 +133,7 @@ void main() {
           HeroTalentModifier(modifier: 2, description: 'Artefakt'),
           HeroTalentModifier(modifier: 1, description: 'Segen'),
         ],
-        'mr': [
-          HeroTalentModifier(modifier: -1, description: 'Fluch'),
-        ],
+        'mr': [HeroTalentModifier(modifier: -1, description: 'Fluch')],
       };
       final result = aggregateNamedStatModifiers(mods);
 
@@ -135,9 +154,7 @@ void main() {
   group('aggregateNamedAttributeModifiers', () {
     test('summiert benannte Modifikatoren pro Eigenschaft', () {
       final mods = <String, List<HeroTalentModifier>>{
-        'mu': [
-          HeroTalentModifier(modifier: 1, description: 'Mut-Amulett'),
-        ],
+        'mu': [HeroTalentModifier(modifier: 1, description: 'Mut-Amulett')],
         'ge': [
           HeroTalentModifier(modifier: -2, description: 'Verletzung'),
           HeroTalentModifier(modifier: 1, description: 'Training'),

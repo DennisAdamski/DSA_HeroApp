@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/standard_stat_modifier_rules.dart';
 
 /// Parserergebnis fuer freie Modifikatortexte aus den Basisdaten.
 ///
@@ -129,20 +130,56 @@ ModifierParseResult parseModifierTexts({
   });
 
   final allTexts = [
-    rasseModText,
-    kulturModText,
-    professionModText,
-    vorteileText,
-    nachteileText,
+    (
+      text: rasseModText,
+      allowStandardAdvantages: false,
+      allowStandardDisadvantages: false,
+    ),
+    (
+      text: kulturModText,
+      allowStandardAdvantages: false,
+      allowStandardDisadvantages: false,
+    ),
+    (
+      text: professionModText,
+      allowStandardAdvantages: false,
+      allowStandardDisadvantages: false,
+    ),
+    (
+      text: vorteileText,
+      allowStandardAdvantages: true,
+      allowStandardDisadvantages: false,
+    ),
+    (
+      text: nachteileText,
+      allowStandardAdvantages: false,
+      allowStandardDisadvantages: true,
+    ),
   ];
 
   final regex = RegExp(r'^\s*([A-Za-z]+)\s*([+-])\s*(\d+)\s*$');
 
-  for (final text in allTexts) {
-    final fragments = text.split(RegExp(r'[\n,;]+'));
+  for (final source in allTexts) {
+    final fragments = source.text.split(RegExp(r'[\n,;]+'));
     for (final raw in fragments) {
       final fragment = raw.trim();
       if (fragment.isEmpty) {
+        continue;
+      }
+
+      final standardModifier = parseStandardStatModifierFragment(
+        fragment: fragment,
+        allowAdvantages: source.allowStandardAdvantages,
+        allowDisadvantages: source.allowStandardDisadvantages,
+      );
+      if (standardModifier != null) {
+        if (standardModifier.hasAmount) {
+          statMods = statMods + standardModifier.statMods;
+          continue;
+        }
+        if (!unknown.contains(fragment)) {
+          unknown.add(fragment);
+        }
         continue;
       }
 
@@ -245,12 +282,7 @@ String _buildModifierParseCacheKey({
 String _normalizeCode(String input) {
   final text = input.toUpperCase().replaceAll(RegExp(r'[^A-Z]'), '');
 
-  const aliases = {
-    'AE': 'ASP',
-    'KE': 'KAP',
-    'LE': 'LEP',
-    'AW': 'AUSWEICHEN',
-  };
+  const aliases = {'AE': 'ASP', 'KE': 'KAP', 'LE': 'LEP', 'AW': 'AUSWEICHEN'};
 
   return aliases[text] ?? text;
 }

@@ -41,9 +41,14 @@ void main() {
   test('auto activation enables magic for AE and AsP modifiers', () {
     final heroAe = buildHero(vorteileText: 'AE+3');
     final heroAsp = buildHero(professionModText: 'AsP-1');
+    final heroAstralmacht = buildHero(vorteileText: 'Astralmacht 3');
 
     expect(computeHeroResourceActivation(heroAe).magic.autoEnabled, isTrue);
     expect(computeHeroResourceActivation(heroAsp).magic.autoEnabled, isTrue);
+    expect(
+      computeHeroResourceActivation(heroAstralmacht).magic.autoEnabled,
+      isTrue,
+    );
   });
 
   test('auto activation enables divine for KE and KaP modifiers', () {

@@ -825,6 +825,13 @@ Alle Regeln sind **pure Dart-Funktionen** ohne Seiteneffekte in `lib/rules/deriv
 
 `Mod` = Summe aus `persistentMods` + `tempMods` für den jeweiligen Wert.
 
+**Zukauf-Grenzen:** `lib/rules/derived/bought_stat_limit_rules.dart`
+begrenzt den AP-Zukauf im Steigerungsdialog fuer Grundwerte. LeP duerfen bis
+`floor(KO / 2)`, Au bis `KO` und MR bis `floor(MU / 2)` gekauft werden. Fuer
+AsP und KaP gibt es derzeit keine harte Zukauf-Grenze; dort begrenzen nur die
+verfuegbaren AP. Die Berechnung nutzt permanente effektive Eigenschaften ohne
+temporaere Zustandseffekte.
+
 ### 4.2 Kampfbasiswerte
 
 **Datei:** `lib/rules/derived/kampfbasis_rules.dart`
@@ -1040,6 +1047,15 @@ Modifikatoren.
 
 **Named Tokens:** `Flink` → `hasFlinkFromVorteile = true`;
 `Behäbig`/`Behaebig` → `hasBehaebigFromNachteile = true`
+
+**Standard-Vor-/Nachteile:** `lib/rules/derived/standard_stat_modifier_rules.dart`
+erkennt in `vorteileText` und `nachteileText` benannte Ressourcenregeln wie
+`Hohe Lebenskraft 3`, `Ausdauernd +4`, `Astralmacht: 5`,
+`Hohe Magieresistenz (2)`, `Kurzatmig 2`,
+`Niedrige Astralenergie 3` und `Niedrige Magieresistenz 1`. Die Zahl ist immer
+der direkte Wirkungspunktwert, nicht der GP-Betrag. LeP, Au und AsP werden bei
+6 Punkten gekappt, MR bei 3 Punkten. Ein bekannter Name ohne Zahl erzeugt
+keinen Effekt und bleibt als unbekanntes Fragment sichtbar.
 
 Trenner: Zeilenumbrüche, Kommas, Semikolons. Nicht erkannte Fragmente landen in
 `unknownFragments` (→ `HeroSheet.unknownModifierFragments` für UI-Hinweis).
