@@ -549,11 +549,29 @@ Set<String> collectRuleTagsForEntry({
         tags.add('talent.type.${_normalizeRuleToken(type)}');
       }
       break;
+    case CatalogSectionId.advantages:
+      tags.add('trait.type.advantage');
+      _addTraitMarkerTags(tags, entry);
+      break;
+    case CatalogSectionId.disadvantages:
+      tags.add('trait.type.disadvantage');
+      _addTraitMarkerTags(tags, entry);
+      break;
     default:
       break;
   }
 
   return Set<String>.unmodifiable(tags);
+}
+
+void _addTraitMarkerTags(Set<String> tags, Map<String, dynamic> entry) {
+  final markers = readCatalogStringList(entry, 'markers');
+  for (final marker in markers) {
+    final normalized = _normalizeRuleToken(marker);
+    if (normalized.isNotEmpty) {
+      tags.add('trait.marker.$normalized');
+    }
+  }
 }
 
 String? _deriveTalentGroupTag(String group) {

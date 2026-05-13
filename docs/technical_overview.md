@@ -149,7 +149,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `stand`, `titel` | `String` | Sozialer Stand und Titel |
 | `familieHerkunftHintergrund` | `String` | Familiengeschichte/Herkunft |
 | `sozialstatus` | `int` | Numerischer Sozialstatus |
-| `vorteileText` / `nachteileText` | `String` | Freitext Vor-/Nachteile (wird geparsed) |
+| `vorteileText` / `nachteileText` | `String` | Parserkompatible Vor-/Nachteile-Fragmente; in der Heldenübersicht katalogbasiert auswählbar und weiterhin als Text gespeichert |
 | `apTotal` | `int` | Gesamte Abenteuerpunkte |
 | `apSpent` | `int` | Ausgegebene Abenteuerpunkte |
 | `apAvailable` | `int` | Verfügbare AP (= apTotal − apSpent) |
@@ -633,6 +633,14 @@ Vorhandensein von `hero` und `state`. Wirft `FormatException` bei Validierungsfe
 | `spells` | `List<SpellDef>` | Alle Zaubersprüche |
 | `weapons` | `List<WeaponDef>` | Alle Waffen |
 | `maneuvers` | `List<ManeuverDef>` | Kampfmanöver (optional) |
+| `combatSpecialAbilities` | `List<CombatSpecialAbilityDef>` | Kampf-Sonderfertigkeiten |
+| `generalSpecialAbilities` | `List<SpecialAbilityDef>` | Allgemeine Sonderfertigkeiten |
+| `magicSpecialAbilities` | `List<SpecialAbilityDef>` | Magische Sonderfertigkeiten |
+| `karmalSpecialAbilities` | `List<SpecialAbilityDef>` | Karmale Sonderfertigkeiten |
+| `advantages` | `List<HeroTraitDef>` | Katalogisierte Vorteile |
+| `disadvantages` | `List<HeroTraitDef>` | Katalogisierte Nachteile |
+| `sprachen` / `schriften` | `List<SpracheDef>` / `List<SchriftDef>` | Sprach- und Schriftkatalog |
+| `reisebericht` | `List<ReiseberichtDef>` | Separater Reisebericht-Katalog |
 | `metadata` | `Map<String, dynamic>` | Weitere Metadaten |
 
 Seit 2026-03-29 wird der Asset-Katalog intern zunaechst als
@@ -732,6 +740,28 @@ vorliegt.
 | `seite` | Quellseite |
 | `erklarung` | Erklärungstext |
 
+### `HeroTraitDef`
+
+| Feld | Bedeutung |
+|---|---|
+| `id` | Eindeutige ID, getrennt nach Vorteilen und Nachteilen |
+| `name` | Anzeigename des Vor- oder Nachteils |
+| `traitType` | `advantage` oder `disadvantage`; validiert gegen die Katalogsektion |
+| `costText` | GP-/Kostenangabe als kurzer Quellfakt, nicht als Regeltext |
+| `valueKind` | Auswahlverhalten: `binary`, `level`, `points` oder `choice` |
+| `minValue` / `maxValue` | Optionaler Wertebereich für Zahlen- und Stufenangaben |
+| `unit` | Optionale Einheit für Zahlenwerte |
+| `selectionTemplate` | Textvorlage für die Speicherung, z. B. `{name} {value}` oder `{name} ({choice})` |
+| `markers` | Kurzmarker aus der Übersicht, z. B. `M`, `SE`, `Gabe`, `Z/H/V` |
+| `source` | Kurze Quellenreferenz |
+| `ruleMeta` | Optionale Herkunfts-, Beleg- und Paketmetadaten |
+| `active` | Im App verfügbar? |
+
+`HeroTraitDef` speichert bewusst nur katalogisierbare Fakten und keine
+Langregeltexte. Die Heldenübersicht erzeugt daraus parserkompatible Fragmente
+für `HeroSheet.vorteileText` und `HeroSheet.nachteileText`; bestehende
+Regelwirkungen bleiben dadurch bei den vorhandenen Parsern und Regelmodulen.
+
 ### Split-JSON-Struktur & Ladevorgang
 
 **Basis-Dateipfad:** `assets/catalogs/house_rules_v1/`
@@ -744,6 +774,11 @@ waffen.json            ← Waffen
 magie.json             ← Zaubersprüche
 manoever.json          ← Manöver (optional)
 kampf_sonderfertigkeiten.json ← Kampf-Sonderfertigkeiten (optional)
+allgemeine_sonderfertigkeiten.json ← Allgemeine Sonderfertigkeiten (optional)
+magische_sonderfertigkeiten.json ← Magische Sonderfertigkeiten (optional)
+karmale_sonderfertigkeiten.json ← Karmale Sonderfertigkeiten (optional)
+vorteile.json          ← Katalogisierte Vorteile (optional)
+nachteile.json         ← Katalogisierte Nachteile (optional)
 sprachen.json          ← Sprachen (optional)
 schriften.json         ← Schriften (optional)
 ```
@@ -1059,6 +1094,10 @@ keinen Effekt und bleibt als unbekanntes Fragment sichtbar.
 
 Trenner: Zeilenumbrüche, Kommas, Semikolons. Nicht erkannte Fragmente landen in
 `unknownFragments` (→ `HeroSheet.unknownModifierFragments` für UI-Hinweis).
+Beim Speichern werden katalogbekannte Vor-/Nachteil-Fragmente herausgefiltert,
+damit normale Auswahlen wie `Flink` oder `Astralmacht 3` nicht als
+Parser-Warnung erscheinen. Freie Alttexte bleiben sichtbar, wenn sie keiner
+bekannten Katalogauswahl entsprechen.
 
 **Performance:** LRU-Cache mit 512 Einträgen für häufig wiederholte Texte.
 
@@ -1324,7 +1363,7 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 |---|---|---|
 | `heroes_home_screen.dart` | `HeroesHomeScreen` | Heldenliste; Import/Export/Löschen |
 | `hero_workspace_screen.dart` | `HeroWorkspaceScreen` | Dynamischer Workspace-Host fuer einen Helden |
-| `hero_overview_tab.dart` | `HeroOverviewTab` | Uebersicht-Tab fuer Eigenschaften, AP, Ressourcen, Biografie |
+| `hero_overview_tab.dart` | `HeroOverviewTab` | Uebersicht-Tab fuer Eigenschaften, AP, Ressourcen, katalogbasierte Vorteile/Nachteile und Biografie |
 | `hero_talents_tab.dart` | `HeroTalentsTab` | Talente, strukturierte Talent-Sonderfertigkeiten und Meta-Talente |
 | `hero_combat_tab.dart` | `HeroCombatTab` | Kampftechniken, Waffen, Kampf (Nah- oder Fernkampf), SF, Manöver und Kampfmeisterschaften |
 | `hero_magic_tab.dart` | `HeroMagicTab` | Zauber, Ritualkategorien/Rituale, Repräsentationen, magische SF und globale Leiteigenschaft |

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/hero_trait_text.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 
 void main() {
@@ -134,6 +135,33 @@ void main() {
         }
       ]
     }
+  ],
+  "advantages": [
+    {
+      "id": "adv_flink",
+      "name": "Flink",
+      "traitType": "advantage",
+      "costText": "10 GP",
+      "valueKind": "binary",
+      "selectionTemplate": "Flink",
+      "source": "Wege der Helden S. 14",
+      "active": true
+    }
+  ],
+  "disadvantages": [
+    {
+      "id": "dis_kurzatmig",
+      "name": "Kurzatmig",
+      "traitType": "disadvantage",
+      "costText": "je -1 GP / 2 AuP",
+      "valueKind": "points",
+      "minValue": 1,
+      "maxValue": 6,
+      "unit": "AuP",
+      "selectionTemplate": "Kurzatmig {value}",
+      "source": "Wege der Helden S. 15",
+      "active": true
+    }
   ]
 }
 ''';
@@ -172,6 +200,8 @@ void main() {
     expect(catalog.spells.first.variants, ['Selbst', 'Fremdheilung']);
     expect(catalog.maneuvers.first.kosten, '200 AP');
     expect(catalog.combatSpecialAbilities.first.name, 'Aufmerksamkeit');
+    expect(catalog.advantages.single.name, 'Flink');
+    expect(catalog.disadvantages.single.maxValue, 6);
     expect(
       catalog.combatSpecialAbilities.first.stilTyp,
       'waffenloser_kampfstil',
@@ -198,6 +228,46 @@ void main() {
     expect(roundtrip.spells.first.ruleMeta?.epic?.requiresOptIn, true);
     expect(roundtrip.maneuvers.first.verbreitung, '6, fast ueberall');
     expect(roundtrip.combatSpecialAbilities.first.kosten, '200 AP');
+    expect(roundtrip.advantages.single.selectionTemplate, 'Flink');
+    expect(roundtrip.disadvantages.single.unit, 'AuP');
+  });
+
+  test('hero trait text helper builds and filters catalog fragments', () {
+    const advantage = HeroTraitDef(
+      id: 'adv_astralmacht',
+      name: 'Astralmacht',
+      traitType: 'advantage',
+      valueKind: 'points',
+      minValue: 1,
+      maxValue: 6,
+      selectionTemplate: 'Astralmacht {value}',
+    );
+    const disadvantage = HeroTraitDef(
+      id: 'dis_angst',
+      name: 'Angst vor [...]',
+      traitType: 'disadvantage',
+      valueKind: 'choice',
+      selectionTemplate: 'Angst vor {choice} {value}',
+    );
+
+    final fragment = buildHeroTraitSelectionText(trait: advantage, value: 3);
+    expect(fragment, 'Astralmacht 3');
+    expect(splitHeroTraitText('Flink; Flink, Angst vor Dunkelheit 5'), [
+      'Flink',
+      'Angst vor Dunkelheit 5',
+    ]);
+    expect(
+      filterKnownHeroTraitFragments(
+        fragments: const <String>[
+          'Astralmacht 3',
+          'Angst vor Dunkelheit 5',
+          'Unbekannter Sonderfall',
+        ],
+        advantages: const <HeroTraitDef>[advantage],
+        disadvantages: const <HeroTraitDef>[disadvantage],
+      ),
+      ['Unbekannter Sonderfall'],
+    );
   });
 
   test('weapon parsing keeps backwards compatibility for legacy entries', () {

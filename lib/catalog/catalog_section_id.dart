@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/catalog/combat_special_ability_def.dart';
+import 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/maneuver_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/schrift_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
@@ -18,6 +19,8 @@ enum CatalogSectionId {
   generalSpecialAbilities,
   magicSpecialAbilities,
   karmalSpecialAbilities,
+  advantages,
+  disadvantages,
   sprachen,
   schriften,
 }
@@ -33,6 +36,8 @@ const List<CatalogSectionId> editableCatalogSections = <CatalogSectionId>[
   CatalogSectionId.generalSpecialAbilities,
   CatalogSectionId.magicSpecialAbilities,
   CatalogSectionId.karmalSpecialAbilities,
+  CatalogSectionId.advantages,
+  CatalogSectionId.disadvantages,
   CatalogSectionId.sprachen,
   CatalogSectionId.schriften,
 ];
@@ -50,10 +55,11 @@ extension CatalogSectionIdX on CatalogSectionId {
     CatalogSectionId.spells => 'magie',
     CatalogSectionId.maneuvers => 'manoever',
     CatalogSectionId.combatSpecialAbilities => 'kampf_sonderfertigkeiten',
-    CatalogSectionId.generalSpecialAbilities =>
-      'allgemeine_sonderfertigkeiten',
+    CatalogSectionId.generalSpecialAbilities => 'allgemeine_sonderfertigkeiten',
     CatalogSectionId.magicSpecialAbilities => 'magische_sonderfertigkeiten',
     CatalogSectionId.karmalSpecialAbilities => 'karmale_sonderfertigkeiten',
+    CatalogSectionId.advantages => 'vorteile',
+    CatalogSectionId.disadvantages => 'nachteile',
     CatalogSectionId.sprachen => 'sprachen',
     CatalogSectionId.schriften => 'schriften',
   };
@@ -72,6 +78,8 @@ extension CatalogSectionIdX on CatalogSectionId {
     CatalogSectionId.generalSpecialAbilities => 'Allgemeine Sonderfertigkeiten',
     CatalogSectionId.magicSpecialAbilities => 'Magische Sonderfertigkeiten',
     CatalogSectionId.karmalSpecialAbilities => 'Karmale Sonderfertigkeiten',
+    CatalogSectionId.advantages => 'Vorteile',
+    CatalogSectionId.disadvantages => 'Nachteile',
     CatalogSectionId.sprachen => 'Sprachen',
     CatalogSectionId.schriften => 'Schriften',
   };
@@ -87,6 +95,8 @@ extension CatalogSectionIdX on CatalogSectionId {
     CatalogSectionId.generalSpecialAbilities => 'Allgemeine Sonderfertigkeit',
     CatalogSectionId.magicSpecialAbilities => 'Magische Sonderfertigkeit',
     CatalogSectionId.karmalSpecialAbilities => 'Karmale Sonderfertigkeit',
+    CatalogSectionId.advantages => 'Vorteil',
+    CatalogSectionId.disadvantages => 'Nachteil',
     CatalogSectionId.sprachen => 'Sprache',
     CatalogSectionId.schriften => 'Schrift',
   };
@@ -96,7 +106,9 @@ extension CatalogSectionIdX on CatalogSectionId {
       this == CatalogSectionId.combatSpecialAbilities ||
       this == CatalogSectionId.generalSpecialAbilities ||
       this == CatalogSectionId.magicSpecialAbilities ||
-      this == CatalogSectionId.karmalSpecialAbilities;
+      this == CatalogSectionId.karmalSpecialAbilities ||
+      this == CatalogSectionId.advantages ||
+      this == CatalogSectionId.disadvantages;
 }
 
 /// Loest einen Verzeichnisnamen zu einer Katalogsektion auf.
@@ -256,6 +268,34 @@ Map<String, dynamic> defaultCatalogEntryTemplate(CatalogSectionId section) {
       'verbreitung': '',
       'kosten': '',
     },
+    CatalogSectionId.advantages => const <String, dynamic>{
+      'id': '',
+      'name': '',
+      'traitType': 'advantage',
+      'costText': '',
+      'valueKind': 'binary',
+      'minValue': 1,
+      'maxValue': 1,
+      'unit': '',
+      'selectionTemplate': '',
+      'markers': <String>[],
+      'source': '',
+      'active': true,
+    },
+    CatalogSectionId.disadvantages => const <String, dynamic>{
+      'id': '',
+      'name': '',
+      'traitType': 'disadvantage',
+      'costText': '',
+      'valueKind': 'binary',
+      'minValue': 1,
+      'maxValue': 1,
+      'unit': '',
+      'selectionTemplate': '',
+      'markers': <String>[],
+      'source': '',
+      'active': true,
+    },
     CatalogSectionId.sprachen => const <String, dynamic>{
       'id': '',
       'name': '',
@@ -293,8 +333,11 @@ Map<String, dynamic> canonicalizeCatalogEntry(
     ).toJson(),
     CatalogSectionId.generalSpecialAbilities ||
     CatalogSectionId.magicSpecialAbilities ||
-    CatalogSectionId.karmalSpecialAbilities =>
-      SpecialAbilityDef.fromJson(raw).toJson(),
+    CatalogSectionId.karmalSpecialAbilities => SpecialAbilityDef.fromJson(
+      raw,
+    ).toJson(),
+    CatalogSectionId.advantages ||
+    CatalogSectionId.disadvantages => HeroTraitDef.fromJson(raw).toJson(),
     CatalogSectionId.sprachen => SpracheDef.fromJson(raw).toJson(),
     CatalogSectionId.schriften => SchriftDef.fromJson(raw).toJson(),
   };
@@ -325,6 +368,24 @@ void validateCatalogEntryStructure(
     if (group == 'Kampftalent') {
       throw const FormatException(
         'Normale Talente dürfen nicht die Gruppe "Kampftalent" verwenden.',
+      );
+    }
+  }
+
+  if (section == CatalogSectionId.advantages) {
+    final traitType = (entry['traitType'] as String? ?? '').trim();
+    if (traitType != 'advantage') {
+      throw const FormatException(
+        'Vorteile müssen traitType "advantage" verwenden.',
+      );
+    }
+  }
+
+  if (section == CatalogSectionId.disadvantages) {
+    final traitType = (entry['traitType'] as String? ?? '').trim();
+    if (traitType != 'disadvantage') {
+      throw const FormatException(
+        'Nachteile müssen traitType "disadvantage" verwenden.',
       );
     }
   }

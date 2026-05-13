@@ -16,6 +16,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Aventurische Waehrungsumrechnung fuer Dukaten/Silber/Kreuzer liegt in
   `lib/rules/derived/currency_rules.dart`.
 - Die kanonische Katalogquelle bleibt `assets/catalogs/house_rules_v1/`.
+- Vor- und Nachteile liegen dort katalogisiert in `vorteile.json` und
+  `nachteile.json`; die Heldenübersicht speichert Auswahlen weiterhin
+  kompatibel in `HeroSheet.vorteileText` und `HeroSheet.nachteileText`.
 - Aktivierbare Hausregel-Pakete liegen eingebaut unter
   `assets/catalogs/house_rules_v1/packs/<packId>/manifest.json`.
 - Eingebaute Pack-Manifeste muessen ausserdem explizit in `pubspec.yaml`

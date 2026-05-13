@@ -60,6 +60,32 @@ void main() {
             },
           },
         ],
+        CatalogSectionId.advantages: <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 'adv_episch',
+            'name': 'Epischer Vorteil',
+            'traitType': 'advantage',
+            'costText': 'systemisch',
+            'valueKind': 'binary',
+            'selectionTemplate': 'Epischer Vorteil',
+            'active': true,
+            'ruleMeta': <String, dynamic>{
+              'origin': 'house_rule',
+              'sourceKey': 'epic_rules_v1.advantages',
+            },
+          },
+        ],
+        CatalogSectionId.disadvantages: <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 'dis_verpflichtungen',
+            'name': 'Verpflichtungen',
+            'traitType': 'disadvantage',
+            'costText': '-12 GP',
+            'valueKind': 'choice',
+            'selectionTemplate': 'Verpflichtungen {choice}',
+            'active': true,
+          },
+        ],
       },
       reisebericht: const <Map<String, dynamic>>[],
     );
@@ -183,6 +209,13 @@ void main() {
           description: 'Child',
           patches: <HouseRulePatch>[],
         ),
+        HouseRulePackManifest(
+          id: 'epic_rules_v1.advantages',
+          parentPackId: 'epic_rules_v1',
+          title: 'Epische Vorteile',
+          description: 'Child',
+          patches: <HouseRulePatch>[],
+        ),
       ],
     );
 
@@ -197,6 +230,10 @@ void main() {
       ),
       isEmpty,
     );
+    expect(
+      inactive.resolvedBaseData.entriesFor(CatalogSectionId.advantages),
+      isEmpty,
+    );
 
     final active = HouseRuleCatalogResolver.resolve(
       baseData: buildBaseData(),
@@ -209,6 +246,69 @@ void main() {
       ),
       hasLength(1),
     );
+    expect(
+      active.resolvedBaseData.entriesFor(CatalogSectionId.advantages),
+      isEmpty,
+    );
+
+    final activeWithTraits = HouseRuleCatalogResolver.resolve(
+      baseData: buildBaseData(),
+      packCatalog: packCatalog,
+      activePackIds: const <String>{
+        'epic_rules_v1',
+        'epic_rules_v1.advantages',
+      },
+    );
+    expect(
+      activeWithTraits.resolvedBaseData.entriesFor(CatalogSectionId.advantages),
+      hasLength(1),
+    );
+  });
+
+  test('regelwerk system pack patches Verpflichtungen cost text', () {
+    const packCatalog = HouseRulePackCatalog(
+      packs: <HouseRulePackManifest>[
+        HouseRulePackManifest(
+          id: 'regelwerk_ueberarbeitung_v1',
+          title: 'Regelwerk-Überarbeitung',
+          description: 'Root',
+          patches: <HouseRulePatch>[],
+        ),
+        HouseRulePackManifest(
+          id: 'regelwerk_ueberarbeitung_v1.system',
+          parentPackId: 'regelwerk_ueberarbeitung_v1',
+          title: 'System',
+          description: 'Systemische Kapitel',
+          patches: <HouseRulePatch>[
+            HouseRulePatch(
+              section: CatalogSectionId.disadvantages,
+              selector: HouseRuleSelector(entryId: 'dis_verpflichtungen'),
+              setFields: <String, dynamic>{
+                'costText': 'variabel nach Organisation',
+              },
+              addEntries: <Map<String, dynamic>>[],
+              deactivateEntries: false,
+            ),
+          ],
+        ),
+      ],
+    );
+
+    final result = HouseRuleCatalogResolver.resolve(
+      baseData: buildBaseData(),
+      packCatalog: packCatalog,
+      activePackIds: const <String>{
+        'regelwerk_ueberarbeitung_v1',
+        'regelwerk_ueberarbeitung_v1.system',
+      },
+    );
+
+    final verpflichtungen = findEntry(
+      result.resolvedBaseData,
+      CatalogSectionId.disadvantages,
+      'dis_verpflichtungen',
+    );
+    expect(verpflichtungen['costText'], 'variabel nach Organisation');
   });
 
   test('regelwerk talents pack patches Akrobatik to A* with provenance', () {

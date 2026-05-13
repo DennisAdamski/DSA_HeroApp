@@ -77,6 +77,13 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 ### Katalog
 
 - Zauber-Definitionen (`SpellDef`) kommen aus `magie.json` im Katalog.
+- Vor- und Nachteile kommen aus `vorteile.json` und `nachteile.json` als
+  `HeroTraitDef`. Die Heldenübersicht schreibt ausgewählte Einträge weiterhin
+  als parserkompatible Textfragmente in `vorteileText` und `nachteileText`;
+  bekannte Katalogfragmente werden aus `unknownModifierFragments`
+  herausgefiltert. Regelwirkungen bleiben bewusst bei den bestehenden
+  Parsern und Regelmodulen, statt alle DSA-Vor-/Nachteile vollautomatisch
+  nachzubauen.
 - `SpellDef` enthaelt neben Grunddaten auch Detailfelder aus `Liber Cantiones` wie `source` (erste Zauberseite), `targetObject`, `wirkung`, `modifications` und `variants`.
 - Die importierten Langtexte werden fuer die Laufzeitdarstellung whitespace-normalisiert; PDF-Zeilenumbrueche werden nicht layoutgetreu uebernommen.
 - Offensichtliche OCR-/Silbentrennungsfehler aus der PDF werden im Importer konservativ bereinigt.
