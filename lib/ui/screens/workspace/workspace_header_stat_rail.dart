@@ -233,9 +233,6 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
   static const double _kTileDenseWidth = 52.0;
   static const double _kTileGap = 6.0;
 
-  /// Mindestbreite einer Vital-Kachel mit sichtbarem Label (z. B. "LeP 30/35").
-  static const double _kTileWithLabelMinWidth = 92.0;
-
   static double _rowWidth(int count, double tileWidth) =>
       count * tileWidth + (count - 1) * _kTileGap;
 
@@ -292,7 +289,7 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
   }
 
   /// Mobile Ansicht: Eigenschaften werden hinter einem Button versteckt,
-  /// die Statuswerte werden mit sichtbaren Labels in einem Wrap dargestellt.
+  /// die Statuswerte stehen mit sichtbaren Labels in derselben Zeile.
   Widget _buildStatusFocused(BuildContext context) {
     final attrItems = items.sublist(0, items.length < 8 ? items.length : 8);
     final vitalItems = items.length > 8
@@ -300,66 +297,57 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
         : <_WorkspaceHeaderStatItem>[];
     final codex = context.codexTheme;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Material(
-          color: codex.panelRaised.withValues(alpha: 0.95),
-          borderRadius: BorderRadius.circular(codex.panelRadius),
-          child: InkWell(
-            key: const ValueKey<String>(
-              'workspace-stat-rail-attributes-button',
-            ),
+    final attrButton = Material(
+      color: codex.panelRaised.withValues(alpha: 0.95),
+      borderRadius: BorderRadius.circular(codex.panelRadius),
+      child: InkWell(
+        key: const ValueKey<String>('workspace-stat-rail-attributes-button'),
+        borderRadius: BorderRadius.circular(codex.panelRadius),
+        onTap: attrItems.isEmpty
+            ? null
+            : () => _showAttributesSheet(context, attrItems),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(codex.panelRadius),
-            onTap: attrItems.isEmpty
-                ? null
-                : () => _showAttributesSheet(context, attrItems),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(codex.panelRadius),
-                border: Border.all(color: codex.rule),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.bolt_outlined, size: 16, color: codex.inkMuted),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Eigenschaften',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: codex.ink,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            border: Border.all(color: codex.rule),
           ),
-        ),
-        const SizedBox(width: _kTileGap),
-        Expanded(
-          child: Wrap(
-            spacing: _kTileGap,
-            runSpacing: 4,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              for (final item in vitalItems)
-                ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minWidth: _kTileWithLabelMinWidth,
-                  ),
-                  child: CodexMetricTile(
-                    label: item.label,
-                    value: item.value,
-                    icon: item.icon,
-                    highlight: item.highlight,
-                    compact: true,
-                    onTap: item.onTap,
-                  ),
+              Icon(Icons.bolt_outlined, size: 14, color: codex.inkMuted),
+              const SizedBox(width: 4),
+              Text(
+                'Eig.',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: codex.ink,
                 ),
+              ),
             ],
           ),
         ),
-      ],
+      ),
+    );
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          attrButton,
+          for (final item in vitalItems) ...[
+            const SizedBox(width: _kTileGap),
+            CodexMetricTile(
+              label: item.label,
+              value: item.value,
+              icon: item.icon,
+              highlight: item.highlight,
+              compact: true,
+              onTap: item.onTap,
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -367,45 +355,59 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
     BuildContext context,
     List<_WorkspaceHeaderStatItem> attrItems,
   ) {
-    return showAdaptiveDetailSheet<void>(
+    return showAdaptiveInputDialog<void>(
       context: context,
       builder: (sheetContext) {
-        return AlertDialog(
+        final theme = Theme.of(sheetContext);
+        return Dialog(
           key: const ValueKey<String>('workspace-stat-rail-attributes-sheet'),
-          title: const Text('Eigenschaften'),
-          contentPadding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-          content: SizedBox(
-            width: 320,
-            child: Wrap(
-              spacing: _kTileGap,
-              runSpacing: _kTileGap,
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                for (final item in attrItems)
-                  SizedBox(
-                    width: 70,
-                    child: CodexMetricTile(
-                      label: item.label,
-                      value: item.value,
-                      icon: item.icon,
-                      highlight: item.highlight,
-                      compact: true,
-                      onTap: item.onTap == null
-                          ? null
-                          : () {
-                              Navigator.of(sheetContext).pop();
-                              item.onTap!();
-                            },
+                Text(
+                  'Eigenschaften',
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 24),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    for (final item in attrItems)
+                      SizedBox(
+                        width: 72,
+                        child: CodexMetricTile(
+                          label: item.label,
+                          value: item.value,
+                          icon: item.icon,
+                          highlight: item.highlight,
+                          compact: true,
+                          onTap: item.onTap == null
+                              ? null
+                              : () {
+                                  Navigator.of(sheetContext).pop();
+                                  item.onTap!();
+                                },
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(sheetContext).pop(),
+                      child: const Text('Schliessen'),
                     ),
-                  ),
+                  ],
+                ),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(sheetContext).pop(),
-              child: const Text('Schliessen'),
-            ),
-          ],
         );
       },
     );
