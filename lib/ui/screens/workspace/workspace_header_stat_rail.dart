@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dar
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/resource_stepper_dialog.dart';
@@ -220,7 +221,7 @@ class WorkspaceHeaderStatRail extends ConsumerWidget {
   }
 }
 
-enum _StatRailMode { full, dense, wrapped }
+enum _StatRailMode { full, dense, statusFocused }
 
 /// Scrollbare Zeile aus kompakten Metrik-Karten fuer den Workspace-Header.
 class _WorkspaceHeaderStatRailBody extends StatelessWidget {
@@ -231,12 +232,6 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
   static const double _kTileFullWidth = 70.0;
   static const double _kTileDenseWidth = 52.0;
   static const double _kTileGap = 6.0;
-
-  /// Minimalbreite pro Kachel im Umbruch-Modus (Icon + Wert ohne Label).
-  static const double _kTileWrappedMinWidth = 50.0;
-
-  /// Mindestbreite fuer den Umbruch-Modus: 8 Attribut-Kacheln muessen passen.
-  static const double _kWrappedMinWidth = 8 * _kTileWrappedMinWidth;
 
   static double _rowWidth(int count, double tileWidth) =>
       count * tileWidth + (count - 1) * _kTileGap;
@@ -251,18 +246,16 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
         final mode = available >= t1
             ? _StatRailMode.full
             : available >= t2
-            ? _StatRailMode.dense
-            : available >= _kWrappedMinWidth
-            ? _StatRailMode.wrapped
-            : _StatRailMode.dense;
+                ? _StatRailMode.dense
+                : _StatRailMode.statusFocused;
         return _buildLayout(context, mode);
       },
     );
   }
 
   Widget _buildLayout(BuildContext context, _StatRailMode mode) {
-    if (mode == _StatRailMode.wrapped) {
-      return _buildWrapped(context);
+    if (mode == _StatRailMode.statusFocused) {
+      return _buildStatusFocused(context);
     }
     return _buildSingleRow(context, labelHidden: mode == _StatRailMode.dense);
   }
@@ -295,54 +288,128 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
     );
   }
 
-  Widget _buildWrapped(BuildContext context) {
+  /// Mobile Ansicht: Eigenschaften werden hinter einem Button versteckt,
+  /// die Statuswerte stehen mit sichtbaren Labels in derselben Zeile.
+  Widget _buildStatusFocused(BuildContext context) {
     final attrItems = items.sublist(0, items.length < 8 ? items.length : 8);
     final vitalItems = items.length > 8
         ? items.sublist(8)
         : <_WorkspaceHeaderStatItem>[];
+    final codex = context.codexTheme;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          children: [
-            for (var i = 0; i < attrItems.length; i++) ...[
-              if (i > 0) const SizedBox(width: _kTileGap),
-              Expanded(
-                child: CodexMetricTile(
-                  label: attrItems[i].label,
-                  value: attrItems[i].value,
-                  icon: attrItems[i].icon,
-                  highlight: attrItems[i].highlight,
-                  compact: true,
-                  labelHidden: true,
-                  onTap: attrItems[i].onTap,
+    final attrButton = Material(
+      color: codex.panelRaised.withValues(alpha: 0.95),
+      borderRadius: BorderRadius.circular(codex.panelRadius),
+      child: InkWell(
+        key: const ValueKey<String>('workspace-stat-rail-attributes-button'),
+        borderRadius: BorderRadius.circular(codex.panelRadius),
+        onTap: attrItems.isEmpty
+            ? null
+            : () => _showAttributesSheet(context, attrItems),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(codex.panelRadius),
+            border: Border.all(color: codex.rule),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.bolt_outlined, size: 14, color: codex.inkMuted),
+              const SizedBox(width: 4),
+              Text(
+                'Eig.',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: codex.ink,
                 ),
               ),
             ],
-          ],
+          ),
         ),
-        if (vitalItems.isNotEmpty) ...[
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              for (var i = 0; i < vitalItems.length; i++) ...[
-                if (i > 0) const SizedBox(width: _kTileGap),
-                CodexMetricTile(
-                  label: vitalItems[i].label,
-                  value: vitalItems[i].value,
-                  icon: vitalItems[i].icon,
-                  highlight: vitalItems[i].highlight,
-                  compact: true,
-                  labelHidden: true,
-                  onTap: vitalItems[i].onTap,
+      ),
+    );
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          attrButton,
+          for (final item in vitalItems) ...[
+            const SizedBox(width: _kTileGap),
+            CodexMetricTile(
+              label: item.label,
+              value: item.value,
+              icon: item.icon,
+              highlight: item.highlight,
+              compact: true,
+              onTap: item.onTap,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAttributesSheet(
+    BuildContext context,
+    List<_WorkspaceHeaderStatItem> attrItems,
+  ) {
+    return showAdaptiveInputDialog<void>(
+      context: context,
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        return Dialog(
+          key: const ValueKey<String>('workspace-stat-rail-attributes-sheet'),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Eigenschaften',
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 24),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    for (final item in attrItems)
+                      SizedBox(
+                        width: 72,
+                        child: CodexMetricTile(
+                          label: item.label,
+                          value: item.value,
+                          icon: item.icon,
+                          highlight: item.highlight,
+                          compact: true,
+                          onTap: item.onTap == null
+                              ? null
+                              : () {
+                                  Navigator.of(sheetContext).pop();
+                                  item.onTap!();
+                                },
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(sheetContext).pop(),
+                      child: const Text('Schliessen'),
+                    ),
+                  ],
                 ),
               ],
-            ],
+            ),
           ),
-        ],
-      ],
+        );
+      },
     );
   }
 }

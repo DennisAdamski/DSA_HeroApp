@@ -1,23 +1,50 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 
 extension _HeroOverviewStatsSection on _HeroOverviewTabState {
+  static const AdaptiveTableColumnSpec _startColumnSpec =
+      AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120);
+
   static const List<AdaptiveTableColumnSpec>
-  _derivedValueColumnSpecs = <AdaptiveTableColumnSpec>[
+  _derivedValueColumnSpecsBase = <AdaptiveTableColumnSpec>[
     AdaptiveTableColumnSpec(minWidth: 96, maxWidth: 136), // Wert (LeP, AsP, …)
-    AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Start
     AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 132), // Modifikator
     AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Aktuell
     AdaptiveTableColumnSpec(minWidth: 82, maxWidth: 120), // Zugekauft
   ];
 
-  static const List<AdaptiveTableColumnSpec> _attributeColumnSpecs =
+  static const List<AdaptiveTableColumnSpec> _attributeColumnSpecsBase =
       <AdaptiveTableColumnSpec>[
         AdaptiveTableColumnSpec(minWidth: 96, maxWidth: 136), // Eigenschaft
-        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Start
         AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Max
         AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Wert
         AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 132), // Aktuell
       ];
+
+  List<AdaptiveTableColumnSpec> _derivedValueColumnSpecs({
+    required bool showStart,
+  }) {
+    if (!showStart) {
+      return _derivedValueColumnSpecsBase;
+    }
+    return <AdaptiveTableColumnSpec>[
+      _derivedValueColumnSpecsBase[0], // Wert
+      _startColumnSpec, // Start
+      ..._derivedValueColumnSpecsBase.sublist(1),
+    ];
+  }
+
+  List<AdaptiveTableColumnSpec> _attributeColumnSpecs({
+    required bool showStart,
+  }) {
+    if (!showStart) {
+      return _attributeColumnSpecsBase;
+    }
+    return <AdaptiveTableColumnSpec>[
+      _attributeColumnSpecsBase[0], // Eigenschaft
+      _startColumnSpec, // Start
+      ..._attributeColumnSpecsBase.sublist(1),
+    ];
+  }
 
   Widget _buildCombinedStatsAndAttributesSection(
     HeroComputedSnapshot snapshot,
@@ -164,6 +191,9 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       ),
     ];
 
+    final showStart = _editController.isEditing;
+    final columnSpecs = _derivedValueColumnSpecs(showStart: showStart);
+
     return _SectionCard(
       title: 'Basiswerte',
       titleAction: IconButton(
@@ -179,18 +209,16 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
             scrollDirection: Axis.horizontal,
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minWidth: adaptiveTableMinWidth(_derivedValueColumnSpecs),
+                minWidth: adaptiveTableMinWidth(columnSpecs),
               ),
               child: Table(
                 defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                columnWidths: buildAdaptiveTableColumnWidths(
-                  _derivedValueColumnSpecs,
-                ),
+                columnWidths: buildAdaptiveTableColumnWidths(columnSpecs),
                 children: [
                   TableRow(
                     children: [
                       _buildAttributesTableHeaderCell('Wert'),
-                      _buildAttributesTableHeaderCell('Start'),
+                      if (showStart) _buildAttributesTableHeaderCell('Start'),
                       _buildAttributesTableHeaderCell('Modifikator'),
                       _buildAttributesTableHeaderCell('Aktuell'),
                       _buildAttributesTableHeaderCell('Zugekauft'),
@@ -204,13 +232,14 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                           '',
                           false,
                         ),
-                        _buildDerivedValueCell(
-                          value:
-                              (entry.current -
-                                      entry.modifier -
-                                      (entry.bought ?? 0))
-                                  .toString(),
-                        ),
+                        if (showStart)
+                          _buildDerivedValueCell(
+                            value:
+                                (entry.current -
+                                        entry.modifier -
+                                        (entry.bought ?? 0))
+                                    .toString(),
+                          ),
                         _buildTappableStatModifierCell(
                           entry,
                           hero,
@@ -385,6 +414,8 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     HeroComputedSnapshot snapshot,
   ) {
     final attrDebugModus = ref.read(debugModusProvider);
+    final showStart = _editController.isEditing;
+    final columnSpecs = _attributeColumnSpecs(showStart: showStart);
     final rows = _HeroOverviewTabState._attributeEntries
         .map((entry) {
           final key = entry.$2;
@@ -402,10 +433,11 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                 key,
                 _attrBonusValue(snapshot.hero.epicMainAttributes, key) > 0,
               ),
-              _buildAttributesComputedCell(
-                keyName: '${key}_start',
-                value: startValue.toString(),
-              ),
+              if (showStart)
+                _buildAttributesComputedCell(
+                  keyName: '${key}_start',
+                  value: startValue.toString(),
+                ),
               _buildAttributesComputedCell(
                 keyName: '${key}_max',
                 value: epicBonusVal > 0
@@ -437,16 +469,16 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            minWidth: adaptiveTableMinWidth(_attributeColumnSpecs),
+            minWidth: adaptiveTableMinWidth(columnSpecs),
           ),
           child: Table(
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            columnWidths: buildAdaptiveTableColumnWidths(_attributeColumnSpecs),
+            columnWidths: buildAdaptiveTableColumnWidths(columnSpecs),
             children: [
               TableRow(
                 children: [
                   _buildAttributesTableHeaderCell('Eigenschaft'),
-                  _buildAttributesTableHeaderCell('Start'),
+                  if (showStart) _buildAttributesTableHeaderCell('Start'),
                   _buildAttributesTableHeaderCell('Max'),
                   _buildAttributesTableHeaderCell('Wert'),
                   _buildAttributesTableHeaderCell('Aktuell'),

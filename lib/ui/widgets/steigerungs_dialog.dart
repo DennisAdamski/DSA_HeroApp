@@ -50,6 +50,7 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
   int seAnzahl = 0,
   bool lehrmeisterVerfuegbar = false,
   String? komplexitaetsHinweis,
+  int? startWert,
 }) {
   return showAdaptiveInputDialog<SteigerungsErgebnis>(
     context: context,
@@ -63,6 +64,7 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
         seAnzahl: seAnzahl,
         lehrmeisterVerfuegbar: lehrmeisterVerfuegbar,
         komplexitaetsHinweis: komplexitaetsHinweis,
+        startWert: startWert,
       );
     },
   );
@@ -78,6 +80,7 @@ class _SteigerungsDialog extends StatefulWidget {
     required this.seAnzahl,
     required this.lehrmeisterVerfuegbar,
     this.komplexitaetsHinweis,
+    this.startWert,
   });
 
   final String bezeichnung;
@@ -88,6 +91,7 @@ class _SteigerungsDialog extends StatefulWidget {
   final int seAnzahl;
   final bool lehrmeisterVerfuegbar;
   final String? komplexitaetsHinweis;
+  final int? startWert;
 
   @override
   State<_SteigerungsDialog> createState() => _SteigerungsDialogState();
@@ -268,8 +272,12 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
               Text(
-                'Aktueller Wert: ${_aktuellerWertLabel()} | '
-                'Maximaler Wert: ${widget.maxWert}',
+                widget.startWert == null
+                    ? 'Aktueller Wert: ${_aktuellerWertLabel()} | '
+                        'Maximaler Wert: ${widget.maxWert}'
+                    : 'Startwert: ${widget.startWert} | '
+                        'Aktueller Wert: ${_aktuellerWertLabel()} | '
+                        'Maximaler Wert: ${widget.maxWert}',
               ),
               const SizedBox(height: 12),
               Text('Neuer Wert'),
