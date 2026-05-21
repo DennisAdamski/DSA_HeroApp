@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dar
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/resource_stepper_dialog.dart';
@@ -220,7 +221,7 @@ class WorkspaceHeaderStatRail extends ConsumerWidget {
   }
 }
 
-enum _StatRailMode { full, dense, wrapped }
+enum _StatRailMode { full, dense, statusFocused }
 
 /// Scrollbare Zeile aus kompakten Metrik-Karten fuer den Workspace-Header.
 class _WorkspaceHeaderStatRailBody extends StatelessWidget {
@@ -232,8 +233,8 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
   static const double _kTileDenseWidth = 52.0;
   static const double _kTileGap = 6.0;
 
-  /// Minimalbreite pro Kachel im Umbruch-Modus (Icon + Wert ohne Label).
-  static const double _kTileWrappedMinWidth = 50.0;
+  /// Mindestbreite einer Vital-Kachel mit sichtbarem Label (z. B. "LeP 30/35").
+  static const double _kTileWithLabelMinWidth = 92.0;
 
   static double _rowWidth(int count, double tileWidth) =>
       count * tileWidth + (count - 1) * _kTileGap;
@@ -249,19 +250,15 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
             ? _StatRailMode.full
             : available >= t2
                 ? _StatRailMode.dense
-                : _StatRailMode.wrapped;
-        return _buildLayout(context, mode, available);
+                : _StatRailMode.statusFocused;
+        return _buildLayout(context, mode);
       },
     );
   }
 
-  Widget _buildLayout(
-    BuildContext context,
-    _StatRailMode mode,
-    double availableWidth,
-  ) {
-    if (mode == _StatRailMode.wrapped) {
-      return _buildWrapped(context, availableWidth);
+  Widget _buildLayout(BuildContext context, _StatRailMode mode) {
+    if (mode == _StatRailMode.statusFocused) {
+      return _buildStatusFocused(context);
     }
     return _buildSingleRow(context, labelHidden: mode == _StatRailMode.dense);
   }
@@ -294,77 +291,123 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
     );
   }
 
-  Widget _buildWrapped(BuildContext context, double availableWidth) {
+  /// Mobile Ansicht: Eigenschaften werden hinter einem Button versteckt,
+  /// die Statuswerte werden mit sichtbaren Labels in einem Wrap dargestellt.
+  Widget _buildStatusFocused(BuildContext context) {
     final attrItems = items.sublist(0, items.length < 8 ? items.length : 8);
     final vitalItems = items.length > 8
         ? items.sublist(8)
         : <_WorkspaceHeaderStatItem>[];
+    final codex = context.codexTheme;
 
-    // Acht Attribut-Tiles teilen sich die Zeile gleichmaessig, solange die
-    // Mindestbreite pro Tile gehalten werden kann. Bei sehr schmalen Geraeten
-    // wird die Reihe in zwei gleich grosse Haelften gebrochen.
-    final attrCount = attrItems.length;
-    final attrSingleRowWidth = _rowWidth(attrCount, _kTileWrappedMinWidth);
-    final attrSplit = attrCount > 4 && availableWidth < attrSingleRowWidth;
-
-    Widget buildAttrRow(List<_WorkspaceHeaderStatItem> row) {
-      return Row(
-        children: [
-          for (var i = 0; i < row.length; i++) ...[
-            if (i > 0) const SizedBox(width: _kTileGap),
-            Expanded(
-              child: CodexMetricTile(
-                label: row[i].label,
-                value: row[i].value,
-                icon: row[i].icon,
-                highlight: row[i].highlight,
-                compact: true,
-                labelHidden: true,
-                onTap: row[i].onTap,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Material(
+          color: codex.panelRaised.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(codex.panelRadius),
+          child: InkWell(
+            key: const ValueKey<String>(
+              'workspace-stat-rail-attributes-button',
+            ),
+            borderRadius: BorderRadius.circular(codex.panelRadius),
+            onTap: attrItems.isEmpty
+                ? null
+                : () => _showAttributesSheet(context, attrItems),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(codex.panelRadius),
+                border: Border.all(color: codex.rule),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.bolt_outlined, size: 16, color: codex.inkMuted),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Eigenschaften',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: codex.ink,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ],
-      );
-    }
-
-    final attrRows = <Widget>[];
-    if (attrSplit) {
-      final half = (attrCount / 2).ceil();
-      attrRows.add(buildAttrRow(attrItems.sublist(0, half)));
-      attrRows.add(const SizedBox(height: 4));
-      attrRows.add(buildAttrRow(attrItems.sublist(half)));
-    } else {
-      attrRows.add(buildAttrRow(attrItems));
-    }
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ...attrRows,
-        if (vitalItems.isNotEmpty) ...[
-          const SizedBox(height: 4),
-          Wrap(
+          ),
+        ),
+        const SizedBox(width: _kTileGap),
+        Expanded(
+          child: Wrap(
             spacing: _kTileGap,
             runSpacing: 4,
             children: [
               for (final item in vitalItems)
-                SizedBox(
-                  width: _kTileWrappedMinWidth,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: _kTileWithLabelMinWidth,
+                  ),
                   child: CodexMetricTile(
                     label: item.label,
                     value: item.value,
                     icon: item.icon,
                     highlight: item.highlight,
                     compact: true,
-                    labelHidden: true,
                     onTap: item.onTap,
                   ),
                 ),
             ],
           ),
-        ],
+        ),
       ],
+    );
+  }
+
+  Future<void> _showAttributesSheet(
+    BuildContext context,
+    List<_WorkspaceHeaderStatItem> attrItems,
+  ) {
+    return showAdaptiveDetailSheet<void>(
+      context: context,
+      builder: (sheetContext) {
+        return AlertDialog(
+          key: const ValueKey<String>('workspace-stat-rail-attributes-sheet'),
+          title: const Text('Eigenschaften'),
+          contentPadding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+          content: SizedBox(
+            width: 320,
+            child: Wrap(
+              spacing: _kTileGap,
+              runSpacing: _kTileGap,
+              children: [
+                for (final item in attrItems)
+                  SizedBox(
+                    width: 70,
+                    child: CodexMetricTile(
+                      label: item.label,
+                      value: item.value,
+                      icon: item.icon,
+                      highlight: item.highlight,
+                      compact: true,
+                      onTap: item.onTap == null
+                          ? null
+                          : () {
+                              Navigator.of(sheetContext).pop();
+                              item.onTap!();
+                            },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(sheetContext).pop(),
+              child: const Text('Schliessen'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
