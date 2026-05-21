@@ -235,9 +235,6 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
   /// Minimalbreite pro Kachel im Umbruch-Modus (Icon + Wert ohne Label).
   static const double _kTileWrappedMinWidth = 50.0;
 
-  /// Mindestbreite fuer den Umbruch-Modus: 8 Attribut-Kacheln muessen passen.
-  static const double _kWrappedMinWidth = 8 * _kTileWrappedMinWidth;
-
   static double _rowWidth(int count, double tileWidth) =>
       count * tileWidth + (count - 1) * _kTileGap;
 
@@ -251,18 +248,20 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
         final mode = available >= t1
             ? _StatRailMode.full
             : available >= t2
-            ? _StatRailMode.dense
-            : available >= _kWrappedMinWidth
-            ? _StatRailMode.wrapped
-            : _StatRailMode.dense;
-        return _buildLayout(context, mode);
+                ? _StatRailMode.dense
+                : _StatRailMode.wrapped;
+        return _buildLayout(context, mode, available);
       },
     );
   }
 
-  Widget _buildLayout(BuildContext context, _StatRailMode mode) {
+  Widget _buildLayout(
+    BuildContext context,
+    _StatRailMode mode,
+    double availableWidth,
+  ) {
     if (mode == _StatRailMode.wrapped) {
-      return _buildWrapped(context);
+      return _buildWrapped(context, availableWidth);
     }
     return _buildSingleRow(context, labelHidden: mode == _StatRailMode.dense);
   }
@@ -295,50 +294,73 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
     );
   }
 
-  Widget _buildWrapped(BuildContext context) {
+  Widget _buildWrapped(BuildContext context, double availableWidth) {
     final attrItems = items.sublist(0, items.length < 8 ? items.length : 8);
     final vitalItems = items.length > 8
         ? items.sublist(8)
         : <_WorkspaceHeaderStatItem>[];
 
+    // Acht Attribut-Tiles teilen sich die Zeile gleichmaessig, solange die
+    // Mindestbreite pro Tile gehalten werden kann. Bei sehr schmalen Geraeten
+    // wird die Reihe in zwei gleich grosse Haelften gebrochen.
+    final attrCount = attrItems.length;
+    final attrSingleRowWidth = _rowWidth(attrCount, _kTileWrappedMinWidth);
+    final attrSplit = attrCount > 4 && availableWidth < attrSingleRowWidth;
+
+    Widget buildAttrRow(List<_WorkspaceHeaderStatItem> row) {
+      return Row(
+        children: [
+          for (var i = 0; i < row.length; i++) ...[
+            if (i > 0) const SizedBox(width: _kTileGap),
+            Expanded(
+              child: CodexMetricTile(
+                label: row[i].label,
+                value: row[i].value,
+                icon: row[i].icon,
+                highlight: row[i].highlight,
+                compact: true,
+                labelHidden: true,
+                onTap: row[i].onTap,
+              ),
+            ),
+          ],
+        ],
+      );
+    }
+
+    final attrRows = <Widget>[];
+    if (attrSplit) {
+      final half = (attrCount / 2).ceil();
+      attrRows.add(buildAttrRow(attrItems.sublist(0, half)));
+      attrRows.add(const SizedBox(height: 4));
+      attrRows.add(buildAttrRow(attrItems.sublist(half)));
+    } else {
+      attrRows.add(buildAttrRow(attrItems));
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            for (var i = 0; i < attrItems.length; i++) ...[
-              if (i > 0) const SizedBox(width: _kTileGap),
-              Expanded(
-                child: CodexMetricTile(
-                  label: attrItems[i].label,
-                  value: attrItems[i].value,
-                  icon: attrItems[i].icon,
-                  highlight: attrItems[i].highlight,
-                  compact: true,
-                  labelHidden: true,
-                  onTap: attrItems[i].onTap,
-                ),
-              ),
-            ],
-          ],
-        ),
+        ...attrRows,
         if (vitalItems.isNotEmpty) ...[
           const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+          Wrap(
+            spacing: _kTileGap,
+            runSpacing: 4,
             children: [
-              for (var i = 0; i < vitalItems.length; i++) ...[
-                if (i > 0) const SizedBox(width: _kTileGap),
-                CodexMetricTile(
-                  label: vitalItems[i].label,
-                  value: vitalItems[i].value,
-                  icon: vitalItems[i].icon,
-                  highlight: vitalItems[i].highlight,
-                  compact: true,
-                  labelHidden: true,
-                  onTap: vitalItems[i].onTap,
+              for (final item in vitalItems)
+                SizedBox(
+                  width: _kTileWrappedMinWidth,
+                  child: CodexMetricTile(
+                    label: item.label,
+                    value: item.value,
+                    icon: item.icon,
+                    highlight: item.highlight,
+                    compact: true,
+                    labelHidden: true,
+                    onTap: item.onTap,
+                  ),
                 ),
-              ],
             ],
           ),
         ],
