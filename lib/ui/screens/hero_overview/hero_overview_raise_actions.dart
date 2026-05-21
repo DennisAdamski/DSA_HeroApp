@@ -151,6 +151,65 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
     return hero.statSePool.adjust(key, -usedSe);
   }
 
+  int _eigenschaftStartwert(HeroSheet hero, AttributeCode code) {
+    final originModifiers = parseOriginAttributeModifiers(hero);
+    final effectiveStartAttributes = computeEffectiveStartAttributes(
+      hero.startAttributes,
+      originModifiers,
+    );
+    return readAttributeValue(effectiveStartAttributes, code);
+  }
+
+  int? _grundwertStartwert(HeroSheet hero, String key) {
+    final snapshot = _latestSnapshot;
+    final state = _latestState;
+    if (snapshot == null || state == null) {
+      return null;
+    }
+    final derived = snapshot.derivedStats;
+    final parsed = parseModifierTextsForHero(hero);
+    final namedStatMods = aggregateNamedStatModifiers(hero.statModifiers);
+    final totalMods =
+        hero.persistentMods +
+        namedStatMods +
+        parsed.statMods +
+        state.tempMods +
+        snapshot.inventoryStatMods;
+    int currentMaxValue;
+    int modifier;
+    int bought;
+    switch (key) {
+      case 'lep':
+        currentMaxValue = derived.maxLep;
+        modifier = totalMods.lep + _cappedLevel(hero.level);
+        bought = hero.bought.lep;
+        break;
+      case 'au':
+        currentMaxValue = derived.maxAu;
+        modifier = totalMods.au + hero.level * 2;
+        bought = hero.bought.au;
+        break;
+      case 'asp':
+        currentMaxValue = derived.maxAsp;
+        modifier = totalMods.asp + hero.level * 2;
+        bought = hero.bought.asp;
+        break;
+      case 'kap':
+        currentMaxValue = derived.maxKap;
+        modifier = totalMods.kap;
+        bought = hero.bought.kap;
+        break;
+      case 'mr':
+        currentMaxValue = derived.mr;
+        modifier = totalMods.mr;
+        bought = hero.bought.mr;
+        break;
+      default:
+        return null;
+    }
+    return currentMaxValue - modifier - bought;
+  }
+
   Future<void> _steigeEigenschaft(AttributeCode code) async {
     final hero = _latestHero;
     if (hero == null || !_canUseSteigerungsDialog) {
@@ -159,6 +218,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
 
     final aktuellerWert = readAttributeValue(hero.attributes, code);
     final maxWert = _eigenschaftMaxWert(hero, code);
+    final startWert = _eigenschaftStartwert(hero, code);
     final result = await showSteigerungsDialog(
       context: context,
       bezeichnung: _attributeLabel(code),
@@ -167,6 +227,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
       effektiveKomplexitaet: kEigenschaftKomplexitaet,
       verfuegbareAp: hero.apAvailable,
       seAnzahl: _eigenschaftSeAnzahl(hero, code),
+      startWert: startWert,
     );
     if (result == null) {
       return;
@@ -226,6 +287,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
       effektiveKomplexitaet: learnCost,
       verfuegbareAp: hero.apAvailable,
       seAnzahl: _grundwertSeAnzahl(hero, key),
+      startWert: _grundwertStartwert(hero, key),
     );
     if (result == null) {
       return;
