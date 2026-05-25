@@ -281,6 +281,34 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     );
   }
 
+  Widget _buildGroupJumpBar(List<String> groups) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+      child: Row(
+        children: groups.map((group) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: ActionChip(
+              label: Text(group),
+              onPressed: () {
+                final key = _groupKeys[group];
+                if (key?.currentContext != null) {
+                  Scrollable.ensureVisible(
+                    key!.currentContext!,
+                    duration: const Duration(milliseconds: 350),
+                    curve: Curves.easeInOut,
+                    alignment: 0.0,
+                  );
+                }
+              },
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildSearchHeader({
     required List<TalentDef> allTalents,
     required List<TalentDef> allCatalogTalents,
