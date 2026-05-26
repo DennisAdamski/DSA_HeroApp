@@ -77,6 +77,15 @@ void main() {
     FakeRepository repo,
     RulesCatalog catalog,
   ) async {
+    // ResponsiveAdaptiveTable schaltet bei zu schmalen Viewports auf Karten
+    // um; Combat-Talent-Tabelle braucht ~1080 px im Edit-Modus.
+    tester.view.physicalSize = const Size(1400, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
     WorkspaceTabEditActions? actions;
     await tester.pumpWidget(
       ProviderScope(
