@@ -17,9 +17,16 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 
 void main() {
   var tabOpenCounter = 0;
+
+  Finder sectionTitle(String name, {bool skipOffstage = true}) =>
+      find.descendant(
+        of: find.byType(CodexSectionCard),
+        matching: find.text(name, skipOffstage: skipOffstage),
+      );
 
   HeroSheet buildHero({
     int level = 1,
@@ -259,10 +266,13 @@ void main() {
 
       await openTalentsTab(tester, repo, buildCatalog());
 
-      expect(find.text('Koerper'), findsOneWidget);
-      expect(find.text('Natur'), findsNothing);
-      expect(find.text('Ohne Gruppe', skipOffstage: false), findsOneWidget);
-      expect(find.text('Kampftalent'), findsNothing);
+      expect(sectionTitle('Koerper'), findsOneWidget);
+      expect(sectionTitle('Natur'), findsNothing);
+      expect(
+        sectionTitle('Ohne Gruppe', skipOffstage: false),
+        findsOneWidget,
+      );
+      expect(sectionTitle('Kampftalent'), findsNothing);
       expect(find.text('Athletik'), findsOneWidget);
       expect(find.text('Boote Fahren'), findsNothing);
       expect(find.text('Schatzensuche', skipOffstage: false), findsOneWidget);
@@ -463,14 +473,14 @@ void main() {
 
     await openTalentsTab(tester, repo, customCatalog);
 
-    final koerper = find.text('Koerperliche Talente');
-    final gesellschaft = find.text('Gesellschaftliche Talente');
+    final koerper = sectionTitle('Koerperliche Talente');
+    final gesellschaft = sectionTitle('Gesellschaftliche Talente');
     await tester.scrollUntilVisible(
-      find.text('Natur Talente'),
+      sectionTitle('Natur Talente'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    final natur = find.text('Natur Talente');
+    final natur = sectionTitle('Natur Talente');
     expect(koerper, findsOneWidget);
     expect(gesellschaft, findsOneWidget);
     expect(natur, findsOneWidget);
@@ -483,17 +493,17 @@ void main() {
       lessThan(tester.getTopLeft(natur).dy),
     );
     await tester.scrollUntilVisible(
-      find.text('Wissenstalente'),
+      sectionTitle('Wissenstalente'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Wissenstalente'), findsOneWidget);
+    expect(sectionTitle('Wissenstalente'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('Handwerkliche Talente'),
+      sectionTitle('Handwerkliche Talente'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Handwerkliche Talente'), findsOneWidget);
+    expect(sectionTitle('Handwerkliche Talente'), findsOneWidget);
   });
 
   testWidgets('edit mode allows editing talent values', (tester) async {
