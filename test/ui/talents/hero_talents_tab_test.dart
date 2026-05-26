@@ -115,6 +115,16 @@ void main() {
     FakeRepository repo,
     RulesCatalog catalog,
   ) async {
+    // Tabellen mit 9–10 Spalten brauchen ~1080 px Mindestbreite im Edit-Modus.
+    // Im Standard-Test-Viewport (800 px) wuerde ResponsiveAdaptiveTable
+    // stattdessen die Mobile-Karten rendern und Tabellen-Felder fehlten.
+    tester.view.physicalSize = const Size(1400, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
     WorkspaceTabEditActions? actions;
     await tester.pumpWidget(
       ProviderScope(
