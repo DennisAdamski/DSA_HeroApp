@@ -439,10 +439,17 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       },
                     ),
               ];
-              return ListView.builder(
+              // Bewusst SingleChildScrollView+Column statt ListView.builder:
+              // Die Gruppen-Sprungleiste nutzt GlobalKeys via Scrollable.ensureVisible,
+              // was bei lazy gerenderten ListView-Items fuer Off-Screen-Gruppen
+              // stillschweigend fehlschlaegt (kein currentContext). Die Anzahl der
+              // Top-Level-Children ist klein und eingeklappte Gruppen sind SizedBox.shrink.
+              return SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
-                itemCount: talentTabChildren.length,
-                itemBuilder: (_, index) => talentTabChildren[index],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: talentTabChildren,
+                ),
               );
             },
           );
