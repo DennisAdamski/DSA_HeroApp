@@ -125,6 +125,12 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   Map<String, HeroScriptEntry> _draftSchriften = <String, HeroScriptEntry>{};
   String _draftMuttersprache = '';
 
+  final Map<String, GlobalKey> _groupKeys = {};
+  final Set<String> _collapsedGroups = {};
+
+  GlobalKey _keyForGroup(String group) =>
+      _groupKeys.putIfAbsent(group, GlobalKey.new);
+
   @override
   void initState() {
     super.initState();
@@ -278,6 +284,11 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       allCatalogTalents: catalog.talents,
                     ),
                   if (widget.scope == _TalentTabScope.nonCombat &&
+                      _subTabController?.index == 0 &&
+                      filterQuery.isEmpty &&
+                      groups.length > 1)
+                    _buildGroupJumpBar(groups),
+                  if (widget.scope == _TalentTabScope.nonCombat &&
                       _subTabController!.index == 1)
                     _buildSpecialAbilitiesTab(),
                   if (widget.scope == _TalentTabScope.nonCombat &&
@@ -354,13 +365,33 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                                 )
                                 .toList(growable: false);
                       if (talents.isEmpty) return const <Widget>[];
+                      final isCollapsed = _collapsedGroups.contains(group);
                       return [
                         Padding(
+                          key: _keyForGroup(group),
                           padding: const EdgeInsets.only(bottom: 10),
                           child: CodexSectionCard(
                             title: group,
-                            subtitle: '${talents.length} Talente',
-                            child: widget.scope == _TalentTabScope.combat
+                            subtitle: '${allGroupTalents.length} Talente',
+                            trailing: IconButton(
+                              icon: Icon(
+                                isCollapsed
+                                    ? Icons.expand_more
+                                    : Icons.expand_less,
+                              ),
+                              tooltip:
+                                  isCollapsed ? 'Ausklappen' : 'Einklappen',
+                              onPressed: () => setState(() {
+                                if (isCollapsed) {
+                                  _collapsedGroups.remove(group);
+                                } else {
+                                  _collapsedGroups.add(group);
+                                }
+                              }),
+                            ),
+                            child: isCollapsed
+                                ? const SizedBox.shrink()
+                                : widget.scope == _TalentTabScope.combat
                                 ? _buildCombatTalentsTable(talents: talents)
                                 : _buildTalentsTable(
                                     talents: talents,
@@ -408,10 +439,17 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       },
                     ),
               ];
-              return ListView.builder(
+              // Bewusst SingleChildScrollView+Column statt ListView.builder:
+              // Die Gruppen-Sprungleiste nutzt GlobalKeys via Scrollable.ensureVisible,
+              // was bei lazy gerenderten ListView-Items fuer Off-Screen-Gruppen
+              // stillschweigend fehlschlaegt (kein currentContext). Die Anzahl der
+              // Top-Level-Children ist klein und eingeklappte Gruppen sind SizedBox.shrink.
+              return SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
-                itemCount: talentTabChildren.length,
-                itemBuilder: (_, index) => talentTabChildren[index],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: talentTabChildren,
+                ),
               );
             },
           );
