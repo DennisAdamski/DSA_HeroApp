@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
@@ -87,8 +86,8 @@ class CodexTheme extends ThemeExtension<CodexTheme> {
 
   /// Liefert das aktive Codex-Theme aus dem Build-Kontext.
   static CodexTheme of(BuildContext context) {
-    return Theme.of(context).extension<CodexTheme>()
-        ?? (Theme.of(context).brightness == Brightness.dark
+    return Theme.of(context).extension<CodexTheme>() ??
+        (Theme.of(context).brightness == Brightness.dark
             ? _darkCodexTheme()
             : _lightCodexTheme());
   }

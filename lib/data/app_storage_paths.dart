@@ -8,7 +8,8 @@ import 'app_support_path_loader_stub.dart'
     if (dart.library.io) 'app_support_path_loader_io.dart'
     as app_support_path;
 import 'storage_path_access_stub.dart'
-    if (dart.library.io) 'storage_path_access_io.dart' as storage_access;
+    if (dart.library.io) 'storage_path_access_io.dart'
+    as storage_access;
 
 typedef AppSupportPathLoader = Future<String> Function();
 typedef DirectoryValidator = Future<void> Function(String path);
@@ -62,6 +63,7 @@ class AppStoragePaths {
 
   static const String settingsDirectoryName = 'Einstellungen';
   static const String heroesDirectoryName = 'Helden';
+  static const String accountProfilesDirectoryName = 'accounts';
 
   final AppSupportPathLoader appSupportPathLoader;
   final DirectoryValidator directoryValidator;
@@ -132,22 +134,42 @@ class AppStoragePaths {
   }
 
   /// Bereitet den aktiven Heldenspeicherpfad fuer Repository-Zugriffe vor.
-  Future<String> prepareHeroStoragePath({String? configuredPath}) async {
+  Future<String> prepareHeroStoragePath({
+    String? configuredPath,
+    String? profileId,
+  }) async {
     final location = await describeHeroStorageLocation(
       configuredPath: configuredPath,
     );
+
+    final normalizedProfileId = profileId?.trim();
+    String profilePath(String basePath) {
+      if (normalizedProfileId == null || normalizedProfileId.isEmpty) {
+        return basePath;
+      }
+      return path.join(
+        basePath,
+        accountProfilesDirectoryName,
+        Uri.encodeComponent(normalizedProfileId),
+      );
+    }
 
     if (location.usesCustomPath) {
       if (location.validationError != null) {
         throw HeroStoragePathException(location.validationError!);
       }
-      return location.effectivePath;
+      final targetPath = profilePath(location.effectivePath);
+      if (_supportsLocalDirectories()) {
+        await directoryCreator(targetPath);
+      }
+      return targetPath;
     }
 
+    final targetPath = profilePath(location.effectivePath);
     if (_supportsLocalDirectories()) {
-      await directoryCreator(location.effectivePath);
+      await directoryCreator(targetPath);
     }
-    return location.effectivePath;
+    return targetPath;
   }
 
   /// Gibt zurueck, ob das Oeffnen eines Speicherordners moeglich ist.

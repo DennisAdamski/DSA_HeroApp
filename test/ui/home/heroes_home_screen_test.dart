@@ -274,7 +274,22 @@ void main() {
           .map((tab) => (tab.text ?? '').trim())
           .toList(growable: false);
       expect(tabLabels, expectedWorkspaceTabLabels());
-      expect(find.textContaining('14'), findsWidgets);
+
+      final overviewScrollable = find
+          .descendant(
+            of: find.byKey(const ValueKey<String>('hero-overview-scroll')),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      final muValue = find.byKey(
+        const ValueKey<String>('overview-effective-mu'),
+      );
+      await tester.scrollUntilVisible(
+        muValue,
+        240,
+        scrollable: overviewScrollable,
+      );
+      expect(find.descendant(of: muValue, matching: find.text('14')), findsOne);
       expect(find.textContaining('10/22'), findsWidgets);
     },
   );

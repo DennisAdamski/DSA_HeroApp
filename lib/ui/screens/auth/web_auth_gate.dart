@@ -1,14 +1,14 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 import 'package:dsa_heldenverwaltung/data/firebase_bootstrap.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/auth/sign_in_screen.dart';
 
-/// Erzwingt im Web-Build einen Login, bevor der eigentliche App-Inhalt
-/// angezeigt wird. Auf Desktop/Mobile reicht dieser Gate den Inhalt direkt
-/// durch und uebergibt einen `null`-AuthUser, sodass der Heldenspeicher wie
-/// bisher rein lokal arbeitet.
+/// Beobachtet optional den Firebase-Login und startet die App immer weiter.
+///
+/// Ohne Login bleibt die App im lokalen Offline-Profil. Sobald ein User
+/// angemeldet ist, baut der nachgelagerte App-Start ein accountgebundenes
+/// lokales Profil mit Remote-Sync auf. Der Login selbst wird ueber die
+/// Einstellungen geoeffnet, nicht mehr als Pflicht-Gate.
 class WebAuthGate extends StatefulWidget {
   const WebAuthGate({
     super.key,
@@ -35,7 +35,7 @@ class _WebAuthGateState extends State<WebAuthGate> {
   @override
   void initState() {
     super.initState();
-    if (kIsWeb && widget.firebaseBootstrap.isAvailable) {
+    if (widget.firebaseBootstrap.isAvailable) {
       _authService = widget._authService ?? AuthService();
     } else {
       _authService = null;
@@ -44,18 +44,8 @@ class _WebAuthGateState extends State<WebAuthGate> {
 
   @override
   Widget build(BuildContext context) {
-    if (!kIsWeb) {
-      // Desktop/Mobile: Login optional, App startet wie bisher rein lokal.
-      return widget.builder(context, null);
-    }
     if (!widget.firebaseBootstrap.isAvailable || _authService == null) {
-      return _wrapInApp(
-        _FirebaseUnavailableScreen(
-          message:
-              widget.firebaseBootstrap.userMessage ??
-              'Login ist derzeit nicht verfuegbar.',
-        ),
-      );
+      return widget.builder(context, null);
     }
 
     return StreamBuilder<AuthUser?>(
@@ -71,70 +61,12 @@ class _WebAuthGateState extends State<WebAuthGate> {
         if (snapshot.hasError) {
           debugPrint('[gate] error=${snapshot.error}');
         }
-        if (snapshot.connectionState == ConnectionState.waiting &&
-            !snapshot.hasData) {
-          return _wrapInApp(
-            const Scaffold(body: Center(child: CircularProgressIndicator())),
-          );
-        }
         final user = snapshot.data;
-        if (user == null) {
-          debugPrint('[gate] showing SignInScreen');
-          return _wrapInApp(SignInScreen(authService: _authService));
-        }
-        debugPrint('[gate] showing AppStartupGate for uid=${user.uid}');
-        // AppStartupGate liefert ueber DsaAppShell selbst eine MaterialApp.
+        debugPrint(
+          '[gate] showing AppStartupGate for uid=${user?.uid ?? "null"}',
+        );
         return widget.builder(context, user);
       },
-    );
-  }
-
-  /// Schmale MaterialApp-Huelle fuer Auth-Zustaende (Loader, Login, Fehler).
-  /// AppStartupGate hat ueber DsaAppShell seine eigene MaterialApp und wird
-  /// daher NICHT durch diesen Wrapper gefuehrt.
-  Widget _wrapInApp(Widget child) {
-    return MaterialApp(
-      title: 'DSA Heldenverwaltung',
-      debugShowCheckedModeBanner: false,
-      home: child,
-    );
-  }
-}
-
-class _FirebaseUnavailableScreen extends StatelessWidget {
-  const _FirebaseUnavailableScreen({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.cloud_off_outlined,
-                  size: 64,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Cloud-Anbindung nicht verfuegbar',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(message, textAlign: TextAlign.center),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

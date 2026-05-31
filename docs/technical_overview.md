@@ -75,6 +75,15 @@ Seed-Import aus. Auf Web wird statt eines nativen Ordners ein logischer
 `Browser-Speicher`-Pfad verwendet, damit der Start ohne `path_provider`
 funktioniert.
 
+Seit 2026-06-01 ist der Konto-Login auf allen Plattformen optional. Ohne Login
+nutzt die App weiterhin das lokale Offline-Profil. Bei Login wird ein getrenntes
+lokales Konto-Profil unter `Helden/accounts/<uid>` geoeffnet und durch
+`SyncingHeroRepository` mit Firestore synchronisiert. Offline-Helden werden beim
+Wechsel in ein Konto nicht still importiert, sondern als Konflikte vor die
+Heldenliste gelegt, damit der Nutzer lokal, online oder beide behalten waehlen
+kann. Avatar-Dateien selbst bleiben vorerst lokal; fehlende Dateien fuehren zu
+Platzhaltern.
+
 ```
 main()
   1. Flutter-Binding initialisieren
@@ -83,6 +92,12 @@ main()
   4. ProviderScope mit Repository-Override starten
   5. DsaApp (Material 3, Seed-Color #2A5A73, Font Merriweather)
 ```
+
+Aktueller Konto-Sync-Zusatz: Nach Firebase-Initialisierung beobachtet
+`WebAuthGate` den optionalen Auth-Stream auf allen Plattformen. `AppStartupGate`
+oeffnet ohne User das Offline-Profil und mit User das Konto-Profil, startet
+`SyncingHeroRepository` plus `FirestoreHeroSyncGateway` und uebergibt den
+Controller ueber `syncControllerProvider`.
 
 ### App-weites Tablet-Layout
 

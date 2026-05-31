@@ -3,13 +3,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/data/firebase_bootstrap.dart';
 
 void main() {
-  test('bootstrapFirebase returns available when initializer succeeds', () async {
-    final result = await bootstrapFirebase(initializer: () async {});
+  test(
+    'bootstrapFirebase returns available when initializer succeeds',
+    () async {
+      final result = await bootstrapFirebase(initializer: () async {});
 
-    expect(result.isAvailable, isTrue);
-    expect(result.userMessage, isNull);
-    expect(result.technicalDetails, isNull);
-  });
+      expect(result.isAvailable, isTrue);
+      expect(result.userMessage, isNull);
+      expect(result.technicalDetails, isNull);
+    },
+  );
 
   test('bootstrapFirebase falls back to local-only mode on failure', () async {
     final result = await bootstrapFirebase(
@@ -17,7 +20,8 @@ void main() {
     );
 
     expect(result.isAvailable, isFalse);
-    expect(result.userMessage, contains('Gruppen-Sync'));
+    expect(result.userMessage, contains('Konto-Sync'));
+    expect(result.userMessage, contains('Cloud-Funktionen'));
     expect(result.technicalDetails, contains('boom'));
   });
 }
