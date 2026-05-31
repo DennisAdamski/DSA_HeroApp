@@ -30,7 +30,7 @@ class FirebaseBootstrapResult {
 /// Initialisiert Firebase und fällt bei Fehlern kontrolliert auf Local-Only zurück.
 ///
 /// Die App bleibt auch ohne Firebase benutzbar; lediglich Cloud-Funktionen wie
-/// der Gruppen-Sync werden deaktiviert.
+/// der Konto-Sync werden deaktiviert.
 Future<FirebaseBootstrapResult> bootstrapFirebase({
   Future<void> Function()? initializer,
 }) async {
@@ -41,7 +41,7 @@ Future<FirebaseBootstrapResult> bootstrapFirebase({
   } on Object catch (error, stackTrace) {
     final result = FirebaseBootstrapResult.unavailable(
       userMessage:
-          'Gruppen-Sync ist derzeit nicht verfügbar. Die lokale '
+          'Konto-Sync ist derzeit nicht verfügbar. Die lokale '
           'Heldenverwaltung läuft weiter, Cloud-Funktionen benötigen aber '
           'eine erfolgreiche Firebase-Konfiguration.',
       technicalDetails: error.toString(),

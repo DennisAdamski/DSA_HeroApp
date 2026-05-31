@@ -7,24 +7,28 @@ import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 import 'package:dsa_heldenverwaltung/data/custom_catalog_repository.dart';
 import 'package:dsa_heldenverwaltung/data/firebase_bootstrap.dart';
-import 'package:dsa_heldenverwaltung/data/firestore_hero_repository.dart';
+import 'package:dsa_heldenverwaltung/data/firestore_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_externe_helden_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
+import 'package:dsa_heldenverwaltung/data/hive_sync_metadata_store.dart';
 import 'package:dsa_heldenverwaltung/data/house_rule_pack_repository.dart';
-import 'package:dsa_heldenverwaltung/data/hybrid_hero_repository.dart';
+import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/state/sync_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/app_shell.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/sync_conflict_gate.dart';
 
 /// Initialisiert das Helden-Repository anhand der aktuellen Einstellungen.
 class AppStartupGate extends StatefulWidget {
@@ -60,7 +64,8 @@ class AppStartupGate extends StatefulWidget {
 class _AppStartupGateState extends State<AppStartupGate> {
   Future<_HeroRepositoryBootstrapResult>? _bootstrapFuture;
   HiveHeroRepository? _activeHive;
-  HybridHeroRepository? _activeHybrid;
+  SyncingHeroRepository? _activeSyncingRepository;
+  HiveSyncMetadataStore? _activeMetadataStore;
   HiveExterneHeldenRepository? _activeExterneHeldenRepository;
   late AppSettings _settings;
   StreamSubscription<AppSettings>? _settingsSubscription;
@@ -97,9 +102,13 @@ class _AppStartupGateState extends State<AppStartupGate> {
   @override
   void dispose() {
     unawaited(_settingsSubscription?.cancel());
-    final hybrid = _activeHybrid;
-    if (hybrid != null) {
-      unawaited(hybrid.close());
+    final syncingRepository = _activeSyncingRepository;
+    if (syncingRepository != null) {
+      unawaited(syncingRepository.close());
+    }
+    final metadataStore = _activeMetadataStore;
+    if (metadataStore != null) {
+      unawaited(metadataStore.close());
     }
     final hive = _activeHive;
     if (hive != null) {
@@ -135,11 +144,16 @@ class _AppStartupGateState extends State<AppStartupGate> {
     try {
       final int generation = ++_loadGeneration;
 
-      // Vorheriges Hybrid-Repo (Subscription) zuerst schliessen, dann Hive.
-      final previousHybrid = _activeHybrid;
-      _activeHybrid = null;
-      if (previousHybrid != null) {
-        await previousHybrid.close();
+      // Vorheriges Sync-Repo (Subscriptions) zuerst schliessen, dann Hive.
+      final previousSyncingRepository = _activeSyncingRepository;
+      _activeSyncingRepository = null;
+      if (previousSyncingRepository != null) {
+        await previousSyncingRepository.close();
+      }
+      final previousMetadataStore = _activeMetadataStore;
+      _activeMetadataStore = null;
+      if (previousMetadataStore != null) {
+        await previousMetadataStore.close();
       }
       final previousHive = _activeHive;
       _activeHive = null;
@@ -147,16 +161,23 @@ class _AppStartupGateState extends State<AppStartupGate> {
         await previousHive.close();
       }
 
+      final offlineHeroesForReview = authUid == null
+          ? const <HeroSheet>[]
+          : await _loadOfflineHeroesForReview(configuredPath);
+
       debugPrint('[startup] prepareHeroStoragePath…');
       final heroStoragePath = await widget.storagePaths.prepareHeroStoragePath(
         configuredPath: configuredPath,
+        profileId: authUid,
       );
       debugPrint('[startup] hive.create path=$heroStoragePath');
       final hive = await HiveHeroRepository.create(
         storagePath: heroStoragePath,
       );
-      debugPrint('[startup] importFromAssets…');
-      await const StartupHeroImporter().importFromAssets(hive);
+      if (authUid == null) {
+        debugPrint('[startup] importFromAssets…');
+        await const StartupHeroImporter().importFromAssets(hive);
+      }
 
       debugPrint('[startup] externe helden…');
       // Externe-Helden-Repository im Heldenspeicher oeffnen.
@@ -164,17 +185,28 @@ class _AppStartupGateState extends State<AppStartupGate> {
         storagePath: heroStoragePath,
       );
 
-      // Bei Login + verfuegbarem Firebase: Hybrid-Repo mit Firestore-Sync.
-      HybridHeroRepository? hybrid;
+      // Bei Login + verfuegbarem Firebase: Konto-Repo mit Remote-Sync.
+      SyncingHeroRepository? syncingRepository;
+      HiveSyncMetadataStore? metadataStore;
       HeroRepository heroRepository = hive;
       if (authUid != null && widget.firebaseBootstrap.isAvailable) {
-        debugPrint('[startup] hybrid.create for uid=$authUid');
-        final firestoreRepo = FirestoreHeroRepository(userId: authUid);
-        hybrid = await HybridHeroRepository.create(
+        debugPrint('[startup] syncing.create for uid=$authUid');
+        final firestoreRepo = FirestoreHeroSyncGateway(userId: authUid);
+        metadataStore = await HiveSyncMetadataStore.create(
+          storagePath: heroStoragePath,
+        );
+        syncingRepository = SyncingHeroRepository(
           local: hive,
           remote: firestoreRepo,
+          metadataStore: metadataStore,
+          accountId: authUid,
+          accountEmail: widget.authUser?.email,
         );
-        heroRepository = hybrid;
+        await syncingRepository.syncNow();
+        await syncingRepository.queueOfflineProfileConflicts(
+          offlineHeroes: offlineHeroesForReview,
+        );
+        heroRepository = syncingRepository;
       }
 
       // Settings: User-spezifischen Firestore-Sync fuer Geheimnisse
@@ -188,8 +220,11 @@ class _AppStartupGateState extends State<AppStartupGate> {
       }
 
       if (generation != _loadGeneration) {
-        if (hybrid != null) {
-          await hybrid.close();
+        if (syncingRepository != null) {
+          await syncingRepository.close();
+        }
+        if (metadataStore != null) {
+          await metadataStore.close();
         }
         await hive.close();
         await externeHeldenRepository.close();
@@ -203,17 +238,35 @@ class _AppStartupGateState extends State<AppStartupGate> {
       }
 
       _activeHive = hive;
-      _activeHybrid = hybrid;
+      _activeSyncingRepository = syncingRepository;
+      _activeMetadataStore = metadataStore;
       _activeExterneHeldenRepository = externeHeldenRepository;
       debugPrint('[startup] done');
       return _HeroRepositoryBootstrapResult(
         heroRepository: heroRepository,
+        syncController: syncingRepository,
         externeHeldenRepository: externeHeldenRepository,
         heroStoragePath: heroStoragePath,
       );
     } on Object catch (error, stackTrace) {
       debugPrint('[startup] FAILED: $error\n$stackTrace');
       rethrow;
+    }
+  }
+
+  Future<List<HeroSheet>> _loadOfflineHeroesForReview(
+    String? configuredPath,
+  ) async {
+    final offlinePath = await widget.storagePaths.prepareHeroStoragePath(
+      configuredPath: configuredPath,
+    );
+    final offlineRepo = await HiveHeroRepository.create(
+      storagePath: offlinePath,
+    );
+    try {
+      return offlineRepo.listHeroes();
+    } finally {
+      await offlineRepo.close();
     }
   }
 
@@ -245,6 +298,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
         final result = snapshot.requireData;
         return _buildScope(
           repository: result.heroRepository,
+          syncController: result.syncController,
           externeHeldenRepository: result.externeHeldenRepository,
           customCatalogRepository: CustomCatalogRepository(
             heroStoragePath: result.heroStoragePath,
@@ -252,7 +306,10 @@ class _AppStartupGateState extends State<AppStartupGate> {
           houseRulePackRepository: HouseRulePackRepository(
             heroStoragePath: result.heroStoragePath,
           ),
-          home: const HeroesHomeScreen(),
+          home: SyncConflictGate(
+            syncController: result.syncController,
+            child: const HeroesHomeScreen(),
+          ),
         );
       },
     );
@@ -261,6 +318,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
   Widget _buildScope({
     required Widget home,
     HeroRepository? repository,
+    AppSyncController? syncController,
     HiveExterneHeldenRepository? externeHeldenRepository,
     CustomCatalogRepository? customCatalogRepository,
     HouseRulePackRepository? houseRulePackRepository,
@@ -287,6 +345,9 @@ class _AppStartupGateState extends State<AppStartupGate> {
     if (repository != null) {
       overrides.add(heroRepositoryProvider.overrideWithValue(repository));
     }
+    if (syncController != null) {
+      overrides.add(syncControllerProvider.overrideWithValue(syncController));
+    }
     if (externeHeldenRepository != null) {
       overrides.add(
         externeHeldenRepositoryProvider.overrideWithValue(
@@ -306,11 +367,13 @@ class _AppStartupGateState extends State<AppStartupGate> {
 class _HeroRepositoryBootstrapResult {
   const _HeroRepositoryBootstrapResult({
     required this.heroRepository,
+    required this.syncController,
     required this.externeHeldenRepository,
     required this.heroStoragePath,
   });
 
   final HeroRepository heroRepository;
+  final AppSyncController? syncController;
   final HiveExterneHeldenRepository externeHeldenRepository;
   final String heroStoragePath;
 }

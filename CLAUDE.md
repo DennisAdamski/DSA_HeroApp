@@ -30,6 +30,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Die adaptive Settings-Navigation wird von `lib/ui/screens/settings_screen.dart`
   orchestriert; wiederverwendbare Teilseiten liegen unter
   `lib/ui/screens/settings/`.
+- `Einstellungen > Konto & Sync` steuert optionalen Firebase-Login,
+  manuellen Konto-Sync und Konfliktaufloesung. Ohne Login nutzt die App das
+  lokale Offline-Profil; mit Login nutzt sie ein getrenntes Profil unter
+  `Helden/accounts/<uid>`.
+- Konto-Sync fuer Helden laeuft ueber `SyncingHeroRepository`,
+  `FirestoreHeroSyncGateway`, `HiveSyncMetadataStore` und die Modelle in
+  `lib/domain/sync_models.dart`. Konflikte duerfen nicht still ueberschrieben
+  werden; die UI muss lokal, online oder beide behalten anbieten.
 - Der Settings-Bereich `Rechtliches` enthaelt den inoffiziellen Fanprojekt-,
   Marken- und Rechtehinweis fuer DSA und Ulisses Spiele.
 - Reisebericht-Daten bleiben separat unter `assets/catalogs/reiseberichte/house_rules_v1/`.
