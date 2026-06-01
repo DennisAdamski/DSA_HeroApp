@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,11 +16,15 @@ import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_sync_metadata_store.dart';
 import 'package:dsa_heldenverwaltung/data/house_rule_pack_repository.dart';
+import 'package:dsa_heldenverwaltung/data/rest_firestore_hero_sync_gateway.dart';
+import 'package:dsa_heldenverwaltung/data/rest_firestore_secrets_repository.dart';
+import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/firebase_options.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
@@ -137,7 +143,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
   }
 
   String? get _remoteSyncProfileUid {
-    if (!widget.firebaseBootstrap.isFirestoreAvailable) {
+    if (!widget.firebaseBootstrap.isAccountSyncAvailable) {
       return null;
     }
     return widget.authUser?.uid;
@@ -192,19 +198,19 @@ class _AppStartupGateState extends State<AppStartupGate> {
         storagePath: heroStoragePath,
       );
 
-      // Bei Login + verfuegbarem Firebase: Konto-Repo mit Remote-Sync.
+      // Bei Login + verfügbarem Firebase: Konto-Repo mit Remote-Sync.
       SyncingHeroRepository? syncingRepository;
       HiveSyncMetadataStore? metadataStore;
       HeroRepository heroRepository = hive;
-      if (authUid != null && widget.firebaseBootstrap.isFirestoreAvailable) {
+      if (authUid != null && widget.firebaseBootstrap.isAccountSyncAvailable) {
         debugPrint('[startup] syncing.create for uid=$authUid');
-        final firestoreRepo = FirestoreHeroSyncGateway(userId: authUid);
+        final remoteRepo = _createRemoteHeroGateway(authUid);
         metadataStore = await HiveSyncMetadataStore.create(
           storagePath: heroStoragePath,
         );
         syncingRepository = SyncingHeroRepository(
           local: hive,
-          remote: firestoreRepo,
+          remote: remoteRepo,
           metadataStore: metadataStore,
           accountId: authUid,
           accountEmail: widget.authUser?.email,
@@ -216,11 +222,14 @@ class _AppStartupGateState extends State<AppStartupGate> {
         heroRepository = syncingRepository;
       }
 
-      // Settings: User-spezifischen Firestore-Sync fuer Geheimnisse
+      // Settings: User-spezifischen Firestore-Sync für Geheimnisse
       // (Katalog-Passwort, Bildgenerierungs-API-Key) aktivieren/deaktivieren.
-      if (authUid != null && widget.firebaseBootstrap.isFirestoreAvailable) {
+      if (authUid != null && widget.firebaseBootstrap.isAccountSyncAvailable) {
         debugPrint('[startup] settings.attachUser uid=$authUid');
-        await widget.settingsRepository.attachUser(authUid);
+        await widget.settingsRepository.attachUser(
+          authUid,
+          remote: _createRemoteSecretsRepository(authUid),
+        );
       } else if (widget.settingsRepository.isAttached) {
         debugPrint('[startup] settings.detachUser');
         await widget.settingsRepository.detachUser();
@@ -235,7 +244,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
         }
         await hive.close();
         await externeHeldenRepository.close();
-        throw StateError('Veralteter Initialisierungslauf fuer Heldendaten.');
+        throw StateError('Veralteter Initialisierungslauf für Heldendaten.');
       }
 
       // Altes externes Repo schliessen, falls vorhanden.
@@ -275,6 +284,49 @@ class _AppStartupGateState extends State<AppStartupGate> {
     } finally {
       await offlineRepo.close();
     }
+  }
+
+  RemoteHeroSyncGateway _createRemoteHeroGateway(String authUid) {
+    if (_usesRestFirestoreTransport) {
+      return RestFirestoreHeroSyncGateway(
+        userId: authUid,
+        projectId: _firebaseProjectId,
+        idTokenProvider: _currentFirebaseIdToken,
+      );
+    }
+    return FirestoreHeroSyncGateway(userId: authUid);
+  }
+
+  RestFirestoreSecretsRepository? _createRemoteSecretsRepository(
+    String authUid,
+  ) {
+    if (!_usesRestFirestoreTransport) {
+      return null;
+    }
+    return RestFirestoreSecretsRepository(
+      userId: authUid,
+      projectId: _firebaseProjectId,
+      idTokenProvider: _currentFirebaseIdToken,
+    );
+  }
+
+  Future<String?> _currentFirebaseIdToken() {
+    final user = firebase_auth.FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return Future<String?>.value();
+    }
+    return user.getIdToken();
+  }
+
+  bool get _usesRestFirestoreTransport {
+    if (kIsWeb) {
+      return false;
+    }
+    return defaultTargetPlatform == TargetPlatform.windows;
+  }
+
+  String get _firebaseProjectId {
+    return DefaultFirebaseOptions.currentPlatform.projectId;
   }
 
   @override

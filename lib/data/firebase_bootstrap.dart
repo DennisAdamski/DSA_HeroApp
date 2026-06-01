@@ -8,8 +8,10 @@ class FirebaseBootstrapResult {
   /// Kennzeichnet eine erfolgreiche Firebase-Initialisierung.
   const FirebaseBootstrapResult.available({
     this.isFirestoreAvailable = true,
+    bool? isAccountSyncAvailable,
     this.firestoreUserMessage,
   }) : isAvailable = true,
+       isAccountSyncAvailable = isAccountSyncAvailable ?? isFirestoreAvailable,
        userMessage = null,
        technicalDetails = null;
 
@@ -19,6 +21,7 @@ class FirebaseBootstrapResult {
     this.technicalDetails,
   }) : isAvailable = false,
        isFirestoreAvailable = false,
+       isAccountSyncAvailable = false,
        firestoreUserMessage = null;
 
   /// Gibt an, ob Firebase Auth grundsätzlich initialisiert wurde.
@@ -26,6 +29,9 @@ class FirebaseBootstrapResult {
 
   /// Gibt an, ob Firestore-basierte Cloud-Funktionen sicher nutzbar sind.
   final bool isFirestoreAvailable;
+
+  /// Gibt an, ob der private Konto-Sync sicher nutzbar ist.
+  final bool isAccountSyncAvailable;
 
   /// Benutzerfreundliche Erklärung für deaktivierte Cloud-Funktionen.
   final String? userMessage;
@@ -47,12 +53,13 @@ Future<FirebaseBootstrapResult> bootstrapFirebase({
   final runInitializer = initializer ?? _initializeFirebase;
   try {
     await runInitializer();
-    if (_isFirestoreDisabledForCurrentPlatform()) {
+    if (_usesRestAccountSyncForCurrentPlatform()) {
       return const FirebaseBootstrapResult.available(
         isFirestoreAvailable: false,
+        isAccountSyncAvailable: true,
         firestoreUserMessage:
-            'Cloud-Sync ist auf dieser Windows-Version derzeit deaktiviert. '
-            'Firebase-Login bleibt verfügbar, die App nutzt lokal gespeicherte Daten.',
+            'Konto-Sync nutzt auf Windows den REST-Transport. '
+            'Andere Firestore-Cloudfunktionen sind dort derzeit deaktiviert.',
       );
     }
     return const FirebaseBootstrapResult.available();
@@ -87,7 +94,7 @@ Future<void> _initializeFirebase() {
   );
 }
 
-bool _isFirestoreDisabledForCurrentPlatform() {
+bool _usesRestAccountSyncForCurrentPlatform() {
   if (kIsWeb) {
     return false;
   }

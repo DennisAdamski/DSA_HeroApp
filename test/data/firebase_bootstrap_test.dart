@@ -16,6 +16,7 @@ void main() {
 
       expect(result.isAvailable, isTrue);
       expect(result.isFirestoreAvailable, isTrue);
+      expect(result.isAccountSyncAvailable, isTrue);
       expect(result.userMessage, isNull);
       expect(result.firestoreUserMessage, isNull);
       expect(result.technicalDetails, isNull);
@@ -23,7 +24,7 @@ void main() {
   );
 
   test(
-    'bootstrapFirebase disables Firestore on Windows without disabling Auth',
+    'bootstrapFirebase separates Windows account sync from native Firestore',
     () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.windows;
       addTearDown(() {
@@ -34,7 +35,8 @@ void main() {
 
       expect(result.isAvailable, isTrue);
       expect(result.isFirestoreAvailable, isFalse);
-      expect(result.firestoreUserMessage, contains('Windows'));
+      expect(result.isAccountSyncAvailable, isTrue);
+      expect(result.firestoreUserMessage, contains('Konto-Sync'));
     },
   );
 
@@ -45,6 +47,7 @@ void main() {
 
     expect(result.isAvailable, isFalse);
     expect(result.isFirestoreAvailable, isFalse);
+    expect(result.isAccountSyncAvailable, isFalse);
     expect(result.userMessage, contains('Konto-Sync'));
     expect(result.userMessage, contains('Cloud-Funktionen'));
     expect(result.technicalDetails, contains('boom'));

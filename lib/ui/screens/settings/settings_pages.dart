@@ -204,7 +204,7 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
                 icon: Icons.report_problem_outlined,
                 label: 'Offene Konflikte: ${syncStatus.openConflicts.length}',
               ),
-              if (!firebase.isFirestoreAvailable) ...[
+              if (!firebase.isAccountSyncAvailable) ...[
                 const SizedBox(height: 8),
                 Text(
                   firebase.firestoreUserMessage ??

@@ -84,12 +84,14 @@ Heldenliste gelegt, damit der Nutzer lokal, online oder beide behalten waehlen
 kann. Avatar-Dateien selbst bleiben vorerst lokal; fehlende Dateien fuehren zu
 Platzhaltern.
 
-Windows-Sonderfall: Firebase Auth bleibt dort verfuegbar, aber
-Firestore-basierte Cloud-Funktionen sind aktuell per
-`FirebaseBootstrapResult.isFirestoreAvailable == false` deaktiviert. Ein
-persistenter Login darf den App-Start nicht in den nativen Firestore-Pfad
-zwingen; `AppStartupGate` oeffnet auf Windows daher weiterhin das Offline-Profil
-und Settings/Gruppe zeigen den Cloud-Sync als nicht verfuegbar.
+Windows-Sonderfall: Firebase Auth bleibt dort verfügbar, der Konto-Sync nutzt
+aber bewusst den Firestore-REST-Transport (`RestFirestoreHeroSyncGateway` und
+`RestFirestoreSecretsRepository`) statt des nativen `cloud_firestore`-Pluginpfads.
+Damit bleibt der persistente Login startfähig und der Sync verwendet weiterhin
+Firebase-ID-Token plus Firestore Security Rules. Deshalb trennt
+`FirebaseBootstrapResult` `isAccountSyncAvailable` von `isFirestoreAvailable`:
+Der private Konto-Sync ist auf Windows aktiv, andere native Firestore-Funktionen
+wie Gruppen-Cloudaktionen bleiben dort deaktiviert.
 
 ```
 main()
@@ -103,8 +105,9 @@ main()
 Aktueller Konto-Sync-Zusatz: Nach Firebase-Initialisierung beobachtet
 `WebAuthGate` den optionalen Auth-Stream auf allen Plattformen. `AppStartupGate`
 oeffnet ohne User das Offline-Profil und mit User das Konto-Profil, startet
-`SyncingHeroRepository` plus `FirestoreHeroSyncGateway` und uebergibt den
-Controller ueber `syncControllerProvider`.
+`SyncingHeroRepository` plus plattformspezifisches Remote-Gateway
+(`FirestoreHeroSyncGateway` oder auf Windows `RestFirestoreHeroSyncGateway`)
+und übergibt den Controller über `syncControllerProvider`.
 
 ### App-weites Tablet-Layout
 
