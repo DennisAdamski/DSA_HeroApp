@@ -74,6 +74,7 @@ class HeroSheet {
     this.statModifiers = const <String, List<HeroTalentModifier>>{},
     this.attributeModifiers = const <String, List<HeroTalentModifier>>{},
     this.unknownModifierFragments = const <String>[],
+    this.lastModified,
     this.isEpisch = false,
     this.epicStartAp = 0,
     this.epicAttributeMaxBonus = const Attributes.zero(),
@@ -127,6 +128,10 @@ class HeroSheet {
   final List<HeroNoteEntry> notes;
   final List<HeroConnectionEntry> connections;
   final List<HeroAdventureEntry> adventures;
+
+  /// Zeitpunkt der letzten lokalen Speicherung (UTC).
+  final DateTime? lastModified;
+
   final HeroAttributeSePool attributeSePool;
   final HeroStatSePool statSePool;
 
@@ -210,6 +215,7 @@ class HeroSheet {
     List<HeroNoteEntry>? notes,
     List<HeroConnectionEntry>? connections,
     List<HeroAdventureEntry>? adventures,
+    Object? lastModified = _copySentinel,
     HeroAttributeSePool? attributeSePool,
     HeroStatSePool? statSePool,
     List<HeroCompanion>? companions,
@@ -268,6 +274,9 @@ class HeroSheet {
       notes: notes ?? this.notes,
       connections: connections ?? this.connections,
       adventures: adventures ?? this.adventures,
+      lastModified: identical(lastModified, _copySentinel)
+          ? this.lastModified
+          : lastModified as DateTime?,
       attributeSePool: attributeSePool ?? this.attributeSePool,
       statSePool: statSePool ?? this.statSePool,
       companions: companions ?? this.companions,
@@ -344,6 +353,8 @@ class HeroSheet {
       'adventures': adventures
           .map((entry) => entry.toJson())
           .toList(growable: false),
+      if (lastModified != null)
+        'lastModified': lastModified!.toUtc().toIso8601String(),
       'attributeSePool': attributeSePool.toJson(),
       'statSePool': statSePool.toJson(),
       'companions': companions
@@ -542,6 +553,8 @@ class HeroSheet {
                 HeroAdventureEntry.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
+      lastModified:
+          DateTime.tryParse(json['lastModified'] as String? ?? ''),
       attributeSePool: HeroAttributeSePool.fromJson(
         (json['attributeSePool'] as Map?)?.cast<String, dynamic>() ??
             const <String, dynamic>{},
