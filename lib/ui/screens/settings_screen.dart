@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,11 +5,16 @@ import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_tools.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
 import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/state/sync_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/auth/sign_in_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_management_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_unlock_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/house_rule_pack_management_screen.dart';
@@ -29,13 +33,12 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   _SettingsDestination _selectedDestination = _SettingsDestination.appearance;
-  late final AuthService _authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
     final layout = appLayoutOf(context);
     final showSplitView = layout.hasPersistentDetailPane;
-    final currentUser = kIsWeb ? _authService.currentUser : null;
+    final currentUser = ref.watch(authUserProvider).valueOrNull;
     final showLogout = currentUser != null;
 
     return Scaffold(
@@ -85,9 +88,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
     if (confirmed != true) return;
-    await _authService.signOut();
-    // Der WebAuthGate beobachtet authStateChanges() und zeigt den
-    // SignInScreen automatisch wieder an.
+    await ref.read(authServiceProvider)?.signOut();
   }
 
   void _selectDestination(_SettingsDestination destination) {

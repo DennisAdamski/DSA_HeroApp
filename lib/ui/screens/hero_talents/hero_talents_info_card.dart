@@ -6,6 +6,10 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     required int combatBaseBe,
     required int activeTalentBe,
   }) {
+    final compact = MediaQuery.sizeOf(context).width < 600;
+    final VoidCallback? startEdit = _editController.isEditing
+        ? null
+        : _startEdit;
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
       child: Align(
@@ -14,16 +18,20 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            FilledButton.icon(
-              key: const ValueKey<String>('talents-local-start-edit'),
-              onPressed: _editController.isEditing
-                  ? null
-                  : () {
-                      _startEdit();
-                    },
-              icon: const Icon(Icons.edit),
-              label: const Text('Bearbeiten'),
-            ),
+            if (compact)
+              IconButton(
+                key: const ValueKey<String>('talents-local-start-edit'),
+                onPressed: startEdit,
+                icon: const Icon(Icons.edit),
+                tooltip: 'Bearbeiten',
+              )
+            else
+              FilledButton.icon(
+                key: const ValueKey<String>('talents-local-start-edit'),
+                onPressed: startEdit,
+                icon: const Icon(Icons.edit),
+                label: const Text('Bearbeiten'),
+              ),
             const SizedBox(width: 4),
             IconButton(
               key: const ValueKey<String>('talents-be-screen-open'),
@@ -282,27 +290,40 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
   }
 
   Widget _buildGroupJumpBar(List<String> groups) {
+    final compact = MediaQuery.sizeOf(context).width < 600;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
       child: Row(
         children: groups.map((group) {
+          final iconData = talentGroupIcons[group] ?? Icons.folder;
+          void onPressed() {
+            final key = _groupKeys[group];
+            if (key?.currentContext != null) {
+              Scrollable.ensureVisible(
+                key!.currentContext!,
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeInOut,
+                alignment: 0.0,
+              );
+            }
+          }
+
+          final chip = compact
+              ? ActionChip(
+                  label: Icon(iconData, size: 18),
+                  tooltip: group,
+                  onPressed: onPressed,
+                )
+              : ActionChip(
+                  avatar: Icon(iconData, size: 18),
+                  label: Text(group),
+                  tooltip: group,
+                  onPressed: onPressed,
+                );
           return Padding(
             padding: const EdgeInsets.only(right: 6),
-            child: ActionChip(
-              label: Text(group),
-              onPressed: () {
-                final key = _groupKeys[group];
-                if (key?.currentContext != null) {
-                  Scrollable.ensureVisible(
-                    key!.currentContext!,
-                    duration: const Duration(milliseconds: 350),
-                    curve: Curves.easeInOut,
-                    alignment: 0.0,
-                  );
-                }
-              },
-            ),
+            child: chip,
           );
         }).toList(),
       ),
@@ -468,3 +489,12 @@ class _TalentBeConfigDialogState extends ConsumerState<TalentBeConfigDialog> {
     );
   }
 }
+
+const Map<String, IconData> talentGroupIcons = {
+  'Gabe': Icons.auto_awesome,
+  'Körperliche Talente': Icons.directions_run,
+  'Gesellschaftliche Talente': Icons.groups,
+  'Natur Talente': Icons.park,
+  'Wissenstalente': Icons.menu_book,
+  'Handwerkliche Talente': Icons.handyman,
+};

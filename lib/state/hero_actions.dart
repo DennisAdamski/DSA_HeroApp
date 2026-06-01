@@ -925,11 +925,12 @@ class HeroActions {
   /// Stellt sicher, dass optionale Cloud-Funktionen aktuell verfügbar sind.
   void _requireGruppenSyncAvailable() {
     final firebaseBootstrap = _ref.read(firebaseBootstrapProvider);
-    if (firebaseBootstrap.isAvailable) {
+    if (firebaseBootstrap.isFirestoreAvailable) {
       return;
     }
     throw StateError(
-      firebaseBootstrap.userMessage ??
+      firebaseBootstrap.firestoreUserMessage ??
+          firebaseBootstrap.userMessage ??
           'Gruppen-Sync ist derzeit nicht verfügbar.',
     );
   }

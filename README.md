@@ -65,6 +65,17 @@ Technischer Stack:
   `Application Support` bzw. auf Windows in `AppData`
 - Heldendaten nutzen standardmaessig einen eigenen Unterordner und koennen auf
   Desktop-Plattformen auf einen frei gewaehlten Ordner umgestellt werden
+- Ein optionaler Konto-Login ist auf allen Plattformen verfuegbar. Ohne Login
+  arbeitet die App weiter im lokalen Offline-Profil; mit Login nutzt sie ein
+  getrenntes lokales Konto-Profil unter `Helden/accounts/<uid>` und spiegelt
+  Helden sowie Laufzeitzustaende nach Firestore.
+- Der Settings-Bereich `Konto & Sync` zeigt Loginstatus, letzten erfolgreichen
+  Sync, offene Konflikte und einen manuellen Sync-Button. Bei Unterschieden
+  zwischen Offline- und Konto-Daten entscheidet der Nutzer zwischen lokal,
+  online oder beide behalten.
+- Auf Windows nutzt der Konto-Sync bewusst die Firestore REST API statt des
+  nativen `cloud_firestore`-Pluginpfads. Firebase Auth liefert dafür das
+  ID-Token; Firestore Security Rules schützen die gleichen User-Dokumente.
 - Auf Web-Zielplattformen liegen Einstellungen und Heldendaten stattdessen im
   browserlokalen Speicher; die UI zeigt dafuer den logischen Pfad
   `Browser-Speicher/...` an
@@ -147,6 +158,9 @@ Technischer Stack:
 - Gruppen-Snapshots und Firestore-Sync uebertragen Avatarbilder nur als
   kompakte Vorschaubilder; wenn kein kleines Thumbnail erzeugt werden kann,
   erscheint auf anderen Geraeten stattdessen der Platzhalter
+- Konto-Sync fuer Helden speichert Avatar-Dateien selbst noch nicht remote.
+  Bildreferenzen bleiben erhalten; fehlende lokale Dateien werden in der UI
+  wie bisher als Platzhalter behandelt.
 - Konfliktbehandlung beim Import vorhandener Helden
 - Katalogdaten aus `assets/catalogs/house_rules_v1/`
 - `vorteile.json` und `nachteile.json` katalogisieren die WdH-Uebersichten
