@@ -3,8 +3,11 @@ import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-/// Maximale Anzahl KI-generierter Bilder pro Nutzer im Cloud-Speicher.
-const int maxKiBilderOnline = 2;
+/// Maximale Anzahl KI-generierter Bilder pro Held im Cloud-Speicher.
+const int maxKiBilderProHeld = 2;
+
+/// Maximale Anzahl von Helden pro Nutzer.
+const int maxHeldenProNutzer = 5;
 
 /// Verwaltet KI-generierte Avatar-Bilder in Firebase Storage.
 ///

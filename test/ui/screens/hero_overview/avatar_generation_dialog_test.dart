@@ -45,7 +45,7 @@ void main() {
       ProviderScope(
         overrides: [
           avatarApiClientProvider.overrideWithValue(null),
-          kiImageCountProvider.overrideWithValue(0),
+          kiImageCountProvider.overrideWith((ref, heroId) => 0),
         ],
         child: MaterialApp(
           home: Scaffold(

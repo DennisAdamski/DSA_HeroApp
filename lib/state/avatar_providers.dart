@@ -44,17 +44,19 @@ final cloudAvatarStorageProvider = Provider<CloudAvatarStorage>((ref) {
   return const CloudAvatarStorage();
 });
 
-/// Anzahl der KI-generierten Bilder des aktuellen Nutzers (ueber alle Helden).
-final kiImageCountProvider = Provider<int>((ref) {
+/// Anzahl der KI-generierten Bilder eines bestimmten Helden.
+final kiImageCountProvider = Provider.family<int, String>((ref, heroId) {
+  final hero = ref.watch(heroByIdProvider(heroId));
+  if (hero == null) return 0;
+  return hero.appearance.avatarGallery
+      .where((e) => e.quelle == 'ki')
+      .length;
+});
+
+/// Aktuelle Anzahl der Helden des Nutzers.
+final heroCountProvider = Provider<int>((ref) {
   final snapshot = ref.watch(heroIndexProvider).valueOrNull;
-  if (snapshot == null) return 0;
-  int count = 0;
-  for (final hero in snapshot.byId.values) {
-    for (final entry in hero.appearance.avatarGallery) {
-      if (entry.quelle == 'ki') count++;
-    }
-  }
-  return count;
+  return snapshot?.sortedIds.length ?? 0;
 });
 
 /// Ob der aktive Provider Referenzbild-basierte Generierung unterstuetzt.
