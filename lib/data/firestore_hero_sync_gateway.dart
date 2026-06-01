@@ -108,7 +108,7 @@ class FirestoreHeroSyncGateway
     required String? previousRevision,
   }) async {
     final payload = hero.toJson();
-    final contentHash = stableContentHash(payload);
+    final contentHash = heroContentHash(hero);
     final revision = _newRevision();
     await _heroesCollection.doc(hero.id).set(<String, dynamic>{
       'deleted': false,
@@ -199,7 +199,7 @@ class FirestoreHeroSyncGateway
     }
     final hero = HeroSheet.fromJson(_castMap(payload));
     final contentHash =
-        data['contentHash'] as String? ?? stableContentHash(hero.toJson());
+        data['contentHash'] as String? ?? heroContentHash(hero);
     return RemoteHeroRecord(
       id: doc.id,
       hero: hero,

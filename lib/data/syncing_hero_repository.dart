@@ -178,6 +178,12 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
             : 'Konto-Version: ${accountHero.name}',
         detectedAt: DateTime.now().toUtc(),
         supportsKeepBoth: true,
+        localApTotal: offlineHero.apTotal,
+        localApAvailable: offlineHero.apAvailable,
+        localUpdatedAt: offlineHero.lastModified,
+        remoteApTotal: accountHero?.apTotal,
+        remoteApAvailable: accountHero?.apAvailable,
+        remoteUpdatedAt: accountHero?.lastModified,
       );
       _offlineHeroConflicts[conflictId] = _OfflineHeroConflictDetails(
         conflict: conflict,
@@ -198,7 +204,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
         final record = records.firstWhere((entry) => entry.id == hero.id);
         final metadata = await metadataStore.load(_heroKey(hero.id));
         if (record.revision == metadata?.remoteRevision) {
-          final localHash = stableContentHash(hero.toJson());
+          final localHash = heroContentHash(hero);
           if (localHash != metadata?.localHash) {
             await _pushHeroIfSafe(hero);
           }
@@ -261,7 +267,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       return;
     }
 
-    final localHash = stableContentHash(localHero.toJson());
+    final localHash = heroContentHash(localHero);
     if (localHash == remoteHash) {
       await _saveMetadata(
         key: key,
@@ -287,7 +293,11 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       return;
     }
 
-    _openHeroConflict(localHero: localHero, remoteRecord: record);
+    _openHeroConflict(
+      localHero: localHero,
+      remoteRecord: record,
+      localTimestamp: localHero.lastModified ?? metadata?.updatedAt,
+    );
   }
 
   Future<void> _applyRemoteHeroDelete(
@@ -306,7 +316,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       return;
     }
 
-    final localHash = stableContentHash(localHero.toJson());
+    final localHash = heroContentHash(localHero);
     if (metadata != null && localHash == metadata.localHash) {
       await local.deleteHero(record.id);
       await _saveMetadata(
@@ -319,21 +329,29 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       return;
     }
 
-    _openHeroConflict(localHero: localHero, remoteRecord: record);
+    _openHeroConflict(
+      localHero: localHero,
+      remoteRecord: record,
+      localTimestamp: metadata?.updatedAt,
+    );
   }
 
   Future<void> _pushHeroIfSafe(HeroSheet hero) async {
     final key = _heroKey(hero.id);
     final metadata = await metadataStore.load(key);
     final remoteRecord = await remote.loadHero(hero.id);
-    final localHash = stableContentHash(hero.toJson());
+    final localHash = heroContentHash(hero);
 
     if (remoteRecord != null &&
         !remoteRecord.isDeleted &&
         _remoteHeroHash(remoteRecord) != localHash) {
       if (metadata == null ||
           remoteRecord.revision != metadata.remoteRevision) {
-        _openHeroConflict(localHero: hero, remoteRecord: remoteRecord);
+        _openHeroConflict(
+          localHero: hero,
+          remoteRecord: remoteRecord,
+          localTimestamp: hero.lastModified ?? metadata?.updatedAt,
+        );
         return;
       }
     }
@@ -341,7 +359,11 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     if (remoteRecord != null &&
         remoteRecord.isDeleted &&
         remoteRecord.revision != metadata?.remoteRevision) {
-      _openHeroConflict(localHero: hero, remoteRecord: remoteRecord);
+      _openHeroConflict(
+        localHero: hero,
+        remoteRecord: remoteRecord,
+        localTimestamp: hero.lastModified ?? metadata?.updatedAt,
+      );
       return;
     }
 
@@ -466,6 +488,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
   void _openHeroConflict({
     required HeroSheet localHero,
     required RemoteHeroRecord remoteRecord,
+    DateTime? localTimestamp,
   }) {
     final conflictId = 'hero-${localHero.id}';
     if (_heroConflicts.containsKey(conflictId)) {
@@ -483,6 +506,12 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
           : (remoteHero?.name ?? 'Online-Version'),
       detectedAt: DateTime.now().toUtc(),
       supportsKeepBoth: !remoteRecord.isDeleted,
+      localApTotal: localHero.apTotal,
+      localApAvailable: localHero.apAvailable,
+      localUpdatedAt: localHero.lastModified ?? localTimestamp,
+      remoteApTotal: remoteHero?.apTotal,
+      remoteApAvailable: remoteHero?.apAvailable,
+      remoteUpdatedAt: remoteRecord.updatedAt,
     );
     _heroConflicts[conflictId] = _HeroConflictDetails(
       conflict: conflict,
@@ -650,7 +679,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
   ) async {
     await _saveMetadata(
       key: _heroKey(hero.id),
-      localHash: stableContentHash(hero.toJson()),
+      localHash: heroContentHash(hero),
       remoteHash: _remoteHeroHash(record),
       remoteRevision: record.revision,
       isDeleted: record.isDeleted,
@@ -726,9 +755,10 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
   }
 
   String _remoteHeroHash(RemoteHeroRecord record) {
-    return record.contentHash.isNotEmpty
-        ? record.contentHash
-        : stableContentHash(record.hero?.toJson());
+    if (record.contentHash.isNotEmpty) return record.contentHash;
+    final hero = record.hero;
+    if (hero == null) return stableContentHash(null);
+    return heroContentHash(hero);
   }
 
   String _remoteStateHash(RemoteHeroStateRecord record) {
@@ -794,8 +824,9 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
 
   @override
   Future<void> saveHero(HeroSheet hero) async {
-    await local.saveHero(hero);
-    await _pushHeroIfSafe(hero);
+    final stamped = hero.copyWith(lastModified: DateTime.now().toUtc());
+    await local.saveHero(stamped);
+    await _pushHeroIfSafe(stamped);
   }
 
   @override

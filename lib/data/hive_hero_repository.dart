@@ -135,7 +135,10 @@ class HiveHeroRepository implements HeroRepository {
   /// Der In-Memory-Index wird durch das resultierende Box-Event aktualisiert.
   @override
   Future<void> saveHero(HeroSheet hero) async {
-    await _heroesBox.put(hero.id, hero.toJson());
+    final stamped = hero.lastModified == null
+        ? hero.copyWith(lastModified: DateTime.now().toUtc())
+        : hero;
+    await _heroesBox.put(stamped.id, stamped.toJson());
   }
 
   /// Loescht einen Helden und seinen Zustand dauerhaft.
