@@ -34,10 +34,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   manuellen Konto-Sync und Konfliktaufloesung. Ohne Login nutzt die App das
   lokale Offline-Profil; mit Login nutzt sie ein getrenntes Profil unter
   `Helden/accounts/<uid>`.
-- Konto-Sync fuer Helden laeuft ueber `SyncingHeroRepository`,
-  `FirestoreHeroSyncGateway`, `HiveSyncMetadataStore` und die Modelle in
-  `lib/domain/sync_models.dart`. Konflikte duerfen nicht still ueberschrieben
+- Konto-Sync für Helden läuft über `SyncingHeroRepository`, ein
+  plattformspezifisches Remote-Gateway (`FirestoreHeroSyncGateway`, auf Windows
+  `RestFirestoreHeroSyncGateway`), `HiveSyncMetadataStore` und die Modelle in
+  `lib/domain/sync_models.dart`. Konflikte dürfen nicht still überschrieben
   werden; die UI muss lokal, online oder beide behalten anbieten.
+- `FirebaseBootstrapResult.isAccountSyncAvailable` steuert den privaten
+  Konto-Sync; `isFirestoreAvailable` steht für native Firestore-Funktionen wie
+  Gruppen-Cloudaktionen und bleibt auf Windows deaktiviert.
 - Der Settings-Bereich `Rechtliches` enthaelt den inoffiziellen Fanprojekt-,
   Marken- und Rechtehinweis fuer DSA und Ulisses Spiele.
 - Reisebericht-Daten bleiben separat unter `assets/catalogs/reiseberichte/house_rules_v1/`.
