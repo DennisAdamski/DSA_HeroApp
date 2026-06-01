@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_api_client.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_file_storage.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_thumbnail_encoder.dart';
+import 'package:dsa_heldenverwaltung/data/cloud_avatar_storage.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_snapshot_diff.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
@@ -36,6 +37,24 @@ final avatarFileStorageProvider = Provider<AvatarFileStorage>((ref) {
 /// Erzeugt kompakte PNG-Thumbnails fuer Gruppen-Sync und -Export.
 final avatarThumbnailEncoderProvider = Provider<AvatarThumbnailEncoder>((ref) {
   return const AvatarThumbnailEncoder();
+});
+
+/// Cloud-Speicher fuer KI-generierte Avatarbilder.
+final cloudAvatarStorageProvider = Provider<CloudAvatarStorage>((ref) {
+  return const CloudAvatarStorage();
+});
+
+/// Anzahl der KI-generierten Bilder des aktuellen Nutzers (ueber alle Helden).
+final kiImageCountProvider = Provider<int>((ref) {
+  final snapshot = ref.watch(heroIndexProvider).valueOrNull;
+  if (snapshot == null) return 0;
+  int count = 0;
+  for (final hero in snapshot.byId.values) {
+    for (final entry in hero.appearance.avatarGallery) {
+      if (entry.quelle == 'ki') count++;
+    }
+  }
+  return count;
 });
 
 /// Ob der aktive Provider Referenzbild-basierte Generierung unterstuetzt.
