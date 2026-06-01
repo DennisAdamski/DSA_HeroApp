@@ -142,7 +142,7 @@ class RestFirestoreHeroSyncGateway
     required String? previousRevision,
   }) async {
     final payload = hero.toJson();
-    final contentHash = stableContentHash(payload);
+    final contentHash = heroContentHash(hero);
     final revision = _newRevision();
     final fields = <String, dynamic>{
       'deleted': false,
@@ -233,7 +233,7 @@ class RestFirestoreHeroSyncGateway
     }
     final hero = HeroSheet.fromJson(_castMap(payload));
     final contentHash =
-        fields['contentHash'] as String? ?? stableContentHash(hero.toJson());
+        fields['contentHash'] as String? ?? heroContentHash(hero);
     return RemoteHeroRecord(
       id: id,
       hero: hero,

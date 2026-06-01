@@ -360,6 +360,8 @@ class _SyncConflictTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hasDetails = conflict.localApTotal != null ||
+        conflict.remoteApTotal != null;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: DecoratedBox(
@@ -374,8 +376,18 @@ class _SyncConflictTile extends StatelessWidget {
             children: [
               Text(conflict.title, style: theme.textTheme.titleSmall),
               const SizedBox(height: 8),
-              Text('Lokal: ${conflict.localSummary}'),
-              Text('Online: ${conflict.remoteSummary}'),
+              if (hasDetails) ...[
+                _buildSideInfo('Lokal', conflict.localSummary,
+                    conflict.localApTotal, conflict.localApAvailable,
+                    conflict.localUpdatedAt),
+                const SizedBox(height: 2),
+                _buildSideInfo('Online', conflict.remoteSummary,
+                    conflict.remoteApTotal, conflict.remoteApAvailable,
+                    conflict.remoteUpdatedAt),
+              ] else ...[
+                Text('Lokal: ${conflict.localSummary}'),
+                Text('Online: ${conflict.remoteSummary}'),
+              ],
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
@@ -407,6 +419,23 @@ class _SyncConflictTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  static Widget _buildSideInfo(String label, String summary, int? apTotal,
+      int? apAvailable, DateTime? updatedAt) {
+    final parts = <String>[summary];
+    if (apTotal != null) parts.add('$apTotal AP');
+    if (apAvailable != null) parts.add('$apAvailable frei');
+    parts.add('Gespeichert: ${_formatConflictTimestamp(updatedAt)}');
+    return Text('$label: ${parts.join(' · ')}');
+  }
+
+  static String _formatConflictTimestamp(DateTime? value) {
+    if (value == null) return 'Unbekannt';
+    final local = value.toLocal();
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${local.year}-${two(local.month)}-${two(local.day)} '
+        '${two(local.hour)}:${two(local.minute)}';
   }
 }
 
