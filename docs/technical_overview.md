@@ -84,6 +84,13 @@ Heldenliste gelegt, damit der Nutzer lokal, online oder beide behalten waehlen
 kann. Avatar-Dateien selbst bleiben vorerst lokal; fehlende Dateien fuehren zu
 Platzhaltern.
 
+Windows-Sonderfall: Firebase Auth bleibt dort verfuegbar, aber
+Firestore-basierte Cloud-Funktionen sind aktuell per
+`FirebaseBootstrapResult.isFirestoreAvailable == false` deaktiviert. Ein
+persistenter Login darf den App-Start nicht in den nativen Firestore-Pfad
+zwingen; `AppStartupGate` oeffnet auf Windows daher weiterhin das Offline-Profil
+und Settings/Gruppe zeigen den Cloud-Sync als nicht verfuegbar.
+
 ```
 main()
   1. Flutter-Binding initialisieren

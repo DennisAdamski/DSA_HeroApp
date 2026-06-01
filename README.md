@@ -73,6 +73,9 @@ Technischer Stack:
   Sync, offene Konflikte und einen manuellen Sync-Button. Bei Unterschieden
   zwischen Offline- und Konto-Daten entscheidet der Nutzer zwischen lokal,
   online oder beide behalten.
+- Auf Windows bleibt Firebase-Login möglich, Firestore-basierter Cloud-Sync ist
+  derzeit jedoch deaktiviert, weil der native Firestore-Pfad dort beim Start
+  abstürzen kann; die App nutzt in diesem Fall weiter das lokale Offline-Profil.
 - Auf Web-Zielplattformen liegen Einstellungen und Heldendaten stattdessen im
   browserlokalen Speicher; die UI zeigt dafuer den logischen Pfad
   `Browser-Speicher/...` an
