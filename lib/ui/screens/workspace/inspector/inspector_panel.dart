@@ -49,6 +49,13 @@ class _InspectorPanelState extends ConsumerState<InspectorPanel>
   Widget build(BuildContext context) {
     final codex = context.codexTheme;
     final edgeRadius = codex.panelRadius / 2;
+    final compactTabs = MediaQuery.sizeOf(context).width < 600;
+    Tab buildTab(IconData icon, String label) {
+      return Tab(
+        icon: Tooltip(message: label, child: Icon(icon)),
+        text: compactTabs ? null : label,
+      );
+    }
 
     return ClipRRect(
       borderRadius: BorderRadius.only(
@@ -72,11 +79,11 @@ class _InspectorPanelState extends ConsumerState<InspectorPanel>
                       labelColor: codex.brass,
                       unselectedLabelColor: codex.inkMuted,
                       indicatorColor: codex.brass,
-                      tabs: const [
-                        Tab(text: 'Vitals'),
-                        Tab(text: 'Magie'),
-                        Tab(text: 'Rast'),
-                        Tab(text: 'Probe'),
+                      tabs: [
+                        buildTab(Icons.healing, 'Vitals'),
+                        buildTab(Icons.flash_on, 'Magie'),
+                        buildTab(Icons.hotel, 'Rast'),
+                        buildTab(Icons.shield, 'Probe'),
                       ],
                     ),
                     Expanded(

@@ -242,7 +242,7 @@ void main() {
   /// Wechselt im Inspector-Panel zum Tab mit dem angegebenen Label.
   Future<void> openInspectorTab(WidgetTester tester, String label) async {
     final tabBar = find.byKey(const ValueKey<String>('inspector-tab-bar'));
-    final tab = find.descendant(of: tabBar, matching: find.text(label));
+    final tab = find.descendant(of: tabBar, matching: find.byTooltip(label));
     await tester.tap(tab);
     await tester.pumpAndSettle();
   }
@@ -286,9 +286,8 @@ void main() {
 
     await openWorkspace(tester, repo, size: const Size(740, 844));
 
-    await tester.tap(find.text('Bearbeiten').first);
-    await tester.pumpAndSettle();
-    expect(find.text('Speichern'), findsOneWidget);
+    await tapWorkspaceEditAction(tester);
+    expect(find.byTooltip('Speichern'), findsOneWidget);
 
     await tester.enterText(
       find.byKey(const ValueKey<String>('overview-field-name')),
@@ -310,8 +309,7 @@ void main() {
     await tester.enterText(apTotalField, '1200');
     await tester.enterText(apSpentField, '50');
 
-    await tester.tap(find.text('Speichern').first);
-    await tester.pumpAndSettle();
+    await tapWorkspaceSaveAction(tester);
 
     final heroes = await repo.listHeroes();
     final hero = findHeroById(heroes, 'demo');
@@ -376,8 +374,7 @@ void main() {
 
     await openWorkspace(tester, repo);
 
-    await tester.tap(find.text('Bearbeiten').first);
-    await tester.pumpAndSettle();
+    await tapWorkspaceEditAction(tester);
 
     final verticalScrollable = activeTabVerticalScrollable();
     final muField = find.byKey(const ValueKey<String>('overview-field-mu'));
@@ -388,8 +385,7 @@ void main() {
     );
     await tester.enterText(muField, '16');
 
-    await tester.tap(find.text('Speichern').first);
-    await tester.pumpAndSettle();
+    await tapWorkspaceSaveAction(tester);
 
     final heroes = await repo.listHeroes();
     final hero = findHeroById(heroes, 'demo');
@@ -413,6 +409,7 @@ void main() {
       );
 
       await openWorkspace(tester, repo, size: const Size(740, 844));
+      await tapWorkspaceEditAction(tester);
 
       final verticalScrollable = activeTabVerticalScrollable();
       final startKl = find.byKey(
@@ -430,8 +427,6 @@ void main() {
       expect(find.descendant(of: startKl, matching: find.text('12')), findsOne);
       expect(find.descendant(of: maxKl, matching: find.text('18')), findsOne);
 
-      await tester.tap(find.text('Bearbeiten').first);
-      await tester.pumpAndSettle();
       await tester.drag(verticalScrollable, const Offset(0, 1200));
       await tester.pumpAndSettle();
 
@@ -440,8 +435,7 @@ void main() {
       );
       expect(rasseModField, findsOneWidget);
       await tester.enterText(rasseModField, 'KL+1');
-      await tester.tap(find.text('Speichern').first);
-      await tester.pumpAndSettle();
+      await tapWorkspaceSaveAction(tester);
 
       final heroes = await repo.listHeroes();
       final hero = findHeroById(heroes, 'demo');
@@ -449,6 +443,7 @@ void main() {
       expect(hero!.attributes.kl, 12);
       expect(hero.startAttributes.kl, 13);
 
+      await tapWorkspaceEditAction(tester);
       await tester.scrollUntilVisible(
         startKl,
         240,
@@ -474,8 +469,7 @@ void main() {
 
     await openWorkspace(tester, repo);
 
-    await tester.tap(find.text('Bearbeiten').first);
-    await tester.pumpAndSettle();
+    await tapWorkspaceEditAction(tester);
 
     final verticalScrollable = activeTabVerticalScrollable();
     final boughtLepField = find.byKey(
@@ -493,8 +487,7 @@ void main() {
       '2',
     );
 
-    await tester.tap(find.text('Speichern').first);
-    await tester.pumpAndSettle();
+    await tapWorkspaceSaveAction(tester);
 
     final heroes = await repo.listHeroes();
     final hero = findHeroById(heroes, 'demo');
@@ -521,8 +514,7 @@ void main() {
     await openWorkspace(tester, repo);
     expect(find.textContaining('10/22'), findsWidgets);
 
-    await tester.tap(find.text('Bearbeiten').first);
-    await tester.pumpAndSettle();
+    await tapWorkspaceEditAction(tester);
 
     final verticalScrollable = activeTabVerticalScrollable();
     final boughtLepField = find.byKey(
@@ -535,8 +527,7 @@ void main() {
     );
     await tester.enterText(boughtLepField, '2');
 
-    await tester.tap(find.text('Speichern').first);
-    await tester.pumpAndSettle();
+    await tapWorkspaceSaveAction(tester);
 
     expect(find.textContaining('10/'), findsWidgets);
   });
@@ -717,8 +708,7 @@ void main() {
 
     await openWorkspace(tester, repo);
 
-    await tester.tap(find.text('Bearbeiten').first);
-    await tester.pumpAndSettle();
+    await tapWorkspaceEditAction(tester);
 
     final verticalScrollable = activeTabVerticalScrollable();
     final muField = find.byKey(const ValueKey<String>('overview-field-mu'));
@@ -731,8 +721,7 @@ void main() {
     await tester.enterText(muField, '-5');
     await tester.enterText(klField, '120');
 
-    await tester.tap(find.text('Speichern').first);
-    await tester.pumpAndSettle();
+    await tapWorkspaceSaveAction(tester);
 
     final heroes = await repo.listHeroes();
     final hero = findHeroById(heroes, 'demo');
@@ -756,15 +745,14 @@ void main() {
 
     await openWorkspace(tester, repo);
 
-    await tester.tap(find.text('Bearbeiten').first);
-    await tester.pumpAndSettle();
-    expect(find.text('Speichern'), findsOneWidget);
+    await tapWorkspaceEditAction(tester);
+    expect(find.byTooltip('Speichern'), findsOneWidget);
 
     await tester.enterText(
       find.byKey(const ValueKey<String>('overview-field-name')),
       'Temp Name',
     );
-    await tester.tap(find.text('Abbrechen').first);
+    await tester.tap(find.byTooltip('Abbrechen').first);
     await tester.pumpAndSettle();
 
     final heroes = await repo.listHeroes();
@@ -800,10 +788,9 @@ void main() {
     await openWorkspace(tester, repo);
     await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');
 
-    await tester.tap(find.text('Bearbeiten').first);
-    await tester.pumpAndSettle();
+    await tapWorkspaceEditAction(tester);
 
-    expect(find.text('Speichern'), findsOneWidget);
+    expect(find.byTooltip('Speichern'), findsOneWidget);
   });
 
   testWidgets('inventory tab shows add action and no global edit action', (
@@ -1686,13 +1673,17 @@ void main() {
 
       final appBar = tester.widget<AppBar>(find.byType(AppBar));
       final actions = appBar.actions ?? const <Widget>[];
-      expect(actions.first, isA<SizedBox>());
-      expect((actions.first as SizedBox).width, 8);
+      // Erstes Element im Compact-Layout ist der Inspector-Trigger,
+      // gefolgt vom linken Spacer der Edit-Aktionen.
+      expect(actions.first, isA<IconButton>());
+      expect((actions.first as IconButton).tooltip, 'Detailpanel');
+      expect(actions[1], isA<SizedBox>());
+      expect((actions[1] as SizedBox).width, 8);
       // Letztes Element ist jetzt das Settings-Icon; der rechte Spacer
       // liegt direkt davor.
       expect(actions.last, isA<IconButton>());
       expect((actions.last as IconButton).tooltip, 'Einstellungen');
-      expect(find.text('Bearbeiten'), findsOneWidget);
+      expect(find.byTooltip('Bearbeiten'), findsOneWidget);
     },
   );
 
@@ -1712,8 +1703,7 @@ void main() {
     );
 
     await openWorkspace(tester, repo);
-    await tester.tap(find.text('Bearbeiten').first);
-    await tester.pumpAndSettle();
+    await tapWorkspaceEditAction(tester);
     await tester.enterText(
       find.byKey(const ValueKey<String>('overview-field-name')),
       'Nicht speichern',
@@ -1762,9 +1752,8 @@ void main() {
     );
 
     await openWorkspace(tester, repo);
-    await tester.tap(find.text('Bearbeiten').first);
-    await tester.pumpAndSettle();
-    expect(find.text('Speichern'), findsOneWidget);
+    await tapWorkspaceEditAction(tester);
+    expect(find.byTooltip('Speichern'), findsOneWidget);
     await tester.enterText(
       find.byKey(const ValueKey<String>('overview-field-name')),
       'Nicht speichern',
@@ -1854,7 +1843,7 @@ void main() {
       expect(find.text('Helden Deck'), findsNothing);
       expect(find.byType(TabBar), findsNothing);
       expect(find.text('Inspector'), findsNothing);
-      expect(find.text('Vitals'), findsOneWidget);
+      expect(find.byTooltip('Vitals'), findsOneWidget);
       expect(heroDeckToggleButton(), findsOneWidget);
       expect(find.byTooltip('Helden-Deck einblenden'), findsOneWidget);
       expect(workspaceDetailsToggleButton(), findsOneWidget);
@@ -2109,14 +2098,14 @@ void main() {
     await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
     expect(find.text('Helden Deck'), findsNothing);
-    expect(find.text('Vitals'), findsOneWidget);
+    expect(find.byTooltip('Vitals'), findsOneWidget);
 
     await tester.tap(heroDeckToggleButton());
     await tester.pumpAndSettle();
 
     expect(find.text('Helden Deck'), findsOneWidget);
     expect(find.byTooltip('Helden-Deck ausblenden'), findsOneWidget);
-    expect(find.text('Vitals'), findsOneWidget);
+    expect(find.byTooltip('Vitals'), findsOneWidget);
     expect(find.text('Basisinformationen'), findsOneWidget);
 
     await tester.tap(heroDeckToggleButton());
@@ -2144,14 +2133,14 @@ void main() {
     await openWorkspace(tester, repo, size: const Size(1600, 1200));
 
     expect(find.text('Inspector'), findsNothing);
-    expect(find.text('Vitals'), findsOneWidget);
+    expect(find.byTooltip('Vitals'), findsOneWidget);
     expect(workspaceDetailsToggleButton(), findsOneWidget);
 
     await tester.tap(workspaceDetailsToggleButton());
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Details einblenden'), findsOneWidget);
-    expect(find.text('Vitals'), findsNothing);
+    expect(find.byTooltip('Vitals'), findsNothing);
     expect(find.text('Statuswerte'), findsNothing);
     expect(find.text('Basisinformationen'), findsOneWidget);
     expect(find.text('Helden Deck'), findsNothing);
@@ -2160,7 +2149,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Details ausblenden'), findsOneWidget);
-    expect(find.text('Vitals'), findsOneWidget);
+    expect(find.byTooltip('Vitals'), findsOneWidget);
     expect(find.text('Statuswerte'), findsOneWidget);
   });
 
@@ -2438,7 +2427,7 @@ void main() {
             widget.scrollDirection == Axis.horizontal,
       ),
     );
-    expect(horizontalScrollInAttributes, findsOneWidget);
+    expect(horizontalScrollInAttributes, findsNothing);
 
     final attributesNarrow = tester.getTopLeft(attributesHeader);
     final derivedNarrow = tester.getTopLeft(derivedHeader);

@@ -151,12 +151,15 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
   void _showInspectorSheet() {
     showAdaptiveDetailSheet<void>(
       context: context,
-      builder: (sheetContext) => Padding(
-        padding: const EdgeInsets.all(18),
-        child: WorkspaceInspectorPanel(
-          heroId: widget.heroId,
-          isExpanded: true,
-          onToggleExpanded: () => Navigator.of(sheetContext).pop(),
+      builder: (sheetContext) => Material(
+        type: MaterialType.transparency,
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: WorkspaceInspectorPanel(
+            heroId: widget.heroId,
+            isExpanded: true,
+            onToggleExpanded: () => Navigator.of(sheetContext).pop(),
+          ),
         ),
       ),
     );

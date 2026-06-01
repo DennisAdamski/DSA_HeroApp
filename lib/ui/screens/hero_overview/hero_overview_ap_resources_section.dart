@@ -204,19 +204,33 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
 
   Widget _buildSingleLineFieldsRow({
     required List<Widget> children,
-    double itemWidth = 200,
+    double targetItemWidth = 200,
   }) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (var i = 0; i < children.length; i++) ...[
-            SizedBox(width: itemWidth, child: children[i]),
-            if (i < children.length - 1) const SizedBox(width: _gridSpacing),
+    if (children.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final available = constraints.maxWidth;
+        // Anzahl Spalten anhand der verfuegbaren Breite bestimmen: auf schmalen
+        // Screens eine Spalte, auf breiten bis zu so vielen, wie Felder da sind.
+        final columns = available.isFinite
+            ? (available / targetItemWidth)
+                  .floor()
+                  .clamp(1, children.length)
+            : children.length;
+        final itemWidth = available.isFinite
+            ? (available - _gridSpacing * (columns - 1)) / columns
+            : targetItemWidth;
+        return Wrap(
+          spacing: _gridSpacing,
+          runSpacing: _gridSpacing,
+          children: [
+            for (final child in children)
+              SizedBox(width: itemWidth, child: child),
           ],
-        ],
-      ),
+        );
+      },
     );
   }
 }
