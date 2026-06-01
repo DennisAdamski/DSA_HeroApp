@@ -94,7 +94,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
   @override
   void didUpdateWidget(covariant AppStartupGate oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.authUser?.uid != _currentAuthUid) {
+    if (_remoteSyncProfileUid != _currentAuthUid) {
       _ensureBootstrap();
     }
   }
@@ -124,7 +124,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
 
   void _ensureBootstrap() {
     final configuredPath = _settings.heroStoragePath;
-    final targetUid = widget.authUser?.uid;
+    final targetUid = _remoteSyncProfileUid;
     if (_bootstrapFuture != null &&
         configuredPath == _currentConfiguredPath &&
         targetUid == _currentAuthUid) {
@@ -134,6 +134,13 @@ class _AppStartupGateState extends State<AppStartupGate> {
     _currentConfiguredPath = configuredPath;
     _currentAuthUid = targetUid;
     _bootstrapFuture = _bootstrapHeroRepository(configuredPath, targetUid);
+  }
+
+  String? get _remoteSyncProfileUid {
+    if (!widget.firebaseBootstrap.isFirestoreAvailable) {
+      return null;
+    }
+    return widget.authUser?.uid;
   }
 
   Future<_HeroRepositoryBootstrapResult> _bootstrapHeroRepository(
@@ -189,7 +196,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
       SyncingHeroRepository? syncingRepository;
       HiveSyncMetadataStore? metadataStore;
       HeroRepository heroRepository = hive;
-      if (authUid != null && widget.firebaseBootstrap.isAvailable) {
+      if (authUid != null && widget.firebaseBootstrap.isFirestoreAvailable) {
         debugPrint('[startup] syncing.create for uid=$authUid');
         final firestoreRepo = FirestoreHeroSyncGateway(userId: authUid);
         metadataStore = await HiveSyncMetadataStore.create(
@@ -211,7 +218,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
 
       // Settings: User-spezifischen Firestore-Sync fuer Geheimnisse
       // (Katalog-Passwort, Bildgenerierungs-API-Key) aktivieren/deaktivieren.
-      if (authUid != null && widget.firebaseBootstrap.isAvailable) {
+      if (authUid != null && widget.firebaseBootstrap.isFirestoreAvailable) {
         debugPrint('[startup] settings.attachUser uid=$authUid');
         await widget.settingsRepository.attachUser(authUid);
       } else if (widget.settingsRepository.isAttached) {

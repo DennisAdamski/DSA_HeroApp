@@ -204,6 +204,17 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
                 icon: Icons.report_problem_outlined,
                 label: 'Offene Konflikte: ${syncStatus.openConflicts.length}',
               ),
+              if (!firebase.isFirestoreAvailable) ...[
+                const SizedBox(height: 8),
+                Text(
+                  firebase.firestoreUserMessage ??
+                      firebase.userMessage ??
+                      'Cloud-Sync ist derzeit nicht verfÃ¼gbar.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ],
               if (syncStatus.lastError != null) ...[
                 const SizedBox(height: 8),
                 Text(
