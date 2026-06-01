@@ -130,13 +130,16 @@ class HybridHeroRepository implements HeroRepository {
 
   @override
   Future<void> saveHero(HeroSheet hero) async {
-    await _local.saveHero(hero);
+    final stamped = hero.lastModified == null
+        ? hero.copyWith(lastModified: DateTime.now().toUtc())
+        : hero;
+    await _local.saveHero(stamped);
     final remote = _remote;
     if (remote == null) {
       return;
     }
     try {
-      await remote.saveHero(hero);
+      await remote.saveHero(stamped);
     } on Object catch (error, stackTrace) {
       _logRemoteError('Remote-saveHero fehlgeschlagen', error, stackTrace);
     }

@@ -3,6 +3,8 @@ import 'dart:typed_data';
 
 import 'package:pointycastle/digests/sha256.dart';
 
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+
 /// Beschreibt die Arten von Nutzerobjekten, die der Konto-Sync verwaltet.
 enum SyncObjectType {
   /// Persistiertes Heldenblatt (`HeroSheet`).
@@ -140,6 +142,12 @@ class SyncConflict {
     required this.remoteSummary,
     required this.detectedAt,
     this.supportsKeepBoth = false,
+    this.localApTotal,
+    this.localApAvailable,
+    this.localUpdatedAt,
+    this.remoteApTotal,
+    this.remoteApAvailable,
+    this.remoteUpdatedAt,
   });
 
   /// Eindeutige Konflikt-ID.
@@ -165,6 +173,24 @@ class SyncConflict {
 
   /// Ob `Beide behalten` fuer diesen Konflikt sinnvoll anwendbar ist.
   final bool supportsKeepBoth;
+
+  /// Gesamt-AP der lokalen Version (nur fuer Hero-Konflikte).
+  final int? localApTotal;
+
+  /// Freie AP der lokalen Version (nur fuer Hero-Konflikte).
+  final int? localApAvailable;
+
+  /// Letzter Speicherzeitpunkt der lokalen Version.
+  final DateTime? localUpdatedAt;
+
+  /// Gesamt-AP der Remote-Version (nur fuer Hero-Konflikte).
+  final int? remoteApTotal;
+
+  /// Freie AP der Remote-Version (nur fuer Hero-Konflikte).
+  final int? remoteApAvailable;
+
+  /// Letzter Speicherzeitpunkt der Remote-Version.
+  final DateTime? remoteUpdatedAt;
 }
 
 /// Sichtbarer Laufzeitstatus des Konto-Syncs.
@@ -225,6 +251,15 @@ class SyncStatusSnapshot {
 }
 
 const Object _copySentinel = Object();
+
+/// Erzeugt einen stabilen Content-Hash fuer ein [HeroSheet].
+///
+/// Schliesst [HeroSheet.lastModified] aus, damit Zeitstempel-Aenderungen
+/// allein keine Sync-Konflikte ausloesen.
+String heroContentHash(HeroSheet hero) {
+  final json = hero.toJson()..remove('lastModified');
+  return stableContentHash(json);
+}
 
 /// Erzeugt einen stabilen SHA-256-Hash fuer JSON-kompatible Daten.
 ///

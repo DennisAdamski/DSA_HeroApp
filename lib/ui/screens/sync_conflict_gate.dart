@@ -87,6 +87,8 @@ class _SyncConflictCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hasDetails = conflict.localApTotal != null ||
+        conflict.remoteApTotal != null;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -95,8 +97,26 @@ class _SyncConflictCard extends StatelessWidget {
           children: [
             Text(conflict.title, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            Text('Lokal: ${conflict.localSummary}'),
-            Text('Online: ${conflict.remoteSummary}'),
+            if (hasDetails) ...[
+              _ConflictSideInfo(
+                label: 'Lokal',
+                summary: conflict.localSummary,
+                apTotal: conflict.localApTotal,
+                apAvailable: conflict.localApAvailable,
+                updatedAt: conflict.localUpdatedAt,
+              ),
+              const SizedBox(height: 4),
+              _ConflictSideInfo(
+                label: 'Online',
+                summary: conflict.remoteSummary,
+                apTotal: conflict.remoteApTotal,
+                apAvailable: conflict.remoteApAvailable,
+                updatedAt: conflict.remoteUpdatedAt,
+              ),
+            ] else ...[
+              Text('Lokal: ${conflict.localSummary}'),
+              Text('Online: ${conflict.remoteSummary}'),
+            ],
             const SizedBox(height: 16),
             Wrap(
               spacing: 8,
@@ -124,5 +144,38 @@ class _SyncConflictCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _ConflictSideInfo extends StatelessWidget {
+  const _ConflictSideInfo({
+    required this.label,
+    required this.summary,
+    this.apTotal,
+    this.apAvailable,
+    this.updatedAt,
+  });
+
+  final String label;
+  final String summary;
+  final int? apTotal;
+  final int? apAvailable;
+  final DateTime? updatedAt;
+
+  @override
+  Widget build(BuildContext context) {
+    final parts = <String>[summary];
+    if (apTotal != null) parts.add('$apTotal AP');
+    if (apAvailable != null) parts.add('$apAvailable frei');
+    parts.add('Gespeichert: ${_formatTimestamp(updatedAt)}');
+    return Text('$label: ${parts.join(' · ')}');
+  }
+
+  static String _formatTimestamp(DateTime? value) {
+    if (value == null) return 'Unbekannt';
+    final local = value.toLocal();
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${local.year}-${two(local.month)}-${two(local.day)} '
+        '${two(local.hour)}:${two(local.minute)}';
   }
 }
