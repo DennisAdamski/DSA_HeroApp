@@ -102,8 +102,8 @@ class _AvatarGenerationDialogState
     final showRefToggle = supportsRef && hasPrimaerbild;
     final snapshotDiff =
         ref.watch(avatarSnapshotDiffProvider(widget.heroId));
-    final kiCount = ref.watch(kiImageCountProvider);
-    final kiLimitReached = kiCount >= maxKiBilderOnline;
+    final kiCount = ref.watch(kiImageCountProvider(widget.heroId));
+    final kiLimitReached = kiCount >= maxKiBilderProHeld;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -125,7 +125,7 @@ class _AvatarGenerationDialogState
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Maximale Anzahl von $maxKiBilderOnline KI-Bildern '
+                    'Maximale Anzahl von $maxKiBilderProHeld KI-Bildern '
                     'erreicht. Bitte lösche ein bestehendes KI-Bild im '
                     'Album, bevor du ein neues generierst.',
                     style: TextStyle(
@@ -149,7 +149,7 @@ class _AvatarGenerationDialogState
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'KI-Bilder online: $kiCount / $maxKiBilderOnline',
+                  'KI-Bilder online: $kiCount / $maxKiBilderProHeld',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
