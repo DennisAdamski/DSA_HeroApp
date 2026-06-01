@@ -2,6 +2,7 @@ part of 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 
 enum _SettingsDestination {
   appearance,
+  accountSync,
   storage,
   catalog,
   houseRules,
@@ -13,6 +14,7 @@ enum _SettingsDestination {
 extension _SettingsDestinationX on _SettingsDestination {
   String get title => switch (this) {
     _SettingsDestination.appearance => 'Darstellung',
+    _SettingsDestination.accountSync => 'Konto & Sync',
     _SettingsDestination.storage => 'Speicher',
     _SettingsDestination.catalog => 'Katalogverwaltung',
     _SettingsDestination.houseRules => 'Hausregeln',
@@ -23,6 +25,7 @@ extension _SettingsDestinationX on _SettingsDestination {
 
   String get subtitle => switch (this) {
     _SettingsDestination.appearance => 'Dunkelmodus und Design',
+    _SettingsDestination.accountSync => 'Login, Cloud-Sync und Konflikte',
     _SettingsDestination.storage => 'Heldenspeicher und Einstellungsordner',
     _SettingsDestination.catalog => 'Custom-Kataloge und Passwortschutz',
     _SettingsDestination.houseRules => 'Pakete aktivieren und verwalten',
@@ -34,6 +37,7 @@ extension _SettingsDestinationX on _SettingsDestination {
 
   IconData get icon => switch (this) {
     _SettingsDestination.appearance => Icons.palette_outlined,
+    _SettingsDestination.accountSync => Icons.sync_outlined,
     _SettingsDestination.storage => Icons.folder_outlined,
     _SettingsDestination.catalog => Icons.library_books_outlined,
     _SettingsDestination.houseRules => Icons.rule_folder_outlined,
@@ -51,6 +55,7 @@ extension _SettingsDestinationX on _SettingsDestination {
 
   Widget buildPage() => switch (this) {
     _SettingsDestination.appearance => const _AppearanceSettingsPage(),
+    _SettingsDestination.accountSync => const _AccountSyncSettingsPage(),
     _SettingsDestination.storage => const _StorageSettingsPage(),
     _SettingsDestination.catalog => const _CatalogSettingsPage(),
     _SettingsDestination.houseRules => const _HouseRulesSettingsPage(),

@@ -115,6 +115,301 @@ class _AppearanceSettingsPage extends ConsumerWidget {
   }
 }
 
+class _AccountSyncSettingsPage extends ConsumerWidget {
+  const _AccountSyncSettingsPage();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final firebase = ref.watch(firebaseBootstrapProvider);
+    final authService = ref.watch(authServiceProvider);
+    final authUser = ref.watch(authUserProvider).valueOrNull;
+    final syncController = ref.watch(syncControllerProvider);
+    final syncStatus =
+        ref.watch(syncStatusProvider).valueOrNull ?? const SyncStatusSnapshot();
+    final accountLabel =
+        authUser?.email ?? syncStatus.email ?? syncStatus.accountId;
+
+    return _SettingsPageList(
+      children: [
+        Text(
+          'Melde dich an, um deine Helden, Zustände und synchronisierten '
+          'Einstellungen zwischen Geräten zu synchronisieren. Ohne Konto '
+          'bleibt die App vollständig lokal nutzbar.',
+          style: theme.textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 16),
+        _SettingsSectionCard(
+          title: 'Konto',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (accountLabel == null) ...[
+                const ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.cloud_off_outlined),
+                  title: Text('Offline-Modus'),
+                  subtitle: Text('Keine Konto-Synchronisierung aktiv.'),
+                ),
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: authService == null
+                      ? null
+                      : () => _openSignIn(context, authService),
+                  icon: const Icon(Icons.login),
+                  label: const Text('Anmelden'),
+                ),
+                if (!firebase.isAvailable) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    firebase.userMessage ??
+                        'Cloud-Funktionen sind derzeit nicht verfügbar.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                ],
+              ] else ...[
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.account_circle_outlined),
+                  title: const Text('Angemeldet'),
+                  subtitle: Text(accountLabel),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: authService == null
+                      ? null
+                      : () => _confirmAndSignOut(context, authService),
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Abmelden'),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _SettingsSectionCard(
+          title: 'Synchronisierung',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SyncInfoRow(
+                icon: Icons.schedule_outlined,
+                label:
+                    'Letzter Sync: ${_formatSyncTime(syncStatus.lastSuccessfulSync)}',
+              ),
+              const SizedBox(height: 8),
+              _SyncInfoRow(
+                icon: Icons.report_problem_outlined,
+                label: 'Offene Konflikte: ${syncStatus.openConflicts.length}',
+              ),
+              if (!firebase.isAccountSyncAvailable) ...[
+                const SizedBox(height: 8),
+                Text(
+                  firebase.firestoreUserMessage ??
+                      firebase.userMessage ??
+                      'Cloud-Sync ist derzeit nicht verfÃ¼gbar.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ],
+              if (syncStatus.lastError != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  syncStatus.lastError!,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: syncController == null || syncStatus.isSyncing
+                    ? null
+                    : () => syncController.syncNow(),
+                icon: syncStatus.isSyncing
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.sync),
+                label: const Text('Jetzt synchronisieren'),
+              ),
+            ],
+          ),
+        ),
+        if (syncStatus.openConflicts.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          _SettingsSectionCard(
+            title: 'Konflikte',
+            child: Column(
+              children: [
+                for (final conflict in syncStatus.openConflicts)
+                  _SyncConflictTile(
+                    conflict: conflict,
+                    onResolve: syncController == null
+                        ? null
+                        : (choice) => _resolveConflict(
+                            context: context,
+                            controller: syncController,
+                            conflict: conflict,
+                            choice: choice,
+                          ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _openSignIn(
+    BuildContext context,
+    AuthService authService,
+  ) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SignInScreen(authService: authService),
+      ),
+    );
+  }
+
+  Future<void> _confirmAndSignOut(
+    BuildContext context,
+    AuthService authService,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Abmelden?'),
+        content: const Text(
+          'Nach dem Abmelden bleibt dein Konto online gespeichert. '
+          'Der lokale Offline-Modus ist weiterhin verfügbar.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Abmelden'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await authService.signOut();
+    }
+  }
+
+  Future<void> _resolveConflict({
+    required BuildContext context,
+    required AppSyncController controller,
+    required SyncConflict conflict,
+    required SyncResolutionChoice choice,
+  }) async {
+    await controller.resolveConflict(conflict.id, choice);
+    if (!context.mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Sync-Konflikt aufgelöst.')));
+  }
+
+  String _formatSyncTime(DateTime? value) {
+    if (value == null) {
+      return 'Noch nie';
+    }
+    final local = value.toLocal();
+    String two(int number) => number.toString().padLeft(2, '0');
+    return '${local.year}-${two(local.month)}-${two(local.day)} '
+        '${two(local.hour)}:${two(local.minute)}';
+  }
+}
+
+class _SyncInfoRow extends StatelessWidget {
+  const _SyncInfoRow({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 20),
+        const SizedBox(width: 8),
+        Expanded(child: Text(label)),
+      ],
+    );
+  }
+}
+
+class _SyncConflictTile extends StatelessWidget {
+  const _SyncConflictTile({required this.conflict, required this.onResolve});
+
+  final SyncConflict conflict;
+  final ValueChanged<SyncResolutionChoice>? onResolve;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border.all(color: theme.colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(conflict.title, style: theme.textTheme.titleSmall),
+              const SizedBox(height: 8),
+              Text('Lokal: ${conflict.localSummary}'),
+              Text('Online: ${conflict.remoteSummary}'),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton(
+                    onPressed: onResolve == null
+                        ? null
+                        : () => onResolve!(SyncResolutionChoice.keepLocal),
+                    child: const Text('Lokal behalten'),
+                  ),
+                  OutlinedButton(
+                    onPressed: onResolve == null
+                        ? null
+                        : () => onResolve!(SyncResolutionChoice.keepRemote),
+                    child: const Text('Online behalten'),
+                  ),
+                  if (conflict.supportsKeepBoth)
+                    FilledButton(
+                      onPressed: onResolve == null
+                          ? null
+                          : () => onResolve!(SyncResolutionChoice.keepBoth),
+                      child: const Text('Beide behalten'),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _StorageSettingsPage extends ConsumerWidget {
   const _StorageSettingsPage();
 
@@ -730,8 +1025,9 @@ class _AvatarApiSettingsPageState
               ),
               const SizedBox(height: 12),
               Text(
-                'Der API-Schlüssel wird nur lokal auf diesem Gerät gespeichert '
-                'und nie an Dritte übertragen.',
+                'Der API-Schlüssel wird lokal geschützt gespeichert. '
+                'Wenn du angemeldet bist, wird er zusätzlich verschlüsselt '
+                'in deinem Konto synchronisiert.',
                 style: theme.textTheme.bodySmall,
               ),
             ],

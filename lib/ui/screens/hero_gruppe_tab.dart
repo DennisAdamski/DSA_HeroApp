@@ -66,8 +66,9 @@ class _HeroGruppeTabState extends ConsumerState<HeroGruppeTab> {
     }
 
     final gruppen = hero.gruppen;
-    final syncAvailable = firebaseBootstrap.isAvailable;
+    final syncAvailable = firebaseBootstrap.isFirestoreAvailable;
     final syncMessage =
+        firebaseBootstrap.firestoreUserMessage ??
         firebaseBootstrap.userMessage ??
         'Gruppen-Sync ist derzeit nicht verfügbar.';
 
@@ -154,8 +155,8 @@ class _LeereGruppenAnsicht extends ConsumerWidget {
             Text(
               'Erstelle eine neue Gruppe oder tritt einer bestehenden Gruppe bei.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
             if (!syncAvailable) ...[
@@ -164,8 +165,9 @@ class _LeereGruppenAnsicht extends ConsumerWidget {
             ],
             const SizedBox(height: 24),
             FilledButton.icon(
-              onPressed:
-                  syncAvailable ? () => _erstelleGruppe(context, ref) : null,
+              onPressed: syncAvailable
+                  ? () => _erstelleGruppe(context, ref)
+                  : null,
               icon: const Icon(Icons.add),
               label: const Text('Gruppe erstellen'),
             ),
@@ -308,9 +310,9 @@ class _AktionsLeisteState extends ConsumerState<_AktionsLeiste> {
       }
     } on Exception catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Sync fehlgeschlagen: $error')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Sync fehlgeschlagen: $error')));
       }
     } finally {
       if (mounted) {
@@ -361,9 +363,9 @@ class _AktionsLeisteState extends ConsumerState<_AktionsLeiste> {
 
   void _codeTeilen() {
     Clipboard.setData(ClipboardData(text: widget.gruppenCode));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Gruppencode kopiert')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Gruppencode kopiert')));
   }
 }
 
@@ -395,8 +397,8 @@ class _GruppenSyncHinweisCard extends StatelessWidget {
             child: Text(
               message,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSecondaryContainer,
-                  ),
+                color: colorScheme.onSecondaryContainer,
+              ),
             ),
           ),
         ],

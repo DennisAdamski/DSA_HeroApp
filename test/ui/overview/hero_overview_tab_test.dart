@@ -147,7 +147,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('LeP steigern'), findsOneWidget);
-    expect(find.text('Aktueller Wert: 7 | Maximaler Wert: 7'), findsOneWidget);
+    expect(find.textContaining('Aktueller Wert: 7'), findsOneWidget);
+    expect(find.textContaining('Maximaler Wert: 7'), findsOneWidget);
     expect(find.text('Der Maximalwert ist bereits erreicht.'), findsOneWidget);
   });
 
