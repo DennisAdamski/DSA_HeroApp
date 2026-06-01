@@ -2,22 +2,39 @@ part of 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 
 extension _HeroOverviewStatsSection on _HeroOverviewTabState {
   static const AdaptiveTableColumnSpec _startColumnSpec =
-      AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120);
+      AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120, flex: 1);
 
+  // Hinweis: Die Spalten brauchen `flex`, damit `ResponsiveAdaptiveTable` die
+  // verfuegbare Breite verteilt (es nutzt feste Spaltenbreiten, keine
+  // IntrinsicColumnWidth). Interaktive Zellen mit Icon-Buttons (Modifikator,
+  // Aktuell, Zugekauft, Wert) bekommen eine Mindestbreite, die ihre Inhalte
+  // sicher aufnimmt; sonst laeuft die Zelle in der Tabellenansicht ueber.
   static const List<AdaptiveTableColumnSpec>
   _derivedValueColumnSpecsBase = <AdaptiveTableColumnSpec>[
-    AdaptiveTableColumnSpec(minWidth: 96, maxWidth: 136), // Wert (LeP, AsP, …)
-    AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 132), // Modifikator
-    AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Aktuell
-    AdaptiveTableColumnSpec(minWidth: 82, maxWidth: 120), // Zugekauft
+    AdaptiveTableColumnSpec(
+      minWidth: 96,
+      maxWidth: 150,
+      flex: 2,
+    ), // Wert (LeP, AsP, …)
+    AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 132, flex: 1), // Modifikator
+    AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120, flex: 1), // Aktuell
+    AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 130, flex: 1), // Zugekauft
   ];
 
   static const List<AdaptiveTableColumnSpec> _attributeColumnSpecsBase =
       <AdaptiveTableColumnSpec>[
-        AdaptiveTableColumnSpec(minWidth: 96, maxWidth: 136), // Eigenschaft
-        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Max
-        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120), // Wert
-        AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 132), // Aktuell
+        AdaptiveTableColumnSpec(
+          minWidth: 96,
+          maxWidth: 170,
+          flex: 2,
+        ), // Eigenschaft
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120, flex: 1), // Max
+        AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 130, flex: 1), // Wert
+        AdaptiveTableColumnSpec(
+          minWidth: 112,
+          maxWidth: 160,
+          flex: 1,
+        ), // Aktuell
       ];
 
   List<AdaptiveTableColumnSpec> _derivedValueColumnSpecs({
@@ -202,75 +219,43 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
         onPressed: () => _openResourceActivationDialog(hero),
         icon: const Icon(Icons.settings_outlined),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minWidth: adaptiveTableMinWidth(columnSpecs),
-              ),
-              child: Table(
-                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                columnWidths: buildAdaptiveTableColumnWidths(columnSpecs),
-                children: [
-                  TableRow(
-                    children: [
-                      _buildAttributesTableHeaderCell('Wert'),
-                      if (showStart) _buildAttributesTableHeaderCell('Start'),
-                      _buildAttributesTableHeaderCell('Modifikator'),
-                      _buildAttributesTableHeaderCell('Aktuell'),
-                      _buildAttributesTableHeaderCell('Zugekauft'),
-                    ],
-                  ),
-                  ...entries.map(
-                    (entry) => TableRow(
-                      children: [
-                        _buildAttributesTableLabelCell(
-                          debugModus ? entry.variableName : entry.label,
-                          '',
-                          false,
-                        ),
-                        if (showStart)
-                          _buildDerivedValueCell(
-                            value:
-                                (entry.current -
-                                        entry.modifier -
-                                        (entry.bought ?? 0))
-                                    .toString(),
-                          ),
-                        _buildTappableStatModifierCell(
-                          entry,
-                          hero,
-                          state,
-                          snapshot,
-                        ),
-                        _buildDerivedValueCell(value: entry.current.toString()),
-                        _buildDerivedBoughtCell(
-                          entry,
-                          onRaise:
-                              _canUseSteigerungsDialog &&
-                                  entry.boughtKey != null &&
-                                  kGrundwertKomplexitaeten.containsKey(
-                                    entry.boughtKey!.replaceFirst('b_', ''),
-                                  )
-                              ? () => _steigeGrundwert(
-                                  entry.boughtKey!.replaceFirst('b_', ''),
-                                )
-                              : null,
-                          raiseTooltip: entry.boughtKey == null
-                              ? null
-                              : '${entry.label} steigern',
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+      child: ResponsiveAdaptiveTable<_DerivedRow>(
+        columnSpecs: columnSpecs,
+        items: entries,
+        headerRow: TableRow(
+          children: [
+            _buildAttributesTableHeaderCell('Wert'),
+            if (showStart) _buildAttributesTableHeaderCell('Start'),
+            _buildAttributesTableHeaderCell('Modifikator'),
+            _buildAttributesTableHeaderCell('Aktuell'),
+            _buildAttributesTableHeaderCell('Zugekauft'),
+          ],
+        ),
+        tableRowBuilder: (entry) => TableRow(
+          children: [
+            _buildAttributesTableLabelCell(
+              debugModus ? entry.variableName : entry.label,
+              '',
+              false,
             ),
-          ),
-        ],
+            if (showStart)
+              _buildDerivedValueCell(
+                value: (entry.current - entry.modifier - (entry.bought ?? 0))
+                    .toString(),
+              ),
+            _buildTappableStatModifierCell(entry, hero, state, snapshot),
+            _buildDerivedValueCell(value: entry.current.toString()),
+            _buildDerivedBoughtCellFor(entry),
+          ],
+        ),
+        cardBuilder: (cardContext, entry) => _buildDerivedValueMobileCard(
+          entry: entry,
+          hero: hero,
+          state: state,
+          snapshot: snapshot,
+          showStart: showStart,
+          debugModus: debugModus,
+        ),
       ),
     );
   }
@@ -416,35 +401,147 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     final attrDebugModus = ref.read(debugModusProvider);
     final showStart = _editController.isEditing;
     final columnSpecs = _attributeColumnSpecs(showStart: showStart);
-    final rows = _HeroOverviewTabState._attributeEntries
-        .map((entry) {
-          final key = entry.$2;
-          final startValue = _valueByKey(effectiveStartAttributes, key);
-          final maximumValue = _valueByKey(attributeMaximums, key);
-          final epicBonusVal = _attrBonusValue(
-            snapshot.hero.epicAttributeMaxBonus,
-            key,
-          );
-          final effective = _effectiveValueByKey(effectiveAttributes, key);
-          return TableRow(
-            children: [
-              _buildAttributesTableLabelCell(
-                attrDebugModus ? entry.$2 : entry.$1,
-                key,
-                _attrBonusValue(snapshot.hero.epicMainAttributes, key) > 0,
-              ),
-              if (showStart)
-                _buildAttributesComputedCell(
+
+    return _SectionCard(
+      title: 'Eigenschaften',
+      child: ResponsiveAdaptiveTable<(String, String)>(
+        columnSpecs: columnSpecs,
+        items: _HeroOverviewTabState._attributeEntries,
+        headerRow: TableRow(
+          children: [
+            _buildAttributesTableHeaderCell('Eigenschaft'),
+            if (showStart) _buildAttributesTableHeaderCell('Start'),
+            _buildAttributesTableHeaderCell('Max'),
+            _buildAttributesTableHeaderCell('Wert'),
+            _buildAttributesTableHeaderCell('Aktuell'),
+          ],
+        ),
+        tableRowBuilder: (entry) => _buildAttributeTableRow(
+          entry,
+          effectiveStartAttributes: effectiveStartAttributes,
+          attributeMaximums: attributeMaximums,
+          effectiveAttributes: effectiveAttributes,
+          snapshot: snapshot,
+          showStart: showStart,
+          attrDebugModus: attrDebugModus,
+        ),
+        cardBuilder: (cardContext, entry) => _buildAttributeMobileCard(
+          entry,
+          effectiveStartAttributes: effectiveStartAttributes,
+          attributeMaximums: attributeMaximums,
+          effectiveAttributes: effectiveAttributes,
+          snapshot: snapshot,
+          showStart: showStart,
+          attrDebugModus: attrDebugModus,
+        ),
+      ),
+    );
+  }
+
+  TableRow _buildAttributeTableRow(
+    (String, String) entry, {
+    required Attributes effectiveStartAttributes,
+    required Attributes attributeMaximums,
+    required Attributes effectiveAttributes,
+    required HeroComputedSnapshot snapshot,
+    required bool showStart,
+    required bool attrDebugModus,
+  }) {
+    final key = entry.$2;
+    final startValue = _valueByKey(effectiveStartAttributes, key);
+    final maximumValue = _valueByKey(attributeMaximums, key);
+    final epicBonusVal = _attrBonusValue(
+      snapshot.hero.epicAttributeMaxBonus,
+      key,
+    );
+    final effective = _effectiveValueByKey(effectiveAttributes, key);
+    return TableRow(
+      children: [
+        _buildAttributesTableLabelCell(
+          attrDebugModus ? entry.$2 : entry.$1,
+          key,
+          _attrBonusValue(snapshot.hero.epicMainAttributes, key) > 0,
+        ),
+        if (showStart)
+          _buildAttributesComputedCell(
+            keyName: '${key}_start',
+            value: startValue.toString(),
+          ),
+        _buildAttributesComputedCell(
+          keyName: '${key}_max',
+          value: epicBonusVal > 0
+              ? '${maximumValue - epicBonusVal}+$epicBonusVal'
+              : maximumValue.toString(),
+        ),
+        _buildAttributesNumericCell(
+          keyName: key,
+          isAdjustable: true,
+          onRaise: _canUseSteigerungsDialog
+              ? () => _steigeEigenschaft(parseAttributeCode(key)!)
+              : null,
+          raiseTooltip: '${entry.$1} steigern',
+        ),
+        _buildTappableAttributeComputedCell(
+          label: entry.$1,
+          attrKey: key,
+          effective: effective,
+          snapshot: snapshot,
+        ),
+      ],
+    );
+  }
+
+  /// Kartenansicht eines Eigenschaften-Eintrags fuer schmale Bildschirme.
+  Widget _buildAttributeMobileCard(
+    (String, String) entry, {
+    required Attributes effectiveStartAttributes,
+    required Attributes attributeMaximums,
+    required Attributes effectiveAttributes,
+    required HeroComputedSnapshot snapshot,
+    required bool showStart,
+    required bool attrDebugModus,
+  }) {
+    final key = entry.$2;
+    final startValue = _valueByKey(effectiveStartAttributes, key);
+    final maximumValue = _valueByKey(attributeMaximums, key);
+    final epicBonusVal = _attrBonusValue(
+      snapshot.hero.epicAttributeMaxBonus,
+      key,
+    );
+    final effective = _effectiveValueByKey(effectiveAttributes, key);
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildAttributesTableLabelCell(
+              attrDebugModus ? entry.$2 : entry.$1,
+              key,
+              _attrBonusValue(snapshot.hero.epicMainAttributes, key) > 0,
+            ),
+            if (showStart)
+              _buildStatCardFieldRow(
+                label: 'Start',
+                value: _buildAttributesComputedCell(
                   keyName: '${key}_start',
                   value: startValue.toString(),
                 ),
-              _buildAttributesComputedCell(
+              ),
+            _buildStatCardFieldRow(
+              label: 'Max',
+              value: _buildAttributesComputedCell(
                 keyName: '${key}_max',
                 value: epicBonusVal > 0
                     ? '${maximumValue - epicBonusVal}+$epicBonusVal'
                     : maximumValue.toString(),
               ),
-              _buildAttributesNumericCell(
+            ),
+            _buildStatCardFieldRow(
+              label: 'Wert',
+              value: _buildAttributesNumericCell(
                 keyName: key,
                 isAdjustable: true,
                 onRaise: _canUseSteigerungsDialog
@@ -452,41 +549,17 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                     : null,
                 raiseTooltip: '${entry.$1} steigern',
               ),
-              _buildTappableAttributeComputedCell(
+            ),
+            _buildStatCardFieldRow(
+              label: 'Aktuell',
+              value: _buildTappableAttributeComputedCell(
                 label: entry.$1,
                 attrKey: key,
                 effective: effective,
                 snapshot: snapshot,
               ),
-            ],
-          );
-        })
-        .toList(growable: false);
-
-    return _SectionCard(
-      title: 'Eigenschaften',
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: adaptiveTableMinWidth(columnSpecs),
-          ),
-          child: Table(
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            columnWidths: buildAdaptiveTableColumnWidths(columnSpecs),
-            children: [
-              TableRow(
-                children: [
-                  _buildAttributesTableHeaderCell('Eigenschaft'),
-                  if (showStart) _buildAttributesTableHeaderCell('Start'),
-                  _buildAttributesTableHeaderCell('Max'),
-                  _buildAttributesTableHeaderCell('Wert'),
-                  _buildAttributesTableHeaderCell('Aktuell'),
-                ],
-              ),
-              ...rows,
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -653,6 +726,101 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       suffixIconConstraints: onRaise == null
           ? null
           : const BoxConstraints(minWidth: 32, minHeight: 32),
+    );
+  }
+
+  /// Baut die "Zugekauft"-Zelle inkl. Steigern-Logik fuer einen Basiswert.
+  ///
+  /// Kapselt die Pruefung, ob ein Wert ueber den Steigerungs-Dialog erhoeht
+  /// werden darf, damit Tabellen- und Kartenlayout dieselbe Logik nutzen.
+  Widget _buildDerivedBoughtCellFor(_DerivedRow entry) {
+    final boughtKey = entry.boughtKey;
+    if (boughtKey == null) {
+      return _buildDerivedBoughtCell(entry);
+    }
+    final statId = boughtKey.replaceFirst('b_', '');
+    final canRaise =
+        _canUseSteigerungsDialog &&
+        kGrundwertKomplexitaeten.containsKey(statId);
+    return _buildDerivedBoughtCell(
+      entry,
+      onRaise: canRaise ? () => _steigeGrundwert(statId) : null,
+      raiseTooltip: '${entry.label} steigern',
+    );
+  }
+
+  /// Beschriftete Zeile (Label links, Wert rechts) fuer die Kartenansicht der
+  /// Basiswerte-/Eigenschaften-Tabellen auf schmalen Bildschirmen.
+  Widget _buildStatCardFieldRow({
+    required String label,
+    required Widget value,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(label, style: Theme.of(context).textTheme.labelMedium),
+          ),
+          Expanded(
+            child: Align(alignment: Alignment.centerLeft, child: value),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Kartenansicht eines Basiswert-Eintrags fuer schmale Bildschirme.
+  Widget _buildDerivedValueMobileCard({
+    required _DerivedRow entry,
+    required HeroSheet hero,
+    required HeroState state,
+    required HeroComputedSnapshot snapshot,
+    required bool showStart,
+    required bool debugModus,
+  }) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildAttributesTableLabelCell(
+              debugModus ? entry.variableName : entry.label,
+              '',
+              false,
+            ),
+            if (showStart)
+              _buildStatCardFieldRow(
+                label: 'Start',
+                value: _buildDerivedValueCell(
+                  value: (entry.current - entry.modifier - (entry.bought ?? 0))
+                      .toString(),
+                ),
+              ),
+            _buildStatCardFieldRow(
+              label: 'Modifikator',
+              value: _buildTappableStatModifierCell(
+                entry,
+                hero,
+                state,
+                snapshot,
+              ),
+            ),
+            _buildStatCardFieldRow(
+              label: 'Aktuell',
+              value: _buildDerivedValueCell(value: entry.current.toString()),
+            ),
+            _buildStatCardFieldRow(
+              label: 'Zugekauft',
+              value: _buildDerivedBoughtCellFor(entry),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

@@ -330,8 +330,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     final activeTabId = activeTab.id;
     final isEditing = _tabRegistry.isEditing(activeTabId);
     final tabActions = _tabRegistry.editActionsFor(activeTabId);
-    final useCompactIconOnlyEditActions =
-        isCompactLayout && activeTab.useCompactIconOnlyEditActions;
+    final useCompactIconOnlyEditActions = isCompactLayout;
 
     VoidCallback? onStartEdit;
     VoidCallback? onSave;
@@ -494,7 +493,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     final isCompactLayout = layout == AppLayoutClass.compact;
     final useBottomNav = isCompactLayout && apple && hasVisibleTabs;
     final showTabBar = isCompactLayout && !apple && hasVisibleTabs;
-    final showInspectorAction = layout == AppLayoutClass.tabletPortrait;
+    final showInspectorAction =
+        layout == AppLayoutClass.tabletPortrait ||
+        layout == AppLayoutClass.compact;
 
     return PopScope(
       canPop: false,
