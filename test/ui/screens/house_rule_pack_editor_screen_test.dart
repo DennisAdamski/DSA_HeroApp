@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/ui/screens/house_rule_pack_editor_screen.dart';
 
+import '../../test_support/list_tile_material_assertions.dart';
+
 void main() {
   testWidgets('new pack drafts open even with empty id and title', (
     tester,
@@ -117,6 +119,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('+ Patch'));
     await tester.pumpAndSettle();
+
+    expectListTileFamilyWidgetHasLocalMaterial(
+      tester,
+      find.widgetWithText(SwitchListTile, 'Einträge deaktivieren'),
+    );
 
     await tester.tap(find.text('JSON'));
     await tester.pumpAndSettle();
