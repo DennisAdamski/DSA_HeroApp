@@ -53,6 +53,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   werden vor PBKDF2 NFC-normalisiert, damit Eingaben mit Umlauten
   unabhaengig von NFC/NFD-Codepoint-Repraesentation funktionieren.
 - Projektsprache ist Deutsch; sichtbare UI-Texte sollen echte Umlaute und das Eszett verwenden, wenn technisch moeglich.
+- ListTile-/SwitchListTile-Kacheln in farbig dekorierten Panels sollen ueber
+  `lib/ui/widgets/list_tile_material.dart` einen lokalen Material-Layer
+  erhalten, damit Flutter-3.44-Ink- und Tile-Hintergruende sichtbar bleiben.
 - Der Windows-Release-Audit fuer EXE/MSIX-Artefakte ist in `docs/windows_antivirus_audit.md` beschrieben; der zugehoerige Helfer liegt unter `tool/audit_windows_artifact.ps1`.
 
 ## Pflegehinweis

@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_modifier_editor.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
 
 const double _fieldSpacing = 12;
 
@@ -259,17 +260,19 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
         ),
         if (_draft.itemType == InventoryItemType.ausruestung) ...[
           const SizedBox(height: _fieldSpacing),
-          SwitchListTile.adaptive(
-            value: _draft.istAusgeruestet,
-            onChanged: (value) => setState(
-              () => _draft = _draft.copyWith(istAusgeruestet: value),
+          ListTileMaterial(
+            child: SwitchListTile.adaptive(
+              value: _draft.istAusgeruestet,
+              onChanged: (value) => setState(
+                () => _draft = _draft.copyWith(istAusgeruestet: value),
+              ),
+              title: const Text('Ausgerüstet'),
+              subtitle: const Text(
+                'Modifikatoren wirken nur, wenn das Item ausgerüstet ist.',
+              ),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
             ),
-            title: const Text('Ausgerüstet'),
-            subtitle: const Text(
-              'Modifikatoren wirken nur, wenn das Item ausgerüstet ist.',
-            ),
-            dense: true,
-            contentPadding: EdgeInsets.zero,
           ),
         ],
         const SizedBox(height: _fieldSpacing),
@@ -313,14 +316,16 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SwitchListTile.adaptive(
-          key: const ValueKey<String>('inventory-editor-magisch'),
-          value: _draft.isMagisch,
-          onChanged: (value) =>
-              setState(() => _draft = _draft.copyWith(isMagisch: value)),
-          title: const Text('Magisch'),
-          dense: true,
-          contentPadding: EdgeInsets.zero,
+        ListTileMaterial(
+          child: SwitchListTile.adaptive(
+            key: const ValueKey<String>('inventory-editor-magisch'),
+            value: _draft.isMagisch,
+            onChanged: (value) =>
+                setState(() => _draft = _draft.copyWith(isMagisch: value)),
+            title: const Text('Magisch'),
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+          ),
         ),
         TextField(
           key: const ValueKey<String>('inventory-editor-magisch-description'),
@@ -335,14 +340,16 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
           ),
         ),
         const SizedBox(height: _fieldSpacing),
-        SwitchListTile.adaptive(
-          key: const ValueKey<String>('inventory-editor-geweiht'),
-          value: _draft.isGeweiht,
-          onChanged: (value) =>
-              setState(() => _draft = _draft.copyWith(isGeweiht: value)),
-          title: const Text('Geweiht'),
-          dense: true,
-          contentPadding: EdgeInsets.zero,
+        ListTileMaterial(
+          child: SwitchListTile.adaptive(
+            key: const ValueKey<String>('inventory-editor-geweiht'),
+            value: _draft.isGeweiht,
+            onChanged: (value) =>
+                setState(() => _draft = _draft.copyWith(isGeweiht: value)),
+            title: const Text('Geweiht'),
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+          ),
         ),
         TextField(
           key: const ValueKey<String>('inventory-editor-geweiht-description'),
