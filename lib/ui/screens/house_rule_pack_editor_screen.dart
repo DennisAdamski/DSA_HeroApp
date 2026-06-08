@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/state/house_rule_pack_admin_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
 
 part 'house_rule_pack_editor/editor_state_helpers.dart';
 part 'house_rule_pack_editor/house_rule_pack_editor_support.dart';

@@ -197,19 +197,21 @@ extension _HouseRulePackStructuredEditor on _HouseRulePackEditorScreenState {
               number: true,
             ),
             const SizedBox(height: 12),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Einträge deaktivieren'),
-              subtitle: const Text(
-                'Entfernt alle durch den Selektor getroffenen Einträge.',
+            ListTileMaterial(
+              child: SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Einträge deaktivieren'),
+                subtitle: const Text(
+                  'Entfernt alle durch den Selektor getroffenen Einträge.',
+                ),
+                value: patch.deactivateEntries,
+                onChanged: (value) {
+                  setState(() {
+                    patch.deactivateEntries = value;
+                    _markValidationStale();
+                  });
+                },
               ),
-              value: patch.deactivateEntries,
-              onChanged: (value) {
-                setState(() {
-                  patch.deactivateEntries = value;
-                  _markValidationStale();
-                });
-              },
             ),
             const SizedBox(height: 12),
             _EditorTextField(

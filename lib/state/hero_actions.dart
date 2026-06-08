@@ -24,8 +24,12 @@ import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
+import 'package:dsa_heldenverwaltung/data/cloud_avatar_storage.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart'
-    show avatarFileStorageProvider, avatarThumbnailEncoderProvider;
+    show
+        avatarFileStorageProvider,
+        avatarThumbnailEncoderProvider,
+        cloudAvatarStorageProvider;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
@@ -61,11 +65,21 @@ class HeroActions {
   /// leeren [HeroState]. Standard-Talente und feste Meta-Talente werden direkt
   /// im Heldenmodell vorbelegt. Die effektiven Startwerte werden aus
   /// Herkunftsmods normalisiert gespeichert. Gibt die neue ID zurueck.
+  ///
+  /// Wirft eine Exception, wenn das Helden-Limit von [maxHeldenProNutzer]
+  /// erreicht ist.
   Future<String> createHero({
     required String name,
     required Attributes rawStartAttributes,
   }) async {
     final repo = _ref.read(heroRepositoryProvider);
+    final existingHeroes = await repo.listHeroes();
+    if (existingHeroes.length >= maxHeldenProNutzer) {
+      throw Exception(
+        'Maximale Anzahl von $maxHeldenProNutzer Helden erreicht. '
+        'Bitte lösche einen bestehenden Helden, bevor du einen neuen erstellst.',
+      );
+    }
     const uuid = Uuid();
     final id = uuid.v4();
     final hero = HeroSheet(
@@ -254,10 +268,23 @@ class HeroActions {
   ///
   /// Bei [ImportConflictResolution.createNewHero] wird eine neue UUID vergeben.
   /// Gibt die ID des importierten (ggf. neu erstellten) Helden zurueck.
+  ///
+  /// Wirft eine Exception, wenn bei [ImportConflictResolution.createNewHero]
+  /// das Helden-Limit von [maxHeldenProNutzer] erreicht ist.
   Future<String> importHeroBundle(
     HeroTransferBundle bundle, {
     required ImportConflictResolution resolution,
   }) async {
+    if (resolution == ImportConflictResolution.createNewHero) {
+      final repo = _ref.read(heroRepositoryProvider);
+      final existingHeroes = await repo.listHeroes();
+      if (existingHeroes.length >= maxHeldenProNutzer) {
+        throw Exception(
+          'Maximale Anzahl von $maxHeldenProNutzer Helden erreicht. '
+          'Bitte lösche einen bestehenden Helden, bevor du einen neuen importierst.',
+        );
+      }
+    }
     const uuid = Uuid();
 
     var hero = bundle.hero;
@@ -352,6 +379,8 @@ class HeroActions {
   /// Speichert ein KI-generiertes Avatar-Bild und legt einen Gallery-Eintrag an.
   ///
   /// [stilId] und [promptAuszug] werden am Gallery-Eintrag hinterlegt.
+  /// Wirft eine Exception, wenn das Online-Limit von [maxKiBilderOnline]
+  /// erreicht ist.
   Future<void> saveHeroAvatar({
     required String heroId,
     required List<int> pngBytes,
@@ -359,6 +388,15 @@ class HeroActions {
     String promptAuszug = '',
   }) async {
     final hero = await _loadHeroById(heroId);
+    final kiCount = hero.appearance.avatarGallery
+        .where((e) => e.quelle == 'ki')
+        .length;
+    if (kiCount >= maxKiBilderProHeld) {
+      throw Exception(
+        'Maximale Anzahl von $maxKiBilderProHeld KI-Bildern pro Held erreicht. '
+        'Bitte lösche ein bestehendes KI-Bild, bevor du ein neues generierst.',
+      );
+    }
     final heroStoragePath = await _resolveHeroStoragePath();
     final storage = _ref.read(avatarFileStorageProvider);
     const uuid = Uuid();
@@ -377,6 +415,16 @@ class HeroActions {
       heroId: heroId,
       pngBytes: pngBytes,
     );
+
+    // KI-Bild in den Cloud-Speicher hochladen
+    final cloudStorage = _ref.read(cloudAvatarStorageProvider);
+    if (cloudStorage.isAvailable) {
+      try {
+        await cloudStorage.upload(fileName, pngBytes);
+      } on Object {
+        // Cloud-Upload ist best-effort; lokales Speichern hat Vorrang.
+      }
+    }
 
     final entry = AvatarGalleryEntry(
       id: entryId,
@@ -571,6 +619,18 @@ class HeroActions {
       fileName: entry.fileName,
     );
 
+    // KI-Bild aus dem Cloud-Speicher entfernen
+    if (entry.quelle == 'ki') {
+      final cloudStorage = _ref.read(cloudAvatarStorageProvider);
+      if (cloudStorage.isAvailable) {
+        try {
+          await cloudStorage.delete(entry.fileName);
+        } on Object {
+          // Best-effort
+        }
+      }
+    }
+
     final updatedGallery = hero.appearance.avatarGallery
         .where((e) => e.id != galleryEntryId)
         .toList();
@@ -626,12 +686,20 @@ class HeroActions {
       );
     }
 
-    // Alle Gallery-Bilder loeschen
+    // Alle Gallery-Bilder loeschen (lokal und in der Cloud)
+    final cloudStorage = _ref.read(cloudAvatarStorageProvider);
     for (final entry in hero.appearance.avatarGallery) {
       await storage.deleteGalleryImage(
         heroStoragePath: heroStoragePath,
         fileName: entry.fileName,
       );
+      if (entry.quelle == 'ki' && cloudStorage.isAvailable) {
+        try {
+          await cloudStorage.delete(entry.fileName);
+        } on Object {
+          // Best-effort
+        }
+      }
     }
 
     final updated = hero.copyWith(
