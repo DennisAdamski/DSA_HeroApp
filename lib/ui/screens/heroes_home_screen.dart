@@ -112,16 +112,27 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
       if (draft == null || !context.mounted) {
         return;
       }
-      final id = await ref
-          .read(heroActionsProvider)
-          .createHero(
-            name: draft.name,
-            rawStartAttributes: draft.rawStartAttributes,
-          );
-      if (!context.mounted) {
-        return;
+      try {
+        final id = await ref
+            .read(heroActionsProvider)
+            .createHero(
+              name: draft.name,
+              rawStartAttributes: draft.rawStartAttributes,
+            );
+        if (!context.mounted) {
+          return;
+        }
+        await _openHeroWorkspace(context, id);
+      } on Exception catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString().replaceFirst('Exception: ', ''),
+            ),
+          ),
+        );
       }
-      await _openHeroWorkspace(context, id);
     }
 
     Future<void> openHeroWorkspace(String heroId) async {

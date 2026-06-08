@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_badge.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
 
 /// Seitenleiste fuer den Desktop-Helden-Deck-Modus.
@@ -103,57 +104,61 @@ class WorkspaceCommandDeckNavigationPanel extends StatelessWidget {
                     final tab = tabs[index];
                     final selected = index == activeTabIndex;
                     final dirty = isDirty(tab.id);
+                    final tileShape = RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(codex.panelRadius),
+                      side: BorderSide(
+                        color: selected ? codex.brassMuted : codex.rule,
+                      ),
+                    );
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 6),
-                      child: ListTile(
-                        selected: selected,
-                        selectedTileColor: codex.brass.withValues(alpha: 0.14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            codex.panelRadius,
+                      child: ListTileMaterial(
+                        shape: tileShape,
+                        child: ListTile(
+                          selected: selected,
+                          selectedTileColor: codex.brass.withValues(
+                            alpha: 0.14,
                           ),
-                          side: BorderSide(
-                            color: selected ? codex.brassMuted : codex.rule,
-                          ),
-                        ),
-                        leading: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Icon(tab.icon),
-                            if (dirty)
-                              Positioned(
-                                right: -3,
-                                top: -2,
-                                child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.error,
-                                    shape: BoxShape.circle,
+                          shape: tileShape,
+                          leading: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Icon(tab.icon),
+                              if (dirty)
+                                Positioned(
+                                  right: -3,
+                                  top: -2,
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.error,
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
                                 ),
-                              ),
-                          ],
-                        ),
-                        title: Text(tab.label),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              tab.helper,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (dirty) ...[
-                              const SizedBox(height: 6),
-                              const CodexBadge(
-                                label: 'Ungespeichert',
-                                tone: CodexBadgeTone.warning,
-                              ),
                             ],
-                          ],
+                          ),
+                          title: Text(tab.label),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                tab.helper,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (dirty) ...[
+                                const SizedBox(height: 6),
+                                const CodexBadge(
+                                  label: 'Ungespeichert',
+                                  tone: CodexBadgeTone.warning,
+                                ),
+                              ],
+                            ],
+                          ),
+                          onTap: () => onSelectTab(index),
                         ),
-                        onTap: () => onSelectTab(index),
                       ),
                     );
                   },

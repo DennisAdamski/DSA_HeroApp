@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/data/cloud_avatar_storage.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_style.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_prompt_rules.dart';
@@ -101,11 +102,60 @@ class _AvatarGenerationDialogState
     final showRefToggle = supportsRef && hasPrimaerbild;
     final snapshotDiff =
         ref.watch(avatarSnapshotDiffProvider(widget.heroId));
+    final kiCount = ref.watch(kiImageCountProvider(widget.heroId));
+    final kiLimitReached = kiCount >= maxKiBilderProHeld;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (kiLimitReached) ...[
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.errorContainer,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: Theme.of(context).colorScheme.onErrorContainer,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Maximale Anzahl von $maxKiBilderProHeld KI-Bildern '
+                    'erreicht. Bitte lösche ein bestehendes KI-Bild im '
+                    'Album, bevor du ein neues generierst.',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ] else ...[
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.cloud_outlined,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'KI-Bilder online: $kiCount / $maxKiBilderProHeld',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ],
         Text('Stil', style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: 8),
         Wrap(
@@ -234,7 +284,7 @@ class _AvatarGenerationDialogState
             ),
             const SizedBox(width: 8),
             FilledButton.icon(
-              onPressed: _loading ? null : _generate,
+              onPressed: _loading || kiLimitReached ? null : _generate,
               icon: _loading
                   ? const SizedBox(
                       width: 16,

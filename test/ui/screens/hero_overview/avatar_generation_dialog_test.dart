@@ -7,7 +7,8 @@ import 'package:dsa_heldenverwaltung/domain/avatar_style.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
-import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
+import 'package:dsa_heldenverwaltung/state/avatar_providers.dart'
+    show avatarApiClientProvider, kiImageCountProvider;
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_generation_dialog.dart';
 
 void main() {
@@ -42,7 +43,10 @@ void main() {
   Future<void> pumpDialog(WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [avatarApiClientProvider.overrideWithValue(null)],
+        overrides: [
+          avatarApiClientProvider.overrideWithValue(null),
+          kiImageCountProvider.overrideWith((ref, heroId) => 0),
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: AvatarGenerationDialog(heroId: 'hero-1', hero: buildHero()),
@@ -100,6 +104,7 @@ void main() {
         const ValueKey<String>('avatar-generation-reset-prompt'),
       );
       await tester.ensureVisible(resetFinder);
+      await tester.pumpAndSettle();
       await tester.tap(resetFinder);
       await tester.pumpAndSettle();
 

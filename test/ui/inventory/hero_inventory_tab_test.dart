@@ -12,6 +12,8 @@ import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
+import '../../test_support/list_tile_material_assertions.dart';
+
 HeroSheet _buildHero({
   List<HeroInventoryEntry> inventoryEntries = const <HeroInventoryEntry>[],
   String dukaten = '',
@@ -550,6 +552,10 @@ void main() {
       expect(
         find.byKey(const ValueKey<String>('inventory-editor-name')),
         findsOneWidget,
+      );
+      expectListTileFamilyWidgetHasLocalMaterial(
+        tester,
+        find.widgetWithText(SwitchListTile, 'Magisch'),
       );
     });
   });
