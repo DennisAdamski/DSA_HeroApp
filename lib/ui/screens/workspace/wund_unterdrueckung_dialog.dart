@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
+import 'package:dsa_heldenverwaltung/domain/talent_ids.dart';
 
 /// Zeigt nach dem Hinzufuegen einer Wunde einen Dialog, der sofortige
 /// Unterdrueckung via SB-Probe oder direkte Bestaetigung anbietet.
@@ -64,7 +65,7 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
 
     final sbEntry =
         (hero.talents
-            as Map<String, HeroTalentEntry>?)?['tal_selbstbeherrschung'];
+            as Map<String, HeroTalentEntry>?)?[TalentIds.selbstbeherrschung];
     final hatSb = sbEntry != null && sbEntry.talentValue != null;
     final sbTaw = hatSb
         ? computeTalentComputedTaw(

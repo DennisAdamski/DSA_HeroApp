@@ -39,6 +39,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart'
     show heroComputedProvider;
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart'
     show heroStorageLocationProvider;
+import 'package:dsa_heldenverwaltung/domain/talent_ids.dart';
 
 /// Steuert, wie beim Import eines bereits vorhandenen Helden verfahren wird.
 enum ImportConflictResolution {
@@ -1006,7 +1007,7 @@ class HeroActions {
 
 Map<String, HeroTalentEntry> _buildDefaultTalents() {
   return Map<String, HeroTalentEntry>.unmodifiable({
-    for (final talentId in _defaultTalentIds) talentId: const HeroTalentEntry(),
+    for (final talentId in kDefaultTalentIds) talentId: const HeroTalentEntry(),
   });
 }
 
@@ -1016,9 +1017,9 @@ List<HeroMetaTalent> _buildDefaultMetaTalents() {
       id: 'meta_kraeutersuchen',
       name: 'Kräutersuchen',
       componentTalentIds: <String>[
-        'tal_sinnesschaerfe',
-        'tal_wildnisleben',
-        'tal_pflanzenkunde',
+        TalentIds.sinnesschaerfe,
+        TalentIds.wildnisleben,
+        TalentIds.pflanzenkunde,
       ],
       attributes: <String>['MU', 'IN', 'FF'],
       be: '',
@@ -1026,40 +1027,6 @@ List<HeroMetaTalent> _buildDefaultMetaTalents() {
   ]);
 }
 
-const Set<String> _defaultTalentIds = <String>{
-  'tal_dolche',
-  'tal_hiebwaffen',
-  'tal_raufen',
-  'tal_ringen',
-  'tal_saebel',
-  'tal_wurfmesser',
-  'tal_athletik',
-  'tal_klettern',
-  'tal_koerperbeherrschung',
-  'tal_schleichen',
-  'tal_schwimmen',
-  'tal_selbstbeherrschung',
-  'tal_sich_verstecken',
-  'tal_singen',
-  'tal_sinnesschaerfe',
-  'tal_tanzen',
-  'tal_zechen',
-  'tal_menschenkenntnis',
-  'tal_ueberreden',
-  'tal_faehrtensuchen',
-  'tal_orientierung',
-  'tal_wildnisleben',
-  'tal_goetter_kulte',
-  'tal_rechnen',
-  'tal_sagen_legenden',
-  'tal_heilkunde_wunden',
-  'tal_holzbearbeitung',
-  'tal_kochen',
-  'tal_lederarbeiten',
-  'tal_malen_zeichnen',
-  'tal_schneidern',
-  'tal_pflanzenkunde',
-};
 
 List<HeroTransferCatalogEntry> _buildTransferCatalogEntries({
   required HeroSheet hero,

@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config/waffenmeister_config.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/maneuver_rules.dart';
+import 'package:dsa_heldenverwaltung/domain/talent_ids.dart';
 
 /// Gesamt-Budget fuer Waffenmeister-Boni.
 const int waffenmeisterTotalBudget = 15;
@@ -189,7 +190,8 @@ WaffenmeisterValidation validateBonusAllocation({
     errors.add('TP/KK -1/-1 ist nur einmalig erlaubt.');
   }
   if (tpKkCount > 0) {
-    final isAllowed = talentId == 'tal_dolche' || talentId == 'tal_fechtwaffen';
+    final isAllowed =
+        talentId == TalentIds.dolche || talentId == TalentIds.fechtwaffen;
     if (!isAllowed) {
       errors.add('TP/KK -1/-1 ist nur bei Dolchen und Fechtwaffen möglich.');
     }
@@ -242,7 +244,7 @@ WaffenmeisterValidation validateBonusAllocation({
     errors.add('Ladezeit-Halbierung ist nur einmalig erlaubt.');
   }
   if (reloadCount > 0) {
-    final isArmbrust = talentId == 'tal_armbrust';
+    final isArmbrust = talentId == TalentIds.armbrust;
     if (!isArmbrust) {
       errors.add('Ladezeit-Halbierung nur bei Armbrüsten möglich.');
     }

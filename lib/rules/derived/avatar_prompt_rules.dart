@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/avatar_style.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_snapshot_diff.dart';
+import 'package:dsa_heldenverwaltung/domain/talent_ids.dart';
 
 /// Baut einen vollstaendigen Bildgenerierungs-Prompt aus Heldendaten.
 ///
@@ -290,12 +291,12 @@ String _mapProfessionToDescription(String profession) {
 }
 
 String _buildCombatIdentity(HeroSheet hero) {
-  final saberTalent = hero.talents['tal_saebel']?.talentValue ?? 0;
+  final saberTalent = hero.talents[TalentIds.saebel]?.talentValue ?? 0;
   if (saberTalent >= 18) {
     return 'an accomplished saber duelist with a controlled, elegant stance';
   }
 
-  final daggerTalent = hero.talents['tal_dolche']?.talentValue ?? 0;
+  final daggerTalent = hero.talents[TalentIds.dolche]?.talentValue ?? 0;
   if (daggerTalent >= 18) {
     return 'clearly trained in close-quarters knife fighting';
   }

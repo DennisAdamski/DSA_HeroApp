@@ -16,6 +16,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_ini_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_unterdrueckung_dialog.dart';
+import 'package:dsa_heldenverwaltung/domain/talent_ids.dart';
 
 /// Oeffnet den Wunden-Detail-Dialog als Fullscreen-Dialog.
 Future<void> showWundenDetailDialog({
@@ -380,7 +381,7 @@ class _SbProbeSection extends StatelessWidget {
 
     final sbEntry =
         (hero.talents
-            as Map<String, HeroTalentEntry>?)?['tal_selbstbeherrschung'];
+            as Map<String, HeroTalentEntry>?)?[TalentIds.selbstbeherrschung];
     final hatSb = sbEntry != null && sbEntry.talentValue != null;
     final sbTaw = hatSb
         ? computeTalentComputedTaw(
