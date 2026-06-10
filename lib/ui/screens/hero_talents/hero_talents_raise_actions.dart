@@ -57,9 +57,7 @@ extension _HeroTalentsRaiseActions on _HeroTalentTableTabState {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Talentdefinition fehlt.')));
+      showInfoSnackBar(context, 'Talentdefinition fehlt.');
       return;
     }
 
@@ -73,13 +71,10 @@ extension _HeroTalentsRaiseActions on _HeroTalentTableTabState {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unbekannte Lernkomplexität für ${talent.name}: '
-            '${complexityResolution.effectiveKomplexitaet}',
-          ),
-        ),
+      showInfoSnackBar(
+        context,
+        'Unbekannte Lernkomplexität für ${talent.name}: '
+        '${complexityResolution.effectiveKomplexitaet}',
       );
       return;
     }
@@ -135,8 +130,6 @@ extension _HeroTalentsRaiseActions on _HeroTalentTableTabState {
       return;
     }
     _tableRevision.value++;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('${talent.name} gesteigert')));
+    showInfoSnackBar(context, '${talent.name} gesteigert');
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 /// Zeigt Gruppenname, Code und Aktionen wie Kopieren oder Verlassen.
 class GruppeDetailsSection extends ConsumerWidget {
@@ -131,15 +132,10 @@ class GruppeDetailsSection extends ConsumerWidget {
 
   void _codeKopieren(BuildContext context) {
     Clipboard.setData(ClipboardData(text: mitgliedschaft.gruppenCode));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Gruppencode kopiert')),
-    );
+    showInfoSnackBar(context, 'Gruppencode kopiert');
   }
 
-  Future<void> _gruppeVerlassen(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _gruppeVerlassen(BuildContext context, WidgetRef ref) async {
     final bestaetigt = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -164,7 +160,9 @@ class GruppeDetailsSection extends ConsumerWidget {
       return;
     }
 
-    await ref.read(heroActionsProvider).verlasseGruppe(
+    await ref
+        .read(heroActionsProvider)
+        .verlasseGruppe(
           heroId: heroId,
           gruppenCode: mitgliedschaft.gruppenCode,
         );

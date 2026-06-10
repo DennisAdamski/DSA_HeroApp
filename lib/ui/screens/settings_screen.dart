@@ -18,6 +18,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/auth/sign_in_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_management_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_unlock_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/house_rule_pack_management_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 part 'settings/settings_navigation.dart';
 part 'settings/settings_pages.dart';

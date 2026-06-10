@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 /// Oeffnet einen Dialog zur Eingabe des Katalog-Entschluesselungspassworts.
 ///
@@ -28,9 +29,7 @@ Future<bool> showCatalogUnlockDialog({
     sourceData = await ref.read(baseCatalogSourceDataProvider.future);
   } on Object {
     if (!context.mounted) return false;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Katalog konnte nicht geladen werden.')),
-    );
+    showInfoSnackBar(context, 'Katalog konnte nicht geladen werden.');
     return false;
   }
 
@@ -39,11 +38,7 @@ Future<bool> showCatalogUnlockDialog({
   if (!context.mounted) return false;
 
   if (probeValue == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Keine geschützten Katalog-Inhalte vorhanden.'),
-      ),
-    );
+    showInfoSnackBar(context, 'Keine geschützten Katalog-Inhalte vorhanden.');
     return false;
   }
 

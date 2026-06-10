@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 part 'hero_reisebericht/reisebericht_category_view.dart';
 part 'hero_reisebericht/reisebericht_entry_tile.dart';
@@ -141,15 +142,12 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
       if (rewards.eigenschaftsBoni.isNotEmpty) {
         parts.add('${rewards.eigenschaftsBoni.length}x Eigenschaftsbonus');
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Reisebericht gespeichert: ${parts.join(', ')}'),
-        ),
+      showInfoSnackBar(
+        context,
+        'Reisebericht gespeichert: ${parts.join(', ')}',
       );
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Reisebericht gespeichert')));
+      showInfoSnackBar(context, 'Reisebericht gespeichert');
     }
   }
 

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,6 +36,7 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 import 'package:uuid/uuid.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 part 'hero_magic/magic_active_spells_table.dart';
 part 'hero_magic/magic_header_section.dart';
@@ -225,9 +226,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       return;
     }
     _editController.markSaved();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Magie gespeichert')));
+    showInfoSnackBar(context, 'Magie gespeichert');
   }
 
   Future<void> _cancelChanges() async {
@@ -296,12 +295,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unbekannte Lernkomplexität für ${spell.name}: $effektiveKomplexitaet',
-          ),
-        ),
+      showInfoSnackBar(
+        context,
+        'Unbekannte Lernkomplexität für ${spell.name}: $effektiveKomplexitaet',
       );
       return;
     }
@@ -337,9 +333,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       return;
     }
     _tableRevision.value++;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('${spell.name} gesteigert')));
+    showInfoSnackBar(context, '${spell.name} gesteigert');
   }
 
   void _updateSpellModifier(String spellId, String raw) {

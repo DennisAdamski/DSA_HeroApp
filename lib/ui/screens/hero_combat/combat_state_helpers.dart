@@ -83,9 +83,7 @@ extension _CombatStateHelpers on _HeroCombatTabState {
     );
     if (weaponValidation != null) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(weaponValidation)));
+        showInfoSnackBar(context, weaponValidation);
       }
       _editController.clearSyncSignature();
       _syncDraftFromHero(hero, force: true);
@@ -96,9 +94,7 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       await ref.read(heroActionsProvider).saveHero(updatedHero);
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Speichern fehlgeschlagen: $error')),
-        );
+        showErrorSnackBar(context, error, prefix: 'Speichern fehlgeschlagen');
       }
       _editController.clearSyncSignature();
       _syncDraftFromHero(hero, force: true);
@@ -145,9 +141,7 @@ extension _CombatStateHelpers on _HeroCombatTabState {
     );
     if (weaponValidation != null) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(weaponValidation)));
+        showInfoSnackBar(context, weaponValidation);
       }
       return;
     }
@@ -161,9 +155,7 @@ extension _CombatStateHelpers on _HeroCombatTabState {
         _setInvalidCombatTalentIds(
           issues.map((entry) => entry.talentId).toSet(),
         );
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(issues.first.message)));
+        showInfoSnackBar(context, issues.first.message);
       }
       return;
     }
@@ -178,9 +170,7 @@ extension _CombatStateHelpers on _HeroCombatTabState {
     }
     _invalidCombatTalentIds = <String>{};
     _editController.markSaved();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Kampfwerte gespeichert')));
+    showInfoSnackBar(context, 'Kampfwerte gespeichert');
   }
 
   Future<void> _cancelChanges() async {

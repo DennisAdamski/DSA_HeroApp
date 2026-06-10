@@ -67,12 +67,9 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
 
     final adventure = _draftAdventures[selectedIndex];
     if (adventure.rewardsApplied) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Angewendete Abenteuer müssen erst zurückgenommen werden.',
-          ),
-        ),
+      showInfoSnackBar(
+        context,
+        'Angewendete Abenteuer müssen erst zurückgenommen werden.',
       );
       return;
     }

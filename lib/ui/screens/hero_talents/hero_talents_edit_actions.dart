@@ -88,9 +88,7 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
                 .map((entry) => entry.talentId)
                 .toSet();
           });
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(issues.first.message)));
+          showInfoSnackBar(context, issues.first.message);
         }
         return;
       }
@@ -114,9 +112,7 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
       return;
     }
     _editController.markSaved();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Talente gespeichert')));
+    showInfoSnackBar(context, 'Talente gespeichert');
   }
 
   Future<void> _cancelChanges() async {

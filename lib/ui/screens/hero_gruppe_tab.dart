@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_erstellen_dia
 import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_mitglieder_liste.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/manueller_held_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 /// Workspace-Tab für Gruppenverwaltung.
 ///
@@ -304,15 +305,11 @@ class _AktionsLeisteState extends ConsumerState<_AktionsLeiste> {
     try {
       await ref.read(heroActionsProvider).syncGruppen(widget.heroId);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Synchronisierung abgeschlossen')),
-        );
+        showInfoSnackBar(context, 'Synchronisierung abgeschlossen');
       }
     } on Exception catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Sync fehlgeschlagen: $error')));
+        showErrorSnackBar(context, error, prefix: 'Sync fehlgeschlagen');
       }
     } finally {
       if (mounted) {
@@ -363,9 +360,7 @@ class _AktionsLeisteState extends ConsumerState<_AktionsLeiste> {
 
   void _codeTeilen() {
     Clipboard.setData(ClipboardData(text: widget.gruppenCode));
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Gruppencode kopiert')));
+    showInfoSnackBar(context, 'Gruppencode kopiert');
   }
 }
 

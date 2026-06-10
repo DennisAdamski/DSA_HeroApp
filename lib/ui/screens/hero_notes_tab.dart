@@ -16,6 +16,7 @@ import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 part 'hero_notes/hero_notes_sections.dart';
 part 'hero_notes/hero_adventure_controller.dart';
@@ -170,11 +171,7 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       currentId: _selectedAdventureId,
     );
     _editController.markSaved();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Chroniken, Kontakte & Abenteuer gespeichert'),
-      ),
-    );
+    showInfoSnackBar(context, 'Chroniken, Kontakte & Abenteuer gespeichert');
   }
 
   Future<void> _cancelChanges() async {
@@ -344,9 +341,7 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     );
     if (!applyCheck.isAllowed) {
       if (applyCheck.reason.trim().isNotEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(applyCheck.reason)));
+        showInfoSnackBar(context, applyCheck.reason);
       }
       return;
     }
@@ -362,9 +357,7 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
 
     _latestHero = updatedHero;
     _syncDraftFromHero(updatedHero, force: true);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${_adventureTitle(adventure)} abgeschlossen')),
-    );
+    showInfoSnackBar(context, '${_adventureTitle(adventure)} abgeschlossen');
   }
 
   Future<void> _reopenAdventureFor(String adventureId) async {
@@ -379,9 +372,7 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     );
     if (!check.isAllowed) {
       if (check.reason.trim().isNotEmpty && mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(check.reason)));
+        showInfoSnackBar(context, check.reason);
       }
       return;
     }
@@ -398,9 +389,7 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     final adventure = _findAdventureById(hero.adventures, adventureId);
     _latestHero = updatedHero;
     _syncDraftFromHero(updatedHero, force: true);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${_adventureTitle(adventure)} wieder geöffnet')),
-    );
+    showInfoSnackBar(context, '${_adventureTitle(adventure)} wieder geöffnet');
   }
 
   HeroAdventureEntry? _findAdventureById(

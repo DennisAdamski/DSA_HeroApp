@@ -67,13 +67,10 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unbekannte Lernkomplexität für ${talent.name}: '
-            '${complexityResolution.effectiveKomplexitaet}',
-          ),
-        ),
+      showInfoSnackBar(
+        context,
+        'Unbekannte Lernkomplexität für ${talent.name}: '
+        '${complexityResolution.effectiveKomplexitaet}',
       );
       return;
     }
@@ -158,9 +155,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       return;
     }
     _viewRevision.value++;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('${talent.name} gesteigert')));
+    showInfoSnackBar(context, '${talent.name} gesteigert');
   }
 
   List<AdaptiveTableColumnSpec> _combatSubtabColumnSpecs({

@@ -253,9 +253,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
       return;
     }
     _viewRevision.value++;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${_attributeLabel(code)} gesteigert')),
-    );
+    showInfoSnackBar(context, '${_attributeLabel(code)} gesteigert');
   }
 
   Future<void> _steigeGrundwert(String key) async {
@@ -309,8 +307,6 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
       return;
     }
     _viewRevision.value++;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${_grundwertLabel(key)} gesteigert')),
-    );
+    showInfoSnackBar(context, '${_grundwertLabel(key)} gesteigert');
   }
 }

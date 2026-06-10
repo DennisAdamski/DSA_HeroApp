@@ -53,6 +53,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_generation_
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_image_evict.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/epic_activation_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 part 'hero_overview/hero_avatar_section.dart';
 part 'hero_overview/hero_overview_base_info_section.dart';
@@ -320,9 +321,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     }
 
     _editController.markSaved();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Status gespeichert')));
+    showInfoSnackBar(context, 'Status gespeichert');
   }
 
   Future<void> _cancelChanges() async {
@@ -420,9 +419,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _draftMagicEnabledOverride = magicEnabledOverride;
     _draftDivineEnabledOverride = divineEnabledOverride;
     _viewRevision.value++;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Ressourcen-Einstellungen gespeichert')),
-    );
+    showInfoSnackBar(context, 'Ressourcen-Einstellungen gespeichert');
   }
 
   Future<void> _applyApIncrement({
@@ -452,9 +449,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       }
       _latestHero = updatedHero;
       _viewRevision.value++;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('$label aktualisiert')));
+      showInfoSnackBar(context, '$label aktualisiert');
       return;
     }
     _onFieldChanged(updatedValue.toString());

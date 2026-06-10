@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/state/house_rule_pack_admin_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 part 'house_rule_pack_editor/editor_state_helpers.dart';
 part 'house_rule_pack_editor/house_rule_pack_editor_support.dart';
@@ -234,14 +235,11 @@ class _HouseRulePackEditorScreenState
         _validationIssues = issues;
         _validationIsStale = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            issues.isEmpty
-                ? 'Hausregelpaket gespeichert.'
-                : 'Hausregelpaket mit ${issues.length} Hinweis(en) gespeichert.',
-          ),
-        ),
+      showInfoSnackBar(
+        context,
+        issues.isEmpty
+            ? 'Hausregelpaket gespeichert.'
+            : 'Hausregelpaket mit ${issues.length} Hinweis(en) gespeichert.',
       );
       Navigator.of(context).pop(true);
     } on FormatException catch (error) {

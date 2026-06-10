@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/state/house_rule_pack_admin_providers.dart'
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/house_rule_pack_editor_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 /// Verwaltungsoberflaeche fuer eingebaute und importierte Hausregel-Pakete.
 class HouseRulePackManagementScreen extends ConsumerWidget {
@@ -32,11 +33,7 @@ class HouseRulePackManagementScreen extends ConsumerWidget {
             tooltip: 'Hausregeln neu laden',
             onPressed: () {
               ref.read(catalogReloadRevisionProvider.notifier).state++;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Hausregel-Pakete werden neu geladen.'),
-                ),
-              );
+              showInfoSnackBar(context, 'Hausregel-Pakete werden neu geladen.');
             },
             icon: const Icon(Icons.refresh),
           ),
@@ -305,23 +302,17 @@ class HouseRulePackManagementScreen extends ConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Hausregelpaket importiert.')),
-      );
+      showInfoSnackBar(context, 'Hausregelpaket importiert.');
     } on FormatException catch (error) {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message)));
+      showInfoSnackBar(context, error.message);
     } on Exception catch (error) {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Import fehlgeschlagen: $error')));
+      showErrorSnackBar(context, error, prefix: 'Import fehlgeschlagen');
     }
   }
 
@@ -344,22 +335,17 @@ class HouseRulePackManagementScreen extends ConsumerWidget {
       if (outcome.result == HouseRulePackExportResult.canceled) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            outcome.location == null
-                ? 'Hausregelpaket exportiert.'
-                : 'Hausregelpaket exportiert: ${outcome.location}',
-          ),
-        ),
+      showInfoSnackBar(
+        context,
+        outcome.location == null
+            ? 'Hausregelpaket exportiert.'
+            : 'Hausregelpaket exportiert: ${outcome.location}',
       );
     } on Exception catch (error) {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Export fehlgeschlagen: $error')));
+      showErrorSnackBar(context, error, prefix: 'Export fehlgeschlagen');
     }
   }
 
@@ -397,16 +383,12 @@ class HouseRulePackManagementScreen extends ConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Hausregelpaket gelöscht.')));
+      showInfoSnackBar(context, 'Hausregelpaket gelöscht.');
     } on Exception catch (error) {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Löschen fehlgeschlagen: $error')));
+      showErrorSnackBar(context, error, prefix: 'Löschen fehlgeschlagen');
     }
   }
 }

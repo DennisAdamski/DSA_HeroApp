@@ -20,6 +20,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_import_expor
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_empty_state.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_page_scaffold.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_split_view.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 /// Startscreen fuer die Heldenauswahl mit iPad-tauglicher Vorschau.
 class HeroesHomeScreen extends ConsumerStatefulWidget {
@@ -125,13 +126,7 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
         await _openHeroWorkspace(context, id);
       } on Exception catch (e) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e.toString().replaceFirst('Exception: ', ''),
-            ),
-          ),
-        );
+        showInfoSnackBar(context, e.toString().replaceFirst('Exception: ', ''));
       }
     }
 
@@ -371,9 +366,7 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
     if (!context.mounted) {
       return;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Held gelöscht: ${hero.name}')));
+    showInfoSnackBar(context, 'Held gelöscht: ${hero.name}');
   }
 
   Future<void> _exportSelectedHero({
@@ -394,33 +387,22 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
         return;
       }
       if (outcome.result == HeroTransferExportResult.savedToFile) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Held exportiert: ${outcome.location ?? 'Datei gespeichert'}',
-            ),
-          ),
+        showInfoSnackBar(
+          context,
+          'Held exportiert: ${outcome.location ?? 'Datei gespeichert'}',
         );
         return;
       }
       if (outcome.result == HeroTransferExportResult.downloaded) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Held exportiert und Download gestartet'),
-          ),
-        );
+        showInfoSnackBar(context, 'Held exportiert und Download gestartet');
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Held exportiert und geteilt')),
-      );
+      showInfoSnackBar(context, 'Held exportiert und geteilt');
     } on Exception catch (error) {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Export fehlgeschlagen: $error')));
+      showErrorSnackBar(context, error, prefix: 'Export fehlgeschlagen');
     }
   }
 
@@ -441,23 +423,17 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Held erfolgreich importiert')),
-      );
+      showInfoSnackBar(context, 'Held erfolgreich importiert');
     } on FormatException catch (error) {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Import ungültig: ${error.message}')),
-      );
+      showInfoSnackBar(context, 'Import ungültig: ${error.message}');
     } on Exception catch (error) {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Import fehlgeschlagen: $error')));
+      showErrorSnackBar(context, error, prefix: 'Import fehlgeschlagen');
     }
   }
 

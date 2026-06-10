@@ -20,9 +20,14 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 class HeroDetailScreen extends ConsumerStatefulWidget {
-  const HeroDetailScreen({super.key, required this.heroId, this.embedded = false});
+  const HeroDetailScreen({
+    super.key,
+    required this.heroId,
+    this.embedded = false,
+  });
 
   final String heroId;
   final bool embedded;
@@ -106,7 +111,9 @@ class _HeroDetailScreenState extends ConsumerState<HeroDetailScreen> {
     final actions = ref.read(heroActionsProvider);
 
     final updatedHero = hero.copyWith(
-      name: _nameController.text.trim().isEmpty ? 'Unbenannter Held' : _nameController.text.trim(),
+      name: _nameController.text.trim().isEmpty
+          ? 'Unbenannter Held'
+          : _nameController.text.trim(),
       level: int.tryParse(_levelController.text.trim())?.clamp(1, 40) ?? 1,
       attributes: Attributes(
         mu: _readInt('mu', min: 1, max: 30),
@@ -150,7 +157,7 @@ class _HeroDetailScreenState extends ConsumerState<HeroDetailScreen> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Held gespeichert')));
+    showInfoSnackBar(context, 'Held gespeichert');
   }
 
   @override
@@ -182,30 +189,57 @@ class _HeroDetailScreenState extends ConsumerState<HeroDetailScreen> {
           children: [
             Text('Basisdaten', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Name')),
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(labelText: 'Name'),
+            ),
             TextField(
               controller: _levelController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Level'),
             ),
             const SizedBox(height: 16),
-            Text('Eigenschaften', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Eigenschaften',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             _numberGrid(['mu', 'kl', 'inn', 'ch', 'ff', 'ge', 'ko', 'kk']),
             const SizedBox(height: 16),
-            Text('Zugekaufte Werte', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Zugekaufte Werte',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             _numberGrid(['b_lep', 'b_au', 'b_asp', 'b_kap', 'b_mr']),
             const SizedBox(height: 16),
-            Text('Modifikatoren', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Modifikatoren',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
-            _numberGrid(['m_lep', 'm_au', 'm_asp', 'm_kap', 'm_mr', 'm_ini', 'm_gs', 'm_ausw']),
+            _numberGrid([
+              'm_lep',
+              'm_au',
+              'm_asp',
+              'm_kap',
+              'm_mr',
+              'm_ini',
+              'm_gs',
+              'm_ausw',
+            ]),
             const SizedBox(height: 16),
-            Text('Aktuelle Ressourcen', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Aktuelle Ressourcen',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             _numberGrid(['cur_lep', 'cur_au', 'cur_asp', 'cur_kap']),
             const SizedBox(height: 16),
-            Text('Berechnete Werte', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Berechnete Werte',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -233,7 +267,9 @@ class _HeroDetailScreenState extends ConsumerState<HeroDetailScreen> {
                 OutlinedButton.icon(
                   onPressed: () async {
                     final navigator = Navigator.of(context);
-                    await ref.read(heroActionsProvider).deleteHero(widget.heroId);
+                    await ref
+                        .read(heroActionsProvider)
+                        .deleteHero(widget.heroId);
                     if (!mounted || widget.embedded) {
                       return;
                     }
@@ -311,6 +347,3 @@ class _HeroDetailScreenState extends ConsumerState<HeroDetailScreen> {
     return labels[key] ?? key;
   }
 }
-
-
-

@@ -46,6 +46,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 import 'package:dsa_heldenverwaltung/domain/string_list_utils.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
 part 'hero_combat/combat_talent_catalog_table.dart';

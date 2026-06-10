@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_entry_editor_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 /// Einstiegsscreen für die Verwaltung synchronisierbarer Custom-Kataloge.
 class CatalogManagementScreen extends ConsumerWidget {
@@ -29,9 +30,7 @@ class CatalogManagementScreen extends ConsumerWidget {
             tooltip: 'Katalog neu laden',
             onPressed: () {
               ref.read(catalogActionsProvider).reloadCatalog();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Katalog wird neu geladen.')),
-              );
+              showInfoSnackBar(context, 'Katalog wird neu geladen.');
             },
             icon: const Icon(Icons.refresh),
           ),
@@ -136,124 +135,123 @@ class _CatalogSectionScreenState extends ConsumerState<CatalogSectionScreen> {
           final sectionSnapshot = snapshot.section(widget.section);
           final entries = _filteredEntries(sectionSnapshot);
           final sectionChildren = <Widget>[
-              _InfoCard(
-                title: widget.section.displayName,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Basis: ${sectionSnapshot.baseEntries.length} · Custom: ${sectionSnapshot.customEntries.length}',
-                    ),
-                    const SizedBox(height: 12),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          await Navigator.of(context).push<bool>(
-                            MaterialPageRoute<bool>(
-                              builder: (_) => CatalogEntryEditorScreen(
-                                section: widget.section,
-                              ),
+            _InfoCard(
+              title: widget.section.displayName,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Basis: ${sectionSnapshot.baseEntries.length} · Custom: ${sectionSnapshot.customEntries.length}',
+                  ),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        await Navigator.of(context).push<bool>(
+                          MaterialPageRoute<bool>(
+                            builder: (_) => CatalogEntryEditorScreen(
+                              section: widget.section,
                             ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.add),
+                      label: Text('+ ${widget.section.singularLabel}'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _searchController,
+                    onChanged: (_) => setState(() {}),
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Suchen',
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ChoiceChip(
+                        label: const Text('Alle'),
+                        selected:
+                            _sourceFilter == _CatalogEntrySourceFilter.all,
+                        onSelected: (_) {
+                          setState(
+                            () => _sourceFilter = _CatalogEntrySourceFilter.all,
                           );
                         },
-                        icon: const Icon(Icons.add),
-                        label: Text('+ ${widget.section.singularLabel}'),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _searchController,
-                      onChanged: (_) => setState(() {}),
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Suchen',
-                        prefixIcon: Icon(Icons.search),
+                      ChoiceChip(
+                        label: const Text('Basis'),
+                        selected:
+                            _sourceFilter == _CatalogEntrySourceFilter.base,
+                        onSelected: (_) {
+                          setState(
+                            () =>
+                                _sourceFilter = _CatalogEntrySourceFilter.base,
+                          );
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        ChoiceChip(
-                          label: const Text('Alle'),
-                          selected:
-                              _sourceFilter == _CatalogEntrySourceFilter.all,
-                          onSelected: (_) {
-                            setState(
-                              () =>
-                                  _sourceFilter = _CatalogEntrySourceFilter.all,
-                            );
-                          },
-                        ),
-                        ChoiceChip(
-                          label: const Text('Basis'),
-                          selected:
-                              _sourceFilter == _CatalogEntrySourceFilter.base,
-                          onSelected: (_) {
-                            setState(
-                              () => _sourceFilter =
-                                  _CatalogEntrySourceFilter.base,
-                            );
-                          },
-                        ),
-                        ChoiceChip(
-                          label: const Text('Custom'),
-                          selected:
-                              _sourceFilter == _CatalogEntrySourceFilter.custom,
-                          onSelected: (_) {
-                            setState(
-                              () => _sourceFilter =
-                                  _CatalogEntrySourceFilter.custom,
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
+                      ChoiceChip(
+                        label: const Text('Custom'),
+                        selected:
+                            _sourceFilter == _CatalogEntrySourceFilter.custom,
+                        onSelected: (_) {
+                          setState(
+                            () => _sourceFilter =
+                                _CatalogEntrySourceFilter.custom,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            if (sectionSnapshot.issues.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _IssueCard(
+                issues: sectionSnapshot.issues,
+                title: 'Fehlerhafte Custom-Dateien',
+              ),
+            ],
+            const SizedBox(height: 16),
+            if (entries.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Text('Keine Einträge für den aktuellen Filter.'),
                 ),
               ),
-              if (sectionSnapshot.issues.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                _IssueCard(
-                  issues: sectionSnapshot.issues,
-                  title: 'Fehlerhafte Custom-Dateien',
-                ),
-              ],
-              const SizedBox(height: 16),
-              if (entries.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Center(
-                    child: Text('Keine Einträge für den aktuellen Filter.'),
+            for (final entry in entries) ...[
+              Card(
+                child: ListTile(
+                  title: Text(entry.name),
+                  subtitle: Text(
+                    '${entry.id} · ${entry.isCustom ? 'Custom' : 'Basis'}',
                   ),
-                ),
-              for (final entry in entries) ...[
-                Card(
-                  child: ListTile(
-                    title: Text(entry.name),
-                    subtitle: Text(
-                      '${entry.id} · ${entry.isCustom ? 'Custom' : 'Basis'}',
-                    ),
-                    trailing: entry.isCustom
-                        ? const Icon(Icons.edit_outlined)
-                        : const Icon(Icons.lock_outline),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => CatalogEntryDetailScreen(
-                            section: widget.section,
-                            entryId: entry.id,
-                            isCustom: entry.isCustom,
-                          ),
+                  trailing: entry.isCustom
+                      ? const Icon(Icons.edit_outlined)
+                      : const Icon(Icons.lock_outline),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => CatalogEntryDetailScreen(
+                          section: widget.section,
+                          entryId: entry.id,
+                          isCustom: entry.isCustom,
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
-                const SizedBox(height: 8),
-              ],
+              ),
+              const SizedBox(height: 8),
+            ],
           ];
           return ListView.builder(
             padding: const EdgeInsets.all(16),
@@ -435,17 +433,20 @@ class CatalogEntryDetailScreen extends ConsumerWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               const SizedBox(height: 16),
-              Builder(builder: (context) {
-                final visible = resolvedEntry.isCustom ||
-                    ref.watch(catalogContentVisibleProvider);
-                final displayData = visible
-                    ? resolvedEntry.data
-                    : _redactEncryptedFields(resolvedEntry.data);
-                return _InfoCard(
-                  title: 'JSON',
-                  child: SelectableText(encoder.convert(displayData)),
-                );
-              }),
+              Builder(
+                builder: (context) {
+                  final visible =
+                      resolvedEntry.isCustom ||
+                      ref.watch(catalogContentVisibleProvider);
+                  final displayData = visible
+                      ? resolvedEntry.data
+                      : _redactEncryptedFields(resolvedEntry.data);
+                  return _InfoCard(
+                    title: 'JSON',
+                    child: SelectableText(encoder.convert(displayData)),
+                  );
+                },
+              ),
             ],
           );
         },

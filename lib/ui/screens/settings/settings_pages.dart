@@ -317,9 +317,7 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
     if (!context.mounted) {
       return;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Sync-Konflikt aufgelöst.')));
+    showInfoSnackBar(context, 'Sync-Konflikt aufgelöst.');
   }
 
   String _formatSyncTime(DateTime? value) {
@@ -360,8 +358,8 @@ class _SyncConflictTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final hasDetails = conflict.localApTotal != null ||
-        conflict.remoteApTotal != null;
+    final hasDetails =
+        conflict.localApTotal != null || conflict.remoteApTotal != null;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: DecoratedBox(
@@ -377,13 +375,21 @@ class _SyncConflictTile extends StatelessWidget {
               Text(conflict.title, style: theme.textTheme.titleSmall),
               const SizedBox(height: 8),
               if (hasDetails) ...[
-                _buildSideInfo('Lokal', conflict.localSummary,
-                    conflict.localApTotal, conflict.localApAvailable,
-                    conflict.localUpdatedAt),
+                _buildSideInfo(
+                  'Lokal',
+                  conflict.localSummary,
+                  conflict.localApTotal,
+                  conflict.localApAvailable,
+                  conflict.localUpdatedAt,
+                ),
                 const SizedBox(height: 2),
-                _buildSideInfo('Online', conflict.remoteSummary,
-                    conflict.remoteApTotal, conflict.remoteApAvailable,
-                    conflict.remoteUpdatedAt),
+                _buildSideInfo(
+                  'Online',
+                  conflict.remoteSummary,
+                  conflict.remoteApTotal,
+                  conflict.remoteApAvailable,
+                  conflict.remoteUpdatedAt,
+                ),
               ] else ...[
                 Text('Lokal: ${conflict.localSummary}'),
                 Text('Online: ${conflict.remoteSummary}'),
@@ -421,8 +427,13 @@ class _SyncConflictTile extends StatelessWidget {
     );
   }
 
-  static Widget _buildSideInfo(String label, String summary, int? apTotal,
-      int? apAvailable, DateTime? updatedAt) {
+  static Widget _buildSideInfo(
+    String label,
+    String summary,
+    int? apTotal,
+    int? apAvailable,
+    DateTime? updatedAt,
+  ) {
     final parts = <String>[summary];
     if (apTotal != null) parts.add('$apTotal AP');
     if (apAvailable != null) parts.add('$apAvailable frei');
@@ -513,12 +524,9 @@ class _StorageSettingsPage extends ConsumerWidget {
                                   if (!context.mounted) {
                                     return;
                                   }
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Heldenspeicher auf Standardpfad zurückgesetzt.',
-                                      ),
-                                    ),
+                                  showInfoSnackBar(
+                                    context,
+                                    'Heldenspeicher auf Standardpfad zurückgesetzt.',
                                   );
                                 }
                               : null,
@@ -589,9 +597,7 @@ class _StorageSettingsPage extends ConsumerWidget {
     if (!context.mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Heldenspeicher aktualisiert.')),
-    );
+    showInfoSnackBar(context, 'Heldenspeicher aktualisiert.');
   }
 
   Future<void> _openStorageFolder({
@@ -604,8 +610,10 @@ class _StorageSettingsPage extends ConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ordner konnte nicht geöffnet werden: $error')),
+      showErrorSnackBar(
+        context,
+        error,
+        prefix: 'Ordner konnte nicht geöffnet werden',
       );
     }
   }
@@ -959,9 +967,7 @@ class _CatalogContentPasswordCard extends ConsumerWidget {
     if (!context.mounted) {
       return;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Katalog-Passwort entfernt.')));
+    showInfoSnackBar(context, 'Katalog-Passwort entfernt.');
   }
 }
 
@@ -1075,11 +1081,7 @@ class _AvatarApiSettingsPageState
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Bildgenerierung-Einstellungen gespeichert.'),
-      ),
-    );
+    showInfoSnackBar(context, 'Bildgenerierung-Einstellungen gespeichert.');
   }
 }
 

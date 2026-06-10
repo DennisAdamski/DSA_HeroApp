@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
 
 /// Direkt speicherndes Geldfeld fuer den Inventar-Tab.
 ///
@@ -88,11 +89,7 @@ class _DukatenFieldState extends State<DukatenField> {
   }
 
   void _showInvalidMoneySnackBar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Der Dukatenwert ist nicht numerisch lesbar.'),
-      ),
-    );
+    showInfoSnackBar(context, 'Der Dukatenwert ist nicht numerisch lesbar.');
   }
 
   String _breakdownLabel() {
