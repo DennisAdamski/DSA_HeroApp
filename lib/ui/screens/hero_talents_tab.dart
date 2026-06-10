@@ -42,6 +42,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/domain/string_list_utils.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/app_snack_bar.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/modifier_list_editor.dart';
 
 part 'hero_talents/hero_talents_cells.dart';
 part 'hero_talents/hero_talents_edit_actions.dart';
