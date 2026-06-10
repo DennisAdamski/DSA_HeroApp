@@ -65,14 +65,10 @@ class _AttributeModifierDetailDialogState
   void initState() {
     super.initState();
     _modifierControllers = widget.namedModifiers
-        .map(
-          (entry) => TextEditingController(text: entry.modifier.toString()),
-        )
+        .map((entry) => TextEditingController(text: entry.modifier.toString()))
         .toList(growable: true);
     _descriptionControllers = widget.namedModifiers
-        .map(
-          (entry) => TextEditingController(text: entry.description),
-        )
+        .map((entry) => TextEditingController(text: entry.description))
         .toList(growable: true);
   }
 
@@ -182,8 +178,9 @@ class _AttributeModifierDetailDialogState
       modifierFields.add(const SizedBox(height: kDialogInlineSpacing));
     }
 
-    final nonZeroSources =
-        widget.parsedSources.where((entry) => entry.value != 0).toList();
+    final nonZeroSources = widget.parsedSources
+        .where((entry) => entry.value != 0)
+        .toList();
 
     return AlertDialog(
       title: Text('Modifikatoren: ${widget.attributeLabel}'),
@@ -208,7 +205,7 @@ class _AttributeModifierDetailDialogState
                   key: const ValueKey<String>('attr-modifiers-add'),
                   onPressed: _addModifierField,
                   icon: const Icon(Icons.add),
-                  label: const Text('Modifikator hinzufuegen'),
+                  label: const Text('Modifikator hinzufügen'),
                 ),
               ),
               if (nonZeroSources.isNotEmpty) ...[
@@ -220,12 +217,7 @@ class _AttributeModifierDetailDialogState
               ],
               const Divider(height: kDialogSectionSpacing * 2),
               _sourceRow(theme, 'Wert', widget.baseValue),
-              _sourceRow(
-                theme,
-                'Aktuell',
-                widget.effectiveValue,
-                bold: true,
-              ),
+              _sourceRow(theme, 'Aktuell', widget.effectiveValue, bold: true),
             ],
           ),
         ),
@@ -273,10 +265,7 @@ class _AttributeModifierDetailDialogState
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
-          SizedBox(
-            width: 140,
-            child: Text(label, style: labelStyle),
-          ),
+          SizedBox(width: 140, child: Text(label, style: labelStyle)),
           Text('$sign$value', style: style),
         ],
       ),

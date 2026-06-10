@@ -36,7 +36,7 @@ class WeaponDamageSection extends StatelessWidget {
         children: [
           _numberField(
             keyName: 'combat-weapon-form-dice-count',
-            label: 'Wuerfel',
+            label: 'Würfel',
             controller: tpDiceCountController,
             onChanged: onTpDiceCountChanged,
           ),

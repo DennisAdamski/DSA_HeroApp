@@ -235,7 +235,7 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
                         initialValue: _learningComplexity,
                         isExpanded: true,
                         decoration: const InputDecoration(
-                          labelText: 'Lernkomplexitaet',
+                          labelText: 'Lernkomplexität',
                         ),
                         items: kRitualKnowledgeComplexities
                             .map((complexity) {

@@ -37,14 +37,10 @@ class _TalentModifiersDialogState extends State<_TalentModifiersDialog> {
   void initState() {
     super.initState();
     _modifierControllers = widget.initialModifiers
-        .map(
-          (entry) => TextEditingController(text: entry.modifier.toString()),
-        )
+        .map((entry) => TextEditingController(text: entry.modifier.toString()))
         .toList(growable: true);
     _descriptionControllers = widget.initialModifiers
-        .map(
-          (entry) => TextEditingController(text: entry.description),
-        )
+        .map((entry) => TextEditingController(text: entry.description))
         .toList(growable: true);
   }
 
@@ -92,7 +88,8 @@ class _TalentModifiersDialogState extends State<_TalentModifiersDialog> {
       if (description.isEmpty) {
         continue;
       }
-      final modifier = int.tryParse(_modifierControllers[index].text.trim()) ?? 0;
+      final modifier =
+          int.tryParse(_modifierControllers[index].text.trim()) ?? 0;
       modifiers.add(
         HeroTalentModifier(modifier: modifier, description: description),
       );
@@ -170,7 +167,7 @@ class _TalentModifiersDialogState extends State<_TalentModifiersDialog> {
                   key: const ValueKey<String>('talent-modifiers-add'),
                   onPressed: _addModifierField,
                   icon: const Icon(Icons.add),
-                  label: const Text('Modifikator hinzufuegen'),
+                  label: const Text('Modifikator hinzufügen'),
                 ),
               ),
             ],

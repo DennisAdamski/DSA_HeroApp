@@ -332,7 +332,7 @@ Widget _buildKnowledgeSummary(
       contentPadding: EdgeInsets.zero,
       title: const Text('Ritualkenntnis'),
       subtitle: Text(
-        'TaW ${ownKnowledge.value}  |  Komplexitaet ${ownKnowledge.learningComplexity}',
+        'TaW ${ownKnowledge.value}  |  Komplexität ${ownKnowledge.learningComplexity}',
         style: theme.textTheme.bodySmall,
       ),
     );
@@ -343,7 +343,7 @@ Widget _buildKnowledgeSummary(
       Text('Abgeleitete Talente', style: theme.textTheme.titleSmall),
       const SizedBox(height: 6),
       if (resolvedTalents.isEmpty)
-        Text('Keine Talente verknuepft.', style: theme.textTheme.bodySmall)
+        Text('Keine Talente verknüpft.', style: theme.textTheme.bodySmall)
       else
         ...resolvedTalents.map((talent) {
           return Padding(
@@ -368,7 +368,7 @@ String _buildCategorySummary(
     return 'Ritualkenntnis, TaW ${knowledge.value}, Kompl. ${knowledge.learningComplexity}';
   }
   if (resolvedTalents.isEmpty) {
-    return 'Talentbasiert, keine Talente verknuepft';
+    return 'Talentbasiert, keine Talente verknüpft';
   }
   return resolvedTalents
       .map((talent) => '${talent.talentName} (${talent.talentValue})')

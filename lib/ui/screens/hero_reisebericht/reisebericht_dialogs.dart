@@ -6,10 +6,7 @@ part of 'package:dsa_heldenverwaltung/ui/screens/hero_reisebericht_tab.dart';
 
 /// Bestaetigungsdialog fuer die Ruecknahme eines bereits angewendeten Eintrags.
 class _RevokeConfirmDialog extends StatelessWidget {
-  const _RevokeConfirmDialog({
-    required this.rewards,
-    required this.entryName,
-  });
+  const _RevokeConfirmDialog({required this.rewards, required this.entryName});
 
   final ReiseberichtRewards rewards;
   final String entryName;
@@ -44,8 +41,11 @@ class _RevokeConfirmDialog extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
                   children: [
-                    const Icon(Icons.remove_circle_outline,
-                        size: 16, color: Colors.red),
+                    const Icon(
+                      Icons.remove_circle_outline,
+                      size: 16,
+                      color: Colors.red,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(child: Text(part)),
                   ],
@@ -107,7 +107,7 @@ class _OpenItemAddDialogState extends State<_OpenItemAddDialog> {
     final hasKlassifikationen = widget.def.klassifikationen.isNotEmpty;
 
     return AdaptiveInputDialog(
-      title: '${widget.def.name}: Eintrag hinzufuegen',
+      title: '${widget.def.name}: Eintrag hinzufügen',
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +181,7 @@ class _OpenItemAddDialogState extends State<_OpenItemAddDialog> {
               ),
             );
           },
-          child: const Text('Hinzufuegen'),
+          child: const Text('Hinzufügen'),
         ),
       ],
     );
@@ -250,10 +250,7 @@ class _WahlSeDialogState extends State<_WahlSeDialog> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   for (final option in widget.seDef.optionen)
-                    RadioListTile<String>(
-                      title: Text(option),
-                      value: option,
-                    ),
+                    RadioListTile<String>(title: Text(option), value: option),
                 ],
               ),
             )

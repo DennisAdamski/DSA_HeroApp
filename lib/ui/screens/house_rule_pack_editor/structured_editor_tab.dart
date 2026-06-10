@@ -91,7 +91,7 @@ extension _HouseRulePackStructuredEditor on _HouseRulePackEditorScreenState {
                 if (_patches.isEmpty)
                   Text(
                     'Noch keine Patches definiert. Ein Paket ohne Patches ist '
-                    'gueltig, wirkt aber nicht auf den Katalog.',
+                    'gültig, wirkt aber nicht auf den Katalog.',
                     style: Theme.of(context).textTheme.bodySmall,
                   )
                 else

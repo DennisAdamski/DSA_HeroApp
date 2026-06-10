@@ -85,7 +85,7 @@ class WeaponRangedSection extends StatelessWidget {
             key: const ValueKey<String>('combat-weapon-form-projectile-add'),
             onPressed: onAddProjectile,
             icon: const Icon(Icons.add),
-            label: const Text('Geschoss hinzufuegen'),
+            label: const Text('Geschoss hinzufügen'),
           ),
           const SizedBox(height: 10),
           if (projectiles.isEmpty)

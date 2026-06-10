@@ -71,7 +71,7 @@ class _RangedProjectileEditorDialogState
   @override
   Widget build(BuildContext context) {
     return AdaptiveInputDialog(
-      title: widget.isNew ? 'Geschoss hinzufuegen' : 'Geschoss bearbeiten',
+      title: widget.isNew ? 'Geschoss hinzufügen' : 'Geschoss bearbeiten',
       maxWidth: kDialogWidthSmall,
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -113,9 +113,7 @@ class _RangedProjectileEditorDialogState
           ),
           const SizedBox(height: 10),
           TextField(
-            key: const ValueKey<String>(
-              'combat-projectile-form-description',
-            ),
+            key: const ValueKey<String>('combat-projectile-form-description'),
             controller: _descriptionController,
             minLines: 2,
             maxLines: 4,

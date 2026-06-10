@@ -171,7 +171,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
               ActionChip(
                 key: ValueKey<String>('talents-combat-spec-add-${talent.id}'),
                 avatar: const Icon(Icons.add, size: 16),
-                label: const Text('Hinzufuegen'),
+                label: const Text('Hinzufügen'),
                 visualDensity: VisualDensity.compact,
                 materialTapTargetSize: adaptiveTapTargetSize(context),
                 padding: EdgeInsets.zero,
@@ -352,7 +352,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
             ActionChip(
               key: ValueKey<String>('talents-spec-add-$talentId'),
               avatar: const Icon(Icons.add, size: 16),
-              label: const Text('Hinzufuegen'),
+              label: const Text('Hinzufügen'),
               visualDensity: VisualDensity.compact,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               padding: EdgeInsets.zero,
@@ -374,7 +374,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Spezialisierung hinzufuegen'),
+          title: const Text('Spezialisierung hinzufügen'),
           content: TextField(
             controller: controller,
             autofocus: true,
@@ -390,7 +390,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
             ),
             FilledButton(
               onPressed: () => Navigator.of(ctx).pop(controller.text),
-              child: const Text('Hinzufuegen'),
+              child: const Text('Hinzufügen'),
             ),
           ],
         );

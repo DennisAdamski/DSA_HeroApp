@@ -109,7 +109,7 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                           resultLabel: preview.tpExpression,
                           steps: [
                             _calcStep(
-                              'Wuerfel',
+                              'Würfel',
                               null,
                               label:
                                   '${weapon.tpDiceCount}W${weapon.tpDiceSides}',
@@ -322,7 +322,7 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                   resultLabel: offhandPreview.tpExpression!,
                   steps: [
                     _calcStep(
-                      'Wuerfel',
+                      'Würfel',
                       null,
                       label:
                           '${offhandWeapon.tpDiceCount}W${offhandWeapon.tpDiceSides}',
@@ -371,7 +371,7 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
           resultLabel: preview.tpExpression,
           steps: [
             _calcStep(
-              'Wuerfel',
+              'Würfel',
               null,
               label: '${weapon.tpDiceCount}W${weapon.tpDiceSides}',
             ),

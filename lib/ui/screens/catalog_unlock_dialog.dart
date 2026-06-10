@@ -41,7 +41,7 @@ Future<bool> showCatalogUnlockDialog({
   if (probeValue == null) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Keine geschuetzten Katalog-Inhalte vorhanden.'),
+        content: Text('Keine geschützten Katalog-Inhalte vorhanden.'),
       ),
     );
     return false;
@@ -172,10 +172,7 @@ class _CatalogUnlockDialogState extends State<_CatalogUnlockDialog> {
           onPressed: () => Navigator.of(context).pop(false),
           child: const Text('Abbrechen'),
         ),
-        FilledButton(
-          onPressed: _submit,
-          child: const Text('Freischalten'),
-        ),
+        FilledButton(onPressed: _submit, child: const Text('Freischalten')),
       ],
     );
   }

@@ -61,14 +61,10 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
   void initState() {
     super.initState();
     _modifierControllers = widget.namedModifiers
-        .map(
-          (entry) => TextEditingController(text: entry.modifier.toString()),
-        )
+        .map((entry) => TextEditingController(text: entry.modifier.toString()))
         .toList(growable: true);
     _descriptionControllers = widget.namedModifiers
-        .map(
-          (entry) => TextEditingController(text: entry.description),
-        )
+        .map((entry) => TextEditingController(text: entry.description))
         .toList(growable: true);
   }
 
@@ -179,8 +175,9 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
     }
 
     // Read-only Quellen (nur Nicht-Null-Werte anzeigen).
-    final nonZeroSources =
-        widget.parsedSources.where((entry) => entry.value != 0).toList();
+    final nonZeroSources = widget.parsedSources
+        .where((entry) => entry.value != 0)
+        .toList();
 
     return AlertDialog(
       title: Text('Modifikatoren: ${widget.statLabel}'),
@@ -205,7 +202,7 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
                   key: const ValueKey<String>('stat-modifiers-add'),
                   onPressed: _addModifierField,
                   icon: const Icon(Icons.add),
-                  label: const Text('Modifikator hinzufuegen'),
+                  label: const Text('Modifikator hinzufügen'),
                 ),
               ),
               if (nonZeroSources.isNotEmpty) ...[
@@ -264,10 +261,7 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
-          SizedBox(
-            width: 140,
-            child: Text(label, style: labelStyle),
-          ),
+          SizedBox(width: 140, child: Text(label, style: labelStyle)),
           Text('$sign$value', style: style),
         ],
       ),

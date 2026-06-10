@@ -56,11 +56,7 @@ class _ReiseberichtEntryTile extends StatelessWidget {
         allDefs: allDefs,
         draft: draft,
       ),
-      'meta' => _MetaTile(
-        def: def,
-        allDefs: allDefs,
-        draft: draft,
-      ),
+      'meta' => _MetaTile(def: def, allDefs: allDefs, draft: draft),
       _ => const SizedBox.shrink(),
     };
   }
@@ -72,7 +68,11 @@ class _ReiseberichtEntryTile extends StatelessWidget {
 
 /// Zeigt AP-Badge und SE-Chips fuer einen Eintrag.
 class _RewardChips extends StatelessWidget {
-  const _RewardChips({this.ap = 0, this.seDefs = const [], this.talentBoni = const []});
+  const _RewardChips({
+    this.ap = 0,
+    this.seDefs = const [],
+    this.talentBoni = const [],
+  });
 
   final int ap;
   final List<ReiseberichtSeDef> seDefs;
@@ -85,16 +85,13 @@ class _RewardChips extends StatelessWidget {
       chips.add(_SmallChip(label: '+$ap AP', color: Colors.amber));
     }
     for (final se in seDefs) {
-      final label = se.ziel == 'wahl'
-          ? 'SE: ${se.name}'
-          : 'SE ${se.name}';
+      final label = se.ziel == 'wahl' ? 'SE: ${se.name}' : 'SE ${se.name}';
       chips.add(_SmallChip(label: label, color: Colors.blue));
     }
     for (final tb in talentBoni) {
-      chips.add(_SmallChip(
-        label: '+${tb.wert} ${tb.talentName}',
-        color: Colors.green,
-      ));
+      chips.add(
+        _SmallChip(label: '+${tb.wert} ${tb.talentName}', color: Colors.green),
+      );
     }
     if (chips.isEmpty) return const SizedBox.shrink();
     return Padding(
@@ -205,7 +202,10 @@ class _CheckpointTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (def.beschreibung.isNotEmpty)
-              Text(def.beschreibung, style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                def.beschreibung,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             _RewardChips(ap: def.ap, seDefs: def.se),
           ],
         ),
@@ -233,8 +233,9 @@ class _MultiRequirementTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final doneCount =
-        def.anforderungen.where((r) => draft.checkedIds.contains(r.id)).length;
+    final doneCount = def.anforderungen
+        .where((r) => draft.checkedIds.contains(r.id))
+        .length;
     final totalCount = def.anforderungen.length;
 
     return Card(
@@ -251,7 +252,10 @@ class _MultiRequirementTile extends StatelessWidget {
           ],
         ),
         subtitle: def.beschreibung.isNotEmpty
-            ? Text(def.beschreibung, style: Theme.of(context).textTheme.bodySmall)
+            ? Text(
+                def.beschreibung,
+                style: Theme.of(context).textTheme.bodySmall,
+              )
             : null,
         children: [
           for (final req in def.anforderungen)
@@ -309,7 +313,9 @@ class _CollectionFixedTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 4),
       child: ExpansionTile(
         leading: Icon(
-          checkedCount >= totalCount ? Icons.check_circle : Icons.circle_outlined,
+          checkedCount >= totalCount
+              ? Icons.check_circle
+              : Icons.circle_outlined,
           color: checkedCount >= totalCount ? Colors.green : null,
         ),
         title: Row(
@@ -322,7 +328,10 @@ class _CollectionFixedTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (def.beschreibung.isNotEmpty)
-              Text(def.beschreibung, style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                def.beschreibung,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             if (def.apProEintrag > 0)
               _RewardChips(ap: def.apProEintrag, seDefs: const []),
             if (def.schwelle > 0)
@@ -428,9 +437,9 @@ class _CollectionOpenTile extends StatelessWidget {
                 ),
                 child: Text(
                   '$itemCount',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
           ],
@@ -439,7 +448,10 @@ class _CollectionOpenTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (def.beschreibung.isNotEmpty)
-              Text(def.beschreibung, style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                def.beschreibung,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             _RewardChips(ap: def.apProEintrag, seDefs: const []),
             if (def.seIntervall > 0 && def.se.isNotEmpty)
               Padding(
@@ -456,7 +468,11 @@ class _CollectionOpenTile extends StatelessWidget {
             ListTile(
               dense: true,
               contentPadding: const EdgeInsets.only(left: 32, right: 16),
-              leading: const Icon(Icons.check_box, size: 20, color: Colors.green),
+              leading: const Icon(
+                Icons.check_box,
+                size: 20,
+                color: Colors.green,
+              ),
               title: Text(items[i].name),
               subtitle: items[i].klassifikation.isNotEmpty
                   ? Text(
@@ -464,8 +480,8 @@ class _CollectionOpenTile extends StatelessWidget {
                           (items[i].ap > 0 ? ' (+${items[i].ap} AP)' : ''),
                     )
                   : items[i].ap > 0
-                      ? Text('+${items[i].ap} AP')
-                      : null,
+                  ? Text('+${items[i].ap} AP')
+                  : null,
               trailing: isEditing
                   ? IconButton(
                       icon: const Icon(Icons.delete_outline, size: 20),
@@ -481,7 +497,7 @@ class _CollectionOpenTile extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: () => _showAddDialog(context),
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Hinzufuegen'),
+                  label: const Text('Hinzufügen'),
                 ),
               ),
             ),
@@ -502,7 +518,9 @@ class _CollectionOpenTile extends StatelessWidget {
       draft.openEntries[def.id] ?? const [],
     );
     items.removeAt(index);
-    final updated = Map<String, List<ReiseberichtOpenItem>>.of(draft.openEntries);
+    final updated = Map<String, List<ReiseberichtOpenItem>>.of(
+      draft.openEntries,
+    );
     updated[def.id] = items;
     onUpdateDraft(draft.copyWith(openEntries: updated));
   }
@@ -572,7 +590,10 @@ class _GroupedProgressionTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (def.beschreibung.isNotEmpty)
-              Text(def.beschreibung, style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                def.beschreibung,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             _RewardChips(ap: def.ap, seDefs: def.se),
           ],
         ),
@@ -654,9 +675,12 @@ class _MetaTile extends StatelessWidget {
     final complete = isReiseberichtEntryComplete(def, draft, allDefs);
 
     // Fortschritt berechnen
-    final sameCategory = allDefs.where(
-      (d) => d.kategorie == def.kategorie && d.id != def.id && d.typ != 'meta',
-    ).toList(growable: false);
+    final sameCategory = allDefs
+        .where(
+          (d) =>
+              d.kategorie == def.kategorie && d.id != def.id && d.typ != 'meta',
+        )
+        .toList(growable: false);
     final doneCount = sameCategory
         .where((d) => isReiseberichtEntryComplete(d, draft, allDefs))
         .length;
@@ -683,7 +707,10 @@ class _MetaTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (def.beschreibung.isNotEmpty)
-              Text(def.beschreibung, style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                def.beschreibung,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             if (!complete)
               Padding(
                 padding: const EdgeInsets.only(top: 2),
@@ -700,10 +727,7 @@ class _MetaTile extends StatelessWidget {
                   color: Colors.amber,
                 ),
               ),
-            _RewardChips(
-              ap: def.ap,
-              seDefs: def.se,
-            ),
+            _RewardChips(ap: def.ap, seDefs: def.se),
             if (def.eigenschaftsBonus.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
