@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
+
 /// Beschreibt ein einzelnes Ruestungsstueck des Helden.
 ///
 /// Unveraenderlich; Aktualisierungen erfolgen ueber [copyWith].
@@ -85,13 +87,12 @@ class ArmorPiece {
   ///
   /// Tolerant bei fehlenden Feldern (Standardwerte werden gesetzt).
   static ArmorPiece fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return ArmorPiece(
       name: (json['name'] as String?) ?? '',
       isActive: (json['isActive'] as bool?) ?? false,
       rg1Active: (json['rg1Active'] as bool?) ?? false,
-      rs: getInt('rs'),
-      be: getInt('be'),
+      rs: readJsonInt(json, 'rs'),
+      be: readJsonInt(json, 'be'),
       isArtifact: (json['isArtifact'] as bool?) ?? false,
       artifactDescription: (json['artifactDescription'] as String?) ?? '',
       isGeweiht: (json['isGeweiht'] as bool?) ?? false,

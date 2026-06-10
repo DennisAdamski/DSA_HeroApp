@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
 
 // [MermaidChart: ff341120-63ae-42dd-88e7-391a12fcef7f]
 /// Einzelner Modifikatorbaustein eines Talents.
@@ -179,8 +180,6 @@ class HeroTalentEntry {
   ///   Schemata), wird die Liste aus dem [specializations]-Freitext geparst.
   ///   So bleibt der AT/PA-Anzeigemodus bei importierten Althelden erhalten.
   static HeroTalentEntry fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
-    String getString(String key) => (json[key] as String?) ?? '';
     List<String> getStringList(String key) {
       final raw = json[key];
       if (raw is! List) {
@@ -209,7 +208,7 @@ class HeroTalentEntry {
       return _normalizeTalentModifiers(entries);
     }
 
-    final legacySpecializations = getString('specializations');
+    final legacySpecializations = readJsonString(json, 'specializations');
     final parsedCombatSpecializations = _normalizeStringList(
       getStringList('combatSpecializations'),
     );
@@ -225,14 +224,14 @@ class HeroTalentEntry {
 
     return HeroTalentEntry(
       talentValue: (json['talentValue'] as num?)?.toInt(),
-      atValue: getInt('atValue'),
-      paValue: getInt('paValue'),
+      atValue: readJsonInt(json, 'atValue'),
+      paValue: readJsonInt(json, 'paValue'),
       talentModifiers: talentModifiers,
-      specialExperiences: getInt('specialExperiences'),
+      specialExperiences: readJsonInt(json, 'specialExperiences'),
       specializations: syncedSpecializations,
       combatSpecializations: mergedCombatSpecializations,
-      gifted: json['gifted'] as bool? ?? false,
-      ebe: getInt('ebe'),
+      gifted: readJsonBool(json, 'gifted'),
+      ebe: readJsonInt(json, 'ebe'),
     );
   }
 }

@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
@@ -288,12 +289,14 @@ class HeroSheet {
           unknownModifierFragments ?? this.unknownModifierFragments,
       isEpisch: isEpisch ?? this.isEpisch,
       epicStartAp: epicStartAp ?? this.epicStartAp,
-      epicAttributeMaxBonus: epicAttributeMaxBonus ?? this.epicAttributeMaxBonus,
+      epicAttributeMaxBonus:
+          epicAttributeMaxBonus ?? this.epicAttributeMaxBonus,
       epicMainAttributes: epicMainAttributes ?? this.epicMainAttributes,
       epicActivationPolicy: identical(epicActivationPolicy, _copySentinel)
           ? this.epicActivationPolicy
           : epicActivationPolicy as String?,
-      epicLockedWaffenmeisterCategories: epicLockedWaffenmeisterCategories ??
+      epicLockedWaffenmeisterCategories:
+          epicLockedWaffenmeisterCategories ??
           this.epicLockedWaffenmeisterCategories,
       epicUnactivatedTalentIds:
           epicUnactivatedTalentIds ?? this.epicUnactivatedTalentIds,
@@ -360,9 +363,7 @@ class HeroSheet {
       'companions': companions
           .map((entry) => entry.toJson())
           .toList(growable: false),
-      'gruppen': gruppen
-          .map((entry) => entry.toJson())
-          .toList(growable: false),
+      'gruppen': gruppen.map((entry) => entry.toJson()).toList(growable: false),
       'reisebericht': reisebericht.toJson(),
       'statModifiers': statModifiers.map(
         (key, list) => MapEntry(
@@ -383,10 +384,11 @@ class HeroSheet {
       'epicMainAttributes': epicMainAttributes.toJson(),
       if (epicActivationPolicy != null)
         'epicActivationPolicy': epicActivationPolicy,
-      'epicLockedWaffenmeisterCategories':
-          epicLockedWaffenmeisterCategories.toList(growable: false),
-      'epicUnactivatedTalentIds':
-          epicUnactivatedTalentIds.toList(growable: false),
+      'epicLockedWaffenmeisterCategories': epicLockedWaffenmeisterCategories
+          .toList(growable: false),
+      'epicUnactivatedTalentIds': epicUnactivatedTalentIds.toList(
+        growable: false,
+      ),
     };
   }
 
@@ -425,9 +427,6 @@ class HeroSheet {
     final rawSchriften =
         (json['schriften'] as Map?)?.cast<String, dynamic>() ??
         const <String, dynamic>{};
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
-    String getString(String key) => (json[key] as String?) ?? '';
-
     final parsedAttributes = Attributes.fromJson(
       (json['attributes'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
@@ -447,7 +446,7 @@ class HeroSheet {
       schemaVersion: (json['schemaVersion'] as num?)?.toInt() ?? 1,
       id: json['id'] as String,
       name: json['name'] as String? ?? 'Unbenannter Held',
-      level: getInt('level') == 0 ? 1 : getInt('level'),
+      level: readJsonInt(json, 'level') == 0 ? 1 : readJsonInt(json, 'level'),
       attributes: parsedAttributes,
       rawStartAttributes: parsedRawStartAttributes,
       startAttributes: parsedStartAttributes,
@@ -502,7 +501,10 @@ class HeroSheet {
                 MagicSpecialAbility.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
-      magicLeadAttribute: getString('magicLeadAttribute').toUpperCase(),
+      magicLeadAttribute: readJsonString(
+        json,
+        'magicLeadAttribute',
+      ).toUpperCase(),
       sprachen: rawSprachen.map((key, value) {
         final map = value is Map
             ? value.cast<String, dynamic>()
@@ -515,15 +517,15 @@ class HeroSheet {
             : const <String, dynamic>{};
         return MapEntry(key, HeroScriptEntry.fromJson(map));
       }),
-      muttersprache: getString('muttersprache'),
+      muttersprache: readJsonString(json, 'muttersprache'),
       appearance: HeroAppearance.fromJson(json),
       background: HeroBackground.fromJson(json),
-      vorteileText: getString('vorteileText'),
-      nachteileText: getString('nachteileText'),
-      apTotal: getInt('apTotal'),
-      apSpent: getInt('apSpent'),
-      apAvailable: getInt('apAvailable'),
-      dukaten: getString('dukaten'),
+      vorteileText: readJsonString(json, 'vorteileText'),
+      nachteileText: readJsonString(json, 'nachteileText'),
+      apTotal: readJsonInt(json, 'apTotal'),
+      apSpent: readJsonInt(json, 'apSpent'),
+      apAvailable: readJsonInt(json, 'apAvailable'),
+      dukaten: readJsonString(json, 'dukaten'),
       resourceActivationConfig: HeroResourceActivationConfig.fromJson(
         (json['resourceActivationConfig'] as Map?)?.cast<String, dynamic>() ??
             const <String, dynamic>{},
@@ -553,8 +555,7 @@ class HeroSheet {
                 HeroAdventureEntry.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
-      lastModified:
-          DateTime.tryParse(json['lastModified'] as String? ?? ''),
+      lastModified: DateTime.tryParse(json['lastModified'] as String? ?? ''),
       attributeSePool: HeroAttributeSePool.fromJson(
         (json['attributeSePool'] as Map?)?.cast<String, dynamic>() ??
             const <String, dynamic>{},
@@ -591,7 +592,8 @@ class HeroSheet {
       isEpisch: (json['isEpisch'] as bool?) ?? false,
       epicStartAp: (json['epicStartAp'] as num?)?.toInt() ?? 0,
       epicAttributeMaxBonus: Attributes.fromJson(
-        (json['epicAttributeMaxBonus'] as Map?)?.cast<String, dynamic>() ?? const {},
+        (json['epicAttributeMaxBonus'] as Map?)?.cast<String, dynamic>() ??
+            const {},
       ),
       epicMainAttributes: Attributes.fromJson(
         (json['epicMainAttributes'] as Map?)?.cast<String, dynamic>() ??

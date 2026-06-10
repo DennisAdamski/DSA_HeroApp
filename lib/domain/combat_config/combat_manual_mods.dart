@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
+
 /// Manuell eingegebene Kampfmodifikatoren fuer den laufenden Kampf.
 ///
 /// Wird vom Spieler zur Laufzeit gesetzt, z. B. fuer situative AT/PA-Boni
@@ -59,14 +61,13 @@ class CombatManualMods {
   ///
   /// Tolerant bei fehlenden Feldern (Standardwert 0).
   static CombatManualMods fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     final hasAtMod = json.containsKey('atMod') && json['atMod'] != null;
     return CombatManualMods(
-      iniMod: getInt('iniMod'),
-      ausweichenMod: getInt('ausweichenMod'),
-      atMod: hasAtMod ? getInt('atMod') : getInt('fkMod'),
-      paMod: getInt('paMod'),
-      iniWurf: getInt('iniWurf'),
+      iniMod: readJsonInt(json, 'iniMod'),
+      ausweichenMod: readJsonInt(json, 'ausweichenMod'),
+      atMod: hasAtMod ? readJsonInt(json, 'atMod') : readJsonInt(json, 'fkMod'),
+      paMod: readJsonInt(json, 'paMod'),
+      iniWurf: readJsonInt(json, 'iniWurf'),
     );
   }
 }

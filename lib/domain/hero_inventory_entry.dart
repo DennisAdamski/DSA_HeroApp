@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
 
 /// Wer oder was ein Inventarstück trägt.
 enum InventoryTraeger {
@@ -227,8 +228,6 @@ class HeroInventoryEntry {
 
   /// Deserialisiert einen Inventar-Eintrag aus einem JSON-Map.
   static HeroInventoryEntry fromJson(Map<String, dynamic> json) {
-    String getString(String key) => (json[key] as String?) ?? '';
-
     InventoryItemType parseItemType(String? raw) {
       return InventoryItemType.values.firstWhere(
         (e) => e.name == raw,
@@ -248,32 +247,33 @@ class HeroInventoryEntry {
         ? modifiersRaw
               .whereType<Map>()
               .map(
-                (entry) =>
-                    InventoryItemModifier.fromJson(entry.cast<String, dynamic>()),
+                (entry) => InventoryItemModifier.fromJson(
+                  entry.cast<String, dynamic>(),
+                ),
               )
               .toList(growable: false)
         : const <InventoryItemModifier>[];
-    final legacyArtifact = getString('artefakt').trim();
+    final legacyArtifact = readJsonString(json, 'artefakt').trim();
     final hasMagischDescription =
         json.containsKey('magischDescription') &&
         json['magischDescription'] != null;
     final magischDescription = hasMagischDescription
-        ? getString('magischDescription')
+        ? readJsonString(json, 'magischDescription')
         : legacyArtifact;
 
     return HeroInventoryEntry(
-      gegenstand: getString('gegenstand'),
-      woGetragen: getString('woGetragen'),
-      typ: getString('typ'),
-      welchesAbenteuer: getString('welchesAbenteuer'),
-      gewicht: getString('gewicht'),
-      wert: getString('wert'),
+      gegenstand: readJsonString(json, 'gegenstand'),
+      woGetragen: readJsonString(json, 'woGetragen'),
+      typ: readJsonString(json, 'typ'),
+      welchesAbenteuer: readJsonString(json, 'welchesAbenteuer'),
+      gewicht: readJsonString(json, 'gewicht'),
+      wert: readJsonString(json, 'wert'),
       artefakt: legacyArtifact,
-      anzahl: getString('anzahl'),
-      amKoerper: getString('amKoerper'),
-      woDann: getString('woDann'),
-      gruppe: getString('gruppe'),
-      beschreibung: getString('beschreibung'),
+      anzahl: readJsonString(json, 'anzahl'),
+      amKoerper: readJsonString(json, 'amKoerper'),
+      woDann: readJsonString(json, 'woDann'),
+      gruppe: readJsonString(json, 'gruppe'),
+      beschreibung: readJsonString(json, 'beschreibung'),
       // v16 – lenient defaults
       itemType: parseItemType(json['itemType'] as String?),
       source: parseSource(json['source'] as String?),
@@ -282,11 +282,11 @@ class HeroInventoryEntry {
       modifiers: modifiers,
       gewichtGramm: (json['gewichtGramm'] as num?)?.toInt() ?? 0,
       wertSilber: (json['wertSilber'] as num?)?.toInt() ?? 0,
-      herkunft: getString('herkunft'),
+      herkunft: readJsonString(json, 'herkunft'),
       isMagisch: (json['isMagisch'] as bool?) ?? legacyArtifact.isNotEmpty,
       magischDescription: magischDescription,
       isGeweiht: (json['isGeweiht'] as bool?) ?? false,
-      geweihtDescription: getString('geweihtDescription'),
+      geweihtDescription: readJsonString(json, 'geweihtDescription'),
       // v19 – lenient defaults
       traegerTyp: InventoryTraeger.values.firstWhere(
         (e) => e.name == json['traegerTyp'],

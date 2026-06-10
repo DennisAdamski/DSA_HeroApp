@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
+
 class BoughtStats {
   const BoughtStats({
     this.lep = 0,
@@ -13,13 +15,7 @@ class BoughtStats {
   final int kap;
   final int mr;
 
-  BoughtStats copyWith({
-    int? lep,
-    int? au,
-    int? asp,
-    int? kap,
-    int? mr,
-  }) {
+  BoughtStats copyWith({int? lep, int? au, int? asp, int? kap, int? mr}) {
     return BoughtStats(
       lep: lep ?? this.lep,
       au: au ?? this.au,
@@ -30,23 +26,16 @@ class BoughtStats {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'lep': lep,
-      'au': au,
-      'asp': asp,
-      'kap': kap,
-      'mr': mr,
-    };
+    return {'lep': lep, 'au': au, 'asp': asp, 'kap': kap, 'mr': mr};
   }
 
   static BoughtStats fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return BoughtStats(
-      lep: getInt('lep'),
-      au: getInt('au'),
-      asp: getInt('asp'),
-      kap: getInt('kap'),
-      mr: getInt('mr'),
+      lep: readJsonInt(json, 'lep'),
+      au: readJsonInt(json, 'au'),
+      asp: readJsonInt(json, 'asp'),
+      kap: readJsonInt(json, 'kap'),
+      mr: readJsonInt(json, 'mr'),
     );
   }
 }

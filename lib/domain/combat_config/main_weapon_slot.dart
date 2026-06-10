@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_weapon_profile.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/weapon_combat_type.dart';
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
 
 /// Konfiguriert eine einzelne Hauptwaffenposition des Helden.
 ///
@@ -181,9 +182,6 @@ class MainWeaponSlot {
   ///
   /// Tolerant bei fehlenden Feldern (Standardwerte werden gesetzt).
   static MainWeaponSlot fromJson(Map<String, dynamic> json) {
-    int getInt(String key, int fallback) =>
-        (json[key] as num?)?.toInt() ?? fallback;
-    String getString(String key) => (json[key] as String?) ?? '';
     Map<String, dynamic> getMap(String key) {
       final raw = json[key];
       if (raw is Map<String, dynamic>) {
@@ -195,34 +193,39 @@ class MainWeaponSlot {
       return const <String, dynamic>{};
     }
 
-    final combatType = weaponCombatTypeFromJson(getString('combatType'));
+    final combatType = weaponCombatTypeFromJson(
+      readJsonString(json, 'combatType'),
+    );
     final hasWmAt = json.containsKey('wmAt') && json['wmAt'] != null;
     return MainWeaponSlot(
-      name: getString('name'),
-      talentId: getString('talentId'),
+      name: readJsonString(json, 'name'),
+      talentId: readJsonString(json, 'talentId'),
       combatType: combatType,
-      weaponType: getString('weaponType'),
-      distanceClass: getString('distanceClass'),
-      kkBase: getInt('kkBase', 0),
-      kkThreshold: getInt('kkThreshold', 1),
-      breakFactor: getInt('breakFactor', 0),
-      tpDiceCount: getInt('tpDiceCount', 1),
+      weaponType: readJsonString(json, 'weaponType'),
+      distanceClass: readJsonString(json, 'distanceClass'),
+      kkBase: readJsonInt(json, 'kkBase'),
+      kkThreshold: readJsonInt(json, 'kkThreshold', fallback: 1),
+      breakFactor: readJsonInt(json, 'breakFactor'),
+      tpDiceCount: readJsonInt(json, 'tpDiceCount', fallback: 1),
       tpDiceSides: 6,
-      tpFlat: getInt('tpFlat', 0),
+      tpFlat: readJsonInt(json, 'tpFlat'),
       wmAt: hasWmAt
-          ? getInt('wmAt', 0)
-          : getInt(
+          ? readJsonInt(json, 'wmAt')
+          : readJsonInt(
+              json,
               'wmFk',
-              combatType == WeaponCombatType.ranged ? 0 : getInt('wmAt', 0),
+              fallback: combatType == WeaponCombatType.ranged
+                  ? 0
+                  : readJsonInt(json, 'wmAt'),
             ),
-      wmPa: getInt('wmPa', 0),
-      iniMod: getInt('iniMod', 0),
-      beTalentMod: getInt('beTalentMod', 0),
+      wmPa: readJsonInt(json, 'wmPa'),
+      iniMod: readJsonInt(json, 'iniMod'),
+      beTalentMod: readJsonInt(json, 'beTalentMod'),
       isOneHanded: (json['isOneHanded'] as bool?) ?? true,
       isArtifact: (json['isArtifact'] as bool?) ?? false,
-      artifactDescription: getString('artifactDescription'),
+      artifactDescription: readJsonString(json, 'artifactDescription'),
       isGeweiht: (json['isGeweiht'] as bool?) ?? false,
-      geweihtDescription: getString('geweihtDescription'),
+      geweihtDescription: readJsonString(json, 'geweihtDescription'),
       rangedProfile: RangedWeaponProfile.fromJson(getMap('rangedProfile')),
     );
   }

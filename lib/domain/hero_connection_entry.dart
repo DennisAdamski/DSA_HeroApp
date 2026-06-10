@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
+
 /// Beschreibt eine wichtige Verbindung oder Kontaktperson eines Helden.
 class HeroConnectionEntry {
   /// Erzeugt einen persistierbaren Verbindungseintrag.
@@ -61,15 +63,13 @@ class HeroConnectionEntry {
 
   /// Laedt einen Verbindungseintrag tolerant gegenueber fehlenden Feldern.
   static HeroConnectionEntry fromJson(Map<String, dynamic> json) {
-    String getString(String key) => (json[key] as String?) ?? '';
-
     return HeroConnectionEntry(
-      name: getString('name'),
-      ort: getString('ort'),
-      sozialstatus: getString('sozialstatus'),
-      loyalitaet: getString('loyalitaet'),
-      beschreibung: getString('beschreibung'),
-      adventureId: getString('adventureId'),
+      name: readJsonString(json, 'name'),
+      ort: readJsonString(json, 'ort'),
+      sozialstatus: readJsonString(json, 'sozialstatus'),
+      loyalitaet: readJsonString(json, 'loyalitaet'),
+      beschreibung: readJsonString(json, 'beschreibung'),
+      adventureId: readJsonString(json, 'adventureId'),
     );
   }
 }

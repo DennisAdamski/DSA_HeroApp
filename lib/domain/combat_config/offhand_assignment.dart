@@ -1,9 +1,8 @@
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
+
 /// Beschreibt, welcher Inventareintrag aktuell in der Nebenhand liegt.
 class OffhandAssignment {
-  const OffhandAssignment({
-    this.weaponIndex = -1,
-    this.equipmentIndex = -1,
-  });
+  const OffhandAssignment({this.weaponIndex = -1, this.equipmentIndex = -1});
 
   /// Index einer Nebenhand-Waffe im Waffeninventar oder `-1`.
   final int weaponIndex;
@@ -21,10 +20,7 @@ class OffhandAssignment {
   bool get usesEquipment => equipmentIndex >= 0;
 
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
-  OffhandAssignment copyWith({
-    int? weaponIndex,
-    int? equipmentIndex,
-  }) {
+  OffhandAssignment copyWith({int? weaponIndex, int? equipmentIndex}) {
     return OffhandAssignment(
       weaponIndex: weaponIndex ?? this.weaponIndex,
       equipmentIndex: equipmentIndex ?? this.equipmentIndex,
@@ -33,18 +29,14 @@ class OffhandAssignment {
 
   /// Serialisiert die Auswahl zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
-    return {
-      'weaponIndex': weaponIndex,
-      'equipmentIndex': equipmentIndex,
-    };
+    return {'weaponIndex': weaponIndex, 'equipmentIndex': equipmentIndex};
   }
 
   /// Deserialisiert eine Auswahl aus einem JSON-Map.
   static OffhandAssignment fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? -1;
     return OffhandAssignment(
-      weaponIndex: getInt('weaponIndex'),
-      equipmentIndex: getInt('equipmentIndex'),
+      weaponIndex: readJsonInt(json, 'weaponIndex', fallback: -1),
+      equipmentIndex: readJsonInt(json, 'equipmentIndex', fallback: -1),
     );
   }
 }

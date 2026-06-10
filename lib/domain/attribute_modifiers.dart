@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
+
 class AttributeModifiers {
   const AttributeModifiers({
     this.mu = 0,
@@ -68,16 +70,15 @@ class AttributeModifiers {
   }
 
   static AttributeModifiers fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return AttributeModifiers(
-      mu: getInt('mu'),
-      kl: getInt('kl'),
-      inn: getInt('inn'),
-      ch: getInt('ch'),
-      ff: getInt('ff'),
-      ge: getInt('ge'),
-      ko: getInt('ko'),
-      kk: getInt('kk'),
+      mu: readJsonInt(json, 'mu'),
+      kl: readJsonInt(json, 'kl'),
+      inn: readJsonInt(json, 'inn'),
+      ch: readJsonInt(json, 'ch'),
+      ff: readJsonInt(json, 'ff'),
+      ge: readJsonInt(json, 'ge'),
+      ko: readJsonInt(json, 'ko'),
+      kk: readJsonInt(json, 'kk'),
     );
   }
 }

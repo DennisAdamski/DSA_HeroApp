@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
+
 /// Aggregierte Modifikatoren fuer abgeleitete Kampf-/Ressourcenwerte.
 ///
 /// Die Werte werden aus verschiedenen Quellen addiert:
@@ -104,20 +106,19 @@ class StatModifiers {
 
   /// Robust gegen fehlende Schluessel: nicht vorhandene Felder werden `0`.
   static StatModifiers fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return StatModifiers(
-      lep: getInt('lep'),
-      au: getInt('au'),
-      asp: getInt('asp'),
-      kap: getInt('kap'),
-      mr: getInt('mr'),
-      iniBase: getInt('iniBase'),
-      at: getInt('at'),
-      pa: getInt('pa'),
-      fk: getInt('fk'),
-      gs: getInt('gs'),
-      ausweichen: getInt('ausweichen'),
-      rs: getInt('rs'),
+      lep: readJsonInt(json, 'lep'),
+      au: readJsonInt(json, 'au'),
+      asp: readJsonInt(json, 'asp'),
+      kap: readJsonInt(json, 'kap'),
+      mr: readJsonInt(json, 'mr'),
+      iniBase: readJsonInt(json, 'iniBase'),
+      at: readJsonInt(json, 'at'),
+      pa: readJsonInt(json, 'pa'),
+      fk: readJsonInt(json, 'fk'),
+      gs: readJsonInt(json, 'gs'),
+      ausweichen: readJsonInt(json, 'ausweichen'),
+      rs: readJsonInt(json, 'rs'),
     );
   }
 }

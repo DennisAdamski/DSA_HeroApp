@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
 
 /// Persistenter SE-Pool fuer Eigenschaften.
 class HeroAttributeSePool {
@@ -121,8 +122,7 @@ class HeroAttributeSePool {
 
   /// Laedt einen SE-Pool tolerant gegenueber fehlenden Feldern.
   static HeroAttributeSePool fromJson(Map<String, dynamic> json) {
-    int getInt(String key) =>
-        _clampNonNegative((json[key] as num?)?.toInt() ?? 0);
+    int getInt(String key) => _clampNonNegative(readJsonInt(json, key));
 
     return HeroAttributeSePool(
       mu: getInt('mu'),
@@ -213,8 +213,7 @@ class HeroStatSePool {
 
   /// Laedt einen SE-Pool tolerant gegenueber fehlenden Feldern.
   static HeroStatSePool fromJson(Map<String, dynamic> json) {
-    int getInt(String key) =>
-        _clampNonNegative((json[key] as num?)?.toInt() ?? 0);
+    int getInt(String key) => _clampNonNegative(readJsonInt(json, key));
 
     return HeroStatSePool(
       lep: getInt('lep'),

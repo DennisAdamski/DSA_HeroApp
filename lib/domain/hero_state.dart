@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 
@@ -125,7 +126,6 @@ class HeroState {
 
   /// Robust gegen fehlende Felder in aelteren Daten.
   static HeroState fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     final rawDiceLog = json['diceLog'] as List?;
     final diceLog = rawDiceLog == null
         ? const <DiceLogEntry>[]
@@ -136,12 +136,12 @@ class HeroState {
           );
     return HeroState(
       schemaVersion: 6,
-      currentLep: getInt('currentLep'),
-      currentAsp: getInt('currentAsp'),
-      currentKap: getInt('currentKap'),
-      currentAu: getInt('currentAu'),
-      erschoepfung: getInt('erschoepfung'),
-      ueberanstrengung: getInt('ueberanstrengung'),
+      currentLep: readJsonInt(json, 'currentLep'),
+      currentAsp: readJsonInt(json, 'currentAsp'),
+      currentKap: readJsonInt(json, 'currentKap'),
+      currentAu: readJsonInt(json, 'currentAu'),
+      erschoepfung: readJsonInt(json, 'erschoepfung'),
+      ueberanstrengung: readJsonInt(json, 'ueberanstrengung'),
       tempMods: StatModifiers.fromJson(
         (json['tempMods'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),

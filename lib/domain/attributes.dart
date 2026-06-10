@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
+
 /// Die acht DSA-Grundeigenschaften eines Helden (unveraenderlich).
 ///
 /// Kuerzel und Namen:
@@ -18,23 +20,23 @@ class Attributes {
   });
 
   const Attributes.zero()
-      : mu = 0,
-        kl = 0,
-        inn = 0,
-        ch = 0,
-        ff = 0,
-        ge = 0,
-        ko = 0,
-        kk = 0;
+    : mu = 0,
+      kl = 0,
+      inn = 0,
+      ch = 0,
+      ff = 0,
+      ge = 0,
+      ko = 0,
+      kk = 0;
 
-  final int mu;  // Mut: Tapferkeit, Willenskraft, magische Kraftquelle
-  final int kl;  // Klugheit: Denkvermögen, Lernfähigkeit
+  final int mu; // Mut: Tapferkeit, Willenskraft, magische Kraftquelle
+  final int kl; // Klugheit: Denkvermögen, Lernfähigkeit
   final int inn; // Intuition: Wahrnehmung, Menschenkenntnis
-  final int ch;  // Charisma: Ausstrahlung, Überzeugungskraft
-  final int ff;  // Fingerfertigkeit: Feinmotorik, Geschick der Hände
-  final int ge;  // Gewandtheit: Körperkoordination, Schnelligkeit
-  final int ko;  // Konstitution: Zähigkeit, Gesundheit
-  final int kk;  // Körperkraft: Muskeln, Hebeln, Tragen
+  final int ch; // Charisma: Ausstrahlung, Überzeugungskraft
+  final int ff; // Fingerfertigkeit: Feinmotorik, Geschick der Hände
+  final int ge; // Gewandtheit: Körperkoordination, Schnelligkeit
+  final int ko; // Konstitution: Zähigkeit, Gesundheit
+  final int kk; // Körperkraft: Muskeln, Hebeln, Tragen
 
   Attributes copyWith({
     int? mu,
@@ -75,16 +77,15 @@ class Attributes {
   // (vor schemaVersion 4) weiterhin lesbar bleiben.
   // num? → toInt() behandelt auch importierte float-Werte korrekt.
   static Attributes fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return Attributes(
-      mu: getInt('mu'),
-      kl: getInt('kl'),
-      inn: getInt('inn'),
-      ch: getInt('ch'),
-      ff: getInt('ff'),
-      ge: getInt('ge'),
-      ko: getInt('ko'),
-      kk: getInt('kk'),
+      mu: readJsonInt(json, 'mu'),
+      kl: readJsonInt(json, 'kl'),
+      inn: readJsonInt(json, 'inn'),
+      ch: readJsonInt(json, 'ch'),
+      ff: readJsonInt(json, 'ff'),
+      ge: readJsonInt(json, 'ge'),
+      ko: readJsonInt(json, 'ko'),
+      kk: readJsonInt(json, 'kk'),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
+
 /// Persistierte Definition eines heldenspezifischen Meta-Talents.
 ///
 /// Meta-Talente werden nicht aus dem globalen Regelkatalog geladen, sondern
@@ -60,16 +62,14 @@ class HeroMetaTalent {
 
   /// Laedt ein Meta-Talent tolerant aus JSON.
   static HeroMetaTalent fromJson(Map<String, dynamic> json) {
-    String getString(String key) => (json[key] as String?) ?? '';
-
     return HeroMetaTalent(
-      id: getString('id'),
-      name: getString('name'),
+      id: readJsonString(json, 'id'),
+      name: readJsonString(json, 'name'),
       componentTalentIds: _normalizeComponentTalentIds(
         _readStringList(json['componentTalentIds']),
       ),
       attributes: _normalizeAttributes(_readStringList(json['attributes'])),
-      be: getString('be'),
+      be: readJsonString(json, 'be'),
     );
   }
 }

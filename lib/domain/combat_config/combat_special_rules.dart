@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
+
 /// Haelt die Aktivierungszustaende aller Kampfsonderfertigkeiten und Manoever.
 ///
 /// Alle boolean-Felder sind standardmaessig `false`.
@@ -171,34 +173,33 @@ class CombatSpecialRules {
   ///
   /// Tolerant bei fehlenden Feldern (Standardwerte werden gesetzt).
   static CombatSpecialRules fromJson(Map<String, dynamic> json) {
-    bool getBool(String key) => (json[key] as bool?) ?? false;
     // Legacy-Migration: Schnellladen-Booleans -> activeManeuvers
     final rawManeuvers = List<dynamic>.from(
       (json['activeManeuvers'] as List?) ?? const <dynamic>[],
     );
-    if (getBool('schnellladenBogen')) {
+    if (readJsonBool(json, 'schnellladenBogen')) {
       rawManeuvers.add('man_schnellladen_bogen');
     }
-    if (getBool('schnellladenArmbrust')) {
+    if (readJsonBool(json, 'schnellladenArmbrust')) {
       rawManeuvers.add('man_schnellladen_armbrust');
     }
     return CombatSpecialRules(
-      kampfreflexe: getBool('kampfreflexe'),
-      kampfgespuer: getBool('kampfgespuer'),
-      schnellziehen: getBool('schnellziehen'),
-      ausweichenI: getBool('ausweichenI'),
-      ausweichenII: getBool('ausweichenII'),
-      ausweichenIII: getBool('ausweichenIII'),
-      schildkampfI: getBool('schildkampfI'),
-      schildkampfII: getBool('schildkampfII'),
-      parierwaffenI: getBool('parierwaffenI'),
-      parierwaffenII: getBool('parierwaffenII'),
-      linkhandActive: getBool('linkhandActive'),
-      flink: getBool('flink'),
-      behaebig: getBool('behaebig'),
-      axxeleratusActive: getBool('axxeleratusActive'),
-      klingentaenzer: getBool('klingentaenzer'),
-      aufmerksamkeit: getBool('aufmerksamkeit'),
+      kampfreflexe: readJsonBool(json, 'kampfreflexe'),
+      kampfgespuer: readJsonBool(json, 'kampfgespuer'),
+      schnellziehen: readJsonBool(json, 'schnellziehen'),
+      ausweichenI: readJsonBool(json, 'ausweichenI'),
+      ausweichenII: readJsonBool(json, 'ausweichenII'),
+      ausweichenIII: readJsonBool(json, 'ausweichenIII'),
+      schildkampfI: readJsonBool(json, 'schildkampfI'),
+      schildkampfII: readJsonBool(json, 'schildkampfII'),
+      parierwaffenI: readJsonBool(json, 'parierwaffenI'),
+      parierwaffenII: readJsonBool(json, 'parierwaffenII'),
+      linkhandActive: readJsonBool(json, 'linkhandActive'),
+      flink: readJsonBool(json, 'flink'),
+      behaebig: readJsonBool(json, 'behaebig'),
+      axxeleratusActive: readJsonBool(json, 'axxeleratusActive'),
+      klingentaenzer: readJsonBool(json, 'klingentaenzer'),
+      aufmerksamkeit: readJsonBool(json, 'aufmerksamkeit'),
       activeCombatSpecialAbilityIds: _normalizeStringList(
         (json['activeCombatSpecialAbilityIds'] as List?) ?? const <dynamic>[],
       ),

@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_type.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/shield_size.dart';
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
 
 /// Beschreibt ein Schild oder eine Parierwaffe im Kampf-Inventar.
 class OffhandEquipmentEntry {
@@ -101,15 +102,14 @@ class OffhandEquipmentEntry {
 
   /// Deserialisiert einen Eintrag aus einem JSON-Map.
   static OffhandEquipmentEntry fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return OffhandEquipmentEntry(
       name: (json['name'] as String?) ?? '',
       type: offhandEquipmentTypeFromJson((json['type'] as String?) ?? ''),
-      breakFactor: getInt('breakFactor'),
+      breakFactor: readJsonInt(json, 'breakFactor'),
       shieldSize: shieldSizeFromJson((json['shieldSize'] as String?) ?? ''),
-      iniMod: getInt('iniMod'),
-      atMod: getInt('atMod'),
-      paMod: getInt('paMod'),
+      iniMod: readJsonInt(json, 'iniMod'),
+      atMod: readJsonInt(json, 'atMod'),
+      paMod: readJsonInt(json, 'paMod'),
       isArtifact: (json['isArtifact'] as bool?) ?? false,
       artifactDescription: (json['artifactDescription'] as String?) ?? '',
       isGeweiht: (json['isGeweiht'] as bool?) ?? false,

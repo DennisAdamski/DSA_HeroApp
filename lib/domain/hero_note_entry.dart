@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
+
 /// Einzelne freie Notiz eines Helden mit Titel und Langbeschreibung.
 class HeroNoteEntry {
   /// Erzeugt einen persistierbaren Notizeintrag.
@@ -24,11 +26,9 @@ class HeroNoteEntry {
 
   /// Laedt einen Notizeintrag tolerant gegenueber fehlenden Feldern.
   static HeroNoteEntry fromJson(Map<String, dynamic> json) {
-    String getString(String key) => (json[key] as String?) ?? '';
-
     return HeroNoteEntry(
-      title: getString('title'),
-      description: getString('description'),
+      title: readJsonString(json, 'title'),
+      description: readJsonString(json, 'description'),
     );
   }
 }

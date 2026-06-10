@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_mode.dart';
+import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
 
 /// Konfiguriert das Nebenhand-Objekt des Helden (Schild, Parierwaffe oder Linkhand).
 ///
@@ -59,13 +60,12 @@ class OffhandSlot {
   ///
   /// Tolerant bei fehlenden Feldern (Standardwerte werden gesetzt).
   static OffhandSlot fromJson(Map<String, dynamic> json) {
-    int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return OffhandSlot(
       mode: offhandModeFromJson((json['mode'] as String?) ?? 'none'),
       name: (json['name'] as String?) ?? '',
-      atMod: getInt('atMod'),
-      paMod: getInt('paMod'),
-      iniMod: getInt('iniMod'),
+      atMod: readJsonInt(json, 'atMod'),
+      paMod: readJsonInt(json, 'paMod'),
+      iniMod: readJsonInt(json, 'iniMod'),
     );
   }
 }
