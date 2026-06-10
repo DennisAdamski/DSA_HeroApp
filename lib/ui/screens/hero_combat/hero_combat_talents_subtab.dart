@@ -625,7 +625,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     final options = _weaponCategoryOptions(talent);
     final selected = entry.combatSpecializations.isEmpty
         ? _splitSpecializationTokens(entry.specializations)
-        : _normalizeStringList(entry.combatSpecializations);
+        : normalizeStringList(entry.combatSpecializations);
 
     if (!isEditing) {
       if (selected.isEmpty) {

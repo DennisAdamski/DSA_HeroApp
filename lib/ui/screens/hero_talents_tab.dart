@@ -39,6 +39,8 @@ import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/domain/string_list_utils.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 part 'hero_talents/hero_talents_cells.dart';
 part 'hero_talents/hero_talents_edit_actions.dart';
@@ -245,200 +247,196 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
               final filterQuery = _talentGroupFilter.trim().toLowerCase();
 
               final talentTabChildren = <Widget>[
-                  if (showTalentsHeader) ...[
-                    CodexTabHeader(
-                      title: widget.scope == _TalentTabScope.combat
-                          ? 'Kampftechniken'
-                          : 'Talente & Bildung',
-                      subtitle: widget.scope == _TalentTabScope.combat
-                          ? 'AT/PA-Verteilung, Waffengattungen und Spezialisierungen im taktischen Codex.'
-                          : 'Talentgruppen, Sonderfertigkeiten sowie Sprachen und Schriften in verdichteter Darstellung.',
-                      assetPath: widget.scope == _TalentTabScope.combat
-                          ? 'assets/ui/codex/combat_silhouette.png'
-                          : 'assets/ui/codex/compass_mark.png',
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                  if (widget.scope == _TalentTabScope.nonCombat &&
-                      widget.showInlineActions)
-                    _buildTopActionBar(
-                      heroId: hero.id,
-                      combatBaseBe: combatBaseBe ?? 0,
-                      activeTalentBe: activeTalentBe,
-                    ),
-                  if (widget.scope == _TalentTabScope.combat &&
-                      widget.showInlineActions)
-                    _buildCombatActionBar(allTalents: relevantTalents),
-                  if (widget.scope == _TalentTabScope.nonCombat)
-                    TabBar(
-                      controller: _subTabController,
-                      tabs: const [
-                        Tab(text: 'Talente'),
-                        Tab(text: 'Sonderfertigkeiten'),
-                        Tab(text: 'Sprachen & Schriften'),
-                      ],
-                    ),
-                  if (widget.scope == _TalentTabScope.nonCombat &&
-                      _subTabController?.index == 0)
-                    _buildSearchHeader(
-                      allTalents: relevantTalents,
-                      allCatalogTalents: catalog.talents,
-                    ),
-                  if (widget.scope == _TalentTabScope.nonCombat &&
-                      _subTabController?.index == 0 &&
-                      filterQuery.isEmpty &&
-                      groups.length > 1)
-                    _buildGroupJumpBar(groups),
-                  if (widget.scope == _TalentTabScope.nonCombat &&
-                      _subTabController!.index == 1)
-                    _buildSpecialAbilitiesTab(),
-                  if (widget.scope == _TalentTabScope.nonCombat &&
-                      _subTabController!.index == 2)
-                    _SprachenSchriftenTab(
-                      heroId: widget.heroId,
-                      draftSprachen: _draftSprachen,
-                      draftSchriften: _draftSchriften,
-                      draftMuttersprache: _draftMuttersprache,
-                      alleSprachen: catalog.sprachen,
-                      alleSchriften: catalog.schriften,
-                      isEditing: _editController.isEditing,
-                      onPrepareAddEntry: _ensureEditingSession,
-                      onSprachWertChanged: (id, wert) {
-                        final entry =
-                            _draftSprachen[id] ?? const HeroLanguageEntry();
-                        _draftSprachen[id] = entry.copyWith(wert: wert);
+                if (showTalentsHeader) ...[
+                  CodexTabHeader(
+                    title: widget.scope == _TalentTabScope.combat
+                        ? 'Kampftechniken'
+                        : 'Talente & Bildung',
+                    subtitle: widget.scope == _TalentTabScope.combat
+                        ? 'AT/PA-Verteilung, Waffengattungen und Spezialisierungen im taktischen Codex.'
+                        : 'Talentgruppen, Sonderfertigkeiten sowie Sprachen und Schriften in verdichteter Darstellung.',
+                    assetPath: widget.scope == _TalentTabScope.combat
+                        ? 'assets/ui/codex/combat_silhouette.png'
+                        : 'assets/ui/codex/compass_mark.png',
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (widget.scope == _TalentTabScope.nonCombat &&
+                    widget.showInlineActions)
+                  _buildTopActionBar(
+                    heroId: hero.id,
+                    combatBaseBe: combatBaseBe ?? 0,
+                    activeTalentBe: activeTalentBe,
+                  ),
+                if (widget.scope == _TalentTabScope.combat &&
+                    widget.showInlineActions)
+                  _buildCombatActionBar(allTalents: relevantTalents),
+                if (widget.scope == _TalentTabScope.nonCombat)
+                  TabBar(
+                    controller: _subTabController,
+                    tabs: const [
+                      Tab(text: 'Talente'),
+                      Tab(text: 'Sonderfertigkeiten'),
+                      Tab(text: 'Sprachen & Schriften'),
+                    ],
+                  ),
+                if (widget.scope == _TalentTabScope.nonCombat &&
+                    _subTabController?.index == 0)
+                  _buildSearchHeader(
+                    allTalents: relevantTalents,
+                    allCatalogTalents: catalog.talents,
+                  ),
+                if (widget.scope == _TalentTabScope.nonCombat &&
+                    _subTabController?.index == 0 &&
+                    filterQuery.isEmpty &&
+                    groups.length > 1)
+                  _buildGroupJumpBar(groups),
+                if (widget.scope == _TalentTabScope.nonCombat &&
+                    _subTabController!.index == 1)
+                  _buildSpecialAbilitiesTab(),
+                if (widget.scope == _TalentTabScope.nonCombat &&
+                    _subTabController!.index == 2)
+                  _SprachenSchriftenTab(
+                    heroId: widget.heroId,
+                    draftSprachen: _draftSprachen,
+                    draftSchriften: _draftSchriften,
+                    draftMuttersprache: _draftMuttersprache,
+                    alleSprachen: catalog.sprachen,
+                    alleSchriften: catalog.schriften,
+                    isEditing: _editController.isEditing,
+                    onPrepareAddEntry: _ensureEditingSession,
+                    onSprachWertChanged: (id, wert) {
+                      final entry =
+                          _draftSprachen[id] ?? const HeroLanguageEntry();
+                      _draftSprachen[id] = entry.copyWith(wert: wert);
+                      _markFieldChanged();
+                    },
+                    onSchriftWertChanged: (id, wert) {
+                      final entry =
+                          _draftSchriften[id] ?? const HeroScriptEntry();
+                      _draftSchriften[id] = entry.copyWith(wert: wert);
+                      _markFieldChanged();
+                    },
+                    onMuttersprachChanged: (id) {
+                      setState(() {
+                        _draftMuttersprache = _draftMuttersprache == id
+                            ? ''
+                            : id;
+                      });
+                      _markFieldChanged();
+                    },
+                    onAddSprache: (id) {
+                      if (!_draftSprachen.containsKey(id)) {
+                        _draftSprachen[id] = const HeroLanguageEntry();
                         _markFieldChanged();
-                      },
-                      onSchriftWertChanged: (id, wert) {
-                        final entry =
-                            _draftSchriften[id] ?? const HeroScriptEntry();
-                        _draftSchriften[id] = entry.copyWith(wert: wert);
+                      }
+                    },
+                    onRemoveSprache: (id) {
+                      _draftSprachen.remove(id);
+                      if (_draftMuttersprache == id) {
+                        _draftMuttersprache = '';
+                      }
+                      _markFieldChanged();
+                    },
+                    onAddSchrift: (id) {
+                      if (!_draftSchriften.containsKey(id)) {
+                        _draftSchriften[id] = const HeroScriptEntry();
                         _markFieldChanged();
-                      },
-                      onMuttersprachChanged: (id) {
-                        setState(() {
-                          _draftMuttersprache = _draftMuttersprache == id
-                              ? ''
-                              : id;
-                        });
-                        _markFieldChanged();
-                      },
-                      onAddSprache: (id) {
-                        if (!_draftSprachen.containsKey(id)) {
-                          _draftSprachen[id] = const HeroLanguageEntry();
-                          _markFieldChanged();
-                        }
-                      },
-                      onRemoveSprache: (id) {
-                        _draftSprachen.remove(id);
-                        if (_draftMuttersprache == id) {
-                          _draftMuttersprache = '';
-                        }
-                        _markFieldChanged();
-                      },
-                      onAddSchrift: (id) {
-                        if (!_draftSchriften.containsKey(id)) {
-                          _draftSchriften[id] = const HeroScriptEntry();
-                          _markFieldChanged();
-                        }
-                      },
-                      onRemoveSchrift: (id) {
-                        _draftSchriften.remove(id);
-                        _markFieldChanged();
-                      },
-                    ),
-                  if (widget.scope == _TalentTabScope.combat ||
-                      _subTabController?.index == 0)
-                    ...groups.expand((group) {
-                      final allGroupTalents =
-                          List<TalentDef>.from(grouped[group]!)..sort(
-                            (a, b) => a.name.toLowerCase().compareTo(
-                              b.name.toLowerCase(),
+                      }
+                    },
+                    onRemoveSchrift: (id) {
+                      _draftSchriften.remove(id);
+                      _markFieldChanged();
+                    },
+                  ),
+                if (widget.scope == _TalentTabScope.combat ||
+                    _subTabController?.index == 0)
+                  ...groups.expand((group) {
+                    final allGroupTalents =
+                        List<TalentDef>.from(grouped[group]!)..sort(
+                          (a, b) => a.name.toLowerCase().compareTo(
+                            b.name.toLowerCase(),
+                          ),
+                        );
+                    final talents = filterQuery.isEmpty
+                        ? allGroupTalents
+                        : allGroupTalents
+                              .where(
+                                (t) =>
+                                    t.name.toLowerCase().contains(filterQuery),
+                              )
+                              .toList(growable: false);
+                    if (talents.isEmpty) return const <Widget>[];
+                    final isCollapsed = _collapsedGroups.contains(group);
+                    return [
+                      Padding(
+                        key: _keyForGroup(group),
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: CodexSectionCard(
+                          title: group,
+                          subtitle: '${allGroupTalents.length} Talente',
+                          trailing: IconButton(
+                            icon: Icon(
+                              isCollapsed
+                                  ? Icons.expand_more
+                                  : Icons.expand_less,
                             ),
-                          );
-                      final talents = filterQuery.isEmpty
-                          ? allGroupTalents
-                          : allGroupTalents
+                            tooltip: isCollapsed ? 'Ausklappen' : 'Einklappen',
+                            onPressed: () => setState(() {
+                              if (isCollapsed) {
+                                _collapsedGroups.remove(group);
+                              } else {
+                                _collapsedGroups.add(group);
+                              }
+                            }),
+                          ),
+                          child: isCollapsed
+                              ? const SizedBox.shrink()
+                              : widget.scope == _TalentTabScope.combat
+                              ? _buildCombatTalentsTable(talents: talents)
+                              : _buildTalentsTable(
+                                  talents: talents,
+                                  effectiveAttributes: effectiveAttributes!,
+                                  activeBaseBe: activeTalentBe,
+                                  inventoryTalentMods:
+                                      ref
+                                          .watch(
+                                            heroComputedProvider(widget.heroId),
+                                          )
+                                          .asData
+                                          ?.value
+                                          .inventoryTalentMods ??
+                                      const {},
+                                ),
+                        ),
+                      ),
+                    ];
+                  }),
+                if (widget.scope == _TalentTabScope.nonCombat &&
+                    (_subTabController?.index == 0) &&
+                    _draftMetaTalents.isNotEmpty)
+                  Builder(
+                    builder: (context) {
+                      final visibleMeta = filterQuery.isEmpty
+                          ? _draftMetaTalents
+                          : _draftMetaTalents
                                 .where(
-                                  (t) => t.name.toLowerCase().contains(
+                                  (m) => m.name.toLowerCase().contains(
                                     filterQuery,
                                   ),
                                 )
                                 .toList(growable: false);
-                      if (talents.isEmpty) return const <Widget>[];
-                      final isCollapsed = _collapsedGroups.contains(group);
-                      return [
-                        Padding(
-                          key: _keyForGroup(group),
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: CodexSectionCard(
-                            title: group,
-                            subtitle: '${allGroupTalents.length} Talente',
-                            trailing: IconButton(
-                              icon: Icon(
-                                isCollapsed
-                                    ? Icons.expand_more
-                                    : Icons.expand_less,
-                              ),
-                              tooltip:
-                                  isCollapsed ? 'Ausklappen' : 'Einklappen',
-                              onPressed: () => setState(() {
-                                if (isCollapsed) {
-                                  _collapsedGroups.remove(group);
-                                } else {
-                                  _collapsedGroups.add(group);
-                                }
-                              }),
-                            ),
-                            child: isCollapsed
-                                ? const SizedBox.shrink()
-                                : widget.scope == _TalentTabScope.combat
-                                ? _buildCombatTalentsTable(talents: talents)
-                                : _buildTalentsTable(
-                                    talents: talents,
-                                    effectiveAttributes: effectiveAttributes!,
-                                    activeBaseBe: activeTalentBe,
-                                    inventoryTalentMods:
-                                        ref
-                                            .watch(
-                                              heroComputedProvider(
-                                                widget.heroId,
-                                              ),
-                                            )
-                                            .asData
-                                            ?.value
-                                            .inventoryTalentMods ??
-                                        const {},
-                                  ),
-                          ),
-                        ),
-                      ];
-                    }),
-                  if (widget.scope == _TalentTabScope.nonCombat &&
-                      (_subTabController?.index == 0) &&
-                      _draftMetaTalents.isNotEmpty)
-                    Builder(
-                      builder: (context) {
-                        final visibleMeta = filterQuery.isEmpty
-                            ? _draftMetaTalents
-                            : _draftMetaTalents
-                                  .where(
-                                    (m) => m.name.toLowerCase().contains(
-                                      filterQuery,
-                                    ),
-                                  )
-                                  .toList(growable: false);
-                        if (visibleMeta.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-                        return _buildMetaTalentsCard(
-                          metaTalents: visibleMeta,
-                          catalogTalents: catalog.talents,
-                          effectiveAttributes: effectiveAttributes!,
-                          activeBaseBe: activeTalentBe,
-                        );
-                      },
-                    ),
+                      if (visibleMeta.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return _buildMetaTalentsCard(
+                        metaTalents: visibleMeta,
+                        catalogTalents: catalog.talents,
+                        effectiveAttributes: effectiveAttributes!,
+                        activeBaseBe: activeTalentBe,
+                      );
+                    },
+                  ),
               ];
               // Bewusst SingleChildScrollView+Column statt ListView.builder:
               // Die Gruppen-Sprungleiste nutzt GlobalKeys via Scrollable.ensureVisible,

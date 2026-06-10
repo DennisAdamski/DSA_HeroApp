@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
+import 'package:dsa_heldenverwaltung/domain/string_list_utils.dart';
 
 /// Haelt die Aktivierungszustaende aller Kampfsonderfertigkeiten und Manoever.
 ///
@@ -131,12 +132,12 @@ class CombatSpecialRules {
       axxeleratusActive: axxeleratusActive ?? this.axxeleratusActive,
       klingentaenzer: klingentaenzer ?? this.klingentaenzer,
       aufmerksamkeit: aufmerksamkeit ?? this.aufmerksamkeit,
-      activeCombatSpecialAbilityIds: _normalizeStringList(
+      activeCombatSpecialAbilityIds: normalizeStringList(
         activeCombatSpecialAbilityIds ?? this.activeCombatSpecialAbilityIds,
       ),
       gladiatorStyleTalent: (gladiatorStyleTalent ?? this.gladiatorStyleTalent)
           .trim(),
-      activeManeuvers: _normalizeStringList(
+      activeManeuvers: normalizeStringList(
         activeManeuvers ?? this.activeManeuvers,
       ),
     );
@@ -161,11 +162,11 @@ class CombatSpecialRules {
       'axxeleratusActive': axxeleratusActive,
       'klingentaenzer': klingentaenzer,
       'aufmerksamkeit': aufmerksamkeit,
-      'activeCombatSpecialAbilityIds': _normalizeStringList(
+      'activeCombatSpecialAbilityIds': normalizeStringList(
         activeCombatSpecialAbilityIds,
       ),
       'gladiatorStyleTalent': gladiatorStyleTalent.trim(),
-      'activeManeuvers': _normalizeStringList(activeManeuvers),
+      'activeManeuvers': normalizeStringList(activeManeuvers),
     };
   }
 
@@ -200,30 +201,12 @@ class CombatSpecialRules {
       axxeleratusActive: readJsonBool(json, 'axxeleratusActive'),
       klingentaenzer: readJsonBool(json, 'klingentaenzer'),
       aufmerksamkeit: readJsonBool(json, 'aufmerksamkeit'),
-      activeCombatSpecialAbilityIds: _normalizeStringList(
+      activeCombatSpecialAbilityIds: normalizeStringList(
         (json['activeCombatSpecialAbilityIds'] as List?) ?? const <dynamic>[],
       ),
       gladiatorStyleTalent:
           (json['gladiatorStyleTalent'] as String?)?.trim() ?? '',
-      activeManeuvers: _normalizeStringList(rawManeuvers),
+      activeManeuvers: normalizeStringList(rawManeuvers),
     );
   }
-}
-
-/// Bereinigt und dedupliziert eine Liste von Manoever-IDs.
-///
-/// Entfernt Leerstrings, fuehrende/nachfolgende Leerzeichen und Duplikate.
-/// Gibt eine unveraenderliche Liste zurueck.
-List<String> _normalizeStringList(Iterable<dynamic> values) {
-  final seen = <String>{};
-  final normalized = <String>[];
-  for (final value in values) {
-    final text = value.toString().trim();
-    if (text.isEmpty || seen.contains(text)) {
-      continue;
-    }
-    seen.add(text);
-    normalized.add(text);
-  }
-  return List<String>.unmodifiable(normalized);
 }

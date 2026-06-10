@@ -116,7 +116,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     final options = _weaponCategoryOptions(talent);
     final selected = entry.combatSpecializations.isEmpty
         ? _splitSpecializationTokens(entry.specializations)
-        : _normalizeStringList(entry.combatSpecializations);
+        : normalizeStringList(entry.combatSpecializations);
 
     if (!isEditing) {
       if (selected.isEmpty) {
@@ -297,7 +297,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     required bool isEditing,
   }) {
     final specs = entry.combatSpecializations.isNotEmpty
-        ? _normalizeStringList(entry.combatSpecializations)
+        ? normalizeStringList(entry.combatSpecializations)
         : _splitSpecializationTokens(entry.specializations);
 
     if (!isEditing) {

@@ -259,7 +259,7 @@ extension _CombatStateHelpers on _HeroCombatTabState {
 
   void _updateCombatSpecializations(String talentId, List<String> values) {
     final current = _entryForTalent(talentId);
-    final normalized = _normalizeStringList(values);
+    final normalized = normalizeStringList(values);
     _draftTalents[talentId] = current.copyWith(
       combatSpecializations: normalized,
       specializations: normalized.join(', '),
@@ -648,36 +648,10 @@ extension _CombatStateHelpers on _HeroCombatTabState {
   }
 
   List<String> _splitSpecializationTokens(String raw) {
-    return _normalizeStringList(raw.split(RegExp(r'[\n,;]+')));
+    return normalizeStringList(raw.split(RegExp(r'[\n,;]+')));
   }
 
   List<String> _weaponCategoryOptions(TalentDef talent) {
-    return _normalizeStringList(
-      talent.weaponCategory.split(RegExp(r'[\n,;]+')),
-    );
-  }
-
-  List<String> _normalizeStringList(Iterable<dynamic> values) {
-    final seen = <String>{};
-    final normalized = <String>[];
-    for (final value in values) {
-      final trimmed = value.toString().trim();
-      if (trimmed.isEmpty || seen.contains(trimmed)) {
-        continue;
-      }
-      seen.add(trimmed);
-      normalized.add(trimmed);
-    }
-    return List<String>.unmodifiable(normalized);
-  }
-
-  String _normalizeToken(String raw) {
-    var value = raw.trim().toLowerCase();
-    value = value
-        .replaceAll(String.fromCharCode(228), 'ae')
-        .replaceAll(String.fromCharCode(246), 'oe')
-        .replaceAll(String.fromCharCode(252), 'ue')
-        .replaceAll(String.fromCharCode(223), 'ss');
-    return value.replaceAll(RegExp(r'[^a-z0-9]+'), '');
+    return normalizeStringList(talent.weaponCategory.split(RegExp(r'[\n,;]+')));
   }
 }

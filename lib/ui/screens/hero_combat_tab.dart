@@ -44,6 +44,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/waffenmeister_editor
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
+import 'package:dsa_heldenverwaltung/domain/string_list_utils.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
 part 'hero_combat/combat_talent_catalog_table.dart';

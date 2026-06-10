@@ -45,7 +45,7 @@ extension _HeroTalentMutations on _HeroTalentTableTabState {
 
   void _updateSpecializations(String talentId, List<String> values) {
     final current = _entryForTalent(talentId);
-    final normalized = _normalizeStringList(values);
+    final normalized = normalizeStringList(values);
     _draftTalents[talentId] = current.copyWith(
       combatSpecializations: normalized,
       specializations: normalized.join(', '),
@@ -61,7 +61,7 @@ extension _HeroTalentMutations on _HeroTalentTableTabState {
 
   void _updateCombatSpecializations(String talentId, List<String> values) {
     final current = _entryForTalent(talentId);
-    final normalized = _normalizeStringList(values);
+    final normalized = normalizeStringList(values);
     _draftTalents[talentId] = current.copyWith(
       combatSpecializations: normalized,
       specializations: normalized.join(', '),

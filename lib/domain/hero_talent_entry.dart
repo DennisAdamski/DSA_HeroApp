@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/json_helpers.dart';
+import 'package:dsa_heldenverwaltung/domain/string_list_utils.dart';
 
 // [MermaidChart: ff341120-63ae-42dd-88e7-391a12fcef7f]
 /// Einzelner Modifikatorbaustein eines Talents.
@@ -110,7 +111,7 @@ class HeroTalentEntry {
     final nextTalentModifiers = _normalizeTalentModifiers(
       talentModifiers ?? this.talentModifiers,
     );
-    final nextCombatSpecializations = _normalizeStringList(
+    final nextCombatSpecializations = normalizeStringList(
       combatSpecializations ?? this.combatSpecializations,
     );
     // Wenn combatSpecializations explizit gesetzt wurde, specializations
@@ -149,7 +150,7 @@ class HeroTalentEntry {
   Map<String, dynamic> toJson() {
     final normalizedCombatSpecializations = combatSpecializations.isEmpty
         ? _parseSpecializations(specializations)
-        : _normalizeStringList(combatSpecializations);
+        : normalizeStringList(combatSpecializations);
     final normalizedTalentModifiers = _normalizeTalentModifiers(
       talentModifiers,
     );
@@ -209,7 +210,7 @@ class HeroTalentEntry {
     }
 
     final legacySpecializations = readJsonString(json, 'specializations');
-    final parsedCombatSpecializations = _normalizeStringList(
+    final parsedCombatSpecializations = normalizeStringList(
       getStringList('combatSpecializations'),
     );
     final talentModifiers = getTalentModifiers('talentModifiers');
@@ -275,21 +276,5 @@ int _sumTalentModifiers(Iterable<HeroTalentModifier> values) {
 // Semikolons in einzelne Eintraege auf.
 List<String> _parseSpecializations(String raw) {
   final tokens = raw.split(RegExp(r'[\n,;]+'));
-  return _normalizeStringList(tokens);
-}
-
-// Normalisiert eine String-Liste: trimmt Whitespace, entfernt Leerstrings
-// und Duplikate und gibt eine unveraenderliche Liste zurueck.
-List<String> _normalizeStringList(Iterable<String> values) {
-  final seen = <String>{};
-  final normalized = <String>[];
-  for (final value in values) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty || seen.contains(trimmed)) {
-      continue;
-    }
-    seen.add(trimmed);
-    normalized.add(trimmed);
-  }
-  return List<String>.unmodifiable(normalized);
+  return normalizeStringList(tokens);
 }
