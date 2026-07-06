@@ -96,6 +96,23 @@ void main() {
     expect(find.textContaining('Unterschiede anzeigen'), findsNothing);
   });
 
+  testWidgets('zeigt Identisch-Hinweis bei leerem Diff', (tester) async {
+    final controller = _FakeSyncController(
+      SyncStatusSnapshot(openConflicts: <SyncConflict>[conflict()]),
+      diffs: <String, SyncObjectDiff>{'hero-h-1': const SyncObjectDiff()},
+    );
+    addTearDown(controller.close);
+
+    await tester.pumpWidget(buildGate(controller));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Beide Versionen sind inhaltlich identisch.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Unterschiede anzeigen'), findsNothing);
+  });
+
   testWidgets('bleibt ohne Diff-Daten unveraendert nutzbar', (tester) async {
     final controller = _FakeSyncController(
       SyncStatusSnapshot(openConflicts: <SyncConflict>[conflict()]),

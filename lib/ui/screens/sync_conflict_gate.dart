@@ -127,7 +127,7 @@ class _SyncConflictCard extends StatelessWidget {
               Text('Lokal: ${conflict.localSummary}'),
               Text('Online: ${conflict.remoteSummary}'),
             ],
-            if (diff != null && diff!.hatAenderungen) ...[
+            if (diff != null) ...[
               const SizedBox(height: 8),
               SyncConflictDiffView(diff: diff!),
             ],
