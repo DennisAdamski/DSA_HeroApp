@@ -109,53 +109,15 @@ class _AdventureDateDraft {
   }
 }
 
-class _AdventureLootDraft {
-  _AdventureLootDraft(HeroAdventureLootEntry initial)
-    : id = initial.id,
-      nameController = TextEditingController(text: initial.name),
-      quantityController = TextEditingController(text: initial.quantity),
-      weightController = TextEditingController(
-        text: initial.weightGramm > 0 ? initial.weightGramm.toString() : '',
-      ),
-      valueController = TextEditingController(
-        text: initial.valueSilver > 0 ? initial.valueSilver.toString() : '',
-      ),
-      originController = TextEditingController(text: initial.origin),
-      descriptionController = TextEditingController(text: initial.description),
-      itemType = initial.itemType;
-
-  final String id;
-  final TextEditingController nameController;
-  final TextEditingController quantityController;
-  final TextEditingController weightController;
-  final TextEditingController valueController;
-  final TextEditingController originController;
-  final TextEditingController descriptionController;
-  InventoryItemType itemType;
-
-  HeroAdventureLootEntry buildValue() {
-    final parsedWeight = int.tryParse(weightController.text.trim()) ?? 0;
-    final parsedValue = int.tryParse(valueController.text.trim()) ?? 0;
-    return HeroAdventureLootEntry(
-      id: id,
-      name: nameController.text.trim(),
-      quantity: quantityController.text.trim(),
-      itemType: itemType,
-      weightGramm: parsedWeight < 0 ? 0 : parsedWeight,
-      valueSilver: parsedValue < 0 ? 0 : parsedValue,
-      origin: originController.text.trim(),
-      description: descriptionController.text.trim(),
-    );
-  }
-
-  void dispose() {
-    nameController.dispose();
-    quantityController.dispose();
-    weightController.dispose();
-    valueController.dispose();
-    originController.dispose();
-    descriptionController.dispose();
-  }
+Future<HeroAdventureLootEntry?> _showAdventureLootItemDialog({
+  required BuildContext context,
+  required HeroAdventureLootEntry initial,
+  required bool isNew,
+}) {
+  return showAdaptiveDetailSheet<HeroAdventureLootEntry>(
+    context: context,
+    builder: (_) => _AdventureLootItemDialog(initial: initial, isNew: isNew),
+  );
 }
 
 class _AdventureNoteDialogResult {
@@ -335,7 +297,7 @@ class _AdventureCompletionDialogState
   late final _AdventureDateDraft _endWorldDate;
   late final _AdventureDateDraft _endAventurianDate;
   late final TextEditingController _dukatenController;
-  late final List<_AdventureLootDraft> _lootDrafts;
+  late List<HeroAdventureLootEntry> _loot;
   late int _apReward;
   late List<HeroAdventureSeReward> _seRewards;
   String? _errorText;
@@ -355,9 +317,7 @@ class _AdventureCompletionDialogState
     _dukatenController = TextEditingController(
       text: _formatAdventureDukatenDraft(initial.dukatenReward),
     );
-    _lootDrafts = initial.lootRewards
-        .map(_AdventureLootDraft.new)
-        .toList(growable: true);
+    _loot = List<HeroAdventureLootEntry>.from(initial.lootRewards);
     _apReward = initial.apReward;
     _seRewards = List<HeroAdventureSeReward>.from(initial.seRewards);
   }
@@ -367,27 +327,48 @@ class _AdventureCompletionDialogState
     _endWorldDate.dispose();
     _endAventurianDate.dispose();
     _dukatenController.dispose();
-    for (final draft in _lootDrafts) {
-      draft.dispose();
-    }
     super.dispose();
   }
 
-  void _addLootDraft() {
-    setState(() {
-      _lootDrafts.add(
-        _AdventureLootDraft(HeroAdventureLootEntry(id: _uuid.v4())),
-      );
-    });
-  }
-
-  void _removeLootDraft(int index) {
-    if (index < 0 || index >= _lootDrafts.length) {
+  Future<void> _addLootEntry() async {
+    final result = await _showAdventureLootItemDialog(
+      context: context,
+      initial: HeroAdventureLootEntry(id: _uuid.v4()),
+      isNew: true,
+    );
+    if (result == null || !mounted) {
       return;
     }
     setState(() {
-      final removed = _lootDrafts.removeAt(index);
-      removed.dispose();
+      _loot = List<HeroAdventureLootEntry>.from(_loot)..add(result);
+    });
+  }
+
+  Future<void> _editLootEntry(int index) async {
+    if (index < 0 || index >= _loot.length) {
+      return;
+    }
+    final result = await _showAdventureLootItemDialog(
+      context: context,
+      initial: _loot[index],
+      isNew: false,
+    );
+    if (result == null || !mounted) {
+      return;
+    }
+    setState(() {
+      final next = List<HeroAdventureLootEntry>.from(_loot);
+      next[index] = result;
+      _loot = next;
+    });
+  }
+
+  void _removeLootEntry(int index) {
+    if (index < 0 || index >= _loot.length) {
+      return;
+    }
+    setState(() {
+      _loot = List<HeroAdventureLootEntry>.from(_loot)..removeAt(index);
     });
   }
 
@@ -489,8 +470,7 @@ class _AdventureCompletionDialogState
       return;
     }
 
-    final nextLoot = _lootDrafts
-        .map((draft) => draft.buildValue())
+    final nextLoot = _loot
         .where((entry) => entry.hasContent)
         .toList(growable: false);
     final nextAdventure = widget.initial.copyWith(
@@ -561,27 +541,28 @@ class _AdventureCompletionDialogState
                   key: const ValueKey<String>(
                     'notes-adventure-complete-add-loot',
                   ),
-                  onPressed: _addLootDraft,
+                  onPressed: _addLootEntry,
                   child: const Text('+ Gegenstand'),
                 ),
               ),
               const SizedBox(height: 8),
-              if (_lootDrafts.isEmpty)
+              if (_loot.isEmpty)
                 const _EmptyState(
                   message: 'Keine zusätzlichen Gegenstände erfasst.',
                 )
               else
                 Column(
                   children: [
-                    for (var index = 0; index < _lootDrafts.length; index++)
+                    for (var index = 0; index < _loot.length; index++)
                       Padding(
                         padding: EdgeInsets.only(
                           top: index == 0 ? 0 : _notesFieldSpacing,
                         ),
                         child: _AdventureLootEditorCard(
                           index: index,
-                          draft: _lootDrafts[index],
-                          onRemove: () => _removeLootDraft(index),
+                          entry: _loot[index],
+                          onEdit: () => _editLootEntry(index),
+                          onRemove: () => _removeLootEntry(index),
                         ),
                       ),
                   ],
@@ -635,169 +616,366 @@ class _CompletionRewardSummary extends StatelessWidget {
   }
 }
 
+const Map<InventoryItemType, String> _adventureLootTypeLabels = {
+  InventoryItemType.ausruestung: 'Ausrüstung',
+  InventoryItemType.verbrauchsgegenstand: 'Verbrauchsgegenstand',
+  InventoryItemType.wertvolles: 'Wertvolles',
+  InventoryItemType.sonstiges: 'Sonstiges',
+};
+
 class _AdventureLootEditorCard extends StatelessWidget {
   const _AdventureLootEditorCard({
     required this.index,
-    required this.draft,
+    required this.entry,
+    required this.onEdit,
     required this.onRemove,
   });
 
   final int index;
-  final _AdventureLootDraft draft;
+  final HeroAdventureLootEntry entry;
+  final VoidCallback onEdit;
   final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
+    final name = entry.name.trim();
+    final subtitleParts = <String>[
+      _adventureLootTypeLabels[entry.itemType] ?? '',
+      if (entry.quantity.trim().isNotEmpty) '${entry.quantity.trim()}×',
+      if (entry.weightGramm > 0) '${entry.weightGramm} g',
+      if (entry.valueSilver > 0) '${entry.valueSilver} S',
+    ].where((part) => part.isNotEmpty).toList(growable: false);
+    final hintChips = <Widget>[
+      if (entry.isMagisch) const Chip(label: Text('Magisch')),
+      if (entry.isGeweiht) const Chip(label: Text('Geweiht')),
+      if (entry.modifiers.isNotEmpty)
+        Chip(label: Text('${entry.modifiers.length} Modifikator(en)')),
+    ];
+
     return Card(
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Gegenstand ${index + 1}',
-                    style: Theme.of(context).textTheme.titleSmall,
+      child: InkWell(
+        key: ValueKey<String>('notes-adventure-complete-edit-loot-$index'),
+        onTap: onEdit,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      name.isEmpty ? 'Gegenstand ${index + 1}' : name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
                   ),
-                ),
-                IconButton(
-                  key: ValueKey<String>(
-                    'notes-adventure-complete-remove-loot-$index',
+                  IconButton(
+                    onPressed: onEdit,
+                    tooltip: 'Gegenstand bearbeiten',
+                    icon: const Icon(Icons.edit_outlined),
                   ),
-                  onPressed: onRemove,
-                  tooltip: 'Gegenstand entfernen',
-                  icon: const Icon(Icons.delete_outline),
+                  IconButton(
+                    key: ValueKey<String>(
+                      'notes-adventure-complete-remove-loot-$index',
+                    ),
+                    onPressed: onRemove,
+                    tooltip: 'Gegenstand entfernen',
+                    icon: const Icon(Icons.delete_outline),
+                  ),
+                ],
+              ),
+              if (subtitleParts.isNotEmpty)
+                Text(
+                  subtitleParts.join(' · '),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
+              if (hintChips.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Wrap(spacing: 8, runSpacing: 8, children: hintChips),
               ],
-            ),
-            const SizedBox(height: _notesFieldSpacing),
-            TextField(
-              key: ValueKey<String>(
-                'notes-adventure-complete-loot-name-$index',
-              ),
-              controller: draft.nameController,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: _notesFieldSpacing),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    key: ValueKey<String>(
-                      'notes-adventure-complete-loot-quantity-$index',
-                    ),
-                    controller: draft.quantityController,
-                    decoration: const InputDecoration(
-                      labelText: 'Anzahl',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: DropdownButtonFormField<InventoryItemType>(
-                    key: ValueKey<String>(
-                      'notes-adventure-complete-loot-type-$index',
-                    ),
-                    initialValue: draft.itemType,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Typ',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: InventoryItemType.ausruestung,
-                        child: Text('Ausrüstung'),
-                      ),
-                      DropdownMenuItem(
-                        value: InventoryItemType.verbrauchsgegenstand,
-                        child: Text('Verbrauchsgegenstand'),
-                      ),
-                      DropdownMenuItem(
-                        value: InventoryItemType.wertvolles,
-                        child: Text('Wertvolles'),
-                      ),
-                      DropdownMenuItem(
-                        value: InventoryItemType.sonstiges,
-                        child: Text('Sonstiges'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        draft.itemType = value;
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: _notesFieldSpacing),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    key: ValueKey<String>(
-                      'notes-adventure-complete-loot-weight-$index',
-                    ),
-                    controller: draft.weightController,
-                    decoration: const InputDecoration(
-                      labelText: 'Gewicht (g)',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    key: ValueKey<String>(
-                      'notes-adventure-complete-loot-value-$index',
-                    ),
-                    controller: draft.valueController,
-                    decoration: const InputDecoration(
-                      labelText: 'Wert (S)',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: _notesFieldSpacing),
-            TextField(
-              key: ValueKey<String>(
-                'notes-adventure-complete-loot-origin-$index',
-              ),
-              controller: draft.originController,
-              decoration: const InputDecoration(
-                labelText: 'Herkunft',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: _notesFieldSpacing),
-            TextField(
-              key: ValueKey<String>(
-                'notes-adventure-complete-loot-description-$index',
-              ),
-              controller: draft.descriptionController,
-              minLines: 2,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                labelText: 'Beschreibung',
-                border: OutlineInputBorder(),
-                alignLabelWithHint: true,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _AdventureLootItemDialog extends StatefulWidget {
+  const _AdventureLootItemDialog({required this.initial, required this.isNew});
+
+  final HeroAdventureLootEntry initial;
+  final bool isNew;
+
+  @override
+  State<_AdventureLootItemDialog> createState() =>
+      _AdventureLootItemDialogState();
+}
+
+class _AdventureLootItemDialogState extends State<_AdventureLootItemDialog> {
+  late HeroAdventureLootEntry _draft;
+  late final TextEditingController _nameController;
+  late final TextEditingController _quantityController;
+  late final TextEditingController _weightController;
+  late final TextEditingController _valueController;
+  late final TextEditingController _originController;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _magischDescriptionController;
+  late final TextEditingController _geweihtDescriptionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _draft = widget.initial;
+    _nameController = TextEditingController(text: _draft.name);
+    _quantityController = TextEditingController(text: _draft.quantity);
+    _weightController = TextEditingController(
+      text: _draft.weightGramm > 0 ? _draft.weightGramm.toString() : '',
+    );
+    _valueController = TextEditingController(
+      text: _draft.valueSilver > 0 ? _draft.valueSilver.toString() : '',
+    );
+    _originController = TextEditingController(text: _draft.origin);
+    _descriptionController = TextEditingController(text: _draft.description);
+    _magischDescriptionController = TextEditingController(
+      text: _draft.magischDescription,
+    );
+    _geweihtDescriptionController = TextEditingController(
+      text: _draft.geweihtDescription,
+    );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _quantityController.dispose();
+    _weightController.dispose();
+    _valueController.dispose();
+    _originController.dispose();
+    _descriptionController.dispose();
+    _magischDescriptionController.dispose();
+    _geweihtDescriptionController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final parsedWeight = int.tryParse(_weightController.text.trim()) ?? 0;
+    final parsedValue = int.tryParse(_valueController.text.trim()) ?? 0;
+    final result = _draft.copyWith(
+      name: _nameController.text.trim(),
+      quantity: _quantityController.text.trim(),
+      weightGramm: parsedWeight < 0 ? 0 : parsedWeight,
+      valueSilver: parsedValue < 0 ? 0 : parsedValue,
+      origin: _originController.text.trim(),
+      description: _descriptionController.text.trim(),
+      magischDescription: _magischDescriptionController.text.trim(),
+      geweihtDescription: _geweihtDescriptionController.text.trim(),
+    );
+    Navigator.of(context).pop(result);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      key: const ValueKey<String>('notes-adventure-loot-dialog'),
+      title: Text(
+        widget.isNew ? 'Gegenstand hinzufügen' : 'Gegenstand bearbeiten',
+      ),
+      content: SizedBox(
+        width: kDialogWidthLarge,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                key: const ValueKey<String>('notes-adventure-loot-name'),
+                controller: _nameController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: _notesFieldSpacing),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      key: const ValueKey<String>(
+                        'notes-adventure-loot-quantity',
+                      ),
+                      controller: _quantityController,
+                      decoration: const InputDecoration(
+                        labelText: 'Anzahl',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DropdownButtonFormField<InventoryItemType>(
+                      key: const ValueKey<String>('notes-adventure-loot-type'),
+                      initialValue: _draft.itemType,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Typ',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: _adventureLootTypeLabels.entries
+                          .map(
+                            (entry) => DropdownMenuItem(
+                              value: entry.key,
+                              child: Text(entry.value),
+                            ),
+                          )
+                          .toList(growable: false),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(
+                            () => _draft = _draft.copyWith(itemType: value),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: _notesFieldSpacing),
+              TextField(
+                key: const ValueKey<String>('notes-adventure-loot-origin'),
+                controller: _originController,
+                decoration: const InputDecoration(
+                  labelText: 'Herkunft',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: _notesFieldSpacing),
+              TextField(
+                key: const ValueKey<String>('notes-adventure-loot-description'),
+                controller: _descriptionController,
+                minLines: 2,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'Beschreibung',
+                  border: OutlineInputBorder(),
+                  alignLabelWithHint: true,
+                ),
+              ),
+              const SizedBox(height: _notesFieldSpacing * 2),
+              _AdventureSubsectionHeader(title: 'Magisch & Geweiht'),
+              const SizedBox(height: 8),
+              ListTileMaterial(
+                child: SwitchListTile.adaptive(
+                  key: const ValueKey<String>('notes-adventure-loot-magisch'),
+                  value: _draft.isMagisch,
+                  onChanged: (value) => setState(
+                    () => _draft = _draft.copyWith(isMagisch: value),
+                  ),
+                  title: const Text('Magisch'),
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              TextField(
+                key: const ValueKey<String>(
+                  'notes-adventure-loot-magisch-description',
+                ),
+                controller: _magischDescriptionController,
+                enabled: _draft.isMagisch,
+                minLines: 2,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'Beschreibung (magisch)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: _notesFieldSpacing),
+              ListTileMaterial(
+                child: SwitchListTile.adaptive(
+                  key: const ValueKey<String>('notes-adventure-loot-geweiht'),
+                  value: _draft.isGeweiht,
+                  onChanged: (value) => setState(
+                    () => _draft = _draft.copyWith(isGeweiht: value),
+                  ),
+                  title: const Text('Geweiht'),
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              TextField(
+                key: const ValueKey<String>(
+                  'notes-adventure-loot-geweiht-description',
+                ),
+                controller: _geweihtDescriptionController,
+                enabled: _draft.isGeweiht,
+                minLines: 2,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'Beschreibung (geweiht)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: _notesFieldSpacing * 2),
+              _AdventureSubsectionHeader(title: 'Wert & Gewicht'),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      key: const ValueKey<String>(
+                        'notes-adventure-loot-weight',
+                      ),
+                      controller: _weightController,
+                      decoration: const InputDecoration(
+                        labelText: 'Gewicht (g)',
+                        border: OutlineInputBorder(),
+                        suffixText: 'g',
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      key: const ValueKey<String>('notes-adventure-loot-value'),
+                      controller: _valueController,
+                      decoration: const InputDecoration(
+                        labelText: 'Wert (S)',
+                        border: OutlineInputBorder(),
+                        suffixText: 'S',
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+              if (_draft.itemType == InventoryItemType.ausruestung) ...[
+                const SizedBox(height: _notesFieldSpacing * 2),
+                _AdventureSubsectionHeader(title: 'Modifikatoren'),
+                const SizedBox(height: 4),
+                InventoryModifierEditor(
+                  modifiers: _draft.modifiers,
+                  onChanged: (mods) =>
+                      setState(() => _draft = _draft.copyWith(modifiers: mods)),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        FilledButton(
+          key: const ValueKey<String>('notes-adventure-loot-dialog-save'),
+          onPressed: _save,
+          child: const Text('Übernehmen'),
+        ),
+      ],
     );
   }
 }
