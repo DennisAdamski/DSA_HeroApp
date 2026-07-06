@@ -152,6 +152,33 @@ void main() {
       );
     });
 
+    test('skips offline profile heroes identical to the account version', () async {
+      final local = FakeRepository(
+        heroes: <HeroSheet>[hero('h-1', 'Alrik'), hero('h-2', 'Konto Layariel')],
+      );
+      final remote = FakeRemoteHeroSyncGateway();
+      final metadata = InMemorySyncMetadataStore();
+      final repository = SyncingHeroRepository(
+        local: local,
+        remote: remote,
+        metadataStore: metadata,
+        accountId: 'user-1',
+        startRemoteListener: false,
+      );
+
+      await repository.queueOfflineProfileConflicts(
+        offlineHeroes: <HeroSheet>[
+          // Identisch zur Konto-Version: darf keinen Konflikt erzeugen.
+          hero('h-1', 'Alrik'),
+          // Abweichender Name: Konflikt bleibt noetig.
+          hero('h-2', 'Offline Layariel'),
+        ],
+      );
+
+      expect(repository.currentStatus.openConflicts, hasLength(1));
+      expect(repository.currentStatus.openConflicts.single.objectId, 'h-2');
+    });
+
     test('conflictDiff liefert Feldunterschiede fuer Heldenkonflikte', () async {
       final local = FakeRepository.empty();
       final remote = FakeRemoteHeroSyncGateway();
