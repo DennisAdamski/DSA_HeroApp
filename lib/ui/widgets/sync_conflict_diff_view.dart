@@ -31,7 +31,13 @@ class SyncConflictDiffView extends StatelessWidget {
       );
     }
     if (diff.entries.isEmpty) {
-      return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Text(
+          'Beide Versionen sind inhaltlich identisch.',
+          style: theme.textTheme.bodySmall,
+        ),
+      );
     }
 
     final visibleEntries = diff.entries.take(_maxVisibleRows).toList();
