@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_object_diff.dart';
 
 /// Steuervertrag fuer den Konto-Sync aus UI- und App-Start-Schicht.
 abstract class AppSyncController {
@@ -16,4 +17,8 @@ abstract class AppSyncController {
     String conflictId,
     SyncResolutionChoice resolution,
   );
+
+  /// Feld-Diff fuer einen offenen Konflikt oder `null`, wenn fuer die
+  /// Konflikt-ID keine vollstaendigen Objektdaten verfuegbar sind.
+  SyncObjectDiff? conflictDiff(String conflictId);
 }
