@@ -217,6 +217,12 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
         continue;
       }
       final accountHero = await local.loadHeroById(offlineHero.id);
+      if (accountHero != null &&
+          heroContentHash(accountHero) == heroContentHash(offlineHero)) {
+        // Inhaltlich identisch: keine Nutzerentscheidung noetig, das Konto
+        // enthaelt bereits denselben Stand.
+        continue;
+      }
       final conflict = SyncConflict(
         id: conflictId,
         objectType: SyncObjectType.hero,
