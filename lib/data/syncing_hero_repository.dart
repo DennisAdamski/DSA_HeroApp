@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_controller.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_object_diff.dart';
 
 /// HeroRepository-Dekorator mit accountgebundenem Remote-Sync.
 ///
@@ -69,6 +70,8 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       <String, _StateConflictDetails>{};
   final Map<String, _DeletedHeroConflictDetails> _deletedHeroConflicts =
       <String, _DeletedHeroConflictDetails>{};
+  final Map<String, SyncObjectDiff> _conflictDiffCache =
+      <String, SyncObjectDiff>{};
   StreamSubscription<List<RemoteHeroRecord>>? _heroSubscription;
   StreamSubscription<List<RemoteHeroStateRecord>>? _stateSubscription;
 
@@ -144,6 +147,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     if (offlineConflict != null) {
       await _resolveOfflineHeroConflict(offlineConflict, resolution);
       _offlineHeroConflicts.remove(conflictId);
+      _conflictDiffCache.remove(conflictId);
       _removeConflictFromStatus(conflictId);
       return;
     }
@@ -153,11 +157,13 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       try {
         await _resolveHeroConflict(heroConflict, resolution);
         _heroConflicts.remove(conflictId);
+        _conflictDiffCache.remove(conflictId);
         _removeConflictFromStatus(conflictId);
       } on SyncPreconditionException {
         // Remote hat sich waehrend des offenen Dialogs erneut geaendert:
         // Konflikt mit frischem Remote-Stand neu oeffnen.
         _heroConflicts.remove(conflictId);
+        _conflictDiffCache.remove(conflictId);
         _removeConflictFromStatus(conflictId);
         final fresh = await remote.loadHero(heroConflict.localHero.id);
         if (fresh != null) {
@@ -176,10 +182,12 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       try {
         await _resolveDeletedHeroConflict(deletedConflict, resolution);
         _deletedHeroConflicts.remove(conflictId);
+        _conflictDiffCache.remove(conflictId);
         _removeConflictFromStatus(conflictId);
       } on SyncPreconditionException {
         // Remote hat sich waehrend des offenen Dialogs erneut geaendert.
         _deletedHeroConflicts.remove(conflictId);
+        _conflictDiffCache.remove(conflictId);
         _removeConflictFromStatus(conflictId);
         final fresh = await remote.loadHero(deletedConflict.heroId);
         if (fresh != null && !fresh.isDeleted) {
@@ -197,9 +205,11 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       try {
         await _resolveStateConflict(stateConflict, resolution);
         _stateConflicts.remove(conflictId);
+        _conflictDiffCache.remove(conflictId);
         _removeConflictFromStatus(conflictId);
       } on SyncPreconditionException {
         _stateConflicts.remove(conflictId);
+        _conflictDiffCache.remove(conflictId);
         _removeConflictFromStatus(conflictId);
         final stateGateway = _stateRemote;
         final fresh = await stateGateway?.loadHeroState(
@@ -214,6 +224,50 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
         }
       }
     }
+  }
+
+  /// Berechnet das Feld-Diff eines offenen Konflikts bei Bedarf.
+  ///
+  /// Das Ergebnis wird pro Konflikt-ID gecacht und beim Aufloesen des
+  /// Konflikts wieder verworfen.
+  @override
+  SyncObjectDiff? conflictDiff(String conflictId) {
+    final cached = _conflictDiffCache[conflictId];
+    if (cached != null) {
+      return cached;
+    }
+    final diff = _computeConflictDiff(conflictId);
+    if (diff != null) {
+      _conflictDiffCache[conflictId] = diff;
+    }
+    return diff;
+  }
+
+  SyncObjectDiff? _computeConflictDiff(String conflictId) {
+    final offlineConflict = _offlineHeroConflicts[conflictId];
+    if (offlineConflict != null) {
+      return computeSyncObjectDiff(
+        offlineConflict.offlineHero.toJson(),
+        offlineConflict.accountHero?.toJson(),
+      );
+    }
+    final heroConflict = _heroConflicts[conflictId];
+    if (heroConflict != null) {
+      final remoteRecord = heroConflict.remoteRecord;
+      return computeSyncObjectDiff(
+        heroConflict.localHero.toJson(),
+        remoteRecord.isDeleted ? null : remoteRecord.hero?.toJson(),
+      );
+    }
+    final stateConflict = _stateConflicts[conflictId];
+    if (stateConflict != null) {
+      final remoteRecord = stateConflict.remoteRecord;
+      return computeSyncObjectDiff(
+        stateConflict.localState.toJson(),
+        remoteRecord.isDeleted ? null : remoteRecord.state?.toJson(),
+      );
+    }
+    return null;
   }
 
   /// Erzeugt Konflikte fuer Offline-Helden beim Wechsel in ein Konto-Profil.
@@ -234,6 +288,12 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
         continue;
       }
       final accountHero = await local.loadHeroById(offlineHero.id);
+      if (accountHero != null &&
+          heroContentHash(accountHero) == heroContentHash(offlineHero)) {
+        // Inhaltlich identisch: keine Nutzerentscheidung noetig, das Konto
+        // enthaelt bereits denselben Stand.
+        continue;
+      }
       final conflict = SyncConflict(
         id: conflictId,
         objectType: SyncObjectType.hero,
@@ -255,6 +315,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       _offlineHeroConflicts[conflictId] = _OfflineHeroConflictDetails(
         conflict: conflict,
         offlineHero: offlineHero,
+        accountHero: accountHero,
       );
       _addConflictToStatus(conflict);
     }
@@ -1243,10 +1304,15 @@ class _OfflineHeroConflictDetails {
   const _OfflineHeroConflictDetails({
     required this.conflict,
     required this.offlineHero,
+    this.accountHero,
   });
 
   final SyncConflict conflict;
   final HeroSheet offlineHero;
+
+  /// Bereits im Konto vorhandene Version oder `null`, wenn das Konto den
+  /// Helden noch nicht kennt.
+  final HeroSheet? accountHero;
 }
 
 class _DeletedHeroConflictDetails {

@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_object_diff.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
@@ -113,6 +114,9 @@ class _FakeSyncController implements AppSyncController {
     String conflictId,
     SyncResolutionChoice resolution,
   ) async {}
+
+  @override
+  SyncObjectDiff? conflictDiff(String conflictId) => null;
 
   Future<void> close() => _controller.close();
 }
