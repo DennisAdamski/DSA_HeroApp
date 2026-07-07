@@ -1577,23 +1577,21 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.enterText(
-        find.byKey(
-          const ValueKey<String>('notes-adventure-complete-loot-name-0'),
-        ),
+        find.byKey(const ValueKey<String>('notes-adventure-loot-name')),
         'Silberdolch',
       );
       await tester.enterText(
-        find.byKey(
-          const ValueKey<String>('notes-adventure-complete-loot-quantity-0'),
-        ),
+        find.byKey(const ValueKey<String>('notes-adventure-loot-quantity')),
         '1',
       );
       await tester.enterText(
-        find.byKey(
-          const ValueKey<String>('notes-adventure-complete-loot-value-0'),
-        ),
+        find.byKey(const ValueKey<String>('notes-adventure-loot-value')),
         '180',
       );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('notes-adventure-loot-dialog-save')),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(
         find.byKey(
           const ValueKey<String>('notes-adventure-complete-dialog-save'),

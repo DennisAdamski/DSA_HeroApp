@@ -398,6 +398,11 @@ HeroInventoryEntry _buildAdventureLootInventoryEntry({
     wertSilber: _normalizeNonNegative(loot.valueSilver),
     herkunft: effectiveOrigin,
     beschreibung: loot.description.trim(),
+    isMagisch: loot.isMagisch,
+    magischDescription: loot.magischDescription.trim(),
+    isGeweiht: loot.isGeweiht,
+    geweihtDescription: loot.geweihtDescription.trim(),
+    modifiers: loot.modifiers,
   );
 }
 

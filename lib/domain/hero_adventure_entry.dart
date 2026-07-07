@@ -215,6 +215,11 @@ class HeroAdventureLootEntry {
     this.valueSilver = 0,
     this.origin = '',
     this.description = '',
+    this.isMagisch = false,
+    this.magischDescription = '',
+    this.isGeweiht = false,
+    this.geweihtDescription = '',
+    this.modifiers = const <InventoryItemModifier>[],
   });
 
   /// Stabile ID der Beutezeile innerhalb des Abenteuers.
@@ -241,6 +246,21 @@ class HeroAdventureLootEntry {
   /// Freitextbeschreibung des Gegenstands.
   final String description;
 
+  /// Kennzeichnet den Gegenstand als magisch (Artefakt-Angabe).
+  final bool isMagisch;
+
+  /// Freitextbeschreibung der magischen Eigenschaften.
+  final String magischDescription;
+
+  /// Kennzeichnet den Gegenstand als geweiht.
+  final bool isGeweiht;
+
+  /// Freitextbeschreibung der geweihten Eigenschaften.
+  final String geweihtDescription;
+
+  /// Modifikatoren, die beim Ausruesten des Gegenstands greifen.
+  final List<InventoryItemModifier> modifiers;
+
   /// Gibt an, ob die Zeile fachlich belegt ist.
   bool get hasContent {
     return name.trim().isNotEmpty ||
@@ -248,7 +268,10 @@ class HeroAdventureLootEntry {
         weightGramm > 0 ||
         valueSilver > 0 ||
         origin.trim().isNotEmpty ||
-        description.trim().isNotEmpty;
+        description.trim().isNotEmpty ||
+        isMagisch ||
+        isGeweiht ||
+        modifiers.isNotEmpty;
   }
 
   /// Liefert eine Kopie mit gezielt ersetzten Feldern.
@@ -261,6 +284,11 @@ class HeroAdventureLootEntry {
     int? valueSilver,
     String? origin,
     String? description,
+    bool? isMagisch,
+    String? magischDescription,
+    bool? isGeweiht,
+    String? geweihtDescription,
+    List<InventoryItemModifier>? modifiers,
   }) {
     return HeroAdventureLootEntry(
       id: id ?? this.id,
@@ -271,6 +299,11 @@ class HeroAdventureLootEntry {
       valueSilver: _normalizeReward(valueSilver ?? this.valueSilver),
       origin: origin ?? this.origin,
       description: description ?? this.description,
+      isMagisch: isMagisch ?? this.isMagisch,
+      magischDescription: magischDescription ?? this.magischDescription,
+      isGeweiht: isGeweiht ?? this.isGeweiht,
+      geweihtDescription: geweihtDescription ?? this.geweihtDescription,
+      modifiers: modifiers ?? this.modifiers,
     );
   }
 
@@ -285,12 +318,29 @@ class HeroAdventureLootEntry {
       'valueSilver': valueSilver,
       'origin': origin,
       'description': description,
+      'isMagisch': isMagisch,
+      'magischDescription': magischDescription,
+      'isGeweiht': isGeweiht,
+      'geweihtDescription': geweihtDescription,
+      'modifiers': modifiers.map((m) => m.toJson()).toList(),
     };
   }
 
   /// Laedt eine Beutezeile tolerant gegenueber fehlenden Feldern.
   static HeroAdventureLootEntry fromJson(Map<String, dynamic> json) {
     String getString(String key) => json[key]?.toString() ?? '';
+
+    final modifiersRaw = json['modifiers'];
+    final modifiers = modifiersRaw is List
+        ? modifiersRaw
+              .whereType<Map>()
+              .map(
+                (entry) => InventoryItemModifier.fromJson(
+                  entry.cast<String, dynamic>(),
+                ),
+              )
+              .toList(growable: false)
+        : const <InventoryItemModifier>[];
 
     return HeroAdventureLootEntry(
       id: getString('id'),
@@ -305,6 +355,11 @@ class HeroAdventureLootEntry {
       ),
       origin: getString('origin'),
       description: getString('description'),
+      isMagisch: json['isMagisch'] as bool? ?? false,
+      magischDescription: getString('magischDescription'),
+      isGeweiht: json['isGeweiht'] as bool? ?? false,
+      geweihtDescription: getString('geweihtDescription'),
+      modifiers: modifiers,
     );
   }
 }

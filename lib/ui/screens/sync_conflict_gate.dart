@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/sync_controller.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_object_diff.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/sync_conflict_diff_view.dart';
 
 /// Blockiert die App-Nutzung, solange Konto-Sync-Konflikte offen sind.
 class SyncConflictGate extends StatelessWidget {
@@ -64,6 +66,7 @@ class _SyncConflictScreen extends StatelessWidget {
               for (final conflict in status.openConflicts) ...[
                 _SyncConflictCard(
                   conflict: conflict,
+                  diff: controller.conflictDiff(conflict.id),
                   onResolve: (choice) {
                     controller.resolveConflict(conflict.id, choice);
                   },
@@ -79,10 +82,17 @@ class _SyncConflictScreen extends StatelessWidget {
 }
 
 class _SyncConflictCard extends StatelessWidget {
-  const _SyncConflictCard({required this.conflict, required this.onResolve});
+  const _SyncConflictCard({
+    required this.conflict,
+    required this.onResolve,
+    this.diff,
+  });
 
   final SyncConflict conflict;
   final ValueChanged<SyncResolutionChoice> onResolve;
+
+  /// Feld-Diff des Konflikts oder `null`, wenn keine Volldaten vorliegen.
+  final SyncObjectDiff? diff;
 
   @override
   Widget build(BuildContext context) {
@@ -116,6 +126,10 @@ class _SyncConflictCard extends StatelessWidget {
             ] else ...[
               Text('Lokal: ${conflict.localSummary}'),
               Text('Online: ${conflict.remoteSummary}'),
+            ],
+            if (diff != null) ...[
+              const SizedBox(height: 8),
+              SyncConflictDiffView(diff: diff!),
             ],
             const SizedBox(height: 16),
             Wrap(
