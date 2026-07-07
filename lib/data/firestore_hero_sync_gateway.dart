@@ -1,9 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:uuid/uuid.dart';
+import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:dsa_heldenverwaltung/data/sync/hero_sync_record_codec.dart';
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 
 /// Firestore-Gateway fuer privaten Konto-Sync von Helden und Zustaenden.
@@ -12,8 +15,6 @@ class FirestoreHeroSyncGateway
   /// Erstellt das Gateway fuer den privaten User-Subtree.
   FirestoreHeroSyncGateway({required this.userId, FirebaseFirestore? firestore})
     : _firestore = firestore ?? FirebaseFirestore.instance;
-
-  static const Uuid _uuid = Uuid();
 
   /// UID des angemeldeten Firebase-Users.
   final String userId;
@@ -31,14 +32,16 @@ class FirestoreHeroSyncGateway
     String heroId, {
     required String? previousRevision,
   }) async {
-    final revision = _newRevision();
-    await _heroesCollection.doc(heroId).set(<String, dynamic>{
-      'deleted': true,
-      'payload': null,
-      'revision': revision,
-      'contentHash': '',
-      'lastModified': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    final revision = newSyncRevision();
+    await _guardedSet(
+      _heroesCollection.doc(heroId),
+      encodeSyncTombstoneWriteFields(
+        revision: revision,
+        lastModifiedValue: FieldValue.serverTimestamp(),
+      ),
+      previousRevision: previousRevision,
+      setOptions: SetOptions(merge: true),
+    );
     return RemoteHeroRecord(
       id: heroId,
       hero: null,
@@ -54,14 +57,16 @@ class FirestoreHeroSyncGateway
     String heroId, {
     required String? previousRevision,
   }) async {
-    final revision = _newRevision();
-    await _statesCollection.doc(heroId).set(<String, dynamic>{
-      'deleted': true,
-      'payload': null,
-      'revision': revision,
-      'contentHash': '',
-      'lastModified': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    final revision = newSyncRevision();
+    await _guardedSet(
+      _statesCollection.doc(heroId),
+      encodeSyncTombstoneWriteFields(
+        revision: revision,
+        lastModifiedValue: FieldValue.serverTimestamp(),
+      ),
+      previousRevision: previousRevision,
+      setOptions: SetOptions(merge: true),
+    );
     return RemoteHeroStateRecord(
       heroId: heroId,
       state: null,
@@ -74,7 +79,7 @@ class FirestoreHeroSyncGateway
 
   @override
   Future<List<RemoteHeroRecord>> loadAllHeroes() async {
-    final snapshot = await _heroesCollection.get();
+    final snapshot = await _mapFirestoreErrors(() => _heroesCollection.get());
     return snapshot.docs
         .map(_decodeHeroRecord)
         .whereType<RemoteHeroRecord>()
@@ -83,7 +88,7 @@ class FirestoreHeroSyncGateway
 
   @override
   Future<List<RemoteHeroStateRecord>> loadAllHeroStates() async {
-    final snapshot = await _statesCollection.get();
+    final snapshot = await _mapFirestoreErrors(() => _statesCollection.get());
     return snapshot.docs
         .map(_decodeStateRecord)
         .whereType<RemoteHeroStateRecord>()
@@ -92,13 +97,17 @@ class FirestoreHeroSyncGateway
 
   @override
   Future<RemoteHeroRecord?> loadHero(String heroId) async {
-    final doc = await _heroesCollection.doc(heroId).get();
+    final doc = await _mapFirestoreErrors(
+      () => _heroesCollection.doc(heroId).get(),
+    );
     return _decodeHeroRecord(doc);
   }
 
   @override
   Future<RemoteHeroStateRecord?> loadHeroState(String heroId) async {
-    final doc = await _statesCollection.doc(heroId).get();
+    final doc = await _mapFirestoreErrors(
+      () => _statesCollection.doc(heroId).get(),
+    );
     return _decodeStateRecord(doc);
   }
 
@@ -107,16 +116,18 @@ class FirestoreHeroSyncGateway
     HeroSheet hero, {
     required String? previousRevision,
   }) async {
-    final payload = hero.toJson();
     final contentHash = heroContentHash(hero);
-    final revision = _newRevision();
-    await _heroesCollection.doc(hero.id).set(<String, dynamic>{
-      'deleted': false,
-      'payload': payload,
-      'revision': revision,
-      'contentHash': contentHash,
-      'lastModified': FieldValue.serverTimestamp(),
-    });
+    final revision = newSyncRevision();
+    await _guardedSet(
+      _heroesCollection.doc(hero.id),
+      encodeSyncPayloadWriteFields(
+        payload: hero.toJson(),
+        revision: revision,
+        contentHash: contentHash,
+        lastModifiedValue: FieldValue.serverTimestamp(),
+      ),
+      previousRevision: previousRevision,
+    );
     return RemoteHeroRecord(
       id: hero.id,
       hero: hero,
@@ -135,14 +146,17 @@ class FirestoreHeroSyncGateway
   }) async {
     final payload = state.toJson();
     final contentHash = stableContentHash(payload);
-    final revision = _newRevision();
-    await _statesCollection.doc(heroId).set(<String, dynamic>{
-      'deleted': false,
-      'payload': payload,
-      'revision': revision,
-      'contentHash': contentHash,
-      'lastModified': FieldValue.serverTimestamp(),
-    });
+    final revision = newSyncRevision();
+    await _guardedSet(
+      _statesCollection.doc(heroId),
+      encodeSyncPayloadWriteFields(
+        payload: payload,
+        revision: revision,
+        contentHash: contentHash,
+        lastModifiedValue: FieldValue.serverTimestamp(),
+      ),
+      previousRevision: previousRevision,
+    );
     return RemoteHeroStateRecord(
       heroId: heroId,
       state: state,
@@ -155,7 +169,7 @@ class FirestoreHeroSyncGateway
 
   @override
   Stream<List<RemoteHeroRecord>> watchHeroes() {
-    return _heroesCollection.snapshots().map((snapshot) {
+    return _mapStreamErrors(_heroesCollection.snapshots()).map((snapshot) {
       return snapshot.docs
           .map(_decodeHeroRecord)
           .whereType<RemoteHeroRecord>()
@@ -165,7 +179,7 @@ class FirestoreHeroSyncGateway
 
   @override
   Stream<List<RemoteHeroStateRecord>> watchHeroStates() {
-    return _statesCollection.snapshots().map((snapshot) {
+    return _mapStreamErrors(_statesCollection.snapshots()).map((snapshot) {
       return snapshot.docs
           .map(_decodeStateRecord)
           .whereType<RemoteHeroStateRecord>()
@@ -180,33 +194,10 @@ class FirestoreHeroSyncGateway
     if (data == null) {
       return null;
     }
-    final deleted = data['deleted'] as bool? ?? false;
-    final updatedAt = _readTimestamp(data['lastModified']);
-    if (deleted) {
-      return RemoteHeroRecord(
-        id: doc.id,
-        hero: null,
-        revision: _readRevision(data, updatedAt),
-        contentHash: '',
-        isDeleted: true,
-        updatedAt: updatedAt,
-      );
-    }
-
-    final payload = data['payload'];
-    if (payload is! Map) {
-      return null;
-    }
-    final hero = HeroSheet.fromJson(_castMap(payload));
-    final contentHash =
-        data['contentHash'] as String? ?? heroContentHash(hero);
-    return RemoteHeroRecord(
+    return decodeRemoteHeroRecord(
       id: doc.id,
-      hero: hero,
-      revision: _readRevision(data, updatedAt, fallbackHash: contentHash),
-      contentHash: contentHash,
-      isDeleted: false,
-      updatedAt: updatedAt,
+      data: data,
+      updatedAt: _readTimestamp(data[HeroSyncRecordFields.lastModified]),
     );
   }
 
@@ -217,38 +208,11 @@ class FirestoreHeroSyncGateway
     if (data == null) {
       return null;
     }
-    final deleted = data['deleted'] as bool? ?? false;
-    final updatedAt = _readTimestamp(data['lastModified']);
-    if (deleted) {
-      return RemoteHeroStateRecord(
-        heroId: doc.id,
-        state: null,
-        revision: _readRevision(data, updatedAt),
-        contentHash: '',
-        isDeleted: true,
-        updatedAt: updatedAt,
-      );
-    }
-
-    final payload = data['payload'];
-    if (payload is! Map) {
-      return null;
-    }
-    final state = HeroState.fromJson(_castMap(payload));
-    final contentHash =
-        data['contentHash'] as String? ?? stableContentHash(state.toJson());
-    return RemoteHeroStateRecord(
+    return decodeRemoteHeroStateRecord(
       heroId: doc.id,
-      state: state,
-      revision: _readRevision(data, updatedAt, fallbackHash: contentHash),
-      contentHash: contentHash,
-      isDeleted: false,
-      updatedAt: updatedAt,
+      data: data,
+      updatedAt: _readTimestamp(data[HeroSyncRecordFields.lastModified]),
     );
-  }
-
-  Map<String, dynamic> _castMap(Map<dynamic, dynamic> raw) {
-    return raw.map((key, value) => MapEntry(key.toString(), value));
   }
 
   DateTime? _readTimestamp(Object? raw) {
@@ -258,22 +222,85 @@ class FirestoreHeroSyncGateway
     return null;
   }
 
-  String _readRevision(
-    Map<String, dynamic> data,
-    DateTime? updatedAt, {
-    String fallbackHash = '',
-  }) {
-    final revision = data['revision'] as String?;
-    if (revision != null && revision.isNotEmpty) {
-      return revision;
+  /// Schreibt ein Dokument und erzwingt [previousRevision] serverseitig.
+  ///
+  /// Mit gesetzter Revision laeuft der Write als Transaktion: Die aktuelle
+  /// Revision wird gelesen und bei Abweichung eine [SyncPreconditionException]
+  /// geworfen, ohne zu schreiben. Ohne Revision bleibt es beim direkten
+  /// `set()` (bewusst z. B. fuer frisch angelegte Dokumente und
+  /// `keepBoth`-Kopien; behaelt ausserdem das Offline-Queueing des Plugins).
+  Future<void> _guardedSet(
+    DocumentReference<Map<String, dynamic>> docRef,
+    Map<String, dynamic> fields, {
+    required String? previousRevision,
+    SetOptions? setOptions,
+  }) async {
+    if (previousRevision == null) {
+      await _mapFirestoreErrors(() => docRef.set(fields, setOptions));
+      return;
     }
-    if (updatedAt != null) {
-      return 'legacy-${updatedAt.toUtc().microsecondsSinceEpoch}';
-    }
-    return 'legacy-$fallbackHash';
+    await _mapFirestoreErrors(
+      () => _firestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(docRef);
+        final data = snapshot.data();
+        final currentRevision = snapshot.exists && data != null
+            ? readSyncRevision(
+                data,
+                _readTimestamp(data[HeroSyncRecordFields.lastModified]),
+              )
+            : null;
+        if (currentRevision != previousRevision) {
+          throw SyncPreconditionException(
+            'Remote-Revision hat sich geändert '
+            '($previousRevision -> $currentRevision).',
+            expectedRevision: previousRevision,
+            actualRevision: currentRevision,
+          );
+        }
+        transaction.set(docRef, fields, setOptions);
+      }),
+    );
   }
 
-  String _newRevision() {
-    return '${DateTime.now().toUtc().microsecondsSinceEpoch}-${_uuid.v4()}';
+  /// Führt eine Firestore-Operation aus und übersetzt [FirebaseException]s
+  /// in typisierte Sync-Fehler.
+  Future<T> _mapFirestoreErrors<T>(Future<T> Function() action) async {
+    try {
+      return await action();
+    } on FirebaseException catch (error) {
+      throw _mapFirebaseException(error);
+    }
+  }
+
+  /// Übersetzt Fehler eines Firestore-Streams in typisierte Sync-Fehler.
+  Stream<T> _mapStreamErrors<T>(Stream<T> stream) {
+    return stream.transform(
+      StreamTransformer<T, T>.fromHandlers(
+        handleError: (error, stackTrace, sink) {
+          if (error is FirebaseException) {
+            sink.addError(_mapFirebaseException(error), stackTrace);
+            return;
+          }
+          sink.addError(error, stackTrace);
+        },
+      ),
+    );
+  }
+
+  Object _mapFirebaseException(FirebaseException error) {
+    final message = error.message ?? 'Firestore-Fehler (${error.code}).';
+    switch (error.code) {
+      case 'unauthenticated':
+      case 'permission-denied':
+        return SyncAuthException(message, cause: error);
+      case 'unavailable':
+      case 'deadline-exceeded':
+        return SyncNetworkException(message, cause: error);
+      case 'aborted':
+      case 'failed-precondition':
+        return SyncPreconditionException(message, cause: error);
+      default:
+        return error;
+    }
   }
 }

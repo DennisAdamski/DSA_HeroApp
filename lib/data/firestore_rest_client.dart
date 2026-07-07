@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+
+import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 
 /// Kleiner Firestore-REST-Client für Plattformen ohne stabilen nativen SDK-Pfad.
 ///
@@ -28,26 +31,32 @@ class FirestoreRestClient {
 
   final http.Client _http;
 
-  /// Lädt ein einzelnes Dokument und gibt dessen dekodierte Felder zurück.
-  Future<Map<String, dynamic>?> getDocumentFields(String documentPath) async {
-    final response = await _http.get(
-      _documentUri(documentPath),
-      headers: await _authHeaders(),
+  /// Lädt ein einzelnes Dokument inklusive Server-`updateTime`.
+  Future<FirestoreRestDocument?> getDocument(String documentPath) async {
+    final headers = await _authHeaders();
+    final response = await _send(
+      () => _http.get(_documentUri(documentPath), headers: headers),
     );
     if (response.statusCode == 404) {
       return null;
     }
     final body = _decodeSuccess(response);
-    return _decodeFields(body);
+    return FirestoreRestDocument.fromJson(body);
+  }
+
+  /// Lädt ein einzelnes Dokument und gibt dessen dekodierte Felder zurück.
+  Future<Map<String, dynamic>?> getDocumentFields(String documentPath) async {
+    final document = await getDocument(documentPath);
+    return document?.fields;
   }
 
   /// Listet alle Dokumente einer Collection mit dekodierten Feldern.
   Future<List<FirestoreRestDocument>> listDocuments(
     String collectionPath,
   ) async {
-    final response = await _http.get(
-      _documentUri(collectionPath),
-      headers: await _authHeaders(),
+    final headers = await _authHeaders();
+    final response = await _send(
+      () => _http.get(_documentUri(collectionPath), headers: headers),
     );
     if (response.statusCode == 404) {
       return const <FirestoreRestDocument>[];
@@ -64,15 +73,33 @@ class FirestoreRestClient {
   }
 
   /// Schreibt ein Dokument per PATCH und gibt die dekodierten Antwortfelder zurück.
+  ///
+  /// [updateTimePrecondition] bzw. [existsPrecondition] werden als
+  /// `currentDocument.*`-Precondition mitgesendet; verletzt der Server sie,
+  /// antwortet er mit 409/`FAILED_PRECONDITION`, was als
+  /// [SyncPreconditionException] auftaucht.
   Future<Map<String, dynamic>> patchDocumentFields(
     String documentPath,
-    Map<String, dynamic> fields,
-  ) async {
+    Map<String, dynamic> fields, {
+    DateTime? updateTimePrecondition,
+    bool? existsPrecondition,
+  }) async {
     final body = <String, dynamic>{'fields': _encodeFields(fields)};
-    final response = await _http.patch(
-      _documentUri(documentPath),
-      headers: await _authHeaders(contentTypeJson: true),
-      body: jsonEncode(body),
+    final headers = await _authHeaders(contentTypeJson: true);
+    final query = <String, String>{
+      if (updateTimePrecondition != null)
+        'currentDocument.updateTime': updateTimePrecondition
+            .toUtc()
+            .toIso8601String(),
+      if (existsPrecondition != null)
+        'currentDocument.exists': existsPrecondition.toString(),
+    };
+    final response = await _send(
+      () => _http.patch(
+        _documentUri(documentPath, queryParameters: query),
+        headers: headers,
+        body: jsonEncode(body),
+      ),
     );
     return _decodeFields(_decodeSuccess(response));
   }
@@ -82,7 +109,9 @@ class FirestoreRestClient {
   }) async {
     final token = await idTokenProvider();
     if (token == null || token.trim().isEmpty) {
-      throw StateError('Kein Firebase-ID-Token für Firestore-REST verfügbar.');
+      throw const SyncAuthException(
+        'Kein Firebase-ID-Token für Firestore-REST verfügbar.',
+      );
     }
     return <String, String>{
       'authorization': 'Bearer $token',
@@ -90,20 +119,50 @@ class FirestoreRestClient {
     };
   }
 
-  Uri _documentUri(String path) {
+  Uri _documentUri(String path, {Map<String, String>? queryParameters}) {
     final encodedPath = path.split('/').map(Uri.encodeComponent).join('/');
     return Uri.https(
       'firestore.googleapis.com',
       '/v1/projects/$projectId/databases/$databaseId/documents/$encodedPath',
+      queryParameters == null || queryParameters.isEmpty
+          ? null
+          : queryParameters,
     );
+  }
+
+  /// Führt einen HTTP-Request aus und übersetzt Transportfehler in
+  /// [SyncNetworkException].
+  Future<http.Response> _send(Future<http.Response> Function() request) async {
+    try {
+      return await request();
+    } on http.ClientException catch (error) {
+      throw SyncNetworkException(
+        'Firestore-REST ist nicht erreichbar: ${error.message}',
+        cause: error,
+      );
+    } on TimeoutException catch (error) {
+      throw SyncNetworkException(
+        'Firestore-REST-Request hat das Zeitlimit überschritten.',
+        cause: error,
+      );
+    }
   }
 
   Map<String, dynamic> _decodeSuccess(http.Response response) {
     final status = response.statusCode;
     if (status < 200 || status >= 300) {
-      throw StateError(
-        'Firestore-REST-Request fehlgeschlagen ($status): ${response.body}',
-      );
+      final description =
+          'Firestore-REST-Request fehlgeschlagen ($status): ${response.body}';
+      if (status == 401 || status == 403) {
+        throw SyncAuthException(description);
+      }
+      if (status == 409 || response.body.contains('FAILED_PRECONDITION')) {
+        throw SyncPreconditionException(description);
+      }
+      if (status >= 500) {
+        throw SyncNetworkException(description);
+      }
+      throw StateError(description);
     }
     if (response.body.trim().isEmpty) {
       return const <String, dynamic>{};
@@ -123,6 +182,7 @@ class FirestoreRestDocument {
     required this.name,
     required this.id,
     required this.fields,
+    this.updateTime,
   });
 
   /// Vollständiger Firestore-Ressourcenname.
@@ -134,15 +194,22 @@ class FirestoreRestDocument {
   /// Plain-Dart-Felder des Dokuments.
   final Map<String, dynamic> fields;
 
+  /// Server-Zeitstempel der letzten Änderung (für Preconditions).
+  final DateTime? updateTime;
+
   /// Dekodiert ein REST-Dokument.
   factory FirestoreRestDocument.fromJson(Map<String, dynamic> json) {
     final name = json['name'] as String? ?? '';
     final segments = name.split('/');
     final rawId = segments.isEmpty ? '' : segments.last;
+    final rawUpdateTime = json['updateTime'];
     return FirestoreRestDocument(
       name: name,
       id: Uri.decodeComponent(rawId),
       fields: _decodeFields(json),
+      updateTime: rawUpdateTime is String
+          ? DateTime.tryParse(rawUpdateTime)
+          : null,
     );
   }
 }
