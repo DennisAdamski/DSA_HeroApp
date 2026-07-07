@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'package:dsa_heldenverwaltung/data/sync/sync_transport.dart';
 import 'package:dsa_heldenverwaltung/firebase_options.dart';
 
 /// Beschreibt, ob optionale Firebase-Funktionen beim App-Start verfügbar sind.
@@ -53,7 +54,7 @@ Future<FirebaseBootstrapResult> bootstrapFirebase({
   final runInitializer = initializer ?? _initializeFirebase;
   try {
     await runInitializer();
-    if (_usesRestAccountSyncForCurrentPlatform()) {
+    if (usesRestFirestoreSyncTransport()) {
       return const FirebaseBootstrapResult.available(
         isFirestoreAvailable: false,
         isAccountSyncAvailable: true,
@@ -92,11 +93,4 @@ Future<void> _initializeFirebase() {
   return Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-}
-
-bool _usesRestAccountSyncForCurrentPlatform() {
-  if (kIsWeb) {
-    return false;
-  }
-  return defaultTargetPlatform == TargetPlatform.windows;
 }

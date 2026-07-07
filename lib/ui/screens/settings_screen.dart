@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_tools.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
