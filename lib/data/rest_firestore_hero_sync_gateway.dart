@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:http/http.dart' as http;
-import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/data/firestore_rest_client.dart';
+import 'package:dsa_heldenverwaltung/data/sync/hero_sync_record_codec.dart';
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 
 /// Firestore-REST-Gateway für privaten Konto-Sync von Helden und Zuständen.
@@ -35,8 +36,6 @@ class RestFirestoreHeroSyncGateway
              httpClient: httpClient,
            );
 
-  static const Uuid _uuid = Uuid();
-
   /// UID des angemeldeten Firebase-Users.
   final String userId;
 
@@ -51,17 +50,16 @@ class RestFirestoreHeroSyncGateway
     String heroId, {
     required String? previousRevision,
   }) async {
-    final revision = _newRevision();
-    final fields = <String, dynamic>{
-      'deleted': true,
-      'payload': null,
-      'revision': revision,
-      'contentHash': '',
-      'lastModified': DateTime.now().toUtc(),
-    };
-    final savedFields = await _rest.patchDocumentFields(
+    final revision = newSyncRevision();
+    final lastModified = DateTime.now().toUtc();
+    final fields = encodeSyncTombstoneWriteFields(
+      revision: revision,
+      lastModifiedValue: lastModified,
+    );
+    final savedFields = await _guardedPatch(
       '$_heroesCollectionPath/$heroId',
       fields,
+      previousRevision: previousRevision,
     );
     return _decodeHeroRecord(heroId, savedFields) ??
         RemoteHeroRecord(
@@ -70,7 +68,7 @@ class RestFirestoreHeroSyncGateway
           revision: revision,
           contentHash: '',
           isDeleted: true,
-          updatedAt: fields['lastModified'] as DateTime,
+          updatedAt: lastModified,
         );
   }
 
@@ -79,17 +77,16 @@ class RestFirestoreHeroSyncGateway
     String heroId, {
     required String? previousRevision,
   }) async {
-    final revision = _newRevision();
-    final fields = <String, dynamic>{
-      'deleted': true,
-      'payload': null,
-      'revision': revision,
-      'contentHash': '',
-      'lastModified': DateTime.now().toUtc(),
-    };
-    final savedFields = await _rest.patchDocumentFields(
+    final revision = newSyncRevision();
+    final lastModified = DateTime.now().toUtc();
+    final fields = encodeSyncTombstoneWriteFields(
+      revision: revision,
+      lastModifiedValue: lastModified,
+    );
+    final savedFields = await _guardedPatch(
       '$_statesCollectionPath/$heroId',
       fields,
+      previousRevision: previousRevision,
     );
     return _decodeStateRecord(heroId, savedFields) ??
         RemoteHeroStateRecord(
@@ -98,7 +95,7 @@ class RestFirestoreHeroSyncGateway
           revision: revision,
           contentHash: '',
           isDeleted: true,
-          updatedAt: fields['lastModified'] as DateTime,
+          updatedAt: lastModified,
         );
   }
 
@@ -141,19 +138,19 @@ class RestFirestoreHeroSyncGateway
     HeroSheet hero, {
     required String? previousRevision,
   }) async {
-    final payload = hero.toJson();
     final contentHash = heroContentHash(hero);
-    final revision = _newRevision();
-    final fields = <String, dynamic>{
-      'deleted': false,
-      'payload': payload,
-      'revision': revision,
-      'contentHash': contentHash,
-      'lastModified': DateTime.now().toUtc(),
-    };
-    final savedFields = await _rest.patchDocumentFields(
+    final revision = newSyncRevision();
+    final lastModified = DateTime.now().toUtc();
+    final fields = encodeSyncPayloadWriteFields(
+      payload: hero.toJson(),
+      revision: revision,
+      contentHash: contentHash,
+      lastModifiedValue: lastModified,
+    );
+    final savedFields = await _guardedPatch(
       '$_heroesCollectionPath/${hero.id}',
       fields,
+      previousRevision: previousRevision,
     );
     return _decodeHeroRecord(hero.id, savedFields) ??
         RemoteHeroRecord(
@@ -162,7 +159,7 @@ class RestFirestoreHeroSyncGateway
           revision: revision,
           contentHash: contentHash,
           isDeleted: false,
-          updatedAt: fields['lastModified'] as DateTime,
+          updatedAt: lastModified,
         );
   }
 
@@ -174,17 +171,18 @@ class RestFirestoreHeroSyncGateway
   }) async {
     final payload = state.toJson();
     final contentHash = stableContentHash(payload);
-    final revision = _newRevision();
-    final fields = <String, dynamic>{
-      'deleted': false,
-      'payload': payload,
-      'revision': revision,
-      'contentHash': contentHash,
-      'lastModified': DateTime.now().toUtc(),
-    };
-    final savedFields = await _rest.patchDocumentFields(
+    final revision = newSyncRevision();
+    final lastModified = DateTime.now().toUtc();
+    final fields = encodeSyncPayloadWriteFields(
+      payload: payload,
+      revision: revision,
+      contentHash: contentHash,
+      lastModifiedValue: lastModified,
+    );
+    final savedFields = await _guardedPatch(
       '$_statesCollectionPath/$heroId',
       fields,
+      previousRevision: previousRevision,
     );
     return _decodeStateRecord(heroId, savedFields) ??
         RemoteHeroStateRecord(
@@ -193,7 +191,7 @@ class RestFirestoreHeroSyncGateway
           revision: revision,
           contentHash: contentHash,
           isDeleted: false,
-          updatedAt: fields['lastModified'] as DateTime,
+          updatedAt: lastModified,
         );
   }
 
@@ -213,34 +211,53 @@ class RestFirestoreHeroSyncGateway
     });
   }
 
-  RemoteHeroRecord? _decodeHeroRecord(String id, Map<String, dynamic> fields) {
-    final deleted = fields['deleted'] as bool? ?? false;
-    final updatedAt = _readTimestamp(fields['lastModified']);
-    if (deleted) {
-      return RemoteHeroRecord(
-        id: id,
-        hero: null,
-        revision: _readRevision(fields, updatedAt),
-        contentHash: '',
-        isDeleted: true,
-        updatedAt: updatedAt,
+  /// Schreibt per PATCH und erzwingt [previousRevision] serverseitig.
+  ///
+  /// Bei gesetzter Revision wird das Dokument zuerst gelesen; weicht die
+  /// Revision ab, fliegt eine [SyncPreconditionException] ohne Write. Der
+  /// anschließende PATCH traegt eine `currentDocument.updateTime`-Precondition,
+  /// damit auch ein Schreiber zwischen Read und Write als Konflikt auffällt.
+  /// Ohne [previousRevision] bleibt es beim Blind-Write (bewusst z. B. für
+  /// frisch angelegte Dokumente und `keepBoth`-Kopien).
+  Future<Map<String, dynamic>> _guardedPatch(
+    String documentPath,
+    Map<String, dynamic> fields, {
+    required String? previousRevision,
+  }) async {
+    if (previousRevision == null) {
+      return _rest.patchDocumentFields(documentPath, fields);
+    }
+    final current = await _rest.getDocument(documentPath);
+    if (current == null) {
+      throw SyncPreconditionException(
+        'Remote-Dokument fehlt, erwartet war Revision $previousRevision.',
+        expectedRevision: previousRevision,
       );
     }
-
-    final payload = fields['payload'];
-    if (payload is! Map) {
-      return null;
+    final currentRevision = readSyncRevision(
+      current.fields,
+      _readTimestamp(current.fields[HeroSyncRecordFields.lastModified]),
+    );
+    if (currentRevision != previousRevision) {
+      throw SyncPreconditionException(
+        'Remote-Revision hat sich geändert '
+        '($previousRevision -> $currentRevision).',
+        expectedRevision: previousRevision,
+        actualRevision: currentRevision,
+      );
     }
-    final hero = HeroSheet.fromJson(_castMap(payload));
-    final contentHash =
-        fields['contentHash'] as String? ?? heroContentHash(hero);
-    return RemoteHeroRecord(
+    return _rest.patchDocumentFields(
+      documentPath,
+      fields,
+      updateTimePrecondition: current.updateTime,
+    );
+  }
+
+  RemoteHeroRecord? _decodeHeroRecord(String id, Map<String, dynamic> fields) {
+    return decodeRemoteHeroRecord(
       id: id,
-      hero: hero,
-      revision: _readRevision(fields, updatedAt, fallbackHash: contentHash),
-      contentHash: contentHash,
-      isDeleted: false,
-      updatedAt: updatedAt,
+      data: fields,
+      updatedAt: _readTimestamp(fields[HeroSyncRecordFields.lastModified]),
     );
   }
 
@@ -248,33 +265,10 @@ class RestFirestoreHeroSyncGateway
     String heroId,
     Map<String, dynamic> fields,
   ) {
-    final deleted = fields['deleted'] as bool? ?? false;
-    final updatedAt = _readTimestamp(fields['lastModified']);
-    if (deleted) {
-      return RemoteHeroStateRecord(
-        heroId: heroId,
-        state: null,
-        revision: _readRevision(fields, updatedAt),
-        contentHash: '',
-        isDeleted: true,
-        updatedAt: updatedAt,
-      );
-    }
-
-    final payload = fields['payload'];
-    if (payload is! Map) {
-      return null;
-    }
-    final state = HeroState.fromJson(_castMap(payload));
-    final contentHash =
-        fields['contentHash'] as String? ?? stableContentHash(state.toJson());
-    return RemoteHeroStateRecord(
+    return decodeRemoteHeroStateRecord(
       heroId: heroId,
-      state: state,
-      revision: _readRevision(fields, updatedAt, fallbackHash: contentHash),
-      contentHash: contentHash,
-      isDeleted: false,
-      updatedAt: updatedAt,
+      data: fields,
+      updatedAt: _readTimestamp(fields[HeroSyncRecordFields.lastModified]),
     );
   }
 
@@ -286,28 +280,5 @@ class RestFirestoreHeroSyncGateway
       return DateTime.tryParse(raw);
     }
     return null;
-  }
-
-  String _readRevision(
-    Map<String, dynamic> fields,
-    DateTime? updatedAt, {
-    String fallbackHash = '',
-  }) {
-    final revision = fields['revision'] as String?;
-    if (revision != null && revision.isNotEmpty) {
-      return revision;
-    }
-    if (updatedAt != null) {
-      return 'legacy-${updatedAt.toUtc().microsecondsSinceEpoch}';
-    }
-    return 'legacy-$fallbackHash';
-  }
-
-  Map<String, dynamic> _castMap(Map<dynamic, dynamic> raw) {
-    return raw.map((key, value) => MapEntry(key.toString(), value));
-  }
-
-  String _newRevision() {
-    return '${DateTime.now().toUtc().microsecondsSinceEpoch}-${_uuid.v4()}';
   }
 }
