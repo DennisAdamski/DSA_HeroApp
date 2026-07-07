@@ -12,6 +12,23 @@ const String _legalDisclaimerText =
     'Spiele beziehungsweise den jeweiligen Rechteinhabern.\n\n'
     'App, Code und eigene App-Inhalte: © 2026 Dennis Adamski.';
 
+/// Benutzerlesbare Meldung für den letzten Sync-Fehler nach Kategorie.
+String _syncFailureLabel(SyncFailure failure) {
+  switch (failure.kind) {
+    case SyncErrorKind.auth:
+      return 'Anmeldung abgelaufen oder nicht gültig – bitte erneut anmelden.';
+    case SyncErrorKind.network:
+      return 'Cloud derzeit nicht erreichbar – Änderungen werden beim '
+          'nächsten Sync übertragen.';
+    case SyncErrorKind.conflict:
+      return 'Paralleler Schreibzugriff erkannt – bitte offene Konflikte '
+          'auflösen.';
+    case SyncErrorKind.decode:
+    case SyncErrorKind.unknown:
+      return failure.message;
+  }
+}
+
 class _SettingsPageList extends StatelessWidget {
   const _SettingsPageList({required this.children});
 
@@ -215,10 +232,10 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
                   ),
                 ),
               ],
-              if (syncStatus.lastError != null) ...[
+              if (syncStatus.lastFailure != null) ...[
                 const SizedBox(height: 8),
                 Text(
-                  syncStatus.lastError!,
+                  _syncFailureLabel(syncStatus.lastFailure!),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.error,
                   ),

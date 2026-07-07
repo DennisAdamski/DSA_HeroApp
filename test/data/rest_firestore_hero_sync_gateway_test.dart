@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/data/rest_firestore_hero_sync_gateway.dart'
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 
 void main() {
@@ -149,7 +150,149 @@ void main() {
           client: client,
           tokenProvider: () async => null,
         ).loadAllHeroes(),
-        throwsA(isA<StateError>()),
+        throwsA(isA<SyncAuthException>()),
+      );
+    });
+
+    test('maps 401 responses to SyncAuthException', () async {
+      final client = MockClient((request) async {
+        return http.Response('{"error": {"status": "UNAUTHENTICATED"}}', 401);
+      });
+
+      await expectLater(
+        gateway(client: client).loadAllHeroes(),
+        throwsA(isA<SyncAuthException>()),
+      );
+    });
+
+    test('maps 5xx responses to SyncNetworkException', () async {
+      final client = MockClient((request) async {
+        return http.Response('{"error": {"status": "UNAVAILABLE"}}', 503);
+      });
+
+      await expectLater(
+        gateway(client: client).loadAllHeroes(),
+        throwsA(isA<SyncNetworkException>()),
+      );
+    });
+
+    test('maps 409 responses to SyncPreconditionException', () async {
+      final client = MockClient((request) async {
+        return http.Response('{"error": {"status": "ABORTED"}}', 409);
+      });
+
+      await expectLater(
+        gateway(
+          client: client,
+        ).saveHero(hero('h-1', 'Alrik'), previousRevision: null),
+        throwsA(isA<SyncPreconditionException>()),
+      );
+    });
+
+    test(
+      'enforces previousRevision via GET and updateTime precondition',
+      () async {
+        final requests = <http.Request>[];
+        final remoteHero = hero('h-1', 'Alrik');
+        final client = MockClient((request) async {
+          requests.add(request);
+          if (request.method == 'GET') {
+            return http.Response(
+              jsonEncode({
+                'name':
+                    'projects/test-project/databases/(default)/documents/'
+                    'users/user-1/heroes/h-1',
+                'updateTime': '2026-01-01T12:00:00Z',
+                'fields': _heroFields(
+                  payload: remoteHero.toJson(),
+                  revision: 'r-1',
+                  contentHash: stableContentHash(remoteHero.toJson()),
+                ),
+              }),
+              200,
+            );
+          }
+          return http.Response(request.body, 200);
+        });
+
+        await gateway(
+          client: client,
+        ).saveHero(hero('h-1', 'Alrik 2'), previousRevision: 'r-1');
+
+        expect(requests, hasLength(2));
+        expect(requests.first.method, 'GET');
+        final patch = requests.last;
+        expect(patch.method, 'PATCH');
+        expect(
+          patch.url.queryParameters['currentDocument.updateTime'],
+          '2026-01-01T12:00:00.000Z',
+        );
+      },
+    );
+
+    test('aborts the save without PATCH when the revision moved', () async {
+      final requests = <http.Request>[];
+      final remoteHero = hero('h-1', 'Alrik');
+      final client = MockClient((request) async {
+        requests.add(request);
+        return http.Response(
+          jsonEncode({
+            'name':
+                'projects/test-project/databases/(default)/documents/'
+                'users/user-1/heroes/h-1',
+            'updateTime': '2026-01-01T12:00:00Z',
+            'fields': _heroFields(
+              payload: remoteHero.toJson(),
+              revision: 'r-2',
+              contentHash: stableContentHash(remoteHero.toJson()),
+            ),
+          }),
+          200,
+        );
+      });
+
+      await expectLater(
+        gateway(
+          client: client,
+        ).saveHero(hero('h-1', 'Alrik 2'), previousRevision: 'r-1'),
+        throwsA(
+          isA<SyncPreconditionException>()
+              .having((e) => e.expectedRevision, 'expectedRevision', 'r-1')
+              .having((e) => e.actualRevision, 'actualRevision', 'r-2'),
+        ),
+      );
+
+      expect(requests.where((r) => r.method == 'PATCH'), isEmpty);
+    });
+
+    test('writes blindly when no previousRevision is given', () async {
+      final requests = <http.Request>[];
+      final client = MockClient((request) async {
+        requests.add(request);
+        return http.Response(request.body, 200);
+      });
+
+      await gateway(
+        client: client,
+      ).saveHero(hero('h-1', 'Alrik'), previousRevision: null);
+
+      expect(requests.single.method, 'PATCH');
+      expect(
+        requests.single.url.queryParameters.containsKey(
+          'currentDocument.updateTime',
+        ),
+        isFalse,
+      );
+    });
+
+    test('maps connection errors to SyncNetworkException', () async {
+      final client = MockClient((request) async {
+        throw http.ClientException('Verbindung abgelehnt');
+      });
+
+      await expectLater(
+        gateway(client: client).loadAllHeroes(),
+        throwsA(isA<SyncNetworkException>()),
       );
     });
   });

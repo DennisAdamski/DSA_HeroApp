@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:pointycastle/digests/sha256.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 
 /// Beschreibt die Arten von Nutzerobjekten, die der Konto-Sync verwaltet.
 enum SyncObjectType {
@@ -201,7 +202,7 @@ class SyncStatusSnapshot {
     this.email,
     this.isSyncing = false,
     this.lastSuccessfulSync,
-    this.lastError,
+    this.lastFailure,
     this.openConflicts = const <SyncConflict>[],
   });
 
@@ -217,8 +218,11 @@ class SyncStatusSnapshot {
   /// Zeitpunkt des letzten vollstaendig erfolgreichen Syncs.
   final DateTime? lastSuccessfulSync;
 
+  /// Letzter Sync-Fehler mit Kategorie fuer die UI.
+  final SyncFailure? lastFailure;
+
   /// Letzter Sync-Fehler als benutzerlesbarer Text.
-  final String? lastError;
+  String? get lastError => lastFailure?.message;
 
   /// Noch nicht geloeste Konflikte.
   final List<SyncConflict> openConflicts;
@@ -232,7 +236,7 @@ class SyncStatusSnapshot {
     String? email,
     bool? isSyncing,
     Object? lastSuccessfulSync = _copySentinel,
-    Object? lastError = _copySentinel,
+    Object? lastFailure = _copySentinel,
     List<SyncConflict>? openConflicts,
   }) {
     return SyncStatusSnapshot(
@@ -242,9 +246,9 @@ class SyncStatusSnapshot {
       lastSuccessfulSync: identical(lastSuccessfulSync, _copySentinel)
           ? this.lastSuccessfulSync
           : lastSuccessfulSync as DateTime?,
-      lastError: identical(lastError, _copySentinel)
-          ? this.lastError
-          : lastError as String?,
+      lastFailure: identical(lastFailure, _copySentinel)
+          ? this.lastFailure
+          : lastFailure as SyncFailure?,
       openConflicts: openConflicts ?? this.openConflicts,
     );
   }
