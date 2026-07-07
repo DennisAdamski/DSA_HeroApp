@@ -152,7 +152,7 @@ class HiveSettingsRepository {
           provider: settings.avatarApiConfig.provider,
         ));
       } on Object catch (e, st) {
-        // Remote-Fehler blockieren den lokalen Save nicht (siehe HybridHeroRepository).
+        // Remote-Fehler blockieren den lokalen Save nicht.
         debugPrint('[settings] remote save fehlgeschlagen: $e\n$st');
       }
     }
