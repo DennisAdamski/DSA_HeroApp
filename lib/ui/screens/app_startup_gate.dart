@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,6 +18,7 @@ import 'package:dsa_heldenverwaltung/data/house_rule_pack_repository.dart';
 import 'package:dsa_heldenverwaltung/data/rest_firestore_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/rest_firestore_secrets_repository.dart';
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
+import 'package:dsa_heldenverwaltung/data/sync/sync_transport.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
@@ -287,7 +287,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
   }
 
   RemoteHeroSyncGateway _createRemoteHeroGateway(String authUid) {
-    if (_usesRestFirestoreTransport) {
+    if (usesRestFirestoreSyncTransport()) {
       return RestFirestoreHeroSyncGateway(
         userId: authUid,
         projectId: _firebaseProjectId,
@@ -300,7 +300,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
   RestFirestoreSecretsRepository? _createRemoteSecretsRepository(
     String authUid,
   ) {
-    if (!_usesRestFirestoreTransport) {
+    if (!usesRestFirestoreSyncTransport()) {
       return null;
     }
     return RestFirestoreSecretsRepository(
@@ -316,13 +316,6 @@ class _AppStartupGateState extends State<AppStartupGate> {
       return Future<String?>.value();
     }
     return user.getIdToken();
-  }
-
-  bool get _usesRestFirestoreTransport {
-    if (kIsWeb) {
-      return false;
-    }
-    return defaultTargetPlatform == TargetPlatform.windows;
   }
 
   String get _firebaseProjectId {
