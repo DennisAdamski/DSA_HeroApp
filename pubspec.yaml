@@ -27,6 +27,8 @@ dependencies:
   pointycastle: ^3.9.1
   flutter_secure_storage: ^10.0.0
   unorm_dart: ^0.3.0
+  sqlite3: ^2.4.0
+  sqlite3_flutter_libs: ^0.5.24
 
 dev_dependencies:
   flutter_test:

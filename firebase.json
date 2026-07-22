@@ -52,6 +52,15 @@
                 ]
             },
             {
+                "source": "**/*.wasm",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "public, max-age=31536000, immutable"
+                    }
+                ]
+            },
+            {
                 "source": "flutter_service_worker.js",
                 "headers": [
                     {
