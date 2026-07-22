@@ -17,6 +17,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_core_attribu
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_hero_header.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_inspector_panel.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_navigation_guard.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/rules_lookup_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
@@ -320,11 +322,56 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     Navigator.of(context).pop();
   }
 
+  /// Baut die Schaltflaeche fuer die Proben-Schnellsuche.
+  ///
+  /// Die Suche ist tab-unabhaengig immer verfuegbar, damit im Spiel jede
+  /// Probe ohne Tab-Wechsel erreichbar bleibt.
+  Widget _buildProbeQuickSearchAction() {
+    return Tooltip(
+      message: 'Probe suchen und würfeln',
+      child: IconButton(
+        key: const ValueKey('workspace-probe-quick-search'),
+        onPressed: () => showProbeQuickSearch(
+          context: context,
+          ref: ref,
+          heroId: widget.heroId,
+        ),
+        icon: const Icon(Icons.casino_outlined),
+      ),
+    );
+  }
+
+  /// Baut die Schaltflaeche fuer den Regel-Nachschlag (nur Desktop).
+  ///
+  /// Liefert `null`, wenn die Plattform keine lokale Wissensbasis hat.
+  Widget? _buildRulesLookupAction() {
+    if (!isRulesLookupSupported()) {
+      return null;
+    }
+    return Tooltip(
+      message: 'Regeln nachschlagen',
+      child: IconButton(
+        key: const ValueKey('workspace-rules-lookup'),
+        onPressed: () => showRulesLookupDialog(context: context),
+        icon: const Icon(Icons.menu_book_outlined),
+      ),
+    );
+  }
+
+  /// Baut die tab-unabhaengigen Spiel-Aktionen (Probensuche, Regelsuche).
+  List<Widget> _buildGlobalPlayActions() {
+    final rulesLookup = _buildRulesLookupAction();
+    return <Widget>[
+      _buildProbeQuickSearchAction(),
+      ?rulesLookup,
+    ];
+  }
+
   /// Baut die Aktionsschaltflaechen fuer die AppBar.
   List<Widget> _buildWorkspaceActions({required bool isCompactLayout}) {
     final activeTab = _activeTabSpec();
     if (activeTab == null) {
-      return const <Widget>[];
+      return _buildGlobalPlayActions();
     }
 
     final activeTabId = activeTab.id;
@@ -342,6 +389,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     }
 
     final widgets = <Widget>[];
+    if (!isEditing) {
+      widgets.addAll(_buildGlobalPlayActions());
+    }
     final headerActions = <WorkspaceHeaderAction>[
       ...activeTab.buildHeaderActions(
         context: context,

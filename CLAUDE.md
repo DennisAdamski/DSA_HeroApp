@@ -57,6 +57,28 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `lib/ui/widgets/list_tile_material.dart` einen lokalen Material-Layer
   erhalten, damit Flutter-3.44-Ink- und Tile-Hintergruende sichtbar bleiben.
 - Der Windows-Release-Audit fuer EXE/MSIX-Artefakte ist in `docs/windows_antivirus_audit.md` beschrieben; der zugehoerige Helfer liegt unter `tool/audit_windows_artifact.ps1`.
+- Spielunterstuetzung ("Spielmodus") ist in `docs/spielmodus_konzept.md` konzipiert.
+  Phase 1 umfasst die tab-unabhaengige Proben-Schnellsuche
+  (`lib/ui/screens/workspace/probe_quick_search.dart`), Filter-Chips im
+  Wuerfelprotokoll und den Regel-Nachschlag. Der Nachschlag liest die vom
+  dsa-rules MCP-Indexer erzeugte SQLite-DB read-only per FTS5 und ist auf
+  Desktop und Web sichtbar (Mobile blendet den Einstieg weiterhin aus).
+  Implementierung unter `lib/data/rules_search/` (Conditional-Import-Fassade
+  `rules_index_search.dart` mit IO-/Web-/Stub-Variante, plattformneutrale
+  Typen in `rules_index_types.dart`), UI in
+  `lib/ui/screens/workspace/rules_lookup_dialog.dart`. Desktop liest die
+  Datenbank direkt vom lokalen Standardpfad (`rules_index_search_io.dart`);
+  Web hat keinen Dateisystemzugriff und nutzt stattdessen `package:sqlite3`
+  im WASM-Modus (`rules_index_search_web.dart`, Binärdatei `web/sqlite3.wasm`)
+  mit `IndexedDbFileSystem`-Persistenz — der Nutzer laedt die am Desktop
+  erzeugte `index.sqlite` einmalig ueber einen Datei-Upload im Dialog hoch;
+  sie bleibt danach origin-gebunden im Browser gespeichert.
+  `web/sqlite3.wasm` ist eine eingecheckte Binaerdatei, kein Build-Artefakt:
+  das `sqlite3`-Package liefert auf pub.dev nur C-Quellen fuer den WASM-Build
+  (`assets/wasm/` im Package), keine fertige `.wasm`. Bei einem Versionswechsel
+  von `sqlite3` in `pubspec.yaml` muss `web/sqlite3.wasm` manuell gegen die
+  passende `sqlite3.wasm` aus den GitHub-Releases von
+  github.com/simolus3/sqlite3.dart (Tag zur Package-Version) ersetzt werden.
 
 ## Pflegehinweis
 

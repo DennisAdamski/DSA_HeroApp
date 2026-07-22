@@ -39,7 +39,10 @@ class HeroState {
       diceLog = const <DiceLogEntry>[];
 
   /// Maximale Anzahl persistierter Wuerfelprotokoll-Eintraege pro Held.
-  static const int diceLogMax = 14;
+  ///
+  /// Sessiontauglich dimensioniert, damit auch ein langer Spielabend im
+  /// Protokoll nachvollziehbar bleibt.
+  static const int diceLogMax = 50;
 
   final int schemaVersion;
   final int currentLep;
