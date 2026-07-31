@@ -198,7 +198,7 @@ class RestFirestoreHeroSyncGateway
   @override
   Stream<List<RemoteHeroRecord>> watchHeroes() async* {
     yield await loadAllHeroes();
-    yield* Stream<int>.periodic(_pollInterval).asyncMap((_) {
+    yield* Stream<void>.periodic(_pollInterval).asyncMap((_) {
       return loadAllHeroes();
     });
   }
@@ -206,7 +206,7 @@ class RestFirestoreHeroSyncGateway
   @override
   Stream<List<RemoteHeroStateRecord>> watchHeroStates() async* {
     yield await loadAllHeroStates();
-    yield* Stream<int>.periodic(_pollInterval).asyncMap((_) {
+    yield* Stream<void>.periodic(_pollInterval).asyncMap((_) {
       return loadAllHeroStates();
     });
   }
