@@ -1,9 +1,14 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_remote_client.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_search.dart';
+import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_sync_service.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_types.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/catalog_unlock_dialog.dart';
 
 /// Prüft, ob die Regelsuche auf dieser Plattform angeboten werden kann.
 ///
@@ -25,18 +30,19 @@ Future<void> showRulesLookupDialog({required BuildContext context}) {
 /// bietet eine reine FTS5-Keyword-Suche über wählbare Quellkategorien. Auf
 /// Web muss die Index-Datenbank zuvor einmalig hochgeladen werden, da dort
 /// kein Zugriff auf einen Nutzer-lokalen Standardpfad möglich ist.
-class RulesLookupDialog extends StatefulWidget {
+class RulesLookupDialog extends ConsumerStatefulWidget {
   /// Erzeugt den Dialog.
   const RulesLookupDialog({super.key});
 
   @override
-  State<RulesLookupDialog> createState() => _RulesLookupDialogState();
+  ConsumerState<RulesLookupDialog> createState() => _RulesLookupDialogState();
 }
 
-class _RulesLookupDialogState extends State<RulesLookupDialog> {
+class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
   RulesIndexSearch? _search;
   bool _loading = true;
   bool _importing = false;
+  bool _syncing = false;
   String? _importError;
   List<RulesSearchHit> _hits = const <RulesSearchHit>[];
   String _query = '';
@@ -194,6 +200,69 @@ class _RulesLookupDialogState extends State<RulesLookupDialog> {
     }
   }
 
+  /// Lädt die Index-Datenbank vom konfigurierten Server und ersetzt den
+  /// aktuell geöffneten Index (falls vorhanden) nach erfolgreicher Validierung.
+  ///
+  /// Setzt voraus, dass der Nutzer das Katalog-Entschlüsselungspasswort
+  /// kennt: fehlt es noch, wird zuerst [showCatalogUnlockDialog] geöffnet.
+  Future<void> _syncFromServer() async {
+    var unlocked = ref.read(catalogContentVisibleProvider);
+    if (!unlocked) {
+      unlocked = await showCatalogUnlockDialog(context: context, ref: ref);
+      if (!unlocked || !mounted) {
+        return;
+      }
+    }
+
+    setState(() {
+      _syncing = true;
+      _importError = null;
+    });
+    final config = ref.read(rulesIndexRemoteConfigProvider);
+    try {
+      final newSearch = await RulesIndexSyncService().syncFromServer(config);
+      final oldSearch = _search;
+      if (!mounted) {
+        newSearch.dispose();
+        return;
+      }
+      oldSearch?.dispose();
+      await ref
+          .read(settingsActionsProvider)
+          .saveRulesIndexRemoteConfig(
+            config.copyWith(lastSyncedAt: DateTime.now()),
+          );
+      setState(() {
+        _search = newSearch;
+        _syncing = false;
+        _hits = const <RulesSearchHit>[];
+        _searched = false;
+        _query = '';
+      });
+    } on RulesIndexDownloadException catch (error) {
+      _handleSyncError(error.message);
+    } on FormatException catch (error) {
+      _handleSyncError(error.message);
+    }
+  }
+
+  /// Zeigt einen Sync-Fehler im Leerzustand-Hinweistext, oder als Snackbar,
+  /// wenn bereits eine funktionierende Suche geöffnet ist.
+  void _handleSyncError(String message) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _syncing = false;
+      _importError = message;
+    });
+    if (_search != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -238,16 +307,39 @@ class _RulesLookupDialogState extends State<RulesLookupDialog> {
           const SizedBox(height: 12),
           const Text(
             'Die Suche nutzt die lokale Index-Datenbank des dsa-rules '
-            'MCP-Servers. Bitte einmalig den Index aufbauen:\n\n'
-            'tool/mcp_dsa_rules → dsa-rules-cli refresh',
+            'MCP-Servers. Entweder einmalig selbst aufbauen:\n\n'
+            'tool/mcp_dsa_rules → dsa-rules-cli refresh\n\n'
+            'oder direkt von einem konfigurierten Server laden.',
           ),
-          const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Schließen'),
+          if (_importError != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              _importError!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
+          ],
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Schließen'),
+              ),
+              const SizedBox(width: 8),
+              FilledButton.icon(
+                key: const ValueKey('rules-lookup-sync-button'),
+                onPressed: _syncing ? null : _syncFromServer,
+                icon: _syncing
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.cloud_download_outlined),
+                label: const Text('Von Server laden'),
+              ),
+            ],
           ),
         ],
       ),
@@ -332,6 +424,27 @@ class _RulesLookupDialogState extends State<RulesLookupDialog> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.upload_file_outlined),
+                ),
+              ],
+            ),
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  key: const ValueKey('rules-lookup-sync-icon-button'),
+                  tooltip: 'Index vom Server aktualisieren',
+                  onPressed: _syncing ? null : _syncFromServer,
+                  icon: _syncing
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.cloud_download_outlined),
                 ),
               ],
             ),

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_tools.dart';
+import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_remote_client.dart';
+import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_sync_service.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';

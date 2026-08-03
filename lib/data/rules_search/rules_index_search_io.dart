@@ -15,15 +15,24 @@ bool rulesIndexSearchSupported() {
 
 /// Öffnet die Regel-Volltextsuche read-only oder liefert `null`.
 ///
-/// `null` bedeutet: Plattform ungeeignet, Datei fehlt oder konnte nicht
-/// geöffnet werden. Der Aufrufer zeigt dann einen Hinweis auf
-/// `dsa-rules-cli refresh`. Async aus Symmetrie mit der Web-Variante, die
-/// die Index-Datei erst asynchron laden kann.
+/// `null` bedeutet: Plattform ungeeignet oder keine der beiden Quellen
+/// (lokal per `dsa-rules-cli refresh` gebaute Datei, per Server-Sync
+/// heruntergeladene Cache-Datei) ist vorhanden/lesbar. Der Aufrufer zeigt
+/// dann einen Hinweis. Async aus Symmetrie mit der Web-Variante, die die
+/// Index-Datei erst asynchron laden kann.
+///
+/// Die lokal per `dsa-rules-cli refresh` gebaute Datei hat Vorrang vor dem
+/// Server-Cache — ein Entwickler/Power-User, der den Index selbst pflegt,
+/// soll nicht durch einen alten Server-Stand überstimmt werden.
 Future<RulesIndexSearch?> openRulesIndexSearch() async {
   if (!rulesIndexSearchSupported()) {
     return null;
   }
-  final path = _resolveDefaultDbPath();
+  return _tryOpenAt(_resolveDefaultDbPath()) ??
+      _tryOpenAt(_resolveRemoteCacheDbPath());
+}
+
+RulesIndexSearch? _tryOpenAt(String path) {
   if (!File(path).existsSync()) {
     return null;
   }
@@ -35,32 +44,78 @@ Future<RulesIndexSearch?> openRulesIndexSearch() async {
   }
 }
 
-/// Desktop-Variante: Datei-Import ist nur auf Web implementiert, da die
-/// Index-Datenbank am Desktop bereits über `_resolveDefaultDbPath()`
-/// gefunden wird.
-Future<RulesIndexSearch> importRulesIndexDatabase(Uint8List bytes) {
-  throw UnsupportedError(
-    'Index-Import wird auf dieser Plattform nicht unterstützt.',
-  );
+/// Importiert eine per Server-Sync heruntergeladene `index.sqlite` in den
+/// Remote-Cache-Pfad und öffnet sie anschließend read-only.
+///
+/// Schreibt bewusst **nicht** in den von `dsa-rules-cli refresh` gepflegten
+/// Standardpfad, um eine lokale Entwickler-Datenbank nicht stillschweigend
+/// zu überschreiben. Validate-then-commit wie im Web-Importer: erst unter
+/// einem `.tmp`-Pfad schreiben und per Testabfrage gegen `chunks_fts`
+/// validieren, bevor ein zuvor funktionierender Cache ersetzt wird — ein
+/// abgebrochener/fehlerhafter Download darf keine funktionierende Kopie
+/// zerstören.
+Future<RulesIndexSearch> importRulesIndexDatabase(Uint8List bytes) async {
+  final targetPath = _resolveRemoteCacheDbPath();
+  await Directory(_resolveDataDir()).create(recursive: true);
+
+  final tmpPath = '$targetPath.tmp';
+  final tmpFile = File(tmpPath);
+  await tmpFile.writeAsBytes(bytes, flush: true);
+
+  final Database validated;
+  try {
+    validated = sqlite3.open(tmpPath, mode: OpenMode.readOnly);
+  } on SqliteException {
+    await tmpFile.delete();
+    throw const FormatException(
+      'Datei ist keine gültige SQLite-Datenbank.',
+    );
+  }
+  try {
+    validated.select('SELECT count(*) FROM chunks_fts LIMIT 1');
+  } on SqliteException {
+    validated.dispose();
+    await tmpFile.delete();
+    throw const FormatException(
+      'Datei enthält kein gültiges Regel-Index-Schema.',
+    );
+  }
+  validated.dispose();
+
+  final targetFile = File(targetPath);
+  if (await targetFile.exists()) {
+    await targetFile.delete();
+  }
+  await tmpFile.rename(targetPath);
+
+  final db = sqlite3.open(targetPath, mode: OpenMode.readOnly);
+  return _SqliteRulesIndexSearch(db);
 }
 
-/// Ermittelt den Standardpfad der Index-Datenbank.
+/// Ermittelt das Datenverzeichnis der Index-Datenbank(en).
 ///
 /// Entspricht der Auflösung des MCP-Servers: `DSA_MCP_DATA_DIR` hat Vorrang,
 /// danach `%LOCALAPPDATA%/dsa-rules-mcp`, sonst `~/.local/share/dsa-rules-mcp`.
-String _resolveDefaultDbPath() {
+String _resolveDataDir() {
   final override = Platform.environment['DSA_MCP_DATA_DIR'];
   if (override != null && override.isNotEmpty) {
-    return '$override${Platform.pathSeparator}index.sqlite';
+    return override;
   }
   final localAppData = Platform.environment['LOCALAPPDATA'];
   if (localAppData != null && localAppData.isNotEmpty) {
-    return '$localAppData${Platform.pathSeparator}dsa-rules-mcp'
-        '${Platform.pathSeparator}index.sqlite';
+    return '$localAppData${Platform.pathSeparator}dsa-rules-mcp';
   }
   final home = Platform.environment['HOME'] ?? '';
-  return '$home/.local/share/dsa-rules-mcp/index.sqlite';
+  return '$home/.local/share/dsa-rules-mcp';
 }
+
+/// Standardpfad der lokal per `dsa-rules-cli refresh` gebauten Datenbank.
+String _resolveDefaultDbPath() =>
+    '${_resolveDataDir()}${Platform.pathSeparator}index.sqlite';
+
+/// Pfad der per Server-Sync heruntergeladenen Cache-Datenbank.
+String _resolveRemoteCacheDbPath() =>
+    '${_resolveDataDir()}${Platform.pathSeparator}index_remote.sqlite';
 
 /// Read-only-Zugriff auf die vom dsa-rules MCP-Indexer erzeugte SQLite-DB.
 ///

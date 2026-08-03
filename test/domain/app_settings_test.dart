@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
+import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart';
 
 void main() {
   test('serializes and deserializes hero storage path', () {
@@ -85,5 +86,37 @@ void main() {
     );
 
     expect(updated.disabledHouseRulePackIds, {'epic_rules_v1'});
+  });
+
+  test('rulesIndexRemoteConfig round-trips through json', () {
+    final settings = AppSettings(
+      rulesIndexRemoteConfig: RulesIndexRemoteConfig(
+        serverUrl: 'https://example.myfritz.net/nas/index.sqlite',
+        username: 'dsa-rules-reader',
+        password: 'secret',
+        lastSyncedAt: DateTime.utc(2026, 8, 1, 12, 30),
+      ),
+    );
+
+    final json = settings.toJson();
+    final restored = AppSettings.fromJson(json);
+
+    expect(
+      restored.rulesIndexRemoteConfig.serverUrl,
+      'https://example.myfritz.net/nas/index.sqlite',
+    );
+    expect(restored.rulesIndexRemoteConfig.username, 'dsa-rules-reader');
+    expect(restored.rulesIndexRemoteConfig.password, 'secret');
+    expect(
+      restored.rulesIndexRemoteConfig.lastSyncedAt,
+      DateTime.utc(2026, 8, 1, 12, 30),
+    );
+  });
+
+  test('missing rulesIndexRemoteConfig defaults to unconfigured value', () {
+    final settings = AppSettings.fromJson(const <String, dynamic>{});
+
+    expect(settings.rulesIndexRemoteConfig.isConfigured, isFalse);
+    expect(settings.rulesIndexRemoteConfig.lastSyncedAt, isNull);
   });
 }
