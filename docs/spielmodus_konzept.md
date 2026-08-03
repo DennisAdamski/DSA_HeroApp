@@ -144,3 +144,44 @@ Diese drei Punkte brauchen entweder eine funktionierende
 `flutter test --platform chrome`/Edge-Kombination oder ein installiertes
 Browser-Automatisierungswerkzeug (z. B. `chromium-cli`, Playwright), um
 `flutter run -d edge` zu steuern.
+
+## 6. Entscheidungsrevision: zentraler Server-Sync (Stand 2026-08-02)
+
+Abschnitt 2.4 (Option A) legte bewusst fest, dass die Index-Datenbank eine
+**lokale, nutzerseitige Datenquelle** bleibt und **keine** Kopplung an
+Netzwerk-/Sync-Mechanismen erhält, um nicht unbeabsichtigt zu einem
+Verbreitungsweg geschützter Volltexte zu werden. Diese Entscheidung wird nun
+bewusst revidiert: die Index-DB wird zusätzlich zum bestehenden manuellen
+Weg (lokal bauen bzw. auf Web hochladen) **zentral von einem Server** (einer
+privaten Fritz!NAS-Freigabe, per WebDAV/HTTPS) bereitgestellt, damit auch
+Nutzer ohne eigenes `dsa-rules-mcp`-Setup den Regel-Nachschlag nutzen können.
+
+Wichtig: **Die Datei selbst bleibt unverschlüsselt.** Der Schutzgedanke aus
+Abschnitt 2.4 wird stattdessen so umgesetzt:
+
+- Das Download-Feature ist ein **clientseitiges Gate hinter dem bestehenden
+  Katalog-Entschlüsselungspasswort** (`showCatalogUnlockDialog`,
+  `catalogContentVisibleProvider`) — erst nach dessen Eingabe bietet die App
+  den Download überhaupt an. Es gibt keine zweite, separate Passwortabfrage.
+- Der WebDAV-Zugriff auf die Fritz!NAS-Freigabe ist zusätzlich durch ein
+  dediziertes, rechtebeschränktes FritzBox-Nutzerkonto abgesichert, dessen
+  Zugangsdaten für Release-Builds fest eingebettet werden
+  (`RulesIndexRemoteConfig`, `--dart-define`).
+- **Bewusster Trade-off:** Beides ist ein Schutz gegen den beiläufigen
+  Zugriffsweg über die normale App-UI, **kein** Schutz gegen gezielte
+  Extraktion der Zugangsdaten aus dem App-Binary. Wer die Build-Defaults
+  extrahiert, käme auch ohne Katalogpasswort an die unverschlüsselte Datei.
+  Eine kryptografische Absicherung der Datei selbst wäre technisch möglich
+  (siehe ursprünglich erwogene v3-Verschlüsselung nach Katalogmuster), wurde
+  aber bewusst zurückgestellt, um die Umsetzung schlank zu halten.
+- Kein automatisches Hintergrund-Polling — nur ein manueller
+  "Jetzt von Server laden"-Button (Einstellungen und Regel-Nachschlag-Dialog).
+  Keine Kopplung an Firestore/Helden-Sync.
+
+Implementierung: `lib/domain/rules_index_remote_config.dart`,
+`lib/data/rules_search/rules_index_remote_client.dart`,
+`lib/data/rules_search/rules_index_sync_service.dart`, Erweiterung von
+`lib/data/rules_search/rules_index_search_io.dart` (Remote-Cache-Pfad
+`index_remote.sqlite`, Fallback nach der lokal gebauten `index.sqlite`),
+UI in `lib/ui/screens/settings/settings_pages.dart`
+(`_RulesIndexServerCard`) und `lib/ui/screens/workspace/rules_lookup_dialog.dart`.
