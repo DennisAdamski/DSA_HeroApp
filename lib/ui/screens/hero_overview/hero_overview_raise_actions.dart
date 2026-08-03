@@ -249,6 +249,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     _latestHero = updatedHero;
     _setFieldText(code.name, result.neuerWert.toString());
+    _setFieldText('ap_spent', updatedHero.apSpent.toString());
     if (!mounted) {
       return;
     }
@@ -305,6 +306,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     _latestHero = updatedHero;
     _setFieldText('b_$key', result.neuerWert.toString());
+    _setFieldText('ap_spent', updatedHero.apSpent.toString());
     if (!mounted) {
       return;
     }
