@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';
+import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart';
 
 /// Visuelle Darstellungsvariante der App-Oberflaeche.
 enum UiVariante {
@@ -20,6 +21,7 @@ class AppSettings {
     this.uiVariante = UiVariante.codex,
     this.summaryRailCollapsed = false,
     this.catalogContentPassword,
+    this.rulesIndexRemoteConfig = const RulesIndexRemoteConfig(),
     Set<String> disabledHouseRulePackIds = const <String>{},
     @Deprecated('Use disabledHouseRulePackIds instead')
     Set<String>? disabledHouseRuleSourceKeys,
@@ -45,6 +47,9 @@ class AppSettings {
   /// Passwort fuer den Zugriff auf geschuetzte Kataloginhalte.
   final String? catalogContentPassword;
 
+  /// Konfiguration fuer den optionalen Remote-Bezug der Regel-Index-DB.
+  final RulesIndexRemoteConfig rulesIndexRemoteConfig;
+
   /// Deaktivierte Hausregel-Pakete (Opt-out). Leeres Set = alles aktiv.
   final Set<String> disabledHouseRulePackIds;
 
@@ -62,6 +67,7 @@ class AppSettings {
     UiVariante? uiVariante,
     bool? summaryRailCollapsed,
     Object? catalogContentPassword = _copySentinel,
+    RulesIndexRemoteConfig? rulesIndexRemoteConfig,
     Set<String>? disabledHouseRulePackIds,
     @Deprecated('Use disabledHouseRulePackIds instead')
     Set<String>? disabledHouseRuleSourceKeys,
@@ -81,6 +87,8 @@ class AppSettings {
       catalogContentPassword: identical(catalogContentPassword, _copySentinel)
           ? this.catalogContentPassword
           : catalogContentPassword as String?,
+      rulesIndexRemoteConfig:
+          rulesIndexRemoteConfig ?? this.rulesIndexRemoteConfig,
       disabledHouseRulePackIds:
           disabledHouseRuleSourceKeys ??
           disabledHouseRulePackIds ??
@@ -97,6 +105,7 @@ class AppSettings {
     'uiVariante': uiVariante.name,
     'summaryRailCollapsed': summaryRailCollapsed,
     'catalogContentPassword': catalogContentPassword,
+    'rulesIndexRemoteConfig': rulesIndexRemoteConfig.toJson(),
     'disabledHouseRulePackIds': disabledHouseRulePackIds.toList(
       growable: false,
     ),
@@ -127,6 +136,10 @@ class AppSettings {
       summaryRailCollapsed: json['summaryRailCollapsed'] as bool? ?? false,
       catalogContentPassword: _parseNullableString(
         json['catalogContentPassword'],
+      ),
+      rulesIndexRemoteConfig: RulesIndexRemoteConfig.fromJson(
+        (json['rulesIndexRemoteConfig'] as Map?)?.cast<String, dynamic>() ??
+            const {},
       ),
       disabledHouseRulePackIds: _parseStringSet(
         json['disabledHouseRulePackIds'],

@@ -6,6 +6,8 @@ import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart'
     show AvatarApiConfig;
+import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart'
+    show RulesIndexRemoteConfig;
 export 'package:dsa_heldenverwaltung/domain/app_settings.dart' show UiVariante;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 
@@ -64,6 +66,12 @@ final summaryRailCollapsedProvider = Provider<bool>((ref) {
 final catalogContentVisibleProvider = Provider<bool>((ref) {
   final pw = ref.watch(appSettingsProvider).valueOrNull?.catalogContentPassword;
   return pw != null && pw.isNotEmpty;
+});
+
+/// Aktuelle Konfiguration des Remote-Bezugs der Regel-Index-DB.
+final rulesIndexRemoteConfigProvider = Provider<RulesIndexRemoteConfig>((ref) {
+  return ref.watch(appSettingsProvider).valueOrNull?.rulesIndexRemoteConfig ??
+      const RulesIndexRemoteConfig();
 });
 
 /// Aktuelle Beschreibung des wirksamen Heldenspeicherorts.
@@ -141,6 +149,12 @@ class SettingsActions {
             : trimmed,
       ),
     );
+  }
+
+  /// Speichert die Remote-Bezugs-Konfiguration der Regel-Index-DB.
+  Future<void> saveRulesIndexRemoteConfig(RulesIndexRemoteConfig config) async {
+    final current = _repo.load();
+    await _repo.save(current.copyWith(rulesIndexRemoteConfig: config));
   }
 
   /// Schaltet den Collapse-Zustand der Kernwerte-Rail um.

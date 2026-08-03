@@ -139,6 +139,25 @@ command = "tool/mcp_dsa_rules/.venv/Scripts/python.exe"
 args = ["-m", "dsa_rules_mcp.server"]
 ```
 
+## Veröffentlichen (Server-Sync für die App)
+
+Die Flutter-App kann `index.sqlite` alternativ zum manuellen Weg (lokal
+bauen bzw. Web-Upload) per Server-Sync beziehen (siehe
+`docs/spielmodus_konzept.md` Abschnitt 6). Dafür nach einem vollständigen
+Rebuild die Datei unverändert auf die konfigurierte Fritz!NAS/WebDAV-
+Freigabe hochladen:
+
+```powershell
+dsa-rules-cli refresh --force
+# Danach index.sqlite manuell (z.B. per Fritz!NAS-Weboberflaeche oder
+# WebDAV-Client) auf die Freigabe hochladen, die in
+# RulesIndexRemoteConfig / RULES_INDEX_SERVER_URL referenziert wird.
+```
+
+Kein Verschlüsselungsschritt nötig — die App gated den Download stattdessen
+über das bestehende Katalog-Entschlüsselungspasswort. Kein CI-Automatismus,
+bewusst ein manueller Betriebsschritt.
+
 ## Troubleshooting
 
 **Server erscheint nicht unter `/mcp`**
