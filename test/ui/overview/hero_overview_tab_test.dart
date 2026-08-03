@@ -152,6 +152,83 @@ void main() {
     expect(find.text('Der Maximalwert ist bereits erreicht.'), findsOneWidget);
   });
 
+  testWidgets(
+    'raising a bought stat via dialog survives a subsequent Speichern without touching ap_spent',
+    (tester) async {
+      WorkspaceTabEditActions? editActions;
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          buildHero().copyWith(
+            apTotal: 9999,
+            apAvailable: 9999,
+            apSpent: 0,
+            bought: const BoughtStats(lep: 0),
+          ),
+        ],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            heroRepositoryProvider.overrideWithValue(repo),
+            rulesCatalogProvider.overrideWith(
+              (ref) async => _buildRulesCatalog(),
+            ),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: HeroOverviewTab(
+                heroId: 'demo',
+                onDirtyChanged: (_) {},
+                onEditingChanged: (_) {},
+                onRegisterDiscard: (_) {},
+                onRegisterEditActions: (actions) {
+                  editActions = actions;
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await editActions!.startEdit();
+      await tester.pumpAndSettle();
+
+      final raiseButton = find.byKey(
+        const ValueKey<String>('overview-derived-raise-b_lep'),
+      );
+      await tester.scrollUntilVisible(
+        raiseButton,
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(raiseButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('LeP steigern'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilledButton, 'Steigern'));
+      await tester.pumpAndSettle();
+
+      // Speichern beruehrt das ap_spent-Feld nicht manuell - es darf den
+      // durch die Steigerung bereits persistierten Wert nicht ueberschreiben.
+      await editActions!.save();
+      await tester.pumpAndSettle();
+
+      final saved = await repo.loadHeroById('demo');
+      expect(saved!.bought.lep, 1);
+      expect(saved.apSpent, greaterThan(0));
+    },
+  );
+
   testWidgets('advantage chips can be selected from catalog and saved', (
     tester,
   ) async {

@@ -79,6 +79,16 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   von `sqlite3` in `pubspec.yaml` muss `web/sqlite3.wasm` manuell gegen die
   passende `sqlite3.wasm` aus den GitHub-Releases von
   github.com/simolus3/sqlite3.dart (Tag zur Package-Version) ersetzt werden.
+- Zusaetzlich zum manuellen Weg (lokal bauen bzw. Web-Upload) kann die
+  Index-DB per Server-Sync bezogen werden (`lib/domain/rules_index_remote_config.dart`,
+  `lib/data/rules_search/rules_index_remote_client.dart`,
+  `lib/data/rules_search/rules_index_sync_service.dart`; Desktop-Cache-Pfad
+  `index_remote.sqlite` in `rules_index_search_io.dart`, UI in
+  `_RulesIndexServerCard` (`settings_pages.dart`) und im
+  Regel-Nachschlag-Dialog). Die Datei bleibt unverschluesselt; das Download-
+  Feature ist stattdessen hinter dem bestehenden Katalog-Entschluesselungs-
+  passwort gated (kein zweites Passwort). Details und der bewusste
+  Schutz-Trade-off stehen in `docs/spielmodus_konzept.md` Abschnitt 6.
 
 ## Pflegehinweis
 

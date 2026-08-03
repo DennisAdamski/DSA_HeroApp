@@ -679,6 +679,8 @@ class _CatalogSettingsPage extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         const _CatalogContentPasswordCard(),
+        const SizedBox(height: 16),
+        const _RulesIndexServerCard(),
       ],
     );
   }
@@ -979,6 +981,213 @@ class _CatalogContentPasswordCard extends ConsumerWidget {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Katalog-Passwort entfernt.')));
+  }
+}
+
+/// Formatiert einen Zeitstempel als lokale Kurzform `TT.MM.JJJJ HH:MM`.
+String _formatSyncTimestamp(DateTime dateTime) {
+  final local = dateTime.toLocal();
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${two(local.day)}.${two(local.month)}.${local.year} '
+      '${two(local.hour)}:${two(local.minute)}';
+}
+
+/// Karte für den optionalen Server-Sync der Regel-Nachschlag-Index-DB.
+///
+/// Der Download ist hinter dem Katalog-Entschlüsselungspasswort gated (siehe
+/// [catalogContentVisibleProvider]): erst nach dessen Eingabe wird die
+/// Aktion überhaupt ausgeführt. Server-URL/Zugangsdaten stammen normalerweise
+/// aus im Release-Build eingebetteten Defaults (`RulesIndexRemoteConfig`);
+/// die Felder hier dienen nur als optionaler Override.
+class _RulesIndexServerCard extends ConsumerStatefulWidget {
+  const _RulesIndexServerCard();
+
+  @override
+  ConsumerState<_RulesIndexServerCard> createState() =>
+      _RulesIndexServerCardState();
+}
+
+class _RulesIndexServerCardState
+    extends ConsumerState<_RulesIndexServerCard> {
+  final _serverUrlController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _syncing = false;
+  bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    final config = ref.read(rulesIndexRemoteConfigProvider);
+    _serverUrlController.text = config.serverUrl;
+    _usernameController.text = config.username;
+    _passwordController.text = config.password;
+  }
+
+  @override
+  void dispose() {
+    _serverUrlController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveOverride() async {
+    final config = ref.read(rulesIndexRemoteConfigProvider);
+    await ref.read(settingsActionsProvider).saveRulesIndexRemoteConfig(
+      config.copyWith(
+        serverUrl: _serverUrlController.text.trim(),
+        username: _usernameController.text.trim(),
+        password: _passwordController.text,
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Server-Zugang gespeichert.')),
+    );
+  }
+
+  Future<void> _syncNow() async {
+    var unlocked = ref.read(catalogContentVisibleProvider);
+    if (!unlocked) {
+      unlocked = await showCatalogUnlockDialog(context: context, ref: ref);
+      if (!unlocked || !mounted) {
+        return;
+      }
+    }
+
+    setState(() => _syncing = true);
+    final config = ref.read(rulesIndexRemoteConfigProvider);
+    try {
+      final search = await RulesIndexSyncService().syncFromServer(config);
+      search.dispose();
+      await ref.read(settingsActionsProvider).saveRulesIndexRemoteConfig(
+        config.copyWith(lastSyncedAt: DateTime.now()),
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() => _syncing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Regel-Index vom Server aktualisiert.')),
+      );
+    } on RulesIndexDownloadException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _syncing = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } on FormatException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _syncing = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final config = ref.watch(rulesIndexRemoteConfigProvider);
+    final lastSyncedAt = config.lastSyncedAt;
+
+    return _SettingsSectionCard(
+      title: 'Regel-Nachschlag: Server-Sync',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Die Regel-Wissensbasis für den Regel-Nachschlag kann statt '
+            'manuellem Aufbau/Import direkt von einem Server geladen werden. '
+            'Der Download wird erst nach Eingabe des Katalog-Passworts '
+            'ausgeführt.',
+            style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            lastSyncedAt == null
+                ? 'Noch nie vom Server geladen.'
+                : 'Zuletzt aktualisiert: ${_formatSyncTimestamp(lastSyncedAt)}',
+            style: theme.textTheme.bodySmall,
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: _syncing ? null : _syncNow,
+            icon: _syncing
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.cloud_download_outlined),
+            label: const Text('Jetzt von Server laden'),
+          ),
+          const SizedBox(height: 8),
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Server-Zugang überschreiben (optional)'),
+            children: [
+              Text(
+                'Nur nötig, um von einem anderen Server als dem '
+                'eingebauten Standard zu laden. Leer lassen, um den '
+                'Standard zu verwenden.',
+                style: theme.textTheme.bodySmall,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _serverUrlController,
+                decoration: const InputDecoration(
+                  labelText: 'Server-URL',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _usernameController,
+                decoration: const InputDecoration(
+                  labelText: 'Benutzername',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
+                  labelText: 'Passwort',
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: FilledButton.icon(
+                  onPressed: _saveOverride,
+                  icon: const Icon(Icons.save),
+                  label: const Text('Speichern'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 
