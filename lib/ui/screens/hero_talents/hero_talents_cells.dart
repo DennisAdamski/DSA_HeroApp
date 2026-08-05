@@ -185,7 +185,54 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
                   if (result == null) {
                     return;
                   }
-                  _updateCombatSpecializations(talent.id, result);
+                  final kept = result.where(selected.contains).toList();
+                  final newlyAdded = result
+                      .where((s) => !selected.contains(s))
+                      .toList();
+                  final finalList = List<String>.from(kept);
+                  var runningCount = kept.length;
+                  for (final spec in newlyAdded) {
+                    final requiredTaw = requiredTawForSpecialization(
+                      runningCount,
+                    );
+                    if ((entry.talentValue ?? -1) < requiredTaw) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '"$spec" übersprungen: TaW $requiredTaw '
+                              'benötigt.',
+                            ),
+                          ),
+                        );
+                      }
+                      continue;
+                    }
+                    final hero = _latestHero;
+                    if (!mounted) {
+                      return;
+                    }
+                    final erwerb = await showErwerbDialog(
+                      context: context,
+                      bezeichnung: 'Spezialisierung: $spec',
+                      kostenHinweis:
+                          'TaW ≥ $requiredTaw nötig; ohne Lehrmeister '
+                          'doppelte Kosten (Wege des Schwerts S. 17)',
+                      verfuegbareAp: hero?.apAvailable ?? 0,
+                      episch: hero?.isEpisch ?? false,
+                    );
+                    if (erwerb == null) {
+                      continue;
+                    }
+                    if (erwerb.apKosten > 0 && hero != null) {
+                      _latestHero = hero.copyWith(
+                        apSpent: hero.apSpent + erwerb.apKosten,
+                      );
+                    }
+                    finalList.add(spec);
+                    runningCount++;
+                  }
+                  _updateCombatSpecializations(talent.id, finalList);
                 },
               ),
           ],
@@ -357,7 +404,11 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               padding: EdgeInsets.zero,
               labelPadding: const EdgeInsets.only(right: 6),
-              onPressed: () => _showAddSpecializationDialog(talentId, specs),
+              onPressed: () => _showAddSpecializationDialog(
+                talentId,
+                specs,
+                entry.talentValue,
+              ),
             ),
           ],
         ),
@@ -368,7 +419,20 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
   Future<void> _showAddSpecializationDialog(
     String talentId,
     List<String> currentSpecs,
+    int? talentValue,
   ) async {
+    final requiredTaw = requiredTawForSpecialization(currentSpecs.length);
+    if ((talentValue ?? -1) < requiredTaw) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Für eine ${currentSpecs.isEmpty ? "erste" : "weitere"} '
+            'Spezialisierung wird TaW $requiredTaw benötigt.',
+          ),
+        ),
+      );
+      return;
+    }
     final controller = TextEditingController();
     final result = await showAdaptiveDetailSheet<String>(
       context: context,
@@ -400,7 +464,27 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     if (result == null || result.trim().isEmpty) {
       return;
     }
-    final updated = List<String>.from(currentSpecs)..add(result.trim());
+    final name = result.trim();
+    final hero = _latestHero;
+    if (!mounted) {
+      return;
+    }
+    final erwerb = await showErwerbDialog(
+      context: context,
+      bezeichnung: 'Spezialisierung: $name',
+      kostenHinweis:
+          'TaW ≥ $requiredTaw nötig; ohne Lehrmeister doppelte Kosten '
+          '(Wege des Schwerts S. 17)',
+      verfuegbareAp: hero?.apAvailable ?? 0,
+      episch: hero?.isEpisch ?? false,
+    );
+    if (erwerb == null) {
+      return;
+    }
+    if (erwerb.apKosten > 0 && hero != null) {
+      _latestHero = hero.copyWith(apSpent: hero.apSpent + erwerb.apKosten);
+    }
+    final updated = List<String>.from(currentSpecs)..add(name);
     _updateSpecializations(talentId, updated);
   }
 

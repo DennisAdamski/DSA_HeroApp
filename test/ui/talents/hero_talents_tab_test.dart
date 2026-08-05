@@ -662,6 +662,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // Neuanlage fragt jetzt die AP-Kosten via Erwerb-Dialog ab.
+    await tester.enterText(find.widgetWithText(TextField, 'AP-Kosten'), '0');
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
+    await tester.pumpAndSettle();
+
     await actions.save();
     await tester.pumpAndSettle();
 

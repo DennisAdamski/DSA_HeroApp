@@ -98,7 +98,7 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
     if (!isEditing) {
       return Chip(label: label, visualDensity: VisualDensity.compact);
     }
-    return InputChip(
+    final inputChip = InputChip(
       key: ValueKey<String>('overview-trait-chip-$keyName-$fragmentIndex'),
       label: label,
       avatar: isKnown ? const Icon(Icons.check, size: 16) : null,
@@ -115,6 +115,73 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
         traits: traits,
       ),
     );
+    if (keyName != 'nachteile') {
+      return inputChip;
+    }
+    final trait = _findMatchingTrait(fragment, traits);
+    final currentLevel = trait == null
+        ? null
+        : parseTraitFragmentValue(fragment, trait);
+    final canReduce =
+        trait != null &&
+        trait.valueKind.contains('level') &&
+        currentLevel != null &&
+        currentLevel > (trait.minValue ?? 0);
+    if (!canReduce) {
+      return inputChip;
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        inputChip,
+        IconButton(
+          key: ValueKey<String>('overview-trait-reduce-$keyName-$fragmentIndex'),
+          icon: const Icon(Icons.arrow_downward, size: 16),
+          tooltip: 'Stufe senken (AP-Abbau)',
+          visualDensity: VisualDensity.compact,
+          onPressed: () => _reduceTraitLevel(
+            keyName: keyName,
+            fragments: fragments,
+            fragmentIndex: fragmentIndex,
+            trait: trait,
+            currentLevel: currentLevel,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _reduceTraitLevel({
+    required String keyName,
+    required List<String> fragments,
+    required int fragmentIndex,
+    required HeroTraitDef trait,
+    required int currentLevel,
+  }) async {
+    final apKosten = await _confirmTraitApKosten(
+      trait: trait,
+      faktor: kSchlechteEigenschaftSpezErfahrungFaktor,
+      titel: 'Schlechte Eigenschaft senken',
+      frage:
+          'Soll "${trait.name}" nachträglich mit AP-Kosten verrechnet '
+          'werden (50 × GP-Wert bei Spezieller Erfahrung, 75 × bei '
+          'Selbststudium — im Kostenfeld anpassbar)?',
+    );
+    if (apKosten > 0) {
+      _erhoeheApSpent(apKosten);
+    }
+    final minValue = trait.minValue ?? 0;
+    final newLevel = currentLevel - 1;
+    final nextFragments = fragments.toList();
+    if (newLevel <= minValue) {
+      nextFragments.removeAt(fragmentIndex);
+    } else {
+      nextFragments[fragmentIndex] = buildHeroTraitSelectionText(
+        trait: trait,
+        value: newLevel,
+      );
+    }
+    _writeTraitFragments(keyName, nextFragments);
   }
 
   Future<void> _addTraitFragment({

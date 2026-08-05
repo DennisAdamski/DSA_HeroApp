@@ -421,15 +421,15 @@ void main() {
 
     await tester.enterText(
       find.byKey(const ValueKey<String>('talents-field-tal_nah-talentValue')),
-      '6',
+      '14',
     );
     await tester.enterText(
       find.byKey(const ValueKey<String>('talents-field-tal_nah-atValue')),
-      '3',
+      '7',
     );
     await tester.enterText(
       find.byKey(const ValueKey<String>('talents-field-tal_nah-paValue')),
-      '3',
+      '7',
     );
 
     final specButton = find.byKey(
@@ -444,6 +444,19 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Übernehmen'));
     await tester.pumpAndSettle();
+
+    // Neue Spezialisierungen fragen jetzt AP-Kosten ab (einzeln, je Erwerb).
+    for (var i = 0; i < 2; i++) {
+      final erwerbButton = find.widgetWithText(FilledButton, 'Erwerben');
+      expect(erwerbButton, findsOneWidget);
+      await tester.enterText(
+        find.widgetWithText(TextField, 'AP-Kosten'),
+        '0',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(erwerbButton);
+      await tester.pumpAndSettle();
+    }
 
     await actions.save();
     await tester.pumpAndSettle();

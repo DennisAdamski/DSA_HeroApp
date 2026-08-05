@@ -169,11 +169,17 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
 
   void _addTalentSpecialAbility() {
     _showTalentSpecialAbilityDialog(
-      onSave: (ability) {
+      onSave: (ability, apKosten) {
         _draftTalentSpecialAbilities = [
           ..._draftTalentSpecialAbilities,
           ability,
         ];
+        if (apKosten > 0) {
+          final hero = _latestHero;
+          if (hero != null) {
+            _latestHero = hero.copyWith(apSpent: hero.apSpent + apKosten);
+          }
+        }
         _markFieldChanged();
       },
     );
@@ -185,7 +191,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
   }) {
     _showTalentSpecialAbilityDialog(
       existing: existing,
-      onSave: (ability) {
+      onSave: (ability, _) {
         final updated = List<TalentSpecialAbility>.from(
           _draftTalentSpecialAbilities,
         );
@@ -205,12 +211,17 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     _markFieldChanged();
   }
 
+  /// Zeigt den Sonderfertigkeiten-Dialog. Beim Neuanlegen wird der Name
+  /// gegen die allgemeinen und karmalen Katalog-Sonderfertigkeiten
+  /// abgeglichen und ein Erwerbs-Dialog mit den bekannten AP-Kosten
+  /// angeboten (vgl. magische Sonderfertigkeiten im Magie-Tab).
   void _showTalentSpecialAbilityDialog({
     TalentSpecialAbility? existing,
-    required void Function(TalentSpecialAbility ability) onSave,
+    required void Function(TalentSpecialAbility ability, int apKosten) onSave,
   }) {
     var draftName = existing?.name ?? '';
     var draftNote = existing?.note ?? '';
+    final isNew = existing == null;
 
     showAdaptiveDetailSheet<void>(
       context: context,
@@ -219,7 +230,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
           builder: (context, setDialogState) {
             return AlertDialog(
               title: Text(
-                existing == null
+                isNew
                     ? 'Sonderfertigkeit hinzufügen'
                     : 'Sonderfertigkeit bearbeiten',
               ),
@@ -269,15 +280,51 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                 ),
                 FilledButton(
                   key: const ValueKey<String>('talents-special-ability-save'),
-                  onPressed: () {
+                  onPressed: () async {
                     final name = draftName.trim();
                     if (name.isEmpty) {
                       return;
                     }
+                    var apKosten = 0;
+                    if (isNew) {
+                      final hero = _latestHero;
+                      final catalog = ref
+                          .read(rulesCatalogProvider)
+                          .valueOrNull;
+                      final combinedCatalog = <SpecialAbilityDef>[
+                        ...?catalog?.generalSpecialAbilities,
+                        ...?catalog?.karmalSpecialAbilities,
+                      ];
+                      final match = matchCatalogSpecialAbility(
+                        combinedCatalog,
+                        name,
+                      );
+                      final erwerb = await showErwerbDialog(
+                        context: dialogContext,
+                        bezeichnung: name,
+                        kostenHinweis: match?.kosten,
+                        vorgeschlageneApKosten: match == null
+                            ? null
+                            : parseLeadingApAmount(match.kosten),
+                        verfuegbareAp: hero?.apAvailable ?? 0,
+                        episch: hero?.isEpisch ?? false,
+                        epischerInhalt: match?.nurEpisch ?? false,
+                      );
+                      if (erwerb == null) {
+                        return;
+                      }
+                      apKosten = erwerb.apKosten;
+                    }
                     onSave(
-                      TalentSpecialAbility(name: name, note: draftNote.trim()),
+                      TalentSpecialAbility(
+                        name: name,
+                        note: draftNote.trim(),
+                      ),
+                      apKosten,
                     );
-                    Navigator.of(dialogContext).pop();
+                    if (dialogContext.mounted) {
+                      Navigator.of(dialogContext).pop();
+                    }
                   },
                   child: const Text('Speichern'),
                 ),

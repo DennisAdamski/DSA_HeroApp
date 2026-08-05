@@ -142,3 +142,13 @@ int computeCombatTalentMaxValue({
 int _giftedLimitBonus(bool gifted) {
   return gifted ? 5 : 3;
 }
+
+/// Mindest-TaW fuer eine weitere Talentspezialisierung.
+///
+/// [bestehendeAnzahl] ist die Zahl bereits vorhandener Spezialisierungen
+/// desselben Talents; 0 -> TaW 7 (1.), 1 -> TaW 14 (2.), usw.
+/// (Wege des Schwerts S. 17: TaW 7/14/21/28 fuer die 1./2./3./4.
+/// Spezialisierung).
+int requiredTawForSpecialization(int bestehendeAnzahl) {
+  return 7 * (bestehendeAnzahl + 1);
+}

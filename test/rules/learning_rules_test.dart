@@ -213,4 +213,13 @@ void main() {
       );
     });
   });
+
+  group('requiredTawForSpecialization', () {
+    test('liefert TaW 7/14/21/28 fuer 1.-4. Spezialisierung', () {
+      expect(requiredTawForSpecialization(0), 7);
+      expect(requiredTawForSpecialization(1), 14);
+      expect(requiredTawForSpecialization(2), 21);
+      expect(requiredTawForSpecialization(3), 28);
+    });
+  });
 }
