@@ -284,6 +284,15 @@ void main() {
       await tester.tap(find.text('Speichern'));
       await _pumpAndSettleIgnoringKnownOverflow(tester);
 
+      // Neuanlage fragt jetzt die AP-Kosten via Erwerb-Dialog ab.
+      await tester.enterText(
+        find.widgetWithText(TextField, 'AP-Kosten'),
+        '0',
+      );
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+      await tester.tap(find.text('Erwerben'));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+
       await opened.actions.save();
       await _pumpAndSettleIgnoringKnownOverflow(tester);
 

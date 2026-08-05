@@ -7,6 +7,10 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
     required this.isEditing,
     required this.onChanged,
     this.onEnsureEditing,
+    this.catalogAbilities = const <SpecialAbilityDef>[],
+    this.verfuegbareAp = 0,
+    this.episch = false,
+    this.onApKostenBestaetigt,
   });
 
   final List<MagicSpecialAbility> abilities;
@@ -14,8 +18,18 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
   final void Function(List<MagicSpecialAbility>) onChanged;
   final Future<void> Function()? onEnsureEditing;
 
+  /// Katalog magischer Sonderfertigkeiten fuer den Kosten-Abgleich beim
+  /// Neuanlegen (Name-Match, best effort).
+  final List<SpecialAbilityDef> catalogAbilities;
+  final int verfuegbareAp;
+  final bool episch;
+
+  /// Wird aufgerufen, wenn beim Neuanlegen ein Erwerbs-Dialog bestaetigt
+  /// wurde — der Aufrufer erhoeht damit `hero.apSpent`.
+  final ValueChanged<int>? onApKostenBestaetigt;
+
   Future<void> _editAbility(BuildContext context, int index) async {
-    final result = await showAdaptiveInputDialog<MagicSpecialAbility>(
+    final result = await showAdaptiveInputDialog<_MagicSpecialAbilityErwerb>(
       context: context,
       builder: (_) => _MagicSpecialAbilityDialog(initial: abilities[index]),
     );
@@ -23,7 +37,7 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
       return;
     }
     final updated = List<MagicSpecialAbility>.from(abilities);
-    updated[index] = result;
+    updated[index] = result.ability;
     onChanged(updated);
   }
 
@@ -38,15 +52,23 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
     if (!context.mounted) {
       return;
     }
-    final result = await showAdaptiveInputDialog<MagicSpecialAbility>(
+    final result = await showAdaptiveInputDialog<_MagicSpecialAbilityErwerb>(
       context: context,
-      builder: (_) => const _MagicSpecialAbilityDialog(),
+      builder: (_) => _MagicSpecialAbilityDialog(
+        catalogAbilities: catalogAbilities,
+        verfuegbareAp: verfuegbareAp,
+        episch: episch,
+      ),
     );
     if (result == null) {
       return;
     }
-    final updated = List<MagicSpecialAbility>.from(abilities)..add(result);
+    final updated = List<MagicSpecialAbility>.from(abilities)
+      ..add(result.ability);
     onChanged(updated);
+    if (result.apKosten > 0) {
+      onApKostenBestaetigt?.call(result.apKosten);
+    }
   }
 
   @override
@@ -131,11 +153,49 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
   }
 }
 
+/// Ergebnis des Sonderfertigkeiten-Dialogs: die Eingabe plus AP-Kosten,
+/// falls beim Neuanlegen ein Erwerbs-Dialog bestaetigt wurde (sonst `0`).
+class _MagicSpecialAbilityErwerb {
+  const _MagicSpecialAbilityErwerb({required this.ability, this.apKosten = 0});
+
+  final MagicSpecialAbility ability;
+  final int apKosten;
+}
+
+/// Sucht einen Katalogeintrag per Name (Groß-/Kleinschreibung tolerant).
+SpecialAbilityDef? _matchCatalogSpecialAbility(
+  List<SpecialAbilityDef> catalog,
+  String name,
+) {
+  final normalized = name.trim().toLowerCase();
+  if (normalized.isEmpty) {
+    return null;
+  }
+  for (final entry in catalog) {
+    if (entry.name.trim().toLowerCase() == normalized) {
+      return entry;
+    }
+  }
+  return null;
+}
+
 /// Dialog zum Anlegen und Bearbeiten einer magischen Sonderfertigkeit.
+///
+/// Beim Neuanlegen wird der eingegebene Name gegen den Katalog abgeglichen
+/// und — falls ein Treffer gefunden wird — ein Erwerbs-Dialog mit den
+/// bekannten AP-Kosten angeboten (vgl. `showErwerbDialog`).
 class _MagicSpecialAbilityDialog extends StatefulWidget {
-  const _MagicSpecialAbilityDialog({this.initial});
+  const _MagicSpecialAbilityDialog({
+    this.initial,
+    this.catalogAbilities = const <SpecialAbilityDef>[],
+    this.verfuegbareAp = 0,
+    this.episch = false,
+  });
 
   final MagicSpecialAbility? initial;
+  final List<SpecialAbilityDef> catalogAbilities;
+  final int verfuegbareAp;
+  final bool episch;
 
   @override
   State<_MagicSpecialAbilityDialog> createState() =>
@@ -163,6 +223,47 @@ class _MagicSpecialAbilityDialogState
     _nameController.dispose();
     _beschreibungController.dispose();
     super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      return;
+    }
+    var apKosten = 0;
+    if (_isNew) {
+      final match = _matchCatalogSpecialAbility(
+        widget.catalogAbilities,
+        name,
+      );
+      final erwerb = await showErwerbDialog(
+        context: context,
+        bezeichnung: name,
+        kostenHinweis: match?.kosten,
+        vorgeschlageneApKosten: match == null
+            ? null
+            : parseLeadingApAmount(match.kosten),
+        verfuegbareAp: widget.verfuegbareAp,
+        episch: widget.episch,
+        epischerInhalt: match?.nurEpisch ?? false,
+      );
+      if (erwerb == null) {
+        return;
+      }
+      apKosten = erwerb.apKosten;
+    }
+    if (!mounted) {
+      return;
+    }
+    Navigator.of(context).pop(
+      _MagicSpecialAbilityErwerb(
+        ability: MagicSpecialAbility(
+          name: name,
+          beschreibung: _beschreibungController.text.trim(),
+        ),
+        apKosten: apKosten,
+      ),
+    );
   }
 
   @override
@@ -201,21 +302,7 @@ class _MagicSpecialAbilityDialogState
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Abbrechen'),
         ),
-        FilledButton(
-          onPressed: () {
-            final name = _nameController.text.trim();
-            if (name.isEmpty) {
-              return;
-            }
-            Navigator.of(context).pop(
-              MagicSpecialAbility(
-                name: name,
-                beschreibung: _beschreibungController.text.trim(),
-              ),
-            );
-          },
-          child: const Text('Speichern'),
-        ),
+        FilledButton(onPressed: _save, child: const Text('Speichern')),
       ],
     );
   }

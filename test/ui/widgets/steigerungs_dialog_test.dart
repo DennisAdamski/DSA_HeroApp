@@ -118,4 +118,45 @@ void main() {
     expect(result!.apKosten, 2);
     expect(result!.seVerbraucht, 1);
   });
+
+  testWidgets('Epos-Aufschlag erhöht die AP-Kosten um 25 %', (tester) async {
+    SteigerungsErgebnis? result;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              return FilledButton(
+                onPressed: () async {
+                  result = await showSteigerungsDialog(
+                    context: context,
+                    bezeichnung: 'Athletik',
+                    aktuellerWert: 0,
+                    maxWert: 10,
+                    effektiveKomplexitaet: LearnCost.c,
+                    verfuegbareAp: 999,
+                    episch: true,
+                  );
+                },
+                child: const Text('Öffnen'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Öffnen'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('AP-Kosten: 2'), findsOneWidget);
+    expect(find.textContaining('Epos-Aufschlag (+25 %): +1 AP'), findsOneWidget);
+
+    await tester.tap(find.text('Steigern'));
+    await tester.pumpAndSettle();
+
+    expect(result, isNotNull);
+    expect(result!.apKosten, 3);
+  });
 }

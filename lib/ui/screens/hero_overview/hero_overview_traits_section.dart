@@ -112,6 +112,7 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
         keyName: keyName,
         fragments: fragments,
         fragmentIndex: fragmentIndex,
+        traits: traits,
       ),
     );
   }
@@ -135,9 +136,86 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
     if (fragment == null || fragment.trim().isEmpty) {
       return;
     }
+    if (keyName == 'vorteile' && pick.trait != null) {
+      final apKosten = await _confirmTraitApKosten(
+        trait: pick.trait!,
+        faktor: kVorteilErwerbFaktor,
+        titel: 'Vorteil nachträglich erwerben',
+        frage:
+            'Soll "${pick.trait!.name}" nachträglich mit AP-Kosten '
+            'verrechnet werden (50 × GP-Wert)?',
+      );
+      if (apKosten > 0) {
+        _erhoeheApSpent(apKosten);
+      }
+    }
     final fragments = splitHeroTraitText(_field(keyName).text).toList();
     fragments.add(fragment);
     _writeTraitFragments(keyName, fragments);
+  }
+
+  /// Sucht den zu einem gespeicherten Textfragment passenden Katalogeintrag
+  /// (best effort, gleiche Praefix-Heuristik wie `isKnownHeroTraitFragment`).
+  HeroTraitDef? _findMatchingTrait(String fragment, List<HeroTraitDef> traits) {
+    final normalized = fragment.trim().toLowerCase();
+    for (final trait in traits) {
+      if (normalized.startsWith(trait.name.trim().toLowerCase())) {
+        return trait;
+      }
+    }
+    return null;
+  }
+
+  void _erhoeheApSpent(int apKosten) {
+    final hero = _latestHero;
+    if (hero == null || apKosten <= 0) {
+      return;
+    }
+    final updatedHero = hero.copyWith(apSpent: hero.apSpent + apKosten);
+    _latestHero = updatedHero;
+    _setFieldText('ap_spent', updatedHero.apSpent.toString());
+  }
+
+  /// Fragt optional (Checkbox-Ersatz: eigener Bestaetigungsdialog, Default
+  /// "ohne AP-Kosten") nach AP-Kosten fuer nachtraeglichen Vorteil-Erwerb
+  /// bzw. Nachteil-Abbau und liefert die bestaetigten AP-Kosten (0, wenn
+  /// abgelehnt/abgebrochen).
+  Future<int> _confirmTraitApKosten({
+    required HeroTraitDef trait,
+    required int faktor,
+    required String titel,
+    required String frage,
+  }) async {
+    final hero = _latestHero;
+    if (hero == null) {
+      return 0;
+    }
+    final entscheidung = await showAdaptiveConfirmDialog(
+      context: context,
+      title: titel,
+      content: frage,
+      cancelLabel: 'Ohne AP-Kosten',
+      confirmLabel: 'Mit AP-Kosten',
+    );
+    if (entscheidung != AdaptiveConfirmResult.confirm) {
+      return 0;
+    }
+    if (!mounted) {
+      return 0;
+    }
+    final gpWert = parseGpAmount(trait.costText);
+    final vorschlag = gpWert == null
+        ? null
+        : computeTraitApCost(gpWert, faktor);
+    final erwerb = await showErwerbDialog(
+      context: context,
+      bezeichnung: trait.name,
+      kostenHinweis: trait.costText.isEmpty ? null : trait.costText,
+      vorgeschlageneApKosten: vorschlag,
+      verfuegbareAp: hero.apAvailable,
+      episch: hero.isEpisch,
+    );
+    return erwerb?.apKosten ?? 0;
   }
 
   Future<_TraitCatalogPick?> _showTraitCatalogDialog({
@@ -390,11 +468,28 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
     _writeTraitFragments(keyName, nextFragments);
   }
 
-  void _removeTraitFragment({
+  Future<void> _removeTraitFragment({
     required String keyName,
     required List<String> fragments,
     required int fragmentIndex,
-  }) {
+    List<HeroTraitDef> traits = const <HeroTraitDef>[],
+  }) async {
+    if (keyName == 'nachteile') {
+      final trait = _findMatchingTrait(fragments[fragmentIndex], traits);
+      if (trait != null) {
+        final apKosten = await _confirmTraitApKosten(
+          trait: trait,
+          faktor: kNachteilAbbauFaktor,
+          titel: 'Nachteil abbauen',
+          frage:
+              'Soll "${trait.name}" nachträglich mit AP-Kosten '
+              'verrechnet werden (100 × GP-Wert)?',
+        );
+        if (apKosten > 0) {
+          _erhoeheApSpent(apKosten);
+        }
+      }
+    }
     final nextFragments = fragments.toList()..removeAt(fragmentIndex);
     _writeTraitFragments(keyName, nextFragments);
   }
