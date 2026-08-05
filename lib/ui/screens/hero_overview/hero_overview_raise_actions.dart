@@ -228,6 +228,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
       verfuegbareAp: hero.apAvailable,
       seAnzahl: _eigenschaftSeAnzahl(hero, code),
       startWert: startWert,
+      episch: hero.isEpisch,
     );
     if (result == null) {
       return;
@@ -289,6 +290,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
       verfuegbareAp: hero.apAvailable,
       seAnzahl: _grundwertSeAnzahl(hero, key),
       startWert: _grundwertStartwert(hero, key),
+      episch: hero.isEpisch,
     );
     if (result == null) {
       return;

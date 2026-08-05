@@ -94,6 +94,7 @@ extension _HeroTalentsRaiseActions on _HeroTalentTableTabState {
       verfuegbareAp: hero.apAvailable,
       seAnzahl: entry.specialExperiences,
       lehrmeisterVerfuegbar: true,
+      episch: hero.isEpisch,
     );
     if (result == null) {
       return;

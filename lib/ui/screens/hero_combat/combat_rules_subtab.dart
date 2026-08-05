@@ -371,7 +371,17 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
             beschreibung: beschreibung,
             isActive: isActive,
             isEditing: isEditing,
-            onToggle: (value) {
+            onToggle: (value) async {
+              if (value) {
+                final bestaetigt = await _confirmErwerbKosten(
+                  bezeichnung: maneuver.name,
+                  kostenHinweis: maneuver.kosten,
+                  epischerInhalt: maneuver.nurEpisch,
+                );
+                if (!bestaetigt) {
+                  return;
+                }
+              }
               final active = List<String>.from(rules.activeManeuvers);
               if (value) {
                 active.add(maneuver.id);
@@ -455,7 +465,17 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
                 beschreibung: beschreibung,
                 isActive: isActive,
                 isEditing: isEditing,
-                onToggle: (value) {
+                onToggle: (value) async {
+                  if (value) {
+                    final bestaetigt = await _confirmErwerbKosten(
+                      bezeichnung: '${maneuver.name} (${talent.name})',
+                      kostenHinweis: maneuver.kosten,
+                      epischerInhalt: maneuver.nurEpisch,
+                    );
+                    if (!bestaetigt) {
+                      return;
+                    }
+                  }
                   final active = List<String>.from(rules.activeManeuvers);
                   if (value) {
                     active.add(toggleId);
@@ -485,7 +505,17 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
               beschreibung: beschreibung,
               isActive: isActive,
               isEditing: isEditing,
-              onToggle: (value) {
+              onToggle: (value) async {
+                if (value) {
+                  final bestaetigt = await _confirmErwerbKosten(
+                    bezeichnung: maneuver.name,
+                    kostenHinweis: maneuver.kosten,
+                    epischerInhalt: maneuver.nurEpisch,
+                  );
+                  if (!bestaetigt) {
+                    return;
+                  }
+                }
                 final active = List<String>.from(rules.activeManeuvers);
                 if (value) {
                   active.add(maneuver.id);
@@ -548,7 +578,7 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
         trailing: Switch(
           value: isActive,
           onChanged: isEditing
-              ? (value) => _toggleCombatSfById(grossmeister.id, value)
+              ? (value) => _toggleCombatSfById(grossmeister, value)
               : null,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),

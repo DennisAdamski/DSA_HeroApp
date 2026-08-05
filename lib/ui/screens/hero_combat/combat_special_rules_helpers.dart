@@ -28,8 +28,51 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
     };
   }
 
+  /// Fragt bei Aktivierung einer Kampf-SF/eines Manoevers die AP-Kosten ab
+  /// und erhoeht bei Bestaetigung `_latestHero.apSpent`.
+  /// Liefert `false`, wenn der Nutzer abgebrochen hat (Toggle bleibt aus).
+  Future<bool> _confirmErwerbKosten({
+    required String bezeichnung,
+    required String kostenHinweis,
+    bool epischerInhalt = false,
+  }) async {
+    final hero = _latestHero;
+    if (hero == null) {
+      return false;
+    }
+    final result = await showErwerbDialog(
+      context: context,
+      bezeichnung: bezeichnung,
+      kostenHinweis: kostenHinweis.trim().isEmpty ? null : kostenHinweis.trim(),
+      vorgeschlageneApKosten: parseLeadingApAmount(kostenHinweis),
+      verfuegbareAp: hero.apAvailable,
+      episch: hero.isEpisch,
+      epischerInhalt: epischerInhalt,
+    );
+    if (result == null) {
+      return false;
+    }
+    _latestHero = hero.copyWith(apSpent: hero.apSpent + result.apKosten);
+    return true;
+  }
+
   /// Schaltet eine SF anhand ihrer Katalog-ID — dispatcht auf das richtige Feld.
-  void _toggleCombatSfById(String id, bool value) {
+  /// Fragt beim Aktivieren vorher die AP-Kosten ab.
+  Future<void> _toggleCombatSfById(
+    CombatSpecialAbilityDef ability,
+    bool value,
+  ) async {
+    final id = ability.id;
+    if (value) {
+      final bestaetigt = await _confirmErwerbKosten(
+        bezeichnung: ability.name,
+        kostenHinweis: ability.kosten,
+        epischerInhalt: ability.nurEpisch,
+      );
+      if (!bestaetigt) {
+        return;
+      }
+    }
     final rules = _draftCombatConfig.specialRules;
     final armor = _draftCombatConfig.armor;
     switch (id) {
@@ -145,7 +188,7 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
             isActive: isActive,
             isEditing: isEditing,
             isEpic: ability.nurEpisch,
-            onToggle: (value) => _toggleCombatSfById(ability.id, value),
+            onToggle: (value) => _toggleCombatSfById(ability, value),
             onNameTap: () => _showCombatSpecialAbilityDetailsDialog(
               context: context,
               ability: ability,

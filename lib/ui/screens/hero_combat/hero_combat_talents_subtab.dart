@@ -93,6 +93,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       verfuegbareAp: hero.apAvailable,
       seAnzahl: entry.specialExperiences,
       lehrmeisterVerfuegbar: true,
+      episch: hero.isEpisch,
     );
     if (result == null) {
       return;

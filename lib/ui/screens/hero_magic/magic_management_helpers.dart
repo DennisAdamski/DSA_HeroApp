@@ -70,6 +70,15 @@ extension _MagicManagementHelpers on _HeroMagicTabState {
     _markFieldChanged();
   }
 
+  void _onMagicSpecialAbilityApKosten(int apKosten) {
+    final hero = _latestHero;
+    if (hero == null || apKosten <= 0) {
+      return;
+    }
+    _latestHero = hero.copyWith(apSpent: hero.apSpent + apKosten);
+    _markFieldChanged();
+  }
+
   void _updateMagicLeadAttribute(String value) {
     _draftMagicLeadAttribute = value;
     _markFieldChanged();

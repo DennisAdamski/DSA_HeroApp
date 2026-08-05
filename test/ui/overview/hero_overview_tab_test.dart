@@ -291,6 +291,11 @@ void main() {
     await tester.tap(find.text('Übernehmen'));
     await tester.pumpAndSettle();
 
+    // Opt-in-Abfrage fuer nachtraeglichen AP-Erwerb: Standardpfad ohne
+    // AP-Kosten waehlen (Verhalten wie vor der Steigerungskosten-Funktion).
+    await tester.tap(find.text('Ohne AP-Kosten'));
+    await tester.pumpAndSettle();
+
     await editActions!.save();
     await tester.pumpAndSettle();
 

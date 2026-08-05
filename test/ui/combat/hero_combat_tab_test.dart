@@ -327,6 +327,18 @@ void main() {
         .first;
     await tester.tap(find.descendant(of: chip, matching: find.byType(Switch)));
     await tester.pumpAndSettle();
+    // Aktivierung fragt neuerdings die AP-Kosten ab (Erwerb-Dialog);
+    // Deaktivierung oeffnet keinen Dialog.
+    final erwerbButton = find.widgetWithText(FilledButton, 'Erwerben');
+    if (erwerbButton.evaluate().isNotEmpty) {
+      await tester.enterText(
+        find.widgetWithText(TextField, 'AP-Kosten'),
+        '0',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(erwerbButton);
+      await tester.pumpAndSettle();
+    }
   }
 
   Future<void> openArmorTab(WidgetTester tester) async {

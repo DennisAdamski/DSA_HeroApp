@@ -14,6 +14,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
@@ -34,6 +35,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 import 'package:uuid/uuid.dart';
 
@@ -314,6 +316,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       effektiveKomplexitaet: learnCost,
       verfuegbareAp: hero.apAvailable,
       lehrmeisterVerfuegbar: true,
+      episch: hero.isEpisch,
     );
     if (result == null) {
       return;
@@ -563,6 +566,11 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             abilities: _draftMagicSpecialAbilities,
                             isEditing: _editController.isEditing,
                             onChanged: _updateMagicSpecialAbilities,
+                            catalogAbilities: catalog.magicSpecialAbilities,
+                            verfuegbareAp: hero.apAvailable,
+                            episch: hero.isEpisch,
+                            onApKostenBestaetigt:
+                                _onMagicSpecialAbilityApKosten,
                             onEnsureEditing: () async {
                               if (!_editController.isEditing) {
                                 await _startEdit();
