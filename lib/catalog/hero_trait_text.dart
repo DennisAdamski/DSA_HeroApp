@@ -81,6 +81,48 @@ String buildHeroTraitSelectionText({
   return result;
 }
 
+/// Extrahiert den numerischen Wert aus einem gespeicherten Fragment anhand
+/// des `selectionTemplate` eines Katalogeintrags — die Umkehrung von
+/// [buildHeroTraitSelectionText]. Liefert `null`, wenn das Template kein
+/// `{value}` enthält oder das Fragment nicht zum Template passt.
+int? parseTraitFragmentValue(String fragment, HeroTraitDef trait) {
+  var template = trait.selectionTemplate.trim();
+  if (template.isEmpty) {
+    template = trait.name.trim();
+  }
+  if (!template.contains('{value}')) {
+    return null;
+  }
+  template = template.replaceAll(RegExp(r'\s+'), ' ');
+
+  final tokenPattern = RegExp(r'\{value\}|\{choice\}');
+  final buffer = StringBuffer('^');
+  var lastEnd = 0;
+  var valueGroupIndex = 0;
+  var groupCount = 0;
+  for (final tokenMatch in tokenPattern.allMatches(template)) {
+    buffer.write(RegExp.escape(template.substring(lastEnd, tokenMatch.start)));
+    if (tokenMatch.group(0) == '{value}') {
+      groupCount++;
+      valueGroupIndex = groupCount;
+      buffer.write(r'(-?\d+)');
+    } else {
+      buffer.write('.*?');
+    }
+    lastEnd = tokenMatch.end;
+  }
+  buffer.write(RegExp.escape(template.substring(lastEnd)));
+  buffer.write(r'$');
+
+  final regex = RegExp(buffer.toString());
+  final normalizedFragment = fragment.trim().replaceAll(RegExp(r'\s+'), ' ');
+  final match = regex.firstMatch(normalizedFragment);
+  if (match == null || valueGroupIndex == 0) {
+    return null;
+  }
+  return int.tryParse(match.group(valueGroupIndex) ?? '');
+}
+
 bool _matchesTraitFragment(String normalizedFragment, HeroTraitDef trait) {
   final patterns = _normalizedPatternsForTrait(trait);
   for (final pattern in patterns) {

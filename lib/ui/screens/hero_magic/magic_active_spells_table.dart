@@ -376,7 +376,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                           controller: controllerFor(
                                             spellId,
                                             'spellValue',
-                                            entry.spellValue.toString(),
+                                            (entry.spellValue ?? 0).toString(),
                                           ),
                                           keyboardType: TextInputType.number,
                                           inputFormatters: [
@@ -414,7 +414,9 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                     ],
                                   ),
                                 )
-                              : DataCell(Text(entry.spellValue.toString())),
+                              : DataCell(
+                                  Text((entry.spellValue ?? 0).toString()),
+                                ),
                           isEditing
                               ? DataCell(
                                   TextField(

@@ -162,23 +162,6 @@ class _MagicSpecialAbilityErwerb {
   final int apKosten;
 }
 
-/// Sucht einen Katalogeintrag per Name (Groß-/Kleinschreibung tolerant).
-SpecialAbilityDef? _matchCatalogSpecialAbility(
-  List<SpecialAbilityDef> catalog,
-  String name,
-) {
-  final normalized = name.trim().toLowerCase();
-  if (normalized.isEmpty) {
-    return null;
-  }
-  for (final entry in catalog) {
-    if (entry.name.trim().toLowerCase() == normalized) {
-      return entry;
-    }
-  }
-  return null;
-}
-
 /// Dialog zum Anlegen und Bearbeiten einer magischen Sonderfertigkeit.
 ///
 /// Beim Neuanlegen wird der eingegebene Name gegen den Katalog abgeglichen
@@ -232,7 +215,7 @@ class _MagicSpecialAbilityDialogState
     }
     var apKosten = 0;
     if (_isNew) {
-      final match = _matchCatalogSpecialAbility(
+      final match = matchCatalogSpecialAbility(
         widget.catalogAbilities,
         name,
       );

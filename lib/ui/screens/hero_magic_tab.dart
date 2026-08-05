@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_matching.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
@@ -311,7 +312,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     final result = await showSteigerungsDialog(
       context: context,
       bezeichnung: spell.name,
-      aktuellerWert: entry.spellValue,
+      aktuellerWert: entry.spellValue ?? -1,
       maxWert: maxWert,
       effektiveKomplexitaet: learnCost,
       verfuegbareAp: hero.apAvailable,
@@ -521,7 +522,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                 request: buildSpellProbeRequest(
                                   title: spell.name,
                                   targets: targets,
-                                  basePool: entry.spellValue + entry.modifier,
+                                  basePool:
+                                      (entry.spellValue ?? 0) +
+                                      entry.modifier,
                                   wundMalus:
                                       (wundEffekte?.talentProbeMalus ?? 0) +
                                       (wundEffekte?.zauberExtraMalus ?? 0),

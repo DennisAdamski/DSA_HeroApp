@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_matching.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
@@ -15,11 +16,13 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
@@ -35,6 +38,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_talents/combat_specializati
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_table_cell.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
@@ -48,6 +52,7 @@ part 'hero_talents/hero_talents_mutations.dart';
 part 'hero_talents/hero_talents_raise_actions.dart';
 part 'hero_talents/hero_talents_tables.dart';
 part 'hero_talents/hero_languages_tab.dart';
+part 'hero_talents/hero_languages_raise_actions.dart';
 part 'hero_talents/meta_talent_dialogs.dart';
 part 'hero_talents/talent_catalog_table.dart';
 part 'hero_talents/talent_detail_dialog.dart';
@@ -346,6 +351,12 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                         _draftSchriften.remove(id);
                         _markFieldChanged();
                       },
+                      onRaiseSprache: _canUseLanguageSteigerungsDialog
+                          ? (id) => _steigereSprache(id, catalog.sprachen)
+                          : null,
+                      onRaiseSchrift: _canUseLanguageSteigerungsDialog
+                          ? (id) => _steigereSchrift(id, catalog.schriften)
+                          : null,
                     ),
                   if (widget.scope == _TalentTabScope.combat ||
                       _subTabController?.index == 0)

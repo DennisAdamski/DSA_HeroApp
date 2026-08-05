@@ -1099,7 +1099,11 @@ void main() {
       heroes: [
         buildHero(
           talents: const <String, HeroTalentEntry>{
-            'tal_nah': HeroTalentEntry(),
+            'tal_nah': HeroTalentEntry(
+              talentValue: 7,
+              atValue: 4,
+              paValue: 3,
+            ),
           },
         ),
       ],
@@ -1127,6 +1131,12 @@ void main() {
     await tester.tap(find.widgetWithText(CheckboxListTile, 'Schwert'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Übernehmen'));
+    await tester.pumpAndSettle();
+
+    // Neue Spezialisierung fragt jetzt AP-Kosten ab.
+    await tester.enterText(find.widgetWithText(TextField, 'AP-Kosten'), '0');
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
     await tester.pumpAndSettle();
 
     await actions.save();
