@@ -45,6 +45,7 @@ Future<ErwerbErgebnis?> showErwerbDialog({
   bool lehrmeisterUeblich = false,
   bool episch = false,
   bool epischerInhalt = false,
+  bool lehrmeisterVerdoppeltOhneIhn = false,
 }) {
   return showAdaptiveInputDialog<ErwerbErgebnis>(
     context: context,
@@ -57,6 +58,7 @@ Future<ErwerbErgebnis?> showErwerbDialog({
         lehrmeisterUeblich: lehrmeisterUeblich,
         episch: episch,
         epischerInhalt: epischerInhalt,
+        lehrmeisterVerdoppeltOhneIhn: lehrmeisterVerdoppeltOhneIhn,
       );
     },
   );
@@ -71,6 +73,7 @@ class _ErwerbDialog extends StatefulWidget {
     required this.lehrmeisterUeblich,
     required this.episch,
     required this.epischerInhalt,
+    this.lehrmeisterVerdoppeltOhneIhn = false,
   });
 
   final String bezeichnung;
@@ -80,6 +83,12 @@ class _ErwerbDialog extends StatefulWidget {
   final bool lehrmeisterUeblich;
   final bool episch;
   final bool epischerInhalt;
+
+  /// Wenn `true`, gilt statt der generischen Lehrmeister-Ermaessigung
+  /// (-20 %) die Talentspezialisierungs-Regel „ohne Lehrmeister doppelte
+  /// Kosten" (Wege des Schwerts S. 17): die eingegebenen/vorgeschlagenen
+  /// Kosten gelten dann als Preis *mit* Lehrmeister.
+  final bool lehrmeisterVerdoppeltOhneIhn;
 
   @override
   State<_ErwerbDialog> createState() => _ErwerbDialogState();
@@ -144,6 +153,9 @@ class _ErwerbDialogState extends State<_ErwerbDialog> {
 
   int get _effektiveApKosten {
     final kosten = _kostenNachEpos;
+    if (widget.lehrmeisterVerdoppeltOhneIhn) {
+      return _mitLehrmeister ? kosten : kosten * 2;
+    }
     if (!_mitLehrmeister) {
       return kosten;
     }
@@ -276,6 +288,9 @@ class _ErwerbDialogState extends State<_ErwerbDialog> {
               const SizedBox(height: 8),
               Text('Kosten (LM): $_effektiveApKosten AP'),
               Text('Dukaten: ${_formatDukaten(_dukaten ?? 0)}'),
+            ] else if (widget.lehrmeisterVerdoppeltOhneIhn) ...[
+              const SizedBox(height: 8),
+              Text('Kosten ohne Lehrmeister: $_effektiveApKosten AP'),
             ],
           ],
           if (_eingegebeneBasiskosten == null) ...[

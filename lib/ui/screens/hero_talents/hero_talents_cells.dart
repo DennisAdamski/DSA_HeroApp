@@ -212,14 +212,22 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
                     if (!mounted) {
                       return;
                     }
+                    final vorgeschlageneKosten = talentSpecializationApCost(
+                      basisKomplexitaet: talent.steigerung,
+                      gifted: entry.gifted,
+                      specializationOrdinal: runningCount + 1,
+                    );
                     final erwerb = await showErwerbDialog(
                       context: context,
                       bezeichnung: 'Spezialisierung: $spec',
                       kostenHinweis:
                           'TaW ≥ $requiredTaw nötig; ohne Lehrmeister '
                           'doppelte Kosten (Wege des Schwerts S. 17)',
+                      vorgeschlageneApKosten: vorgeschlageneKosten,
                       verfuegbareAp: hero?.apAvailable ?? 0,
                       episch: hero?.isEpisch ?? false,
+                      lehrmeisterUeblich: true,
+                      lehrmeisterVerdoppeltOhneIhn: true,
                     );
                     if (erwerb == null) {
                       continue;
@@ -340,6 +348,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
 
   Widget _specializationBadgesCell({
     required String talentId,
+    required TalentDef talent,
     required HeroTalentEntry entry,
     required bool isEditing,
   }) {
@@ -406,6 +415,8 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
               labelPadding: const EdgeInsets.only(right: 6),
               onPressed: () => _showAddSpecializationDialog(
                 talentId,
+                talent,
+                entry,
                 specs,
                 entry.talentValue,
               ),
@@ -418,6 +429,8 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
 
   Future<void> _showAddSpecializationDialog(
     String talentId,
+    TalentDef talent,
+    HeroTalentEntry entry,
     List<String> currentSpecs,
     int? talentValue,
   ) async {
@@ -469,14 +482,22 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     if (!mounted) {
       return;
     }
+    final vorgeschlageneKosten = talentSpecializationApCost(
+      basisKomplexitaet: talent.steigerung,
+      gifted: entry.gifted,
+      specializationOrdinal: currentSpecs.length + 1,
+    );
     final erwerb = await showErwerbDialog(
       context: context,
       bezeichnung: 'Spezialisierung: $name',
       kostenHinweis:
           'TaW ≥ $requiredTaw nötig; ohne Lehrmeister doppelte Kosten '
           '(Wege des Schwerts S. 17)',
+      vorgeschlageneApKosten: vorgeschlageneKosten,
       verfuegbareAp: hero?.apAvailable ?? 0,
       episch: hero?.isEpisch ?? false,
+      lehrmeisterUeblich: true,
+      lehrmeisterVerdoppeltOhneIhn: true,
     );
     if (erwerb == null) {
       return;

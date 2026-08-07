@@ -334,6 +334,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       ),
       _specializationBadgesCell(
         talentId: talent.id,
+        talent: talent,
         entry: entry,
         isEditing: isEditing,
       ),
