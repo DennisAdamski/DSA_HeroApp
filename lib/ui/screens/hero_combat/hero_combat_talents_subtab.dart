@@ -723,14 +723,22 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                     if (!mounted) {
                       return;
                     }
+                    final vorgeschlageneKosten = talentSpecializationApCost(
+                      basisKomplexitaet: talent.steigerung,
+                      gifted: entry.gifted,
+                      specializationOrdinal: runningCount + 1,
+                    );
                     final erwerb = await showErwerbDialog(
                       context: context,
                       bezeichnung: 'Spezialisierung: $spec',
                       kostenHinweis:
                           'TaW ≥ $requiredTaw nötig; ohne Lehrmeister '
                           'doppelte Kosten (Wege des Schwerts S. 17)',
+                      vorgeschlageneApKosten: vorgeschlageneKosten,
                       verfuegbareAp: hero?.apAvailable ?? 0,
                       episch: hero?.isEpisch ?? false,
+                      lehrmeisterUeblich: true,
+                      lehrmeisterVerdoppeltOhneIhn: true,
                     );
                     if (erwerb == null) {
                       continue;

@@ -152,3 +152,38 @@ int _giftedLimitBonus(bool gifted) {
 int requiredTawForSpecialization(int bestehendeAnzahl) {
   return 7 * (bestehendeAnzahl + 1);
 }
+
+/// Aktivierungsfaktor je Lernkomplexitaet (SKT-Zeile "Faktor", Wege des
+/// Schwerts S. 169) — Grundlage der Talentspezialisierungs-Kosten.
+const Map<String, int> kAktivierungsfaktoren = {
+  'A*': 1,
+  'A': 1,
+  'B': 2,
+  'C': 3,
+  'D': 4,
+  'E': 5,
+  'F': 8,
+  'G': 10,
+  'H': 20,
+};
+
+/// AP-Kosten fuer den Erwerb einer Talentspezialisierung.
+///
+/// [basisKomplexitaet] ist die Steigerungskategorie des Talents
+/// (`TalentDef.steigerung`), [specializationOrdinal] die 1-basierte
+/// Ordnungszahl (1. Spezialisierung = 1, 2. = 2, ...). Begabung senkt die
+/// Kategorie wie beim regulaeren Steigern um eine Stufe.
+/// Formel: 20 AP * Aktivierungsfaktor(Kategorie) * Ordnungszahl
+/// (Wege des Schwerts S. 17, S. 169).
+int talentSpecializationApCost({
+  required String basisKomplexitaet,
+  required bool gifted,
+  required int specializationOrdinal,
+}) {
+  final komplexitaet = effectiveTalentLernkomplexitaet(
+    basisKomplexitaet: basisKomplexitaet,
+    gifted: gifted,
+  );
+  final faktor = kAktivierungsfaktoren[komplexitaet] ?? 1;
+  return 20 * faktor * specializationOrdinal;
+}
