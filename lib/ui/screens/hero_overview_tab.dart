@@ -54,6 +54,7 @@ import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_generation_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_image_evict.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/nachteil_abbau_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/epic_activation_dialog.dart';
 

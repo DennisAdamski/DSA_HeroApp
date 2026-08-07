@@ -115,70 +115,50 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
         traits: traits,
       ),
     );
-    if (keyName != 'nachteile') {
-      return inputChip;
-    }
-    final trait = _findMatchingTrait(fragment, traits);
-    final currentLevel = trait == null
-        ? null
-        : parseTraitFragmentValue(fragment, trait);
-    final canReduce =
-        trait != null &&
-        trait.valueKind.contains('level') &&
-        currentLevel != null &&
-        currentLevel > (trait.minValue ?? 0);
-    if (!canReduce) {
-      return inputChip;
-    }
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        inputChip,
-        IconButton(
-          key: ValueKey<String>('overview-trait-reduce-$keyName-$fragmentIndex'),
-          icon: const Icon(Icons.arrow_downward, size: 16),
-          tooltip: 'Stufe senken (AP-Abbau)',
-          visualDensity: VisualDensity.compact,
-          onPressed: () => _reduceTraitLevel(
-            keyName: keyName,
-            fragments: fragments,
-            fragmentIndex: fragmentIndex,
-            trait: trait,
-            currentLevel: currentLevel,
-          ),
-        ),
-      ],
-    );
+    return inputChip;
   }
 
-  Future<void> _reduceTraitLevel({
+  bool _isGraduatedTrait(HeroTraitDef trait) {
+    return trait.valueKind.contains('level') || trait.valueKind.contains('points');
+  }
+
+  Future<void> _abbauGraduatedTrait({
     required String keyName,
     required List<String> fragments,
     required int fragmentIndex,
     required HeroTraitDef trait,
     required int currentLevel,
   }) async {
-    final apKosten = await _confirmTraitApKosten(
-      trait: trait,
-      faktor: kSchlechteEigenschaftSpezErfahrungFaktor,
-      titel: 'Schlechte Eigenschaft senken',
-      frage:
-          'Soll "${trait.name}" nachträglich mit AP-Kosten verrechnet '
-          'werden (50 × GP-Wert bei Spezieller Erfahrung, 75 × bei '
-          'Selbststudium — im Kostenfeld anpassbar)?',
-    );
-    if (apKosten > 0) {
-      _erhoeheApSpent(apKosten);
+    final hero = _latestHero;
+    if (hero == null) {
+      return;
     }
-    final minValue = trait.minValue ?? 0;
-    final newLevel = currentLevel - 1;
+    final minWert = trait.minValue ?? 0;
+    final gpWertProPunkt = parseGpAmount(trait.costText);
+    final istSpeziellerErfahrungFaehig = trait.markers.contains('SE');
+    final ergebnis = await showNachteilAbbauDialog(
+      context: context,
+      bezeichnung: trait.name,
+      aktuellerWert: currentLevel,
+      minWert: minWert,
+      gpWertProPunkt: gpWertProPunkt,
+      istSpeziellerErfahrungFaehig: istSpeziellerErfahrungFaehig,
+      verfuegbareAp: hero.apAvailable,
+      episch: hero.isEpisch,
+    );
+    if (ergebnis == null) {
+      return;
+    }
+    if (ergebnis.apKosten > 0) {
+      _erhoeheApSpent(ergebnis.apKosten);
+    }
     final nextFragments = fragments.toList();
-    if (newLevel <= minValue) {
+    if (ergebnis.neuerWert < minWert) {
       nextFragments.removeAt(fragmentIndex);
     } else {
       nextFragments[fragmentIndex] = buildHeroTraitSelectionText(
         trait: trait,
-        value: newLevel,
+        value: ergebnis.neuerWert,
       );
     }
     _writeTraitFragments(keyName, nextFragments);
@@ -542,7 +522,21 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
     List<HeroTraitDef> traits = const <HeroTraitDef>[],
   }) async {
     if (keyName == 'nachteile') {
-      final trait = _findMatchingTrait(fragments[fragmentIndex], traits);
+      final fragment = fragments[fragmentIndex];
+      final trait = _findMatchingTrait(fragment, traits);
+      if (trait != null && _isGraduatedTrait(trait)) {
+        final currentLevel = parseTraitFragmentValue(fragment, trait);
+        if (currentLevel != null) {
+          await _abbauGraduatedTrait(
+            keyName: keyName,
+            fragments: fragments,
+            fragmentIndex: fragmentIndex,
+            trait: trait,
+            currentLevel: currentLevel,
+          );
+          return;
+        }
+      }
       if (trait != null) {
         final apKosten = await _confirmTraitApKosten(
           trait: trait,
