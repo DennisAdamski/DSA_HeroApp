@@ -29,3 +29,18 @@ const int kSchlechteEigenschaftSelbststudiumFaktor = 75;
 int computeTraitApCost(int gpWert, int faktor) {
   return math.max(0, gpWert.abs() * faktor);
 }
+
+/// Summiert die AP-Kosten fuer das stufenweise Absenken eines gestuften
+/// Nachteils um [punkte] Punkte, je Punkt mit [faktor] × dem GP-Wert eines
+/// einzelnen Punktes [gpWertProPunkt] (analog zu den Steigerungskosten fuer
+/// Eigenschaften/Talente, nur abwaerts).
+int computeTraitAbbauApCost({
+  required int gpWertProPunkt,
+  required int faktor,
+  required int punkte,
+}) {
+  if (punkte <= 0) {
+    return 0;
+  }
+  return computeTraitApCost(gpWertProPunkt, faktor) * punkte;
+}
