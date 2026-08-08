@@ -66,6 +66,13 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
             attributeNames: talent.attributes,
             gifted: entry.gifted,
           );
+    // Beruecksichtigt die epische KK-Haupteigenschaft (halbierte eBE bei
+    // KK-Talenten); ohne State-Referenz bleibt es beim ungekuerzten Wert.
+    final talentEbe = computeTalentEbe(
+      baseBe: activeBaseBe,
+      talentBeRule: talent.be,
+      reductionMultiplier: state?._epicEbeMultiplier(talent.attributes) ?? 1.0,
+    );
     final specs = entry.combatSpecializations.isNotEmpty
         ? entry.combatSpecializations
         : entry.specializations
@@ -245,18 +252,14 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
               ],
               _detailRow(theme, 'max TaW', '$maxTaw'),
               if (!isCombat) ...[
-                _detailRow(
-                  theme,
-                  'eBE',
-                  '${computeTalentEbe(baseBe: activeBaseBe, talentBeRule: talent.be)}',
-                ),
+                _detailRow(theme, 'eBE', '$talentEbe'),
                 _detailRow(
                   theme,
                   'TaW*',
                   '${computeTalentComputedTaw(
                     talentValue: entry.talentValue,
                     modifier: entry.modifier,
-                    ebe: computeTalentEbe(baseBe: activeBaseBe, talentBeRule: talent.be),
+                    ebe: talentEbe,
                     inventoryMod: inventoryMod,
                   )}',
                 ),
@@ -443,6 +446,7 @@ class _MetaTalentDetailDialog extends StatelessWidget {
     required this.componentNames,
     required this.rawTaw,
     required this.computedTaw,
+    required this.ebe,
   });
 
   final HeroMetaTalent metaTalent;
@@ -452,6 +456,9 @@ class _MetaTalentDetailDialog extends StatelessWidget {
   final int rawTaw;
   final int computedTaw;
 
+  /// Bereits berechnete eBE -- enthaelt den epischen KK-Rabatt, falls er greift.
+  final int ebe;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -460,11 +467,6 @@ class _MetaTalentDetailDialog extends StatelessWidget {
       attributeNames: metaTalent.attributes,
       gifted: false,
     );
-    final ebe = computeMetaTalentEbe(
-      baseBe: activeBaseBe,
-      beRule: metaTalent.be,
-    );
-
     return AlertDialog(
       title: Text(metaTalent.name),
       content: SizedBox(
