@@ -53,6 +53,17 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Gruppen-Cloudaktionen und bleibt auf Windows deaktiviert.
 - Der Settings-Bereich `Rechtliches` enthaelt den inoffiziellen Fanprojekt-,
   Marken- und Rechtehinweis fuer DSA und Ulisses Spiele.
+- Epische Helden waehlen je eine geistige und eine koerperliche
+  Haupteigenschaft (`HeroSheet.epicMainAttributes`). Sie definieren die Boni
+  aus Kap. 2.1 und sind vom 25-%-AP-Aufschlag ausgenommen
+  (`isEpicMainAttribute` in `lib/rules/derived/epic_main_attribute_rules.dart`,
+  Parameter `isMainAttribute` in `epic_ap_cost_rules.dart`). Der
+  `EpicActivationDialog` hat dafuer einen Korrekturmodus; Einstieg ist das
+  Stern-Symbol der Sektion `AP und Level`.
+- `AppSettings.tabellenAnsicht` (`automatisch`, `tabelle`, `karten`)
+  ueberstimmt die Breiten-Automatik von `ResponsiveAdaptiveTable`. Ohne diese
+  Einstellung weichen breite Tabellen auf Tablet-Breiten zwingend auf Karten
+  aus. Bedienbar im Talente-Tab und unter `Einstellungen > Darstellung`.
 - Reisebericht-Daten bleiben separat unter `assets/catalogs/reiseberichte/house_rules_v1/`.
 - Geschuetzte Katalog-Felder (Wirkung/Varianten von Zaubern, Erklaerungstexte
   von Manoevern und Kampf-Sonderfertigkeiten) sind v3-verschluesselt
