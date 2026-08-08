@@ -53,6 +53,73 @@ void main() {
 
     expect(sync.syncCalls, 1);
   });
+
+  testWidgets('settings zeigen Konflikte als Vergleichstabelle', (
+    tester,
+  ) async {
+    final settings = _FakeSettingsRepository();
+    final sync = _FakeSyncController(
+      SyncStatusSnapshot(
+        accountId: 'user-1',
+        email: 'alrik@example.test',
+        openConflicts: <SyncConflict>[
+          SyncConflict(
+            id: 'hero-h-1',
+            objectType: SyncObjectType.hero,
+            objectId: 'h-1',
+            title: 'Held: Alrik',
+            localSummary: 'Alrik lokal',
+            remoteSummary: 'Alrik online',
+            detectedAt: DateTime.utc(2026),
+            localApTotal: 1100,
+            remoteApTotal: 1200,
+          ),
+        ],
+      ),
+      diffs: <String, SyncObjectDiff>{
+        'hero-h-1': const SyncObjectDiff(
+          entries: <SyncDiffEntry>[
+            SyncDiffEntry(
+              path: <String>['apTotal'],
+              kind: SyncDiffKind.changed,
+              localValue: 1100,
+              remoteValue: 1200,
+            ),
+          ],
+        ),
+      },
+    );
+    addTearDown(settings.close);
+    addTearDown(sync.close);
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = const Size(1200, 900);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(_buildApp(settings: settings, sync: sync));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('settings-menu-accountSync')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Feld'), findsOneWidget);
+    expect(find.text('Online'), findsOneWidget);
+    expect(find.text('Lokal'), findsOneWidget);
+    expect(find.text('AP gesamt'), findsOneWidget);
+    expect(find.text('Unterschiede anzeigen (1)'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Unterschiede anzeigen (1)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Unterschiede anzeigen (1)'));
+    await tester.pumpAndSettle();
+
+    // "AP gesamt" steht jetzt als Zusammenfassung und als Diff-Zeile da.
+    expect(find.text('AP gesamt'), findsNWidgets(2));
+    expect(find.text('1200'), findsNWidgets(2));
+    expect(find.text('1100'), findsNWidgets(2));
+  });
 }
 
 Widget _buildApp({
@@ -86,10 +153,15 @@ Widget _buildApp({
 }
 
 class _FakeSyncController implements AppSyncController {
-  _FakeSyncController(SyncStatusSnapshot initial) : _current = initial;
+  _FakeSyncController(
+    SyncStatusSnapshot initial, {
+    Map<String, SyncObjectDiff> diffs = const <String, SyncObjectDiff>{},
+  }) : _current = initial,
+       _diffs = diffs;
 
   final StreamController<SyncStatusSnapshot> _controller =
       StreamController<SyncStatusSnapshot>.broadcast();
+  final Map<String, SyncObjectDiff> _diffs;
   SyncStatusSnapshot _current;
   int syncCalls = 0;
 
@@ -116,7 +188,7 @@ class _FakeSyncController implements AppSyncController {
   ) async {}
 
   @override
-  SyncObjectDiff? conflictDiff(String conflictId) => null;
+  SyncObjectDiff? conflictDiff(String conflictId) => _diffs[conflictId];
 
   Future<void> close() => _controller.close();
 }

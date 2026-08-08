@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_sync_service.
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_object_diff.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -21,6 +22,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/auth/sign_in_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_management_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_unlock_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/house_rule_pack_management_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/sync_conflict_comparison_table.dart';
 
 part 'settings/settings_navigation.dart';
 part 'settings/settings_pages.dart';
