@@ -75,7 +75,16 @@ int parseBeModifier(String raw) {
 
 // Berechnet die effektive Behinderung (eBE) eines einzelnen Talents
 // anhand der Katalog-BE-Regel (z. B. "-", "-3", "x2").
-int computeTalentEbe({required int baseBe, required String talentBeRule}) {
+//
+// [reductionMultiplier] skaliert die errechnete Behinderung. Das deckt die
+// epische KK-Haupteigenschaft ab (Kap. 2.1: halbierte eBE bei KK-Talenten).
+// Neutralwert ist 1.0. Gerundet wird abwaerts, also zugunsten des Helden --
+// dieselbe Richtung wie bei computeAtEbePart.
+int computeTalentEbe({
+  required int baseBe,
+  required String talentBeRule,
+  double reductionMultiplier = 1.0,
+}) {
   final normalizedBase = baseBe < 0 ? 0 : baseBe;
   final compactRule = talentBeRule.trim().toLowerCase().replaceAll(
     RegExp(r'\s+'),
@@ -91,7 +100,10 @@ int computeTalentEbe({required int baseBe, required String talentBeRule}) {
     if (factor == null || factor < 0) {
       return 0;
     }
-    final reduction = normalizedBase * factor;
+    final reduction = _scaleReduction(
+      normalizedBase * factor,
+      reductionMultiplier,
+    );
     return clampNonPositive(-reduction);
   }
 
@@ -102,7 +114,16 @@ int computeTalentEbe({required int baseBe, required String talentBeRule}) {
   final offset = -numeric;
   final reduction = normalizedBase - offset;
   final effectiveReduction = reduction < 0 ? 0 : reduction;
-  return clampNonPositive(-effectiveReduction);
+  return clampNonPositive(-_scaleReduction(effectiveReduction, reductionMultiplier));
+}
+
+// Skaliert eine nicht-negative Behinderung und rundet zugunsten des Helden ab.
+int _scaleReduction(int reduction, double multiplier) {
+  if (multiplier == 1.0 || reduction <= 0) {
+    return reduction;
+  }
+  final scaled = (reduction * multiplier).floor();
+  return scaled < 0 ? 0 : scaled;
 }
 
 int _min(int a, int b) => a < b ? a : b;

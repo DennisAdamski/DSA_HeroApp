@@ -60,6 +60,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Parameter `isMainAttribute` in `epic_ap_cost_rules.dart`). Der
   `EpicActivationDialog` hat dafuer einen Korrekturmodus; Einstieg ist das
   Stern-Symbol der Sektion `AP und Level`.
+- Die Haupteigenschafts-Boni aus Kap. 2.1 liegen als
+  `epicMainAttributeBonuses` mit `EpicBonusUmsetzung` je Einzelbonus vor.
+  Gerechnet werden nur zwei: eBE-Halbierung bei KK-Talenten
+  (`epicTalentEbeMultiplier` → `computeTalentEbe`) und die halbierte
+  Wund-Proben-Erschwernis bei KO (`computeWundEffekte`). Die IN-Finte
+  erscheint als Hinweis in der Kampfvorschau (Muster:
+  `buildAxxeleratusDefenseHint`). Alle uebrigen Boni sind in der UI
+  ausdruecklich als `manuell` gekennzeichnet — mangels Modell fuer
+  Tragkraft, Gift, Krankheit, Handwerk und gezieltes Ausweichen.
 - `AppSettings.tabellenAnsicht` (`automatisch`, `tabelle`, `karten`)
   ueberstimmt die Breiten-Automatik von `ResponsiveAdaptiveTable`. Ohne diese
   Einstellung weichen breite Tabellen auf Tablet-Breiten zwingend auf Karten

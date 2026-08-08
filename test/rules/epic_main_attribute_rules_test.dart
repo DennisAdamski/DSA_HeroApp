@@ -214,34 +214,204 @@ void main() {
     );
   });
 
-  group('activeEpicMainAttributeHints', () {
+  group('activeEpicMainAttributeBonuses', () {
     test('leer bei inaktiver Regel', () {
-      final hints = activeEpicMainAttributeHints(
-        ruleActive: false,
-        isEpisch: true,
-        mainAttributes: muMain,
+      expect(
+        activeEpicMainAttributeBonuses(
+          ruleActive: false,
+          isEpisch: true,
+          mainAttributes: muMain,
+        ),
+        isEmpty,
       );
-      expect(hints, isEmpty);
     });
 
     test('leer bei nicht-epischem Helden', () {
-      final hints = activeEpicMainAttributeHints(
-        ruleActive: true,
-        isEpisch: false,
-        mainAttributes: muMain,
+      expect(
+        activeEpicMainAttributeBonuses(
+          ruleActive: true,
+          isEpisch: false,
+          mainAttributes: muMain,
+        ),
+        isEmpty,
       );
-      expect(hints, isEmpty);
     });
 
     test('enthaelt genau die gewaehlten Haupteigenschaften', () {
-      final hints = activeEpicMainAttributeHints(
+      final boni = activeEpicMainAttributeBonuses(
         ruleActive: true,
         isEpisch: true,
         mainAttributes: muKkMain,
       );
-      expect(hints.length, 2);
-      expect(hints.any((h) => h.startsWith('MU:')), isTrue);
-      expect(hints.any((h) => h.startsWith('KK:')), isTrue);
+      expect(
+        boni.map((bonus) => bonus.code).toSet(),
+        <AttributeCode>{AttributeCode.mu, AttributeCode.kk},
+      );
+    });
+
+    test('KK liefert genau einen automatischen und drei manuelle Boni', () {
+      final boni = activeEpicMainAttributeBonuses(
+        ruleActive: true,
+        isEpisch: true,
+        mainAttributes: kkMain,
+      );
+      expect(boni.length, 4);
+      expect(
+        boni
+            .where((b) => b.umsetzung == EpicBonusUmsetzung.automatisch)
+            .map((b) => b.text),
+        <String>['eBE bei KK-Talenten halbiert'],
+      );
+      expect(
+        boni.where((b) => b.umsetzung == EpicBonusUmsetzung.manuell).length,
+        3,
+      );
+    });
+
+    test('IN-Finte ist als Hinweis ausgewiesen', () {
+      final boni = activeEpicMainAttributeBonuses(
+        ruleActive: true,
+        isEpisch: true,
+        mainAttributes: innMain,
+      );
+      final finte = boni.firstWhere((b) => b.text.contains('Finten'));
+      expect(finte.umsetzung, EpicBonusUmsetzung.hinweis);
+    });
+  });
+
+  group('epicMainAttributeBonusSummary', () {
+    test('fasst alle Einzelboni einer Eigenschaft zusammen', () {
+      final summary = epicMainAttributeBonusSummary(AttributeCode.kk);
+      expect(summary, contains('eBE bei KK-Talenten halbiert'));
+      expect(summary, contains('Tragkraft KK'));
+    });
+  });
+
+  group('talentProbeUsesAttribute', () {
+    test('erkennt KK in allen Katalog-Schreibweisen', () {
+      for (final token in const <String>['KK', 'Koerperkraft', 'Körperkraft']) {
+        expect(
+          talentProbeUsesAttribute(<String>['Mut', 'Gewandheit', token],
+              AttributeCode.kk),
+          isTrue,
+          reason: token,
+        );
+      }
+    });
+
+    test('lehnt Ketten ohne die Eigenschaft ab', () {
+      expect(
+        talentProbeUsesAttribute(
+          <String>['Klugheit', 'Intuition', 'Charisma'],
+          AttributeCode.kk,
+        ),
+        isFalse,
+      );
+    });
+  });
+
+  group('epicTalentEbeMultiplier', () {
+    const kkChain = <String>['Mut', 'Gewandheit', 'Koerperkraft'];
+    const klChain = <String>['Klugheit', 'Intuition', 'Charisma'];
+
+    test('halbiert nur bei KK-Haupteigenschaft und KK-Talent', () {
+      expect(
+        epicTalentEbeMultiplier(
+          ruleActive: true,
+          isEpisch: true,
+          mainAttributes: kkMain,
+          talentAttributes: kkChain,
+        ),
+        0.5,
+      );
+    });
+
+    test('neutral bei Talent ohne KK-Probe', () {
+      expect(
+        epicTalentEbeMultiplier(
+          ruleActive: true,
+          isEpisch: true,
+          mainAttributes: kkMain,
+          talentAttributes: klChain,
+        ),
+        1.0,
+      );
+    });
+
+    test('neutral ohne KK-Haupteigenschaft', () {
+      expect(
+        epicTalentEbeMultiplier(
+          ruleActive: true,
+          isEpisch: true,
+          mainAttributes: koMain,
+          talentAttributes: kkChain,
+        ),
+        1.0,
+      );
+    });
+
+    test('neutral bei inaktiver Regel oder nicht-epischem Helden', () {
+      expect(
+        epicTalentEbeMultiplier(
+          ruleActive: false,
+          isEpisch: true,
+          mainAttributes: kkMain,
+          talentAttributes: kkChain,
+        ),
+        1.0,
+      );
+      expect(
+        epicTalentEbeMultiplier(
+          ruleActive: true,
+          isEpisch: false,
+          mainAttributes: kkMain,
+          talentAttributes: kkChain,
+        ),
+        1.0,
+      );
+    });
+  });
+
+  group('buildEpicFinteDefenseHint', () {
+    test('liefert Text bei IN-Haupteigenschaft', () {
+      expect(
+        buildEpicFinteDefenseHint(
+          ruleActive: true,
+          isEpisch: true,
+          mainAttributes: innMain,
+        ),
+        contains('Finten gegen dich sind um 2 erschwert'),
+      );
+    });
+
+    test('leer ohne IN-Haupteigenschaft', () {
+      expect(
+        buildEpicFinteDefenseHint(
+          ruleActive: true,
+          isEpisch: true,
+          mainAttributes: kkMain,
+        ),
+        isEmpty,
+      );
+    });
+
+    test('leer bei inaktiver Regel oder nicht-epischem Helden', () {
+      expect(
+        buildEpicFinteDefenseHint(
+          ruleActive: false,
+          isEpisch: true,
+          mainAttributes: innMain,
+        ),
+        isEmpty,
+      );
+      expect(
+        buildEpicFinteDefenseHint(
+          ruleActive: true,
+          isEpisch: false,
+          mainAttributes: innMain,
+        ),
+        isEmpty,
+      );
     });
   });
 }
