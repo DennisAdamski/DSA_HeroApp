@@ -176,6 +176,10 @@ Technischer Stack:
   Haupteigenschaft; diese beiden steigern sich ohne den epischen
   AP-Aufschlag und sind ueber `AP und Level > Stern-Symbol` nachtraeglich
   korrigierbar
+- Von den Haupteigenschafts-Boni rechnet die App die eBE-Halbierung bei
+  KK-Talenten und die halbierte Wund-Proben-Erschwernis bei KO; die
+  IN-Finte erscheint als Hinweis in der Kampfvorschau. Alle uebrigen Boni
+  sind in der Heldenuebersicht ausdruecklich als `manuell` gekennzeichnet
 - Breite Datenlisten lassen sich unter `Einstellungen > Darstellung` sowie im
   Kopf des Talente-Tabs zwischen automatischer, Tabellen- und Kartenansicht
   umschalten
