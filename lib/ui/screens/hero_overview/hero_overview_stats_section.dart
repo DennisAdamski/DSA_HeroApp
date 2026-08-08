@@ -256,6 +256,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
           showStart: showStart,
           debugModus: debugModus,
         ),
+        ansicht: _tabellenAnsicht,
       ),
     );
   }
@@ -434,6 +435,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
           showStart: showStart,
           attrDebugModus: attrDebugModus,
         ),
+        ansicht: _tabellenAnsicht,
       ),
     );
   }

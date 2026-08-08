@@ -75,6 +75,7 @@ class _AppearanceSettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dunkelModus = ref.watch(dunkelModusProvider);
     final variante = ref.watch(uiVarianteProvider);
+    final ansicht = ref.watch(tabellenAnsichtProvider);
     final actions = ref.read(settingsActionsProvider);
     final theme = Theme.of(context);
 
@@ -122,6 +123,45 @@ class _AppearanceSettingsPage extends ConsumerWidget {
                 variante == UiVariante.codex
                     ? 'Pergament- und Messing-Ästhetik mit Texturen und dekorativen Elementen.'
                     : 'Schlichtes Material-Design ohne dekorative Elemente.',
+                style: theme.textTheme.bodySmall,
+              ),
+              const Divider(height: 24),
+              Text('Datenlisten', style: theme.textTheme.titleSmall),
+              const SizedBox(height: 12),
+              SegmentedButton<TabellenAnsicht>(
+                key: const ValueKey<String>('settings-tabellen-ansicht'),
+                segments: const <ButtonSegment<TabellenAnsicht>>[
+                  ButtonSegment(
+                    value: TabellenAnsicht.automatisch,
+                    label: Text('Automatisch'),
+                    icon: Icon(Icons.auto_mode),
+                  ),
+                  ButtonSegment(
+                    value: TabellenAnsicht.tabelle,
+                    label: Text('Tabelle'),
+                    icon: Icon(Icons.table_rows),
+                  ),
+                  ButtonSegment(
+                    value: TabellenAnsicht.karten,
+                    label: Text('Karten'),
+                    icon: Icon(Icons.view_agenda_outlined),
+                  ),
+                ],
+                selected: <TabellenAnsicht>{ansicht},
+                onSelectionChanged: (selected) {
+                  actions.setTabellenAnsicht(selected.first);
+                },
+              ),
+              const SizedBox(height: 12),
+              Text(
+                switch (ansicht) {
+                  TabellenAnsicht.automatisch =>
+                    'Tabelle, solange die Breite reicht, sonst kompakte Karten.',
+                  TabellenAnsicht.tabelle =>
+                    'Immer die volle Tabelle — auf schmalen Geräten horizontal scrollbar.',
+                  TabellenAnsicht.karten =>
+                    'Immer die kompakte Kartenliste, auch auf breiten Bildschirmen.',
+                },
                 style: theme.textTheme.bodySmall,
               ),
             ],

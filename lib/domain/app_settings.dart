@@ -10,6 +10,18 @@ enum UiVariante {
   codex,
 }
 
+/// Darstellung breiter Datenlisten (Talente, Eigenschaften, Basiswerte).
+enum TabellenAnsicht {
+  /// Tabelle, solange die Breite reicht, sonst Karten (Standard).
+  automatisch,
+
+  /// Immer die volle Tabelle, bei Bedarf horizontal scrollbar.
+  tabelle,
+
+  /// Immer die kompakte Kartenliste.
+  karten,
+}
+
 /// Globale, heldenunabhaengige App-Einstellungen.
 class AppSettings {
   const AppSettings({
@@ -19,6 +31,7 @@ class AppSettings {
     this.lastSelectedHeroId,
     this.avatarApiConfig = const AvatarApiConfig(),
     this.uiVariante = UiVariante.codex,
+    this.tabellenAnsicht = TabellenAnsicht.automatisch,
     this.summaryRailCollapsed = false,
     this.catalogContentPassword,
     this.rulesIndexRemoteConfig = const RulesIndexRemoteConfig(),
@@ -40,6 +53,9 @@ class AppSettings {
 
   /// Aktive visuelle Darstellungsvariante.
   final UiVariante uiVariante;
+
+  /// Gewuenschte Darstellung breiter Datenlisten.
+  final TabellenAnsicht tabellenAnsicht;
 
   /// Ob die Kernwerte-Rail im Workspace zugeklappt ist.
   final bool summaryRailCollapsed;
@@ -65,6 +81,7 @@ class AppSettings {
     Object? lastSelectedHeroId = _copySentinel,
     AvatarApiConfig? avatarApiConfig,
     UiVariante? uiVariante,
+    TabellenAnsicht? tabellenAnsicht,
     bool? summaryRailCollapsed,
     Object? catalogContentPassword = _copySentinel,
     RulesIndexRemoteConfig? rulesIndexRemoteConfig,
@@ -83,6 +100,7 @@ class AppSettings {
           : lastSelectedHeroId as String?,
       avatarApiConfig: avatarApiConfig ?? this.avatarApiConfig,
       uiVariante: uiVariante ?? this.uiVariante,
+      tabellenAnsicht: tabellenAnsicht ?? this.tabellenAnsicht,
       summaryRailCollapsed: summaryRailCollapsed ?? this.summaryRailCollapsed,
       catalogContentPassword: identical(catalogContentPassword, _copySentinel)
           ? this.catalogContentPassword
@@ -103,6 +121,7 @@ class AppSettings {
     'lastSelectedHeroId': lastSelectedHeroId,
     'avatarApiConfig': avatarApiConfig.toJson(),
     'uiVariante': uiVariante.name,
+    'tabellenAnsicht': tabellenAnsicht.name,
     'summaryRailCollapsed': summaryRailCollapsed,
     'catalogContentPassword': catalogContentPassword,
     'rulesIndexRemoteConfig': rulesIndexRemoteConfig.toJson(),
@@ -121,6 +140,12 @@ class AppSettings {
     final uiVariante =
         UiVariante.values.where((v) => v.name == rawVariante).firstOrNull ??
         UiVariante.codex;
+    final rawAnsicht = json['tabellenAnsicht'] as String?;
+    final tabellenAnsicht =
+        TabellenAnsicht.values
+            .where((v) => v.name == rawAnsicht)
+            .firstOrNull ??
+        TabellenAnsicht.automatisch;
 
     return AppSettings(
       debugModus: json['debugModus'] as bool? ?? false,
@@ -133,6 +158,7 @@ class AppSettings {
         (json['avatarApiConfig'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
       uiVariante: uiVariante,
+      tabellenAnsicht: tabellenAnsicht,
       summaryRailCollapsed: json['summaryRailCollapsed'] as bool? ?? false,
       catalogContentPassword: _parseNullableString(
         json['catalogContentPassword'],

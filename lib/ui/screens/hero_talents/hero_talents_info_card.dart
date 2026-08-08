@@ -488,9 +488,44 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
               icon: const Icon(Icons.merge_type),
               label: const Text('+ Meta-Talent'),
             ),
+            _buildTabellenAnsichtToggle(),
           ],
         ),
       ),
+    );
+  }
+
+  /// Umschalter zwischen Breiten-Automatik, erzwungener Tabelle und Karten.
+  ///
+  /// Auf Tablet-Breiten weicht die Talent-Tabelle sonst zwingend auf Karten
+  /// aus; wer die volle Tabelle braucht, kann sie hier horizontal scrollbar
+  /// erzwingen. Die Auswahl gilt app-weit und wird persistiert.
+  Widget _buildTabellenAnsichtToggle() {
+    return SegmentedButton<TabellenAnsicht>(
+      key: const ValueKey<String>('talents-view-mode-toggle'),
+      showSelectedIcon: false,
+      segments: const <ButtonSegment<TabellenAnsicht>>[
+        ButtonSegment<TabellenAnsicht>(
+          value: TabellenAnsicht.automatisch,
+          icon: Icon(Icons.auto_mode),
+          tooltip: 'Automatisch',
+        ),
+        ButtonSegment<TabellenAnsicht>(
+          value: TabellenAnsicht.tabelle,
+          icon: Icon(Icons.table_rows),
+          tooltip: 'Immer Tabelle',
+        ),
+        ButtonSegment<TabellenAnsicht>(
+          value: TabellenAnsicht.karten,
+          icon: Icon(Icons.view_agenda_outlined),
+          tooltip: 'Immer Karten',
+        ),
+      ],
+      selected: <TabellenAnsicht>{_tabellenAnsicht},
+      onSelectionChanged: (selection) {
+        if (selection.isEmpty) return;
+        ref.read(settingsActionsProvider).setTabellenAnsicht(selection.first);
+      },
     );
   }
 }

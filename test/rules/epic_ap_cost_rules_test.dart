@@ -74,6 +74,43 @@ void main() {
       );
     });
 
+    test('kein Aufschlag fuer Haupteigenschaften', () {
+      expect(
+        applyEpicApSurcharge(
+          100,
+          ruleActive: true,
+          isEpisch: true,
+          isMainAttribute: true,
+        ),
+        100,
+      );
+    });
+
+    test('Haupteigenschaft und Lehrmeister schliessen sich nicht aus', () {
+      expect(
+        applyEpicApSurcharge(
+          100,
+          ruleActive: true,
+          isEpisch: true,
+          isMainAttribute: true,
+          lehrmeisterHebtAuf: true,
+        ),
+        100,
+      );
+    });
+
+    test('Nicht-Haupteigenschaft behaelt den Aufschlag', () {
+      expect(
+        applyEpicApSurcharge(
+          100,
+          ruleActive: true,
+          isEpisch: true,
+          isMainAttribute: false,
+        ),
+        125,
+      );
+    });
+
     test('Lehrmeister hebt den Aufschlag auf', () {
       expect(
         applyEpicApSurcharge(
@@ -130,6 +167,18 @@ void main() {
           isEpisch: true,
         ),
         25,
+      );
+    });
+
+    test('liefert 0 fuer Haupteigenschaften', () {
+      expect(
+        computeEpicApSurchargeDelta(
+          100,
+          ruleActive: true,
+          isEpisch: true,
+          isMainAttribute: true,
+        ),
+        0,
       );
     });
   });

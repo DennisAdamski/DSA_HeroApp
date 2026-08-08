@@ -119,6 +119,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
                 effectiveAttributes: effectiveAttributes,
                 activeBaseBe: activeBaseBe,
               ),
+              ansicht: _tabellenAnsicht,
             ),
           ),
         ],
@@ -155,6 +156,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           activeBaseBe: activeBaseBe,
           inventoryMod: inventoryTalentMods[talent.id] ?? 0,
         ),
+        ansicht: _tabellenAnsicht,
       ),
     );
   }
@@ -173,6 +175,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
             _buildCombatTalentRow(talent: talent, isEditing: isEditing),
         cardBuilder: (cardContext, talent) =>
             _buildCombatTalentMobileCard(talent: talent, isEditing: isEditing),
+        ansicht: _tabellenAnsicht,
       ),
     );
   }
@@ -615,35 +618,89 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           ),
         );
       },
-      trailing: IconButton(
-        key: ValueKey<String>('talents-mobile-roll-${talent.id}'),
-        visualDensity: VisualDensity.compact,
-        iconSize: 18,
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-        tooltip: '${talent.name} würfeln',
-        onPressed: () => showLoggedProbeDialog(
-          context: context,
-          ref: ref,
-          heroId: widget.heroId,
-          request: buildTalentProbeRequest(
-            title: talent.name,
-            targets: _buildProbeTargets(effectiveAttributes, talent.attributes),
-            basePool: computedTaw,
-            hasSpecialization: hasSpecialization,
-            wundMalus:
-                ref
-                    .read(heroComputedProvider(widget.heroId))
-                    .asData
-                    ?.value
-                    .wundEffekte
-                    .talentProbeMalus ??
-                0,
-          ),
+      trailing: _mobileCardActions(
+        raiseButton: _mobileRaiseButton(
+          keyName: 'talents-mobile-raise-${talent.id}',
+          tooltip: '${talent.name} steigern',
+          isEditing: isEditing,
+          onRaise: () => _steigereTalent(talent.id),
         ),
-        icon: const Icon(Icons.casino_outlined),
+        rollButton: IconButton(
+          key: ValueKey<String>('talents-mobile-roll-${talent.id}'),
+          visualDensity: VisualDensity.compact,
+          iconSize: 18,
+          padding: EdgeInsets.zero,
+          constraints: BoxConstraints(
+            minWidth: adaptiveMinTouchTarget(context),
+            minHeight: adaptiveMinTouchTarget(context),
+          ),
+          tooltip: '${talent.name} würfeln',
+          onPressed: () => showLoggedProbeDialog(
+            context: context,
+            ref: ref,
+            heroId: widget.heroId,
+            request: buildTalentProbeRequest(
+              title: talent.name,
+              targets: _buildProbeTargets(
+                effectiveAttributes,
+                talent.attributes,
+              ),
+              basePool: computedTaw,
+              hasSpecialization: hasSpecialization,
+              wundMalus:
+                  ref
+                      .read(heroComputedProvider(widget.heroId))
+                      .asData
+                      ?.value
+                      .wundEffekte
+                      .talentProbeMalus ??
+                  0,
+            ),
+          ),
+          icon: const Icon(Icons.casino_outlined),
+        ),
       ),
     );
+  }
+
+  /// Baut den Steigern-Button fuer eine Talent-Karte.
+  ///
+  /// Liefert `null`, solange der Tab nicht im Bearbeitungsmodus ist oder
+  /// ungespeicherte Aenderungen den Steigerungsdialog blockieren.
+  Widget? _mobileRaiseButton({
+    required String keyName,
+    required String tooltip,
+    required bool isEditing,
+    required VoidCallback onRaise,
+  }) {
+    if (!isEditing || !_canUseSteigerungsDialog) {
+      return null;
+    }
+    return IconButton(
+      key: ValueKey<String>(keyName),
+      visualDensity: VisualDensity.compact,
+      iconSize: 18,
+      padding: EdgeInsets.zero,
+      constraints: BoxConstraints(
+        minWidth: adaptiveMinTouchTarget(context),
+        minHeight: adaptiveMinTouchTarget(context),
+      ),
+      tooltip: tooltip,
+      onPressed: onRaise,
+      icon: const Icon(Icons.trending_up),
+    );
+  }
+
+  /// Fasst die Aktions-Icons einer Karte zusammen; leere Slots entfallen.
+  Widget? _mobileCardActions({Widget? raiseButton, Widget? rollButton}) {
+    final actions = <Widget>[?raiseButton, ?rollButton];
+    if (actions.isEmpty) {
+      return null;
+    }
+    if (actions.length == 1) {
+      return actions.first;
+    }
+    return Row(mainAxisSize: MainAxisSize.min, children: actions);
   }
 
   Widget _buildCombatTalentMobileCard({
@@ -711,6 +768,12 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           ),
         );
       },
+      trailing: _mobileRaiseButton(
+        keyName: 'combat-talents-mobile-raise-${talent.id}',
+        tooltip: '${talent.name} steigern',
+        isEditing: isEditing,
+        onRaise: () => _steigereTalent(talent.id),
+      ),
     );
   }
 
