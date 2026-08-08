@@ -241,6 +241,7 @@ final heroComputedProvider =
         parsedModifiers: parsed,
         effectiveAttributes: effective,
         derivedStats: derived,
+        epicAdvantagesRuleActive: epicAdvantagesActive,
       );
 
       return AsyncValue<HeroComputedSnapshot>.data(

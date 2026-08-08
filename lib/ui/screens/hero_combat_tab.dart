@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
@@ -304,6 +306,9 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                 catalogTalents: catalog.talents,
                 catalogManeuvers: catalog.maneuvers,
                 catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
+                epicAdvantagesRuleActive: ref.watch(
+                  isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+                ),
               );
               final effectiveAttributes = computeEffectiveAttributes(
                 hero,
