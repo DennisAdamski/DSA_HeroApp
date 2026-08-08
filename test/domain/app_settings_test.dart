@@ -119,4 +119,25 @@ void main() {
     expect(settings.rulesIndexRemoteConfig.isConfigured, isFalse);
     expect(settings.rulesIndexRemoteConfig.lastSyncedAt, isNull);
   });
+
+  test('tabellenAnsicht round-trips through json', () {
+    const settings = AppSettings(tabellenAnsicht: TabellenAnsicht.tabelle);
+
+    final restored = AppSettings.fromJson(settings.toJson());
+
+    expect(restored.tabellenAnsicht, TabellenAnsicht.tabelle);
+  });
+
+  test('missing oder unbekannte tabellenAnsicht faellt auf automatisch', () {
+    expect(
+      AppSettings.fromJson(const <String, dynamic>{}).tabellenAnsicht,
+      TabellenAnsicht.automatisch,
+    );
+    expect(
+      AppSettings.fromJson(const <String, dynamic>{
+        'tabellenAnsicht': 'unbekannt',
+      }).tabellenAnsicht,
+      TabellenAnsicht.automatisch,
+    );
+  });
 }

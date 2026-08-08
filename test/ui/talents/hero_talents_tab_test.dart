@@ -14,6 +14,7 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
@@ -142,6 +143,7 @@ void main() {
     FakeRepository repo,
     RulesCatalog catalog, {
     Size viewSize = const Size(1400, 1000),
+    TabellenAnsicht? tabellenAnsicht,
   }) async {
     // Tabellen mit 9–10 Spalten brauchen ~1080 px Mindestbreite im Edit-Modus.
     // Im Standard-Test-Viewport (800 px) wuerde ResponsiveAdaptiveTable
@@ -161,6 +163,8 @@ void main() {
         overrides: [
           heroRepositoryProvider.overrideWithValue(repo),
           rulesCatalogProvider.overrideWith((ref) async => catalog),
+          if (tabellenAnsicht != null)
+            tabellenAnsichtProvider.overrideWithValue(tabellenAnsicht),
         ],
         child: MaterialApp(
           home: Scaffold(
@@ -211,8 +215,16 @@ void main() {
   }
 
   Future<void> closeBeDialog(WidgetTester tester) async {
-    await tester.tap(find.byType(TextButton).first);
+    // Gezielt der Schliessen-Button des Dialogs: `TextButton.first` traefe
+    // sonst einen der Segment-Buttons des Ansichts-Umschalters.
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.widgetWithText(TextButton, 'Schließen'),
+      ),
+    );
     await tester.pumpAndSettle();
+    expect(find.text('Talent-BE'), findsNothing);
   }
 
   Future<void> createMetaTalent(
@@ -1555,4 +1567,49 @@ void main() {
 
     expect(find.text('Athletik steigern'), findsOneWidget);
   });
+
+  testWidgets(
+    'erzwungene Tabellenansicht behaelt die Tabelle auf schmalen Layouts',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(talentValue: 4),
+            },
+          ).copyWith(apTotal: 9999, apAvailable: 9999),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final actions = await openTalentsTab(
+        tester,
+        repo,
+        buildCatalog(),
+        viewSize: const Size(820, 1180),
+        tabellenAnsicht: TabellenAnsicht.tabelle,
+      );
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('talents-mobile-card-tal_a')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('talents-raise-tal_a-talentValue'),
+          skipOffstage: false,
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 }

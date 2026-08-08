@@ -8,7 +8,8 @@ import 'package:dsa_heldenverwaltung/domain/avatar_config.dart'
     show AvatarApiConfig;
 import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart'
     show RulesIndexRemoteConfig;
-export 'package:dsa_heldenverwaltung/domain/app_settings.dart' show UiVariante;
+export 'package:dsa_heldenverwaltung/domain/app_settings.dart'
+    show TabellenAnsicht, UiVariante;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 
 /// Settings-Repository (wird beim App-Start uebersteuert).
@@ -53,6 +54,12 @@ final dunkelModusProvider = Provider<bool>((ref) {
 final uiVarianteProvider = Provider<UiVariante>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.uiVariante ??
       UiVariante.codex;
+});
+
+/// Gewuenschte Darstellung breiter Datenlisten (Tabelle oder Karten).
+final tabellenAnsichtProvider = Provider<TabellenAnsicht>((ref) {
+  return ref.watch(appSettingsProvider).valueOrNull?.tabellenAnsicht ??
+      TabellenAnsicht.automatisch;
 });
 
 /// Ob die Kernwerte-Rail im Workspace zugeklappt ist.
@@ -130,6 +137,12 @@ class SettingsActions {
   Future<void> setUiVariante(UiVariante variante) async {
     final current = _repo.load();
     await _repo.save(current.copyWith(uiVariante: variante));
+  }
+
+  /// Setzt die Darstellung breiter Datenlisten.
+  Future<void> setTabellenAnsicht(TabellenAnsicht ansicht) async {
+    final current = _repo.load();
+    await _repo.save(current.copyWith(tabellenAnsicht: ansicht));
   }
 
   /// Speichert die Avatar-API-Konfiguration.

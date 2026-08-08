@@ -121,6 +121,10 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
       <String, TextEditingController>{};
 
   HeroSheet? _latestHero;
+
+  /// In `build` gelesene Ansichtseinstellung; die Tabellen werden aus
+  /// verschachtelten Buildern heraus gebaut, wo `ref.watch` nicht erlaubt ist.
+  TabellenAnsicht _tabellenAnsicht = TabellenAnsicht.automatisch;
   List<TalentDef> _latestCatalogTalents = const <TalentDef>[];
   CatalogRuleResolver _latestCatalogRuleResolver = const CatalogRuleResolver();
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
@@ -204,6 +208,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     }
 
     _latestHero = hero;
+    _tabellenAnsicht = ref.watch(tabellenAnsichtProvider);
     _syncDraftFromHero(hero);
 
     final stateAsync = ref.watch(heroStateProvider(widget.heroId));
