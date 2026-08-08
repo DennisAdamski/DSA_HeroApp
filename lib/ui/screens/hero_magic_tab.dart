@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_matching.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
@@ -14,6 +15,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
@@ -34,6 +36,8 @@ import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_picker.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 import 'package:uuid/uuid.dart';
 
@@ -92,6 +96,12 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       <MagicSpecialAbility>[];
   String _draftMagicLeadAttribute = '';
 
+  /// Aufsummierte AP-Kosten aus Erwerbs-Dialogen (magische Sonderfertigkeiten)
+  /// seit dem letzten Sync/Save. Siehe Kommentar bei der analogen
+  /// `_draftApSpentDelta` in `hero_talents_tab.dart` fuer die Begruendung
+  /// (build() ueberschreibt `_latestHero` unconditional aus dem Provider).
+  int _draftApSpentDelta = 0;
+
   @override
   void initState() {
     super.initState();
@@ -146,6 +156,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     );
     _draftRepresentationen = List<String>.from(hero.representationen);
     _draftMerkmalskenntnisse = List<String>.from(hero.merkmalskenntnisse);
+    _draftApSpentDelta = 0;
     _draftMagicSpecialAbilities = List<MagicSpecialAbility>.from(
       hero.magicSpecialAbilities,
     );
@@ -219,6 +230,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         _draftMagicSpecialAbilities,
       ),
       magicLeadAttribute: _draftMagicLeadAttribute,
+      apSpent: hero.apSpent + _draftApSpentDelta,
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     if (!mounted) {
@@ -309,11 +321,12 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     final result = await showSteigerungsDialog(
       context: context,
       bezeichnung: spell.name,
-      aktuellerWert: entry.spellValue,
+      aktuellerWert: entry.spellValue ?? -1,
       maxWert: maxWert,
       effektiveKomplexitaet: learnCost,
       verfuegbareAp: hero.apAvailable,
       lehrmeisterVerfuegbar: true,
+      episch: hero.isEpisch,
     );
     if (result == null) {
       return;
@@ -518,7 +531,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                 request: buildSpellProbeRequest(
                                   title: spell.name,
                                   targets: targets,
-                                  basePool: entry.spellValue + entry.modifier,
+                                  basePool:
+                                      (entry.spellValue ?? 0) +
+                                      entry.modifier,
                                   wundMalus:
                                       (wundEffekte?.talentProbeMalus ?? 0) +
                                       (wundEffekte?.zauberExtraMalus ?? 0),
@@ -563,6 +578,11 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             abilities: _draftMagicSpecialAbilities,
                             isEditing: _editController.isEditing,
                             onChanged: _updateMagicSpecialAbilities,
+                            catalogAbilities: catalog.magicSpecialAbilities,
+                            verfuegbareAp: hero.apAvailable,
+                            episch: hero.isEpisch,
+                            onApKostenBestaetigt:
+                                _onMagicSpecialAbilityApKosten,
                             onEnsureEditing: () async {
                               if (!_editController.isEditing) {
                                 await _startEdit();

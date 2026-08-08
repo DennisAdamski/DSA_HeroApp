@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:dsa_heldenverwaltung/domain/learn/learn_complexity.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/epic_ap_cost_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
@@ -51,6 +52,7 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
   bool lehrmeisterVerfuegbar = false,
   String? komplexitaetsHinweis,
   int? startWert,
+  bool episch = false,
 }) {
   return showAdaptiveInputDialog<SteigerungsErgebnis>(
     context: context,
@@ -65,6 +67,7 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
         lehrmeisterVerfuegbar: lehrmeisterVerfuegbar,
         komplexitaetsHinweis: komplexitaetsHinweis,
         startWert: startWert,
+        episch: episch,
       );
     },
   );
@@ -81,6 +84,7 @@ class _SteigerungsDialog extends StatefulWidget {
     required this.lehrmeisterVerfuegbar,
     this.komplexitaetsHinweis,
     this.startWert,
+    this.episch = false,
   });
 
   final String bezeichnung;
@@ -92,6 +96,7 @@ class _SteigerungsDialog extends StatefulWidget {
   final bool lehrmeisterVerfuegbar;
   final String? komplexitaetsHinweis;
   final int? startWert;
+  final bool episch;
 
   @override
   State<_SteigerungsDialog> createState() => _SteigerungsDialogState();
@@ -141,12 +146,30 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
     );
   }
 
+  int get _kostenNachEpos {
+    return applyEpicApSurcharge(
+      _basisKosten.apKosten,
+      ruleActive: true,
+      isEpisch: widget.episch,
+      lehrmeisterHebtAuf: _mitLehrmeister,
+    );
+  }
+
+  int get _eposAufschlagDelta {
+    return computeEpicApSurchargeDelta(
+      _basisKosten.apKosten,
+      ruleActive: true,
+      isEpisch: widget.episch,
+      lehrmeisterHebtAuf: _mitLehrmeister,
+    );
+  }
+
   int get _effektiveApKosten {
-    final basisKosten = _basisKosten.apKosten;
+    final kosten = _kostenNachEpos;
     if (!_mitLehrmeister) {
-      return basisKosten;
+      return kosten;
     }
-    return apMitLehrmeister(basisKosten);
+    return apMitLehrmeister(kosten);
   }
 
   double? get _dukaten {
@@ -376,6 +399,12 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
               ],
               const SizedBox(height: 4),
               Text('AP-Kosten: ${basisKosten.apKosten}'),
+              if (widget.episch && _eposAufschlagDelta > 0) ...[
+                Text(
+                  'Epos-Aufschlag (+25 %): +$_eposAufschlagDelta AP',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
               const SizedBox(height: 12),
               Text('Verfügbare AP: ${widget.verfuegbareAp}'),
               Text(

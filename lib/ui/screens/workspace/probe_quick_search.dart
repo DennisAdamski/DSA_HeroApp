@@ -413,7 +413,7 @@ List<ProbeQuickSearchCandidate> _buildSpellCandidates({
     if (targets.isEmpty) {
       continue;
     }
-    final basePool = entry.spellValue + entry.modifier;
+    final basePool = (entry.spellValue ?? 0) + entry.modifier;
     final chain = targets.map((target) => target.label).join('/');
     candidates.add(
       ProbeQuickSearchCandidate(
