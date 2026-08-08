@@ -39,6 +39,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `RestFirestoreHeroSyncGateway`), `HiveSyncMetadataStore` und die Modelle in
   `lib/domain/sync_models.dart`. Konflikte dürfen nicht still überschrieben
   werden; die UI muss lokal, online oder beide behalten anbieten.
+- Inhaltlich identische Datensätze sind aber kein Konflikt: `isSyncContentIdentical`
+  (`lib/domain/sync_object_diff.dart`) entscheidet das mit derselben Logik wie
+  die Konflikt-UI (umsortierte Listen, `lastModified`/`schemaVersion` zählen als
+  gleich); in dem Fall übernimmt die App die Online-Version und überspringt den
+  Datensatz. Nur echte Unterschiede erzeugen einen Konflikt und werden als
+  Tabelle `Feld | Online | Lokal` gezeigt
+  (`lib/ui/widgets/sync_conflict_comparison_table.dart` mit den deutschen
+  Feldnamen aus `lib/ui/widgets/sync_conflict_field_labels.dart`), sowohl im
+  Start-Gate als auch unter `Einstellungen > Konto & Sync`.
 - `FirebaseBootstrapResult.isAccountSyncAvailable` steuert den privaten
   Konto-Sync; `isFirestoreAvailable` steht für native Firestore-Funktionen wie
   Gruppen-Cloudaktionen und bleibt auf Windows deaktiviert.
