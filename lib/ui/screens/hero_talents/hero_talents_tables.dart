@@ -119,6 +119,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
                 effectiveAttributes: effectiveAttributes,
                 activeBaseBe: activeBaseBe,
               ),
+              ansicht: _tabellenAnsicht,
             ),
           ),
         ],
@@ -155,6 +156,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           activeBaseBe: activeBaseBe,
           inventoryMod: inventoryTalentMods[talent.id] ?? 0,
         ),
+        ansicht: _tabellenAnsicht,
       ),
     );
   }
@@ -173,6 +175,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
             _buildCombatTalentRow(talent: talent, isEditing: isEditing),
         cardBuilder: (cardContext, talent) =>
             _buildCombatTalentMobileCard(talent: talent, isEditing: isEditing),
+        ansicht: _tabellenAnsicht,
       ),
     );
   }

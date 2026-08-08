@@ -114,6 +114,10 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   HeroSheet? _latestHero;
   HeroState? _latestState;
   HeroComputedSnapshot? _latestSnapshot;
+
+  /// In `build` gelesene Ansichtseinstellung; die Tabellen werden aus
+  /// verschachtelten Buildern heraus gebaut, wo `ref.watch` nicht erlaubt ist.
+  TabellenAnsicht _tabellenAnsicht = TabellenAnsicht.automatisch;
   bool? _draftMagicEnabledOverride;
   bool? _draftDivineEnabledOverride;
 
@@ -470,6 +474,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     UiRebuildObserver.bump('hero_overview_tab');
     final hero = ref.watch(heroByIdProvider(widget.heroId));
     final computedAsync = ref.watch(heroComputedProvider(widget.heroId));
+    _tabellenAnsicht = ref.watch(tabellenAnsichtProvider);
 
     if (hero == null) {
       return const Center(child: Text('Held nicht gefunden.'));
