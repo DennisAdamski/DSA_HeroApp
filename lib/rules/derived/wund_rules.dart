@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 
 /// Ergebniscontainer fuer alle aggregierten Wundauswirkungen.
 class WundEffekte {
@@ -126,7 +127,17 @@ WundschwellenStufen computeWundschwellenStufen({
 ///
 /// Unterdrueckte Wunden verursachen keine Abzuege, zaehlen aber weiterhin
 /// fuer Kampfunfaehigkeit (Zone >= 3 Wunden).
-WundEffekte computeWundEffekte(WundZustand zustand) {
+///
+/// [halbierteProbenErschwernis] deckt die epische KO-Haupteigenschaft ab
+/// (Kap. 2.1: „Wund-Erschwernis halbiert"). Bewusst enge Auslegung: halbiert
+/// werden nur [WundEffekte.talentProbeMalus] und
+/// [WundEffekte.zauberExtraMalus] -- also genau die Werte, die dieser Typ als
+/// *Erschwernis* fuehrt. Die AT/PA/FK/INI/GS-*Abzuege* bleiben unberuehrt.
+/// Gerundet wird Richtung Null, also zugunsten des Helden.
+WundEffekte computeWundEffekte(
+  WundZustand zustand, {
+  bool halbierteProbenErschwernis = false,
+}) {
   final gesamt = zustand.gesamtWunden;
   if (gesamt == 0) return const WundEffekte();
 
@@ -139,7 +150,7 @@ WundEffekte computeWundEffekte(WundZustand zustand) {
   var fkMalus = effektiv * -2;
   var iniMalus = effektiv * -2;
   var gsMalus = effektiv * -1;
-  final talentProbeMalus = effektiv * -3;
+  final talentProbeMalusRoh = effektiv * -3;
 
   // --- Zonenspezifische Zusatzabzuege (nur effektive Wunden) ---
   var zauberExtraMalus = 0;
@@ -221,6 +232,15 @@ WundEffekte computeWundEffekte(WundZustand zustand) {
     );
   }
 
+  // Epische KO-Haupteigenschaft: halbiert ausschliesslich die
+  // Proben-Erschwernis, nicht die Kampf-Abzuege.
+  final talentProbeMalus = halbierteProbenErschwernis
+      ? roundDownTowardsZero(talentProbeMalusRoh / 2)
+      : talentProbeMalusRoh;
+  final zauberExtraMalusEffektiv = halbierteProbenErschwernis
+      ? roundDownTowardsZero(zauberExtraMalus / 2)
+      : zauberExtraMalus;
+
   // kopfIniWuerfelMalus proportional zu effektiven Kopfwunden.
   final kopfTotal = zustand.wundenInZone(WundZone.kopf);
   final kopfEffektiv = zustand.effektiveWundenInZone(WundZone.kopf);
@@ -236,7 +256,7 @@ WundEffekte computeWundEffekte(WundZustand zustand) {
     kopfIniWuerfelMalus: effektiverKopfIniMalus,
     gsMalus: gsMalus,
     talentProbeMalus: talentProbeMalus,
-    zauberExtraMalus: zauberExtraMalus,
+    zauberExtraMalus: zauberExtraMalusEffektiv,
     hinweise: hinweise,
     kampfunfaehig: kampfunfaehigeZonen.isNotEmpty,
     kampfunfaehigeZonen: kampfunfaehigeZonen,

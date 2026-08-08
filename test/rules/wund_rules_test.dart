@@ -572,4 +572,57 @@ void main() {
       expect(mods.gs, 0);
     });
   });
+
+  group('halbierteProbenErschwernis (epische KO-Haupteigenschaft)', () {
+    test('halbiert nur die Proben-Erschwernis, nicht die Kampf-Abzuege', () {
+      const zustand = WundZustand(wundenProZone: {WundZone.brust: 2});
+      final voll = computeWundEffekte(zustand);
+      final halb = computeWundEffekte(
+        zustand,
+        halbierteProbenErschwernis: true,
+      );
+
+      expect(voll.talentProbeMalus, -6);
+      expect(halb.talentProbeMalus, -3);
+
+      expect(halb.atMalus, voll.atMalus);
+      expect(halb.paMalus, voll.paMalus);
+      expect(halb.fkMalus, voll.fkMalus);
+      expect(halb.iniMalus, voll.iniMalus);
+      expect(halb.gsMalus, voll.gsMalus);
+    });
+
+    test('halbiert auch die Kopfwunden-Zusatzerschwernis fuer Zauber', () {
+      const zustand = WundZustand(wundenProZone: {WundZone.kopf: 2});
+      final halb = computeWundEffekte(
+        zustand,
+        halbierteProbenErschwernis: true,
+      );
+      // Basis -6 -> -3, Kopf-Zusatz -6 -> -3
+      expect(halb.talentProbeMalus, -3);
+      expect(halb.zauberExtraMalus, -3);
+      expect(halb.zauberProbeMalus, -6);
+    });
+
+    test('rundet Richtung Null, also zugunsten des Helden', () {
+      const zustand = WundZustand(wundenProZone: {WundZone.brust: 1});
+      final halb = computeWundEffekte(
+        zustand,
+        halbierteProbenErschwernis: true,
+      );
+      // -3 / 2 = -1,5 -> -1
+      expect(halb.talentProbeMalus, -1);
+    });
+
+    test('ohne Flag bleibt alles unveraendert', () {
+      const zustand = WundZustand(wundenProZone: {WundZone.brust: 2});
+      expect(
+        computeWundEffekte(
+          zustand,
+          halbierteProbenErschwernis: false,
+        ).talentProbeMalus,
+        -6,
+      );
+    });
+  });
 }
