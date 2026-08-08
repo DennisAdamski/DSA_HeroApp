@@ -140,12 +140,15 @@ void main() {
   Future<WorkspaceTabEditActions> openTalentsTab(
     WidgetTester tester,
     FakeRepository repo,
-    RulesCatalog catalog,
-  ) async {
+    RulesCatalog catalog, {
+    Size viewSize = const Size(1400, 1000),
+  }) async {
     // Tabellen mit 9–10 Spalten brauchen ~1080 px Mindestbreite im Edit-Modus.
     // Im Standard-Test-Viewport (800 px) wuerde ResponsiveAdaptiveTable
     // stattdessen die Mobile-Karten rendern und Tabellen-Felder fehlten.
-    tester.view.physicalSize = const Size(1400, 1000);
+    // Tests fuer den Karten-Pfad geben deshalb bewusst eine kleine
+    // [viewSize] vor.
+    tester.view.physicalSize = viewSize;
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
       tester.view.resetPhysicalSize();
@@ -1446,4 +1449,110 @@ void main() {
       expect(hero.talents.keys, containsAll(<String>['tal_a', 'tal_b']));
     },
   );
+
+  testWidgets(
+    'schmale Layouts bieten den Steigern-Button auf der Talent-Karte',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(talentValue: 4),
+            },
+          ).copyWith(apTotal: 9999, apAvailable: 9999),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      // iPad-Portrait-Breite: die Tabelle weicht auf Mobile-Karten aus.
+      final actions = await openTalentsTab(
+        tester,
+        repo,
+        buildCatalog(),
+        viewSize: const Size(820, 1180),
+      );
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('talents-mobile-card-tal_a')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('talents-field-tal_a-talentValue'),
+        ),
+        findsNothing,
+      );
+
+      final raiseButton = find.byKey(
+        const ValueKey<String>('talents-mobile-raise-tal_a'),
+      );
+      await scrollMainListUpUntilVisible(tester, raiseButton);
+      await tester.ensureVisible(raiseButton);
+      await tester.pumpAndSettle();
+      await tester.tap(raiseButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Athletik steigern'), findsOneWidget);
+    },
+  );
+
+  testWidgets('Talent-Detail-Sheet bietet eine Steigern-Aktion', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(talentValue: 4),
+          },
+        ).copyWith(apTotal: 9999, apAvailable: 9999),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openTalentsTab(
+      tester,
+      repo,
+      buildCatalog(),
+      viewSize: const Size(820, 1180),
+    );
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    final card = find.byKey(
+      const ValueKey<String>('talents-mobile-card-tal_a'),
+    );
+    await scrollMainListUpUntilVisible(tester, card);
+    await tester.ensureVisible(card);
+    await tester.pumpAndSettle();
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+
+    final sheetRaise = find.byKey(
+      const ValueKey<String>('talent-detail-raise-tal_a'),
+    );
+    expect(sheetRaise, findsOneWidget);
+    await tester.ensureVisible(sheetRaise);
+    await tester.pumpAndSettle();
+    await tester.tap(sheetRaise);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Athletik steigern'), findsOneWidget);
+  });
 }

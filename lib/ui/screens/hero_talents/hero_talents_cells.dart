@@ -293,9 +293,14 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
               onPressed: onRaise,
               icon: const Icon(Icons.trending_up),
             ),
+      // Auf Apple-Plattformen (inkl. iPad-Web) greift die HIG-Mindestgroesse
+      // von 44 pt, damit der Button per Finger sicher zu treffen ist.
       suffixIconConstraints: onRaise == null
           ? null
-          : const BoxConstraints(minWidth: 32, minHeight: 32),
+          : BoxConstraints(
+              minWidth: adaptiveMinTouchTarget(context),
+              minHeight: adaptiveMinTouchTarget(context),
+            ),
     );
   }
 
