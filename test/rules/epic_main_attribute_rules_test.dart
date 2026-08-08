@@ -13,6 +13,30 @@ void main() {
   final ffMain = noMain.copyWith(ff: 1);
   final muKkMain = noMain.copyWith(mu: 1, kk: 1);
 
+  group('isEpicMainAttribute', () {
+    test('true fuer die gewaehlte Haupteigenschaft', () {
+      expect(
+        isEpicMainAttribute(mainAttributes: muKkMain, code: AttributeCode.mu),
+        isTrue,
+      );
+      expect(
+        isEpicMainAttribute(mainAttributes: muKkMain, code: AttributeCode.kk),
+        isTrue,
+      );
+    });
+
+    test('false fuer nicht gewaehlte Eigenschaften', () {
+      expect(
+        isEpicMainAttribute(mainAttributes: muKkMain, code: AttributeCode.kl),
+        isFalse,
+      );
+      expect(
+        isEpicMainAttribute(mainAttributes: noMain, code: AttributeCode.mu),
+        isFalse,
+      );
+    });
+  });
+
   group('isEpicMainAttributeBonusActive', () {
     test('Gate off when rule inactive', () {
       expect(

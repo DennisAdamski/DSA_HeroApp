@@ -41,6 +41,9 @@ class SteigerungsErgebnis {
 /// `aktuellerWert < 0` repraesentiert einen noch nicht aktivierten Wert.
 /// Dadurch koennen Talente mit Aktivierungskosten ohne separates Zusatz-Flag
 /// verarbeitet werden.
+///
+/// `istHaupteigenschaft` markiert eine der beiden epischen Haupteigenschaften.
+/// Sie steigern sich laut Hausregel Kap. 2.1 ohne den epischen AP-Aufschlag.
 Future<SteigerungsErgebnis?> showSteigerungsDialog({
   required BuildContext context,
   required String bezeichnung,
@@ -53,6 +56,7 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
   String? komplexitaetsHinweis,
   int? startWert,
   bool episch = false,
+  bool istHaupteigenschaft = false,
 }) {
   return showAdaptiveInputDialog<SteigerungsErgebnis>(
     context: context,
@@ -68,6 +72,7 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
         komplexitaetsHinweis: komplexitaetsHinweis,
         startWert: startWert,
         episch: episch,
+        istHaupteigenschaft: istHaupteigenschaft,
       );
     },
   );
@@ -85,6 +90,7 @@ class _SteigerungsDialog extends StatefulWidget {
     this.komplexitaetsHinweis,
     this.startWert,
     this.episch = false,
+    this.istHaupteigenschaft = false,
   });
 
   final String bezeichnung;
@@ -97,6 +103,7 @@ class _SteigerungsDialog extends StatefulWidget {
   final String? komplexitaetsHinweis;
   final int? startWert;
   final bool episch;
+  final bool istHaupteigenschaft;
 
   @override
   State<_SteigerungsDialog> createState() => _SteigerungsDialogState();
@@ -151,6 +158,7 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
       _basisKosten.apKosten,
       ruleActive: true,
       isEpisch: widget.episch,
+      isMainAttribute: widget.istHaupteigenschaft,
       lehrmeisterHebtAuf: _mitLehrmeister,
     );
   }
@@ -160,6 +168,7 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
       _basisKosten.apKosten,
       ruleActive: true,
       isEpisch: widget.episch,
+      isMainAttribute: widget.istHaupteigenschaft,
       lehrmeisterHebtAuf: _mitLehrmeister,
     );
   }
@@ -399,7 +408,15 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
               ],
               const SizedBox(height: 4),
               Text('AP-Kosten: ${basisKosten.apKosten}'),
-              if (widget.episch && _eposAufschlagDelta > 0) ...[
+              if (widget.episch && widget.istHaupteigenschaft) ...[
+                Text(
+                  'Haupteigenschaft — kein epischer Aufschlag',
+                  key: const ValueKey<String>(
+                    'steigerungs-dialog-main-attribute-hint',
+                  ),
+                  style: theme.textTheme.bodySmall,
+                ),
+              ] else if (widget.episch && _eposAufschlagDelta > 0) ...[
                 Text(
                   'Epos-Aufschlag (+25 %): +$_eposAufschlagDelta AP',
                   style: theme.textTheme.bodySmall,

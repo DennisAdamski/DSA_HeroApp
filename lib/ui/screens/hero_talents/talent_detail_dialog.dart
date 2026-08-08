@@ -295,8 +295,38 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Schließen'),
         ),
+        if (isEditing) _buildRaiseAction(state!),
       ],
     );
+  }
+
+  /// Baut die Steigern-Aktion des Sheets.
+  ///
+  /// Auf schmalen Layouts ersetzt die Talent-Tabelle ihre Zeilen durch
+  /// Karten; das Sheet ist dort der Hauptweg zum Steigerungsdialog.
+  /// Blockiert der Dirty-Gate die Steigerung, erklaert ein Tooltip warum,
+  /// statt den Button wortlos zu sperren.
+  Widget _buildRaiseAction(_HeroTalentTableTabState state) {
+    final canRaise = state._canUseSteigerungsDialog;
+    final button = FilledButton.icon(
+      key: ValueKey<String>('talent-detail-raise-${widget.talent.id}'),
+      onPressed: canRaise ? () => _raiseTalent(state) : null,
+      icon: const Icon(Icons.trending_up),
+      label: const Text('Steigern'),
+    );
+    if (canRaise) {
+      return button;
+    }
+    return Tooltip(
+      message: 'Erst Änderungen speichern, dann steigern.',
+      child: button,
+    );
+  }
+
+  /// Schliesst das Sheet und oeffnet den Steigerungsdialog des Tabs.
+  Future<void> _raiseTalent(_HeroTalentTableTabState state) async {
+    Navigator.of(context).pop();
+    await state._steigereTalent(widget.talent.id);
   }
 
   Widget _buildIntEditor({
