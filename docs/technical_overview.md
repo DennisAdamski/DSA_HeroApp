@@ -1478,7 +1478,7 @@ einem Zielgerät im Profile-Modus.
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **23**, fuer `HeroState` **5**.
+- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **26**, fuer `HeroState` **6**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 3 wird **strikt** validiert.
 
@@ -1530,6 +1530,59 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   MSIX-Artefakt Hash, Versionsinfos, Authenticode-Status und optional einen
   lokalen Defender-Scan.
 - Diese Pruefung ergaenzt den Quellcode-Audit, ersetzt ihn aber nicht.
+
+### Update 2026-08-08: Epische Haupteigenschaften und Steigern auf Tablets
+
+- **Haupteigenschaften steigern zum Normalpreis.** `applyEpicApSurcharge`
+  und `computeEpicApSurchargeDelta`
+  (`lib/rules/derived/epic_ap_cost_rules.dart`) kennen jetzt den Parameter
+  `isMainAttribute`. Ist er gesetzt, entfaellt der 25-%-Aufschlag aus
+  Kap. 2.2 — die beiden gewaehlten Haupteigenschaften sind laut Kap. 2.1
+  davon ausgenommen. Ob eine Eigenschaft betroffen ist, entscheidet das neue
+  Praedikat `isEpicMainAttribute`
+  (`lib/rules/derived/epic_main_attribute_rules.dart`), das bewusst
+  unabhaengig von Hausregel-Schaltern und `isEpisch` arbeitet.
+- `showSteigerungsDialog` reicht das ueber `istHaupteigenschaft` durch;
+  gesetzt wird es nur in `_steigeEigenschaft`
+  (`hero_overview_raise_actions.dart`). Talente und Zauber behalten den
+  Aufschlag. Der Dialog zeigt statt der Aufschlagszeile den Hinweis
+  „Haupteigenschaft — kein epischer Aufschlag".
+- **Epischer Status ist korrigierbar.** `EpicActivationDialog` hat einen
+  Edit-Modus (`isEdit`, `initialMaxBonus`, `initialMainAttributes`,
+  `initialPolicy`). `_editEpicStatus`
+  (`hero_overview_epic_section.dart`) schreibt daraus ausschliesslich
+  `epicAttributeMaxBonus`, `epicMainAttributes` und
+  `epicActivationPolicy`; `isEpisch`, `epicStartAp` und
+  `epicUnactivatedTalentIds` bleiben unangetastet, damit Epos-Level und
+  AU-Deckelung stabil bleiben. Einstieg ist das Stern-Symbol der Sektion
+  „AP und Level" (`overview-action-epic-edit`). Es gibt weiterhin keinen
+  Weg, den epischen Status zu entfernen. `HeroSheet` bleibt bei
+  `schemaVersion` 26 — es kamen keine Felder hinzu.
+- Fehlen einem epischen Helden die Haupteigenschaften, weist die Sektion
+  „Epische Vorteile und Nachteile" mit einem eigenen Hinweis darauf hin.
+- **Steigern auf iPad-Breiten.** Unterhalb der Spalten-Mindestbreite
+  (Talent-Tabelle im Edit-Modus rund 1010 px) rendert
+  `ResponsiveAdaptiveTable` Karten; dort fehlte bisher jeder Weg zum
+  Steigerungsdialog. Talent- und Kampftalent-Karten haben jetzt einen
+  Steigern-Button, und `_TalentDetailDialog` eine Steigern-Aktion
+  (`talent-detail-raise-<id>`), die das Sheet schliesst und
+  `_steigereTalent` aufruft. Blockiert der Dirty-Gate, erklaert ein
+  Tooltip den Grund.
+- Die Touch-Ziele der Steigern-Buttons folgen jetzt
+  `adaptiveMinTouchTarget` (`lib/ui/config/platform_adaptive.dart`), auf
+  Apple-Plattformen also den 44 pt der HIG statt bisher 32 dp.
+- **Ansicht umschaltbar.** `AppSettings.tabellenAnsicht`
+  (`enum TabellenAnsicht { automatisch, tabelle, karten }`, Default
+  `automatisch`) ueberstimmt die Breiten-Automatik von
+  `ResponsiveAdaptiveTable` ueber dessen Parameter `ansicht`. Das Widget
+  bleibt Riverpod-frei; den Wert liefern die Tabs, die ihn in ihrer
+  `build`-Methode aus `tabellenAnsichtProvider` lesen und in einem Feld
+  ablegen (die Tabellen entstehen in verschachtelten Buildern, wo
+  `ref.watch` nicht erlaubt ist). Bei erzwungener Tabelle greift die
+  vorhandene horizontale `SingleChildScrollView`. Bedienbar im Kopf des
+  Talente-Tabs (`talents-view-mode-toggle`) und unter
+  `Einstellungen > Darstellung`; die Einstellung gilt app-weit und damit
+  auch fuer die Eigenschafts- und Basiswert-Tabellen der Uebersicht.
 
 ### Update 2026-03-07: Begabung & Lernkomplexitaet
 
