@@ -71,6 +71,43 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
     }
   }
 
+  Future<void> _addFromCatalog(BuildContext context) async {
+    await onEnsureEditing?.call();
+    if (!context.mounted) {
+      return;
+    }
+    final owned =
+        abilities.map((a) => a.name.trim().toLowerCase()).toSet();
+    await showSpecialAbilityPicker(
+      context: context,
+      title: 'Magische Sonderfertigkeiten',
+      catalog: catalogAbilities,
+      ownedNamesLower: owned,
+      verfuegbareAp: verfuegbareAp,
+      episch: episch,
+      onAdd: (ability, apKosten) {
+        final updated = List<MagicSpecialAbility>.from(abilities)
+          ..add(
+            MagicSpecialAbility(
+              name: ability.name,
+              beschreibung: ability.beschreibung,
+            ),
+          );
+        onChanged(updated);
+        if (apKosten > 0) {
+          onApKostenBestaetigt?.call(apKosten);
+        }
+      },
+      onRemove: (ability) {
+        final normalized = ability.name.trim().toLowerCase();
+        final updated = abilities
+            .where((a) => a.name.trim().toLowerCase() != normalized)
+            .toList();
+        onChanged(updated);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -80,10 +117,22 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
         title: 'Sonderfertigkeiten',
         subtitle:
             '${abilities.length} Einträge mit Beschreibung und Zusatzangaben.',
-        trailing: FilledButton(
-          key: const ValueKey<String>('magic-sf-add'),
-          onPressed: () => _addAbility(context),
-          child: const Text('+ Sonderfertigkeit'),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            OutlinedButton.icon(
+              key: const ValueKey<String>('magic-sf-add-from-catalog'),
+              onPressed: () => _addFromCatalog(context),
+              icon: const Icon(Icons.library_add),
+              label: const Text('Aus Katalog'),
+            ),
+            const SizedBox(width: 8),
+            FilledButton(
+              key: const ValueKey<String>('magic-sf-add'),
+              onPressed: () => _addAbility(context),
+              child: const Text('+ Sonderfertigkeit'),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

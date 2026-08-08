@@ -37,6 +37,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/responsive_adaptive_table.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents/combat_specialization_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_picker.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_table_cell.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
@@ -130,6 +131,17 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   Map<String, HeroLanguageEntry> _draftSprachen = <String, HeroLanguageEntry>{};
   Map<String, HeroScriptEntry> _draftSchriften = <String, HeroScriptEntry>{};
   String _draftMuttersprache = '';
+
+  /// Aufsummierte AP-Kosten aus Erwerbs-Dialogen (Sonderfertigkeiten,
+  /// Talentspezialisierung) seit dem letzten Sync/Save.
+  ///
+  /// Bewusst nicht direkt in `_latestHero.apSpent` geschrieben: `build()`
+  /// liest den Helden unconditional aus `heroByIdProvider` und ueberschreibt
+  /// `_latestHero` bei jedem Rebuild (z. B. ausgeloest durch
+  /// `_markFieldChanged()`), bevor `_saveChanges()` laeuft. Wie die anderen
+  /// `_draftXxx`-Felder wird dieser Delta-Wert erst in `_saveChanges()`
+  /// auf den zu diesem Zeitpunkt aktuellen `hero.apSpent` angewendet.
+  int _draftApSpentDelta = 0;
 
   final Map<String, GlobalKey> _groupKeys = {};
   final Set<String> _collapsedGroups = {};
