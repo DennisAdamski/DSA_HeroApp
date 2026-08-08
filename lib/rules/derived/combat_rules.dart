@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ausweichen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/fernkampf_ladezeit_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/fernkampf_rules.dart';
@@ -75,6 +76,7 @@ class CombatPreviewStats {
     required this.initiativeFixedRollTotal,
     required this.damageDiceSpec,
     required this.axxAttackDefenseHint,
+    required this.epicFinteDefenseHint,
     required this.isRangedWeapon,
     required this.rangedAtBase,
     required this.projectileAtMod,
@@ -161,6 +163,10 @@ class CombatPreviewStats {
   final int? initiativeFixedRollTotal;
   final DiceSpec damageDiceSpec;
   final String axxAttackDefenseHint;
+
+  /// Anzeigehinweis der epischen IN-Haupteigenschaft (Finten gegen den
+  /// Helden sind erschwert). Leer, wenn der Bonus nicht greift.
+  final String epicFinteDefenseHint;
   final bool isRangedWeapon;
   final int rangedAtBase;
   final int projectileAtMod;
@@ -316,6 +322,7 @@ CombatPreviewStats computeCombatPreviewStats(
   ModifierParseResult? parsedModifiers,
   Attributes? effectiveAttributes,
   DerivedStats? derivedStats,
+  bool epicAdvantagesRuleActive = true,
 }) {
   final parsed = parsedModifiers ?? parseModifierTextsForHero(sheet);
   final effective =
@@ -581,6 +588,11 @@ CombatPreviewStats computeCombatPreviewStats(
   final axxAttackDefenseHint = buildAxxeleratusDefenseHint(
     axxeleratusActive: axxeleratusActive,
   );
+  final epicFinteDefenseHint = buildEpicFinteDefenseHint(
+    ruleActive: epicAdvantagesRuleActive,
+    isEpisch: sheet.isEpisch,
+    mainAttributes: sheet.epicMainAttributes,
+  );
 
   // --- Nebenhand-Vorschau ---
   final offhandPreview = _buildOffhandPreview(
@@ -675,6 +687,7 @@ CombatPreviewStats computeCombatPreviewStats(
       modifier: tpCalc,
     ),
     axxAttackDefenseHint: axxAttackDefenseHint,
+    epicFinteDefenseHint: epicFinteDefenseHint,
     isRangedWeapon: isRangedWeapon,
     rangedAtBase: rangedAtBase,
     projectileAtMod: projectileAtMod,
