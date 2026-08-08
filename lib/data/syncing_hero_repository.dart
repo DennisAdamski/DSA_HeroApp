@@ -167,7 +167,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
         _removeConflictFromStatus(conflictId);
         final fresh = await remote.loadHero(heroConflict.localHero.id);
         if (fresh != null) {
-          _openHeroConflict(
+          await _openHeroConflict(
             localHero: heroConflict.localHero,
             remoteRecord: fresh,
             localTimestamp: heroConflict.localHero.lastModified,
@@ -216,7 +216,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
           stateConflict.remoteRecord.heroId,
         );
         if (fresh != null) {
-          _openStateConflict(
+          await _openStateConflict(
             heroId: stateConflict.remoteRecord.heroId,
             localState: stateConflict.localState,
             remoteRecord: fresh,
@@ -289,7 +289,10 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       }
       final accountHero = await local.loadHeroById(offlineHero.id);
       if (accountHero != null &&
-          heroContentHash(accountHero) == heroContentHash(offlineHero)) {
+          isSyncContentIdentical(
+            offlineHero.toJson(),
+            accountHero.toJson(),
+          )) {
         // Inhaltlich identisch: keine Nutzerentscheidung noetig, das Konto
         // enthaelt bereits denselben Stand.
         continue;
@@ -424,12 +427,8 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
 
     final localHash = heroContentHash(localHero);
     if (localHash == remoteHash) {
-      await _saveMetadata(
-        key: key,
-        localHash: localHash,
-        remoteHash: remoteHash,
-        remoteRevision: record.revision,
-      );
+      // Inhaltlich identisch: der Online-Stand ist massgeblich.
+      await _adoptRemoteHero(remoteHero, record, localHero: localHero);
       return;
     }
 
@@ -448,7 +447,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       return;
     }
 
-    _openHeroConflict(
+    await _openHeroConflict(
       localHero: localHero,
       remoteRecord: record,
       localTimestamp: localHero.lastModified ?? metadata?.updatedAt,
@@ -526,7 +525,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       return;
     }
 
-    _openHeroConflict(
+    await _openHeroConflict(
       localHero: localHero,
       remoteRecord: record,
       localTimestamp: metadata?.updatedAt,
@@ -544,7 +543,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
         _remoteHeroHash(remoteRecord) != localHash) {
       if (metadata == null ||
           remoteRecord.revision != metadata.remoteRevision) {
-        _openHeroConflict(
+        await _openHeroConflict(
           localHero: hero,
           remoteRecord: remoteRecord,
           localTimestamp: hero.lastModified ?? metadata?.updatedAt,
@@ -556,7 +555,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     if (remoteRecord != null &&
         remoteRecord.isDeleted &&
         remoteRecord.revision != metadata?.remoteRevision) {
-      _openHeroConflict(
+      await _openHeroConflict(
         localHero: hero,
         remoteRecord: remoteRecord,
         localTimestamp: hero.lastModified ?? metadata?.updatedAt,
@@ -575,7 +574,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       // laden und den regulaeren Konfliktdialog oeffnen.
       final fresh = await remote.loadHero(hero.id);
       if (fresh != null) {
-        _openHeroConflict(
+        await _openHeroConflict(
           localHero: hero,
           remoteRecord: fresh,
           localTimestamp: hero.lastModified ?? metadata?.updatedAt,
@@ -652,7 +651,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
           isDeleted: true,
         );
       } else {
-        _openStateConflict(
+        await _openStateConflict(
           heroId: record.heroId,
           localState: localState,
           remoteRecord: record,
@@ -677,8 +676,17 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       return;
     }
     final localHash = stableContentHash(localState.toJson());
-    if (localHash == remoteHash ||
-        (metadata != null && localHash == metadata.localHash)) {
+    if (localHash == remoteHash) {
+      // Inhaltlich identisch: der Online-Stand ist massgeblich.
+      await _adoptRemoteState(
+        record.heroId,
+        remoteState,
+        record,
+        localState: localState,
+      );
+      return;
+    }
+    if (metadata != null && localHash == metadata.localHash) {
       await local.saveHeroState(record.heroId, remoteState);
       await _saveMetadata(
         key: key,
@@ -691,7 +699,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     if (metadata != null && metadata.remoteRevision == record.revision) {
       return;
     }
-    _openStateConflict(
+    await _openStateConflict(
       heroId: record.heroId,
       localState: localState,
       remoteRecord: record,
@@ -713,7 +721,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
         _remoteStateHash(remoteRecord) != localHash &&
         (metadata == null ||
             remoteRecord.revision != metadata.remoteRevision)) {
-      _openStateConflict(
+      await _openStateConflict(
         heroId: heroId,
         localState: state,
         remoteRecord: remoteRecord,
@@ -731,7 +739,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     } on SyncPreconditionException {
       final fresh = await stateGateway.loadHeroState(heroId);
       if (fresh != null) {
-        _openStateConflict(
+        await _openStateConflict(
           heroId: heroId,
           localState: state,
           remoteRecord: fresh,
@@ -747,16 +755,25 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     );
   }
 
-  void _openHeroConflict({
+  Future<void> _openHeroConflict({
     required HeroSheet localHero,
     required RemoteHeroRecord remoteRecord,
     DateTime? localTimestamp,
-  }) {
+  }) async {
     final conflictId = 'hero-${localHero.id}';
     if (_heroConflicts.containsKey(conflictId)) {
       return;
     }
     final remoteHero = remoteRecord.hero;
+    if (!remoteRecord.isDeleted &&
+        remoteHero != null &&
+        isSyncContentIdentical(localHero.toJson(), remoteHero.toJson())) {
+      // Beide Seiten sind inhaltlich gleich (z.B. nur umsortierte Listen):
+      // Online-Version als massgeblich uebernehmen statt den Nutzer eine
+      // Scheinentscheidung treffen zu lassen.
+      await _adoptRemoteHero(remoteHero, remoteRecord, localHero: localHero);
+      return;
+    }
     final conflict = SyncConflict(
       id: conflictId,
       objectType: SyncObjectType.hero,
@@ -814,13 +831,26 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     _addConflictToStatus(conflict);
   }
 
-  void _openStateConflict({
+  Future<void> _openStateConflict({
     required String heroId,
     required HeroState localState,
     required RemoteHeroStateRecord remoteRecord,
-  }) {
+  }) async {
     final conflictId = 'heroState-$heroId';
     if (_stateConflicts.containsKey(conflictId)) {
+      return;
+    }
+    final remoteState = remoteRecord.state;
+    if (!remoteRecord.isDeleted &&
+        remoteState != null &&
+        isSyncContentIdentical(localState.toJson(), remoteState.toJson())) {
+      // Inhaltlich identische Laufzeitwerte: Online-Version uebernehmen.
+      await _adoptRemoteState(
+        heroId,
+        remoteState,
+        remoteRecord,
+        localState: localState,
+      );
       return;
     }
     final conflict = SyncConflict(
@@ -1006,6 +1036,41 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
           );
         }
     }
+  }
+
+  /// Uebernimmt den Online-Stand eines Helden als massgeblich.
+  ///
+  /// Geschrieben wird nur, wenn sich die lokal gespeicherten Daten wirklich
+  /// unterscheiden — der Abgleich laeuft bei jedem Remote-Ereignis fuer jeden
+  /// Helden und darf keine unnoetigen Schreibzugriffe ausloesen.
+  Future<void> _adoptRemoteHero(
+    HeroSheet remoteHero,
+    RemoteHeroRecord record, {
+    HeroSheet? localHero,
+  }) async {
+    final needsWrite = localHero == null ||
+        stableContentHash(localHero.toJson()) !=
+            stableContentHash(remoteHero.toJson());
+    if (needsWrite) {
+      await local.saveHero(remoteHero);
+    }
+    await _storeHeroMetadata(remoteHero, record);
+  }
+
+  /// Uebernimmt die Online-Laufzeitwerte eines Helden als massgeblich.
+  Future<void> _adoptRemoteState(
+    String heroId,
+    HeroState remoteState,
+    RemoteHeroStateRecord record, {
+    HeroState? localState,
+  }) async {
+    final needsWrite = localState == null ||
+        stableContentHash(localState.toJson()) !=
+            stableContentHash(remoteState.toJson());
+    if (needsWrite) {
+      await local.saveHeroState(heroId, remoteState);
+    }
+    await _storeStateMetadata(heroId, remoteState, record);
   }
 
   Future<void> _storeHeroMetadata(

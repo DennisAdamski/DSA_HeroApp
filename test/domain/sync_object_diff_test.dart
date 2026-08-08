@@ -195,6 +195,82 @@ void main() {
     });
   });
 
+  group('isSyncContentIdentical', () {
+    test('wertet umsortierte primitive Listen als identisch', () {
+      expect(
+        isSyncContentIdentical(
+          {
+            'name': 'Alrik',
+            'tags': ['b', 'a', 'c'],
+          },
+          {
+            'name': 'Alrik',
+            'tags': ['a', 'c', 'b'],
+          },
+        ),
+        isTrue,
+      );
+    });
+
+    test('wertet umsortierte id-gekeyte Listen als identisch', () {
+      expect(
+        isSyncContentIdentical(
+          {
+            'notes': [
+              {'id': 'n1', 'text': 'eins'},
+              {'id': 'n2', 'text': 'zwei'},
+            ],
+          },
+          {
+            'notes': [
+              {'id': 'n2', 'text': 'zwei'},
+              {'id': 'n1', 'text': 'eins'},
+            ],
+          },
+        ),
+        isTrue,
+      );
+    });
+
+    test('ignoriert Zeitstempel und Schema-Version', () {
+      expect(
+        isSyncContentIdentical(
+          {
+            'name': 'Alrik',
+            'lastModified': '2026-01-01T00:00:00Z',
+            'schemaVersion': 4,
+          },
+          {
+            'name': 'Alrik',
+            'lastModified': '2026-08-08T10:00:00Z',
+            'schemaVersion': 5,
+          },
+        ),
+        isTrue,
+      );
+    });
+
+    test('meldet echte Wertunterschiede', () {
+      expect(
+        isSyncContentIdentical({'apTotal': 1100}, {'apTotal': 1200}),
+        isFalse,
+      );
+      expect(
+        isSyncContentIdentical(
+          {'name': 'Alrik', 'titel': 'Ritter'},
+          {'name': 'Alrik'},
+        ),
+        isFalse,
+      );
+    });
+
+    test('gilt nie als identisch, wenn eine Seite fehlt', () {
+      expect(isSyncContentIdentical({'name': 'Alrik'}, null), isFalse);
+      expect(isSyncContentIdentical(null, {'name': 'Alrik'}), isFalse);
+      expect(isSyncContentIdentical(null, null), isFalse);
+    });
+  });
+
   group('formatSyncDiffValue', () {
     test('formatiert Sonderfaelle lesbar', () {
       expect(formatSyncDiffValue(null), '—');

@@ -84,6 +84,27 @@ Heldenliste gelegt, damit der Nutzer lokal, online oder beide behalten waehlen
 kann. Avatar-Dateien selbst bleiben vorerst lokal; fehlende Dateien fuehren zu
 Platzhaltern.
 
+Seit 2026-08-08 gilt beim Startabgleich zusaetzlich: Sind lokale und
+Online-Version inhaltlich identisch, wird kommentarlos die Online-Version
+uebernommen und der Datensatz uebersprungen — es entsteht kein Konflikt. Das
+Praedikat dafuer ist `isSyncContentIdentical` in
+`lib/domain/sync_object_diff.dart`; es nutzt dieselbe Vergleichslogik wie die
+Konflikt-UI und ist damit toleranter als `heroContentHash`: reine
+Umsortierungen von Listen sowie `lastModified`/`schemaVersion` gelten als
+gleich. `SyncingHeroRepository._adoptRemoteHero` bzw. `_adoptRemoteState`
+schreiben dabei nur, wenn sich die lokal gespeicherten Daten wirklich
+unterscheiden. Geloeschte Gegenseiten gelten nie als identisch und bleiben
+Nutzerentscheidungen.
+
+Echte Unterschiede werden als dreispaltige Vergleichstabelle
+`Feld | Online | Lokal` dargestellt
+(`lib/ui/widgets/sync_conflict_comparison_table.dart`, deutsche Feldnamen aus
+`lib/ui/widgets/sync_conflict_field_labels.dart`). Die Zusammenfassung (Name,
+Zeitstempel, AP gesamt, AP frei) bildet die stets sichtbaren ersten Zeilen, die
+einzelnen Feldunterschiede lassen sich darunter ein- und ausklappen. Dasselbe
+Widget nutzen der blockierende Startbildschirm `SyncConflictGate` und die
+Konflikt-Kachel unter `Einstellungen > Konto & Sync`.
+
 Windows-Sonderfall: Firebase Auth bleibt dort verfügbar, der Konto-Sync nutzt
 aber bewusst den Firestore-REST-Transport (`RestFirestoreHeroSyncGateway` und
 `RestFirestoreSecretsRepository`) statt des nativen `cloud_firestore`-Pluginpfads.

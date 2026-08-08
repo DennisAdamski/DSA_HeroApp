@@ -226,7 +226,7 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
                 Text(
                   firebase.firestoreUserMessage ??
                       firebase.userMessage ??
-                      'Cloud-Sync ist derzeit nicht verfÃ¼gbar.',
+                      'Cloud-Sync ist derzeit nicht verfügbar.',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.error,
                   ),
@@ -267,6 +267,7 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
                 for (final conflict in syncStatus.openConflicts)
                   _SyncConflictTile(
                     conflict: conflict,
+                    diff: syncController?.conflictDiff(conflict.id),
                     onResolve: syncController == null
                         ? null
                         : (choice) => _resolveConflict(
@@ -369,16 +370,21 @@ class _SyncInfoRow extends StatelessWidget {
 }
 
 class _SyncConflictTile extends StatelessWidget {
-  const _SyncConflictTile({required this.conflict, required this.onResolve});
+  const _SyncConflictTile({
+    required this.conflict,
+    required this.onResolve,
+    this.diff,
+  });
 
   final SyncConflict conflict;
   final ValueChanged<SyncResolutionChoice>? onResolve;
 
+  /// Feld-Diff des Konflikts oder `null`, wenn keine Volldaten vorliegen.
+  final SyncObjectDiff? diff;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final hasDetails = conflict.localApTotal != null ||
-        conflict.remoteApTotal != null;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: DecoratedBox(
@@ -393,18 +399,7 @@ class _SyncConflictTile extends StatelessWidget {
             children: [
               Text(conflict.title, style: theme.textTheme.titleSmall),
               const SizedBox(height: 8),
-              if (hasDetails) ...[
-                _buildSideInfo('Lokal', conflict.localSummary,
-                    conflict.localApTotal, conflict.localApAvailable,
-                    conflict.localUpdatedAt),
-                const SizedBox(height: 2),
-                _buildSideInfo('Online', conflict.remoteSummary,
-                    conflict.remoteApTotal, conflict.remoteApAvailable,
-                    conflict.remoteUpdatedAt),
-              ] else ...[
-                Text('Lokal: ${conflict.localSummary}'),
-                Text('Online: ${conflict.remoteSummary}'),
-              ],
+              SyncConflictComparisonTable(conflict: conflict, diff: diff),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
@@ -436,23 +431,6 @@ class _SyncConflictTile extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  static Widget _buildSideInfo(String label, String summary, int? apTotal,
-      int? apAvailable, DateTime? updatedAt) {
-    final parts = <String>[summary];
-    if (apTotal != null) parts.add('$apTotal AP');
-    if (apAvailable != null) parts.add('$apAvailable frei');
-    parts.add('Gespeichert: ${_formatConflictTimestamp(updatedAt)}');
-    return Text('$label: ${parts.join(' · ')}');
-  }
-
-  static String _formatConflictTimestamp(DateTime? value) {
-    if (value == null) return 'Unbekannt';
-    final local = value.toLocal();
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${local.year}-${two(local.month)}-${two(local.day)} '
-        '${two(local.hour)}:${two(local.minute)}';
   }
 }
 

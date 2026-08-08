@@ -100,6 +100,24 @@ SyncObjectDiff computeSyncObjectDiff(
   );
 }
 
+/// True, wenn lokale und Online-Version inhaltlich identisch sind.
+///
+/// Nutzt bewusst dieselbe Vergleichslogik wie die Konflikt-UI und ist damit
+/// toleranter als `heroContentHash`: reine Umsortierungen von Listen sowie
+/// die ignorierten Metafelder (`lastModified`, `schemaVersion`) gelten als
+/// gleich. Fehlt eine der beiden Seiten komplett, ist das Ergebnis `false` —
+/// eine geloeschte Gegenseite ist kein "identisch", sondern eine
+/// Nutzerentscheidung.
+///
+/// Der Vergleich bricht beim ersten Unterschied ab und ist daher auch fuer
+/// den Startup-Abgleich aller Helden guenstig genug.
+bool isSyncContentIdentical(
+  Map<String, dynamic>? local,
+  Map<String, dynamic>? remote,
+) {
+  return !computeSyncObjectDiff(local, remote, maxEntries: 1).hatAenderungen;
+}
+
 /// Formatiert einen JSON-Wert kompakt fuer die Anzeige in der Konflikt-UI.
 ///
 /// Lange Texte werden auf [maxLength] Zeichen gekuerzt; Maps und Listen

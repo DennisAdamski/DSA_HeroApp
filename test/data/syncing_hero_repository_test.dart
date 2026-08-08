@@ -4,8 +4,10 @@ import 'package:dsa_heldenverwaltung/data/sync/in_memory_sync_metadata_store.dar
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_object_diff.dart';
@@ -179,6 +181,95 @@ void main() {
       expect(repository.currentStatus.openConflicts, hasLength(1));
       expect(repository.currentStatus.openConflicts.single.objectId, 'h-2');
     });
+
+    test(
+      'uebernimmt die Online-Version statt Konflikt bei reiner Umsortierung',
+      () async {
+        HeroSheet alrik(List<String> representationen) {
+          return hero(
+            'h-1',
+            'Alrik',
+          ).copyWith(representationen: representationen);
+        }
+
+        final local = FakeRepository.empty();
+        final remote = FakeRemoteHeroSyncGateway();
+        final metadata = InMemorySyncMetadataStore();
+        await remote.saveHero(
+          alrik(const <String>['gildenmagie']),
+          previousRevision: null,
+        );
+
+        final repository = SyncingHeroRepository(
+          local: local,
+          remote: remote,
+          metadataStore: metadata,
+          accountId: 'user-1',
+          startRemoteListener: false,
+        );
+        await repository.syncNow();
+
+        // Beide Seiten weichen von der Basisrevision ab, enthalten aber
+        // dieselben Eintraege in anderer Reihenfolge.
+        await remote.saveHero(
+          alrik(const <String>['gildenmagie', 'elfen']),
+          previousRevision: null,
+        );
+        await repository.saveHero(alrik(const <String>['elfen', 'gildenmagie']));
+
+        expect(repository.currentStatus.openConflicts, isEmpty);
+        expect((await local.loadHeroById('h-1'))?.representationen, <String>[
+          'gildenmagie',
+          'elfen',
+        ]);
+      },
+    );
+
+    test(
+      'uebernimmt Online-Laufzeitwerte statt Konflikt bei reiner Umsortierung',
+      () async {
+        HeroState stateMitWurf(List<int> diceValues) {
+          return const HeroState.empty().copyWith(
+            diceLog: <DiceLogEntry>[
+              DiceLogEntry(
+                timestamp: DateTime.utc(2026, 1, 1),
+                type: ProbeType.attribute,
+                title: 'Eigenschaftsprobe: MU',
+                subtitle: 'MU',
+                success: true,
+                diceValues: diceValues,
+              ),
+            ],
+          );
+        }
+
+        final local = FakeRepository(
+          heroes: <HeroSheet>[hero('h-1', 'Alrik')],
+          states: <String, HeroState>{'h-1': stateMitWurf(const <int>[3, 5])},
+        );
+        final remote = FakeRemoteHeroAndStateSyncGateway();
+        final metadata = InMemorySyncMetadataStore();
+        await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
+        await remote.saveHeroState(
+          'h-1',
+          stateMitWurf(const <int>[5, 3]),
+          previousRevision: null,
+        );
+
+        final repository = SyncingHeroRepository(
+          local: local,
+          remote: remote,
+          metadataStore: metadata,
+          accountId: 'user-1',
+          startRemoteListener: false,
+        );
+        await repository.syncNow();
+
+        expect(repository.currentStatus.openConflicts, isEmpty);
+        final storedState = await local.loadHeroState('h-1');
+        expect(storedState?.diceLog.single.diceValues, <int>[5, 3]);
+      },
+    );
 
     test('conflictDiff liefert Feldunterschiede fuer Heldenkonflikte', () async {
       final local = FakeRepository.empty();
