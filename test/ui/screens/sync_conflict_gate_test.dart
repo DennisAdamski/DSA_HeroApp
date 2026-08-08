@@ -62,16 +62,61 @@ void main() {
     await tester.pumpWidget(buildGate(controller));
     await tester.pumpAndSettle();
 
+    // Kopfzeile und Zusammenfassung sind auch eingeklappt sichtbar.
+    expect(find.text('Feld'), findsOneWidget);
+    expect(find.text('Online'), findsOneWidget);
+    expect(find.text('Lokal'), findsOneWidget);
+    expect(find.text('AP gesamt'), findsOneWidget);
+    expect(find.text('1200'), findsOneWidget);
+    expect(find.text('1100'), findsOneWidget);
     expect(find.text('Unterschiede anzeigen (2)'), findsOneWidget);
     expect(find.text('Eigenschaften › MU'), findsNothing);
 
     await tester.tap(find.text('Unterschiede anzeigen (2)'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Name'), findsOneWidget);
-    expect(find.text('Alrik lokal → Alrik online'), findsOneWidget);
+    // "Name" steht jetzt zweimal: als Zusammenfassung und als Diff-Zeile.
+    expect(find.text('Name'), findsNWidgets(2));
     expect(find.text('Eigenschaften › MU'), findsOneWidget);
-    expect(find.text('12 → 14'), findsOneWidget);
+    expect(find.text('14'), findsOneWidget);
+    expect(find.text('12'), findsOneWidget);
+    expect(find.text('Unterschiede ausblenden'), findsOneWidget);
+  });
+
+  testWidgets('trennt nur-lokale und nur-online Felder in den Spalten', (
+    tester,
+  ) async {
+    final controller = _FakeSyncController(
+      SyncStatusSnapshot(openConflicts: <SyncConflict>[conflict()]),
+      diffs: <String, SyncObjectDiff>{
+        'hero-h-1': const SyncObjectDiff(
+          entries: <SyncDiffEntry>[
+            SyncDiffEntry(
+              path: <String>['dukaten'],
+              kind: SyncDiffKind.onlyLocal,
+              localValue: 42,
+            ),
+            SyncDiffEntry(
+              path: <String>['titel'],
+              kind: SyncDiffKind.onlyRemote,
+              remoteValue: 'Ritter',
+            ),
+          ],
+        ),
+      },
+    );
+    addTearDown(controller.close);
+
+    await tester.pumpWidget(buildGate(controller));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Unterschiede anzeigen (2)'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dukaten'), findsOneWidget);
+    expect(find.text('42'), findsOneWidget);
+    expect(find.text('Titel'), findsOneWidget);
+    expect(find.text('Ritter'), findsOneWidget);
+    expect(find.text('(nicht vorhanden)'), findsNWidgets(2));
   });
 
   testWidgets('meldet geloeschte Online-Version statt Feldliste', (
@@ -123,6 +168,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Unterschiede anzeigen'), findsNothing);
+    // Die Zusammenfassung bleibt auch ohne Diff als Tabelle sichtbar.
+    expect(find.text('Alrik online'), findsOneWidget);
+    expect(find.text('Alrik lokal'), findsOneWidget);
 
     await tester.tap(find.text('Lokal behalten'));
     await tester.pumpAndSettle();
