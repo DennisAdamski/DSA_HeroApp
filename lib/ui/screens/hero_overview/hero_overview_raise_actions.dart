@@ -229,6 +229,10 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
       seAnzahl: _eigenschaftSeAnzahl(hero, code),
       startWert: startWert,
       episch: hero.isEpisch,
+      istHaupteigenschaft: isEpicMainAttribute(
+        mainAttributes: hero.epicMainAttributes,
+        code: code,
+      ),
     );
     if (result == null) {
       return;
