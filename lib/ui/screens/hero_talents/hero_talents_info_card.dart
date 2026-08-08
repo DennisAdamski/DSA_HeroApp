@@ -100,7 +100,32 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                 '(${_draftTalentSpecialAbilities.length})',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
+              PopupMenuButton<String>(
+                key: const ValueKey<String>(
+                  'talents-special-abilities-catalog',
+                ),
+                tooltip: 'Aus Katalog wählen',
+                onSelected: (value) async {
+                  await _ensureEditingSession();
+                  if (!mounted) {
+                    return;
+                  }
+                  _openTalentSpecialAbilityCatalog(karmal: value == 'karmal');
+                },
+                itemBuilder: (context) => const [
+                  PopupMenuItem(value: 'allgemein', child: Text('Allgemein')),
+                  PopupMenuItem(value: 'karmal', child: Text('Karmal')),
+                ],
+                child: IgnorePointer(
+                  child: OutlinedButton.icon(
+                    onPressed: null,
+                    icon: const Icon(Icons.library_add),
+                    label: const Text('Aus Katalog'),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
               FilledButton(
                 key: const ValueKey<String>('talents-special-abilities-add'),
                 onPressed: () async {
@@ -175,10 +200,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
           ability,
         ];
         if (apKosten > 0) {
-          final hero = _latestHero;
-          if (hero != null) {
-            _latestHero = hero.copyWith(apSpent: hero.apSpent + apKosten);
-          }
+          _draftApSpentDelta += apKosten;
         }
         _markFieldChanged();
       },
@@ -197,6 +219,49 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
         );
         updated[index] = ability;
         _draftTalentSpecialAbilities = updated;
+        _markFieldChanged();
+      },
+    );
+  }
+
+  /// Oeffnet den Katalog-Browser fuer allgemeine oder karmale
+  /// Sonderfertigkeiten (beide landen in derselben `talentSpecialAbilities`-
+  /// Liste, vgl. Dokumentation bei [_showTalentSpecialAbilityDialog]).
+  void _openTalentSpecialAbilityCatalog({required bool karmal}) {
+    final hero = _latestHero;
+    final catalog = ref.read(rulesCatalogProvider).valueOrNull;
+    if (hero == null || catalog == null) {
+      return;
+    }
+    final abilities =
+        karmal ? catalog.karmalSpecialAbilities : catalog.generalSpecialAbilities;
+    final owned = _draftTalentSpecialAbilities
+        .map((a) => a.name.trim().toLowerCase())
+        .toSet();
+    showSpecialAbilityPicker(
+      context: context,
+      title: karmal
+          ? 'Karmale Sonderfertigkeiten'
+          : 'Allgemeine Sonderfertigkeiten',
+      catalog: abilities,
+      ownedNamesLower: owned,
+      verfuegbareAp: hero.apAvailable,
+      episch: hero.isEpisch,
+      onAdd: (ability, apKosten) {
+        _draftTalentSpecialAbilities = [
+          ..._draftTalentSpecialAbilities,
+          TalentSpecialAbility(name: ability.name),
+        ];
+        if (apKosten > 0) {
+          _draftApSpentDelta += apKosten;
+        }
+        _markFieldChanged();
+      },
+      onRemove: (ability) {
+        final normalized = ability.name.trim().toLowerCase();
+        _draftTalentSpecialAbilities = _draftTalentSpecialAbilities
+            .where((a) => a.name.trim().toLowerCase() != normalized)
+            .toList();
         _markFieldChanged();
       },
     );

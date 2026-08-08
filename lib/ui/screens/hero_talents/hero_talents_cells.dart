@@ -502,8 +502,8 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     if (erwerb == null) {
       return;
     }
-    if (erwerb.apKosten > 0 && hero != null) {
-      _latestHero = hero.copyWith(apSpent: hero.apSpent + erwerb.apKosten);
+    if (erwerb.apKosten > 0) {
+      _draftApSpentDelta += erwerb.apKosten;
     }
     final updated = List<String>.from(currentSpecs)..add(name);
     _updateSpecializations(talentId, updated);

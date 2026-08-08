@@ -36,6 +36,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_picker.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 import 'package:uuid/uuid.dart';
@@ -95,6 +96,12 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       <MagicSpecialAbility>[];
   String _draftMagicLeadAttribute = '';
 
+  /// Aufsummierte AP-Kosten aus Erwerbs-Dialogen (magische Sonderfertigkeiten)
+  /// seit dem letzten Sync/Save. Siehe Kommentar bei der analogen
+  /// `_draftApSpentDelta` in `hero_talents_tab.dart` fuer die Begruendung
+  /// (build() ueberschreibt `_latestHero` unconditional aus dem Provider).
+  int _draftApSpentDelta = 0;
+
   @override
   void initState() {
     super.initState();
@@ -149,6 +156,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     );
     _draftRepresentationen = List<String>.from(hero.representationen);
     _draftMerkmalskenntnisse = List<String>.from(hero.merkmalskenntnisse);
+    _draftApSpentDelta = 0;
     _draftMagicSpecialAbilities = List<MagicSpecialAbility>.from(
       hero.magicSpecialAbilities,
     );
@@ -222,6 +230,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         _draftMagicSpecialAbilities,
       ),
       magicLeadAttribute: _draftMagicLeadAttribute,
+      apSpent: hero.apSpent + _draftApSpentDelta,
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     if (!mounted) {
