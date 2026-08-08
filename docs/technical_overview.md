@@ -1584,6 +1584,66 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   `Einstellungen > Darstellung`; die Einstellung gilt app-weit und damit
   auch fuer die Eigenschafts- und Basiswert-Tabellen der Uebersicht.
 
+### Update 2026-08-08: Haupteigenschafts-Boni teilweise verdrahtet
+
+- **Boni-Katalog mit Umsetzungsgrad.** Die frühere flache Map
+  `epicMainAttributeBonusDescriptions` ist ersetzt durch
+  `const List<EpicMainAttributeBonus> epicMainAttributeBonuses`
+  (`lib/rules/derived/epic_main_attribute_rules.dart`). Jeder Einzelbonus aus
+  Kap. 2.1 trägt ein `EpicBonusUmsetzung`:
+  `automatisch` (die App rechnet ihn ein), `hinweis` (die App blendet ihn an
+  der passenden Stelle ein) oder `manuell` (noch nicht unterstützt).
+  Zugriffe: `activeEpicMainAttributeBonuses` (ersetzt
+  `activeEpicMainAttributeHints`), `epicMainAttributeBonusesFor` und
+  `epicMainAttributeBonusSummary` für Tooltips.
+- **Von rund 18 Einzelboni sind 2 gerechnet und 1 eingeblendet.** Der Rest
+  bleibt bewusst manuell, weil die zugehörigen Regelbereiche in dieser App gar
+  nicht modelliert sind — siehe die Aufstellung unten.
+- **KK: eBE bei KK-Talenten halbiert.** `computeTalentEbe`
+  (`ruestung_be_rules.dart`) kennt `reductionMultiplier`;
+  `computeMetaTalentEbe` reicht ihn durch. Ob er greift, entscheidet
+  `epicTalentEbeMultiplier` anhand von `talentProbeUsesAttribute`, das die
+  Probenkette aus `TalentDef.attributes` über `parseAttributeCode` prüft.
+  Verdrahtet in Talent-Tabelle und -Karten, Talent-Detail-Sheet und
+  Proben-Schnellsuche. **Rundung:** die Behinderung wird abgerundet, also
+  zugunsten des Helden — gleiche Richtung wie `computeAtEbePart`.
+- **KO: Wund-Erschwernis halbiert.** `computeWundEffekte` kennt
+  `halbierteProbenErschwernis`. **Bewusst enge Auslegung:** halbiert werden
+  nur `talentProbeMalus` und `zauberExtraMalus` — genau die Felder, die
+  `WundEffekte` als *Erschwernis* führt. Die AT/PA/FK/INI/GS-*Abzüge* bleiben
+  unberührt. Gerundet wird Richtung Null (−3 → −1, −6 → −3). Der zentrale
+  Snapshot (`hero_providers.dart`) und die drei Wunden-Vorschauen teilen sich
+  das Gate über `isEpicWoundReliefActive`
+  (`lib/ui/screens/workspace/epic_wound_relief.dart`).
+- **IN: Fintenhinweis.** Der Bonus wirkt auf die Probe des *Gegners* und ist
+  deshalb kein Heldenwert. Er folgt dem Muster von
+  `buildAxxeleratusDefenseHint` (`magic_rules.dart`):
+  `buildEpicFinteDefenseHint` füllt das neue Feld
+  `CombatPreviewStats.epicFinteDefenseHint`, das
+  `combat_preview_subtab.dart` neben dem Axxeleratus-Hinweis einblendet.
+  `computeCombatPreviewStats` hat dafür den optionalen Parameter
+  `epicAdvantagesRuleActive` (Default `true`); den echten Wert übergeben
+  `hero_combat_tab.dart` und `hero_providers.dart`.
+- Alle drei Effekte sind über das Hausregel-Paket `epic_rules_v1.advantages`
+  (`isHouseRuleActiveProvider`) geschaltet — dieselbe Regel, die schon die
+  Bonus-Anzeige steuert.
+- **Weiterhin nicht unterstützt** (in der UI als „manuell" ausgewiesen), weil
+  der jeweilige Regelbereich nicht modelliert ist:
+  KK Tragkraft × 1,5 (es gibt keine Tragkraftberechnung für Helden;
+  `tragkraft` existiert nur als Freitextfeld auf `HeroCompanion`),
+  MU MR +7 gegen angstauslösende Zauber (MR ist ein einzelner Kennwert,
+  „angstauslösend" ist nicht kategorisiert),
+  KO Gift ×0,5 und Krankheit ×0,7 (kein Gift-/Krankheitsmodell),
+  FF Handwerksprodukte ×1,1 (kein Herstellungs- oder Produktwertmodell),
+  GE gezieltes Ausweichen ⅓ und Passierschlag-Immunität
+  (`ausweichen_rules.dart` kennt nur den Endwert),
+  sowie die übrigen Textboni aus Kap. 2.1.
+- **UI-Kennzeichnung.** Die Sektion „Epische Vorteile und Nachteile"
+  (`hero_overview_epic_section.dart`) und der ⓘ-Dialog der Eigenschaften-
+  Tabelle (`hero_overview_stats_section.dart`) markieren jeden nicht
+  gerechneten Bonus mit „manuell" bzw. „Hinweis in der Kampfvorschau";
+  gerechnete Boni bleiben unmarkiert.
+
 ### Update 2026-03-07: Begabung & Lernkomplexitaet
 
 - `HeroSpellEntry` enthaelt jetzt zusaetzlich ein `gifted`-Flag fuer
