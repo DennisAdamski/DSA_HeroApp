@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
@@ -255,6 +257,7 @@ void main() {
     WidgetTester tester,
     FakeRepository repo, {
     bool showInlineCombatTalentsActions = true,
+    bool? epicAdvantagesActive,
   }) async {
     WorkspaceTabEditActions? actions;
     await tester.pumpWidget(
@@ -262,6 +265,10 @@ void main() {
         overrides: [
           heroRepositoryProvider.overrideWithValue(repo),
           rulesCatalogProvider.overrideWith((ref) async => buildCatalog()),
+          if (epicAdvantagesActive != null)
+            isHouseRuleActiveProvider(
+              EpicRuleKeys.advantages,
+            ).overrideWithValue(epicAdvantagesActive),
         ],
         child: MaterialApp(
           home: Scaffold(
@@ -3926,4 +3933,64 @@ void main() {
       expect(calculationTop, greaterThan(artifactTop));
     },
   );
+
+  FakeRepository epicRepo(HeroSheet hero) => FakeRepository(
+    heroes: [hero],
+    states: {
+      'demo': const HeroState(
+        currentLep: 10,
+        currentAsp: 0,
+        currentKap: 0,
+        currentAu: 10,
+      ),
+    },
+  );
+
+  Finder finteHint() => find.byKey(
+    const ValueKey<String>('combat-preview-epic-finte-hint'),
+    skipOffstage: false,
+  );
+
+  testWidgets(
+    'epische IN-Haupteigenschaft blendet den Fintenhinweis in der Vorschau ein',
+    (tester) async {
+      final repo = epicRepo(
+        buildHero().copyWith(
+          isEpisch: true,
+          epicMainAttributes: const Attributes.zero().copyWith(inn: 1),
+        ),
+      );
+      await openCombatTab(tester, repo, epicAdvantagesActive: true);
+
+      expect(finteHint(), findsOneWidget);
+    },
+  );
+
+  testWidgets('ohne IN-Haupteigenschaft fehlt der Fintenhinweis', (
+    tester,
+  ) async {
+    final repo = epicRepo(
+      buildHero().copyWith(
+        isEpisch: true,
+        epicMainAttributes: const Attributes.zero().copyWith(kk: 1),
+      ),
+    );
+    await openCombatTab(tester, repo, epicAdvantagesActive: true);
+
+    expect(finteHint(), findsNothing);
+  });
+
+  testWidgets('abgeschaltete Hausregel unterdrueckt den Fintenhinweis', (
+    tester,
+  ) async {
+    final repo = epicRepo(
+      buildHero().copyWith(
+        isEpisch: true,
+        epicMainAttributes: const Attributes.zero().copyWith(inn: 1),
+      ),
+    );
+    await openCombatTab(tester, repo, epicAdvantagesActive: false);
+
+    expect(finteHint(), findsNothing);
+  });
 }

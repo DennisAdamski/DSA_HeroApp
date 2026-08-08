@@ -8,7 +8,9 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
@@ -552,6 +554,77 @@ void main() {
       expect(saved!.isEpisch, isTrue);
       expect(saved.epicMainAttributes.kl, 1);
       expect(saved.epicMainAttributes.kk, 1);
+    },
+  );
+
+  testWidgets(
+    'Boni-Sektion markiert nur die noch nicht gerechneten Eintraege',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          buildHero().copyWith(
+            isEpisch: true,
+            epicMainAttributes: const Attributes.zero().copyWith(kk: 1),
+          ),
+        ],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            heroRepositoryProvider.overrideWithValue(repo),
+            rulesCatalogProvider.overrideWith(
+              (ref) async => _buildRulesCatalog(),
+            ),
+            isHouseRuleActiveProvider(
+              EpicRuleKeys.advantages,
+            ).overrideWithValue(true),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: HeroOverviewTab(
+                heroId: 'demo',
+                onDirtyChanged: (_) {},
+                onEditingChanged: (_) {},
+                onRegisterDiscard: (_) {},
+                onRegisterEditActions: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.text('Epische Vorteile und Nachteile'),
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
+      String lineFor(String fragment) {
+        final finder = find.textContaining(fragment, skipOffstage: false);
+        expect(finder, findsWidgets, reason: fragment);
+        final widget = tester.widgetList<Text>(finder).first;
+        return widget.data ?? widget.textSpan!.toPlainText();
+      }
+
+      // Gerechnet -> ohne Marker.
+      expect(lineFor('eBE bei KK-Talenten halbiert'), isNot(contains('manuell')));
+      // Nicht gerechnet -> ausdruecklich markiert.
+      expect(lineFor('Tragkraft KK'), contains('manuell'));
+      expect(
+        find.byKey(const ValueKey<String>('overview-epic-manual-note')),
+        findsOneWidget,
+      );
     },
   );
 }

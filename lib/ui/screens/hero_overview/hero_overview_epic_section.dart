@@ -9,10 +9,13 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
     final disadvRuleActive = ref.watch(
       isHouseRuleActiveProvider(EpicRuleKeys.disadvantages),
     );
-    final hints = activeEpicMainAttributeHints(
+    final boni = activeEpicMainAttributeBonuses(
       ruleActive: advRuleActive,
       isEpisch: true,
       mainAttributes: hero.epicMainAttributes,
+    );
+    final hatOffeneBoni = boni.any(
+      (bonus) => bonus.umsetzung != EpicBonusUmsetzung.automatisch,
     );
     // Unterscheidet "Regel abgeschaltet" von "Auswahl fehlt" — nur im
     // zweiten Fall braucht der Nutzer eine Handlungsaufforderung.
@@ -38,7 +41,7 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
             children: [
               Text('Epische Vorteile', style: labelStyle),
               const SizedBox(height: 4),
-              if (hints.isEmpty && !hasMainAttributes)
+              if (boni.isEmpty && !hasMainAttributes)
                 Text(
                   'Keine Haupteigenschaften gewählt — über das Stern-Symbol '
                   'in „AP und Level" nachtragen.',
@@ -47,17 +50,29 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
                     color: theme.colorScheme.error,
                   ),
                 )
-              else if (hints.isEmpty)
+              else if (boni.isEmpty)
                 Text(
                   'Keine Haupteigenschafts-Boni aktiv.',
                   style: theme.textTheme.bodyMedium,
                 )
-              else
-                for (final hint in hints)
+              else ...[
+                for (final bonus in boni)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 2),
-                    child: Text('• $hint', style: theme.textTheme.bodyMedium),
+                    child: _buildEpicBonusLine(bonus),
                   ),
+                if (hatOffeneBoni) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    'Mit „manuell" gekennzeichnete Boni rechnet die App noch '
+                    'nicht — sie gelten am Spieltisch.',
+                    key: const ValueKey<String>('overview-epic-manual-note'),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ],
             ],
           ),
           if (disadvRuleActive)
@@ -82,6 +97,40 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
         ],
       ),
     );
+  }
+
+  /// Rendert einen Bonus als Aufzaehlungszeile mit Umsetzungs-Marker.
+  ///
+  /// Nur automatisch gerechnete Boni bleiben unmarkiert; alles andere sagt
+  /// ausdruecklich, dass die App den Wert nicht selbst anwendet.
+  Widget _buildEpicBonusLine(EpicMainAttributeBonus bonus) {
+    final theme = Theme.of(context);
+    final marker = _epicBonusMarker(bonus.umsetzung);
+    final label = '• ${attributeCodeKey(bonus.code)}: ${bonus.text}';
+    if (marker == null) {
+      return Text(label, style: theme.textTheme.bodyMedium);
+    }
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(text: label),
+          TextSpan(
+            text: '  ($marker)',
+            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+      style: theme.textTheme.bodyMedium,
+    );
+  }
+
+  /// Kurzmarker fuer den Umsetzungsgrad; `null` bei berechneten Boni.
+  String? _epicBonusMarker(EpicBonusUmsetzung umsetzung) {
+    return switch (umsetzung) {
+      EpicBonusUmsetzung.automatisch => null,
+      EpicBonusUmsetzung.hinweis => 'Hinweis in der Kampfvorschau',
+      EpicBonusUmsetzung.manuell => 'manuell',
+    };
   }
 
   int _attrBonusValue(Attributes bonus, String key) {

@@ -1,28 +1,176 @@
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 
-/// Statische Beschreibungen des epischen Haupteigenschafts-Bonus pro Eigenschaft.
+/// Wie weit die App einen Haupteigenschafts-Bonus unterstuetzt.
 ///
-/// Quelle: Hausregeln Kap. 2.1 – „Haupteigenschaften".
-/// Wird in der Eigenschaften-Tabelle (ⓘ-Icon) und im Aktivierungsdialog genutzt.
-const Map<String, String> epicMainAttributeBonusDescriptions = {
-  'mu': 'MR +7 gegen angstauslösende Zauber; Manipulationsprobe 2×/Tag abwehren; '
-      'Aurapanzer stark verstärken.',
-  'kl': 'Nach gelungener Wissenstalent-Probe: Folgeproben zum Ziel um 3 erleichtert; '
-      'AT/PA/TP gegen analysiertes Ziel +1.',
-  'inn': 'Gefahreninstinkt-Immunität gegen Überraschung; '
-      'Finten gegen den Helden um 2 erschwert.',
-  'ch': 'Mitstreiter dürfen CH-Wert für MU-Proben nutzen (max. MU × 1,5); '
-      'Zuneigungs-/Loyalitätszauber +7 erschwert.',
-  'ff': 'Handwerksprodukte 10 % wertvoller + Zusatzverbesserung; '
-      'FF-Probe ersetzt Ausweichen gegen Fernwaffen.',
-  'ge': 'Gezieltes Ausweichen bereits auf ⅓ des Wertes; '
-      'Immunität gegen Passierschläge durch Ausweichen.',
-  'ko': 'Gifte: ½ Schaden, ½ Giftstufen-Erschwernis; Krankheiten: 70 % Zeit; '
-      'Ansteckungswurf wiederholen; Wund-Erschwernis halbiert.',
-  'kk': 'eBE bei KK-Talenten halbiert; Tragkraft KK × 1,5; '
-      'Niederwerfen-KK-Probe wiederholen; Zurückdrängen möglich.',
-};
+/// Der Katalog aus Kap. 2.1 beschreibt Effekte quer durch das ganze
+/// Regelwerk. Nur ein Teil davon hat in dieser App ueberhaupt einen
+/// Rechenpunkt. Damit Spieler erkennen, welcher Wert bereits stimmt und was
+/// sie selbst nachhalten muessen, traegt jeder Einzelbonus seinen
+/// Umsetzungsgrad.
+enum EpicBonusUmsetzung {
+  /// Die App rechnet den Bonus in den angezeigten Wert ein.
+  automatisch,
+
+  /// Die App blendet den Bonus an der passenden Stelle ein; angewandt wird
+  /// er am Spieltisch (wie der Fintenhinweis des Axxeleratus).
+  hinweis,
+
+  /// Die App unterstuetzt den Bonus noch nicht.
+  manuell,
+}
+
+/// Ein einzelner Haupteigenschafts-Bonus aus Kap. 2.1.
+class EpicMainAttributeBonus {
+  /// Erzeugt einen unveraenderlichen Bonus-Eintrag.
+  const EpicMainAttributeBonus({
+    required this.code,
+    required this.text,
+    required this.umsetzung,
+  });
+
+  /// Haupteigenschaft, an die der Bonus gebunden ist.
+  final AttributeCode code;
+
+  /// Regeltext des Einzelbonus.
+  final String text;
+
+  /// Unterstuetzungsgrad in dieser App.
+  final EpicBonusUmsetzung umsetzung;
+}
+
+/// Alle Haupteigenschafts-Boni in Charakterblatt-Reihenfolge.
+///
+/// Quelle: Hausregeln Kap. 2.1 – „Haupteigenschaften". Bewusst in
+/// Einzelaussagen zerlegt, weil eine Eigenschaft Boni mit
+/// unterschiedlichem Umsetzungsgrad mischt (KK: eBE-Halbierung wird
+/// gerechnet, Tragkraft nicht).
+const List<EpicMainAttributeBonus> epicMainAttributeBonuses =
+    <EpicMainAttributeBonus>[
+  EpicMainAttributeBonus(
+    code: AttributeCode.mu,
+    text: 'MR +7 gegen angstauslösende Zauber',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.mu,
+    text: 'Manipulationsprobe 2×/Tag abwehren',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.mu,
+    text: 'Aurapanzer stark verstärken',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.kl,
+    text: 'Nach gelungener Wissenstalent-Probe: Folgeproben zum Ziel '
+        'um 3 erleichtert',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.kl,
+    text: 'AT/PA/TP gegen analysiertes Ziel +1',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.inn,
+    text: 'Gefahreninstinkt-Immunität gegen Überraschung',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.inn,
+    text: 'Finten gegen den Helden um 2 erschwert',
+    umsetzung: EpicBonusUmsetzung.hinweis,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.ch,
+    text: 'Mitstreiter dürfen CH-Wert für MU-Proben nutzen (max. MU × 1,5)',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.ch,
+    text: 'Zuneigungs-/Loyalitätszauber +7 erschwert',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.ff,
+    text: 'Handwerksprodukte 10 % wertvoller + Zusatzverbesserung',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.ff,
+    text: 'FF-Probe ersetzt Ausweichen gegen Fernwaffen',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.ge,
+    text: 'Gezieltes Ausweichen bereits auf ⅓ des Wertes',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.ge,
+    text: 'Immunität gegen Passierschläge durch Ausweichen',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.ko,
+    text: 'Gifte: ½ Schaden, ½ Giftstufen-Erschwernis',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.ko,
+    text: 'Krankheiten: 70 % Zeit',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.ko,
+    text: 'Ansteckungswurf wiederholen',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.ko,
+    text: 'Wund-Erschwernis auf Proben halbiert',
+    umsetzung: EpicBonusUmsetzung.automatisch,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.kk,
+    text: 'eBE bei KK-Talenten halbiert',
+    umsetzung: EpicBonusUmsetzung.automatisch,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.kk,
+    text: 'Tragkraft KK × 1,5',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.kk,
+    text: 'Niederwerfen-KK-Probe wiederholen',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+  EpicMainAttributeBonus(
+    code: AttributeCode.kk,
+    text: 'Zurückdrängen möglich',
+    umsetzung: EpicBonusUmsetzung.manuell,
+  ),
+];
+
+/// Liefert alle Boni-Eintraege einer einzelnen Haupteigenschaft.
+List<EpicMainAttributeBonus> epicMainAttributeBonusesFor(AttributeCode code) {
+  return List<EpicMainAttributeBonus>.unmodifiable(
+    epicMainAttributeBonuses.where((bonus) => bonus.code == code),
+  );
+}
+
+/// Fasst die Boni einer Eigenschaft als Fliesstext zusammen.
+///
+/// Genutzt fuer Chip-Tooltips im Aktivierungsdialog, wo eine Liste mit
+/// Markern nicht darstellbar ist.
+String epicMainAttributeBonusSummary(AttributeCode code) {
+  return epicMainAttributeBonusesFor(
+    code,
+  ).map((bonus) => bonus.text).join('; ');
+}
 
 /// Prüft, ob [code] in [mainAttributes] als Haupteigenschaft markiert ist.
 ///
@@ -165,6 +313,45 @@ double epicKrankheitTimeMultiplier({
       : 1.0;
 }
 
+/// Prueft, ob eine Talent-Probenkette die Eigenschaft [code] enthaelt.
+///
+/// [talentAttributes] sind die Katalognamen aus `TalentDef.attributes`
+/// (z. B. `['Mut', 'Gewandheit', 'Koerperkraft']`). Die Erkennung laeuft
+/// ueber `parseAttributeCode`, das Kurzformen und Umlaut-Varianten abdeckt.
+bool talentProbeUsesAttribute(
+  List<String> talentAttributes,
+  AttributeCode code,
+) {
+  for (final raw in talentAttributes) {
+    if (parseAttributeCode(raw) == code) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/// Multiplikator auf die effektive Behinderung eines einzelnen Talents.
+///
+/// Quelle: Kap. 2.1 — „Körperliche Talente die KK-Proben beinhalten haben
+/// eine halbierte effektive Behinderung." Greift nur, wenn KK
+/// Haupteigenschaft ist und die Probenkette des Talents KK enthaelt.
+/// Neutralwert ist 1.0.
+double epicTalentEbeMultiplier({
+  required bool ruleActive,
+  required bool isEpisch,
+  required Attributes mainAttributes,
+  required List<String> talentAttributes,
+}) {
+  if (!talentProbeUsesAttribute(talentAttributes, AttributeCode.kk)) {
+    return 1.0;
+  }
+  return epicKkBeMultiplier(
+    ruleActive: ruleActive,
+    isEpisch: isEpisch,
+    mainAttributes: mainAttributes,
+  );
+}
+
 /// Wertmultiplikator für handwerkliche Produkte (FF-Haupteigenschaft).
 ///
 /// Quelle: Kap. 2.1 — „Handwerkliche Produkte sind 10 % wertvoller …"
@@ -184,65 +371,48 @@ double epicHandwerkWertMultiplier({
       : 1.0;
 }
 
-/// Liefert kurze Textbeschreibungen der aktiven Boni für UI-Anzeige.
+/// Liefert die Boni aller gewaehlten Haupteigenschaften.
 ///
 /// Reihenfolge entspricht der Eigenschafts-Reihenfolge im Charakterblatt
-/// (MU, KL, IN, CH, FF, GE, KO, KK). Leer, wenn keine Regel greift.
-List<String> activeEpicMainAttributeHints({
+/// (MU, KL, IN, CH, FF, GE, KO, KK). Leer, wenn die Regel nicht greift oder
+/// der Held keine Haupteigenschaften gewaehlt hat.
+List<EpicMainAttributeBonus> activeEpicMainAttributeBonuses({
   required bool ruleActive,
   required bool isEpisch,
   required Attributes mainAttributes,
 }) {
-  if (!ruleActive || !isEpisch) return const <String>[];
-  final hints = <String>[];
-  if (mainAttributes.mu > 0) {
-    hints.add(
-      'MU: MR +7 gegen angstauslösende Zauber; 2×/Tag Manipulationsprobe '
-      'abwehren; Aurapanzer stark verstärken.',
-    );
+  if (!ruleActive || !isEpisch) return const <EpicMainAttributeBonus>[];
+  return List<EpicMainAttributeBonus>.unmodifiable(
+    epicMainAttributeBonuses.where(
+      (bonus) => isEpicMainAttribute(
+        mainAttributes: mainAttributes,
+        code: bonus.code,
+      ),
+    ),
+  );
+}
+
+/// Anzeigetext fuer die gegnerische Finten-Erschwernis (IN-Haupteigenschaft).
+///
+/// Quelle: Kap. 2.1 — „Finten gegen alle Helden mit Haupteigenschaft IN
+/// sind um 2 erschwert." Der Bonus wirkt auf die Probe des Gegners und
+/// laesst sich deshalb nicht in einen Heldenwert einrechnen. Er wird wie
+/// der Axxeleratus-Fintenhinweis in der Kampfvorschau eingeblendet
+/// (vgl. `buildAxxeleratusDefenseHint` in `magic_rules.dart`).
+/// Liefert den leeren String, wenn der Bonus nicht greift.
+String buildEpicFinteDefenseHint({
+  required bool ruleActive,
+  required bool isEpisch,
+  required Attributes mainAttributes,
+}) {
+  final erschwernis = epicFinteErschwernis(
+    ruleActive: ruleActive,
+    isEpisch: isEpisch,
+    mainAttributes: mainAttributes,
+  );
+  if (erschwernis <= 0) {
+    return '';
   }
-  if (mainAttributes.kl > 0) {
-    hints.add(
-      'KL: Nach gelungener Wissenstalent-Probe sind Folgeproben zum Ziel '
-      'um 3 erleichtert; AT/PA/TP gegen analysiertes Ziel +1.',
-    );
-  }
-  if (mainAttributes.inn > 0) {
-    hints.add(
-      'IN: Gefahreninstinkt-Immunität gegen Überraschung; '
-      'Finten gegen den Helden sind um 2 erschwert.',
-    );
-  }
-  if (mainAttributes.ch > 0) {
-    hints.add(
-      'CH: Mitstreiter dürfen CH-Wert für MU-Proben nutzen (max. MU × 1,5); '
-      'Zuneigungs-/Loyalitätszauber +7 erschwert.',
-    );
-  }
-  if (mainAttributes.ff > 0) {
-    hints.add(
-      'FF: Handwerksprodukte 10 % wertvoller und mit einer Zusatzverbesserung; '
-      'FF-Probe ersetzt Ausweichen gegen Fernwaffen.',
-    );
-  }
-  if (mainAttributes.ge > 0) {
-    hints.add(
-      'GE: Gezieltes Ausweichen bereits auf ein Drittel des Wertes; '
-      'Immunität gegen Passierschläge durch Ausweichen.',
-    );
-  }
-  if (mainAttributes.ko > 0) {
-    hints.add(
-      'KO: Gifte halber Schaden und halbe Giftstufen-Erschwernis; '
-      'Krankheiten 70 % Zeit; Ansteckungswurf wiederholen; '
-      'Wund-Erschwernis halbiert.',
-    );
-  }
-  if (mainAttributes.kk > 0) {
-    hints.add(
-      'KK: eBE bei KK-Talenten halbiert; Tragkraft KK × 1,5; '
-      'Niederwerfen-KK-Probe wiederholen; Zurückdrängen möglich.',
-    );
-  }
-  return List<String>.unmodifiable(hints);
+  return 'Haupteigenschaft IN: Finten gegen dich sind um '
+      '$erschwernis erschwert';
 }

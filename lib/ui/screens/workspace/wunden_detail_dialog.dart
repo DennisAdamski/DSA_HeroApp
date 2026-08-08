@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/epic_wound_relief.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
@@ -83,7 +84,10 @@ class _WundenDetailDialog extends ConsumerWidget {
       await speichereWundZustand(neuerZustand, diceLogEntries: diceLogEntries);
 
       if (!context.mounted) return;
-      final effekte = computeWundEffekte(neuerZustand);
+      final effekte = computeWundEffekte(
+        neuerZustand,
+        halbierteProbenErschwernis: isEpicWoundReliefActive(ref, hero),
+      );
       final unterdruecken = await showWundUnterdrueckungDialog(
         context: context,
         hero: hero,

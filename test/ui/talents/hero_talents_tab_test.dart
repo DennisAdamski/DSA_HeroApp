@@ -13,7 +13,9 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
@@ -144,6 +146,7 @@ void main() {
     RulesCatalog catalog, {
     Size viewSize = const Size(1400, 1000),
     TabellenAnsicht? tabellenAnsicht,
+    bool? epicAdvantagesActive,
   }) async {
     // Tabellen mit 9–10 Spalten brauchen ~1080 px Mindestbreite im Edit-Modus.
     // Im Standard-Test-Viewport (800 px) wuerde ResponsiveAdaptiveTable
@@ -165,6 +168,10 @@ void main() {
           rulesCatalogProvider.overrideWith((ref) async => catalog),
           if (tabellenAnsicht != null)
             tabellenAnsichtProvider.overrideWithValue(tabellenAnsicht),
+          if (epicAdvantagesActive != null)
+            isHouseRuleActiveProvider(
+              EpicRuleKeys.advantages,
+            ).overrideWithValue(epicAdvantagesActive),
         ],
         child: MaterialApp(
           home: Scaffold(
@@ -1610,6 +1617,87 @@ void main() {
         ),
         findsOneWidget,
       );
+    },
+  );
+
+  testWidgets(
+    'KK-Haupteigenschaft halbiert die eBE von Talenten mit KK-Probe',
+    (tester) async {
+      HeroSheet epicHero() => buildHero(
+        talents: const <String, HeroTalentEntry>{'tal_a': HeroTalentEntry()},
+        combatConfig: const CombatConfig(
+          armor: ArmorConfig(
+            pieces: <ArmorPiece>[
+              ArmorPiece(
+                name: 'Ruestung',
+                isActive: true,
+                rg1Active: false,
+                be: 3,
+              ),
+            ],
+            globalArmorTrainingLevel: 0,
+          ),
+        ),
+      );
+
+      String ebeText(WidgetTester tester) {
+        return tester
+            .widget<Text>(
+              find.descendant(
+                of: find.byKey(
+                  const ValueKey<String>('talents-field-tal_a-ebe-display'),
+                ),
+                matching: find.byType(Text),
+              ),
+            )
+            .data!;
+      }
+
+      // Athletik: BE-Regel x2, Probenkette MU/GE/KK -> ohne Bonus eBE -6.
+      final ohneBonus = FakeRepository(
+        heroes: [epicHero().copyWith(isEpisch: true)],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+      await openTalentsTab(
+        tester,
+        ohneBonus,
+        buildCatalog(),
+        epicAdvantagesActive: true,
+      );
+
+      expect(ebeText(tester), '-6');
+
+      final mitBonus = FakeRepository(
+        heroes: [
+          epicHero().copyWith(
+            isEpisch: true,
+            epicMainAttributes: const Attributes.zero().copyWith(kk: 1),
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+      await openTalentsTab(
+        tester,
+        mitBonus,
+        buildCatalog(),
+        epicAdvantagesActive: true,
+      );
+
+      expect(ebeText(tester), '-3');
     },
   );
 }

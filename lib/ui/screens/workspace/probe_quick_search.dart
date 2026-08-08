@@ -7,12 +7,15 @@ import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 
@@ -113,6 +116,9 @@ class _ProbeQuickSearchDialogState
     final computedAsync = ref.watch(heroComputedProvider(widget.heroId));
     final catalogAsync = ref.watch(rulesCatalogProvider);
     final talentBeOverride = ref.watch(talentBeOverrideProvider(widget.heroId));
+    final epicAdvantagesActive = ref.watch(
+      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+    );
 
     final snapshot = computedAsync.valueOrNull;
     final catalog = catalogAsync.valueOrNull;
@@ -132,6 +138,7 @@ class _ProbeQuickSearchDialogState
         catalogTalents: catalog.talents,
         catalogSpells: catalog.spells,
         talentBeOverride: talentBeOverride,
+        epicAdvantagesActive: epicAdvantagesActive,
       );
       body = _buildResultList(_filterCandidates(candidates));
     }
@@ -248,6 +255,7 @@ List<ProbeQuickSearchCandidate> _buildCandidates({
   required List<TalentDef> catalogTalents,
   required List<SpellDef> catalogSpells,
   required int? talentBeOverride,
+  required bool epicAdvantagesActive,
 }) {
   final candidates = <ProbeQuickSearchCandidate>[
     ..._buildAttributeCandidates(snapshot.effectiveAttributes),
@@ -257,6 +265,7 @@ List<ProbeQuickSearchCandidate> _buildCandidates({
       snapshot: snapshot,
       catalogTalents: catalogTalents,
       talentBeOverride: talentBeOverride,
+      epicAdvantagesActive: epicAdvantagesActive,
     ),
     ..._buildSpellCandidates(
       hero: hero,
@@ -337,6 +346,7 @@ List<ProbeQuickSearchCandidate> _buildTalentCandidates({
   required HeroComputedSnapshot snapshot,
   required List<TalentDef> catalogTalents,
   required int? talentBeOverride,
+  required bool epicAdvantagesActive,
 }) {
   final activeTalentBe = talentBeOverride ?? snapshot.combatPreviewStats.beKampf;
   final wundMalus = snapshot.wundEffekte.talentProbeMalus;
@@ -356,6 +366,12 @@ List<ProbeQuickSearchCandidate> _buildTalentCandidates({
     final ebe = computeTalentEbe(
       baseBe: activeTalentBe,
       talentBeRule: talent.be,
+      reductionMultiplier: epicTalentEbeMultiplier(
+        ruleActive: epicAdvantagesActive,
+        isEpisch: hero.isEpisch,
+        mainAttributes: hero.epicMainAttributes,
+        talentAttributes: talent.attributes,
+      ),
     );
     final computedTaw = computeTalentComputedTaw(
       talentValue: entry.talentValue,

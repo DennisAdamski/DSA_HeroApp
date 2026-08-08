@@ -7,23 +7,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_modifier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_actions.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_index_snapshot.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 
 /// Temporaerer BE-Ueberschreibungswert fuer die Talentansicht je Held.
 ///
@@ -192,8 +196,20 @@ final heroComputedProvider =
             state.tempAttributeMods +
             inventoryMods.attributeMods,
       );
-      // Wundberechnung
-      final wundEffekte = computeWundEffekte(state.wpiZustand);
+      // Wundberechnung -- die epische KO-Haupteigenschaft halbiert die
+      // Proben-Erschwernis (Kap. 2.1).
+      final epicAdvantagesActive = ref.watch(
+        isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+      );
+      final wundEffekte = computeWundEffekte(
+        state.wpiZustand,
+        halbierteProbenErschwernis: isEpicMainAttributeBonusActive(
+          ruleActive: epicAdvantagesActive,
+          isEpisch: hero.isEpisch,
+          mainAttributes: hero.epicMainAttributes,
+          code: AttributeCode.ko,
+        ),
+      );
       final wundStatMods = wundEffekteToStatModifiers(wundEffekte);
       final wundschwelleMods = hero.statModifiers['wundschwelle'] ?? const [];
       final wundschwelle = computeWundschwelle(
@@ -225,6 +241,7 @@ final heroComputedProvider =
         parsedModifiers: parsed,
         effectiveAttributes: effective,
         derivedStats: derived,
+        epicAdvantagesRuleActive: epicAdvantagesActive,
       );
 
       return AsyncValue<HeroComputedSnapshot>.data(

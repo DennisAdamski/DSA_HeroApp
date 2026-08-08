@@ -63,6 +63,13 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
         const SizedBox(height: 8),
         Text(preview.axxAttackDefenseHint),
       ],
+      if (preview.epicFinteDefenseHint.isNotEmpty) ...[
+        const SizedBox(height: 8),
+        Text(
+          preview.epicFinteDefenseHint,
+          key: const ValueKey<String>('combat-preview-epic-finte-hint'),
+        ),
+      ],
       const SizedBox(height: 12),
       _buildPossibleManeuversPreviewCard(catalog: catalog, preview: preview),
     ];
