@@ -14,6 +14,14 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
       isEpisch: true,
       mainAttributes: hero.epicMainAttributes,
     );
+    // Unterscheidet "Regel abgeschaltet" von "Auswahl fehlt" — nur im
+    // zweiten Fall braucht der Nutzer eine Handlungsaufforderung.
+    final hasMainAttributes = AttributeCode.values.any(
+      (code) => isEpicMainAttribute(
+        mainAttributes: hero.epicMainAttributes,
+        code: code,
+      ),
+    );
 
     final labelStyle = theme.textTheme.labelMedium?.copyWith(
       fontWeight: FontWeight.w700,
@@ -30,7 +38,16 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
             children: [
               Text('Epische Vorteile', style: labelStyle),
               const SizedBox(height: 4),
-              if (hints.isEmpty)
+              if (hints.isEmpty && !hasMainAttributes)
+                Text(
+                  'Keine Haupteigenschaften gewählt — über das Stern-Symbol '
+                  'in „AP und Level" nachtragen.',
+                  key: const ValueKey<String>('overview-epic-missing-main'),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                )
+              else if (hints.isEmpty)
                 Text(
                   'Keine Haupteigenschafts-Boni aktiv.',
                   style: theme.textTheme.bodyMedium,
@@ -116,6 +133,45 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
     _viewRevision.value++;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Epischer Status aktiviert')),
+    );
+  }
+
+  /// Korrigiert einen bereits gesetzten epischen Status.
+  ///
+  /// Aendert ausschliesslich Haupteigenschaften, Obergrenzen-Bonus und
+  /// Policy. `epicStartAp` und `epicUnactivatedTalentIds` bleiben
+  /// unangetastet, damit Epos-Level und AU-Deckelung stabil bleiben.
+  Future<void> _editEpicStatus(HeroSheet hero) async {
+    final snapshot = _latestSnapshot;
+    final effectiveStart =
+        snapshot?.effectiveStartAttributes ?? const Attributes.zero();
+    final currentValues = snapshot?.effectiveAttributes ?? hero.attributes;
+
+    final result = await showDialog<EpicActivationResult>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => EpicActivationDialog(
+        currentValues: currentValues,
+        effectiveStartAttributes: effectiveStart,
+        isEdit: true,
+        initialMaxBonus: hero.epicAttributeMaxBonus,
+        initialMainAttributes: hero.epicMainAttributes,
+        initialPolicy: hero.epicActivationPolicy,
+      ),
+    );
+    if (result == null || !mounted) return;
+
+    final updated = hero.copyWith(
+      epicAttributeMaxBonus: result.maxBonus,
+      epicMainAttributes: result.mainAttributes,
+      epicActivationPolicy: result.policy,
+    );
+    await ref.read(heroActionsProvider).saveHero(updated);
+    if (!mounted) return;
+    _latestHero = updated;
+    _viewRevision.value++;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Epischer Status aktualisiert')),
     );
   }
 }

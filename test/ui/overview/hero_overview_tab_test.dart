@@ -478,6 +478,82 @@ void main() {
       expect(saved.apSpent, 100);
     },
   );
+
+  testWidgets(
+    'epischer Held ohne Haupteigenschaften kann sie nachtragen',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[buildHero().copyWith(isEpisch: true)],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            heroRepositoryProvider.overrideWithValue(repo),
+            rulesCatalogProvider.overrideWith(
+              (ref) async => _buildRulesCatalog(),
+            ),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: HeroOverviewTab(
+                heroId: 'demo',
+                onDirtyChanged: (_) {},
+                onEditingChanged: (_) {},
+                onRegisterDiscard: (_) {},
+                onRegisterEditActions: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final editButton = find.byKey(
+        const ValueKey<String>('overview-action-epic-edit'),
+      );
+      await tester.scrollUntilVisible(
+        editButton,
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('overview-action-epic-activate')),
+        findsNothing,
+      );
+
+      await tester.tap(editButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Epischen Status bearbeiten'), findsOneWidget);
+
+      for (final chipKey in const <String>[
+        'epic-dialog-mental-kl',
+        'epic-dialog-physical-kk',
+        'epic-dialog-confirm',
+      ]) {
+        final target = find.byKey(ValueKey<String>(chipKey));
+        await tester.ensureVisible(target);
+        await tester.pumpAndSettle();
+        await tester.tap(target);
+        await tester.pumpAndSettle();
+      }
+
+      final saved = await repo.loadHeroById('demo');
+      expect(saved!.isEpisch, isTrue);
+      expect(saved.epicMainAttributes.kl, 1);
+      expect(saved.epicMainAttributes.kk, 1);
+    },
+  );
 }
 
 RulesCatalog _buildRulesCatalog() {
