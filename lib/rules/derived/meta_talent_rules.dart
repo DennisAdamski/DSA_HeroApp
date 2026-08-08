@@ -103,9 +103,18 @@ int computeMetaTalentComputedTaw({
 }
 
 /// Berechnet die eBE eines Meta-Talents anhand seiner BE-Regel.
+///
+/// [reductionMultiplier] wird unveraendert an [computeTalentEbe]
+/// durchgereicht, damit auch Meta-Talente von der epischen
+/// KK-Haupteigenschaft profitieren.
 int computeMetaTalentEbe({
   required int baseBe,
   required String beRule,
+  double reductionMultiplier = 1.0,
 }) {
-  return computeTalentEbe(baseBe: baseBe, talentBeRule: beRule);
+  return computeTalentEbe(
+    baseBe: baseBe,
+    talentBeRule: beRule,
+    reductionMultiplier: reductionMultiplier,
+  );
 }

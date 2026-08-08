@@ -28,4 +28,62 @@ void main() {
     expect(computeTalentEbe(baseBe: 3, talentBeRule: 'X 2'), -6);
     expect(computeTalentEbe(baseBe: 5, talentBeRule: ' - 3 '), -2);
   });
+
+  group('reductionMultiplier', () {
+    test('Neutralwert 1.0 aendert nichts', () {
+      expect(
+        computeTalentEbe(
+          baseBe: 3,
+          talentBeRule: 'x2',
+          reductionMultiplier: 1.0,
+        ),
+        -6,
+      );
+    });
+
+    test('halbiert die x-Regel', () {
+      expect(
+        computeTalentEbe(
+          baseBe: 3,
+          talentBeRule: 'x2',
+          reductionMultiplier: 0.5,
+        ),
+        -3,
+      );
+    });
+
+    test('halbiert die minus-Regel', () {
+      expect(
+        computeTalentEbe(
+          baseBe: 7,
+          talentBeRule: '-3',
+          reductionMultiplier: 0.5,
+        ),
+        -2,
+      );
+    });
+
+    test('rundet zugunsten des Helden ab', () {
+      // Reduktion 3 -> 1,5 -> 1
+      expect(
+        computeTalentEbe(
+          baseBe: 3,
+          talentBeRule: 'x1',
+          reductionMultiplier: 0.5,
+        ),
+        -1,
+      );
+    });
+
+    test('greift nicht, wenn die Regel ohnehin keine Behinderung ergibt', () {
+      expect(
+        computeTalentEbe(
+          baseBe: 2,
+          talentBeRule: '-3',
+          reductionMultiplier: 0.5,
+        ),
+        0,
+      );
+    });
+  });
 }

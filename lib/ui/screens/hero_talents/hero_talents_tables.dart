@@ -238,7 +238,11 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   }) {
     final entry = _entryForTalent(talent.id);
     final complexityResolution = _resolveTalentComplexity(talent, entry);
-    final ebe = computeTalentEbe(baseBe: activeBaseBe, talentBeRule: talent.be);
+    final ebe = computeTalentEbe(
+      baseBe: activeBaseBe,
+      talentBeRule: talent.be,
+      reductionMultiplier: _epicEbeMultiplier(talent.attributes),
+    );
     final computedTaw = computeTalentComputedTaw(
       talentValue: entry.talentValue,
       modifier: entry.modifier,
@@ -467,6 +471,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final ebe = computeMetaTalentEbe(
       baseBe: activeBaseBe,
       beRule: metaTalent.be,
+      reductionMultiplier: _epicEbeMultiplier(metaTalent.attributes),
     );
     final rawTaw = computeMetaTalentBaseTaw(
       talentEntries: _draftTalents,
@@ -496,6 +501,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               componentNames: componentNames,
               rawTaw: rawTaw,
               computedTaw: computedTaw,
+              ebe: ebe,
             ),
           ),
           trailing: IconButton(
@@ -564,7 +570,11 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   }) {
     final entry = _entryForTalent(talent.id);
     final complexityResolution = _resolveTalentComplexity(talent, entry);
-    final ebe = computeTalentEbe(baseBe: activeBaseBe, talentBeRule: talent.be);
+    final ebe = computeTalentEbe(
+      baseBe: activeBaseBe,
+      talentBeRule: talent.be,
+      reductionMultiplier: _epicEbeMultiplier(talent.attributes),
+    );
     final computedTaw = computeTalentComputedTaw(
       talentValue: entry.talentValue,
       modifier: entry.modifier,
@@ -660,6 +670,23 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           icon: const Icon(Icons.casino_outlined),
         ),
       ),
+    );
+  }
+
+  /// Liefert den eBE-Multiplikator fuer eine Talent-Probenkette.
+  ///
+  /// Deckt die epische KK-Haupteigenschaft ab (Kap. 2.1: halbierte eBE bei
+  /// Talenten mit KK-Probe). Neutralwert ist 1.0.
+  double _epicEbeMultiplier(List<String> talentAttributes) {
+    final hero = _latestHero;
+    if (hero == null) {
+      return 1.0;
+    }
+    return epicTalentEbeMultiplier(
+      ruleActive: _epicAdvantagesActive,
+      isEpisch: hero.isEpisch,
+      mainAttributes: hero.epicMainAttributes,
+      talentAttributes: talentAttributes,
     );
   }
 
@@ -790,6 +817,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final ebe = computeMetaTalentEbe(
       baseBe: activeBaseBe,
       beRule: metaTalent.be,
+      reductionMultiplier: _epicEbeMultiplier(metaTalent.attributes),
     );
     final rawTaw = computeMetaTalentBaseTaw(
       talentEntries: _draftTalents,
@@ -832,6 +860,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           componentNames: componentNames,
           rawTaw: rawTaw,
           computedTaw: computedTaw,
+          ebe: ebe,
         ),
       ),
       trailing: IconButton(

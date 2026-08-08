@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
 
@@ -170,6 +171,12 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
 
   int _currentValue(String key) => _attributeValue(widget.currentValues, key);
 
+  /// Fliesstext-Zusammenfassung der Boni einer Eigenschaft fuer Tooltips.
+  String _bonusSummaryFor(String key) {
+    final code = parseAttributeCode(key);
+    return code == null ? '' : epicMainAttributeBonusSummary(code);
+  }
+
   Attributes _buildBonus() {
     return Attributes(
       mu: _bonus['mu']!,
@@ -310,8 +317,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
                 children: _mentalAttrs.map((entry) {
                   final label = entry.$1;
                   final key = entry.$2;
-                  final bonusText =
-                      epicMainAttributeBonusDescriptions[key] ?? '';
+                  final bonusText = _bonusSummaryFor(key);
                   return Tooltip(
                     message: bonusText,
                     preferBelow: true,
@@ -337,8 +343,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
                 children: _physicalAttrs.map((entry) {
                   final label = entry.$1;
                   final key = entry.$2;
-                  final bonusText =
-                      epicMainAttributeBonusDescriptions[key] ?? '';
+                  final bonusText = _bonusSummaryFor(key);
                   return Tooltip(
                     message: bonusText,
                     preferBelow: true,

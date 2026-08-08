@@ -17,14 +17,17 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
@@ -125,6 +128,10 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   /// In `build` gelesene Ansichtseinstellung; die Tabellen werden aus
   /// verschachtelten Buildern heraus gebaut, wo `ref.watch` nicht erlaubt ist.
   TabellenAnsicht _tabellenAnsicht = TabellenAnsicht.automatisch;
+
+  /// Ob das Hausregel-Paket der epischen Vorteile aktiv ist. Wird aus
+  /// demselben Grund wie [_tabellenAnsicht] in `build` gelesen.
+  bool _epicAdvantagesActive = false;
   List<TalentDef> _latestCatalogTalents = const <TalentDef>[];
   CatalogRuleResolver _latestCatalogRuleResolver = const CatalogRuleResolver();
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
@@ -209,6 +216,9 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
 
     _latestHero = hero;
     _tabellenAnsicht = ref.watch(tabellenAnsichtProvider);
+    _epicAdvantagesActive = ref.watch(
+      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+    );
     _syncDraftFromHero(hero);
 
     final stateAsync = ref.watch(heroStateProvider(widget.heroId));

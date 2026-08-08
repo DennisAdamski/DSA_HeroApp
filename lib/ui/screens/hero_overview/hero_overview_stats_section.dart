@@ -615,22 +615,52 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     );
   }
 
-  /// Öffnet einen Dialog mit dem epischen Haupteigenschafts-Bonus für [attrKey].
+  /// Öffnet einen Dialog mit den epischen Haupteigenschafts-Boni für [attrKey].
+  ///
+  /// Zeigt jeden Einzelbonus mit seinem Umsetzungsgrad, damit erkennbar
+  /// bleibt, welchen Wert die App bereits einrechnet.
   void _showEpicAttrBonusInfo(String attrKey, String label) {
-    final description = epicMainAttributeBonusDescriptions[attrKey] ?? '';
+    final code = parseAttributeCode(attrKey);
+    final boni = code == null
+        ? const <EpicMainAttributeBonus>[]
+        : epicMainAttributeBonusesFor(code);
     showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('$label – Epischer Haupteigenschafts-Bonus'),
-        content: Text(description),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('OK'),
+      builder: (ctx) {
+        final dialogTheme = Theme.of(ctx);
+        return AlertDialog(
+          title: Text('$label – Epischer Haupteigenschafts-Bonus'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final bonus in boni)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    _epicBonusInfoLine(bonus),
+                    style: dialogTheme.textTheme.bodyMedium,
+                  ),
+                ),
+            ],
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
+  }
+
+  /// Formatiert einen Bonus samt Umsetzungs-Marker fuer den Info-Dialog.
+  String _epicBonusInfoLine(EpicMainAttributeBonus bonus) {
+    final marker = _epicBonusMarker(bonus.umsetzung);
+    return marker == null
+        ? '• ${bonus.text}'
+        : '• ${bonus.text}  ($marker)';
   }
 
   Widget _buildAttributesNumericCell({
