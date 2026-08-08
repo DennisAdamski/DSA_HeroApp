@@ -159,4 +159,54 @@ void main() {
     expect(result, isNotNull);
     expect(result!.apKosten, 3);
   });
+
+  testWidgets('Haupteigenschaft bleibt vom Epos-Aufschlag verschont', (
+    tester,
+  ) async {
+    SteigerungsErgebnis? result;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              return FilledButton(
+                onPressed: () async {
+                  result = await showSteigerungsDialog(
+                    context: context,
+                    bezeichnung: 'Körperkraft',
+                    aktuellerWert: 0,
+                    maxWert: 10,
+                    effektiveKomplexitaet: LearnCost.c,
+                    verfuegbareAp: 999,
+                    episch: true,
+                    istHaupteigenschaft: true,
+                  );
+                },
+                child: const Text('Öffnen'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Öffnen'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('AP-Kosten: 2'), findsOneWidget);
+    expect(find.textContaining('Epos-Aufschlag'), findsNothing);
+    expect(
+      find.byKey(
+        const ValueKey<String>('steigerungs-dialog-main-attribute-hint'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Steigern'));
+    await tester.pumpAndSettle();
+
+    expect(result, isNotNull);
+    expect(result!.apKosten, 2);
+  });
 }

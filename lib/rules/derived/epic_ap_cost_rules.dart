@@ -9,6 +9,12 @@
 /// Parameter `lehrmeisterHebtAuf` entspricht der Klarstellung im
 /// Regeltext: ein Lehrmeister hebt den Aufschlag auf, anstatt zusaetzlich
 /// zu verbilligen. Diese Entscheidung wird durch die UI uebergeben.
+///
+/// Parameter `isMainAttribute` deckt die Ausnahme aus Kap. 2.1 ab: die
+/// beiden gewaehlten Haupteigenschaften (je eine geistige und eine
+/// koerperliche) steigern sich weiterhin zum Normalpreis. Ob eine
+/// Eigenschaft Haupteigenschaft ist, entscheidet `isEpicMainAttribute`
+/// in `epic_main_attribute_rules.dart`.
 int applyEpicApSurcharge(
   int baseApCost, {
   required bool ruleActive,
@@ -16,11 +22,13 @@ int applyEpicApSurcharge(
   bool isEpicContent = false,
   bool isBegabung = false,
   bool isSpecialExperience = false,
+  bool isMainAttribute = false,
   bool lehrmeisterHebtAuf = false,
 }) {
   if (baseApCost <= 0) return baseApCost;
   if (!ruleActive || !isEpisch) return baseApCost;
   if (isEpicContent || isBegabung || isSpecialExperience) return baseApCost;
+  if (isMainAttribute) return baseApCost;
   if (lehrmeisterHebtAuf) return baseApCost;
   return (baseApCost * 1.25).round();
 }
@@ -34,6 +42,7 @@ int computeEpicApSurchargeDelta(
   bool isEpicContent = false,
   bool isBegabung = false,
   bool isSpecialExperience = false,
+  bool isMainAttribute = false,
   bool lehrmeisterHebtAuf = false,
 }) {
   final adjusted = applyEpicApSurcharge(
@@ -43,6 +52,7 @@ int computeEpicApSurchargeDelta(
     isEpicContent: isEpicContent,
     isBegabung: isBegabung,
     isSpecialExperience: isSpecialExperience,
+    isMainAttribute: isMainAttribute,
     lehrmeisterHebtAuf: lehrmeisterHebtAuf,
   );
   return adjusted - baseApCost;

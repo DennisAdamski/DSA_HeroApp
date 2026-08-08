@@ -24,6 +24,19 @@ const Map<String, String> epicMainAttributeBonusDescriptions = {
       'Niederwerfen-KK-Probe wiederholen; Zurückdrängen möglich.',
 };
 
+/// Prüft, ob [code] in [mainAttributes] als Haupteigenschaft markiert ist.
+///
+/// Bewusst unabhängig von Hausregel-Schaltern und vom epischen Status: die
+/// Markierung selbst ist eine reine Eigenschaft des Heldenbogens. Wer die
+/// Boni aus Kap. 2.1 prüfen will, nutzt [isEpicMainAttributeBonusActive];
+/// wer die Kostenregel aus Kap. 2.2 prüfen will, nutzt dieses Prädikat.
+bool isEpicMainAttribute({
+  required Attributes mainAttributes,
+  required AttributeCode code,
+}) {
+  return readAttributeValue(mainAttributes, code) > 0;
+}
+
 /// Prüfungsergebnis: Gate für die Haupteigenschafts-Boni aus Kap. 2.1.
 ///
 /// Der Bonus gilt nur, wenn der Held episch ist, die Regel aktiv ist
@@ -35,7 +48,7 @@ bool isEpicMainAttributeBonusActive({
   required AttributeCode code,
 }) {
   if (!ruleActive || !isEpisch) return false;
-  return readAttributeValue(mainAttributes, code) > 0;
+  return isEpicMainAttribute(mainAttributes: mainAttributes, code: code);
 }
 
 /// MR-Bonus gegen angstauslösende Zauber (MU-Haupteigenschaft).
