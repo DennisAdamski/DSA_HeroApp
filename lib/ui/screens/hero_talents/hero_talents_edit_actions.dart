@@ -33,6 +33,7 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
     _draftSprachen = Map<String, HeroLanguageEntry>.from(hero.sprachen);
     _draftSchriften = Map<String, HeroScriptEntry>.from(hero.schriften);
     _draftMuttersprache = hero.muttersprache;
+    _draftApSpentDelta = 0;
   }
 
   void _resetCellControllers() {
@@ -108,6 +109,7 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
       sprachen: Map<String, HeroLanguageEntry>.unmodifiable(_draftSprachen),
       schriften: Map<String, HeroScriptEntry>.unmodifiable(_draftSchriften),
       muttersprache: _draftMuttersprache,
+      apSpent: hero.apSpent + _draftApSpentDelta,
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     if (!mounted) {

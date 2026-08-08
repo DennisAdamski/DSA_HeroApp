@@ -100,7 +100,32 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                 '(${_draftTalentSpecialAbilities.length})',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
+              PopupMenuButton<String>(
+                key: const ValueKey<String>(
+                  'talents-special-abilities-catalog',
+                ),
+                tooltip: 'Aus Katalog wählen',
+                onSelected: (value) async {
+                  await _ensureEditingSession();
+                  if (!mounted) {
+                    return;
+                  }
+                  _openTalentSpecialAbilityCatalog(karmal: value == 'karmal');
+                },
+                itemBuilder: (context) => const [
+                  PopupMenuItem(value: 'allgemein', child: Text('Allgemein')),
+                  PopupMenuItem(value: 'karmal', child: Text('Karmal')),
+                ],
+                child: IgnorePointer(
+                  child: OutlinedButton.icon(
+                    onPressed: null,
+                    icon: const Icon(Icons.library_add),
+                    label: const Text('Aus Katalog'),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
               FilledButton(
                 key: const ValueKey<String>('talents-special-abilities-add'),
                 onPressed: () async {
@@ -169,11 +194,14 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
 
   void _addTalentSpecialAbility() {
     _showTalentSpecialAbilityDialog(
-      onSave: (ability) {
+      onSave: (ability, apKosten) {
         _draftTalentSpecialAbilities = [
           ..._draftTalentSpecialAbilities,
           ability,
         ];
+        if (apKosten > 0) {
+          _draftApSpentDelta += apKosten;
+        }
         _markFieldChanged();
       },
     );
@@ -185,12 +213,55 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
   }) {
     _showTalentSpecialAbilityDialog(
       existing: existing,
-      onSave: (ability) {
+      onSave: (ability, _) {
         final updated = List<TalentSpecialAbility>.from(
           _draftTalentSpecialAbilities,
         );
         updated[index] = ability;
         _draftTalentSpecialAbilities = updated;
+        _markFieldChanged();
+      },
+    );
+  }
+
+  /// Oeffnet den Katalog-Browser fuer allgemeine oder karmale
+  /// Sonderfertigkeiten (beide landen in derselben `talentSpecialAbilities`-
+  /// Liste, vgl. Dokumentation bei [_showTalentSpecialAbilityDialog]).
+  void _openTalentSpecialAbilityCatalog({required bool karmal}) {
+    final hero = _latestHero;
+    final catalog = ref.read(rulesCatalogProvider).valueOrNull;
+    if (hero == null || catalog == null) {
+      return;
+    }
+    final abilities =
+        karmal ? catalog.karmalSpecialAbilities : catalog.generalSpecialAbilities;
+    final owned = _draftTalentSpecialAbilities
+        .map((a) => a.name.trim().toLowerCase())
+        .toSet();
+    showSpecialAbilityPicker(
+      context: context,
+      title: karmal
+          ? 'Karmale Sonderfertigkeiten'
+          : 'Allgemeine Sonderfertigkeiten',
+      catalog: abilities,
+      ownedNamesLower: owned,
+      verfuegbareAp: hero.apAvailable,
+      episch: hero.isEpisch,
+      onAdd: (ability, apKosten) {
+        _draftTalentSpecialAbilities = [
+          ..._draftTalentSpecialAbilities,
+          TalentSpecialAbility(name: ability.name),
+        ];
+        if (apKosten > 0) {
+          _draftApSpentDelta += apKosten;
+        }
+        _markFieldChanged();
+      },
+      onRemove: (ability) {
+        final normalized = ability.name.trim().toLowerCase();
+        _draftTalentSpecialAbilities = _draftTalentSpecialAbilities
+            .where((a) => a.name.trim().toLowerCase() != normalized)
+            .toList();
         _markFieldChanged();
       },
     );
@@ -205,12 +276,17 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     _markFieldChanged();
   }
 
+  /// Zeigt den Sonderfertigkeiten-Dialog. Beim Neuanlegen wird der Name
+  /// gegen die allgemeinen und karmalen Katalog-Sonderfertigkeiten
+  /// abgeglichen und ein Erwerbs-Dialog mit den bekannten AP-Kosten
+  /// angeboten (vgl. magische Sonderfertigkeiten im Magie-Tab).
   void _showTalentSpecialAbilityDialog({
     TalentSpecialAbility? existing,
-    required void Function(TalentSpecialAbility ability) onSave,
+    required void Function(TalentSpecialAbility ability, int apKosten) onSave,
   }) {
     var draftName = existing?.name ?? '';
     var draftNote = existing?.note ?? '';
+    final isNew = existing == null;
 
     showAdaptiveDetailSheet<void>(
       context: context,
@@ -219,7 +295,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
           builder: (context, setDialogState) {
             return AlertDialog(
               title: Text(
-                existing == null
+                isNew
                     ? 'Sonderfertigkeit hinzufügen'
                     : 'Sonderfertigkeit bearbeiten',
               ),
@@ -269,15 +345,51 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                 ),
                 FilledButton(
                   key: const ValueKey<String>('talents-special-ability-save'),
-                  onPressed: () {
+                  onPressed: () async {
                     final name = draftName.trim();
                     if (name.isEmpty) {
                       return;
                     }
+                    var apKosten = 0;
+                    if (isNew) {
+                      final hero = _latestHero;
+                      final catalog = ref
+                          .read(rulesCatalogProvider)
+                          .valueOrNull;
+                      final combinedCatalog = <SpecialAbilityDef>[
+                        ...?catalog?.generalSpecialAbilities,
+                        ...?catalog?.karmalSpecialAbilities,
+                      ];
+                      final match = matchCatalogSpecialAbility(
+                        combinedCatalog,
+                        name,
+                      );
+                      final erwerb = await showErwerbDialog(
+                        context: dialogContext,
+                        bezeichnung: name,
+                        kostenHinweis: match?.kosten,
+                        vorgeschlageneApKosten: match == null
+                            ? null
+                            : parseLeadingApAmount(match.kosten),
+                        verfuegbareAp: hero?.apAvailable ?? 0,
+                        episch: hero?.isEpisch ?? false,
+                        epischerInhalt: match?.nurEpisch ?? false,
+                      );
+                      if (erwerb == null) {
+                        return;
+                      }
+                      apKosten = erwerb.apKosten;
+                    }
                     onSave(
-                      TalentSpecialAbility(name: name, note: draftNote.trim()),
+                      TalentSpecialAbility(
+                        name: name,
+                        note: draftNote.trim(),
+                      ),
+                      apKosten,
                     );
-                    Navigator.of(dialogContext).pop();
+                    if (dialogContext.mounted) {
+                      Navigator.of(dialogContext).pop();
+                    }
                   },
                   child: const Text('Speichern'),
                 ),

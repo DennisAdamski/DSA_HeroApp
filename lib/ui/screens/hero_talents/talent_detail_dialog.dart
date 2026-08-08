@@ -343,6 +343,7 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
     }
     return state._specializationBadgesCell(
       talentId: talent.id,
+      talent: talent,
       entry: _liveEntry,
       isEditing: true,
     );

@@ -213,4 +213,72 @@ void main() {
       );
     });
   });
+
+  group('requiredTawForSpecialization', () {
+    test('liefert TaW 7/14/21/28 fuer 1.-4. Spezialisierung', () {
+      expect(requiredTawForSpecialization(0), 7);
+      expect(requiredTawForSpecialization(1), 14);
+      expect(requiredTawForSpecialization(2), 21);
+      expect(requiredTawForSpecialization(3), 28);
+    });
+  });
+
+  group('talentSpecializationApCost', () {
+    test('berechnet 20 AP * Aktivierungsfaktor * Ordnungszahl', () {
+      expect(
+        talentSpecializationApCost(
+          basisKomplexitaet: 'C',
+          gifted: false,
+          specializationOrdinal: 1,
+        ),
+        60,
+      );
+      expect(
+        talentSpecializationApCost(
+          basisKomplexitaet: 'C',
+          gifted: false,
+          specializationOrdinal: 2,
+        ),
+        120,
+      );
+      expect(
+        talentSpecializationApCost(
+          basisKomplexitaet: 'C',
+          gifted: false,
+          specializationOrdinal: 3,
+        ),
+        180,
+      );
+    });
+
+    test('Begabung senkt die Kategorie um eine Stufe (C -> B)', () {
+      expect(
+        talentSpecializationApCost(
+          basisKomplexitaet: 'C',
+          gifted: true,
+          specializationOrdinal: 1,
+        ),
+        40,
+      );
+    });
+
+    test('deckt die Randfaelle A* und H ab', () {
+      expect(
+        talentSpecializationApCost(
+          basisKomplexitaet: 'A*',
+          gifted: false,
+          specializationOrdinal: 1,
+        ),
+        20,
+      );
+      expect(
+        talentSpecializationApCost(
+          basisKomplexitaet: 'H',
+          gifted: false,
+          specializationOrdinal: 1,
+        ),
+        400,
+      );
+    });
+  });
 }

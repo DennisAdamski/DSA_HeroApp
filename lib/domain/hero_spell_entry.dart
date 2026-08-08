@@ -4,7 +4,10 @@ import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 /// Speichert den Heldenwert in einem einzelnen Zauber (unveraenderlich).
 ///
 /// Analog zu [HeroTalentEntry], aber fuer aktivierte Zauber.
-/// [spellValue] entspricht dem ZfW (Zauberferttigkeitswert).
+/// [spellValue] entspricht dem ZfW (Zauberferttigkeitswert). `null` bedeutet,
+/// der Zauber ist ueber die Repraesentationswahl aktiviert, aber noch nicht
+/// ueber den Steigerungsdialog gesteigert worden — erst dieser verrechnet
+/// die Aktivierungskosten und setzt einen konkreten Wert (mindestens 0).
 /// [hauszauber] markiert den Zauber als Hauszauber (reduziert Steigerung).
 /// [gifted] markiert eine Begabung auf genau diesen Zauber.
 /// [specializations] speichert aus Kompatibilitaetsgruenden die Varianten
@@ -14,7 +17,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 class HeroSpellEntry {
   /// Erzeugt einen unveraenderlichen Heldeneintrag fuer einen Zauber.
   const HeroSpellEntry({
-    this.spellValue = 0,
+    this.spellValue,
     this.modifier = 0,
     this.hauszauber = false,
     this.gifted = false,
@@ -24,7 +27,7 @@ class HeroSpellEntry {
     this.textOverrides,
   });
 
-  final int spellValue;
+  final int? spellValue;
   final int modifier;
   final bool hauszauber;
   final bool gifted;
@@ -35,7 +38,7 @@ class HeroSpellEntry {
 
   /// Liefert eine gezielte, immutable Aktualisierung des Zaubereintrags.
   HeroSpellEntry copyWith({
-    int? spellValue,
+    Object? spellValue = keepFieldValue,
     int? modifier,
     bool? hauszauber,
     bool? gifted,
@@ -45,7 +48,9 @@ class HeroSpellEntry {
     Object? textOverrides = keepFieldValue,
   }) {
     return HeroSpellEntry(
-      spellValue: spellValue ?? this.spellValue,
+      spellValue: identical(spellValue, keepFieldValue)
+          ? this.spellValue
+          : spellValue as int?,
       modifier: modifier ?? this.modifier,
       hauszauber: hauszauber ?? this.hauszauber,
       gifted: gifted ?? this.gifted,
@@ -96,7 +101,7 @@ class HeroSpellEntry {
       specs = <String>[];
     }
     return HeroSpellEntry(
-      spellValue: (json['spellValue'] as num?)?.toInt() ?? 0,
+      spellValue: (json['spellValue'] as num?)?.toInt(),
       modifier: (json['modifier'] as num?)?.toInt() ?? 0,
       hauszauber: json['hauszauber'] as bool? ?? false,
       gifted: json['gifted'] as bool? ?? false,

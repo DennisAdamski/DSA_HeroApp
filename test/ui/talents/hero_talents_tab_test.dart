@@ -114,6 +114,26 @@ void main() {
       ],
       spells: <SpellDef>[],
       weapons: <WeaponDef>[],
+      generalSpecialAbilities: <SpecialAbilityDef>[
+        SpecialAbilityDef(
+          id: 'asf_kulturkunde',
+          name: 'Kulturkunde',
+          gruppe: 'allgemein',
+          kategorie: 'Gesellschaft',
+          beschreibung: 'Ignoriert kulturbedingte Erschwernisse.',
+          kosten: '150 AP',
+        ),
+      ],
+      karmalSpecialAbilities: <SpecialAbilityDef>[
+        SpecialAbilityDef(
+          id: 'karmsf_akoluth',
+          name: 'Akoluth',
+          gruppe: 'karmal',
+          kategorie: 'Kirchendienst',
+          beschreibung: 'Dienendes Mitglied seiner Kirche.',
+          kosten: '50 AP',
+        ),
+      ],
     );
   }
 
@@ -662,6 +682,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // Neuanlage fragt jetzt die AP-Kosten via Erwerb-Dialog ab.
+    await tester.enterText(find.widgetWithText(TextField, 'AP-Kosten'), '0');
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
+    await tester.pumpAndSettle();
+
     await actions.save();
     await tester.pumpAndSettle();
 
@@ -671,6 +697,115 @@ void main() {
       TalentSpecialAbility(name: 'Regeneration I'),
     ]);
   });
+
+  testWidgets(
+    'free text special ability with nonzero AP-Kosten increases apSpent',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero().copyWith(apAvailable: 500)],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final actions = await openTalentsTab(tester, repo, buildCatalog());
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Sonderfertigkeiten'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('talents-special-abilities-add')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talents-special-ability-name')),
+        'Regeneration I',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('talents-special-ability-save')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'AP-Kosten'),
+        '100',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
+      await tester.pumpAndSettle();
+
+      await actions.save();
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+      expect(hero.apSpent, 100);
+    },
+  );
+
+  testWidgets(
+    'special ability catalog picker adds allgemeine SF and increases apSpent',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero().copyWith(apAvailable: 500)],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final actions = await openTalentsTab(tester, repo, buildCatalog());
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Sonderfertigkeiten'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('talents-special-abilities-catalog'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Allgemein'));
+      await tester.pumpAndSettle();
+
+      // Katalog-Browser ist offen und zeigt die Fixture-SF "Kulturkunde".
+      expect(find.text('Allgemeine Sonderfertigkeiten'), findsOneWidget);
+      expect(find.text('Kulturkunde'), findsOneWidget);
+
+      await tester.tap(find.byType(Switch).first);
+      await tester.pumpAndSettle();
+
+      // Erwerb-Dialog mit dem Katalog-Kostenvorschlag bestaetigen.
+      expect(find.text('Katalog: 150 AP'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Fertig'));
+      await tester.pumpAndSettle();
+
+      await actions.save();
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+      expect(hero.talentSpecialAbilities, const <TalentSpecialAbility>[
+        TalentSpecialAbility(name: 'Kulturkunde'),
+      ]);
+      expect(hero.apSpent, 150);
+    },
+  );
 
   testWidgets('special ability add action stays available outside edit mode', (
     tester,

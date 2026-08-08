@@ -60,17 +60,22 @@ class _SonderfertigkeitenSection extends StatelessWidget {
           const SizedBox(height: 8),
           TextButton.icon(
             onPressed: () async {
-              final result = await showAdaptiveInputDialog<HeroCompanionSonderfertigkeit>(
+              final result = await showAdaptiveInputDialog<_SonderfertigkeitErwerb>(
                 context: context,
-                builder: (_) => const _SonderfertigkeitDialog(),
+                builder: (_) => _SonderfertigkeitDialog(
+                  verfuegbareAp: companionApVerfuegbar(companion),
+                ),
               );
               if (result != null) {
                 onChanged(
                   companion.copyWith(
                     sonderfertigkeiten: [
                       ...companion.sonderfertigkeiten,
-                      result,
+                      result.sf,
                     ],
+                    apAusgegeben: result.apKosten > 0
+                        ? (companion.apAusgegeben ?? 0) + result.apKosten
+                        : companion.apAusgegeben,
                   ),
                 );
               }
@@ -143,9 +148,19 @@ class _SonderfertigkeitTile extends StatelessWidget {
   }
 }
 
+/// Ergebnis des Sonderfertigkeiten-Dialogs: die Eingabe plus AP-Kosten,
+/// falls beim Neuanlegen ein Erwerbs-Dialog bestaetigt wurde (sonst `0`).
+class _SonderfertigkeitErwerb {
+  const _SonderfertigkeitErwerb({required this.sf, this.apKosten = 0});
+
+  final HeroCompanionSonderfertigkeit sf;
+  final int apKosten;
+}
+
 class _SonderfertigkeitDialog extends StatefulWidget {
-  const _SonderfertigkeitDialog({this.initial});
+  const _SonderfertigkeitDialog({this.initial, this.verfuegbareAp = 0});
   final HeroCompanionSonderfertigkeit? initial;
+  final int verfuegbareAp;
 
   @override
   State<_SonderfertigkeitDialog> createState() =>
@@ -155,6 +170,8 @@ class _SonderfertigkeitDialog extends StatefulWidget {
 class _SonderfertigkeitDialogState extends State<_SonderfertigkeitDialog> {
   late final TextEditingController _name;
   late final TextEditingController _beschreibung;
+
+  bool get _isNew => widget.initial == null;
 
   @override
   void initState() {
@@ -172,9 +189,37 @@ class _SonderfertigkeitDialogState extends State<_SonderfertigkeitDialog> {
     super.dispose();
   }
 
+  Future<void> _save() async {
+    final name = _name.text.trim();
+    var apKosten = 0;
+    if (_isNew) {
+      final erwerb = await showErwerbDialog(
+        context: context,
+        bezeichnung: name.isEmpty ? 'Sonderfertigkeit' : name,
+        verfuegbareAp: widget.verfuegbareAp,
+      );
+      if (erwerb == null) {
+        return;
+      }
+      apKosten = erwerb.apKosten;
+    }
+    if (!mounted) {
+      return;
+    }
+    Navigator.of(context).pop(
+      _SonderfertigkeitErwerb(
+        sf: HeroCompanionSonderfertigkeit(
+          name: name,
+          beschreibung: _beschreibung.text.trim(),
+        ),
+        apKosten: apKosten,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isNew = widget.initial == null;
+    final isNew = _isNew;
     return AdaptiveInputDialog(
       title: isNew
           ? 'Sonderfertigkeit hinzufügen'
@@ -209,12 +254,7 @@ class _SonderfertigkeitDialogState extends State<_SonderfertigkeitDialog> {
           child: const Text('Abbrechen'),
         ),
         FilledButton(
-          onPressed: () => Navigator.of(context).pop(
-            HeroCompanionSonderfertigkeit(
-              name: _name.text.trim(),
-              beschreibung: _beschreibung.text.trim(),
-            ),
-          ),
+          onPressed: _save,
           child: Text(isNew ? 'Hinzufügen' : 'Speichern'),
         ),
       ],

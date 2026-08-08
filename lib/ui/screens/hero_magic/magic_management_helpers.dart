@@ -70,6 +70,14 @@ extension _MagicManagementHelpers on _HeroMagicTabState {
     _markFieldChanged();
   }
 
+  void _onMagicSpecialAbilityApKosten(int apKosten) {
+    if (apKosten <= 0) {
+      return;
+    }
+    _draftApSpentDelta += apKosten;
+    _markFieldChanged();
+  }
+
   void _updateMagicLeadAttribute(String value) {
     _draftMagicLeadAttribute = value;
     _markFieldChanged();

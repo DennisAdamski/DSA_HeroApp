@@ -93,6 +93,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       verfuegbareAp: hero.apAvailable,
       seAnzahl: entry.specialExperiences,
       lehrmeisterVerfuegbar: true,
+      episch: hero.isEpisch,
     );
     if (result == null) {
       return;
@@ -695,7 +696,62 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                   if (result == null) {
                     return;
                   }
-                  _updateCombatSpecializations(talent.id, result);
+                  final kept = result.where(selected.contains).toList();
+                  final newlyAdded = result
+                      .where((s) => !selected.contains(s))
+                      .toList();
+                  final finalList = List<String>.from(kept);
+                  var runningCount = kept.length;
+                  for (final spec in newlyAdded) {
+                    final requiredTaw = requiredTawForSpecialization(
+                      runningCount,
+                    );
+                    if ((entry.talentValue ?? -1) < requiredTaw) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '"$spec" übersprungen: TaW $requiredTaw '
+                              'benötigt.',
+                            ),
+                          ),
+                        );
+                      }
+                      continue;
+                    }
+                    final hero = _latestHero;
+                    if (!mounted) {
+                      return;
+                    }
+                    final vorgeschlageneKosten = talentSpecializationApCost(
+                      basisKomplexitaet: talent.steigerung,
+                      gifted: entry.gifted,
+                      specializationOrdinal: runningCount + 1,
+                    );
+                    final erwerb = await showErwerbDialog(
+                      context: context,
+                      bezeichnung: 'Spezialisierung: $spec',
+                      kostenHinweis:
+                          'TaW ≥ $requiredTaw nötig; ohne Lehrmeister '
+                          'doppelte Kosten (Wege des Schwerts S. 17)',
+                      vorgeschlageneApKosten: vorgeschlageneKosten,
+                      verfuegbareAp: hero?.apAvailable ?? 0,
+                      episch: hero?.isEpisch ?? false,
+                      lehrmeisterUeblich: true,
+                      lehrmeisterVerdoppeltOhneIhn: true,
+                    );
+                    if (erwerb == null) {
+                      continue;
+                    }
+                    if (erwerb.apKosten > 0 && hero != null) {
+                      _latestHero = hero.copyWith(
+                        apSpent: hero.apSpent + erwerb.apKosten,
+                      );
+                    }
+                    finalList.add(spec);
+                    runningCount++;
+                  }
+                  _updateCombatSpecializations(talent.id, finalList);
                 },
               ),
           ],

@@ -15,7 +15,7 @@ void main() {
 
     test('fromJson mit fehlenden Feldern liefert Standardwerte', () {
       final entry = HeroLanguageEntry.fromJson(const <String, dynamic>{});
-      expect(entry.wert, 0);
+      expect(entry.wert, isNull);
       expect(entry.modifier, 0);
     });
 
@@ -37,7 +37,7 @@ void main() {
 
     test('fromJson mit fehlenden Feldern liefert Standardwerte', () {
       final entry = HeroScriptEntry.fromJson(const <String, dynamic>{});
-      expect(entry.wert, 0);
+      expect(entry.wert, isNull);
       expect(entry.modifier, 0);
     });
 
