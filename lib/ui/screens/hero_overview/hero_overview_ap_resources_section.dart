@@ -46,7 +46,12 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
     return _SectionCard(
       title: 'AP und Level',
       titleAction: hero.isEpisch
-          ? null
+          ? IconButton(
+              key: const ValueKey<String>('overview-action-epic-edit'),
+              tooltip: 'Epischen Status bearbeiten',
+              icon: const Icon(Icons.auto_awesome),
+              onPressed: () => _editEpicStatus(hero),
+            )
           : IconButton(
               key: const ValueKey<String>('overview-action-epic-activate'),
               tooltip: 'Epischen Status aktivieren',

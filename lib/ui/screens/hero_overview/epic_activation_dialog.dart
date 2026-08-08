@@ -18,25 +18,45 @@ class EpicActivationResult {
   final String? policy;
 }
 
-/// Einmaliger Dialog zur Aktivierung des epischen Status.
+/// Dialog zur Aktivierung — und nachträglichen Korrektur — des epischen Status.
 ///
 /// Der Spieler verteilt 5 Punkte auf die acht Grundeigenschaften
 /// (maximal +2 pro Eigenschaft), wählt je eine geistige und eine
 /// körperliche Haupteigenschaft und optional eine Aktivierungs-Policy.
-/// Das Ergebnis ist unveränderlich.
 ///
 /// [currentValues] sind die aktuellen Eigenschaftswerte des Helden.
 /// [effectiveStartAttributes] werden genutzt, um die neuen Maximalwerte
 /// (ceil(start × 1,5) + Bonus) anzuzeigen.
+///
+/// Mit [isEdit] arbeitet der Dialog als Korrekturmaske für bereits epische
+/// Helden: [initialMaxBonus], [initialMainAttributes] und [initialPolicy]
+/// belegen die Auswahl vor. Das ist der Weg, um bei Helden ohne
+/// Haupteigenschaften die fehlende Auswahl nachzutragen.
 class EpicActivationDialog extends StatefulWidget {
   const EpicActivationDialog({
     super.key,
     required this.currentValues,
     required this.effectiveStartAttributes,
+    this.isEdit = false,
+    this.initialMaxBonus = const Attributes.zero(),
+    this.initialMainAttributes = const Attributes.zero(),
+    this.initialPolicy,
   });
 
   final Attributes currentValues;
   final Attributes effectiveStartAttributes;
+
+  /// Schaltet Titel, Texte und Bestätigungsbutton auf Korrekturbetrieb um.
+  final bool isEdit;
+
+  /// Vorbelegung der Punkteverteilung auf die Eigenschafts-Obergrenzen.
+  final Attributes initialMaxBonus;
+
+  /// Vorbelegung der Haupteigenschaften (Werte > 0 gelten als gewählt).
+  final Attributes initialMainAttributes;
+
+  /// Vorbelegung der Aktivierungs-Policy.
+  final String? initialPolicy;
 
   @override
   State<EpicActivationDialog> createState() => _EpicActivationDialogState();
@@ -81,6 +101,52 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
   String? _selectedPhysical;
   String _policy = 'standard';
 
+  @override
+  void initState() {
+    super.initState();
+    for (final key in _bonus.keys.toList(growable: false)) {
+      final initial = _attributeValue(widget.initialMaxBonus, key);
+      _bonus[key] = initial.clamp(0, _maxPerAttr);
+    }
+    _selectedMental = _firstSelected(_mentalAttrs, widget.initialMainAttributes);
+    _selectedPhysical = _firstSelected(
+      _physicalAttrs,
+      widget.initialMainAttributes,
+    );
+    final initialPolicy = widget.initialPolicy;
+    final isKnownPolicy = _policies.any((entry) => entry.$2 == initialPolicy);
+    if (isKnownPolicy) {
+      _policy = initialPolicy!;
+    }
+  }
+
+  /// Liefert den ersten Eigenschafts-Schluessel aus [candidates], der in
+  /// [mainAttributes] markiert ist, sonst `null`.
+  String? _firstSelected(
+    List<(String, String)> candidates,
+    Attributes mainAttributes,
+  ) {
+    for (final entry in candidates) {
+      if (_attributeValue(mainAttributes, entry.$2) > 0) {
+        return entry.$2;
+      }
+    }
+    return null;
+  }
+
+  /// Liest einen Eigenschaftswert ueber den Kleinbuchstaben-Schluessel.
+  int _attributeValue(Attributes attributes, String key) => switch (key) {
+    'mu' => attributes.mu,
+    'kl' => attributes.kl,
+    'inn' => attributes.inn,
+    'ch' => attributes.ch,
+    'ff' => attributes.ff,
+    'ge' => attributes.ge,
+    'ko' => attributes.ko,
+    'kk' => attributes.kk,
+    _ => 0,
+  };
+
   int get _totalUsed => _bonus.values.fold(0, (a, b) => a + b);
   int get _remaining => _maxTotal - _totalUsed;
   bool get _canConfirm =>
@@ -99,29 +165,10 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
     return (_startValue(key) * 1.5).ceil();
   }
 
-  int _startValue(String key) => switch (key) {
-    'mu'  => widget.effectiveStartAttributes.mu,
-    'kl'  => widget.effectiveStartAttributes.kl,
-    'inn' => widget.effectiveStartAttributes.inn,
-    'ch'  => widget.effectiveStartAttributes.ch,
-    'ff'  => widget.effectiveStartAttributes.ff,
-    'ge'  => widget.effectiveStartAttributes.ge,
-    'ko'  => widget.effectiveStartAttributes.ko,
-    'kk'  => widget.effectiveStartAttributes.kk,
-    _     => 0,
-  };
+  int _startValue(String key) =>
+      _attributeValue(widget.effectiveStartAttributes, key);
 
-  int _currentValue(String key) => switch (key) {
-    'mu'  => widget.currentValues.mu,
-    'kl'  => widget.currentValues.kl,
-    'inn' => widget.currentValues.inn,
-    'ch'  => widget.currentValues.ch,
-    'ff'  => widget.currentValues.ff,
-    'ge'  => widget.currentValues.ge,
-    'ko'  => widget.currentValues.ko,
-    'kk'  => widget.currentValues.kk,
-    _     => 0,
-  };
+  int _currentValue(String key) => _attributeValue(widget.currentValues, key);
 
   Attributes _buildBonus() {
     return Attributes(
@@ -156,8 +203,23 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
     final theme = Theme.of(context);
     final remaining = _remaining;
 
+    final hinweis = widget.isEdit
+        ? 'Korrigiere die Punkteverteilung auf die Eigenschafts-Obergrenzen '
+              '(noch $remaining von $_maxTotal Punkten frei, max. '
+              '+$_maxPerAttr pro Eigenschaft) sowie die beiden '
+              'Haupteigenschaften. Bereits gesteigerte Werte bleiben erhalten, '
+              'auch wenn sie über einer neuen Obergrenze liegen.'
+        : 'Verteile $remaining von $_maxTotal Punkten auf die '
+              'Eigenschafts-Obergrenzen (max. +$_maxPerAttr pro Eigenschaft). '
+              'Wähle zusätzlich je eine geistige und eine körperliche '
+              'Haupteigenschaft.';
+
     return AlertDialog(
-      title: const Text('Epischen Status aktivieren'),
+      title: Text(
+        widget.isEdit
+            ? 'Epischen Status bearbeiten'
+            : 'Epischen Status aktivieren',
+      ),
       content: SizedBox(
         width: 480,
         child: SingleChildScrollView(
@@ -165,13 +227,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Verteile $remaining von $_maxTotal Punkten auf die '
-                'Eigenschafts-Obergrenzen (max. +$_maxPerAttr pro Eigenschaft). '
-                'Wähle zusätzlich je eine geistige und eine körperliche '
-                'Haupteigenschaft. Diese Auswahl ist unveränderlich.',
-                style: theme.textTheme.bodySmall,
-              ),
+              Text(hinweis, style: theme.textTheme.bodySmall),
               const SizedBox(height: 12),
               ..._attrs.map((entry) {
                 final label = entry.$1;
@@ -260,6 +316,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
                     message: bonusText,
                     preferBelow: true,
                     child: ChoiceChip(
+                      key: ValueKey<String>('epic-dialog-mental-$key'),
                       label: Text(label),
                       selected: _selectedMental == key,
                       onSelected: (_) =>
@@ -286,6 +343,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
                     message: bonusText,
                     preferBelow: true,
                     child: ChoiceChip(
+                      key: ValueKey<String>('epic-dialog-physical-$key'),
                       label: Text(label),
                       selected: _selectedPhysical == key,
                       onSelected: (_) =>
@@ -325,6 +383,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
           child: const Text('Abbrechen'),
         ),
         FilledButton(
+          key: const ValueKey<String>('epic-dialog-confirm'),
           onPressed: _canConfirm
               ? () => Navigator.of(context).pop(
                     EpicActivationResult(
@@ -334,7 +393,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
                     ),
                   )
               : null,
-          child: const Text('Aktivieren'),
+          child: Text(widget.isEdit ? 'Speichern' : 'Aktivieren'),
         ),
       ],
     );
