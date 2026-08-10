@@ -59,8 +59,13 @@ void main() {
     );
   }
 
-  RulesCatalog buildCatalog() {
-    return const RulesCatalog(
+  /// Baut den Testkatalog. [generalSpecialAbilities] erlaubt es, die
+  /// allgemeinen Sonderfertigkeiten fuer einzelne Tests zu ersetzen (z. B.
+  /// gegen mehrfach waehlbare Varianten-SF).
+  RulesCatalog buildCatalog({
+    List<SpecialAbilityDef>? generalSpecialAbilities,
+  }) {
+    final catalog = const RulesCatalog(
       version: 'test_catalog',
       source: 'test',
       talents: <TalentDef>[
@@ -137,6 +142,20 @@ void main() {
           kosten: '50 AP',
         ),
       ],
+    );
+    if (generalSpecialAbilities == null) {
+      return catalog;
+    }
+    return RulesCatalog(
+      version: catalog.version,
+      source: catalog.source,
+      talents: catalog.talents,
+      spells: catalog.spells,
+      weapons: catalog.weapons,
+      sprachen: catalog.sprachen,
+      schriften: catalog.schriften,
+      generalSpecialAbilities: generalSpecialAbilities,
+      karmalSpecialAbilities: catalog.karmalSpecialAbilities,
     );
   }
 
@@ -826,6 +845,96 @@ void main() {
         TalentSpecialAbility(name: 'Kulturkunde'),
       ]);
       expect(hero.apSpent, 150);
+    },
+  );
+
+  testWidgets(
+    'multi-select SF can be acquired twice with different variants',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [buildHero().copyWith(apAvailable: 500)],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final catalog = buildCatalog(
+        generalSpecialAbilities: const <SpecialAbilityDef>[
+          SpecialAbilityDef(
+            id: 'asf_gelaendekunde',
+            name: 'Geländekunde',
+            gruppe: 'allgemein',
+            kategorie: 'Überleben',
+            beschreibung: 'Erleichtert Proben in vertrauter Wildnis.',
+            kosten: '150 AP für die erste Geländekunde, je 100 AP weitere',
+            mehrfachwaehlbar: true,
+            variantenLabel: 'Gelände',
+            varianten: <String>['Waldkundig', 'Wüstenkundig'],
+            variantenFreitext: false,
+            apErstwerb: 150,
+            apFolgeerwerb: 100,
+          ),
+        ],
+      );
+
+      final actions = await openTalentsTab(tester, repo, catalog);
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Sonderfertigkeiten'));
+      await tester.pumpAndSettle();
+
+      Future<void> acquireVariant(String variante) async {
+        await tester.tap(
+          find.byKey(
+            const ValueKey<String>('talents-special-abilities-catalog'),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Allgemein'));
+        await tester.pumpAndSettle();
+
+        // Mehrfach waehlbare SF zeigen einen Hinzufuegen-Button statt Switch.
+        expect(find.byType(Switch), findsNothing);
+        await tester.tap(
+          find.byKey(const ValueKey<String>('sf-add-variant-Geländekunde')),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(
+          find.byKey(const ValueKey<String>('sf-variant-dropdown')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(variante).last);
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(FilledButton, 'Weiter'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Fertig'));
+        await tester.pumpAndSettle();
+      }
+
+      await acquireVariant('Waldkundig');
+      await acquireVariant('Wüstenkundig');
+
+      await actions.save();
+      await tester.pumpAndSettle();
+
+      final heroes = await repo.listHeroes();
+      final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+      expect(hero.talentSpecialAbilities, const <TalentSpecialAbility>[
+        TalentSpecialAbility(name: 'Geländekunde (Waldkundig)'),
+        TalentSpecialAbility(name: 'Geländekunde (Wüstenkundig)'),
+      ]);
+      // Gestaffelte Kosten: 150 AP fuer die erste, 100 AP fuer die zweite.
+      expect(hero.apSpent, 250);
     },
   );
 

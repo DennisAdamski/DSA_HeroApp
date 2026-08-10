@@ -446,6 +446,72 @@ void main() {
     );
   });
 
+  test('special ability variant fields survive a json roundtrip', () {
+    const raw = '''
+{
+  "id": "asf_gelaendekunde",
+  "name": "Geländekunde",
+  "gruppe": "allgemein",
+  "typ": "sonderfertigkeit",
+  "kategorie": "Überleben",
+  "mehrfachwaehlbar": true,
+  "varianten_label": "Gelände",
+  "varianten": ["Waldkundig", "Wüstenkundig"],
+  "varianten_freitext": false,
+  "ap_erstwerb": 150,
+  "ap_folgeerwerb": 100,
+  "kosten": "150 AP für die erste Geländekunde, je 100 AP für jedes weitere"
+}
+''';
+
+    final ability = SpecialAbilityDef.fromJson(
+      jsonDecode(raw) as Map<String, dynamic>,
+    );
+
+    expect(ability.mehrfachwaehlbar, isTrue);
+    expect(ability.variantenLabel, 'Gelände');
+    expect(ability.varianten, ['Waldkundig', 'Wüstenkundig']);
+    expect(ability.variantenFreitext, isFalse);
+    expect(ability.apErstwerb, 150);
+    expect(ability.apFolgeerwerb, 100);
+
+    final roundtrip = SpecialAbilityDef.fromJson(ability.toJson());
+    expect(roundtrip.mehrfachwaehlbar, isTrue);
+    expect(roundtrip.varianten, ['Waldkundig', 'Wüstenkundig']);
+    expect(roundtrip.variantenFreitext, isFalse);
+    expect(roundtrip.apErstwerb, 150);
+    expect(roundtrip.apFolgeerwerb, 100);
+  });
+
+  test('special abilities without variant fields keep their defaults', () {
+    const raw = '''
+{
+  "id": "asf_standfest",
+  "name": "Standfest",
+  "gruppe": "allgemein",
+  "kosten": "200 AP (4 GP)"
+}
+''';
+
+    final ability = SpecialAbilityDef.fromJson(
+      jsonDecode(raw) as Map<String, dynamic>,
+    );
+
+    expect(ability.mehrfachwaehlbar, isFalse);
+    expect(ability.variantenLabel, isEmpty);
+    expect(ability.varianten, isEmpty);
+    expect(ability.variantenFreitext, isTrue);
+    expect(ability.apErstwerb, isNull);
+    expect(ability.apFolgeerwerb, isNull);
+
+    // Ohne gesetzte Felder bleibt das serialisierte Objekt unveraendert schlank.
+    final json = ability.toJson();
+    expect(json.containsKey('mehrfachwaehlbar'), isFalse);
+    expect(json.containsKey('varianten'), isFalse);
+    expect(json.containsKey('varianten_freitext'), isFalse);
+    expect(json.containsKey('ap_erstwerb'), isFalse);
+  });
+
   test('rule meta roundtrip keeps citations and epic gating', () {
     const raw = '''
 {

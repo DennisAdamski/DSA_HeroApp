@@ -247,10 +247,11 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
       ownedNamesLower: owned,
       verfuegbareAp: hero.apAvailable,
       episch: hero.isEpisch,
-      onAdd: (ability, apKosten) {
+      eigeneKultur: hero.background.kultur,
+      onAdd: (ability, anzeigeName, apKosten) {
         _draftTalentSpecialAbilities = [
           ..._draftTalentSpecialAbilities,
-          TalentSpecialAbility(name: ability.name),
+          TalentSpecialAbility(name: anzeigeName),
         ];
         if (apKosten > 0) {
           _draftApSpentDelta += apKosten;

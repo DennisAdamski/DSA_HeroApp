@@ -19,6 +19,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Vor- und Nachteile liegen dort katalogisiert in `vorteile.json` und
   `nachteile.json`; die Heldenübersicht speichert Auswahlen weiterhin
   kompatibel in `HeroSheet.vorteileText` und `HeroSheet.nachteileText`.
+- Mehrfach erwerbbare allgemeine Sonderfertigkeiten (Kulturkunde, Geländekunde,
+  Ortskenntnis, Akklimatisierung, Berufsgeheimnis) tragen im Katalog ihre
+  Auswahlmöglichkeiten (`mehrfachwaehlbar`, `varianten`, `ap_erstwerb`,
+  `ap_folgeerwerb`). Jede erworbene Instanz wird als eigener Eintrag
+  `Basisname (Variante)` in `HeroSheet.talentSpecialAbilities` gespeichert;
+  Namensaufbau und gestaffelte AP-Vorschläge liegen in
+  `lib/rules/derived/special_ability_variant_rules.dart`.
 - Aktivierbare Hausregel-Pakete liegen eingebaut unter
   `assets/catalogs/house_rules_v1/packs/<packId>/manifest.json`.
 - Eingebaute Pack-Manifeste muessen ausserdem explizit in `pubspec.yaml`
