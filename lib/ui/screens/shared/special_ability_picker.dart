@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/special_ability_variant_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -15,10 +15,15 @@ import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 ///
 /// [ownedNamesLower] enthaelt die bereits eingetragenen Namen des Helden
 /// (klein geschrieben, getrimmt) fuer den "bereits vorhanden"-Abgleich.
-/// [onAdd] wird nach bestaetigtem Erwerbsdialog aufgerufen; der Aufrufer
+/// [onAdd] wird nach bestaetigtem Erwerbsdialog aufgerufen und erhaelt den
+/// zu speichernden Anzeigenamen — bei mehrfach waehlbaren Sonderfertigkeiten
+/// inklusive Auswahlvariante (`Kulturkunde (Novadi)`). Der Aufrufer
 /// entscheidet, in welche Liste (`talentSpecialAbilities`/
 /// `magicSpecialAbilities`) der Eintrag geschrieben wird. [onRemove] wird
 /// beim Abschalten eines bereits vorhandenen Eintrags aufgerufen.
+///
+/// [eigeneKultur] ist die Kultur des Helden; sie steuert den AP-Vorschlag
+/// fuer die kostenlose Kulturkunde der eigenen Kultur.
 Future<void> showSpecialAbilityPicker({
   required BuildContext context,
   required String title,
@@ -26,8 +31,14 @@ Future<void> showSpecialAbilityPicker({
   required Set<String> ownedNamesLower,
   required int verfuegbareAp,
   required bool episch,
-  required void Function(SpecialAbilityDef ability, int apKosten) onAdd,
+  required void Function(
+    SpecialAbilityDef ability,
+    String anzeigeName,
+    int apKosten,
+  )
+  onAdd,
   required void Function(SpecialAbilityDef ability) onRemove,
+  String eigeneKultur = '',
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
@@ -39,6 +50,7 @@ Future<void> showSpecialAbilityPicker({
       episch: episch,
       onAdd: onAdd,
       onRemove: onRemove,
+      eigeneKultur: eigeneKultur,
     ),
   );
 }
@@ -52,6 +64,7 @@ class _SpecialAbilityPickerScreen extends StatefulWidget {
     required this.episch,
     required this.onAdd,
     required this.onRemove,
+    required this.eigeneKultur,
   });
 
   final String title;
@@ -59,8 +72,14 @@ class _SpecialAbilityPickerScreen extends StatefulWidget {
   final Set<String> ownedNamesLower;
   final int verfuegbareAp;
   final bool episch;
-  final void Function(SpecialAbilityDef ability, int apKosten) onAdd;
+  final void Function(
+    SpecialAbilityDef ability,
+    String anzeigeName,
+    int apKosten,
+  )
+  onAdd;
   final void Function(SpecialAbilityDef ability) onRemove;
+  final String eigeneKultur;
 
   @override
   State<_SpecialAbilityPickerScreen> createState() =>
@@ -87,31 +106,20 @@ class _SpecialAbilityPickerScreenState
     super.dispose();
   }
 
-  bool _isOwned(SpecialAbilityDef ability) =>
-      _ownedNamesLower.contains(ability.name.trim().toLowerCase());
+  bool _isOwned(SpecialAbilityDef ability) {
+    if (ability.mehrfachwaehlbar) {
+      return _ownedCount(ability) > 0;
+    }
+    return _ownedNamesLower.contains(ability.name.trim().toLowerCase());
+  }
+
+  /// Anzahl bereits eingetragener Instanzen einer mehrfach waehlbaren SF.
+  int _ownedCount(SpecialAbilityDef ability) =>
+      countOwnedVariants(_ownedNamesLower, ability.name);
 
   Future<void> _toggle(SpecialAbilityDef ability, bool value) async {
     if (value) {
-      final result = await showErwerbDialog(
-        context: context,
-        bezeichnung: ability.name,
-        kostenHinweis: ability.kosten,
-        vorgeschlageneApKosten: parseLeadingApAmount(ability.kosten),
-        verfuegbareAp: _verfuegbareAp,
-        episch: widget.episch,
-        epischerInhalt: ability.nurEpisch,
-      );
-      if (result == null) {
-        return;
-      }
-      widget.onAdd(ability, result.apKosten);
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _ownedNamesLower.add(ability.name.trim().toLowerCase());
-        _verfuegbareAp -= result.apKosten;
-      });
+      await _acquire(ability);
     } else {
       widget.onRemove(ability);
       if (!mounted) {
@@ -121,6 +129,52 @@ class _SpecialAbilityPickerScreenState
         _ownedNamesLower.remove(ability.name.trim().toLowerCase());
       });
     }
+  }
+
+  /// Fuehrt Variantenauswahl (falls noetig) und Erwerbsdialog aus und meldet
+  /// das Ergebnis an den Aufrufer.
+  Future<void> _acquire(SpecialAbilityDef ability) async {
+    var variante = '';
+    if (ability.mehrfachwaehlbar) {
+      final selection = await showAdaptiveInputDialog<String>(
+        context: context,
+        builder: (_) => _VariantSelectionDialog(
+          ability: ability,
+          bereitsBelegt: ownedVariantsFor(_ownedNamesLower, ability.name),
+        ),
+      );
+      if (selection == null || selection.trim().isEmpty || !mounted) {
+        return;
+      }
+      variante = selection.trim();
+    }
+
+    final anzeigeName = buildVariantAbilityName(ability.name, variante);
+    final result = await showErwerbDialog(
+      context: context,
+      bezeichnung: anzeigeName,
+      kostenHinweis: ability.kosten,
+      vorgeschlageneApKosten: suggestVariantApCost(
+        def: ability,
+        bereitsErworben: _ownedCount(ability),
+        variante: variante,
+        eigeneKultur: widget.eigeneKultur,
+      ),
+      verfuegbareAp: _verfuegbareAp,
+      episch: widget.episch,
+      epischerInhalt: ability.nurEpisch,
+    );
+    if (result == null) {
+      return;
+    }
+    widget.onAdd(ability, anzeigeName, result.apKosten);
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _ownedNamesLower.add(anzeigeName.trim().toLowerCase());
+      _verfuegbareAp -= result.apKosten;
+    });
   }
 
   void _showDetails(SpecialAbilityDef ability) {
@@ -214,7 +268,11 @@ class _SpecialAbilityPickerScreenState
                   beschreibung: ability.beschreibung,
                   isOwned: _isOwned(ability),
                   isEpic: ability.nurEpisch,
+                  variantCount: ability.mehrfachwaehlbar
+                      ? _ownedCount(ability)
+                      : null,
                   onToggle: (value) => _toggle(ability, value),
+                  onAddVariant: () => _acquire(ability),
                   onNameTap: () => _showDetails(ability),
                 ),
               );
@@ -325,6 +383,11 @@ class _SpecialAbilityDetailsDialog extends StatelessWidget {
 /// Kompaktes Chip-Widget fuer eine allgemeine/karmale/magische SF im Picker.
 /// Name ist tappbar und oeffnet einen Detail-Dialog; der Switch schaltet die
 /// Zugehoerigkeit zum Helden an/aus (loest bei Aktivierung den Erwerbsdialog aus).
+///
+/// Ist [variantCount] gesetzt, handelt es sich um eine mehrfach waehlbare SF:
+/// Statt des Switches erscheint ein Hinzufuegen-Button mit Zaehler, weil ein
+/// An/Aus-Schalter bei mehreren Instanzen mehrdeutig waere. Entfernt werden
+/// einzelne Instanzen in der Sonderfertigkeiten-Liste des jeweiligen Tabs.
 class _SpecialAbilityChip extends StatelessWidget {
   const _SpecialAbilityChip({
     required this.name,
@@ -333,6 +396,8 @@ class _SpecialAbilityChip extends StatelessWidget {
     required this.isEpic,
     required this.onToggle,
     required this.onNameTap,
+    this.variantCount,
+    this.onAddVariant,
   });
 
   final String name;
@@ -341,6 +406,12 @@ class _SpecialAbilityChip extends StatelessWidget {
   final bool isEpic;
   final ValueChanged<bool> onToggle;
   final VoidCallback onNameTap;
+
+  /// Anzahl bereits erworbener Varianten, oder `null` bei einfachen SF.
+  final int? variantCount;
+
+  /// Wird bei mehrfach waehlbaren SF fuer einen weiteren Erwerb aufgerufen.
+  final VoidCallback? onAddVariant;
 
   static const _epicColor = Color(0xFFB8860B); // goldenrod
 
@@ -415,13 +486,163 @@ class _SpecialAbilityChip extends StatelessWidget {
               ],
             ),
           ),
-          Switch(
-            value: isOwned,
-            onChanged: onToggle,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
+          if (variantCount == null)
+            Switch(
+              value: isOwned,
+              onChanged: onToggle,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            )
+          else ...[
+            if (variantCount! > 0)
+              Text(
+                '$variantCount×',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            IconButton(
+              key: ValueKey<String>('sf-add-variant-$name'),
+              icon: const Icon(Icons.add_circle_outline, size: 20),
+              tooltip: 'Weitere Auswahl erwerben',
+              visualDensity: VisualDensity.compact,
+              onPressed: onAddVariant,
+            ),
+          ],
         ],
       ),
+    );
+  }
+}
+
+/// Dialog zur Auswahl der Variante einer mehrfach waehlbaren Sonderfertigkeit
+/// (Kultur, Gelaende, Ort, Klima, Geheimwissen).
+///
+/// Zeigt die katalogisierten Vorschlaege als Dropdown und — sofern der Katalog
+/// es erlaubt — zusaetzlich ein Freitextfeld. Bereits belegte Varianten werden
+/// ausgeblendet.
+class _VariantSelectionDialog extends StatefulWidget {
+  const _VariantSelectionDialog({
+    required this.ability,
+    required this.bereitsBelegt,
+  });
+
+  final SpecialAbilityDef ability;
+  final Set<String> bereitsBelegt;
+
+  @override
+  State<_VariantSelectionDialog> createState() =>
+      _VariantSelectionDialogState();
+}
+
+class _VariantSelectionDialogState extends State<_VariantSelectionDialog> {
+  static const _freeTextValue = '__freitext__';
+
+  late final List<String> _options;
+  late final TextEditingController _freeTextController;
+  String? _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    final belegt = widget.bereitsBelegt
+        .map((entry) => entry.trim().toLowerCase())
+        .toSet();
+    _options = widget.ability.varianten
+        .where((option) => !belegt.contains(option.trim().toLowerCase()))
+        .toList(growable: false);
+    _freeTextController = TextEditingController();
+    _selected = _options.isEmpty && widget.ability.variantenFreitext
+        ? _freeTextValue
+        : null;
+  }
+
+  /// Alle Katalogoptionen sind belegt und Freitext ist nicht erlaubt —
+  /// es gibt nichts mehr zu erwerben.
+  bool get _isExhausted =>
+      _options.isEmpty && !widget.ability.variantenFreitext;
+
+  @override
+  void dispose() {
+    _freeTextController.dispose();
+    super.dispose();
+  }
+
+  bool get _isFreeText => _selected == _freeTextValue;
+
+  String get _resolvedVariant =>
+      _isFreeText ? _freeTextController.text.trim() : (_selected ?? '').trim();
+
+  String get _label => widget.ability.variantenLabel.trim().isEmpty
+      ? 'Auswahl'
+      : widget.ability.variantenLabel.trim();
+
+  @override
+  Widget build(BuildContext context) {
+    final allowsFreeText = widget.ability.variantenFreitext;
+    return AdaptiveInputDialog(
+      title: '${widget.ability.name}: $_label wählen',
+      maxWidth: kDialogWidthSmall,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_isExhausted)
+            Text(
+              'Alle Auswahlmöglichkeiten sind bereits erworben.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          if (_options.isNotEmpty)
+            DropdownButtonFormField<String>(
+              key: const ValueKey<String>('sf-variant-dropdown'),
+              initialValue: _selected,
+              isExpanded: true,
+              decoration: InputDecoration(
+                labelText: _label,
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+              items: [
+                for (final option in _options)
+                  DropdownMenuItem<String>(
+                    value: option,
+                    child: Text(option, overflow: TextOverflow.ellipsis),
+                  ),
+                if (allowsFreeText)
+                  const DropdownMenuItem<String>(
+                    value: _freeTextValue,
+                    child: Text('Eigene Eingabe…'),
+                  ),
+              ],
+              onChanged: (value) => setState(() => _selected = value),
+            ),
+          if (_options.isNotEmpty && _isFreeText) const SizedBox(height: 12),
+          if (_isFreeText)
+            TextField(
+              key: const ValueKey<String>('sf-variant-freetext'),
+              controller: _freeTextController,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: _label,
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        FilledButton(
+          onPressed: _resolvedVariant.isEmpty
+              ? null
+              : () => Navigator.of(context).pop(_resolvedVariant),
+          child: const Text('Weiter'),
+        ),
+      ],
     );
   }
 }
