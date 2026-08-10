@@ -85,11 +85,11 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
       ownedNamesLower: owned,
       verfuegbareAp: verfuegbareAp,
       episch: episch,
-      onAdd: (ability, apKosten) {
+      onAdd: (ability, anzeigeName, apKosten) {
         final updated = List<MagicSpecialAbility>.from(abilities)
           ..add(
             MagicSpecialAbility(
-              name: ability.name,
+              name: anzeigeName,
               beschreibung: ability.beschreibung,
             ),
           );

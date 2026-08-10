@@ -689,6 +689,31 @@ Vorhandensein von `hero` und `state`. Wirft `FormatException` bei Validierungsfe
 | `reisebericht` | `List<ReiseberichtDef>` | Separater Reisebericht-Katalog |
 | `metadata` | `Map<String, dynamic>` | Weitere Metadaten |
 
+#### Mehrfach erwerbbare Sonderfertigkeiten mit Auswahl
+
+Einige allgemeine Sonderfertigkeiten werden laut Regelwerk mehrfach mit
+jeweils einer anderen Auswahl erworben — Kulturkunde je Kultur, Gelaendekunde
+je Gelaendetyp, Ortskenntnis je Oertlichkeit, Akklimatisierung je Klima,
+Berufsgeheimnis je Geheimwissen. `SpecialAbilityDef`
+(`lib/catalog/special_ability_def.dart`) traegt dafuer optionale Felder:
+
+| Feld | JSON | Inhalt |
+|---|---|---|
+| `mehrfachwaehlbar` | `mehrfachwaehlbar` | SF darf mehrfach erworben werden |
+| `variantenLabel` | `varianten_label` | Feldbeschriftung im Dialog, z. B. `Kultur` |
+| `varianten` | `varianten` | Katalogisierte Auswahlvorschlaege (darf leer sein) |
+| `variantenFreitext` | `varianten_freitext` | Freie Eingabe erlaubt (Default `true`) |
+| `apErstwerb` | `ap_erstwerb` | AP-Vorschlag fuer den ersten Erwerb |
+| `apFolgeerwerb` | `ap_folgeerwerb` | AP-Vorschlag fuer jeden weiteren Erwerb |
+
+Fehlen die Felder, verhaelt sich die SF wie bisher (einmaliger An/Aus-Erwerb,
+AP-Vorschlag aus `parseLeadingApAmount(kosten)`). Jede erworbene Instanz wird
+als eigener Eintrag im Format `Basisname (Variante)` gespeichert —
+`Kulturkunde (Novadi)`. Aufbau, Zerlegung und der gestaffelte AP-Vorschlag
+liegen in `lib/rules/derived/special_ability_variant_rules.dart`;
+`matchCatalogSpecialAbility` faellt fuer solche Namen auf den Basisnamen
+zurueck, damit Kostenhinweis und Detailansicht weiter greifen.
+
 Seit 2026-03-29 wird der Asset-Katalog intern zunaechst als
 `CatalogSourceData` geladen. Danach kombiniert `CatalogRuntimeData` die
 Basisdaten mit konfliktfreien Custom-Dateien aus dem aktiven Heldenspeicher.
