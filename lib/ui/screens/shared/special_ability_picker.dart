@@ -535,10 +535,19 @@ class _VariantSelectionDialog extends StatefulWidget {
       _VariantSelectionDialogState();
 }
 
+/// Eine waehlbare Variante samt ihrem Gruppenpreis (falls vorhanden).
+class _VariantOption {
+  const _VariantOption({required this.name, this.ap, this.gruppe = ''});
+
+  final String name;
+  final int? ap;
+  final String gruppe;
+}
+
 class _VariantSelectionDialogState extends State<_VariantSelectionDialog> {
   static const _freeTextValue = '__freitext__';
 
-  late final List<String> _options;
+  late final List<_VariantOption> _options;
   late final TextEditingController _freeTextController;
   String? _selected;
 
@@ -548,11 +557,25 @@ class _VariantSelectionDialogState extends State<_VariantSelectionDialog> {
     final belegt = widget.bereitsBelegt
         .map((entry) => entry.trim().toLowerCase())
         .toSet();
-    _options = widget.ability.varianten
-        .where((option) => !belegt.contains(option.trim().toLowerCase()))
-        .toList(growable: false);
+    final ability = widget.ability;
+    final options = <_VariantOption>[];
+    for (final name in ability.varianten) {
+      options.add(_VariantOption(name: name));
+    }
+    for (final gruppe in ability.variantenGruppen) {
+      for (final name in gruppe.varianten) {
+        options.add(
+          _VariantOption(name: name, ap: gruppe.ap, gruppe: gruppe.label),
+        );
+      }
+    }
+    final seen = <String>{};
+    _options = options.where((option) {
+      final key = option.name.trim().toLowerCase();
+      return !belegt.contains(key) && seen.add(key);
+    }).toList(growable: false);
     _freeTextController = TextEditingController();
-    _selected = _options.isEmpty && widget.ability.variantenFreitext
+    _selected = _options.isEmpty && ability.variantenFreitext
         ? _freeTextValue
         : null;
   }
@@ -605,8 +628,25 @@ class _VariantSelectionDialogState extends State<_VariantSelectionDialog> {
               items: [
                 for (final option in _options)
                   DropdownMenuItem<String>(
-                    value: option,
-                    child: Text(option, overflow: TextOverflow.ellipsis),
+                    value: option.name,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            option.name,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (option.ap != null) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            '${option.ap} AP',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: Theme.of(context).hintColor),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 if (allowsFreeText)
                   const DropdownMenuItem<String>(

@@ -122,6 +122,10 @@ Set<String> ownedVariantsFor(Iterable<String> ownedNames, String basisName) {
 /// [eigeneKultur] ermoeglicht den Regelfall "Kulturkunde der eigenen Kultur
 /// ist kostenlos"; der Abgleich ist ein Best-effort-Textvergleich mit
 /// `hero.background.kultur`.
+///
+/// Liegt die Variante in einer Kostengruppe (Merkmalsstufe, Ritualpreis),
+/// schlaegt deren Preis die Erst-/Folgeerwerb-Staffelung: Diese Kosten haengen
+/// laut Regelwerk an der Auswahl selbst, nicht an der Reihenfolge des Erwerbs.
 int suggestVariantApCost({
   required SpecialAbilityDef def,
   required int bereitsErworben,
@@ -131,11 +135,35 @@ int suggestVariantApCost({
   if (_matchesOwnCulture(variante, eigeneKultur)) {
     return 0;
   }
+  final gruppe = variantGroupFor(def, variante);
+  if (gruppe != null) {
+    return gruppe.ap;
+  }
   final fallback = parseLeadingApAmount(def.kosten) ?? 0;
   if (bereitsErworben <= 0) {
     return def.apErstwerb ?? fallback;
   }
   return def.apFolgeerwerb ?? def.apErstwerb ?? fallback;
+}
+
+/// Sucht die Kostengruppe, in der [variante] liegt. `null`, wenn die Variante
+/// aus der flachen Liste stammt, frei eingegeben wurde oder leer ist.
+SpecialAbilityVariantGroup? variantGroupFor(
+  SpecialAbilityDef def,
+  String variante,
+) {
+  final needle = normalizeSpecialAbilityName(variante);
+  if (needle.isEmpty) {
+    return null;
+  }
+  for (final gruppe in def.variantenGruppen) {
+    for (final kandidat in gruppe.varianten) {
+      if (normalizeSpecialAbilityName(kandidat) == needle) {
+        return gruppe;
+      }
+    }
+  }
+  return null;
 }
 
 bool _matchesOwnCulture(String variante, String eigeneKultur) {

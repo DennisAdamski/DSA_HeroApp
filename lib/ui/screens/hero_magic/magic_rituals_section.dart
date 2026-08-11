@@ -9,6 +9,9 @@ class _MagicRitualsSection extends StatelessWidget {
     required this.isEditing,
     required this.onChanged,
     this.onEnsureEditing,
+    this.verfuegbareAp = 0,
+    this.episch = false,
+    this.onApKostenBestaetigt,
   });
 
   final List<HeroRitualCategory> ritualCategories;
@@ -17,6 +20,11 @@ class _MagicRitualsSection extends StatelessWidget {
   final bool isEditing;
   final void Function(List<HeroRitualCategory>) onChanged;
   final Future<void> Function()? onEnsureEditing;
+  final int verfuegbareAp;
+  final bool episch;
+
+  /// Wird nach einem bestaetigten Erwerbsdialog aufgerufen.
+  final ValueChanged<int>? onApKostenBestaetigt;
 
   Future<void> _addCategory(BuildContext context) async {
     await onEnsureEditing?.call();
@@ -30,7 +38,27 @@ class _MagicRitualsSection extends StatelessWidget {
     if (created == null) {
       return;
     }
-    onChanged(normalizeRitualCategories([...ritualCategories, created]));
+    if (created.fremdeTradition && context.mounted) {
+      final erwerb = await showErwerbDialog(
+        context: context,
+        bezeichnung: 'Ritualkenntnis ${created.category.name}',
+        kostenHinweis:
+            'Aktivierungskosten einer fremden Tradition; erfordert '
+            'meisterliche Erlaubnis (Wege der Helden S. 290)',
+        vorgeschlageneApKosten: kRitualkenntnisFremdeTraditionAp,
+        verfuegbareAp: verfuegbareAp,
+        episch: episch,
+      );
+      if (erwerb == null) {
+        return;
+      }
+      if (erwerb.apKosten > 0) {
+        onApKostenBestaetigt?.call(erwerb.apKosten);
+      }
+    }
+    onChanged(
+      normalizeRitualCategories([...ritualCategories, created.category]),
+    );
   }
 
   Future<void> _editCategory(
@@ -47,7 +75,7 @@ class _MagicRitualsSection extends StatelessWidget {
       return;
     }
     final updated = List<HeroRitualCategory>.from(ritualCategories);
-    updated[categoryIndex] = updatedCategory;
+    updated[categoryIndex] = updatedCategory.category;
     onChanged(normalizeRitualCategories(updated));
   }
 

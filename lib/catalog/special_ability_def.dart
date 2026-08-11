@@ -1,6 +1,44 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 import 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
 
+/// Gruppe von Auswahlvarianten mit gemeinsamen AP-Kosten.
+///
+/// Manche Sonderfertigkeiten kosten je Variante unterschiedlich viel, statt
+/// nach Anzahl gestaffelt zu sein: Merkmalsgrossmeister richtet sich nach der
+/// Merkmalsklassifikation (I/II/III), die Traditionsrituale haben je Ritual
+/// einen eigenen Preis. Das [label] beschreibt die Gruppe im Auswahldialog —
+/// bei den Merkmalen die Regelwerks-Stufe, bei den Ritualen schlicht der Preis.
+class SpecialAbilityVariantGroup {
+  const SpecialAbilityVariantGroup({
+    required this.label,
+    required this.ap,
+    this.varianten = const <String>[],
+  });
+
+  /// Anzeigename der Gruppe, z. B. `Stufe II` oder `150 AP`.
+  final String label;
+
+  /// AP-Kosten fuer jede Variante dieser Gruppe.
+  final int ap;
+
+  /// Die Varianten dieser Gruppe.
+  final List<String> varianten;
+
+  /// Liest eine Gruppe tolerant aus JSON.
+  factory SpecialAbilityVariantGroup.fromJson(Map<String, dynamic> json) {
+    return SpecialAbilityVariantGroup(
+      label: readCatalogString(json, 'label', fallback: ''),
+      ap: readCatalogInt(json, 'ap', fallback: 0),
+      varianten: readCatalogStringList(json, 'varianten'),
+    );
+  }
+
+  /// Serialisiert die Gruppe in ein JSON-kompatibles Map.
+  Map<String, dynamic> toJson() {
+    return {'label': label, 'ap': ap, 'varianten': varianten};
+  }
+}
+
 /// Definition einer Sonderfertigkeit (allgemein, magisch oder karmal)
 /// aus dem Regelkatalog.
 ///
@@ -26,6 +64,7 @@ class SpecialAbilityDef {
     this.mehrfachwaehlbar = false,
     this.variantenLabel = '',
     this.varianten = const <String>[],
+    this.variantenGruppen = const <SpecialAbilityVariantGroup>[],
     this.variantenFreitext = true,
     this.apErstwerb,
     this.apFolgeerwerb,
@@ -58,6 +97,10 @@ class SpecialAbilityDef {
   /// wenn es keine feste Liste gibt (z. B. Ortskenntnis).
   final List<String> varianten;
 
+  /// Auswahlvarianten mit gruppenspezifischen AP-Kosten. Ergaenzt [varianten];
+  /// beide Quellen zusammen liefert [alleVarianten].
+  final List<SpecialAbilityVariantGroup> variantenGruppen;
+
   /// Ob zusaetzlich zur Liste eine freie Eingabe erlaubt ist.
   final bool variantenFreitext;
 
@@ -69,6 +112,22 @@ class SpecialAbilityDef {
   final int? apFolgeerwerb;
 
   final RuleMeta? ruleMeta; // Strukturierte Herkunfts- und Freischaltmetadaten
+
+  /// Alle waehlbaren Varianten — flache Liste plus alle Gruppen, in dieser
+  /// Reihenfolge und ohne Duplikate.
+  List<String> get alleVarianten {
+    final result = <String>[];
+    final seen = <String>{};
+    for (final variante in [
+      ...varianten,
+      for (final gruppe in variantenGruppen) ...gruppe.varianten,
+    ]) {
+      if (seen.add(variante.trim().toLowerCase())) {
+        result.add(variante);
+      }
+    }
+    return List<String>.unmodifiable(result);
+  }
 
   /// Deserialisiert die Sonderfertigkeit tolerant aus JSON.
   factory SpecialAbilityDef.fromJson(Map<String, dynamic> json) {
@@ -99,6 +158,9 @@ class SpecialAbilityDef {
         fallback: '',
       ),
       varianten: readCatalogStringList(json, 'varianten'),
+      variantenGruppen: readCatalogObjectList(json, 'varianten_gruppen')
+          .map(SpecialAbilityVariantGroup.fromJson)
+          .toList(growable: false),
       variantenFreitext: readCatalogBool(
         json,
         'varianten_freitext',
@@ -130,6 +192,10 @@ class SpecialAbilityDef {
       if (mehrfachwaehlbar) 'mehrfachwaehlbar': true,
       if (variantenLabel.isNotEmpty) 'varianten_label': variantenLabel,
       if (varianten.isNotEmpty) 'varianten': varianten,
+      if (variantenGruppen.isNotEmpty)
+        'varianten_gruppen': variantenGruppen
+            .map((gruppe) => gruppe.toJson())
+            .toList(growable: false),
       if (!variantenFreitext) 'varianten_freitext': false,
       if (apErstwerb != null) 'ap_erstwerb': apErstwerb,
       if (apFolgeerwerb != null) 'ap_folgeerwerb': apFolgeerwerb,

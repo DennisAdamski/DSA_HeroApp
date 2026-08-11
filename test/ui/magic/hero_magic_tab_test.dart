@@ -368,6 +368,198 @@ void main() {
     },
   );
 
+  testWidgets('Merkmalskenntnis-Chip verrechnet die Klassifikationskosten', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: <HeroSheet>[buildHero().copyWith(apAvailable: 1000)],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    final opened = await openMagicTab(tester, repo: repo);
+
+    await opened.actions.startEdit();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.tap(find.text('Repr. & SF'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    // Limbus ist Klassifikation III -> 300 AP.
+    await tester.tap(find.widgetWithText(FilterChip, 'Limbus'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    expect(find.text('Merkmalskenntnis Limbus erwerben'), findsOneWidget);
+    expect(find.textContaining('Klassifikation 3: 300 AP'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await opened.actions.save();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    final savedHero = await opened.repo.loadHeroById('demo');
+    expect(savedHero?.merkmalskenntnisse, contains('Limbus'));
+    expect(savedHero?.apSpent, 300);
+  });
+
+  testWidgets('abgebrochener Merkmalskenntnis-Erwerb laesst den Chip aus', (
+    tester,
+  ) async {
+    final opened = await openMagicTab(tester);
+
+    await opened.actions.startEdit();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.tap(find.text('Repr. & SF'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await tester.tap(find.widgetWithText(FilterChip, 'Limbus'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.tap(find.widgetWithText(TextButton, 'Abbrechen'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await opened.actions.save();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    final savedHero = await opened.repo.loadHeroById('demo');
+    expect(savedHero?.merkmalskenntnisse, isNot(contains('Limbus')));
+    expect(savedHero?.apSpent, 0);
+  });
+
+  testWidgets('Repraesentations-Chip schlaegt den Vollzauberer-Preis vor', (
+    tester,
+  ) async {
+    // Held hat bereits drei Repraesentationen -> die vierte hat keinen
+    // Regelpreis mehr, also faellt der Vorschlag auf 0 und der Hinweis warnt.
+    final repo = FakeRepository(
+      heroes: <HeroSheet>[
+        buildHero(representationen: const <String>['Mag']),
+      ],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    final opened = await openMagicTab(tester, repo: repo);
+
+    await opened.actions.startEdit();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.tap(find.text('Repr. & SF'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await tester.tap(find.widgetWithText(FilterChip, 'Dru'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    expect(find.text('Repräsentation Dru erwerben'), findsOneWidget);
+    expect(
+      find.textContaining('2. Repräsentation: Vollzauberer 2000 AP'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Halbzauberer 3000 AP'), findsOneWidget);
+  });
+
+  testWidgets('Zauberspezialisierung verlangt den noetigen ZfW', (
+    tester,
+  ) async {
+    // Der Fixture-Zauber hat ZfW 8 und bereits eine Spezialisierung; fuer die
+    // zweite waeren ZfW 14 noetig.
+    final opened = await openMagicTab(tester);
+
+    await opened.actions.startEdit();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('spell-specialization-add')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.tap(
+      find.byKey(const ValueKey<String>('spell-specialization-add')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    expect(
+      find.text('Für eine weitere Spezialisierung wird ZfW 14 benötigt.'),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey<String>('spell-specialization-name')),
+        findsNothing);
+  });
+
+  testWidgets('Zauberspezialisierung wird gespeichert und kostet AP', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: <HeroSheet>[
+        buildHero().copyWith(
+          apAvailable: 1000,
+          spells: const <String, HeroSpellEntry>{
+            'spell_axxeleratus': HeroSpellEntry(
+              spellValue: 8,
+              learnedRepresentation: 'Mag',
+              learnedTradition: 'Mag',
+            ),
+          },
+        ),
+      ],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    final opened = await openMagicTab(tester, repo: repo);
+
+    await opened.actions.startEdit();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('spell-specialization-add')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.tap(
+      find.byKey(const ValueKey<String>('spell-specialization-add')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('spell-specialization-name')),
+      'Reichweite',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Weiter'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    // Zauber der Kategorie C, erste Spezialisierung: 20 * 3 * 1 = 60 AP.
+    expect(find.text('Spezialisierung: Reichweite erwerben'), findsOneWidget);
+    expect(find.textContaining('ZfW ≥ 7 nötig'), findsOneWidget);
+    expect(find.widgetWithText(TextField, '60'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await opened.actions.save();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    final savedHero = await opened.repo.loadHeroById('demo');
+    expect(
+      savedHero?.spells['spell_axxeleratus']?.specializations,
+      <String>['Reichweite'],
+    );
+    // Ohne Lehrmeister verdoppeln sich die Kosten (Wege des Schwerts S. 17),
+    // genau wie bei der Talentspezialisierung: 60 AP -> 120 AP.
+    expect(savedHero?.apSpent, 120);
+  });
+
   testWidgets('magic tab stores global lead attribute', (tester) async {
     final opened = await openMagicTab(tester);
 
@@ -403,7 +595,17 @@ void main() {
         findsOneWidget,
       );
       expect(find.byType(TextField), findsNothing);
-      expect(find.text('Heldeneintrag'), findsNothing);
+      // Die Spezialisierung des Helden steht in der Tabellenspalte "Spez.",
+      // nicht im Detaildialog.
+      expect(
+        find.descendant(
+          of: find.byKey(
+            const ValueKey<String>('magic-spell-details-dialog'),
+          ),
+          matching: find.text('Heldeneintrag'),
+        ),
+        findsNothing,
+      );
       expect(
         find.descendant(
           of: find.byKey(const ValueKey<String>('magic-spell-details-traits')),

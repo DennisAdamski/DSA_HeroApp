@@ -1,6 +1,63 @@
 [
   {
     "id": "emsf_arkane_meisterschaft",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Merkmal",
+    "varianten_gruppen": [
+      {
+        "label": "Stufe I",
+        "ap": 400,
+        "varianten": [
+          "Dämonisch (Amazeroth)",
+          "Dämonisch (Asfaloth)",
+          "Dämonisch (Blakharaz)",
+          "Dämonisch (Lolgramoth)",
+          "Dämonisch (Mishkara)",
+          "Dämonisch (Thargunitoth)",
+          "Elementar (Eis)",
+          "Elementar (Erz)",
+          "Elementar (Feuer)",
+          "Elementar (Humus)",
+          "Elementar (Luft)",
+          "Elementar (Wasser)",
+          "Geisterwesen",
+          "Heilung",
+          "Herbeirufung",
+          "Illusion",
+          "Schaden",
+          "Telekinese",
+          "Verständigung"
+        ]
+      },
+      {
+        "label": "Stufe II",
+        "ap": 550,
+        "varianten": [
+          "Antimagie",
+          "Beschwörung",
+          "Eigenschaften",
+          "Einfluss",
+          "Form",
+          "Hellsicht",
+          "Herrschaft",
+          "Kraft",
+          "Objekt",
+          "Umwelt"
+        ]
+      },
+      {
+        "label": "Stufe III",
+        "ap": 700,
+        "varianten": [
+          "Dämonisch (allgemein)",
+          "Elementar (allgemein)",
+          "Limbus",
+          "Metamagie",
+          "Temporal"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Arkane Meisterschaft",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -121,6 +178,19 @@
   },
   {
     "id": "emsf_elementaraspekt",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Element",
+    "varianten": [
+      "Eis",
+      "Erz",
+      "Feuer",
+      "Humus",
+      "Luft",
+      "Wasser"
+    ],
+    "varianten_freitext": false,
+    "ap_erstwerb": 250,
+    "ap_folgeerwerb": 250,
     "name": "Elementaraspekt",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -221,6 +291,63 @@
   },
   {
     "id": "emsf_merkmalsgrossmeister",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Merkmal",
+    "varianten_gruppen": [
+      {
+        "label": "Stufe I",
+        "ap": 600,
+        "varianten": [
+          "Dämonisch (Amazeroth)",
+          "Dämonisch (Asfaloth)",
+          "Dämonisch (Blakharaz)",
+          "Dämonisch (Lolgramoth)",
+          "Dämonisch (Mishkara)",
+          "Dämonisch (Thargunitoth)",
+          "Elementar (Eis)",
+          "Elementar (Erz)",
+          "Elementar (Feuer)",
+          "Elementar (Humus)",
+          "Elementar (Luft)",
+          "Elementar (Wasser)",
+          "Geisterwesen",
+          "Heilung",
+          "Herbeirufung",
+          "Illusion",
+          "Schaden",
+          "Telekinese",
+          "Verständigung"
+        ]
+      },
+      {
+        "label": "Stufe II",
+        "ap": 800,
+        "varianten": [
+          "Antimagie",
+          "Beschwörung",
+          "Eigenschaften",
+          "Einfluss",
+          "Form",
+          "Hellsicht",
+          "Herrschaft",
+          "Kraft",
+          "Objekt",
+          "Umwelt"
+        ]
+      },
+      {
+        "label": "Stufe III",
+        "ap": 1000,
+        "varianten": [
+          "Dämonisch (allgemein)",
+          "Elementar (allgemein)",
+          "Limbus",
+          "Metamagie",
+          "Temporal"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Merkmalsgroßmeister",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -409,6 +536,37 @@
   },
   {
     "id": "magsf_bann_und_schutzkreise",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Kreis",
+    "varianten_gruppen": [
+      {
+        "label": "25 AP",
+        "ap": 25,
+        "varianten": [
+          "Bann- und Schutzkreis gegen Geisterwesen",
+          "Schutzkreis gegen Ungeziefer",
+          "Schutzkreis gegen Reptilien"
+        ]
+      },
+      {
+        "label": "50 AP",
+        "ap": 50,
+        "varianten": [
+          "Bann- und Schutzkreis gegen Niedere Dämonen",
+          "Schutzkreis gegen Traumgänger"
+        ]
+      },
+      {
+        "label": "75 AP",
+        "ap": 75,
+        "varianten": [
+          "Bann- und Schutzkreis gegen Elementare",
+          "Bann- und Schutzkreis gegen Gehörnte Dämonen",
+          "Bannkreis gegen Chimären"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Bann- und Schutzkreise",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -521,6 +679,53 @@
   },
   {
     "id": "magsf_druidische_dolchrituale",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Dolchritual",
+    "varianten_gruppen": [
+      {
+        "label": "25 AP",
+        "ap": 25,
+        "varianten": [
+          "Gespür",
+          "Leib",
+          "Weg",
+          "Ernte"
+        ]
+      },
+      {
+        "label": "50 AP",
+        "ap": 50,
+        "varianten": [
+          "Licht",
+          "Weisung"
+        ]
+      },
+      {
+        "label": "75 AP",
+        "ap": 75,
+        "varianten": [
+          "Schutz"
+        ]
+      },
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Weihe",
+          "Bann",
+          "Lebenskraft",
+          "Opferdolch"
+        ]
+      },
+      {
+        "label": "150 AP",
+        "ap": 150,
+        "varianten": [
+          "Schneide"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Druidische Dolchrituale (OR)*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -537,6 +742,34 @@
   },
   {
     "id": "magsf_druidische_herrschaftsrituale",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Herrschaftsritual",
+    "varianten_gruppen": [
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Wachs der Herrschaft",
+          "Wurzel des Blutes"
+        ]
+      },
+      {
+        "label": "150 AP",
+        "ap": 150,
+        "varianten": [
+          "Miniatur der Herrschaft",
+          "Kristall der Herrschaft"
+        ]
+      },
+      {
+        "label": "200 AP",
+        "ap": 200,
+        "varianten": [
+          "Amulett der Herrschaft"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Druidische Herrschaftsrituale",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -553,6 +786,51 @@
   },
   {
     "id": "magsf_elfenlieder",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Elfenlied",
+    "varianten_gruppen": [
+      {
+        "label": "50 AP",
+        "ap": 50,
+        "varianten": [
+          "Freundschaftslied"
+        ]
+      },
+      {
+        "label": "75 AP",
+        "ap": 75,
+        "varianten": [
+          "Sorgenlied"
+        ]
+      },
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Windgeflüster"
+        ]
+      },
+      {
+        "label": "150 AP",
+        "ap": 150,
+        "varianten": [
+          "Zaubermelodie",
+          "Lied der Lieder",
+          "Erinnerungsmelodie",
+          "Lied des Trostes",
+          "Lied der Reinheit"
+        ]
+      },
+      {
+        "label": "250 AP",
+        "ap": 250,
+        "varianten": [
+          "Friedenslied",
+          "Melodie der Kunstfertigkeit"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Elfenlieder*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -713,6 +991,57 @@
   },
   {
     "id": "magsf_hexenfluesche",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Hexenfluch",
+    "varianten_gruppen": [
+      {
+        "label": "50 AP",
+        "ap": 50,
+        "varianten": [
+          "Unfruchtbarkeit",
+          "Warzen sprießen",
+          "Zunge lähmen"
+        ]
+      },
+      {
+        "label": "75 AP",
+        "ap": 75,
+        "varianten": [
+          "Ängste mehren",
+          "Beute",
+          "Hexenschuss",
+          "Viehverstümmelung"
+        ]
+      },
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Krötenkuss",
+          "Mit Blindheit schlagen",
+          "Pech an den Hals",
+          "Pestilenz",
+          "Schlaf rauben",
+          "Todesfluch"
+        ]
+      },
+      {
+        "label": "125 AP",
+        "ap": 125,
+        "varianten": [
+          "Kornfäule"
+        ]
+      },
+      {
+        "label": "150 AP",
+        "ap": 150,
+        "varianten": [
+          "Beiß auf Granit",
+          "Hagelschlag"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Hexenflüche*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -729,6 +1058,18 @@
   },
   {
     "id": "magsf_geodenrituale",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Ritual",
+    "varianten_gruppen": [
+      {
+        "label": "250 AP",
+        "ap": 250,
+        "varianten": [
+          "Gestalt aus Rauch"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Geodenrituale*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -809,6 +1150,52 @@
   },
   {
     "id": "magsf_keulenrituale",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Keulenritual",
+    "varianten_gruppen": [
+      {
+        "label": "50 AP",
+        "ap": 50,
+        "varianten": [
+          "Härte der Keule"
+        ]
+      },
+      {
+        "label": "75 AP",
+        "ap": 75,
+        "varianten": [
+          "Kraft der Keule"
+        ]
+      },
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Weihe der Keule",
+          "Opferkeule",
+          "Gespür der Keule",
+          "Hilfe der Keule",
+          "Nähe zur Natur",
+          "Zauber der Keule"
+        ]
+      },
+      {
+        "label": "150 AP",
+        "ap": 150,
+        "varianten": [
+          "Bann der Keule"
+        ]
+      },
+      {
+        "label": "200 AP",
+        "ap": 200,
+        "varianten": [
+          "Geist der Keule",
+          "Apport der Keule"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Keulenrituale (OR)*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -873,6 +1260,47 @@
   },
   {
     "id": "magsf_kristallomantische_rituale",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Ritual",
+    "varianten_gruppen": [
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Kristallbindung"
+        ]
+      },
+      {
+        "label": "150 AP",
+        "ap": 150,
+        "varianten": [
+          "Kristallkraft Bündeln"
+        ]
+      },
+      {
+        "label": "200 AP",
+        "ap": 200,
+        "varianten": [
+          "Matrixkristall"
+        ]
+      },
+      {
+        "label": "250 AP",
+        "ap": 250,
+        "varianten": [
+          "Kristallformung",
+          "Thesiskristall"
+        ]
+      },
+      {
+        "label": "300 AP",
+        "ap": 300,
+        "varianten": [
+          "Madakristall"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Kristallomantische Rituale (OR)*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -921,6 +1349,54 @@
   },
   {
     "id": "magsf_kugelzauber",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Kugelzauber",
+    "varianten_gruppen": [
+      {
+        "label": "50 AP",
+        "ap": 50,
+        "varianten": [
+          "Brennglas und Prisma",
+          "Bilderspiel"
+        ]
+      },
+      {
+        "label": "75 AP",
+        "ap": 75,
+        "varianten": [
+          "Bildergalerie",
+          "H'Szints Auge"
+        ]
+      },
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Bindung",
+          "Warnendes Leuchten",
+          "Orbitarium"
+        ]
+      },
+      {
+        "label": "150 AP",
+        "ap": 150,
+        "varianten": [
+          "Schutz gegen Untote",
+          "Kugel des Hellsehers",
+          "Fernbild",
+          "Farben des Geistes"
+        ]
+      },
+      {
+        "label": "200 AP",
+        "ap": 200,
+        "varianten": [
+          "Kugel des Illusionisten",
+          "Wachendes Auge"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Kugelzauber (OR)*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -1113,6 +1589,34 @@
   },
   {
     "id": "magsf_oduen_gaben",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Odún-Gabe",
+    "varianten_gruppen": [
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Hauch des Odûn",
+          "Ruf des Odûn"
+        ]
+      },
+      {
+        "label": "200 AP",
+        "ap": 200,
+        "varianten": [
+          "Haut des Odûn",
+          "Blut des Odûn"
+        ]
+      },
+      {
+        "label": "300 AP",
+        "ap": 300,
+        "varianten": [
+          "Seele des Odûn"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Odûn-Gaben (V)*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -1241,6 +1745,41 @@
   },
   {
     "id": "magsf_schalenzauber",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Schalenzauber",
+    "varianten_gruppen": [
+      {
+        "label": "75 AP",
+        "ap": 75,
+        "varianten": [
+          "Mandricons Bindung"
+        ]
+      },
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Weihe der Schale",
+          "Chymische Hochzeit"
+        ]
+      },
+      {
+        "label": "125 AP",
+        "ap": 125,
+        "varianten": [
+          "Allegorische Analyse",
+          "Transmutation der Elemente"
+        ]
+      },
+      {
+        "label": "150 AP",
+        "ap": 150,
+        "varianten": [
+          "Feuer und Eis"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Schalenzauber (OR)*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -1289,6 +1828,52 @@
   },
   {
     "id": "magsf_schlangenring_zauber",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Schlangenring-Zauber",
+    "varianten_gruppen": [
+      {
+        "label": "75 AP",
+        "ap": 75,
+        "varianten": [
+          "Wasserbann"
+        ]
+      },
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Weihe der Schlange",
+          "Macht über den Regen",
+          "Kräfte der Natur",
+          "Wirbelnder Luftschild"
+        ]
+      },
+      {
+        "label": "150 AP",
+        "ap": 150,
+        "varianten": [
+          "Magnetismus",
+          "Herr der Flammen",
+          "Macht des Lebens"
+        ]
+      },
+      {
+        "label": "200 AP",
+        "ap": 200,
+        "varianten": [
+          "Seelenfeuer",
+          "Weg durch Sumus Leib"
+        ]
+      },
+      {
+        "label": "250 AP",
+        "ap": 250,
+        "varianten": [
+          "Launen des Windes"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Schlangenring-Zauber (OR)*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -1321,6 +1906,26 @@
   },
   {
     "id": "magsf_schuppenbeutel",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Ritual",
+    "varianten_gruppen": [
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Bindung des Schuppenbeutels",
+          "Suchende Finger"
+        ]
+      },
+      {
+        "label": "200 AP",
+        "ap": 200,
+        "varianten": [
+          "Ewige Wegzehrung"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Schuppenbeutel (OR)*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -1369,6 +1974,58 @@
   },
   {
     "id": "magsf_stabzauber",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Stabzauber",
+    "varianten_gruppen": [
+      {
+        "label": "50 AP",
+        "ap": 50,
+        "varianten": [
+          "Stabverlängerung"
+        ]
+      },
+      {
+        "label": "75 AP",
+        "ap": 75,
+        "varianten": [
+          "Ewige Flamme"
+        ]
+      },
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Bindung"
+        ]
+      },
+      {
+        "label": "150 AP",
+        "ap": 150,
+        "varianten": [
+          "Seil des Adepten",
+          "Hammerschlag",
+          "Kraftfokus",
+          "Merkmalsfokus"
+        ]
+      },
+      {
+        "label": "200 AP",
+        "ap": 200,
+        "varianten": [
+          "Modifikationsfokus",
+          "Zauberspeicher"
+        ]
+      },
+      {
+        "label": "300 AP",
+        "ap": 300,
+        "varianten": [
+          "Flammenschwert",
+          "Schuppenhaut"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Stabzauber (OR)*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -1481,6 +2138,40 @@
   },
   {
     "id": "magsf_trommelzauber",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Trommelzauber",
+    "varianten_gruppen": [
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Sturm der Wüste"
+        ]
+      },
+      {
+        "label": "150 AP",
+        "ap": 150,
+        "varianten": [
+          "Rastullahs Güte"
+        ]
+      },
+      {
+        "label": "200 AP",
+        "ap": 200,
+        "varianten": [
+          "Ruf des Krieges",
+          "Schutz Rastullahs"
+        ]
+      },
+      {
+        "label": "250 AP",
+        "ap": 250,
+        "varianten": [
+          "Zorn des Gottgefälligen"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Trommelzauber",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -1625,6 +2316,50 @@
   },
   {
     "id": "magsf_zaubertaenze",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Zaubertanz",
+    "varianten_gruppen": [
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Tanz der Liebe",
+          "Tanz der Wahrheit",
+          "Tanz der Bilder",
+          "Tanz der Gemeinschaft",
+          "Firuns Jagd"
+        ]
+      },
+      {
+        "label": "150 AP",
+        "ap": 150,
+        "varianten": [
+          "Tanz der Erlösung",
+          "Tanz des Ungehorsams",
+          "Tanz der Weisheit",
+          "Selinata",
+          "Rahjas Begehren"
+        ]
+      },
+      {
+        "label": "200 AP",
+        "ap": 200,
+        "varianten": [
+          "Tanz der Ermutigung",
+          "Tanz ohne Ende",
+          "Tanz der Unantastbarkeit"
+        ]
+      },
+      {
+        "label": "250 AP",
+        "ap": 250,
+        "varianten": [
+          "Tanz der Freude",
+          "Madayana"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Zaubertänze*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
@@ -1641,6 +2376,61 @@
   },
   {
     "id": "magsf_zibilja_rituale",
+    "mehrfachwaehlbar": true,
+    "varianten_label": "Ritual",
+    "varianten_gruppen": [
+      {
+        "label": "50 AP",
+        "ap": 50,
+        "varianten": [
+          "Winterlager",
+          "Bienenfleiß"
+        ]
+      },
+      {
+        "label": "75 AP",
+        "ap": 75,
+        "varianten": [
+          "Weisheit der Schrift",
+          "Bienenschwarm"
+        ]
+      },
+      {
+        "label": "100 AP",
+        "ap": 100,
+        "varianten": [
+          "Schwarmseele",
+          "Traumseherin",
+          "Traumwissen"
+        ]
+      },
+      {
+        "label": "125 AP",
+        "ap": 125,
+        "varianten": [
+          "Wachshaut",
+          "Bienentanz"
+        ]
+      },
+      {
+        "label": "150 AP",
+        "ap": 150,
+        "varianten": [
+          "Mackestopp",
+          "Siegel der Ewigen Ruhe",
+          "Unsichtbare Chronik"
+        ]
+      },
+      {
+        "label": "300 AP",
+        "ap": 300,
+        "varianten": [
+          "Ruf des Bienenstocks",
+          "Bienenkönigin"
+        ]
+      }
+    ],
+    "varianten_freitext": false,
     "name": "Zibilja-Rituale*",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
