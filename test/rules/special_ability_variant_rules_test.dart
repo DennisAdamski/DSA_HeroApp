@@ -165,4 +165,97 @@ void main() {
       expect(suggestVariantApCost(def: ohneKosten, bereitsErworben: 0), 0);
     });
   });
+
+  group('Gruppenkosten', () {
+    const hexenfluesche = SpecialAbilityDef(
+      id: 'magsf_hexenfluesche',
+      name: 'Hexenflüche*',
+      kosten: 'je nach Hexenfluch',
+      mehrfachwaehlbar: true,
+      variantenLabel: 'Hexenfluch',
+      variantenGruppen: [
+        SpecialAbilityVariantGroup(
+          label: '50 AP',
+          ap: 50,
+          varianten: ['Warzen sprießen', 'Zunge lähmen'],
+        ),
+        SpecialAbilityVariantGroup(
+          label: '150 AP',
+          ap: 150,
+          varianten: ['Hagelschlag'],
+        ),
+      ],
+      variantenFreitext: false,
+      apErstwerb: 999,
+      apFolgeerwerb: 999,
+    );
+
+    test('nimmt den Preis der Gruppe, in der die Variante liegt', () {
+      expect(
+        suggestVariantApCost(
+          def: hexenfluesche,
+          bereitsErworben: 0,
+          variante: 'Warzen sprießen',
+        ),
+        50,
+      );
+      expect(
+        suggestVariantApCost(
+          def: hexenfluesche,
+          bereitsErworben: 3,
+          variante: 'Hagelschlag',
+        ),
+        150,
+      );
+    });
+
+    test('der Gruppenpreis schlaegt die Erst-/Folgestaffelung', () {
+      // apErstwerb/apFolgeerwerb sind bewusst absurd hoch gesetzt.
+      expect(
+        suggestVariantApCost(
+          def: hexenfluesche,
+          bereitsErworben: 0,
+          variante: 'Zunge lähmen',
+        ),
+        isNot(999),
+      );
+    });
+
+    test('unbekannte Variante faellt auf die Staffelung zurueck', () {
+      expect(
+        suggestVariantApCost(
+          def: hexenfluesche,
+          bereitsErworben: 0,
+          variante: 'Eigener Fluch',
+        ),
+        999,
+      );
+    });
+
+    test('variantGroupFor findet die Gruppe umlauttolerant', () {
+      expect(
+        variantGroupFor(hexenfluesche, 'Warzen spriessen')?.ap,
+        50,
+      );
+      expect(variantGroupFor(hexenfluesche, 'Unbekannt'), isNull);
+      expect(variantGroupFor(hexenfluesche, '  '), isNull);
+    });
+
+    test('alleVarianten fuehrt flache Liste und Gruppen zusammen', () {
+      const gemischt = SpecialAbilityDef(
+        id: 'x',
+        name: 'X',
+        varianten: ['Flach'],
+        variantenGruppen: [
+          SpecialAbilityVariantGroup(
+            label: '10 AP',
+            ap: 10,
+            varianten: ['Gruppiert', 'Flach'],
+          ),
+        ],
+      );
+
+      expect(gemischt.alleVarianten, ['Flach', 'Gruppiert']);
+    });
+  });
 }

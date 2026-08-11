@@ -702,9 +702,18 @@ Berufsgeheimnis je Geheimwissen. `SpecialAbilityDef`
 | `mehrfachwaehlbar` | `mehrfachwaehlbar` | SF darf mehrfach erworben werden |
 | `variantenLabel` | `varianten_label` | Feldbeschriftung im Dialog, z. B. `Kultur` |
 | `varianten` | `varianten` | Katalogisierte Auswahlvorschlaege (darf leer sein) |
+| `variantenGruppen` | `varianten_gruppen` | Varianten mit gruppenspezifischen AP-Kosten |
 | `variantenFreitext` | `varianten_freitext` | Freie Eingabe erlaubt (Default `true`) |
 | `apErstwerb` | `ap_erstwerb` | AP-Vorschlag fuer den ersten Erwerb |
 | `apFolgeerwerb` | `ap_folgeerwerb` | AP-Vorschlag fuer jeden weiteren Erwerb |
+
+`varianten_gruppen` traegt Kosten, die an der Auswahl selbst haengen statt an
+der Reihenfolge des Erwerbs — Merkmalsgrossmeister nach Merkmalsklassifikation
+(600/800/1000 AP), die Traditionsrituale je Einzelritual. Eine Gruppe besteht
+aus `label`, `ap` und `varianten`; der Getter `alleVarianten` fuehrt flache
+Liste und Gruppen zusammen. Liegt die gewaehlte Variante in einer Gruppe,
+schlaegt deren Preis die Erst-/Folgeerwerb-Staffelung (`variantGroupFor` und
+`suggestVariantApCost`).
 
 Fehlen die Felder, verhaelt sich die SF wie bisher (einmaliger An/Aus-Erwerb,
 AP-Vorschlag aus `parseLeadingApAmount(kosten)`). Jede erworbene Instanz wird
@@ -713,6 +722,28 @@ als eigener Eintrag im Format `Basisname (Variante)` gespeichert —
 liegen in `lib/rules/derived/special_ability_variant_rules.dart`;
 `matchCatalogSpecialAbility` faellt fuer solche Namen auf den Basisnamen
 zurueck, damit Kostenhinweis und Detailansicht weiter greifen.
+
+Im Magiebereich nutzen das die drei epischen bzw. gruppierten SF
+(Merkmalsgrossmeister, Arkane Meisterschaft, Elementaraspekt) sowie die 17
+Ritualgruppen der Kategorie `Traditionsrituale` — Hexenflueche, Kugelzauber,
+Keulenrituale und so fort — mit rund 150 einzeln erwerbbaren Ritualen.
+
+#### AP-Verrechnung ausserhalb des Sonderfertigkeiten-Katalogs
+
+Merkmalskenntnisse und Repraesentationen sind keine Katalog-SF, sondern eigene
+Felder im Heldenmodell (`HeroSheet.merkmalskenntnisse`,
+`HeroSheet.representationen`) mit FilterChips im Magie-Header. Die Kosten
+liegen in `lib/rules/derived/magic_acquisition_rules.dart`:
+`merkmalsklassifikation` (I/II/III) speist alle drei Merkmals-Preistabellen,
+`repraesentationApCost` liefert 2.000/3.000/4.000 AP je nach Anzahl und
+Voll-/Halbzauberer. Beim Aktivieren eines Chips oeffnet sich der
+Erwerbsdialog; beim Deaktivieren werden — wie ueberall in der App — keine AP
+zurueckerstattet.
+
+Zauberspezialisierungen liegen in `HeroSpellEntry.specializations` und werden
+in der Spalte `Spez.` der Zaubertabelle gepflegt. Kosten und ZfW-Schwellen
+teilen sich die Formel mit der Talentspezialisierung
+(`spellSpecializationApCost`, `requiredZfwForSpecialization`).
 
 Seit 2026-03-29 wird der Asset-Katalog intern zunaechst als
 `CatalogSourceData` geladen. Danach kombiniert `CatalogRuntimeData` die

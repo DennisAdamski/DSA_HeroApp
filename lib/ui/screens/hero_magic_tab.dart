@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/magic_acquisition_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
@@ -374,6 +375,17 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _markFieldChanged();
   }
 
+  void _updateSpellSpecializations(
+    String spellId,
+    List<String> specializations,
+  ) {
+    final current = _draftSpells[spellId] ?? const HeroSpellEntry();
+    _draftSpells[spellId] = current.copyWith(
+      specializations: List<String>.unmodifiable(specializations),
+    );
+    _markFieldChanged();
+  }
+
   void _updateSpellTextOverrides(
     String spellId,
     HeroSpellTextOverrides? value,
@@ -491,10 +503,16 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             onLearnedRepresentationChanged:
                                 _updateSpellLearnedRepresentation,
                             onTextOverridesChanged: _updateSpellTextOverrides,
+                            onSpecializationsChanged:
+                                _updateSpellSpecializations,
                             onRemoveSpell: _removeSpell,
                             controllerFor: _controllerFor,
                             canRaiseValues: _canUseSteigerungsDialog,
                             onRaiseSpell: _steigeZauber,
+                            verfuegbareAp: hero.apAvailable,
+                            episch: hero.isEpisch,
+                            onApKostenBestaetigt:
+                                _onMagicSpecialAbilityApKosten,
                             onAddSpell: () async {
                               if (!_editController.isEditing) {
                                 await _startEdit();
@@ -552,6 +570,10 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             heroTalents: hero.talents,
                             isEditing: _editController.isEditing,
                             onChanged: _updateRitualCategories,
+                            verfuegbareAp: hero.apAvailable,
+                            episch: hero.isEpisch,
+                            onApKostenBestaetigt:
+                                _onMagicSpecialAbilityApKosten,
                             onEnsureEditing: () async {
                               if (!_editController.isEditing) {
                                 await _startEdit();
@@ -573,6 +595,10 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                 _updateMerkmalskenntnisse,
                             onMagicLeadAttributeChanged:
                                 _updateMagicLeadAttribute,
+                            verfuegbareAp: hero.apAvailable,
+                            episch: hero.isEpisch,
+                            onApKostenBestaetigt:
+                                _onMagicSpecialAbilityApKosten,
                           ),
                           _MagicSpecialAbilitiesSection(
                             abilities: _draftMagicSpecialAbilities,
