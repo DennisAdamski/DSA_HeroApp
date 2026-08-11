@@ -25,6 +25,10 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     this.onRaiseSpell,
     this.onAddSpell,
     this.onRollSpell,
+    this.onSpecializationsChanged,
+    this.verfuegbareAp = 0,
+    this.episch = false,
+    this.onApKostenBestaetigt,
   });
 
   final List<String> activeSpellIds;
@@ -53,6 +57,95 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final VoidCallback? onAddSpell;
   final void Function(String spellId, SpellDef spell, HeroSpellEntry entry)?
   onRollSpell;
+
+  /// Meldet die geaenderte Spezialisierungsliste eines Zaubers.
+  final void Function(String spellId, List<String> specializations)?
+  onSpecializationsChanged;
+  final int verfuegbareAp;
+  final bool episch;
+
+  /// Wird nach einem bestaetigten Erwerbsdialog aufgerufen.
+  final ValueChanged<int>? onApKostenBestaetigt;
+
+  /// Legt eine Zauberspezialisierung an (Wege der Helden S. 292-293).
+  ///
+  /// Voraussetzung ist ein ZfW von 7/14/21/28 fuer die 1./2./3./4.
+  /// Spezialisierung; mehr als vier sind nicht vorgesehen. Die AP-Kosten
+  /// folgen der Talentspezialisierungs-Formel und werden im Erwerbsdialog
+  /// bestaetigt.
+  Future<void> _addSpecialization(
+    BuildContext context,
+    String spellId,
+    SpellDef def,
+    HeroSpellEntry entry,
+  ) async {
+    final current = List<String>.from(entry.specializations);
+    if (current.length >= kMaxZauberspezialisierungen) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Mehr als $kMaxZauberspezialisierungen Spezialisierungen sind '
+            'je Zauber nicht vorgesehen.',
+          ),
+        ),
+      );
+      return;
+    }
+    final requiredZfw = requiredZfwForSpecialization(current.length);
+    if ((entry.spellValue ?? -1) < requiredZfw) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Für eine ${current.isEmpty ? "erste" : "weitere"} '
+            'Spezialisierung wird ZfW $requiredZfw benötigt.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final name = await showAdaptiveInputDialog<String>(
+      context: context,
+      builder: (_) => _SpellSpecializationNameDialog(spellName: def.name),
+    );
+    if (name == null || name.trim().isEmpty || !context.mounted) {
+      return;
+    }
+
+    final erwerb = await showErwerbDialog(
+      context: context,
+      bezeichnung: 'Spezialisierung: ${name.trim()}',
+      kostenHinweis:
+          'ZfW ≥ $requiredZfw nötig; ein Zauber profitiert von höchstens '
+          'einer Spezialisierung; ohne Lehrmeister doppelte Kosten',
+      vorgeschlageneApKosten: spellSpecializationApCost(
+        basisKomplexitaet: def.steigerung,
+        gifted: entry.gifted,
+        specializationOrdinal: current.length + 1,
+      ),
+      verfuegbareAp: verfuegbareAp,
+      episch: episch,
+      lehrmeisterUeblich: true,
+      lehrmeisterVerdoppeltOhneIhn: true,
+    );
+    if (erwerb == null) {
+      return;
+    }
+    onSpecializationsChanged?.call(spellId, [...current, name.trim()]);
+    if (erwerb.apKosten > 0) {
+      onApKostenBestaetigt?.call(erwerb.apKosten);
+    }
+  }
+
+  void _removeSpecialization(
+    String spellId,
+    HeroSpellEntry entry,
+    String specialization,
+  ) {
+    final updated = List<String>.from(entry.specializations)
+      ..remove(specialization);
+    onSpecializationsChanged?.call(spellId, updated);
+  }
 
   Future<void> _openSpellDetails(
     BuildContext context,
@@ -150,6 +243,10 @@ class _MagicActiveSpellsTable extends StatelessWidget {
         label: Text('Varianten'),
         width: AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 320, flex: 2),
       ),
+      const AdaptiveDataColumnSpec(
+        label: Text('Spez.'),
+        width: AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 220, flex: 1),
+      ),
       if (isEditing)
         const AdaptiveDataColumnSpec(
           label: Text(''),
@@ -225,6 +322,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                             const DataCell(Text('-')),
                             const DataCell(Text('-')),
                             if (isEditing) const DataCell(Text('-')),
+                            const DataCell(Text('-')),
                             const DataCell(Text('-')),
                             const DataCell(Text('-')),
                             const DataCell(Text('-')),
@@ -623,6 +721,16 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                             protectedPreview: preview.variantsProtected,
                             onTap: openDetails,
                           ),
+                          _buildSpecializationsCell(
+                            width: layout.contentWidthFor(isEditing ? 15 : 14),
+                            context: context,
+                            specializations: entry.specializations,
+                            isEditing: isEditing,
+                            onAdd: () =>
+                                _addSpecialization(context, spellId, def, entry),
+                            onRemove: (value) =>
+                                _removeSpecialization(spellId, entry, value),
+                          ),
                           if (isEditing)
                             DataCell(
                               IconButton(
@@ -725,6 +833,132 @@ DataCell _buildDetailCell({
           overflow: TextOverflow.ellipsis,
           maxLines: maxLines,
         ),
+      ),
+    ),
+  );
+}
+
+/// Fragt den Namen einer Zauberspezialisierung ab.
+///
+/// Bewusst ein eigener StatefulWidget: Der [TextEditingController] muss die
+/// Schliess-Animation des Dialogs ueberleben, sonst greift das noch
+/// eingebaute Textfeld auf einen bereits entsorgten Controller zu.
+class _SpellSpecializationNameDialog extends StatefulWidget {
+  const _SpellSpecializationNameDialog({required this.spellName});
+
+  final String spellName;
+
+  @override
+  State<_SpellSpecializationNameDialog> createState() =>
+      _SpellSpecializationNameDialogState();
+}
+
+class _SpellSpecializationNameDialogState
+    extends State<_SpellSpecializationNameDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AdaptiveInputDialog(
+      title: 'Spezialisierung: ${widget.spellName}',
+      maxWidth: kDialogWidthSmall,
+      content: TextField(
+        key: const ValueKey<String>('spell-specialization-name'),
+        controller: _controller,
+        autofocus: true,
+        decoration: const InputDecoration(
+          labelText: 'Aspekt',
+          hintText: 'z. B. Reichweite',
+          helperText: 'Eine Modifikation oder Variante des Zaubers',
+          border: OutlineInputBorder(),
+          isDense: true,
+        ),
+        onSubmitted: (value) => Navigator.of(context).pop(value),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text),
+          child: const Text('Weiter'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Zelle mit den Zauberspezialisierungen: je ein Chip, im Bearbeitungsmodus
+/// zusaetzlich ein Hinzufuegen-Button und Loeschsymbole an den Chips.
+DataCell _buildSpecializationsCell({
+  required BuildContext context,
+  required double width,
+  required List<String> specializations,
+  required bool isEditing,
+  required VoidCallback onAdd,
+  required ValueChanged<String> onRemove,
+}) {
+  final theme = Theme.of(context);
+  return DataCell(
+    SizedBox(
+      width: width,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: specializations.isEmpty
+                ? Text(
+                    '-',
+                    style: theme.textTheme.bodySmall,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : Wrap(
+                    spacing: 4,
+                    runSpacing: 2,
+                    children: specializations
+                        .map(
+                          (value) => Chip(
+                            // Ohne Schranke sprengt ein langer Aspektname die
+                            // Tabellenzelle, weil Wrap seine Kinder nicht
+                            // schrumpft.
+                            label: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 84),
+                              child: Text(
+                                value,
+                                style: theme.textTheme.bodySmall,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            onDeleted: isEditing
+                                ? () => onRemove(value)
+                                : null,
+                          ),
+                        )
+                        .toList(growable: false),
+                  ),
+          ),
+          if (isEditing)
+            IconButton(
+              key: const ValueKey<String>('spell-specialization-add'),
+              icon: const Icon(Icons.add_circle_outline, size: 18),
+              tooltip: 'Spezialisierung erwerben',
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              onPressed: onAdd,
+            ),
+        ],
       ),
     ),
   );

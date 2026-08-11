@@ -187,3 +187,35 @@ int talentSpecializationApCost({
   final faktor = kAktivierungsfaktoren[komplexitaet] ?? 1;
   return 20 * faktor * specializationOrdinal;
 }
+
+/// Mindest-ZfW fuer eine weitere Zauberspezialisierung.
+///
+/// Wege der Helden S. 292 nennt ZfW 7/14/21/28 fuer die 1./2./3./4.
+/// Spezialisierung — dieselbe Staffelung wie bei Talenten. Kein Zufall: Die
+/// Zauberspezialisierung ist regeltechnisch als Gegenstueck zur
+/// Talentspezialisierung formuliert. Daher wird bewusst dieselbe Funktion
+/// verwendet, statt die Zahlen ein zweites Mal zu pflegen.
+int requiredZfwForSpecialization(int bestehendeAnzahl) =>
+    requiredTawForSpecialization(bestehendeAnzahl);
+
+/// Hoechstzahl an Spezialisierungen je Zauber (Wege der Helden S. 292).
+const int kMaxZauberspezialisierungen = 4;
+
+/// AP-Kosten fuer den Erwerb einer Zauberspezialisierung.
+///
+/// [basisKomplexitaet] ist die Steigerungskategorie des Zaubers
+/// (`SpellDef.steigerung`), [specializationOrdinal] die 1-basierte
+/// Ordnungszahl innerhalb desselben Zaubers. Formel wie bei Talenten:
+/// 20 AP * Aktivierungsfaktor(Kategorie) * Ordnungszahl
+/// (Wege der Helden S. 292-293).
+int spellSpecializationApCost({
+  required String basisKomplexitaet,
+  required bool gifted,
+  required int specializationOrdinal,
+}) {
+  return talentSpecializationApCost(
+    basisKomplexitaet: basisKomplexitaet,
+    gifted: gifted,
+    specializationOrdinal: specializationOrdinal,
+  );
+}

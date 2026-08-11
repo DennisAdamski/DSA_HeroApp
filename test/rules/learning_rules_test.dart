@@ -223,6 +223,49 @@ void main() {
     });
   });
 
+  group('spellSpecializationApCost', () {
+    test('folgt derselben Formel wie die Talentspezialisierung', () {
+      expect(
+        spellSpecializationApCost(
+          basisKomplexitaet: 'D',
+          gifted: false,
+          specializationOrdinal: 1,
+        ),
+        80,
+      );
+      expect(
+        spellSpecializationApCost(
+          basisKomplexitaet: 'D',
+          gifted: false,
+          specializationOrdinal: 4,
+        ),
+        320,
+      );
+    });
+
+    test('Begabung auf den Zauber senkt die Kategorie', () {
+      expect(
+        spellSpecializationApCost(
+          basisKomplexitaet: 'D',
+          gifted: true,
+          specializationOrdinal: 1,
+        ),
+        60,
+      );
+    });
+
+    test('ZfW-Schwellen entsprechen den TaW-Schwellen 7/14/21/28', () {
+      expect(requiredZfwForSpecialization(0), 7);
+      expect(requiredZfwForSpecialization(1), 14);
+      expect(requiredZfwForSpecialization(2), 21);
+      expect(requiredZfwForSpecialization(3), 28);
+    });
+
+    test('hoechstens vier Spezialisierungen je Zauber', () {
+      expect(kMaxZauberspezialisierungen, 4);
+    });
+  });
+
   group('talentSpecializationApCost', () {
     test('berechnet 20 AP * Aktivierungsfaktor * Ordnungszahl', () {
       expect(
