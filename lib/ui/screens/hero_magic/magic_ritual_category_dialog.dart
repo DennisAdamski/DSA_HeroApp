@@ -2,12 +2,28 @@ part of '../hero_magic_tab.dart';
 
 const Uuid _ritualDialogUuid = Uuid();
 
-Future<HeroRitualCategory?> _showRitualCategoryDialog({
+/// Ergebnis des Ritualkategorie-Dialogs.
+///
+/// [fremdeTradition] ist nur beim Neuanlegen relevant: Die Ritualkenntnis der
+/// eigenen Tradition wird laut Regelwerk ueber die Profession aktiviert und
+/// kostet nichts, eine fremde Tradition kostet 250 AP Aktivierungskosten
+/// (Wege der Helden S. 290).
+class _RitualCategoryResult {
+  const _RitualCategoryResult({
+    required this.category,
+    this.fremdeTradition = false,
+  });
+
+  final HeroRitualCategory category;
+  final bool fremdeTradition;
+}
+
+Future<_RitualCategoryResult?> _showRitualCategoryDialog({
   required BuildContext context,
   required List<TalentDef> catalogTalents,
   HeroRitualCategory? existing,
 }) {
-  return showAdaptiveDetailSheet<HeroRitualCategory>(
+  return showAdaptiveDetailSheet<_RitualCategoryResult>(
     context: context,
     builder: (dialogContext) {
       return _RitualCategoryDialog(
@@ -38,6 +54,12 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
   late List<_EditableRitualFieldDefDraft> _fieldDefs;
   String _talentSearch = '';
   String? _errorText;
+
+  /// Nur beim Neuanlegen: Ritualkenntnis einer fremden Tradition, die laut
+  /// Regelwerk 250 AP Aktivierungskosten verursacht.
+  bool _fremdeTradition = false;
+
+  bool get _isNew => widget.existing == null;
 
   @override
   void initState() {
@@ -148,7 +170,12 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
           .toList(growable: false),
       rituals: widget.existing?.rituals ?? const <HeroRitualEntry>[],
     );
-    Navigator.of(context).pop(normalizeRitualCategory(builtCategory));
+    Navigator.of(context).pop(
+      _RitualCategoryResult(
+        category: normalizeRitualCategory(builtCategory),
+        fremdeTradition: _fremdeTradition,
+      ),
+    );
   }
 
   @override
@@ -207,6 +234,27 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
                 },
               ),
               const SizedBox(height: 12),
+              if (_isNew &&
+                  _knowledgeMode == HeroRitualKnowledgeMode.ownKnowledge) ...[
+                CheckboxListTile(
+                  key: const ValueKey<String>('magic-ritual-fremde-tradition'),
+                  value: _fremdeTradition,
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: const Text('Fremde Tradition'),
+                  subtitle: const Text(
+                    '250 AP Aktivierung und meisterliche Erlaubnis; die '
+                    'eigene Tradition wird über die Profession aktiviert.',
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _fremdeTradition = value ?? false;
+                    });
+                  },
+                ),
+                const SizedBox(height: 8),
+              ],
               if (_knowledgeMode == HeroRitualKnowledgeMode.ownKnowledge)
                 Row(
                   children: [

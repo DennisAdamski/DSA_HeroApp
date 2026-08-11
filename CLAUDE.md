@@ -26,6 +26,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `Basisname (Variante)` in `HeroSheet.talentSpecialAbilities` gespeichert;
   Namensaufbau und gestaffelte AP-Vorschläge liegen in
   `lib/rules/derived/special_ability_variant_rules.dart`.
+- Magische Sonderfertigkeiten nutzen dieselbe Mechanik mit `varianten_gruppen`
+  (Varianten mit gruppenspezifischen Kosten): Merkmalsgroßmeister und Arkane
+  Meisterschaft nach Merkmalsklassifikation, die 17 Ritualgruppen der Kategorie
+  `Traditionsrituale` je Einzelritual. Merkmalskenntnisse, Repräsentationen,
+  Zauberspezialisierungen und Ritualkenntnisse sind dagegen eigene Felder im
+  Heldenmodell und werden nicht als Sonderfertigkeit gepflegt; ihre AP-Kosten
+  stehen in `lib/rules/derived/magic_acquisition_rules.dart` bzw.
+  `learning_rules.dart`.
 - Aktivierbare Hausregel-Pakete liegen eingebaut unter
   `assets/catalogs/house_rules_v1/packs/<packId>/manifest.json`.
 - Eingebaute Pack-Manifeste muessen ausserdem explizit in `pubspec.yaml`

@@ -10,6 +10,9 @@ class _MagicHeaderSection extends StatelessWidget {
     required this.onRepresentationenChanged,
     required this.onMerkmalskenntnisseChanged,
     required this.onMagicLeadAttributeChanged,
+    this.verfuegbareAp = 0,
+    this.episch = false,
+    this.onApKostenBestaetigt,
   });
 
   final List<String> representationen;
@@ -19,6 +22,116 @@ class _MagicHeaderSection extends StatelessWidget {
   final void Function(List<String>) onRepresentationenChanged;
   final void Function(List<String>) onMerkmalskenntnisseChanged;
   final void Function(String value) onMagicLeadAttributeChanged;
+
+  final int verfuegbareAp;
+  final bool episch;
+
+  /// Wird nach einem bestaetigten Erwerbsdialog aufgerufen; der Aufrufer
+  /// erhoeht damit `hero.apSpent`.
+  final ValueChanged<int>? onApKostenBestaetigt;
+
+  /// Schaltet eine Merkmalskenntnis um. Beim Aktivieren wird der Erwerb ueber
+  /// den Erwerbsdialog bestaetigt (100/200/300 AP je Klassifikation, WdH
+  /// S. 289); ein Abbruch laesst den Chip aus. Beim Deaktivieren werden — wie
+  /// ueberall sonst in der App — keine AP zurueckerstattet.
+  Future<void> _toggleMerkmalskenntnis(
+    BuildContext context,
+    String merkmal,
+    bool value,
+  ) async {
+    final updated = List<String>.from(merkmalskenntnisse);
+    if (!value) {
+      updated.remove(merkmal);
+      onMerkmalskenntnisseChanged(updated);
+      return;
+    }
+    final stufe = merkmalsklassifikation(merkmal);
+    final erwerb = await showErwerbDialog(
+      context: context,
+      bezeichnung: 'Merkmalskenntnis $merkmal',
+      kostenHinweis:
+          'Klassifikation $stufe: ${merkmalskenntnisApCost(merkmal)} AP; '
+          'die erste Merkmalskenntnis ist bei vielen Professionen enthalten '
+          '(dann 0 AP)',
+      vorgeschlageneApKosten: merkmalskenntnisApCost(merkmal),
+      verfuegbareAp: verfuegbareAp,
+      episch: episch,
+    );
+    if (erwerb == null) {
+      return;
+    }
+    updated.add(merkmal);
+    onMerkmalskenntnisseChanged(updated);
+    if (erwerb.apKosten > 0) {
+      onApKostenBestaetigt?.call(erwerb.apKosten);
+    }
+  }
+
+  /// Schaltet eine Repraesentation um. Beim Aktivieren wird der Erwerb ueber
+  /// den Erwerbsdialog bestaetigt (WdH S. 290). Vorgeschlagen wird der
+  /// Vollzauberer-Preis; der Halbzauberer-Preis steht im Kostenhinweis und
+  /// kann im editierbaren AP-Feld uebernommen werden.
+  Future<void> _toggleRepresentation(
+    BuildContext context,
+    String representation,
+    bool value,
+  ) async {
+    final updated = List<String>.from(representationen);
+    if (!value) {
+      updated.remove(representation);
+      onRepresentationenChanged(updated);
+      return;
+    }
+    final anzahl = representationen.length;
+    final vollzauberer = repraesentationApCost(
+      anzahlVorhanden: anzahl,
+      istHalbzauberer: false,
+    );
+    final halbzauberer = repraesentationApCost(
+      anzahlVorhanden: anzahl,
+      istHalbzauberer: true,
+    );
+    final erwerb = await showErwerbDialog(
+      context: context,
+      bezeichnung: 'Repräsentation $representation',
+      kostenHinweis: _representationKostenHinweis(
+        anzahl: anzahl,
+        vollzauberer: vollzauberer,
+        halbzauberer: halbzauberer,
+      ),
+      vorgeschlageneApKosten: vollzauberer ?? 0,
+      verfuegbareAp: verfuegbareAp,
+      episch: episch,
+    );
+    if (erwerb == null) {
+      return;
+    }
+    updated.add(representation);
+    onRepresentationenChanged(updated);
+    if (erwerb.apKosten > 0) {
+      onApKostenBestaetigt?.call(erwerb.apKosten);
+    }
+  }
+
+  String _representationKostenHinweis({
+    required int anzahl,
+    required int? vollzauberer,
+    required int? halbzauberer,
+  }) {
+    if (anzahl <= 0) {
+      return 'Die erste Repräsentation stammt aus Kultur bzw. Profession '
+          'und kostet keine AP.';
+    }
+    final teile = <String>[
+      if (vollzauberer != null) 'Vollzauberer $vollzauberer AP',
+      if (halbzauberer != null)
+        'Halbzauberer $halbzauberer AP'
+      else
+        'für Halbzauberer laut Regelwerk nicht vorgesehen',
+    ];
+    return '${anzahl + 1}. Repräsentation: ${teile.join('; ')} '
+        '(Wege der Helden S. 290)';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,17 +157,8 @@ class _MagicHeaderSection extends StatelessWidget {
                       label: Text(rep),
                       selected: selected,
                       onSelected: isEditing
-                          ? (value) {
-                              final updated = List<String>.from(
-                                representationen,
-                              );
-                              if (value) {
-                                updated.add(rep);
-                              } else {
-                                updated.remove(rep);
-                              }
-                              onRepresentationenChanged(updated);
-                            }
+                          ? (value) =>
+                                _toggleRepresentation(context, rep, value)
                           : null,
                     );
                   })
@@ -110,17 +214,8 @@ class _MagicHeaderSection extends StatelessWidget {
                       label: Text(merkmal),
                       selected: selected,
                       onSelected: isEditing
-                          ? (value) {
-                              final updated = List<String>.from(
-                                merkmalskenntnisse,
-                              );
-                              if (value) {
-                                updated.add(merkmal);
-                              } else {
-                                updated.remove(merkmal);
-                              }
-                              onMerkmalskenntnisseChanged(updated);
-                            }
+                          ? (value) =>
+                                _toggleMerkmalskenntnis(context, merkmal, value)
                           : null,
                     );
                   })
