@@ -7,7 +7,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
   // Hinweis: Die Spalten brauchen `flex`, damit `ResponsiveAdaptiveTable` die
   // verfuegbare Breite verteilt (es nutzt feste Spaltenbreiten, keine
   // IntrinsicColumnWidth). Interaktive Zellen mit Icon-Buttons (Modifikator,
-  // Aktuell, Zugekauft, Wert) bekommen eine Mindestbreite, die ihre Inhalte
+  // Summe, Zugekauft, Wert) bekommen eine Mindestbreite, die ihre Inhalte
   // sicher aufnimmt; sonst laeuft die Zelle in der Tabellenansicht ueber.
   static const List<AdaptiveTableColumnSpec>
   _derivedValueColumnSpecsBase = <AdaptiveTableColumnSpec>[
@@ -17,7 +17,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       flex: 2,
     ), // Wert (LeP, AsP, …)
     AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 132, flex: 1), // Modifikator
-    AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120, flex: 1), // Aktuell
+    AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120, flex: 1), // Summe
     AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 130, flex: 1), // Zugekauft
   ];
 
@@ -227,7 +227,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
             _buildAttributesTableHeaderCell('Wert'),
             if (showStart) _buildAttributesTableHeaderCell('Start'),
             _buildAttributesTableHeaderCell('Modifikator'),
-            _buildAttributesTableHeaderCell('Aktuell'),
+            _buildAttributesTableHeaderCell('Summe'),
             _buildAttributesTableHeaderCell('Zugekauft'),
           ],
         ),
@@ -843,7 +843,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               ),
             ),
             _buildStatCardFieldRow(
-              label: 'Aktuell',
+              label: 'Summe',
               value: _buildDerivedValueCell(value: entry.current.toString()),
             ),
             _buildStatCardFieldRow(
