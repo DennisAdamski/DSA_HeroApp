@@ -280,7 +280,9 @@ class _AppStartupGateState extends State<AppStartupGate> {
       storagePath: offlinePath,
     );
     try {
-      return offlineRepo.listHeroes();
+      // `await` ist hier zwingend: ohne das wuerde `finally` das Repository
+      // schliessen, bevor `listHeroes()` fertig gelesen hat.
+      return await offlineRepo.listHeroes();
     } finally {
       await offlineRepo.close();
     }
