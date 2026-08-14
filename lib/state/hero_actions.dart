@@ -965,7 +965,9 @@ class HeroActions {
       if (avatarBytes == null) return null;
 
       final encoder = _ref.read(avatarThumbnailEncoderProvider);
-      return encoder.createThumbnailBase64(imageBytes: avatarBytes);
+      // `await` ist hier zwingend: ohne das laeuft eine Exception aus dem
+      // Encoder am `on Exception`-Zweig vorbei und blockiert den Sync doch.
+      return await encoder.createThumbnailBase64(imageBytes: avatarBytes);
     } on Exception {
       // Avatar-Fehler ignorieren, damit der Sync nicht blockiert.
       return null;
