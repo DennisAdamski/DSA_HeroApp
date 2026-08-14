@@ -136,11 +136,21 @@ class _CatalogUnlockDialogState extends State<_CatalogUnlockDialog> {
       saltV3: widget.saltV3,
     );
     if (decrypted != null) {
-      // Passwort korrekt — dauerhaft persistieren.
-      await widget.ref
-          .read(settingsActionsProvider)
-          .setCatalogContentPassword(input);
-      if (mounted) Navigator.of(context).pop(true);
+      // Passwort korrekt — dauerhaft persistieren. Schlaegt das Speichern fehl
+      // (z. B. gesperrter Secure-Storage), bleibt der Dialog offen und meldet
+      // den Fehler, statt ihn unbemerkt nach oben durchzureichen.
+      try {
+        await widget.ref
+            .read(settingsActionsProvider)
+            .setCatalogContentPassword(input);
+        if (mounted) Navigator.of(context).pop(true);
+      } catch (_) {
+        if (mounted) {
+          setState(() {
+            _errorText = 'Speichern fehlgeschlagen. Bitte erneut versuchen.';
+          });
+        }
+      }
     } else {
       setState(() {
         _errorText = 'Falsches Passwort.';
