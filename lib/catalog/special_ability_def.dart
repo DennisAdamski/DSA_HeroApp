@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 import 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
 
 /// Gruppe von Auswahlvarianten mit gemeinsamen AP-Kosten.
 ///
@@ -68,6 +69,10 @@ class SpecialAbilityDef {
     this.variantenFreitext = true,
     this.apErstwerb,
     this.apFolgeerwerb,
+    this.voraussetzungenStruktur = const <SpecialAbilityRequirement>[],
+    this.kette,
+    this.aliasNamen = const <String>[],
+    this.nurInformation = false,
     this.ruleMeta,
   });
 
@@ -111,7 +116,33 @@ class SpecialAbilityDef {
   /// AP-Vorschlag fuer jeden weiteren Erwerb (gestaffelte Kosten).
   final int? apFolgeerwerb;
 
+  /// Maschinenlesbare Fassung von [voraussetzungen]. Leer bedeutet, dass die
+  /// App fuer diesen Eintrag nichts pruefen kann — der Freitext bleibt dann
+  /// die einzige Information.
+  final List<SpecialAbilityRequirement> voraussetzungenStruktur;
+
+  /// Zugehoerigkeit zu einer Stufenkette (`Eiserner Wille I` → `II`).
+  /// `null` bei allen Eintraegen, die fuer sich allein stehen.
+  final SpecialAbilityChainRef? kette;
+
+  /// Frueher genutzte Schreibweisen dieses Eintrags. Noetig, damit Helden, die
+  /// eine spaeter aufgeteilte Sammel-Sonderfertigkeit gespeichert haben
+  /// (`Eiserner Wille I / II`), weiterhin als Besitzer erkannt werden.
+  final List<String> aliasNamen;
+
+  /// Der Eintrag beschreibt eine Kenntnis, die anderswo im Heldenmodell
+  /// gepflegt wird (Repraesentation, Ritualkenntnis). Er wird im Katalog
+  /// angezeigt, aber nicht als Sonderfertigkeit erworben.
+  final bool nurInformation;
+
   final RuleMeta? ruleMeta; // Strukturierte Herkunfts- und Freischaltmetadaten
+
+  /// Anzeigename plus alle Alias-Namen — die vollstaendige Menge an
+  /// Schreibweisen, unter denen dieser Eintrag bei einem Helden stehen kann.
+  List<String> get alleNamen => List<String>.unmodifiable(<String>[
+    name,
+    ...aliasNamen,
+  ]);
 
   /// Alle waehlbaren Varianten — flache Liste plus alle Gruppen, in dieser
   /// Reihenfolge und ohne Duplikate.
@@ -132,6 +163,7 @@ class SpecialAbilityDef {
   /// Deserialisiert die Sonderfertigkeit tolerant aus JSON.
   factory SpecialAbilityDef.fromJson(Map<String, dynamic> json) {
     final ruleMetaJson = readCatalogObject(json, 'ruleMeta');
+    final ketteJson = readCatalogObject(json, 'kette');
     return SpecialAbilityDef(
       id: readCatalogString(json, 'id', fallback: ''),
       name: readCatalogString(json, 'name', fallback: ''),
@@ -168,6 +200,19 @@ class SpecialAbilityDef {
       ),
       apErstwerb: _readNullableInt(json, 'ap_erstwerb'),
       apFolgeerwerb: _readNullableInt(json, 'ap_folgeerwerb'),
+      voraussetzungenStruktur:
+          readCatalogObjectList(json, 'voraussetzungen_struktur')
+              .map(SpecialAbilityRequirement.fromJson)
+              .toList(growable: false),
+      kette: ketteJson == null
+          ? null
+          : SpecialAbilityChainRef.fromJson(ketteJson),
+      aliasNamen: readCatalogStringList(json, 'alias_namen'),
+      nurInformation: readCatalogBool(
+        json,
+        'nur_information',
+        fallback: false,
+      ),
       ruleMeta: ruleMetaJson == null ? null : RuleMeta.fromJson(ruleMetaJson),
     );
   }
@@ -199,6 +244,13 @@ class SpecialAbilityDef {
       if (!variantenFreitext) 'varianten_freitext': false,
       if (apErstwerb != null) 'ap_erstwerb': apErstwerb,
       if (apFolgeerwerb != null) 'ap_folgeerwerb': apFolgeerwerb,
+      if (voraussetzungenStruktur.isNotEmpty)
+        'voraussetzungen_struktur': voraussetzungenStruktur
+            .map((bedingung) => bedingung.toJson())
+            .toList(growable: false),
+      if (kette != null) 'kette': kette!.toJson(),
+      if (aliasNamen.isNotEmpty) 'alias_namen': aliasNamen,
+      if (nurInformation) 'nur_information': true,
       if (ruleMeta != null) 'ruleMeta': ruleMeta!.toJson(),
     };
   }
