@@ -46,7 +46,11 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - **HeroSpellEntry**: Speichert ZfW (spellValue), Modifikator, Hauszauber-Flag, Begabungs-Flag, die konkret gelernte Zauber-Repräsentation (`learnedRepresentation`) samt Herkunftstradition (`learnedTradition`) sowie optionale heldenspezifische Text-Overrides pro aktiviertem Zauber; das Listenfeld `specializations` bleibt nur noch als Legacy-Kompatibilitaet bestehen.
 - **HeroSpellTextOverrides**: Optionales Override-Objekt fuer importierte Zauberdetails (`aspCost`, `targetObject`, `range`, `duration`, `castingTime`, `wirkung`, `modifications`, `variants`) pro aktiviertem Zauber.
 - **MagicSpecialAbility**: Name + optionale Notiz fuer magische Sonderfertigkeiten.
-- **HeroSheet** (schemaVersion 21): Enthaelt `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities`, `magicLeadAttribute`, strukturierte `talentSpecialAbilities`, `metaTalents` und `resourceActivationConfig`; Waffenmeisterschaften liegen in `combatConfig.waffenmeisterschaften`. Zauber-Eintraege koennen zusaetzlich `gifted`, `learnedRepresentation`, `learnedTradition` und `textOverrides` speichern.
+- **repraesentationsTraditionen** (`Map<String, String>`): Gewaehlte Tradition je
+  Repraesentationskuerzel. Nur noetig, wenn ein Kuerzel mehrere Traditionen mit
+  unterschiedlicher Leiteigenschaft traegt — aktuell ausschliesslich `Geo`
+  (Herr der Erde → KL, Diener Sumus → IN, Wege der Zauberei S. 19).
+- **HeroSheet** (schemaVersion 27): Enthaelt `spells` (Map<String, HeroSpellEntry>), `representationen`, `merkmalskenntnisse`, `magicSpecialAbilities`, `magicLeadAttribute`, strukturierte `talentSpecialAbilities`, `metaTalents` und `resourceActivationConfig`; Waffenmeisterschaften liegen in `combatConfig.waffenmeisterschaften`. Zauber-Eintraege koennen zusaetzlich `gifted`, `learnedRepresentation`, `learnedTradition` und `textOverrides` speichern.
 
 ### Regelfunktionen (`magic_rules.dart`, `learning_rules.dart`)
 
@@ -65,7 +69,8 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 ### UI-Tab (Magie)
 
 - **hero_magic_tab.dart**: Hauptdatei des Magie-Tabs im HeroWorkspaceScreen, aufgeteilt in Part-Files:
-  - `magic_header_section.dart` — Repraesentationen und Merkmalskenntnisse bearbeiten
+  - `magic_header_section.dart` — Repraesentationen (mit Traditionswahl bei
+    mehrdeutigen Kuerzeln), abgeleitete Leiteigenschaft und Merkmalskenntnisse
   - `magic_special_abilities_section.dart` — Magische Sonderfertigkeiten verwalten
   - `magic_active_spells_table.dart` — Tabelle aktivierter Zauber (ZfW, Mod, gelernte Repräsentation, effektive Steigerung, Hauszauber, Begabung, Katalog-Varianten)
   - `magic_spell_catalog_table.dart` — Katalog-Zauber filtern, alle Verbreitungen anzeigen und mit Repräsentationswahl aktivieren
@@ -89,6 +94,34 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 - Offensichtliche OCR-/Silbentrennungsfehler aus der PDF werden im Importer konservativ bereinigt.
 - Im Magie-Tab zeigt der Detaildialog fuer aktivierte Zauber die effektiven Werte aus `SpellDef` plus optionalen `HeroSpellTextOverrides`; `source` bleibt dabei read-only. Merkmale und der abgeleitete MR-Hinweis werden immer aus dem Katalog angezeigt.
 - Konstanten `kRepresentationen` und `kMerkmale` in `rules_catalog.dart` definieren die verfuegbaren Repraesentationen und Merkmale.
+
+### Magische Sonderfertigkeiten: Voraussetzungen und Stufenketten
+
+- Alle 105 Eintraege in `magische_sonderfertigkeiten.json` tragen den Block
+  `voraussetzungen_struktur`; das Schema steht in `docs/technical_overview.md`
+  Abschnitt 4.9. Der Freitext `voraussetzungen` bleibt unveraendert erhalten.
+- Drei Sammeleintraege wurden in Einzelstufen aufgeteilt. Die alten Namen
+  bleiben als `alias_namen` der jeweils ersten Stufe erhalten, damit
+  Bestandshelden weiterhin als Besitzer erkannt werden:
+
+  | frueher | jetzt | `alias_namen` an Stufe I |
+  |---|---|---|
+  | `Eiserner Wille I / II` (200 AP / 300 AP) | `magsf_eiserner_wille_i` (200 AP), `magsf_eiserner_wille_ii` (300 AP) | `Eiserner Wille I / II`, `Eiserner Wille` |
+  | `Dämonenbindung I / II (ZHB)` (150 AP / 250 AP) | `magsf_daemonenbindung_i`, `magsf_daemonenbindung_ii` | `Dämonenbindung I / II (ZHB)`, `Dämonenbindung` |
+  | `Spontane Regeneration I–V` (300 AP pro Stufe) | `emsf_spontane_regeneration_i` bis `…_v`, KO-Schwelle 16/17/18/19/20 | `Spontane Regeneration I–V`, `Spontane Regeneration` |
+
+- Bereits getrennte Paare bekamen nur die `kette`-Metadaten: Regeneration I/II,
+  Matrixregeneration I/II, Meisterliche Zauberkontrolle I/II,
+  Kraftlinienmagie I/II, Semipermanenz I/II sowie Aurapanzer / Aurapanzer II.
+- Vier Eintraege sind als `nur_information` markiert, weil die zugehoerige
+  Kenntnis ein eigenes Heldenfeld hat und nicht als Sonderfertigkeit gefuehrt
+  wird: `magsf_repraesentation`, `magsf_ritualkenntnis_tradition`,
+  `magsf_merkmalskenntnis_einzelnes_merkmal` und `magsf_zauberspezialisierung`.
+  Sie bleiben im Picker nachschlagbar, haben dort aber keinen Schalter.
+- Die 18 Traditionsrituale sind ueber `{"art": "tradition", …}` an ihre
+  Tradition gebunden. Ausgenommen sind `magsf_elfenlieder` (haengt am Vorteil
+  Zweistimmiger Gesang), `magsf_kugelzauber`, `magsf_oduen_gaben` und
+  `magsf_ottagaldr` — deren Regelwerk nennt nur Einzelfallbedingungen.
 
 ## Rast im Workspace
 

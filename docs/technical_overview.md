@@ -186,7 +186,8 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `talentSpecialAbilities` | `List<TalentSpecialAbility>` | Strukturierte Talent-Sonderfertigkeiten (Name + optionale Notiz), Legacy-Strings werden tolerant migriert |
 | `spells` | `Map<String, HeroSpellEntry>` | Aktivierte oder gelernte Zauber des Helden |
 | `ritualCategories` | `List<HeroRitualCategory>` | Heldenspezifische Ritualkategorien mit Ritualkenntnis oder Talentbezug |
-| `magicLeadAttribute` | `String` | Globale Leiteigenschaft für magische Regeneration (`MU` bis `KK`) |
+| `repraesentationsTraditionen` | `Map<String, String>` | Gewählte Tradition je Repräsentationskürzel; nur bei mehrdeutigen Kürzeln nötig (aktuell nur `Geo`) |
+| `magicLeadAttribute` | `String` | Bewusst abweichende Leiteigenschaft (`MU` bis `KK`); ohne Eintrag wird sie aus der Tradition abgeleitet |
 | `rasse` / `rasseModText` | `String` | Rasse und Rassenmodifikator-Text |
 | `kultur` / `kulturModText` | `String` | Kultur und Kulturmodifikator-Text |
 | `profession` / `professionModText` | `String` | Profession und Professions-Mod-Text |
@@ -732,7 +733,8 @@ Keulenrituale und so fort — mit rund 150 einzeln erwerbbaren Ritualen.
 
 Merkmalskenntnisse und Repraesentationen sind keine Katalog-SF, sondern eigene
 Felder im Heldenmodell (`HeroSheet.merkmalskenntnisse`,
-`HeroSheet.representationen`) mit FilterChips im Magie-Header. Die Kosten
+`HeroSheet.representationen`) mit FilterChips im Magie-Header; die Chips
+zeigen den Klartextnamen der Tradition. Die Kosten
 liegen in `lib/rules/derived/magic_acquisition_rules.dart`:
 `merkmalsklassifikation` (I/II/III) speist alle drei Merkmals-Preistabellen,
 `repraesentationApCost` liefert 2.000/3.000/4.000 AP je nach Anzahl und
@@ -1212,6 +1214,82 @@ level         = floor(sqrt(apSpent / 50 + 0.25) + 0.5)
 apAvailable   = max(0, apTotal − apSpent)
 ```
 
+### 4.9 Erwerbsvoraussetzungen und Stufenketten
+
+**Dateien:** `lib/catalog/special_ability_requirement.dart`,
+`lib/rules/derived/requirement_evaluation_rules.dart`,
+`lib/rules/derived/hero_requirement_context.dart`,
+`lib/rules/derived/special_ability_chain_rules.dart`,
+`lib/rules/derived/tradition_rules.dart`
+
+Katalogeinträge tragen neben dem Freitext `voraussetzungen` optional den
+maschinenlesbaren Block `voraussetzungen_struktur`. Beide stehen bewusst
+nebeneinander: Der Freitext bleibt die Regelquelle und wird unverändert
+angezeigt, der Strukturblock erlaubt zusätzlich die Prüfung gegen den Helden.
+Einträge ohne Strukturblock — etwa aus Hausregel-Paketen — verhalten sich wie
+zuvor.
+
+**Schema einer Bedingung:**
+
+```jsonc
+"voraussetzungen_struktur": [
+  { "art": "eigenschaft", "code": "MU", "min": 15 },
+  { "art": "sonderfertigkeit", "name": "Eiserner Wille", "stufe": 1 },
+  { "art": "oder", "bedingungen": [
+      { "art": "eigenschaft", "code": "KL", "min": 20 },
+      { "art": "eigenschaft", "code": "IN", "min": 20 }
+  ]}
+]
+```
+
+| `art` | Felder | Bedeutung |
+|---|---|---|
+| `eigenschaft` | `code`, `min` | Mindestwert einer Eigenschaft |
+| `leiteigenschaft` | `min` | Mindestwert der Leiteigenschaft der Tradition |
+| `sonderfertigkeit` | `name`, `stufe?` | Andere SF, optional ab Kettenstufe |
+| `zauber` | `name`, `min` | Mindest-ZfW |
+| `talent` | `name`, `min` | Mindest-TaW |
+| `ritualkenntnis` | `name?`, `min?` | Ritualkenntnis, optional mit RkW |
+| `tradition` | `namen[]` | Eine von mehreren Traditionen |
+| `merkmalskenntnis` | `name?` | Merkmal; ohne Namen genügt irgendeines |
+| `vorteil` | `name` | Erforderlicher Vorteil |
+| `nachteil_verboten` | `name` | Nachteil, den der Held nicht haben darf |
+| `rasse` | `namen[]` | Eine von mehreren Rassen |
+| `spruchzauberer` | – | Mindestens eine Repräsentation |
+| `oder` / `und` | `bedingungen[]` | Verknüpfung; `und` nur als Oder-Zweig |
+| `hinweis` | `text` | Nicht prüfbarer Regeltext |
+
+`hinweis` ist der Auffangtyp und zählt nie als unerfüllt — Regeltexte wie
+„sechs Monate Kontemplation" bleiben sichtbar, ohne etwas zu blockieren.
+Unbekannte Arten werden beim Laden zu `RequirementArt.unbekannt` und ebenfalls
+wie ein Hinweis behandelt; `test/catalog/magic_special_ability_catalog_test.dart`
+schlägt an, wenn eine im Katalog auftaucht.
+
+**Auswertung:** `buildHeroRequirementContext(hero, catalog: …)` sammelt
+Eigenschaften, erworbene Sonderfertigkeiten, Zauber- und Talentwerte (der
+Katalog löst dafür IDs in Klarnamen auf), Ritualkenntnisse, Traditionen,
+Merkmale, Vor-/Nachteile und Rasse. `evaluateRequirements` liefert daraus je
+Bedingung einen `RequirementCheckResult` mit Soll- und Ist-Text. Ein
+nicht erfüllter Punkt **sperrt den Erwerb nicht**: Die UI zeigt die Checkliste
+und verlangt eine bewusste Bestätigung („Trotzdem erwerben —
+Meisterentscheid"), damit Hausregeln möglich bleiben.
+
+**Stufenketten:** Aufeinander aufbauende Sonderfertigkeiten teilen sich eine
+`kette` mit gemeinsamer `id` und aufsteigender `stufe`. Jede Stufe bleibt ein
+eigener Katalogeintrag, weil die Regelwerke je Stufe eigene AP-Kosten und
+Voraussetzungen vergeben. `alias_namen` hält frühere Schreibweisen fest, damit
+Helden mit einem alten Sammeleintrag (`Eiserner Wille I / II`) weiterhin als
+Besitzer der ersten Stufe erkannt werden.
+
+**Traditionen und Leiteigenschaft:** `tradition_rules.dart` enthält die Tabelle
+aus *Wege der Zauberei* S. 19 (Klugheit bzw. Intuition je Tradition). Die
+Traditionen eines Helden sind die Vereinigung aus `representationen` und den
+Namen seiner Ritualkategorien — Derwische, Zibiljas, Zaubertänzer und Schamanen
+haben laut Regelwerk gar keine Repräsentation und wären sonst von ihren eigenen
+Traditionsritualen ausgesperrt. Trägt eine Repräsentation mehrere Traditionen
+(nur die geodische: Herr der Erde → KL, Diener Sumus → IN), hält
+`HeroSheet.repraesentationsTraditionen` die getroffene Wahl fest.
+
 ---
 
 ## 5. Zustandsverwaltung (State Layer)
@@ -1534,7 +1612,7 @@ einem Zielgerät im Profile-Modus.
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **26**, fuer `HeroState` **6**.
+- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **27**, fuer `HeroState` **6**.
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 3 wird **strikt** validiert.
 
