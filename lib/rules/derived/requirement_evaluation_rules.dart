@@ -77,6 +77,9 @@ class HeroRequirementContext {
     this.nachteile = const <String>[],
     this.rasse = '',
     this.leiteigenschaftOverride = '',
+    this.basiswerte = const <String, int>{},
+    this.manoever = const <String>[],
+    this.waffenmeisterschaften = const <String>[],
   });
 
   /// Eigenschaftswerte nach Kuerzel (`MU`, `KL`, …).
@@ -112,6 +115,15 @@ class HeroRequirementContext {
 
   /// Manuell gesetzte Leiteigenschaft; schlaegt die Tradition.
   final String leiteigenschaftOverride;
+
+  /// Abgeleitete Kampf-Basiswerte nach Kuerzel (`AT`, `PA`, `FK`, `INI`).
+  final Map<String, int> basiswerte;
+
+  /// Namen der erlernten Manoever.
+  final List<String> manoever;
+
+  /// Kampftalente, auf die der Held eine Waffenmeisterschaft besitzt.
+  final List<String> waffenmeisterschaften;
 
   /// Die Leiteigenschafts-Kuerzel dieses Helden.
   Set<String> get leiteigenschaften =>
@@ -193,8 +205,23 @@ RequirementCheckResult evaluateRequirement(
         sollPraefix: 'ohne Nachteil',
         erfuelltWennVorhanden: false,
       );
+    case RequirementArt.nachteil:
+      return _pruefeTraitFragment(
+        requirement,
+        context.nachteile,
+        sollPraefix: 'Nachteil',
+        erfuelltWennVorhanden: true,
+      );
     case RequirementArt.rasse:
-      return _pruefeRasse(requirement, context);
+      return _pruefeRasse(requirement, context, verboten: false);
+    case RequirementArt.rasseVerboten:
+      return _pruefeRasse(requirement, context, verboten: true);
+    case RequirementArt.basiswert:
+      return _pruefeBasiswert(requirement, context);
+    case RequirementArt.manoever:
+      return _pruefeManoever(requirement, context);
+    case RequirementArt.waffenmeister:
+      return _pruefeWaffenmeister(requirement, context);
     case RequirementArt.spruchzauberer:
       return RequirementCheckResult(
         requirement: requirement,
@@ -507,25 +534,138 @@ RequirementCheckResult _pruefeTraitFragment(
   );
 }
 
+/// Prueft die Rasse — mit [verboten] umgekehrt („kein Zwerg“).
+///
+/// Ohne eingetragene Rasse bleibt beides ein Hinweis statt einer Absage: Die
+/// Forderung laesst sich schlicht nicht beantworten, und ein leeres Feld soll
+/// keinen Erwerb als blockiert darstellen.
 RequirementCheckResult _pruefeRasse(
   SpecialAbilityRequirement requirement,
-  HeroRequirementContext context,
-) {
+  HeroRequirementContext context, {
+  required bool verboten,
+}) {
   final gefordert = requirement.alleNamen;
   final eigene = normalizeSpecialAbilityName(context.rasse);
+  final soll = verboten
+      ? 'keine Rasse ${gefordert.join(' oder ')}'
+      : 'Rasse ${gefordert.join(' oder ')}';
+  if (eigene.isEmpty) {
+    return RequirementCheckResult(
+      requirement: requirement,
+      status: RequirementStatus.hinweis,
+      sollText: soll,
+      istText: 'keine Rasse eingetragen',
+    );
+  }
   final passt = gefordert.any((name) {
     final needle = normalizeSpecialAbilityName(name);
     return needle.isNotEmpty && eigene.contains(needle);
   });
   return RequirementCheckResult(
     requirement: requirement,
-    status: passt
+    status: passt != verboten
         ? RequirementStatus.erfuellt
         : RequirementStatus.nichtErfuellt,
-    sollText: 'Rasse ${gefordert.join(' oder ')}',
-    istText: context.rasse.trim().isEmpty
-        ? 'keine Rasse eingetragen'
-        : context.rasse.trim(),
+    sollText: soll,
+    istText: context.rasse.trim(),
+  );
+}
+
+/// Ausgeschriebene Namen der Kampf-Basiswerte fuer die Checkliste.
+const Map<String, String> _basiswertNamen = <String, String>{
+  'AT': 'AT-Basis',
+  'PA': 'PA-Basis',
+  'FK': 'FK-Basis',
+  'INI': 'INI-Basiswert',
+};
+
+RequirementCheckResult _pruefeBasiswert(
+  SpecialAbilityRequirement requirement,
+  HeroRequirementContext context,
+) {
+  final code = requirement.code.trim().toUpperCase();
+  final min = requirement.min ?? 0;
+  final soll = '${_basiswertNamen[code] ?? code} $min';
+  final ist = context.basiswerte[code];
+  if (ist == null) {
+    return RequirementCheckResult(
+      requirement: requirement,
+      status: RequirementStatus.hinweis,
+      sollText: soll,
+      istText: 'Wert unbekannt',
+    );
+  }
+  return RequirementCheckResult(
+    requirement: requirement,
+    status: ist >= min
+        ? RequirementStatus.erfuellt
+        : RequirementStatus.nichtErfuellt,
+    sollText: soll,
+    istText: 'Held hat $ist',
+  );
+}
+
+RequirementCheckResult _pruefeManoever(
+  SpecialAbilityRequirement requirement,
+  HeroRequirementContext context,
+) {
+  final needle = normalizeSpecialAbilityName(requirement.name);
+  // Per-Talent-Manoever stehen beim Helden als `Name (Talent)`; der Vergleich
+  // schneidet solche Zusaetze deshalb ab, wie es `besessenStufeFuer` fuer die
+  // Sonderfertigkeiten tut.
+  final vorhanden =
+      needle.isNotEmpty &&
+      context.manoever.any(
+        (eintrag) => besessenStufeFuer(eintrag, requirement.name) != null,
+      );
+  return RequirementCheckResult(
+    requirement: requirement,
+    status: vorhanden
+        ? RequirementStatus.erfuellt
+        : RequirementStatus.nichtErfuellt,
+    sollText: 'Manöver ${requirement.name}',
+    istText: vorhanden ? 'erlernt' : 'nicht erlernt',
+  );
+}
+
+/// Prueft eine Waffenmeisterschaft.
+///
+/// Ohne `name` genuegt eine beliebige — die Regelwerke formulieren das als
+/// „Waffenmeister (beliebig)“ bzw. „(Nahkampfwaffe)“, was die App mangels
+/// Waffengattungs-Modell gleich behandelt.
+RequirementCheckResult _pruefeWaffenmeister(
+  SpecialAbilityRequirement requirement,
+  HeroRequirementContext context,
+) {
+  final talent = requirement.name.trim();
+  if (talent.isEmpty) {
+    final vorhanden = context.waffenmeisterschaften.isNotEmpty;
+    return RequirementCheckResult(
+      requirement: requirement,
+      status: vorhanden
+          ? RequirementStatus.erfuellt
+          : RequirementStatus.nichtErfuellt,
+      sollText: 'Waffenmeister (beliebig)',
+      istText: vorhanden
+          ? context.waffenmeisterschaften.join(', ')
+          : 'keine Waffenmeisterschaft',
+    );
+  }
+  final needle = normalizeSpecialAbilityName(talent);
+  final vorhanden = context.waffenmeisterschaften.any(
+    (eintrag) => normalizeSpecialAbilityName(eintrag) == needle,
+  );
+  return RequirementCheckResult(
+    requirement: requirement,
+    status: vorhanden
+        ? RequirementStatus.erfuellt
+        : RequirementStatus.nichtErfuellt,
+    sollText: 'Waffenmeister ($talent)',
+    istText: vorhanden
+        ? 'vorhanden'
+        : (context.waffenmeisterschaften.isEmpty
+              ? 'keine Waffenmeisterschaft'
+              : 'nur ${context.waffenmeisterschaften.join(', ')}'),
   );
 }
 

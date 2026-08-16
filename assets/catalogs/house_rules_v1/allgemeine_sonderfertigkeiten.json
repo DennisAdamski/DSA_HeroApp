@@ -7,8 +7,20 @@
     "seite": "Epische Stufen S. 22",
     "beschreibung": "SO-Differenz wirkt bei Betören-Proben als Bonus statt als Malus.",
     "voraussetzungen": "CH 20, TaW Betören 21",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 20
+      },
+      {
+        "art": "talent",
+        "name": "Betören",
+        "min": 21
+      }
+    ],
     "kosten": "300 AP",
-    "erklarung_lang": "enc:3:DkpoOyiq+J4cyMY1V7KcnhkEUfj9r/+xOAoKa4sudeCB60qtImPBH3au5IaXnfU0MseUL5ctm/GbvoUAjChVYNbjvZhJaC2VP3Ni6QizqTVtL8gIDCzSF/yYKpPl2gIk+PSZOEq1cxbwASIAh8iuR2cxRloEmlwAjrdycOwN5HOCVHrdlsYudwU7WUPpIr7pLM994NpD46QwO2aOR6GYESgBd23Hn8GoZjK5C+I1QfsOMgCSABpAFV967qAmmpoGel9cRncaJWQHmdsQsg19gIpZ9EmNhIHqqMeOCrs6VGhYHEAs6iRiNLbPPrT5hfeQE/BiJx3/eoJz3wVkcXExL4q2k8xI1KZCgjsMnd9+ZPNuSv63eigatc+LkOs+BWDgK0AgRS2cE2ak2jY=",
+    "erklarung_lang": "enc:3:Xc0JyHRv6du0tgOFSUYT8gawrzscNNeOjoeFhFqV2OAiMIeiiPFPw5pa9nvkybrrasdbPqP07OLs6ZiwXivyKSo8J2I8ZP+SolQbS6O50fyW3E+A8a7GnfqwaWjTBbRY1bs8Cftr5DUHUHAp+HJwqpbNPY9Y83RHRLhpAMjaFCbpHnd1oBUxXxiFjKEmFRP77w78F26c1leslf1b73Sqsi/3cR6kOJrma5mQnwcq9nl6lEPUFgiGV2323gABbwo7WKXhtvvRDSD1xx3CivnvigyOZlMG2Hxas/3O2AdZuwMJ6C8EWo4UAKIMBOdVztoOfkSb8Hi6DDMXQ/4C1/uD+vRp0FCka9jYoAQVCgeVVblj3h4Kb7S1i83PtloxYMf6r6Btw4vQ7VItBME=",
     "quelle": "Epische Stufen S. 22",
     "hausregel": true,
     "nurEpisch": true,
@@ -36,8 +48,15 @@
     "seite": "Epische Stufen S. 22",
     "beschreibung": "Intuitives Ausweichen einer ausgelösten Falle oder eines Hinterhalts per IN-Probe.",
     "voraussetzungen": "IN 21",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 21
+      }
+    ],
     "kosten": "300 AP",
-    "erklarung_lang": "enc:3:SI39DZPwDpOZkMzMaBJsmKC7PwlsjRBB1rw2L2QxcudS7Sq66hrJ105jHBYJ4elHFRZYADn3yhJLiVQktCwLg5GK0x7eWxHlStP1E1bKK4LNNufHEKx7Wk/ajwjLgWkiegTHYpEZ7fs5MFShliiB8x91G7SwvG+hR/f2S0rGI1TvppXN3Lc99efltf6Cv1z6Bm3iNhVdhijjPf2ko0Js2jnw51NoP6pfaxZrZZGfpnUPyXL2Cu2xpGvZtFqdyrYdSEVSj+6bmwPOMLHObNRRqaAlK2HTS2HofcXZd5+9gqw0hPauKLTrGh1JS4F+FihLOBOzzk/oT9SIJZM0wolb8EYl8uSV8roCo/JEztU2Ccy7WyXggcLRzMp4O7zrv49E0GM3G7AWnLtrWpVlQyitSQ64ebx4K2uTk3VJL48ES/cjqM2bs3R2DGIl8Uiv/d7o1Gq/NYBJMndRLWbznYijOPRvV+zCSf2ln52cBCWY4M+8qh2ck2M=",
+    "erklarung_lang": "enc:3:UNQWLugj5MNZiHmiskqbMF+R2ejI1GYwaBAdHNxtJM4kiMUsaJo9vwwdavpx7OLaXZaaoM5XCVqTrRiPhWTo3DIsg8SSXCPlsSAvxiY8nvhcXpV9P1egDIh1gy1O8TguWkck5nD+vaDK6gvKb+WRpKzBc/I30AWt4KjV7kTJygpgxcG7Q0lEOtJMQTNMxqegva+QokpevwSwj/+Uke+a+jnwax/BM9ihAeY9O2ypeVYffiSVSyQAVc90hNm44sexaaPr4yO+fivEV1N4Mvu3ss1TE6ERFZ4vIoQuHsZ6UB10LaQ70FNzHY/cIz6N/YYjcZo4aWWPr+VU5HNuhFaNpxoM5Dc6npcAK6YXz3pZFvn2QobMGkk5oNRQM55n4/01Mvgo5ezdBXEo2Ol+auv1iFuoVq2mXEawUNw3UjPOFHMsJe8pPOv5uFgcJ4a2emx1sKKzMsuUau7r8+dGrhGOn2xZ534ptPe9Ojgx/J31gYlaziFL8Ow=",
     "quelle": "Epische Stufen S. 22",
     "hausregel": true,
     "nurEpisch": true,
@@ -65,8 +84,30 @@
     "seite": "Epische Stufen S. 22",
     "beschreibung": "Menschenkenntnis-Proben zum Durchschauen des Helden sind 50 % stärker erschwert.",
     "voraussetzungen": "IN 16, CH 18, TaW Selbstbeherrschung 15, TaW Überreden 20",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 16
+      },
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Selbstbeherrschung",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Überreden",
+        "min": 20
+      }
+    ],
     "kosten": "400 AP",
-    "erklarung_lang": "enc:3:DpUexJakXMJrAChxNh5CUhpImE9LVpX+Acw0sFGOCRm9/uQpGZ1g35wYI4MAvo7WTH1ZR+IRG0Yzfnw5tRut5v1u+tgyDA4Gp2qPAeuRLUqGIPcBbfh9Mo+JmkY9C+RQBZezgTZe8iXByZrDtP43rsKkTjCgw8mra24xPHSlFttNZqbuECgA4PxzIDl3Xfs9iNdNV9zlp6dV2Ko87/XuapXSJn9kXOrLNZ8eu/C6kTLIcKND/30=",
+    "erklarung_lang": "enc:3:7/aFWE/X0ghwfSkZa6/by37Dc2T995xwMIHpfaTuMADN0pCXSeg6+9dl1LksBOX+djOIFz3o7o1GeTpnqLX6yalnhUF+mRjbwmWjt6eKhn3QNiWE31JU2OH6JpFRwv/JKhVq1E0x9XyFF2eoaxuKAsLAHZ8S4b/FYgO5FAowRo1NmhJRSEV9HqiMkzAE+27x5IpW6unEhhhAnonzSwVoPY3VmGQjfG6KVQ18HQGxHMMCztikAtM=",
     "quelle": "Epische Stufen S. 22",
     "hausregel": true,
     "nurEpisch": true,
@@ -94,8 +135,39 @@
     "seite": "Epische Stufen S. 23",
     "beschreibung": "Empath fokussiert angeeignete Emotionen und Nachteile auf ein einziges Ziel und zerdrückt es geistig.",
     "voraussetzungen": "MU 20, TaW Überreden oder Überzeugen 21, SF Gefühle vermitteln, TaW Gabe Empathie 12",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 20
+      },
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "talent",
+            "name": "Überreden",
+            "min": 21
+          },
+          {
+            "art": "talent",
+            "name": "Überzeugen",
+            "min": 21
+          }
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "SF Gefühle vermitteln — kein Katalogeintrag vorhanden"
+      },
+      {
+        "art": "talent",
+        "name": "Empathie",
+        "min": 12
+      }
+    ],
     "kosten": "500 AP",
-    "erklarung_lang": "enc:3:0JHhpoumobooon/CtU6iFXq4rJWI6o9po6xGUcIAvhERRAzK9IZJ9U7LVlFR9fwTW/sXtbWzEa6/z83ZauADLwVvZCNcRdwa9aPf56RwzLDHoniVYLs6vdWIfKKRvVPaVjkf3eKLeCHwmPoVUSqK9bIx7iUaZ1suJR6UOfdCKEmXKy3mpo4UlH9oPNzR+fr1CEHeRPK55wx4j/FCKgOyxj9/UwQZQzxMuIwePleceH6HgGbV13SA9kGyqGEgzsryAPKpe86XEND0ctgr0LLg7HwuEiM+zSOIVeRSODDWN9twGCqhF9GGcxov3aG0ZKWNmAVhg61dgulJNMDRANaWzFFTwX5xKIgjiAqspFuCXeyZwzVTZrCaA+mTofctU8j+BlBTuzJJnsrqWmg81Hex6fYMMxKWGaX5iGB+L1IMLtmDFgYDw7VvH+CH0wQXb1lSgh+8zf/C2zxwPjijK/AoiexYziMUftdcjaCdezD27/EfXYwkO9d5oUhwdH0yMYsI5eVov873vBOnQCpTxqCKR+1nLa+fZDWGJ7LAcRsSfVBck5AZOiOSmMqM7lC6Ymg0xR2IMbA7uHYjz6eQZWb4t13Z349sQH+PXLJk1bIEQQuP5pS8cs9Gxg4bjQJXDDNf9RNkiRF8arn45iL30R+b6XrSjAhgt84uOi7algkK7G1aG555GMQHQ8ewYLZPKmFUeS1AObURmrSdHculYNI/xzp3igvPjDnqk1B7KlF3ZQPk7hlgq5txQ/e/kN6NUw8DTAbuahx6BsFoB289mEdw8YcUGWXZJ39lsP5Ah4bFg5VzTzfY/b74E+I0+X8Bgj15PqMw0knfMRCwD2f9MEjtJytOdbkrxiis015es3OtTs1wWgBQKwo6UnruLHYxYsn9Oo7+vPyM4Ak3ZNfaZWkVZt6IOrePNzlg5Bopo/cy9n9Q1pJTWyXYXYi2n+HBX3Vwj0vUJw3FXIHOq52UkwrR/yY2TC+tRIJ2rSnbugOMHlKDihKefnxmV9bO8Xds53Uqdrbr43w9Asb9LzIaJHoEERGcDOFTopyu3cEOrrMaRgnPFA==",
+    "erklarung_lang": "enc:3:jVH0ILvj19WmUdLSBjgBBF212Gd2MEJvso93Ne38gu1CAWAmIgI6SNM4fCDWuIpi1on7cUJ4waDGEAz2hvL58NxDTteOSIQWqHFjTX+ubIzw9nzbRKwYKVtVBJt0yeUZsQL2SZGtyt+3PwNZFs032oeRrL70lDMpeEzrbj1CJbsAuXu3yeLZIjTC/Zg9REi4z1ALWZU1WQVaU1nP1Zir4NKahMcBrWBiOuY2BrZIX7AyvgNQnb+9Y91QfVKIU//QqkI4ZPDg7d8K71L47PLGT5YqCEf6W5klmYJvwf/8ZjN8qFdfYfJfrngfaXxeA2k0gu7smN+ioR0M1NH3AFRX6qKlu2kmliBgsqNCQumaipm5kUY5O+uNP5oAcKKX2GQ4ZL89NNubCF0F8TUDQ1bjpMmJTz8mnXAS33s1v1lsLEv63Jeziu0R3Pr4G8AkpY9Wb6Zr6Gon49RR3FSe1GWxHoAKM+v6XLXmiQfy5apWiYnkDtdpDlO9xBvndIBt73GDos65uchiwb4lYCExLh/l0Tz4XDrO6SpXLrhS8ZPM+rAwJgmKKk1rN5ssIBGC4lMHUc2gWUwSKSS/gdNk38Mvc3Zyfp0xds3uL5qzmmOHfM6DB2/H/FkSgDD/WzkiFVLuPaadrf57Ad34HRbDXcamXHoKQg7mZnBhSB/pnBJ+WuKy+Izr8n464jgOpkW9uwNF+/C0xFmT5YQeljsdgJg8F9VkznMDq0OXXikiXGZdEuQ2H068ievDJTwkPdEovhlpg7SpfD5oSVVggGPNKFJ4JspsdCatla3OL6SqGaCid47kwAxx2DIqV/Lh50HlvWH/A2QNoIhtVAHImVaUkIsOHY3zf2bIV3f7VaSAaTJ3sJCYZyugbbLByCq5ffruAtaWiqJJnZ9XihKawWin9xe6tI61tOVqgZ+vQXUr/zG7/RCoTp+Ned9iv1nybXzq+vb0HoXPLEtKDwVh1wR02L/nWjediGdL/6ykshKXqt6lzntyDLcRhqebYNKwKudI8Fqxi2CZfFA0wDPgXgMzZ+jJeta9hbH6+fyKzwu6hLGlYl2yPQ==",
     "quelle": "Epische Stufen S. 23",
     "hausregel": true,
     "nurEpisch": true,
@@ -123,8 +195,29 @@
     "seite": "Epische Stufen S. 24",
     "beschreibung": "Wer verhört wird, kann nur unter erschwerter MU-Probe lügen.",
     "voraussetzungen": "TaW Menschenkenntnis 22, CH 20, TaW Überreden 21, SF Silberzunge",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Menschenkenntnis",
+        "min": 22
+      },
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 20
+      },
+      {
+        "art": "talent",
+        "name": "Überreden",
+        "min": 21
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Silberzunge"
+      }
+    ],
     "kosten": "350 AP",
-    "erklarung_lang": "enc:3:tFnWMdF2TAVKjWpILb5JbnwaTQAR8JqYmaV1tDa2zpuN/c++JbfdIs45+3yMa8bOIfjtu4e7RhsNf6T9BRJ1FKrZj3GGZMd2e/qwCV6dXtGtfOcZKF2nF2Q6Dzdw+tzdh+U6VFOaMCViZJ4RkpiDdeN0Nc31uAxT9Lhg/yy/Isc/CPleIPf1VQTkx8ViuLzNBYezb6RE/YwGfNJuxCS630vJuUxRxh5XPRG1e8a7u5xxQj55HaI37gInEaactfLCKzraXmVfThkr09Yg7f5p8fpmcVNse0v5UP2HNcSmarPrhGjRJH0=",
+    "erklarung_lang": "enc:3:RFsPv+2Cm3Z7NkF4zpRP+XhavBRqbo59xOhoL+Jn5JV/RelE6bLm4/vGBMSsnbvzC3MPod/bGUMGGZm410U2YRgv8aiRLMy+/dUEvMyKr9PYIIybYlmFn9JbDIPEaDLYKgPu1ctoT/FVbr1aPhoSLs/l4pEP58I+1LjsaQFFOcNCKI1JlREIHaQLKVBqf8TVuY/D3+dPZzkdBBI/bBIP/TH15otybebnqRAhbp5hN59y/JhIBV0jUuDsvz8pxu1zZ+7EQ51azsrcYu2//j1C9eLn40GsnqhTx++l5LRv4nrefG/yS50=",
     "quelle": "Epische Stufen S. 24",
     "hausregel": true,
     "nurEpisch": true,
@@ -152,8 +245,35 @@
     "seite": "Epische Stufen S. 24",
     "beschreibung": "Keine gesellschaftlichen Vor-/Nachteile durch epische Merkmale; wird nicht wiedererkannt, wenn nicht gewünscht.",
     "voraussetzungen": "IN 18, TaW Menschenkenntnis, Etikette, Sich Verkleiden und Gassenwissen 15",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Menschenkenntnis",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Etikette",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Sich Verkleiden",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Gassenwissen",
+        "min": 15
+      }
+    ],
     "kosten": "400 AP",
-    "erklarung_lang": "enc:3:4X7dkW7m0IiVeDkAEn1mWzy5XraPhxBS3oHhev3uB5lfF5tFGgAzAg7m6E1a9yEL+3NjsV+euLGUChSq+l+1WlWNnVIuTnaR6FBXztugNqzAFjA1+HrMtPg81g66iZiAFw5h3Ljtq2wwxHBicLGf1NfvpEdhBW2xzhVlOnAk6Tjtu04eXwofjYFq7nBnuTyPAjf9i+jvTTz74/Sf4JSnYvgAiQ+hbg4T2hNNIXIR9Cho2Ykrf2yg1g6+3V9cSeI9/1wCwsUsVfNMaH/axbGveMN1lkAx2aph0koKUet4jM6VLH8T+ZKfKW+tESfueE1xXGU=",
+    "erklarung_lang": "enc:3:j3Nw+WsUye4QPkTVJzKCgN9Jz8Q2gezWoEAy0OScbvuKp73XfV+9iCTgiG0dre1pOAp3N/ufXPgj8TgyAiogRz/NNKR7nQCyzlPEd0mq/8k5heiNcO1OEzETgm4A8pM7rg0AVY7X3uZ/V4exIxot2R3R18HUANxkxoXVSr71snPq7dxOLPgDeFuE8fDn5Zr+908t8wbThb/EJhfG8vnpQ1fgHb6hOvZlE2hAcjyuZhrWCsy0YV57lKMW1hsW5wusx9btt6jOJap8CnS9LGzPRtnLrRpMjU5ddIG8h1ckXWOcVRX6YYz0OFnnrMaocc7nPm4=",
     "quelle": "Epische Stufen S. 24",
     "hausregel": true,
     "nurEpisch": true,
@@ -181,8 +301,29 @@
     "seite": "Epische Stufen S. 24",
     "beschreibung": "Tiere können mit Manövern wie Finte, Wuchtschlag, gezielter Biss, Sturmangriff u. a. ausgebildet werden.",
     "voraussetzungen": "CH 18, TaW Abrichten und Tierkunde 18 (alle VR -2 bei Tierfreund; nur Abrichten bei Tierempathie)",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Abrichten",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Tierkunde",
+        "min": 18
+      },
+      {
+        "art": "hinweis",
+        "text": "Alle Voraussetzungen -2 bei Vorteil Tierfreund; mit Tierempathie genügt Abrichten"
+      }
+    ],
     "kosten": "400 AP",
-    "erklarung_lang": "enc:3:9X+++iqDChJOk1d7fq/bIYihbc1kR6WEPYTMHaQo9+LNVTLWnUr3q063U/W1LaiizsSWHM2fUlcZBlDwQsEOnI9Ucl1ry57swtmdnafw38vXSbIyaM4oLSBfUjhdInnIpRIZs3CWaVUJuiucCAWvu+zKrrn5cPsHz/1luJLBVSwV2oDX1SY6Yw2p4JOxr4RE5mqTMQKHxvd66Iers0m5uguXGMeoOrVREVyFjgEx+vRjNwceKkdPQhafqA7Rskj++aaneZ4oDwSOsPNnzThwRr7796FY5URP46O5aZug2m9xaAMA2elnWxwF1Qd9luF7tNyIgUqcx7YJugpcpk8RIX+RkyU6og7inpVH5vyan3RI37DW10k7wtNbGokGqa0yZaoXvPN9Sd1968gmcrl1/Z1bks95r9g1R13ml8XSoHYEByeOVCTySLBsnTF9nLVWI05gw9TPSDoEX5E1SfASvtBWA9qUoXeVqWkMgC5Uo7GKqY97MDTY9Q==",
+    "erklarung_lang": "enc:3:xitGZQrUU2RKVNx7pUal9IW+fwtv+DhMjbU/c9Eh/NrA/f3+4jk09M0C71Lw1kmj4+c1ZnD53l27U5jZzFAf7kH5/aPhdbFV3hVrD15FIadeSFg5NFVb4HwPWvtszRorxqb4+6N8gweBES0NDeX5BFhZHYvlsfbfQlqMZXXf04TXwV5eoJblfU3sic5RYLc8WtpwIeIszf4d7Z/fUQIBdj2uREfdeTwcVnZ0xwfC8/2CxFJYVbsQEy+LEIvgyz3Ia7eISJSb7f1ZPHqB1Jr2la7vINSSueFdGOxq2+yHcxIp5t3PHKW8yvra8b3tuhWkpVlm/7vA0qMIWwBm+uXuIbddwbexyMtt07n2Dq0Z302BSaLiXQtEfxBgUHC/878jp46Jy7582IYUoI67OeAy0zjYHw0LMiuuIWTvVAh9zI5ssjXlEsLN8LF8/Ku7iKMFUVzzWNnbhG5uBComBIkIM9I6mmPc9LNl8pfHCOscGWjjLLCXYYaDuA==",
     "quelle": "Epische Stufen S. 24",
     "hausregel": true,
     "nurEpisch": true,
@@ -210,8 +351,18 @@
     "seite": "Epische Stufen S. 24–27",
     "beschreibung": "Alchimistische Meister brauen Tränke mit permanenter Wirkung aus Titaniumstaub, Qualitätselixier und mächtigen Zutaten.",
     "voraussetzungen": "SF Vollendetes Handwerk (Alchimie); Speziallabor (ca. 1500 D); vollendetes Labor (5000 D) erleichtert um 3",
+    "voraussetzungen_struktur": [
+      {
+        "art": "sonderfertigkeit",
+        "name": "Vollendetes Handwerk"
+      },
+      {
+        "art": "hinweis",
+        "text": "Speziallabor (ca. 1500 D); ein vollendetes Labor (5000 D) erleichtert um 3"
+      }
+    ],
     "kosten": "600 AP",
-    "erklarung_lang": "enc:3:7ZWI4fXsBUGfLmqW93fhUJEdepmZUASnqu+xgeNZ+MUFM2/vh/hRYB5nMd+WgyLK28KhQqCasBV1TR4Wr+DE78anFX1cdBXScM23m7zRrZGkzuuSAbzx0m4S/f9Dcfxv0e07Abm9zI8jzoPFh8GXT1b2sCecUo0i/q94tjHXWxeW7jFP95iSA+wcW15y0Zndj6aGTYU9hXCfEb0Ir03mAS6QwBlDnnEarLEdqXOqNsQinJn0bBoHoNsSud6c6OcqiOomhME0ZwU0/VvJES6Nlui/+PoWyn9bLowQbizb7MdYd32XBv4J5C+p/5t5Oe6Gp7l1UKVWxPXUH1qwCnswQw3Ch2mQ5UzSVUAxhQQftME450W05Edc2O8eQAWnWjDc9xoN+PWp0jJmkh6jCpbbTziPblHu4FyJELU2SiPAFqW9qs8dscdpjY1/ZHqrJ++Tw2cfql4FBbzWs3gwKZrsWARHRlXSWTlHNq7cUFo8GNB4Vjxdqno+RMg8Lb4SRjKJQBbfJ0yhtD7UuP8Co1QbepPLfWWhwt8qEgxw6HFu/8WGn8Yo9Mt4o/WfuLPMQScbKBNdxeYDCtLKaZIu6BxfDRuOPVxvcd+lHqoKXGDHShJjp91nyDjCjtuxnJI5CxhuBSoEKC6VRWN9w09BCBh9tn9R+USgP9W7f069AHLmc9H8BswXSo6qdQAokXGctHfKwX3RY2i/mFszNwVlJ3SSwL215CNuAgUIvIzCuCS5xMUTclxu1oGB1/22Z2Y5Gy/lPR77sCumBrDYp2VwzhOkxigaiPrHAi3B5h4Qf4RVBJ5nKrkabiw6lQnHaby+TCRPzEnDUryExXXR9LrkvRgYVrGTLvwJBkknHNeK4GmPtX6ylNLr7L7RpedZMDy7IfIeb3XZsBB/5Zp948NowXfn2BkIqYLVr2nTkzTpDB4dSEUZc1Zg73GWVnHzNpIn5bbz9WXE4fRgERY/2Z00B1G/YD7z2mXbh1cpMSx1rcZIB9p8fL27+Dgi/otEk26s2uQBkdd0tSc6cuo0OV9VIcJuBkzi+oTJE9ozeNSpXHGZWSEsKgx51L5JKHNzEMo+L6zvvT9I5wSRXOOm2q1m2emt0ZTnNoFhTOgdRZw5GHGTHH+TLrKyDSVXfTOFNJvSv69lnaeVZHBFR8J3mvtnJGpmNcr/BO8/NRv+29Gi8183kQHLqbEcRC0roaY9/7UbLilJQGn6bGOsQpSIz4VBjeYpT1lhMugsyuFFtZ5uM7DAHZuRmZHJWidCH+lkQtOtETwHfPrtAAUf/B13bJM=",
+    "erklarung_lang": "enc:3:P2OgOw5jKh8QKtqyvt3f1rwPWyL/qxEnpVmdf/oz4C3Ozs6y+zwqrE6vKFdzsFFKf54nUM6vKIHZilL+lu3nr/lziG9moncxtVjNpZ/NJDVpeEt2dn2NMF2Q/zo94pkAyuTamZPuZNN5xc5CtdJ23/LlHjEp5bppPrdv8e6YTaEyceiXLLL37XTs6R5wfa3MrqqElOHU6COt8Lcb0JmJT/zfjNsWfdGS1iyTL/dpF8fCQWBxH39FLUzUNjtxY8wI3k+TYFIl4MJjPUbdJz3zoOJbUUSvNOfjCZ9pV9Cq/r8HifqVw3u0yUdrnXiLyKegtQWxVRb13f9+T6g+W8s4USCavwocBPlINtetC8NDKTay8SjSEmCu0TkciQ6kUYLh4ovO4JIGFzqwMktcUszzFiyw9QdEFZ1O4Bu9RdF47LVKCDdV08SFhyLGE3jGOMdK+8Th02b1kdb6xEA/6XwAxPoeClOuiTB2sDXzTJvomTsR7S882wO+/x47+1nbUgrTmN353Flf2mKqbfIsUg9yhprhqeB8xk/t2OzHmE4zEQInwqALjzRI/xtRo1PhSdRsI5nXT331P+BEt79rBFYt+NnRQhaaZbgEg2351W3Zm2izQonnQf2u1rHQ4DH0elCP6+F7Olgq9CWJrdUnF7TZJ8zXo1H3mS08hr0Di2C+kAHwW/Y3/Lrx7vFqhfSoy9XzXPdGjpbkh/bdP0HD2mRQ3NdjrM701wtd8clhYv+0eqnxDRpx+not/IvBDtpl4a5F7RUMtOX9vAMI86jaW5kjtc1+lBBeVtdQ0CE4NBGYfX5nwYYuLy3XrTu3cCDreMb8XR6Zu2mHopfE1O25XNjGHDj5q4/yWiYBDm+YmrwhS8jxH6zM5V8kBiZJNWYri4D6JQuln6lS4d28Lu+HCN+CldIal7/Qduix3QnmAm5vUXQW+5Yo1kwGprg8YqOxuzmmfitEbl+oPVjyrNSBVDDhBTFOPJ9le1OomGNS3CgxR2C4v+YuANJffv6mFD4jzZ6iUYUiZefQSTWbULXB62VQSDPX4qNQLWmTHdGBY/3CQvWWw91jLRwSPDtLy6OIAjLBQLnWW2KbNoT9f0x9kr4K4GhOMmA+c1Srb7os5a5LfErWqb39gIjaURJ4LZHSF4mCxKIXI6HAtcmH7vwcErpBYgs2LkIldirExOFTrZ1Y3Cxpxc+uaPch8NqyDarVCThfs9FkfRQLIaHZdIPgU0ArCgCNeV8SSetKKG809z+muBMv6t2TJwsweZ1QhvZfm7aGKIDpcOTSZNTWwsU=",
     "quelle": "Epische Stufen S. 24–27",
     "hausregel": true,
     "nurEpisch": true,
@@ -239,8 +390,34 @@
     "seite": "Epische Stufen S. 27",
     "beschreibung": "Bewegung wie ein Akrobat ohne Proben; akrobatische Einlagen kosten keine Extra-Zeit; Aufstehen ohne GE-Probe.",
     "voraussetzungen": "TaW Körperbeherrschung 18, TaW Akrobatik 15, TaW Athletik 15, TaW Klettern 15, SF Standfest",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Körperbeherrschung",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Akrobatik",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Athletik",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Klettern",
+        "min": 15
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Standfest"
+      }
+    ],
     "kosten": "450 AP",
-    "erklarung_lang": "enc:3:t7i/3uOmJQlnD+Hyg7EHJres2yitIQMInxlhhr6MDuXRL7g7736O/ttmf+b1Qw38Y59AF/z1S6QOpnRqvU1zWDAOn6q/25Paaws9YoIV9rdAJQlBGaiMnVRe1D8UIwEmdXjFkcvms9FHKzepwXbdYF19hVAcrRgxfElex1vPxT1padL4QPIgUVPyCyquXuyf5b3G7ibseUWzJYRwQuhfr1JiWiEQrAcbVKm4SXYUymN8Mh+WX9IbZZXd/AfSwE91gZGJ/hkuSwx50j2b2uxfYw0pDPQQC+nKdwtpk5mTrB+iSCpVA9Gl3OqJ3YqGQOeusJ5jwx9zmgC9I5wOu4JR9vEYB0+IB0DCSg1drX0LkzBhu/VAN44hV/5c3PB2yI5hkMRXi/tHJjTNRzvRLtY8p68zm2cSxNFByLZvd9On9odsA16CdCw00KBJu2VecJZMd7ojdm3If8D/XA6+kdsXpc0cQRBSeQV0jBFcsCL4oVCJqEwImttHdvaz8iRF10XVzsA2kYVBkakcHlrXwPVFesYLhCo06oeyKkcdT6URj8NxoMcMon+WuqmWaul6kdOmczNIhyXl/npBMI3JySLEVo+LebwDn9HfEMhlF9GSe14AZW8sERWEHkFvwgPGTS4TKP6KUTZHjYLz5L3/khR7q9kLUASF+Cvks7wqpGlutb9LWz928WTH3Ut/eesk/BnLvZqyOCg=",
+    "erklarung_lang": "enc:3:lJ0fRYXkzWKfWKvMhpTDfQH5waTxk8Nd1f3YUmCCZSnrhEYpOvIT9ysOvg8TV6TVTfH0TLEibn/y+JotCAB6MAx00j6wjMWtrDQ8XMo8JUX4PZxqgf1NlWL+WlvxlpA/kdD8hp7eAETDHKJfINQ3ylvcaT/prJlHfSs/IHq/Mnsi+Zw651nQ8maYpGtv/lbJJEEGYTJs39DctrBFYeUMoqWWxR+Lxq29d3sn4MDjYNOvUu8wBejRtaLR9utB4u9a1FASQqVKy1wSC4ZyvHZUJcXiFCVyggHePs2neh40j8TOqlH5qtMFWhIUDmcR8QQ5zccl8kSIWZG4yakkLtPpUehB20+OBPKY02jr/l4DSCcIdv3iplgSKswARZpsMli9GRCYqsZitTsfz2vtEOQFROkHvePT1uUgQe19ODy/2dQmiupcFosYpqvrxH7I9APzduodxwPvBkXJ2rMqEOc0jQ2odwqwfAQ2pzDBhrasjvhdOY5BJS4Mk4uSLN+aIfwHsloHIxmWltiQQDHYq30gSkt7f4fx8UWDUrViRE7AB/upIORevsaCDEf04OGHTWZvTkuDj8clSQls7T6RoiznhTaHQzF7i1JPR/Hv3tqC/pmw1/SSrKjer2qphuYq8a+sYCupo9nMKMQttz4j2jbFmMjizbQ9eRp3o4fHvM5Rjf+LkN56653MPherrr71rKn8HplYRiE=",
     "quelle": "Epische Stufen S. 27",
     "hausregel": true,
     "nurEpisch": true,
@@ -268,8 +445,29 @@
     "seite": "Epische Stufen S. 28",
     "beschreibung": "CH-Proben zum Aufwiegeln dürfen wiederholt werden; Heilkunde Seele als Unterstützung für Überzeugen/Menschenkenntnis.",
     "voraussetzungen": "CH 20, TaW Überzeugen 21, TaW Heilkunde Seele 15 (passende Kulturkunde)",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 20
+      },
+      {
+        "art": "talent",
+        "name": "Überzeugen",
+        "min": 21
+      },
+      {
+        "art": "talent",
+        "name": "Heilkunde Seele",
+        "min": 15
+      },
+      {
+        "art": "hinweis",
+        "text": "Passende Kulturkunde"
+      }
+    ],
     "kosten": "300 AP",
-    "erklarung_lang": "enc:3:8TY+CyFPNq2acGWxtAHlQ58ogd0Z+IjBeMBczPHFQ+1+jvQG1KBgAiLTWnDE1Wuzd1p1Kd6zYdsF1v4Pt+YoBvEQxdayZPIgO0E3x6uZ9Ju9yxjiQFJdhN+Fj213YWShB1UDExPdD7I34ClMWWsbmSPXgPSSy5Wih5VtL433lJD/RRbsYiORjNZSCX/di5s8wIiXjUXuxeSEM5tZ02CW45XA+JBazvc1bK2ZVSnV6dkUE2kbGNsIQ9W9iJwCUu5s6JhmK/o35345/2BxgaInFNI5s/bqgP81sDsbCBji9MCuhxJw/BD8Xt+hM20OTYHECZ3qY3vnGZUQG3P2zw4qi/A5YNB3bpIy6RBL0BxdIYSAeSGIYjqNnMK7G5bCpI5Ly9WFYOI0BBWB50WRRDIos9oGemniIXBqBBut/Hd3ORuDl4TGzNytpaeYlDpvaWQMsnd7NvlIH6GX037twhrIpQ==",
+    "erklarung_lang": "enc:3:YT6cjtrm2/huBnZFqTz/+BHiBOeqvJEdMFF136MkmcrEDUrdzxQtQ3XKsCDt3hVnUQNumokCOVnyeG2+IMGH9Swen0+aXEwKFpCHOQtH/fdWhrR7qphJDlcFOCvzLkqRxZXv1LCFn70oILXE+14DrjikNEKmkFwmh3R1syDILnk+4qS7z475S5eeemTP+N1JZKkBjjcY3EukY8MuugkeVhD/U16kExDGiSo0E7rqqGMbcwZUSuRMVlDGEzSNDv9/P9F3w5uW5a4PaUw9zLWrRLYZrVlg/DcZQRm48DBawWm35ELfARii8eVu3pN9X9WLgVT2nmgGIJY4oz+pQB1DtxKBg1lNWgPfNU14Le/s2ajKVq4Hw3u4ckBVKxpUBrf/PjqDP3yO2oxn+7Nt/qK3IYAFpSafbGQOpgPhWMl+LErBNawfHM2fpQXGEHnsanTaPB0wOgI3e/t2w0he5HWObw==",
     "quelle": "Epische Stufen S. 28",
     "hausregel": true,
     "nurEpisch": true,
@@ -297,8 +495,20 @@
     "seite": "Epische Stufen S. 28",
     "beschreibung": "Mit Schleichen-TaW/10 GS bewegen und als stillstehend wahrgenommen werden; halbe GS ohne Schleichen-Abzug.",
     "voraussetzungen": "TaW Schleichen 18, TaW Sich Verstecken 15",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Schleichen",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Sich Verstecken",
+        "min": 15
+      }
+    ],
     "kosten": "400 AP",
-    "erklarung_lang": "enc:3:wB+9erbyW76ZyH7c41XFuhRGg0rRZhZgH5S586ybjcfr/2zNagj4vz0ly21yz3ov3zmQvbdi7WWn0qXyHY6NG9Ewq5u3DjJu7NFOE+ZS0XmhddZN6Y3HVNa4gJcO8pdNlME/ocvye/pzdn1F0//v6h2Y/2JYZ6Lz+qTzn20nXPfowvPt3l6tv+OH2HEWIu7y/L6Sr67Omy2rMC30XO0qfinoIiptXGvcc07KrGuTtkDyfym/VoWq1PEShCE0YESMo41J9i1T4yok0SQrOGvuPeAqxH5pcD3BJB94xJ/Rhhe6mf5pPqaPqIYdldoNWPOfAOLqN+vPeoLM9vLXGVAXTwGf+NRhy1DnV5b0x2YzxntUpxX0Hlp/WD/SxcnXLnxIGGFnhdxL8ZmRifD18PLFfHwpxCH9ge59CJYr70jYOKpSpDTTxHlbaNKPAjOht+MT2HJdieXmzQr4k3fia+6EJL1RJ3ztE0oxUCPh4nub3qtsUEJd7tTS18X8QIr0968cCEHYRZO9cAuNlPqnTtBw7sRbqQ00fVBtQymERlvzZ5/7Hnj+x6pyZ3qspZhm6GUbP7WOUxk23ucocwmSAJAUxBAgDNFaI1x2XaqrEGs/+zUc5J7J9IRBNQQ3kPu7kxs4X9L4",
+    "erklarung_lang": "enc:3:xBx6OAEk2W3fiXQfpxJIx/4jH+2vdXly4/GeLOm8xVsclHbH/SnadYkckxnMMMqvt7xhhcCVdIEDXm/plVhg5JHy9clsqcTt3/HeCs/AVg86nvIDXybVFtfGfz1pCM/qWIZBKJAuUhmmkmOI+OFGGClYffARTGWmR4bQP1Eylleh7kQHzwCeGhJFQU/pvWPh9z5eo1cr3PeuLF/gTJWnULDixCQOU2TuVhDBIlK9W4YcReL4Gla+IkwTkq2gT1Ms2sowVyvZrRD/s7KYtMFGect6/DSsApQk5OfV3BxFaEwBARA7LdQjFnGBA12sWlN43ADGfTSQrEPfsRyjOmlbbYJkHohuEQpPTMzYooMyAfFmeuHs/6lTqxFmezaMIHEhmWYtue/mPRnc5CLoTN+SxsPZiZFTGK0lbOaLI8axs/JfBw7EY1gH65y5spnZCIppRLnKO61vGZBiEQF7q49eWj57Hlwh9rxvzmmNmrAFfAB5Vsv36VmAgnJaUh2i74V2M53A3ikjYadrHEg9YEsu6vxFO3T2CrcWxYflEXc35lIRZ7Poq4BJkk2Zn9gJeDksAQHUizkL6TovIvWm0Ldavpsw+lzo3XE1P7ep2Tplvn/zOcjeDYsFR9NtZ1ty7TaMwMx9",
     "quelle": "Epische Stufen S. 28",
     "hausregel": true,
     "nurEpisch": true,
@@ -326,8 +536,20 @@
     "seite": "Epische Stufen S. 28",
     "beschreibung": "Umfangreiche Boni für Aufwiegeln, Betteln, Feilschen und Lügen.",
     "voraussetzungen": "TaW Überreden 21, CH 19",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Überreden",
+        "min": 21
+      },
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 19
+      }
+    ],
     "kosten": "450 AP",
-    "erklarung_lang": "enc:3:w4NM9cmO6EYnYTlcysp6mi5zDy3G5nKoz+0R3JuHDvNe5XCj7jxpjhxKnVvlguppkmU7gX7xd8/bdLfpF13q3Zm+xVJu7QS9hVq7FlrTgUF7nAhZvkhBJFQVhc8y5otyh1xDRVgXKZj6BUf6qrYuxiAU0AZpd2JZ2lcKBUWkMmuwVMZFuZF/g7C00tI16XNzbMmTuZbLmvv4y/UoPpVJGsp1ikkUA75q1/ROsDYSdc8C40O8vIr3TDblLmoFHKBKF2aUAeOdmrlOP0l1aCgSWBlX0bGzWAUQ9XdlSdrvRBw0YonbL0TG/z7QI6iITAenKWl/xMUO2p0Zm9mVID1hB01xt99Fa6ytvqPAdq6ltldgCQjHg0wI1w6MyhslLMsDvvn9+SR1Q5OqZB+DLAF5uyL9/ku6wGnYMPmNyf1uYYk3I75gyNeRGmzGFrXyI+bSm96NGWmegfivLEvId3xQYBKq7vRames+caXpezaE660TBysYD7tsTnMkCYcTHOWEGvYM33mM3NgnpIxd9UCYCVve/7lm9R7yLxol+9J4g6WMbihpInpBfIlYQS4ZXNdzArNbICPWN5uI9B120bx0wB7bT1OqZU/MtmHCkyEij8avLbTDsCS0ZCC8D2KvHG6p1nCvzGvoDj5cWsNhoJ98p8ggyozK06zqW3FZHZ9yE06tt5LqfuT76PA1sqTfsSVTe0R5nhRj8QuSBz37WcqDhbfAgI+Aa6v2Kgkp2+CZ+uKwkljty3v7sV5WRFW1zw8vUA==",
+    "erklarung_lang": "enc:3:DJW1cdK8A5O9LdWWMNidjguVBQDlrdeahNf41o7d0DXsKfr4yFa3CGCJHK5hb5tJnN+bEvScEZfWsUjJMsn9QIihvj1+9AbqDDGtIUng/19KK4Z1AeCAZNyiDd+QJAS4GhX+LsY1FGE5XZy3SHzZ6lLxj08cx/r80YHRZ3FRMYjDGfia74xj7vgXgZM6LV9jejJUlUzAQXdHAivEXUyJ3Vj77BhnazJ4tJO52mxb0ooAIphB6pX/E2p955WLd5xCrfFxKduuqsz4bgTKv1BeEvwIecnzJxh71DlrXLEZXaLtce9WedMi6LKy7qU2Nh7IVfMrLEP6d8uU+ih4JfXC39QlaYwNnKgw0zkHGrac0IT1uvduJHWIoPYdj/azHXgJ2788hIa2liUGtwfjhGsHa+wpunxlA9uMh3gVBGDfMbpDXAap3bIt01MiK2wpocMowwQ29WLnCet1zcphtZv5ESWV0T7a/595D5UPTSsHvn6dSJTTVvALZUGYnKI9XXTtIx2aZ40i2QaNYicUFrevYdmgDl0UniJ0ktFAGZDb0k2V0jEDxQBCQcFCnG4jzPZtMR8ImQeVTnCIUY14RYTiYeVwynTz3K+WUJPJFuOLI+ikNisSjLqSFgEiREvbRj3cBXHAQiK42zAFGCX+Gp9UqQO2BYiLkZzzSHq0K9HyjbjtJnxxhoESI/5HVLwk4suHnanGZFEmjI6lSPHcYV3Bze/5u5Ndmk2o/vTpdN7sfj7sWZ4440d66x0zX/aD4lVOtA==",
     "quelle": "Epische Stufen S. 28",
     "hausregel": true,
     "nurEpisch": true,
@@ -355,8 +577,39 @@
     "seite": "Epische Stufen S. 29",
     "beschreibung": "Reduziert Hitze-/Kälteschaden um 1 TP; immun gegen natürliche Wildnis-Krankheiten.",
     "voraussetzungen": "KO 20 (18 bei Resistenz gegen Krankheiten), TaW Wildnisleben 18",
+    "voraussetzungen_struktur": [
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "eigenschaft",
+            "code": "KO",
+            "min": 20
+          },
+          {
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "eigenschaft",
+                "code": "KO",
+                "min": 18
+              },
+              {
+                "art": "vorteil",
+                "name": "Resistenz gegen Krankheiten"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "art": "talent",
+        "name": "Wildnisleben",
+        "min": 18
+      }
+    ],
     "kosten": "300 AP (halbiert bei Haupteigenschaft KO)",
-    "erklarung_lang": "enc:3:Sj7Yk9XMonrhngr0+kJiE3lIr4TwPPv+AOeFGhDm/lgHBC6IYitRcsrhnS/IyITsC22SozJLDyYb92tHvf4hPYt9patxxW/3sfwyT9P01Vv1TwAA0kzV4yYi6JZxQrR40wLubAlUSiEf++w5oSnvRmkwiY/fOGEI7HefP81KUYeTQKjQHoq7QBq35yMJS7oK1xMOPhahY24Xrp8FamKsGwkgv8ZMA3zVLuWxEEO0HMAzcjPi0vLeKRHS4Ug5l8PIGDa3mhyP5GJE/1LTu7Vph3IsiSLWD3vB9J8HxRx/SaN4m8aZkcMN7OmIXZzX3MeAT8sanb8M7XjWLpdWRvxoLegHhaZ13dkZnzPveCQjdb1LKkcFmloXgRLuc2zeSerBfCwQH31puWohKe/UdeKVLK3F+vb5iUYT41zhOELP91vtSMVWHf4z5nbpe0Q=",
+    "erklarung_lang": "enc:3:VVKkFdC6c8y4TBqEoxr51QXZyp/grxSTlAtw7aXTd0+NRDrWkBVqvJlrwIlL5qJe0nf1nqY1RLR5QStmBq7+RUXcz3c5SzLDWqTbvjQnAU1JQz7JwRZaG5TGP7vIz44+7fMsF837FQIwCRHQNQqK3djg19gUOfZcKOiokdHefB8C5dyegm71DlE+dAnpfB9Dkn2d1tfjlo3bA994J6DCV+OHuPsMC8PMUyH7RpXL84+WNtBCbDbEoRuPkJqvUquSH47S2T8n7ZHMLf0vEvzBS2qIjv5+EHE7ppZjzZ7NSej6BVG9i6HuZ7BlH1XFF65RTO82UrGR7F6M+qPssDUpn+hG+SkmAfZE5VnnEF79PEgKgn4fn43tdPQcUHZZ1Mif2ckaqaXg4aWlEyDxKaorh+2prrcne6E1XzxD2RkRB2Em/Xpl+7yEAOfZvig=",
     "quelle": "Epische Stufen S. 29",
     "hausregel": true,
     "nurEpisch": true,
@@ -384,8 +637,22 @@
     "seite": "Epische Stufen S. 29–34",
     "beschreibung": "Meisterung eines Handwerks- oder Wissenstalents mit talentspezifischen Boni (separat je Talent zu zahlen).",
     "voraussetzungen": "Entsprechendes Talent auf TaW 24; beteiligte Eigenschaften insgesamt auf 50 (je ≥ 15; bei zwei Eigenschaften zusammen ≥ 38); alle Hilfstalente TaW ≥ 15",
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Entsprechendes Talent auf TaW 24"
+      },
+      {
+        "art": "hinweis",
+        "text": "Beteiligte Eigenschaften insgesamt auf 50 (je mindestens 15; bei zwei Eigenschaften zusammen mindestens 38)"
+      },
+      {
+        "art": "hinweis",
+        "text": "Alle Hilfstalente auf TaW 15 oder höher"
+      }
+    ],
     "kosten": "600 AP (pro gewähltem Talent)",
-    "erklarung_lang": "enc:3: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",
+    "erklarung_lang": "enc:3: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",
     "quelle": "Epische Stufen S. 29–34",
     "hausregel": true,
     "nurEpisch": true,
@@ -413,8 +680,25 @@
     "seite": "Epische Stufen S. 34",
     "beschreibung": "Tilgt Abzüge auf Schleichen-Proben während des Kletterns durch das Klettern selbst.",
     "voraussetzungen": "TaW Klettern 18, TaW Schleichen 18, GE 20",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Klettern",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Schleichen",
+        "min": 18
+      },
+      {
+        "art": "eigenschaft",
+        "code": "GE",
+        "min": 20
+      }
+    ],
     "kosten": "300 AP",
-    "erklarung_lang": "enc:3:fiHQIdZ4nLoYJtUsrgbfqZcf97JGJeI5CSkg6LGOCTG9zWwu+aAg5UsUROpbVwcQa1QJTYCTtgEAvDrkB4dGCetqncIK96fCoETMeMjTfQAaksYXbDv/ILfQB7G/+X2GXRtuMiZtPkR4ZFbdyqg5Zh1UcTj3MLunA2VP2xg2imaEH3VK+QzBnqgGiUUz8nvb8iHk/DkjxfNKCAZXAdaq+Kz3nRezWfsFaKAE/aXW6ChfACXHhvxd1gbSOCf1ensrtnrtvCa2b+eVkL5IRUekZlfk8ZDYTaspgPJt43zEscLpLXuMcE+Fx7Jb1VdjphLEwytDxkElSA==",
+    "erklarung_lang": "enc:3:txMk9DRYNda5JvShCJfW4Wx9c5xYzHq+Dcsg3gY/YaBa0/EBqoNvyid2pksxk8BfWggKZv9ydfh/TY/ibhaFnAZZks9xrhyYZLMODbpuZgP5f4MeQWwwbX4QSNC7v12ZSVtFaadbNRH1xg50CVfU60Dv50QHPz0YHO+2/u+0rZagNedocEZV/JePmsuGoS2RPyppxPi2uG358yev7xO/vrntfY1iA9zCjKdbco7/WAZAxZYXgO89+epgdw7NKZnFqFOkVN9c86q5bZxj0bqWmK3f5DPOxXMFAM9AE7sh3FLSVqvYoawAVmPG1j6Kn8p9SsiZ3iw0EA==",
     "quelle": "Epische Stufen S. 34",
     "hausregel": true,
     "nurEpisch": true,
@@ -442,8 +726,24 @@
     "seite": "Epische Stufen S. 34",
     "beschreibung": "Schlechte Eigenschaften in Höhe von Selbstbeherrschung-GP können ignoriert werden.",
     "voraussetzungen": "MU 18, TaW Selbstbeherrschung 18, Vorteil Empathie",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Selbstbeherrschung",
+        "min": 18
+      },
+      {
+        "art": "vorteil",
+        "name": "Empathie"
+      }
+    ],
     "kosten": "250 AP",
-    "erklarung_lang": "enc:3:CiXfpIVcvKcoLRuF7EJFA4JC6xhu16xTmDgzYrUb6aQhd9kE4CSsJmehvhQl7JYfavGvZ/WyNPizrgF8dtcAwoR/Z/lA/Q7K160g1lCHOqtmmD4YJtnwSHkirCHccef5Zvc52mfwFz/9FLXgOuUi2xdxvNe2VQtTZ2vtgFvR5qFApZpED032jVtOp4dW85ULFINgtl+GqluxDeSQ8771UrXP7kdeNvnNnOE0zEuXi6wR35YkBMfcDw1LHs+d3prEJ6dhOBMW4hJeqOb5x1mervEwqEccPg==",
+    "erklarung_lang": "enc:3:wSuR7m83rFZkTBh99DAjPHZ+vltR8KFrCqn/ONBWUAKrjen/7xunPi9nsENk4Dp4lugIjFsrwEgQs0VGZaPlUTBsTTm3fqp2RDcUf/vM2odrYA4RKvG0I1XKlMIIrui3SNcDlhL3IWKnE7CuWrOSjIPk5BHChjgkVTDyUg6bAEa3oIkKvEPWIk7L8zUZsRtoTHQlQ2lqWW41+lyaR5ZwGQREUS3726aAwDYU7tWEsY1nlTISOm4zZHadx+/B0Yw657guJPFEDpASwmfB2cAN4LsM1gCRrw==",
     "quelle": "Epische Stufen S. 34",
     "hausregel": true,
     "nurEpisch": true,
@@ -481,9 +781,20 @@
     "seite": "Wege der Helden S. 276",
     "beschreibung": "Erlaubt es, den Effekt der Vorteile Hitzeresistenz bzw. Kälteresistenz nachträglich zu erlernen.",
     "voraussetzungen": "KO 12; kann nur durch längeren Aufenthalt (mindestens 5 Jahre) in einer entsprechenden Klimazone erlernt werden, ohne weiteren Lernzeit-Aufwand",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KO",
+        "min": 12
+      },
+      {
+        "art": "hinweis",
+        "text": "Nur durch mindestens 5 Jahre Aufenthalt in der entsprechenden Klimazone erlernbar, ohne weiteren Lernzeit-Aufwand"
+      }
+    ],
     "verbreitung": "7, kann ohne Lehrmeister erlernt werden",
     "kosten": "je 150 AP; kann nicht zu Spielbeginn gewählt werden",
-    "erklarung_lang": "enc:3:DVW8f0lxaFs7FEbvia+PrqUfqiFs5olqCNFFAN61kDfhHlb584MC3ME4RRgJhRLhpKxrzyFedH3xLnVlfyZMJxnf+hX/RdWBCic8S2YtO9hUlvrFFd0rhjUg9IRN+BtK8s9mwLdpyHRHB3ZxO4YjMLX8Yq/jpRvPgsUWPax3fjgp/oECOLbstoICg8NAWJCJK3Ti+WsGDMs/KDGw1sRIilirjPVgPRN09fT208MeD4rL1qTUPlv8K8DVEI0mVOaIKnzaUr7Sx1IgSZqqPXmPxrUJLwIf23FDCOWpvudmJmN4tqlvN7T7PM83xe0dEpgCq6M2DvAi9oPzvBITLMAW21yKNjh2+x+2fbT3bh/M758TAG+8TbTLvzftCFdGlbng+1KOwQ4zHNHSZWhMqSb2o2JfQ3qgEXIfuXGVCVkb6/RP/3Z0yvHC1mCG5G4iuqxSWc/B8rE/DSVQhPHszDsmzediH8uBU7F4yiJ1jFXsFDBW58IWuuNneZaT5TqQewQQtuuZAitRFnVimNaGb8+IA6xW2th1Io1khvoEWXV/LM3WOQvxe+gb8oFAYu74yZX0ieR4kumvgo/xoWahWPNceW0MTdyTPf5Qv3poyerhKE4CBUDoRoCWRfzGdhrEAGlWKAZ+Wfc8jkj1nLGssGjeHYBNA4e1tOBUF5Y2D3M+PfxtFQ8/HBnnRIej2uZC+xbwwOqV8DpNC4jbC1GPYHGAsDKeyCp11rTYXOmFhR0B2vRgvqeXLE0spMpHZ6WawLSTug21nZHUqmXwRj77Yr3MFw/MtstpYJrs8WyXz9Vnyj9MTBBN5hJYIybvcrByEsKIfpasMAhYXZsY+RSmW12RhYXNv8GIVLUwonP5zL+gzQzkUq9zmxy+F8iB1U8Wf2uY8hN54hBxo4uNtKY18w5wIzRoDGxzNua3RLjxII7AIvcyp/Dp2El71sbFPlB4Osc4jP/lgmPmibcbVujLfeMsAsntHusxB5Fn+6F7NvFBLlM+EF7EusB19tQ=",
+    "erklarung_lang": "enc:3:NAbqCoVqtIdrLoY20IOD6BEea8JR6NjjZYUyPLpNIUPIIwylHccVSG3ENkIuo2Uy8mU9gLWcEno19Shq3ggyO977EOHMupNxL5HW0zdRbZ06yOpnrT98pjEkGKYGG1rLK/W2itw9H/EeFttZ7ybOGpAmhX0sJOar9CP6HkPQehCQrDnrqV7igUZQvlBc1LD1/ZiOZ+4BW/lWKI+Qwp2H7n+xfRYwPVLVKlM6rxsn6TkhoZ1tEsmSZ2WlMOpnJi1CbndRclP+kQ5A8CyicXJijMhklXpo1M+LruH7os039B6wIFrFRsRQMeSWk6fS9qY2b3vaxS5lpq0bq4wVd2gIWRnTt9GvP/cwhvzOvkjk9C7phVeVWzPT0socE6Bh1NOtTcmdPjDEy/nvBAg8ouOo/gQK1sXV8LYoj+aNBR+xMMKWUn5k2et8zUyNcETL4/7nMEKisfuGQ41wf5j7oNwThxE6cn67HAVj0W52SLnsewxl4bjATAHhBgADrDdZBWXwbFKMFQ/HTaheOu4/d3ieLaUd7K9JK44DtyxJ9OkVSDdUmJciNxNF40qMtVL3t8fRJpoGJnXR1xmbtbuvXnypB1akLg5gYclOlqoM57ZeCHPcT+KkIuyEcuoC9UWX8ziZ4gglF6yB2BzEg6iF4/IpUOo28bsFJv3dZ4kkRCEg877eJE07J0H/CXmT7WAbNFaHKyuk+sWNuWyeLuzQkhC4weV/BpDN6QnOwCyl9cE/xX7KRR+hNVLz267cy5coWguU0toL75mCE6Yy6tr6/hfelbEHxYkFLXZFlOzCnqp7emCwu/7VNLL1YKhQbhZx51NL8+D/0yugMg+hr9JLj9b0s1DqkAiDL/nvq6Abt+ku4vqgoVvsdZRQxnSYZzNawoGSkAY0VOINjLPZf7UA64L9WcTVyqH0urwP7ECBMb66u1Qh5vuCMNvrVZZURQKNwUyejbTyiKKzMwgi28iGMntWJW8pEv07rVIB2pHQBV1Hi23oXz8ud3hDJ4c=",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false
@@ -520,9 +831,19 @@
     "seite": "Wege der Helden S. 276-277",
     "beschreibung": "Der Held kennt ein von einem Zunftmeister erfahrenes Geheimnis der Handwerkskunst, das besondere Herstellungsverfahren oder Materialien erlaubt.",
     "voraussetzungen": "Passendes Handwerkstalent auf TaW 15 oder höher, ein bis zwei passende Hilfs-Talente jeweils auf TaW 7+",
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Passendes Handwerkstalent auf TaW 15 oder höher"
+      },
+      {
+        "art": "hinweis",
+        "text": "Ein bis zwei passende Hilfstalente jeweils auf TaW 7 oder höher"
+      }
+    ],
     "verbreitung": "2, üblicherweise bei Zunftmeistern und ähnlichen Veteranen",
     "kosten": "100 AP",
-    "erklarung_lang": "enc:3:PBSwWwJd8xQ8XECTFke8E/C88GP8ietkJzJLEg29YQWfDbBEARBeF31aVdvBH8MwyMQQ7nU3le2pyBH9if2UiBZ5vtowXX1vqloov7K9MqXE11w04fA5RhGdZspC2ZIUTd4K8ei73LTgCricNQtCPaokSsQJpw307XyuSOD2+1qqax/XIkmEUWI1NqneKrl1mV0KK0sqXMimQOucCvchqX8ueeMxqGGPzxNsZg9uKu1Kvji17rNka0G+MkyI0sByrWdlNu7n2ln067bgfUhldt5bEV1lAYOIYbR267JtNlumzYIeY3FP2Kr6zkBIY/ttbxDitFVmXvwWdH5XMDJQs690qjPY7Y759Gq+5D47Hc2nbiSWy4zf6/NUQYMo6CAzeLSJFygyYzWgS5QYzOCFLxN/Q1C2YYLyBHT6+ILtb8sqbPgpLoYT1YarkgPhvL60Ny82A+vK2Rgxtn3rhm3e6AlRi+L04KGfHeSNA5Oyy55XPpoEPOtiGvTyjyHoYd4NRDPRGvzAM1obiTSDB1LIuQ4LbVOQ1PjrwfAksMEVxweFzk7XaBdjgJxBhae0aSgfHa4R32gQmp2B7uQeXeuT3y/MFa3Mmea6SN/oVKu90ulxxRqyOIelBoP/LOTLLD2LLuRtbi+Vdp6QXovbqZR1sOGw+qyFHN6aNKoJupsAGntZaVmI4OZm3keKeMKN3oih1YMps4GsLDPJSBZ/nzdRExHpX8NRclBfHOBBiS05YAvmsxWBlMvwprvXcm6fRPhGKltOKDAmEocfjJa7fhT/+Pr93R05huM=",
+    "erklarung_lang": "enc:3:IJ70K6uf90avffndrmAKSiVBza+rnE98kp8wZvD9K/KO89t7xvzEASGuSIkU3SlW1PJD38luC57+XQC6GiU6DR6BSByRkX8u01RJ6ahtxTi1azot+p+8kbIk8pIFBJnCxnxjZEGKKPifdl4E49ryl5Ak7CvBzjmCFFVMtkyQJQLNwZKZbSN/RlnQkeLqp30yAj0Md8SqfimFOqOoPNeapbsWEgnf67WSvBss8/cSlOkdx6UPTJzPkCUYawlCEQv6M19dxrf1cG9j/8+1k7PCFk8ldeHz6vy7dpn7ECv+9/QvlmNzZtAWpJjrozAsn7hWrhx9VEqwXke8tnWqc9Ww7YC4S+1ZDGvSdJrLq9rpilnVdWtruI7r1zEuvqblXsZVeh1JlojYktkI9aWMQRYKKKCiKjwL1AjjishPUXdlUgs8xH3S3gYxIA5eYxza0Mo+n1d60FHsnQVQLmmZgit5U6IYJ1PSGhMtYGzfTyOFaRQzplJz726hjRcDQ3v5cb+25Uq2gEJcmv98xpT3dzD2uc3FUnldSyLclaomoEQj+7JxdY6EY5It4GcEYL8RE5VTqiob6ZkU4LpzFug9PhdUFqbqM/GHZPJ8ceAVR1agIg5xT0OojY/CqNLo+bPpPtyZfT7csoVoiLeMGli/CrUlNDaPxBEVVTD3wTSLpABB1i1XoMvBbE5WdPzgG6N5VG7YGGEltdXCqcSfgUrEfiQTxGCkCCU+M2GtRrhn0KWQqh83DDZH8b6U/lSCSt3fEVo5rfVt6WuzJtJh86gmU3yLuJD9QsVWxbc=",
     "quelle": "Wege der Helden; Auswahlliste: Wege des Schwerts S. 42",
     "hausregel": false,
     "nurEpisch": false
@@ -536,9 +857,30 @@
     "seite": "Wege der Helden S. 277",
     "beschreibung": "Ermöglicht das effektive Fälschen von Schriftstücken und Kunstwerken sowie das Erkennen solcher Fälschungen.",
     "voraussetzungen": "Alchimie 5, Malen/Zeichnen 7, Schriftlicher Ausdruck 5; passende Schriften 7+",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Alchemie",
+        "min": 5
+      },
+      {
+        "art": "talent",
+        "name": "Malen / Zeichnen",
+        "min": 7
+      },
+      {
+        "art": "talent",
+        "name": "Schriftlicher Ausdruck",
+        "min": 5
+      },
+      {
+        "art": "hinweis",
+        "text": "Passende Schriften auf 7 oder höher"
+      }
+    ],
     "verbreitung": "2",
     "kosten": "100 AP / 2 GP",
-    "erklarung_lang": "enc:3:yPMtvVJ/UoUZmU3RiIWa4A6PsXYqHq4iQ7lQgNkqzQeq0YHLvkuJoAejwV6hffYcBAS2ypF3u9PzP6OK4i3kI1A12SOLcA2E9llZPpks+59+OJTFdnkcCEu5j3jz34Am3FVdZAyJeM1TjTIklei85Pp99oO3RFfLZwU3c0LM2vnI3buNCIOx3PXJJy4i0m0f7pmZJr2UEOVmQEuzxxv2eXdZBxETnuPJhoNVnSKn5LsLRIsf5hZPtjySjmKFdwJ8KAvqTrQGRqLLjn7FyiCkk0qjYSXuKY7FlrPnqJC2JWZ/ARlOs54poAO421iY9K1cbdJ8Eqa6bpGe2fdA/fTZSMrsiOIxhTb8smfz9/UckAxhSawyH6uhj5sQK8q6Wgi/Ulyb+ROKLO28x0eoyIcfd9viy2tjjLLvN4fVLKweybuGv4PLGEKpm7K22A6Sz3KrVZkLPiRZS4vP30OYAG9XGQqwkNFa3/7hunFvWTfNUwGjgymJlG61cNH3xiHq6xcif9alGMVyf6p+a8l2Xzh74YQ+6KVo3kJ+06X1beUiZINp87RtDdy5oA8yD5lUqEK38SWmf6pFlSH56f6y5+9DjbSGPNvUSfcIiaGi54Y4vt0lEnOgMHkjhhF6qKpBB1YswxF+aOnUCgZoVtGXsRyh2RM0O3aK1sm0BjxAFggmNepVU5gzNNI8vyQ5Dj8+oOANJkT+1qXMZhzZPbqEawuAJLas6AcF//aRYbb4U8H4GdaAk6k8Qh8iPsmDieTJ7bNmSKUzTK8S06lGQ+tZ8aS7rHsOgaA/FTjppTxzrgjmkI99er2OSbvviwPu2UBUpHTN8HiZGBEV0lyHyWfvlqe+0HzHVwg6TmmADtVuuGrou8LszCCUEFZ+IZHhly2Dh6djXcD3M/y4+A7tKRFSdq46+T7tFg==",
+    "erklarung_lang": "enc:3:E5i+cY9PMKcOcoJxKqzDOyYtNnDcMszbsXtelfbHWapappPZQsk4EzPgd73uMwdcYph6fuq9iAynF+8qNRdUDWlC3OUiFKlUfRW5QJy0xDrCEtEaS681vrHxgtwvEClhiuXOBZA2aHWYlUMlBQoNgdf6pEZA6zptpAvpCsGVhAoB/rVWqboysQ/bkvymTBB83NpFfDVQmww64XsfmxX5Ixdt6RIWhJDOlHld8Wr20yKFe4NFYAoKlgJ4ZNczPE1RDAG710Lv7cJ7DyDw0J9CeGBBwyqH0QvM5fLbmCUxeUwjY4AK4EW1xPpDIzDK5VmbwT46XcYzdsbdbRjkUYWVURzqpBTTHSUatJclE67NMd93ZMEIjC9nNxZ1cqTE0fxCB/UuqpbodaUxEF35KU1h0BnRTX4DGb0Z+qobpt6hss5FTqw1ZZZuYvZ4gB5YSLof0HEAgIyh53DFP2ZE3RN25U4D4w+N1yTePqXtatUYaJcKFuwtXSZTA1P1RZox5G5HRFHVGfrHI8bEF9YMG3Apqxk1GvBoGPpVpA42kYFuJ7GFxy9bI7KnCIJAUpP+Z+C6Gtj7nwTCfHJkBbbkQWTsfPp55ZLFXQyXvinf3JBzuCYibZ/MCum7XjLHyH8Z3onQufxBxwrQ2FEovm+J46i2xyuyeqcEscEIYDUMsOqyLhZAJG3BTbVCWQuJ/Sz8alnzU5L42tOSVHqCVvsQLYwwGstEXiDkY5lf3nhHZjWQ4BcM9XOcVYWl/U1CwFG9AEv/rWXFVbJ0njpObCKcim3s+3oJYeaUEh2Sdth6LFxvtr+XjzLPs1lv+/aa6XyDy4+nPHlSa1UkVIlHR9XJZi5KIdfZLvq4rvE4OT0twJGrutKF2GySahoyGZquBJ2HUdxf28ZsHo0oE4Wgnw4KgKEBiR3IyQ==",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false
@@ -600,9 +942,25 @@
     "seite": "Wege der Helden S. 277",
     "beschreibung": "Erlaubt es, kulturbedingte Erschwernisse auf Gesellschaftliche und bestimmte Wissens-Talente außerhalb der eigenen Kultur zu ignorieren.",
     "voraussetzungen": "KL und IN mindestens 10, Kenntnis der Sprache der Kultur mindestens 5",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 10
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 10
+      },
+      {
+        "art": "hinweis",
+        "text": "Kenntnis der Sprache der Kultur mindestens 5"
+      }
+    ],
     "verbreitung": "7, kann ohne Lehrmeister erlernt werden",
     "kosten": "kostenlos (0 AP) für die eigene Kultur; 150 AP (3 GP) für jede weitere Kultur; verbilligt (75 AP / 2 GP) für Helden mit dem Vorteil Soziale Anpassungsfähigkeit bzw. der Sonderfertigkeit Nandusgefälliges Wissen, doppelt verbilligt bei beidem (38 AP / 1 GP)",
-    "erklarung_lang": "enc:3:vyoy92JJjd+X7O+9toZSIjxvXvn20G6j89UwmXEsQl4CGmwFJCdM/hcFTtXxiIjhPZLQZTJpsaIYnFqqRYftu1kxPYddUNvhzPrx9LH/GXWNyBMJGeGYqEXbWUZ8YhsbFGDrDtEcvrRns9H8xwEQZA29WkX3/tX6CIjxMVjwN0dIqNgN4aCpPz13zcmx9a8Dn01Fp9f8fPEyg+f+I8kRpCX7z+zys6rnktgdRUBmsDJxCIVNlkQAwEna6ZRo0B7e/AT4c9G8x91Nm+eyeSA7zCvGMplPiBArhiI4Q9ImDIaWvXMgpDkE174eBMOkAlkE4f4zyaFyRLdrcaiIQYz+KBDau3YKQDVHCIcBt7dKIpIEMtWi7nEXF9jOVc3+eumnek+X3/FuzinFj6lrer269jD1aS0xhqxKD8ubxk0jkXc6OHEAmYi+h/HRrwPXwsHpTvG+3oRIiazT6190KghokOdKjyzbtayeJ5Lr/AvkKNW78ztj0oxNzCOzWuNnXnReMyaRJiGB7u8tP2qythw6KDbjRTLZO9VVQa0xPcuIp14Y0YGVLhgndl85FLg13+EEjaeEfRcq/xGWzDdPa6GSq70I/mUlXkMmy2dTYoTuqkzw7ebAD/UMn4mpac3UCpO6ssJ8FoMj0qall3C06Rk7m8XTXyCyWtVdvbJvssUXVSl5y+F5DbsM9pFA0eFas9sOf/wij9Cx4fhhHNWku76oz0MGqW4TXPC4DQ1I6NpapFe27E+CFq2FvTvp4YzdFDrL9+xTviTO6drWQ+34PzkLz7sLgQzLDwOxd0LYxRMxnjATxVEAQJ1XvFIRFSuCkFAEgwZyS9c/JyE9js1vxsPX12XumruTts0iOYBW469Qb5Stk9hmx6VnuMyqL73Rg5tWUAAmDYFgo5lyidItxK6d7vp2iMnBrsB/9njSQwc6f1s/n0ijysRgFhUidJvlCGTbQ71jzxJF7jz29jYpoLQjI5SMXVGWcXZ4r5QXiAsAr7d9jF5PPNmeAz+6Hzb55rmKN9OV5TFXHGlpXOU+Mo5XFuzZ/ILdVaqg2vxG7cPi57xXidiNtmKURts2VmMQpYd5sIIwAbe8gRaxmKAdkdAYr4ehmgY6f0HF/kwvk7yply3gxE60xGupayza8lvGPGYT11br",
+    "erklarung_lang": "enc:3:FY46/r553wQCzQ7YcC9n9eOId4vox7POm3ZcZSaNyiad6fGiyMWxP7gVM+Bez9vNCIZxSqpsi7Gi8Zf+GRgstuaUGCQuzpwcylOLMnLegSg+H0DNPwWrj9o5rGs6xE8rOf+WtNiSQkP3uT9gROnjwVsPdwK6ga3fLWRfujT3NdiT240g35pvHxdCP6vQ7jsBqEcOhLYo3bali+z9DBdNKR6Y7h79YECDWti6iX+fmgez80Pci66jklWacdeHNY/3tHS4ETl5SDtB0G4cBYEfbGPpfbBjKI/oSHPR0rqcyJAA5Cu81zSz5sc0fD3N7KEVLAxW8CqnJhXLVDpNEu/onCd704gEtc0sAdgKeA6Po8ZC3zj0wnMJ0qIlqawZ+t2MsXxxBcyCLQgesHGyNSeq/7b/+C/gYRrBzDURsnkSWi2ISTQv+p3eMWPRkyg/ZNgAJRZvdmNKlp82u1dAEg95TkkaqHV+aUN0RgWtNJ9Gb8kWWHf5gvn6+ND5z1iwpvZ1+ZzQBMg20Dxqcgk2qI+jtAMtoEmDGAu9oap+obRBvpoQh0D5ycWm0ODMKJSowPqpREJ34r599zuyG9nuMgaa3rgmM9kUCJXRH8k3zGn7D5IMdTjO+NdKfdYwfYipdQkAvK+tH0KfVtQGsm134nS9bfQJ6DCPieZm3ze8ZoCca9McQayT+M2Q6ptQIDIy+UfScZs011tA4wWWHqxJIhvEUy7qnf2zxLjo7A5rZ486Umj36O4FjGpkbgC9FMD6FuAaJk0jMnO2Z4lYpXJVAjrLGsfd52jnckDDpTJt94btEpdRzsaV4qAo7BeyUlWAGviOjprNfl4OfyIXLnQhUZqUO5kHpRprk3SERxBYjv5VhghpfFJSG2fPY47jKjRgcGbdvSv4cyBKCMa7/Ay6KZSra9XRIk2+A9aOa6pxlKdG+VpIVhJn4akklreBJQ/URNupBaZyGoLSRz2pBiqVboIjESJukUosAhlRVu61B4vanUb1dBsVFZmfgO9K9xE60d/v2rJMkKnUyPPa1ceQl9/uYsEKSYyZo7JclEI9p0Dz1lfqdsiyehS8T/gRqp2hdbC2TJ6ya/csn0glYclM8ZfkG2XgilnCmP9SdiZF+s/jo9RGXrwtdykgQqI3gaslqPjzMFLb",
     "quelle": "Wege der Helden; Auswahlliste: Wege des Schwerts S. 43",
     "hausregel": false,
     "nurEpisch": false
@@ -633,9 +991,15 @@
     "seite": "Wege der Helden S. 276-277",
     "beschreibung": "Erleichtert Proben auf Wettervorhersage, Wildnisleben, Tier- und Pflanzenkunde in einer vertrauten Art von Wildnis um 3 Punkte.",
     "voraussetzungen": "Kann nur durch längeren Aufenthalt (mindestens 12 Monate) im entsprechenden Gelände erlernt werden, ohne weiteren Lernzeit-Aufwand; Unterbrechungen können zusätzliche Zeit erfordern",
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Nur durch mindestens 12 Monate Aufenthalt im entsprechenden Gelände erlernbar; Unterbrechungen können zusätzliche Zeit erfordern"
+      }
+    ],
     "verbreitung": "7, kann ohne Lehrmeister erlernt werden",
     "kosten": "150 AP für die erste Geländekunde, je 100 AP für jedes weitere Gelände",
-    "erklarung_lang": "enc:3:HreqlpyKQ2OFUbMdKFMYFjahXWWEKT59MuZJytl61S9+Ed9nY6z4mg9wLDh4FTeqLaqMa1Ardlkssb1q/MnWekkzs0zLrRDRNxK4/8OhGJhMqC7Rd+VbIlnaE2afXfY8KLcA6Fg4telUYpzb18jGeCr/moX831ZPS27H3fIGUe1r25DTbUUa7jWV85Xy6R7GwAl/42F+LFVJhkr2XgL4l9ReZE76u694kZa9CnF9nDve8sdIl2VudHu4Zk6pDvfZQWrGYOtOsZRatezCNa9iFPoMv15hsSxCMR+MDygZ+x/GiAHTh+NWZTZE95T1HlDhiup1OJFlOhpp3AcueO0peJw4uXcG+7bqaw7JDTyOSZdHfRMPbE0Po4c08wPdThsOQaYHH66XZo4WvaagO9WIx+0q4KRgaNoQI/0sgJdTHWvfbtA96ptoynJvXtUzYWQaRzvK90mxQ/qrs5Eu8an7QrTkAae3RcLgauzQfbLKyPYtV3Le9RfilUDNR/2UKYgxgxv2atQ7wCAXeLEhcICiDNsPnjsNFctklvHLYaw2Yu5qViGGDkJtNZKM4+2ccmuWZVTru3mPT1gUNq0CzIIBcEGxfrTZuE1oQYDkJhst+4v1wIy9IXe4CKmSmi0+qcvDWoG/8SsaQb/iMlvOjfpmqYfqyt4ZsTZ6WjI50wmmJj2DBCTkOyvTM6H/M1WG6VcyzWBNdUxZK9hvj6QwGRJ87lAyZysYTZ8nCsip/nMmjDMRZT1pT6OJvLPUL5ImA3isx1LSLOhkMbrKAxbFc7iC0ICyYkPBOVJ1rc0VhwTGkVx3xsziqkkguE2lrh5AF+Jf7Sm0XPSeaknBcZLjUX2LotSp4VK9/tP+SYIdbsMyV234ELUFbv5Q",
+    "erklarung_lang": "enc:3:AbPsRitNpfgDtwwrxZr9F4GugYhjEQT8QOGNuV4cn8zEGaEGo9NNCmf0Xry/B7FfNLEUgK3onsACkoWsblKJeMvl2pO/INPQd+UKTgkwQYBEOaWIxOLO/imz/p4f2AxaEK0rp5Un8un3oAMexMPA5Q/6/DNOKYTbYq95wbRhEZkZt5rPGz/8UcEUCoUtq330O++DM889miMmgFW7nDEhd0u5n/zBHLg9TbMYtAMSUwok7l2wh1HxOZnxRIX7mXUWtdTPoSVHsykvUldWfcIKEt8mG0LnOWY+eBXxa6JZSmLryxXI1MLXuSb0jSrImhZdI5fhlo5yulZ2P+g/tq9qb59AVpzoY0Jto2SNHy+VeMxv/RaKi0BUriT5bCWJKHBwAlL1F7fNzcMo84r+1z39crNeGROJIBhwofkVh9fp58jWjz2xH9FEEquEJ31dHHJ7979otI79dlCs1S/opJjYRmAYxArX8GmGSUp+3MAk3a0A7IlZ+kc1JI3nUMCiPGvPbkaYOiWDcfsAlLpKzJIuE21VfkINnesvgUrn3A45NhwOodG4Hqb8q2F2PuJvybG2D0dUnytudRG+KM4gphNZ3JF/olltSGLPloOl0bUzx4mu/5+1w4H76CfPPeOv6TDV8YjghPSFkr/BhsDxMjSWkZdtL5oN4h+dxNlsdwSTUsUi6yAHjQLMpE4NLwTdNwljQhV4dSoTbVOHjlD0cEciO8fW1JS6ZIWiqD/l9sxFiDtg67Mb/9rloE+hOiTWJJYZ9pA2CSR6Bc0fyxGtChnQ1Vjz1xGh9LvvPTBXSeZaUJwraHggaEvyA9jiuvMEIiGwEDuqs/9qn8Q3ISzafjozetwYX216NY5aMeWvRYYO0NiL4PxqIBFT",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false
@@ -649,9 +1013,21 @@
     "seite": "Wege der Helden S. 277",
     "beschreibung": "Kompensiert fehlendes Werkzeug durch improvisierte Hilfsmittel und halbiert Erschwernisse beim Ausweichen auf ein anderes Handwerkstalent.",
     "voraussetzungen": "IN und FF mindestens 12",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 12
+      },
+      {
+        "art": "eigenschaft",
+        "code": "FF",
+        "min": 12
+      }
+    ],
     "verbreitung": "7, ergibt sich vor allem aus Praxis",
     "kosten": "200 AP (4 GP)",
-    "erklarung_lang": "enc:3:QpNFcs+3Hrn2G+MoWJ4+Ok43t92tLjfGlCu6LIP/7V9ek/7OzBTPyc+DXB1hKZA4dHBIWDvPHpwwT1pU8fWTmrNRnw6u5AB8A/fnoxFJwiGw1dCbYdlafZnB/c9v2tXx+/PDXUTB44a6l4gQIKKP+hceo4xTPEXsAL6OGb4gePfkZFxLXFErpkPd17GMRSoCJk5qZNxFp8OOJSv+IVhaaNwxn6BE4cL7hQSugJhCBo+T/C+BlmUXiXmIeg6CHHjdjV0WfvDI0s//11bqX4Ro8IJkrFrOMQnU+eTH5URCvVvAW6fWTh/ihwLqTcK38iahhjaWPHKjQqrZg3/YIe1kht2oX31ixQPgRY1iyS/YfuoAF0EzidxN/3HZQg70MUfUncWGM4zaAVDFFO4xSg2vOdBMzITwlbgnot+gcHa262alhokwDdMOJS1WMEgzy6RsntRLaUW5mfqPE1DQ3w+GZf6eB05z2Nj5smZtVP7/DQJETLz2uoKEME//vg/psbbPzshehlTlF1tBB0/mouhddOUFpS+4lpLujfYvvjyu7OOc20v8+TUSay/x3Bw56A5pbq3w8ugT+ZcWhy3q/+30q/6fWPCBwClUCQrMvHDGamzkL+f+BC3Oa4IBt17lp7R+CQ5zIgURplZPgXh91PYRu+8cVgZHfZds7pJbuV1UsbyuEZ45IREFZM7jf4VTTRG1xvmOMpBxO61w5jOpuyeiePWL6RFyy0LAB/JIeqC1BIauuIRwGa0FvheF0l5Rv/LSVldz+Qo1ee4QPotHnyWoKQrCmK5Dx+FrLpEN",
+    "erklarung_lang": "enc:3:HyCZX0tjg83W6/Z5nv0atHHArnrT/KtNI0/ztt42+vGEqd6X9r3j4QWWNEHX61FeyLz1440VB5ar+4uQPSFiFIMqRI+s3gbp6zOEfklTUP9nGOKMy00iOA0aMt6tMCJ0r8U4dAmmWRju68JZpMNIRyew5dMA6shOOOEdZ3YOEcrNfwEnA5y4Kr6JrfgEAr0iP0sW8Q7K1HCnsUCERekZTf4tzTRyn6sQh2OUHd3un3Q6XvFaoaZT07kpke4v4qXVCN85QRW1pYbO4qiTQDPPADOZphVH8kuvoqQWdpWsXSODUlSD5ddiGerbCmZpvWad9H38Ib/eEFLd3dAeqsN3rVFo/H31zqGjde7D/eT5nF9BgULUi88P36ZZ8BHeF70dJpyHE35kM8QUJd0FBfy5I9hNbmrx3Fd1zHfJ+sJrSB8Wz29knFkhlJizH9FuEaqtYUtAMaS9kdDmcuz9MWkSrFYZm0bifHGjBBdGV/2/mxnITz+r38cR0/0wR1eX7XhyLUWXZPBwNVHJI8QWMaBLjBUHQ9kn+lOUzyrR0sXfuyjkLWnbVVMJiZUGSqLoAoCrijxZ+SIz7j4uJV3VDoSPii+pvO68I3GOYZDyf1X8T5KkkVIHV2SHQLwb0Aywf5bdp3aHmtP1FQOdNwd3fp8Y9YH1FIPPpuXXJ6GqYJ6eMNC6UPw74hm4xH5MHlvQMizumgxRhfioHAFKtR5UvxPJP71xRc5XdBQyGW9/je5YzWEPLfEy6V7vF4hPfoAhg1JZdE805ZiDMnEEownEkPtt/iy6HptcAlqwsDJW",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false
@@ -665,9 +1041,21 @@
     "seite": "Wege der Helden S. 277",
     "beschreibung": "Fantastische Allgemeinbildung; halbiert Erschwernisse beim Ableiten eines nicht vorhandenen Wissenstalents.",
     "voraussetzungen": "KL und IN mindestens 12",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 12
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 12
+      }
+    ],
     "verbreitung": "4, bei allen Kulten und Professionen, die auf Allgemeinbildung Wert legen",
     "kosten": "200 AP (4 GP); automatisch beim Vorteil Akademische Ausbildung (Gelehrter)",
-    "erklarung_lang": "enc:3:tCz2mIq6gdHNb5PBiT3Gf3KLCu3VQIbgLWftpntdYujes0TDFctUk5Udbkcv/weTN9gq60hDicuuhX6euTemfyTTsBdYTkuXHOgp5/dAjgjtJXkyN3qUXs/3hM+7rgOHTdyNHppqlOnilxVCgF+6H/UDwV/S4HTNWoMnU73nrKe5oZ3zL6BGoOfpMyKG3j5GMp9CeELl4j7Ycy8zIwF4M2mPIyaPXG7KEpz/57w0JlfjaYeS4SH7zqil8Coptn57HABapDi52nVS8ZC4wtmAO4+7FaAJ+wGZrkTJkAUKUE/sZvYsUQMOg0SUzT+cDNcI2jyi/2KmNTeTon9oehvGXVuCS0GFMYLB9sc5mJENuAxR04VxXIVeZHOM7PkOkTsHZdnAUb+79037INNpPoPQYZEfEAvnQTWZ73HT7V3HTtw+W9AO28xvrkbNoM/ftPH9FfgcT7T6ooPvyGyJTKxS/KQwHPQTtIwrKGOMC0MJt9GdHC9kRxHfGyQD4gb3Q55iuRvPSU54ejNutpJDjm+9OGDKtU4gdxd3pSqt5YsG+ZzvsjapkW+4ctSMDAIRNqsv7KG3sGgGKptIkIdPPs/RcGN8ey/MVkDdjRvYVu811YhU+NqQDjtgVP3Kj84iJI7sUp3x6bVd0q3maTlfMSoJbuLLS9Nj2tI6D6iO9jNfVcn+Z/6hcrc4FNob92mr8XfWhdlEisBMFxti1Aa0AAmkXUQbRlpFeSsb3tgoDX1x4ezcKXMk83EOZXuWvkNd/tctVKosJj1on6GsTeMhp2IZIxUCpi/hDQdb8636zxDMyS2fbWHiEZ+Iyaupsrg6gxKADQVGupPN/hgRryexP0sgCc0YqkCCXpaycvhhF+cmXo4QtjuWOCtcerH4wMO2Ir1V6igZ/5SZn16dlvA39yCLnYn5osA5OHaFv1PnkVVH7nWBcoGV4urgmkTPD5XOHLOzwr9iZpAYaKuimQGLjeCQ9pMG8jMTvwDXxB3PhHdJS6k8SG1XVo4NWn5h7lKp9iQ=",
+    "erklarung_lang": "enc:3:3UnU4jcCfzkkl4zn3KOhPvjzzRRD/EiYbAOUBVto6lHk9eq9abA03xT+WNnGSa8J00jeqAHMi+rPE2pIE1vImzmfAgkrdBMc78DqKTkbOxnWFDejkm4JttF04Li94LAIF3Tkoqd6JtjtnqChYBMNpWsA4RpRGuyUj8f5VdPJGdUgWTJXxU6LHUPRTkOa8OGe1hJzaCtnDk2Ugtg5ZQzSquXAKFcinz+95Z91OIFM3yC9O4UUCMu8P1jH6hTWTkhOhL3fIC8ri6wQ00+485YjCMMxwvVHRm+5MPuDrJCWIRf6ZDSnG8CTgGWTtXOm3kcP3miVrH74mBLXg4v7vpvs5eDMgMxH3jQWh08eX+o3bP895wrGplH/og61kflmsAxJqX6Y/ghbbGfMRt28V8aIE7CeFSrriBRN8jwAScyoZJiqED4K63xEew4lx2JdO0uaBRAmBIxC7fTc67E7n6yFnZ/CdU2HSbUSLukW/2QLhFDF8d9A/HjuerBty8B4Zc8cF5YLVNYY4fmxFAABq98LgxbRc4H4TVJeLU+Cj+Nd7F0UUwf4/LBYq5/q4uGcT11wS7ZSUiVkLmQsdAv0n0OErQnh4hCsEGwLvgJ1Hd3OLlAKLkLzkqZFejlqEXQ0vR+L1QVi6fo1A+Ou8tSuLtqz/hUOz0sYX7Mi0a7QyaupLisQE4ITSH7d7/Oeg5AGyL/i9lqfEXnXRPwPCj/qSAHBEXSupCk1anOfg1o+mKICoLx+/stsouFQzvfAMAEKHKLCrYLiIl7nWVI8fFN7Juh4IwLBrxP+EzSTThKu/pxeBo5rPlWO4WNkN0Vu7Fj2Sx7Opck2K/oTwGYXQ7TrYU3tss8L1cpqzY0JxBVmGoe5L9kIFycCNsKZFPxRJCyDXsVRuGsxmh1ZbRyikxseJJOW7TaJlfaBmap5p2SvYKn7XZEnWlo2fxJb+yeBuzsl2iUZVl8WtIhbSXFjlcdMcdsTYnZHBfZm2PYUUAFc9XB6L6tw/tDLl7/lG8eGehE1sN8=",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false
@@ -687,9 +1075,15 @@
     "seite": "Wege der Helden S. 277-278",
     "beschreibung": "Kenntnis eines bestimmten Gebiets oder einer Strecke; ignoriert bis zu 7 Punkte Probenzuschläge auf passende Talente am entsprechenden Ort.",
     "voraussetzungen": "Längerer Aufenthalt am gewünschten Ort (mindestens ein halbes Jahr) oder häufigere Reisen entlang der Strecke (Meisterentscheid), ohne weiteren Lernzeit-Aufwand",
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Längerer Aufenthalt am gewünschten Ort (mindestens ein halbes Jahr) oder häufigere Reisen entlang der Strecke (Meisterentscheid)"
+      }
+    ],
     "verbreitung": "7, aus der Praxis heraus",
     "kosten": "150 AP (3 GP) pro bekannter Örtlichkeit / Strecke für die erste Ortskenntnis, 100 AP (2 GP) für alle folgenden",
-    "erklarung_lang": "enc:3:73+qw/cF3j5A1HUD3mttqlIPQ4VR4kthzHmRykjYd5jMsk80apFLBgf5AFJWaGj5wTUN7mKnL2JS4uZYp0Hfwk+w78vrZPRsMxLnFXp/oTORYNbPG1wzEpAbb21bV2ujPsqE7AArAnQUITULLYIcwwgfy/84q0oJrGDGWWckjWgnYtp/1dkMO6oW/h/zAll6SngqDPT7BFwYHgVVUqD3AsJc81PFJQIEBSoPDKaKPv8X4jSocwxCQYz4XDmTDV01ZYV5hjFupPU4wlJCKL4RZySZHtEzhNbieNiu0+TF1y9ZrJ2E9F6Xg5NkQ8RxPQSOW5JJNzynyw+xa9bGIkx55k4z0JPOGHq72rvOIG5sgsTq6g+YWZLKXBS1AD0xiyu1UdFSO0sLQGeafjGBUlA6YjigZZbYsviySOLcs6yhaO9ooXZcqOAZhcjg7+qAbXIBM7aHjoLkfJOpR7CN1w13EqJsDfDvgP51eJn52aWDX//TcBvjxSPOVXugjxSwxe5xAwX5Ctzb5z5ha5P9RqHW9S4AVOXp6fdNSQrxApw2LpZ24kJhyBAdqSM8MMxoSDyfF/PekOV5yXo91MvecuNqX27kK1nd6lKH0o95tH/hORR4uMMqbcChIEdpRd9+f7QRpCdKijsZR1kQ+c8jRK7a0LxwrphbAR/hw2sJLDDLDI6oZ84R0AaHfZPT6UFihcMODx92KRC02ycSkkrjOl+FRC2L9qsSK2pXIV+e3wvCgCgZR3361Y4ZnTBzBEaga8apWQ66Hb+8Ka5NfdKbZhZYoOOAHuK8Srae9GW6r7fa2SeTvU0K2u3DZWPP364HkVESZwCB5XSIIKPuyyLFJdolxKbph1ffCN47HDwBAac9J9xCX5aEDx1tn8nV+xCoPP2/LVmYWZFHIv35fgCP6omwj+4yYb9nd64SbeKHcT+iKL+hQuKfHqdHabuYQF3sAy3b2xVavp7cOy3FVEr4mn4Ns4Dogr8J7I/BSeWUf0n9XrCuO9WmnjSqPvRXskSxN7i588HvdvnsxPiqpc3MoxoCMLxUiYg9FMpfI0Zuh3XeVzBW44OwHL9ddd8+fS9wUhMSzy0/H1IjiT/vScRaxljKhMXpCRw5mPvKhSI4y5bJoLOyUArS2peo96FfmZAFKdyRIZy+AWZx",
+    "erklarung_lang": "enc:3:01K7WPSARhe7mYHt8jrQtZDyXZp3b9XHSMBfU46JGk5fQi3Usjg9UQVVqlCsyrGb16vtZtHYwvZO4IvhrtRp2qIi3shKhs8mVhi7x4zDUdfJhEfcCw6ARjdysFAdj/P3+k1/CTq4oWQC4MlSd3F7HwLJnihnmp55Q2uvljOJz/ZjIgcavNXkV2ElUhDnjOKQlSurt51mKrPT4debnJQ8bsQNrvJpUJDgmzM3SmYTghIly5roeeo1ygrnxbn69nP8zY+3TEgZUqCz0DHMVNfP6L8gnTe15D+uMV3bqyvYFfvopsOOModnqCdbTpVRo8slWX+k6Ad9AQRyKsdBAn9VZESSLmJTsTGoOHrnyUCHv0a/xceULWuMQiMF62qm3R7Mo90LumCQvsCg0Wf2i0vuS5Vkq4vHh8dWIevL2xN78gran5EOVLkP+9aC5hOvwVE2mrR1vHXtGDRXlFn+lymigZ5yNDn2qYlrB7iITd10gpTK2L0PQgGE7lYLForHvKFZ/oOgNsLm9iZXEvIUEDYX8fgS3izwRz5vvIc/RFO/68JndvrAn45gQdwlC2dXM6nW1PvlSwwF1RdQ8wGhQMSR/pjTBEcvcUF5/IwxGBi5qTb6gexqwzD/Us9+x1ZtiJce8xxT0lko1LHhrLHyzaa5eXHZb/M57eSce2ZZA2iEJp3T28mBxSv804WdlK33BHXW+o/JHXigIHYKMxs/bEiFIvhB0O+HIecBQcTJq7hnLIyCXY7WtnbRV3+lxA5mK+iiwVvIf6hbYPPcYmErcN+auCSJptzR+7qJ19ViD2A8Rkyey+CZ7s/4sYcXk0Z7d2OOIp42o0xRXl1fM1futsbfb63eqQFQ5LB1oYdB0Ir8JqRwddpRqnCxTCzLEnzYSzxflDSZRLWjisCDloG2Yt4J2BhsxnbjLJj/vGa8IPmy5WFlIlEglJJ1r1JmFutN129Udg11/wUnH+xfsS+jdtOlM8ZsSflvNzMpzmbJrYWsohc3CRyzwR+ggA/2/piR7vczq03DUGbkxFaeyf9zgNkpOFj6XQQpkvKX6TAyB0ZhhgsmGJIJqvrW2wS8bG5wubahc6nnQ//PsdvmLS5LofLP46AeLXiHN+4HcEBgP4cX1CKmDKFPRROAvoeXjUDwXL2MibSvKaGo",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false
@@ -703,9 +1097,16 @@
     "seite": "Wege der Helden S. 278",
     "beschreibung": "Erlernbare, schwächere Variante des Vorteils Balance; erleichtert Proben rund um Balancehalten auf schwankendem Untergrund.",
     "voraussetzungen": "GE 12",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "GE",
+        "min": 12
+      }
+    ],
     "verbreitung": "4, bei Kulturen und Professionen, die viel mit schwankendem oder unsicherem Untergrund (Schiffe, Gebirge) zu tun haben",
     "kosten": "200 AP (4 GP); ist in den Vorteilen Balance / Herausragende Balance enthalten",
-    "erklarung_lang": "enc:3:1jEe6k+tHBaIVSPSykVaKFLvMyU855rjTBdpADEPVrvOJFiTjytHN1u3ARpHQeKUWTcNWVKHflyCzpa/LMGsFR2HotRmsYAPfKx7SF/Lovbqw/LjgbEti6Ai983X4G+AyDVhew4Cs/xfuXta1+KWNhB3ydmgwPf6x0LNNjnVo/hx115/z6jK1UmgNPucRUjuwrxFI88PRIGXTbf4D3R4swOYxTc7GHpT1XrwOIKITpgEMrqKelOVVUUvAoKXc9P7Tp3mLWZ08VZec9gfNhMsfTpO2YKf2OX395mlhlZykXPnpV4VUqGGsNVwOCObtQJMF+4F0y6jcPSfRwFDtBzeaah4xDx9vCLi8yO5SBjiXELhckl2GWzOs+ffgEsaU6N8tezDpKgcqSy+HSGoGa6fGULhF88gC9UURy7j5DOY6j5iY/Q0nFJRwaKNtsZ8OfDzo57pI77W0jnVnpEov5Z4iNTO3V1PwaIx76NpfO4JocTT43TQIo3ZhBUZUrhXUJCgHUwOAknrIjh9Syz9JxzYL6PSw6ZGx8wTiQhL4LEcMoHZ9SdM5+IfI1tb2qu4D6I=",
+    "erklarung_lang": "enc:3:vb8kuvmqARhVMfx9sKPW+n0v/vADWitcBZR/jIsNMRNnpMnKRlrX2nRTzN73W9NyOyotP0s5JYi4mJYQkKwGdCpKYO7El5/q1icx+0vUVVCU1hcPqwaONLCYcwmBTDMzRZkzvY6xvPHI/oMaY8YQLy5U8lcJBguPHbQMqaVj7AemP7uh/6qhxoiu5s1pE9lEG4k/or7hI+bLeoaVxmexHuL4YLyrlBquSDj6MWGA0VYz0bgzwuev5uHHBMGVXHX5j7wFxT6WFyjJf1qYaqAEFTTT8eTEvEZARrf6v2Lv2PktwEAlIm+6FRKw0GsTQ6nPKRxtCudJtDnpf2uCwXJOA+YTcQzc30dYCoEqr3suh7FJ5R04cu1HzT//vYGIVX2+kNZn7tZAApUYw8N6QAD8CnW1vVAhtGQDK1cl/de4G6Rd/nZWL5y2HwWyjSQ1OQeaX70ZoCqtlcpJ52zEiTu59sW7LAAipmj4NKoGJ3vHttWeXy2oYYxKYLXiy/lbNrUtRKJEvhjh790SMIx5giW3HNPcmaXgy16chsvPs3YM6bsapDKs8dIIoaytj0sBc1k=",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false
@@ -719,9 +1120,31 @@
     "seite": "Wege der Helden S. 278",
     "beschreibung": "Ein Tier (meist ein Pferd) kann optisch aufgewertet werden, um einen höheren Preis beim Verkauf zu erzielen.",
     "voraussetzungen": "Reiten, Sich Verkleiden, Abrichten und Überreden jeweils TaW 7",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Reiten",
+        "min": 7
+      },
+      {
+        "art": "talent",
+        "name": "Sich Verkleiden",
+        "min": 7
+      },
+      {
+        "art": "talent",
+        "name": "Abrichten",
+        "min": 7
+      },
+      {
+        "art": "talent",
+        "name": "Überreden",
+        "min": 7
+      }
+    ],
     "verbreitung": "4",
     "kosten": "100 AP (2 GP)",
-    "erklarung_lang": "enc:3:wZgDX1sag+3mqMrCwGS42AT4k80U1T9UkNvX2hmzRhfqSYSAzpe4DjWNxVtKbUBXzg1cxsYDdxDX/63ii66xWmYrdbOt5Vwc25JAZQ3r7EQ9eJJ1MB/Mn/S4MM7oXKtgc0ksFcQ30PTGJTGLu3Sm3ysSoFEfkH/lmdQNjb4WJ1Fxn+Pq9OI5cwfWPU5AyWrnV05f6HJD6sWXLb8+7/beEF+p/1E2Ne41FsiKwnHRg0imrjkauodG27pB11vMgLL/cxwGE0sTSAEyp1/6k/NBJ5V6y6JornPPWj8MTgyIsSpV5GTs8la/9uUPVLISu3vilQksCnybJrS+QhGh+SMSYRpOxHe1jZmLhefif2ko6mTAQ1G9bUJDR6L9gu6MaZH5YEHFfTjJuK2JMyOCCF7HeX0035MvOHZ40Zh14A6YOTqm4aQr8kdcqEFcsf/VppnQI/rK3ZgC2BKHVmsbAi+LvwlU6xGvWUuyzPoTNLCj9/2P50tDWSKk8Qd9GCAGH4L5kcWvi8BtShWxXqzJj0bhG+3wmsFJozFBkHyF1D7EHdpAOyYy9T1lg7dgklbLNTRbNcBelGHxtuzdFKDqc4gp8siqmtJREFLt4pnl6ASUInxJUaka6LGi2vQ/WuMHlkLRTqaxmQ1ZVkI/sL2YxBVS5MyKO/z9ERIDgE0u7JbJxMRKA6cd0Jmqyhz3hpLZ2g6u3C1n0XQntOxfV95mH+N5rWmg/W0UZindumFx63q8FrApZyuCJopICLSo",
+    "erklarung_lang": "enc:3:xhOHITjIXXRweLyFWqj66f3raxqSGOaKHOAtq0Z0p3Rtvr6Z6rZfZ/+jhNMaAiGjoi2JiE/MYW46uXZkCRsBa0gcMYxGkPjv0t8GwR4gR4R9OoWolnUKcEFKncmRpvWphK9wDd2pku9aCbUk2AoXQRGwKyYX3jC3tEAmZcV/QCm/RfsPcGwCQvln9HTHvJd8Q9AldythZZFxzAGOq3mpwpYOBE/g3O0Nwm4dZ1iMlznODKvUS18AbD15VRsOiWW1gYdMr5+nboCPX3U0jNKPqkveyQ6gEyBlbym0GUvpZxthbRtuJvlGJYueO/rsmLZKY1VdIv2zRrpimYXXBty/bDMomxHL3+9Ymp4bBosscgdFJrO3U6nzyoUZCVQUYxk+9dtHSxdpWQSQa+y7+hCHixcO2qZObjJmdpCFMwJ8Z9a7Bw64Tkej0FSyyUznEcmJHlLyfGbDRJciqSYXCjoChZ8z0TYL7QsNnJl1q4cSRIbbWY/rCYLC2LLAAeqfHt1BTQ9JZgt3o6QkXS+RW4T7UAznK+vUiTnh9sAL3FkEs7LoQ/tgyazmebWQR3X9CyhtHmTaycp6MQIccN3xYs9g6sxBbI2MVuQ+fdp8AFlfrHEcaHC+z5ct5GdWEwqP5ZXjFDxAm3lYHF5BSD1/jC6//g/IGxfRhNgcbE+F8ggqWFnJ3kEmetQ0MPxF1Q3b14JN8Y0YrxkR/0y1DlU+S4Za9d4qzYfHcw+UjthwMBZlkIZ0VF5nMv66bdwH",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false

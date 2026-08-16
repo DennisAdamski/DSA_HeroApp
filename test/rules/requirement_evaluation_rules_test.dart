@@ -17,8 +17,14 @@ void main() {
     List<String> nachteile = const <String>[],
     String rasse = '',
     String leiteigenschaftOverride = '',
+    Map<String, int> basiswerte = const <String, int>{},
+    List<String> manoever = const <String>[],
+    List<String> waffenmeisterschaften = const <String>[],
   }) {
     return HeroRequirementContext(
+      basiswerte: basiswerte,
+      manoever: manoever,
+      waffenmeisterschaften: waffenmeisterschaften,
       eigenschaften: eigenschaften,
       sonderfertigkeiten: sonderfertigkeiten,
       zauberwerte: zauberwerte,
@@ -552,6 +558,215 @@ void main() {
         ),
         isTrue,
       );
+    });
+  });
+
+  group('Basiswerte', () {
+    test('erfuellt, wenn der abgeleitete Wert reicht', () {
+      final ergebnis = evaluateRequirement(
+        const SpecialAbilityRequirement(
+          art: RequirementArt.basiswert,
+          code: 'INI',
+          min: 10,
+        ),
+        context(basiswerte: const <String, int>{'INI': 11}),
+      );
+
+      expect(ergebnis.status, RequirementStatus.erfuellt);
+      expect(ergebnis.sollText, 'INI-Basiswert 10');
+      expect(ergebnis.istText, 'Held hat 11');
+    });
+
+    test('nicht erfuellt, wenn der Wert darunter liegt', () {
+      final ergebnis = evaluateRequirement(
+        const SpecialAbilityRequirement(
+          art: RequirementArt.basiswert,
+          code: 'PA',
+          min: 10,
+        ),
+        context(basiswerte: const <String, int>{'PA': 9}),
+      );
+
+      expect(ergebnis.status, RequirementStatus.nichtErfuellt);
+      expect(ergebnis.sollText, 'PA-Basis 10');
+    });
+
+    test('ohne bekannten Wert bleibt es ein Hinweis', () {
+      final ergebnis = evaluateRequirement(
+        const SpecialAbilityRequirement(
+          art: RequirementArt.basiswert,
+          code: 'AT',
+          min: 10,
+        ),
+        context(),
+      );
+
+      expect(ergebnis.status, RequirementStatus.hinweis);
+    });
+  });
+
+  group('Manoever', () {
+    test('erfuellt, wenn das Manoever erlernt ist', () {
+      final ergebnis = evaluateRequirement(
+        const SpecialAbilityRequirement(
+          art: RequirementArt.manoever,
+          name: 'Klingenwand',
+        ),
+        context(manoever: const <String>['Klingensturm', 'Klingenwand']),
+      );
+
+      expect(ergebnis.status, RequirementStatus.erfuellt);
+      expect(ergebnis.sollText, 'Manöver Klingenwand');
+    });
+
+    test('der Talent-Zusatz eines Per-Talent-Manoevers stoert nicht', () {
+      final ergebnis = evaluateRequirement(
+        const SpecialAbilityRequirement(
+          art: RequirementArt.manoever,
+          name: 'Scharfschütze',
+        ),
+        context(manoever: const <String>['Scharfschütze (Bogen)']),
+      );
+
+      expect(ergebnis.status, RequirementStatus.erfuellt);
+    });
+
+    test('nicht erfuellt, wenn es fehlt', () {
+      final ergebnis = evaluateRequirement(
+        const SpecialAbilityRequirement(
+          art: RequirementArt.manoever,
+          name: 'Binden',
+        ),
+        context(manoever: const <String>['Finte']),
+      );
+
+      expect(ergebnis.status, RequirementStatus.nichtErfuellt);
+      expect(ergebnis.istText, 'nicht erlernt');
+    });
+  });
+
+  group('Waffenmeisterschaft', () {
+    test('eine benannte Gattung muss genau passen', () {
+      final ergebnis = evaluateRequirement(
+        const SpecialAbilityRequirement(
+          art: RequirementArt.waffenmeister,
+          name: 'Schwerter',
+        ),
+        context(waffenmeisterschaften: const <String>['Schwerter']),
+      );
+
+      expect(ergebnis.status, RequirementStatus.erfuellt);
+      expect(ergebnis.sollText, 'Waffenmeister (Schwerter)');
+    });
+
+    test('eine andere Gattung genuegt nicht', () {
+      final ergebnis = evaluateRequirement(
+        const SpecialAbilityRequirement(
+          art: RequirementArt.waffenmeister,
+          name: 'Schwerter',
+        ),
+        context(waffenmeisterschaften: const <String>['Dolche']),
+      );
+
+      expect(ergebnis.status, RequirementStatus.nichtErfuellt);
+      expect(ergebnis.istText, 'nur Dolche');
+    });
+
+    test('ohne Namen genuegt eine beliebige', () {
+      final ergebnis = evaluateRequirement(
+        const SpecialAbilityRequirement(art: RequirementArt.waffenmeister),
+        context(waffenmeisterschaften: const <String>['Peitsche']),
+      );
+
+      expect(ergebnis.status, RequirementStatus.erfuellt);
+      expect(ergebnis.sollText, 'Waffenmeister (beliebig)');
+    });
+
+    test('ganz ohne Waffenmeisterschaft ist sie nicht erfuellt', () {
+      final ergebnis = evaluateRequirement(
+        const SpecialAbilityRequirement(art: RequirementArt.waffenmeister),
+        context(),
+      );
+
+      expect(ergebnis.status, RequirementStatus.nichtErfuellt);
+      expect(ergebnis.istText, 'keine Waffenmeisterschaft');
+    });
+  });
+
+  group('Geforderter Nachteil', () {
+    test('erfuellt, wenn der Held ihn hat', () {
+      final ergebnis = evaluateRequirement(
+        const SpecialAbilityRequirement(
+          art: RequirementArt.nachteil,
+          name: 'Blutrausch',
+        ),
+        context(nachteile: const <String>['Blutrausch']),
+      );
+
+      expect(ergebnis.status, RequirementStatus.erfuellt);
+      expect(ergebnis.sollText, 'Nachteil Blutrausch');
+    });
+
+    test('nicht erfuellt, wenn er fehlt — anders als nachteil_verboten', () {
+      final fordernd = evaluateRequirement(
+        const SpecialAbilityRequirement(
+          art: RequirementArt.nachteil,
+          name: 'Blutrausch',
+        ),
+        context(),
+      );
+      final verbietend = evaluateRequirement(
+        const SpecialAbilityRequirement(
+          art: RequirementArt.nachteilVerboten,
+          name: 'Blutrausch',
+        ),
+        context(),
+      );
+
+      expect(fordernd.status, RequirementStatus.nichtErfuellt);
+      expect(verbietend.status, RequirementStatus.erfuellt);
+    });
+  });
+
+  group('Verbotene Rasse', () {
+    test('erfuellt, solange der Held eine andere Rasse hat', () {
+      final ergebnis = evaluateRequirement(
+        const SpecialAbilityRequirement(
+          art: RequirementArt.rasseVerboten,
+          name: 'Zwerg',
+        ),
+        context(rasse: 'Mittelländer'),
+      );
+
+      expect(ergebnis.status, RequirementStatus.erfuellt);
+      expect(ergebnis.sollText, 'keine Rasse Zwerg');
+    });
+
+    test('nicht erfuellt, wenn er genau diese Rasse hat', () {
+      final ergebnis = evaluateRequirement(
+        const SpecialAbilityRequirement(
+          art: RequirementArt.rasseVerboten,
+          name: 'Zwerg',
+        ),
+        context(rasse: 'Ambosszwerg'),
+      );
+
+      expect(ergebnis.status, RequirementStatus.nichtErfuellt);
+    });
+
+    test('ohne eingetragene Rasse bleibt beides ein Hinweis', () {
+      for (final art in <RequirementArt>[
+        RequirementArt.rasse,
+        RequirementArt.rasseVerboten,
+      ]) {
+        final ergebnis = evaluateRequirement(
+          SpecialAbilityRequirement(art: art, name: 'Elf'),
+          context(),
+        );
+
+        expect(ergebnis.status, RequirementStatus.hinweis);
+        expect(ergebnis.istText, 'keine Rasse eingetragen');
+      }
     });
   });
 }

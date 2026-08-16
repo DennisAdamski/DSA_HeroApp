@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/combat_special_ability_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_chain_rules.dart';
@@ -174,6 +175,62 @@ void main() {
       expect(
         istEintragErworben(willeII, const <String>['Eiserner Wille I']),
         isFalse,
+      );
+    });
+  });
+
+  group('Kampf-Sonderfertigkeiten', () {
+    // Die Kettenlogik ist generisch ueber SpecialAbilityEntry, damit
+    // Kampf-Ketten dieselbe Darstellung bekommen wie die magischen.
+    const ausweichenI = CombatSpecialAbilityDef(
+      id: 'ksf_ausweichen_i',
+      name: 'Ausweichen I',
+      kosten: '100 AP',
+      kette: SpecialAbilityChainRef(
+        id: 'ausweichen',
+        stufe: 1,
+        label: 'Ausweichen',
+      ),
+    );
+    const ausweichenII = CombatSpecialAbilityDef(
+      id: 'ksf_ausweichen_ii',
+      name: 'Ausweichen II',
+      kosten: '200 AP',
+      kette: SpecialAbilityChainRef(id: 'ausweichen', stufe: 2),
+    );
+    const linkhand = CombatSpecialAbilityDef(
+      id: 'ksf_linkhand',
+      name: 'Linkhand',
+    );
+    const kampfKatalog = <CombatSpecialAbilityDef>[
+      ausweichenII,
+      linkhand,
+      ausweichenI,
+    ];
+
+    test('bildet Ketten und behaelt den konkreten Typ', () {
+      final ketten = buildSpecialAbilityChains(kampfKatalog);
+
+      expect(ketten, hasLength(1));
+      final SpecialAbilityChain<CombatSpecialAbilityDef> kette = ketten.single;
+      expect(kette.label, 'Ausweichen');
+      expect(kette.stufen.first.kosten, '100 AP');
+    });
+
+    test('laesst kettenlose Eintraege uebrig', () {
+      expect(
+        kettenloseEintraege(kampfKatalog).map((def) => def.id),
+        <String>['ksf_linkhand'],
+      );
+    });
+
+    test('findet die naechste offene Stufe', () {
+      final kette = buildSpecialAbilityChains(kampfKatalog).single;
+
+      expect(erworbeneKettenstufe(kette, const <String>['Ausweichen I']), 1);
+      expect(
+        naechsteKettenstufe(kette, const <String>['Ausweichen I'])?.id,
+        'ksf_ausweichen_ii',
       );
     });
   });

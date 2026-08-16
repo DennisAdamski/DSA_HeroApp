@@ -42,8 +42,31 @@ enum RequirementArt {
   /// Ein Nachteil, den der Held gerade nicht haben darf.
   nachteilVerboten,
 
+  /// Ein Nachteil, den der Held haben muss. Klingt paradox, kommt aber vor:
+  /// Berserkerfinesse verlangt „Vorteil Kampfrausch oder Nachteil Blutrausch“.
+  nachteil,
+
   /// Zugehoerigkeit zu einer von mehreren Rassen.
   rasse,
+
+  /// Eine Rasse, die der Held gerade nicht sein darf („kein Zwerg“).
+  rasseVerboten,
+
+  /// Mindestwert eines abgeleiteten Kampf-Basiswerts (`AT`, `PA`, `FK`, `INI`).
+  /// Die Regelwerke formulieren das als „AT/PA-Basis 10“ oder
+  /// „INI-Basiswert 10“.
+  basiswert,
+
+  /// Ein erlerntes Manoever. Viele Kampf-Sonderfertigkeiten bauen darauf auf
+  /// (`Klingenwand`, `Sturmangriff`); Manoever stehen im eigenen Katalog
+  /// `manoever.json` und sind deshalb keine [sonderfertigkeit].
+  manoever,
+
+  /// Eine Waffenmeisterschaft. Ohne `name` genuegt eine beliebige, sonst muss
+  /// sie auf das genannte Kampftalent lauten. Eigene Art, weil Waffenmeister
+  /// im Heldenmodell als `combatConfig.waffenmeisterschaften` steht und nicht
+  /// unter den Sonderfertigkeits-Namen auftaucht.
+  waffenmeister,
 
   /// Der Held muss Spruchzauberer sein (mindestens eine Repraesentation).
   spruchzauberer,
@@ -78,7 +101,12 @@ const Map<String, RequirementArt> _artByKey = <String, RequirementArt>{
   'merkmalskenntnis': RequirementArt.merkmalskenntnis,
   'vorteil': RequirementArt.vorteil,
   'nachteil_verboten': RequirementArt.nachteilVerboten,
+  'nachteil': RequirementArt.nachteil,
   'rasse': RequirementArt.rasse,
+  'rasse_verboten': RequirementArt.rasseVerboten,
+  'basiswert': RequirementArt.basiswert,
+  'manoever': RequirementArt.manoever,
+  'waffenmeister': RequirementArt.waffenmeister,
   'spruchzauberer': RequirementArt.spruchzauberer,
   'oder': RequirementArt.oderGruppe,
   'und': RequirementArt.undGruppe,

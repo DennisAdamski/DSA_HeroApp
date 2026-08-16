@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_chain_rules.dart';
@@ -14,7 +14,8 @@ import 'package:dsa_heldenverwaltung/ui/widgets/requirement_checklist.dart';
 /// blass. Darunter stehen nur die noch offenen Voraussetzungen der naechsten
 /// Stufe — die bereits erfuellten kosten in der Uebersicht nur Platz und stehen
 /// vollstaendig im Detaildialog.
-class SpecialAbilityChainCard extends StatelessWidget {
+class SpecialAbilityChainCard<T extends SpecialAbilityEntry>
+    extends StatelessWidget {
   /// Erzeugt die Kettenkarte.
   const SpecialAbilityChainCard({
     super.key,
@@ -27,23 +28,22 @@ class SpecialAbilityChainCard extends StatelessWidget {
   });
 
   /// Die dargestellte Kette.
-  final SpecialAbilityChain kette;
+  final SpecialAbilityChain<T> kette;
 
   /// Hoechste bereits erworbene Stufe; `0`, wenn noch keine.
   final int erworbeneStufe;
 
   /// Wird mit der zu erwerbenden Stufe aufgerufen.
-  final ValueChanged<SpecialAbilityDef> onErwerben;
+  final ValueChanged<T> onErwerben;
 
   /// Oeffnet den Detaildialog einer Stufe.
-  final ValueChanged<SpecialAbilityDef> onDetails;
+  final ValueChanged<T> onDetails;
 
   /// Offene Voraussetzungen der naechsten Stufe.
   final List<RequirementCheckResult> offeneVoraussetzungenDerNaechstenStufe;
 
   /// Die naechste noch nicht erworbene Stufe.
-  SpecialAbilityDef? get _naechsteStufe =>
-      naechsteKettenstufe(kette, _erworbeneNamen);
+  T? get _naechsteStufe => naechsteKettenstufe(kette, _erworbeneNamen);
 
   /// Rekonstruiert aus [erworbeneStufe] die Namen der erworbenen Stufen.
   ///
@@ -91,7 +91,7 @@ class SpecialAbilityChainCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            _StufenReihe(
+            _StufenReihe<T>(
               kette: kette,
               erworbeneStufe: erworbeneStufe,
               naechsteStufe: naechste,
@@ -115,7 +115,7 @@ class SpecialAbilityChainCard extends StatelessWidget {
                   onPressed: () => onErwerben(naechste),
                   icon: Icon(gesperrt ? Icons.lock_outline : Icons.add),
                   label: Text(
-                    '${_kurzName(naechste, kette)} erwerben'
+                    '${_kurzName(naechste)} erwerben'
                     '${_apSuffix(naechste)}',
                   ),
                 ),
@@ -137,7 +137,7 @@ class SpecialAbilityChainCard extends StatelessWidget {
 }
 
 /// Die waagerechte Stufenreihe mit verbindenden Strichen.
-class _StufenReihe extends StatelessWidget {
+class _StufenReihe<T extends SpecialAbilityEntry> extends StatelessWidget {
   const _StufenReihe({
     required this.kette,
     required this.erworbeneStufe,
@@ -146,11 +146,11 @@ class _StufenReihe extends StatelessWidget {
     required this.onDetails,
   });
 
-  final SpecialAbilityChain kette;
+  final SpecialAbilityChain<T> kette;
   final int erworbeneStufe;
-  final SpecialAbilityDef? naechsteStufe;
+  final T? naechsteStufe;
   final bool gesperrt;
-  final ValueChanged<SpecialAbilityDef> onDetails;
+  final ValueChanged<T> onDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -265,7 +265,7 @@ class _StufenMarke extends StatelessWidget {
 
 /// Kuerzt den Stufennamen um das Ketten-Label: aus `Eiserner Wille II` wird
 /// innerhalb der Karte `Stufe II`.
-String _kurzName(SpecialAbilityDef def, SpecialAbilityChain kette) {
+String _kurzName(SpecialAbilityEntry def) {
   final stufe = def.kette?.stufe;
   if (stufe == null) {
     return def.name;
@@ -274,7 +274,7 @@ String _kurzName(SpecialAbilityDef def, SpecialAbilityChain kette) {
 }
 
 /// `  ·  200 AP`, sofern sich aus dem Kostentext ein Betrag lesen laesst.
-String _apSuffix(SpecialAbilityDef def) {
+String _apSuffix(SpecialAbilityEntry def) {
   final ap = parseLeadingApAmount(def.kosten);
   return ap == null ? '' : ' · $ap AP';
 }

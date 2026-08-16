@@ -1217,9 +1217,11 @@ apAvailable   = max(0, apTotal − apSpent)
 ### 4.9 Erwerbsvoraussetzungen und Stufenketten
 
 **Dateien:** `lib/catalog/special_ability_requirement.dart`,
+`lib/catalog/special_ability_entry.dart`,
 `lib/rules/derived/requirement_evaluation_rules.dart`,
 `lib/rules/derived/hero_requirement_context.dart`,
 `lib/rules/derived/special_ability_chain_rules.dart`,
+`lib/rules/derived/combat_special_ability_state.dart`,
 `lib/rules/derived/tradition_rules.dart`
 
 Katalogeinträge tragen neben dem Freitext `voraussetzungen` optional den
@@ -1228,6 +1230,18 @@ nebeneinander: Der Freitext bleibt die Regelquelle und wird unverändert
 angezeigt, der Strukturblock erlaubt zusätzlich die Prüfung gegen den Helden.
 Einträge ohne Strukturblock — etwa aus Hausregel-Paketen — verhalten sich wie
 zuvor.
+
+Gepflegt ist der Block für die magischen, die allgemeinen und die
+Kampf-Sonderfertigkeiten. Die karmalen fehlen bewusst: Ihre
+Kernvoraussetzungen (Liturgiekenntnis/LkW, Gottheit, Entrückungsstufe) haben
+im `HeroSheet` kein Gegenstück, wären also fast ausschließlich `hinweis`.
+
+Getragen wird beides — Voraussetzungen wie Ketten — von der schmalen
+Schnittstelle `SpecialAbilityEntry`, die `SpecialAbilityDef` (allgemein,
+magisch, karmal) und `CombatSpecialAbilityDef` gemeinsam implementieren. Damit
+teilen sich beide Katalogfamilien Ketten-Logik und Stufen-Karte, ohne dass
+ihre übrigen Felder (Varianten hier, Manöver-Freischaltungen dort)
+zusammengelegt werden müssten.
 
 **Schema einer Bedingung:**
 
@@ -1253,26 +1267,60 @@ zuvor.
 | `tradition` | `namen[]` | Eine von mehreren Traditionen |
 | `merkmalskenntnis` | `name?` | Merkmal; ohne Namen genügt irgendeines |
 | `vorteil` | `name` | Erforderlicher Vorteil |
+| `nachteil` | `name` | Nachteil, den der Held haben **muss** |
 | `nachteil_verboten` | `name` | Nachteil, den der Held nicht haben darf |
 | `rasse` | `namen[]` | Eine von mehreren Rassen |
+| `rasse_verboten` | `namen[]` | Rasse, die der Held nicht sein darf |
+| `basiswert` | `code`, `min` | Abgeleiteter Kampfwert: `AT`, `PA`, `FK`, `INI` |
+| `manoever` | `name` | Erlerntes Manöver aus `manoever.json` |
+| `waffenmeister` | `name?` | Waffenmeisterschaft; ohne Namen genügt irgendeine |
 | `spruchzauberer` | – | Mindestens eine Repräsentation |
 | `oder` / `und` | `bedingungen[]` | Verknüpfung; `und` nur als Oder-Zweig |
 | `hinweis` | `text` | Nicht prüfbarer Regeltext |
 
+`manoever` ist eine eigene Art, weil Manöver in `manoever.json` stehen und
+keine Sonderfertigkeiten sind — `Klingenwand` oder `Sturmangriff` würden über
+`sonderfertigkeit` nie gefunden. `waffenmeister` ebenso: Waffenmeisterschaften
+liegen in `combatConfig.waffenmeisterschaften` und tauchen gar nicht unter den
+SF-Namen auf. Geprüft wird gegen das Kampftalent **und** die freie
+Gattungsangabe `weaponType` — nur so bleibt „Waffenmeister (Schild)" erfüllbar,
+denn für Schilde gibt es kein eigenes Kampftalent.
+
 `hinweis` ist der Auffangtyp und zählt nie als unerfüllt — Regeltexte wie
 „sechs Monate Kontemplation" bleiben sichtbar, ohne etwas zu blockieren.
 Unbekannte Arten werden beim Laden zu `RequirementArt.unbekannt` und ebenfalls
-wie ein Hinweis behandelt; `test/catalog/magic_special_ability_catalog_test.dart`
-schlägt an, wenn eine im Katalog auftaucht.
+wie ein Hinweis behandelt.
 
-**Auswertung:** `buildHeroRequirementContext(hero, catalog: …)` sammelt
-Eigenschaften, erworbene Sonderfertigkeiten, Zauber- und Talentwerte (der
-Katalog löst dafür IDs in Klarnamen auf), Ritualkenntnisse, Traditionen,
-Merkmale, Vor-/Nachteile und Rasse. `evaluateRequirements` liefert daraus je
-Bedingung einen `RequirementCheckResult` mit Soll- und Ist-Text. Ein
-nicht erfüllter Punkt **sperrt den Erwerb nicht**: Die UI zeigt die Checkliste
-und verlangt eine bewusste Bestätigung („Trotzdem erwerben —
-Meisterentscheid"), damit Hausregeln möglich bleiben.
+**Katalogtests** decken die fehleranfällige Stelle ab: Ein Tippfehler in einem
+referenzierten Namen sieht im JSON richtig aus, findet aber nie sein Ziel und
+fiele sonst erst im Betrieb als stillschweigend unerfüllte Bedingung auf. Die
+Tests unter `test/catalog/` (`magic_`, `general_`, `combat_…_catalog_test.dart`
+plus der gemeinsame Helfer `catalog_reference_names.dart`) lösen deshalb jede
+Referenz gegen ihren Bezugskatalog auf: Talente gegen `talente.json` und
+`waffentalente.json`, Manöver gegen `manoever.json`, Vor-/Nachteile und Zauber
+gegen ihre Dateien.
+
+**Auswertung:** `buildHeroRequirementContext(hero, catalog: …, mods: …)`
+sammelt Eigenschaften, erworbene Sonderfertigkeiten, Zauber- und Talentwerte
+(der Katalog löst dafür IDs in Klarnamen auf), Ritualkenntnisse, Traditionen,
+Merkmale, Vor-/Nachteile, Rasse, die Kampf-Basiswerte, erlernte Manöver und
+Waffenmeisterschaften. `evaluateRequirements` liefert daraus je Bedingung einen
+`RequirementCheckResult` mit Soll- und Ist-Text. Ein nicht erfüllter Punkt
+**sperrt den Erwerb nicht**: Die UI zeigt die Checkliste und verlangt eine
+bewusste Bestätigung („Trotzdem erwerben — Meisterentscheid"), damit Hausregeln
+möglich bleiben.
+
+In die Basiswerte fließen nur dauerhafte Modifikatoren ein (`persistentMods`
+plus benannte Stat-Mods). Temporäre Zaubereffekte wie Attributo oder
+Axxeleratus bleiben außen vor — ein laufender Zauber darf keinen dauerhaften
+Erwerb rechtfertigen.
+
+Welche Kampf-SF ein Held besitzt, beantwortet
+`isCombatSpecialAbilityActive(config, id)`. Das ist nötig, weil ein Teil der
+Kampf-SF nicht unter `activeCombatSpecialAbilityIds` steht, sondern in eigenen
+Feldern (`ausweichenI`, `kampfreflexe`, `globalArmorTrainingLevel`) — ohne
+diese Auflösung erschiene `Ausweichen II` selbst dann gesperrt, wenn
+`Ausweichen I` längst aktiv ist.
 
 **Stufenketten:** Aufeinander aufbauende Sonderfertigkeiten teilen sich eine
 `kette` mit gemeinsamer `id` und aufsteigender `stufe`. Jede Stufe bleibt ein
@@ -1280,6 +1328,19 @@ eigener Katalogeintrag, weil die Regelwerke je Stufe eigene AP-Kosten und
 Voraussetzungen vergeben. `alias_namen` hält frühere Schreibweisen fest, damit
 Helden mit einem alten Sammeleintrag (`Eiserner Wille I / II`) weiterhin als
 Besitzer der ersten Stufe erkannt werden.
+
+Im Kampfkatalog sind das `ausweichen` (I–III), `ruestungsgewoehnung` (I–IV),
+`schildkampf`, `parierwaffen` und `beidhaendiger_kampf` (je I–II). Der
+Kampfregeln-Tab rendert seine Gruppen einzeln; eine Kette, deren Stufen in
+verschiedenen Gruppen landen, würde dort zerfallen. `Rüstungsgewöhnung IV` ist
+episch, trägt aber `kampfTyp: allgemein` und bleibt damit bei den Stufen I–III
+— ein Test in `combat_special_ability_catalog_test.dart` hält das fest.
+
+**Bekannte Regelwerks-Lücke:** *Zweihandmeister* und die *Fortgeschrittene
+Monsterparade* verlangen die SF `Zweihändiger Kampf III`, für die es weder
+unter den Kampf-SF noch unter den Manövern einen Katalogeintrag gibt. Solange
+er fehlt, bleibt die Forderung ein sichtbarer `hinweis` statt einer falschen
+Absage.
 
 **Traditionen und Leiteigenschaft:** `tradition_rules.dart` enthält die Tabelle
 aus *Wege der Zauberei* S. 19 (Klugheit bzw. Intuition je Tradition). Die
