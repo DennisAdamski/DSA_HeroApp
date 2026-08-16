@@ -105,6 +105,30 @@ einzelnen Feldunterschiede lassen sich darunter ein- und ausklappen. Dasselbe
 Widget nutzen der blockierende Startbildschirm `SyncConflictGate` und die
 Konflikt-Kachel unter `Einstellungen > Konto & Sync`.
 
+Seit 2026-08-17 werden Entscheidungen zu Offline-Helden dauerhaft festgehalten.
+Vorher war das eine echte Luecke: `queueOfflineProfileConflicts` liest die
+Offline-Box bei jedem Start neu, die Konfliktliste lebt nur im Speicher, und
+keiner der drei Auflösungswege veraendert das Offline-Profil. `Online behalten`
+war deshalb ein No-Op — dieselbe Frage kam bei jedem Start wieder.
+`SyncingHeroRepository` schreibt nun in allen drei Zweigen ein
+`OfflineHeroReview` (`lib/domain/sync_models.dart`) in die Box
+`offline_hero_review_v1` im Konto-Profilpfad
+(`lib/data/hive_offline_hero_review_store.dart`, Vertrag und In-Memory-Variante
+in `lib/data/sync/offline_hero_review_store.dart`). Gefragt wird nur noch, wenn
+kein Beschluss vorliegt oder sich der Offline-Held seither geaendert hat; der
+Vergleich laeuft ueber `heroContentHash`, ist also unabhaengig von
+`lastModified`. Der Offline-Held selbst wird dabei bewusst nie geloescht, damit
+ein spaeterer Offline-Start seine Daten noch findet.
+
+Das Gate ist dadurch auch keine Sackgasse mehr: `Später entscheiden` gibt die
+App fuer die laufende Sitzung frei (die Konflikte bleiben unter
+`Einstellungen > Konto & Sync` loesbar), `Abmelden` wechselt zurueck ins
+Offline-Profil, und bei mehr als einem Konflikt loesen
+`Alle: Online behalten` / `Alle: Lokal behalten` den Stapel in einem Zug auf.
+Getroffene Beschluesse listet der Abschnitt `Offline-Helden` unter
+`Einstellungen > Konto & Sync`; sie sind dort einzeln (`Erneut prüfen`) oder
+komplett widerrufbar.
+
 Windows-Sonderfall: Firebase Auth bleibt dort verfügbar, der Konto-Sync nutzt
 aber bewusst den Firestore-REST-Transport (`RestFirestoreHeroSyncGateway` und
 `RestFirestoreSecretsRepository`) statt des nativen `cloud_firestore`-Pluginpfads.

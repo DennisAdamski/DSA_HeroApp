@@ -152,7 +152,7 @@ Widget _buildApp({
   );
 }
 
-class _FakeSyncController implements AppSyncController {
+class _FakeSyncController extends AppSyncController {
   _FakeSyncController(
     SyncStatusSnapshot initial, {
     Map<String, SyncObjectDiff> diffs = const <String, SyncObjectDiff>{},

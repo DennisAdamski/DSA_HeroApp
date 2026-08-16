@@ -321,6 +321,10 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
             ),
           ),
         ],
+        if (accountLabel != null) ...[
+          const SizedBox(height: 16),
+          _OfflineHeroReviewsCard(controller: syncController),
+        ],
       ],
     );
   }
@@ -388,6 +392,114 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
     String two(int number) => number.toString().padLeft(2, '0');
     return '${local.year}-${two(local.month)}-${two(local.day)} '
         '${two(local.hour)}:${two(local.minute)}';
+  }
+}
+
+/// Zeigt die bereits entschiedenen Offline-Helden und macht sie widerrufbar.
+///
+/// Ohne diese Ansicht waere eine einmal getroffene Entscheidung unsichtbar und
+/// endgueltig -- die Frage wird nach einem Beschluss bewusst nicht mehr
+/// gestellt.
+class _OfflineHeroReviewsCard extends ConsumerWidget {
+  const _OfflineHeroReviewsCard({required this.controller});
+
+  final AppSyncController? controller;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final reviews = ref.watch(offlineHeroReviewsProvider);
+    final entries = reviews.valueOrNull ?? const <OfflineHeroReview>[];
+    if (reviews.isLoading || entries.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return _SettingsSectionCard(
+      title: 'Offline-Helden',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Zu diesen Helden aus dem Offline-Profil hast du bereits '
+            'entschieden. Sie werden beim Start nicht mehr abgefragt.',
+            style: theme.textTheme.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          for (final review in entries)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.history_toggle_off_outlined),
+              title: Text(review.heroName),
+              subtitle: Text(
+                '${_offlineChoiceLabel(review.choice)} • '
+                '${_formatReviewDate(review.decidedAt)}',
+              ),
+              trailing: TextButton(
+                onPressed: controller == null
+                    ? null
+                    : () => _reopen(context, ref, review),
+                child: const Text('Erneut prüfen'),
+              ),
+            ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: controller == null ? null : () => _clearAll(context, ref),
+            icon: const Icon(Icons.restart_alt),
+            label: const Text('Alle Entscheidungen zurücksetzen'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _reopen(
+    BuildContext context,
+    WidgetRef ref,
+    OfflineHeroReview review,
+  ) async {
+    await controller!.reopenOfflineHeroReview(review.heroId);
+    ref.invalidate(offlineHeroReviewsProvider);
+    if (!context.mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${review.heroName} wird erneut abgefragt.'),
+      ),
+    );
+  }
+
+  Future<void> _clearAll(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showAdaptiveConfirmDialog(
+      context: context,
+      title: 'Entscheidungen zurücksetzen?',
+      content:
+          'Alle Offline-Helden werden wieder als offener Konflikt gestellt.',
+      confirmLabel: 'Zurücksetzen',
+      isDestructive: true,
+    );
+    if (confirmed != AdaptiveConfirmResult.confirm) {
+      return;
+    }
+    await controller!.clearOfflineHeroReviews();
+    ref.invalidate(offlineHeroReviewsProvider);
+  }
+
+  static String _offlineChoiceLabel(SyncResolutionChoice choice) {
+    switch (choice) {
+      case SyncResolutionChoice.keepLocal:
+        return 'Lokal behalten';
+      case SyncResolutionChoice.keepRemote:
+        return 'Online behalten';
+      case SyncResolutionChoice.keepBoth:
+        return 'Beide behalten';
+    }
+  }
+
+  static String _formatReviewDate(DateTime value) {
+    final local = value.toLocal();
+    String two(int number) => number.toString().padLeft(2, '0');
+    return '${local.year}-${two(local.month)}-${two(local.day)}';
   }
 }
 
