@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/data/firestore_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_externe_helden_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
+import 'package:dsa_heldenverwaltung/data/hive_offline_hero_review_store.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_sync_metadata_store.dart';
 import 'package:dsa_heldenverwaltung/data/house_rule_pack_repository.dart';
@@ -72,6 +73,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
   HiveHeroRepository? _activeHive;
   SyncingHeroRepository? _activeSyncingRepository;
   HiveSyncMetadataStore? _activeMetadataStore;
+  HiveOfflineHeroReviewStore? _activeOfflineReviewStore;
   HiveExterneHeldenRepository? _activeExterneHeldenRepository;
   late AppSettings _settings;
   StreamSubscription<AppSettings>? _settingsSubscription;
@@ -115,6 +117,10 @@ class _AppStartupGateState extends State<AppStartupGate> {
     final metadataStore = _activeMetadataStore;
     if (metadataStore != null) {
       unawaited(metadataStore.close());
+    }
+    final offlineReviewStore = _activeOfflineReviewStore;
+    if (offlineReviewStore != null) {
+      unawaited(offlineReviewStore.close());
     }
     final hive = _activeHive;
     if (hive != null) {
@@ -168,6 +174,11 @@ class _AppStartupGateState extends State<AppStartupGate> {
       if (previousMetadataStore != null) {
         await previousMetadataStore.close();
       }
+      final previousOfflineReviewStore = _activeOfflineReviewStore;
+      _activeOfflineReviewStore = null;
+      if (previousOfflineReviewStore != null) {
+        await previousOfflineReviewStore.close();
+      }
       final previousHive = _activeHive;
       _activeHive = null;
       if (previousHive != null) {
@@ -201,6 +212,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
       // Bei Login + verfügbarem Firebase: Konto-Repo mit Remote-Sync.
       SyncingHeroRepository? syncingRepository;
       HiveSyncMetadataStore? metadataStore;
+      HiveOfflineHeroReviewStore? offlineReviewStore;
       HeroRepository heroRepository = hive;
       if (authUid != null && widget.firebaseBootstrap.isAccountSyncAvailable) {
         debugPrint('[startup] syncing.create for uid=$authUid');
@@ -208,10 +220,14 @@ class _AppStartupGateState extends State<AppStartupGate> {
         metadataStore = await HiveSyncMetadataStore.create(
           storagePath: heroStoragePath,
         );
+        offlineReviewStore = await HiveOfflineHeroReviewStore.create(
+          storagePath: heroStoragePath,
+        );
         syncingRepository = SyncingHeroRepository(
           local: hive,
           remote: remoteRepo,
           metadataStore: metadataStore,
+          offlineReviewStore: offlineReviewStore,
           accountId: authUid,
           accountEmail: widget.authUser?.email,
         );
@@ -242,6 +258,9 @@ class _AppStartupGateState extends State<AppStartupGate> {
         if (metadataStore != null) {
           await metadataStore.close();
         }
+        if (offlineReviewStore != null) {
+          await offlineReviewStore.close();
+        }
         await hive.close();
         await externeHeldenRepository.close();
         throw StateError('Veralteter Initialisierungslauf für Heldendaten.');
@@ -256,6 +275,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
       _activeHive = hive;
       _activeSyncingRepository = syncingRepository;
       _activeMetadataStore = metadataStore;
+      _activeOfflineReviewStore = offlineReviewStore;
       _activeExterneHeldenRepository = externeHeldenRepository;
       debugPrint('[startup] done');
       return _HeroRepositoryBootstrapResult(

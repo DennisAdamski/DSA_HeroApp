@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/sync/in_memory_sync_metadata_store.dart';
+import 'package:dsa_heldenverwaltung/data/sync/offline_hero_review_store.dart';
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -406,6 +407,149 @@ void main() {
       );
       expect(nameEntry.localValue, 'Offline Alrik');
       expect(nameEntry.remoteValue, 'Konto Alrik');
+    });
+
+    group('Offline-Helden-Beschluesse ueberdauern den Neustart', () {
+      /// Baut ein Repository wie beim App-Start: neue Instanz, aber derselbe
+      /// Beschluss-Speicher im Konto-Profil.
+      SyncingHeroRepository buildRepository({
+        required FakeRepository local,
+        required FakeRemoteHeroSyncGateway remote,
+        required InMemorySyncMetadataStore metadata,
+        required InMemoryOfflineHeroReviewStore reviews,
+      }) {
+        return SyncingHeroRepository(
+          local: local,
+          remote: remote,
+          metadataStore: metadata,
+          offlineReviewStore: reviews,
+          accountId: 'user-1',
+          startRemoteListener: false,
+        );
+      }
+
+      for (final choice in SyncResolutionChoice.values) {
+        test('${choice.name} wird beim naechsten Start nicht erneut '
+            'gefragt', () async {
+          final offlineHero = hero('h-1', 'Offline Alrik');
+          final reviews = InMemoryOfflineHeroReviewStore();
+          final remote = FakeRemoteHeroSyncGateway();
+          final metadata = InMemorySyncMetadataStore();
+          final local = FakeRepository(
+            heroes: <HeroSheet>[hero('h-1', 'Konto Alrik')],
+          );
+
+          final firstRun = buildRepository(
+            local: local,
+            remote: remote,
+            metadata: metadata,
+            reviews: reviews,
+          );
+          await firstRun.queueOfflineProfileConflicts(
+            offlineHeroes: <HeroSheet>[offlineHero],
+          );
+          final conflictId = firstRun.currentStatus.openConflicts.single.id;
+          await firstRun.resolveConflict(conflictId, choice);
+          expect(firstRun.currentStatus.openConflicts, isEmpty);
+
+          // Neustart: neue Repository-Instanz, dieselbe Offline-Box.
+          final secondRun = buildRepository(
+            local: local,
+            remote: remote,
+            metadata: metadata,
+            reviews: reviews,
+          );
+          await secondRun.queueOfflineProfileConflicts(
+            offlineHeroes: <HeroSheet>[offlineHero],
+          );
+
+          expect(secondRun.currentStatus.openConflicts, isEmpty);
+        });
+      }
+
+      test('geaenderter Offline-Held wird erneut gefragt', () async {
+        final reviews = InMemoryOfflineHeroReviewStore();
+        final remote = FakeRemoteHeroSyncGateway();
+        final metadata = InMemorySyncMetadataStore();
+        final local = FakeRepository(
+          heroes: <HeroSheet>[hero('h-1', 'Konto Alrik')],
+        );
+
+        final firstRun = buildRepository(
+          local: local,
+          remote: remote,
+          metadata: metadata,
+          reviews: reviews,
+        );
+        await firstRun.queueOfflineProfileConflicts(
+          offlineHeroes: <HeroSheet>[hero('h-1', 'Offline Alrik')],
+        );
+        await firstRun.resolveConflict(
+          firstRun.currentStatus.openConflicts.single.id,
+          SyncResolutionChoice.keepRemote,
+        );
+
+        final secondRun = buildRepository(
+          local: local,
+          remote: remote,
+          metadata: metadata,
+          reviews: reviews,
+        );
+        await secondRun.queueOfflineProfileConflicts(
+          offlineHeroes: <HeroSheet>[hero('h-1', 'Offline Alrik neu benannt')],
+        );
+
+        expect(secondRun.currentStatus.openConflicts, hasLength(1));
+      });
+
+      test('reopenOfflineHeroReview stellt den Konflikt erneut', () async {
+        final offlineHero = hero('h-1', 'Offline Alrik');
+        final reviews = InMemoryOfflineHeroReviewStore();
+        final repository = buildRepository(
+          local: FakeRepository(heroes: <HeroSheet>[hero('h-1', 'Konto Alrik')]),
+          remote: FakeRemoteHeroSyncGateway(),
+          metadata: InMemorySyncMetadataStore(),
+          reviews: reviews,
+        );
+
+        await repository.queueOfflineProfileConflicts(
+          offlineHeroes: <HeroSheet>[offlineHero],
+        );
+        await repository.resolveConflict(
+          repository.currentStatus.openConflicts.single.id,
+          SyncResolutionChoice.keepRemote,
+        );
+        expect(repository.currentStatus.openConflicts, isEmpty);
+        expect(await repository.listOfflineHeroReviews(), hasLength(1));
+
+        await repository.reopenOfflineHeroReview('h-1');
+
+        expect(repository.currentStatus.openConflicts, hasLength(1));
+        expect(await repository.listOfflineHeroReviews(), isEmpty);
+      });
+
+      test('clearOfflineHeroReviews verwirft alle Beschluesse', () async {
+        final reviews = InMemoryOfflineHeroReviewStore();
+        final repository = buildRepository(
+          local: FakeRepository(heroes: <HeroSheet>[hero('h-1', 'Konto Alrik')]),
+          remote: FakeRemoteHeroSyncGateway(),
+          metadata: InMemorySyncMetadataStore(),
+          reviews: reviews,
+        );
+
+        await repository.queueOfflineProfileConflicts(
+          offlineHeroes: <HeroSheet>[hero('h-1', 'Offline Alrik')],
+        );
+        await repository.resolveConflict(
+          repository.currentStatus.openConflicts.single.id,
+          SyncResolutionChoice.keepRemote,
+        );
+        expect(await repository.listOfflineHeroReviews(), hasLength(1));
+
+        await repository.clearOfflineHeroReviews();
+
+        expect(await repository.listOfflineHeroReviews(), isEmpty);
+      });
     });
 
     test(

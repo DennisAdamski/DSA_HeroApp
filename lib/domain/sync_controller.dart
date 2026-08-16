@@ -21,4 +21,18 @@ abstract class AppSyncController {
   /// Feld-Diff fuer einen offenen Konflikt oder `null`, wenn fuer die
   /// Konflikt-ID keine vollstaendigen Objektdaten verfuegbar sind.
   SyncObjectDiff? conflictDiff(String conflictId);
+
+  /// Bereits getroffene Entscheidungen zu Offline-Helden.
+  ///
+  /// Die Standardimplementierung liefert eine leere Liste, damit einfache
+  /// Controller-Attrappen ohne Offline-Beschluesse auskommen.
+  Future<List<OfflineHeroReview>> listOfflineHeroReviews() async {
+    return const <OfflineHeroReview>[];
+  }
+
+  /// Verwirft den Beschluss zu [heroId] und stellt den Konflikt erneut.
+  Future<void> reopenOfflineHeroReview(String heroId) async {}
+
+  /// Verwirft alle Beschluesse zu Offline-Helden.
+  Future<void> clearOfflineHeroReviews() async {}
 }

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
+import 'package:dsa_heldenverwaltung/data/sync/offline_hero_review_store.dart';
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_metadata_store.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -28,8 +29,10 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     required this.metadataStore,
     required this.accountId,
     this.accountEmail,
+    OfflineHeroReviewStore? offlineReviewStore,
     bool startRemoteListener = true,
-  }) {
+  }) : offlineReviewStore =
+           offlineReviewStore ?? InMemoryOfflineHeroReviewStore() {
     if (startRemoteListener) {
       _heroSubscription = remote.watchHeroes().listen(
         (records) => unawaited(_applyRemoteHeroRecords(records)),
@@ -54,6 +57,9 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
   /// Lokaler Metadatenspeicher fuer Basisrevisionen.
   final SyncMetadataStore metadataStore;
 
+  /// Speicher fuer bereits getroffene Offline-Helden-Beschluesse.
+  final OfflineHeroReviewStore offlineReviewStore;
+
   /// Konto-ID des angemeldeten Users.
   final String accountId;
 
@@ -72,6 +78,13 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       <String, _DeletedHeroConflictDetails>{};
   final Map<String, SyncObjectDiff> _conflictDiffCache =
       <String, SyncObjectDiff>{};
+
+  /// Zuletzt zur Pruefung uebergebene Helden des Offline-Profils.
+  ///
+  /// Wird gebraucht, um einen widerrufenen Beschluss ohne erneutes Oeffnen der
+  /// Offline-Box wieder als Konflikt stellen zu koennen.
+  List<HeroSheet> _offlineHeroesForReview = const <HeroSheet>[];
+
   StreamSubscription<List<RemoteHeroRecord>>? _heroSubscription;
   StreamSubscription<List<RemoteHeroStateRecord>>? _stateSubscription;
 
@@ -272,56 +285,102 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
 
   /// Erzeugt Konflikte fuer Offline-Helden beim Wechsel in ein Konto-Profil.
   ///
-  /// Die Methode wird nur genutzt, wenn sowohl Offline-Daten als auch bereits
-  /// Konto-/Online-Daten vorhanden sind. Dadurch entscheidet der Nutzer bewusst,
-  /// ob Offline-Helden ins Konto uebernommen, ignoriert oder als Kopie
-  /// erhalten werden.
+  /// Der Aufrufer uebergibt bei jedem Start alle Helden des Offline-Profils.
+  /// Gefragt wird nur zu Helden, die im Konto inhaltlich abweichen und zu denen
+  /// noch kein Beschluss vorliegt. Dadurch entscheidet der Nutzer einmal
+  /// bewusst, ob ein Offline-Held ins Konto uebernommen, ignoriert oder als
+  /// Kopie erhalten wird.
   Future<void> queueOfflineProfileConflicts({
     required List<HeroSheet> offlineHeroes,
   }) async {
+    _offlineHeroesForReview = List<HeroSheet>.unmodifiable(offlineHeroes);
     if (offlineHeroes.isEmpty) {
       return;
     }
+    final reviews = <String, OfflineHeroReview>{
+      for (final review in await offlineReviewStore.loadAll())
+        review.heroId: review,
+    };
     for (final offlineHero in offlineHeroes) {
-      final conflictId = 'offlineHero-${offlineHero.id}';
-      if (_offlineHeroConflicts.containsKey(conflictId)) {
+      final review = reviews[offlineHero.id];
+      if (review != null && review.offlineHash == heroContentHash(offlineHero)) {
+        // Der Nutzer hat zu genau diesem Stand bereits entschieden. Erst eine
+        // Aenderung im Offline-Profil rechtfertigt eine erneute Frage.
         continue;
       }
-      final accountHero = await local.loadHeroById(offlineHero.id);
-      if (accountHero != null &&
-          isSyncContentIdentical(
-            offlineHero.toJson(),
-            accountHero.toJson(),
-          )) {
-        // Inhaltlich identisch: keine Nutzerentscheidung noetig, das Konto
-        // enthaelt bereits denselben Stand.
-        continue;
-      }
-      final conflict = SyncConflict(
-        id: conflictId,
-        objectType: SyncObjectType.hero,
-        objectId: offlineHero.id,
-        title: 'Offline-Held: ${offlineHero.name}',
-        localSummary: offlineHero.name,
-        remoteSummary: accountHero == null
-            ? 'Konto enthält bereits andere Daten'
-            : 'Konto-Version: ${accountHero.name}',
-        detectedAt: DateTime.now().toUtc(),
-        supportsKeepBoth: true,
-        localApTotal: offlineHero.apTotal,
-        localApAvailable: offlineHero.apAvailable,
-        localUpdatedAt: offlineHero.lastModified,
-        remoteApTotal: accountHero?.apTotal,
-        remoteApAvailable: accountHero?.apAvailable,
-        remoteUpdatedAt: accountHero?.lastModified,
-      );
-      _offlineHeroConflicts[conflictId] = _OfflineHeroConflictDetails(
-        conflict: conflict,
-        offlineHero: offlineHero,
-        accountHero: accountHero,
-      );
-      _addConflictToStatus(conflict);
+      await _openOfflineHeroConflict(offlineHero);
     }
+  }
+
+  /// Bereits getroffene Entscheidungen zu Offline-Helden.
+  @override
+  Future<List<OfflineHeroReview>> listOfflineHeroReviews() {
+    return offlineReviewStore.loadAll();
+  }
+
+  /// Verwirft den Beschluss zu [heroId] und stellt den Konflikt erneut.
+  ///
+  /// Der Konflikt kann nur wiederhergestellt werden, solange die Offline-Daten
+  /// dieses Starts vorliegen; danach genuegt ein Neustart.
+  @override
+  Future<void> reopenOfflineHeroReview(String heroId) async {
+    await offlineReviewStore.delete(heroId);
+    for (final offlineHero in _offlineHeroesForReview) {
+      if (offlineHero.id == heroId) {
+        await _openOfflineHeroConflict(offlineHero);
+        return;
+      }
+    }
+  }
+
+  /// Verwirft alle Beschluesse und stellt die offenen Fragen erneut.
+  @override
+  Future<void> clearOfflineHeroReviews() async {
+    await offlineReviewStore.clear();
+    for (final offlineHero in _offlineHeroesForReview) {
+      await _openOfflineHeroConflict(offlineHero);
+    }
+  }
+
+  String _offlineConflictId(String heroId) => 'offlineHero-$heroId';
+
+  /// Stellt die Frage zu einem Offline-Helden, sofern sie sich noch stellt.
+  Future<void> _openOfflineHeroConflict(HeroSheet offlineHero) async {
+    final conflictId = _offlineConflictId(offlineHero.id);
+    if (_offlineHeroConflicts.containsKey(conflictId)) {
+      return;
+    }
+    final accountHero = await local.loadHeroById(offlineHero.id);
+    if (accountHero != null &&
+        isSyncContentIdentical(offlineHero.toJson(), accountHero.toJson())) {
+      // Inhaltlich identisch: keine Nutzerentscheidung noetig, das Konto
+      // enthaelt bereits denselben Stand.
+      return;
+    }
+    final conflict = SyncConflict(
+      id: conflictId,
+      objectType: SyncObjectType.hero,
+      objectId: offlineHero.id,
+      title: 'Offline-Held: ${offlineHero.name}',
+      localSummary: offlineHero.name,
+      remoteSummary: accountHero == null
+          ? 'Konto enthält bereits andere Daten'
+          : 'Konto-Version: ${accountHero.name}',
+      detectedAt: DateTime.now().toUtc(),
+      supportsKeepBoth: true,
+      localApTotal: offlineHero.apTotal,
+      localApAvailable: offlineHero.apAvailable,
+      localUpdatedAt: offlineHero.lastModified,
+      remoteApTotal: accountHero?.apTotal,
+      remoteApAvailable: accountHero?.apAvailable,
+      remoteUpdatedAt: accountHero?.lastModified,
+    );
+    _offlineHeroConflicts[conflictId] = _OfflineHeroConflictDetails(
+      conflict: conflict,
+      offlineHero: offlineHero,
+      accountHero: accountHero,
+    );
+    _addConflictToStatus(conflict);
   }
 
   Future<int> _syncHeroes() async {
@@ -978,7 +1037,10 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
   ) async {
     switch (resolution) {
       case SyncResolutionChoice.keepRemote:
-        return;
+        // Der Konto-Stand bleibt, wie er ist. Der Offline-Held bleibt
+        // unangetastet im Offline-Profil liegen -- bewusst, damit ein
+        // spaeterer Offline-Start seine Daten noch findet.
+        break;
       case SyncResolutionChoice.keepLocal:
         await saveHero(details.offlineHero);
       case SyncResolutionChoice.keepBoth:
@@ -989,6 +1051,18 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
         );
         await saveHero(copy);
     }
+    // Ohne diesen Beschluss wuerde dieselbe Frage bei jedem Start erneut
+    // gestellt: die Konfliktliste lebt nur im Speicher und das Offline-Profil
+    // bleibt in allen drei Zweigen unveraendert.
+    await offlineReviewStore.save(
+      OfflineHeroReview(
+        heroId: details.offlineHero.id,
+        heroName: details.offlineHero.name,
+        offlineHash: heroContentHash(details.offlineHero),
+        choice: resolution,
+        decidedAt: DateTime.now().toUtc(),
+      ),
+    );
   }
 
   Future<void> _resolveStateConflict(
