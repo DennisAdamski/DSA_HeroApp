@@ -38,19 +38,38 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Erwerbsvoraussetzungen liegen zusätzlich zum Freitext `voraussetzungen` als
   maschinenlesbarer Block `voraussetzungen_struktur` im Katalog
   (`lib/catalog/special_ability_requirement.dart`, Schema in
-  `docs/technical_overview.md` Abschnitt 4.9). Geprüft wird über
-  `buildHeroRequirementContext` und `evaluateRequirements`
-  (`lib/rules/derived/`). Ein offener Punkt sperrt nie: Die UI zeigt eine
-  Checkliste (`lib/ui/widgets/requirement_checklist.dart`) und verlangt im
-  Erwerbsdialog die Bestätigung „Trotzdem erwerben (Meisterentscheid)".
+  `docs/technical_overview.md` Abschnitt 4.9). Gepflegt für magische,
+  allgemeine und Kampf-Sonderfertigkeiten; karmale fehlen bewusst, weil
+  Liturgiekenntnis, Gottheit und Entrückung im `HeroSheet` kein Gegenstück
+  haben. Geprüft wird über `buildHeroRequirementContext` und
+  `evaluateRequirements` (`lib/rules/derived/`). Ein offener Punkt sperrt nie:
+  Die UI zeigt eine Checkliste (`lib/ui/widgets/requirement_checklist.dart`)
+  und verlangt im Erwerbsdialog die Bestätigung „Trotzdem erwerben
+  (Meisterentscheid)".
+- Kampf-Voraussetzungen brauchen eigene Bedingungsarten, weil sie auf Dinge
+  außerhalb der SF-Kataloge zeigen: `manoever` (steht in `manoever.json`),
+  `basiswert` (AT/PA/FK/INI), `waffenmeister` (liegt in
+  `combatConfig.waffenmeisterschaften`), dazu `nachteil` und `rasse_verboten`.
+  Die Katalogtests unter `test/catalog/` lösen jede Referenz gegen ihren
+  Bezugskatalog auf — ohne sie fällt ein Tippfehler erst im Betrieb auf, und
+  dort nur als stillschweigend unerfüllte Bedingung.
+- Ob eine Kampf-SF bei einem Helden aktiv ist, beantwortet ausschließlich
+  `isCombatSpecialAbilityActive` (`lib/rules/derived/combat_special_ability_state.dart`).
+  Ein Teil der Kampf-SF steht nicht unter `activeCombatSpecialAbilityIds`,
+  sondern in eigenen Feldern (`ausweichenI`, `kampfreflexe`,
+  `globalArmorTrainingLevel`); diese Zuordnung darf nicht in der UI dupliziert
+  werden.
 - Aufeinander aufbauende Sonderfertigkeiten teilen sich eine `kette` mit
   gemeinsamer `id` und aufsteigender `stufe`; jede Stufe bleibt ein eigener
   Katalogeintrag mit eigenen Kosten und Voraussetzungen
-  (`lib/rules/derived/special_ability_chain_rules.dart`). Der Picker fasst sie
-  zu einer Stufen-Karte zusammen
-  (`lib/ui/screens/shared/special_ability_chain_card.dart`). Alte Sammelnamen
-  wie `Eiserner Wille I / II` bleiben als `alias_namen` der ersten Stufe
-  erhalten, damit Bestandshelden erkannt werden.
+  (`lib/rules/derived/special_ability_chain_rules.dart`). Ketten-Logik und
+  Stufen-Karte (`lib/ui/screens/shared/special_ability_chain_card.dart`) sind
+  generisch über `SpecialAbilityEntry`
+  (`lib/catalog/special_ability_entry.dart`), damit Kampf-Ketten (`Ausweichen`,
+  `Rüstungsgewöhnung`, `Schildkampf`, `Parierwaffen`, `Beidhändiger Kampf`)
+  dieselbe Darstellung bekommen wie die magischen. Alte Sammelnamen wie
+  `Eiserner Wille I / II` bleiben als `alias_namen` der ersten Stufe erhalten,
+  damit Bestandshelden erkannt werden.
 - Traditionen und Leiteigenschaften stehen in
   `lib/rules/derived/tradition_rules.dart` (Wege der Zauberei S. 19). Die
   Traditionen eines Helden sind die Vereinigung aus `representationen` und den

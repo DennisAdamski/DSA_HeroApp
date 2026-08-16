@@ -331,10 +331,10 @@ class _SpecialAbilityPickerScreenState
     );
   }
 
-  Widget _buildChainCard(SpecialAbilityChain kette) {
+  Widget _buildChainCard(SpecialAbilityChain<SpecialAbilityDef> kette) {
     final erworben = erworbeneKettenstufe(kette, _ownedNamesLower);
     final naechste = naechsteKettenstufe(kette, _ownedNamesLower);
-    return SpecialAbilityChainCard(
+    return SpecialAbilityChainCard<SpecialAbilityDef>(
       kette: kette,
       erworbeneStufe: erworben,
       offeneVoraussetzungenDerNaechstenStufe: naechste == null

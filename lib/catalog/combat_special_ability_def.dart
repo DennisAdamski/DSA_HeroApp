@@ -1,12 +1,14 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 import 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_entry.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
 
 /// Definition einer Kampf-Sonderfertigkeit aus dem Regelkatalog.
 ///
 /// Diese Eintraege werden aktuell als strukturierter Nachschlage-Katalog
 /// geladen und koennen spaeter enger mit UI und Regelberechnungen
 /// verknuepft werden.
-class CombatSpecialAbilityDef {
+class CombatSpecialAbilityDef implements SpecialAbilityEntry {
   const CombatSpecialAbilityDef({
     required this.id,
     required this.name,
@@ -26,9 +28,14 @@ class CombatSpecialAbilityDef {
     this.quelle = '',
     this.hausregel = false,
     this.nurEpisch = false,
+    this.voraussetzungenStruktur = const <SpecialAbilityRequirement>[],
+    this.kette,
+    this.aliasNamen = const <String>[],
   });
 
+  @override
   final String id; // Eindeutige ID (z. B. 'ksf_aufmerksamkeit')
+  @override
   final String name; // Anzeigename
   final String gruppe; // Obergruppe, aktuell meist 'kampf'
   final String typ; // Typisierung, aktuell 'sonderfertigkeit'
@@ -39,21 +46,46 @@ class CombatSpecialAbilityDef {
   final String erklarungLang; // Ausfuehrliche Regelbeschreibung
   final String voraussetzungen; // Erwerbsvoraussetzungen
   final String verbreitung; // Verbreitungsangabe laut Regelwerk
+  @override
   final String kosten; // AP-Kosten laut Regelwerk
   final List<String> aktiviertManoeverIds; // Freigeschaltete Manoever-IDs
   final List<CombatSpecialAbilityBonusDef> kampfwertBoni; // Direkte Boni
   final RuleMeta? ruleMeta; // Strukturierte Herkunfts- und Freischaltmetadaten
   final String quelle; // Freitext-Quellreferenz (z. B. 'Wege des Schwerts S. 112')
   final bool hausregel; // Eintrag stammt aus einer Hausregel
+  @override
   final bool nurEpisch; // Nur fuer episch eingestufte Helden verfuegbar
+
+  /// Maschinenlesbare Fassung von [voraussetzungen]. Leer bedeutet, dass die
+  /// App fuer diesen Eintrag nichts pruefen kann — der Freitext bleibt dann
+  /// die einzige Information.
+  @override
+  final List<SpecialAbilityRequirement> voraussetzungenStruktur;
+
+  /// Zugehoerigkeit zu einer Stufenkette (`Ausweichen I` → `II` → `III`).
+  /// `null` bei allen Eintraegen, die fuer sich allein stehen.
+  @override
+  final SpecialAbilityChainRef? kette;
+
+  /// Frueher genutzte Schreibweisen dieses Eintrags, damit Bestandshelden mit
+  /// einem alten Sammelnamen weiterhin als Besitzer erkannt werden.
+  final List<String> aliasNamen;
 
   /// Gibt an, ob der Eintrag einen regelwirksamen waffenlosen Kampfstil darstellt.
   bool get isUnarmedCombatStyle => stilTyp.trim() == 'waffenloser_kampfstil';
+
+  /// Anzeigename plus alle Alias-Namen.
+  @override
+  List<String> get alleNamen => List<String>.unmodifiable(<String>[
+    name,
+    ...aliasNamen,
+  ]);
 
   /// Deserialisiert die Sonderfertigkeit tolerant aus JSON.
   factory CombatSpecialAbilityDef.fromJson(Map<String, dynamic> json) {
     final kampfwertBoniRaw = (json['kampfwert_boni'] as List?) ?? const [];
     final ruleMetaJson = readCatalogObject(json, 'ruleMeta');
+    final ketteJson = readCatalogObject(json, 'kette');
     return CombatSpecialAbilityDef(
       id: readCatalogString(json, 'id', fallback: ''),
       name: readCatalogString(json, 'name', fallback: ''),
@@ -83,6 +115,14 @@ class CombatSpecialAbilityDef {
       quelle: readCatalogString(json, 'quelle', fallback: ''),
       hausregel: readCatalogBool(json, 'hausregel', fallback: false),
       nurEpisch: readCatalogBool(json, 'nurEpisch', fallback: false),
+      voraussetzungenStruktur:
+          readCatalogObjectList(json, 'voraussetzungen_struktur')
+              .map(SpecialAbilityRequirement.fromJson)
+              .toList(growable: false),
+      kette: ketteJson == null
+          ? null
+          : SpecialAbilityChainRef.fromJson(ketteJson),
+      aliasNamen: readCatalogStringList(json, 'alias_namen'),
     );
   }
 
@@ -109,6 +149,12 @@ class CombatSpecialAbilityDef {
       if (quelle.isNotEmpty) 'quelle': quelle,
       if (hausregel) 'hausregel': true,
       if (nurEpisch) 'nurEpisch': true,
+      if (voraussetzungenStruktur.isNotEmpty)
+        'voraussetzungen_struktur': voraussetzungenStruktur
+            .map((bedingung) => bedingung.toJson())
+            .toList(growable: false),
+      if (kette != null) 'kette': kette!.toJson(),
+      if (aliasNamen.isNotEmpty) 'alias_namen': aliasNamen,
     };
   }
 }

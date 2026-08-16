@@ -9,13 +9,17 @@
 /// Dieses Modul gruppiert einen Katalog in Ketten und beantwortet die beiden
 /// Fragen, die die Erwerbs-UI stellt: Welche Stufe hat der Held schon, und
 /// welche ist als naechstes dran?
+///
+/// Alles hier ist generisch ueber [SpecialAbilityEntry], weil Kampf-Ketten
+/// (`Ausweichen I-III`, `Ruestungsgewoehnung I-IV`) genauso funktionieren wie
+/// magische — nur dass sie aus `CombatSpecialAbilityDef` bestehen.
 library;
 
-import 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_variant_rules.dart';
 
 /// Eine Kette aus mindestens zwei Stufen.
-class SpecialAbilityChain {
+class SpecialAbilityChain<T extends SpecialAbilityEntry> {
   /// Erzeugt eine unveraenderliche Kette.
   const SpecialAbilityChain({
     required this.id,
@@ -30,13 +34,7 @@ class SpecialAbilityChain {
   final String label;
 
   /// Die Stufen, aufsteigend sortiert.
-  final List<SpecialAbilityDef> stufen;
-
-  /// Kategorie der Kette — die der ersten Stufe.
-  String get kategorie => stufen.first.kategorie;
-
-  /// Ob die Kette nur informativ ist (siehe [SpecialAbilityDef.nurInformation]).
-  bool get nurInformation => stufen.first.nurInformation;
+  final List<T> stufen;
 }
 
 /// Gruppiert die Eintraege eines Katalogs zu Ketten.
@@ -45,23 +43,23 @@ class SpecialAbilityChain {
 /// uebergangen: Eine „Kette“ aus einem Glied ist eine gewoehnliche
 /// Sonderfertigkeit und soll auch so aussehen. Die Reihenfolge der Ketten
 /// folgt dem ersten Auftreten im Katalog, damit die Anzeige stabil bleibt.
-List<SpecialAbilityChain> buildSpecialAbilityChains(
-  Iterable<SpecialAbilityDef> katalog,
+List<SpecialAbilityChain<T>> buildSpecialAbilityChains<T extends SpecialAbilityEntry>(
+  Iterable<T> katalog,
 ) {
-  final gruppen = <String, List<SpecialAbilityDef>>{};
+  final gruppen = <String, List<T>>{};
   final reihenfolge = <String>[];
   for (final def in katalog) {
     final id = def.kette?.id.trim() ?? '';
     if (id.isEmpty) {
       continue;
     }
-    if (gruppen.putIfAbsent(id, () => <SpecialAbilityDef>[]).isEmpty) {
+    if (gruppen.putIfAbsent(id, () => <T>[]).isEmpty) {
       reihenfolge.add(id);
     }
     gruppen[id]!.add(def);
   }
 
-  final ketten = <SpecialAbilityChain>[];
+  final ketten = <SpecialAbilityChain<T>>[];
   for (final id in reihenfolge) {
     final stufen = gruppen[id]!
       ..sort((a, b) => (a.kette!.stufe).compareTo(b.kette!.stufe));
@@ -70,22 +68,22 @@ List<SpecialAbilityChain> buildSpecialAbilityChains(
     }
     final label = stufen.first.kette!.label.trim();
     ketten.add(
-      SpecialAbilityChain(
+      SpecialAbilityChain<T>(
         id: id,
         label: label.isEmpty ? _basisName(stufen.first.name) : label,
-        stufen: List<SpecialAbilityDef>.unmodifiable(stufen),
+        stufen: List<T>.unmodifiable(stufen),
       ),
     );
   }
-  return List<SpecialAbilityChain>.unmodifiable(ketten);
+  return List<SpecialAbilityChain<T>>.unmodifiable(ketten);
 }
 
 /// Alle Eintraege, die von [buildSpecialAbilityChains] nicht erfasst werden.
 ///
 /// Zusammen mit den Ketten ergibt das wieder den vollstaendigen Katalog — die
 /// UI kann also beides nebeneinander anzeigen, ohne etwas zu verlieren.
-List<SpecialAbilityDef> kettenloseEintraege(
-  Iterable<SpecialAbilityDef> katalog,
+List<T> kettenloseEintraege<T extends SpecialAbilityEntry>(
+  Iterable<T> katalog,
 ) {
   final kettenIds = buildSpecialAbilityChains(katalog)
       .map((kette) => kette.id)
@@ -97,8 +95,8 @@ List<SpecialAbilityDef> kettenloseEintraege(
 
 /// Die hoechste Stufe der Kette, die der Held bereits erworben hat. `0`, wenn
 /// er noch gar keine besitzt.
-int erworbeneKettenstufe(
-  SpecialAbilityChain kette,
+int erworbeneKettenstufe<T extends SpecialAbilityEntry>(
+  SpecialAbilityChain<T> kette,
   Iterable<String> erworbeneNamen,
 ) {
   var hoechste = 0;
@@ -118,8 +116,8 @@ int erworbeneKettenstufe(
 /// Bewusst nicht „erworbene Stufe + 1“: Ein importierter Held kann Stufe II
 /// besitzen, ohne dass Stufe I eingetragen ist. Dann soll die UI die Luecke
 /// anbieten statt die Kette als abgeschlossen zu behandeln.
-SpecialAbilityDef? naechsteKettenstufe(
-  SpecialAbilityChain kette,
+T? naechsteKettenstufe<T extends SpecialAbilityEntry>(
+  SpecialAbilityChain<T> kette,
   Iterable<String> erworbeneNamen,
 ) {
   for (final stufe in kette.stufen) {
@@ -136,7 +134,7 @@ SpecialAbilityDef? naechsteKettenstufe(
 /// Held, der noch den alten Sammeleintrag `Eiserner Wille I / II` gespeichert
 /// hat, als Besitzer von Stufe I erkannt wird.
 bool istEintragErworben(
-  SpecialAbilityDef def,
+  SpecialAbilityEntry def,
   Iterable<String> erworbeneNamen,
 ) {
   final kandidaten = def.alleNamen

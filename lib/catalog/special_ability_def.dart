@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 import 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_entry.dart';
 import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
 
 /// Gruppe von Auswahlvarianten mit gemeinsamen AP-Kosten.
@@ -46,7 +47,7 @@ class SpecialAbilityVariantGroup {
 /// Bewusst ein einziger Typ fuer alle drei Sektionen, da die Regelwerke
 /// strukturell identische Angaben liefern. Die konkrete Zugehoerigkeit
 /// entscheidet die Katalogsektion ([CatalogSectionId]), nicht dieser Typ.
-class SpecialAbilityDef {
+class SpecialAbilityDef implements SpecialAbilityEntry {
   const SpecialAbilityDef({
     required this.id,
     required this.name,
@@ -76,7 +77,9 @@ class SpecialAbilityDef {
     this.ruleMeta,
   });
 
+  @override
   final String id; // Eindeutige ID (z. B. 'asf_wachsamkeit')
+  @override
   final String name; // Anzeigename
   final String gruppe; // Obergruppe laut Regelwerk
   final String typ; // Typisierung, meist 'sonderfertigkeit'
@@ -86,9 +89,11 @@ class SpecialAbilityDef {
   final String erklarungLang; // Ausfuehrliche Regelbeschreibung
   final String voraussetzungen; // Erwerbsvoraussetzungen
   final String verbreitung; // Verbreitungsangabe laut Regelwerk
+  @override
   final String kosten; // AP-Kosten laut Regelwerk
   final String quelle; // Freitext-Quellreferenz (z. B. 'Wege der Zauberei S. 140')
   final bool hausregel; // Eintrag stammt aus einer Hausregel
+  @override
   final bool nurEpisch; // Nur fuer episch eingestufte Helden verfuegbar
 
   /// Die Sonderfertigkeit darf mehrfach erworben werden — jeweils fuer eine
@@ -119,10 +124,12 @@ class SpecialAbilityDef {
   /// Maschinenlesbare Fassung von [voraussetzungen]. Leer bedeutet, dass die
   /// App fuer diesen Eintrag nichts pruefen kann — der Freitext bleibt dann
   /// die einzige Information.
+  @override
   final List<SpecialAbilityRequirement> voraussetzungenStruktur;
 
   /// Zugehoerigkeit zu einer Stufenkette (`Eiserner Wille I` → `II`).
   /// `null` bei allen Eintraegen, die fuer sich allein stehen.
+  @override
   final SpecialAbilityChainRef? kette;
 
   /// Frueher genutzte Schreibweisen dieses Eintrags. Noetig, damit Helden, die
@@ -139,6 +146,7 @@ class SpecialAbilityDef {
 
   /// Anzeigename plus alle Alias-Namen — die vollstaendige Menge an
   /// Schreibweisen, unter denen dieser Eintrag bei einem Helden stehen kann.
+  @override
   List<String> get alleNamen => List<String>.unmodifiable(<String>[
     name,
     ...aliasNamen,

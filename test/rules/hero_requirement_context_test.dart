@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
@@ -152,5 +153,83 @@ void main() {
 
     expect(context.talentwerte.containsKey('Magiekunde'), isFalse);
     expect(context.talentwerte['tal_magiekunde'], 12);
+  });
+
+  group('Kampfdaten', () {
+    const kampfCatalog = RulesCatalog(
+      version: 'test',
+      source: 'test',
+      talents: <TalentDef>[
+        TalentDef(
+          id: 'tal_schwerter',
+          name: 'Schwerter',
+          group: 'Kampftalent',
+          steigerung: 'D',
+          attributes: <String>['MU', 'GE', 'KK'],
+        ),
+      ],
+      maneuvers: <ManeuverDef>[
+        ManeuverDef(id: 'man_binden', name: 'Binden'),
+        ManeuverDef(id: 'man_scharfschuetze', name: 'Scharfschütze'),
+      ],
+      spells: <SpellDef>[],
+      weapons: <WeaponDef>[],
+    );
+
+    HeroSheet kampfHeld() {
+      return buildHero().copyWith(
+        combatConfig: const CombatConfig(
+          specialRules: CombatSpecialRules(
+            activeManeuvers: <String>['man_binden', 'man_scharfschuetze::tal_bogen'],
+          ),
+          waffenmeisterschaften: <WaffenmeisterConfig>[
+            WaffenmeisterConfig(talentId: 'tal_schwerter', weaponType: 'Schild'),
+          ],
+        ),
+      );
+    }
+
+    test('rechnet die Kampf-Basiswerte aus den Eigenschaften', () {
+      final context = buildHeroRequirementContext(
+        buildHero(),
+        catalog: catalog,
+      );
+
+      // MU 15, GE 11, KK 10 → AT round(36/5) = 7; IN 13 → PA round(34/5) = 7.
+      expect(context.basiswerte['AT'], 7);
+      expect(context.basiswerte['PA'], 7);
+      expect(context.basiswerte['FK'], 7);
+      // INI: round((15 + 15 + 13 + 11) / 5) = 11.
+      expect(context.basiswerte['INI'], 11);
+    });
+
+    test('loest Manoever-IDs in Klarnamen auf', () {
+      final context = buildHeroRequirementContext(
+        kampfHeld(),
+        catalog: kampfCatalog,
+      );
+
+      expect(context.manoever, contains('Binden'));
+    });
+
+    test('behaelt beim Per-Talent-Manoever den Talentzusatz', () {
+      final context = buildHeroRequirementContext(
+        kampfHeld(),
+        catalog: kampfCatalog,
+      );
+
+      // Das Talent steht nicht im Testkatalog; dann bleibt die ID stehen,
+      // statt den Eintrag ganz zu verlieren.
+      expect(context.manoever, contains('Scharfschütze (tal_bogen)'));
+    });
+
+    test('fuehrt Waffenmeisterschaften nach Talent und freier Gattung', () {
+      final context = buildHeroRequirementContext(
+        kampfHeld(),
+        catalog: kampfCatalog,
+      );
+
+      expect(context.waffenmeisterschaften, <String>['Schwerter', 'Schild']);
+    });
   });
 }

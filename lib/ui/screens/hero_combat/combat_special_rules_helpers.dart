@@ -4,37 +4,56 @@ part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
   /// Liefert den Aktivzustand einer SF anhand ihrer Katalog-ID.
   /// Liest sowohl dedizierte boolean-Felder als auch [activeCombatSpecialAbilityIds].
-  bool _isCatalogSfActive(String id) {
-    final rules = _draftCombatConfig.specialRules;
-    final armor = _draftCombatConfig.armor;
-    return switch (id) {
-      'ksf_kampfreflexe' => rules.kampfreflexe,
-      'ksf_kampfgespuer' => rules.kampfgespuer,
-      'ksf_schnellziehen' => rules.schnellziehen,
-      'ksf_ausweichen_i' => rules.ausweichenI,
-      'ksf_ausweichen_ii' => rules.ausweichenII,
-      'ksf_ausweichen_iii' => rules.ausweichenIII,
-      'ksf_linkhand' => rules.linkhandActive,
-      'ksf_schildkampf_i' => rules.schildkampfI,
-      'ksf_schildkampf_ii' => rules.schildkampfII,
-      'ksf_parierwaffen_i' => rules.parierwaffenI,
-      'ksf_parierwaffen_ii' => rules.parierwaffenII,
-      'ksf_klingentaenzer' => rules.klingentaenzer,
-      'ksf_aufmerksamkeit' => rules.aufmerksamkeit,
-      'ksf_ruestungsgewoehnung_i' => armor.globalArmorTrainingLevel >= 1,
-      'ksf_ruestungsgewoehnung_ii' => armor.globalArmorTrainingLevel >= 2,
-      'ksf_ruestungsgewoehnung_iii' => armor.globalArmorTrainingLevel >= 3,
-      _ => rules.activeCombatSpecialAbilityIds.contains(id),
-    };
+  bool _isCatalogSfActive(String id) =>
+      isCombatSpecialAbilityActive(_draftCombatConfig, id);
+
+  /// Baut den Pruefkontext fuer Erwerbsvoraussetzungen aus dem Draft-Zustand.
+  ///
+  /// Bewusst aus dem Draft: Wer gerade `Ausweichen I` eingeschaltet hat, soll
+  /// `Ausweichen II` sofort freigegeben sehen, ohne erst zu speichern.
+  ///
+  /// In die Basiswerte fliessen nur die dauerhaften Modifikatoren ein —
+  /// temporaere Zaubereffekte (Attributo, Axxeleratus) duerfen keinen
+  /// dauerhaften Erwerb rechtfertigen.
+  HeroRequirementContext? _buildCombatRequirementContext(RulesCatalog catalog) {
+    final hero = _latestHero;
+    if (hero == null) {
+      return null;
+    }
+    return buildHeroRequirementContext(
+      hero.copyWith(combatConfig: _draftCombatConfig),
+      catalog: catalog,
+      mods:
+          hero.persistentMods + aggregateNamedStatModifiers(hero.statModifiers),
+    );
+  }
+
+  /// Prueft die Voraussetzungen einer Kampf-SF; leer, wenn nichts pruefbar ist.
+  List<RequirementCheckResult> _pruefeCombatSf(
+    CombatSpecialAbilityDef ability,
+    HeroRequirementContext? requirementContext,
+  ) {
+    if (requirementContext == null || ability.voraussetzungenStruktur.isEmpty) {
+      return const <RequirementCheckResult>[];
+    }
+    return evaluateRequirements(
+      ability.voraussetzungenStruktur,
+      requirementContext,
+    );
   }
 
   /// Fragt bei Aktivierung einer Kampf-SF/eines Manoevers die AP-Kosten ab
   /// und erhoeht bei Bestaetigung `_latestHero.apSpent`.
   /// Liefert `false`, wenn der Nutzer abgebrochen hat (Toggle bleibt aus).
+  ///
+  /// [voraussetzungen] blendet die Checkliste im Dialog ein. Offene Punkte
+  /// sperren nicht, verlangen aber den Meisterentscheid.
   Future<bool> _confirmErwerbKosten({
     required String bezeichnung,
     required String kostenHinweis,
     bool epischerInhalt = false,
+    List<RequirementCheckResult> voraussetzungen =
+        const <RequirementCheckResult>[],
   }) async {
     final hero = _latestHero;
     if (hero == null) {
@@ -48,6 +67,7 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
       verfuegbareAp: hero.apAvailable,
       episch: hero.isEpisch,
       epischerInhalt: epischerInhalt,
+      voraussetzungen: voraussetzungen,
     );
     if (result == null) {
       return false;
@@ -60,14 +80,17 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
   /// Fragt beim Aktivieren vorher die AP-Kosten ab.
   Future<void> _toggleCombatSfById(
     CombatSpecialAbilityDef ability,
-    bool value,
-  ) async {
+    bool value, {
+    List<RequirementCheckResult> voraussetzungen =
+        const <RequirementCheckResult>[],
+  }) async {
     final id = ability.id;
     if (value) {
       final bestaetigt = await _confirmErwerbKosten(
         bezeichnung: ability.name,
         kostenHinweis: ability.kosten,
         epischerInhalt: ability.nurEpisch,
+        voraussetzungen: voraussetzungen,
       );
       if (!bestaetigt) {
         return;
@@ -153,8 +176,12 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
     _markFieldChanged();
   }
 
-  /// Rendert alle SF einer Gruppe als Chip-Wrap.
-  /// [abilities] sind bereits gefiltert (z. B. nur waffenlose Stile).
+  /// Rendert alle SF einer Gruppe.
+  ///
+  /// Stufenketten (`Ausweichen I-III`, `Ruestungsgewoehnung I-IV`) werden zu je
+  /// einer Karte zusammengefasst, alles Uebrige bleibt ein Chip — dieselbe
+  /// Aufteilung wie im Sonderfertigkeiten-Picker. [abilities] sind bereits
+  /// gefiltert (z. B. nur waffenlose Stile).
   Widget _buildSfChipWrap({
     required List<CombatSpecialAbilityDef> abilities,
     required RulesCatalog catalog,
@@ -167,48 +194,118 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
         child: Text('Keine Einträge vorhanden.'),
       );
     }
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: abilities.map((ability) {
-        final isActive = _isCatalogSfActive(ability.id);
-        final String beschreibung;
-        if (ability.isUnarmedCombatStyle) {
-          beschreibung = '${ability.aktiviertManoeverIds.length} Manöver';
-        } else if (ability.beschreibung.trim().isNotEmpty) {
-          beschreibung = ability.beschreibung.trim();
-        } else {
-          beschreibung = 'Kampf-Sonderfertigkeit';
-        }
-        return ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 160, maxWidth: 260),
-          child: _CombatRuleChip(
-            name: ability.name,
-            beschreibung: beschreibung,
-            isActive: isActive,
-            isEditing: isEditing,
-            isEpic: ability.nurEpisch,
-            onToggle: (value) => _toggleCombatSfById(ability, value),
-            onNameTap: () => _showCombatSpecialAbilityDetailsDialog(
-              context: context,
-              ability: ability,
-              catalogManeuvers: catalog.maneuvers,
-              onGladiatorStyleChanged:
-                  ability.id == 'ksf_gladiatorenstil' && isEditing
-                      ? (String? value) {
-                          _draftCombatConfig = _draftCombatConfig.copyWith(
-                            specialRules: rules.copyWith(
-                              gladiatorStyleTalent: value ?? '',
-                            ),
-                          );
-                          _markFieldChanged();
-                        }
-                      : null,
-              gladiatorStyleTalent: rules.gladiatorStyleTalent,
-            ),
+    final requirementContext = _buildCombatRequirementContext(catalog);
+    final ketten = buildSpecialAbilityChains(abilities);
+    final einzeln = kettenloseEintraege(abilities);
+
+    Widget chipFuer(CombatSpecialAbilityDef ability) {
+      final isActive = _isCatalogSfActive(ability.id);
+      final String beschreibung;
+      if (ability.isUnarmedCombatStyle) {
+        beschreibung = '${ability.aktiviertManoeverIds.length} Manöver';
+      } else if (ability.beschreibung.trim().isNotEmpty) {
+        beschreibung = ability.beschreibung.trim();
+      } else {
+        beschreibung = 'Kampf-Sonderfertigkeit';
+      }
+      final ergebnisse = _pruefeCombatSf(ability, requirementContext);
+      return ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 160, maxWidth: 260),
+        child: _CombatRuleChip(
+          name: ability.name,
+          beschreibung: beschreibung,
+          isActive: isActive,
+          isEditing: isEditing,
+          isEpic: ability.nurEpisch,
+          offeneVoraussetzungen: isActive
+              ? 0
+              : offeneVoraussetzungen(ergebnisse).length,
+          onToggle: (value) =>
+              _toggleCombatSfById(ability, value, voraussetzungen: ergebnisse),
+          onNameTap: () => _showCombatSpecialAbilityDetailsDialog(
+            context: context,
+            ability: ability,
+            catalogManeuvers: catalog.maneuvers,
+            voraussetzungen: ergebnisse,
+            onGladiatorStyleChanged:
+                ability.id == 'ksf_gladiatorenstil' && isEditing
+                    ? (String? value) {
+                        _draftCombatConfig = _draftCombatConfig.copyWith(
+                          specialRules: rules.copyWith(
+                            gladiatorStyleTalent: value ?? '',
+                          ),
+                        );
+                        _markFieldChanged();
+                      }
+                    : null,
+            gladiatorStyleTalent: rules.gladiatorStyleTalent,
           ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final kette in ketten) ...[
+          _buildCombatChainCard(
+            kette: kette,
+            catalog: catalog,
+            requirementContext: requirementContext,
+            isEditing: isEditing,
+          ),
+          const SizedBox(height: 8),
+        ],
+        if (einzeln.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: einzeln.map(chipFuer).toList(growable: false),
+          ),
+      ],
+    );
+  }
+
+  /// Eine Stufenkette als Karte mit Stufenreihe.
+  Widget _buildCombatChainCard({
+    required SpecialAbilityChain<CombatSpecialAbilityDef> kette,
+    required RulesCatalog catalog,
+    required HeroRequirementContext? requirementContext,
+    required bool isEditing,
+  }) {
+    // Der Aktivzustand kommt aus `_isCatalogSfActive`, weil ein Teil der
+    // Kampf-SF in eigenen Feldern steht statt unter den aktiven IDs.
+    final erworbeneNamen = kette.stufen
+        .where((def) => _isCatalogSfActive(def.id))
+        .map((def) => def.name)
+        .toList(growable: false);
+    final erworben = erworbeneKettenstufe(kette, erworbeneNamen);
+    final naechste = naechsteKettenstufe(kette, erworbeneNamen);
+
+    return SpecialAbilityChainCard<CombatSpecialAbilityDef>(
+      kette: kette,
+      erworbeneStufe: erworben,
+      offeneVoraussetzungenDerNaechstenStufe: naechste == null
+          ? const <RequirementCheckResult>[]
+          : offeneVoraussetzungen(
+              _pruefeCombatSf(naechste, requirementContext),
+            ),
+      onErwerben: (stufe) {
+        if (!isEditing) {
+          return;
+        }
+        _toggleCombatSfById(
+          stufe,
+          true,
+          voraussetzungen: _pruefeCombatSf(stufe, requirementContext),
         );
-      }).toList(),
+      },
+      onDetails: (stufe) => _showCombatSpecialAbilityDetailsDialog(
+        context: context,
+        ability: stufe,
+        catalogManeuvers: catalog.maneuvers,
+        voraussetzungen: _pruefeCombatSf(stufe, requirementContext),
+      ),
     );
   }
 
@@ -240,6 +337,8 @@ Future<void> _showCombatSpecialAbilityDetailsDialog({
   required BuildContext context,
   required CombatSpecialAbilityDef ability,
   List<ManeuverDef> catalogManeuvers = const <ManeuverDef>[],
+  List<RequirementCheckResult> voraussetzungen =
+      const <RequirementCheckResult>[],
   void Function(String?)? onGladiatorStyleChanged,
   String gladiatorStyleTalent = '',
 }) {
@@ -248,6 +347,7 @@ Future<void> _showCombatSpecialAbilityDetailsDialog({
     builder: (_) => _CombatSpecialAbilityDetailsDialog(
       ability: ability,
       catalogManeuvers: catalogManeuvers,
+      voraussetzungen: voraussetzungen,
       onGladiatorStyleChanged: onGladiatorStyleChanged,
       gladiatorStyleTalent: gladiatorStyleTalent,
     ),
@@ -259,12 +359,14 @@ class _CombatSpecialAbilityDetailsDialog extends StatelessWidget {
   const _CombatSpecialAbilityDetailsDialog({
     required this.ability,
     this.catalogManeuvers = const <ManeuverDef>[],
+    this.voraussetzungen = const <RequirementCheckResult>[],
     this.onGladiatorStyleChanged,
     this.gladiatorStyleTalent = '',
   });
 
   final CombatSpecialAbilityDef ability;
   final List<ManeuverDef> catalogManeuvers;
+  final List<RequirementCheckResult> voraussetzungen;
   final void Function(String?)? onGladiatorStyleChanged;
   final String gladiatorStyleTalent;
 
@@ -326,7 +428,13 @@ class _CombatSpecialAbilityDetailsDialog extends StatelessWidget {
                   },
                 ),
               ],
-              if (ability.voraussetzungen.trim().isNotEmpty) ...[
+              // Die geprüfte Checkliste ersetzt den Freitext, sobald es
+              // strukturierte Voraussetzungen gibt: Sie sagt dasselbe, nennt
+              // aber zusätzlich den Stand des Helden.
+              if (voraussetzungen.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                RequirementChecklist(ergebnisse: voraussetzungen),
+              ] else if (ability.voraussetzungen.trim().isNotEmpty) ...[
                 const SizedBox(height: 16),
                 Text('Voraussetzungen', style: theme.textTheme.titleSmall),
                 const SizedBox(height: 6),
@@ -435,6 +543,7 @@ class _CombatRuleChip extends StatelessWidget {
     required this.onToggle,
     required this.onNameTap,
     this.isEpic = false,
+    this.offeneVoraussetzungen = 0,
   });
 
   final String name;
@@ -445,7 +554,12 @@ class _CombatRuleChip extends StatelessWidget {
   final VoidCallback onNameTap;
   final bool isEpic;
 
+  /// Anzahl der nicht erfuellten Voraussetzungen.
+  final int offeneVoraussetzungen;
+
   static const _epicColor = Color(0xFFB8860B); // goldenrod
+
+  bool get _istGesperrt => !isActive && offeneVoraussetzungen > 0;
 
   @override
   Widget build(BuildContext context) {
@@ -493,6 +607,14 @@ class _CombatRuleChip extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                       ],
+                      if (_istGesperrt) ...[
+                        Icon(
+                          Icons.lock_outline,
+                          size: 13,
+                          color: colorScheme.error,
+                        ),
+                        const SizedBox(width: 4),
+                      ],
                       Flexible(
                         child: Text(
                           name,
@@ -508,7 +630,17 @@ class _CombatRuleChip extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (beschreibung.trim().isNotEmpty)
+                if (_istGesperrt)
+                  Text(
+                    offeneVoraussetzungen == 1
+                        ? '1 Voraussetzung offen'
+                        : '$offeneVoraussetzungen Voraussetzungen offen',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: colorScheme.error),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                else if (beschreibung.trim().isNotEmpty)
                   Text(
                     beschreibung.trim(),
                     style: theme.textTheme.bodySmall

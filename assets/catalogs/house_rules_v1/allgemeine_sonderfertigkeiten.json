@@ -7,6 +7,18 @@
     "seite": "Epische Stufen S. 22",
     "beschreibung": "SO-Differenz wirkt bei Betören-Proben als Bonus statt als Malus.",
     "voraussetzungen": "CH 20, TaW Betören 21",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 20
+      },
+      {
+        "art": "talent",
+        "name": "Betören",
+        "min": 21
+      }
+    ],
     "kosten": "300 AP",
     "erklarung_lang": "Gegensätze ziehen sich an: Es gibt nicht nur keine Abzüge mehr für zu hohen oder niedrigen SO, sondern der Held hat gelernt, seine Andersartigkeit als positives Alleinstellungsmerkmal herauszuarbeiten, so dass er bei Betören-Proben die SO-Differenz als Bonus erhält.",
     "quelle": "Epische Stufen S. 22",
@@ -15,8 +27,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 22", "excerpt": "Charmeur" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 22",
+          "excerpt": "Charmeur"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -27,6 +48,13 @@
     "seite": "Epische Stufen S. 22",
     "beschreibung": "Intuitives Ausweichen einer ausgelösten Falle oder eines Hinterhalts per IN-Probe.",
     "voraussetzungen": "IN 21",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 21
+      }
+    ],
     "kosten": "300 AP",
     "erklarung_lang": "Erlaubt ein intuitives Ausweichen einer bereits ausgelösten Falle, wenn eine IN-Probe gelingt, die um die Hälfte der Sinnesschärfe-Probe erschwert ist, die notwendig gewesen wäre, die Falle zu entdecken. Erschwernis des Ausweichens je nach Fallenart. Gilt auch für Angriffe aus dem Hinterhalt (nicht zu verwechseln mit Angriffen von hinten).",
     "quelle": "Epische Stufen S. 22",
@@ -35,8 +63,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 22", "excerpt": "Falleninstinkt" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 22",
+          "excerpt": "Falleninstinkt"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -47,6 +84,28 @@
     "seite": "Epische Stufen S. 22",
     "beschreibung": "Menschenkenntnis-Proben zum Durchschauen des Helden sind 50 % stärker erschwert.",
     "voraussetzungen": "IN 16, CH 18, TaW Selbstbeherrschung 15, TaW Überreden 20",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 16
+      },
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Selbstbeherrschung",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Überreden",
+        "min": 20
+      }
+    ],
     "kosten": "400 AP",
     "erklarung_lang": "Man wirkt absolut glaubwürdig bei der Darstellung seiner Gefühle; alle Menschenkenntnis-Proben, um den Helden zu durchschauen, sind 50 % mehr erschwert.",
     "quelle": "Epische Stufen S. 22",
@@ -55,8 +114,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 22", "excerpt": "Gefühlsmime" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 22",
+          "excerpt": "Gefühlsmime"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -67,6 +135,37 @@
     "seite": "Epische Stufen S. 23",
     "beschreibung": "Empath fokussiert angeeignete Emotionen und Nachteile auf ein einziges Ziel und zerdrückt es geistig.",
     "voraussetzungen": "MU 20, TaW Überreden oder Überzeugen 21, SF Gefühle vermitteln, TaW Gabe Empathie 12",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 20
+      },
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "talent",
+            "name": "Überreden",
+            "min": 21
+          },
+          {
+            "art": "talent",
+            "name": "Überzeugen",
+            "min": 21
+          }
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "SF Gefühle vermitteln — kein Katalogeintrag vorhanden"
+      },
+      {
+        "art": "talent",
+        "name": "Empathie",
+        "min": 12
+      }
+    ],
     "kosten": "500 AP",
     "erklarung_lang": "Alle zurzeit vom Empathen kontrollierten (d. h. von anderen angeeigneten) Emotionen, psychischen Krankheiten (z. B. Blutrausch, Einbildungen, Wahnvorstellungen) und Schlechten Eigenschaften kann er auf ein einziges Ziel fokussieren, welches für die nächsten TaP Minuten unter dieser Last zerdrückt wird: Alle Proben sind TaP/2 erschwert; alle 5 KR eine Probe auf Selbstbeherrschung + TaP. Bei Misslingen kompletter mentaler Zusammenbruch (Apathie, manischer Wahn, Blutrausch etc.). Am Ende verliert der Empath für 1 SR das Bewusstsein, alle Störungen kehren zu ihren ursprünglichen Besitzern zurück. Zauberdauer 10 Aktionen; Kosten: restliche Ausdauer, mindestens 30 AuP. Die TaP können nicht über den Nachteils-GP liegen, die auf den Gegner „losgelassen\" werden.",
     "quelle": "Epische Stufen S. 23",
@@ -75,8 +174,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 23", "excerpt": "Geist Überwältigen" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 23",
+          "excerpt": "Geist Überwältigen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -87,6 +195,27 @@
     "seite": "Epische Stufen S. 24",
     "beschreibung": "Wer verhört wird, kann nur unter erschwerter MU-Probe lügen.",
     "voraussetzungen": "TaW Menschenkenntnis 22, CH 20, TaW Überreden 21, SF Silberzunge",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Menschenkenntnis",
+        "min": 22
+      },
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 20
+      },
+      {
+        "art": "talent",
+        "name": "Überreden",
+        "min": 21
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Silberzunge"
+      }
+    ],
     "kosten": "350 AP",
     "erklarung_lang": "Wer von jemandem mit dieser SF verhört wird, kann nur dann lügen, wenn ihm eine MU-Probe gelingt, die jede Stunde neu abgelegt werden muss und für jede Stunde der Befragung um 2 Punkte erschwert ist.",
     "quelle": "Epische Stufen S. 24",
@@ -95,8 +224,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 24", "excerpt": "Inquisitor" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 24",
+          "excerpt": "Inquisitor"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -107,6 +245,33 @@
     "seite": "Epische Stufen S. 24",
     "beschreibung": "Keine gesellschaftlichen Vor-/Nachteile durch epische Merkmale; wird nicht wiedererkannt, wenn nicht gewünscht.",
     "voraussetzungen": "IN 18, TaW Menschenkenntnis, Etikette, Sich Verkleiden und Gassenwissen 15",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Menschenkenntnis",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Etikette",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Sich Verkleiden",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Gassenwissen",
+        "min": 15
+      }
+    ],
     "kosten": "400 AP",
     "erklarung_lang": "Dem Helden entstehen bei Bedarf keine gesellschaftlichen Vor- und Nachteile mehr durch epische Merkmale, d. h. er wird nicht wiedererkannt, wenn er es nicht will (außer durch Personen, die ihn persönlich kennen).",
     "quelle": "Epische Stufen S. 24",
@@ -115,8 +280,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 24", "excerpt": "Meister der Anpassung" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 24",
+          "excerpt": "Meister der Anpassung"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -127,6 +301,27 @@
     "seite": "Epische Stufen S. 24",
     "beschreibung": "Tiere können mit Manövern wie Finte, Wuchtschlag, gezielter Biss, Sturmangriff u. a. ausgebildet werden.",
     "voraussetzungen": "CH 18, TaW Abrichten und Tierkunde 18 (alle VR -2 bei Tierfreund; nur Abrichten bei Tierempathie)",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Abrichten",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Tierkunde",
+        "min": 18
+      },
+      {
+        "art": "hinweis",
+        "text": "Alle Voraussetzungen -2 bei Vorteil Tierfreund; mit Tierempathie genügt Abrichten"
+      }
+    ],
     "kosten": "400 AP",
     "erklarung_lang": "Der Ausbilder kann Tieren deutlich mehr beibringen als ein normaler Abrichter: Manöver wie Finte, Wuchtschlag, gezielter Biss, Gegenhalten, Sturmangriff oder Verbeißen können (nach Meisterentscheid angepasst) vermittelt werden. Sturmangriffe erhalten z. B. nicht grundsätzlich GS/2 mehr TP, sondern sind auch von der Masse des Tieres abhängig.",
     "quelle": "Epische Stufen S. 24",
@@ -135,8 +330,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 24", "excerpt": "Meisterliches Abrichten" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 24",
+          "excerpt": "Meisterliches Abrichten"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -147,6 +351,16 @@
     "seite": "Epische Stufen S. 24–27",
     "beschreibung": "Alchimistische Meister brauen Tränke mit permanenter Wirkung aus Titaniumstaub, Qualitätselixier und mächtigen Zutaten.",
     "voraussetzungen": "SF Vollendetes Handwerk (Alchimie); Speziallabor (ca. 1500 D); vollendetes Labor (5000 D) erleichtert um 3",
+    "voraussetzungen_struktur": [
+      {
+        "art": "sonderfertigkeit",
+        "name": "Vollendetes Handwerk"
+      },
+      {
+        "art": "hinweis",
+        "text": "Speziallabor (ca. 1500 D); ein vollendetes Labor (5000 D) erleichtert um 3"
+      }
+    ],
     "kosten": "600 AP",
     "erklarung_lang": "Die permanente Wirkung wird durch drei Zutaten erzielt: 1 Skrupel hochreiner Titaniumstaub (200–300 D), ein Elixier der Qualitätsstufe F und eine mächtige Zutat (ggf. mehrere). Basiserschwernis 15; jede Zutat erschwert die Alchimie-Probe um 3. Mächtige Zutaten tragen Punktwerte 1–5 bei (Eigenschaft +1 = 5 Punkte; LeP = 2/Punkt; AuP = 0,5/Punkt; AsP = 1/Punkt; Vorteile = GP × 2; Nachteile = GP). Chaos-Faktor (%): pro Zutat wird auf den summierten CF gewürfelt; fällt der Wurf in den chaotischen Bereich, pervertiert die Zutat. Chaos-Faktor wirkt dreifach als Bonus auf das Endergebnis (gewünscht oder pervertiert). Beispiele für chaotische Auswirkungen: Fellwuchs (12), Vernarbung (2W6), Schattenverlust (12), Mehrfache Schatten (5), Transparenz (1 je 5 %), Wachstumsverschiebung (1 je 2 %), Krallen (5), Sonar (15), übernatürliche Fähigkeiten (12). Ob die SF für Helden zugänglich ist, sollte besonders gut überlegt sein.",
     "quelle": "Epische Stufen S. 24–27",
@@ -155,8 +369,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 24–27", "excerpt": "Permanente Tränke" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 24–27",
+          "excerpt": "Permanente Tränke"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -167,6 +390,32 @@
     "seite": "Epische Stufen S. 27",
     "beschreibung": "Bewegung wie ein Akrobat ohne Proben; akrobatische Einlagen kosten keine Extra-Zeit; Aufstehen ohne GE-Probe.",
     "voraussetzungen": "TaW Körperbeherrschung 18, TaW Akrobatik 15, TaW Athletik 15, TaW Klettern 15, SF Standfest",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Körperbeherrschung",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Akrobatik",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Athletik",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Klettern",
+        "min": 15
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Standfest"
+      }
+    ],
     "kosten": "450 AP",
     "erklarung_lang": "Der Held kann sich wie ein Akrobat bewegen, ohne dass dafür Proben notwendig werden (z. B. beim Balancieren, Überwinden kleinerer Hindernisse wie Kisten oder Mäuerchen), solange die Bewegung nicht halsbrecherisch gefährlich ist oder während eines Kampfes / einer Flucht stattfindet. Akrobatische Einlagen – z. B. während einer Verfolgungsjagd – benötigen praktisch keine zusätzliche Zeit zur Überwindung von Hindernissen. Wer auf dem Boden liegt, kann ohne GE-Probe in einer Aktion aufstehen.",
     "quelle": "Epische Stufen S. 27",
@@ -175,8 +424,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 27", "excerpt": "Überragende Agilität" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 27",
+          "excerpt": "Überragende Agilität"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -187,6 +445,27 @@
     "seite": "Epische Stufen S. 28",
     "beschreibung": "CH-Proben zum Aufwiegeln dürfen wiederholt werden; Heilkunde Seele als Unterstützung für Überzeugen/Menschenkenntnis.",
     "voraussetzungen": "CH 20, TaW Überzeugen 21, TaW Heilkunde Seele 15 (passende Kulturkunde)",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 20
+      },
+      {
+        "art": "talent",
+        "name": "Überzeugen",
+        "min": 21
+      },
+      {
+        "art": "talent",
+        "name": "Heilkunde Seele",
+        "min": 15
+      },
+      {
+        "art": "hinweis",
+        "text": "Passende Kulturkunde"
+      }
+    ],
     "kosten": "300 AP",
     "erklarung_lang": "Charme und psychologische Kenntnisse: CH-Proben zum Aufwiegeln dürfen wiederholt werden (Eigenschafts- oder Talentprobe). Heilkunde Seele kann als Unterstützungstalent für Überzeugen- und Menschenkenntnis-Proben eingesetzt werden. Die Fähigkeit ist nur einsetzbar, wenn man über die entsprechende Kulturkunde verfügt.",
     "quelle": "Epische Stufen S. 28",
@@ -195,8 +474,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 28", "excerpt": "Revolutionär" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 28",
+          "excerpt": "Revolutionär"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -207,6 +495,18 @@
     "seite": "Epische Stufen S. 28",
     "beschreibung": "Mit Schleichen-TaW/10 GS bewegen und als stillstehend wahrgenommen werden; halbe GS ohne Schleichen-Abzug.",
     "voraussetzungen": "TaW Schleichen 18, TaW Sich Verstecken 15",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Schleichen",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Sich Verstecken",
+        "min": 15
+      }
+    ],
     "kosten": "400 AP",
     "erklarung_lang": "Dies ist die Fähigkeit, sich quasi ungesehen bewegen zu können. Regeltechnisch kann sich jeder mit dieser SF mit einem Zehntel seines Schleichen-TaW in GS bewegen und wird trotzdem so wahrgenommen, als würde er stillstehen. Bedeutsam bei schlechter Beleuchtung und dem Chamelioni Mimikri, wo es darauf ankommt, einen praktisch Unsichtbaren zu sehen. Außerdem darf man sich mit bis zu halber GS bewegen, ohne dass Erschwernisse auf Schleichen anfallen.",
     "quelle": "Epische Stufen S. 28",
@@ -215,8 +515,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 28", "excerpt": "Schattenläufer" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 28",
+          "excerpt": "Schattenläufer"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -227,6 +536,18 @@
     "seite": "Epische Stufen S. 28",
     "beschreibung": "Umfangreiche Boni für Aufwiegeln, Betteln, Feilschen und Lügen.",
     "voraussetzungen": "TaW Überreden 21, CH 19",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Überreden",
+        "min": 21
+      },
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 19
+      }
+    ],
     "kosten": "450 AP",
     "erklarung_lang": "Aufwiegeln: Nur halbe Erschwernisse durch schlechten Ruf, SO, äußere Umstände etc. Betteln: Einnahmen verdoppelt; soll durch Betteln ein bestimmtes Ziel erreicht werden, ist die Probe nur um drei Viertel der Punkte erschwert. Feilschen: Bis zu 60 % Preisnachlass; verkaufte Ware bis zu 95 % des erwarteten Weiterverkaufspreises. Lügen: Vor jeder Lüge wird zwischen Lügner und Belogenem eine vergleichende Menschenkenntnis-Probe gewürfelt; nur wenn der Belogene gewinnt, darf er eine weitere Probe ablegen, um den Wahrheitsgehalt zu schätzen.",
     "quelle": "Epische Stufen S. 28",
@@ -235,8 +556,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 28", "excerpt": "Silberzunge" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 28",
+          "excerpt": "Silberzunge"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -247,6 +577,37 @@
     "seite": "Epische Stufen S. 29",
     "beschreibung": "Reduziert Hitze-/Kälteschaden um 1 TP; immun gegen natürliche Wildnis-Krankheiten.",
     "voraussetzungen": "KO 20 (18 bei Resistenz gegen Krankheiten), TaW Wildnisleben 18",
+    "voraussetzungen_struktur": [
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "eigenschaft",
+            "code": "KO",
+            "min": 20
+          },
+          {
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "eigenschaft",
+                "code": "KO",
+                "min": 18
+              },
+              {
+                "art": "vorteil",
+                "name": "Resistenz gegen Krankheiten"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "art": "talent",
+        "name": "Wildnisleben",
+        "min": 18
+      }
+    ],
     "kosten": "300 AP (halbiert bei Haupteigenschaft KO)",
     "erklarung_lang": "Wer lange genug in der Natur zugebracht hat, erhält einen TP weniger durch Hitze/Kälte und wird von keiner Krankheit mehr befallen, die man sich durch Umgang in der Natur zuziehen kann (z. B. Flinker Difar, Brabaker Schweiß). Nicht Tollwut oder Krankheiten durch giftige/infizierte Tiere und Pflanzen.",
     "quelle": "Epische Stufen S. 29",
@@ -255,8 +616,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 29", "excerpt": "Sumus Kind" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 29",
+          "excerpt": "Sumus Kind"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -267,6 +637,20 @@
     "seite": "Epische Stufen S. 29–34",
     "beschreibung": "Meisterung eines Handwerks- oder Wissenstalents mit talentspezifischen Boni (separat je Talent zu zahlen).",
     "voraussetzungen": "Entsprechendes Talent auf TaW 24; beteiligte Eigenschaften insgesamt auf 50 (je ≥ 15; bei zwei Eigenschaften zusammen ≥ 38); alle Hilfstalente TaW ≥ 15",
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Entsprechendes Talent auf TaW 24"
+      },
+      {
+        "art": "hinweis",
+        "text": "Beteiligte Eigenschaften insgesamt auf 50 (je mindestens 15; bei zwei Eigenschaften zusammen mindestens 38)"
+      },
+      {
+        "art": "hinweis",
+        "text": "Alle Hilfstalente auf TaW 15 oder höher"
+      }
+    ],
     "kosten": "600 AP (pro gewähltem Talent)",
     "erklarung_lang": "Boni je Talent (Auswahl): Abrichten – +1 AT/PA/INI/TP bei Kampf, +10 % KK bei Zug/Trage, +1 GS/AU sonst; LO-Max +2. Alchimie – ein Bonus pro Trank wählbar. Bergbau – Grundriss-Einschätzung vor Betreten. Bogenbau – Seilzug-Bogen oder verdoppelte Pfeileffektivität. Boote fahren – höhere GS oder -50 % Manöver-Erschwernis. Brauer – Bier exzellent, Zusätze kaschierbar. Fahrzeug lenken – Gespann-GS 1:1, einhändig. Falschspiel – Gewinnchance bis +35 %. Feinmechanik – Prothesen, Armbrust-Repeater, Mechanik-TaW ≥ 18. Gerber/Kürschner – Leder +1 RS, feuer-/säurefest. Glaskunst – Fernrohre, Zielfernrohr-AT +2. Grobschmied – Waffen +4 TP/+8 BF/+2 Personalisierung; Platten/Ketten-Boni. Heilkunde Gift – Giftschaden rückgängig, Immunisierung. Heilkunde Krankheiten – Schaden -20 %. Heilkunde Seele – doppelte Geschwindigkeit Nachteile abbauen. Heilkunde Wunden – halbierte Wundabzüge. Holzbearbeitung – Schild-Boni (+1 PA klein, +1 AT sehr groß). Instrumentbauer – Zauber in Instrumente einarbeiten (pAsP-Kosten). Kartographie – Karten tarnen. Kristallzucht – Edelstein-Magieeffekte verdoppelt. Malen/Zeichnen – Technische Zeichnungen erleichtern Proben um TaP/3. Maurer – Härte/Struktur durch freiwillige Erschwernis. Musizieren – Elfenlieder +50 %, TaW/3 Erleichterung auf gesellschaftliche Proben. Schlösser Knacken – zweite Probe ohne Bruch. Schneidern – Kleidung +1 RS (3× Zeit). Seiler – +30 % Tragfähigkeit. Stoffe Färben – Tarnkleidung. Tätowieren – lebende 3D-Bilder. Webkunst – wasserdicht, +1 Kälteschutz. Winzer – wie Brauer. Zimmermann – wie Maurer für Schiffe.",
     "quelle": "Epische Stufen S. 29–34",
@@ -275,8 +659,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 29–34", "excerpt": "Vollendetes Handwerk" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 29–34",
+          "excerpt": "Vollendetes Handwerk"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -287,6 +680,23 @@
     "seite": "Epische Stufen S. 34",
     "beschreibung": "Tilgt Abzüge auf Schleichen-Proben während des Kletterns durch das Klettern selbst.",
     "voraussetzungen": "TaW Klettern 18, TaW Schleichen 18, GE 20",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Klettern",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Schleichen",
+        "min": 18
+      },
+      {
+        "art": "eigenschaft",
+        "code": "GE",
+        "min": 20
+      }
+    ],
     "kosten": "300 AP",
     "erklarung_lang": "Tilgt alle Abzüge auf Schleichen-Proben während des Kletterns, die durch das Klettern an sich entstehen. Der Untergrund spielt nach wie vor eine Rolle, aber nicht mehr als würde der Spezialagent darüber hinweggehen.",
     "quelle": "Epische Stufen S. 34",
@@ -295,8 +705,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 34", "excerpt": "Wandlauf" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 34",
+          "excerpt": "Wandlauf"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -307,6 +726,22 @@
     "seite": "Epische Stufen S. 34",
     "beschreibung": "Schlechte Eigenschaften in Höhe von Selbstbeherrschung-GP können ignoriert werden.",
     "voraussetzungen": "MU 18, TaW Selbstbeherrschung 18, Vorteil Empathie",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Selbstbeherrschung",
+        "min": 18
+      },
+      {
+        "art": "vorteil",
+        "name": "Empathie"
+      }
+    ],
     "kosten": "250 AP",
     "erklarung_lang": "Diese Fähigkeit erweitert die Möglichkeiten zur Absorption von psychischen Verletzungen: In Zukunft können Schlechte Eigenschaften in Höhe von Selbstbeherrschung-GP ignoriert werden.",
     "quelle": "Epische Stufen S. 34",
@@ -315,8 +750,17 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.general_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 34", "excerpt": "Zustand Isolieren" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 34",
+          "excerpt": "Zustand Isolieren"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -324,7 +768,10 @@
     "name": "Akklimatisierung",
     "mehrfachwaehlbar": true,
     "varianten_label": "Klima",
-    "varianten": ["Hitze", "Kälte"],
+    "varianten": [
+      "Hitze",
+      "Kälte"
+    ],
     "varianten_freitext": false,
     "ap_erstwerb": 150,
     "ap_folgeerwerb": 150,
@@ -334,6 +781,17 @@
     "seite": "Wege der Helden S. 276",
     "beschreibung": "Erlaubt es, den Effekt der Vorteile Hitzeresistenz bzw. Kälteresistenz nachträglich zu erlernen.",
     "voraussetzungen": "KO 12; kann nur durch längeren Aufenthalt (mindestens 5 Jahre) in einer entsprechenden Klimazone erlernt werden, ohne weiteren Lernzeit-Aufwand",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KO",
+        "min": 12
+      },
+      {
+        "art": "hinweis",
+        "text": "Nur durch mindestens 5 Jahre Aufenthalt in der entsprechenden Klimazone erlernbar, ohne weiteren Lernzeit-Aufwand"
+      }
+    ],
     "verbreitung": "7, kann ohne Lehrmeister erlernt werden",
     "kosten": "je 150 AP; kann nicht zu Spielbeginn gewählt werden",
     "erklarung_lang": "Wesen, die resistent gegen Hitze- bzw. Kälteeinflüsse sind, erleiden durch außergewöhnliche Umgebungstemperaturen keinen Schaden, solange diese Temperaturen im erträglichen Rahmen bleiben; sie müssen nur dann Einschränkungen hinnehmen, wenn sie sich unangemessen verhalten (etwa sich bei großer Hitze noch übermäßig anstrengen). Diese Sonderfertigkeit schützt nicht gegen Zauber, deren Wirkung auf Feuer oder Eis beruht. Es können sowohl die Akklimatisierung (Hitze) als auch die Akklimatisierung (Kälte) erworben werden; die 5 Jahre können unterbrochen werden. Helden, die Hitze- oder Kälteempfindlich sind, müssen diesen Nachteil zuerst wegkaufen, ehe sie sich eine entsprechende Akklimatisierung erwerben können.",
@@ -373,6 +831,16 @@
     "seite": "Wege der Helden S. 276-277",
     "beschreibung": "Der Held kennt ein von einem Zunftmeister erfahrenes Geheimnis der Handwerkskunst, das besondere Herstellungsverfahren oder Materialien erlaubt.",
     "voraussetzungen": "Passendes Handwerkstalent auf TaW 15 oder höher, ein bis zwei passende Hilfs-Talente jeweils auf TaW 7+",
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Passendes Handwerkstalent auf TaW 15 oder höher"
+      },
+      {
+        "art": "hinweis",
+        "text": "Ein bis zwei passende Hilfstalente jeweils auf TaW 7 oder höher"
+      }
+    ],
     "verbreitung": "2, üblicherweise bei Zunftmeistern und ähnlichen Veteranen",
     "kosten": "100 AP",
     "erklarung_lang": "Typische Beispiele stammen in erster Linie aus der Schmiedekunst, wo z. B. Damaszierungs-Techniken oder Zwergenspan jeweils ein solches Berufsgeheimnis darstellen. Die Verarbeitung von echtem (Elfen-)Bausch oder die Herstellung von Spinnenseide fallen ebenso in den Bereich der Berufsgeheimnisse wie die Konstruktion von Hand-Torsionswaffen. Die entsprechenden Regelungen bzw. Boni dürfen nur genutzt werden, wenn der Held das entsprechende Berufsgeheimnis kennt. Die Auswahlliste ist ausdrücklich unvollständig; weitere Berufsgeheimnisse können frei ergänzt werden.",
@@ -389,6 +857,27 @@
     "seite": "Wege der Helden S. 277",
     "beschreibung": "Ermöglicht das effektive Fälschen von Schriftstücken und Kunstwerken sowie das Erkennen solcher Fälschungen.",
     "voraussetzungen": "Alchimie 5, Malen/Zeichnen 7, Schriftlicher Ausdruck 5; passende Schriften 7+",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Alchemie",
+        "min": 5
+      },
+      {
+        "art": "talent",
+        "name": "Malen / Zeichnen",
+        "min": 7
+      },
+      {
+        "art": "talent",
+        "name": "Schriftlicher Ausdruck",
+        "min": 5
+      },
+      {
+        "art": "hinweis",
+        "text": "Passende Schriften auf 7 oder höher"
+      }
+    ],
     "verbreitung": "2",
     "kosten": "100 AP / 2 GP",
     "erklarung_lang": "Beinhaltet das Nachahmen von fremden Schriften, die Herstellung von falschen Siegeln, die Auswahl des richtigen Papiers und Farben, verschiedene Alterungstechniken und ähnliches. Die Sonderfertigkeit erleichtert alle Proben (meist auf Schriftlicher Ausdruck, Alchimie, Malen/Zeichnen und andere handwerkliche Talente), die sich um eine solche Fälschung drehen, um 3 Punkte. Proben auf Sinnenschärfe oder passende Wissenstalente zum Enttarnen einer solchen Fälschung sind zusätzlich zu den bei den Proben übrigen TaP* um 5 Punkte erschwert. Die Sonderfertigkeit hilft jedoch auch beim Erkennen solcher Fälschungen; diese Proben sind um 5 Punkte erleichtert.",
@@ -453,6 +942,22 @@
     "seite": "Wege der Helden S. 277",
     "beschreibung": "Erlaubt es, kulturbedingte Erschwernisse auf Gesellschaftliche und bestimmte Wissens-Talente außerhalb der eigenen Kultur zu ignorieren.",
     "voraussetzungen": "KL und IN mindestens 10, Kenntnis der Sprache der Kultur mindestens 5",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 10
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 10
+      },
+      {
+        "art": "hinweis",
+        "text": "Kenntnis der Sprache der Kultur mindestens 5"
+      }
+    ],
     "verbreitung": "7, kann ohne Lehrmeister erlernt werden",
     "kosten": "kostenlos (0 AP) für die eigene Kultur; 150 AP (3 GP) für jede weitere Kultur; verbilligt (75 AP / 2 GP) für Helden mit dem Vorteil Soziale Anpassungsfähigkeit bzw. der Sonderfertigkeit Nandusgefälliges Wissen, doppelt verbilligt bei beidem (38 AP / 1 GP)",
     "erklarung_lang": "Proben auf Gesellschaftliche und bestimmte Wissens-Talente sind außerhalb der eigenen Kultur meist erschwert (um mindestens 3, eher 7, teilweise auch bis zu 15 Punkten). Die Sonderfertigkeit Kulturkunde erlaubt es, diese Erschwernisse zu ignorieren. Zuschläge, die auch ein Mitglied der entsprechenden Kultur betreffen würden (etwa SO-Differenz), werden hierdurch nicht beeinflusst. Kulturkunde wird in erster Linie durch den Aufenthalt unter Wesen der betreffenden Kultur erworben (mindestens ein Jahr, dabei kein weiterer Zeitaufwand); es ist aber auch möglich, genügend über eine Kultur aus Reiseberichten, Schriftwechseln oder von einem Lehrmeister aus der entsprechenden Kultur zu erfahren (was einen den AP entsprechenden Zeitaufwand mit sich bringt). Bei der Entdeckung neuer Kulturen können weitere Kulturkunden hinzukommen.",
@@ -486,6 +991,12 @@
     "seite": "Wege der Helden S. 276-277",
     "beschreibung": "Erleichtert Proben auf Wettervorhersage, Wildnisleben, Tier- und Pflanzenkunde in einer vertrauten Art von Wildnis um 3 Punkte.",
     "voraussetzungen": "Kann nur durch längeren Aufenthalt (mindestens 12 Monate) im entsprechenden Gelände erlernt werden, ohne weiteren Lernzeit-Aufwand; Unterbrechungen können zusätzliche Zeit erfordern",
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Nur durch mindestens 12 Monate Aufenthalt im entsprechenden Gelände erlernbar; Unterbrechungen können zusätzliche Zeit erfordern"
+      }
+    ],
     "verbreitung": "7, kann ohne Lehrmeister erlernt werden",
     "kosten": "150 AP für die erste Geländekunde, je 100 AP für jedes weitere Gelände",
     "erklarung_lang": "Erleichtert alle Proben, die sich auf den Umgang mit einer vertrauten Art von Wildnis beziehen, um 3 Punkte (vor allem Wettervorhersage, Wildnisleben, Tier- und Pflanzenkunde, je nach Meister-Maßgabe auch Sinnenschärfe und Fährtensuchen); ein geländekundiger Held kann zudem sehr plötzliche Phänomene wie Wetterumschwünge, tückische Sumpflöcher oder Schneewehen vorausahnen. Folgende Arten sind möglich: Dschungelkundig, Eiskundig, Gebirgskundig, Höhlenkundig, Maraskankundig, Meereskundig, Steppenkundig, Sumpfkundig, Waldkundig, Wüstenkundig. Geländekunde kann mehrfach (für verschiedene Geländetypen) gewählt werden.",
@@ -502,6 +1013,18 @@
     "seite": "Wege der Helden S. 277",
     "beschreibung": "Kompensiert fehlendes Werkzeug durch improvisierte Hilfsmittel und halbiert Erschwernisse beim Ausweichen auf ein anderes Handwerkstalent.",
     "voraussetzungen": "IN und FF mindestens 12",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 12
+      },
+      {
+        "art": "eigenschaft",
+        "code": "FF",
+        "min": 12
+      }
+    ],
     "verbreitung": "7, ergibt sich vor allem aus Praxis",
     "kosten": "200 AP (4 GP)",
     "erklarung_lang": "Als Meister der Improvisation kann der Held fehlendes Werkzeug durch improvisierte Hilfsmittel kompensieren: einen Stein als Hammer, Gräser als Schnüre, etwas Scharfkantiges als Schneidewerkzeug und dergleichen. Der Meister sollte eventuelle Probenzuschläge durch schlechtes oder nicht vorhandenes Werkzeug halbieren, wenn der Held genügend Zeit hat, andere Hilfsmittel zu suchen. Muss der Held eine Probe in einem Handwerkstalent ablegen, das er nicht hat, so dass er auf ein anderes Talent ausweichen muss, gelten für ihn nur die Hälfte der verhängten Erschwernisse.",
@@ -518,6 +1041,18 @@
     "seite": "Wege der Helden S. 277",
     "beschreibung": "Fantastische Allgemeinbildung; halbiert Erschwernisse beim Ableiten eines nicht vorhandenen Wissenstalents.",
     "voraussetzungen": "KL und IN mindestens 12",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 12
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 12
+      }
+    ],
     "verbreitung": "4, bei allen Kulten und Professionen, die auf Allgemeinbildung Wert legen",
     "kosten": "200 AP (4 GP); automatisch beim Vorteil Akademische Ausbildung (Gelehrter)",
     "erklarung_lang": "Wer über diese Sonderfertigkeit verfügt, besitzt eine fantastische Allgemeinbildung und kann Wissen aus verwandten Gebieten kombinieren, um daraus die richtigen Schlüsse zu ziehen. Beim Ableiten eines nicht vorhandenen Wissenstalents gelten für ihn nur die Hälfte der verhängten Erschwernisse, insbesondere auch beim Ableiten auf die Eigenschaft Klugheit. Dies kommt vor allem bei Kenntnissen zum Tragen, die nur schwer von einem existierenden Wissens-Talent abgedeckt werden, z. B. die Kenntnis bedeutender Künstler und Kunstwerke, verbreiteter Gedichte und Standorte großer Bibliotheken. Der Held hat große Übung in der Bibliotheksrecherche und braucht nur die halbe Zeit, um interessante Dinge in Büchern ausfindig zu machen.",
@@ -540,6 +1075,12 @@
     "seite": "Wege der Helden S. 277-278",
     "beschreibung": "Kenntnis eines bestimmten Gebiets oder einer Strecke; ignoriert bis zu 7 Punkte Probenzuschläge auf passende Talente am entsprechenden Ort.",
     "voraussetzungen": "Längerer Aufenthalt am gewünschten Ort (mindestens ein halbes Jahr) oder häufigere Reisen entlang der Strecke (Meisterentscheid), ohne weiteren Lernzeit-Aufwand",
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Längerer Aufenthalt am gewünschten Ort (mindestens ein halbes Jahr) oder häufigere Reisen entlang der Strecke (Meisterentscheid)"
+      }
+    ],
     "verbreitung": "7, aus der Praxis heraus",
     "kosten": "150 AP (3 GP) pro bekannter Örtlichkeit / Strecke für die erste Ortskenntnis, 100 AP (2 GP) für alle folgenden",
     "erklarung_lang": "Der Held hat Kenntnis eines bestimmten Gebiets, seiner Weghindernisse, Wetterverhältnisse, Straßenbedingungen, wilden Tiere und dergleichen. Das Gebiet sollte nicht größer als 100 Rechtmeilen (Quadratkilometer) sein, kann aber auch (im Falle eines Flusses oder einer Küste) eine Strecke von 100 mal 1 Meile oder eine Straße und deren nächste Umgebung sein. In einer Großstadt (ab ca. 10.000 Einwohnern) steht Ortskenntnis nur für die Kenntnis eines einzelnen Stadtteils; diese Sonderfertigkeit kann mehrfach (für benachbarte Stadtteile, den Verlauf eines Flusses und mehr) gewählt werden. Spieltechnisch erlaubt sie, bis zu 7 Punkte aus Probenzuschlägen auf passende Talente (Wildnisleben und Orientierung in der freien Natur, Gassenwissen und Orientierung in Städten) zu ignorieren, wenn sich der Held am passenden Ort aufhält.",
@@ -556,6 +1097,13 @@
     "seite": "Wege der Helden S. 278",
     "beschreibung": "Erlernbare, schwächere Variante des Vorteils Balance; erleichtert Proben rund um Balancehalten auf schwankendem Untergrund.",
     "voraussetzungen": "GE 12",
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "GE",
+        "min": 12
+      }
+    ],
     "verbreitung": "4, bei Kulturen und Professionen, die viel mit schwankendem oder unsicherem Untergrund (Schiffe, Gebirge) zu tun haben",
     "kosten": "200 AP (4 GP); ist in den Vorteilen Balance / Herausragende Balance enthalten",
     "erklarung_lang": "Helden, die diese Sonderfertigkeit erlernt haben, dürfen alle Körperbeherrschungs-, Athletik- und Akrobatik-Proben um 2 und alle GE-Proben um 1 Punkt erleichtert ablegen, wenn diese mit dem Balancehalten oder dem Stehenbleiben auf schwankendem Untergrund zu tun haben. Weiterhin hilft Standfest im Kampf, nach bestimmten Kampfmanövern stehen zu bleiben oder einen Sturz bei einem Patzer zu vermeiden.",
@@ -572,6 +1120,28 @@
     "seite": "Wege der Helden S. 278",
     "beschreibung": "Ein Tier (meist ein Pferd) kann optisch aufgewertet werden, um einen höheren Preis beim Verkauf zu erzielen.",
     "voraussetzungen": "Reiten, Sich Verkleiden, Abrichten und Überreden jeweils TaW 7",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Reiten",
+        "min": 7
+      },
+      {
+        "art": "talent",
+        "name": "Sich Verkleiden",
+        "min": 7
+      },
+      {
+        "art": "talent",
+        "name": "Abrichten",
+        "min": 7
+      },
+      {
+        "art": "talent",
+        "name": "Überreden",
+        "min": 7
+      }
+    ],
     "verbreitung": "4",
     "kosten": "100 AP (2 GP)",
     "erklarung_lang": "Mit Hilfe dieser Sonderfertigkeit kann ein Tier gezielt 'geschminkt', d. h. optisch aufgewertet werden, um einen höheren Preis beim Verkauf zu erzielen. Bei allen Tätigkeiten, die mit dem Verschönern von Pferden zusammenhängen (vor allem Sich Verkleiden, Tierkunde, Abrichten, Pflanzenkunde, Alchimie, Menschenkenntnis und Überreden), hat der Held einen um 5 Punkte verbesserten Talentwert. Dieser Bonus wird auch angerechnet, wenn der Held auf dem Pferdemarkt feststellen will, ob ein Tier mittels solcher Methoden behandelt worden ist.",

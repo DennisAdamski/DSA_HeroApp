@@ -123,6 +123,49 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
   Zweistimmiger Gesang), `magsf_kugelzauber`, `magsf_oduen_gaben` und
   `magsf_ottagaldr` — deren Regelwerk nennt nur Einzelfallbedingungen.
 
+### Allgemeine Sonderfertigkeiten: Voraussetzungen
+
+- Alle 26 Eintraege in `allgemeine_sonderfertigkeiten.json` tragen
+  `voraussetzungen_struktur`. Sie kommen mit den bestehenden Bedingungsarten
+  aus; neue brauchte es nur fuer den Kampfkatalog.
+- Unpruefbares bleibt `hinweis`: die Aufenthaltsdauern bei Akklimatisierung,
+  Gelaendekunde und Ortskenntnis, das Speziallabor bei Permanente Traenke, die
+  Eigenschaftssumme bei Vollendetes Handwerk sowie die variantenabhaengigen
+  Forderungen von Berufsgeheimnis und Faelscher.
+- `easf_sumus_kind` nutzt eine Oder-Gruppe mit Und-Zweig fuer die Regel „KO 20
+  (18 bei Resistenz gegen Krankheiten)".
+- `easf_geist_ueberwaeltigen` verlangt laut Regelwerk die SF
+  `Gefuehle vermitteln`, die es im Katalog nicht gibt — bleibt `hinweis`.
+
+### Kampf-Sonderfertigkeiten: Voraussetzungen und Stufenketten
+
+- Alle 87 Eintraege in `kampf_sonderfertigkeiten.json` tragen
+  `voraussetzungen_struktur` (240 Bedingungen).
+- Fuenf Bedingungsarten kamen dafuer hinzu, weil der Kampfkatalog als einziger
+  ueber die SF-Kataloge hinaus verweist: `basiswert` (AT/PA/FK/INI),
+  `manoever`, `waffenmeister`, `nachteil` und `rasse_verboten`.
+- Fuenf Ketten: `ausweichen` (I–III), `ruestungsgewoehnung` (I–IV, Stufe IV ist
+  der epische `esf_ruestungsgewoehnung_iv`), `schildkampf`, `parierwaffen` und
+  `beidhaendiger_kampf` (je I–II).
+- Die 23 Waffen-Grossmeister verlangen je `waffenmeister` auf ihr Kampftalent
+  plus `TaW 24`. Zwei Namen weichen vom Eintragsnamen ab, weil der Talentname
+  im Katalog anders lautet: `Zweihandhiebwaffen` → `Zweihand_Hiebwaffen`,
+  `Zweihandschwerter` → `Zweihandschwerter_Säbel`.
+- `Waffenmeister (Schild)` (Schildmeister, Fortgeschrittene Monsterparade)
+  bleibt pruefbar, obwohl es kein Schild-Kampftalent gibt: Der Pruefkontext
+  liest auch die freie Gattungsangabe `weaponType`.
+- Bewusst `hinweis` statt Struktur: `Maximale BE 0/1` (Anwendungs-, keine
+  Erwerbsbedingung), die AP-Schwelle des Waffenmeisters, der
+  Eigenschaftsaufschlag der Grossmeister und die Stufen II/III der
+  Meisterlichen Waffenfuehrung (ein Eintrag, drei Stufen im Text).
+- Offene Regelwerks-Luecke: `Zweihaendiger Kampf III` wird von
+  `esf_zweihandmeister` und `esf_fortgeschrittene_monsterparade` verlangt, hat
+  aber weder unter den Kampf-SF noch unter den Manoevern einen Katalogeintrag.
+- Die Freitexte schreiben das Sinnestalent uneinheitlich: `ksf_blindkampf`
+  nennt `Sinnenschaerfe`, `esf_projektilblock` `Sinnesschaerfe`. Beide
+  Freitexte bleiben als Regelwerkszitat stehen; der Strukturblock nutzt in
+  beiden Faellen `Sinnesschaerfe`, weil das Talent im Katalog so heisst.
+
 ## Rast im Workspace
 
 - Der breite Workspace-Inspector zeigt eine Lagerfeuer-Aktion `Rast`.
