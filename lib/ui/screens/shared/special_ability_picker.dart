@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/special_ability_chain_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_variant_rules.dart';
-import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_chain_card.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_details_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_variant_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 
 /// Oeffnet einen durchsuchbaren Katalog-Browser fuer allgemeine, karmale
@@ -24,6 +25,10 @@ import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 ///
 /// [eigeneKultur] ist die Kultur des Helden; sie steuert den AP-Vorschlag
 /// fuer die kostenlose Kulturkunde der eigenen Kultur.
+///
+/// [requirementContext] schaltet die Voraussetzungspruefung frei: Ohne ihn
+/// verhaelt sich der Picker wie zuvor, mit ihm zeigt er Checklisten, sperrt
+/// Eintraege sichtbar und verlangt bei offenen Punkten einen Meisterentscheid.
 Future<void> showSpecialAbilityPicker({
   required BuildContext context,
   required String title,
@@ -39,6 +44,7 @@ Future<void> showSpecialAbilityPicker({
   onAdd,
   required void Function(SpecialAbilityDef ability) onRemove,
   String eigeneKultur = '',
+  HeroRequirementContext? requirementContext,
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
@@ -51,6 +57,7 @@ Future<void> showSpecialAbilityPicker({
       onAdd: onAdd,
       onRemove: onRemove,
       eigeneKultur: eigeneKultur,
+      requirementContext: requirementContext,
     ),
   );
 }
@@ -65,6 +72,7 @@ class _SpecialAbilityPickerScreen extends StatefulWidget {
     required this.onAdd,
     required this.onRemove,
     required this.eigeneKultur,
+    required this.requirementContext,
   });
 
   final String title;
@@ -80,6 +88,7 @@ class _SpecialAbilityPickerScreen extends StatefulWidget {
   onAdd;
   final void Function(SpecialAbilityDef ability) onRemove;
   final String eigeneKultur;
+  final HeroRequirementContext? requirementContext;
 
   @override
   State<_SpecialAbilityPickerScreen> createState() =>
@@ -110,12 +119,44 @@ class _SpecialAbilityPickerScreenState
     if (ability.mehrfachwaehlbar) {
       return _ownedCount(ability) > 0;
     }
-    return _ownedNamesLower.contains(ability.name.trim().toLowerCase());
+    return istEintragErworben(ability, _ownedNamesLower);
   }
 
   /// Anzahl bereits eingetragener Instanzen einer mehrfach waehlbaren SF.
   int _ownedCount(SpecialAbilityDef ability) =>
       countOwnedVariants(_ownedNamesLower, ability.name);
+
+  /// Prueft die Voraussetzungen eines Eintrags gegen den Helden.
+  ///
+  /// Der Kontext wird bewusst nicht nach jedem Erwerb neu gebaut: Er stammt aus
+  /// dem gespeicherten Helden, und der Aufrufer schreibt die Aenderungen erst
+  /// beim Schliessen zurueck. Frisch erworbene Stufen fliessen ueber
+  /// [_ownedNamesLower] trotzdem sofort ein.
+  List<RequirementCheckResult> _pruefe(SpecialAbilityDef ability) {
+    final basis = widget.requirementContext;
+    if (basis == null || ability.voraussetzungenStruktur.isEmpty) {
+      return const <RequirementCheckResult>[];
+    }
+    return evaluateRequirements(
+      ability.voraussetzungenStruktur,
+      HeroRequirementContext(
+        eigenschaften: basis.eigenschaften,
+        sonderfertigkeiten: <String>[
+          ...basis.sonderfertigkeiten,
+          ..._ownedNamesLower,
+        ],
+        zauberwerte: basis.zauberwerte,
+        talentwerte: basis.talentwerte,
+        ritualkenntnisse: basis.ritualkenntnisse,
+        traditionen: basis.traditionen,
+        merkmalskenntnisse: basis.merkmalskenntnisse,
+        vorteile: basis.vorteile,
+        nachteile: basis.nachteile,
+        rasse: basis.rasse,
+        leiteigenschaftOverride: basis.leiteigenschaftOverride,
+      ),
+    );
+  }
 
   Future<void> _toggle(SpecialAbilityDef ability, bool value) async {
     if (value) {
@@ -126,7 +167,9 @@ class _SpecialAbilityPickerScreenState
         return;
       }
       setState(() {
-        _ownedNamesLower.remove(ability.name.trim().toLowerCase());
+        for (final name in ability.alleNamen) {
+          _ownedNamesLower.remove(name.trim().toLowerCase());
+        }
       });
     }
   }
@@ -138,7 +181,7 @@ class _SpecialAbilityPickerScreenState
     if (ability.mehrfachwaehlbar) {
       final selection = await showAdaptiveInputDialog<String>(
         context: context,
-        builder: (_) => _VariantSelectionDialog(
+        builder: (_) => SpecialAbilityVariantDialog(
           ability: ability,
           bereitsBelegt: ownedVariantsFor(_ownedNamesLower, ability.name),
         ),
@@ -163,6 +206,7 @@ class _SpecialAbilityPickerScreenState
       verfuegbareAp: _verfuegbareAp,
       episch: widget.episch,
       epischerInhalt: ability.nurEpisch,
+      voraussetzungen: _pruefe(ability),
     );
     if (result == null) {
       return;
@@ -180,7 +224,10 @@ class _SpecialAbilityPickerScreenState
   void _showDetails(SpecialAbilityDef ability) {
     showAdaptiveDetailSheet<void>(
       context: context,
-      builder: (_) => _SpecialAbilityDetailsDialog(ability: ability),
+      builder: (_) => SpecialAbilityDetailsDialog(
+        ability: ability,
+        voraussetzungen: _pruefe(ability),
+      ),
     );
   }
 
@@ -190,8 +237,8 @@ class _SpecialAbilityPickerScreenState
     final filtered = query.isEmpty
         ? widget.catalog
         : widget.catalog
-            .where((a) => a.name.toLowerCase().contains(query))
-            .toList();
+              .where((a) => a.name.toLowerCase().contains(query))
+              .toList();
     final grouped = <String, List<SpecialAbilityDef>>{};
     for (final ability in filtered) {
       final key = ability.kategorie.trim().isEmpty
@@ -201,8 +248,9 @@ class _SpecialAbilityPickerScreenState
     }
     final groupKeys = grouped.keys.toList()..sort();
     for (final key in groupKeys) {
-      grouped[key]!
-          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      grouped[key]!.sort(
+        (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+      );
     }
 
     return AlertDialog(
@@ -251,131 +299,70 @@ class _SpecialAbilityPickerScreenState
   }
 
   Widget _buildGroup(String title, List<SpecialAbilityDef> abilities) {
+    // Ketten werden zu einer Karte zusammengefasst, alles Uebrige bleibt ein
+    // Chip. Beides zusammen ergibt wieder den vollstaendigen Katalog.
+    final ketten = buildSpecialAbilityChains(abilities);
+    final einzeln = kettenloseEintraege(abilities);
+    final anzahl = abilities.length;
+
     return ExpansionTile(
-      title: Text('$title (${abilities.length})'),
-      initiallyExpanded: abilities.length <= 8,
+      title: Text('$title ($anzahl)'),
+      initiallyExpanded: anzahl <= 8,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: abilities.map((ability) {
-              return ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 160, maxWidth: 260),
-                child: _SpecialAbilityChip(
-                  name: ability.name,
-                  beschreibung: ability.beschreibung,
-                  isOwned: _isOwned(ability),
-                  isEpic: ability.nurEpisch,
-                  variantCount: ability.mehrfachwaehlbar
-                      ? _ownedCount(ability)
-                      : null,
-                  onToggle: (value) => _toggle(ability, value),
-                  onAddVariant: () => _acquire(ability),
-                  onNameTap: () => _showDetails(ability),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final kette in ketten) ...[
+                _buildChainCard(kette),
+                const SizedBox(height: 8),
+              ],
+              if (einzeln.isNotEmpty)
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: einzeln.map(_buildChip).toList(growable: false),
                 ),
-              );
-            }).toList(),
+            ],
           ),
         ),
       ],
     );
   }
-}
 
-/// Detaildialog fuer eine katalogbasierte allgemeine/karmale/magische SF.
-class _SpecialAbilityDetailsDialog extends StatelessWidget {
-  const _SpecialAbilityDetailsDialog({required this.ability});
+  Widget _buildChainCard(SpecialAbilityChain<SpecialAbilityDef> kette) {
+    final erworben = erworbeneKettenstufe(kette, _ownedNamesLower);
+    final naechste = naechsteKettenstufe(kette, _ownedNamesLower);
+    return SpecialAbilityChainCard<SpecialAbilityDef>(
+      kette: kette,
+      erworbeneStufe: erworben,
+      offeneVoraussetzungenDerNaechstenStufe: naechste == null
+          ? const <RequirementCheckResult>[]
+          : offeneVoraussetzungen(_pruefe(naechste)),
+      onErwerben: _acquire,
+      onDetails: _showDetails,
+    );
+  }
 
-  final SpecialAbilityDef ability;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return AlertDialog(
-      title: Text(ability.name),
-      content: SizedBox(
-        width: kDialogWidthMedium,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (ability.gruppe.trim().isNotEmpty)
-                    Chip(label: Text('Gruppe: ${ability.gruppe.trim()}')),
-                  if (ability.kategorie.trim().isNotEmpty)
-                    Chip(label: Text('Kategorie: ${ability.kategorie.trim()}')),
-                  if (ability.seite.trim().isNotEmpty)
-                    Chip(label: Text('S. ${ability.seite.trim()}')),
-                ],
-              ),
-              if (ability.beschreibung.trim().isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text('Beschreibung', style: theme.textTheme.titleSmall),
-                const SizedBox(height: 6),
-                Text(ability.beschreibung.trim()),
-              ],
-              if (ability.erklarungLang.trim().isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text('Lange Erklärung', style: theme.textTheme.titleSmall),
-                const SizedBox(height: 6),
-                Consumer(
-                  builder: (context, ref, _) {
-                    final visible = ref.watch(catalogContentVisibleProvider);
-                    final password = ref
-                        .watch(appSettingsProvider)
-                        .valueOrNull
-                        ?.catalogContentPassword;
-                    final resolved = resolveProtectedValue(
-                      raw: ability.erklarungLang.trim(),
-                      unlocked: visible,
-                      password: password,
-                    );
-                    if (resolved == null) {
-                      return Text(
-                        lockedContentHint,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontStyle: FontStyle.italic,
-                        ),
-                      );
-                    }
-                    return Text(resolved);
-                  },
-                ),
-              ],
-              if (ability.voraussetzungen.trim().isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text('Voraussetzungen', style: theme.textTheme.titleSmall),
-                const SizedBox(height: 6),
-                Text(ability.voraussetzungen.trim()),
-              ],
-              if (ability.verbreitung.trim().isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text('Verbreitung', style: theme.textTheme.titleSmall),
-                const SizedBox(height: 6),
-                Text(ability.verbreitung.trim()),
-              ],
-              if (ability.kosten.trim().isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text('Kosten', style: theme.textTheme.titleSmall),
-                const SizedBox(height: 6),
-                Text(ability.kosten.trim()),
-              ],
-            ],
-          ),
-        ),
+  Widget _buildChip(SpecialAbilityDef ability) {
+    final ergebnisse = _pruefe(ability);
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 160, maxWidth: 260),
+      child: _SpecialAbilityChip(
+        name: ability.name,
+        beschreibung: ability.beschreibung,
+        isOwned: _isOwned(ability),
+        isEpic: ability.nurEpisch,
+        nurInformation: ability.nurInformation,
+        offeneVoraussetzungen: offeneVoraussetzungen(ergebnisse).length,
+        variantCount: ability.mehrfachwaehlbar
+            ? _ownedCount(ability)
+            : null,
+        onToggle: (value) => _toggle(ability, value),
+        onAddVariant: () => _acquire(ability),
+        onNameTap: () => _showDetails(ability),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Schließen'),
-        ),
-      ],
     );
   }
 }
@@ -388,6 +375,10 @@ class _SpecialAbilityDetailsDialog extends StatelessWidget {
 /// Statt des Switches erscheint ein Hinzufuegen-Button mit Zaehler, weil ein
 /// An/Aus-Schalter bei mehreren Instanzen mehrdeutig waere. Entfernt werden
 /// einzelne Instanzen in der Sonderfertigkeiten-Liste des jeweiligen Tabs.
+///
+/// [nurInformation] kennzeichnet Eintraege, die anderswo gepflegt werden
+/// (Repraesentation, Ritualkenntnis, Merkmalskenntnis, Zauberspezialisierung).
+/// Sie bleiben nachschlagbar, haben aber keinen Schalter.
 class _SpecialAbilityChip extends StatelessWidget {
   const _SpecialAbilityChip({
     required this.name,
@@ -396,6 +387,8 @@ class _SpecialAbilityChip extends StatelessWidget {
     required this.isEpic,
     required this.onToggle,
     required this.onNameTap,
+    this.nurInformation = false,
+    this.offeneVoraussetzungen = 0,
     this.variantCount,
     this.onAddVariant,
   });
@@ -407,6 +400,12 @@ class _SpecialAbilityChip extends StatelessWidget {
   final ValueChanged<bool> onToggle;
   final VoidCallback onNameTap;
 
+  /// Der Eintrag wird an anderer Stelle im Heldenbogen gepflegt.
+  final bool nurInformation;
+
+  /// Anzahl der nicht erfuellten Voraussetzungen.
+  final int offeneVoraussetzungen;
+
   /// Anzahl bereits erworbener Varianten, oder `null` bei einfachen SF.
   final int? variantCount;
 
@@ -415,18 +414,24 @@ class _SpecialAbilityChip extends StatelessWidget {
 
   static const _epicColor = Color(0xFFB8860B); // goldenrod
 
+  bool get _istGesperrt => !isOwned && offeneVoraussetzungen > 0;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final borderColor = isEpic
         ? _epicColor
-        : (isOwned ? colorScheme.primary : theme.dividerColor);
+        : (isOwned
+              ? colorScheme.primary
+              : (_istGesperrt ? colorScheme.error : theme.dividerColor));
     final bgColor = isOwned
         ? (isEpic
-            ? Color.alphaBlend(
-                const Color(0x22B8860B), colorScheme.primaryContainer)
-            : colorScheme.primaryContainer)
+              ? Color.alphaBlend(
+                  const Color(0x22B8860B),
+                  colorScheme.primaryContainer,
+                )
+              : colorScheme.primaryContainer)
         : colorScheme.surfaceContainerHighest;
     return Container(
       decoration: BoxDecoration(
@@ -460,6 +465,14 @@ class _SpecialAbilityChip extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                       ],
+                      if (_istGesperrt) ...[
+                        Icon(
+                          Icons.lock_outline,
+                          size: 13,
+                          color: colorScheme.error,
+                        ),
+                        const SizedBox(width: 4),
+                      ],
                       Flexible(
                         child: Text(
                           name,
@@ -475,18 +488,42 @@ class _SpecialAbilityChip extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (beschreibung.trim().isNotEmpty)
+                if (_istGesperrt)
+                  Text(
+                    offeneVoraussetzungen == 1
+                        ? '1 Voraussetzung offen'
+                        : '$offeneVoraussetzungen Voraussetzungen offen',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.error,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                else if (beschreibung.trim().isNotEmpty)
                   Text(
                     beschreibung.trim(),
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: theme.hintColor),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.hintColor,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
               ],
             ),
           ),
-          if (variantCount == null)
+          if (nurInformation)
+            Padding(
+              padding: const EdgeInsets.only(right: 8, left: 4),
+              child: Tooltip(
+                message: 'Wird an anderer Stelle im Heldenbogen gepflegt',
+                child: Icon(
+                  Icons.info_outline,
+                  size: 18,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            )
+          else if (variantCount == null)
             Switch(
               value: isOwned,
               onChanged: onToggle,
@@ -511,178 +548,6 @@ class _SpecialAbilityChip extends StatelessWidget {
           ],
         ],
       ),
-    );
-  }
-}
-
-/// Dialog zur Auswahl der Variante einer mehrfach waehlbaren Sonderfertigkeit
-/// (Kultur, Gelaende, Ort, Klima, Geheimwissen).
-///
-/// Zeigt die katalogisierten Vorschlaege als Dropdown und — sofern der Katalog
-/// es erlaubt — zusaetzlich ein Freitextfeld. Bereits belegte Varianten werden
-/// ausgeblendet.
-class _VariantSelectionDialog extends StatefulWidget {
-  const _VariantSelectionDialog({
-    required this.ability,
-    required this.bereitsBelegt,
-  });
-
-  final SpecialAbilityDef ability;
-  final Set<String> bereitsBelegt;
-
-  @override
-  State<_VariantSelectionDialog> createState() =>
-      _VariantSelectionDialogState();
-}
-
-/// Eine waehlbare Variante samt ihrem Gruppenpreis (falls vorhanden).
-class _VariantOption {
-  const _VariantOption({required this.name, this.ap, this.gruppe = ''});
-
-  final String name;
-  final int? ap;
-  final String gruppe;
-}
-
-class _VariantSelectionDialogState extends State<_VariantSelectionDialog> {
-  static const _freeTextValue = '__freitext__';
-
-  late final List<_VariantOption> _options;
-  late final TextEditingController _freeTextController;
-  String? _selected;
-
-  @override
-  void initState() {
-    super.initState();
-    final belegt = widget.bereitsBelegt
-        .map((entry) => entry.trim().toLowerCase())
-        .toSet();
-    final ability = widget.ability;
-    final options = <_VariantOption>[];
-    for (final name in ability.varianten) {
-      options.add(_VariantOption(name: name));
-    }
-    for (final gruppe in ability.variantenGruppen) {
-      for (final name in gruppe.varianten) {
-        options.add(
-          _VariantOption(name: name, ap: gruppe.ap, gruppe: gruppe.label),
-        );
-      }
-    }
-    final seen = <String>{};
-    _options = options.where((option) {
-      final key = option.name.trim().toLowerCase();
-      return !belegt.contains(key) && seen.add(key);
-    }).toList(growable: false);
-    _freeTextController = TextEditingController();
-    _selected = _options.isEmpty && ability.variantenFreitext
-        ? _freeTextValue
-        : null;
-  }
-
-  /// Alle Katalogoptionen sind belegt und Freitext ist nicht erlaubt —
-  /// es gibt nichts mehr zu erwerben.
-  bool get _isExhausted =>
-      _options.isEmpty && !widget.ability.variantenFreitext;
-
-  @override
-  void dispose() {
-    _freeTextController.dispose();
-    super.dispose();
-  }
-
-  bool get _isFreeText => _selected == _freeTextValue;
-
-  String get _resolvedVariant =>
-      _isFreeText ? _freeTextController.text.trim() : (_selected ?? '').trim();
-
-  String get _label => widget.ability.variantenLabel.trim().isEmpty
-      ? 'Auswahl'
-      : widget.ability.variantenLabel.trim();
-
-  @override
-  Widget build(BuildContext context) {
-    final allowsFreeText = widget.ability.variantenFreitext;
-    return AdaptiveInputDialog(
-      title: '${widget.ability.name}: $_label wählen',
-      maxWidth: kDialogWidthSmall,
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (_isExhausted)
-            Text(
-              'Alle Auswahlmöglichkeiten sind bereits erworben.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          if (_options.isNotEmpty)
-            DropdownButtonFormField<String>(
-              key: const ValueKey<String>('sf-variant-dropdown'),
-              initialValue: _selected,
-              isExpanded: true,
-              decoration: InputDecoration(
-                labelText: _label,
-                border: const OutlineInputBorder(),
-                isDense: true,
-              ),
-              items: [
-                for (final option in _options)
-                  DropdownMenuItem<String>(
-                    value: option.name,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            option.name,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (option.ap != null) ...[
-                          const SizedBox(width: 8),
-                          Text(
-                            '${option.ap} AP',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: Theme.of(context).hintColor),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                if (allowsFreeText)
-                  const DropdownMenuItem<String>(
-                    value: _freeTextValue,
-                    child: Text('Eigene Eingabe…'),
-                  ),
-              ],
-              onChanged: (value) => setState(() => _selected = value),
-            ),
-          if (_options.isNotEmpty && _isFreeText) const SizedBox(height: 12),
-          if (_isFreeText)
-            TextField(
-              key: const ValueKey<String>('sf-variant-freetext'),
-              controller: _freeTextController,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: _label,
-                border: const OutlineInputBorder(),
-                isDense: true,
-              ),
-              onChanged: (_) => setState(() {}),
-            ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(
-          onPressed: _resolvedVariant.isEmpty
-              ? null
-              : () => Navigator.of(context).pop(_resolvedVariant),
-          child: const Text('Weiter'),
-        ),
-      ],
     );
   }
 }

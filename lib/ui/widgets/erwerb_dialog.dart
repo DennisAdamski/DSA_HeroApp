@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_ap_cost_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/requirement_checklist.dart';
 
 /// Ergebnis eines bestaetigten Erwerbsdialogs.
 class ErwerbErgebnis {
@@ -36,6 +38,11 @@ class ErwerbErgebnis {
 /// Im Gegensatz zu `showSteigerungsDialog` gibt es keinen Zielwert-Stepper —
 /// die AP-Kosten werden als editierbares Feld angezeigt, vorbelegt mit
 /// [vorgeschlageneApKosten] (oder leer, wenn `null`).
+///
+/// [voraussetzungen] blendet die Pruefliste ueber dem AP-Feld ein. Offene
+/// Punkte blockieren den Erwerb nicht, verlangen aber eine bewusste
+/// Bestaetigung — Hausregeln und Meisterentscheide sollen moeglich bleiben,
+/// ohne dass die App so tut, als waere alles in Ordnung.
 Future<ErwerbErgebnis?> showErwerbDialog({
   required BuildContext context,
   required String bezeichnung,
@@ -46,6 +53,8 @@ Future<ErwerbErgebnis?> showErwerbDialog({
   bool episch = false,
   bool epischerInhalt = false,
   bool lehrmeisterVerdoppeltOhneIhn = false,
+  List<RequirementCheckResult> voraussetzungen =
+      const <RequirementCheckResult>[],
 }) {
   return showAdaptiveInputDialog<ErwerbErgebnis>(
     context: context,
@@ -59,6 +68,7 @@ Future<ErwerbErgebnis?> showErwerbDialog({
         episch: episch,
         epischerInhalt: epischerInhalt,
         lehrmeisterVerdoppeltOhneIhn: lehrmeisterVerdoppeltOhneIhn,
+        voraussetzungen: voraussetzungen,
       );
     },
   );
@@ -74,6 +84,7 @@ class _ErwerbDialog extends StatefulWidget {
     required this.episch,
     required this.epischerInhalt,
     this.lehrmeisterVerdoppeltOhneIhn = false,
+    this.voraussetzungen = const <RequirementCheckResult>[],
   });
 
   final String bezeichnung;
@@ -90,6 +101,9 @@ class _ErwerbDialog extends StatefulWidget {
   /// Kosten gelten dann als Preis *mit* Lehrmeister.
   final bool lehrmeisterVerdoppeltOhneIhn;
 
+  /// Gepruefte Erwerbsvoraussetzungen; leer heisst „nicht pruefbar“.
+  final List<RequirementCheckResult> voraussetzungen;
+
   @override
   State<_ErwerbDialog> createState() => _ErwerbDialogState();
 }
@@ -99,7 +113,12 @@ class _ErwerbDialogState extends State<_ErwerbDialog> {
   late final TextEditingController _lehrmeisterController;
   bool _mitLehrmeister = false;
   bool _keinEposAufschlag = false;
+  bool _meisterentscheid = false;
   int _lehrmeisterTaW = 15;
+
+  /// Die Punkte, die den Erwerb offen lassen.
+  List<RequirementCheckResult> get _offeneVoraussetzungen =>
+      offeneVoraussetzungen(widget.voraussetzungen);
 
   @override
   void initState() {
@@ -174,7 +193,10 @@ class _ErwerbDialogState extends State<_ErwerbDialog> {
   }
 
   bool get _kannBestaetigen {
-    return _eingegebeneBasiskosten != null && _hatGenugAp;
+    if (_eingegebeneBasiskosten == null || !_hatGenugAp) {
+      return false;
+    }
+    return _offeneVoraussetzungen.isEmpty || _meisterentscheid;
   }
 
   void _setLehrmeisterTaW(String raw) {
@@ -208,6 +230,14 @@ class _ErwerbDialogState extends State<_ErwerbDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (widget.voraussetzungen.isNotEmpty) ...[
+            RequirementChecklist(
+              key: const ValueKey<String>('erwerb-voraussetzungen'),
+              ergebnisse: widget.voraussetzungen,
+              dicht: true,
+            ),
+            const SizedBox(height: 12),
+          ],
           if (kostenHinweis != null && kostenHinweis.isNotEmpty) ...[
             Text('Katalog: $kostenHinweis', style: theme.textTheme.bodySmall),
             const SizedBox(height: 12),
@@ -292,6 +322,32 @@ class _ErwerbDialogState extends State<_ErwerbDialog> {
               const SizedBox(height: 8),
               Text('Kosten ohne Lehrmeister: $_effektiveApKosten AP'),
             ],
+          ],
+          if (_offeneVoraussetzungen.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              _offeneVoraussetzungen.length == 1
+                  ? 'Eine Voraussetzung ist nicht erfüllt.'
+                  : '${_offeneVoraussetzungen.length} Voraussetzungen sind '
+                        'nicht erfüllt.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.error,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            CheckboxListTile(
+              key: const ValueKey<String>('erwerb-meisterentscheid'),
+              value: _meisterentscheid,
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: const Text('Trotzdem erwerben (Meisterentscheid)'),
+              controlAffinity: ListTileControlAffinity.leading,
+              onChanged: (value) {
+                setState(() {
+                  _meisterentscheid = value ?? false;
+                });
+              },
+            ),
           ],
           if (_eingegebeneBasiskosten == null) ...[
             const SizedBox(height: 12),

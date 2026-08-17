@@ -182,6 +182,7 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
                   catalog,
                   grossmeisterSf: grossmeisterSf,
                   combatTalents: combatTalents,
+                  requirementContext: _buildCombatRequirementContext(catalog),
                 ),
               ),
             ],
@@ -195,6 +196,7 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     RulesCatalog catalog, {
     required List<CombatSpecialAbilityDef> grossmeisterSf,
     required List<TalentDef> combatTalents,
+    required HeroRequirementContext? requirementContext,
   }) {
     final wmList = _draftCombatConfig.waffenmeisterschaften;
     final isEditing = _editController.isEditing;
@@ -293,6 +295,10 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
                   grossmeister: grossmeister,
                   isActive: isGmActive,
                   isEditing: isEditing,
+                  voraussetzungen: _pruefeCombatSf(
+                    grossmeister,
+                    requirementContext,
+                  ),
                 ),
               ],
             ],
@@ -544,9 +550,14 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     required CombatSpecialAbilityDef grossmeister,
     required bool isActive,
     required bool isEditing,
+    List<RequirementCheckResult> voraussetzungen =
+        const <RequirementCheckResult>[],
   }) {
     const epicColor = Color(0xFFB8860B);
     final theme = Theme.of(context);
+    final offen = isActive
+        ? const <RequirementCheckResult>[]
+        : offeneVoraussetzungen(voraussetzungen);
     return Card(
       color: isActive
           ? Color.alphaBlend(
@@ -562,29 +573,47 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
         ),
       ),
       child: ListTile(
-        leading: const Icon(Icons.auto_awesome, color: epicColor, size: 20),
+        leading: Icon(
+          offen.isEmpty ? Icons.auto_awesome : Icons.lock_outline,
+          color: offen.isEmpty ? epicColor : theme.colorScheme.error,
+          size: 20,
+        ),
         title: Row(
           children: [
             Expanded(child: Text(grossmeister.name)),
           ],
         ),
-        subtitle: grossmeister.beschreibung.trim().isNotEmpty
+        subtitle: offen.isNotEmpty
             ? Text(
-                grossmeister.beschreibung.trim(),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                offen.length == 1
+                    ? '1 Voraussetzung offen'
+                    : '${offen.length} Voraussetzungen offen',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
               )
-            : null,
+            : (grossmeister.beschreibung.trim().isNotEmpty
+                  ? Text(
+                      grossmeister.beschreibung.trim(),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : null),
         trailing: Switch(
           value: isActive,
           onChanged: isEditing
-              ? (value) => _toggleCombatSfById(grossmeister, value)
+              ? (value) => _toggleCombatSfById(
+                  grossmeister,
+                  value,
+                  voraussetzungen: voraussetzungen,
+                )
               : null,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         onTap: () => _showCombatSpecialAbilityDetailsDialog(
           context: context,
           ability: grossmeister,
+          voraussetzungen: voraussetzungen,
         ),
       ),
     );

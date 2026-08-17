@@ -72,9 +72,42 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 35", "excerpt": "Arkane Meisterschaft" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 35",
+          "excerpt": "Arkane Meisterschaft"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "eigenschaft",
+            "code": "KL",
+            "min": 20
+          },
+          {
+            "art": "eigenschaft",
+            "code": "IN",
+            "min": 20
+          }
+        ]
+      },
+      {
+        "art": "merkmalskenntnis"
+      },
+      {
+        "art": "hinweis",
+        "text": "Jede weitere Meisterschaft erfordert +1 auf die Eigenschaft"
+      }
+    ]
   },
   {
     "id": "emsf_artefaktsicherung",
@@ -92,9 +125,30 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 35", "excerpt": "Artefaktsicherung" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 35",
+          "excerpt": "Artefaktsicherung"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 18
+      },
+      {
+        "art": "zauber",
+        "name": "ARCANOVI",
+        "min": 21
+      }
+    ]
   },
   {
     "id": "emsf_astrale_entladung",
@@ -112,9 +166,34 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 35", "excerpt": "Astrale Entladung" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 35",
+          "excerpt": "Astrale Entladung"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 19
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Eiserner Wille",
+        "stufe": 2
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Wirkungsmaximierung"
+      }
+    ]
   },
   {
     "id": "emsf_aura_des_drachenerbes",
@@ -132,9 +211,51 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 35", "excerpt": "Aura des Drachenerbes" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 35",
+          "excerpt": "Aura des Drachenerbes"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Überreden",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Überzeugen",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Etikette",
+        "min": 18
+      },
+      {
+        "art": "talent",
+        "name": "Gassenwissen",
+        "min": 18
+      },
+      {
+        "art": "rasse",
+        "namen": [
+          "Achaz"
+        ]
+      }
+    ]
   },
   {
     "id": "emsf_aurapanzer_ii",
@@ -152,8 +273,38 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 36", "excerpt": "Aurapanzer II" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 36",
+          "excerpt": "Aurapanzer II"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 21
+      },
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 18
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Aurapanzer",
+        "stufe": 1
+      }
+    ],
+    "kette": {
+      "id": "aurapanzer",
+      "stufe": 2
     }
   },
   {
@@ -172,9 +323,31 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 36", "excerpt": "Band in die Lichtwelt" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 36",
+          "excerpt": "Band in die Lichtwelt"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 23
+      },
+      {
+        "art": "rasse",
+        "namen": [
+          "Elf"
+        ]
+      }
+    ]
   },
   {
     "id": "emsf_elementaraspekt",
@@ -205,9 +378,41 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 36–37", "excerpt": "Elementaraspekt" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 36–37",
+          "excerpt": "Elementaraspekt"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 16
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 16
+      },
+      {
+        "art": "leiteigenschaft",
+        "min": 18
+      },
+      {
+        "art": "merkmalskenntnis"
+      },
+      {
+        "art": "hinweis",
+        "text": "Zum Element passende Eigenschaft auf 18: Eis MU / Erz KK / Feuer CH / Humus KO / Luft GE / Wasser FF"
+      }
+    ]
   },
   {
     "id": "emsf_freizauberei",
@@ -225,9 +430,67 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 38", "excerpt": "Freizauberei" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 38",
+          "excerpt": "Freizauberei"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "eigenschaft",
+                "code": "KL",
+                "min": 24
+              },
+              {
+                "art": "eigenschaft",
+                "code": "IN",
+                "min": 23
+              }
+            ]
+          },
+          {
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "eigenschaft",
+                "code": "IN",
+                "min": 26
+              },
+              {
+                "art": "eigenschaft",
+                "code": "KL",
+                "min": 20
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Hexen setzen CH statt KL an"
+      },
+      {
+        "art": "hinweis",
+        "text": "Magische Sonderfertigkeiten im Wert von 2.500 AP"
+      },
+      {
+        "art": "hinweis",
+        "text": "Alle Merkmalskenntnisse; alle Zauber des Merkmals in eigener Repräsentation auf ZfW 24 (fremde Repräsentation ZfW 12)"
+      }
+    ]
   },
   {
     "id": "emsf_infinitum_runen",
@@ -245,9 +508,43 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 38–41", "excerpt": "Infinitum-Runen" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 38–41",
+          "excerpt": "Infinitum-Runen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "zauber",
+        "name": "INFINITUM",
+        "min": 8
+      },
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "talent",
+            "name": "Runenkunde",
+            "min": 18
+          },
+          {
+            "art": "ritualkenntnis",
+            "min": 18
+          }
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "AsP-Kosten: 5× Komplexität, davon 1/10 permanent"
+      }
+    ]
   },
   {
     "id": "emsf_magische_minimierung",
@@ -265,9 +562,30 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 41", "excerpt": "Magische Minimierung" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 41",
+          "excerpt": "Magische Minimierung"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 17
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Meisterliche Zauberkontrolle",
+        "stufe": 2
+      }
+    ]
   },
   {
     "id": "emsf_meisterlicher_artefaktschmied",
@@ -285,9 +603,58 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 41", "excerpt": "Meisterlicher Artefaktschmied" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 41",
+          "excerpt": "Meisterlicher Artefaktschmied"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "eigenschaft",
+            "code": "KL",
+            "min": 18
+          },
+          {
+            "art": "eigenschaft",
+            "code": "IN",
+            "min": 18
+          }
+        ]
+      },
+      {
+        "art": "eigenschaft",
+        "code": "FF",
+        "min": 18
+      },
+      {
+        "art": "zauber",
+        "name": "INFINITUM",
+        "min": 15
+      },
+      {
+        "art": "zauber",
+        "name": "ARCANOVI",
+        "min": 21
+      },
+      {
+        "art": "hinweis",
+        "text": "KL (für Elfen IN) und FF zusammen mindestens 40"
+      },
+      {
+        "art": "hinweis",
+        "text": "Der ARCANOVI-Wert gilt für die Semipermanenz-Variante"
+      }
+    ]
   },
   {
     "id": "emsf_merkmalsgrossmeister",
@@ -362,9 +729,50 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 41–48", "excerpt": "Merkmalsgroßmeister" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 41–48",
+          "excerpt": "Merkmalsgroßmeister"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "leiteigenschaft",
+        "min": 17
+      },
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "eigenschaft",
+            "code": "KL",
+            "min": 15
+          },
+          {
+            "art": "eigenschaft",
+            "code": "IN",
+            "min": 15
+          }
+        ]
+      },
+      {
+        "art": "merkmalskenntnis"
+      },
+      {
+        "art": "hinweis",
+        "text": "ZfP aller Zauber des Merkmals auf 18 (10 außerhalb der eigenen Repräsentation) oder insgesamt 100 ZfP; nur Zauber ab ZfW 18"
+      },
+      {
+        "art": "hinweis",
+        "text": "Weitere Großmeisterschaften: +3 auf die Leiteigenschaft, +2 auf die andere"
+      }
+    ]
   },
   {
     "id": "emsf_pfad_der_uralten",
@@ -382,19 +790,50 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 49", "excerpt": "Pfad der Uralten" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 49",
+          "excerpt": "Pfad der Uralten"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 15
+      },
+      {
+        "art": "eigenschaft",
+        "code": "KO",
+        "min": 15
+      },
+      {
+        "art": "rasse",
+        "namen": [
+          "Achaz"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Je +1 auf beide Eigenschaften für jeden weiteren Kauf"
+      }
+    ]
   },
   {
-    "id": "emsf_spontane_regeneration",
-    "name": "Spontane Regeneration I–V",
+    "id": "emsf_spontane_regeneration_i",
+    "name": "Spontane Regeneration I",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
     "seite": "Epische Stufen S. 49",
     "beschreibung": "Achaz-Regenerationskraft; pro Stufe +1 LeP/Ruhephase, -1 KO-Erschwernis; ab III Finger/Zehen, ab V Gliedmaßen.",
-    "voraussetzungen": "KO 16 (je +1 pro Stufe), SF Pfad der Uralten, kein Nachteil Schlechte Regeneration, Rasse Achaz",
-    "kosten": "300 AP pro Stufe",
+    "voraussetzungen": "KO 16, SF Pfad der Uralten, kein Nachteil Schlechte Regeneration, Rasse Achaz",
+    "kosten": "300 AP",
     "erklarung_lang": "Pro Stufe +1 LeP pro Ruhephase und -1 Erschwernis auf KO-Proben zur Heilung von Wunden/Verletzungen. Stufe III ermöglicht das Nachwachsen von Zehen und Fingern, Stufe V das Nachwachsen von Gliedmaßen (gilt wie 5 Wunden auskurieren, nur ohne andere Wunden möglich). Kumulativ zum Vorteil Schnelle Heilung.",
     "quelle": "Epische Stufen S. 49",
     "hausregel": true,
@@ -402,8 +841,263 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 49", "excerpt": "Spontane Regeneration" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 49",
+          "excerpt": "Spontane Regeneration"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KO",
+        "min": 16
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Pfad der Uralten"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Schlechte Regeneration"
+      },
+      {
+        "art": "rasse",
+        "namen": [
+          "Achaz"
+        ]
+      }
+    ],
+    "kette": {
+      "id": "spontane_regeneration",
+      "stufe": 1,
+      "label": "Spontane Regeneration"
+    },
+    "alias_namen": [
+      "Spontane Regeneration I–V",
+      "Spontane Regeneration"
+    ]
+  },
+  {
+    "id": "emsf_spontane_regeneration_ii",
+    "name": "Spontane Regeneration II",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 49",
+    "beschreibung": "Achaz-Regenerationskraft; pro Stufe +1 LeP/Ruhephase, -1 KO-Erschwernis; ab III Finger/Zehen, ab V Gliedmaßen.",
+    "voraussetzungen": "KO 17, SF Pfad der Uralten, kein Nachteil Schlechte Regeneration, Rasse Achaz",
+    "kosten": "300 AP",
+    "erklarung_lang": "Pro Stufe +1 LeP pro Ruhephase und -1 Erschwernis auf KO-Proben zur Heilung von Wunden/Verletzungen. Stufe III ermöglicht das Nachwachsen von Zehen und Fingern, Stufe V das Nachwachsen von Gliedmaßen (gilt wie 5 Wunden auskurieren, nur ohne andere Wunden möglich). Kumulativ zum Vorteil Schnelle Heilung.",
+    "quelle": "Epische Stufen S. 49",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 49",
+          "excerpt": "Spontane Regeneration"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KO",
+        "min": 17
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Pfad der Uralten"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Schlechte Regeneration"
+      },
+      {
+        "art": "rasse",
+        "namen": [
+          "Achaz"
+        ]
+      }
+    ],
+    "kette": {
+      "id": "spontane_regeneration",
+      "stufe": 2
+    }
+  },
+  {
+    "id": "emsf_spontane_regeneration_iii",
+    "name": "Spontane Regeneration III",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 49",
+    "beschreibung": "Achaz-Regenerationskraft; pro Stufe +1 LeP/Ruhephase, -1 KO-Erschwernis; ab III Finger/Zehen, ab V Gliedmaßen.",
+    "voraussetzungen": "KO 18, SF Pfad der Uralten, kein Nachteil Schlechte Regeneration, Rasse Achaz",
+    "kosten": "300 AP",
+    "erklarung_lang": "Pro Stufe +1 LeP pro Ruhephase und -1 Erschwernis auf KO-Proben zur Heilung von Wunden/Verletzungen. Stufe III ermöglicht das Nachwachsen von Zehen und Fingern, Stufe V das Nachwachsen von Gliedmaßen (gilt wie 5 Wunden auskurieren, nur ohne andere Wunden möglich). Kumulativ zum Vorteil Schnelle Heilung.",
+    "quelle": "Epische Stufen S. 49",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 49",
+          "excerpt": "Spontane Regeneration"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KO",
+        "min": 18
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Pfad der Uralten"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Schlechte Regeneration"
+      },
+      {
+        "art": "rasse",
+        "namen": [
+          "Achaz"
+        ]
+      }
+    ],
+    "kette": {
+      "id": "spontane_regeneration",
+      "stufe": 3
+    }
+  },
+  {
+    "id": "emsf_spontane_regeneration_iv",
+    "name": "Spontane Regeneration IV",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 49",
+    "beschreibung": "Achaz-Regenerationskraft; pro Stufe +1 LeP/Ruhephase, -1 KO-Erschwernis; ab III Finger/Zehen, ab V Gliedmaßen.",
+    "voraussetzungen": "KO 19, SF Pfad der Uralten, kein Nachteil Schlechte Regeneration, Rasse Achaz",
+    "kosten": "300 AP",
+    "erklarung_lang": "Pro Stufe +1 LeP pro Ruhephase und -1 Erschwernis auf KO-Proben zur Heilung von Wunden/Verletzungen. Stufe III ermöglicht das Nachwachsen von Zehen und Fingern, Stufe V das Nachwachsen von Gliedmaßen (gilt wie 5 Wunden auskurieren, nur ohne andere Wunden möglich). Kumulativ zum Vorteil Schnelle Heilung.",
+    "quelle": "Epische Stufen S. 49",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 49",
+          "excerpt": "Spontane Regeneration"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KO",
+        "min": 19
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Pfad der Uralten"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Schlechte Regeneration"
+      },
+      {
+        "art": "rasse",
+        "namen": [
+          "Achaz"
+        ]
+      }
+    ],
+    "kette": {
+      "id": "spontane_regeneration",
+      "stufe": 4
+    }
+  },
+  {
+    "id": "emsf_spontane_regeneration_v",
+    "name": "Spontane Regeneration V",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "seite": "Epische Stufen S. 49",
+    "beschreibung": "Achaz-Regenerationskraft; pro Stufe +1 LeP/Ruhephase, -1 KO-Erschwernis; ab III Finger/Zehen, ab V Gliedmaßen.",
+    "voraussetzungen": "KO 20, SF Pfad der Uralten, kein Nachteil Schlechte Regeneration, Rasse Achaz",
+    "kosten": "300 AP",
+    "erklarung_lang": "Pro Stufe +1 LeP pro Ruhephase und -1 Erschwernis auf KO-Proben zur Heilung von Wunden/Verletzungen. Stufe III ermöglicht das Nachwachsen von Zehen und Fingern, Stufe V das Nachwachsen von Gliedmaßen (gilt wie 5 Wunden auskurieren, nur ohne andere Wunden möglich). Kumulativ zum Vorteil Schnelle Heilung.",
+    "quelle": "Epische Stufen S. 49",
+    "hausregel": true,
+    "nurEpisch": true,
+    "ruleMeta": {
+      "origin": "house_rule",
+      "sourceKey": "epic_rules_v1.magic_sf",
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 49",
+          "excerpt": "Spontane Regeneration"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KO",
+        "min": 20
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Pfad der Uralten"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Schlechte Regeneration"
+      },
+      {
+        "art": "rasse",
+        "namen": [
+          "Achaz"
+        ]
+      }
+    ],
+    "kette": {
+      "id": "spontane_regeneration",
+      "stufe": 5
     }
   },
   {
@@ -422,9 +1116,30 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 50", "excerpt": "Stachelpanzer" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 50",
+          "excerpt": "Stachelpanzer"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "sonderfertigkeit",
+        "name": "Pfad der Uralten"
+      },
+      {
+        "art": "rasse",
+        "namen": [
+          "Achaz"
+        ]
+      }
+    ]
   },
   {
     "id": "emsf_schutzbrecher",
@@ -442,9 +1157,29 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 50", "excerpt": "Schutzbrecher" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 50",
+          "excerpt": "Schutzbrecher"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 19
+      },
+      {
+        "art": "leiteigenschaft",
+        "min": 21
+      }
+    ]
   },
   {
     "id": "emsf_sirenensang",
@@ -462,9 +1197,33 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 50", "excerpt": "Sirenensang" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 50",
+          "excerpt": "Sirenensang"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Singen",
+        "min": 22
+      },
+      {
+        "art": "vorteil",
+        "name": "Zweistimmiger Gesang"
+      },
+      {
+        "art": "hinweis",
+        "text": "TaW 17 genügt bei Wohlklang"
+      }
+    ]
   },
   {
     "id": "emsf_wirkungsmaximierung",
@@ -482,9 +1241,34 @@
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.magic_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 50", "excerpt": "Wirkungsmaximierung" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
-    }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 50",
+          "excerpt": "Wirkungsmaximierung"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 16
+      },
+      {
+        "art": "leiteigenschaft",
+        "min": 20
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Meisterliche Zauberkontrolle",
+        "stufe": 1
+      }
+    ]
   },
   {
     "id": "magsf_apport",
@@ -500,7 +1284,33 @@
     "erklarung_lang": "Ein Objektritual, das auf jedes persönlich gebundene Traditionsartefakt (Alchimistenschale, Bannschwert, Geodensichel, Hexenkessel, Kristallkugel, Schuppenbeutel, Vulkanglasdolch, Zauberstab) gesprochen werden kann, um die Gefahr eines Verlustes zu minimieren: Ein solcherart verzauberter Gegenstand kehrt auf Befehl zum Zauberer zurück, wenn er von diesem räumlich getrennt ist.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 12
+      },
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 12
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 13
+      },
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 13
+      },
+      {
+        "art": "hinweis",
+        "text": "Entsprechendes Bindungsritual des Traditionsartefakts"
+      }
+    ]
   },
   {
     "id": "magsf_aurapanzer",
@@ -516,7 +1326,70 @@
     "erklarung_lang": "Rigorose Fasten- und Konzentrationstechniken haben Körper und Geist so gereinigt, dass die Aura des Helden gleichermaßen 'magieabweisend' wirkt: Der Charakter erhält einen Rüstungsschutz von MR Punkten gegen magischen Schaden (aus Zaubern mit dem Merkmal Schaden sowie aus den mTP magischer Waffen), nicht jedoch gegen elementare Sekundärschäden und körperliche Angriffe von Dämonen. Die hier zugrundegelegte MR ist die 'natürliche' MR des Helden, die sich aus Eigenschaften, Vorteilen und zugekaufter MR ergibt; zusätzliche MR aus Zaubern, Sonderfertigkeiten oder Artefakten wird nicht angerechnet. Der Aurapanzer ist nicht mit einem ODEM ARCANUM erkennbar, jedoch mit einem ANALYS oder OCULUS aus der Form der Aura deutlich abzulesen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 15
+      },
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 13
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 13
+      },
+      {
+        "art": "eigenschaft",
+        "code": "KO",
+        "min": 13
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Gedankenschutz"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Arkanophobie"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Astraler Block"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Jähzorn"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Niedrige Magieresistenz"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Schwacher Astralkörper"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Unstet"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Wilde Magie"
+      },
+      {
+        "art": "hinweis",
+        "text": "Mindestens ein halbes Jahr Kontemplation"
+      }
+    ],
+    "kette": {
+      "id": "aurapanzer",
+      "stufe": 1,
+      "label": "Aurapanzer"
+    }
   },
   {
     "id": "magsf_astrale_meditation",
@@ -532,7 +1405,14 @@
     "erklarung_lang": "Wer diese Sonderfertigkeit beherrscht, ist in der Lage, durch schiere Konzentration und etwas Zeitaufwand (1 SR pro umgewandelten Punkt; erfordert eine Probe auf IN/CH/KO, erleichtert um den halben RkW bzw. den halben TaW Musizieren bei Elfen, die ja über keine spezialisierte Ritualkenntnis verfügen) eigene Lebensenergie in eigene Astralenergie im Verhältnis 1 zu 1 umzuwandeln. Durch die Anstrengung verliert der Meditierende W3-1 Lebenspunkte. Ohne diese Sonderfertigkeit benötigt man das Kraut Thonnys; wer Thonnys und gleichzeitig die Sonderfertigkeit verwendet, für den ist die genannte Probe um 3 Punkte erleichtert und er kann die Punkte in einem besseren Verhältnis umwandeln (WdZ 8ff.).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 13
+      }
+    ]
   },
   {
     "id": "magsf_bann_und_schutzkreise",
@@ -579,7 +1459,17 @@
     "erklarung_lang": "'Bannkreise halten Wesen in ihrem Inneren gefangen, Schutzkreise dagegen schließen sie aus,' sagt das Große Buch der Abschwörungen. Bekannt sind Bann- und Schutzkreise gegen Geisterwesen (25 AP; V: Mag 5, Ach 4, Zib 3), gegen Niedere Dämonen (50 AP; V: Mag 6, Alc 4, Zib 1), gegen Elementare (75 AP; V: Ach 5, Alc 4, Mag 3) und gegen Gehörnte Dämonen (75 AP, 50 AP wenn Kreis gegen Niedere Dämonen bekannt; V: Mag 5, Alc 2), Bannkreise gegen Chimären (75 AP; V: 1) sowie Schutzkreise gegen Ungeziefer (25 AP; V: Ach 6, Mag 4, Alc 3), Reptilien (25 AP; V: Mag 3) und Traumgänger (50 AP; V: Zib 5, Mag 2). Mehr zu Bann- und Schutzkreisen finden Sie in SRD 67f.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "sonderfertigkeit",
+        "name": "Zauberzeichen"
+      },
+      {
+        "art": "hinweis",
+        "text": "Für Kreise gegen niedere/gehörnte Dämonen entfällt die Sonderfertigkeit bei ZfW INVOCATIO MINOR/MAIOR ab 7"
+      }
+    ]
   },
   {
     "id": "magsf_aura_verhuellen",
@@ -595,7 +1485,19 @@
     "erklarung_lang": "Der Zauberkundige ist in der Lage, durch schiere Willenskraft - eine MU-Probe mit selbst gewähltem Aufschlag - seine magische Ausstrahlung zu unterdrücken, so dass selbst spezialisierte und gezielte Erkenntniszauber und -liturgien ins Leere laufen: Die entsprechenden Proben sind um den dreifachen Wert des gewählten Aufschlags erschwert. Ungezielte Erkenntniszauberei (von Hexenkröten und Nachtwinden, durch die Gabe Magiegespür, einen ungezielten ODEM, eine Knochenkeule in der Nähe) wird durch diese Sonderfertigkeit komplett getäuscht. Das Ablegen der MU-Probe (der Akt der Konzentration) kostet 1W3 Punkte Erschöpfung. Während man die Aura unterdrückt (maximal 1 Stunde, kann jedoch erneuert werden), ist man nicht in der Lage, selbst zu zaubern oder Zauber aufrechtzuerhalten.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 13
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 13
+      }
+    ]
   },
   {
     "id": "magsf_bannschwert",
@@ -611,7 +1513,24 @@
     "erklarung_lang": "Mit diesem Ritual wird ein magisches Objekt erschaffen, dessen Zweck es ist, die Verbindung jenseitiger Wesen ins Diesseits zu zerstören und dadurch deren Austreibung zu erleichtern.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Druide",
+          "Geode",
+          "Hexe",
+          "Kristallomant",
+          "Gildenmagier",
+          "Schamane"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Geoden nur auf nicht-metallische Instrumente"
+      }
+    ]
   },
   {
     "id": "magsf_blutmagie",
@@ -627,7 +1546,14 @@
     "erklarung_lang": "Der Zauberkundige hat sich die Methodik angeeignet, durch die Opferung von Tieren oder gar kulturschaffenden Zweibeinern (kurz: durch Ausnutzung fremder Lebensenergie) seine Zauber und Rituale mit Kraft zu speisen. Diese Magie des Blutes ist allgemein verpönt, vielerorts sogar bei Todesstrafe verboten.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 12
+      }
+    ]
   },
   {
     "id": "magsf_chimaerenmeister",
@@ -643,23 +1569,102 @@
     "erklarung_lang": "Kenner dieser Sonderfertigkeit haben Erleichterungen bei der Konstruktion von Chimären; ihre Chimären sind zudem loyaler als üblich.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 11
+      },
+      {
+        "art": "merkmalskenntnis",
+        "name": "Dämonisch (Asfaloth)"
+      },
+      {
+        "art": "zauber",
+        "name": "CHIMAEROFORM",
+        "min": 11
+      }
+    ]
   },
   {
-    "id": "magsf_daemonenbindung_i_ii",
-    "name": "Dämonenbindung I / II (ZHB)",
+    "id": "magsf_daemonenbindung_i",
+    "name": "Dämonenbindung I (ZHB)",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
     "kategorie": "Beschwörung",
     "seite": "Wege der Helden S. 285-286",
     "beschreibung": "Erlaubt es, einen Niederen bzw. Gehörnten Dämon dauerhaft in der dritten Sphäre zu binden oder zu manifestieren; kostet täglich AsP und LeP.",
-    "voraussetzungen": "Magiekunde 11 / 15, INVOCATIO MINOR / MAIOR 15; Dämonenbindung II erfordert Dämonenbindung I",
+    "voraussetzungen": "Magiekunde 11, INVOCATIO MINOR 15",
     "verbreitung": "3; Akademie Brabak, frühere Abgänger der Akademie Rashdul; ansonsten nur bei Privatgelehrten (auch anderen Zauberern als Gildenmagiern) und in den Schwarzen Landen bekannt. Kenntnis der SF ist auch in Punin vorhanden, wird aber nicht an Akademiefremde weitergegeben.",
-    "kosten": "150 AP / 250 AP",
+    "kosten": "150 AP",
     "erklarung_lang": "Der Beschwörer kann einen Niederen / Gehörnten Dämon dauerhaft in der dritten Sphäre binden oder manifestieren, was ihn täglich AsP und LeP kostet, die üblicherweise in einem kurzen Ritual um Mitternacht geopfert werden müssen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 11
+      },
+      {
+        "art": "zauber",
+        "name": "INVOCATIO MINOR",
+        "min": 15
+      }
+    ],
+    "kette": {
+      "id": "daemonenbindung",
+      "stufe": 1,
+      "label": "Dämonenbindung"
+    },
+    "alias_namen": [
+      "Dämonenbindung I / II (ZHB)",
+      "Dämonenbindung"
+    ]
+  },
+  {
+    "id": "magsf_daemonenbindung_ii",
+    "name": "Dämonenbindung II (ZHB)",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Beschwörung",
+    "seite": "Wege der Helden S. 285-286",
+    "beschreibung": "Erlaubt es, einen Niederen bzw. Gehörnten Dämon dauerhaft in der dritten Sphäre zu binden oder zu manifestieren; kostet täglich AsP und LeP.",
+    "voraussetzungen": "Magiekunde 15, INVOCATIO MAIOR 15; Dämonenbindung II erfordert Dämonenbindung I",
+    "verbreitung": "3; Akademie Brabak, frühere Abgänger der Akademie Rashdul; ansonsten nur bei Privatgelehrten (auch anderen Zauberern als Gildenmagiern) und in den Schwarzen Landen bekannt. Kenntnis der SF ist auch in Punin vorhanden, wird aber nicht an Akademiefremde weitergegeben.",
+    "kosten": "250 AP",
+    "erklarung_lang": "Der Beschwörer kann einen Niederen / Gehörnten Dämon dauerhaft in der dritten Sphäre binden oder manifestieren, was ihn täglich AsP und LeP kostet, die üblicherweise in einem kurzen Ritual um Mitternacht geopfert werden müssen.",
+    "quelle": "Wege der Helden",
+    "hausregel": false,
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 15
+      },
+      {
+        "art": "zauber",
+        "name": "INVOCATIO MAIOR",
+        "min": 15
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Dämonenbindung",
+        "stufe": 1
+      }
+    ],
+    "kette": {
+      "id": "daemonenbindung",
+      "stufe": 2
+    }
   },
   {
     "id": "magsf_druidenrache",
@@ -675,7 +1680,17 @@
     "erklarung_lang": "Durch dieses Ritual ist der Zauberer in der Lage, all seine Reserven (seine LE, Eigenschaften und sogar Fertigkeitspunkte) in einen finalen, spektakulären Zauberspruch zu legen - und mit diesem zu vergehen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "spruchzauberer"
+      },
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 15
+      }
+    ]
   },
   {
     "id": "magsf_druidische_dolchrituale",
@@ -738,7 +1753,20 @@
     "erklarung_lang": "Mit diesen Ritualen können dem Vulkanglasdolch der Druiden oder der Goldsichel der Geoden besondere Fähigkeiten verliehen werden: Weihe (Kosten 100 AP; Verbreitung 7; RkW 3), Gespür (25 AP; V5; RkW 5), Licht (50 AP; V5; RkW 7), Bann (100 AP; V3; Merkmal Antimagie oder Geisterwesen; RkW 7, nur Druiden), Leib (25 AP; V4; KO 12; RkW 7, nur Druiden), Schutz (75 AP; V3; RkW 11, Wildnisleben 10), Weg (25 AP; V5; RkW 7), Ernte (25 AP; V4; RkW 7), Lebenskraft (100 AP; V4; RkW 5), Opferdolch (100 AP; V3; SF Blutmagie; RkW 7, nur Druiden), Schneide (150 AP; V2; Merkmal Erz oder Feuer; RkW 11), Weisung (50 AP; V2; SF Kraftlinienmagie I; RkW 11, Magiekunde 10). Einige dieser Rituale erfordern bei Anwendung eine Ritualprobe und den Einsatz von AsP.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Druide",
+          "Geode"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Werte siehe einzelne Rituale; teilweise aufeinander aufbauend"
+      }
+    ]
   },
   {
     "id": "magsf_druidische_herrschaftsrituale",
@@ -782,7 +1810,20 @@
     "erklarung_lang": "Diese rituellen Zauber erlauben die Einflussnahme auf ein Opfer über eine große Entfernung - selbst, wenn das Opfer außer Sicht ist: Wachs der Herrschaft (Kosten 100 AP; Verbreitung 5; RkW 7), Miniatur der Herrschaft (150 AP; V4; RkW 7), Kristall der Herrschaft (150 AP; V4; RkW 11), Amulett der Herrschaft (200 AP; V3; RkW 7, nur Druiden) und Wurzel des Blutes (100 AP; V3, nur im Umfeld der Trollzacker; RkW 7). Diese Rituale erfordern bei Anwendung eine Ritualprobe und den Einsatz von AsP.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Druide",
+          "Schamane"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Schamanen der Ferkina und Trollzacker über Geister Binden"
+      }
+    ]
   },
   {
     "id": "magsf_elfenlieder",
@@ -843,23 +1884,111 @@
     "erklarung_lang": "Die traditionellen Melodien der Elfen stellen machtvolle Zauberrituale dar; wichtig für ihre Ausführung ist eine Beherrschung der Talente Singen und Musizieren. Es sind: Sorgenlied (Kosten 75 AP; Verbreitung 7), Zaubermelodie (150 AP; V4), Friedenslied (250 AP; V4), Windgeflüster (100 AP; V5), Lied der Lieder (150 AP; V5), Freundschaftslied (50 AP; V6), Erinnerungsmelodie (150 AP; V4), Melodie der Kunstfertigkeit (250 AP; V5), Lied des Trostes (150 AP; V3), Lied der Reinheit (150 AP; V2).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "vorteil",
+        "name": "Zweistimmiger Gesang"
+      }
+    ]
   },
   {
-    "id": "magsf_eiserner_wille_i_ii",
-    "name": "Eiserner Wille I / II",
+    "id": "magsf_eiserner_wille_i",
+    "name": "Eiserner Wille I",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
     "kategorie": "Geistestechnik",
     "seite": "Wege der Helden S. 286-287",
-    "beschreibung": "Geistige Technik, die den Geist gegen magische Beeinflussung festigt: nach zweiaktiger Konzentration temporär +3/+7 MR gegen geistbeeinflussende Zauberei.",
-    "voraussetzungen": "MU 13, IN 12; der Held darf nicht die Nachteile Jähzorn, Unstet oder Wilde Magie haben; um Eiserner Wille II zu erwerben, ist die Kenntnis von Eiserner Wille I erforderlich",
+    "beschreibung": "Geistige Technik, die den Geist gegen magische Beeinflussung festigt: nach zweiaktiger Konzentration temporär +3 MR gegen geistbeeinflussende Zauberei.",
+    "voraussetzungen": "MU 13, IN 12; der Held darf nicht die Nachteile Jähzorn, Unstet oder Wilde Magie haben",
     "verbreitung": "4 / 3; bei Lehrmeistern magischer, geweihter und einiger Kämpferprofessionen",
-    "kosten": "200 AP / 300 AP",
+    "kosten": "200 AP",
     "erklarung_lang": "Der Held hat geistige Techniken erlernt, die es ihm ermöglichen, seinen Geist gegen magische Beeinflussungen zu festigen. Wann immer er sich konzentriert (was zwei Aktionen benötigt und einen Punkt Erschöpfung einbringt), hat er für den Zeitraum von MU/2 Spielrunden eine um 3 / 7 Punkte erhöhte MR gegen Zauber mit den Merkmalen Einfluss, Hellsicht, Herrschaft und Verständigung sowie gegen andere, den Geist beeinflussende Zauberei und übersinnliche Wirkungen (wie Furcht-Auren), die als entsprechender Zauber angesehen werden können. Während der Held sich konzentriert, sind für ihn alle Talent- und Zauberproben um 3 Punkte erschwert, alle Eigenschaftsproben und Kampfwürfe um je 1 Punkt. Der Bonus des Eisernen Willens ist kumulativ mit Boni aus Vorteilen, Zaubern, Artefakten und zugekaufter Magieresistenz.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 13
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 12
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Jähzorn"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Unstet"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Wilde Magie"
+      }
+    ],
+    "kette": {
+      "id": "eiserner_wille",
+      "stufe": 1,
+      "label": "Eiserner Wille"
+    },
+    "alias_namen": [
+      "Eiserner Wille I / II",
+      "Eiserner Wille"
+    ]
+  },
+  {
+    "id": "magsf_eiserner_wille_ii",
+    "name": "Eiserner Wille II",
+    "gruppe": "magisch",
+    "typ": "sonderfertigkeit",
+    "kategorie": "Geistestechnik",
+    "seite": "Wege der Helden S. 286-287",
+    "beschreibung": "Ausbau des Eisernen Willens: nach zweiaktiger Konzentration temporär +7 MR gegen geistbeeinflussende Zauberei.",
+    "voraussetzungen": "MU 13, IN 12; SF Eiserner Wille I; der Held darf nicht die Nachteile Jähzorn, Unstet oder Wilde Magie haben",
+    "verbreitung": "4 / 3; bei Lehrmeistern magischer, geweihter und einiger Kämpferprofessionen",
+    "kosten": "300 AP",
+    "erklarung_lang": "Der Held hat geistige Techniken erlernt, die es ihm ermöglichen, seinen Geist gegen magische Beeinflussungen zu festigen. Wann immer er sich konzentriert (was zwei Aktionen benötigt und einen Punkt Erschöpfung einbringt), hat er für den Zeitraum von MU/2 Spielrunden eine um 3 / 7 Punkte erhöhte MR gegen Zauber mit den Merkmalen Einfluss, Hellsicht, Herrschaft und Verständigung sowie gegen andere, den Geist beeinflussende Zauberei und übersinnliche Wirkungen (wie Furcht-Auren), die als entsprechender Zauber angesehen werden können. Während der Held sich konzentriert, sind für ihn alle Talent- und Zauberproben um 3 Punkte erschwert, alle Eigenschaftsproben und Kampfwürfe um je 1 Punkt. Der Bonus des Eisernen Willens ist kumulativ mit Boni aus Vorteilen, Zaubern, Artefakten und zugekaufter Magieresistenz.",
+    "quelle": "Wege der Helden",
+    "hausregel": false,
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 13
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 12
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Eiserner Wille",
+        "stufe": 1
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Jähzorn"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Unstet"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Wilde Magie"
+      }
+    ],
+    "kette": {
+      "id": "eiserner_wille",
+      "stufe": 2
+    }
   },
   {
     "id": "magsf_exorzist",
@@ -875,7 +2004,19 @@
     "erklarung_lang": "Wer diese SF beherrscht - gleich ob Zauberer oder Geweihter - ist in der Lage, das theoretische Wissen um die Vertreibung von Dämonen und seinen festen Willen so in Einklang zu bringen, dass er bei einer Austreibung von Dämonen oder Geistern oder der Errichtung eines Bann- oder Schutzkreises (oder eines entsprechenden anderen Zauberzeichens gegen Dämonen, Geister oder Untote) eine Magiekunde-Probe würfeln und die Hälfte der TaP* als Erleichterung der jeweils passenden Beschwörungs-, Mirakel- oder Ritualkenntnis-Probe (als Aktivierungs-Probe bei Zauberzeichen) verwenden darf. Zudem steht ihm ein Bonus von TaP*/4 auf eventuell anfallende Beherrschungs-/Vertreibungsproben zu.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 11
+      }
+    ]
   },
   {
     "id": "magsf_elementarharmonisierte_aura",
@@ -891,7 +2032,59 @@
     "erklarung_lang": "Der Zauberer kann die Merkmalskenntnis des Gegenelements seines bevorzugten Elements erlernen und ist dann in der Lage, Zauber des Gegenelements ohne weitere Einschränkungen zu sprechen. Diese Sonderfertigkeit muss für die drei Elementpaare jeweils neu erworben werden.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 15
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 12
+      },
+      {
+        "art": "merkmalskenntnis"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Affinität zu Dämonen"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Animalische Magie"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Arkanophobie"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Astraler Block"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Schwache Ausstrahlung"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Schwacher Astralkörper"
+      },
+      {
+        "art": "nachteil_verboten",
+        "name": "Unstet"
+      },
+      {
+        "art": "hinweis",
+        "text": "Mindestens sechs Monate Kontemplation an einem geeigneten Ort; keine Merkmalskenntnis oder Begabung in einem dämonischen Merkmal, kein Paktierer"
+      }
+    ]
   },
   {
     "id": "magsf_fernzauberei",
@@ -907,7 +2100,17 @@
     "erklarung_lang": "Für Kenner dieser Sonderfertigkeit sind die Zuschläge auf die Zauberprobe beim Zaubern auf die Distanz Horizont halbiert.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "spruchzauberer"
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 12
+      }
+    ]
   },
   {
     "id": "magsf_form_der_formlosigkeit",
@@ -923,7 +2126,29 @@
     "erklarung_lang": "Mit dieser SF ist der Beschwörer in der Lage, dem Dämon bei (oder sogar nach) der Beschwörung zusätzliche Eigenschaften mitzugeben. Auch das nachträgliche Verbessern der (Kampf-)Werte des Dämons ist erleichtert möglich.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 11
+      },
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "zauber",
+            "name": "INVOCATIO MINOR",
+            "min": 11
+          },
+          {
+            "art": "zauber",
+            "name": "INVOCATIO MAIOR",
+            "min": 11
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "magsf_geber_der_gestalt",
@@ -939,7 +2164,46 @@
     "erklarung_lang": "Ein Beschwörer mit dieser SF kann beim nachträglichen Formen eines Dämons diesem erleichtert zusätzliche Eigenschaften mitgeben.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 15
+      },
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "zauber",
+            "name": "INVOCATIO MINOR",
+            "min": 15
+          },
+          {
+            "art": "zauber",
+            "name": "INVOCATIO MAIOR",
+            "min": 15
+          }
+        ]
+      },
+      {
+        "art": "tradition",
+        "namen": [
+          "Druide",
+          "Gildenmagier",
+          "Hexe",
+          "Kristallomant"
+        ]
+      },
+      {
+        "art": "ritualkenntnis",
+        "min": 11
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Form der Formlosigkeit"
+      }
+    ]
   },
   {
     "id": "magsf_gedankenschutz",
@@ -955,7 +2219,24 @@
     "erklarung_lang": "Diese Technik, seinen Willen zu festigen, basiert auf den Übungen des Eisernen Willens, erfordert aber keine weitere Anstrengung oder ausgeführte Handlungen mehr, sondern gibt dem Helden dauerhaft und automatisch MR +3 gegen Herrschafts-, Einfluss-, Hellsicht- und Verständigungs-Zauberei sowie gegen andere, den Geist beeinflussende Magie und übersinnliche Wirkungen, die als entsprechender Zauber angesehen werden können. Der Bonus des Gedankenschutzes ist kumulativ mit Boni aus Vorteilen, Zaubern und Artefakten sowie zugekaufter Magieresistenz. Mit entsprechender Konzentration (Eiserner Wille II) kann dieser Bonus auf +7 angehoben werden.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 15
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 13
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Eiserner Wille",
+        "stufe": 1
+      }
+    ]
   },
   {
     "id": "magsf_gefaess_der_sterne",
@@ -971,7 +2252,19 @@
     "erklarung_lang": "Der Zauberer ist in der Lage, das 'Gefäß', das die Astralkraft aufnimmt, zu vergrößern, d.h., er ist in der Lage, mehr permanente AE zu speichern, er wird 'strahlender': In die Berechnung der AE-Basis geht der Charisma-Wert doppelt ein, d.h. (MU+IN+CH+CH)/2. Wenn er in der Lage ist, die Große Meditation zu vollführen, kann er hierbei auf Wunsch auch Charisma als Leiteigenschaft wählen (anstatt KL oder IN) und so CH/3 plus RkP*/10 aus einer (MU/CH/CH)-Probe auf die Ritualkenntnis als AsP hinzugewinnen. Zudem ist er nicht mehr gezwungen, für die Große Meditation bestimmte Orte aufzusuchen, sondern kann das Ritual durchführen, wo es ihm beliebt. Druiden, Geoden und Hexen sehen die Zauberkraft als 'Erdkraft', weswegen diese SF bei ihnen als 'Sumus Fülle' bekannt ist.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 15
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 13
+      }
+    ]
   },
   {
     "id": "magsf_grosse_meditation",
@@ -987,7 +2280,19 @@
     "erklarung_lang": "Dies ist der gildenmagische Name für eine Technik, die es Vollzauberern erlaubt, ihre astralen Kräfte (genauer: die Fähigkeit, Astralenergie anzusammeln, also ihren AE-Grundwert) zu verbessern: Durch einen langen und rigorosen Meditationsprozess gewinnt der Zauberer je nach Tradition KL/3 oder IN/3 AsP zu seinem Grundvorrat hinzu, bei Gelingen einer entsprechenden Ritualprobe (je nach Tradition auf MU/KL/CH bzw. MU/IN/CH) sogar noch zusätzlich RkP*/10 bzw. TaP*/10 Punkte. Die Traditionen Druide, Gildenmagier und Herr der Erde benutzen für die Berechnung wie auch die Ritualprobe die KL; die Traditionen Achaz-Kristallomant, Hexe und Diener Sumus verwenden hier jeweils die IN; Elfen legen die Probe auf MU/IN/CH ab und können die Hälfte ihres TaW Singen oder Musizieren als Bonus verwenden. Kenner der SF Gefäß der Sterne können auf Wunsch auch CH als Leiteigenschaft wählen. Es kann nur ein solches Ritual pro Jahr durchgeführt werden, das jeweils im Rahmen der eigenen magischen Tradition durchgeführt wird und entsprechende Riten und Formalismen erfüllen muss.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 12
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 12
+      }
+    ]
   },
   {
     "id": "magsf_hexenfluesche",
@@ -1054,7 +2359,19 @@
     "erklarung_lang": "Diese besondere Form der Zauberei ist den Hexen vorbehalten. Sie ist besonders tückisch dadurch, dass sie die Magieresistenz umgeht und teilweise sehr schwer aufzuheben ist. Die einzelnen (bekannten) Flüche sind: Ängste mehren (Kosten 75 AP; Verbreitung 6), Beiß auf Granit (150 AP; V3), Beute (75 AP; V4), Hagelschlag (150 AP; V4), Hexenschuss (75 AP; V7), Kornfäule (125 AP; V3), Krötenkuss (100 AP; V3), Mit Blindheit schlagen (100 AP; V5), Pech an den Hals (100 AP; V4), Pestilenz (100 AP; V3), Schlaf rauben (100 AP; V4), Todesfluch (100 AP; V3), Unfruchtbarkeit (50 AP; V4), Viehverstümmelung (75 AP; V3), Warzen sprießen (50 AP; V6) und Zunge lähmen (50 AP; V4).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Hexe"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Profession Hexe und Teilnahme an Hexennächten"
+      }
+    ]
   },
   {
     "id": "magsf_geodenrituale",
@@ -1082,7 +2399,24 @@
     "erklarung_lang": "Neben den Schlangenring-Zaubern und dem Zugang zu einigen druidischen Ritualen kennen die Geoden noch zwei weitere Rituale: die Gestalt aus Rauch (Kosten 250 AP; Verbreitung 4) und den Trank des ungehinderten Weges (wird auf Geodentreffen gemeinsam gebraut und wirkt bis zur nächsten Sonnenwende, nicht als Einzelritual erlernbar).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Geode"
+        ]
+      },
+      {
+        "art": "ritualkenntnis",
+        "name": "Geode",
+        "min": 3
+      },
+      {
+        "art": "hinweis",
+        "text": "Mitglied der geodischen Gemeinschaft"
+      }
+    ]
   },
   {
     "id": "magsf_golembauer",
@@ -1098,7 +2432,34 @@
     "erklarung_lang": "Kenner dieser Sonderfertigkeit haben Erleichterungen bei der Erschaffung von Golems, sowohl dämonischer wie auch elementarer Art; ihre Golems sind zudem loyaler als üblich.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 11
+      },
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "zauber",
+            "name": "STEIN WANDLE",
+            "min": 11
+          },
+          {
+            "art": "zauber",
+            "name": "STAUB WANDLE",
+            "min": 11
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "magsf_hoehere_daemonenbindung",
@@ -1114,7 +2475,31 @@
     "erklarung_lang": "Ein Beschwörer mit dieser Sonderfertigkeit muss bei Bindung oder Manifestation eines Dämonen nur geringere AsP-Kosten aufwenden.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "sonderfertigkeit",
+        "name": "Dämonenbindung",
+        "stufe": 2
+      },
+      {
+        "art": "tradition",
+        "namen": [
+          "Druide",
+          "Gildenmagier",
+          "Hexe",
+          "Kristallomant"
+        ]
+      },
+      {
+        "art": "ritualkenntnis",
+        "min": 11
+      },
+      {
+        "art": "hinweis",
+        "text": "Beherrschungs-Wert 15"
+      }
+    ]
   },
   {
     "id": "magsf_hypervehemenz",
@@ -1130,7 +2515,23 @@
     "erklarung_lang": "Ermöglicht die Schaffung von Artefakten mittels ARCANOVI mit schier überwältigenden Effekten: Will ein Zauberer bei der Artefaktherstellung den Stapeleffekt nutzen, darf er zum Ansammeln von ZfP* beliebig viele Proben auf Wirkende Sprüche einbinden. Details hierzu finden Sie im Band Stäbe, Ringe, Dschinnenlampen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "zauber",
+        "name": "ARCANOVI",
+        "min": 14
+      },
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 16
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Stapeleffekt"
+      }
+    ]
   },
   {
     "id": "magsf_invocatio_integra",
@@ -1146,7 +2547,14 @@
     "erklarung_lang": "Ein Kenner dieser Sonderfertigkeit ist in der Lage, das gleichnamige Ritual (vergleiche Die Kunst der Invokation in Wege der Zauberei) durchzuführen, um bei der Beschwörung eines Gehörnten Dämonen mehr Sicherheit durch Paraphernalia und Donaria, Beschwörungszeitpunkt und Wahre Namen zu erreichen, vor allem aber durch eine längere Vorbereitung auf die Beschwörung.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "zauber",
+        "name": "INVOCATIO MAIOR",
+        "min": 7
+      }
+    ]
   },
   {
     "id": "magsf_keulenrituale",
@@ -1208,7 +2616,19 @@
     "erklarung_lang": "Mit diesen Ritualen kann ein Schamane seine Knochenkeule verzaubern: Weihe der Keule (Kosten 100 AP; Verbreitung 6), Härte der Keule (50 AP; V5), Opferkeule (100 AP; V3; Voraussetzung SF Blutmagie), Gespür der Keule (100 AP; V5; Voraussetzung RK Geister Binden 5), Kraft der Keule (75 AP; V4; Geister Binden 7), Hilfe der Keule (100 AP; V3; Geister Binden 7), Nähe zur Natur (100 AP; V4; Geister Binden 7), Zauber der Keule (100 AP; V3; Geister Binden 9), Bann der Keule (150 AP; V4; Geister Binden 11), Geist der Keule (200 AP; V3; Geister Binden 11), Apport der Keule (200 AP; V5; Voraussetzung RK Geister Binden 11, Geister Rufen 11).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Schamane"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Weitere Voraussetzungen je nach Keulenritual"
+      }
+    ]
   },
   {
     "id": "magsf_konzentrationsstaerke",
@@ -1224,7 +2644,14 @@
     "erklarung_lang": "Wird der Zaubernde durch einen äußeren Einfluss beim Zauberwirken gestört, ist üblicherweise eine Selbstbeherrschungs-Probe nötig, um ungestört weiter zaubern zu können. Für Zauberer mit Konzentrationsstärke ist diese Probe um 7 Punkte erleichtert. Diese Sonderfertigkeit gilt auch für die Konzentration bei Ritualen. Die Probe für eine erfolgreiche Astrale Meditation und die Probe zur AsP-Steigerung bei der Großen Meditation sind mit dieser SF um 2 Punkte erleichtert. Einige ausgebildete Viertelzauberer sind in der Lage, diese SF zu erlernen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 15
+      }
+    ]
   },
   {
     "id": "magsf_kraftkontrolle",
@@ -1240,7 +2667,19 @@
     "erklarung_lang": "Der Zauberkundige hat die Möglichkeit, durch schiere Konzentration bei jedem Zauberspruch oder Ritual einen Astralpunkt einzusparen. Einsatz dieser Fertigkeit bringt 1 Punkt Erschöpfung mit sich und erfordert eine zusätzliche Aktion Zauberdauer. Jeder Zauber kostet weiterhin mindestens 1 AsP; eventuelle permanente AsP-Kosten sind nicht betroffen. Wirkt nicht bei Zaubersprüchen in elfischer, kristallomantischer oder schelmischer Repräsentation (die bereits 'kostenoptimiert' sind).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 12
+      },
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 13
+      }
+    ]
   },
   {
     "id": "magsf_kraftspeicher",
@@ -1256,7 +2695,14 @@
     "erklarung_lang": "Der Zaubernde kann geeignete Objekte mittels des ARCANOVI und unter Aufwand permanenter Astralpunkte in aktive Kraftspeicher verwandeln, die je nach ihrer Natur in bestimmter Art und Weise Astralenergie aufnehmen, speichern und wieder abgeben können.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "zauber",
+        "name": "ARCANOVI",
+        "min": 10
+      }
+    ]
   },
   {
     "id": "magsf_kristallomantische_rituale",
@@ -1313,7 +2759,19 @@
     "erklarung_lang": "Mit diesen Ritualen können die Kristallomanten der Achaz Edelsteinen besondere Wirkungen geben; sie sind quasi unerlässlich für ein einwandfreies Zaubern in kristallomantischer Repräsentation: Kristallbindung (Kosten 100 AP; Verbreitung 6), Kristallformung (250 AP; V5; Voraussetzungen: FF 14, ZfW Hartes Schmelze 10, TaW Gesteinskunde 10, TaW Steinschneider 8), Thesiskristall (250 AP; V4; SF Kristallformung, Magiekunde 10, Gesteinskunde (Edelsteine) 10), Madakristall (300 AP; V2; RK 11, SF Kristallbindung, SF Matrixverständnis, Kristallkugel mit H'Szints Auge), Matrixkristall (200 AP; V2; RK 14, SF Thesiskristall), Kristallkraft Bündeln (150 AP; V4; auch RK Achaz-Schamane, MU 13).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Kristallomant"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Zusätzliche Voraussetzungen je nach Ritual"
+      }
+    ]
   },
   {
     "id": "magsf_kraftlinienmagie_i",
@@ -1329,7 +2787,33 @@
     "erklarung_lang": "Wer sich das Geheimnis der Kraftlinien durch eigene Erfahrungen, einen Lehrmeister oder das Studium von Büchern wie Die Nichtwelt, Druidentum und Hexenkult oder der neuesten Edition der Enzyclopaedia Magica erarbeitet, kann diese nicht sonderlich schwierige, aber immer noch recht seltene Sonderfertigkeit erwerben. Sie erlaubt alle Nutzungsmöglichkeiten, die im entsprechenden Kapitel in Wege der Zauberei aufgeführt sind. Proben zum Erkennen von Kraftlinien sind um 5 Punkte erleichtert.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "eigenschaft",
+            "code": "KL",
+            "min": 15
+          },
+          {
+            "art": "eigenschaft",
+            "code": "IN",
+            "min": 15
+          }
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Zugang zu den genannten Büchern oder einem gebildeten Lehrmeister"
+      }
+    ],
+    "kette": {
+      "id": "kraftlinienmagie",
+      "stufe": 1,
+      "label": "Kraftlinienmagie"
+    }
   },
   {
     "id": "magsf_kraftlinienmagie_ii",
@@ -1345,7 +2829,27 @@
     "erklarung_lang": "Mit der Kenntnis dieser Sonderfertigkeit ist der Zauberer in der Lage, verschiedene Zauber und Rituale auf und mit Kraftlinien erleichtert durchzuführen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 15
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Kraftlinienmagie",
+        "stufe": 1
+      },
+      {
+        "art": "hinweis",
+        "text": "Zugang zu den entsprechenden Büchern oder einem gebildeten Lehrmeister"
+      }
+    ],
+    "kette": {
+      "id": "kraftlinienmagie",
+      "stufe": 2
+    }
   },
   {
     "id": "magsf_kugelzauber",
@@ -1409,7 +2913,13 @@
     "erklarung_lang": "Die Objektrituale zur Verzauberung der Kristallkugel sind in der gildenmagischen und der Achaz-Zauberei sehr verbreitet, und selbst Scharlatane haben einige dieser Verzauberungen gemeistert. Es sind: Bindung (Kosten 100 AP; alle Traditionen; Verbreitung 6), Brennglas und Prisma (50 AP; alle Traditionen; V5), Schutz gegen Untote (150 AP; nur Gildenmagie; V3), Warnendes Leuchten (100 AP; alle Traditionen; V4), Kugel des Hellsehers (150 AP; alle Traditionen; V4), Kugel des Illusionisten (200 AP; nur Scharlatane; V4), Orbitarium (100 AP; nur Gildenmagie und Kristallomantie; V3), Bilderspiel (50 AP; alle Traditionen; V4), Fernbild (150 AP; nur Kristallomantie; V4), Bildergalerie (75 AP; alle Traditionen; V3), H'Szints Auge (75 AP; nur Kristallomantie; V3), Farben des Geistes (150 AP; nur Kristallomantie; V3) und Wachendes Auge (200 AP; alle Traditionen; V3).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Voraussetzungen je nach Kugelzauber"
+      }
+    ]
   },
   {
     "id": "magsf_lockeres_zaubern",
@@ -1425,7 +2935,18 @@
     "erklarung_lang": "Der Schelm hat seine Fertigkeit verbessert, auf spielerisch-leichte Art zu zaubern, so dass er bei Anwendung von Zaubern in schelmischer Repräsentation nun eine Magieresistenz von bis zu 12 ignorieren kann; eine MR von 13 oder mehr kommt dagegen voll zum Tragen. Aufgrund der Voraussetzungen ist diese Sonderfertigkeit, die nur von koboldischen Lehrmeistern erlernt werden kann, ausschließlich Schelmen zugänglich.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 16
+      },
+      {
+        "art": "vorteil",
+        "name": "Unbeschwertes Zaubern"
+      }
+    ]
   },
   {
     "id": "magsf_matrixgeber",
@@ -1441,7 +2962,19 @@
     "erklarung_lang": "Der Charakter ist in der Lage, Matrixgeber, eine besondere Form magischer Artefakte, zu erschaffen. Der ARCANOVI (Matrixgeber) wird aktiviert und startet auf einem ZfW von 1/3 des ZfW der momentan höchsten ARCANOVI-Version.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "zauber",
+        "name": "ARCANOVI",
+        "min": 14
+      },
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 14
+      }
+    ]
   },
   {
     "id": "magsf_matrixkontrolle",
@@ -1457,7 +2990,22 @@
     "erklarung_lang": "Durch langjährige und intensive Beschäftigung mit den Methoden der Zauberwerkstatt und den Gesetzen der Metamagie können die Kenner dieser seltenen SF sehr viel einfacher bestehende Zauber dauerhaft modifizieren. Sie dürfen nach Zusammenrechnung aller Erschwernisse und Erleichterungen bei Proben im Rahmen der Zauberwerkstatt den Gesamtzuschlag halbieren.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "sonderfertigkeit",
+        "name": "Matrixverständnis"
+      },
+      {
+        "art": "leiteigenschaft",
+        "min": 16
+      },
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 14
+      }
+    ]
   },
   {
     "id": "magsf_matrixregeneration_i",
@@ -1473,7 +3021,19 @@
     "erklarung_lang": "Wer diese Technik beherrscht, hat einen besonders effektiven Weg gefunden, seine Kraft in dauerhafte astrale Muster fließen zu lassen. Für ihn kostet der Rückkauf permanenter Astralpunkte nur 40 AP; er benötigt nur 20 ZE für die entsprechenden geistigen Übungen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 14
+      }
+    ],
+    "kette": {
+      "id": "matrixregeneration",
+      "stufe": 1,
+      "label": "Matrixregeneration"
+    }
   },
   {
     "id": "magsf_matrixregeneration_ii",
@@ -1489,7 +3049,33 @@
     "erklarung_lang": "Nur wenige menschliche Zauberkundige haben das Geheimnis der schier unerschöpflichen Kraft altechsischer Artefaktherstellung entdeckt. Dadurch sinken die Kosten für die Wiedergewinnung permanent investierter Astralpunkte auf 30 AP; er benötigt nur 15 ZE für die entsprechenden geistigen Übungen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 13
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 16
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Matrixregeneration",
+        "stufe": 1
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Regeneration",
+        "stufe": 1
+      }
+    ],
+    "kette": {
+      "id": "matrixregeneration",
+      "stufe": 2
+    }
   },
   {
     "id": "magsf_meisterliche_zauberkontrolle_i",
@@ -1505,7 +3091,31 @@
     "erklarung_lang": "Der Zaubernde kann jeden von ihm gesprochenen Spruch in der letzten Aktion der Spruchdauer freiwillig abbrechen, wenn ihm das Ergebnis nicht gefällt (z.B., weil er zu wenig ZfP* für einen gewünschten Effekt übrig behält). (Die Erschwernis des Spruches durch die gegnerische MR wird dabei explizit noch nicht eingerechnet.) Der abgebrochene Spruch kostet so viel wie ein misslungener Spruch (also üblicherweise die Hälfte, für Hexen ein Drittel). Außerdem kann der Zaubernde (wiederum vor Einrechnen eventueller gegnerischer MR) eventuelle ZfP* aus der Probe zurückhalten und ungenützt verfallen lassen, um z.B. einen gezielteren oder kurzfristigeren Zaubereffekt hervorzurufen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "spruchzauberer"
+      },
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 12
+      },
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 15
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Zauberkontrolle"
+      }
+    ],
+    "kette": {
+      "id": "meisterliche_zauberkontrolle",
+      "stufe": 1,
+      "label": "Meisterliche Zauberkontrolle"
+    }
   },
   {
     "id": "magsf_matrixverstaendnis",
@@ -1521,7 +3131,17 @@
     "erklarung_lang": "Der Zauberer hat einen besonderen, intuitiven Zugang zu den grundsätzlichen Strukturen der Spruchzauberei entdeckt oder aber ein besonderes Verständnis entwickelt und muss zum Ausführen Spontaner Modifikationen keine zusätzliche Zeit aufwenden (Ausnahme: verlängerte Zauberdauer). Dies gilt auch für Zuschläge, die aus nicht ausführbarer Zaubertechnik resultieren, jedoch nicht für Zuschläge aus verletzter Fester Gewohnheit, Kristallgebundenheit, Religiöser Bedingung oder Thesisgebundenheit. Er ist zudem in der Lage, auch bei Zaubern in Fremdrepräsentationen Spontane Modifikationen anzuwenden, was ihn jedoch die üblichen Zuschläge auf die Zauberdauer kostet. Zudem steht ihm eine Spontane Modifikation mehr zu, als sich aus seiner Leiteigenschaft (Seite 12) ergibt. Hier sind besonders die Kristallomanten der Achaz zu erwähnen, die durch ihre stetige Beschäftigung mit Kristallstrukturen einen besonderen Blick entwickelt haben.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "spruchzauberer"
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 15
+      }
+    ]
   },
   {
     "id": "magsf_meisterliche_zauberkontrolle_ii",
@@ -1537,7 +3157,27 @@
     "erklarung_lang": "Zauberkundige, die diese Sonderfertigkeit gemeistert haben, sind in der Lage, während der Wirkungsdauer einen Spruch zu unterdrücken und wieder zur Wirkung kommen zu lassen, ihn also quasi ab- und wieder anzuschalten. Für beide Vorgänge ist jeweils eine erfolgreiche Zauberprobe und ein Zeitaufwand von einer Aktion erforderlich.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 12
+      },
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 15
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Zauberkontrolle"
+      }
+    ],
+    "kette": {
+      "id": "meisterliche_zauberkontrolle",
+      "stufe": 2
+    }
   },
   {
     "id": "magsf_merkmalskenntnis_einzelnes_merkmal",
@@ -1553,7 +3193,18 @@
     "erklarung_lang": "Der Zauberer hat im Laufe seiner Ausbildung oder durch persönliche Studien besondere Einblicke in ein Merkmal von Zaubern erhalten und kann zukünftig alle Zauber mit diesem Merkmal um eine Spalte leichter erlernen. Bei Magiern, Hexen, Druiden, Geoden, Kristallomanten und Scharlatanen ist die Kenntnis des ersten Merkmals üblicherweise in der Profession integriert. Die Merkmale sind aufgrund verschiedener Faktoren (Verbreitung, Komplexität, Anzahl der zugehörigen Zauber, aber auch Spielgleichgewicht) in drei Stufen aufgeteilt. In Stufe I finden sich die Merkmale Dämonisch (einzelne Domäne), Elementar (einzelnes Element), Geisterwesen, Heilung, Herbeirufung, Illusion, Schaden, Telekinese und Verständigung; Stufe II umfasst die Merkmale Antimagie, Beschwörung, Eigenschaften, Einfluss, Form, Hellsicht, Herrschaft, Kraft, Objekt und Umwelt; Stufe III beinhaltet die Merkmale Dämonisch (gesamt), Elementar (gesamt), Limbus, Metamagie und Temporal.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Wird im Magie-Tab unter „Merkmalskenntnisse“ gepflegt"
+      },
+      {
+        "art": "hinweis",
+        "text": "Leiteigenschaft 13 für das zweite Merkmal, 15 für drei, 16 für vier, 17 für fünf, 18 für sechs Merkmale"
+      }
+    ],
+    "nur_information": true
   },
   {
     "id": "magsf_meisterliche_regeneration",
@@ -1569,7 +3220,14 @@
     "erklarung_lang": "Der Zauberer hat seine Konzentrations-Techniken zur nächtlichen Regeneration so sehr vervollkommnet, dass er ohne weiteren Würfelwurf pro Ruhephase KL/3+3 AsP bzw. IN/3+3 AsP (plus/minus eventuelle Punkte aus den Vor- und Nachteilen Astrale Regeneration bzw. Astraler Block) regeneriert, bei Gelingen einer IN-Probe sogar einen weiteren Punkt. Ob er KL oder IN verwendet, hängt von seiner Tradition bzw. Leiteigenschaft (Seite 12) ab: Gildenmagier, Druiden und Herren der Erde verwenden KL, Achaz-Kristallomanten, Hexen, Elfen und Diener Sumus verwenden IN. Er muss sich hierzu vor dem Einschlafen nur kurz konzentrieren (und natürlich möglichst ungestört schlafen).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "sonderfertigkeit",
+        "name": "Regeneration",
+        "stufe": 2
+      }
+    ]
   },
   {
     "id": "magsf_nekromant",
@@ -1585,7 +3243,23 @@
     "erklarung_lang": "Kenner dieser Sonderfertigkeit müssen allgemein weniger AsP für die Erhebung von Untoten oder für die Dienste eines Nephazz-Dämonen aufbringen. Ihre Untoten sind loyaler als üblich.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 15
+      },
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 11
+      },
+      {
+        "art": "merkmalskenntnis",
+        "name": "Dämonisch (Thargunitoth)"
+      }
+    ]
   },
   {
     "id": "magsf_oduen_gaben",
@@ -1629,7 +3303,13 @@
     "erklarung_lang": "Dies sind die Einweihungsstufen der Gjalskerländer Tierkrieger (Durro-Dûn) in das Wesen ihres tierischen Leit-Geists: Hauch des Odûn (Kosten 100 AP; Verbreitung 5; Voraussetzungen MU 12, IN 12, RK Durro-Dûn 3), Haut des Odûn (200 AP; V4; SF Hauch des Odûn, RkW 7), Blut des Odûn (200 AP, V3; SF Haut des Odûn, RkW 10), Ruf des Odûn (100 AP; V3; SF Blut des Odûn, RkW 12), Seele des Odûn (300 AP; V2; SF Ruf des Odûn, RkW 15).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Voraussetzungen je nach Gabe"
+      }
+    ]
   },
   {
     "id": "magsf_ottagaldr",
@@ -1645,7 +3325,13 @@
     "erklarung_lang": "Das Bund-Lied einer thorwalschen Otta stellt gewissermaßen eine blutmagische, erweiterte Variante eines Unitatio dar und erlaubt es einem Schiffsmagier, mit der Lebenskraft der Schiffsbesatzung zu zaubern. Siehe Stäbe, Ringe, Dschinnenlampen für eine detailliertere Beschreibung dieser Fertigkeit.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Wird ausschließlich an der Runajasko zu Olport und nur kompletten thorwalschen Schiffsgemeinschaften gelehrt"
+      }
+    ]
   },
   {
     "id": "magsf_regeneration_i",
@@ -1661,7 +3347,19 @@
     "erklarung_lang": "Der Zauberer kennt Meditations- und Konzentrations-Techniken, die er vor dem Schlafengehen oder vor einer Ruhephase ausführt (was etwa eine Viertelstunde dauert), um seine Regeneration der Astralenergie zu steigern. Er regeneriert in der folgenden Ruhephase 1W6+1 Astralpunkte anstatt der üblichen 1W6 AsP. Diese Regeneration wird mit den Punkten aus Umweltbedingungen, dem Vorteil Astraler Regeneration, dem Nachteil Astraler Block sowie einem eventuellen Zusatzpunkt aus der IN-Probe verrechnet.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 12
+      }
+    ],
+    "kette": {
+      "id": "regeneration",
+      "stufe": 1,
+      "label": "Regeneration"
+    }
   },
   {
     "id": "magsf_regeneration_ii",
@@ -1677,7 +3375,23 @@
     "erklarung_lang": "Dies ist eine Verstärkung der SF Regeneration I. Die Meditation vor der Ruhephase dauert nicht länger, aber die Wirkung ist stärker: Die regenerierten AsP betragen insgesamt 1W6+2, ebenfalls wieder verrechnet mit den oben genannten Modifikationen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 15
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Regeneration",
+        "stufe": 1
+      }
+    ],
+    "kette": {
+      "id": "regeneration",
+      "stufe": 2
+    }
   },
   {
     "id": "magsf_ritualkenntnis_tradition",
@@ -1693,7 +3407,14 @@
     "erklarung_lang": "Der Zauberkundige ist in der Lage, Rituale einer bestimmten magischen Tradition (üblicherweise der eigenen) zu erkennen, zu erlernen und durchzuführen, wobei das Erlernen einzelner Rituale meist an einen bestimmten Wert in Ritualkenntnis (abgekürzt als RK, mit RkW als Ritualkenntnis-Wert und RkP* als übrig behaltenen Punkten aus einer Ritualkenntnis-Probe) gekoppelt ist. Ritualkenntnis [Tradition] wird im Spiel wie ein Talent gehandhabt. Die Eigenschaftsproben, auf die die Ritualkenntnis angewendet wird, sind jedoch üblicherweise durch das spezielle Ritual vorgegeben. Eine Ritualkenntnis kann wie ein gewöhnliches Talent gesteigert werden, wobei man für eine Ritualkenntnis der eigenen Tradition (eine Ritualkenntnis, zu der man die zugehörige Repräsentation verinnerlicht hat) die Spalte E verwendet, für die Ritualkenntnis Alchimie und die Ritualkenntnis Scharlatan jeweils die Spalte D. Für Ritualkenntnisse, deren Repräsentation dem Helden nicht bekannt ist, wird eine um zwei Spalten teurere Steigerung verwendet. Verbesserung der Ritualkenntnis erfordert stets einen Lehrmeister (oder ein Buch mit entsprechenden Qualitäten). Startwert der Ritualkenntnis ist stets 3; einige Professionen und Varianten erhalten einen höheren Startwert (wenn also Ritualkenntnis +4 angegeben ist, startet der Charakter mit einem RkW von 7). Viertelzauberern ist jeweils nur ihre eigene Ritualkenntnis zugänglich.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Wird im Magie-Tab als eigene Ritualkategorie gepflegt"
+      }
+    ],
+    "nur_information": true
   },
   {
     "id": "magsf_repraesentation",
@@ -1709,7 +3430,18 @@
     "erklarung_lang": "Die Kenntnis der Zauberstrukturen, Rituale, Denkhilfen und Gewohnheiten einer Zaubertradition werden durch die Repräsentation ihrer Sprüche und Rituale dargestellt. Daher ist es ein langwieriger Prozess, eine bestimmte Repräsentation zu erlernen, was üblicherweise während der Lehrzeit des Charakters (also bei der Erschaffung des Helden) geschieht. Es ist jedoch auch möglich, im späteren Leben eine zweite und gar weitere Repräsentationen zu erlernen. Eine Ausnahme stellen hier Schamanen dar, die üblicherweise keine Repräsentation erlernen (da sie keine Spruchzauberei betreiben); einige wenige von ihnen sind jedoch in der Lage, die druidische Repräsentation zu meistern und auf diese Art Spruchmagie zu wirken. Kenntnis einer Repräsentation bedeutet, einen Zauber in der entsprechenden Repräsentation gemäß seiner Grundschwierigkeit (Komplexität) erlernen zu können - Zauber in einer fremden Repräsentation werden um zwei Spalten schwieriger erlernt. Folgende Repräsentationen sind den Aventuriern bekannt: Achaz-Kristallomantisch, Borbaradianisch, Druidisch, Elfisch, Geodisch, Gildenmagisch, Hexisch, Scharlatanisch, Schelmisch. Schamanen haben eine eigene Ritualkenntnis, jedoch keine Repräsentation, gleiches gilt für die Derwische, Durro-Dûn, Zibiljas und die Zaubertänzer.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Wird im Magie-Tab unter „Repräsentationen & Fokus“ gepflegt"
+      },
+      {
+        "art": "hinweis",
+        "text": "Zweite Repräsentation: KL und IN je 15 sowie 50 ZfP in der fremden Repräsentation; dritte Repräsentation: KL 18"
+      }
+    ],
+    "nur_information": true
   },
   {
     "id": "magsf_runenkunde",
@@ -1725,7 +3457,23 @@
     "erklarung_lang": "Ein Kenner dieser Sonderfertigkeit kann mittels eines Handwerkstalents (wie Holzbearbeitung oder Tätowieren) einzeln zu erlernende (und mit AP zu bezahlende) Zauberrunen an Objekten oder auf Lebewesen anbringen und damit Schiffskiele oder thorwalsche Piraten mit Zauberwirkungen belegen (was den Einsatz von AsP erfordert). Beim Erlernen dieser Sonderfertigkeit wird die Ritualkenntnis (Runenzauberei) auf einem Startwert von 3 aktiviert. Sie kann fortan nach Spalte E gesteigert werden.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "FF",
+        "min": 12
+      },
+      {
+        "art": "talent",
+        "name": "Singen",
+        "min": 5
+      },
+      {
+        "art": "hinweis",
+        "text": "Alt-Hjaldingsch (Saga-Thorwalsch) und seine Runen auf je mindestens 9"
+      }
+    ]
   },
   {
     "id": "magsf_salasandra",
@@ -1741,7 +3489,13 @@
     "erklarung_lang": "Dies ist die Fähigkeit eines Elfen, mit seiner Sippe in geistiger Harmonie zu verschmelzen - und einer der Kernbegriffe des Elf-Seins. Im Salasandra können viele Erfahrungen, Eindrücke und Fertigkeiten ausgetauscht (und somit leichter erlernt) werden.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "vorteil",
+        "name": "Zweistimmiger Gesang"
+      }
+    ]
   },
   {
     "id": "magsf_schalenzauber",
@@ -1792,7 +3546,22 @@
     "erklarung_lang": "Mit diesen Ritualen wird die Schale zu einem Werkzeug der Alchimisten und alchimistisch aktiven Zauberer. Weihe der Schale (Kosten 100 AP; Verbreitung 6; TaW Alchimie 7), Allegorische Analyse (125 AP; V5), Chymische Hochzeit (100 AP; V4; TaW Alchimie 10, SF Allegorische Analyse), Mandricons Bindung (75 AP; V4; TaW Magiekunde 7), Feuer und Eis (150 AP; V4), Transmutation der Elemente (125 AP; V3; TaW Alchimie 10, SF Mandricons Bindung).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Alchimist",
+          "Gildenmagier",
+          "Hexe",
+          "Kristallomant"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Weitere Kenntnisse je nach Ritual"
+      }
+    ]
   },
   {
     "id": "magsf_schamanistische_rituale",
@@ -1808,7 +3577,19 @@
     "erklarung_lang": "Diese Rituale bilden die Basis des Zauberwirkens der jeweiligen animistischen Weltsicht; mit ihnen werden Willen und Wirken der Geister in die Welt gebracht. Zu ihrem Wirken ist eine Probe auf eine der vier Ritualfertigkeiten des Schamanen und der Einsatz von Astralpunkten nötig. Die Rituale sind den einzelnen schamanistischen Traditionen zugeordnet und hinsichtlich ihrer Mächtigkeit in sechs Grade aufgeteilt. Um ein Ritual erlernen zu können, muss der Schamane in der genannten Ritualfertigkeit über einen RkW verfügen, der mindestens dem doppelten Grad des gewünschten Rituals entspricht; Rituale fremder Traditionen gelten - wenn sie überhaupt zugänglich sind - als einen Grad höher als aufgeführt. Zu den einzelnen Ritualen siehe die Liste auf Seite 323.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Schamane"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Passende Tradition und ausreichender RkW"
+      }
+    ]
   },
   {
     "id": "magsf_semipermanenz_ii",
@@ -1824,7 +3605,27 @@
     "erklarung_lang": "Der Charakter kennt eine Technik, um semipermanente Spruchspeicher mit kurzen Anwendungsintervallen weniger aufwendig zu erschaffen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "zauber",
+        "name": "ARCANOVI",
+        "min": 10
+      },
+      {
+        "art": "talent",
+        "name": "Magiekunde",
+        "min": 16
+      },
+      {
+        "art": "hinweis",
+        "text": "Der ARCANOVI-Wert gilt für die Semipermanenz-Variante"
+      }
+    ],
+    "kette": {
+      "id": "semipermanenz",
+      "stufe": 2
+    }
   },
   {
     "id": "magsf_schlangenring_zauber",
@@ -1886,7 +3687,19 @@
     "erklarung_lang": "Dies sind die geodischen Rituale, die den geweihten Halsring mit zusätzlichen Fähigkeiten versehen: Weihe der Schlange (Kosten 100 AP; Verbreitung 6; Ritualkenntnis Geode 3), Magnetismus (150 AP; V4; RkW 7), Wasserbann (75 AP; V5; RkW 3), Macht über den Regen (100 AP; V4; RkW 7, SF Wasserbann), Seelenfeuer (200 AP; V3; RkW 11), Herr der Flammen (150 AP; V4; RkW 7), Macht des Lebens (150 AP; V4; RkW 11), Kräfte der Natur (100 AP; V4; RkW 7, SF Macht des Lebens), Wirbelnder Luftschild (100 AP; V4; RkW 7), Launen des Windes (250 AP; V3; RkW 11, SF Luftschild), Weg durch Sumus Leib (200 AP; V3; RkW 15).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Geode"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Erforderlicher RkW je nach Ritual"
+      }
+    ]
   },
   {
     "id": "magsf_signaturkenntnis",
@@ -1902,7 +3715,44 @@
     "erklarung_lang": "Dieses recht neue Spezialgebiet der magischen Hellsicht ermöglicht es, bestimmte Zauberkundige anhand charakteristischer Merkmale ihrer Zauberwirkungen oder Artefakte (eine Art 'magischem Fingerabdruck', also bestimmter Aura-Muster) zu erkennen. Es ist gewissermaßen eine Spezialisierung auf die Variante 'Signatur erkennen' bei den Zaubern ODEM, ANALYS und OCULUS. Die entsprechende Zauberprobe ist um 2 Punkte erleichtert (und ohne diese Sonderfertigkeit ist überhaupt keine entsprechende Zaubervariante möglich).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 15
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 15
+      },
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "zauber",
+                "name": "ANALYS",
+                "min": 15
+              },
+              {
+                "art": "zauber",
+                "name": "ODEM ARCANUM",
+                "min": 15
+              }
+            ]
+          },
+          {
+            "art": "zauber",
+            "name": "OCULUS ASTRALIS",
+            "min": 15
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "magsf_schuppenbeutel",
@@ -1938,7 +3788,19 @@
     "erklarung_lang": "Die Bindung des Schuppenbeutels (Kosten 100 AP; V6), die Suchenden Finger (100 AP; V6) und die Ewige Wegzehrung (200 AP, halbe Kosten bei Merkmalskenntnis Temporal; V4; ZfW Unberührt von Satinav 10) sind die Schuppenbeutel-Rituale des Kristallomanten.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Kristallomant"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Weitere Voraussetzungen je nach Ritual"
+      }
+    ]
   },
   {
     "id": "magsf_simultanzaubern",
@@ -1954,7 +3816,17 @@
     "erklarung_lang": "Üblicherweise muss ein Zauberkundiger eine Erschwernis von 3 Punkten hinnehmen, wenn er einen Zauber sprechen will, während ein weiterer Zauber wirkt, den er aufrechterhalten muss. Ein Simultanzaubern-Kundiger erleidet nur eine Erschwernis von einem Punkt pro noch wirkendem (A)-Zauber.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "spruchzauberer"
+      },
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 15
+      }
+    ]
   },
   {
     "id": "magsf_semipermanenz_i",
@@ -1970,7 +3842,23 @@
     "erklarung_lang": "Der Charakter ist fähig, semipermanente Artefakte zu erschaffen. Der ARCANOVI (Semipermanenz) wird aktiviert und startet auf einem ZfW von 1/3 des ZfW der momentan höchsten ARCANOVI-Variante. Semipermanente Artefakte zählen zu den mächtigeren Zauberdingen und sind den versierteren Thaumaturgen vorbehalten.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "zauber",
+        "name": "ARCANOVI",
+        "min": 14
+      },
+      {
+        "art": "hinweis",
+        "text": "20 ZfW-Punkte in Sprüchen mit dem Merkmal Temporal"
+      }
+    ],
+    "kette": {
+      "id": "semipermanenz",
+      "stufe": 1,
+      "label": "Semipermanenz"
+    }
   },
   {
     "id": "magsf_stabzauber",
@@ -2038,7 +3926,19 @@
     "erklarung_lang": "Die Objektrituale der Gildenmagier. Bindung (Kosten 100 AP), Ewige Flamme (75 AP; RK 5), Seil des Adepten (150 AP; RK 7), Stabverlängerung (50 AP), Hammerschlag (150 AP), Kraftfokus (150 AP; RK 11), Modifikationsfokus (200 AP), Zauberspeicher (200 AP), Merkmalsfokus (150 AP), Flammenschwert (300 AP), Schuppenhaut (300 AP). Eine detaillierte Betrachtung der einzelnen Stabzauber finden Sie in Wege der Zauberei.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Gildenmagier"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Schwellenwerte siehe einzelne Stabzauber"
+      }
+    ]
   },
   {
     "id": "magsf_stapeleffekt",
@@ -2054,7 +3954,14 @@
     "erklarung_lang": "Der Zaubernde kann bei der Herstellung eines Artefakts mittels ARCANOVI die ZfP* einzelner Wirkender Sprüche aufsummieren, um einen stärkeren Gesamteffekt zu erzeugen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "zauber",
+        "name": "ARCANOVI",
+        "min": 7
+      }
+    ]
   },
   {
     "id": "magsf_tanz_der_mada",
@@ -2070,7 +3977,13 @@
     "erklarung_lang": "Dieser komplexe Meditationstanz, der zu Rohals Zeiten aus dem tulamidischen Raum bei den Gildenmagiern Einzug gefunden hat, ermöglicht es den ansonsten eher theorieverbundenen Gildenmagiern, ihre körperlichen Eigenschaften und Talente zu verbessern: Regelmäßige Übungen (im Rahmen von einer halben Stunde pro Tag, entsprechend 2 ZE pro Woche, die von möglichen Lernzeiten abgehen) über den Zeitraum eines halben Jahres erlauben es dem Magier, eine Spezielle Erfahrung in einem der Talente Akrobatik, Athletik, Körperbeherrschung, Schleichen, Selbstbeherrschung, Sinnenschärfe, Stäbe oder Tanzen zu machen (bis zu einem TaW von 10). Regelmäßige Anwendung erlaubt es auch Zauberern (oder anderen Personen) mit dem Nachteil Stubenhocker, die zudem üblicherweise keine körperliche Ertüchtigung durch Rucksackschleppen oder Monsterverprügeln durchführen, ihre Steigerungsnachteile langsam abzubauen. Anmerkung: Ähnliche Meditationstänze sind im tulamidischen Kulturraum recht verbreitet (der Schattenkampf der Novadis, Hadjinim und Derwische ist sehr ähnlich und enthält zusätzlich noch die Möglichkeit, eine entsprechende Spezielle Erfahrung in den Talenten Säbel und Zweihandschwerter/-säbel (Doppelkhunchomer) zu machen) und kann nach Meisterentscheid auch anderen Helden zur Verfügung stehen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "nachteil_verboten",
+        "name": "Unstet"
+      }
+    ]
   },
   {
     "id": "magsf_tierischer_begleiter",
@@ -2086,7 +3999,13 @@
     "erklarung_lang": "Der Elf geht eine besondere gedankliche Verbindung mit einem sehr nahestehenden Tier, einem dauerhaften Begleiter wie seinem Reittier oder einem Seelentier ein und ist dadurch in der Lage, bestimmte Zauber auch auf dieses Tier auszuweiten (als Spontane Modifikation).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "vorteil",
+        "name": "Zweistimmiger Gesang"
+      }
+    ]
   },
   {
     "id": "magsf_vertrautenbindung",
@@ -2102,7 +4021,22 @@
     "erklarung_lang": "Dies ist ein einzelnes Ritual, mit dem die Hexe oder der Geode ein Tier an sich binden kann, so dass es zu einem Vertrauten wird. Mehr zu diesen Zaubertieren und ihrer Bindung finden Sie bei der Beschreibung der hexischen Rituale in Wege der Zauberei. Diese SF ist Zibiljas und Goblin-Schamaninnen unter bestimmten Bedingungen ebenfalls zugänglich.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Hexe",
+          "Geode",
+          "Zibilja",
+          "Schamane"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Geoden als Diener Sumus, Goblin-Schamaninnen über Geister Binden 7"
+      }
+    ]
   },
   {
     "id": "magsf_traumgaenger",
@@ -2118,7 +4052,28 @@
     "erklarung_lang": "Der Zauberkundige kennt sich sehr gut in den Träumen anderer aus und kann sich dort ungestörter und freier bewegen (siehe Tödliche Träume in Wege der Zauberei). Alle Proben auf Zauber oder Rituale, mit denen er in Traumwelten eindringen kann, sowie Proben, um die Umwelt, Bedingungen oder Realitätsdichte in Träumen zu ändern, und Proben auf Heilkunde Seele sind für einen Traumgänger um 3 Punkte erleichtert, wenn er an den Träumen seines Patienten teilhaben konnte.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 12
+      },
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "zauber",
+            "name": "TRAUMGESTALT",
+            "min": 7
+          },
+          {
+            "art": "hinweis",
+            "text": "Kenntnis des Zibilja-Rituals Traumseherin oder andere Traummagie nach Maßgabe des Meisters"
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "magsf_vielfache_ladungen",
@@ -2134,7 +4089,14 @@
     "erklarung_lang": "Mittels dieser Verzauberungstechnik ist es einfacher, Artefakte mit vielen Anwendungen und Wirkenden Sprüchen zu schaffen. Die Anzahl benötigter ZfP* bei der ARCANOVI-Probe ändert sich im Punkt Anzahl der Wirkenden Sprüche; näheres siehe Stäbe, Ringe, Dschinnenlampen. Diese Verzauberungstechnik ist nur bei ladungsbasierten Spruchspeichern anwendbar.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "zauber",
+        "name": "ARCANOVI",
+        "min": 14
+      }
+    ]
   },
   {
     "id": "magsf_trommelzauber",
@@ -2184,7 +4146,19 @@
     "erklarung_lang": "Die Rufer der Macht Rastullahs, die Derwische, kennen Methoden, mit ihren Dablas hypnotische Klänge zu erzeugen, die die körperlichen und kämpferischen Fähigkeiten der Zuhörer verbessern können. Dies sind: Ruf des Krieges (Kosten 200 AP; Verbreitung 6, Voraussetzung RkW 3), Sturm der Wüste (100 AP; V4; RkW 7), Schutz Rastullahs (200 AP; V3; RkW 11), Rastullahs Güte (150 AP; V3; RkW 11) und Zorn des Gottgefälligen (250 AP; V2; RkW 14).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Derwisch"
+        ]
+      },
+      {
+        "art": "hinweis",
+        "text": "Erforderlicher RkW je nach Ritual"
+      }
+    ]
   },
   {
     "id": "magsf_zauber_bereithalten",
@@ -2200,7 +4174,26 @@
     "erklarung_lang": "Wer diese schwierige geistige Technik beherrscht, kann einen Zauberspruch wirken, aber bis zu MU Aktionen darauf warten, ihn loszuschicken. Wenn er nichts tut außer der Aktion Schritt, ist keine Probe erforderlich; ansonsten muss er pro Aktion, die er während der Bereithaltungszeit ausführt, eine Selbstbeherrschungs-Probe ausführen, die um die halben AsP des gespeicherten Spruchs erschwert ist. Misslingt diese Probe, so geht der Spruch los und trifft das nächststehende gültige Ziel (angefangen beim Zauberer selbst, falls der Zauber dies zulässt).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "spruchzauberer"
+      },
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 12
+      },
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 12
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Zauberkontrolle"
+      }
+    ]
   },
   {
     "id": "magsf_verbotene_pforten",
@@ -2216,7 +4209,14 @@
     "erklarung_lang": "Dies ist die Kenntnis der Methodik, die eigene Lebensenergie für Zaubersprüche zu verwenden, was nur unter bestimmten Randbedingungen möglich und zudem risikoreich ist. Zudem wird es von einigen Zauberern nicht gerne gesehen, da diese Technik gewisse Verwandtschaft mit der verpönten Blutmagie durchaus nicht leugnen kann. Einige ausgebildete Viertelzauberer sind in der Lage, diese SF zu erlernen.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 12
+      }
+    ]
   },
   {
     "id": "magsf_zauber_unterbrechen",
@@ -2232,7 +4232,27 @@
     "erklarung_lang": "Wer diese Sonderfertigkeit beherrscht, ist in der Lage, während der Zauberdauer einen Spruch zu unterbrechen, eine einzelne Aktion auszuführen, dann eine Selbstbeherrschungs-Probe abzulegen und anschließend weiter zu zaubern, um den Spruch zu beenden.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 15
+      },
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 15
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Zauber bereithalten"
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Konzentrationsstärke"
+      }
+    ]
   },
   {
     "id": "magsf_zauber_vereinigen",
@@ -2248,7 +4268,17 @@
     "erklarung_lang": "Kenner dieser Sonderfertigkeit können in einem UNITATIO-Zirkel deutlich mehr ZfP* zur Gesamtwirkung beisteuern.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "spruchzauberer"
+      },
+      {
+        "art": "zauber",
+        "name": "UNITATIO",
+        "min": 10
+      }
+    ]
   },
   {
     "id": "magsf_zauberkontrolle",
@@ -2264,7 +4294,17 @@
     "erklarung_lang": "Der Zaubernde kann jeden von ihm gesprochenen Spruch nach Belieben noch während seiner Wirkungsdauer aufheben, was normalerweise nur mit Sprüchen funktioniert, die aufrechterhalten werden. Ein Zaubernder mit Zauberkontrolle kann das Ergebnis seiner Zauberprobe einschätzen - und weiß damit zu sagen, ob ein Zauber gelungen ist, an den Fähigkeiten des Zauberers selbst gescheitert ist oder erst durch MR und andere Störfaktoren vereitelt wurde.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "spruchzauberer"
+      },
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 12
+      }
+    ]
   },
   {
     "id": "magsf_zauberroutine",
@@ -2280,7 +4320,16 @@
     "erklarung_lang": "Ein Zauberer mit dieser Sonderfertigkeit kann misslungene Sprüche ohne Zuschlag auf die Probe wiederholen (anstatt je +3 pro Wiederholung); außerdem dauern seine wiederholten Proben nicht länger (Elfen: nur um 3 Aktionen verlängert).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "spruchzauberer"
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Zauberkontrolle"
+      }
+    ]
   },
   {
     "id": "magsf_zauberspezialisierung",
@@ -2296,7 +4345,18 @@
     "erklarung_lang": "Wie bei Talenten ist es auch bei Zaubern möglich, sich auf bestimmte Aspekte zu spezialisieren, um diese dann besser zu beherrschen. Im spezialisierten Aspekt verfügt der Held dann über einen um zwei Punkte höheren effektiven ZfW, also über zwei Zauberfertigkeitspunkte mehr, die er demzufolge auch übrigbehalten kann. Als Spezialisierung kann eine der unter Modifikationen oder Varianten genannten Unter-Abteilungen eines Zaubers gewählt werden. (Man kann sich also z.B. darauf spezialisieren, einen Zauber prinzipiell mit höherer Reichweite zu sprechen.) Ein Zauber kann nur von maximal einer Zauberspezialisierung profitieren.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Wird am jeweiligen Zauber im Magie-Tab gepflegt"
+      },
+      {
+        "art": "hinweis",
+        "text": "ZfW 7 für die erste Spezialisierung, 14 für die zweite, 21 für die dritte, 28 für die vierte"
+      }
+    ],
+    "nur_information": true
   },
   {
     "id": "magsf_zauberzeichen",
@@ -2312,7 +4372,34 @@
     "erklarung_lang": "Ein Kenner dieser Sonderfertigkeit kann mittels eines Handwerkstalents (wie Malen/Zeichnen oder Webkunst) einzeln zu erlernende (und mit AP zu bezahlende) Arkanoglyphen an Orten oder Objekten anbringen und damit unter Einsatz von AsP zauberspruchähnliche Wirkungen an Truhen oder Tordurchgängen hervorrufen. Dazu ist zudem eine der untenstehenden Ritualkenntnisse erforderlich. Eine detaillierte Betrachtung dieser Fertigkeiten und eine Beschreibung einzelner Arkanoglyphen finden Sie im Ergänzungsband Stäbe, Ringe, Dschinnenlampen auf den Seiten 65ff. bzw. im Nachfolgeband Wege der Alchimie.",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "KL",
+        "min": 12
+      },
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 12
+      },
+      {
+        "art": "eigenschaft",
+        "code": "FF",
+        "min": 12
+      },
+      {
+        "art": "tradition",
+        "namen": [
+          "Alchimist",
+          "Gildenmagier",
+          "Kristallomant",
+          "Zibilja",
+          "Schamane"
+        ]
+      }
+    ]
   },
   {
     "id": "magsf_zaubertaenze",
@@ -2372,7 +4459,15 @@
     "erklarung_lang": "Dies sind die 'Rituale' der Zaubertänzer, der Sharisadim, Hazaqi und Majuna. Es sind: Tanz der Liebe (Kosten 100 AP; Verbreitung Tulamidische Sharisad 6, Novadi-Sharisad und Hazaqi je 5), Tanz der Freude (250 AP; Tul und Nov je 6, Majuna 3), Tanz der Ermutigung (200 AP; Tul, Nov, Maj je 7, Haz 6), Tanz der Wahrheit (100 AP; Nov und Tul je 4), Tanz der Erlösung (150 AP; Haz 6, Nov und Tul je 5, Maj 4), Tanz der Bilder (100 AP; Haz und Maj je 7, Nov und Tul je 6), Tanz ohne Ende (200 AP; Haz 4, Maj und Tul je 3, Nov 2), Tanz des Ungehorsams (150 AP; Tul 4), Tanz der Gemeinschaft (100 AP; Tul 2), Tanz der Weisheit (150 AP; Nov 6), Tanz der Unantastbarkeit (200 AP; Nov 4), Selinata (150 AP; Haz 4), Madayana (250 AP; Haz 3, Maj 1), Firuns Jagd (100 AP; Maj 5), Rahjas Begehren (150 AP; Maj 5).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Zaubertänzer"
+        ]
+      }
+    ]
   },
   {
     "id": "magsf_zibilja_rituale",
@@ -2443,6 +4538,14 @@
     "erklarung_lang": "Dies sind teilweise Objekt-Verzauberungen, vor allem aber Zauber, die die Zusammengehörigkeit der Sippe stärken. Es sind dies: Schwarmseele (Kosten 100 AP; Verbreitung 6), Mackestopp (150 AP; V4), Traumseherin (100 AP; V4), Weisheit der Schrift (75 AP; V4), Siegel der Ewigen Ruhe (150 AP; V3), Unsichtbare Chronik (150 AP; V4), Ruf des Bienenstocks (300 AP; V3; Voraussetzung SF Unsichtbare Chronik), Winterlager (50 AP; V5), Bienenschwarm (75 AP; V4), Wachshaut (125 AP; V3), Bienenkönigin (300 AP; V3), Bienenfleiß (50 AP; V3), Bienentanz (125 AP; V4; SF Winterlager) und Traumwissen (100 AP; V3; SF Traumseherin).",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Zibilja"
+        ]
+      }
+    ]
   }
 ]
