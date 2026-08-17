@@ -55,6 +55,38 @@ extension _MagicManagementHelpers on _HeroMagicTabState {
     _markFieldChanged();
   }
 
+  void _updateRepraesentationsTraditionen(Map<String, String> values) {
+    _draftRepraesentationsTraditionen = values;
+    _markFieldChanged();
+  }
+
+  /// Baut den Pruefkontext fuer Erwerbsvoraussetzungen aus dem Draft-Zustand.
+  ///
+  /// Bewusst aus dem Draft und nicht aus dem gespeicherten Helden: Wer gerade
+  /// eine Repraesentation aktiviert oder eine Sonderfertigkeit erworben hat,
+  /// soll die Folgen sofort in den Checklisten sehen, ohne erst zu speichern.
+  HeroRequirementContext _buildRequirementContext(
+    HeroSheet hero,
+    RulesCatalog catalog,
+  ) {
+    return buildHeroRequirementContext(
+      hero.copyWith(
+        spells: Map<String, HeroSpellEntry>.from(_draftSpells),
+        ritualCategories: List<HeroRitualCategory>.from(_draftRitualCategories),
+        representationen: List<String>.from(_draftRepresentationen),
+        repraesentationsTraditionen: Map<String, String>.from(
+          _draftRepraesentationsTraditionen,
+        ),
+        merkmalskenntnisse: List<String>.from(_draftMerkmalskenntnisse),
+        magicSpecialAbilities: List<MagicSpecialAbility>.from(
+          _draftMagicSpecialAbilities,
+        ),
+        magicLeadAttribute: _draftMagicLeadAttribute,
+      ),
+      catalog: catalog,
+    );
+  }
+
   void _updateRitualCategories(List<HeroRitualCategory> values) {
     _draftRitualCategories = values;
     _markFieldChanged();

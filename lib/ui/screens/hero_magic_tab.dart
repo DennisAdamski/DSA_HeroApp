@@ -16,11 +16,14 @@ import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_acquisition_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/tradition_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -92,6 +95,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   Map<String, HeroSpellEntry> _draftSpells = <String, HeroSpellEntry>{};
   List<HeroRitualCategory> _draftRitualCategories = <HeroRitualCategory>[];
   List<String> _draftRepresentationen = <String>[];
+  Map<String, String> _draftRepraesentationsTraditionen = <String, String>{};
   List<String> _draftMerkmalskenntnisse = <String>[];
   List<MagicSpecialAbility> _draftMagicSpecialAbilities =
       <MagicSpecialAbility>[];
@@ -156,6 +160,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       hero.ritualCategories,
     );
     _draftRepresentationen = List<String>.from(hero.representationen);
+    _draftRepraesentationsTraditionen = Map<String, String>.from(
+      hero.repraesentationsTraditionen,
+    );
     _draftMerkmalskenntnisse = List<String>.from(hero.merkmalskenntnisse);
     _draftApSpentDelta = 0;
     _draftMagicSpecialAbilities = List<MagicSpecialAbility>.from(
@@ -226,6 +233,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       spells: Map<String, HeroSpellEntry>.from(_draftSpells),
       ritualCategories: List<HeroRitualCategory>.from(_draftRitualCategories),
       representationen: List<String>.from(_draftRepresentationen),
+      repraesentationsTraditionen: Map<String, String>.from(
+        _draftRepraesentationsTraditionen,
+      ),
       merkmalskenntnisse: List<String>.from(_draftMerkmalskenntnisse),
       magicSpecialAbilities: List<MagicSpecialAbility>.from(
         _draftMagicSpecialAbilities,
@@ -587,10 +597,14 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                         children: [
                           _MagicHeaderSection(
                             representationen: _draftRepresentationen,
+                            repraesentationsTraditionen:
+                                _draftRepraesentationsTraditionen,
                             merkmalskenntnisse: _draftMerkmalskenntnisse,
                             magicLeadAttribute: _draftMagicLeadAttribute,
                             isEditing: _editController.isEditing,
                             onRepresentationenChanged: _updateRepresentationen,
+                            onRepraesentationsTraditionenChanged:
+                                _updateRepraesentationsTraditionen,
                             onMerkmalskenntnisseChanged:
                                 _updateMerkmalskenntnisse,
                             onMagicLeadAttributeChanged:
@@ -607,6 +621,10 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             catalogAbilities: catalog.magicSpecialAbilities,
                             verfuegbareAp: hero.apAvailable,
                             episch: hero.isEpisch,
+                            requirementContext: _buildRequirementContext(
+                              hero,
+                              catalog,
+                            ),
                             onApKostenBestaetigt:
                                 _onMagicSpecialAbilityApKosten,
                             onEnsureEditing: () async {

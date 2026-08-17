@@ -18,6 +18,7 @@ import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';

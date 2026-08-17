@@ -11,6 +11,7 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
     this.verfuegbareAp = 0,
     this.episch = false,
     this.onApKostenBestaetigt,
+    this.requirementContext,
   });
 
   final List<MagicSpecialAbility> abilities;
@@ -27,6 +28,10 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
   /// Wird aufgerufen, wenn beim Neuanlegen ein Erwerbs-Dialog bestaetigt
   /// wurde — der Aufrufer erhoeht damit `hero.apSpent`.
   final ValueChanged<int>? onApKostenBestaetigt;
+
+  /// Pruefkontext fuer die Erwerbsvoraussetzungen; `null` schaltet die
+  /// Pruefung ab.
+  final HeroRequirementContext? requirementContext;
 
   Future<void> _editAbility(BuildContext context, int index) async {
     final result = await showAdaptiveInputDialog<_MagicSpecialAbilityErwerb>(
@@ -58,6 +63,7 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
         catalogAbilities: catalogAbilities,
         verfuegbareAp: verfuegbareAp,
         episch: episch,
+        requirementContext: requirementContext,
       ),
     );
     if (result == null) {
@@ -85,6 +91,7 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
       ownedNamesLower: owned,
       verfuegbareAp: verfuegbareAp,
       episch: episch,
+      requirementContext: requirementContext,
       onAdd: (ability, anzeigeName, apKosten) {
         final updated = List<MagicSpecialAbility>.from(abilities)
           ..add(
@@ -222,12 +229,14 @@ class _MagicSpecialAbilityDialog extends StatefulWidget {
     this.catalogAbilities = const <SpecialAbilityDef>[],
     this.verfuegbareAp = 0,
     this.episch = false,
+    this.requirementContext,
   });
 
   final MagicSpecialAbility? initial;
   final List<SpecialAbilityDef> catalogAbilities;
   final int verfuegbareAp;
   final bool episch;
+  final HeroRequirementContext? requirementContext;
 
   @override
   State<_MagicSpecialAbilityDialog> createState() =>
@@ -278,6 +287,13 @@ class _MagicSpecialAbilityDialogState
         verfuegbareAp: widget.verfuegbareAp,
         episch: widget.episch,
         epischerInhalt: match?.nurEpisch ?? false,
+        voraussetzungen:
+            match == null || widget.requirementContext == null
+            ? const <RequirementCheckResult>[]
+            : evaluateRequirements(
+                match.voraussetzungenStruktur,
+                widget.requirementContext!,
+              ),
       );
       if (erwerb == null) {
         return;

@@ -336,7 +336,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.background.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 26);
+    expect(reloaded.schemaVersion, 27);
     expect(reloaded.background.kultur, 'Mittelreich');
     expect(reloaded.background.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -825,7 +825,7 @@ void main() {
     },
   );
 
-  test('schemaVersion ist 26 nach toJson (v26-Default mit Epic-Feldern)', () {
+  test('schemaVersion ist 27 nach toJson (v27-Default mit Epic-Feldern)', () {
     const hero = HeroSheet(
       id: 'version-check',
       name: 'Versionstest',
@@ -842,8 +842,8 @@ void main() {
       ),
     );
     final json = hero.toJson();
-    expect(json['schemaVersion'], 26);
-    expect(HeroSheet.fromJson(json).schemaVersion, 26);
+    expect(json['schemaVersion'], 27);
+    expect(HeroSheet.fromJson(json).schemaVersion, 27);
   });
 
   test(
@@ -1047,5 +1047,61 @@ void main() {
       OffhandEquipmentType.shield,
     );
     expect(loaded.combatConfig.offhandEquipment.single.paMod, 2);
+  });
+
+  group('Repraesentations-Traditionen', () {
+    test('ueberstehen einen JSON-Roundtrip', () {
+      const hero = HeroSheet(
+        id: 'h-geode',
+        name: 'Geode',
+        level: 5,
+        attributes: Attributes.zero(),
+        representationen: <String>['Geo'],
+        repraesentationsTraditionen: <String, String>{
+          'Geo': 'geode_diener_sumus',
+        },
+      );
+
+      final loaded = HeroSheet.fromJson(hero.toJson());
+
+      expect(loaded.repraesentationsTraditionen, <String, String>{
+        'Geo': 'geode_diener_sumus',
+      });
+    });
+
+    test('fehlen sie im JSON, bleibt die Zuordnung leer', () {
+      final loaded = HeroSheet.fromJson(<String, dynamic>{
+        'id': 'h-alt',
+        'name': 'Altbestand',
+        'level': 1,
+        'representationen': <String>['Mag'],
+      });
+
+      expect(loaded.representationen, <String>['Mag']);
+      expect(loaded.repraesentationsTraditionen, isEmpty);
+    });
+
+    test('copyWith ersetzt die Zuordnung', () {
+      const hero = HeroSheet(
+        id: 'h-geode',
+        name: 'Geode',
+        level: 5,
+        attributes: Attributes.zero(),
+        repraesentationsTraditionen: <String, String>{
+          'Geo': 'geode_herr_der_erde',
+        },
+      );
+
+      final geaendert = hero.copyWith(
+        repraesentationsTraditionen: const <String, String>{
+          'Geo': 'geode_diener_sumus',
+        },
+      );
+
+      expect(
+        geaendert.repraesentationsTraditionen['Geo'],
+        'geode_diener_sumus',
+      );
+    });
   });
 }
