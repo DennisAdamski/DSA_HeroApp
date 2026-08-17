@@ -1009,7 +1009,8 @@ Sonderfertigkeits-Boni auf IniBase:
 
 | Wert | Berechnung |
 |---|---|
-| `rsTotal` | Summe `rs` aller aktiven `ArmorPiece` |
+| `rsTotal` | Summe `rs` aller aktiven `ArmorPiece` + `rs`-Mod + `armatrutzRsBonus` |
+| `armatrutzRsBonus` | erzauberter RS eines laufenden `Armatrutz` (siehe 4.5b) |
 | `beTotalRaw` | Summe `be` aller aktiven `ArmorPiece` |
 | `rgReduction` | 0 / 1 / 2 je nach Training-Level und aktiven RG1-Stücken |
 | `beKampf` | `max(0, beTotalRaw − rgReduction)` |
@@ -1062,6 +1063,48 @@ zusaetzlich um weitere `+2`.
 | GS | finaler GS-Wert wird verdoppelt |
 | Kampf-SF | aktiviert temporaer `Schnellziehen`, `Schnellladen (Bogen)` und `Schnellladen (Armbrust)` |
 | Anzeige | `Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2` |
+
+### 4.5b Armatrutz
+
+**Datei:** `lib/rules/derived/armatrutz_rules.dart`
+
+Der Armatrutz (Liber Cantiones S. 28) legt dem Ziel eine rein magische
+Ruestung auf.
+
+| Wert | Berechnung |
+|---|---|
+| `armatrutzRsBonus` | erzauberter RS aus `ActiveSpellEffectDetail.amount`; `0`, wenn der Effekt aus oder seine Wirkungsdauer abgelaufen ist |
+| `rsTotal` | getragener RS + `armatrutzRsBonus` |
+| Behinderung | unveraendert — die magische Ruestung erzeugt bewusst keine BE |
+| AsP-Kosten | `max(4, RS² − ZfP*/2)`, halbe ZfP* abgerundet (`computeArmatrutzAspCost`) |
+
+Die AsP-Kosten sind ein reiner Anzeigehinweis in der Eingabemaske; abgezogen
+wird nichts automatisch, weil Zeitpunkt und Erfolg des Zaubers am Spieltisch
+entschieden werden.
+
+### 4.5c Wirkungsdauer aktiver Zaubereffekte
+
+**Dateien:** `lib/domain/spell_duration.dart`,
+`lib/rules/derived/spell_duration_rules.dart`,
+`lib/rules/derived/active_spell_rules.dart`
+
+Jeder aktive Zaubereffekt (`importantActiveSpellEffects`) kann eine optionale
+Wirkungsdauer tragen. `SpellDuration` haelt Gesamtdauer, Restdauer und
+Zeiteinheit (`Aktionen`, `Kampfrunden`, `Spielrunden`, `Minuten`, `Stunden`,
+`Tage`, `permanent`) getrennt, damit am Spieltisch heruntergezaehlt werden
+kann, ohne die Ausgangsdauer zu verlieren.
+
+- Einheiten werden **nicht** ineinander umgerechnet: Eine Spielrunde geht nur
+  ausserhalb des Kampfes sinnvoll in Kampfrunden auf.
+- Der Countdown ist manuell (`advanceSpellDuration`, `resetSpellDuration`);
+  es laeuft keine Uhr mit.
+- Abgelaufene Effekte werden **nicht** automatisch deaktiviert, sondern nur
+  als abgelaufen angezeigt (`expiredActiveSpellEffects`). Ausnahme ist der
+  Armatrutz: Sein RS-Bonus faellt bei abgelaufener Wirkungsdauer weg, weil ein
+  stillschweigend weiterlaufender Ruestungsbonus die Kampfwerte verfaelschen
+  wuerde.
+- Persistiert wird in `HeroState.activeSpellEffects.effectDetails`; aeltere
+  Staende ohne dieses Feld bleiben lesbar.
 
 ### 4.6 Waffe, Fernkampf-AT, Schaden und Kampfmeisterschaften
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
@@ -26,9 +27,32 @@ class InspectorArcaneEffectsBlock extends ConsumerWidget {
     final heroState = heroStateAsync.valueOrNull;
     final combat = computedAsync.valueOrNull?.combatPreviewStats;
 
-    final axxActive = heroSheet != null && heroState != null
+    final isHeroLoaded = heroSheet != null && heroState != null;
+    final axxActive = isHeroLoaded
         ? isAxxeleratusEffectActive(sheet: heroSheet, state: heroState)
         : false;
+    final armatrutzActive =
+        isHeroLoaded &&
+        isActiveSpellEffectEnabled(
+          sheet: heroSheet,
+          state: heroState,
+          effectId: activeSpellEffectArmatrutz,
+        );
+    final attributoActive =
+        isHeroLoaded &&
+        isActiveSpellEffectEnabled(
+          sheet: heroSheet,
+          state: heroState,
+          effectId: activeSpellEffectAttributo,
+        );
+    final durations = heroState == null
+        ? const <String, SpellDuration?>{}
+        : <String, SpellDuration?>{
+            for (final effect in importantActiveSpellEffects)
+              effect.id: heroState.activeSpellEffects
+                  .detailFor(effect.id)
+                  .duration,
+          };
     final chips = combat != null
         ? describeActiveSpellEffects(
             axxeleratusActive: axxActive,
@@ -36,6 +60,13 @@ class InspectorArcaneEffectsBlock extends ConsumerWidget {
             axxPaBaseBonus: combat.axxPaBaseBonus,
             axxAusweichenBonus: combat.axxAusweichenBonus,
             axxTpBonus: computeAxxeleratusTpBonus(axxeleratusActive: axxActive),
+            armatrutzActive: armatrutzActive,
+            armatrutzRsBonus: combat.armatrutzRsBonus,
+            attributoActive: attributoActive,
+            attributoBonusText: heroState == null
+                ? ''
+                : describeAttributeModifiers(heroState.tempAttributeMods),
+            durationsByEffectId: durations,
           )
         : <ActiveSpellEffectChip>[];
 
@@ -66,9 +97,13 @@ class InspectorArcaneEffectsBlock extends ConsumerWidget {
               children: [
                 for (final chip in chips)
                   Chip(
-                    avatar: const Icon(Icons.bolt, size: 16),
+                    key: ValueKey<String>('arcane-effect-chip-${chip.effectId}'),
+                    avatar: Icon(
+                      chip.isExpired ? Icons.timer_off_outlined : Icons.bolt,
+                      size: 16,
+                    ),
                     label: Text(
-                      '${chip.label}: ${chip.bonusText}',
+                      _chipLabel(chip),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     visualDensity: VisualDensity.compact,
@@ -81,4 +116,19 @@ class InspectorArcaneEffectsBlock extends ConsumerWidget {
       ),
     );
   }
+}
+
+// Setzt Effektname, Boni und Restlaufzeit zu einer Chip-Beschriftung zusammen.
+String _chipLabel(ActiveSpellEffectChip chip) {
+  final parts = <String>[];
+  if (chip.bonusText.isNotEmpty) {
+    parts.add(chip.bonusText);
+  }
+  if (chip.durationText.isNotEmpty) {
+    parts.add(chip.durationText);
+  }
+  if (parts.isEmpty) {
+    return chip.label;
+  }
+  return '${chip.label}: ${parts.join(' · ')}';
 }

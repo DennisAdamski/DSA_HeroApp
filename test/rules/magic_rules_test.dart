@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
@@ -337,6 +338,45 @@ void main() {
       expect(result.first.bonusText, contains('PA+2'));
       expect(result.first.bonusText, contains('AW+2'));
       expect(result.first.bonusText, contains('TP+2'));
+    });
+
+    test('meldet den Armatrutz mit erzaubertem RS', () {
+      final result = describeActiveSpellEffects(
+        axxeleratusActive: false,
+        axxIniBonus: 0,
+        axxPaBaseBonus: 0,
+        axxAusweichenBonus: 0,
+        axxTpBonus: 0,
+        armatrutzActive: true,
+        armatrutzRsBonus: 4,
+      );
+
+      expect(result, hasLength(1));
+      expect(result.first.effectId, activeSpellEffectArmatrutz);
+      expect(result.first.bonusText, 'RS+4');
+      expect(result.first.durationText, isEmpty);
+    });
+
+    test('haengt die Restlaufzeit an den passenden Chip', () {
+      final result = describeActiveSpellEffects(
+        axxeleratusActive: false,
+        axxIniBonus: 0,
+        axxPaBaseBonus: 0,
+        axxAusweichenBonus: 0,
+        axxTpBonus: 0,
+        armatrutzActive: true,
+        armatrutzRsBonus: 2,
+        durationsByEffectId: <String, SpellDuration?>{
+          activeSpellEffectArmatrutz: SpellDuration(
+            amount: 3,
+            remaining: 1,
+            unit: SpellDurationUnit.spielrunden,
+          ),
+        },
+      );
+
+      expect(result.first.durationText, 'noch 1 SR');
+      expect(result.first.isExpired, isFalse);
     });
   });
 
