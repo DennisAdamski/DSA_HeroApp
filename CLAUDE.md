@@ -70,6 +70,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   dieselbe Darstellung bekommen wie die magischen. Alte Sammelnamen wie
   `Eiserner Wille I / II` bleiben als `alias_namen` der ersten Stufe erhalten,
   damit Bestandshelden erkannt werden.
+- Laufende Zaubereffekte (`Axxeleratus`, `Attributo`, `Armatrutz`) stehen in
+  `lib/rules/derived/active_spell_rules.dart` und werden über
+  `Magie-Tab > Zauber aktivieren` gepflegt. Zusatzdaten je Effekt (Zahlenwert
+  und Wirkungsdauer) liegen in `HeroState.activeSpellEffects.effectDetails`.
+  Der `Armatrutz` addiert seinen erzauberten RS in
+  `lib/rules/derived/armatrutz_rules.dart` zur getragenen Rüstung, ohne
+  Behinderung zu erzeugen; bei abgelaufener Wirkungsdauer fällt der Bonus weg.
+  Die Wirkungsdauer selbst (`lib/domain/spell_duration.dart`,
+  `lib/rules/derived/spell_duration_rules.dart`) ist effektunabhängig:
+  Kampfrunden, Spielrunden und weitere Zeiteinheiten werden nie ineinander
+  umgerechnet, der Countdown bleibt manuell, und abgelaufene Effekte werden
+  nur angezeigt statt automatisch abgeschaltet.
 - Traditionen und Leiteigenschaften stehen in
   `lib/rules/derived/tradition_rules.dart` (Wege der Zauberei S. 19). Die
   Traditionen eines Helden sind die Vereinigung aus `representationen` und den

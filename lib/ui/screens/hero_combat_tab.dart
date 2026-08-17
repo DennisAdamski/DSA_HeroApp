@@ -448,6 +448,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                               previewBeKampf: preview.beKampf,
                               previewBeMod: preview.beMod,
                               previewEbe: preview.ebe,
+                              previewArmatrutzRsBonus: preview.armatrutzRsBonus,
                             ),
                             const SizedBox(height: 12),
                             CombatOffhandSection(

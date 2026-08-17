@@ -24,6 +24,7 @@ class CombatArmorSection extends StatefulWidget {
     required this.previewBeKampf,
     required this.previewBeMod,
     required this.previewEbe,
+    this.previewArmatrutzRsBonus = 0,
   });
 
   /// Aktuelle Ruestungskonfiguration.
@@ -39,6 +40,9 @@ class CombatArmorSection extends StatefulWidget {
   final int previewBeKampf;
   final int previewBeMod;
   final int previewEbe;
+
+  /// Anteil eines laufenden `Armatrutz` am RS gesamt.
+  final int previewArmatrutzRsBonus;
 
   @override
   State<CombatArmorSection> createState() => _CombatArmorSectionState();
@@ -194,7 +198,13 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
               key: const ValueKey<String>('combat-armor-calculation-section'),
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('RS gesamt = Summe aktiver RS = ${widget.previewRsTotal}'),
+                Text(
+                  key: const ValueKey<String>('combat-armor-rs-total'),
+                  _rsTotalExplanation(
+                    rsTotal: widget.previewRsTotal,
+                    armatrutzRsBonus: widget.previewArmatrutzRsBonus,
+                  ),
+                ),
                 Text(
                   'BE (Kampf) = BE Roh (${widget.previewBeTotalRaw}) - RG (${widget.previewRgReduction}) = ${widget.previewBeKampf}',
                 ),
@@ -638,4 +648,18 @@ String _geweihtDescriptionText(ArmorPiece piece) {
     return '-';
   }
   return description;
+}
+
+// Erklaert den RS gesamt und weist einen laufenden Armatrutz gesondert aus,
+// damit der magische Anteil nicht mit getragener Ruestung verwechselt wird.
+String _rsTotalExplanation({
+  required int rsTotal,
+  required int armatrutzRsBonus,
+}) {
+  if (armatrutzRsBonus <= 0) {
+    return 'RS gesamt = Summe aktiver RS = $rsTotal';
+  }
+  final wornRs = rsTotal - armatrutzRsBonus;
+  return 'RS gesamt = Summe aktiver RS ($wornRs) + Armatrutz '
+      '($armatrutzRsBonus) = $rsTotal';
 }
