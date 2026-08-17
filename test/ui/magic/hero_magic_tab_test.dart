@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -455,10 +456,12 @@ void main() {
     await tester.tap(find.text('Repr. & SF'));
     await _pumpAndSettleIgnoringKnownOverflow(tester);
 
-    await tester.tap(find.widgetWithText(FilterChip, 'Dru'));
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-representation-Dru')),
+    );
     await _pumpAndSettleIgnoringKnownOverflow(tester);
 
-    expect(find.text('Repräsentation Dru erwerben'), findsOneWidget);
+    expect(find.text('Repräsentation Druide (Dru) erwerben'), findsOneWidget);
     expect(
       find.textContaining('2. Repräsentation: Vollzauberer 2000 AP'),
       findsOneWidget,
@@ -1469,4 +1472,227 @@ void main() {
       ]);
     },
   );
+
+  group('Stufenketten und Voraussetzungen', () {
+    // Zwei Stufen einer Kette plus eine Sonderfertigkeit, die auf Stufe I
+    // aufbaut — dieselbe Konstellation wie Eiserner Wille / Gedankenschutz
+    // im echten Katalog.
+    const willeI = SpecialAbilityDef(
+      id: 'magsf_eiserner_wille_i',
+      name: 'Eiserner Wille I',
+      gruppe: 'magisch',
+      kategorie: 'Geistestechnik',
+      kosten: '200 AP',
+      kette: SpecialAbilityChainRef(
+        id: 'eiserner_wille',
+        stufe: 1,
+        label: 'Eiserner Wille',
+      ),
+      voraussetzungenStruktur: <SpecialAbilityRequirement>[
+        SpecialAbilityRequirement(
+          art: RequirementArt.eigenschaft,
+          code: 'MU',
+          min: 13,
+        ),
+      ],
+    );
+    const willeII = SpecialAbilityDef(
+      id: 'magsf_eiserner_wille_ii',
+      name: 'Eiserner Wille II',
+      gruppe: 'magisch',
+      kategorie: 'Geistestechnik',
+      kosten: '300 AP',
+      kette: SpecialAbilityChainRef(id: 'eiserner_wille', stufe: 2),
+      voraussetzungenStruktur: <SpecialAbilityRequirement>[
+        SpecialAbilityRequirement(
+          art: RequirementArt.sonderfertigkeit,
+          name: 'Eiserner Wille',
+          stufe: 1,
+        ),
+      ],
+    );
+    const gedankenschutz = SpecialAbilityDef(
+      id: 'magsf_gedankenschutz',
+      name: 'Gedankenschutz',
+      gruppe: 'magisch',
+      kategorie: 'Geistestechnik',
+      kosten: '250 AP',
+      voraussetzungenStruktur: <SpecialAbilityRequirement>[
+        // Der Fixture-Held hat MU 14 und IN 13 — die SF fehlt ihm also nur.
+        SpecialAbilityRequirement(
+          art: RequirementArt.eigenschaft,
+          code: 'IN',
+          min: 13,
+        ),
+        SpecialAbilityRequirement(
+          art: RequirementArt.sonderfertigkeit,
+          name: 'Eiserner Wille',
+          stufe: 1,
+        ),
+      ],
+    );
+
+    Future<_OpenedMagicTab> openPicker(
+      WidgetTester tester, {
+      List<MagicSpecialAbility> vorhanden = const <MagicSpecialAbility>[],
+    }) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          buildHero(
+            magicSpecialAbilities: vorhanden,
+          ).copyWith(apAvailable: 1000),
+        ],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+      final opened = await openMagicTab(
+        tester,
+        repo: repo,
+        catalog: buildCatalog(
+          magicSpecialAbilities: const <SpecialAbilityDef>[
+            willeI,
+            willeII,
+            gedankenschutz,
+          ],
+        ),
+      );
+      await tester.tap(find.text('Repr. & SF'));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-sf-add-from-catalog')),
+      );
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+      return opened;
+    }
+
+    testWidgets('die Kette erscheint als eine Karte statt als Einzel-Chips', (
+      tester,
+    ) async {
+      await openPicker(tester);
+
+      expect(
+        find.byKey(const ValueKey<String>('sf-chain-eiserner_wille')),
+        findsOneWidget,
+      );
+      expect(find.text('Eiserner Wille'), findsOneWidget);
+      expect(
+        find.byKey(
+          const ValueKey<String>('sf-chain-acquire-magsf_eiserner_wille_i'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('nach Stufe I bietet die Karte Stufe II an', (tester) async {
+      await openPicker(
+        tester,
+        vorhanden: const <MagicSpecialAbility>[
+          MagicSpecialAbility(name: 'Eiserner Wille I'),
+        ],
+      );
+
+      expect(find.text('Stufe I von II'), findsOneWidget);
+      expect(
+        find.byKey(
+          const ValueKey<String>('sf-chain-acquire-magsf_eiserner_wille_ii'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('eine gesperrte SF nennt die Zahl der offenen Punkte', (
+      tester,
+    ) async {
+      await openPicker(tester);
+
+      expect(find.text('1 Voraussetzung offen'), findsOneWidget);
+    });
+
+    testWidgets(
+      'der Erwerbsdialog verlangt bei offenen Punkten den Meisterentscheid',
+      (tester) async {
+        final opened = await openPicker(tester);
+
+        await tester.tap(
+          find.descendant(
+            of: find.ancestor(
+              of: find.text('Gedankenschutz'),
+              matching: find.byType(Container),
+            ),
+            matching: find.byType(Switch),
+          ),
+        );
+        await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+        expect(
+          find.byKey(const ValueKey<String>('erwerb-voraussetzungen')),
+          findsOneWidget,
+        );
+        expect(find.text('Eine Voraussetzung ist nicht erfüllt.'), findsOneWidget);
+
+        final erwerben = find.widgetWithText(FilledButton, 'Erwerben');
+        expect(
+          tester.widget<FilledButton>(erwerben).onPressed,
+          isNull,
+          reason: 'ohne Meisterentscheid darf nicht erworben werden',
+        );
+
+        await tester.tap(
+          find.byKey(const ValueKey<String>('erwerb-meisterentscheid')),
+        );
+        await _pumpAndSettleIgnoringKnownOverflow(tester);
+        await tester.tap(erwerben);
+        await _pumpAndSettleIgnoringKnownOverflow(tester);
+        await tester.tap(find.text('Fertig'));
+        await _pumpAndSettleIgnoringKnownOverflow(tester);
+        await opened.actions.save();
+        await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+        final savedHero = await opened.repo.loadHeroById('demo');
+        expect(savedHero?.magicSpecialAbilities.map((a) => a.name), [
+          'Gedankenschutz',
+        ]);
+        expect(savedHero?.apSpent, 250);
+      },
+    );
+
+    testWidgets('erfuellte Voraussetzungen brauchen keinen Meisterentscheid', (
+      tester,
+    ) async {
+      await openPicker(
+        tester,
+        vorhanden: const <MagicSpecialAbility>[
+          MagicSpecialAbility(name: 'Eiserner Wille I'),
+        ],
+      );
+
+      await tester.tap(
+        find.descendant(
+          of: find.ancestor(
+            of: find.text('Gedankenschutz'),
+            matching: find.byType(Container),
+          ),
+          matching: find.byType(Switch),
+        ),
+      );
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+      expect(
+        find.byKey(const ValueKey<String>('erwerb-meisterentscheid')),
+        findsNothing,
+      );
+      expect(
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Erwerben'))
+            .onPressed,
+        isNotNull,
+      );
+    });
+  });
 }

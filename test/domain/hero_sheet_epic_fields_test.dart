@@ -24,7 +24,7 @@ void main() {
     );
   }
 
-  test('Default-HeroSheet hat schemaVersion 26 und leere Epic-Felder', () {
+  test('Default-HeroSheet hat schemaVersion 27 und leere Epic-Felder', () {
     const hero = HeroSheet(
       id: 'h-default',
       name: 'Default',
@@ -32,7 +32,7 @@ void main() {
       attributes: Attributes.zero(),
     );
 
-    expect(hero.schemaVersion, 26);
+    expect(hero.schemaVersion, 27);
     expect(hero.isEpisch, isFalse);
     expect(hero.epicMainAttributes.mu, 0);
     expect(hero.epicMainAttributes.kk, 0);

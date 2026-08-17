@@ -31,7 +31,7 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 26,
+    this.schemaVersion = 27,
     required this.name,
     required this.level,
     required this.attributes,
@@ -47,6 +47,7 @@ class HeroSheet {
     this.spells = const <String, HeroSpellEntry>{},
     this.ritualCategories = const <HeroRitualCategory>[],
     this.representationen = const <String>[],
+    this.repraesentationsTraditionen = const <String, String>{},
     this.merkmalskenntnisse = const <String>[],
     this.magicSpecialAbilities = const <MagicSpecialAbility>[],
     this.magicLeadAttribute = '',
@@ -102,6 +103,16 @@ class HeroSheet {
   final Map<String, HeroSpellEntry> spells;
   final List<HeroRitualCategory> ritualCategories;
   final List<String> representationen;
+
+  /// Gewaehlte Tradition je Repraesentationskuerzel, z. B.
+  /// `Geo` → `geode_diener_sumus`.
+  ///
+  /// Nur noetig, wenn sich hinter einer Repraesentation mehrere Traditionen mit
+  /// unterschiedlicher Leiteigenschaft verbergen (aktuell nur die Geoden, WdZ
+  /// S. 19). Alle uebrigen Repraesentationen bestimmen ihre Tradition — und
+  /// damit ihre Leiteigenschaft — eindeutig ueber `tradition_rules.dart`.
+  final Map<String, String> repraesentationsTraditionen;
+
   final List<String> merkmalskenntnisse;
   final List<MagicSpecialAbility> magicSpecialAbilities;
   final String magicLeadAttribute;
@@ -196,6 +207,7 @@ class HeroSheet {
     Map<String, HeroSpellEntry>? spells,
     List<HeroRitualCategory>? ritualCategories,
     List<String>? representationen,
+    Map<String, String>? repraesentationsTraditionen,
     List<String>? merkmalskenntnisse,
     List<MagicSpecialAbility>? magicSpecialAbilities,
     String? magicLeadAttribute,
@@ -253,6 +265,8 @@ class HeroSheet {
       spells: spells ?? this.spells,
       ritualCategories: ritualCategories ?? this.ritualCategories,
       representationen: representationen ?? this.representationen,
+      repraesentationsTraditionen:
+          repraesentationsTraditionen ?? this.repraesentationsTraditionen,
       merkmalskenntnisse: merkmalskenntnisse ?? this.merkmalskenntnisse,
       magicSpecialAbilities:
           magicSpecialAbilities ?? this.magicSpecialAbilities,
@@ -326,6 +340,7 @@ class HeroSheet {
           .map((entry) => entry.toJson())
           .toList(growable: false),
       'representationen': representationen,
+      'repraesentationsTraditionen': repraesentationsTraditionen,
       'merkmalskenntnisse': merkmalskenntnisse,
       'magicSpecialAbilities': magicSpecialAbilities
           .map((entry) => entry.toJson())
@@ -415,6 +430,9 @@ class HeroSheet {
         (json['ritualCategories'] as List?) ?? const <dynamic>[];
     final rawRepresentationen =
         (json['representationen'] as List?) ?? const <dynamic>[];
+    final rawRepraesentationsTraditionen =
+        (json['repraesentationsTraditionen'] as Map?)?.cast<String, dynamic>() ??
+        const <String, dynamic>{};
     final rawMerkmalskenntnisse =
         (json['merkmalskenntnisse'] as List?) ?? const <dynamic>[];
     final rawMagicSpecialAbilities =
@@ -492,6 +510,9 @@ class HeroSheet {
       representationen: rawRepresentationen
           .map((entry) => entry.toString())
           .toList(growable: false),
+      repraesentationsTraditionen: rawRepraesentationsTraditionen.map(
+        (key, value) => MapEntry(key, value.toString()),
+      ),
       merkmalskenntnisse: rawMerkmalskenntnisse
           .map((entry) => entry.toString())
           .toList(growable: false),

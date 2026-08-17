@@ -248,6 +248,17 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
       verfuegbareAp: hero.apAvailable,
       episch: hero.isEpisch,
       eigeneKultur: hero.background.kultur,
+      // Aus dem Draft gebaut, nicht aus dem gespeicherten Helden: Wer gerade
+      // eine Sonderfertigkeit erworben hat, soll die Folge sofort in den
+      // Checklisten der darauf aufbauenden Eintraege sehen.
+      requirementContext: buildHeroRequirementContext(
+        hero.copyWith(
+          talentSpecialAbilities: List<TalentSpecialAbility>.from(
+            _draftTalentSpecialAbilities,
+          ),
+        ),
+        catalog: catalog,
+      ),
       onAdd: (ability, anzeigeName, apKosten) {
         _draftTalentSpecialAbilities = [
           ..._draftTalentSpecialAbilities,
