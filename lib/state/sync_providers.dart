@@ -17,3 +17,16 @@ final syncStatusProvider = StreamProvider<SyncStatusSnapshot>((ref) {
   }
   return controller.watchStatus();
 });
+
+/// Bereits getroffene Entscheidungen zu Offline-Helden.
+///
+/// Nach `reopenOfflineHeroReview` oder `clearOfflineHeroReviews` muss der
+/// Provider invalidiert werden, damit die Liste den neuen Stand zeigt.
+final offlineHeroReviewsProvider =
+    FutureProvider.autoDispose<List<OfflineHeroReview>>((ref) async {
+      final controller = ref.watch(syncControllerProvider);
+      if (controller == null) {
+        return const <OfflineHeroReview>[];
+      }
+      return controller.listOfflineHeroReviews();
+    });

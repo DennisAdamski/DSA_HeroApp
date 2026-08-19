@@ -111,6 +111,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `RestFirestoreHeroSyncGateway`), `HiveSyncMetadataStore` und die Modelle in
   `lib/domain/sync_models.dart`. Konflikte dürfen nicht still überschrieben
   werden; die UI muss lokal, online oder beide behalten anbieten.
+- Entscheidungen zu Offline-Helden (`Offline-Held: …`-Konflikte beim Wechsel in
+  ein Konto) müssen persistiert werden, sonst wiederholt sich die Frage bei
+  jedem Start: die Konfliktliste lebt nur im Speicher und keiner der drei
+  Auflösungswege verändert das Offline-Profil. `SyncingHeroRepository` schreibt
+  dafür ein `OfflineHeroReview` in die Box `offline_hero_review_v1` im
+  Konto-Profil (`lib/data/hive_offline_hero_review_store.dart`). Der Offline-Held
+  selbst wird nie gelöscht. Widerrufbar unter
+  `Einstellungen > Konto & Sync > Offline-Helden`.
 - Inhaltlich identische Datensätze sind aber kein Konflikt: `isSyncContentIdentical`
   (`lib/domain/sync_object_diff.dart`) entscheidet das mit derselben Logik wie
   die Konflikt-UI (umsortierte Listen, `lastModified`/`schemaVersion` zählen als

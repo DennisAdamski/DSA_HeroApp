@@ -1,11 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_controller.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_object_diff.dart';
+import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/sync_conflict_gate.dart';
 
 void main() {
@@ -26,11 +29,17 @@ void main() {
     );
   }
 
-  Widget buildGate(_FakeSyncController controller) {
-    return MaterialApp(
-      home: SyncConflictGate(
-        syncController: controller,
-        child: const Text('App-Inhalt'),
+  Widget buildGate(_FakeSyncController controller, {AuthService? authService}) {
+    return ProviderScope(
+      overrides: [
+        if (authService != null)
+          authServiceProvider.overrideWithValue(authService),
+      ],
+      child: MaterialApp(
+        home: SyncConflictGate(
+          syncController: controller,
+          child: const Text('App-Inhalt'),
+        ),
       ),
     );
   }
@@ -179,9 +188,133 @@ void main() {
       ('hero-h-1', SyncResolutionChoice.keepLocal),
     ]);
   });
+
+  testWidgets('"Später entscheiden" gibt die App frei', (tester) async {
+    final controller = _FakeSyncController(
+      SyncStatusSnapshot(openConflicts: <SyncConflict>[conflict()]),
+    );
+    addTearDown(controller.close);
+
+    await tester.pumpWidget(buildGate(controller));
+    await tester.pumpAndSettle();
+    expect(find.text('App-Inhalt'), findsNothing);
+
+    await tester.tap(find.text('Später entscheiden'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('App-Inhalt'), findsOneWidget);
+    // Zurueckstellen loest nichts auf: die Konflikte bleiben offen.
+    expect(controller.resolvedConflicts, isEmpty);
+  });
+
+  testWidgets('Sammelaktion loest alle Konflikte online auf', (tester) async {
+    final controller = _FakeSyncController(
+      SyncStatusSnapshot(
+        openConflicts: <SyncConflict>[
+          conflict(),
+          conflict(id: 'hero-h-2'),
+          conflict(id: 'hero-h-3'),
+        ],
+      ),
+    );
+    addTearDown(controller.close);
+
+    await tester.pumpWidget(buildGate(controller));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Alle: Online behalten'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Alle lösen'));
+    await tester.pumpAndSettle();
+
+    expect(controller.resolvedConflicts, [
+      ('hero-h-1', SyncResolutionChoice.keepRemote),
+      ('hero-h-2', SyncResolutionChoice.keepRemote),
+      ('hero-h-3', SyncResolutionChoice.keepRemote),
+    ]);
+  });
+
+  testWidgets('Sammelaktion fehlt bei einem einzelnen Konflikt', (
+    tester,
+  ) async {
+    final controller = _FakeSyncController(
+      SyncStatusSnapshot(openConflicts: <SyncConflict>[conflict()]),
+    );
+    addTearDown(controller.close);
+
+    await tester.pumpWidget(buildGate(controller));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Alle: Online behalten'), findsNothing);
+  });
+
+  testWidgets('Abmelden meldet nach Bestaetigung ab', (tester) async {
+    final controller = _FakeSyncController(
+      SyncStatusSnapshot(openConflicts: <SyncConflict>[conflict()]),
+    );
+    addTearDown(controller.close);
+    final authService = _FakeAuthService();
+
+    await tester.pumpWidget(buildGate(controller, authService: authService));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.logout));
+    await tester.pumpAndSettle();
+    expect(authService.signOutCalls, 0);
+
+    await tester.tap(find.text('Abmelden').last);
+    await tester.pumpAndSettle();
+
+    expect(authService.signOutCalls, 1);
+    expect(controller.resolvedConflicts, isEmpty);
+  });
+
+  testWidgets('Abmelden fehlt ohne verfuegbaren Auth-Dienst', (tester) async {
+    final controller = _FakeSyncController(
+      SyncStatusSnapshot(openConflicts: <SyncConflict>[conflict()]),
+    );
+    addTearDown(controller.close);
+
+    await tester.pumpWidget(buildGate(controller));
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.logout), findsNothing);
+  });
 }
 
-class _FakeSyncController implements AppSyncController {
+class _FakeAuthService implements AuthService {
+  int signOutCalls = 0;
+
+  @override
+  Future<void> signOut() async {
+    signOutCalls++;
+  }
+
+  @override
+  AuthUser? get currentUser => const AuthUser(uid: 'user-1', email: null);
+
+  @override
+  Stream<AuthUser?> watchUser() =>
+      Stream<AuthUser?>.value(const AuthUser(uid: 'user-1', email: null));
+
+  @override
+  Future<AuthUser> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AuthUser> registerWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    throw UnimplementedError();
+  }
+}
+
+class _FakeSyncController extends AppSyncController {
   _FakeSyncController(
     SyncStatusSnapshot initial, {
     Map<String, SyncObjectDiff> diffs = const <String, SyncObjectDiff>{},
