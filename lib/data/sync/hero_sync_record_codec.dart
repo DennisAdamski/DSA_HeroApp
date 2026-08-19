@@ -139,7 +139,7 @@ RemoteHeroStateRecord? decodeRemoteHeroStateRecord({
   final state = HeroState.fromJson(_castMap(payload));
   final contentHash =
       data[HeroSyncRecordFields.contentHash] as String? ??
-      stableContentHash(state.toJson());
+      heroStateContentHash(state);
   return RemoteHeroStateRecord(
     heroId: heroId,
     state: state,

@@ -734,7 +734,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       );
       return;
     }
-    final localHash = stableContentHash(localState.toJson());
+    final localHash = heroStateContentHash(localState);
     if (localHash == remoteHash) {
       // Inhaltlich identisch: der Online-Stand ist massgeblich.
       await _adoptRemoteState(
@@ -773,7 +773,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     final key = _stateKey(heroId);
     final metadata = await metadataStore.load(key);
     final remoteRecord = await stateGateway.loadHeroState(heroId);
-    final localHash = stableContentHash(state.toJson());
+    final localHash = heroStateContentHash(state);
 
     if (remoteRecord != null &&
         !remoteRecord.isDeleted &&
@@ -912,16 +912,21 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       );
       return;
     }
+    // Die rohe Helden-ID sagt dem Nutzer nichts; der Name steht im lokalen
+    // Heldenblatt. Fehlt es (verwaister Zustand), bleibt die ID als Notnagel.
+    final hero = await local.loadHeroById(heroId);
     final conflict = SyncConflict(
       id: conflictId,
       objectType: SyncObjectType.heroState,
       objectId: heroId,
-      title: 'Zustand: $heroId',
+      title: 'Zustand: ${hero?.name ?? heroId}',
       localSummary: 'Lokale Laufzeitwerte',
       remoteSummary: remoteRecord.isDeleted
           ? 'Online geloescht'
           : 'Online-Laufzeitwerte',
       detectedAt: DateTime.now().toUtc(),
+      localUpdatedAt: localState.lastModified,
+      remoteUpdatedAt: remoteRecord.updatedAt,
     );
     _stateConflicts[conflictId] = _StateConflictDetails(
       conflict: conflict,
@@ -1139,8 +1144,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     HeroState? localState,
   }) async {
     final needsWrite = localState == null ||
-        stableContentHash(localState.toJson()) !=
-            stableContentHash(remoteState.toJson());
+        heroStateContentHash(localState) != heroStateContentHash(remoteState);
     if (needsWrite) {
       await local.saveHeroState(heroId, remoteState);
     }
@@ -1167,7 +1171,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
   ) async {
     await _saveMetadata(
       key: _stateKey(heroId),
-      localHash: stableContentHash(state.toJson()),
+      localHash: heroStateContentHash(state),
       remoteHash: _remoteStateHash(record),
       remoteRevision: record.revision,
       isDeleted: record.isDeleted,
@@ -1243,9 +1247,12 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
   }
 
   String _remoteStateHash(RemoteHeroStateRecord record) {
-    return record.contentHash.isNotEmpty
-        ? record.contentHash
-        : stableContentHash(record.state?.toJson());
+    if (record.contentHash.isNotEmpty) {
+      return record.contentHash;
+    }
+    final state = record.state;
+    if (state == null) return stableContentHash(null);
+    return heroStateContentHash(state);
   }
 
   SyncObjectKey _heroKey(String heroId) {
@@ -1365,9 +1372,12 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
 
   @override
   Future<void> saveHeroState(String heroId, HeroState state) async {
-    await local.saveHeroState(heroId, state);
+    // Frischer Stempel bei jedem Speichern, analog zu [saveHero]. Er bleibt
+    // aus [heroStateContentHash] heraus und loest deshalb keinen Konflikt aus.
+    final stamped = state.copyWith(lastModified: DateTime.now().toUtc());
+    await local.saveHeroState(heroId, stamped);
     await _pushRemoteBestEffort(
-      () => _pushHeroStateIfSafe(heroId, state),
+      () => _pushHeroStateIfSafe(heroId, stamped),
       context:
           'Zustand von Held $heroId konnte nicht in die Cloud '
           'uebertragen werden',

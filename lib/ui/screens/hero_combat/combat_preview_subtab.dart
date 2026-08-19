@@ -194,7 +194,11 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
             SizedBox(
               width: 130,
               child: CodexMetricTile(
+                key: const ValueKey<String>('combat-preview-rs-tile'),
                 label: 'RS',
+                helper: preview.armatrutzRsBonus > 0
+                    ? 'inkl. Armatrutz +${preview.armatrutzRsBonus}'
+                    : null,
                 value: preview.rsTotal.toString(),
                 icon: Icons.health_and_safety_outlined,
               ),

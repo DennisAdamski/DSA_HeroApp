@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/armatrutz_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ausweichen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
@@ -26,6 +27,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/waffen_rules.dart';
 class CombatPreviewStats {
   const CombatPreviewStats({
     required this.rsTotal,
+    required this.armatrutzRsBonus,
     required this.beTotalRaw,
     required this.rgReduction,
     required this.beKampf,
@@ -111,6 +113,9 @@ class CombatPreviewStats {
   });
 
   final int rsTotal;
+
+  /// Anteil des `Armatrutz` an [rsTotal]; 0, wenn der Zauber nicht laeuft.
+  final int armatrutzRsBonus;
   final int beTotalRaw;
   final int rgReduction;
   final int beKampf;
@@ -371,7 +376,10 @@ CombatPreviewStats computeCombatPreviewStats(
   final activeArmorPieces = armor.pieces
       .where((piece) => piece.isActive)
       .toList(growable: false);
-  final rsTotal = computeRsTotal(activeArmorPieces) + mods.rs;
+  // Der Armatrutz legt eine rein magische Ruestung auf: Sein RS zaehlt zur
+  // getragenen Ruestung hinzu, erzeugt aber bewusst keine Behinderung.
+  final armatrutzRsBonus = computeArmatrutzRsBonus(sheet: sheet, state: state);
+  final rsTotal = computeRsTotal(activeArmorPieces) + mods.rs + armatrutzRsBonus;
   final beTotalRaw = computeBeTotalRaw(activeArmorPieces);
   final rgReduction = computeRgReduction(
     globalArmorTrainingLevel: armor.globalArmorTrainingLevel,
@@ -633,6 +641,7 @@ CombatPreviewStats computeCombatPreviewStats(
 
   return CombatPreviewStats(
     rsTotal: clampNonNegative(rsTotal),
+    armatrutzRsBonus: armatrutzRsBonus,
     beTotalRaw: clampNonNegative(beTotalRaw),
     rgReduction: rgReduction,
     beKampf: beKampf,

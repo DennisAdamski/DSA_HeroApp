@@ -170,7 +170,7 @@ class RestFirestoreHeroSyncGateway
     required String? previousRevision,
   }) async {
     final payload = state.toJson();
-    final contentHash = stableContentHash(payload);
+    final contentHash = heroStateContentHash(state);
     final revision = newSyncRevision();
     final lastModified = DateTime.now().toUtc();
     final fields = encodeSyncPayloadWriteFields(

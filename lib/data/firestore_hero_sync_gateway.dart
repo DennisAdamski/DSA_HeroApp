@@ -145,7 +145,7 @@ class FirestoreHeroSyncGateway
     required String? previousRevision,
   }) async {
     final payload = state.toJson();
-    final contentHash = stableContentHash(payload);
+    final contentHash = heroStateContentHash(state);
     final revision = newSyncRevision();
     await _guardedSet(
       _statesCollection.doc(heroId),

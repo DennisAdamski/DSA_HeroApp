@@ -35,6 +35,62 @@ void main() {
     expect(loaded.ueberanstrengung, 0);
   });
 
+  group('lastModified', () {
+    test('roundtrip keeps the timestamp in UTC', () {
+      final state = HeroState(
+        currentLep: 12,
+        currentAsp: 7,
+        currentKap: 1,
+        currentAu: 16,
+        lastModified: DateTime.utc(2026, 8, 20, 10, 30),
+      );
+
+      final reloaded = HeroState.fromJson(state.toJson());
+
+      expect(reloaded.lastModified, DateTime.utc(2026, 8, 20, 10, 30));
+    });
+
+    test('is omitted from json when unset', () {
+      const state = HeroState(
+        currentLep: 10,
+        currentAsp: 0,
+        currentKap: 0,
+        currentAu: 10,
+      );
+
+      expect(state.toJson().containsKey('lastModified'), isFalse);
+      expect(HeroState.fromJson(state.toJson()).lastModified, isNull);
+    });
+
+    test('stays null for older data without the field', () {
+      final loaded = HeroState.fromJson(const <String, dynamic>{
+        'schemaVersion': 4,
+        'currentLep': 10,
+        'currentAsp': 3,
+        'currentKap': 0,
+        'currentAu': 12,
+      });
+
+      expect(loaded.lastModified, isNull);
+    });
+
+    test('copyWith replaces the timestamp', () {
+      const state = HeroState(
+        currentLep: 10,
+        currentAsp: 0,
+        currentKap: 0,
+        currentAu: 10,
+      );
+
+      final stamped = state.copyWith(
+        lastModified: DateTime.utc(2026, 8, 20, 11),
+      );
+
+      expect(stamped.lastModified, DateTime.utc(2026, 8, 20, 11));
+      expect(stamped.currentLep, 10);
+    });
+  });
+
   group('diceLog', () {
     DiceLogEntry entry(int target) => DiceLogEntry(
       timestamp: DateTime.utc(2026, 4, 30, 8, target),

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 
 void main() {
@@ -34,6 +35,39 @@ void main() {
       };
 
       expect(stableContentHash(first), isNot(stableContentHash(second)));
+    });
+  });
+
+  group('heroStateContentHash', () {
+    HeroState state({int currentLep = 30, DateTime? lastModified}) {
+      return HeroState(
+        currentLep: currentLep,
+        currentAsp: 12,
+        currentKap: 0,
+        currentAu: 20,
+        lastModified: lastModified,
+      );
+    }
+
+    test('ignores lastModified so a re-save alone is no conflict', () {
+      final early = state(lastModified: DateTime.utc(2026, 1, 1));
+      final late = state(lastModified: DateTime.utc(2026, 8, 20));
+
+      expect(heroStateContentHash(early), heroStateContentHash(late));
+    });
+
+    test('treats a missing timestamp like any other timestamp', () {
+      expect(
+        heroStateContentHash(state()),
+        heroStateContentHash(state(lastModified: DateTime.utc(2026, 8, 20))),
+      );
+    });
+
+    test('still changes when real runtime values change', () {
+      expect(
+        heroStateContentHash(state(currentLep: 30)),
+        isNot(heroStateContentHash(state(currentLep: 29))),
+      );
     });
   });
 
