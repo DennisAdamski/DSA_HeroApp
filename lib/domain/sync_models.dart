@@ -131,6 +131,69 @@ class SyncMetadata {
   }
 }
 
+/// Festgehaltene Nutzerentscheidung zu einem Offline-Helden.
+///
+/// Beim Wechsel in ein Konto-Profil fragt die App fuer jeden Helden des
+/// Offline-Profils nach, welche Fassung erhalten bleiben soll. Ohne einen
+/// persistierten Beschluss wuerde dieselbe Frage bei jedem Start erneut
+/// gestellt, weil das Offline-Profil dabei unveraendert bleibt.
+class OfflineHeroReview {
+  /// Erstellt einen Beschluss zu einem Offline-Helden.
+  const OfflineHeroReview({
+    required this.heroId,
+    required this.heroName,
+    required this.offlineHash,
+    required this.choice,
+    required this.decidedAt,
+  });
+
+  /// ID des Helden im Offline-Profil.
+  final String heroId;
+
+  /// Name zum Entscheidungszeitpunkt, nur fuer die Anzeige.
+  final String heroName;
+
+  /// [heroContentHash] des Offline-Helden zum Entscheidungszeitpunkt.
+  ///
+  /// Aendert der Nutzer den Helden spaeter im Offline-Profil, passt der Hash
+  /// nicht mehr und die Frage wird bewusst erneut gestellt.
+  final String offlineHash;
+
+  /// Getroffene Entscheidung.
+  final SyncResolutionChoice choice;
+
+  /// Zeitpunkt der Entscheidung.
+  final DateTime decidedAt;
+
+  /// Serialisiert den Beschluss fuer Hive.
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'heroId': heroId,
+      'heroName': heroName,
+      'offlineHash': offlineHash,
+      'choice': choice.name,
+      'decidedAt': decidedAt.toUtc().toIso8601String(),
+    };
+  }
+
+  /// Laedt einen Beschluss tolerant aus Persistenzdaten.
+  static OfflineHeroReview fromJson(Map<String, dynamic> json) {
+    final rawChoice = json['choice'] as String?;
+    return OfflineHeroReview(
+      heroId: json['heroId'] as String? ?? '',
+      heroName: json['heroName'] as String? ?? '',
+      offlineHash: json['offlineHash'] as String? ?? '',
+      choice: SyncResolutionChoice.values.firstWhere(
+        (candidate) => candidate.name == rawChoice,
+        orElse: () => SyncResolutionChoice.keepRemote,
+      ),
+      decidedAt:
+          DateTime.tryParse(json['decidedAt'] as String? ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+    );
+  }
+}
+
 /// Beschreibt einen offenen Konflikt zwischen lokalem und Online-Stand.
 class SyncConflict {
   /// Erstellt einen UI- und Service-tauglichen Konfliktdatensatz.
