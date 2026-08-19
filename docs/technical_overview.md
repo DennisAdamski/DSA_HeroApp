@@ -129,6 +129,33 @@ Getroffene Beschluesse listet der Abschnitt `Offline-Helden` unter
 `Einstellungen > Konto & Sync`; sie sind dort einzeln (`Erneut prüfen`) oder
 komplett widerrufbar.
 
+Seit 2026-08-20 ist auch der Zustands-Konflikt (`SyncObjectType.heroState`,
+Laufzeitwerte wie LeP/AsP, temporaere Modifikatoren, aktive Zaubereffekte und
+Wuerfelprotokoll) entscheidbar statt nur anzeigbar. Zwei Luecken standen dem
+entgegen:
+
+- Der Titel lautete `Zustand: <heroId>` und zeigte damit eine rohe UUID.
+  `_openStateConflict` loest den Namen jetzt ueber `local.loadHeroById` auf;
+  fehlt das Heldenblatt (verwaister Zustand), bleibt die ID als Notnagel.
+- `HeroState` hatte kein `lastModified`, weshalb die Zusammenfassungszeile
+  `Gespeichert` auf beiden Seiten `Unbekannt` zeigte — ausgerechnet die
+  Information, die die Frage "welche Version ist neuer?" beantwortet. Das Feld
+  existiert nun (`lib/domain/hero_state.dart`) und wird analog zu `HeroSheet`
+  auf zwei Ebenen gestempelt: `SyncingHeroRepository.saveHeroState` setzt bei
+  jedem Speichern einen frischen Wert, `HiveHeroRepository.saveHeroState`
+  ergaenzt ihn offline, falls er fehlt. Die Online-Seite kam schon vorher als
+  `RemoteHeroStateRecord.updatedAt` an und wurde nur nicht durchgereicht.
+
+Wichtig dabei: Der Zeitstempel darf nicht in die Konflikterkennung geraten,
+sonst meldet jedes Neuspeichern einen Scheinkonflikt. Dafuer gibt es
+`heroStateContentHash` (`lib/domain/sync_models.dart`), das `lastModified`
+entfernt — exakt das Muster von `heroContentHash`. **Alle** Stellen, die einen
+Zustand hashen, muessen diese Funktion verwenden, nicht `stableContentHash` auf
+`state.toJson()`: die beiden Gateways, `hero_sync_record_codec.dart` und die
+vier Stellen in `syncing_hero_repository.dart`. Bestandsdaten haben zunaechst
+kein `lastModified` und zeigen bis zum naechsten Speichern weiterhin
+`Unbekannt`; das ist gewollt, geraten wird nichts.
+
 Windows-Sonderfall: Firebase Auth bleibt dort verfügbar, der Konto-Sync nutzt
 aber bewusst den Firestore-REST-Transport (`RestFirestoreHeroSyncGateway` und
 `RestFirestoreSecretsRepository`) statt des nativen `cloud_firestore`-Pluginpfads.

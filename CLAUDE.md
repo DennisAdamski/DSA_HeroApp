@@ -128,6 +128,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`lib/ui/widgets/sync_conflict_comparison_table.dart` mit den deutschen
   Feldnamen aus `lib/ui/widgets/sync_conflict_field_labels.dart`), sowohl im
   Start-Gate als auch unter `Einstellungen > Konto & Sync`.
+- Laufzeitzustände (`HeroState`) tragen wie `HeroSheet` ein `lastModified`,
+  damit die Konflikt-UI beim `Zustand:`-Konflikt nicht auf beiden Seiten
+  `Unbekannt` anzeigt. Gehasht wird ein Zustand ausschließlich über
+  `heroStateContentHash` (`lib/domain/sync_models.dart`), das den Zeitstempel
+  entfernt — genau wie `heroContentHash`. Wer irgendwo `stableContentHash`
+  direkt auf `state.toJson()` anwendet, baut einen Scheinkonflikt bei jedem
+  Speichern ein.
 - `FirebaseBootstrapResult.isAccountSyncAvailable` steuert den privaten
   Konto-Sync; `isFirestoreAvailable` steht für native Firestore-Funktionen wie
   Gruppen-Cloudaktionen und bleibt auf Windows deaktiviert.
