@@ -380,6 +380,160 @@ void main() {
       expect(lepEntry.remoteValue, 12);
     });
 
+    test('Zustands-Konflikt nennt den Heldennamen statt der ID', () async {
+      final local = FakeRepository(
+        heroes: <HeroSheet>[hero('h-1', 'Alrik')],
+        states: <String, HeroState>{
+          'h-1': const HeroState.empty().copyWith(currentLep: 20),
+        },
+      );
+      final remote = FakeRemoteHeroAndStateSyncGateway();
+      await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
+      await remote.saveHeroState(
+        'h-1',
+        const HeroState.empty().copyWith(currentLep: 12),
+        previousRevision: null,
+      );
+
+      final repository = SyncingHeroRepository(
+        local: local,
+        remote: remote,
+        metadataStore: InMemorySyncMetadataStore(),
+        accountId: 'user-1',
+        startRemoteListener: false,
+      );
+      await repository.syncNow();
+
+      final conflict = repository.currentStatus.openConflicts.singleWhere(
+        (entry) => entry.objectType == SyncObjectType.heroState,
+      );
+      expect(conflict.title, 'Zustand: Alrik');
+      expect(conflict.objectId, 'h-1');
+    });
+
+    test('Zustands-Konflikt faellt ohne Helden auf die ID zurueck', () async {
+      final local = FakeRepository(
+        heroes: const <HeroSheet>[],
+        states: <String, HeroState>{
+          'h-verwaist': const HeroState.empty().copyWith(currentLep: 20),
+        },
+      );
+      final remote = FakeRemoteHeroAndStateSyncGateway();
+      await remote.saveHeroState(
+        'h-verwaist',
+        const HeroState.empty().copyWith(currentLep: 12),
+        previousRevision: null,
+      );
+
+      final repository = SyncingHeroRepository(
+        local: local,
+        remote: remote,
+        metadataStore: InMemorySyncMetadataStore(),
+        accountId: 'user-1',
+        startRemoteListener: false,
+      );
+      await repository.syncNow();
+
+      final conflict = repository.currentStatus.openConflicts.singleWhere(
+        (entry) => entry.objectType == SyncObjectType.heroState,
+      );
+      expect(conflict.title, 'Zustand: h-verwaist');
+    });
+
+    test('Zustands-Konflikt traegt beide Zeitstempel', () async {
+      final localState = const HeroState.empty().copyWith(
+        currentLep: 20,
+        lastModified: DateTime.utc(2026, 8, 19, 21, 15),
+      );
+      final local = FakeRepository(
+        heroes: <HeroSheet>[hero('h-1', 'Alrik')],
+        states: <String, HeroState>{'h-1': localState},
+      );
+      final remote = FakeRemoteHeroAndStateSyncGateway();
+      await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
+      final remoteRecord = await remote.saveHeroState(
+        'h-1',
+        const HeroState.empty().copyWith(currentLep: 12),
+        previousRevision: null,
+      );
+
+      final repository = SyncingHeroRepository(
+        local: local,
+        remote: remote,
+        metadataStore: InMemorySyncMetadataStore(),
+        accountId: 'user-1',
+        startRemoteListener: false,
+      );
+      await repository.syncNow();
+
+      final conflict = repository.currentStatus.openConflicts.singleWhere(
+        (entry) => entry.objectType == SyncObjectType.heroState,
+      );
+      expect(conflict.localUpdatedAt, DateTime.utc(2026, 8, 19, 21, 15));
+      expect(conflict.remoteUpdatedAt, remoteRecord.updatedAt);
+      expect(conflict.remoteUpdatedAt, isNotNull);
+    });
+
+    test('erneutes Speichern stempelt den Zustand frisch', () async {
+      final local = FakeRepository(
+        heroes: <HeroSheet>[hero('h-1', 'Alrik')],
+        states: <String, HeroState>{},
+      );
+      final remote = FakeRemoteHeroAndStateSyncGateway();
+      final repository = SyncingHeroRepository(
+        local: local,
+        remote: remote,
+        metadataStore: InMemorySyncMetadataStore(),
+        accountId: 'user-1',
+        startRemoteListener: false,
+      );
+
+      await repository.saveHeroState(
+        'h-1',
+        const HeroState.empty().copyWith(currentLep: 30),
+      );
+      final first = (await local.loadHeroState('h-1'))!.lastModified;
+      await repository.saveHeroState(
+        'h-1',
+        const HeroState.empty().copyWith(currentLep: 29),
+      );
+      final second = (await local.loadHeroState('h-1'))!.lastModified;
+
+      expect(first, isNotNull);
+      expect(second, isNotNull);
+      expect(second!.isBefore(first!), isFalse);
+    });
+
+    test(
+      'frischer Zeitstempel allein loest keinen Zustands-Konflikt aus',
+      () async {
+        final local = FakeRepository(
+          heroes: <HeroSheet>[hero('h-1', 'Alrik')],
+          states: <String, HeroState>{},
+        );
+        final remote = FakeRemoteHeroAndStateSyncGateway();
+        final repository = SyncingHeroRepository(
+          local: local,
+          remote: remote,
+          metadataStore: InMemorySyncMetadataStore(),
+          accountId: 'user-1',
+          startRemoteListener: false,
+        );
+
+        const state = HeroState.empty();
+        await repository.saveHeroState('h-1', state.copyWith(currentLep: 30));
+        // Identischer Inhalt, nur ein neuer Zeitstempel: darf nicht fragen.
+        await repository.saveHeroState('h-1', state.copyWith(currentLep: 30));
+
+        expect(
+          repository.currentStatus.openConflicts.where(
+            (entry) => entry.objectType == SyncObjectType.heroState,
+          ),
+          isEmpty,
+        );
+      },
+    );
+
     test('conflictDiff vergleicht Offline-Helden mit Konto-Version', () async {
       final local = FakeRepository(
         heroes: <HeroSheet>[hero('h-1', 'Konto Alrik')],
@@ -959,7 +1113,7 @@ class FakeRemoteHeroAndStateSyncGateway extends FakeRemoteHeroSyncGateway
       heroId: heroId,
       state: state,
       revision: revision,
-      contentHash: stableContentHash(state.toJson()),
+      contentHash: heroStateContentHash(state),
       isDeleted: false,
       updatedAt: DateTime.utc(2026, 1, 2, 12, _stateRevisionCounter),
     );

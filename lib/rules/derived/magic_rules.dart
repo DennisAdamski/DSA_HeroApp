@@ -1,4 +1,7 @@
+import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_duration_rules.dart';
 
 // Magie-Regelfunktionen (pure Dart, keine Seiteneffekte).
 //
@@ -438,24 +441,65 @@ String buildAxxeleratusDefenseHint({required bool axxeleratusActive}) {
 
 /// Ergebnis-Typ fuer einen aktiven Zaubereffekt-Chip im Inspector.
 class ActiveSpellEffectChip {
-  const ActiveSpellEffectChip({required this.label, required this.bonusText});
+  /// Erstellt einen Chip; [durationText] bleibt leer ohne Wirkungsdauer.
+  const ActiveSpellEffectChip({
+    required this.effectId,
+    required this.label,
+    required this.bonusText,
+    this.durationText = '',
+    this.isExpired = false,
+  });
+
+  /// Effekt-ID aus `active_spell_rules.dart`.
+  final String effectId;
 
   final String label;
   final String bonusText;
+
+  /// Kompakte Restlaufzeit, z. B. `noch 3 KR`; leer, wenn keine erfasst ist.
+  final String durationText;
+
+  /// `true`, wenn die erfasste Wirkungsdauer abgelaufen ist.
+  final bool isExpired;
 }
 
 /// Beschreibt aktive Zaubereffekte als Chips fuer das Inspector-Panel.
 ///
 /// Nimmt die bereits berechneten Bonus-Werte aus `CombatPreviewStats`
-/// entgegen, damit keine erneute Berechnung noetig ist.
+/// entgegen, damit keine erneute Berechnung noetig ist. [durationsByEffectId]
+/// haengt jedem Chip seine Restlaufzeit an; fehlende Eintraege bedeuten
+/// schlicht "keine Wirkungsdauer erfasst".
 List<ActiveSpellEffectChip> describeActiveSpellEffects({
   required bool axxeleratusActive,
   required int axxIniBonus,
   required int axxPaBaseBonus,
   required int axxAusweichenBonus,
   required int axxTpBonus,
+  bool armatrutzActive = false,
+  int armatrutzRsBonus = 0,
+  bool attributoActive = false,
+  String attributoBonusText = '',
+  Map<String, SpellDuration?> durationsByEffectId =
+      const <String, SpellDuration?>{},
 }) {
   final chips = <ActiveSpellEffectChip>[];
+
+  // Baut einen Chip inklusive Restlaufzeit aus der Effekt-ID.
+  ActiveSpellEffectChip buildChip({
+    required String effectId,
+    required String label,
+    required String bonusText,
+  }) {
+    final duration = durationsByEffectId[effectId];
+    return ActiveSpellEffectChip(
+      effectId: effectId,
+      label: label,
+      bonusText: bonusText,
+      durationText: describeSpellDurationCompact(duration) ?? '',
+      isExpired: duration?.isExpired ?? false,
+    );
+  }
+
   if (axxeleratusActive) {
     final parts = <String>[];
     if (axxIniBonus != 0) parts.add('INI+$axxIniBonus');
@@ -463,7 +507,29 @@ List<ActiveSpellEffectChip> describeActiveSpellEffects({
     if (axxAusweichenBonus != 0) parts.add('AW+$axxAusweichenBonus');
     if (axxTpBonus != 0) parts.add('TP+$axxTpBonus');
     chips.add(
-      ActiveSpellEffectChip(label: 'Axxeleratus', bonusText: parts.join(' ')),
+      buildChip(
+        effectId: activeSpellEffectAxxeleratus,
+        label: 'Axxeleratus',
+        bonusText: parts.join(' '),
+      ),
+    );
+  }
+  if (attributoActive) {
+    chips.add(
+      buildChip(
+        effectId: activeSpellEffectAttributo,
+        label: 'Attributo',
+        bonusText: attributoBonusText,
+      ),
+    );
+  }
+  if (armatrutzActive) {
+    chips.add(
+      buildChip(
+        effectId: activeSpellEffectArmatrutz,
+        label: 'Armatrutz',
+        bonusText: armatrutzRsBonus > 0 ? 'RS+$armatrutzRsBonus' : 'RS+0',
+      ),
     );
   }
   return chips;

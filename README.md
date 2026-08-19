@@ -130,6 +130,10 @@ Technischer Stack:
 - Steigerungsdialog fuer Zauber mit Fremdrepr.-, Hauszauber-, manueller Komplexitaetskorrektur und Lehrmeisterlogik
 - Eigener Ritual-Bereich mit Ritualkategorien, Ritualkenntnissen und Ritualen
 - Pflege magischer Sonderfertigkeiten mit Beschreibung und aktiver Zaubereffekte
+- Laufende Zaubereffekte (Axxeleratus, Attributo, Armatrutz) mit optionaler
+  Wirkungsdauer in Kampfrunden, Spielrunden oder laengeren Zeiteinheiten samt
+  manuellem Countdown; der Armatrutz addiert seinen erzauberten RS zur
+  getragenen Ruestung, ohne Behinderung zu erzeugen
 
 ### Workspace und Regeneration
 

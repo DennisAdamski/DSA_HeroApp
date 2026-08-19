@@ -182,7 +182,10 @@ class HiveHeroRepository implements HeroRepository {
   /// Speichert den Laufzeitzustand eines Helden dauerhaft.
   @override
   Future<void> saveHeroState(String heroId, HeroState state) async {
-    await _statesBox.put(heroId, state.toJson());
+    final stamped = state.lastModified == null
+        ? state.copyWith(lastModified: DateTime.now().toUtc())
+        : state;
+    await _statesBox.put(heroId, stamped.toJson());
   }
 
   /// Gibt alle Stream-Subscriptions und den StreamController frei.

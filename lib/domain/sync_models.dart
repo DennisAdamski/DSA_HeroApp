@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:pointycastle/digests/sha256.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 
 /// Beschreibt die Arten von Nutzerobjekten, die der Konto-Sync verwaltet.
@@ -325,6 +326,17 @@ const Object _copySentinel = Object();
 /// allein keine Sync-Konflikte ausloesen.
 String heroContentHash(HeroSheet hero) {
   final json = hero.toJson()..remove('lastModified');
+  return stableContentHash(json);
+}
+
+/// Erzeugt einen stabilen Content-Hash fuer einen [HeroState].
+///
+/// Schliesst [HeroState.lastModified] aus -- aus demselben Grund wie
+/// [heroContentHash]: Der Zeitstempel wird bei jedem Speichern neu gesetzt und
+/// wuerde sonst bei inhaltlich gleichen Laufzeitwerten einen Konflikt
+/// vortaeuschen.
+String heroStateContentHash(HeroState state) {
+  final json = state.toJson()..remove('lastModified');
   return stableContentHash(json);
 }
 

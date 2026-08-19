@@ -22,10 +22,12 @@ class HeroState {
     this.activeSpellEffects = const ActiveSpellEffectsState(),
     this.wpiZustand = const WundZustand(),
     this.diceLog = const <DiceLogEntry>[],
+    this.lastModified,
   });
 
   const HeroState.empty()
     : schemaVersion = 6,
+      lastModified = null,
       currentLep = 0,
       currentAsp = 0,
       currentKap = 0,
@@ -61,6 +63,15 @@ class HeroState {
   /// Persistiertes Wuerfelprotokoll, neueste Eintraege am Ende der Liste.
   final List<DiceLogEntry> diceLog;
 
+  /// Zeitpunkt der letzten Speicherung, analog zu `HeroSheet.lastModified`.
+  ///
+  /// Rein informativ: Der Wert bleibt aus `heroStateContentHash` und damit aus
+  /// der Konflikterkennung heraus, damit ein blosses Neuspeichern keine Frage
+  /// ausloest. Gebraucht wird er in der Konflikt-UI, die sonst auf beiden
+  /// Seiten `Unbekannt` anzeigt und dem Nutzer die Entscheidung
+  /// "welche Version ist neuer?" ohne Datengrundlage abverlangt.
+  final DateTime? lastModified;
+
   /// Immutable Update fuer Teilmengen des Laufzeitzustands.
   HeroState copyWith({
     int? currentLep,
@@ -74,6 +85,7 @@ class HeroState {
     ActiveSpellEffectsState? activeSpellEffects,
     WundZustand? wpiZustand,
     List<DiceLogEntry>? diceLog,
+    DateTime? lastModified,
   }) {
     return HeroState(
       schemaVersion: schemaVersion,
@@ -88,6 +100,7 @@ class HeroState {
       activeSpellEffects: activeSpellEffects ?? this.activeSpellEffects,
       wpiZustand: wpiZustand ?? this.wpiZustand,
       diceLog: diceLog ?? this.diceLog,
+      lastModified: lastModified ?? this.lastModified,
     );
   }
 
@@ -123,6 +136,8 @@ class HeroState {
       'activeSpellEffects': activeSpellEffects.toJson(),
       'wpiZustand': wpiZustand.toJson(),
       'diceLog': diceLog.map((entry) => entry.toJson()).toList(growable: false),
+      if (lastModified != null)
+        'lastModified': lastModified!.toUtc().toIso8601String(),
     };
   }
 
@@ -160,6 +175,7 @@ class HeroState {
         (json['wpiZustand'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
       diceLog: diceLog,
+      lastModified: DateTime.tryParse(json['lastModified'] as String? ?? ''),
     );
   }
 }
