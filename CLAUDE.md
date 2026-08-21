@@ -102,6 +102,26 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Die adaptive Settings-Navigation wird von `lib/ui/screens/settings_screen.dart`
   orchestriert; wiederverwendbare Teilseiten liegen unter
   `lib/ui/screens/settings/`.
+- Auf einen asynchronen Provider darf **nicht** mit
+  `ref.read(provider.future)` gewartet werden. In Riverpod 3.2 wird diese
+  Future bei einem Fehler nie erfüllt — der Provider geht in `AsyncLoading`
+  **mit** angehängtem Fehler, und auch das `onError` der Future feuert nie;
+  zusätzlich wird ein Provider ohne aktiven Listener nach einer Änderung
+  seiner Abhängigkeiten gar nicht erst neu gebaut. Beides zusammen ergibt
+  einen Ladezustand, der nie endet. Wer warten muss, abonniert stattdessen den
+  `AsyncValue` (`ref.listenManual`) und wertet `error` und `hasValue` aus;
+  Muster: `_awaitCatalogReady` in `lib/ui/screens/heroes_home_screen.dart`.
+  Die Katalogkette in `lib/state/catalog_providers.dart` benutzt weiterhin
+  `await ref.watch(dep.future)` — bewusst: ein `ref.watch(dep)` im
+  Provider-Body macht den Provider rebuild-abhängig und bricht dadurch den
+  Erfolgsfall, sobald niemand lauscht. Fehler in der Kette bleiben deshalb
+  unsichtbar; auffangen muss sie die wartende Stelle per Timeout.
+- Dialoge, die auf dem Root-Navigator liegen, müssen sich **selbst**
+  schließen. Ein `Navigator.pop()` des Aufrufers hinter einem
+  `context.mounted`-Guard genügt nicht: `SyncConflictGate` tauscht den
+  `HeroesHomeScreen` unter der `MaterialApp` aus, die Dialog-Route überlebt
+  das, und ein `canPop: false`-Dialog bleibt dann ohne jeden Schließweg
+  stehen. Wartende Dialoge brauchen zusätzlich Timeout und Abbruch.
 - `Einstellungen > Konto & Sync` steuert optionalen Firebase-Login,
   manuellen Konto-Sync und Konfliktaufloesung. Ohne Login nutzt die App das
   lokale Offline-Profil; mit Login nutzt sie ein getrenntes Profil unter

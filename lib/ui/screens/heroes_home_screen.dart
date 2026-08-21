@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -31,14 +32,77 @@ class HeroesHomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
+  /// Wartezeit, bevor der Vorbereitungsdialog ueberhaupt erscheint.
+  ///
+  /// Ein vorgewaermter Katalog ist sofort da; ein aufblitzender Dialog waere
+  /// stoerender als die kurze Verzoegerung.
+  static const Duration _catalogDialogDelay = Duration(milliseconds: 120);
+
+  /// Obergrenze, ab der ein haengender Ladevorgang als Fehlschlag gilt.
+  static const Duration _catalogTimeout = Duration(seconds: 20);
+
   Future<void>? _catalogPrewarmFuture;
   bool _catalogPrewarmScheduled = false;
 
   // Teilt einen einzigen Katalog-Load zwischen Home-Prewarm und Heldenoeffnung.
+  //
+  // Fehler werden hier bewusst **nicht** mehr geschluckt: Der
+  // Vorbereitungsdialog muss benennen koennen, warum es klemmt. Reine
+  // Vorwaerm-Aufrufe ohne Dialog haengen sich selbst ein `catchError` an.
   Future<void> _startCatalogPrewarm() {
-    return _catalogPrewarmFuture ??= ref
-        .read(rulesCatalogProvider.future)
-        .then<void>((_) {}, onError: (Object error, StackTrace stack) {});
+    return _catalogPrewarmFuture ??= _awaitCatalogReady();
+  }
+
+  /// Wartet, bis der Regelkatalog einen Wert **oder** einen Fehler hat.
+  ///
+  /// Bewusst ueber `listenManual` statt ueber `rulesCatalogProvider.future`.
+  /// In Riverpod 3.2 hat `.future` zwei Eigenschaften, die zusammen genau den
+  /// beobachteten Dauer-Ladebalken erzeugen:
+  ///
+  /// - Scheitert der Provider, geht er in `AsyncLoading` **mit** angehaengtem
+  ///   Fehler, und die Future wird nie erfuellt — auch ihr `onError` feuert
+  ///   nie. Der alte Code konnte den Fehler deshalb gar nicht bemerken.
+  /// - Ohne aktiven Listener wird ein Provider nach einer Aenderung seiner
+  ///   Abhaengigkeiten nicht neu gebaut. Ein `read(...future)` allein haelt
+  ///   die Kette nicht am Leben.
+  ///
+  /// Das Abo loest beides: Es liefert Wert und Fehler, und es haelt die
+  /// Katalogkette so lange aktiv, bis eines von beidem da ist.
+  ///
+  /// [includeCurrentState] muss beim Neuversuch `false` sein: Direkt nach
+  /// `invalidate` traegt der Provider noch den Fehler des Vorlaufs, ein
+  /// sofortiges Auswerten wuerde den Neuversuch also augenblicklich wieder
+  /// als gescheitert melden.
+  Future<void> _awaitCatalogReady({bool includeCurrentState = true}) {
+    final completer = Completer<void>();
+
+    void settle(AsyncValue<RulesCatalog> value) {
+      if (completer.isCompleted) {
+        return;
+      }
+      final error = value.error;
+      if (error != null) {
+        completer.completeError(error, value.stackTrace ?? StackTrace.current);
+      } else if (value.hasValue) {
+        completer.complete();
+      }
+    }
+
+    final subscription = ref.listenManual<AsyncValue<RulesCatalog>>(
+      rulesCatalogProvider,
+      (_, next) => settle(next),
+      fireImmediately: includeCurrentState,
+    );
+    return completer.future.whenComplete(subscription.close);
+  }
+
+  // Verwirft den gemerkten Ladeversuch, damit `Erneut versuchen` tatsaechlich
+  // neu laedt, statt derselben gescheiterten Future erneut zuzuhoeren.
+  Future<void> _retryCatalogPrewarm() {
+    ref.invalidate(rulesCatalogProvider);
+    return _catalogPrewarmFuture = _awaitCatalogReady(
+      includeCurrentState: false,
+    );
   }
 
   // Startet den Katalog erst nach dem ersten sichtbaren Home-Frame.
@@ -51,37 +115,49 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
       if (!mounted) {
         return;
       }
-      unawaited(_startCatalogPrewarm());
+      unawaited(_startCatalogPrewarm().catchError((Object _) {}));
     });
   }
 
-  // Zeigt den Dialog nur, wenn der vorbereitete Katalog spuerbar laenger laedt.
-  Future<void> _waitForCatalogBeforeOpening(BuildContext context) async {
+  /// Wartet auf den Regelkatalog und zeigt bei spuerbarer Wartezeit einen
+  /// Dialog.
+  ///
+  /// Liefert `true`, wenn der Katalog bereit ist, und `false`, wenn der Nutzer
+  /// abgebrochen hat oder der Ladeversuch endgueltig scheiterte.
+  Future<bool> _waitForCatalogBeforeOpening(BuildContext context) async {
     final future = _startCatalogPrewarm();
-    var shouldShowDialog = true;
-    var dialogShown = false;
 
-    unawaited(
-      Future<void>.delayed(const Duration(milliseconds: 120), () {
-        if (!shouldShowDialog || !context.mounted) {
-          return;
-        }
-        dialogShown = true;
-        unawaited(
-          showDialog<void>(
-            context: context,
-            barrierDismissible: false,
-            builder: (_) => const _CatalogPreparationDialog(),
-          ),
-        );
-      }),
-    );
-
-    await future;
-    shouldShowDialog = false;
-    if (dialogShown && context.mounted) {
-      Navigator.of(context, rootNavigator: true).pop();
+    if (await _settlesWithin(future, _catalogDialogDelay)) {
+      try {
+        await future;
+        return true;
+      } on Object {
+        // Fehler gehoert in den Dialog, nicht in ein stilles Nichts.
+      }
     }
+
+    if (!context.mounted) {
+      return false;
+    }
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _CatalogPreparationDialog(
+        task: future,
+        timeout: _catalogTimeout,
+        onRetry: _retryCatalogPrewarm,
+      ),
+    );
+    return result ?? false;
+  }
+
+  /// Meldet, ob [future] innerhalb von [limit] abgeschlossen ist — mit Wert
+  /// oder mit Fehler.
+  static Future<bool> _settlesWithin(Future<void> future, Duration limit) {
+    return Future.any<bool>(<Future<bool>>[
+      future.then<bool>((_) => true, onError: (Object _) => true),
+      Future<bool>.delayed(limit, () => false),
+    ]);
   }
 
   // Buendelt Auswahl, Katalogvorbereitung und Navigation fuer alle Oeffnungspfade.
@@ -90,8 +166,8 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
     if (!context.mounted) {
       return;
     }
-    await _waitForCatalogBeforeOpening(context);
-    if (!context.mounted) {
+    final ready = await _waitForCatalogBeforeOpening(context);
+    if (!ready || !context.mounted) {
       return;
     }
     Navigator.of(context).push(
@@ -126,11 +202,7 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
       } on Exception catch (e) {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e.toString().replaceFirst('Exception: ', ''),
-            ),
-          ),
+          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
         );
       }
     }
@@ -469,27 +541,128 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
   }
 }
 
-class _CatalogPreparationDialog extends StatelessWidget {
-  const _CatalogPreparationDialog();
+/// Blockiert das Oeffnen eines Helden, solange der Regelkatalog laedt.
+///
+/// Der Dialog verwaltet seine Lebensdauer **selbst**, und das ist der Kern
+/// dieser Klasse: Frueher schloss ihn der Aufrufer per `Navigator.pop()`, aber
+/// nur solange dessen `context.mounted` galt. Die Dialog-Route haengt jedoch am
+/// Root-Navigator der `MaterialApp`, waehrend `SyncConflictGate` den
+/// `HeroesHomeScreen` darunter jederzeit austauschen kann. Genau dann blieb ein
+/// `canPop: false`-Dialog ohne Barrier-Tap und ohne Zurueck-Weg stehen — die
+/// App war hart blockiert.
+///
+/// Zusaetzlich endet das Warten nach [timeout], statt unbegrenzt zu drehen.
+class _CatalogPreparationDialog extends StatefulWidget {
+  const _CatalogPreparationDialog({
+    required this.task,
+    required this.timeout,
+    required this.onRetry,
+  });
+
+  /// Laufender Katalog-Ladevorgang.
+  final Future<void> task;
+
+  /// Zeit, nach der ein nicht abgeschlossener Ladevorgang als Fehlschlag gilt.
+  final Duration timeout;
+
+  /// Startet einen echten neuen Ladeversuch und liefert dessen Future.
+  final Future<void> Function() onRetry;
+
+  @override
+  State<_CatalogPreparationDialog> createState() =>
+      _CatalogPreparationDialogState();
+}
+
+class _CatalogPreparationDialogState extends State<_CatalogPreparationDialog> {
+  Object? _error;
+  bool _timedOut = false;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_observe(widget.task));
+  }
+
+  /// Begleitet einen Ladeversuch und schliesst den Dialog bei Erfolg selbst.
+  Future<void> _observe(Future<void> task) async {
+    try {
+      await task.timeout(widget.timeout);
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).pop(true);
+    } on TimeoutException {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _timedOut = true;
+        _error = null;
+      });
+    } on Object catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _timedOut = false;
+        _error = error;
+      });
+    }
+  }
+
+  void _retry() {
+    setState(() {
+      _timedOut = false;
+      _error = null;
+    });
+    unawaited(_observe(widget.onRetry()));
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const PopScope(
-      canPop: false,
-      child: AlertDialog(
-        content: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-            SizedBox(width: 16),
-            Flexible(child: Text('Regelkatalog wird vorbereitet ...')),
-          ],
+    final error = _error;
+    final failed = _timedOut || error != null;
+
+    if (!failed) {
+      return const PopScope(
+        canPop: false,
+        child: AlertDialog(
+          content: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 16),
+              Flexible(child: Text('Regelkatalog wird vorbereitet ...')),
+            ],
+          ),
         ),
+      );
+    }
+
+    return AlertDialog(
+      title: const Text('Regelkatalog nicht bereit'),
+      content: Text(
+        _timedOut
+            ? 'Der Regelkatalog braucht ungewöhnlich lange. Du kannst es '
+                  'erneut versuchen oder abbrechen und später weitermachen.'
+            : 'Der Regelkatalog konnte nicht geladen werden.\n\n$error',
       ),
+      actions: [
+        TextButton(
+          key: const ValueKey<String>('catalog-preparation-cancel'),
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Abbrechen'),
+        ),
+        FilledButton(
+          key: const ValueKey<String>('catalog-preparation-retry'),
+          onPressed: _retry,
+          child: const Text('Erneut versuchen'),
+        ),
+      ],
     );
   }
 }
