@@ -26,10 +26,7 @@ import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/data/cloud_avatar_storage.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart'
-    show
-        avatarFileStorageProvider,
-        avatarThumbnailEncoderProvider,
-        cloudAvatarStorageProvider;
+    show avatarFileStorageProvider, avatarThumbnailEncoderProvider;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
@@ -208,37 +205,41 @@ class HeroActions {
     // Avatar-Bytes laden und base64-kodieren (falls vorhanden)
     String? avatarBase64;
     List<Map<String, dynamic>>? galleryImages;
-    final hasAvatar = hero.appearance.avatarFileName.isNotEmpty;
+    final aktivesBild = hero.appearance.aktivesBild;
     final hasGallery = hero.appearance.avatarGallery.isNotEmpty;
 
-    if (hasAvatar || hasGallery) {
+    if (hasGallery) {
       final heroStoragePath = await _resolveHeroStoragePath();
       final storage = _ref.read(avatarFileStorageProvider);
 
-      if (hasAvatar) {
-        final bytes = await storage.loadAvatarBytes(
-          heroStoragePath: heroStoragePath,
-          avatarFileName: hero.appearance.avatarFileName,
-        );
+      // Ein nicht ladbares Bild darf den Export nie abbrechen: Der Held
+      // selbst ist wichtiger als sein Portraet.
+      Future<List<int>?> loadOrNull(String fileName) async {
+        try {
+          return await storage.loadGalleryImageBytes(
+            heroStoragePath: heroStoragePath,
+            fileName: fileName,
+          );
+        } on Object {
+          return null;
+        }
+      }
+
+      // `avatarBase64` bleibt fuer aeltere Importer befuellt; die Galerie
+      // unten traegt dieselben Bytes noch einmal mit ihren Metadaten.
+      if (aktivesBild != null) {
+        final bytes = await loadOrNull(aktivesBild.fileName);
         if (bytes != null) {
           avatarBase64 = base64Encode(bytes);
         }
       }
 
       // Gallery-Bilder base64-kodiert einbetten
-      if (hasGallery) {
-        galleryImages = [];
-        for (final entry in hero.appearance.avatarGallery) {
-          final bytes = await storage.loadGalleryImageBytes(
-            heroStoragePath: heroStoragePath,
-            fileName: entry.fileName,
-          );
-          if (bytes != null) {
-            galleryImages.add({
-              ...entry.toJson(),
-              'base64': base64Encode(bytes),
-            });
-          }
+      galleryImages = [];
+      for (final entry in hero.appearance.avatarGallery) {
+        final bytes = await loadOrNull(entry.fileName);
+        if (bytes != null) {
+          galleryImages.add({...entry.toJson(), 'base64': base64Encode(bytes)});
         }
       }
     }
@@ -408,23 +409,7 @@ class HeroActions {
       entryId: entryId,
       pngBytes: pngBytes,
     );
-
-    // Legacy-Kompatibilitaet: auch als Haupt-Avatar speichern
-    await storage.saveAvatar(
-      heroStoragePath: heroStoragePath,
-      heroId: heroId,
-      pngBytes: pngBytes,
-    );
-
-    // KI-Bild in den Cloud-Speicher hochladen
-    final cloudStorage = _ref.read(cloudAvatarStorageProvider);
-    if (cloudStorage.isAvailable) {
-      try {
-        await cloudStorage.upload(fileName, pngBytes);
-      } on Object {
-        // Cloud-Upload ist best-effort; lokales Speichern hat Vorrang.
-      }
-    }
+    _requireStoredFileName(fileName);
 
     final entry = AvatarGalleryEntry(
       id: entryId,
@@ -440,7 +425,6 @@ class HeroActions {
     final updatedGallery = [...hero.appearance.avatarGallery, entry];
     final updated = hero.copyWith(
       appearance: hero.appearance.copyWith(
-        avatarFileName: '$heroId.png',
         avatarGallery: updatedGallery,
         aktivesBildId: entryId,
       ),
@@ -453,6 +437,13 @@ class HeroActions {
     required String heroId,
     required List<int> imageBytes,
   }) async {
+    if (imageBytes.length > maxAvatarBildBytes) {
+      final megabytes = (maxAvatarBildBytes / (1024 * 1024)).round();
+      throw Exception(
+        'Das Bild ist zu gross (maximal $megabytes MB). Bitte verkleinere es '
+        'und versuche es erneut.',
+      );
+    }
     final hero = await _loadHeroById(heroId);
     final heroStoragePath = await _resolveHeroStoragePath();
     final storage = _ref.read(avatarFileStorageProvider);
@@ -465,13 +456,7 @@ class HeroActions {
       entryId: entryId,
       pngBytes: imageBytes,
     );
-
-    // Auch als aktiven Avatar setzen
-    await storage.saveAvatar(
-      heroStoragePath: heroStoragePath,
-      heroId: heroId,
-      pngBytes: imageBytes,
-    );
+    _requireStoredFileName(fileName);
 
     final entry = AvatarGalleryEntry(
       id: entryId,
@@ -483,12 +468,24 @@ class HeroActions {
     final updatedGallery = [...hero.appearance.avatarGallery, entry];
     final updated = hero.copyWith(
       appearance: hero.appearance.copyWith(
-        avatarFileName: '$heroId.png',
         avatarGallery: updatedGallery,
         aktivesBildId: entryId,
       ),
     );
     await saveHero(updated);
+  }
+
+  /// Stellt sicher, dass die Ablage einen gueltigen Dateinamen geliefert hat.
+  ///
+  /// Im Web gibt die Ablage ohne angemeldeten Nutzer einen leeren Namen
+  /// zurueck. Ohne diesen Guard entstuende ein Galerie-Eintrag, der auf keine
+  /// Datei zeigt und nie wieder reparierbar waere.
+  void _requireStoredFileName(String fileName) {
+    if (fileName.isNotEmpty) return;
+    throw Exception(
+      'Das Bild konnte nicht gespeichert werden. Bitte melde dich an und '
+      'versuche es erneut.',
+    );
   }
 
   /// Setzt ein Gallery-Bild als Primaerbild und erstellt einen Snapshot.
@@ -576,27 +573,8 @@ class HeroActions {
         .firstOrNull;
     if (entry == null) return;
 
-    final heroStoragePath = await _resolveHeroStoragePath();
-    final storage = _ref.read(avatarFileStorageProvider);
-
-    // Gallery-Bild als Haupt-Avatar kopieren
-    final bytes = await storage.loadGalleryImageBytes(
-      heroStoragePath: heroStoragePath,
-      fileName: entry.fileName,
-    );
-    if (bytes != null) {
-      await storage.saveAvatar(
-        heroStoragePath: heroStoragePath,
-        heroId: heroId,
-        pngBytes: bytes,
-      );
-    }
-
     final updated = hero.copyWith(
-      appearance: hero.appearance.copyWith(
-        avatarFileName: '$heroId.png',
-        aktivesBildId: galleryEntryId,
-      ),
+      appearance: hero.appearance.copyWith(aktivesBildId: galleryEntryId),
     );
     await saveHero(updated);
   }
@@ -618,18 +596,6 @@ class HeroActions {
       heroStoragePath: heroStoragePath,
       fileName: entry.fileName,
     );
-
-    // KI-Bild aus dem Cloud-Speicher entfernen
-    if (entry.quelle == 'ki') {
-      final cloudStorage = _ref.read(cloudAvatarStorageProvider);
-      if (cloudStorage.isAvailable) {
-        try {
-          await cloudStorage.delete(entry.fileName);
-        } on Object {
-          // Best-effort
-        }
-      }
-    }
 
     final updatedGallery = hero.appearance.avatarGallery
         .where((e) => e.id != galleryEntryId)
@@ -686,20 +652,12 @@ class HeroActions {
       );
     }
 
-    // Alle Gallery-Bilder loeschen (lokal und in der Cloud)
-    final cloudStorage = _ref.read(cloudAvatarStorageProvider);
+    // Alle Gallery-Bilder loeschen; die Cloud-Seite erledigt der Decorator.
     for (final entry in hero.appearance.avatarGallery) {
       await storage.deleteGalleryImage(
         heroStoragePath: heroStoragePath,
         fileName: entry.fileName,
       );
-      if (entry.quelle == 'ki' && cloudStorage.isAvailable) {
-        try {
-          await cloudStorage.delete(entry.fileName);
-        } on Object {
-          // Best-effort
-        }
-      }
     }
 
     final updated = hero.copyWith(
@@ -953,14 +911,15 @@ class HeroActions {
   /// Laedt das aktive Avatarbild und reduziert es auf ein kompaktes
   /// Gruppen-Thumbnail fuer Export und Firestore-Sync.
   Future<String?> _loadAvatarThumbnailBase64(HeroSheet hero) async {
-    if (hero.appearance.avatarFileName.isEmpty) return null;
+    final entry = hero.appearance.aktivesBild;
+    if (entry == null) return null;
 
     try {
       final heroStoragePath = await _resolveHeroStoragePath();
       final storage = _ref.read(avatarFileStorageProvider);
-      final avatarBytes = await storage.loadAvatarBytes(
+      final avatarBytes = await storage.loadGalleryImageBytes(
         heroStoragePath: heroStoragePath,
-        avatarFileName: hero.appearance.avatarFileName,
+        fileName: entry.fileName,
       );
       if (avatarBytes == null) return null;
 
