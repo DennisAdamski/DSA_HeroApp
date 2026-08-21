@@ -1,0 +1,17 @@
+[
+  {
+    "origin": [
+      "https://heldensync-ccf0b.web.app",
+      "https://heldensync-ccf0b.firebaseapp.com",
+      "http://localhost:5000"
+    ],
+    "method": ["GET", "HEAD"],
+    "responseHeader": [
+      "Content-Type",
+      "Content-Length",
+      "Content-Range",
+      "Accept-Ranges"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]

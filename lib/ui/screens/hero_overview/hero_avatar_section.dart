@@ -19,51 +19,35 @@ Future<void> _pickAndUploadImage(
 }
 
 class _AvatarDisplay extends ConsumerWidget {
-  const _AvatarDisplay({required this.heroId, required this.avatarFileName});
+  const _AvatarDisplay({required this.heroId, required this.fileName});
 
   final String heroId;
-  final String avatarFileName;
+  final String fileName;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final locationAsync = ref.watch(heroStorageLocationProvider);
-
-    return locationAsync.when(
-      data: (location) {
-        final storage = ref.read(avatarFileStorageProvider);
-        final path = storage.resolveAvatarPath(
-          heroStoragePath: location.effectivePath,
-          avatarFileName: avatarFileName,
-        );
-        return GestureDetector(
-          onTap: () => _openFullscreen(context, path),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 350),
-              child: Image(
-                image: avatarImageFromPath(path),
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return const _SketchedAvatarPlaceholder();
-                },
-              ),
-            ),
+    return GestureDetector(
+      onTap: () => _openFullscreen(context),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 350),
+          child: AvatarGalleryImage(
+            heroId: heroId,
+            fileName: fileName,
+            fit: BoxFit.contain,
+            placeholder: const _SketchedAvatarPlaceholder(),
           ),
-        );
-      },
-      loading: () => const SizedBox(
-        height: 200,
-        child: Center(child: CircularProgressIndicator()),
+        ),
       ),
-      error: (_, _) => const _SketchedAvatarPlaceholder(),
     );
   }
 
-  void _openFullscreen(BuildContext context, String path) {
+  void _openFullscreen(BuildContext context) {
     showDialog<void>(
       context: context,
-      builder: (context) => _AvatarFullscreenDialog(imagePath: path),
+      builder: (context) =>
+          _AvatarFullscreenDialog(heroId: heroId, fileName: fileName),
     );
   }
 }
@@ -253,7 +237,6 @@ class _AvatarAlbumDialog extends ConsumerWidget {
     final gallery = liveHero.appearance.avatarGallery;
     final primaerbildId = liveHero.appearance.primaerbildId;
     final aktivesBildId = liveHero.appearance.aktivesBildId;
-    final locationAsync = ref.watch(heroStorageLocationProvider);
     final snapshotDiff = ref.watch(avatarSnapshotDiffProvider(heroId));
 
     final screenSize = MediaQuery.of(context).size;
@@ -301,41 +284,23 @@ class _AvatarAlbumDialog extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Expanded(
-                child: locationAsync.when(
-                  data: (location) {
-                    final storage = ref.read(avatarFileStorageProvider);
-                    return GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 280,
-                            mainAxisSpacing: 16,
-                            crossAxisSpacing: 16,
-                            childAspectRatio: 0.78,
-                          ),
-                      itemCount: gallery.length,
-                      itemBuilder: (context, index) {
-                        final entry = gallery[index];
-                        final isPrimaer = entry.id == primaerbildId;
-                        final isAktiv = entry.id == aktivesBildId;
-                        final path = storage.resolveAvatarPath(
-                          heroStoragePath: location.effectivePath,
-                          avatarFileName: entry.fileName,
-                        );
-                        return _AlbumCard(
-                          heroId: heroId,
-                          entry: entry,
-                          path: path,
-                          isPrimaer: isPrimaer,
-                          isAktiv: isAktiv,
-                        );
-                      },
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 280,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 0.78,
+                  ),
+                  itemCount: gallery.length,
+                  itemBuilder: (context, index) {
+                    final entry = gallery[index];
+                    return _AlbumCard(
+                      heroId: heroId,
+                      entry: entry,
+                      isPrimaer: entry.id == primaerbildId,
+                      isAktiv: entry.id == aktivesBildId,
                     );
                   },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (_, _) => const Center(
-                    child: Text('Fehler beim Laden der Galerie.'),
-                  ),
                 ),
               ),
             ],
@@ -350,14 +315,12 @@ class _AlbumCard extends ConsumerWidget {
   const _AlbumCard({
     required this.heroId,
     required this.entry,
-    required this.path,
     required this.isPrimaer,
     required this.isAktiv,
   });
 
   final String heroId;
   final AvatarGalleryEntry entry;
-  final String path;
   final bool isPrimaer;
   final bool isAktiv;
 
@@ -374,10 +337,10 @@ class _AlbumCard extends ConsumerWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image(
-                  image: avatarImageFromPath(path),
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
+                child: AvatarGalleryImage(
+                  heroId: heroId,
+                  fileName: entry.fileName,
+                  placeholder: Container(
                     color: colorScheme.surfaceContainerHighest,
                     child: const Icon(Icons.broken_image_outlined, size: 32),
                   ),
@@ -502,7 +465,8 @@ class _AlbumCard extends ConsumerWidget {
   void _openFullscreen(BuildContext context) {
     showDialog<void>(
       context: context,
-      builder: (context) => _AvatarFullscreenDialog(imagePath: path),
+      builder: (context) =>
+          _AvatarFullscreenDialog(heroId: heroId, fileName: entry.fileName),
     );
   }
 
@@ -510,8 +474,7 @@ class _AlbumCard extends ConsumerWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         fullscreenDialog: true,
-        builder: (context) =>
-            _HeaderFocusDialog(heroId: heroId, entry: entry, imagePath: path),
+        builder: (context) => _HeaderFocusDialog(heroId: heroId, entry: entry),
       ),
     );
   }
@@ -543,15 +506,10 @@ class _AlbumCard extends ConsumerWidget {
 }
 
 class _HeaderFocusDialog extends ConsumerStatefulWidget {
-  const _HeaderFocusDialog({
-    required this.heroId,
-    required this.entry,
-    required this.imagePath,
-  });
+  const _HeaderFocusDialog({required this.heroId, required this.entry});
 
   final String heroId;
   final AvatarGalleryEntry entry;
-  final String imagePath;
 
   @override
   ConsumerState<_HeaderFocusDialog> createState() => _HeaderFocusDialogState();
@@ -571,7 +529,9 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
   Size? _imageSize;
   ImageStream? _imageStream;
   ImageStreamListener? _imageStreamListener;
-  late final ImageProvider<Object> _imageProvider;
+  ImageProvider<Object>? _imageProvider;
+  Uint8List? _loadedBytes;
+  bool _resolvingDuringBuild = false;
   PointerDeviceKind _lastPointerKind = PointerDeviceKind.touch;
 
   @override
@@ -582,37 +542,87 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
       widget.entry.headerFocusY ?? 0.5,
     );
     _zoom = (widget.entry.headerZoom ?? 1.0).clamp(_minZoom, _maxZoom);
-    _imageProvider = avatarImageFromPath(widget.imagePath);
+  }
+
+  /// Uebernimmt neu geladene Bytes als Bildquelle.
+  ///
+  /// Wird aus `build` heraus aufgerufen. Das Feld direkt zu setzen ist hier
+  /// richtig: `_imageProvider` und `_imageSize` werden erst weiter unten im
+  /// selben Aufbau gelesen.
+  void _syncImageProvider(Uint8List? bytes) {
+    if (identical(bytes, _loadedBytes)) return;
+    _loadedBytes = bytes;
+    _detachImageStream();
+    _imageSize = null;
+    if (bytes == null || bytes.isEmpty) {
+      _imageProvider = null;
+      return;
+    }
+    _imageProvider = MemoryImage(bytes);
     _resolveImageSize();
   }
 
+  void _detachImageStream() {
+    final stream = _imageStream;
+    final listener = _imageStreamListener;
+    if (stream != null && listener != null) {
+      stream.removeListener(listener);
+    }
+    _imageStream = null;
+    _imageStreamListener = null;
+  }
+
   void _resolveImageSize() {
-    final stream = _imageProvider.resolve(const ImageConfiguration());
+    final provider = _imageProvider;
+    if (provider == null) return;
+    final stream = provider.resolve(const ImageConfiguration());
     final listener = ImageStreamListener((info, _) {
       if (!mounted) return;
-      setState(() {
-        _imageSize = Size(
-          info.image.width.toDouble(),
-          info.image.height.toDouble(),
-        );
-      });
+      _applyImageSize(
+        Size(info.image.width.toDouble(), info.image.height.toDouble()),
+      );
     }, onError: (_, _) {});
     _imageStream = stream;
     _imageStreamListener = listener;
+    // `ImageStreamCompleter.addListener` darf laut Vertrag synchron
+    // zurueckrufen, wenn bereits ein Bild vorliegt. `MemoryImage` dekodiert
+    // derzeit immer verzoegert, waehrend `build` waere `setState` aber
+    // verboten — deshalb die Absicherung ueber `_resolvingDuringBuild`.
+    _resolvingDuringBuild = true;
     stream.addListener(listener);
+    _resolvingDuringBuild = false;
+  }
+
+  void _applyImageSize(Size size) {
+    if (_imageSize == size) return;
+    if (_resolvingDuringBuild) {
+      _imageSize = size;
+      return;
+    }
+    setState(() {
+      _imageSize = size;
+    });
   }
 
   @override
   void dispose() {
-    if (_imageStream != null && _imageStreamListener != null) {
-      _imageStream!.removeListener(_imageStreamListener!);
-    }
+    _detachImageStream();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    _syncImageProvider(
+      ref
+          .watch(
+            avatarBytesProvider((
+              heroId: widget.heroId,
+              fileName: widget.entry.fileName,
+            )),
+          )
+          .valueOrNull,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -764,14 +774,18 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
                 child: Transform.scale(
                   scale: _zoom,
                   alignment: alignment,
-                  child: Image(
-                    image: _imageProvider,
-                    fit: BoxFit.cover,
-                    alignment: alignment,
-                    errorBuilder: (_, _, _) => const Center(
-                      child: Icon(Icons.broken_image_outlined, size: 32),
-                    ),
-                  ),
+                  child: _imageProvider == null
+                      ? const Center(
+                          child: Icon(Icons.broken_image_outlined, size: 32),
+                        )
+                      : Image(
+                          image: _imageProvider!,
+                          fit: BoxFit.cover,
+                          alignment: alignment,
+                          errorBuilder: (_, _, _) => const Center(
+                            child: Icon(Icons.broken_image_outlined, size: 32),
+                          ),
+                        ),
                 ),
               ),
               DecoratedBox(
@@ -903,13 +917,15 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
                 fit: StackFit.expand,
                 children: [
                   Center(
-                    child: Image(
-                      image: _imageProvider,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => const Center(
-                        child: Icon(Icons.broken_image_outlined, size: 40),
-                      ),
-                    ),
+                    child: _imageProvider == null
+                        ? const Icon(Icons.broken_image_outlined, size: 40)
+                        : Image(
+                            image: _imageProvider!,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, _, _) => const Center(
+                              child: Icon(Icons.broken_image_outlined, size: 40),
+                            ),
+                          ),
                   ),
                   if (fittedRect != null)
                     Positioned(
@@ -986,9 +1002,13 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
 // ---------------------------------------------------------------------------
 
 class _AvatarFullscreenDialog extends StatelessWidget {
-  const _AvatarFullscreenDialog({required this.imagePath});
+  const _AvatarFullscreenDialog({
+    required this.heroId,
+    required this.fileName,
+  });
 
-  final String imagePath;
+  final String heroId;
+  final String fileName;
 
   @override
   Widget build(BuildContext context) {
@@ -999,11 +1019,11 @@ class _AvatarFullscreenDialog extends StatelessWidget {
             child: InteractiveViewer(
               minScale: 0.5,
               maxScale: 4.0,
-              child: Image(
-                image: avatarImageFromPath(imagePath),
+              child: AvatarGalleryImage(
+                heroId: heroId,
+                fileName: fileName,
                 fit: BoxFit.contain,
-                errorBuilder: (_, _, _) =>
-                    const Icon(Icons.broken_image_outlined, size: 64),
+                placeholder: const Icon(Icons.broken_image_outlined, size: 64),
               ),
             ),
           ),

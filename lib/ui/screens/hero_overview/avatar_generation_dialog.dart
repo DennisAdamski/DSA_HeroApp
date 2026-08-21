@@ -1,4 +1,3 @@
-import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_image_evict.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -11,7 +10,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/avatar_prompt_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_snapshot_diff.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 
 /// Dialog fuer die KI-basierte Portraet-Generierung.
 class AvatarGenerationDialog extends ConsumerStatefulWidget {
@@ -480,16 +478,9 @@ class _AvatarGenerationDialogState
       );
       if (!mounted) return;
 
-      // Flutter cached Image.file() nach Dateipfad — bei Neugenerierung
-      // wuerde sonst das alte Bild angezeigt. Daher gezielt evicten.
-      final location =
-          await ref.read(heroStorageLocationProvider.future);
-      final storage = ref.read(avatarFileStorageProvider);
-      final path = storage.resolveAvatarPath(
-        heroStoragePath: location.effectivePath,
-        avatarFileName: '${widget.heroId}.png',
-      );
-      await evictAvatarImage(path);
+      // Der Byte-Provider cached pro Dateiname; ohne Invalidierung zeigte die
+      // Uebersicht nach dem Generieren weiter das vorherige Bild.
+      ref.invalidate(activeAvatarBytesProvider(widget.heroId));
 
       if (!mounted) return;
       Navigator.pop(context);

@@ -1,10 +1,13 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/data/avatar_api_client.dart';
+import 'package:dsa_heldenverwaltung/data/avatar_backfill_service.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_file_storage.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_thumbnail_encoder.dart';
 import 'package:dsa_heldenverwaltung/data/cloud_avatar_storage.dart';
-import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
+import 'package:dsa_heldenverwaltung/data/syncing_avatar_storage.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_snapshot_diff.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -30,8 +33,20 @@ final avatarEstimatedCostProvider = Provider<double?>((ref) {
 });
 
 /// Avatar-Dateispeicherung.
+///
+/// Auf Plattformen mit lokalem Dateisystem wird die Ablage in
+/// [SyncingAvatarStorage] gewickelt, damit Bilder zusaetzlich in der Cloud
+/// landen und von dort nachgeladen werden koennen. Im Web ist die
+/// Plattformimplementierung bereits der Cloud-Speicher.
 final avatarFileStorageProvider = Provider<AvatarFileStorage>((ref) {
-  return const AvatarFileStorage();
+  final platform = createAvatarFileStorage();
+  if (platform.isCloudBacked) {
+    return platform;
+  }
+  return SyncingAvatarStorage(
+    local: platform,
+    cloud: ref.watch(cloudAvatarStorageProvider),
+  );
 });
 
 /// Erzeugt kompakte PNG-Thumbnails fuer Gruppen-Sync und -Export.
@@ -39,18 +54,25 @@ final avatarThumbnailEncoderProvider = Provider<AvatarThumbnailEncoder>((ref) {
   return const AvatarThumbnailEncoder();
 });
 
-/// Cloud-Speicher fuer KI-generierte Avatarbilder.
+/// Ergebnis des letzten Avatar-Backfills, oder `null` wenn keiner lief.
+///
+/// Wird von `AppStartupGate` per Override befuellt. Ohne diese Anzeige ist im
+/// Release-Build nicht feststellbar, ob der Abgleich lief — genau die Frage,
+/// die beim leeren Web-Album aufkam.
+final avatarBackfillReportProvider = Provider<AvatarBackfillReport?>((ref) {
+  return null;
+});
+
+/// Cloud-Speicher fuer Avatarbilder.
 final cloudAvatarStorageProvider = Provider<CloudAvatarStorage>((ref) {
-  return const CloudAvatarStorage();
+  return const FirebaseCloudAvatarStorage();
 });
 
 /// Anzahl der KI-generierten Bilder eines bestimmten Helden.
 final kiImageCountProvider = Provider.family<int, String>((ref, heroId) {
   final hero = ref.watch(heroByIdProvider(heroId));
   if (hero == null) return 0;
-  return hero.appearance.avatarGallery
-      .where((e) => e.quelle == 'ki')
-      .length;
+  return hero.appearance.avatarGallery.where((e) => e.quelle == 'ki').length;
 });
 
 /// Aktuelle Anzahl der Helden des Nutzers.
@@ -64,8 +86,32 @@ final avatarSupportsReferenceProvider = Provider<bool>((ref) {
   return ref.watch(avatarApiClientProvider)?.supportsReferenceImage ?? false;
 });
 
+/// Laedt die PNG-Bytes einer einzelnen Avatar-Datei.
+///
+/// Bewusst `Uint8List` statt `List<int>`: `MemoryImage` vergleicht seine Bytes
+/// per Identitaet. Wer die Instanz aus diesem Provider unveraendert an
+/// `Image.memory` weiterreicht, trifft den globalen `ImageCache`; ein
+/// `Uint8List.fromList(...)` im Widget wuerde ihn bei jedem Rebuild verfehlen
+/// und das PNG neu dekodieren.
+///
+/// Liefert `null` statt zu werfen, damit fehlende Bilder im Platzhalter
+/// landen.
+final avatarBytesProvider =
+    FutureProvider.family<Uint8List?, ({String heroId, String fileName})>((
+      ref,
+      args,
+    ) async {
+      if (args.fileName.isEmpty) return null;
+      final location = await ref.watch(heroStorageLocationProvider.future);
+      final storage = ref.watch(avatarFileStorageProvider);
+      return storage.loadGalleryImageBytes(
+        heroStoragePath: location.effectivePath,
+        fileName: args.fileName,
+      );
+    });
+
 /// Laedt die PNG-Bytes des Primaerbilds eines Helden.
-final primaerbildBytesProvider = FutureProvider.family<List<int>?, String>((
+final primaerbildBytesProvider = FutureProvider.family<Uint8List?, String>((
   ref,
   heroId,
 ) async {
@@ -80,49 +126,24 @@ final primaerbildBytesProvider = FutureProvider.family<List<int>?, String>((
       .firstOrNull;
   if (entry == null) return null;
 
-  final location = await ref.read(heroStorageLocationProvider.future);
-  final storage = ref.read(avatarFileStorageProvider);
-  return storage.loadGalleryImageBytes(
-    heroStoragePath: location.effectivePath,
-    fileName: entry.fileName,
+  return ref.watch(
+    avatarBytesProvider((heroId: heroId, fileName: entry.fileName)).future,
   );
 });
 
 /// Laedt die PNG-Bytes des aktiv angezeigten Bildes (Header + Uebersicht).
 ///
-/// Fallbacks: aktivesBildId -> Match auf avatarFileName -> Primaerbild.
-final activeAvatarBytesProvider = FutureProvider.family<List<int>?, String>((
+/// Die Fallback-Kette steckt in `HeroAppearance.aktivesBild`.
+final activeAvatarBytesProvider = FutureProvider.family<Uint8List?, String>((
   ref,
   heroId,
 ) async {
   final hero = ref.watch(heroByIdProvider(heroId));
-  if (hero == null) return null;
-
-  final gallery = hero.appearance.avatarGallery;
-  if (gallery.isEmpty) return null;
-
-  AvatarGalleryEntry? entry;
-  final aktivesBildId = hero.appearance.aktivesBildId;
-  if (aktivesBildId.isNotEmpty) {
-    entry = gallery.where((e) => e.id == aktivesBildId).firstOrNull;
-  }
-  if (entry == null && hero.appearance.avatarFileName.isNotEmpty) {
-    entry = gallery
-        .where((e) => e.fileName == hero.appearance.avatarFileName)
-        .firstOrNull;
-  }
-  if (entry == null && hero.appearance.primaerbildId.isNotEmpty) {
-    entry = gallery
-        .where((e) => e.id == hero.appearance.primaerbildId)
-        .firstOrNull;
-  }
+  final entry = hero?.appearance.aktivesBild;
   if (entry == null) return null;
 
-  final location = await ref.read(heroStorageLocationProvider.future);
-  final storage = ref.read(avatarFileStorageProvider);
-  return storage.loadGalleryImageBytes(
-    heroStoragePath: location.effectivePath,
-    fileName: entry.fileName,
+  return ref.watch(
+    avatarBytesProvider((heroId: heroId, fileName: entry.fileName)).future,
   );
 });
 

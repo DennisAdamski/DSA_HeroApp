@@ -52,7 +52,7 @@ import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_generation_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_image_evict.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/nachteil_abbau_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
@@ -494,7 +494,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
           valueListenable: _viewRevision,
           builder: (context, revision, child) {
             final overviewChildren = <Widget>[
-              if (hero.appearance.avatarFileName.isEmpty) ...[
+              if (!hero.appearance.hatBild) ...[
                 _NoAvatarActions(heroId: hero.id, hero: hero),
                 const SizedBox(height: _sectionSpacing),
               ],

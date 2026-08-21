@@ -138,26 +138,7 @@ class WorkspaceHeroHeader extends ConsumerWidget {
   AvatarGalleryEntry? _resolveActiveEntry(HeroSheet hero) {
     final gallery = hero.appearance.avatarGallery;
     if (gallery.isEmpty) return null;
-
-    final aktivesBildId = hero.appearance.aktivesBildId;
-    if (aktivesBildId.isNotEmpty) {
-      for (final entry in gallery) {
-        if (entry.id == aktivesBildId) return entry;
-      }
-    }
-    final avatarFileName = hero.appearance.avatarFileName;
-    if (avatarFileName.isNotEmpty) {
-      for (final entry in gallery) {
-        if (entry.fileName == avatarFileName) return entry;
-      }
-    }
-    final primaerbildId = hero.appearance.primaerbildId;
-    if (primaerbildId.isNotEmpty) {
-      for (final entry in gallery) {
-        if (entry.id == primaerbildId) return entry;
-      }
-    }
-    return null;
+    return hero.appearance.aktivesBild;
   }
 
   String _roleText(HeroSheet hero) {
@@ -187,7 +168,7 @@ class _WorkspaceHeroPortrait extends StatelessWidget {
 
   final String heroName;
   final AvatarGalleryEntry? activeEntry;
-  final AsyncValue<List<int>?> portraitBytesAsync;
+  final AsyncValue<Uint8List?> portraitBytesAsync;
   final double width;
   final double height;
 
@@ -233,7 +214,7 @@ class _WorkspaceHeroPortrait extends StatelessWidget {
 class _HeaderPortraitImage extends StatelessWidget {
   const _HeaderPortraitImage({required this.bytes, required this.activeEntry});
 
-  final List<int> bytes;
+  final Uint8List bytes;
   final AvatarGalleryEntry? activeEntry;
 
   @override
@@ -251,7 +232,7 @@ class _HeaderPortraitImage extends StatelessWidget {
             scale: zoom,
             alignment: alignment,
             child: Image.memory(
-              Uint8List.fromList(bytes),
+              bytes,
               key: const ValueKey<String>('workspace-header-portrait-image'),
               fit: BoxFit.cover,
               alignment: alignment,
