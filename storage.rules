@@ -1,8 +1,19 @@
 rules_version = '2';
+
 service firebase.storage {
   match /b/{bucket}/o {
+    // Avatarbilder gehoeren ausschliesslich ihrem Konto.
+    //
+    // `delete` steht bewusst getrennt von `write`: Bei einer Loeschung ist
+    // `request.resource` null, eine Groessenbedingung in `write` wuerde also
+    // jedes Loeschen blockieren.
     match /avatars/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, delete: if request.auth != null
+                          && request.auth.uid == userId;
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   && request.resource.size < 8 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
     }
   }
 }

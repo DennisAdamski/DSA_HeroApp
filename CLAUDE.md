@@ -102,6 +102,26 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Die adaptive Settings-Navigation wird von `lib/ui/screens/settings_screen.dart`
   orchestriert; wiederverwendbare Teilseiten liegen unter
   `lib/ui/screens/settings/`.
+- Auf einen asynchronen Provider darf **nicht** mit
+  `ref.read(provider.future)` gewartet werden. In Riverpod 3.2 wird diese
+  Future bei einem Fehler nie erfüllt — der Provider geht in `AsyncLoading`
+  **mit** angehängtem Fehler, und auch das `onError` der Future feuert nie;
+  zusätzlich wird ein Provider ohne aktiven Listener nach einer Änderung
+  seiner Abhängigkeiten gar nicht erst neu gebaut. Beides zusammen ergibt
+  einen Ladezustand, der nie endet. Wer warten muss, abonniert stattdessen den
+  `AsyncValue` (`ref.listenManual`) und wertet `error` und `hasValue` aus;
+  Muster: `_awaitCatalogReady` in `lib/ui/screens/heroes_home_screen.dart`.
+  Die Katalogkette in `lib/state/catalog_providers.dart` benutzt weiterhin
+  `await ref.watch(dep.future)` — bewusst: ein `ref.watch(dep)` im
+  Provider-Body macht den Provider rebuild-abhängig und bricht dadurch den
+  Erfolgsfall, sobald niemand lauscht. Fehler in der Kette bleiben deshalb
+  unsichtbar; auffangen muss sie die wartende Stelle per Timeout.
+- Dialoge, die auf dem Root-Navigator liegen, müssen sich **selbst**
+  schließen. Ein `Navigator.pop()` des Aufrufers hinter einem
+  `context.mounted`-Guard genügt nicht: `SyncConflictGate` tauscht den
+  `HeroesHomeScreen` unter der `MaterialApp` aus, die Dialog-Route überlebt
+  das, und ein `canPop: false`-Dialog bleibt dann ohne jeden Schließweg
+  stehen. Wartende Dialoge brauchen zusätzlich Timeout und Abbruch.
 - `Einstellungen > Konto & Sync` steuert optionalen Firebase-Login,
   manuellen Konto-Sync und Konfliktaufloesung. Ohne Login nutzt die App das
   lokale Offline-Profil; mit Login nutzt sie ein getrenntes Profil unter
@@ -119,6 +139,79 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Konto-Profil (`lib/data/hive_offline_hero_review_store.dart`). Der Offline-Held
   selbst wird nie gelöscht. Widerrufbar unter
   `Einstellungen > Konto & Sync > Offline-Helden`.
+- Avatar-Bilddateien synchronisiert der Konto-Sync **nicht** mit: sein Payload
+  ist `HeroSheet.toJson()` und trägt nur Dateinamen. Die Bytes wandern über
+  Firebase Storage (`avatars/{uid}/{fileName}`). `SyncingAvatarStorage`
+  (`lib/data/syncing_avatar_storage.dart`) legt sich dafür um die
+  plattformspezifische `AvatarFileStorage`: schreiben local-first mit
+  Best-Effort-Upload, lesen mit Cloud-Fallback samt lokalem Cachen. Ob der
+  Decorator greift, entscheidet `AvatarFileStorage.isCloudBacked` — im Web ist
+  die Plattformimplementierung selbst der Cloud-Speicher, dort wäre er ein
+  doppelter Weg. Löschen betrifft immer beide Seiten und alle Quellen; die
+  frühere Sonderbehandlung von `quelle == 'ki'` gibt es nicht mehr.
+- Bestandsbilder holt `AvatarBackfillService`
+  (`lib/data/avatar_backfill_service.dart`) nach, angestoßen in
+  `AppStartupGate` **nach** `syncNow()` und ohne `await`. Die Reihenfolge ist
+  korrektheitsrelevant: vor dem Sync wäre die lokale Galerie veraltet, und ein
+  auf einem anderen Gerät gelöschtes Bild käme wieder hoch. Der Service darf
+  **nie** `saveHero()` aufrufen — das änderte `lastModified` und löste bei
+  jedem Start eine Konfliktwelle aus. Abgeglichene Dateien vermerkt die Box
+  `avatar_sync_v1` (`lib/data/hive_avatar_sync_marker_store.dart`); sie liegt
+  im Kontoprofil, weil der `avatare`-Ordner bewusst profilübergreifend geteilt
+  bleibt (eine Umstellung auf `accounts/<uid>/avatare/` würde jeden
+  Bestandsavatar unsichtbar machen).
+- Dateinamen dürfen nie aus `heroId` und `entryId` rekonstruiert werden:
+  Bestandshelden tragen den Legacy-Eintrag `{heroId}_legacy` mit dem Dateinamen
+  `{heroId}.png`, der dabei verlorenginge. Maßgeblich ist immer
+  `AvatarGalleryEntry.fileName`.
+- Ob ein Held ein Bild hat, beantwortet `HeroAppearance.hatBild`, welches
+  angezeigt wird `HeroAppearance.aktivesBild`. `avatarFileName` bleibt als
+  Bestandsfeld im Modell (Entfernen erzeugte auf jedem Gerät einen Helden-Diff
+  und damit Konflikte), wird aber nicht mehr gelesen. Bilder rendert
+  ausschließlich `AvatarGalleryImage`
+  (`lib/ui/widgets/avatar_gallery_image.dart`) über `avatarBytesProvider`. Die
+  Bytes sind `Uint8List` und müssen unverändert an `Image.memory` gereicht
+  werden — ein `Uint8List.fromList(...)` im Widget verfehlt den globalen
+  `ImageCache` bei jedem Rebuild, weil `MemoryImage` seine Bytes per Identität
+  vergleicht.
+- Ein fehlgeschlagener Bildzugriff darf nie stumm als „kein Bild" erscheinen.
+  `AvatarLoadException` (`lib/data/avatar_load_failure.dart`) trägt den Grund
+  (nicht angemeldet, keine Berechtigung, zu groß, Netzwerk, unbekannt);
+  `AvatarGalleryImage` zeigt Laden, Fehlen und Fehlschlag als drei getrennte
+  Zustände. Nur echtes `object-not-found` liefert weiterhin `null`. Wichtig für
+  Web: `firebase_storage_web` lädt die Bytes nicht über das JS-SDK, sondern per
+  `getMetadata()` → `getDownloadURL()` → `http.readBytes`, und `guard()` reicht
+  alles außer Firebase-Fehlern unverändert durch — ein reines
+  `on FirebaseException` verpasst deshalb Netzwerk- und Typfehler.
+- Die Web-App läuft bewusst auch ohne Login (`WebAuthGate` reicht `null` durch).
+  Ohne Konto gibt es keinen Cloud-Pfad und damit keine Avatarbilder.
+- Beim lokalen Web-Debuggen ist `flutter run -d chrome --web-port=5000`
+  **Pflicht**, nicht Komfort: Firebase Auth und Hive persistieren pro Origin,
+  und die CORS-Regel des Storage-Buckets nennt genau diesen Port. Ein
+  zufälliger Port bedeutet abgemeldete Sitzung, leeren Speicher **und**
+  blockierte Bilder.
+- Der Storage-Bucket braucht eine **CORS-Konfiguration**, sonst sind Avatare im
+  Web unsichtbar. `firebase_storage_web.getData()` lädt die Bytes per
+  `http.readBytes` von der Download-URL — ein normaler Browser-Fetch. Diese
+  Antwort trägt ohne Bucket-Konfiguration kein `Access-Control-Allow-Origin`,
+  der Browser verwirft sie, und es kommt nur `ClientException: Failed to fetch`
+  an. Achtung bei der Diagnose: Eine `OPTIONS`-Anfrage auf dieselbe URL
+  antwortet mit `Access-Control-Allow-Origin: *` (Upload-Server) und führt in
+  die Irre — geprüft werden muss der **GET**. Die Konfiguration liegt als
+  `cors.json` im Repo und wird **nicht** von `firebase deploy` übertragen,
+  sondern mit
+  `gsutil cors set cors.json gs://heldensync-ccf0b.firebasestorage.app`
+  (z. B. in der Google Cloud Shell). Neue Origins müssen dort ergänzt werden;
+  GCS erlaubt keine Wildcard innerhalb einer Origin.
+- Im Web liegen geladene Avatarbytes zusätzlich in der Hive-Box
+  `avatar_blobs_v1` (IndexedDB, `lib/data/hive_avatar_blob_cache.dart`), damit
+  ein Reload sie nicht erneut herunterlädt. Der Cache ist inhaltsadressiert und
+  kann nicht veralten, weil `AvatarGalleryEntry.fileName` eine UUID trägt;
+  aufzuräumen sind nur verwaiste Einträge, das erledigt
+  `AvatarCacheReconciler` beim Start nach `syncNow()`. Bewusst **kein**
+  `SyncingAvatarStorage` im Web: dort gilt der lokale Write als Erfolg, aber
+  IndexedDB ist kein haltbarer Speicher — im Browser zählt ein Bild erst als
+  gespeichert, wenn der Upload durch ist.
 - Inhaltlich identische Datensätze sind aber kein Konflikt: `isSyncContentIdentical`
   (`lib/domain/sync_object_diff.dart`) entscheidet das mit derselben Logik wie
   die Konflikt-UI (umsortierte Listen, `lastModified`/`schemaVersion` zählen als

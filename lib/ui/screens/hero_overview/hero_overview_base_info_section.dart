@@ -2,9 +2,9 @@ part of 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 
 extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
   Widget _buildBaseInfoSection(HeroSheet hero) {
-    final hasAvatar = hero.appearance.avatarFileName.isNotEmpty;
+    final aktivesBild = hero.appearance.aktivesBild;
 
-    if (!hasAvatar) {
+    if (aktivesBild == null) {
       return _SectionCard(
         title: 'Basisinformationen',
         child: Column(
@@ -28,16 +28,20 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 1000;
           if (isWide) {
-            return _buildWideAvatarBaseInfo(hero, constraints);
+            return _buildWideAvatarBaseInfo(hero, aktivesBild, constraints);
           }
-          return _buildNarrowAvatarBaseInfo(hero);
+          return _buildNarrowAvatarBaseInfo(hero, aktivesBild);
         },
       ),
     );
   }
 
   /// Breites Layout: Feldgrid links, Avatar rechts.
-  Widget _buildWideAvatarBaseInfo(HeroSheet hero, BoxConstraints constraints) {
+  Widget _buildWideAvatarBaseInfo(
+    HeroSheet hero,
+    AvatarGalleryEntry aktivesBild,
+    BoxConstraints constraints,
+  ) {
     final avatarWidth = (constraints.maxWidth * 0.25).clamp(150.0, 280.0);
 
     return Column(
@@ -56,7 +60,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
                 children: [
                   _AvatarDisplay(
                     heroId: widget.heroId,
-                    avatarFileName: hero.appearance.avatarFileName,
+                    fileName: aktivesBild.fileName,
                   ),
                   const SizedBox(height: 8),
                   _HasAvatarActions(heroId: widget.heroId, hero: hero),
@@ -70,7 +74,10 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
   }
 
   /// Schmales Layout mit Avatar: Bild oben, dann Felder.
-  Widget _buildNarrowAvatarBaseInfo(HeroSheet hero) {
+  Widget _buildNarrowAvatarBaseInfo(
+    HeroSheet hero,
+    AvatarGalleryEntry aktivesBild,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -81,7 +88,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
             constraints: const BoxConstraints(maxWidth: 250),
             child: _AvatarDisplay(
               heroId: widget.heroId,
-              avatarFileName: hero.appearance.avatarFileName,
+              fileName: aktivesBild.fileName,
             ),
           ),
         ),
