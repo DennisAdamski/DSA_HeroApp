@@ -377,6 +377,193 @@ void main() {
       findsOneWidget,
     );
   });
+
+  // Der eigentliche Regressionsfall: `SyncConflictGate` tauscht den Home-Screen
+  // unter der Dialog-Route aus, die am Root-Navigator haengt. Frueher schloss
+  // niemand mehr den `canPop: false`-Dialog — die App war hart blockiert.
+  testWidgets(
+    'preparation dialog closes itself when the home screen is swapped out',
+    (tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(700, 900);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final repo = FakeRepository(heroes: [hero], states: const {});
+      final catalogCompleter = Completer<RulesCatalog>();
+      final swapped = ValueNotifier<bool>(false);
+      addTearDown(swapped.dispose);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            heroRepositoryProvider.overrideWithValue(repo),
+            rulesCatalogProvider.overrideWith((ref) => catalogCompleter.future),
+          ],
+          child: MaterialApp(
+            home: ValueListenableBuilder<bool>(
+              valueListenable: swapped,
+              builder: (context, isSwapped, _) => isSwapped
+                  ? const Scaffold(body: Center(child: Text('Konflikte')))
+                  : const HeroesHomeScreen(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Rondra').first);
+      await tester.pump(const Duration(milliseconds: 130));
+      expect(find.text('Regelkatalog wird vorbereitet ...'), findsOneWidget);
+
+      // Home-Screen unter dem Dialog austauschen, dann Katalog liefern.
+      swapped.value = true;
+      await tester.pump();
+      catalogCompleter.complete(catalog);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Regelkatalog wird vorbereitet ...'), findsNothing);
+      expect(find.text('Konflikte'), findsOneWidget);
+    },
+  );
+
+  testWidgets('preparation dialog offers a way out when the catalog hangs', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = const Size(700, 900);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repo = FakeRepository(heroes: [hero], states: const {});
+    final catalogCompleter = Completer<RulesCatalog>();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) => catalogCompleter.future),
+        ],
+        child: const MaterialApp(home: HeroesHomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Rondra').first);
+    await tester.pump(const Duration(milliseconds: 130));
+    expect(find.text('Regelkatalog wird vorbereitet ...'), findsOneWidget);
+
+    // Timeout abwarten: der Dialog wird bedienbar statt endlos zu drehen.
+    await tester.pump(const Duration(seconds: 21));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Regelkatalog wird vorbereitet ...'), findsNothing);
+    expect(find.text('Regelkatalog nicht bereit'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('catalog-preparation-cancel')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Regelkatalog nicht bereit'), findsNothing);
+    expect(
+      find.byKey(const ValueKey<String>('workspace-back-button')),
+      findsNothing,
+      reason: 'ohne Katalog darf der Workspace nicht geoeffnet werden',
+    );
+
+    catalogCompleter.complete(catalog);
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('preparation dialog names the reason when the catalog fails', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = const Size(700, 900);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repo = FakeRepository(heroes: [hero], states: const {});
+    final catalogCompleter = Completer<RulesCatalog>();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) => catalogCompleter.future),
+        ],
+        child: const MaterialApp(home: HeroesHomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Rondra').first);
+    await tester.pump(const Duration(milliseconds: 130));
+    expect(find.text('Regelkatalog wird vorbereitet ...'), findsOneWidget);
+
+    catalogCompleter.completeError(
+      const FormatException('Katalog kaputt'),
+      StackTrace.empty,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Regelkatalog nicht bereit'), findsOneWidget);
+    expect(find.textContaining('Katalog kaputt'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('catalog-preparation-cancel')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Regelkatalog nicht bereit'), findsNothing);
+  });
+
+  testWidgets('preparation dialog can retry a failed catalog load', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = const Size(700, 900);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repo = FakeRepository(heroes: [hero], states: const {});
+    var attempt = 0;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) {
+            attempt++;
+            return attempt == 1
+                ? Future<RulesCatalog>.error(
+                    const FormatException('erster Versuch'),
+                    StackTrace.empty,
+                  )
+                : Future<RulesCatalog>.value(catalog);
+          }),
+        ],
+        child: const MaterialApp(home: HeroesHomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Rondra').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Regelkatalog nicht bereit'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('catalog-preparation-retry')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Regelkatalog nicht bereit'), findsNothing);
+    expect(
+      find.byKey(const ValueKey<String>('workspace-back-button')),
+      findsOneWidget,
+      reason: 'nach erfolgreichem Neuversuch muss der Workspace oeffnen',
+    );
+  });
 }
 
 void _noopBool(bool value) {}

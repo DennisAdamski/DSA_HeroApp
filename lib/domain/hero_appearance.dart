@@ -42,6 +42,34 @@ class HeroAppearance {
   /// Heldendaten-Snapshot zum Zeitpunkt der Primaerbild-Festlegung.
   final AvatarSnapshot? avatarSnapshot;
 
+  /// Ob dem Helden mindestens ein Bild zugeordnet ist.
+  ///
+  /// Massgeblich ist allein die Galerie. [avatarFileName] bleibt als
+  /// Bestandsfeld erhalten, wird aber nicht mehr als Vorhandensein gewertet.
+  bool get hatBild => avatarGallery.isNotEmpty;
+
+  /// Der aktuell sichtbare Galerie-Eintrag, oder `null` ohne Bild.
+  ///
+  /// Fallback-Kette: [aktivesBildId], dann Treffer auf [avatarFileName]
+  /// (Bestandshelden), dann [primaerbildId]. Diese Reihenfolge muss mit
+  /// `activeAvatarBytesProvider` uebereinstimmen.
+  AvatarGalleryEntry? get aktivesBild {
+    if (avatarGallery.isEmpty) return null;
+    if (aktivesBildId.isNotEmpty) {
+      final match = avatarGallery.where((e) => e.id == aktivesBildId);
+      if (match.isNotEmpty) return match.first;
+    }
+    if (avatarFileName.isNotEmpty) {
+      final match = avatarGallery.where((e) => e.fileName == avatarFileName);
+      if (match.isNotEmpty) return match.first;
+    }
+    if (primaerbildId.isNotEmpty) {
+      final match = avatarGallery.where((e) => e.id == primaerbildId);
+      if (match.isNotEmpty) return match.first;
+    }
+    return null;
+  }
+
   HeroAppearance copyWith({
     String? geschlecht,
     String? alter,
@@ -68,28 +96,29 @@ class HeroAppearance {
       avatarGallery: avatarGallery ?? this.avatarGallery,
       primaerbildId: primaerbildId ?? this.primaerbildId,
       aktivesBildId: aktivesBildId ?? this.aktivesBildId,
-      avatarSnapshot:
-          avatarSnapshot != null ? avatarSnapshot() : this.avatarSnapshot,
+      avatarSnapshot: avatarSnapshot != null
+          ? avatarSnapshot()
+          : this.avatarSnapshot,
     );
   }
 
   /// Serialisiert als flache Map (Felder auf Root-Ebene).
   Map<String, dynamic> toJson() => {
-        'geschlecht': geschlecht,
-        'alter': alter,
-        'groesse': groesse,
-        'gewicht': gewicht,
-        'haarfarbe': haarfarbe,
-        'augenfarbe': augenfarbe,
-        'aussehen': aussehen,
-        'avatarFileName': avatarFileName,
-        'avatarGallery':
-            avatarGallery.map((e) => e.toJson()).toList(growable: false),
-        'primaerbildId': primaerbildId,
-        'aktivesBildId': aktivesBildId,
-        if (avatarSnapshot != null)
-          'avatarSnapshot': avatarSnapshot!.toJson(),
-      };
+    'geschlecht': geschlecht,
+    'alter': alter,
+    'groesse': groesse,
+    'gewicht': gewicht,
+    'haarfarbe': haarfarbe,
+    'augenfarbe': augenfarbe,
+    'aussehen': aussehen,
+    'avatarFileName': avatarFileName,
+    'avatarGallery': avatarGallery
+        .map((e) => e.toJson())
+        .toList(growable: false),
+    'primaerbildId': primaerbildId,
+    'aktivesBildId': aktivesBildId,
+    if (avatarSnapshot != null) 'avatarSnapshot': avatarSnapshot!.toJson(),
+  };
 
   /// Liest aus einer flachen Map (Felder auf Root-Ebene).
   static HeroAppearance fromJson(Map<String, dynamic> json) {
@@ -141,7 +170,8 @@ class HeroAppearance {
       }
     }
 
-    final rawSnapshot = (json['avatarSnapshot'] as Map?)?.cast<String, dynamic>();
+    final rawSnapshot = (json['avatarSnapshot'] as Map?)
+        ?.cast<String, dynamic>();
 
     return HeroAppearance(
       geschlecht: (json['geschlecht'] as String?) ?? '',
@@ -155,8 +185,9 @@ class HeroAppearance {
       avatarGallery: gallery,
       primaerbildId: primaerbildId,
       aktivesBildId: aktivesBildId,
-      avatarSnapshot:
-          rawSnapshot != null ? AvatarSnapshot.fromJson(rawSnapshot) : null,
+      avatarSnapshot: rawSnapshot != null
+          ? AvatarSnapshot.fromJson(rawSnapshot)
+          : null,
     );
   }
 }

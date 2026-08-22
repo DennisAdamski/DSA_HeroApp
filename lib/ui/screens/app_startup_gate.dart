@@ -6,6 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
+import 'package:dsa_heldenverwaltung/data/avatar_backfill_service.dart';
+import 'package:dsa_heldenverwaltung/data/avatar_cache_reconciler.dart';
+import 'package:dsa_heldenverwaltung/data/avatar_file_storage.dart';
+import 'package:dsa_heldenverwaltung/data/cloud_avatar_storage.dart';
+import 'package:dsa_heldenverwaltung/data/hive_avatar_sync_marker_store.dart';
 import 'package:dsa_heldenverwaltung/data/custom_catalog_repository.dart';
 import 'package:dsa_heldenverwaltung/data/firebase_bootstrap.dart';
 import 'package:dsa_heldenverwaltung/data/firestore_hero_sync_gateway.dart';
@@ -26,6 +31,7 @@ import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/firebase_options.dart';
+import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
@@ -74,6 +80,13 @@ class _AppStartupGateState extends State<AppStartupGate> {
   SyncingHeroRepository? _activeSyncingRepository;
   HiveSyncMetadataStore? _activeMetadataStore;
   HiveOfflineHeroReviewStore? _activeOfflineReviewStore;
+
+  /// Verhindert, dass ein Kontowechsel einen zweiten Backfill startet, waehrend
+  /// der erste die Marker-Box noch offen haelt.
+  bool _avatarBackfillRunning = false;
+
+  /// Ergebnis des letzten Backfills, sichtbar unter Konto & Sync.
+  AvatarBackfillReport? _avatarBackfillReport;
   HiveExterneHeldenRepository? _activeExterneHeldenRepository;
   late AppSettings _settings;
   StreamSubscription<AppSettings>? _settingsSubscription;
@@ -236,6 +249,9 @@ class _AppStartupGateState extends State<AppStartupGate> {
           offlineHeroes: offlineHeroesForReview,
         );
         heroRepository = syncingRepository;
+        // Bewusst erst hier und ohne `await`: Vor dem Sync waere die lokale
+        // Galerie veraltet, und der Start darf nicht auf Bild-Uploads warten.
+        unawaited(_startAvatarBackfill(configuredPath, heroStoragePath, hive));
       }
 
       // Settings: User-spezifischen Firestore-Sync für Geheimnisse
@@ -287,6 +303,73 @@ class _AppStartupGateState extends State<AppStartupGate> {
     } on Object catch (error, stackTrace) {
       debugPrint('[startup] FAILED: $error\n$stackTrace');
       rethrow;
+    }
+  }
+
+  /// Gleicht die Avatarbilder aller Helden mit der Cloud ab.
+  ///
+  /// Vollstaendig Best-Effort: Der Konto-Sync uebertraegt nur die Heldendaten,
+  /// die Bilder wandern hierueber. Fehler bleiben ohne Folgen fuer den Start.
+  Future<void> _startAvatarBackfill(
+    String? configuredPath,
+    String heroProfilePath,
+    HiveHeroRepository hive,
+  ) async {
+    if (_avatarBackfillRunning) return;
+    _avatarBackfillRunning = true;
+    HiveAvatarSyncMarkerStore? markerStore;
+    try {
+      const cloud = FirebaseCloudAvatarStorage();
+      if (!cloud.isAvailable) return;
+
+      // Die rohe Plattformablage, nicht `SyncingAvatarStorage`: dessen Lesen
+      // wuerde jede fehlende Datei sofort nachladen und den Abgleich
+      // verdoppeln.
+      final storage = createAvatarFileStorage();
+
+      // Im Web liegen die Bytes bereits in der Cloud; dort ist nur der lokale
+      // Zwischenspeicher aufzuraeumen.
+      if (storage.isCloudBacked) {
+        final cache = storage.blobCache;
+        if (cache == null) return;
+        final entfernt = await AvatarCacheReconciler(
+          cache: cache,
+        ).run(heroes: await hive.listHeroes());
+        final report = AvatarBackfillReport(
+          verwaisteEntfernt: entfernt,
+        ).abgeschlossen(DateTime.now().toUtc());
+        debugPrint('[startup] avatar-cache $report');
+        if (mounted) {
+          setState(() => _avatarBackfillReport = report);
+        }
+        return;
+      }
+
+      // Avatare liegen bewusst ausserhalb des Kontoprofils, die Marker darin.
+      final location = await widget.storagePaths.describeHeroStorageLocation(
+        configuredPath: configuredPath,
+      );
+      markerStore = await HiveAvatarSyncMarkerStore.create(
+        storagePath: heroProfilePath,
+      );
+      final service = AvatarBackfillService(
+        storage: storage,
+        cloud: cloud,
+        markers: markerStore,
+      );
+      final report = await service.run(
+        heroes: await hive.listHeroes(),
+        heroStoragePath: location.effectivePath,
+      );
+      debugPrint('[startup] avatar-backfill $report');
+      if (mounted) {
+        setState(() => _avatarBackfillReport = report);
+      }
+    } on Object catch (error) {
+      debugPrint('[startup] avatar-backfill fehlgeschlagen: $error');
+    } finally {
+      await markerStore?.close();
+      _avatarBackfillRunning = false;
     }
   }
 
@@ -429,6 +512,10 @@ class _AppStartupGateState extends State<AppStartupGate> {
         ),
       );
     }
+
+    overrides.add(
+      avatarBackfillReportProvider.overrideWithValue(_avatarBackfillReport),
+    );
 
     return ProviderScope(
       key: scopeKey,

@@ -1,30 +1,37 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:path/path.dart' as p;
 
+import 'package:dsa_heldenverwaltung/data/avatar_blob_cache.dart';
+import 'package:dsa_heldenverwaltung/data/avatar_file_storage.dart';
+
 /// Speichert und laedt Avatar-Bilder im Heldenspeicher-Verzeichnis.
-class AvatarFileStorage {
-  const AvatarFileStorage();
+class LocalAvatarFileStorage implements AvatarFileStorage {
+  const LocalAvatarFileStorage();
 
   static const String _avatarDir = 'avatare';
 
-  /// Speichert PNG-Bytes als Avatar-Datei und gibt den Dateinamen zurueck.
+  @override
+  bool get isCloudBacked => false;
+
+  /// Die Dateisystem-Ablage braucht keinen Cache — die Bytes liegen bereits
+  /// lokal.
+  @override
+  AvatarBlobCache? get blobCache => null;
+
+  @override
   Future<String> saveAvatar({
     required String heroStoragePath,
     required String heroId,
     required List<int> pngBytes,
   }) async {
-    final dir = Directory(p.join(heroStoragePath, _avatarDir));
-    if (!dir.existsSync()) {
-      await dir.create(recursive: true);
-    }
     final fileName = '$heroId.png';
-    final file = File(p.join(dir.path, fileName));
-    await file.writeAsBytes(pngBytes, flush: true);
+    await _write(heroStoragePath, fileName, pngBytes);
     return fileName;
   }
 
-  /// Loest den vollstaendigen Pfad einer Avatar-Datei auf.
+  @override
   String resolveAvatarPath({
     required String heroStoragePath,
     required String avatarFileName,
@@ -32,62 +39,41 @@ class AvatarFileStorage {
     return p.join(heroStoragePath, _avatarDir, avatarFileName);
   }
 
-  /// Laedt Avatar-Bytes fuer den Export (base64-Einbettung).
-  /// Gibt `null` zurueck, wenn die Datei nicht existiert.
-  Future<List<int>?> loadAvatarBytes({
+  @override
+  Future<Uint8List?> loadAvatarBytes({
     required String heroStoragePath,
     required String avatarFileName,
-  }) async {
-    if (avatarFileName.isEmpty) return null;
-    final file = File(
-      resolveAvatarPath(
-        heroStoragePath: heroStoragePath,
-        avatarFileName: avatarFileName,
-      ),
+  }) {
+    return loadGalleryImageBytes(
+      heroStoragePath: heroStoragePath,
+      fileName: avatarFileName,
     );
-    if (!file.existsSync()) return null;
-    return file.readAsBytes();
   }
 
-  /// Loescht die Avatar-Datei eines Helden.
+  @override
   Future<void> deleteAvatar({
     required String heroStoragePath,
     required String avatarFileName,
-  }) async {
-    if (avatarFileName.isEmpty) return;
-    final file = File(
-      resolveAvatarPath(
-        heroStoragePath: heroStoragePath,
-        avatarFileName: avatarFileName,
-      ),
+  }) {
+    return deleteGalleryImage(
+      heroStoragePath: heroStoragePath,
+      fileName: avatarFileName,
     );
-    if (file.existsSync()) {
-      await file.delete();
-    }
   }
 
-  // ---------------------------------------------------------------------------
-  // Gallery-Methoden fuer Multi-Image-Support
-  // ---------------------------------------------------------------------------
-
-  /// Speichert ein Gallery-Bild und gibt den Dateinamen zurueck.
+  @override
   Future<String> saveGalleryImage({
     required String heroStoragePath,
     required String heroId,
     required String entryId,
     required List<int> pngBytes,
   }) async {
-    final dir = Directory(p.join(heroStoragePath, _avatarDir));
-    if (!dir.existsSync()) {
-      await dir.create(recursive: true);
-    }
     final fileName = '${heroId}_$entryId.png';
-    final file = File(p.join(dir.path, fileName));
-    await file.writeAsBytes(pngBytes, flush: true);
+    await _write(heroStoragePath, fileName, pngBytes);
     return fileName;
   }
 
-  /// Loescht ein einzelnes Gallery-Bild.
+  @override
   Future<void> deleteGalleryImage({
     required String heroStoragePath,
     required String fileName,
@@ -99,8 +85,8 @@ class AvatarFileStorage {
     }
   }
 
-  /// Laedt die Bytes eines Gallery-Bildes (fuer Export).
-  Future<List<int>?> loadGalleryImageBytes({
+  @override
+  Future<Uint8List?> loadGalleryImageBytes({
     required String heroStoragePath,
     required String fileName,
   }) async {
@@ -109,4 +95,21 @@ class AvatarFileStorage {
     if (!file.existsSync()) return null;
     return file.readAsBytes();
   }
+
+  Future<void> _write(
+    String heroStoragePath,
+    String fileName,
+    List<int> pngBytes,
+  ) async {
+    final dir = Directory(p.join(heroStoragePath, _avatarDir));
+    if (!dir.existsSync()) {
+      await dir.create(recursive: true);
+    }
+    final file = File(p.join(dir.path, fileName));
+    await file.writeAsBytes(pngBytes, flush: true);
+  }
+}
+
+AvatarFileStorage createAvatarFileStorageImpl() {
+  return const LocalAvatarFileStorage();
 }

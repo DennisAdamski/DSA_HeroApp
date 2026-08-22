@@ -153,17 +153,14 @@ class _AppearanceSettingsPage extends ConsumerWidget {
                 },
               ),
               const SizedBox(height: 12),
-              Text(
-                switch (ansicht) {
-                  TabellenAnsicht.automatisch =>
-                    'Tabelle, solange die Breite reicht, sonst kompakte Karten.',
-                  TabellenAnsicht.tabelle =>
-                    'Immer die volle Tabelle — auf schmalen Geräten horizontal scrollbar.',
-                  TabellenAnsicht.karten =>
-                    'Immer die kompakte Kartenliste, auch auf breiten Bildschirmen.',
-                },
-                style: theme.textTheme.bodySmall,
-              ),
+              Text(switch (ansicht) {
+                TabellenAnsicht.automatisch =>
+                  'Tabelle, solange die Breite reicht, sonst kompakte Karten.',
+                TabellenAnsicht.tabelle =>
+                  'Immer die volle Tabelle — auf schmalen Geräten horizontal scrollbar.',
+                TabellenAnsicht.karten =>
+                  'Immer die kompakte Kartenliste, auch auf breiten Bildschirmen.',
+              }, style: theme.textTheme.bodySmall),
             ],
           ),
         ),
@@ -260,6 +257,11 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
               _SyncInfoRow(
                 icon: Icons.report_problem_outlined,
                 label: 'Offene Konflikte: ${syncStatus.openConflicts.length}',
+              ),
+              const SizedBox(height: 8),
+              _SyncInfoRow(
+                icon: Icons.image_outlined,
+                label: 'Avatarbilder: ${_avatarBackfillLabel(ref)}',
               ),
               if (!firebase.isAccountSyncAvailable) ...[
                 const SizedBox(height: 8),
@@ -384,6 +386,20 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
     ).showSnackBar(const SnackBar(content: Text('Sync-Konflikt aufgelöst.')));
   }
 
+  /// Beschreibt den letzten Avatar-Abgleich.
+  ///
+  /// Auf Desktop und Mobil ist das der Byte-Abgleich mit der Cloud, im Web das
+  /// Aufraeumen des Browser-Zwischenspeichers — beide melden ueber denselben
+  /// Report.
+  String _avatarBackfillLabel(WidgetRef ref) {
+    final report = ref.watch(avatarBackfillReportProvider);
+    if (report?.zuletztGelaufen == null) {
+      return 'Abgleich noch nicht gelaufen';
+    }
+    return '${report!.beschreibung} '
+        '(${_formatSyncTime(report.zuletztGelaufen)})';
+  }
+
   String _formatSyncTime(DateTime? value) {
     if (value == null) {
       return 'Noch nie';
@@ -443,7 +459,9 @@ class _OfflineHeroReviewsCard extends ConsumerWidget {
             ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
-            onPressed: controller == null ? null : () => _clearAll(context, ref),
+            onPressed: controller == null
+                ? null
+                : () => _clearAll(context, ref),
             icon: const Icon(Icons.restart_alt),
             label: const Text('Alle Entscheidungen zurücksetzen'),
           ),
@@ -463,9 +481,7 @@ class _OfflineHeroReviewsCard extends ConsumerWidget {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${review.heroName} wird erneut abgefragt.'),
-      ),
+      SnackBar(content: Text('${review.heroName} wird erneut abgefragt.')),
     );
   }
 
@@ -1137,8 +1153,7 @@ class _RulesIndexServerCard extends ConsumerStatefulWidget {
       _RulesIndexServerCardState();
 }
 
-class _RulesIndexServerCardState
-    extends ConsumerState<_RulesIndexServerCard> {
+class _RulesIndexServerCardState extends ConsumerState<_RulesIndexServerCard> {
   final _serverUrlController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -1164,19 +1179,21 @@ class _RulesIndexServerCardState
 
   Future<void> _saveOverride() async {
     final config = ref.read(rulesIndexRemoteConfigProvider);
-    await ref.read(settingsActionsProvider).saveRulesIndexRemoteConfig(
-      config.copyWith(
-        serverUrl: _serverUrlController.text.trim(),
-        username: _usernameController.text.trim(),
-        password: _passwordController.text,
-      ),
-    );
+    await ref
+        .read(settingsActionsProvider)
+        .saveRulesIndexRemoteConfig(
+          config.copyWith(
+            serverUrl: _serverUrlController.text.trim(),
+            username: _usernameController.text.trim(),
+            password: _passwordController.text,
+          ),
+        );
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Server-Zugang gespeichert.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Server-Zugang gespeichert.')));
   }
 
   Future<void> _syncNow() async {
@@ -1193,9 +1210,11 @@ class _RulesIndexServerCardState
     try {
       final search = await RulesIndexSyncService().syncFromServer(config);
       search.dispose();
-      await ref.read(settingsActionsProvider).saveRulesIndexRemoteConfig(
-        config.copyWith(lastSyncedAt: DateTime.now()),
-      );
+      await ref
+          .read(settingsActionsProvider)
+          .saveRulesIndexRemoteConfig(
+            config.copyWith(lastSyncedAt: DateTime.now()),
+          );
       if (!mounted) {
         return;
       }

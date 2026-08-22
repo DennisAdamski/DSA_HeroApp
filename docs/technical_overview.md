@@ -81,8 +81,47 @@ lokales Konto-Profil unter `Helden/accounts/<uid>` geoeffnet und durch
 `SyncingHeroRepository` mit Firestore synchronisiert. Offline-Helden werden beim
 Wechsel in ein Konto nicht still importiert, sondern als Konflikte vor die
 Heldenliste gelegt, damit der Nutzer lokal, online oder beide behalten waehlen
-kann. Avatar-Dateien selbst bleiben vorerst lokal; fehlende Dateien fuehren zu
-Platzhaltern.
+kann.
+
+Avatar-Bilddateien wandern seit 2026-08-20 ueber Firebase Storage
+(`avatars/{uid}/{fileName}`) mit; der Firestore-Payload traegt weiterhin nur
+die Dateinamen. Zustaendig ist `SyncingAvatarStorage`
+(`lib/data/syncing_avatar_storage.dart`), ein Decorator um die
+plattformspezifische `AvatarFileStorage`: Schreiben ist local-first mit
+Best-Effort-Upload, Lesen faellt bei fehlender lokaler Datei auf die Cloud
+zurueck und legt die Bytes lokal ab. Im Web entfaellt der Decorator, weil die
+Plattformimplementierung selbst der Cloud-Speicher ist (`isCloudBacked`).
+Bestandsbilder holt `AvatarBackfillService`
+(`lib/data/avatar_backfill_service.dart`) nach, angestossen in
+`AppStartupGate` nach `syncNow()`. Die Reihenfolge ist zwingend: vor dem Sync
+waere die lokale Galerie veraltet und auf einem anderen Geraet geloeschte
+Bilder kaemen zurueck. Bereits abgeglichene Dateien vermerkt
+`avatar_sync_v1` im Kontoprofil, sodass der Steady State keine
+Netzwerkaufrufe braucht. Das Ergebnis des letzten Laufs steht unter
+`Einstellungen > Konto & Sync`.
+
+Fehlschlaege beim Bildzugriff werden nicht verschluckt: `AvatarLoadException`
+(`lib/data/avatar_load_failure.dart`) benennt den Grund, und
+`AvatarGalleryImage` unterscheidet Laden, Fehlen und Fehlschlag. Das ist im Web
+noetig, weil dort sechs verschiedene Ursachen (kein Login, fehlendes Objekt,
+Regelverstoss, Groessenlimit, Netzwerkfehler, Typfehler im Plugin) sonst
+identisch als leerer Platzhalter aussehen. Ohne Login gibt es im Web keinen
+Cloud-Pfad; beim lokalen Debuggen deshalb `--web-port` fixieren, da Firebase
+Auth pro Origin persistiert.
+
+Damit der Browser die Bytes ueberhaupt lesen darf, braucht der Storage-Bucket
+eine CORS-Konfiguration (`cors.json` im Repo, angewendet per
+`gsutil cors set cors.json gs://heldensync-ccf0b.firebasestorage.app`).
+`firebase deploy` uebertraegt sie nicht. Fehlt sie, liefert der Download zwar
+`200 OK`, aber ohne `Access-Control-Allow-Origin` — der Browser verwirft die
+Antwort und meldet nur `ClientException: Failed to fetch`. Eine
+`OPTIONS`-Gegenprobe taugt zur Diagnose nicht, weil sie vom Upload-Server
+beantwortet wird und CORS-Header setzt.
+
+Geladene Bytes legt die Web-Ablage zusaetzlich in der Hive-Box
+`avatar_blobs_v1` (IndexedDB) ab. Der Cache ist inhaltsadressiert und veraltet
+nicht, weil Dateinamen eine UUID tragen; `AvatarCacheReconciler` entfernt beim
+Start lediglich Eintraege ohne Galerie-Bezug.
 
 Seit 2026-08-08 gilt beim Startabgleich zusaetzlich: Sind lokale und
 Online-Version inhaltlich identisch, wird kommentarlos die Online-Version

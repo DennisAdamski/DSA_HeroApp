@@ -4,9 +4,17 @@
 /// zum aktuellen Heldenzustand erkennen und im Prompt beruecksichtigen
 /// zu koennen.
 class AvatarSnapshot {
-  const AvatarSnapshot({
+  /// Erstellt einen Snapshot; [attributes] wird dabei normalisiert.
+  ///
+  /// Bewusst **nicht** `const` und mit nullbarem [attributes]: Ein `null`, das
+  /// ueber einen dynamischen Pfad hereinkommt, liess frueher erst weit spaeter
+  /// `computeAvatarSnapshotDiff` platzen, und zwar beim Spread von
+  /// `attributes.keys` — an einer Stelle also, die den Verursacher nicht mehr
+  /// benennen konnte. Hier ist der einzige Engpass, durch den jede Instanz
+  /// muss, also faellt die Normalisierung hier an.
+  AvatarSnapshot({
     this.erstelltAm = '',
-    this.attributes = const {},
+    Map<String, int>? attributes,
     this.alter = '',
     this.vorteileText = '',
     this.nachteileText = '',
@@ -14,12 +22,16 @@ class AvatarSnapshot {
     this.geschlecht = '',
     this.haarfarbe = '',
     this.augenfarbe = '',
-  });
+  }) : attributes = attributes == null
+           ? const <String, int>{}
+           : Map<String, int>.unmodifiable(attributes);
 
   /// ISO-8601 Zeitstempel der Snapshot-Erstellung.
   final String erstelltAm;
 
   /// Eigenschaftswerte zum Snapshot-Zeitpunkt (z.B. {'MU': 14, 'KL': 12}).
+  ///
+  /// Nie `null` und nie veraenderbar — siehe Konstruktor.
   final Map<String, int> attributes;
 
   /// Alter des Helden zum Snapshot-Zeitpunkt.
@@ -43,18 +55,24 @@ class AvatarSnapshot {
   /// Augenfarbe zum Snapshot-Zeitpunkt.
   final String augenfarbe;
 
+  /// Serialisiert den Snapshot als flache Map.
+  ///
+  /// [attributes] wird als einfache Kopie herausgegeben, damit Konsumenten
+  /// (Hive-Writer, `jsonEncode`, Sync-Payload) keine unveraenderliche
+  /// Sicht auf interne Daten zu sehen bekommen.
   Map<String, dynamic> toJson() => {
-        'erstelltAm': erstelltAm,
-        'attributes': attributes,
-        'alter': alter,
-        'vorteileText': vorteileText,
-        'nachteileText': nachteileText,
-        'rasse': rasse,
-        'geschlecht': geschlecht,
-        'haarfarbe': haarfarbe,
-        'augenfarbe': augenfarbe,
-      };
+    'erstelltAm': erstelltAm,
+    'attributes': Map<String, int>.of(attributes),
+    'alter': alter,
+    'vorteileText': vorteileText,
+    'nachteileText': nachteileText,
+    'rasse': rasse,
+    'geschlecht': geschlecht,
+    'haarfarbe': haarfarbe,
+    'augenfarbe': augenfarbe,
+  };
 
+  /// Liest einen Snapshot aus einer flachen Map.
   static AvatarSnapshot fromJson(Map<String, dynamic> json) {
     final rawAttributes = json['attributes'];
     final attributes = <String, int>{};
