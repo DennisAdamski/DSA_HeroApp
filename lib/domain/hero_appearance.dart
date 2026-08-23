@@ -1,11 +1,13 @@
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 
 /// Aeussere Erscheinung eines Helden.
 class HeroAppearance {
   const HeroAppearance({
     this.geschlecht = '',
     this.alter = '',
+    this.geburtsdatum = const AventurianDate(),
     this.groesse = '',
     this.gewicht = '',
     this.haarfarbe = '',
@@ -19,7 +21,16 @@ class HeroAppearance {
   });
 
   final String geschlecht;
+
+  /// Bei der Erschaffung eingetragenes Alter (Freitext, altert nicht mit).
   final String alter;
+
+  /// Aventurisches Geburtsdatum als Bezugspunkt fuer das aktuelle Alter.
+  ///
+  /// Ausgewertet von `lib/rules/derived/aventurian_age_rules.dart`; leer
+  /// bedeutet, dass kein aktuelles Alter berechnet werden kann.
+  final AventurianDate geburtsdatum;
+
   final String groesse;
   final String gewicht;
   final String haarfarbe;
@@ -73,6 +84,7 @@ class HeroAppearance {
   HeroAppearance copyWith({
     String? geschlecht,
     String? alter,
+    AventurianDate? geburtsdatum,
     String? groesse,
     String? gewicht,
     String? haarfarbe,
@@ -87,6 +99,7 @@ class HeroAppearance {
     return HeroAppearance(
       geschlecht: geschlecht ?? this.geschlecht,
       alter: alter ?? this.alter,
+      geburtsdatum: geburtsdatum ?? this.geburtsdatum,
       groesse: groesse ?? this.groesse,
       gewicht: gewicht ?? this.gewicht,
       haarfarbe: haarfarbe ?? this.haarfarbe,
@@ -103,9 +116,15 @@ class HeroAppearance {
   }
 
   /// Serialisiert als flache Map (Felder auf Root-Ebene).
+  ///
+  /// `geburtsdatum` wird bewusst nur bei belegtem Wert geschrieben: Die Map
+  /// landet flach im Helden-JSON und geht damit in `heroContentHash` ein. Ein
+  /// bedingungslos emittiertes Feld wuerde jeden Bestandshelden veraendern und
+  /// beim naechsten Speichern eine Sync-Konfliktwelle ausloesen.
   Map<String, dynamic> toJson() => {
     'geschlecht': geschlecht,
     'alter': alter,
+    if (geburtsdatum.hasContent) 'geburtsdatum': geburtsdatum.toJson(),
     'groesse': groesse,
     'gewicht': gewicht,
     'haarfarbe': haarfarbe,
@@ -173,9 +192,15 @@ class HeroAppearance {
     final rawSnapshot = (json['avatarSnapshot'] as Map?)
         ?.cast<String, dynamic>();
 
+    final rawGeburtsdatum = (json['geburtsdatum'] as Map?)
+        ?.cast<String, dynamic>();
+
     return HeroAppearance(
       geschlecht: (json['geschlecht'] as String?) ?? '',
       alter: (json['alter'] as String?) ?? '',
+      geburtsdatum: rawGeburtsdatum != null
+          ? AventurianDate.fromJson(rawGeburtsdatum)
+          : const AventurianDate(),
       groesse: (json['groesse'] as String?) ?? '',
       gewicht: (json['gewicht'] as String?) ?? '',
       haarfarbe: (json['haarfarbe'] as String?) ?? '',

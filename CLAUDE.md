@@ -82,6 +82,19 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Kampfrunden, Spielrunden und weitere Zeiteinheiten werden nie ineinander
   umgerechnet, der Countdown bleibt manuell, und abgelaufene Effekte werden
   nur angezeigt statt automatisch abgeschaltet.
+- Der aventurische Kalender liegt kanonisch in `lib/domain/aventurian_date.dart`:
+  zwölf Göttermonate à 30 Tage — **Phex** steht zwischen Tsa und Peraine und
+  fehlte in der früheren Monatsliste des Abenteuer-Tabs — plus fünf Namenlose
+  Tage, zusammen 365. Der Abenteuer-Tab hält keine eigene Liste mehr.
+  `lib/rules/derived/aventurian_age_rules.dart` leitet daraus das aktuelle Alter
+  ab: Bezugspunkt ist `HeroAppearance.geburtsdatum`, Stichtag das Datum des
+  laufenden Abenteuers (`currentAventurianDate` vor `startAventurianDate`,
+  ersatzweise das zuletzt abgeschlossene Abenteuer). Das Freitextfeld
+  `HeroAppearance.alter` bleibt der Erschaffungswert und wird nicht berechnet.
+  `geburtsdatum` darf in `toJson` **nur bei belegtem Wert** geschrieben werden:
+  die Appearance-Felder landen flach im Helden-JSON und gehen in
+  `heroContentHash` ein — sonst ändert sich jeder Bestandsheld und der
+  Konto-Sync meldet beim nächsten Speichern Konflikte.
 - Traditionen und Leiteigenschaften stehen in
   `lib/rules/derived/tradition_rules.dart` (Wege der Zauberei S. 19). Die
   Traditionen eines Helden sind die Vereinigung aus `representationen` und den

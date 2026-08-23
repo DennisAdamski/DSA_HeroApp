@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
@@ -627,6 +630,139 @@ void main() {
       );
     },
   );
+
+  group('Alter (aktuell)', () {
+    /// Baut die Uebersicht fuer einen Helden und scrollt an die Alterszeile.
+    Future<void> pumpOverview(WidgetTester tester, HeroSheet hero) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[hero],
+        states: <String, HeroState>{
+          hero.id: const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            heroRepositoryProvider.overrideWithValue(repo),
+            rulesCatalogProvider.overrideWith(
+              (ref) async => _buildRulesCatalog(),
+            ),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: HeroOverviewTab(
+                heroId: hero.id,
+                onDirtyChanged: (_) {},
+                onEditingChanged: (_) {},
+                onRegisterDiscard: (_) {},
+                onRegisterEditActions: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    /// Liest den Anzeigewert eines schreibgeschuetzten Feldes.
+    String valueOf(WidgetTester tester, String fieldKey) {
+      final field = find.byKey(
+        ValueKey<String>(fieldKey),
+        skipOffstage: false,
+      );
+      expect(field, findsOneWidget, reason: fieldKey);
+      final value = find.descendant(
+        of: field,
+        matching: find.byType(Text),
+        skipOffstage: false,
+      );
+      // Erstes Text-Widget ist das Label, zweites der Wert.
+      return tester.widgetList<Text>(value).last.data ?? '';
+    }
+
+    HeroSheet heroMit({
+      AventurianDate geburtsdatum = const AventurianDate(),
+      List<HeroAdventureEntry> adventures = const <HeroAdventureEntry>[],
+    }) {
+      return buildHero().copyWith(
+        appearance: HeroAppearance(geburtsdatum: geburtsdatum),
+        adventures: adventures,
+      );
+    }
+
+    testWidgets('zeigt das Alter zum Datum des laufenden Abenteuers', (
+      tester,
+    ) async {
+      await pumpOverview(
+        tester,
+        heroMit(
+          geburtsdatum: const AventurianDate(
+            day: '12',
+            month: 'praios',
+            year: '1000',
+          ),
+          adventures: <HeroAdventureEntry>[
+            const HeroAdventureEntry(
+              id: 'a1',
+              title: 'Laufendes Abenteuer',
+              currentAventurianDate: HeroAdventureDateValue(
+                day: '13',
+                month: 'praios',
+                year: '1027',
+              ),
+            ),
+          ],
+        ),
+      );
+
+      expect(valueOf(tester, 'overview-field-alter-aktuell'), '27');
+      expect(
+        valueOf(tester, 'overview-field-geburtsdatum'),
+        '12. Praios 1000 BF',
+      );
+    });
+
+    testWidgets('zeigt ohne Geburtsdatum den Leerplatzhalter', (tester) async {
+      await pumpOverview(
+        tester,
+        heroMit(
+          adventures: <HeroAdventureEntry>[
+            const HeroAdventureEntry(
+              id: 'a1',
+              currentAventurianDate: HeroAdventureDateValue(
+                day: '13',
+                month: 'praios',
+                year: '1027',
+              ),
+            ),
+          ],
+        ),
+      );
+
+      expect(valueOf(tester, 'overview-field-alter-aktuell'), '–');
+    });
+
+    testWidgets('zeigt ohne Abenteuerdatum den Leerplatzhalter', (tester) async {
+      await pumpOverview(
+        tester,
+        heroMit(
+          geburtsdatum: const AventurianDate(
+            day: '12',
+            month: 'praios',
+            year: '1000',
+          ),
+        ),
+      );
+
+      expect(valueOf(tester, 'overview-field-alter-aktuell'), '–');
+    });
+  });
 }
 
 RulesCatalog _buildRulesCatalog() {
