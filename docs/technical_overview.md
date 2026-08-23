@@ -260,12 +260,12 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 23) | Format-Version fuer Migrationskompatibilitaet |
+| `schemaVersion` | `int` (= 28) | Format-Version fuer Migrationskompatibilitaet |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
 | `attributes` | `Attributes` | Aktuelle Eigenschaftswerte (8 Werte) |
-| `startAttributes` | `Attributes` | Effektive Starteigenschaften nach Rasse/Kultur/Profession |
+| `startAttributes` | `Attributes` | Abgeleitet: `computeHeroEffectiveStartAttributes`. Nie als Basis einer erneuten Modifikation verwenden (Abschnitt 4.10) |
 | `persistentMods` | `StatModifiers` | Dauerhafte Modifikatoren (aus Vor-/Nachteilen) |
 | `bought` | `BoughtStats` | Gekaufte Ressourcenerhöhungen |
 | `combatConfig` | `CombatConfig` | Gesamte Kampfkonfiguration |
@@ -1487,6 +1487,92 @@ Traditionsritualen ausgesperrt. Trägt eine Repräsentation mehrere Traditionen
 
 ---
 
+### 4.10 Auswahllisten und Eigenschaftswirkung bei Vor-/Nachteilen
+
+**Dateien:** `lib/catalog/hero_trait_def.dart`,
+`lib/catalog/hero_trait_choices.dart`, `lib/catalog/hero_trait_text.dart`,
+`lib/rules/derived/attribute_trait_rules.dart`,
+`lib/rules/derived/modifier_fragment_text.dart`,
+`lib/rules/derived/attribute_start_rules.dart`
+
+**Katalogschema.** Ein Vor-/Nachteil mit `{choice}` im `selectionTemplate`
+traegt vier optionale Felder:
+
+| Feld | Bedeutung |
+|---|---|
+| `choiceLabel` | Beschriftung des Auswahlfelds (`Sinn`, `Eigenschaft`, `Geltungsbereich`). Leer = `Spezialisierung` |
+| `choices` | Feste Auswahlliste, Reihenfolge bleibt erhalten |
+| `choiceSource` | Katalogabgeleitete Liste, siehe unten |
+| `choiceFreeText` | Ob zusaetzlich freie Eingabe erlaubt ist (Default `true`) |
+
+`resolveTraitChoices(trait, catalog)` fuehrt beides zusammen: feste `choices`
+zuerst, danach die aufgeloeste Quelle alphabetisch, dedupliziert. Bekannte
+Quellen stehen in `kKnownTraitChoiceSources`: `eigenschaften`, `talente`,
+`talente_handwerk`, `talente_kampf_koerper`, `talente_sonstige`,
+`talentgruppen`, `talentgruppen_kampf_koerper`, `talentgruppen_sonstige`,
+`zauber`, `rituale`, `merkmale`, `schlechte_eigenschaften`, `sprachen`,
+`schriften`.
+
+Zwei Quellen sind nicht offensichtlich: `rituale` flacht die
+Variantengruppen der Kategorie `Traditionsrituale` ab (Einzelrituale haben
+keinen eigenen Katalog), und `schlechte_eigenschaften` liest die Nachteile
+mit Marker `SE` — Platzhalter-Eintraege wie `Angst vor [...]` bleiben
+draussen. `test/catalog/trait_choice_catalog_test.dart` loest jede Quelle
+gegen den echten Katalog auf; ein Tippfehler faellt sonst erst im Betrieb
+auf, und dort nur als leeres Dropdown.
+
+**Speicherformat.** Unveraendert Freitext in `HeroSheet.vorteileText` /
+`nachteileText`. `parseTraitFragmentParts` ist die Umkehrung von
+`buildHeroTraitSelectionText` und liefert Auswahl **und** Wert. Eine
+Klammergruppe, die nur `{choice}` enthaelt, ist beim Zurueckparsen optional
+und wird beim Bauen entfernt, wenn die Auswahl leer bleibt — sonst haette
+das erweiterte Template `Guter Ruf {value} ({choice})` Bestandsfragmente wie
+`Guter Ruf 4` unlesbar gemacht. `mergeHeroTraitFragment` fasst einen zweiten
+Erwerb derselben Auswahl zum summierten Wert zusammen, statt ihn wie
+`serializeHeroTraitFragments` still zu verwerfen.
+
+**Herausragende Eigenschaft.** Der einzige Vor-/Nachteil mit einer
+Eigenschaft als Wirkungsziel (WdH S. 253). Fragmentform
+`<Name> <Eigenschaft> [<Wert>]`, geparst von
+`parseAttributeTraitFragment`. Der Modifikator landet in **zwei**
+Akkumulatoren von `parseModifierTexts`:
+
+- `attributeMods` — wirkt wie ein `KK+2`-Fragment auf den aktuellen Wert.
+- `startAttributeMods` — hebt zusaetzlich den Startwert und damit ueber
+  `ceil(start * 1.5)` das Maximum.
+
+Freie `CODE+N`-Fragmente aus Vor-/Nachteilen fliessen **nicht** in
+`startAttributeMods`: die beschreiben laufende Effekte, keine
+Generierungswerte. Rasse, Kultur und Profession dagegen schon
+(`contributesToStartAttributes`).
+
+Die Eintragskonvention ist damit: **die Eigenschaft ohne den Bonus
+eintragen**, die App rechnet ihn oben drauf. Buchbeispiel Thorwaler mit
+Rohstart KK 14, `rasseModText: 'KK+1'` und `Herausragende Eigenschaft KK 2`
+ergibt Startwert 17, aktuellen Wert 17 und Maximum 26.
+
+**Startwerte haben genau einen Einstiegspunkt.**
+`computeHeroEffectiveStartAttributes(hero)` und
+`computeHeroAttributeMaximums(hero)` binden die Basis fest an
+`rawStartAttributes`. Das ist kein Stilentscheid: `startAttributes` traegt
+bereits das Ergebnis dieser Rechnung, und der Steigerungsdialog hat es
+frueher ein zweites Mal modifiziert — Herkunftsmods wurden doppelt addiert
+und der Dialog erlaubte einen Steigerungsschritt zu viel.
+
+**Steigerungsdialog auf Effektivebene.** `hero.attributes` ist die Rohspalte,
+Startwert und Maximum liegen eine Ebene darueber. `_startAttributeDelta`
+holt genau die Modifikatoren, die auch das Maximum speisen (Herkunft plus
+Herausragende Eigenschaft), rechnet sie fuer den Dialog auf und beim
+Speichern wieder ab. Benannte `attributeModifiers` und freie Textmods
+bleiben draussen — das sind situative Boni, keine erkaufte Progression.
+
+**Bestandshelden.** `pendingAttributeTraitNotices(hero)` meldet die neu
+wirksamen Boni, solange `hero.schemaVersion < 28`. Bewusst **kein** stiller
+Wertumbau: ob der Punkt schon im eingetragenen Wert steckt, weiss nur der
+Nutzer. Der Hinweis steht in der Uebersicht und verschwindet erst nach
+ausdruecklicher Quittierung („Verstanden – Werte geprueft"), die
+`schemaVersion` auf 28 hebt.
+
 ## 5. Zustandsverwaltung (State Layer)
 
 ### 5.1 Provider-Übersicht
@@ -1807,7 +1893,8 @@ einem Zielgerät im Profile-Modus.
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **27**, fuer `HeroState` **6**.
+- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **28**, fuer `HeroState` **6**.
+- **28** markiert keine Formataenderung, sondern die Quittierung der geaenderten Auswertung von `Herausragende Eigenschaft` (Abschnitt 4.10).
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 3 wird **strikt** validiert.
 

@@ -548,4 +548,64 @@ void main() {
     expect(roundtrip.ruleMeta?.citations.single.locator, 'Abschnitt 3.1');
     expect(roundtrip.ruleMeta?.epic?.requiresOptIn, true);
   });
+
+  group('HeroTraitDef Auswahlfelder', () {
+    test('liest choiceLabel, choices, choiceSource und choiceFreeText', () {
+      final trait = HeroTraitDef.fromJson(<String, dynamic>{
+        'id': 'adv_herausragender_sinn',
+        'name': 'Herausragender Sinn',
+        'traitType': 'advantage',
+        'valueKind': 'choice',
+        'selectionTemplate': 'Herausragender Sinn {choice}',
+        'choiceLabel': 'Sinn',
+        'choices': <String>['Gehör', 'Sicht'],
+        'choiceFreeText': false,
+      });
+
+      expect(trait.choiceLabel, 'Sinn');
+      expect(trait.choices, <String>['Gehör', 'Sicht']);
+      expect(trait.choiceSource, isEmpty);
+      expect(trait.choiceFreeText, isFalse);
+    });
+
+    test('faellt ohne die Felder auf die Bestandsdefaults zurueck', () {
+      final trait = HeroTraitDef.fromJson(<String, dynamic>{
+        'id': 'adv_flink',
+        'name': 'Flink',
+        'traitType': 'advantage',
+      });
+
+      expect(trait.choiceLabel, isEmpty);
+      expect(trait.choices, isEmpty);
+      expect(trait.choiceSource, isEmpty);
+      // Default true entspricht dem bisherigen Verhalten (freies Textfeld).
+      expect(trait.choiceFreeText, isTrue);
+    });
+
+    test('serialisiert die Felder nur, wenn sie gesetzt sind', () {
+      const schlicht = HeroTraitDef(
+        id: 'adv_flink',
+        name: 'Flink',
+        traitType: 'advantage',
+      );
+      expect(schlicht.toJson().containsKey('choiceLabel'), isFalse);
+      expect(schlicht.toJson().containsKey('choices'), isFalse);
+      expect(schlicht.toJson().containsKey('choiceSource'), isFalse);
+      expect(schlicht.toJson().containsKey('choiceFreeText'), isFalse);
+
+      const reich = HeroTraitDef(
+        id: 'adv_x',
+        name: 'X',
+        traitType: 'advantage',
+        choiceLabel: 'Eigenschaft',
+        choiceSource: 'eigenschaften',
+        choiceFreeText: false,
+      );
+      final json = reich.toJson();
+      expect(json['choiceLabel'], 'Eigenschaft');
+      expect(json['choiceSource'], 'eigenschaften');
+      expect(json['choiceFreeText'], isFalse);
+      expect(HeroTraitDef.fromJson(json).choiceFreeText, isFalse);
+    });
+  });
 }

@@ -163,14 +163,10 @@ final heroComputedProvider =
 
       final parsed = parseModifierTextsForHero(hero);
       final resourceActivation = computeHeroResourceActivation(hero);
-      final effectiveStartAttributes = computeEffectiveStartAttributes(
-        hero.rawStartAttributes,
-        parseOriginAttributeModifiers(hero),
+      final effectiveStartAttributes = computeHeroEffectiveStartAttributes(
+        hero,
       );
-      final attributeMaximums = computeAttributeMaximums(
-        effectiveStartAttributes,
-        epicBonus: hero.epicAttributeMaxBonus,
-      );
+      final attributeMaximums = computeHeroAttributeMaximums(hero);
 
       // Inventar-Modifikatoren aus ausgeruesteten Items aggregieren
       final inventoryMods = aggregateInventoryModifiers(

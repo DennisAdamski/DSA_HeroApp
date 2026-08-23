@@ -18,6 +18,10 @@ class HeroTraitDef {
     this.maxValue,
     this.unit = '',
     this.selectionTemplate = '',
+    this.choiceLabel = '',
+    this.choices = const <String>[],
+    this.choiceSource = '',
+    this.choiceFreeText = true,
     this.markers = const <String>[],
     this.source = '',
     this.active = true,
@@ -51,6 +55,21 @@ class HeroTraitDef {
   /// Textvorlage für die kompatible Speicherung im Heldenmodell.
   final String selectionTemplate;
 
+  /// Beschriftung des `{choice}`-Felds, z. B. `Sinn` oder `Geltungsbereich`.
+  /// Leer bedeutet die generische Beschriftung `Spezialisierung`.
+  final String choiceLabel;
+
+  /// Feste Auswahlliste für `{choice}`. Leer heißt: keine Vorschläge.
+  final List<String> choices;
+
+  /// Katalogabgeleitete Auswahlliste, aufgelöst über `resolveTraitChoices`
+  /// (`lib/catalog/hero_trait_choices.dart`). Leer heißt: keine.
+  final String choiceSource;
+
+  /// Ob neben der Liste weiterhin freie Eingabe erlaubt ist. Der Default `true`
+  /// entspricht dem bisherigen Verhalten (reines Textfeld).
+  final bool choiceFreeText;
+
   /// Marker aus der Übersicht, z. B. `M(ZH)`, `SE`, `Gabe` oder `*`.
   final List<String> markers;
 
@@ -80,6 +99,10 @@ class HeroTraitDef {
         'selectionTemplate',
         fallback: '',
       ),
+      choiceLabel: readCatalogString(json, 'choiceLabel', fallback: ''),
+      choices: readCatalogStringList(json, 'choices'),
+      choiceSource: readCatalogString(json, 'choiceSource', fallback: ''),
+      choiceFreeText: readCatalogBool(json, 'choiceFreeText', fallback: true),
       markers: readCatalogStringList(json, 'markers'),
       source: readCatalogString(json, 'source', fallback: ''),
       active: readCatalogBool(json, 'active', fallback: true),
@@ -99,6 +122,10 @@ class HeroTraitDef {
       if (maxValue != null) 'maxValue': maxValue,
       if (unit.isNotEmpty) 'unit': unit,
       'selectionTemplate': selectionTemplate,
+      if (choiceLabel.isNotEmpty) 'choiceLabel': choiceLabel,
+      if (choices.isNotEmpty) 'choices': choices,
+      if (choiceSource.isNotEmpty) 'choiceSource': choiceSource,
+      if (!choiceFreeText) 'choiceFreeText': choiceFreeText,
       if (markers.isNotEmpty) 'markers': markers,
       'source': source,
       'active': active,

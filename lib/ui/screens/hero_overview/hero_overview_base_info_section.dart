@@ -284,6 +284,47 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
     );
   }
 
+  /// Hinweis fuer Bestandshelden, deren `Herausragende Eigenschaft` erst ab
+  /// jetzt als Modifikator wirkt.
+  ///
+  /// Bewusst kein stiller Wertumbau: ob der Punkt schon im eingetragenen Wert
+  /// steckt, weiss nur der Nutzer. Der Hinweis bleibt stehen, bis er ihn
+  /// quittiert — nicht schon beim naechsten beliebigen Speichern.
+  Widget _buildAttributeTraitNoticeSection(HeroSheet hero) {
+    final notices = pendingAttributeTraitNotices(hero);
+    return _SectionCard(
+      title: 'Geänderte Regelauswertung',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '"Herausragende Eigenschaft" wirkt jetzt als Modifikator '
+            '(${notices.join(', ')}). Trage die Eigenschaft ohne diesen '
+            'Bonus ein — Startwert, aktueller Wert und Höchstwert rechnet '
+            'die App daraus.',
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton(
+              key: const ValueKey<String>('attribute-trait-notice-ack'),
+              onPressed: () => _acknowledgeAttributeTraitNotice(hero),
+              child: const Text('Verstanden – Werte geprüft'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _acknowledgeAttributeTraitNotice(HeroSheet hero) async {
+    await ref
+        .read(heroActionsProvider)
+        .saveHero(
+          hero.copyWith(schemaVersion: kAttributeTraitEffectSchemaVersion),
+        );
+  }
+
   Widget _buildParserWarningsSection(HeroSheet hero) {
     return _SectionCard(
       title: 'Parser-Warnungen',

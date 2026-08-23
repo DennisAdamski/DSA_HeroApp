@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
@@ -484,81 +485,80 @@ void main() {
     },
   );
 
-  testWidgets(
-    'epischer Held ohne Haupteigenschaften kann sie nachtragen',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: <HeroSheet>[buildHero().copyWith(isEpisch: true)],
-        states: <String, HeroState>{
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 0,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
+  testWidgets('epischer Held ohne Haupteigenschaften kann sie nachtragen', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: <HeroSheet>[buildHero().copyWith(isEpisch: true)],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            heroRepositoryProvider.overrideWithValue(repo),
-            rulesCatalogProvider.overrideWith(
-              (ref) async => _buildRulesCatalog(),
-            ),
-          ],
-          child: MaterialApp(
-            home: Scaffold(
-              body: HeroOverviewTab(
-                heroId: 'demo',
-                onDirtyChanged: (_) {},
-                onEditingChanged: (_) {},
-                onRegisterDiscard: (_) {},
-                onRegisterEditActions: (_) {},
-              ),
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith(
+            (ref) async => _buildRulesCatalog(),
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: HeroOverviewTab(
+              heroId: 'demo',
+              onDirtyChanged: (_) {},
+              onEditingChanged: (_) {},
+              onRegisterDiscard: (_) {},
+              onRegisterEditActions: (_) {},
             ),
           ),
         ),
-      );
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final editButton = find.byKey(
+      const ValueKey<String>('overview-action-epic-edit'),
+    );
+    await tester.scrollUntilVisible(
+      editButton,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('overview-action-epic-activate')),
+      findsNothing,
+    );
+
+    await tester.tap(editButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Epischen Status bearbeiten'), findsOneWidget);
+
+    for (final chipKey in const <String>[
+      'epic-dialog-mental-kl',
+      'epic-dialog-physical-kk',
+      'epic-dialog-confirm',
+    ]) {
+      final target = find.byKey(ValueKey<String>(chipKey));
+      await tester.ensureVisible(target);
       await tester.pumpAndSettle();
-
-      final editButton = find.byKey(
-        const ValueKey<String>('overview-action-epic-edit'),
-      );
-      await tester.scrollUntilVisible(
-        editButton,
-        240,
-        scrollable: find.byType(Scrollable).first,
-      );
+      await tester.tap(target);
       await tester.pumpAndSettle();
-      expect(
-        find.byKey(const ValueKey<String>('overview-action-epic-activate')),
-        findsNothing,
-      );
+    }
 
-      await tester.tap(editButton);
-      await tester.pumpAndSettle();
-
-      expect(find.text('Epischen Status bearbeiten'), findsOneWidget);
-
-      for (final chipKey in const <String>[
-        'epic-dialog-mental-kl',
-        'epic-dialog-physical-kk',
-        'epic-dialog-confirm',
-      ]) {
-        final target = find.byKey(ValueKey<String>(chipKey));
-        await tester.ensureVisible(target);
-        await tester.pumpAndSettle();
-        await tester.tap(target);
-        await tester.pumpAndSettle();
-      }
-
-      final saved = await repo.loadHeroById('demo');
-      expect(saved!.isEpisch, isTrue);
-      expect(saved.epicMainAttributes.kl, 1);
-      expect(saved.epicMainAttributes.kk, 1);
-    },
-  );
+    final saved = await repo.loadHeroById('demo');
+    expect(saved!.isEpisch, isTrue);
+    expect(saved.epicMainAttributes.kl, 1);
+    expect(saved.epicMainAttributes.kk, 1);
+  });
 
   testWidgets(
     'Boni-Sektion markiert nur die noch nicht gerechneten Eintraege',
@@ -621,7 +621,10 @@ void main() {
       }
 
       // Gerechnet -> ohne Marker.
-      expect(lineFor('eBE bei KK-Talenten halbiert'), isNot(contains('manuell')));
+      expect(
+        lineFor('eBE bei KK-Talenten halbiert'),
+        isNot(contains('manuell')),
+      );
       // Nicht gerechnet -> ausdruecklich markiert.
       expect(lineFor('Tragkraft KK'), contains('manuell'));
       expect(
@@ -672,10 +675,7 @@ void main() {
 
     /// Liest den Anzeigewert eines schreibgeschuetzten Feldes.
     String valueOf(WidgetTester tester, String fieldKey) {
-      final field = find.byKey(
-        ValueKey<String>(fieldKey),
-        skipOffstage: false,
-      );
+      final field = find.byKey(ValueKey<String>(fieldKey), skipOffstage: false);
       expect(field, findsOneWidget, reason: fieldKey);
       final value = find.descendant(
         of: field,
@@ -748,7 +748,9 @@ void main() {
       expect(valueOf(tester, 'overview-field-alter-aktuell'), '–');
     });
 
-    testWidgets('zeigt ohne Abenteuerdatum den Leerplatzhalter', (tester) async {
+    testWidgets('zeigt ohne Abenteuerdatum den Leerplatzhalter', (
+      tester,
+    ) async {
       await pumpOverview(
         tester,
         heroMit(
@@ -762,6 +764,230 @@ void main() {
 
       expect(valueOf(tester, 'overview-field-alter-aktuell'), '–');
     });
+  });
+
+  /// Baut den Overview-Tab fuer einen Helden und liefert die Edit-Aktionen.
+  Future<WorkspaceTabEditActions> pumpOverview(
+    WidgetTester tester,
+    FakeRepository repo,
+  ) async {
+    WorkspaceTabEditActions? editActions;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith(
+            (ref) async => _buildRulesCatalog(),
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: HeroOverviewTab(
+              heroId: 'demo',
+              onDirtyChanged: (_) {},
+              onEditingChanged: (_) {},
+              onRegisterDiscard: (_) {},
+              onRegisterEditActions: (actions) {
+                editActions = actions;
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    return editActions!;
+  }
+
+  Future<void> openTraitCatalog(WidgetTester tester, String eintrag) async {
+    final addAdvantageButton = find.byKey(
+      const ValueKey<String>('overview-add-trait-vorteile'),
+    );
+    await tester.scrollUntilVisible(
+      addAdvantageButton,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(addAdvantageButton);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, eintrag);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ListTile, eintrag));
+    await tester.pumpAndSettle();
+  }
+
+  FakeRepository buildRepo({HeroSheet? hero}) {
+    return FakeRepository(
+      heroes: <HeroSheet>[hero ?? buildHero()],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+  }
+
+  testWidgets('Auswahl-Eintrag zeigt ein Dropdown statt eines Textfelds', (
+    tester,
+  ) async {
+    final repo = buildRepo();
+    final editActions = await pumpOverview(tester, repo);
+    await editActions.startEdit();
+    await tester.pumpAndSettle();
+
+    await openTraitCatalog(tester, 'Herausragender Sinn');
+
+    expect(find.byKey(const Key('trait-choice-dropdown')), findsOneWidget);
+    // Ohne Freitext gibt es kein zusaetzliches Eingabefeld.
+    expect(find.byKey(const Key('trait-choice-freetext')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('trait-choice-dropdown')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tastsinn').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Übernehmen'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ohne AP-Kosten'));
+    await tester.pumpAndSettle();
+
+    await editActions.save();
+    await tester.pumpAndSettle();
+
+    final saved = await repo.loadHeroById('demo');
+    expect(saved!.vorteileText, 'Herausragender Sinn Tastsinn');
+  });
+
+  testWidgets('Guter Ruf speichert Wert und Geltungsbereich', (tester) async {
+    final repo = buildRepo();
+    final editActions = await pumpOverview(tester, repo);
+    await editActions.startEdit();
+    await tester.pumpAndSettle();
+
+    await openTraitCatalog(tester, 'Guter Ruf');
+
+    await tester.tap(find.byKey(const Key('trait-choice-dropdown')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Eigene Kultur').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, '4');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Übernehmen'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ohne AP-Kosten'));
+    await tester.pumpAndSettle();
+
+    await editActions.save();
+    await tester.pumpAndSettle();
+
+    final saved = await repo.loadHeroById('demo');
+    expect(saved!.vorteileText, 'Guter Ruf 4 (Eigene Kultur)');
+  });
+
+  testWidgets('Steigerungsdialog nutzt dasselbe Maximum wie die Tabelle', (
+    tester,
+  ) async {
+    // Rohstart KK 14 plus Rassenbonus KK+1: Startwert 15, Maximum 23.
+    // Vor dem Bugfix rechnete der Dialog die Herkunftsmods doppelt (16/24).
+    const base = Attributes(
+      mu: 14,
+      kl: 12,
+      inn: 13,
+      ch: 11,
+      ff: 10,
+      ge: 12,
+      ko: 14,
+      kk: 14,
+    );
+    final hero = HeroSheet(
+      id: 'demo',
+      name: 'Thorwaler',
+      level: 1,
+      attributes: base,
+      rawStartAttributes: base,
+      startAttributes: const Attributes(
+        mu: 14,
+        kl: 12,
+        inn: 13,
+        ch: 11,
+        ff: 10,
+        ge: 12,
+        ko: 14,
+        kk: 15,
+      ),
+      background: const HeroBackground(rasseModText: 'KK+1'),
+      apTotal: 5000,
+      apAvailable: 5000,
+    );
+
+    final repo = buildRepo(hero: hero);
+    final editActions = await pumpOverview(tester, repo);
+    await editActions.startEdit();
+    await tester.pumpAndSettle();
+
+    final raiseButton = find.byKey(const ValueKey<String>('overview-raise-kk'));
+    await tester.scrollUntilVisible(
+      raiseButton,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(raiseButton);
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Startwert: 15'), findsOneWidget);
+    expect(find.textContaining('Maximaler Wert: 23'), findsOneWidget);
+  });
+
+  testWidgets('Bestandshelden-Hinweis erscheint und laesst sich quittieren', (
+    tester,
+  ) async {
+    const base = Attributes(
+      mu: 14,
+      kl: 12,
+      inn: 13,
+      ch: 11,
+      ff: 10,
+      ge: 12,
+      ko: 14,
+      kk: 14,
+    );
+    final hero = HeroSheet(
+      id: 'demo',
+      name: 'Bestand',
+      level: 1,
+      schemaVersion: 27,
+      attributes: base,
+      rawStartAttributes: base,
+      vorteileText: 'Herausragende Eigenschaft KK 2',
+    );
+
+    final repo = buildRepo(hero: hero);
+    await pumpOverview(tester, repo);
+
+    final ackButton = find.byKey(
+      const ValueKey<String>('attribute-trait-notice-ack'),
+    );
+    await tester.scrollUntilVisible(
+      ackButton,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('KK +2'), findsOneWidget);
+
+    await tester.tap(ackButton);
+    await tester.pumpAndSettle();
+
+    final saved = await repo.loadHeroById('demo');
+    expect(saved!.schemaVersion, 28);
+    expect(
+      find.byKey(const ValueKey<String>('attribute-trait-notice-ack')),
+      findsNothing,
+    );
   });
 }
 
@@ -791,6 +1017,33 @@ RulesCatalog _buildRulesCatalog() {
         costText: '10 GP',
         valueKind: 'binary',
         selectionTemplate: 'Flink',
+      ),
+      HeroTraitDef(
+        id: 'adv_herausragender_sinn',
+        name: 'Herausragender Sinn',
+        traitType: 'advantage',
+        costText: '5 GP pro Sinn',
+        valueKind: 'choice',
+        selectionTemplate: 'Herausragender Sinn {choice}',
+        choiceLabel: 'Sinn',
+        choices: <String>['Gehör', 'Sicht', 'Tastsinn', 'Geruchssinn'],
+        choiceFreeText: false,
+      ),
+      HeroTraitDef(
+        id: 'adv_guter_ruf',
+        name: 'Guter Ruf',
+        traitType: 'advantage',
+        costText: '1-10 GP',
+        valueKind: 'points',
+        minValue: 1,
+        maxValue: 10,
+        unit: 'GP',
+        selectionTemplate: 'Guter Ruf {value} ({choice})',
+        choiceLabel: 'Geltungsbereich',
+        choices: <String>[
+          'Eigene Kultur',
+          'Benachbarte und verwandte Kulturen',
+        ],
       ),
     ],
     disadvantages: <HeroTraitDef>[

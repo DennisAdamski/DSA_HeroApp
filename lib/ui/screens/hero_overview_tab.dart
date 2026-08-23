@@ -48,6 +48,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_deta
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_table_cell.dart';
 import 'package:file_picker/file_picker.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/hero_trait_choices.dart';
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_text.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
@@ -549,6 +550,10 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
               ],
               const SizedBox(height: _sectionSpacing),
               _buildApSection(hero),
+              if (pendingAttributeTraitNotices(hero).isNotEmpty) ...[
+                const SizedBox(height: _sectionSpacing),
+                _buildAttributeTraitNoticeSection(hero),
+              ],
               if (kShowParserWarnings &&
                   hero.unknownModifierFragments.isNotEmpty) ...[
                 const SizedBox(height: _sectionSpacing),

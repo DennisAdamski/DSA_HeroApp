@@ -337,7 +337,7 @@ void main() {
     final reloaded = HeroSheet.fromJson(json);
 
     expect(reloaded.background.rasse, 'Mensch');
-    expect(reloaded.schemaVersion, 27);
+    expect(reloaded.schemaVersion, 28);
     expect(reloaded.background.kultur, 'Mittelreich');
     expect(reloaded.background.profession, 'Krieger');
     expect(reloaded.apTotal, 2000);
@@ -826,7 +826,7 @@ void main() {
     },
   );
 
-  test('schemaVersion ist 27 nach toJson (v27-Default mit Epic-Feldern)', () {
+  test('schemaVersion ist 28 nach toJson (v28-Default mit Epic-Feldern)', () {
     const hero = HeroSheet(
       id: 'version-check',
       name: 'Versionstest',
@@ -843,8 +843,8 @@ void main() {
       ),
     );
     final json = hero.toJson();
-    expect(json['schemaVersion'], 27);
-    expect(HeroSheet.fromJson(json).schemaVersion, 27);
+    expect(json['schemaVersion'], 28);
+    expect(HeroSheet.fromJson(json).schemaVersion, 28);
   });
 
   test(
