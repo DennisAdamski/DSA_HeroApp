@@ -281,7 +281,8 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `rasse` / `rasseModText` | `String` | Rasse und Rassenmodifikator-Text |
 | `kultur` / `kulturModText` | `String` | Kultur und Kulturmodifikator-Text |
 | `profession` / `professionModText` | `String` | Profession und Professions-Mod-Text |
-| `geschlecht`, `alter`, `groesse`, `gewicht` | `String` | Körperdaten |
+| `geschlecht`, `alter`, `groesse`, `gewicht` | `String` | Körperdaten; `alter` ist der Freitextwert aus der Erschaffung und altert nicht mit |
+| `geburtsdatum` | `AventurianDate` | Aventurisches Geburtsdatum als Bezugspunkt für das berechnete aktuelle Alter; wird nur bei belegtem Wert serialisiert |
 | `haarfarbe`, `augenfarbe`, `aussehen` | `String` | Äußere Erscheinung |
 | `stand`, `titel` | `String` | Sozialer Stand und Titel |
 | `familieHerkunftHintergrund` | `String` | Familiengeschichte/Herkunft |
@@ -2077,7 +2078,9 @@ ueber die Settings-Katalogverwaltung bearbeitet.
 - `HeroAdventurePersonEntry` modelliert abenteuerspezifische Personen
   getrennt von globalen Kontakten.
 - `HeroAdventureDateValue` kapselt strukturierte weltliche und aventurische
-  Datumsangaben fuer Abenteuer.
+  Datumsangaben fuer Abenteuer. Die Monatsauswahl kommt aus dem kanonischen
+  Kalender in `lib/domain/aventurian_date.dart` (siehe Abschnitt „Aventurischer
+  Kalender und aktuelles Alter").
 - Der Abenteuer-Tab zeigt Abenteuer jetzt als nach Status gruppierte
   `ChoiceChip`-Uebersicht; standardmaessig wird das erste `Aktuell`-
   Abenteuer, sonst der erste Eintrag geoeffnet.
@@ -2174,6 +2177,49 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   `Ueberanstrengung` jetzt direkt in den editierbaren Vitalwerten.
 - Das Lagerfeuer-Symbol sitzt oben rechts in derselben Vitalwerte-Karte und
   oeffnet `rest_dialog.dart` mit Vorschau und Sammeluebernahme.
+
+### Update 2026-08-23: Aventurischer Kalender und aktuelles Alter
+
+**Kalender (`lib/domain/aventurian_date.dart`)**
+
+- `aventurianMonths` ist die kanonische Monatsfolge: zwoelf Goettermonate zu je
+  30 Tagen (Praios, Rondra, Efferd, Travia, Boron, Hesinde, Firun, Tsa, **Phex**,
+  Peraine, Ingerimm, Rahja), danach die fuenf Namenlosen Tage — zusammen 365
+  Tage (Geographia Aventurica, Immerwaehrender Kalender S. 253).
+- Vorher fuehrte der Abenteuer-Tab eine eigene Liste **ohne Phex**. Diese Liste
+  ist entfallen; `hero_adventure_dialogs.dart` delegiert an den geteilten
+  Kalender. Bestandsdaten brauchen keine Migration: Monate sind Schluessel, es
+  kam nur eine Option hinzu.
+- `AventurianDate` haelt Tag, Monat und Jahr als `String`, weil die
+  Eingabefelder Freitext zulassen und Teilangaben gueltig sind.
+  `normalizeAventurianMonth`, `aventurianMonthLabel`, `aventurianMonthIndex` und
+  `formatAventurianDate` (`12. Praios 1027 BF`) ergaenzen den Typ.
+
+**Altersregel (`lib/rules/derived/aventurian_age_rules.dart`)**
+
+- `aventurianDayOfYear` liefert `Monatsindex * 30 + Tag`; die Namenlosen Tage
+  landen dadurch auf 361 bis 365.
+- `parseAventurianYear` liest die erste ganze Zahl, damit `1027 BF` funktioniert.
+- `resolveCurrentAdventureDate` bestimmt den Stichtag: laufende Abenteuer in
+  Listenreihenfolge (`currentAventurianDate` vor `startAventurianDate`), sonst
+  das zuletzt abgeschlossene (`endAventurianDate` → `currentAventurianDate` →
+  `startAventurianDate`).
+- `computeAventurianAge` zaehlt volle Jahre und zieht einen im laufenden Jahr
+  noch ausstehenden Geburtstag ab. Fehlt Tag oder Monat, bleibt es bei der
+  Jahresdifferenz; ein negatives Ergebnis liefert `null`.
+
+**Modell und UI**
+
+- `HeroAppearance.geburtsdatum` ist der Bezugspunkt. Es wird in `toJson` **nur
+  bei belegtem Wert** geschrieben: Die Appearance-Map landet flach im
+  Helden-JSON und geht in `heroContentHash` ein — ein bedingungslos emittiertes
+  Feld wuerde jeden Bestandshelden veraendern und beim naechsten Speichern eine
+  Sync-Konfliktwelle ausloesen.
+- Die Heldenuebersicht zeigt neben dem manuellen `Alter` die beiden Felder
+  `Geburtsdatum` (im Lesemodus formatiert, im Bearbeitungsmodus Tag /
+  Monats-Dropdown / Jahr) und das schreibgeschuetzte `Alter (aktuell)`. Der
+  Geburtsmonat liegt als Entwurfsfeld `_draftGeburtsmonat` im Tab-State, weil
+  ein Dropdown sich nicht als `TextEditingController` puffern laesst.
 
 ---
 

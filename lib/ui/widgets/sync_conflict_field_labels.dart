@@ -67,6 +67,7 @@ const Map<String, String> syncFieldLabels = <String, String>{
   // HeroSheet: flach eingemischte Aussehen-Felder.
   'geschlecht': 'Geschlecht',
   'alter': 'Alter',
+  'geburtsdatum': 'Geburtsdatum',
   'groesse': 'Größe',
   'gewicht': 'Gewicht',
   'haarfarbe': 'Haarfarbe',

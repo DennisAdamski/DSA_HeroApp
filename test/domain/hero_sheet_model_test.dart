@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
@@ -1102,6 +1103,58 @@ void main() {
         geaendert.repraesentationsTraditionen['Geo'],
         'geode_diener_sumus',
       );
+    });
+  });
+
+  group('Geburtsdatum', () {
+    HeroSheet heroMitGeburtsdatum(AventurianDate geburtsdatum) {
+      return HeroSheet(
+        id: 'h-geburt',
+        name: 'Geburtstagskind',
+        level: 1,
+        attributes: Attributes.zero(),
+        appearance: HeroAppearance(geburtsdatum: geburtsdatum),
+      );
+    }
+
+    test('ueberlebt einen JSON-Roundtrip', () {
+      final hero = heroMitGeburtsdatum(
+        const AventurianDate(day: '12', month: 'phex', year: '1000'),
+      );
+
+      final geladen = HeroSheet.fromJson(hero.toJson());
+
+      expect(geladen.appearance.geburtsdatum.day, '12');
+      expect(geladen.appearance.geburtsdatum.month, 'phex');
+      expect(geladen.appearance.geburtsdatum.year, '1000');
+    });
+
+    test('wird ohne Inhalt nicht serialisiert', () {
+      final hero = heroMitGeburtsdatum(const AventurianDate());
+
+      // Das Feld landet flach im Helden-JSON und geht in heroContentHash ein.
+      // Wuerde es leer mitgeschrieben, aenderte sich jeder Bestandsheld und
+      // der Konto-Sync meldete beim naechsten Speichern Konflikte.
+      expect(hero.toJson().containsKey('geburtsdatum'), isFalse);
+      expect(
+        HeroSheet.fromJson(hero.toJson()).appearance.geburtsdatum.hasContent,
+        isFalse,
+      );
+    });
+
+    test('fuehrt Monatsnamen auf ihren Schluessel zurueck', () {
+      final geladen = HeroSheet.fromJson(<String, dynamic>{
+        'id': 'h-alt',
+        'name': 'Bestandsheld',
+        'level': 1,
+        'geburtsdatum': <String, dynamic>{
+          'day': '3',
+          'month': 'Ingerimm',
+          'year': '1010',
+        },
+      });
+
+      expect(geladen.appearance.geburtsdatum.month, 'ingerimm');
     });
   });
 }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
@@ -16,6 +17,7 @@ import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/bought_stat_limit_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
@@ -121,6 +123,10 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   bool? _draftMagicEnabledOverride;
   bool? _draftDivineEnabledOverride;
 
+  /// Entwurfswert des Geburtsmonats; der Monat kommt aus einem Dropdown und
+  /// laesst sich deshalb nicht wie die uebrigen Felder als Text puffern.
+  String _draftGeburtsmonat = '';
+
   @override
   void initState() {
     super.initState();
@@ -179,6 +185,11 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('profession_mod').text = hero.background.professionModText;
     _field('geschlecht').text = hero.appearance.geschlecht;
     _field('alter').text = hero.appearance.alter;
+    _field('geburt_tag').text = hero.appearance.geburtsdatum.day;
+    _field('geburt_jahr').text = hero.appearance.geburtsdatum.year;
+    _draftGeburtsmonat = normalizeAventurianMonth(
+      hero.appearance.geburtsdatum.month,
+    );
     _field('groesse').text = hero.appearance.groesse;
     _field('gewicht').text = hero.appearance.gewicht;
     _field('haarfarbe').text = hero.appearance.haarfarbe;
@@ -268,6 +279,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       appearance: hero.appearance.copyWith(
         geschlecht: _field('geschlecht').text.trim(),
         alter: _field('alter').text.trim(),
+        geburtsdatum: _readBirthDateDraft(),
         groesse: _field('groesse').text.trim(),
         gewicht: _field('gewicht').text.trim(),
         haarfarbe: _field('haarfarbe').text.trim(),
@@ -352,6 +364,36 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     if (mounted) {
       _viewRevision.value++;
     }
+  }
+
+  /// Liest das Geburtsdatum aus dem aktuellen Bearbeitungsstand.
+  AventurianDate _readBirthDateDraft() {
+    return AventurianDate.fromParts(
+      _field('geburt_tag').text,
+      _draftGeburtsmonat,
+      _field('geburt_jahr').text,
+    );
+  }
+
+  /// Liefert das anzuzeigende Geburtsdatum.
+  ///
+  /// Im Bearbeitungsmodus zaehlt der noch ungespeicherte Entwurf, damit das
+  /// abgeleitete Alter schon waehrend der Eingabe mitlaeuft.
+  AventurianDate _visibleBirthDate(HeroSheet hero) {
+    if (!_editController.isEditing) {
+      return hero.appearance.geburtsdatum;
+    }
+    return _readBirthDateDraft();
+  }
+
+  /// Uebernimmt einen im Dropdown gewaehlten Geburtsmonat in den Entwurf.
+  void _applyDraftGeburtsmonat(String month) {
+    final normalizedMonth = normalizeAventurianMonth(month);
+    if (_draftGeburtsmonat == normalizedMonth) {
+      return;
+    }
+    _draftGeburtsmonat = normalizedMonth;
+    _onFieldChanged('');
   }
 
   HeroResourceActivation _buildCurrentResourceActivation(HeroSheet hero) {

@@ -9,7 +9,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
         title: 'Basisinformationen',
         child: Column(
           children: [
-            _buildStandardFieldLayout(),
+            _buildStandardFieldLayout(hero),
             const SizedBox(height: _gridSpacing),
             const _SketchedAvatarPlaceholder(),
             const SizedBox(height: _gridSpacing),
@@ -52,7 +52,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: Column(children: _buildStandardFieldRows())),
+            Expanded(child: Column(children: _buildStandardFieldRows(hero))),
             const SizedBox(width: _gridSpacing),
             SizedBox(
               width: avatarWidth,
@@ -95,24 +95,24 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
         const SizedBox(height: 8),
         _HasAvatarActions(heroId: widget.heroId, hero: hero),
         const SizedBox(height: _gridSpacing),
-        ..._buildStandardFieldRows(),
+        ..._buildStandardFieldRows(hero),
       ],
     );
   }
 
   /// Standard-Feldanordnung ohne Avatar (wie das urspruengliche Layout).
-  Widget _buildStandardFieldLayout() {
+  Widget _buildStandardFieldLayout(HeroSheet hero) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildInputField(label: 'Name', keyName: 'name'),
         const SizedBox(height: _gridSpacing),
-        ..._buildStandardFieldRows(),
+        ..._buildStandardFieldRows(hero),
       ],
     );
   }
 
-  List<Widget> _buildStandardFieldRows() {
+  List<Widget> _buildStandardFieldRows(HeroSheet hero) {
     return [
       _ResponsiveFieldGrid(
         breakpoint: _standardTwoColumnBreakpoint,
@@ -149,6 +149,8 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
         children: [
           _buildInputField(label: 'Geschlecht', keyName: 'geschlecht'),
           _buildInputField(label: 'Alter', keyName: 'alter'),
+          _buildBirthDateField(hero),
+          _buildCurrentAgeField(hero),
           _buildInputField(label: 'Größe', keyName: 'groesse'),
           _buildInputField(label: 'Gewicht', keyName: 'gewicht'),
           _buildInputField(label: 'Haarfarbe', keyName: 'haarfarbe'),
@@ -181,6 +183,98 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
         ],
       ),
     ];
+  }
+
+  /// Aventurisches Geburtsdatum: gelesen als formatierter Text, bearbeitet als
+  /// Tag, Monatsauswahl und Jahr.
+  Widget _buildBirthDateField(HeroSheet hero) {
+    final geburtsdatum = _visibleBirthDate(hero);
+    if (!_editController.isEditing) {
+      return _buildReadOnlyValueField(
+        key: const ValueKey<String>('overview-field-geburtsdatum'),
+        label: 'Geburtsdatum',
+        value: formatAventurianDate(geburtsdatum),
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 2,
+          child: TextField(
+            key: const ValueKey<String>('overview-field-geburt-tag'),
+            controller: _field('geburt_tag'),
+            maxLines: 1,
+            keyboardType: TextInputType.number,
+            decoration: _inputDecoration('Tag'),
+            onChanged: _onFieldChanged,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(flex: 4, child: _buildBirthMonthDropdown()),
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 3,
+          child: TextField(
+            key: const ValueKey<String>('overview-field-geburt-jahr'),
+            controller: _field('geburt_jahr'),
+            maxLines: 1,
+            decoration: _inputDecoration('Jahr (BF)'),
+            onChanged: _onFieldChanged,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Monatsauswahl auf Basis des kanonischen aventurischen Kalenders.
+  ///
+  /// Bewusst ein `DropdownButton` statt eines `DropdownButtonFormField`: Der
+  /// Monat lebt in einem Entwurfsfeld, und nur der Button uebernimmt einen von
+  /// aussen geaenderten Wert bei jedem Rebuild zuverlaessig.
+  Widget _buildBirthMonthDropdown() {
+    final selectedMonth = _draftGeburtsmonat.isEmpty
+        ? null
+        : _draftGeburtsmonat;
+    final items = aventurianMonths
+        .map(
+          (month) => DropdownMenuItem<String>(
+            value: month.value,
+            child: Text(
+              month.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        )
+        .toList(growable: false);
+
+    return InputDecorator(
+      decoration: _inputDecoration('Monat'),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          key: const ValueKey<String>('overview-field-geburt-monat'),
+          value: selectedMonth,
+          isExpanded: true,
+          isDense: true,
+          hint: const Text('–'),
+          items: items,
+          onChanged: (month) => _applyDraftGeburtsmonat(month ?? ''),
+        ),
+      ),
+    );
+  }
+
+  /// Aus Geburtsdatum und Abenteuerdatum abgeleitetes Alter (nie editierbar).
+  Widget _buildCurrentAgeField(HeroSheet hero) {
+    final geburtsdatum = _visibleBirthDate(hero);
+    final aktuellesAlter = computeHeroAgeForBirthDate(hero, geburtsdatum);
+    return _buildReadOnlyValueField(
+      key: const ValueKey<String>('overview-field-alter-aktuell'),
+      label: 'Alter (aktuell)',
+      value: aktuellesAlter?.toString() ?? '',
+    );
   }
 
   Widget _buildAdvantagesSection() {
