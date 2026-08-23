@@ -119,7 +119,8 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
   }
 
   bool _isGraduatedTrait(HeroTraitDef trait) {
-    return trait.valueKind.contains('level') || trait.valueKind.contains('points');
+    return trait.valueKind.contains('level') ||
+        trait.valueKind.contains('points');
   }
 
   Future<void> _abbauGraduatedTrait({
@@ -196,8 +197,14 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
         _erhoeheApSpent(apKosten);
       }
     }
-    final fragments = splitHeroTraitText(_field(keyName).text).toList();
-    fragments.add(fragment);
+    final existing = splitHeroTraitText(_field(keyName).text).toList();
+    final fragments = pick.trait == null
+        ? (existing..add(fragment))
+        : mergeHeroTraitFragment(
+            fragments: existing,
+            fragment: fragment,
+            trait: pick.trait!,
+          );
     _writeTraitFragments(keyName, fragments);
   }
 
@@ -369,70 +376,18 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
       return buildHeroTraitSelectionText(trait: trait);
     }
 
-    final choiceController = TextEditingController();
-    final valueController = TextEditingController(
-      text: (trait.minValue ?? 1).toString(),
-    );
-    final result = await showDialog<String>(
+    final catalog = ref.read(rulesCatalogProvider).valueOrNull;
+    return showDialog<String>(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(trait.name),
-          content: SizedBox(
-            width: 420,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (needsChoice)
-                  TextField(
-                    controller: choiceController,
-                    decoration: const InputDecoration(
-                      labelText: 'Spezialisierung',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    autofocus: true,
-                  ),
-                if (needsChoice && needsValue) const SizedBox(height: 12),
-                if (needsValue)
-                  TextField(
-                    controller: valueController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: trait.unit.isEmpty ? 'Wert' : trait.unit,
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    autofocus: !needsChoice,
-                  ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Abbrechen'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final parsedValue = int.tryParse(valueController.text.trim());
-                final value = needsValue
-                    ? _clampTraitValue(parsedValue, trait)
-                    : null;
-                final fragment = buildHeroTraitSelectionText(
-                  trait: trait,
-                  choice: choiceController.text,
-                  value: value,
-                );
-                Navigator.of(dialogContext).pop(fragment);
-              },
-              child: const Text('Übernehmen'),
-            ),
-          ],
-        );
-      },
+      builder: (dialogContext) => _TraitValueDialog(
+        trait: trait,
+        needsChoice: needsChoice,
+        needsValue: needsValue,
+        choices: needsChoice
+            ? resolveTraitChoices(trait, catalog)
+            : const <String>[],
+      ),
     );
-    return result;
   }
 
   Future<String?> _showFreeTraitDialog({required String singularLabel}) {
@@ -560,19 +515,6 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
     _setFieldText(keyName, serialized);
     _onFieldChanged(serialized);
   }
-
-  int _clampTraitValue(int? rawValue, HeroTraitDef trait) {
-    final min = trait.minValue ?? 1;
-    final max = trait.maxValue;
-    var value = rawValue ?? min;
-    if (value < min) {
-      value = min;
-    }
-    if (max != null && value > max) {
-      value = max;
-    }
-    return value;
-  }
 }
 
 class _TraitCatalogPick {
@@ -582,4 +524,186 @@ class _TraitCatalogPick {
 
   final HeroTraitDef? trait;
   final bool isFreeEntry;
+}
+
+/// Sentinel des Auswahl-Dropdowns fuer den Eintrag „Eigene Eingabe…".
+const String _kTraitFreeChoiceSentinel = '__freitext__';
+
+/// Klemmt einen Dialogwert gegen `minValue`/`maxValue` des Katalogeintrags.
+int _clampTraitValue(int? rawValue, HeroTraitDef trait) {
+  final min = trait.minValue ?? 1;
+  final max = trait.maxValue;
+  var value = rawValue ?? min;
+  if (value < min) {
+    value = min;
+  }
+  if (max != null && value > max) {
+    value = max;
+  }
+  return value;
+}
+
+/// Erfasst Auswahl und Zahlenwert eines katalogisierten Vor-/Nachteils.
+///
+/// Eigener [StatefulWidget], damit die Controller erst mit der Dialog-Route
+/// entsorgt werden. Ein `dispose()` direkt nach `await showDialog` waere zu
+/// frueh: die Route baut waehrend ihrer Schliess-Animation noch einmal auf.
+class _TraitValueDialog extends StatefulWidget {
+  const _TraitValueDialog({
+    required this.trait,
+    required this.needsChoice,
+    required this.needsValue,
+    required this.choices,
+  });
+
+  final HeroTraitDef trait;
+  final bool needsChoice;
+  final bool needsValue;
+  final List<String> choices;
+
+  @override
+  State<_TraitValueDialog> createState() => _TraitValueDialogState();
+}
+
+class _TraitValueDialogState extends State<_TraitValueDialog> {
+  late final TextEditingController _choiceController;
+  late final TextEditingController _valueController;
+  late String _selectedChoice;
+
+  /// Ohne Vorschlagsliste bleibt es beim reinen Textfeld wie bisher; ein
+  /// Dropdown mit nur dem Freitext-Eintrag waere ein Klick ohne Nutzen.
+  bool get _useDropdown => widget.choices.isNotEmpty;
+
+  bool get _isFreeChoice => _selectedChoice == _kTraitFreeChoiceSentinel;
+
+  String get _resolvedChoice => _isFreeChoice || !_useDropdown
+      ? _choiceController.text.trim()
+      : _selectedChoice.trim();
+
+  String get _choiceLabel => widget.trait.choiceLabel.trim().isEmpty
+      ? 'Spezialisierung'
+      : widget.trait.choiceLabel.trim();
+
+  @override
+  void initState() {
+    super.initState();
+    _choiceController = TextEditingController();
+    _valueController = TextEditingController(
+      text: (widget.trait.minValue ?? 1).toString(),
+    );
+    // Ist Freitext gesperrt, steht die erste Option vor; sonst startet der
+    // Dialog leer, damit keine Auswahl versehentlich uebernommen wird.
+    _selectedChoice = _useDropdown && !widget.trait.choiceFreeText
+        ? widget.choices.first
+        : '';
+  }
+
+  @override
+  void dispose() {
+    _choiceController.dispose();
+    _valueController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildChoiceTextField() {
+    return TextField(
+      key: const Key('trait-choice-freetext'),
+      controller: _choiceController,
+      decoration: InputDecoration(
+        labelText: _choiceLabel,
+        border: const OutlineInputBorder(),
+        isDense: true,
+      ),
+      autofocus: true,
+      onChanged: (_) => setState(() {}),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final canSubmit = !widget.needsChoice || _resolvedChoice.isNotEmpty;
+
+    return AlertDialog(
+      title: Text(widget.trait.name),
+      content: SizedBox(
+        width: 420,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (widget.needsChoice && _useDropdown)
+              DropdownButtonFormField<String>(
+                key: const Key('trait-choice-dropdown'),
+                initialValue: _selectedChoice.isEmpty ? null : _selectedChoice,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: _choiceLabel,
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: [
+                  for (final choice in widget.choices)
+                    DropdownMenuItem<String>(
+                      value: choice,
+                      child: Text(choice, overflow: TextOverflow.ellipsis),
+                    ),
+                  if (widget.trait.choiceFreeText)
+                    const DropdownMenuItem<String>(
+                      value: _kTraitFreeChoiceSentinel,
+                      child: Text('Eigene Eingabe…'),
+                    ),
+                ],
+                onChanged: (value) {
+                  setState(() => _selectedChoice = value ?? '');
+                },
+              ),
+            if (widget.needsChoice && !_useDropdown) _buildChoiceTextField(),
+            if (widget.needsChoice && _useDropdown && _isFreeChoice) ...[
+              const SizedBox(height: 12),
+              _buildChoiceTextField(),
+            ],
+            if (widget.needsChoice && widget.needsValue)
+              const SizedBox(height: 12),
+            if (widget.needsValue)
+              TextField(
+                controller: _valueController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: widget.trait.unit.isEmpty
+                      ? 'Wert'
+                      : widget.trait.unit,
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                autofocus: !widget.needsChoice,
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        FilledButton(
+          onPressed: canSubmit
+              ? () {
+                  final parsedValue = int.tryParse(
+                    _valueController.text.trim(),
+                  );
+                  final value = widget.needsValue
+                      ? _clampTraitValue(parsedValue, widget.trait)
+                      : null;
+                  final fragment = buildHeroTraitSelectionText(
+                    trait: widget.trait,
+                    choice: widget.needsChoice ? _resolvedChoice : '',
+                    value: value,
+                  );
+                  Navigator.of(context).pop(fragment);
+                }
+              : null,
+          child: const Text('Übernehmen'),
+        ),
+      ],
+    );
+  }
 }

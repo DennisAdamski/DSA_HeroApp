@@ -1,20 +1,10 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_notes_tab.dart';
 
-const List<_AdventureMonthOption> _aventurianMonthOptions =
-    <_AdventureMonthOption>[
-      _AdventureMonthOption(value: 'praios', label: 'Praios'),
-      _AdventureMonthOption(value: 'rondra', label: 'Rondra'),
-      _AdventureMonthOption(value: 'efferd', label: 'Efferd'),
-      _AdventureMonthOption(value: 'travia', label: 'Travia'),
-      _AdventureMonthOption(value: 'boron', label: 'Boron'),
-      _AdventureMonthOption(value: 'hesinde', label: 'Hesinde'),
-      _AdventureMonthOption(value: 'firun', label: 'Firun'),
-      _AdventureMonthOption(value: 'tsa', label: 'Tsa'),
-      _AdventureMonthOption(value: 'peraine', label: 'Peraine'),
-      _AdventureMonthOption(value: 'ingerimm', label: 'Ingerimm'),
-      _AdventureMonthOption(value: 'rahja', label: 'Rahja'),
-      _AdventureMonthOption(value: 'namenlose_tage', label: 'Namenlose Tage'),
-    ];
+/// Monatsauswahl der Abenteuerdaten.
+///
+/// Quelle ist der kanonische Kalender aus `lib/domain/aventurian_date.dart`,
+/// damit hier keine zweite, abweichende Monatsliste entsteht.
+const List<AventurianMonth> _aventurianMonthOptions = aventurianMonths;
 
 Future<HeroAdventureEntry?> _showAdventureCreateDialog({
   required BuildContext context,
@@ -62,13 +52,6 @@ Future<_AdventurePersonDialogResult?> _showAdventurePersonDialog({
     builder: (_) =>
         _AdventurePersonDialog(initial: initial, isEditing: isEditing),
   );
-}
-
-class _AdventureMonthOption {
-  const _AdventureMonthOption({required this.value, required this.label});
-
-  final String value;
-  final String label;
 }
 
 class _AdventureDateDraft {
@@ -1413,22 +1396,11 @@ class _AdventureDialogDateFields extends StatelessWidget {
 }
 
 String _normalizeAventurianMonthValue(String rawValue) {
-  final normalizedValue = rawValue.trim().toLowerCase();
-  for (final option in _aventurianMonthOptions) {
-    if (option.value == normalizedValue ||
-        option.label.toLowerCase() == normalizedValue) {
-      return option.value;
-    }
-  }
-  return '';
+  return normalizeAventurianMonth(rawValue);
 }
 
 String _aventurianMonthLabel(String rawValue) {
-  final normalizedValue = _normalizeAventurianMonthValue(rawValue);
-  final option = _aventurianMonthOptions
-      .where((entry) => entry.value == normalizedValue)
-      .firstOrNull;
-  return option?.label ?? rawValue.trim();
+  return aventurianMonthLabel(rawValue);
 }
 
 String _adventureCompletionTitle(HeroAdventureEntry entry) {

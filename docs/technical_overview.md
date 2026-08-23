@@ -260,12 +260,12 @@ Feldern; `?? Standardwert` für jedes Feld).
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `String` | Eindeutige UUID; bleibt über Exporte stabil |
-| `schemaVersion` | `int` (= 23) | Format-Version fuer Migrationskompatibilitaet |
+| `schemaVersion` | `int` (= 28) | Format-Version fuer Migrationskompatibilitaet |
 | `name` | `String` | Anzeigename des Helden |
 | `level` | `int` | Stufe (wird aus `apSpent` berechnet) |
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
 | `attributes` | `Attributes` | Aktuelle Eigenschaftswerte (8 Werte) |
-| `startAttributes` | `Attributes` | Effektive Starteigenschaften nach Rasse/Kultur/Profession |
+| `startAttributes` | `Attributes` | Abgeleitet: `computeHeroEffectiveStartAttributes`. Nie als Basis einer erneuten Modifikation verwenden (Abschnitt 4.10) |
 | `persistentMods` | `StatModifiers` | Dauerhafte Modifikatoren (aus Vor-/Nachteilen) |
 | `bought` | `BoughtStats` | Gekaufte Ressourcenerhöhungen |
 | `combatConfig` | `CombatConfig` | Gesamte Kampfkonfiguration |
@@ -281,7 +281,8 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `rasse` / `rasseModText` | `String` | Rasse und Rassenmodifikator-Text |
 | `kultur` / `kulturModText` | `String` | Kultur und Kulturmodifikator-Text |
 | `profession` / `professionModText` | `String` | Profession und Professions-Mod-Text |
-| `geschlecht`, `alter`, `groesse`, `gewicht` | `String` | Körperdaten |
+| `geschlecht`, `alter`, `groesse`, `gewicht` | `String` | Körperdaten; `alter` ist der Freitextwert aus der Erschaffung und altert nicht mit |
+| `geburtsdatum` | `AventurianDate` | Aventurisches Geburtsdatum als Bezugspunkt für das berechnete aktuelle Alter; wird nur bei belegtem Wert serialisiert |
 | `haarfarbe`, `augenfarbe`, `aussehen` | `String` | Äußere Erscheinung |
 | `stand`, `titel` | `String` | Sozialer Stand und Titel |
 | `familieHerkunftHintergrund` | `String` | Familiengeschichte/Herkunft |
@@ -1486,6 +1487,92 @@ Traditionsritualen ausgesperrt. Trägt eine Repräsentation mehrere Traditionen
 
 ---
 
+### 4.10 Auswahllisten und Eigenschaftswirkung bei Vor-/Nachteilen
+
+**Dateien:** `lib/catalog/hero_trait_def.dart`,
+`lib/catalog/hero_trait_choices.dart`, `lib/catalog/hero_trait_text.dart`,
+`lib/rules/derived/attribute_trait_rules.dart`,
+`lib/rules/derived/modifier_fragment_text.dart`,
+`lib/rules/derived/attribute_start_rules.dart`
+
+**Katalogschema.** Ein Vor-/Nachteil mit `{choice}` im `selectionTemplate`
+traegt vier optionale Felder:
+
+| Feld | Bedeutung |
+|---|---|
+| `choiceLabel` | Beschriftung des Auswahlfelds (`Sinn`, `Eigenschaft`, `Geltungsbereich`). Leer = `Spezialisierung` |
+| `choices` | Feste Auswahlliste, Reihenfolge bleibt erhalten |
+| `choiceSource` | Katalogabgeleitete Liste, siehe unten |
+| `choiceFreeText` | Ob zusaetzlich freie Eingabe erlaubt ist (Default `true`) |
+
+`resolveTraitChoices(trait, catalog)` fuehrt beides zusammen: feste `choices`
+zuerst, danach die aufgeloeste Quelle alphabetisch, dedupliziert. Bekannte
+Quellen stehen in `kKnownTraitChoiceSources`: `eigenschaften`, `talente`,
+`talente_handwerk`, `talente_kampf_koerper`, `talente_sonstige`,
+`talentgruppen`, `talentgruppen_kampf_koerper`, `talentgruppen_sonstige`,
+`zauber`, `rituale`, `merkmale`, `schlechte_eigenschaften`, `sprachen`,
+`schriften`.
+
+Zwei Quellen sind nicht offensichtlich: `rituale` flacht die
+Variantengruppen der Kategorie `Traditionsrituale` ab (Einzelrituale haben
+keinen eigenen Katalog), und `schlechte_eigenschaften` liest die Nachteile
+mit Marker `SE` — Platzhalter-Eintraege wie `Angst vor [...]` bleiben
+draussen. `test/catalog/trait_choice_catalog_test.dart` loest jede Quelle
+gegen den echten Katalog auf; ein Tippfehler faellt sonst erst im Betrieb
+auf, und dort nur als leeres Dropdown.
+
+**Speicherformat.** Unveraendert Freitext in `HeroSheet.vorteileText` /
+`nachteileText`. `parseTraitFragmentParts` ist die Umkehrung von
+`buildHeroTraitSelectionText` und liefert Auswahl **und** Wert. Eine
+Klammergruppe, die nur `{choice}` enthaelt, ist beim Zurueckparsen optional
+und wird beim Bauen entfernt, wenn die Auswahl leer bleibt — sonst haette
+das erweiterte Template `Guter Ruf {value} ({choice})` Bestandsfragmente wie
+`Guter Ruf 4` unlesbar gemacht. `mergeHeroTraitFragment` fasst einen zweiten
+Erwerb derselben Auswahl zum summierten Wert zusammen, statt ihn wie
+`serializeHeroTraitFragments` still zu verwerfen.
+
+**Herausragende Eigenschaft.** Der einzige Vor-/Nachteil mit einer
+Eigenschaft als Wirkungsziel (WdH S. 253). Fragmentform
+`<Name> <Eigenschaft> [<Wert>]`, geparst von
+`parseAttributeTraitFragment`. Der Modifikator landet in **zwei**
+Akkumulatoren von `parseModifierTexts`:
+
+- `attributeMods` — wirkt wie ein `KK+2`-Fragment auf den aktuellen Wert.
+- `startAttributeMods` — hebt zusaetzlich den Startwert und damit ueber
+  `ceil(start * 1.5)` das Maximum.
+
+Freie `CODE+N`-Fragmente aus Vor-/Nachteilen fliessen **nicht** in
+`startAttributeMods`: die beschreiben laufende Effekte, keine
+Generierungswerte. Rasse, Kultur und Profession dagegen schon
+(`contributesToStartAttributes`).
+
+Die Eintragskonvention ist damit: **die Eigenschaft ohne den Bonus
+eintragen**, die App rechnet ihn oben drauf. Buchbeispiel Thorwaler mit
+Rohstart KK 14, `rasseModText: 'KK+1'` und `Herausragende Eigenschaft KK 2`
+ergibt Startwert 17, aktuellen Wert 17 und Maximum 26.
+
+**Startwerte haben genau einen Einstiegspunkt.**
+`computeHeroEffectiveStartAttributes(hero)` und
+`computeHeroAttributeMaximums(hero)` binden die Basis fest an
+`rawStartAttributes`. Das ist kein Stilentscheid: `startAttributes` traegt
+bereits das Ergebnis dieser Rechnung, und der Steigerungsdialog hat es
+frueher ein zweites Mal modifiziert — Herkunftsmods wurden doppelt addiert
+und der Dialog erlaubte einen Steigerungsschritt zu viel.
+
+**Steigerungsdialog auf Effektivebene.** `hero.attributes` ist die Rohspalte,
+Startwert und Maximum liegen eine Ebene darueber. `_startAttributeDelta`
+holt genau die Modifikatoren, die auch das Maximum speisen (Herkunft plus
+Herausragende Eigenschaft), rechnet sie fuer den Dialog auf und beim
+Speichern wieder ab. Benannte `attributeModifiers` und freie Textmods
+bleiben draussen — das sind situative Boni, keine erkaufte Progression.
+
+**Bestandshelden.** `pendingAttributeTraitNotices(hero)` meldet die neu
+wirksamen Boni, solange `hero.schemaVersion < 28`. Bewusst **kein** stiller
+Wertumbau: ob der Punkt schon im eingetragenen Wert steckt, weiss nur der
+Nutzer. Der Hinweis steht in der Uebersicht und verschwindet erst nach
+ausdruecklicher Quittierung („Verstanden – Werte geprueft"), die
+`schemaVersion` auf 28 hebt.
+
 ## 5. Zustandsverwaltung (State Layer)
 
 ### 5.1 Provider-Übersicht
@@ -1806,7 +1893,8 @@ einem Zielgerät im Profile-Modus.
 ### Serialisierungskompatibilität
 
 - `fromJson()` ist in **allen** Domain-Modellen lenient: jedes Feld verwendet `?? Standardwert`.
-- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **27**, fuer `HeroState` **6**.
+- Die aktuelle `schemaVersion` fuer `HeroSheet` ist **28**, fuer `HeroState` **6**.
+- **28** markiert keine Formataenderung, sondern die Quittierung der geaenderten Auswertung von `Herausragende Eigenschaft` (Abschnitt 4.10).
 - Beim Hinzufügen neuer Felder: immer einen Standardwert in `fromJson()` angeben.
 - `HeroTransferBundle.transferSchemaVersion` = 3 wird **strikt** validiert.
 
@@ -2077,7 +2165,9 @@ ueber die Settings-Katalogverwaltung bearbeitet.
 - `HeroAdventurePersonEntry` modelliert abenteuerspezifische Personen
   getrennt von globalen Kontakten.
 - `HeroAdventureDateValue` kapselt strukturierte weltliche und aventurische
-  Datumsangaben fuer Abenteuer.
+  Datumsangaben fuer Abenteuer. Die Monatsauswahl kommt aus dem kanonischen
+  Kalender in `lib/domain/aventurian_date.dart` (siehe Abschnitt „Aventurischer
+  Kalender und aktuelles Alter").
 - Der Abenteuer-Tab zeigt Abenteuer jetzt als nach Status gruppierte
   `ChoiceChip`-Uebersicht; standardmaessig wird das erste `Aktuell`-
   Abenteuer, sonst der erste Eintrag geoeffnet.
@@ -2174,6 +2264,49 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   `Ueberanstrengung` jetzt direkt in den editierbaren Vitalwerten.
 - Das Lagerfeuer-Symbol sitzt oben rechts in derselben Vitalwerte-Karte und
   oeffnet `rest_dialog.dart` mit Vorschau und Sammeluebernahme.
+
+### Update 2026-08-23: Aventurischer Kalender und aktuelles Alter
+
+**Kalender (`lib/domain/aventurian_date.dart`)**
+
+- `aventurianMonths` ist die kanonische Monatsfolge: zwoelf Goettermonate zu je
+  30 Tagen (Praios, Rondra, Efferd, Travia, Boron, Hesinde, Firun, Tsa, **Phex**,
+  Peraine, Ingerimm, Rahja), danach die fuenf Namenlosen Tage — zusammen 365
+  Tage (Geographia Aventurica, Immerwaehrender Kalender S. 253).
+- Vorher fuehrte der Abenteuer-Tab eine eigene Liste **ohne Phex**. Diese Liste
+  ist entfallen; `hero_adventure_dialogs.dart` delegiert an den geteilten
+  Kalender. Bestandsdaten brauchen keine Migration: Monate sind Schluessel, es
+  kam nur eine Option hinzu.
+- `AventurianDate` haelt Tag, Monat und Jahr als `String`, weil die
+  Eingabefelder Freitext zulassen und Teilangaben gueltig sind.
+  `normalizeAventurianMonth`, `aventurianMonthLabel`, `aventurianMonthIndex` und
+  `formatAventurianDate` (`12. Praios 1027 BF`) ergaenzen den Typ.
+
+**Altersregel (`lib/rules/derived/aventurian_age_rules.dart`)**
+
+- `aventurianDayOfYear` liefert `Monatsindex * 30 + Tag`; die Namenlosen Tage
+  landen dadurch auf 361 bis 365.
+- `parseAventurianYear` liest die erste ganze Zahl, damit `1027 BF` funktioniert.
+- `resolveCurrentAdventureDate` bestimmt den Stichtag: laufende Abenteuer in
+  Listenreihenfolge (`currentAventurianDate` vor `startAventurianDate`), sonst
+  das zuletzt abgeschlossene (`endAventurianDate` → `currentAventurianDate` →
+  `startAventurianDate`).
+- `computeAventurianAge` zaehlt volle Jahre und zieht einen im laufenden Jahr
+  noch ausstehenden Geburtstag ab. Fehlt Tag oder Monat, bleibt es bei der
+  Jahresdifferenz; ein negatives Ergebnis liefert `null`.
+
+**Modell und UI**
+
+- `HeroAppearance.geburtsdatum` ist der Bezugspunkt. Es wird in `toJson` **nur
+  bei belegtem Wert** geschrieben: Die Appearance-Map landet flach im
+  Helden-JSON und geht in `heroContentHash` ein — ein bedingungslos emittiertes
+  Feld wuerde jeden Bestandshelden veraendern und beim naechsten Speichern eine
+  Sync-Konfliktwelle ausloesen.
+- Die Heldenuebersicht zeigt neben dem manuellen `Alter` die beiden Felder
+  `Geburtsdatum` (im Lesemodus formatiert, im Bearbeitungsmodus Tag /
+  Monats-Dropdown / Jahr) und das schreibgeschuetzte `Alter (aktuell)`. Der
+  Geburtsmonat liegt als Entwurfsfeld `_draftGeburtsmonat` im Tab-State, weil
+  ein Dropdown sich nicht als `TextEditingController` puffern laesst.
 
 ---
 

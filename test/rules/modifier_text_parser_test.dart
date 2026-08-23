@@ -178,4 +178,93 @@ void main() {
     expect(effective.ko, 8);
     expect(effective.kk, 15);
   });
+
+  test('Herausragende Eigenschaft wirkt auf aktuelle Werte und Startwerte', () {
+    final parsed = parseModifierTexts(
+      rasseModText: '',
+      kulturModText: '',
+      professionModText: '',
+      vorteileText: 'Herausragende Eigenschaft KK 2',
+      nachteileText: '',
+    );
+
+    expect(parsed.attributeMods.kk, 2);
+    expect(parsed.startAttributeMods.kk, 2);
+    expect(parsed.unknownFragments, isEmpty);
+  });
+
+  test('Herausragende Eigenschaft in nachteileText bleibt wirkungslos', () {
+    final parsed = parseModifierTexts(
+      rasseModText: '',
+      kulturModText: '',
+      professionModText: '',
+      vorteileText: '',
+      nachteileText: 'Herausragende Eigenschaft KK 2',
+    );
+
+    expect(parsed.attributeMods.kk, 0);
+    expect(parsed.startAttributeMods.kk, 0);
+    expect(parsed.unknownFragments, contains('Herausragende Eigenschaft KK 2'));
+  });
+
+  test('Rasse, Kultur und Profession landen auch in startAttributeMods', () {
+    final parsed = parseModifierTexts(
+      rasseModText: 'KK+1',
+      kulturModText: 'MU+1',
+      professionModText: 'KL-1',
+      vorteileText: '',
+      nachteileText: '',
+    );
+
+    expect(parsed.startAttributeMods.kk, 1);
+    expect(parsed.startAttributeMods.mu, 1);
+    expect(parsed.startAttributeMods.kl, -1);
+    expect(parsed.attributeMods.kk, 1);
+  });
+
+  test('freie CODE-Fragmente in Vorteilen erhoehen startAttributeMods nicht', () {
+    final parsed = parseModifierTexts(
+      rasseModText: '',
+      kulturModText: '',
+      professionModText: '',
+      vorteileText: 'KK+5',
+      nachteileText: 'MU-2',
+    );
+
+    expect(parsed.attributeMods.kk, 5);
+    expect(parsed.attributeMods.mu, -2);
+    expect(parsed.startAttributeMods.kk, 0);
+    expect(parsed.startAttributeMods.mu, 0);
+  });
+
+  test('mehrere Herausragende-Eigenschaft-Fragmente summieren sich', () {
+    final parsed = parseModifierTexts(
+      rasseModText: '',
+      kulturModText: '',
+      professionModText: '',
+      vorteileText: 'Herausragende Eigenschaft KK 2; '
+          'Herausragende Eigenschaft GE 1',
+      nachteileText: '',
+    );
+
+    expect(parsed.startAttributeMods.kk, 2);
+    expect(parsed.startAttributeMods.ge, 1);
+  });
+
+  test('Herausragende Eigenschaft ohne gueltige Eigenschaft wird gemeldet', () {
+    final parsed = parseModifierTexts(
+      rasseModText: '',
+      kulturModText: '',
+      professionModText: '',
+      vorteileText: 'Herausragende Eigenschaft Zauberei 2',
+      nachteileText: '',
+    );
+
+    expect(parsed.attributeMods.kk, 0);
+    expect(parsed.startAttributeMods.kk, 0);
+    expect(
+      parsed.unknownFragments,
+      contains('Herausragende Eigenschaft Zauberei 2'),
+    );
+  });
 }

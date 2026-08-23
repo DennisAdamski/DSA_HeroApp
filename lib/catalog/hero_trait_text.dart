@@ -77,37 +77,63 @@ String buildHeroTraitSelectionText({
   var result = template
       .replaceAll('{choice}', selectedChoice)
       .replaceAll('{value}', valueText);
+  // Ein leerer `{choice}` in Klammern soll keine leere Klammer hinterlassen:
+  // `Guter Ruf 4 ()` waere kein sinnvoller Anzeigetext.
+  result = result.replaceAll(RegExp(r'\s*\(\s*\)'), '');
   result = result.replaceAll(RegExp(r'\s+'), ' ').trim();
   return result;
 }
 
-/// Extrahiert den numerischen Wert aus einem gespeicherten Fragment anhand
-/// des `selectionTemplate` eines Katalogeintrags — die Umkehrung von
-/// [buildHeroTraitSelectionText]. Liefert `null`, wenn das Template kein
-/// `{value}` enthält oder das Fragment nicht zum Template passt.
-int? parseTraitFragmentValue(String fragment, HeroTraitDef trait) {
+/// Zerlegung eines gespeicherten Fragments in seine Template-Bestandteile.
+class HeroTraitFragmentParts {
+  const HeroTraitFragmentParts({this.choice = '', this.value});
+
+  /// Der `{choice}`-Anteil, leer wenn das Template keinen hat oder er fehlte.
+  final String choice;
+
+  /// Der `{value}`-Anteil, `null` wenn das Template keinen hat.
+  final int? value;
+}
+
+/// Zerlegt ein gespeichertes Fragment anhand des `selectionTemplate` eines
+/// Katalogeintrags — die Umkehrung von [buildHeroTraitSelectionText]. Liefert
+/// `null`, wenn das Fragment nicht zum Template passt.
+///
+/// Eine Klammergruppe, die nur `{choice}` enthaelt, gilt als optional. Sonst
+/// wuerde ein Bestandsfragment wie `Guter Ruf 4` gegen das erweiterte Template
+/// `Guter Ruf {value} ({choice})` nicht mehr matchen.
+HeroTraitFragmentParts? parseTraitFragmentParts(
+  String fragment,
+  HeroTraitDef trait,
+) {
   var template = trait.selectionTemplate.trim();
   if (template.isEmpty) {
     template = trait.name.trim();
   }
-  if (!template.contains('{value}')) {
-    return null;
-  }
   template = template.replaceAll(RegExp(r'\s+'), ' ');
 
-  final tokenPattern = RegExp(r'\{value\}|\{choice\}');
+  final tokenPattern = RegExp(r'\{value\}|\s*\(\{choice\}\)|\{choice\}');
   final buffer = StringBuffer('^');
   var lastEnd = 0;
   var valueGroupIndex = 0;
+  var choiceGroupIndex = 0;
   var groupCount = 0;
   for (final tokenMatch in tokenPattern.allMatches(template)) {
     buffer.write(RegExp.escape(template.substring(lastEnd, tokenMatch.start)));
-    if (tokenMatch.group(0) == '{value}') {
+    final token = tokenMatch.group(0)!;
+    if (token == '{value}') {
       groupCount++;
       valueGroupIndex = groupCount;
       buffer.write(r'(-?\d+)');
+    } else if (token == '{choice}') {
+      groupCount++;
+      choiceGroupIndex = groupCount;
+      buffer.write('(.*?)');
     } else {
-      buffer.write('.*?');
+      // Klammergruppe mit ausschliesslich `{choice}` — optionaler Teil.
+      groupCount++;
+      choiceGroupIndex = groupCount;
+      buffer.write(r'(?:\s*\((.*?)\))?');
     }
     lastEnd = tokenMatch.end;
   }
@@ -117,10 +143,83 @@ int? parseTraitFragmentValue(String fragment, HeroTraitDef trait) {
   final regex = RegExp(buffer.toString());
   final normalizedFragment = fragment.trim().replaceAll(RegExp(r'\s+'), ' ');
   final match = regex.firstMatch(normalizedFragment);
-  if (match == null || valueGroupIndex == 0) {
+  if (match == null) {
     return null;
   }
-  return int.tryParse(match.group(valueGroupIndex) ?? '');
+  return HeroTraitFragmentParts(
+    choice: choiceGroupIndex == 0
+        ? ''
+        : (match.group(choiceGroupIndex) ?? '').trim(),
+    value: valueGroupIndex == 0
+        ? null
+        : int.tryParse(match.group(valueGroupIndex) ?? ''),
+  );
+}
+
+/// Extrahiert den numerischen Wert aus einem gespeicherten Fragment anhand
+/// des `selectionTemplate` eines Katalogeintrags. Liefert `null`, wenn das
+/// Template kein `{value}` enthaelt oder das Fragment nicht dazu passt.
+int? parseTraitFragmentValue(String fragment, HeroTraitDef trait) {
+  var template = trait.selectionTemplate.trim();
+  if (template.isEmpty) {
+    template = trait.name.trim();
+  }
+  if (!template.contains('{value}')) {
+    return null;
+  }
+  return parseTraitFragmentParts(fragment, trait)?.value;
+}
+
+/// Fuegt ein Fragment hinzu und fasst dabei die gleiche Auswahl desselben
+/// Katalogeintrags zu einem Eintrag mit summiertem Wert zusammen.
+///
+/// Ohne diese Zusammenfassung verschluckt [serializeHeroTraitFragments] den
+/// zweiten Erwerb still, weil es identische Strings verwirft — und der Nutzer
+/// hat ueber den Erwerbsdialog unter Umstaenden schon AP dafuer bezahlt.
+/// Greift nur bei Templates mit `{choice}` **und** `{value}`; sonst wird das
+/// Fragment schlicht angehaengt.
+List<String> mergeHeroTraitFragment({
+  required List<String> fragments,
+  required String fragment,
+  required HeroTraitDef trait,
+}) {
+  final result = List<String>.from(fragments);
+  final addition = fragment.trim();
+  if (addition.isEmpty) {
+    return result;
+  }
+
+  final template = trait.selectionTemplate.trim();
+  if (!template.contains('{choice}') || !template.contains('{value}')) {
+    result.add(addition);
+    return result;
+  }
+
+  final incoming = parseTraitFragmentParts(addition, trait);
+  if (incoming == null || incoming.value == null) {
+    result.add(addition);
+    return result;
+  }
+
+  for (var index = 0; index < result.length; index++) {
+    final existing = parseTraitFragmentParts(result[index], trait);
+    if (existing == null || existing.value == null) {
+      continue;
+    }
+    if (_normalizeTraitText(existing.choice) !=
+        _normalizeTraitText(incoming.choice)) {
+      continue;
+    }
+    result[index] = buildHeroTraitSelectionText(
+      trait: trait,
+      choice: incoming.choice,
+      value: existing.value! + incoming.value!,
+    );
+    return result;
+  }
+
+  result.add(addition);
+  return result;
 }
 
 bool _matchesTraitFragment(String normalizedFragment, HeroTraitDef trait) {

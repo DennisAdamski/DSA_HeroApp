@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 
 /// Ergebnis einer erkannten benannten Standard-Modifikatorregel.
 class StandardStatModifierMatch {
@@ -100,7 +101,7 @@ StandardStatModifierMatch? parseStandardStatModifierFragment({
   required bool allowAdvantages,
   required bool allowDisadvantages,
 }) {
-  final normalizedFragment = _normalizeFragment(fragment);
+  final normalizedFragment = normalizeModifierFragment(fragment);
   if (normalizedFragment.isEmpty) {
     return null;
   }
@@ -114,8 +115,8 @@ StandardStatModifierMatch? parseStandardStatModifierFragment({
     }
 
     for (final alias in rule.aliases) {
-      final normalizedAlias = _normalizeFragment(alias);
-      final amountText = _amountTextAfterAlias(
+      final normalizedAlias = normalizeModifierFragment(alias);
+      final amountText = modifierFragmentRemainderAfterAlias(
         normalizedFragment,
         normalizedAlias,
       );
@@ -138,33 +139,6 @@ StandardStatModifierMatch? parseStandardStatModifierFragment({
   }
 
   return null;
-}
-
-String? _amountTextAfterAlias(String normalizedFragment, String alias) {
-  if (normalizedFragment == alias) {
-    return '';
-  }
-  final prefix = '$alias ';
-  if (!normalizedFragment.startsWith(prefix)) {
-    return null;
-  }
-  return normalizedFragment.substring(prefix.length).trim();
-}
-
-String _normalizeFragment(String input) {
-  var normalized = input
-      .toLowerCase()
-      .replaceAll(String.fromCharCode(228), 'ae')
-      .replaceAll(String.fromCharCode(246), 'oe')
-      .replaceAll(String.fromCharCode(252), 'ue')
-      .replaceAll(String.fromCharCode(223), 'ss');
-  normalized = normalized.replaceAll(RegExp(r'[:()\[\]]'), ' ');
-  normalized = normalized.replaceAllMapped(
-    RegExp(r'([+-])\s*(\d+)'),
-    (match) => ' ${match.group(1)!}${match.group(2)!}',
-  );
-  normalized = normalized.replaceAll(RegExp(r'[^a-z0-9+\-\s]'), ' ');
-  return normalized.replaceAll(RegExp(r'\s+'), ' ').trim();
 }
 
 StatModifiers _statModsForRule(_StandardStatModifierRule rule, int amount) {

@@ -113,10 +113,7 @@ void main() {
     final computed = computedSub.read().requireValue;
 
     final parsed = parseModifierTextsForHero(hero);
-    final effectiveStartAttributes = computeEffectiveStartAttributes(
-      hero.rawStartAttributes,
-      parseOriginAttributeModifiers(hero),
-    );
+    final effectiveStartAttributes = computeHeroEffectiveStartAttributes(hero);
     final attributeMaximums = computeAttributeMaximums(
       effectiveStartAttributes,
     );

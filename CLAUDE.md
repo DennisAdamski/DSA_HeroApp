@@ -35,6 +35,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   stehen in `lib/rules/derived/magic_acquisition_rules.dart` bzw.
   `learning_rules.dart`. Ihre Katalogeinträge tragen deshalb
   `nur_information: true` und erscheinen im Picker ohne Erwerbsschalter.
+- Vor-/Nachteile mit `{choice}` im `selectionTemplate` tragen im Katalog ihre
+  Auswahl (`choiceLabel`, `choices`, `choiceSource`, `choiceFreeText`);
+  `resolveTraitChoices` (`lib/catalog/hero_trait_choices.dart`) loest
+  katalogabgeleitete Quellen auf. „Herausragende Eigenschaft" ist der einzige
+  Eintrag mit echter Regelwirkung
+  (`lib/rules/derived/attribute_trait_rules.dart`): er hebt Startwert **und**
+  aktuellen Wert, das Maximum folgt über `ceil(start × 1,5)`. Die Eigenschaft
+  wird deshalb **ohne** diesen Bonus eingetragen. Startwerte und Maxima gibt es
+  nur über `computeHeroEffectiveStartAttributes` /
+  `computeHeroAttributeMaximums` — `HeroSheet.startAttributes` trägt bereits das
+  Ergebnis und darf nie erneut modifiziert werden. Details in
+  `docs/technical_overview.md` Abschnitt 4.10.
 - Erwerbsvoraussetzungen liegen zusätzlich zum Freitext `voraussetzungen` als
   maschinenlesbarer Block `voraussetzungen_struktur` im Katalog
   (`lib/catalog/special_ability_requirement.dart`, Schema in
@@ -82,6 +94,19 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Kampfrunden, Spielrunden und weitere Zeiteinheiten werden nie ineinander
   umgerechnet, der Countdown bleibt manuell, und abgelaufene Effekte werden
   nur angezeigt statt automatisch abgeschaltet.
+- Der aventurische Kalender liegt kanonisch in `lib/domain/aventurian_date.dart`:
+  zwölf Göttermonate à 30 Tage — **Phex** steht zwischen Tsa und Peraine und
+  fehlte in der früheren Monatsliste des Abenteuer-Tabs — plus fünf Namenlose
+  Tage, zusammen 365. Der Abenteuer-Tab hält keine eigene Liste mehr.
+  `lib/rules/derived/aventurian_age_rules.dart` leitet daraus das aktuelle Alter
+  ab: Bezugspunkt ist `HeroAppearance.geburtsdatum`, Stichtag das Datum des
+  laufenden Abenteuers (`currentAventurianDate` vor `startAventurianDate`,
+  ersatzweise das zuletzt abgeschlossene Abenteuer). Das Freitextfeld
+  `HeroAppearance.alter` bleibt der Erschaffungswert und wird nicht berechnet.
+  `geburtsdatum` darf in `toJson` **nur bei belegtem Wert** geschrieben werden:
+  die Appearance-Felder landen flach im Helden-JSON und gehen in
+  `heroContentHash` ein — sonst ändert sich jeder Bestandsheld und der
+  Konto-Sync meldet beim nächsten Speichern Konflikte.
 - Traditionen und Leiteigenschaften stehen in
   `lib/rules/derived/tradition_rules.dart` (Wege der Zauberei S. 19). Die
   Traditionen eines Helden sind die Vereinigung aus `representationen` und den

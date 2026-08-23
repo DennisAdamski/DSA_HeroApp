@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/attribute_trait_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standard_stat_modifier_rules.dart';
 
 /// Parserergebnis fuer freie Modifikatortexte aus den Basisdaten.
@@ -12,6 +13,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/standard_stat_modifier_rules.
 class ModifierParseResult {
   const ModifierParseResult({
     this.attributeMods = const AttributeModifiers(),
+    this.startAttributeMods = const AttributeModifiers(),
     this.statMods = const StatModifiers(),
     this.hasFlinkFromVorteile = false,
     this.hasBehaebigFromNachteile = false,
@@ -19,6 +21,16 @@ class ModifierParseResult {
   });
 
   final AttributeModifiers attributeMods;
+
+  /// Modifikatoren, die zusaetzlich den *Startwert* einer Eigenschaft anheben
+  /// und damit ueber `ceil(start * 1.5)` auch das Maximum: Rasse, Kultur und
+  /// Profession sowie startwerterhoehende Vorteile wie `Herausragende
+  /// Eigenschaft`.
+  ///
+  /// Freie `KK+2`-Fragmente in Vor-/Nachteilen bleiben bewusst draussen: die
+  /// beschreiben laufende Effekte, keine Generierungswerte.
+  final AttributeModifiers startAttributeMods;
+
   final StatModifiers statMods;
   final bool hasFlinkFromVorteile;
   final bool hasBehaebigFromNachteile;
@@ -119,6 +131,7 @@ ModifierParseResult parseModifierTexts({
   required String nachteileText,
 }) {
   var attrMods = const AttributeModifiers();
+  var startAttrMods = const AttributeModifiers();
   var statMods = const StatModifiers();
   final unknown = <String>[];
   final hasFlinkFromVorteile = _containsNamedToken(vorteileText, const {
@@ -134,26 +147,31 @@ ModifierParseResult parseModifierTexts({
       text: rasseModText,
       allowStandardAdvantages: false,
       allowStandardDisadvantages: false,
+      contributesToStartAttributes: true,
     ),
     (
       text: kulturModText,
       allowStandardAdvantages: false,
       allowStandardDisadvantages: false,
+      contributesToStartAttributes: true,
     ),
     (
       text: professionModText,
       allowStandardAdvantages: false,
       allowStandardDisadvantages: false,
+      contributesToStartAttributes: true,
     ),
     (
       text: vorteileText,
       allowStandardAdvantages: true,
       allowStandardDisadvantages: false,
+      contributesToStartAttributes: false,
     ),
     (
       text: nachteileText,
       allowStandardAdvantages: false,
       allowStandardDisadvantages: true,
+      contributesToStartAttributes: false,
     ),
   ];
 
@@ -183,6 +201,25 @@ ModifierParseResult parseModifierTexts({
         continue;
       }
 
+      final attributeTrait = parseAttributeTraitFragment(
+        fragment: fragment,
+        allowAdvantages: source.allowStandardAdvantages,
+        allowDisadvantages: source.allowStandardDisadvantages,
+      );
+      if (attributeTrait != null) {
+        if (!attributeTrait.hasAttribute) {
+          if (!unknown.contains(fragment)) {
+            unknown.add(fragment);
+          }
+          continue;
+        }
+        attrMods = attrMods + attributeTrait.attributeMods;
+        if (attributeTrait.raisesStartValue) {
+          startAttrMods = startAttrMods + attributeTrait.attributeMods;
+        }
+        continue;
+      }
+
       final match = regex.firstMatch(fragment);
       if (match == null) {
         if (!unknown.contains(fragment)) {
@@ -198,6 +235,10 @@ ModifierParseResult parseModifierTexts({
       final handledAttr = _applyAttributeCode(code, amount, attrMods);
       if (handledAttr != null) {
         attrMods = handledAttr;
+        if (source.contributesToStartAttributes) {
+          startAttrMods =
+              _applyAttributeCode(code, amount, startAttrMods) ?? startAttrMods;
+        }
         continue;
       }
 
@@ -215,6 +256,7 @@ ModifierParseResult parseModifierTexts({
 
   return ModifierParseResult(
     attributeMods: attrMods,
+    startAttributeMods: startAttrMods,
     statMods: statMods,
     hasFlinkFromVorteile: hasFlinkFromVorteile,
     hasBehaebigFromNachteile: hasBehaebigFromNachteile,
