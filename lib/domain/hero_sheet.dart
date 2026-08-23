@@ -31,7 +31,7 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 class HeroSheet {
   const HeroSheet({
     required this.id,
-    this.schemaVersion = 27,
+    this.schemaVersion = 28,
     required this.name,
     required this.level,
     required this.attributes,
@@ -192,6 +192,7 @@ class HeroSheet {
   /// Immutable Update fuer gezielte Feldanpassungen.
   HeroSheet copyWith({
     String? id,
+    int? schemaVersion,
     String? name,
     int? level,
     Attributes? attributes,
@@ -246,7 +247,7 @@ class HeroSheet {
   }) {
     return HeroSheet(
       id: id ?? this.id,
-      schemaVersion: schemaVersion,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
       name: name ?? this.name,
       level: level ?? this.level,
       attributes: attributes ?? this.attributes,
@@ -302,12 +303,14 @@ class HeroSheet {
           unknownModifierFragments ?? this.unknownModifierFragments,
       isEpisch: isEpisch ?? this.isEpisch,
       epicStartAp: epicStartAp ?? this.epicStartAp,
-      epicAttributeMaxBonus: epicAttributeMaxBonus ?? this.epicAttributeMaxBonus,
+      epicAttributeMaxBonus:
+          epicAttributeMaxBonus ?? this.epicAttributeMaxBonus,
       epicMainAttributes: epicMainAttributes ?? this.epicMainAttributes,
       epicActivationPolicy: identical(epicActivationPolicy, _copySentinel)
           ? this.epicActivationPolicy
           : epicActivationPolicy as String?,
-      epicLockedWaffenmeisterCategories: epicLockedWaffenmeisterCategories ??
+      epicLockedWaffenmeisterCategories:
+          epicLockedWaffenmeisterCategories ??
           this.epicLockedWaffenmeisterCategories,
       epicUnactivatedTalentIds:
           epicUnactivatedTalentIds ?? this.epicUnactivatedTalentIds,
@@ -375,9 +378,7 @@ class HeroSheet {
       'companions': companions
           .map((entry) => entry.toJson())
           .toList(growable: false),
-      'gruppen': gruppen
-          .map((entry) => entry.toJson())
-          .toList(growable: false),
+      'gruppen': gruppen.map((entry) => entry.toJson()).toList(growable: false),
       'reisebericht': reisebericht.toJson(),
       'statModifiers': statModifiers.map(
         (key, list) => MapEntry(
@@ -398,10 +399,11 @@ class HeroSheet {
       'epicMainAttributes': epicMainAttributes.toJson(),
       if (epicActivationPolicy != null)
         'epicActivationPolicy': epicActivationPolicy,
-      'epicLockedWaffenmeisterCategories':
-          epicLockedWaffenmeisterCategories.toList(growable: false),
-      'epicUnactivatedTalentIds':
-          epicUnactivatedTalentIds.toList(growable: false),
+      'epicLockedWaffenmeisterCategories': epicLockedWaffenmeisterCategories
+          .toList(growable: false),
+      'epicUnactivatedTalentIds': epicUnactivatedTalentIds.toList(
+        growable: false,
+      ),
     };
   }
 
@@ -431,7 +433,8 @@ class HeroSheet {
     final rawRepresentationen =
         (json['representationen'] as List?) ?? const <dynamic>[];
     final rawRepraesentationsTraditionen =
-        (json['repraesentationsTraditionen'] as Map?)?.cast<String, dynamic>() ??
+        (json['repraesentationsTraditionen'] as Map?)
+            ?.cast<String, dynamic>() ??
         const <String, dynamic>{};
     final rawMerkmalskenntnisse =
         (json['merkmalskenntnisse'] as List?) ?? const <dynamic>[];
@@ -574,8 +577,7 @@ class HeroSheet {
                 HeroAdventureEntry.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
-      lastModified:
-          DateTime.tryParse(json['lastModified'] as String? ?? ''),
+      lastModified: DateTime.tryParse(json['lastModified'] as String? ?? ''),
       attributeSePool: HeroAttributeSePool.fromJson(
         (json['attributeSePool'] as Map?)?.cast<String, dynamic>() ??
             const <String, dynamic>{},
@@ -612,7 +614,8 @@ class HeroSheet {
       isEpisch: (json['isEpisch'] as bool?) ?? false,
       epicStartAp: (json['epicStartAp'] as num?)?.toInt() ?? 0,
       epicAttributeMaxBonus: Attributes.fromJson(
-        (json['epicAttributeMaxBonus'] as Map?)?.cast<String, dynamic>() ?? const {},
+        (json['epicAttributeMaxBonus'] as Map?)?.cast<String, dynamic>() ??
+            const {},
       ),
       epicMainAttributes: Attributes.fromJson(
         (json['epicMainAttributes'] as Map?)?.cast<String, dynamic>() ??
