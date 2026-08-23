@@ -35,6 +35,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   stehen in `lib/rules/derived/magic_acquisition_rules.dart` bzw.
   `learning_rules.dart`. Ihre Katalogeinträge tragen deshalb
   `nur_information: true` und erscheinen im Picker ohne Erwerbsschalter.
+- Vor-/Nachteile mit `{choice}` im `selectionTemplate` tragen im Katalog ihre
+  Auswahl (`choiceLabel`, `choices`, `choiceSource`, `choiceFreeText`);
+  `resolveTraitChoices` (`lib/catalog/hero_trait_choices.dart`) loest
+  katalogabgeleitete Quellen auf. „Herausragende Eigenschaft" ist der einzige
+  Eintrag mit echter Regelwirkung
+  (`lib/rules/derived/attribute_trait_rules.dart`): er hebt Startwert **und**
+  aktuellen Wert, das Maximum folgt über `ceil(start × 1,5)`. Die Eigenschaft
+  wird deshalb **ohne** diesen Bonus eingetragen. Startwerte und Maxima gibt es
+  nur über `computeHeroEffectiveStartAttributes` /
+  `computeHeroAttributeMaximums` — `HeroSheet.startAttributes` trägt bereits das
+  Ergebnis und darf nie erneut modifiziert werden. Details in
+  `docs/technical_overview.md` Abschnitt 4.10.
 - Erwerbsvoraussetzungen liegen zusätzlich zum Freitext `voraussetzungen` als
   maschinenlesbarer Block `voraussetzungen_struktur` im Katalog
   (`lib/catalog/special_ability_requirement.dart`, Schema in

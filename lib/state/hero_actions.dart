@@ -123,11 +123,7 @@ class HeroActions {
     final unknownModifierFragments = await _filterKnownTraitWarnings(
       parsed.unknownFragments,
     );
-    final originAttributeModifiers = parseOriginAttributeModifiers(hero);
-    final effectiveStartAttributes = computeEffectiveStartAttributes(
-      hero.rawStartAttributes,
-      originAttributeModifiers,
-    );
+    final effectiveStartAttributes = computeHeroEffectiveStartAttributes(hero);
 
     final normalizedHero = hero.copyWith(
       apTotal: normalizedApTotal,

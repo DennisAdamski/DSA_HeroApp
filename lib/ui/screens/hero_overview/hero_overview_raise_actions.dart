@@ -72,17 +72,19 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
     };
   }
 
+  /// Abstand zwischen der gespeicherten Rohspalte `hero.attributes` und der
+  /// Ebene, auf der Startwert und Maximum liegen.
+  ///
+  /// Bewusst nur die startwerterhoehenden Modifikatoren (Herkunft plus
+  /// `Herausragende Eigenschaft`) — genau die speisen auch `ceil(start * 1.5)`.
+  /// Benannte `attributeModifiers` und freie `KK+2`-Fragmente bleiben draussen:
+  /// das sind situative Boni, keine erkaufte Progression.
+  int _startAttributeDelta(HeroSheet hero, AttributeCode code) {
+    return attributeModValue(parseStartAttributeModifiers(hero), code.name);
+  }
+
   int _eigenschaftMaxWert(HeroSheet hero, AttributeCode code) {
-    final originModifiers = parseOriginAttributeModifiers(hero);
-    final effectiveStartAttributes = computeEffectiveStartAttributes(
-      hero.startAttributes,
-      originModifiers,
-    );
-    final attributeMaximums = computeAttributeMaximums(
-      effectiveStartAttributes,
-      epicBonus: hero.epicAttributeMaxBonus,
-    );
-    return readAttributeValue(attributeMaximums, code);
+    return readAttributeValue(computeHeroAttributeMaximums(hero), code);
   }
 
   Attributes _permanentEffectiveAttributesForBoughtStats(HeroSheet hero) {
@@ -152,12 +154,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
   }
 
   int _eigenschaftStartwert(HeroSheet hero, AttributeCode code) {
-    final originModifiers = parseOriginAttributeModifiers(hero);
-    final effectiveStartAttributes = computeEffectiveStartAttributes(
-      hero.startAttributes,
-      originModifiers,
-    );
-    return readAttributeValue(effectiveStartAttributes, code);
+    return readAttributeValue(computeHeroEffectiveStartAttributes(hero), code);
   }
 
   int? _grundwertStartwert(HeroSheet hero, String key) {
@@ -216,7 +213,10 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
       return;
     }
 
-    final aktuellerWert = readAttributeValue(hero.attributes, code);
+    // Der Dialog rechnet auf der Effektivebene, weil Startwert und Maximum
+    // dort liegen. Gespeichert wird danach wieder die Rohspalte.
+    final startDelta = _startAttributeDelta(hero, code);
+    final aktuellerWert = readAttributeValue(hero.attributes, code) + startDelta;
     final maxWert = _eigenschaftMaxWert(hero, code);
     final startWert = _eigenschaftStartwert(hero, code);
     final result = await showSteigerungsDialog(
@@ -242,7 +242,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
       attributes: _attributesWithRaisedValue(
         hero.attributes,
         code,
-        result.neuerWert,
+        result.neuerWert - startDelta,
       ),
       attributeSePool: _attributeSePoolAfterConsumption(
         hero: hero,
@@ -253,7 +253,7 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
     _latestHero = updatedHero;
-    _setFieldText(code.name, result.neuerWert.toString());
+    _setFieldText(code.name, (result.neuerWert - startDelta).toString());
     _setFieldText('ap_spent', updatedHero.apSpent.toString());
     if (!mounted) {
       return;

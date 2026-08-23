@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 
 void main() {
   test('derived stats compute with current formulas and modifiers', () {
@@ -182,5 +183,47 @@ void main() {
     expect(d.maxAu, 21);
     expect(d.maxAsp, 20);
     expect(d.mr, 9);
+  });
+
+  test('Herausragende Eigenschaft erhoeht die abgeleiteten Werte', () {
+    const attributes = Attributes(
+      mu: 12,
+      kl: 12,
+      inn: 12,
+      ch: 12,
+      ff: 12,
+      ge: 12,
+      ko: 12,
+      kk: 12,
+    );
+    const state = HeroState(
+      currentLep: 0,
+      currentAsp: 0,
+      currentKap: 0,
+      currentAu: 0,
+    );
+    const ohne = HeroSheet(
+      id: 'ohne',
+      name: 'Ohne',
+      level: 1,
+      attributes: attributes,
+    );
+    const mit = HeroSheet(
+      id: 'mit',
+      name: 'Mit',
+      level: 1,
+      attributes: attributes,
+      vorteileText: 'Herausragende Eigenschaft KO 2',
+    );
+
+    final basis = computeDerivedStats(ohne, state);
+    final erhoeht = computeDerivedStats(mit, state);
+
+    expect(
+      computeEffectiveAttributes(mit).ko,
+      computeEffectiveAttributes(ohne).ko + 2,
+    );
+    expect(erhoeht.maxLep, greaterThan(basis.maxLep));
+    expect(erhoeht.maxAu, greaterThan(basis.maxAu));
   });
 }

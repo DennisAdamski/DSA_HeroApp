@@ -188,4 +188,31 @@ void main() {
       expect(attributeModValue(mods, 'unbekannt'), 0);
     });
   });
+
+  group('Herausragende Eigenschaft in der Quellenaufschluesselung', () {
+    test('erscheint als Vorteils-Quelle', () {
+      final hero = _makeHero(vorteileText: 'Herausragende Eigenschaft KK 2');
+
+      final breakdown = computeModifierSourceBreakdown(hero);
+
+      expect(breakdown.vorteileAttributeMods.kk, 2);
+      expect(breakdown.nachteileAttributeMods.kk, 0);
+      expect(breakdown.rasseAttributeMods.kk, 0);
+      expect(breakdown.kulturAttributeMods.kk, 0);
+      expect(breakdown.professionAttributeMods.kk, 0);
+    });
+
+    test('bleibt von Rasse und Vorteil getrennt', () {
+      final hero = _makeHero(
+        rasseModText: 'KK+1',
+        vorteileText: 'Herausragende Eigenschaft KK 2',
+      );
+
+      final breakdown = computeModifierSourceBreakdown(hero);
+
+      expect(breakdown.rasseAttributeMods.kk, 1);
+      expect(breakdown.vorteileAttributeMods.kk, 2);
+      expect(parseModifierTextsForHero(hero).attributeMods.kk, 3);
+    });
+  });
 }
