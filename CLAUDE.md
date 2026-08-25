@@ -312,7 +312,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`assets/wasm/` im Package), keine fertige `.wasm`. Bei einem Versionswechsel
   von `sqlite3` in `pubspec.yaml` muss `web/sqlite3.wasm` manuell gegen die
   passende `sqlite3.wasm` aus den GitHub-Releases von
-  github.com/simolus3/sqlite3.dart (Tag zur Package-Version) ersetzt werden.
+  github.com/simolus3/sqlite3.dart ersetzt werden — Tag `sqlite3-<version>`,
+  aktuell `sqlite3-3.5.2`. Ein Versatz zwischen Package und `.wasm` faellt
+  **nicht** beim Kompilieren auf, sondern erst zur Laufzeit im Browser.
+- Die nativen SQLite-Bibliotheken fuer Desktop und Mobile liefert seit
+  `sqlite3` 3.x dessen eigener Build-Hook, der SQLite direkt mit der App
+  buendelt (unter Windows erscheint es als `sqlite3.dll` im Release-Ordner).
+  Das frueher noetige `sqlite3_flutter_libs` ist entfallen: es ist mit
+  `0.6.0+eol` end-of-life und enthaelt keinen Code mehr. Beide Pakete
+  duerfen nur gemeinsam bewegt werden — ein isolierter Bump von
+  `sqlite3_flutter_libs` liesse Desktop und Mobile ohne native Bibliothek
+  zurueck. Aus demselben Grund gibt es keinen `open.overrideFor`-Aufruf
+  mehr; das Laden uebernimmt vollstaendig der Hook.
 - Zusaetzlich zum manuellen Weg (lokal bauen bzw. Web-Upload) kann die
   Index-DB per Server-Sync bezogen werden (`lib/domain/rules_index_remote_config.dart`,
   `lib/data/rules_search/rules_index_remote_client.dart`,
