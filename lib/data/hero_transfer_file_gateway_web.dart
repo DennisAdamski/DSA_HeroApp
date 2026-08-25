@@ -12,19 +12,14 @@ class WebHeroTransferFileGateway implements HeroTransferFileGateway {
 
   @override
   Future<String?> pickImportJson() async {
-    final result = await FilePicker.pickFiles(
+    final file = await FilePicker.pickFile(
       type: FileType.custom,
       allowedExtensions: const <String>['json'],
-      withData: true,
     );
-    if (result == null || result.files.isEmpty) {
+    if (file == null) {
       return null;
     }
-    final bytes = result.files.single.bytes;
-    if (bytes == null) {
-      return null;
-    }
-    return utf8.decode(bytes);
+    return utf8.decode(await file.readAsBytes());
   }
 
   @override

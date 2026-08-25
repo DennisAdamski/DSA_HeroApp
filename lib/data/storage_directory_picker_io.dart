@@ -7,7 +7,8 @@ class _IoStorageDirectoryPicker implements StorageDirectoryPicker {
   Future<String?> pickDirectory({required String dialogTitle}) {
     return FilePicker.getDirectoryPath(
       dialogTitle: dialogTitle,
-      lockParentWindow: true,
+      windowsOptions: const WindowsOptions(lockParentWindow: true),
+      linuxOptions: const LinuxOptions(lockParentWindow: true),
     );
   }
 }
