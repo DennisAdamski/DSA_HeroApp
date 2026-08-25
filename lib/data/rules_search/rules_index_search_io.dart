@@ -74,13 +74,13 @@ Future<RulesIndexSearch> importRulesIndexDatabase(Uint8List bytes) async {
   try {
     validated.select('SELECT count(*) FROM chunks_fts LIMIT 1');
   } on SqliteException {
-    validated.dispose();
+    validated.close();
     await tmpFile.delete();
     throw const FormatException(
       'Datei enthält kein gültiges Regel-Index-Schema.',
     );
   }
-  validated.dispose();
+  validated.close();
 
   final targetFile = File(targetPath);
   if (await targetFile.exists()) {
@@ -129,7 +129,7 @@ class _SqliteRulesIndexSearch implements RulesIndexSearch {
 
   @override
   void dispose() {
-    _db.dispose();
+    _db.close();
   }
 
   @override
