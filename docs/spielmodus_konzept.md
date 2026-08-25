@@ -114,6 +114,23 @@ Zusätzlich verifiziert: `flutter build web --release` kompiliert fehlerfrei
 (inkl. Wasm-Dry-Run), und ein lokal servierter Build liefert `sqlite3.wasm`
 korrekt mit `Content-Type: application/wasm` aus.
 
+### Nachtrag 2026-08-25: sqlite3 3.x
+
+`package:sqlite3` wurde von 2.9.4 auf 3.5.2 gehoben und `sqlite3_flutter_libs`
+(mit `0.6.0+eol` end-of-life) entfernt. Für den Web-Pfad ändert sich die
+Architektur nicht: `WasmSqlite3.loadFromUrl`, `IndexedDbFileSystem` und die
+Low-Level-VFS-Aufrufe (`xOpen`/`xAccess`/`xDelete`) gibt es unverändert, und
+der WAL-Workaround in `_disableWalMode` bleibt nötig. Zwei Punkte sind neu:
+
+- `web/sqlite3.wasm` muss zur Package-Version passen und trägt jetzt das
+  Binary aus dem Release-Tag `sqlite3-3.5.2`.
+- `Database.dispose()` ist zugunsten von `close()` deprecated; die
+  sqlite3-eigenen Aufrufe sind umgestellt, `RulesIndexSearch.dispose()` als
+  projekteigene Schnittstelle nicht.
+
+Der offene Punkt „manueller Browser-Durchlauf" unten bleibt damit bestehen und
+ist nach diesem Versionswechsel eher wichtiger geworden.
+
 Noch offen — **nicht** weil kein Browser verfügbar wäre (Edge ist installiert
 und läuft headless einwandfrei, `flutter devices` listet es als Web-Device),
 sondern weil der dafür nötige interaktive Browser-Test in der bisherigen
