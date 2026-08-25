@@ -63,7 +63,7 @@ Uint8List buildMinimalRulesIndexBytes() {
       [1, 'Ausweichen erschwert eine Behinderung um den Wert der Behinderung.'],
     );
   } finally {
-    db.dispose();
+    db.close();
   }
   final bytes = File(path).readAsBytesSync();
   tempDir.deleteSync(recursive: true);
