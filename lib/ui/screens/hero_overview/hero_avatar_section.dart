@@ -5,13 +5,10 @@ Future<void> _pickAndUploadImage(
   WidgetRef ref,
   String heroId,
 ) async {
-  final result = await FilePicker.pickFiles(
-    type: FileType.image,
-    withData: true,
-  );
-  if (result == null || result.files.isEmpty) return;
-  final bytes = result.files.first.bytes;
-  if (bytes == null || bytes.isEmpty) return;
+  final file = await FilePicker.pickFile(type: FileType.image);
+  if (file == null) return;
+  final bytes = await file.readAsBytes();
+  if (bytes.isEmpty) return;
   if (!context.mounted) return;
   await ref
       .read(heroActionsProvider)

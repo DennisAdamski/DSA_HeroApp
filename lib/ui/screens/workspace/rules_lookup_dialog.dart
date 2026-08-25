@@ -154,21 +154,18 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
       _importError = null;
       _importing = true;
     });
-    final result = await FilePicker.pickFiles(
+    final file = await FilePicker.pickFile(
       type: FileType.custom,
       allowedExtensions: const <String>['sqlite'],
-      withData: true,
     );
-    final bytes = result != null && result.files.isNotEmpty
-        ? result.files.first.bytes
-        : null;
-    if (bytes == null) {
+    if (file == null) {
       if (!mounted) {
         return;
       }
       setState(() => _importing = false);
       return;
     }
+    final bytes = await file.readAsBytes();
     try {
       final newSearch = await importRulesIndexDatabase(bytes);
       final oldSearch = _search;

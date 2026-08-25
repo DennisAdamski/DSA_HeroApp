@@ -13,26 +13,14 @@ class IoHeroTransferFileGateway implements HeroTransferFileGateway {
 
   @override
   Future<String?> pickImportJson() async {
-    final result = await FilePicker.pickFiles(
+    final file = await FilePicker.pickFile(
       type: FileType.custom,
       allowedExtensions: const <String>['json'],
-      withData: true,
     );
-    if (result == null || result.files.isEmpty) {
+    if (file == null) {
       return null;
     }
-
-    final file = result.files.single;
-    final bytes = file.bytes;
-    if (bytes != null) {
-      return utf8.decode(bytes);
-    }
-
-    final path = file.path;
-    if (path == null || path.trim().isEmpty) {
-      return null;
-    }
-    return File(path).readAsString();
+    return utf8.decode(await file.readAsBytes());
   }
 
   @override
@@ -44,21 +32,22 @@ class IoHeroTransferFileGateway implements HeroTransferFileGateway {
     final fileName = '$safeName.dsa-hero.json';
 
     if (_isDesktopPlatform()) {
-      final targetPath = await FilePicker.saveFile(
+      final savedUri = await FilePicker.saveFile(
         dialogTitle: 'Held exportieren',
         fileName: fileName,
+        bytes: utf8.encode(jsonPayload),
+        mimeType: 'application/json',
         type: FileType.custom,
         allowedExtensions: const <String>['json'],
       );
-      if (targetPath == null || targetPath.trim().isEmpty) {
+      if (savedUri == null) {
         return const HeroTransferExportOutcome(
           result: HeroTransferExportResult.canceled,
         );
       }
-      await File(targetPath).writeAsString(jsonPayload);
       return HeroTransferExportOutcome(
         result: HeroTransferExportResult.savedToFile,
-        location: targetPath,
+        location: _describeSaveLocation(savedUri),
       );
     }
 
@@ -76,6 +65,17 @@ class IoHeroTransferFileGateway implements HeroTransferFileGateway {
       result: HeroTransferExportResult.shared,
       location: target.path,
     );
+  }
+
+  /// Wandelt den von `FilePicker.saveFile` gelieferten Uri in einen
+  /// anzeigbaren Pfad.
+  ///
+  /// Dieser Zweig laeuft nur auf Desktop, wo das Schema immer `file:` ist.
+  /// Die uebrigen von file_picker dokumentierten Schemata (`content`, `blob`,
+  /// ...) werden defensiv als Uri-Text durchgereicht, statt den bereits
+  /// erfolgreichen Export an der Pfadumwandlung scheitern zu lassen.
+  String _describeSaveLocation(Uri uri) {
+    return uri.scheme == 'file' ? uri.toFilePath() : uri.toString();
   }
 
   bool _isDesktopPlatform() {
