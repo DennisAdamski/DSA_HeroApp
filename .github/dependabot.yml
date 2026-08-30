@@ -1,0 +1,22 @@
+# Haelt Abhaengigkeiten und Actions sichtbar aktuell.
+#
+# Ohne diese Datei faellt Drift erst beim naechsten manuellen Audit auf —
+# beim letzten waren es 19 zurueckgehaltene Pub-Updates und ein
+# end-of-life-Paket.
+version: 2
+updates:
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
