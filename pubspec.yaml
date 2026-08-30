@@ -29,6 +29,7 @@ dependencies:
   flutter_secure_storage: ^11.0.0
   unorm_dart: ^0.3.0
   sqlite3: ^3.5.2
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:

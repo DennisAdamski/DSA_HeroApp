@@ -1,11 +1,9 @@
-// ignore_for_file: deprecated_member_use, avoid_web_libraries_in_flutter
-
 import 'dart:convert';
-import 'dart:html' as html;
 
 import 'package:file_picker/file_picker.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
+import 'package:dsa_heldenverwaltung/data/web_download.dart';
 
 class WebHeroTransferFileGateway implements HeroTransferFileGateway {
   const WebHeroTransferFileGateway();
@@ -27,29 +25,14 @@ class WebHeroTransferFileGateway implements HeroTransferFileGateway {
     required String fileNameBase,
     required String jsonPayload,
   }) async {
-    final safeName = _sanitizeFileName(fileNameBase);
+    final safeName = sanitizeDownloadFileName(fileNameBase, fallback: 'held');
     final fileName = '$safeName.dsa-hero.json';
-    final bytes = utf8.encode(jsonPayload);
-    final blob = html.Blob(<dynamic>[bytes], 'application/json;charset=utf-8');
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    final anchor = html.AnchorElement(href: url)
-      ..download = fileName
-      ..style.display = 'none';
-
-    html.document.body?.append(anchor);
-    anchor.click();
-    anchor.remove();
-    html.Url.revokeObjectUrl(url);
+    triggerJsonDownload(fileName: fileName, jsonPayload: jsonPayload);
 
     return HeroTransferExportOutcome(
       result: HeroTransferExportResult.downloaded,
       location: fileName,
     );
-  }
-
-  String _sanitizeFileName(String value) {
-    final trimmed = value.trim().isEmpty ? 'held' : value.trim();
-    return trimmed.replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_');
   }
 }
 

@@ -1,5 +1,5 @@
 import 'house_rule_pack_file_gateway_stub.dart'
-    if (dart.library.html) 'house_rule_pack_file_gateway_web.dart'
+    if (dart.library.js_interop) 'house_rule_pack_file_gateway_web.dart'
     if (dart.library.io) 'house_rule_pack_file_gateway_io.dart';
 
 /// Ergebnis eines Hausregel-Exports in eine Datei oder einen Share-Flow.

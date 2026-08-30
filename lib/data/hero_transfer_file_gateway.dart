@@ -1,5 +1,5 @@
 import 'hero_transfer_file_gateway_stub.dart'
-    if (dart.library.html) 'hero_transfer_file_gateway_web.dart'
+    if (dart.library.js_interop) 'hero_transfer_file_gateway_web.dart'
     if (dart.library.io) 'hero_transfer_file_gateway_io.dart';
 
 enum HeroTransferExportResult { canceled, savedToFile, downloaded, shared }
