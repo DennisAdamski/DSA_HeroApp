@@ -135,16 +135,14 @@ class _EditorMessageCard extends StatelessWidget {
           children: [
             Text(
               title,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(color: textColor),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(color: textColor),
             ),
             const SizedBox(height: 8),
             Text(
               message,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: textColor),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: textColor),
             ),
           ],
         ),

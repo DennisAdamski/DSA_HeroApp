@@ -8,10 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 /// Steigern-Aufruf verrechnet die Aktivierungskosten und setzt einen
 /// konkreten Wert (mindestens 0).
 class HeroLanguageEntry {
-  const HeroLanguageEntry({
-    this.wert,
-    this.modifier = 0,
-  });
+  const HeroLanguageEntry({this.wert, this.modifier = 0});
 
   /// Aktueller Talentwert der Sprache, oder `null` vor der Aktivierung.
   final int? wert;
@@ -26,9 +23,9 @@ class HeroLanguageEntry {
       );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'wert': wert,
-        'modifier': modifier,
-      };
+    'wert': wert,
+    'modifier': modifier,
+  };
 
   factory HeroLanguageEntry.fromJson(Map<String, dynamic> json) =>
       HeroLanguageEntry(
@@ -53,10 +50,7 @@ class HeroLanguageEntry {
 /// ausgewaehlt, aber noch nicht ueber den Steigerungsdialog aktiviert
 /// worden (analog zu `HeroTalentEntry.talentValue`).
 class HeroScriptEntry {
-  const HeroScriptEntry({
-    this.wert,
-    this.modifier = 0,
-  });
+  const HeroScriptEntry({this.wert, this.modifier = 0});
 
   /// Aktueller Talentwert der Schrift, oder `null` vor der Aktivierung.
   final int? wert;
@@ -71,9 +65,9 @@ class HeroScriptEntry {
       );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'wert': wert,
-        'modifier': modifier,
-      };
+    'wert': wert,
+    'modifier': modifier,
+  };
 
   factory HeroScriptEntry.fromJson(Map<String, dynamic> json) =>
       HeroScriptEntry(

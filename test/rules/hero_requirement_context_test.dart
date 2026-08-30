@@ -180,10 +180,16 @@ void main() {
       return buildHero().copyWith(
         combatConfig: const CombatConfig(
           specialRules: CombatSpecialRules(
-            activeManeuvers: <String>['man_binden', 'man_scharfschuetze::tal_bogen'],
+            activeManeuvers: <String>[
+              'man_binden',
+              'man_scharfschuetze::tal_bogen',
+            ],
           ),
           waffenmeisterschaften: <WaffenmeisterConfig>[
-            WaffenmeisterConfig(talentId: 'tal_schwerter', weaponType: 'Schild'),
+            WaffenmeisterConfig(
+              talentId: 'tal_schwerter',
+              weaponType: 'Schild',
+            ),
           ],
         ),
       );

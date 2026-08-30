@@ -38,21 +38,21 @@ class _SonderfertigkeitenSection extends StatelessWidget {
                 final ctx = context;
                 if (!ctx.mounted) return;
                 final result =
-                    await showAdaptiveInputDialog<HeroCompanionSonderfertigkeit>(
-                  context: ctx,
-                  builder: (_) => _SonderfertigkeitDialog(initial: sfs[i]),
-                );
+                    await showAdaptiveInputDialog<
+                      HeroCompanionSonderfertigkeit
+                    >(
+                      context: ctx,
+                      builder: (_) => _SonderfertigkeitDialog(initial: sfs[i]),
+                    );
                 if (result != null) {
-                  final next =
-                      List<HeroCompanionSonderfertigkeit>.from(sfs);
+                  final next = List<HeroCompanionSonderfertigkeit>.from(sfs);
                   next[i] = result;
                   onChanged(companion.copyWith(sonderfertigkeiten: next));
                 }
               },
               onDelete: () {
-                final next =
-                    List<HeroCompanionSonderfertigkeit>.from(sfs)
-                      ..removeAt(i);
+                final next = List<HeroCompanionSonderfertigkeit>.from(sfs)
+                  ..removeAt(i);
                 onChanged(companion.copyWith(sonderfertigkeiten: next));
               },
             ),
@@ -60,12 +60,13 @@ class _SonderfertigkeitenSection extends StatelessWidget {
           const SizedBox(height: 8),
           TextButton.icon(
             onPressed: () async {
-              final result = await showAdaptiveInputDialog<_SonderfertigkeitErwerb>(
-                context: context,
-                builder: (_) => _SonderfertigkeitDialog(
-                  verfuegbareAp: companionApVerfuegbar(companion),
-                ),
-              );
+              final result =
+                  await showAdaptiveInputDialog<_SonderfertigkeitErwerb>(
+                    context: context,
+                    builder: (_) => _SonderfertigkeitDialog(
+                      verfuegbareAp: companionApVerfuegbar(companion),
+                    ),
+                  );
               if (result != null) {
                 onChanged(
                   companion.copyWith(
@@ -113,9 +114,8 @@ class _SonderfertigkeitTile extends StatelessWidget {
             children: [
               Text(
                 sf.name.isEmpty ? '–' : sf.name,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w500),
               ),
               if (sf.beschreibung.isNotEmpty)
                 Text(

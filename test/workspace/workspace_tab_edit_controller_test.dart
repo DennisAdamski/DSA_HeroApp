@@ -47,21 +47,24 @@ void main() {
     expect(controller.shouldSync('new-during-edit', force: true), isTrue);
   });
 
-  test('discard resets state and allows forced resync from blank signature', () {
-    final controller = WorkspaceTabEditController(
-      onDirtyChanged: (_) {},
-      onEditingChanged: (_) {},
-      requestRebuild: () {},
-    );
+  test(
+    'discard resets state and allows forced resync from blank signature',
+    () {
+      final controller = WorkspaceTabEditController(
+        onDirtyChanged: (_) {},
+        onEditingChanged: (_) {},
+        requestRebuild: () {},
+      );
 
-    expect(controller.shouldSync('v1'), isTrue);
-    controller.startEdit();
-    controller.markFieldChanged();
-    controller.clearSyncSignature();
-    controller.markDiscarded();
+      expect(controller.shouldSync('v1'), isTrue);
+      controller.startEdit();
+      controller.markFieldChanged();
+      controller.clearSyncSignature();
+      controller.markDiscarded();
 
-    expect(controller.isEditing, isFalse);
-    expect(controller.isDirty, isFalse);
-    expect(controller.shouldSync('v1'), isTrue);
-  });
+      expect(controller.isEditing, isFalse);
+      expect(controller.isDirty, isFalse);
+      expect(controller.shouldSync('v1'), isTrue);
+    },
+  );
 }

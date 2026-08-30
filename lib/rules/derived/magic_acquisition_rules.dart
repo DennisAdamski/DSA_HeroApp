@@ -71,9 +71,8 @@ int merkmalsklassifikation(String merkmal) {
   if (needle.isEmpty) {
     return 2;
   }
-  bool contains(List<String> liste) => liste.any(
-    (eintrag) => normalizeSpecialAbilityName(eintrag) == needle,
-  );
+  bool contains(List<String> liste) =>
+      liste.any((eintrag) => normalizeSpecialAbilityName(eintrag) == needle);
   if (contains(kMerkmaleKlassifikationI)) {
     return 1;
   }

@@ -104,10 +104,10 @@ void main() {
         repraesentationen: const <String>['Mag', 'Hex'],
       );
 
-      expect(
-        traditionen.map((t) => t.id).toSet(),
-        <String>{'gildenmagier', 'hexe'},
-      );
+      expect(traditionen.map((t) => t.id).toSet(), <String>{
+        'gildenmagier',
+        'hexe',
+      });
     });
 
     test('leitet Traditionen aus Ritualkenntnissen ab', () {
@@ -124,10 +124,10 @@ void main() {
         ritualkenntnisse: const <String>['Gildenmagie', 'Zibilja'],
       );
 
-      expect(
-        traditionen.map((t) => t.id).toSet(),
-        <String>{'gildenmagier', 'zibilja'},
-      );
+      expect(traditionen.map((t) => t.id).toSet(), <String>{
+        'gildenmagier',
+        'zibilja',
+      });
       expect(traditionen, hasLength(2));
     });
 
@@ -185,10 +185,9 @@ void main() {
         repraesentationen: const <String>['Mag'],
       );
 
-      expect(
-        leiteigenschaftenFuer(traditionen, override: 'CH'),
-        <String>{'CH'},
-      );
+      expect(leiteigenschaftenFuer(traditionen, override: 'CH'), <String>{
+        'CH',
+      });
     });
 
     test('ohne Tradition und ohne Override bleibt die Menge leer', () {

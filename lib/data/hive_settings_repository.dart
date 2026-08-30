@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 import 'package:dsa_heldenverwaltung/data/firestore_secrets_repository.dart';
 import 'package:dsa_heldenverwaltung/data/secrets_cipher.dart';
@@ -70,8 +70,9 @@ class HiveSettingsRepository {
 
     var cachedApiKey = await secure.read(key: _apiKeySecureKey) ?? '';
     final rawCatalogPw = await secure.read(key: _catalogPasswordSecureKey);
-    var cachedCatalogPassword =
-        (rawCatalogPw == null || rawCatalogPw.isEmpty) ? null : rawCatalogPw;
+    var cachedCatalogPassword = (rawCatalogPw == null || rawCatalogPw.isEmpty)
+        ? null
+        : rawCatalogPw;
 
     // Einmalige Migration: sensible Felder aus Hive in Secure Storage umziehen.
     final rawHive = box.get(_settingsKey);
@@ -79,7 +80,8 @@ class HiveSettingsRepository {
       final oldSettings = AppSettings.fromJson(rawHive.cast<String, dynamic>());
       var migrated = false;
 
-      if (cachedApiKey.isEmpty && oldSettings.avatarApiConfig.apiKey.isNotEmpty) {
+      if (cachedApiKey.isEmpty &&
+          oldSettings.avatarApiConfig.apiKey.isNotEmpty) {
         cachedApiKey = oldSettings.avatarApiConfig.apiKey;
         await secure.write(key: _apiKeySecureKey, value: cachedApiKey);
         migrated = true;
@@ -101,7 +103,12 @@ class HiveSettingsRepository {
       }
     }
 
-    return HiveSettingsRepository._(box, secure, cachedApiKey, cachedCatalogPassword);
+    return HiveSettingsRepository._(
+      box,
+      secure,
+      cachedApiKey,
+      cachedCatalogPassword,
+    );
   }
 
   /// Laedt die aktuellen Einstellungen (oder Defaults bei leerer Box).
@@ -110,8 +117,9 @@ class HiveSettingsRepository {
   /// Start aus dem sicheren Speicher bevoelkert wurde.
   AppSettings load() {
     final raw = _box.get(_settingsKey);
-    final base =
-        raw == null ? const AppSettings() : AppSettings.fromJson(raw.cast<String, dynamic>());
+    final base = raw == null
+        ? const AppSettings()
+        : AppSettings.fromJson(raw.cast<String, dynamic>());
     return base.copyWith(
       avatarApiConfig: base.avatarApiConfig.copyWith(apiKey: _cachedApiKey),
       catalogContentPassword: _cachedCatalogPassword,
@@ -145,12 +153,14 @@ class HiveSettingsRepository {
     final cipher = _cipher;
     if (remote != null && cipher != null) {
       try {
-        await remote.save(_buildRemoteSecrets(
-          cipher: cipher,
-          apiKey: _cachedApiKey,
-          catalogPassword: _cachedCatalogPassword,
-          provider: settings.avatarApiConfig.provider,
-        ));
+        await remote.save(
+          _buildRemoteSecrets(
+            cipher: cipher,
+            apiKey: _cachedApiKey,
+            catalogPassword: _cachedCatalogPassword,
+            provider: settings.avatarApiConfig.provider,
+          ),
+        );
       } on Object catch (e, st) {
         // Remote-Fehler blockieren den lokalen Save nicht.
         debugPrint('[settings] remote save fehlgeschlagen: $e\n$st');
@@ -175,8 +185,7 @@ class HiveSettingsRepository {
     RemoteSecretsRepository? remote,
     SecretsCipher? cipher,
   }) async {
-    final effectiveRemote =
-        remote ?? FirestoreSecretsRepository(userId: uid);
+    final effectiveRemote = remote ?? FirestoreSecretsRepository(userId: uid);
     final effectiveCipher = cipher ?? SecretsCipher.forUser(uid);
 
     _attachedUid = uid;
@@ -229,12 +238,14 @@ class HiveSettingsRepository {
     if (remoteSecrets == null) {
       // Remote leer: lokale Werte hochladen, falls vorhanden.
       if (localApiKey.isNotEmpty || (localPassword?.isNotEmpty ?? false)) {
-        await remote.save(_buildRemoteSecrets(
-          cipher: cipher,
-          apiKey: localApiKey,
-          catalogPassword: localPassword,
-          provider: localProvider,
-        ));
+        await remote.save(
+          _buildRemoteSecrets(
+            cipher: cipher,
+            apiKey: localApiKey,
+            catalogPassword: localPassword,
+            provider: localProvider,
+          ),
+        );
       }
       return;
     }
@@ -250,44 +261,51 @@ class HiveSettingsRepository {
     final remotePassword = !remoteSecrets.catalogPasswordSet
         ? null
         : remoteSecrets.catalogPasswordCipher.isEmpty
-            ? ''
-            : cipher.decryptString(
-                cipher: remoteSecrets.catalogPasswordCipher,
-                iv: remoteSecrets.catalogPasswordIv,
-              );
+        ? ''
+        : cipher.decryptString(
+            cipher: remoteSecrets.catalogPasswordCipher,
+            iv: remoteSecrets.catalogPasswordIv,
+          );
     final remoteProvider =
         AvatarApiProvider.fromId(remoteSecrets.apiProvider) ?? localProvider;
 
     // Wenn lokal gefuellt und remote leer (pro Wert): lokale gewinnen — sonst Remote.
-    final mergedApiKey =
-        remoteApiKey.isEmpty && localApiKey.isNotEmpty ? localApiKey : remoteApiKey;
-    final mergedPassword = (remotePassword == null || remotePassword.isEmpty) &&
+    final mergedApiKey = remoteApiKey.isEmpty && localApiKey.isNotEmpty
+        ? localApiKey
+        : remoteApiKey;
+    final mergedPassword =
+        (remotePassword == null || remotePassword.isEmpty) &&
             (localPassword?.isNotEmpty ?? false)
         ? localPassword
         : remotePassword;
-    final mergedProvider =
-        remoteSecrets.apiProvider.isEmpty ? localProvider : remoteProvider;
+    final mergedProvider = remoteSecrets.apiProvider.isEmpty
+        ? localProvider
+        : remoteProvider;
 
     final hasLocalChange =
         mergedApiKey != localApiKey || mergedPassword != localPassword;
     if (hasLocalChange) {
-      await save(localSettings.copyWith(
-        avatarApiConfig: localSettings.avatarApiConfig.copyWith(
-          apiKey: mergedApiKey,
-          provider: mergedProvider,
+      await save(
+        localSettings.copyWith(
+          avatarApiConfig: localSettings.avatarApiConfig.copyWith(
+            apiKey: mergedApiKey,
+            provider: mergedProvider,
+          ),
+          catalogContentPassword: mergedPassword,
         ),
-        catalogContentPassword: mergedPassword,
-      ));
+      );
     } else if (mergedApiKey != remoteApiKey ||
         mergedPassword != remotePassword ||
         mergedProvider.name != remoteSecrets.apiProvider) {
       // Remote war unvollstaendig — lokales Bild dorthin schreiben.
-      await remote.save(_buildRemoteSecrets(
-        cipher: cipher,
-        apiKey: mergedApiKey,
-        catalogPassword: mergedPassword,
-        provider: mergedProvider,
-      ));
+      await remote.save(
+        _buildRemoteSecrets(
+          cipher: cipher,
+          apiKey: mergedApiKey,
+          catalogPassword: mergedPassword,
+          provider: mergedProvider,
+        ),
+      );
     }
   }
 
@@ -322,13 +340,12 @@ class HiveSettingsRepository {
   }
 
   static AppSettings _stripSensitiveFields(AppSettings s) => s.copyWith(
-        avatarApiConfig: s.avatarApiConfig.copyWith(apiKey: ''),
-        catalogContentPassword: null,
-      );
+    avatarApiConfig: s.avatarApiConfig.copyWith(apiKey: ''),
+    catalogContentPassword: null,
+  );
 
   // Auf Web bleibt der API-Key gestrippt, das Katalog-Passwort wird dagegen
   // bewusst im Klartext in der Hive-Box persistiert (siehe `create`).
-  static AppSettings _stripWebSensitiveFields(AppSettings s) => s.copyWith(
-        avatarApiConfig: s.avatarApiConfig.copyWith(apiKey: ''),
-      );
+  static AppSettings _stripWebSensitiveFields(AppSettings s) =>
+      s.copyWith(avatarApiConfig: s.avatarApiConfig.copyWith(apiKey: ''));
 }

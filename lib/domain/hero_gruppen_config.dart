@@ -45,9 +45,7 @@ class HeroGruppenMitgliedschaft {
     return HeroGruppenMitgliedschaft(
       gruppenCode: json['gruppenCode'] as String? ?? '',
       gruppenName: json['gruppenName'] as String? ?? '',
-      externeHeldIds: rawIds
-          .whereType<String>()
-          .toList(growable: false),
+      externeHeldIds: rawIds.whereType<String>().toList(growable: false),
     );
   }
 }

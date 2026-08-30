@@ -14,8 +14,8 @@ class WebAuthGate extends StatefulWidget {
     super.key,
     required this.firebaseBootstrap,
     required this.builder,
-    AuthService? authService,
-  }) : _authService = authService;
+    this._authService,
+  });
 
   /// Ergebnis der Firebase-Initialisierung; bestimmt ob Login moeglich ist.
   final FirebaseBootstrapResult firebaseBootstrap;

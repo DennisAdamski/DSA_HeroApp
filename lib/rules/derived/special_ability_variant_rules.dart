@@ -172,7 +172,5 @@ bool _matchesOwnCulture(String variante, String eigeneKultur) {
   if (selection.isEmpty || own.isEmpty) {
     return false;
   }
-  return selection == own ||
-      own.contains(selection) ||
-      selection.contains(own);
+  return selection == own || own.contains(selection) || selection.contains(own);
 }

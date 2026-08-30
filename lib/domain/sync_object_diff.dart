@@ -309,8 +309,9 @@ void _diffLists(
   }
 
   // Index-Fallback fuer gemischte oder id-lose Listen.
-  final sharedLength =
-      local.length < remote.length ? local.length : remote.length;
+  final sharedLength = local.length < remote.length
+      ? local.length
+      : remote.length;
   for (var i = 0; i < sharedLength; i++) {
     _diffValues(local[i], remote[i], [...path, '[$i]'], collector);
   }
@@ -336,7 +337,8 @@ void _diffLists(
 
 bool _isPrimitiveList(List<dynamic> values) {
   return values.every(
-    (value) => value == null || value is String || value is num || value is bool,
+    (value) =>
+        value == null || value is String || value is num || value is bool,
   );
 }
 

@@ -104,4 +104,3 @@ int computeOffhandPaBonus({
       return basePaMod;
   }
 }
-

@@ -105,9 +105,8 @@ class _DukatenFieldState extends State<DukatenField> {
 
   @override
   Widget build(BuildContext context) {
-    final breakdownStyle = Theme.of(context).textTheme.labelMedium?.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final breakdownStyle = Theme.of(context).textTheme.labelMedium
+        ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);
 
     return Wrap(
       spacing: 8,

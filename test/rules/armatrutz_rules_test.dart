@@ -46,7 +46,10 @@ void main() {
   );
 
   /// Baut einen Laufzeitzustand mit laufendem Armatrutz.
-  HeroState stateWithArmatrutz({required int rsBonus, SpellDuration? duration}) {
+  HeroState stateWithArmatrutz({
+    required int rsBonus,
+    SpellDuration? duration,
+  }) {
     final effects = const ActiveSpellEffectsState()
         .withToggled(activeSpellEffectArmatrutz, true)
         .withDetail(

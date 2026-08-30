@@ -36,7 +36,9 @@ void main() {
       username: 'user',
     );
 
-    final updated = config.copyWith(serverUrl: 'https://new.example/index.sqlite');
+    final updated = config.copyWith(
+      serverUrl: 'https://new.example/index.sqlite',
+    );
 
     expect(updated.serverUrl, 'https://new.example/index.sqlite');
     expect(updated.username, 'user');

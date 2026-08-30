@@ -14,25 +14,18 @@ Future<String?> showGruppeBeitretenDialog({
 }) {
   return showAdaptiveInputDialog<String>(
     context: context,
-    builder: (context) => _GruppeBeitretenDialog(
-      heroId: heroId,
-      ref: ref,
-    ),
+    builder: (context) => _GruppeBeitretenDialog(heroId: heroId, ref: ref),
   );
 }
 
 class _GruppeBeitretenDialog extends StatefulWidget {
-  const _GruppeBeitretenDialog({
-    required this.heroId,
-    required this.ref,
-  });
+  const _GruppeBeitretenDialog({required this.heroId, required this.ref});
 
   final String heroId;
   final WidgetRef ref;
 
   @override
-  State<_GruppeBeitretenDialog> createState() =>
-      _GruppeBeitretenDialogState();
+  State<_GruppeBeitretenDialog> createState() => _GruppeBeitretenDialogState();
 }
 
 class _GruppeBeitretenDialogState extends State<_GruppeBeitretenDialog> {
@@ -105,10 +98,9 @@ class _GruppeBeitretenDialogState extends State<_GruppeBeitretenDialog> {
     });
 
     try {
-      await widget.ref.read(heroActionsProvider).trittGruppeBei(
-            heroId: widget.heroId,
-            gruppenCode: code,
-          );
+      await widget.ref
+          .read(heroActionsProvider)
+          .trittGruppeBei(heroId: widget.heroId, gruppenCode: code);
       if (mounted) Navigator.of(context).pop(code);
     } on StateError catch (error) {
       if (!mounted) return;

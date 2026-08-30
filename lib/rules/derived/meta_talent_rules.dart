@@ -42,9 +42,7 @@ List<String> validateHeroMetaTalent({
       .where((entry) => parseAttributeCode(entry) == null)
       .toList(growable: false);
   if (invalidAttributes.isNotEmpty) {
-    issues.add(
-      'Ungueltige Eigenschaften: ${invalidAttributes.join(', ')}.',
-    );
+    issues.add('Ungueltige Eigenschaften: ${invalidAttributes.join(', ')}.');
   }
   if (!isValidMetaTalentBeRule(metaTalent.be)) {
     issues.add('BE-Regel ist ungueltig.');
@@ -53,7 +51,9 @@ List<String> validateHeroMetaTalent({
 }
 
 /// Liefert alle referenzierten Talent-IDs aus einer Meta-Talent-Liste.
-Set<String> collectMetaTalentComponentIds(Iterable<HeroMetaTalent> metaTalents) {
+Set<String> collectMetaTalentComponentIds(
+  Iterable<HeroMetaTalent> metaTalents,
+) {
   final ids = <String>{};
   for (final metaTalent in metaTalents) {
     ids.addAll(metaTalent.componentTalentIds);
@@ -91,15 +91,8 @@ int computeMetaTalentBaseTaw({
 }
 
 /// Berechnet den angezeigten TaW eines Meta-Talents inklusive eBE.
-int computeMetaTalentComputedTaw({
-  required int baseTaw,
-  required int ebe,
-}) {
-  return computeTalentComputedTaw(
-    talentValue: baseTaw,
-    modifier: 0,
-    ebe: ebe,
-  );
+int computeMetaTalentComputedTaw({required int baseTaw, required int ebe}) {
+  return computeTalentComputedTaw(talentValue: baseTaw, modifier: 0, ebe: ebe);
 }
 
 /// Berechnet die eBE eines Meta-Talents anhand seiner BE-Regel.

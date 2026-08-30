@@ -156,73 +156,73 @@ void main() {
     },
   );
 
-  testWidgets('workspace header shows the primary image when one is available', (
-    tester,
-  ) async {
-    final imageBytes = base64Decode(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/aJ0AAAAASUVORK5CYII=',
-    );
-    tester.view.devicePixelRatio = 1.0;
-    tester.view.physicalSize = const Size(1024, 1024);
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final hero = buildHero(
-      appearance: const HeroAppearance(
-        primaerbildId: 'bild-1',
-        avatarGallery: [
-          AvatarGalleryEntry(
-            id: 'bild-1',
-            fileName: 'demo_bild-1.png',
-            headerFocusX: 0.3,
-            headerFocusY: 0.4,
-          ),
-        ],
-      ),
-    );
-    final repo = FakeRepository(
-      heroes: [hero],
-      states: const <String, HeroState>{
-        'demo': HeroState(
-          currentLep: 27,
-          currentAsp: 30,
-          currentKap: 0,
-          currentAu: 30,
+  testWidgets(
+    'workspace header shows the primary image when one is available',
+    (tester) async {
+      final imageBytes = base64Decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/aJ0AAAAASUVORK5CYII=',
+      );
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(1024, 1024);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final hero = buildHero(
+        appearance: const HeroAppearance(
+          primaerbildId: 'bild-1',
+          avatarGallery: [
+            AvatarGalleryEntry(
+              id: 'bild-1',
+              fileName: 'demo_bild-1.png',
+              headerFocusX: 0.3,
+              headerFocusY: 0.4,
+            ),
+          ],
         ),
-      },
-    );
+      );
+      final repo = FakeRepository(
+        heroes: [hero],
+        states: const <String, HeroState>{
+          'demo': HeroState(
+            currentLep: 27,
+            currentAsp: 30,
+            currentKap: 0,
+            currentAu: 30,
+          ),
+        },
+      );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          heroRepositoryProvider.overrideWithValue(repo),
-          debugModusProvider.overrideWith((ref) => false),
-          primaerbildBytesProvider.overrideWith(
-            (ref, heroId) async => imageBytes,
-          ),
-          activeAvatarBytesProvider.overrideWith(
-            (ref, heroId) async => imageBytes,
-          ),
-        ],
-        child: MaterialApp(
-          home: Scaffold(
-            body: WorkspaceHeroHeader(
-              heroId: 'demo',
-              hero: hero,
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            heroRepositoryProvider.overrideWithValue(repo),
+            debugModusProvider.overrideWith((ref) => false),
+            primaerbildBytesProvider.overrideWith(
+              (ref, heroId) async => imageBytes,
+            ),
+            activeAvatarBytesProvider.overrideWith(
+              (ref, heroId) async => imageBytes,
+            ),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: WorkspaceHeroHeader(heroId: 'demo', hero: hero),
             ),
           ),
         ),
-      ),
-    );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 200));
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
 
-    expect(
-      find.byKey(const ValueKey<String>('workspace-header-portrait-image')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey<String>('workspace-header-portrait-initials')),
-      findsNothing,
-    );
-  });
+      expect(
+        find.byKey(const ValueKey<String>('workspace-header-portrait-image')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('workspace-header-portrait-initials'),
+        ),
+        findsNothing,
+      );
+    },
+  );
 }

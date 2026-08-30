@@ -6,12 +6,10 @@
 /// - `lastSyncedToken`: Fingerprint des zuletzt synchronisierten Modells.
 class WorkspaceTabEditController {
   WorkspaceTabEditController({
-    required void Function(bool isDirty) onDirtyChanged,
-    required void Function(bool isEditing) onEditingChanged,
-    required void Function() requestRebuild,
-  }) : _onDirtyChanged = onDirtyChanged,
-       _onEditingChanged = onEditingChanged,
-       _requestRebuild = requestRebuild;
+    required this._onDirtyChanged,
+    required this._onEditingChanged,
+    required this._requestRebuild,
+  });
 
   final void Function(bool isDirty) _onDirtyChanged;
   final void Function(bool isEditing) _onEditingChanged;

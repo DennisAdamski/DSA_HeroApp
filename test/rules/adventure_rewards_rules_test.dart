@@ -84,38 +84,35 @@ void main() {
     ],
   );
 
-  test(
-    'applyAdventureRewards schliesst das Abenteuer ab und uebernimmt Dukaten sowie Beute',
-    () {
-      final hero = buildHero(
-        adventures: const <HeroAdventureEntry>[adventure],
-        talents: const <String, HeroTalentEntry>{
-          'tal_schwerter': HeroTalentEntry(talentValue: 8),
-        },
-        dukaten: '10',
-      );
+  test('applyAdventureRewards schliesst das Abenteuer ab und uebernimmt Dukaten sowie Beute', () {
+    final hero = buildHero(
+      adventures: const <HeroAdventureEntry>[adventure],
+      talents: const <String, HeroTalentEntry>{
+        'tal_schwerter': HeroTalentEntry(talentValue: 8),
+      },
+      dukaten: '10',
+    );
 
-      final result = applyAdventureRewards(hero: hero, adventureId: 'adv_1');
+    final result = applyAdventureRewards(hero: hero, adventureId: 'adv_1');
 
-      expect(result.apTotal, 150);
-      expect(result.dukaten, '22,5');
-      expect(result.talents['tal_schwerter']?.specialExperiences, 2);
-      expect(result.statSePool.lep, 1);
-      expect(result.attributeSePool.mu, 1);
-      expect(result.inventoryEntries, hasLength(1));
-      expect(
-        result.inventoryEntries.single.source,
-        InventoryItemSource.abenteuer,
-      );
-      expect(result.inventoryEntries.single.sourceRef, 'adv:adv_1|loot:loot_1');
-      expect(
-        result.inventoryEntries.single.herkunft,
-        'Abenteuer: Das Purpurzeichen',
-      );
-      expect(result.adventures.single.status, HeroAdventureStatus.completed);
-      expect(result.adventures.single.rewardsApplied, isTrue);
-    },
-  );
+    expect(result.apTotal, 150);
+    expect(result.dukaten, '22,5');
+    expect(result.talents['tal_schwerter']?.specialExperiences, 2);
+    expect(result.statSePool.lep, 1);
+    expect(result.attributeSePool.mu, 1);
+    expect(result.inventoryEntries, hasLength(1));
+    expect(
+      result.inventoryEntries.single.source,
+      InventoryItemSource.abenteuer,
+    );
+    expect(result.inventoryEntries.single.sourceRef, 'adv:adv_1|loot:loot_1');
+    expect(
+      result.inventoryEntries.single.herkunft,
+      'Abenteuer: Das Purpurzeichen',
+    );
+    expect(result.adventures.single.status, HeroAdventureStatus.completed);
+    expect(result.adventures.single.rewardsApplied, isTrue);
+  });
 
   test('applyAdventureRewards erhaelt Kreuzer aus gemischten Geldwerten', () {
     final hero = buildHero(
@@ -146,49 +143,43 @@ void main() {
     },
   );
 
-  test(
-    'canRevokeAdventureRewards erlaubt Ruecknahme solange AP und SE ungenutzt sind',
-    () {
-      final hero = buildHero(
-        adventures: <HeroAdventureEntry>[
-          adventure.copyWith(rewardsApplied: true),
-        ],
-        talents: const <String, HeroTalentEntry>{
-          'tal_schwerter': HeroTalentEntry(
-            talentValue: 8,
-            specialExperiences: 2,
-          ),
-        },
-        apTotal: 150,
-        apSpent: 20,
-        dukaten: '22,5',
-        inventoryEntries: const <HeroInventoryEntry>[
-          HeroInventoryEntry(
-            gegenstand: 'Silberdolch',
-            source: InventoryItemSource.abenteuer,
-            sourceRef: 'adv:adv_1|loot:loot_1',
-            welchesAbenteuer: 'Das Purpurzeichen',
-          ),
-        ],
-        attributeSePool: const HeroAttributeSePool(mu: 1),
-        statSePool: const HeroStatSePool(lep: 1),
-      );
+  test('canRevokeAdventureRewards erlaubt Ruecknahme solange AP und SE ungenutzt sind', () {
+    final hero = buildHero(
+      adventures: <HeroAdventureEntry>[
+        adventure.copyWith(rewardsApplied: true),
+      ],
+      talents: const <String, HeroTalentEntry>{
+        'tal_schwerter': HeroTalentEntry(talentValue: 8, specialExperiences: 2),
+      },
+      apTotal: 150,
+      apSpent: 20,
+      dukaten: '22,5',
+      inventoryEntries: const <HeroInventoryEntry>[
+        HeroInventoryEntry(
+          gegenstand: 'Silberdolch',
+          source: InventoryItemSource.abenteuer,
+          sourceRef: 'adv:adv_1|loot:loot_1',
+          welchesAbenteuer: 'Das Purpurzeichen',
+        ),
+      ],
+      attributeSePool: const HeroAttributeSePool(mu: 1),
+      statSePool: const HeroStatSePool(lep: 1),
+    );
 
-      final check = canRevokeAdventureRewards(hero: hero, adventureId: 'adv_1');
+    final check = canRevokeAdventureRewards(hero: hero, adventureId: 'adv_1');
 
-      expect(check.isAllowed, isTrue);
-      final reverted = revokeAdventureRewards(hero: hero, adventureId: 'adv_1');
-      expect(reverted.apTotal, 100);
-      expect(reverted.dukaten, '10');
-      expect(reverted.talents['tal_schwerter']?.specialExperiences, 0);
-      expect(reverted.attributeSePool.mu, 0);
-      expect(reverted.statSePool.lep, 0);
-      expect(reverted.inventoryEntries, isEmpty);
-      expect(reverted.adventures.single.status, HeroAdventureStatus.current);
-      expect(reverted.adventures.single.endWorldDate.hasContent, isFalse);
-      expect(reverted.adventures.single.rewardsApplied, isFalse);
-    },
-  );
+    expect(check.isAllowed, isTrue);
+    final reverted = revokeAdventureRewards(hero: hero, adventureId: 'adv_1');
+    expect(reverted.apTotal, 100);
+    expect(reverted.dukaten, '10');
+    expect(reverted.talents['tal_schwerter']?.specialExperiences, 0);
+    expect(reverted.attributeSePool.mu, 0);
+    expect(reverted.statSePool.lep, 0);
+    expect(reverted.inventoryEntries, isEmpty);
+    expect(reverted.adventures.single.status, HeroAdventureStatus.current);
+    expect(reverted.adventures.single.endWorldDate.hasContent, isFalse);
+    expect(reverted.adventures.single.rewardsApplied, isFalse);
+  });
 
   test(
     'canRevokeAdventureRewards blockiert wenn AP bereits verbraucht wurden',
@@ -216,31 +207,25 @@ void main() {
     },
   );
 
-  test(
-    'canRevokeAdventureRewards blockiert wenn eine Talent-SE bereits verbraucht wurde',
-    () {
-      final hero = buildHero(
-        adventures: <HeroAdventureEntry>[
-          adventure.copyWith(rewardsApplied: true),
-        ],
-        talents: const <String, HeroTalentEntry>{
-          'tal_schwerter': HeroTalentEntry(
-            talentValue: 8,
-            specialExperiences: 1,
-          ),
-        },
-        apTotal: 150,
-        apSpent: 20,
-        attributeSePool: const HeroAttributeSePool(mu: 1),
-        statSePool: const HeroStatSePool(lep: 1),
-      );
+  test('canRevokeAdventureRewards blockiert wenn eine Talent-SE bereits verbraucht wurde', () {
+    final hero = buildHero(
+      adventures: <HeroAdventureEntry>[
+        adventure.copyWith(rewardsApplied: true),
+      ],
+      talents: const <String, HeroTalentEntry>{
+        'tal_schwerter': HeroTalentEntry(talentValue: 8, specialExperiences: 1),
+      },
+      apTotal: 150,
+      apSpent: 20,
+      attributeSePool: const HeroAttributeSePool(mu: 1),
+      statSePool: const HeroStatSePool(lep: 1),
+    );
 
-      final check = canRevokeAdventureRewards(hero: hero, adventureId: 'adv_1');
+    final check = canRevokeAdventureRewards(hero: hero, adventureId: 'adv_1');
 
-      expect(check.isAllowed, isFalse);
-      expect(check.reason, contains('Schwerter'));
-    },
-  );
+    expect(check.isAllowed, isFalse);
+    expect(check.reason, contains('Schwerter'));
+  });
 
   test(
     'canRevokeAdventureRewards blockiert bei nicht mehr vorhandener Beute',

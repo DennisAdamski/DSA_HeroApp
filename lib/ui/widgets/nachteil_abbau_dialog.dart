@@ -284,8 +284,8 @@ class _NachteilAbbauDialogState extends State<_NachteilAbbauDialog> {
                 setState(() {
                   _mitSpeziellerErfahrung = value ?? false;
                   if (widget.gpWertProPunkt != null) {
-                    _apKostenController.text =
-                        (_berechneteKosten ?? 0).toString();
+                    _apKostenController.text = (_berechneteKosten ?? 0)
+                        .toString();
                   }
                 });
               },
@@ -296,9 +296,7 @@ class _NachteilAbbauDialogState extends State<_NachteilAbbauDialog> {
             Text('AP-Kosten: ${_eingegebeneBasiskosten ?? 0}')
           else
             TextField(
-              key: const ValueKey<String>(
-                'nachteil-abbau-dialog-ap-kosten',
-              ),
+              key: const ValueKey<String>('nachteil-abbau-dialog-ap-kosten'),
               controller: _apKostenController,
               keyboardType: TextInputType.number,
               inputFormatters: <TextInputFormatter>[

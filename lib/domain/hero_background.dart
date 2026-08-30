@@ -53,17 +53,17 @@ class HeroBackground {
 
   /// Serialisiert als flache Map (Felder auf Root-Ebene).
   Map<String, dynamic> toJson() => {
-        'rasse': rasse,
-        'rasseModText': rasseModText,
-        'kultur': kultur,
-        'kulturModText': kulturModText,
-        'profession': profession,
-        'professionModText': professionModText,
-        'familieHerkunftHintergrund': familieHerkunftHintergrund,
-        'stand': stand,
-        'titel': titel,
-        'sozialstatus': sozialstatus,
-      };
+    'rasse': rasse,
+    'rasseModText': rasseModText,
+    'kultur': kultur,
+    'kulturModText': kulturModText,
+    'profession': profession,
+    'professionModText': professionModText,
+    'familieHerkunftHintergrund': familieHerkunftHintergrund,
+    'stand': stand,
+    'titel': titel,
+    'sozialstatus': sozialstatus,
+  };
 
   /// Liest aus einer flachen Map (Felder auf Root-Ebene).
   static HeroBackground fromJson(Map<String, dynamic> json) {

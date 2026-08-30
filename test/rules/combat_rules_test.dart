@@ -215,31 +215,25 @@ void main() {
     expect(axxResult.axxAttackDefenseHint, isNotEmpty);
   });
 
-  test(
-    'kampf initiative includes only weapon/offhand ini mods on top of helden initiative',
-    () {
-      final sheet = hero(
-        combatConfig: const CombatConfig(
-          mainWeapon: MainWeaponSlot(iniMod: 3),
-          offhandAssignment: OffhandAssignment(equipmentIndex: 0),
-          offhandEquipment: <OffhandEquipmentEntry>[
-            OffhandEquipmentEntry(
-              type: OffhandEquipmentType.shield,
-              iniMod: -1,
-            ),
-          ],
-          manualMods: CombatManualMods(iniWurf: 2),
-        ),
-      );
+  test('kampf initiative includes only weapon/offhand ini mods on top of helden initiative', () {
+    final sheet = hero(
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(iniMod: 3),
+        offhandAssignment: OffhandAssignment(equipmentIndex: 0),
+        offhandEquipment: <OffhandEquipmentEntry>[
+          OffhandEquipmentEntry(type: OffhandEquipmentType.shield, iniMod: -1),
+        ],
+        manualMods: CombatManualMods(iniWurf: 2),
+      ),
+    );
 
-      final result = preview(sheet);
-      expect(
-        result.kombinierteHeldenWaffenIni,
-        result.heldenInitiative + 3 + result.iniGe,
-      );
-      expect(result.kampfInitiative, result.kombinierteHeldenWaffenIni - 1);
-    },
-  );
+    final result = preview(sheet);
+    expect(
+      result.kombinierteHeldenWaffenIni,
+      result.heldenInitiative + 3 + result.iniGe,
+    );
+    expect(result.kampfInitiative, result.kombinierteHeldenWaffenIni - 1);
+  });
 
   test('kampf initiative uses the higher value of main and offhand weapon', () {
     final sheet = hero(

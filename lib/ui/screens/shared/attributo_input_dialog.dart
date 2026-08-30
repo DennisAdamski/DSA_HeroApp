@@ -87,10 +87,7 @@ class _AttributoInputDialogState extends State<_AttributoInputDialog> {
           children: [
             SizedBox(
               width: 36,
-              child: Text(
-                abbr,
-                style: theme.textTheme.titleSmall,
-              ),
+              child: Text(abbr, style: theme.textTheme.titleSmall),
             ),
             const SizedBox(width: kDialogInlineSpacing),
             Expanded(

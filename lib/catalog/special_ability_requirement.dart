@@ -182,9 +182,10 @@ class SpecialAbilityRequirement {
         'text',
         fallback: art == RequirementArt.unbekannt ? artKey : '',
       ),
-      bedingungen: readCatalogObjectList(json, 'bedingungen')
-          .map(SpecialAbilityRequirement.fromJson)
-          .toList(growable: false),
+      bedingungen: readCatalogObjectList(
+        json,
+        'bedingungen',
+      ).map(SpecialAbilityRequirement.fromJson).toList(growable: false),
     );
   }
 

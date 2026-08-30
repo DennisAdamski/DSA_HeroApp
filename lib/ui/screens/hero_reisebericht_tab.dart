@@ -243,8 +243,7 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
       children: [
         const CodexTabHeader(
           title: 'Abenteuer-Chronik',
-          subtitle:
-              'Erfahrungen, Meilensteine und Belohnungen als fortlaufender Reisebericht.',
+          subtitle: 'Erfahrungen, Meilensteine und Belohnungen als fortlaufender Reisebericht.',
           assetPath: 'assets/ui/codex/hero_banner_crest.png',
         ),
         TabBar(

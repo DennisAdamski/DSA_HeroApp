@@ -117,8 +117,8 @@ int? companionEffektivwert(HeroCompanion c, String key) {
 /// Faellt auf den aktuellen Basiswert zurueck, wenn noch kein Startwert
 /// festgehalten wurde.
 int? companionEffektiverPoolwert(HeroCompanion c, String key) {
-  final startwert = companionPoolStartwert(c, key) ??
-      companionPoolBasiswert(c, key);
+  final startwert =
+      companionPoolStartwert(c, key) ?? companionPoolBasiswert(c, key);
   if (startwert == null) return null;
   return startwert + companionSteigerung(c, key);
 }

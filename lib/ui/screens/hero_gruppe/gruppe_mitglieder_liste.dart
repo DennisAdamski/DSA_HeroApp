@@ -31,8 +31,8 @@ class GruppeMitgliederListe extends ConsumerWidget {
           child: Text(
             'Noch keine Mitglieder',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       );
@@ -58,7 +58,9 @@ class GruppeMitgliederListe extends ConsumerWidget {
   }
 
   Future<void> _entferneHeld(WidgetRef ref, String externerHeldId) async {
-    await ref.read(heroActionsProvider).removeExternerHeld(
+    await ref
+        .read(heroActionsProvider)
+        .removeExternerHeld(
           heroId: heroId,
           gruppenCode: gruppenCode,
           externerHeldId: externerHeldId,
@@ -67,10 +69,7 @@ class GruppeMitgliederListe extends ConsumerWidget {
 }
 
 class _ExternerHeldKarte extends StatelessWidget {
-  const _ExternerHeldKarte({
-    required this.held,
-    required this.onEntfernen,
-  });
+  const _ExternerHeldKarte({required this.held, required this.onEntfernen});
 
   final ExternerHeld held;
   final VoidCallback onEntfernen;
@@ -78,9 +77,11 @@ class _ExternerHeldKarte extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final herkunft = [held.rasse, held.kultur, held.profession]
-        .where((s) => s.isNotEmpty)
-        .join(' · ');
+    final herkunft = [
+      held.rasse,
+      held.kultur,
+      held.profession,
+    ].where((s) => s.isNotEmpty).join(' · ');
 
     return Card(
       child: Padding(
@@ -228,10 +229,7 @@ class _StatChip extends StatelessWidget {
         color: theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(
-        '$label $value',
-        style: theme.textTheme.labelSmall,
-      ),
+      child: Text('$label $value', style: theme.textTheme.labelSmall),
     );
   }
 }

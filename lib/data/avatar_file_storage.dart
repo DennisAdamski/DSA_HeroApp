@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:dsa_heldenverwaltung/data/avatar_blob_cache.dart';
 
 import 'avatar_file_storage_stub.dart'
-    if (dart.library.html) 'avatar_file_storage_web.dart'
+    if (dart.library.js_interop) 'avatar_file_storage_web.dart'
     if (dart.library.io) 'avatar_file_storage_io.dart';
 
 /// Plattformfassade fuer die Ablage von Avatar-Bildern.

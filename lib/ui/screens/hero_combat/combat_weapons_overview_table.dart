@@ -10,19 +10,17 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart'
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 
-typedef WeaponSlotUpdater =
-    void Function(
-      int index,
-      MainWeaponSlot Function(MainWeaponSlot current) update,
-    );
+typedef WeaponSlotUpdater = void Function(
+  int index,
+  MainWeaponSlot Function(MainWeaponSlot current) update,
+);
 
-typedef WeaponFilterChanged =
-    void Function({
-      String? talentId,
-      String? combatType,
-      String? weaponType,
-      String? distanceClass,
-    });
+typedef WeaponFilterChanged = void Function({
+  String? talentId,
+  String? combatType,
+  String? weaponType,
+  String? distanceClass,
+});
 
 /// Rendert die Waffen-Uebersichtstabelle inklusive Filter und Inline-Feldern.
 class CombatWeaponsOverviewTable extends StatelessWidget {
@@ -68,23 +66,31 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
   final WeaponSlotUpdater onWeaponSlotUpdate;
   final WeaponFilterChanged onFilterChanged;
 
-  static const List<AdaptiveTableColumnSpec> _columnSpecs =
-      <AdaptiveTableColumnSpec>[
-        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 3), // Name
-        AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 180, flex: 1), // Typ
-        AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 260, flex: 2), // Waffentalent
-        AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 240, flex: 2), // Waffenart
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 96),             // DK
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),             // AT
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),             // PA
-        AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),            // TP
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),             // INI
-        AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 92),             // BF
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),             // eBE
-        AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 120),            // Artefakt
-        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 420, flex: 4), // Artefaktbeschreibung
-        AdaptiveTableColumnSpec.fixed(72),                               // Aktion
-      ];
+  static const List<AdaptiveTableColumnSpec>
+  _columnSpecs = <AdaptiveTableColumnSpec>[
+    AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 3), // Name
+    AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 180, flex: 1), // Typ
+    AdaptiveTableColumnSpec(
+      minWidth: 150,
+      maxWidth: 260,
+      flex: 2,
+    ), // Waffentalent
+    AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 240, flex: 2), // Waffenart
+    AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 96), // DK
+    AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84), // AT
+    AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84), // PA
+    AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110), // TP
+    AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84), // INI
+    AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 92), // BF
+    AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84), // eBE
+    AdaptiveTableColumnSpec(minWidth: 86, maxWidth: 120), // Artefakt
+    AdaptiveTableColumnSpec(
+      minWidth: 180,
+      maxWidth: 420,
+      flex: 4,
+    ), // Artefaktbeschreibung
+    AdaptiveTableColumnSpec.fixed(72), // Aktion
+  ];
 
   static const List<String> _headers = <String>[
     'Name',

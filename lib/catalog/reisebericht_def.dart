@@ -185,8 +185,9 @@ class ReiseberichtDef {
       result['se'] = se.map((entry) => entry.toJson()).toList(growable: false);
     }
     if (anforderungen.isNotEmpty) {
-      result['anforderungen'] =
-          anforderungen.map((entry) => entry.toJson()).toList(growable: false);
+      result['anforderungen'] = anforderungen
+          .map((entry) => entry.toJson())
+          .toList(growable: false);
     }
     if (apProEintrag > 0) result['ap_pro_eintrag'] = apProEintrag;
     if (apProEintragAlternativ != null) {
@@ -200,24 +201,23 @@ class ReiseberichtDef {
       result['schwelle_belohnung'] = schwelleBelohnung!.toJson();
     }
     if (festeEintraege.isNotEmpty) {
-      result['feste_eintraege'] =
-          festeEintraege.map((entry) => entry.toJson()).toList(growable: false);
+      result['feste_eintraege'] = festeEintraege
+          .map((entry) => entry.toJson())
+          .toList(growable: false);
     }
     if (bonus != null) result['bonus'] = bonus!.toJson();
     if (seIntervall > 0) result['se_intervall'] = seIntervall;
     if (klassifikationen.isNotEmpty) {
-      result['klassifikationen'] =
-          klassifikationen.map((entry) => entry.toJson()).toList(
-            growable: false,
-          );
+      result['klassifikationen'] = klassifikationen
+          .map((entry) => entry.toJson())
+          .toList(growable: false);
     }
     if (gruppeId.isNotEmpty) result['gruppe_id'] = gruppeId;
     if (stufe > 0) result['stufe'] = stufe;
     if (eigenschaftsBonus.isNotEmpty) {
-      result['eigenschafts_bonus'] =
-          eigenschaftsBonus.map((entry) => entry.toJson()).toList(
-            growable: false,
-          );
+      result['eigenschafts_bonus'] = eigenschaftsBonus
+          .map((entry) => entry.toJson())
+          .toList(growable: false);
     }
     return result;
   }
@@ -370,8 +370,9 @@ class ReiseberichtBonusDef {
       result['se'] = se.map((entry) => entry.toJson()).toList(growable: false);
     }
     if (talentBoni.isNotEmpty) {
-      result['talent_boni'] =
-          talentBoni.map((entry) => entry.toJson()).toList(growable: false);
+      result['talent_boni'] = talentBoni
+          .map((entry) => entry.toJson())
+          .toList(growable: false);
     }
     return result;
   }
@@ -414,9 +415,7 @@ class ReiseberichtEigenschaftsBonusDef {
   /// Auswahl-Optionen fuer 'wahl' (z. B. ['KL', 'IN']).
   final List<String> optionen;
 
-  factory ReiseberichtEigenschaftsBonusDef.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory ReiseberichtEigenschaftsBonusDef.fromJson(Map<String, dynamic> json) {
     return ReiseberichtEigenschaftsBonusDef(
       eigenschaft: readCatalogString(json, 'eigenschaft', fallback: ''),
       wert: readCatalogInt(json, 'wert', fallback: 0),
@@ -425,10 +424,7 @@ class ReiseberichtEigenschaftsBonusDef {
   }
 
   Map<String, dynamic> toJson() {
-    final result = <String, dynamic>{
-      'eigenschaft': eigenschaft,
-      'wert': wert,
-    };
+    final result = <String, dynamic>{'eigenschaft': eigenschaft, 'wert': wert};
     if (optionen.isNotEmpty) result['optionen'] = optionen;
     return result;
   }

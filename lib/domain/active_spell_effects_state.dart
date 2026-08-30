@@ -47,7 +47,9 @@ class ActiveSpellEffectDetail {
     final rawDuration = (json['duration'] as Map?)?.cast<String, dynamic>();
     return ActiveSpellEffectDetail(
       amount: (json['amount'] as num?)?.toInt() ?? 0,
-      duration: rawDuration == null ? null : SpellDuration.fromJson(rawDuration),
+      duration: rawDuration == null
+          ? null
+          : SpellDuration.fromJson(rawDuration),
     );
   }
 
@@ -97,7 +99,9 @@ class ActiveSpellEffectsState {
     List<String>? activeEffectIds,
     Map<String, ActiveSpellEffectDetail>? effectDetails,
   }) {
-    final nextIds = _normalizeEffectIds(activeEffectIds ?? this.activeEffectIds);
+    final nextIds = _normalizeEffectIds(
+      activeEffectIds ?? this.activeEffectIds,
+    );
     return ActiveSpellEffectsState(
       activeEffectIds: nextIds,
       effectDetails: _normalizeDetails(
@@ -164,7 +168,8 @@ class ActiveSpellEffectsState {
   static ActiveSpellEffectsState fromJson(Map<String, dynamic> json) {
     final rawIds = (json['activeEffectIds'] as List?) ?? const <dynamic>[];
     final normalizedIds = _normalizeEffectIds(rawIds);
-    final rawDetails = (json['effectDetails'] as Map?) ?? const <dynamic, dynamic>{};
+    final rawDetails =
+        (json['effectDetails'] as Map?) ?? const <dynamic, dynamic>{};
     final details = <String, ActiveSpellEffectDetail>{};
     rawDetails.forEach((key, value) {
       if (value is! Map) {

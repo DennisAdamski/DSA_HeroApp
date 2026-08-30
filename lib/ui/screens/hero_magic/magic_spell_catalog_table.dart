@@ -254,7 +254,8 @@ class _MagicSpellCatalogTableState extends State<_MagicSpellCatalogTable> {
                                                     vertical: 1,
                                                   ),
                                               decoration: BoxDecoration(
-                                                color: theme.colorScheme
+                                                color: theme
+                                                    .colorScheme
                                                     .secondaryContainer,
                                                 borderRadius:
                                                     BorderRadius.circular(4),
@@ -265,7 +266,8 @@ class _MagicSpellCatalogTableState extends State<_MagicSpellCatalogTable> {
                                                     .textTheme
                                                     .labelSmall
                                                     ?.copyWith(
-                                                      color: theme.colorScheme
+                                                      color: theme
+                                                          .colorScheme
                                                           .onSecondaryContainer,
                                                     ),
                                               ),

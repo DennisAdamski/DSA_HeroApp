@@ -156,10 +156,8 @@ class _AppearanceSettingsPage extends ConsumerWidget {
               Text(switch (ansicht) {
                 TabellenAnsicht.automatisch =>
                   'Tabelle, solange die Breite reicht, sonst kompakte Karten.',
-                TabellenAnsicht.tabelle =>
-                  'Immer die volle Tabelle — auf schmalen Geräten horizontal scrollbar.',
-                TabellenAnsicht.karten =>
-                  'Immer die kompakte Kartenliste, auch auf breiten Bildschirmen.',
+                TabellenAnsicht.tabelle => 'Immer die volle Tabelle — auf schmalen Geräten horizontal scrollbar.',
+                TabellenAnsicht.karten => 'Immer die kompakte Kartenliste, auch auf breiten Bildschirmen.',
               }, style: theme.textTheme.bodySmall),
             ],
           ),
@@ -1227,17 +1225,15 @@ class _RulesIndexServerCardState extends ConsumerState<_RulesIndexServerCard> {
         return;
       }
       setState(() => _syncing = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
     } on FormatException catch (error) {
       if (!mounted) {
         return;
       }
       setState(() => _syncing = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
     }
   }
 

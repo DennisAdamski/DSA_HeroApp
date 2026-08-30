@@ -50,20 +50,24 @@ class WaffenmeisterBasicSection extends StatelessWidget {
               labelText: 'Kampftalent',
               border: OutlineInputBorder(),
             ),
-            items: combatTalents.map((talent) {
-              return DropdownMenuItem(
-                value: talent.id,
-                child: Text('${talent.name} (${talent.steigerung})'),
-              );
-            }).toList(growable: false),
+            items: combatTalents
+                .map((talent) {
+                  return DropdownMenuItem(
+                    value: talent.id,
+                    child: Text('${talent.name} (${talent.steigerung})'),
+                  );
+                })
+                .toList(growable: false),
             onChanged: (value) {
               final newTypes = _weaponTypesForTalent(value ?? '');
-              onChanged(draft.copyWith(
-                talentId: value ?? '',
-                weaponType: newTypes.contains(draft.weaponType)
-                    ? draft.weaponType
-                    : '',
-              ));
+              onChanged(
+                draft.copyWith(
+                  talentId: value ?? '',
+                  weaponType: newTypes.contains(draft.weaponType)
+                      ? draft.weaponType
+                      : '',
+                ),
+              );
             },
           ),
           const SizedBox(height: 12),
@@ -71,7 +75,9 @@ class WaffenmeisterBasicSection extends StatelessWidget {
           // Waffenart
           if (weaponTypes.isEmpty)
             DropdownButtonFormField<String>(
-              initialValue: draft.weaponType.isNotEmpty ? draft.weaponType : null,
+              initialValue: draft.weaponType.isNotEmpty
+                  ? draft.weaponType
+                  : null,
               decoration: const InputDecoration(
                 labelText: 'Waffenart (Freitext)',
                 border: OutlineInputBorder(),
@@ -178,13 +184,15 @@ class WaffenmeisterBasicSection extends StatelessWidget {
                     labelText: 'Eigenschaft 1',
                     border: OutlineInputBorder(),
                   ),
-                  items: _attributeOptions.map((attr) {
-                    return DropdownMenuItem(value: attr, child: Text(attr));
-                  }).toList(growable: false),
+                  items: _attributeOptions
+                      .map((attr) {
+                        return DropdownMenuItem(value: attr, child: Text(attr));
+                      })
+                      .toList(growable: false),
                   onChanged: (value) {
-                    onChanged(draft.copyWith(
-                      requiredAttribute1: value ?? 'GE',
-                    ));
+                    onChanged(
+                      draft.copyWith(requiredAttribute1: value ?? 'GE'),
+                    );
                   },
                 ),
               ),
@@ -200,9 +208,7 @@ class WaffenmeisterBasicSection extends StatelessWidget {
                   keyboardType: TextInputType.number,
                   onChanged: (value) {
                     final parsed = int.tryParse(value) ?? 13;
-                    onChanged(draft.copyWith(
-                      requiredAttribute1Value: parsed,
-                    ));
+                    onChanged(draft.copyWith(requiredAttribute1Value: parsed));
                   },
                 ),
               ),
@@ -214,13 +220,15 @@ class WaffenmeisterBasicSection extends StatelessWidget {
                     labelText: 'Eigenschaft 2',
                     border: OutlineInputBorder(),
                   ),
-                  items: _attributeOptions.map((attr) {
-                    return DropdownMenuItem(value: attr, child: Text(attr));
-                  }).toList(growable: false),
+                  items: _attributeOptions
+                      .map((attr) {
+                        return DropdownMenuItem(value: attr, child: Text(attr));
+                      })
+                      .toList(growable: false),
                   onChanged: (value) {
-                    onChanged(draft.copyWith(
-                      requiredAttribute2: value ?? 'KK',
-                    ));
+                    onChanged(
+                      draft.copyWith(requiredAttribute2: value ?? 'KK'),
+                    );
                   },
                 ),
               ),
@@ -236,9 +244,7 @@ class WaffenmeisterBasicSection extends StatelessWidget {
                   keyboardType: TextInputType.number,
                   onChanged: (value) {
                     final parsed = int.tryParse(value) ?? 13;
-                    onChanged(draft.copyWith(
-                      requiredAttribute2Value: parsed,
-                    ));
+                    onChanged(draft.copyWith(requiredAttribute2Value: parsed));
                   },
                 ),
               ),

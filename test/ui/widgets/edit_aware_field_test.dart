@@ -12,11 +12,7 @@ void main() {
     testWidgets('View-Modus rendert Plain Text ohne TextField', (tester) async {
       await tester.pumpWidget(
         wrap(
-          const EditAwareField(
-            label: 'Name',
-            value: 'Alrik',
-            isEditing: false,
-          ),
+          const EditAwareField(label: 'Name', value: 'Alrik', isEditing: false),
         ),
       );
 
@@ -25,24 +21,16 @@ void main() {
       expect(find.byType(TextFormField), findsNothing);
     });
 
-    testWidgets('View-Modus zeigt Platzhalter bei leerem Wert',
-        (tester) async {
+    testWidgets('View-Modus zeigt Platzhalter bei leerem Wert', (tester) async {
       await tester.pumpWidget(
-        wrap(
-          const EditAwareField(
-            label: 'Titel',
-            value: '',
-            isEditing: false,
-          ),
-        ),
+        wrap(const EditAwareField(label: 'Titel', value: '', isEditing: false)),
       );
 
       expect(find.text('Titel'), findsOneWidget);
       expect(find.text('–'), findsOneWidget);
     });
 
-    testWidgets('Edit-Modus rendert TextFormField mit Border',
-        (tester) async {
+    testWidgets('Edit-Modus rendert TextFormField mit Border', (tester) async {
       await tester.pumpWidget(
         wrap(
           EditAwareField(
@@ -62,8 +50,9 @@ void main() {
       expect(decoration.border, isA<OutlineInputBorder>());
     });
 
-    testWidgets('Controller-Variante nutzt Controller-Text im View-Modus',
-        (tester) async {
+    testWidgets('Controller-Variante nutzt Controller-Text im View-Modus', (
+      tester,
+    ) async {
       final controller = TextEditingController(text: 'Controllerwert');
 
       await tester.pumpWidget(
@@ -82,8 +71,9 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('Controller-Variante nutzt Controller im Edit-Modus',
-        (tester) async {
+    testWidgets('Controller-Variante nutzt Controller im Edit-Modus', (
+      tester,
+    ) async {
       final controller = TextEditingController(text: '42');
 
       await tester.pumpWidget(
@@ -104,16 +94,9 @@ void main() {
   });
 
   group('EditAwareIntField', () {
-    testWidgets('View-Modus rendert Plain Text ohne TextField',
-        (tester) async {
+    testWidgets('View-Modus rendert Plain Text ohne TextField', (tester) async {
       await tester.pumpWidget(
-        wrap(
-          const EditAwareIntField(
-            label: 'MU',
-            value: 13,
-            isEditing: false,
-          ),
-        ),
+        wrap(const EditAwareIntField(label: 'MU', value: 13, isEditing: false)),
       );
 
       expect(find.text('MU'), findsOneWidget);
@@ -124,19 +107,16 @@ void main() {
     testWidgets('View-Modus zeigt Platzhalter bei null', (tester) async {
       await tester.pumpWidget(
         wrap(
-          const EditAwareIntField(
-            label: 'AsP',
-            value: null,
-            isEditing: false,
-          ),
+          const EditAwareIntField(label: 'AsP', value: null, isEditing: false),
         ),
       );
 
       expect(find.text('–'), findsOneWidget);
     });
 
-    testWidgets('Edit-Modus rendert TextFormField mit Zahlentastatur',
-        (tester) async {
+    testWidgets('Edit-Modus rendert TextFormField mit Zahlentastatur', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrap(
           EditAwareIntField(

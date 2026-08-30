@@ -290,10 +290,8 @@ class _InitialsPortrait extends StatelessWidget {
           child: Text(
             key: const ValueKey<String>('workspace-header-portrait-initials'),
             initials.isEmpty ? '?' : initials,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.white,
-              fontFamily: 'Cinzel',
-            ),
+            style: Theme.of(context).textTheme.headlineSmall
+                ?.copyWith(color: Colors.white, fontFamily: 'Cinzel'),
           ),
         ),
       ],

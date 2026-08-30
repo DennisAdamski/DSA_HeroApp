@@ -34,12 +34,16 @@ Helden im Pen-&-Paper-Rollenspiel *Das Schwarze Auge* (DSA). Die App bietet:
 
 | Schicht | Technologie |
 |---|---|
-| Sprache | Dart ^3.10.4 |
-| Framework | Flutter (Material 3) |
-| Zustandsverwaltung | flutter_riverpod ^2.6.1 |
-| Lokale Datenbank | hive ^2.2.3, hive_flutter ^1.1.0 |
-| Datei-I/O | file_picker ^8.1.4, path_provider ^2.1.5 |
-| Teilen | share_plus ^10.1.2 |
+| Sprache | Dart ^3.13.0 |
+| Framework | Flutter (Material 3), >=3.47.1 |
+| Zustandsverwaltung | flutter_riverpod ^3.4.2 |
+| Lokale Datenbank | hive_ce ^2.19.3, hive_ce_flutter ^2.3.4 |
+| Volltextsuche | sqlite3 ^3.5.2 (native Libs ueber Build-Hook) |
+| Datei-I/O | file_picker ^12.1.0, path_provider ^2.1.5 |
+| Web-Interop | web ^1.1.1 (`package:web` + `dart:js_interop`) |
+| Teilen | share_plus ^13.3.0 |
+| Sichere Speicherung | flutter_secure_storage ^11.0.0 |
+| Krypto | pointycastle ^4.0.0 (`lib/crypto/aes_primitives.dart`) |
 | IDs | uuid ^4.5.1 |
 | Linting | flutter_lints ^6.0.0 |
 | Tests | flutter_test, integration_test |
@@ -1585,7 +1589,7 @@ ausdruecklicher Quittierung („Verstanden – Werte geprueft"), die
 | `heroRepositoryProvider` | `Provider<HeroRepository>` | Repository (beim Start überschrieben) |
 | `heroTransferCodecProvider` | `Provider<HeroTransferCodec>` | JSON-Codec für Im-/Export |
 | `heroTransferFileGatewayProvider` | `Provider<HeroTransferFileGateway>` | Plattform-I/O |
-| `selectedHeroIdProvider` | `StateProvider<String?>` | Aktuell gewählte Held-ID |
+| `selectedHeroIdProvider` | `NotifierProvider<String?>` | Aktuell gewählte Held-ID |
 | `heroIndexProvider` | `StreamProvider<HeroIndexSnapshot>` | Alle Helden reaktiv |
 | `heroListProvider` | `StreamProvider<List<HeroSheet>>` | Sortierte Heldenliste |
 | `heroByIdProvider(id)` | `Provider.family<HeroSheet?>` | O(1) Lookup per ID |
@@ -1602,9 +1606,7 @@ ausdruecklicher Quittierung („Verstanden – Werte geprueft"), die
 | `catalogRuntimeDataProvider` | `FutureProvider<CatalogRuntimeData>` | Basis + Custom + Fehlerzustand |
 | `catalogAdminSnapshotProvider` | `FutureProvider<CatalogAdminSnapshot>` | Settings-Katalogverwaltung |
 | `rulesCatalogProvider` | `FutureProvider<RulesCatalog>` | Geladener Katalog |
-| `talentBeOverrideProvider(id)` | `StateProvider.family<bool?>` | Manuelle BE-Überschreibung |
-| `talentsVisibilityModeProvider(id)` | `StateProvider.family<bool>` | Verborgene Talente zeigen |
-| `combatTalentsVisibilityModeProvider(id)` | `StateProvider.family<bool>` | Kampftalente einblenden |
+| `talentBeOverrideProvider(id)` | `NotifierProvider.family<int?>` | Manuelle BE-Überschreibung |
 
 `HeroesHomeScreen` waermt `rulesCatalogProvider.future` einmal nach dem ersten
 Frame mit geladener Heldenliste vor. Beim Oeffnen eines Helden wartet der Screen

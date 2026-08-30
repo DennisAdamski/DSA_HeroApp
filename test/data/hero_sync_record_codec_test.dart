@@ -180,10 +180,9 @@ void main() {
 
   group('readSyncRevision', () {
     test('prefers the stored revision', () {
-      final revision = readSyncRevision(
-        <String, dynamic>{'revision': 'r-8'},
-        DateTime.utc(2026, 1, 6),
-      );
+      final revision = readSyncRevision(<String, dynamic>{
+        'revision': 'r-8',
+      }, DateTime.utc(2026, 1, 6));
 
       expect(revision, 'r-8');
     });

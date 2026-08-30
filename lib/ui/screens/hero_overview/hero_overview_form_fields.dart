@@ -9,7 +9,9 @@ extension _HeroOverviewFormFieldsSection on _HeroOverviewTabState {
     TextInputType? keyboardType,
     bool? readOnly,
   }) {
-    final isEditing = readOnly == true ? false : (readOnly ?? _editController.isEditing);
+    final isEditing = readOnly == true
+        ? false
+        : (readOnly ?? _editController.isEditing);
     final fieldKey = ValueKey<String>('overview-field-$keyName');
     if (!isEditing) {
       return KeyedSubtree(

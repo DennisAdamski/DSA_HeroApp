@@ -274,9 +274,8 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
   }
 
   void _saveAndClose() {
-    Navigator.of(
-      context,
-    ).pop(_SpellDetailsDialogResult(overrides: _buildOverrides()));
+    Navigator.of(context)
+        .pop(_SpellDetailsDialogResult(overrides: _buildOverrides()));
   }
 
   void _addVariantField() {

@@ -59,43 +59,52 @@ void main() {
       }
     });
 
-    test('importiert eine gueltige Datenbank und macht sie durchsuchbar', () async {
-      final bytes = buildMinimalRulesIndexBytes();
+    test(
+      'importiert eine gueltige Datenbank und macht sie durchsuchbar',
+      () async {
+        final bytes = buildMinimalRulesIndexBytes();
 
-      final search = await importRulesIndexDatabase(bytes);
-      try {
-        expect(File(remoteCachePath).existsSync(), isTrue);
-        final hits = search.search(
-          'Behinderung',
-          categories: RulesSourceCategory.values.toSet(),
+        final search = await importRulesIndexDatabase(bytes);
+        try {
+          expect(File(remoteCachePath).existsSync(), isTrue);
+          final hits = search.search(
+            'Behinderung',
+            categories: RulesSourceCategory.values.toSet(),
+          );
+          expect(hits, isNotEmpty);
+        } finally {
+          search.dispose();
+        }
+      },
+    );
+
+    test(
+      'oeffnet importierte Datenbank anschliessend ueber openRulesIndexSearch '
+      'als Fallback, wenn keine lokale index.sqlite existiert',
+      () async {
+        final bytes = buildMinimalRulesIndexBytes();
+        final imported = await importRulesIndexDatabase(bytes);
+        imported.dispose();
+
+        final search = await openRulesIndexSearch();
+        expect(search, isNotNull);
+        search?.dispose();
+      },
+    );
+
+    test(
+      'lehnt eine Datei ohne SQLite-Header ab und raeumt tmp-Datei auf',
+      () async {
+        final bytes = Uint8List.fromList('not a database'.codeUnits);
+
+        await expectLater(
+          importRulesIndexDatabase(bytes),
+          throwsA(isA<FormatException>()),
         );
-        expect(hits, isNotEmpty);
-      } finally {
-        search.dispose();
-      }
-    });
-
-    test('oeffnet importierte Datenbank anschliessend ueber openRulesIndexSearch '
-        'als Fallback, wenn keine lokale index.sqlite existiert', () async {
-      final bytes = buildMinimalRulesIndexBytes();
-      final imported = await importRulesIndexDatabase(bytes);
-      imported.dispose();
-
-      final search = await openRulesIndexSearch();
-      expect(search, isNotNull);
-      search?.dispose();
-    });
-
-    test('lehnt eine Datei ohne SQLite-Header ab und raeumt tmp-Datei auf', () async {
-      final bytes = Uint8List.fromList('not a database'.codeUnits);
-
-      await expectLater(
-        importRulesIndexDatabase(bytes),
-        throwsA(isA<FormatException>()),
-      );
-      expect(File('$remoteCachePath.tmp').existsSync(), isFalse);
-      expect(File(remoteCachePath).existsSync(), isFalse);
-    });
+        expect(File('$remoteCachePath.tmp').existsSync(), isFalse);
+        expect(File(remoteCachePath).existsSync(), isFalse);
+      },
+    );
 
     test('ein fehlgeschlagener Import laesst einen zuvor funktionierenden '
         'Cache unangetastet', () async {

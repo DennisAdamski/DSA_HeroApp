@@ -73,7 +73,8 @@ void main() {
       expect(
         bekannt.any((name) => besessenStufeFuer(name, bedingung.name) != null),
         isTrue,
-        reason: 'Voraussetzung "SF ${bedingung.name}" hat keinen Katalogeintrag',
+        reason:
+            'Voraussetzung "SF ${bedingung.name}" hat keinen Katalogeintrag',
       );
     }
   });
@@ -131,9 +132,9 @@ void main() {
       (bedingung) => bedingung.art == RequirementArt.oderGruppe,
     );
 
-    expect(
-      gruppe.bedingungen.map((bedingung) => bedingung.name),
-      <String>['Überreden', 'Überzeugen'],
-    );
+    expect(gruppe.bedingungen.map((bedingung) => bedingung.name), <String>[
+      'Überreden',
+      'Überzeugen',
+    ]);
   });
 }

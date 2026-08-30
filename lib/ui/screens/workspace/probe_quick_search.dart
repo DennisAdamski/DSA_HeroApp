@@ -348,7 +348,8 @@ List<ProbeQuickSearchCandidate> _buildTalentCandidates({
   required int? talentBeOverride,
   required bool epicAdvantagesActive,
 }) {
-  final activeTalentBe = talentBeOverride ?? snapshot.combatPreviewStats.beKampf;
+  final activeTalentBe =
+      talentBeOverride ?? snapshot.combatPreviewStats.beKampf;
   final wundMalus = snapshot.wundEffekte.talentProbeMalus;
   final candidates = <ProbeQuickSearchCandidate>[];
   for (final talent in catalogTalents) {
@@ -398,7 +399,9 @@ List<ProbeQuickSearchCandidate> _buildTalentCandidates({
       ),
     );
   }
-  candidates.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  candidates.sort(
+    (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+  );
   return candidates;
 }
 
@@ -445,7 +448,9 @@ List<ProbeQuickSearchCandidate> _buildSpellCandidates({
       ),
     );
   }
-  candidates.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  candidates.sort(
+    (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+  );
   return candidates;
 }
 

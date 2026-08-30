@@ -11,7 +11,10 @@ void main() {
   ];
 
   test('findet einen Eintrag ueber den exakten Namen', () {
-    expect(matchCatalogSpecialAbility(catalog, 'standfest')?.id, 'asf_standfest');
+    expect(
+      matchCatalogSpecialAbility(catalog, 'standfest')?.id,
+      'asf_standfest',
+    );
   });
 
   test('findet den Katalogeintrag zu einem Namen mit Auswahlvariante', () {

@@ -1,7 +1,6 @@
 import 'dart:convert';
 
-import 'package:encrypt/encrypt.dart' show Key;
-import 'package:flutter/foundation.dart' hide Key;
+import 'package:flutter/foundation.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
@@ -106,7 +105,7 @@ _DecryptPayload _decryptPayload(_DecryptPayload payload) {
 Map<String, dynamic> _walkMap(
   Map<String, dynamic> input, {
   required String password,
-  required Key? v3Key,
+  required CatalogKey? v3Key,
 }) {
   final result = <String, dynamic>{};
   input.forEach((key, value) {
@@ -119,7 +118,7 @@ Map<String, dynamic> _walkMap(
 dynamic _walkValue(
   dynamic value, {
   required String password,
-  required Key? v3Key,
+  required CatalogKey? v3Key,
 }) {
   if (value is String) {
     return _decryptStringIfNeeded(value, password: password, v3Key: v3Key);
@@ -155,16 +154,13 @@ dynamic _walkValue(
 dynamic _decryptStringIfNeeded(
   String value, {
   required String password,
-  required Key? v3Key,
+  required CatalogKey? v3Key,
 }) {
   if (!isEncryptedValue(value)) return value;
   String? decrypted;
   if (value.startsWith('${encryptedPrefix}3:')) {
     if (v3Key == null) return value;
-    decrypted = decryptCatalogValueV3(
-      encryptedValue: value,
-      derivedKey: v3Key,
-    );
+    decrypted = decryptCatalogValueV3(encryptedValue: value, derivedKey: v3Key);
   } else {
     // v2 oder v1 — langsamer Fallback.
     decrypted = decryptCatalogValue(value, password);

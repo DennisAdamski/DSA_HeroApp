@@ -187,16 +187,13 @@ void main() {
           id: 'ksf_blindkampf',
           name: 'Blindkampf',
           beschreibung: 'Begrenzt Sichtabzüge im Nahkampf auf maximal -2/-2.',
-          erklarungLang:
-              'Der Held kann auch bei schlechter Sicht noch erstaunlich sicher kämpfen.',
+          erklarungLang: 'Der Held kann auch bei schlechter Sicht noch erstaunlich sicher kämpfen.',
         ),
         CombatSpecialAbilityDef(
           id: 'ksf_meisterliches_entwaffnen',
           name: 'Meisterliches Entwaffnen',
-          beschreibung:
-              'Erlaubt Entwaffnen gegen Zweihandwaffen und erschwert die KK-Probe weiter.',
-          erklarungLang:
-              'Der Held darf auch Gegner mit zweihändig geführten Waffen entwaffnen.',
+          beschreibung: 'Erlaubt Entwaffnen gegen Zweihandwaffen und erschwert die KK-Probe weiter.',
+          erklarungLang: 'Der Held darf auch Gegner mit zweihändig geführten Waffen entwaffnen.',
           aktiviertManoeverIds: <String>['man_entwaffnen_meisterlich'],
         ),
         CombatSpecialAbilityDef(
@@ -266,9 +263,8 @@ void main() {
           heroRepositoryProvider.overrideWithValue(repo),
           rulesCatalogProvider.overrideWith((ref) async => buildCatalog()),
           if (epicAdvantagesActive != null)
-            isHouseRuleActiveProvider(
-              EpicRuleKeys.advantages,
-            ).overrideWithValue(epicAdvantagesActive),
+            isHouseRuleActiveProvider(EpicRuleKeys.advantages)
+                .overrideWithValue(epicAdvantagesActive),
         ],
         child: MaterialApp(
           home: Scaffold(
@@ -338,10 +334,7 @@ void main() {
     // Deaktivierung oeffnet keinen Dialog.
     final erwerbButton = find.widgetWithText(FilledButton, 'Erwerben');
     if (erwerbButton.evaluate().isNotEmpty) {
-      await tester.enterText(
-        find.widgetWithText(TextField, 'AP-Kosten'),
-        '0',
-      );
+      await tester.enterText(find.widgetWithText(TextField, 'AP-Kosten'), '0');
       await tester.pumpAndSettle();
       await tester.tap(erwerbButton);
       await tester.pumpAndSettle();
@@ -1106,11 +1099,7 @@ void main() {
       heroes: [
         buildHero(
           talents: const <String, HeroTalentEntry>{
-            'tal_nah': HeroTalentEntry(
-              talentValue: 7,
-              atValue: 4,
-              paValue: 3,
-            ),
+            'tal_nah': HeroTalentEntry(talentValue: 7, atValue: 4, paValue: 3),
           },
         ),
       ],

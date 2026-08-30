@@ -19,31 +19,34 @@ void main() {
     return dir;
   }
 
-  test('saveEntry and load roundtrip custom entries as per-file JSON', () async {
-    final tempDir = await createTempDir();
-    final repository = CustomCatalogRepository(heroStoragePath: tempDir.path);
+  test(
+    'saveEntry and load roundtrip custom entries as per-file JSON',
+    () async {
+      final tempDir = await createTempDir();
+      final repository = CustomCatalogRepository(heroStoragePath: tempDir.path);
 
-    await repository.saveEntry(
-      catalogVersion: 'house_rules_v1',
-      section: CatalogSectionId.talents,
-      entry: const <String, dynamic>{
-        'id': 'tal_custom',
-        'name': 'Hauswissen',
-        'group': 'Wissen',
-        'steigerung': 'B',
-        'attributes': <String>['KL', 'KL', 'IN'],
-        'active': true,
-      },
-    );
+      await repository.saveEntry(
+        catalogVersion: 'house_rules_v1',
+        section: CatalogSectionId.talents,
+        entry: const <String, dynamic>{
+          'id': 'tal_custom',
+          'name': 'Hauswissen',
+          'group': 'Wissen',
+          'steigerung': 'B',
+          'attributes': <String>['KL', 'KL', 'IN'],
+          'active': true,
+        },
+      );
 
-    final snapshot = await repository.load(catalogVersion: 'house_rules_v1');
+      final snapshot = await repository.load(catalogVersion: 'house_rules_v1');
 
-    expect(snapshot.issues, isEmpty);
-    expect(snapshot.entries, hasLength(1));
-    expect(snapshot.entries.single.id, 'tal_custom');
-    expect(snapshot.entries.single.section, CatalogSectionId.talents);
-    expect(snapshot.entries.single.data['name'], 'Hauswissen');
-  });
+      expect(snapshot.issues, isEmpty);
+      expect(snapshot.entries, hasLength(1));
+      expect(snapshot.entries.single.id, 'tal_custom');
+      expect(snapshot.entries.single.section, CatalogSectionId.talents);
+      expect(snapshot.entries.single.data['name'], 'Hauswissen');
+    },
+  );
 
   test('load reports invalid files and duplicate custom ids', () async {
     final tempDir = await createTempDir();
@@ -68,7 +71,9 @@ void main() {
     expect(snapshot.entries, hasLength(1));
     expect(snapshot.issues, hasLength(2));
     expect(
-      snapshot.issues.any((issue) => issue.message.contains('Doppelte Custom-ID')),
+      snapshot.issues.any(
+        (issue) => issue.message.contains('Doppelte Custom-ID'),
+      ),
       isTrue,
     );
   });

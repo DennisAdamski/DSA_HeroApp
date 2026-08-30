@@ -180,9 +180,9 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
     if (!mounted) return;
     _latestHero = updated;
     _viewRevision.value++;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Epischer Status aktiviert')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Epischer Status aktiviert')));
   }
 
   /// Korrigiert einen bereits gesetzten epischen Status.

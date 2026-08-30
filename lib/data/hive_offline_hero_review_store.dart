@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 import 'package:dsa_heldenverwaltung/data/sync/offline_hero_review_store.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';

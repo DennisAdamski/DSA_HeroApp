@@ -9,10 +9,7 @@ class HeroCompanionSpeed {
   final int wert;
 
   HeroCompanionSpeed copyWith({String? art, int? wert}) {
-    return HeroCompanionSpeed(
-      art: art ?? this.art,
-      wert: wert ?? this.wert,
-    );
+    return HeroCompanionSpeed(art: art ?? this.art, wert: wert ?? this.wert);
   }
 
   Map<String, dynamic> toJson() => {'art': art, 'wert': wert};

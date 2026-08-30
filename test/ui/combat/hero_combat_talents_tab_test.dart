@@ -449,10 +449,7 @@ void main() {
     for (var i = 0; i < 2; i++) {
       final erwerbButton = find.widgetWithText(FilledButton, 'Erwerben');
       expect(erwerbButton, findsOneWidget);
-      await tester.enterText(
-        find.widgetWithText(TextField, 'AP-Kosten'),
-        '0',
-      );
+      await tester.enterText(find.widgetWithText(TextField, 'AP-Kosten'), '0');
       await tester.pumpAndSettle();
       await tester.tap(erwerbButton);
       await tester.pumpAndSettle();

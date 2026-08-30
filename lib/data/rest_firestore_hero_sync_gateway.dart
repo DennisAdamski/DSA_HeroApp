@@ -23,11 +23,10 @@ class RestFirestoreHeroSyncGateway
     required String projectId,
     required Future<String?> Function() idTokenProvider,
     String databaseId = '(default)',
-    Duration pollInterval = const Duration(seconds: 30),
+    this._pollInterval = const Duration(seconds: 30),
     http.Client? httpClient,
     FirestoreRestClient? restClient,
-  }) : _pollInterval = pollInterval,
-       _rest =
+  }) : _rest =
            restClient ??
            FirestoreRestClient(
              projectId: projectId,

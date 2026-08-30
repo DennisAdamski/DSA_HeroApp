@@ -38,13 +38,10 @@ class _VertrautenmagieSection extends StatelessWidget {
     final aktiviert = kategorie.rituals.map((r) => r.name).toSet();
     final selected = await showAdaptiveDetailSheet<HeroRitualEntry>(
       context: context,
-      builder: (_) =>
-          _VertrautenmagiePickerDialog(aktiviert: aktiviert),
+      builder: (_) => _VertrautenmagiePickerDialog(aktiviert: aktiviert),
     );
     if (selected == null) return;
-    onChanged(
-      kategorie.copyWith(rituals: [...kategorie.rituals, selected]),
-    );
+    onChanged(kategorie.copyWith(rituals: [...kategorie.rituals, selected]));
   }
 
   void _showDetail(BuildContext context, HeroRitualEntry ritual) {
@@ -72,13 +69,14 @@ class _VertrautenmagieSection extends StatelessWidget {
                       isEditing: true,
                       onChanged: (v) => onChanged(
                         kategorie.copyWith(
-                          ownKnowledge: (kategorie.ownKnowledge ??
-                                  const HeroRitualKnowledge(
-                                    name: 'Vertrautenmagie',
-                                    value: 0,
-                                    learningComplexity: 'E',
-                                  ))
-                              .copyWith(value: v ?? 0),
+                          ownKnowledge:
+                              (kategorie.ownKnowledge ??
+                                      const HeroRitualKnowledge(
+                                        name: 'Vertrautenmagie',
+                                        value: 0,
+                                        learningComplexity: 'E',
+                                      ))
+                                  .copyWith(value: v ?? 0),
                         ),
                       ),
                     ),
@@ -115,11 +113,8 @@ class _VertrautenmagieSection extends StatelessWidget {
           (entry) => _RitualListTile(
             ritual: entry.value,
             isEditing: isEditing,
-            onTap: isEditing
-                ? null
-                : () => _showDetail(context, entry.value),
-            onDelete:
-                isEditing ? () => _removeRitual(entry.key) : null,
+            onTap: isEditing ? null : () => _showDetail(context, entry.value),
+            onDelete: isEditing ? () => _removeRitual(entry.key) : null,
           ),
         ),
         if (isEditing) ...[
@@ -192,16 +187,13 @@ class _VertrautenmagiePickerDialog extends StatelessWidget {
                 ritual.name,
                 style: istAktiv
                     ? TextStyle(
-                        color:
-                            Theme.of(ctx).colorScheme.onSurfaceVariant,
+                        color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                       )
                     : null,
               ),
               subtitle: Text(_ritualProbeText(ritual)),
               enabled: !istAktiv,
-              onTap: istAktiv
-                  ? null
-                  : () => Navigator.of(ctx).pop(ritual),
+              onTap: istAktiv ? null : () => Navigator.of(ctx).pop(ritual),
             );
           },
         ),
@@ -253,13 +245,10 @@ class _VertrautenmagieDetailDialog extends ConsumerWidget {
       if (probe.isNotEmpty) ('Ritualprobe', probe),
       if (ritual.technik.isNotEmpty && resolvedTechnik != null)
         ('Technik', resolvedTechnik),
-      if (ritual.zauberdauer.isNotEmpty)
-        ('Zauberdauer', ritual.zauberdauer),
+      if (ritual.zauberdauer.isNotEmpty) ('Zauberdauer', ritual.zauberdauer),
       if (ritual.kosten.isNotEmpty) ('Ritualkosten', ritual.kosten),
-      if (ritual.zielobjekt.isNotEmpty)
-        ('Zielobjekt', ritual.zielobjekt),
-      if (ritual.reichweite.isNotEmpty)
-        ('Reichweite', ritual.reichweite),
+      if (ritual.zielobjekt.isNotEmpty) ('Zielobjekt', ritual.zielobjekt),
+      if (ritual.reichweite.isNotEmpty) ('Reichweite', ritual.reichweite),
       if (ritual.wirkungsdauer.isNotEmpty)
         ('Wirkungsdauer', ritual.wirkungsdauer),
       if (ritual.merkmale.isNotEmpty) ('Merkmale', ritual.merkmale),
@@ -304,8 +293,7 @@ class _VertrautenmagieDetailDialog extends ConsumerWidget {
                         lockedContentHint,
                         style: TextStyle(
                           fontStyle: FontStyle.italic,
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ),
@@ -323,9 +311,7 @@ class _VertrautenmagieDetailDialog extends ConsumerWidget {
                         width: 110,
                         child: Text(
                           '${row.$1}:',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
                       Expanded(child: Text(row.$2)),

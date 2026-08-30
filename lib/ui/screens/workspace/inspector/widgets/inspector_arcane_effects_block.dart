@@ -97,7 +97,9 @@ class InspectorArcaneEffectsBlock extends ConsumerWidget {
               children: [
                 for (final chip in chips)
                   Chip(
-                    key: ValueKey<String>('arcane-effect-chip-${chip.effectId}'),
+                    key: ValueKey<String>(
+                      'arcane-effect-chip-${chip.effectId}',
+                    ),
                     avatar: Icon(
                       chip.isExpired ? Icons.timer_off_outlined : Icons.bolt,
                       size: 16,

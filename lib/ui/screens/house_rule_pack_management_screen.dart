@@ -31,7 +31,7 @@ class HouseRulePackManagementScreen extends ConsumerWidget {
           IconButton(
             tooltip: 'Hausregeln neu laden',
             onPressed: () {
-              ref.read(catalogReloadRevisionProvider.notifier).state++;
+              ref.read(catalogReloadRevisionProvider.notifier).bump();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Hausregel-Pakete werden neu geladen.'),
@@ -312,9 +312,8 @@ class HouseRulePackManagementScreen extends ConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
     } on Exception catch (error) {
       if (!context.mounted) {
         return;
@@ -540,9 +539,8 @@ class _HouseRuleIssueCard extends StatelessWidget {
           children: [
             Text(
               title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: colorScheme.onErrorContainer,
-              ),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(color: colorScheme.onErrorContainer),
             ),
             const SizedBox(height: 12),
             for (final issue in issues.take(12)) ...[

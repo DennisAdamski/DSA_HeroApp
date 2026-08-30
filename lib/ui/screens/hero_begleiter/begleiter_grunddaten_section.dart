@@ -29,10 +29,7 @@ class _BegleiterAuswahlView extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  'Begleiter',
-                  style: theme.textTheme.titleMedium,
-                ),
+                child: Text('Begleiter', style: theme.textTheme.titleMedium),
               ),
               FilledButton.icon(
                 onPressed: onAdd,
@@ -79,9 +76,7 @@ class _BegleiterAuswahlView extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _EmptyBegleiterHint extends StatelessWidget {
-  const _EmptyBegleiterHint({
-    required this.onAdd,
-  });
+  const _EmptyBegleiterHint({required this.onAdd});
 
   final VoidCallback onAdd;
 
@@ -261,10 +256,7 @@ class _BegleiterDetailView extends StatelessWidget {
                     onChanged: (updatedKat) => onChanged(
                       companion.copyWith(
                         ritualCategories: companion.ritualCategories
-                            .map(
-                              (c) =>
-                                  c.id == updatedKat.id ? updatedKat : c,
-                            )
+                            .map((c) => c.id == updatedKat.id ? updatedKat : c)
                             .toList(),
                       ),
                     ),
@@ -377,10 +369,10 @@ class _GrunddatenSection extends StatelessWidget {
                           'Typ',
                           style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                          ),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
                         ),
                         const SizedBox(height: 2),
                         Text(companion.typ.label),

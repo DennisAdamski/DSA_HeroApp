@@ -33,8 +33,7 @@ class WeaponRangedSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return WeaponEditorSectionCard(
       title: 'Fernkampf',
-      subtitle:
-          'Verwaltet Ladezeit, Distanzstufen und projektilspezifische Modifikatoren.',
+      subtitle: 'Verwaltet Ladezeit, Distanzstufen und projektilspezifische Modifikatoren.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

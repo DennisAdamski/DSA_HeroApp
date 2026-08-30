@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/firebase_bootstrap.dart';
@@ -12,12 +12,9 @@ import 'package:dsa_heldenverwaltung/ui/screens/auth/web_auth_gate.dart';
 
 /// Startet die Anwendung und initialisiert die persistenten Heldendaten.
 Future<void> main() async {
-  await runZonedGuarded(
-    _runApp,
-    (error, stack) {
-      debugPrint('[boot] FATAL UNCAUGHT: $error\n$stack');
-    },
-  );
+  await runZonedGuarded(_runApp, (error, stack) {
+    debugPrint('[boot] FATAL UNCAUGHT: $error\n$stack');
+  });
 }
 
 Future<void> _runApp() async {

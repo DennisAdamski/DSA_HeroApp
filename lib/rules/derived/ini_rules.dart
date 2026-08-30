@@ -48,8 +48,9 @@ int computeIniGe({
   required int kkThreshold,
 }) {
   final normalizedThreshold = kkThreshold < 1 ? 1 : kkThreshold;
-  final geBase = 26 - kkBase;               // Spiegelkonstante zur KK-Basis
-  final geThreshold = 7 - normalizedThreshold; // Spiegelkonstante zum KK-Schwellenwert
+  final geBase = 26 - kkBase; // Spiegelkonstante zur KK-Basis
+  final geThreshold =
+      7 - normalizedThreshold; // Spiegelkonstante zum KK-Schwellenwert
   if (geThreshold == 0) {
     return 0;
   }

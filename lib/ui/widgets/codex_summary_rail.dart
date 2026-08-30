@@ -40,10 +40,7 @@ class CodexSummaryRailItem {
 /// verdichtete Darstellung fuer den Workspace ausreicht.
 class CodexSummaryRail extends StatelessWidget {
   /// Erstellt eine Rail aus kompakten Metrik-Karten.
-  const CodexSummaryRail({
-    super.key,
-    required this.items,
-  });
+  const CodexSummaryRail({super.key, required this.items});
 
   /// Anzuzeigende Summary-Eintraege.
   final List<CodexSummaryRailItem> items;

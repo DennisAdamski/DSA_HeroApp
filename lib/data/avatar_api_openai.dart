@@ -11,7 +11,7 @@ import 'package:dsa_heldenverwaltung/data/avatar_api_client.dart';
 /// Quality-Parameter und Kosten.
 abstract class _OpenAiImageClient implements AvatarApiClient {
   _OpenAiImageClient({required this.apiKey, http.Client? httpClient})
-      : _httpClient = httpClient ?? http.Client();
+    : _httpClient = httpClient ?? http.Client();
 
   final String apiKey;
   final http.Client _httpClient;
@@ -26,12 +26,12 @@ abstract class _OpenAiImageClient implements AvatarApiClient {
   /// Baut den Request-Body. Subklassen koennen dies ueberschreiben,
   /// um modellspezifische Parameter zu setzen.
   Map<String, dynamic> _buildRequestBody(String prompt) => {
-        'model': _model,
-        'prompt': prompt,
-        'n': 1,
-        'size': _size,
-        'quality': _quality,
-      };
+    'model': _model,
+    'prompt': prompt,
+    'n': 1,
+    'size': _size,
+    'quality': _quality,
+  };
 
   @override
   Future<List<int>> generatePortrait({required String prompt}) async {
@@ -51,16 +51,12 @@ abstract class _OpenAiImageClient implements AvatarApiClient {
     final json = jsonDecode(response.body) as Map<String, dynamic>;
     final data = json['data'] as List?;
     if (data == null || data.isEmpty) {
-      throw const FormatException(
-        'Die API hat kein Bild zurueckgegeben.',
-      );
+      throw const FormatException('Die API hat kein Bild zurueckgegeben.');
     }
 
     final b64 = (data[0] as Map)['b64_json'] as String?;
     if (b64 == null || b64.isEmpty) {
-      throw const FormatException(
-        'Die API-Antwort enthaelt keine Bilddaten.',
-      );
+      throw const FormatException('Die API-Antwort enthaelt keine Bilddaten.');
     }
 
     return base64Decode(b64);
@@ -109,9 +105,7 @@ abstract class _OpenAiImageClient implements AvatarApiClient {
         }
         return Exception('Fehlerhafte Anfrage: $detail');
       default:
-        return Exception(
-          'API-Fehler (${response.statusCode}): $detail',
-        );
+        return Exception('API-Fehler (${response.statusCode}): $detail');
     }
   }
 }
@@ -172,16 +166,12 @@ class OpenAiGptImage1Client extends _OpenAiImageClient {
     final json = jsonDecode(response.body) as Map<String, dynamic>;
     final data = json['data'] as List?;
     if (data == null || data.isEmpty) {
-      throw const FormatException(
-        'Die API hat kein Bild zurueckgegeben.',
-      );
+      throw const FormatException('Die API hat kein Bild zurueckgegeben.');
     }
 
     final b64 = (data[0] as Map)['b64_json'] as String?;
     if (b64 == null || b64.isEmpty) {
-      throw const FormatException(
-        'Die API-Antwort enthaelt keine Bilddaten.',
-      );
+      throw const FormatException('Die API-Antwort enthaelt keine Bilddaten.');
     }
 
     return base64Decode(b64);
@@ -203,9 +193,9 @@ class OpenAiDalle3Client extends _OpenAiImageClient {
 
   @override
   Map<String, dynamic> _buildRequestBody(String prompt) => {
-        ...super._buildRequestBody(prompt),
-        'response_format': 'b64_json',
-      };
+    ...super._buildRequestBody(prompt),
+    'response_format': 'b64_json',
+  };
 
   @override
   double get estimatedCostUsd => 0.080;
