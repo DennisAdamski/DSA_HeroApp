@@ -160,7 +160,8 @@ class _BottomSheetInputShell extends StatelessWidget {
     final theme = Theme.of(context);
     final viewInsets = MediaQuery.viewInsetsOf(context);
     final mediaQuery = MediaQuery.of(context);
-    final maxBodyHeight = mediaQuery.size.height -
+    final maxBodyHeight =
+        mediaQuery.size.height -
         viewInsets.bottom -
         mediaQuery.padding.top -
         160;
@@ -185,10 +186,7 @@ class _BottomSheetInputShell extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SizedBox(
                 width: double.infinity,
-                child: Text(
-                  title,
-                  style: theme.textTheme.titleLarge,
-                ),
+                child: Text(title, style: theme.textTheme.titleLarge),
               ),
             ),
             const SizedBox(height: 12),

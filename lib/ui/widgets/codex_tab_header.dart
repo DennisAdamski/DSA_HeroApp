@@ -32,9 +32,8 @@ class CodexTabHeader extends StatelessWidget {
     final width = MediaQuery.sizeOf(context).width;
     final useCompactLayout = width < 480;
 
-    final showAsset = codex.showDecoration &&
-        assetPath != null &&
-        !useCompactLayout;
+    final showAsset =
+        codex.showDecoration && assetPath != null && !useCompactLayout;
 
     return Container(
       margin: EdgeInsets.fromLTRB(12, useCompactLayout ? 8 : 12, 12, 0),

@@ -53,9 +53,7 @@ void main() {
       // Spezielle Erfahrung aktivieren -> günstigerer Faktor (50x statt 75x).
       await tester.tap(
         find.byKey(
-          const ValueKey<String>(
-            'nachteil-abbau-dialog-spezielle-erfahrung',
-          ),
+          const ValueKey<String>('nachteil-abbau-dialog-spezielle-erfahrung'),
         ),
       );
       await tester.pumpAndSettle();
@@ -72,53 +70,54 @@ void main() {
     },
   );
 
-  testWidgets('Absenken bis unter den Minimalwert markiert vollständige Entfernung', (
-    tester,
-  ) async {
-    NachteilAbbauErgebnis? result;
+  testWidgets(
+    'Absenken bis unter den Minimalwert markiert vollständige Entfernung',
+    (tester) async {
+      NachteilAbbauErgebnis? result;
 
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Builder(
-            builder: (context) {
-              return FilledButton(
-                onPressed: () async {
-                  result = await showNachteilAbbauDialog(
-                    context: context,
-                    bezeichnung: 'Goldgier',
-                    aktuellerWert: 1,
-                    minWert: 1,
-                    gpWertProPunkt: -1,
-                    istSpeziellerErfahrungFaehig: true,
-                    verfuegbareAp: 999,
-                  );
-                },
-                child: const Text('Öffnen'),
-              );
-            },
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) {
+                return FilledButton(
+                  onPressed: () async {
+                    result = await showNachteilAbbauDialog(
+                      context: context,
+                      bezeichnung: 'Goldgier',
+                      aktuellerWert: 1,
+                      minWert: 1,
+                      gpWertProPunkt: -1,
+                      istSpeziellerErfahrungFaehig: true,
+                      verfuegbareAp: 999,
+                    );
+                  },
+                  child: const Text('Öffnen'),
+                );
+              },
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    await tester.tap(find.text('Öffnen'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Öffnen'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('entfernt'), findsOneWidget);
-    expect(
-      find.text('Der Nachteil wird bei Bestätigung vollständig entfernt.'),
-      findsOneWidget,
-    );
-    expect(find.text('AP-Kosten: 75'), findsOneWidget);
+      expect(find.text('entfernt'), findsOneWidget);
+      expect(
+        find.text('Der Nachteil wird bei Bestätigung vollständig entfernt.'),
+        findsOneWidget,
+      );
+      expect(find.text('AP-Kosten: 75'), findsOneWidget);
 
-    await tester.tap(find.text('Abbauen'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Abbauen'));
+      await tester.pumpAndSettle();
 
-    expect(result, isNotNull);
-    expect(result!.neuerWert, 0);
-    expect(result!.apKosten, 75);
-  });
+      expect(result, isNotNull);
+      expect(result!.neuerWert, 0);
+      expect(result!.apKosten, 75);
+    },
+  );
 
   testWidgets(
     'gestufter Nachteil ohne SE-Marker zeigt keine Checkbox und nutzt 100er Faktor',
@@ -154,9 +153,7 @@ void main() {
 
       expect(
         find.byKey(
-          const ValueKey<String>(
-            'nachteil-abbau-dialog-spezielle-erfahrung',
-          ),
+          const ValueKey<String>('nachteil-abbau-dialog-spezielle-erfahrung'),
         ),
         findsNothing,
       );

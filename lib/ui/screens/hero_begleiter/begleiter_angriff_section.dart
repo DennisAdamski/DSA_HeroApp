@@ -95,10 +95,11 @@ class _AngriffseSection extends StatelessWidget {
               onEdit: () async {
                 final ctx = context;
                 if (!ctx.mounted) return;
-                final result = await showAdaptiveDetailSheet<HeroCompanionAttack>(
-                  context: ctx,
-                  builder: (_) => _AngriffDialog(initial: angriffe[i]),
-                );
+                final result =
+                    await showAdaptiveDetailSheet<HeroCompanionAttack>(
+                      context: ctx,
+                      builder: (_) => _AngriffDialog(initial: angriffe[i]),
+                    );
                 if (result != null) {
                   final next = List<HeroCompanionAttack>.from(angriffe);
                   next[i] = result;
@@ -124,9 +125,7 @@ class _AngriffseSection extends StatelessWidget {
               );
               if (result != null) {
                 onChanged(
-                  companion.copyWith(
-                    angriffe: [...companion.angriffe, result],
-                  ),
+                  companion.copyWith(angriffe: [...companion.angriffe, result]),
                 );
               }
             },

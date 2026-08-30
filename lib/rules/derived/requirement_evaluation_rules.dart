@@ -131,9 +131,8 @@ class HeroRequirementContext {
 
   /// Ob der Held Spruchzauberei betreibt — also mindestens eine Tradition mit
   /// Repraesentation fuehrt.
-  bool get istSpruchzauberer => traditionen.any(
-    (tradition) => tradition.repraesentation.isNotEmpty,
-  );
+  bool get istSpruchzauberer =>
+      traditionen.any((tradition) => tradition.repraesentation.isNotEmpty);
 }
 
 /// Prueft eine Liste von Voraussetzungen.
@@ -152,9 +151,8 @@ List<RequirementCheckResult> offeneVoraussetzungen(
 ) => ergebnisse.where((ergebnis) => ergebnis.istOffen).toList(growable: false);
 
 /// Ob kein Befund offen ist. Reine Hinweise zaehlen als erfuellt.
-bool alleVoraussetzungenErfuellt(
-  Iterable<RequirementCheckResult> ergebnisse,
-) => ergebnisse.every((ergebnis) => !ergebnis.istOffen);
+bool alleVoraussetzungenErfuellt(Iterable<RequirementCheckResult> ergebnisse) =>
+    ergebnisse.every((ergebnis) => !ergebnis.istOffen);
 
 /// Prueft genau eine Voraussetzung.
 RequirementCheckResult evaluateRequirement(
@@ -169,17 +167,9 @@ RequirementCheckResult evaluateRequirement(
     case RequirementArt.sonderfertigkeit:
       return _pruefeSonderfertigkeit(requirement, context);
     case RequirementArt.zauber:
-      return _pruefeWert(
-        requirement,
-        context.zauberwerte,
-        bezeichnung: 'ZfW',
-      );
+      return _pruefeWert(requirement, context.zauberwerte, bezeichnung: 'ZfW');
     case RequirementArt.talent:
-      return _pruefeWert(
-        requirement,
-        context.talentwerte,
-        bezeichnung: 'TaW',
-      );
+      return _pruefeWert(requirement, context.talentwerte, bezeichnung: 'TaW');
     case RequirementArt.ritualkenntnis:
       return _pruefeWert(
         requirement,
@@ -679,10 +669,7 @@ RequirementCheckResult _pruefeGruppe(
   HeroRequirementContext context, {
   required bool alleNoetig,
 }) {
-  final teilergebnisse = evaluateRequirements(
-    requirement.bedingungen,
-    context,
-  );
+  final teilergebnisse = evaluateRequirements(requirement.bedingungen, context);
   final nurHinweise =
       teilergebnisse.isEmpty ||
       teilergebnisse.every(
@@ -722,8 +709,7 @@ const List<String> _roemischeZahlen = <String>[
   'VII',
 ];
 
-String _roemischeZahl(int wert) =>
-    wert > 0 && wert < _roemischeZahlen.length
+String _roemischeZahl(int wert) => wert > 0 && wert < _roemischeZahlen.length
     ? _roemischeZahlen[wert]
     : '$wert';
 

@@ -99,7 +99,10 @@ void main() {
     });
 
     test('liefert null bei fehlenden oder unplausiblen Angaben', () {
-      expect(aventurianDayOfYear(const AventurianDate(month: 'praios')), isNull);
+      expect(
+        aventurianDayOfYear(const AventurianDate(month: 'praios')),
+        isNull,
+      );
       expect(aventurianDayOfYear(const AventurianDate(day: '5')), isNull);
       expect(
         aventurianDayOfYear(const AventurianDate(day: '31', month: 'praios')),
@@ -254,7 +257,10 @@ void main() {
       );
 
       final date = resolveCurrentAdventureDate(hero);
-      expect(date, const AventurianDate(day: '4', month: 'rondra', year: '1027'));
+      expect(
+        date,
+        const AventurianDate(day: '4', month: 'rondra', year: '1027'),
+      );
     });
 
     test('faellt auf das Startdatum zurueck', () {
@@ -272,7 +278,10 @@ void main() {
       );
 
       final date = resolveCurrentAdventureDate(hero);
-      expect(date, const AventurianDate(day: '1', month: 'praios', year: '1027'));
+      expect(
+        date,
+        const AventurianDate(day: '1', month: 'praios', year: '1027'),
+      );
     });
 
     test('ueberspringt laufende Abenteuer ohne verwertbares Datum', () {
@@ -319,7 +328,10 @@ void main() {
       );
 
       final date = resolveCurrentAdventureDate(hero);
-      expect(date, const AventurianDate(day: '2', month: 'boron', year: '1026'));
+      expect(
+        date,
+        const AventurianDate(day: '2', month: 'boron', year: '1026'),
+      );
     });
 
     test('liefert null ohne jedes verwertbare Datum', () {

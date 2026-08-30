@@ -151,7 +151,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('AP-Kosten: 2'), findsOneWidget);
-    expect(find.textContaining('Epos-Aufschlag (+25 %): +1 AP'), findsOneWidget);
+    expect(
+      find.textContaining('Epos-Aufschlag (+25 %): +1 AP'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text('Steigern'));
     await tester.pumpAndSettle();

@@ -156,32 +156,38 @@ void main() {
       );
     });
 
-    test('skips offline profile heroes identical to the account version', () async {
-      final local = FakeRepository(
-        heroes: <HeroSheet>[hero('h-1', 'Alrik'), hero('h-2', 'Konto Layariel')],
-      );
-      final remote = FakeRemoteHeroSyncGateway();
-      final metadata = InMemorySyncMetadataStore();
-      final repository = SyncingHeroRepository(
-        local: local,
-        remote: remote,
-        metadataStore: metadata,
-        accountId: 'user-1',
-        startRemoteListener: false,
-      );
+    test(
+      'skips offline profile heroes identical to the account version',
+      () async {
+        final local = FakeRepository(
+          heroes: <HeroSheet>[
+            hero('h-1', 'Alrik'),
+            hero('h-2', 'Konto Layariel'),
+          ],
+        );
+        final remote = FakeRemoteHeroSyncGateway();
+        final metadata = InMemorySyncMetadataStore();
+        final repository = SyncingHeroRepository(
+          local: local,
+          remote: remote,
+          metadataStore: metadata,
+          accountId: 'user-1',
+          startRemoteListener: false,
+        );
 
-      await repository.queueOfflineProfileConflicts(
-        offlineHeroes: <HeroSheet>[
-          // Identisch zur Konto-Version: darf keinen Konflikt erzeugen.
-          hero('h-1', 'Alrik'),
-          // Abweichender Name: Konflikt bleibt noetig.
-          hero('h-2', 'Offline Layariel'),
-        ],
-      );
+        await repository.queueOfflineProfileConflicts(
+          offlineHeroes: <HeroSheet>[
+            // Identisch zur Konto-Version: darf keinen Konflikt erzeugen.
+            hero('h-1', 'Alrik'),
+            // Abweichender Name: Konflikt bleibt noetig.
+            hero('h-2', 'Offline Layariel'),
+          ],
+        );
 
-      expect(repository.currentStatus.openConflicts, hasLength(1));
-      expect(repository.currentStatus.openConflicts.single.objectId, 'h-2');
-    });
+        expect(repository.currentStatus.openConflicts, hasLength(1));
+        expect(repository.currentStatus.openConflicts.single.objectId, 'h-2');
+      },
+    );
 
     test(
       'uebernimmt die Online-Version statt Konflikt bei reiner Umsortierung',
@@ -216,7 +222,9 @@ void main() {
           alrik(const <String>['gildenmagie', 'elfen']),
           previousRevision: null,
         );
-        await repository.saveHero(alrik(const <String>['elfen', 'gildenmagie']));
+        await repository.saveHero(
+          alrik(const <String>['elfen', 'gildenmagie']),
+        );
 
         expect(repository.currentStatus.openConflicts, isEmpty);
         expect((await local.loadHeroById('h-1'))?.representationen, <String>[
@@ -246,7 +254,9 @@ void main() {
 
         final local = FakeRepository(
           heroes: <HeroSheet>[hero('h-1', 'Alrik')],
-          states: <String, HeroState>{'h-1': stateMitWurf(const <int>[3, 5])},
+          states: <String, HeroState>{
+            'h-1': stateMitWurf(const <int>[3, 5]),
+          },
         );
         final remote = FakeRemoteHeroAndStateSyncGateway();
         final metadata = InMemorySyncMetadataStore();
@@ -272,47 +282,50 @@ void main() {
       },
     );
 
-    test('conflictDiff liefert Feldunterschiede fuer Heldenkonflikte', () async {
-      final local = FakeRepository.empty();
-      final remote = FakeRemoteHeroSyncGateway();
-      final metadata = InMemorySyncMetadataStore();
-      await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
+    test(
+      'conflictDiff liefert Feldunterschiede fuer Heldenkonflikte',
+      () async {
+        final local = FakeRepository.empty();
+        final remote = FakeRemoteHeroSyncGateway();
+        final metadata = InMemorySyncMetadataStore();
+        await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
 
-      final repository = SyncingHeroRepository(
-        local: local,
-        remote: remote,
-        metadataStore: metadata,
-        accountId: 'user-1',
-        startRemoteListener: false,
-      );
-      await repository.syncNow();
+        final repository = SyncingHeroRepository(
+          local: local,
+          remote: remote,
+          metadataStore: metadata,
+          accountId: 'user-1',
+          startRemoteListener: false,
+        );
+        await repository.syncNow();
 
-      await remote.saveHero(
-        hero('h-1', 'Alrik online'),
-        previousRevision: null,
-      );
-      await repository.saveHero(hero('h-1', 'Alrik lokal'));
-      final conflictId = repository.currentStatus.openConflicts.single.id;
+        await remote.saveHero(
+          hero('h-1', 'Alrik online'),
+          previousRevision: null,
+        );
+        await repository.saveHero(hero('h-1', 'Alrik lokal'));
+        final conflictId = repository.currentStatus.openConflicts.single.id;
 
-      final diff = repository.conflictDiff(conflictId);
+        final diff = repository.conflictDiff(conflictId);
 
-      expect(diff, isNotNull);
-      expect(diff!.remoteMissing, isFalse);
-      final nameEntry = diff.entries.singleWhere(
-        (entry) => entry.path.join('.') == 'name',
-      );
-      expect(nameEntry.kind, SyncDiffKind.changed);
-      expect(nameEntry.localValue, 'Alrik lokal');
-      expect(nameEntry.remoteValue, 'Alrik online');
+        expect(diff, isNotNull);
+        expect(diff!.remoteMissing, isFalse);
+        final nameEntry = diff.entries.singleWhere(
+          (entry) => entry.path.join('.') == 'name',
+        );
+        expect(nameEntry.kind, SyncDiffKind.changed);
+        expect(nameEntry.localValue, 'Alrik lokal');
+        expect(nameEntry.remoteValue, 'Alrik online');
 
-      expect(repository.conflictDiff('unbekannt'), isNull);
+        expect(repository.conflictDiff('unbekannt'), isNull);
 
-      await repository.resolveConflict(
-        conflictId,
-        SyncResolutionChoice.keepLocal,
-      );
-      expect(repository.conflictDiff(conflictId), isNull);
-    });
+        await repository.resolveConflict(
+          conflictId,
+          SyncResolutionChoice.keepLocal,
+        );
+        expect(repository.conflictDiff(conflictId), isNull);
+      },
+    );
 
     test('conflictDiff markiert geloeschte Online-Version', () async {
       final local = FakeRepository.empty();
@@ -660,7 +673,9 @@ void main() {
         final offlineHero = hero('h-1', 'Offline Alrik');
         final reviews = InMemoryOfflineHeroReviewStore();
         final repository = buildRepository(
-          local: FakeRepository(heroes: <HeroSheet>[hero('h-1', 'Konto Alrik')]),
+          local: FakeRepository(
+            heroes: <HeroSheet>[hero('h-1', 'Konto Alrik')],
+          ),
           remote: FakeRemoteHeroSyncGateway(),
           metadata: InMemorySyncMetadataStore(),
           reviews: reviews,
@@ -685,7 +700,9 @@ void main() {
       test('clearOfflineHeroReviews verwirft alle Beschluesse', () async {
         final reviews = InMemoryOfflineHeroReviewStore();
         final repository = buildRepository(
-          local: FakeRepository(heroes: <HeroSheet>[hero('h-1', 'Konto Alrik')]),
+          local: FakeRepository(
+            heroes: <HeroSheet>[hero('h-1', 'Konto Alrik')],
+          ),
           remote: FakeRemoteHeroSyncGateway(),
           metadata: InMemorySyncMetadataStore(),
           reviews: reviews,
@@ -706,33 +723,30 @@ void main() {
       });
     });
 
-    test(
-      'opens a conflict when a concurrent writer races the push',
-      () async {
-        final local = FakeRepository.empty();
-        final remote = _RacingRemoteHeroSyncGateway();
-        final metadata = InMemorySyncMetadataStore();
-        await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
+    test('opens a conflict when a concurrent writer races the push', () async {
+      final local = FakeRepository.empty();
+      final remote = _RacingRemoteHeroSyncGateway();
+      final metadata = InMemorySyncMetadataStore();
+      await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
 
-        final repository = SyncingHeroRepository(
-          local: local,
-          remote: remote,
-          metadataStore: metadata,
-          accountId: 'user-1',
-          startRemoteListener: false,
-        );
-        await repository.syncNow();
+      final repository = SyncingHeroRepository(
+        local: local,
+        remote: remote,
+        metadataStore: metadata,
+        accountId: 'user-1',
+        startRemoteListener: false,
+      );
+      await repository.syncNow();
 
-        // Der parallele Schreiber schlaegt genau zwischen dem Pre-Read des
-        // Pushs und dem eigentlichen Write zu.
-        remote.concurrentWrite = hero('h-1', 'Remote Racer');
-        await repository.saveHero(hero('h-1', 'Lokaler Racer'));
+      // Der parallele Schreiber schlaegt genau zwischen dem Pre-Read des
+      // Pushs und dem eigentlichen Write zu.
+      remote.concurrentWrite = hero('h-1', 'Remote Racer');
+      await repository.saveHero(hero('h-1', 'Lokaler Racer'));
 
-        expect(repository.currentStatus.openConflicts, hasLength(1));
-        expect((await remote.loadHero('h-1'))?.hero?.name, 'Remote Racer');
-        expect((await local.loadHeroById('h-1'))?.name, 'Lokaler Racer');
-      },
-    );
+      expect(repository.currentStatus.openConflicts, hasLength(1));
+      expect((await remote.loadHero('h-1'))?.hero?.name, 'Remote Racer');
+      expect((await local.loadHeroById('h-1'))?.name, 'Lokaler Racer');
+    });
 
     test('keeps local save and records failure when push is offline', () async {
       final local = FakeRepository.empty();
@@ -750,10 +764,7 @@ void main() {
       await repository.saveHero(hero('h-1', 'Alrik'));
 
       expect((await local.loadHeroById('h-1'))?.name, 'Alrik');
-      expect(
-        repository.currentStatus.lastFailure?.kind,
-        SyncErrorKind.network,
-      );
+      expect(repository.currentStatus.lastFailure?.kind, SyncErrorKind.network);
 
       remote.offline = false;
       expect(await remote.loadAllHeroes(), isEmpty);
@@ -763,39 +774,41 @@ void main() {
       expect(repository.currentStatus.lastFailure, isNull);
     });
 
-    test('completes an offline delete on next sync instead of resurrecting',
-        () async {
-      final local = FakeRepository.empty();
-      final remote = _OfflineRemoteHeroSyncGateway();
-      final metadata = InMemorySyncMetadataStore();
-      await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
+    test(
+      'completes an offline delete on next sync instead of resurrecting',
+      () async {
+        final local = FakeRepository.empty();
+        final remote = _OfflineRemoteHeroSyncGateway();
+        final metadata = InMemorySyncMetadataStore();
+        await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
 
-      final repository = SyncingHeroRepository(
-        local: local,
-        remote: remote,
-        metadataStore: metadata,
-        accountId: 'user-1',
-        startRemoteListener: false,
-      );
-      await repository.syncNow();
+        final repository = SyncingHeroRepository(
+          local: local,
+          remote: remote,
+          metadataStore: metadata,
+          accountId: 'user-1',
+          startRemoteListener: false,
+        );
+        await repository.syncNow();
 
-      remote.offline = true;
-      await repository.deleteHero('h-1');
+        remote.offline = true;
+        await repository.deleteHero('h-1');
 
-      expect(await local.loadHeroById('h-1'), isNull);
-      expect(
-        repository.currentStatus.lastFailure?.kind,
-        SyncErrorKind.network,
-      );
+        expect(await local.loadHeroById('h-1'), isNull);
+        expect(
+          repository.currentStatus.lastFailure?.kind,
+          SyncErrorKind.network,
+        );
 
-      remote.offline = false;
-      await repository.syncNow();
+        remote.offline = false;
+        await repository.syncNow();
 
-      expect(await local.loadHeroById('h-1'), isNull);
-      expect((await remote.loadHero('h-1'))?.isDeleted, isTrue);
-      expect(repository.currentStatus.openConflicts, isEmpty);
-      expect(repository.currentStatus.lastFailure, isNull);
-    });
+        expect(await local.loadHeroById('h-1'), isNull);
+        expect((await remote.loadHero('h-1'))?.isDeleted, isTrue);
+        expect(repository.currentStatus.openConflicts, isEmpty);
+        expect(repository.currentStatus.lastFailure, isNull);
+      },
+    );
 
     test(
       'opens a deletion conflict when remote changed after offline delete',
@@ -840,67 +853,74 @@ void main() {
       },
     );
 
-    test('deletion conflict resolved with keepLocal enforces the delete',
-        () async {
-      final local = FakeRepository.empty();
-      final remote = _OfflineRemoteHeroSyncGateway();
-      final metadata = InMemorySyncMetadataStore();
-      await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
+    test(
+      'deletion conflict resolved with keepLocal enforces the delete',
+      () async {
+        final local = FakeRepository.empty();
+        final remote = _OfflineRemoteHeroSyncGateway();
+        final metadata = InMemorySyncMetadataStore();
+        await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
 
-      final repository = SyncingHeroRepository(
-        local: local,
-        remote: remote,
-        metadataStore: metadata,
-        accountId: 'user-1',
-        startRemoteListener: false,
-      );
-      await repository.syncNow();
+        final repository = SyncingHeroRepository(
+          local: local,
+          remote: remote,
+          metadataStore: metadata,
+          accountId: 'user-1',
+          startRemoteListener: false,
+        );
+        await repository.syncNow();
 
-      remote.offline = true;
-      await repository.deleteHero('h-1');
-      remote.offline = false;
-      await remote.saveHero(hero('h-1', 'Remote Neu'), previousRevision: null);
-      await repository.syncNow();
-      final conflict = repository.currentStatus.openConflicts.single;
+        remote.offline = true;
+        await repository.deleteHero('h-1');
+        remote.offline = false;
+        await remote.saveHero(
+          hero('h-1', 'Remote Neu'),
+          previousRevision: null,
+        );
+        await repository.syncNow();
+        final conflict = repository.currentStatus.openConflicts.single;
 
-      await repository.resolveConflict(
-        conflict.id,
-        SyncResolutionChoice.keepLocal,
-      );
+        await repository.resolveConflict(
+          conflict.id,
+          SyncResolutionChoice.keepLocal,
+        );
 
-      expect(await local.loadHeroById('h-1'), isNull);
-      expect((await remote.loadHero('h-1'))?.isDeleted, isTrue);
-      expect(repository.currentStatus.openConflicts, isEmpty);
-    });
+        expect(await local.loadHeroById('h-1'), isNull);
+        expect((await remote.loadHero('h-1'))?.isDeleted, isTrue);
+        expect(repository.currentStatus.openConflicts, isEmpty);
+      },
+    );
 
-    test('isolates broken remote records instead of aborting the batch',
-        () async {
-      final local = _RejectingRepository(rejectedHeroId: 'h-2');
-      final remote = FakeRemoteHeroSyncGateway();
-      final metadata = InMemorySyncMetadataStore();
-      await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
-      await remote.saveHero(hero('h-2', 'Kaputt'), previousRevision: null);
-      await remote.saveHero(hero('h-3', 'Yasinde'), previousRevision: null);
+    test(
+      'isolates broken remote records instead of aborting the batch',
+      () async {
+        final local = _RejectingRepository(rejectedHeroId: 'h-2');
+        final remote = FakeRemoteHeroSyncGateway();
+        final metadata = InMemorySyncMetadataStore();
+        await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
+        await remote.saveHero(hero('h-2', 'Kaputt'), previousRevision: null);
+        await remote.saveHero(hero('h-3', 'Yasinde'), previousRevision: null);
 
-      final repository = SyncingHeroRepository(
-        local: local,
-        remote: remote,
-        metadataStore: metadata,
-        accountId: 'user-1',
-        startRemoteListener: false,
-      );
+        final repository = SyncingHeroRepository(
+          local: local,
+          remote: remote,
+          metadataStore: metadata,
+          accountId: 'user-1',
+          startRemoteListener: false,
+        );
 
-      await repository.syncNow();
+        await repository.syncNow();
 
-      expect((await local.loadHeroById('h-1'))?.name, 'Alrik');
-      expect(await local.loadHeroById('h-2'), isNull);
-      expect((await local.loadHeroById('h-3'))?.name, 'Yasinde');
-      final failure = repository.currentStatus.lastFailure;
-      expect(failure, isNotNull);
-      expect(failure!.kind, SyncErrorKind.decode);
-      expect(failure.message, contains('h-2'));
-      expect(repository.currentStatus.lastSuccessfulSync, isNull);
-    });
+        expect((await local.loadHeroById('h-1'))?.name, 'Alrik');
+        expect(await local.loadHeroById('h-2'), isNull);
+        expect((await local.loadHeroById('h-3'))?.name, 'Yasinde');
+        final failure = repository.currentStatus.lastFailure;
+        expect(failure, isNotNull);
+        expect(failure!.kind, SyncErrorKind.decode);
+        expect(failure.message, contains('h-2'));
+        expect(repository.currentStatus.lastSuccessfulSync, isNull);
+      },
+    );
 
     test('classifies network errors during syncNow in the status', () async {
       final local = FakeRepository.empty();

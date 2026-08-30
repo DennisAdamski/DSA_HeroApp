@@ -223,9 +223,8 @@ Map<String, dynamic> _decodeFields(Map<String, dynamic> json) {
   if (fields is! Map) {
     return const <String, dynamic>{};
   }
-  return _castMap(
-    fields,
-  ).map((key, value) => MapEntry(key, _decodeValue(_castMap(value as Map))));
+  return _castMap(fields)
+      .map((key, value) => MapEntry(key, _decodeValue(_castMap(value as Map))));
 }
 
 Map<String, dynamic> _encodeValue(Object? value) {

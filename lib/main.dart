@@ -12,12 +12,9 @@ import 'package:dsa_heldenverwaltung/ui/screens/auth/web_auth_gate.dart';
 
 /// Startet die Anwendung und initialisiert die persistenten Heldendaten.
 Future<void> main() async {
-  await runZonedGuarded(
-    _runApp,
-    (error, stack) {
-      debugPrint('[boot] FATAL UNCAUGHT: $error\n$stack');
-    },
-  );
+  await runZonedGuarded(_runApp, (error, stack) {
+    debugPrint('[boot] FATAL UNCAUGHT: $error\n$stack');
+  });
 }
 
 Future<void> _runApp() async {

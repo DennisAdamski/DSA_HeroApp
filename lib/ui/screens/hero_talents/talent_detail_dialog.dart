@@ -176,9 +176,7 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
                             if (mounted) setState(() {});
                           },
                           icon: const Icon(Icons.tune, size: 16),
-                          label: Text(
-                            '${entry.modifier + inventoryMod}',
-                          ),
+                          label: Text('${entry.modifier + inventoryMod}'),
                         ),
                       ),
                       ...entry.talentModifiers.map(
@@ -256,12 +254,7 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
                 _detailRow(
                   theme,
                   'TaW*',
-                  '${computeTalentComputedTaw(
-                    talentValue: entry.talentValue,
-                    modifier: entry.modifier,
-                    ebe: talentEbe,
-                    inventoryMod: inventoryMod,
-                  )}',
+                  '${computeTalentComputedTaw(talentValue: entry.talentValue, modifier: entry.modifier, ebe: talentEbe, inventoryMod: inventoryMod)}',
                 ),
               ],
               if (isEditing || specs.isNotEmpty) ...[
@@ -278,8 +271,9 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
                           (s) => Chip(
                             label: Text(s),
                             visualDensity: VisualDensity.compact,
-                            materialTapTargetSize:
-                                adaptiveTapTargetSize(context),
+                            materialTapTargetSize: adaptiveTapTargetSize(
+                              context,
+                            ),
                             padding: EdgeInsets.zero,
                             labelPadding: const EdgeInsets.symmetric(
                               horizontal: 6,
@@ -345,9 +339,7 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
     return SizedBox(
       width: 96,
       child: TextField(
-        key: ValueKey<String>(
-          'talent-detail-edit-${widget.talent.id}-$field',
-        ),
+        key: ValueKey<String>('talent-detail-edit-${widget.talent.id}-$field'),
         controller: controller,
         keyboardType: TextInputType.number,
         decoration: const InputDecoration(

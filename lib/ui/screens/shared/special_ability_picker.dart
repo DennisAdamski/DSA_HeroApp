@@ -356,9 +356,7 @@ class _SpecialAbilityPickerScreenState
         isEpic: ability.nurEpisch,
         nurInformation: ability.nurInformation,
         offeneVoraussetzungen: offeneVoraussetzungen(ergebnisse).length,
-        variantCount: ability.mehrfachwaehlbar
-            ? _ownedCount(ability)
-            : null,
+        variantCount: ability.mehrfachwaehlbar ? _ownedCount(ability) : null,
         onToggle: (value) => _toggle(ability, value),
         onAddVariant: () => _acquire(ability),
         onNameTap: () => _showDetails(ability),

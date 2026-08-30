@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
+
 import 'modifier_parser.dart';
 
 /// Ergebniscontainer fuer alle zentral berechneten Heldenwerte.

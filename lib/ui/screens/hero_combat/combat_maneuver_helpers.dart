@@ -134,10 +134,7 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
   }
 
   /// Sammelt die Manoever-IDs fuer einen einzelnen Waffen-Slot.
-  Set<String> _maneuverIdsForSlot(
-    RulesCatalog catalog,
-    MainWeaponSlot slot,
-  ) {
+  Set<String> _maneuverIdsForSlot(RulesCatalog catalog, MainWeaponSlot slot) {
     final weapon = _findMatchedCatalogWeaponForSlot(catalog, slot);
     final talentDef = _talentDefForSlot(catalog, slot);
     final talentName = talentDef?.name ?? '';
@@ -245,12 +242,11 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
       final availability = inMain && inOff
           ? ManeuverHandAvailability.both
           : inMain
-              ? ManeuverHandAvailability.mainOnly
-              : ManeuverHandAvailability.offhandOnly;
-      entries.add(PreviewManeuverEntry(
-        maneuverId: id,
-        availableHands: availability,
-      ));
+          ? ManeuverHandAvailability.mainOnly
+          : ManeuverHandAvailability.offhandOnly;
+      entries.add(
+        PreviewManeuverEntry(maneuverId: id, availableHands: availability),
+      );
     }
     entries.sort((a, b) {
       final left = displayNameForManeuverId(

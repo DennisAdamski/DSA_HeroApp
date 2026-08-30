@@ -13,11 +13,17 @@ void main() {
     });
 
     test('Schlechte Eigenschaft per Spezieller Erfahrung', () {
-      expect(computeTraitApCost(-2, kSchlechteEigenschaftSpezErfahrungFaktor), 100);
+      expect(
+        computeTraitApCost(-2, kSchlechteEigenschaftSpezErfahrungFaktor),
+        100,
+      );
     });
 
     test('Schlechte Eigenschaft im Selbststudium (1,5-fach)', () {
-      expect(computeTraitApCost(-2, kSchlechteEigenschaftSelbststudiumFaktor), 150);
+      expect(
+        computeTraitApCost(-2, kSchlechteEigenschaftSelbststudiumFaktor),
+        150,
+      );
     });
 
     test('ignoriert Vorzeichen des GP-Werts', () {

@@ -222,27 +222,31 @@ void main() {
     expect(parsed.attributeMods.kk, 1);
   });
 
-  test('freie CODE-Fragmente in Vorteilen erhoehen startAttributeMods nicht', () {
-    final parsed = parseModifierTexts(
-      rasseModText: '',
-      kulturModText: '',
-      professionModText: '',
-      vorteileText: 'KK+5',
-      nachteileText: 'MU-2',
-    );
+  test(
+    'freie CODE-Fragmente in Vorteilen erhoehen startAttributeMods nicht',
+    () {
+      final parsed = parseModifierTexts(
+        rasseModText: '',
+        kulturModText: '',
+        professionModText: '',
+        vorteileText: 'KK+5',
+        nachteileText: 'MU-2',
+      );
 
-    expect(parsed.attributeMods.kk, 5);
-    expect(parsed.attributeMods.mu, -2);
-    expect(parsed.startAttributeMods.kk, 0);
-    expect(parsed.startAttributeMods.mu, 0);
-  });
+      expect(parsed.attributeMods.kk, 5);
+      expect(parsed.attributeMods.mu, -2);
+      expect(parsed.startAttributeMods.kk, 0);
+      expect(parsed.startAttributeMods.mu, 0);
+    },
+  );
 
   test('mehrere Herausragende-Eigenschaft-Fragmente summieren sich', () {
     final parsed = parseModifierTexts(
       rasseModText: '',
       kulturModText: '',
       professionModText: '',
-      vorteileText: 'Herausragende Eigenschaft KK 2; '
+      vorteileText:
+          'Herausragende Eigenschaft KK 2; '
           'Herausragende Eigenschaft GE 1',
       nachteileText: '',
     );

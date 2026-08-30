@@ -361,10 +361,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   /// Baut die tab-unabhaengigen Spiel-Aktionen (Probensuche, Regelsuche).
   List<Widget> _buildGlobalPlayActions() {
     final rulesLookup = _buildRulesLookupAction();
-    return <Widget>[
-      _buildProbeQuickSearchAction(),
-      ?rulesLookup,
-    ];
+    return <Widget>[_buildProbeQuickSearchAction(), ?rulesLookup];
   }
 
   /// Baut die Aktionsschaltflaechen fuer die AppBar.

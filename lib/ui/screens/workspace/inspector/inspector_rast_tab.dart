@@ -86,7 +86,7 @@ class InspectorRastTab extends ConsumerWidget {
   }
 }
 
-class _ReadOnlyVitalRow extends StatelessWidget{
+class _ReadOnlyVitalRow extends StatelessWidget {
   const _ReadOnlyVitalRow({
     required this.label,
     required this.current,

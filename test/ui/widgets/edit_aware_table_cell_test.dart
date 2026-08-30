@@ -17,8 +17,7 @@ void main() {
   }
 
   group('EditAwareTableCell', () {
-    testWidgets('View-Modus rendert Plain Text ohne TextField',
-        (tester) async {
+    testWidgets('View-Modus rendert Plain Text ohne TextField', (tester) async {
       await tester.pumpWidget(
         wrap(const EditAwareTableCell(value: '14', isEditing: false)),
       );

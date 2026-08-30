@@ -28,9 +28,8 @@ class CodexBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final codex = context.codexTheme;
     final colors = _colorsForTone(codex, tone);
-    final textStyle = Theme.of(
-      context,
-    ).textTheme.labelSmall?.copyWith(color: colors.foreground);
+    final textStyle = Theme.of(context).textTheme.labelSmall
+        ?.copyWith(color: colors.foreground);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

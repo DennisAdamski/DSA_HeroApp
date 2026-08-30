@@ -124,4 +124,3 @@ String _normalizeStyleTalent(String raw) {
   }
   return '';
 }
-

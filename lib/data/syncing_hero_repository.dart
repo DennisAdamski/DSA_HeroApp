@@ -303,7 +303,8 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     };
     for (final offlineHero in offlineHeroes) {
       final review = reviews[offlineHero.id];
-      if (review != null && review.offlineHash == heroContentHash(offlineHero)) {
+      if (review != null &&
+          review.offlineHash == heroContentHash(offlineHero)) {
         // Der Nutzer hat zu genau diesem Stand bereits entschieden. Erst eine
         // Aenderung im Offline-Profil rechtfertigt eine erneute Frage.
         continue;
@@ -516,7 +517,9 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
   /// True, wenn die Metadaten eine lokal ausgefuehrte, remote aber noch
   /// nicht bestaetigte Loeschung markieren (siehe [deleteHero]).
   bool _isPendingLocalDelete(SyncMetadata? metadata) {
-    return metadata != null && !metadata.isDeleted && metadata.localHash.isEmpty;
+    return metadata != null &&
+        !metadata.isDeleted &&
+        metadata.localHash.isEmpty;
   }
 
   /// Holt eine lokal bereits ausgefuehrte Loeschung remote nach.
@@ -1127,7 +1130,8 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     RemoteHeroRecord record, {
     HeroSheet? localHero,
   }) async {
-    final needsWrite = localHero == null ||
+    final needsWrite =
+        localHero == null ||
         stableContentHash(localHero.toJson()) !=
             stableContentHash(remoteHero.toJson());
     if (needsWrite) {
@@ -1143,7 +1147,8 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     RemoteHeroStateRecord record, {
     HeroState? localState,
   }) async {
-    final needsWrite = localState == null ||
+    final needsWrite =
+        localState == null ||
         heroStateContentHash(localState) != heroStateContentHash(remoteState);
     if (needsWrite) {
       await local.saveHeroState(heroId, remoteState);
@@ -1281,7 +1286,8 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     }
     await _pushRemoteBestEffort(
       () => _pushHeroDelete(heroId),
-      context: 'Loeschung von Held $heroId konnte nicht in die Cloud '
+      context:
+          'Loeschung von Held $heroId konnte nicht in die Cloud '
           'uebertragen werden',
     );
   }

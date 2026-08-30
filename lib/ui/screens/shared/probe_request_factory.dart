@@ -11,7 +11,9 @@ ResolvedProbeRequest buildAttributeProbeRequest({
     subtitle: label,
     ruleHint: '1W20 auf den Eigenschaftswert; 1 ist immer Erfolg, 20 immer Misslingen.',
     diceSpec: const DiceSpec(count: 1, sides: 20),
-    targets: <ProbeTargetValue>[ProbeTargetValue(label: label, value: effectiveValue)],
+    targets: <ProbeTargetValue>[
+      ProbeTargetValue(label: label, value: effectiveValue),
+    ],
   );
 }
 
@@ -30,8 +32,7 @@ ResolvedProbeRequest buildTalentProbeRequest({
     type: ProbeType.talent,
     title: 'Talentprobe: $title',
     subtitle: targets.map((target) => target.label).join(' / '),
-    ruleHint:
-        '3W20 mit TaW-Kompensation; ab zwei 20ern automatisch misslungen, ab zwei 1ern automatisch gelungen mit Spezieller Erfahrung.',
+    ruleHint: '3W20 mit TaW-Kompensation; ab zwei 20ern automatisch misslungen, ab zwei 1ern automatisch gelungen mit Spezieller Erfahrung.',
     diceSpec: const DiceSpec(count: 3, sides: 20),
     targets: targets,
     basePool: basePool,
@@ -54,8 +55,7 @@ ResolvedProbeRequest buildSpellProbeRequest({
     type: ProbeType.spell,
     title: 'Zauberprobe: $title',
     subtitle: targets.map((target) => target.label).join(' / '),
-    ruleHint:
-        '3W20 mit ZfW-Kompensation; Varianten und spontane Modifikationen bleiben in v1 außen vor.',
+    ruleHint: '3W20 mit ZfW-Kompensation; Varianten und spontane Modifikationen bleiben in v1 außen vor.',
     diceSpec: const DiceSpec(count: 3, sides: 20),
     targets: targets,
     basePool: basePool,

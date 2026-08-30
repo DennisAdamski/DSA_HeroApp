@@ -75,11 +75,7 @@ void main() {
 
   group('companionEffektivwert', () {
     test('addiert Basiswert und Steigerung', () {
-      const c = HeroCompanion(
-        id: 'a',
-        mu: 12,
-        steigerungen: {'mu': 3},
-      );
+      const c = HeroCompanion(id: 'a', mu: 12, steigerungen: {'mu': 3});
       expect(companionEffektivwert(c, 'mu'), 15);
     });
 
@@ -106,11 +102,7 @@ void main() {
     });
 
     test('faellt auf maxLep zurueck wenn startLep null', () {
-      const c = HeroCompanion(
-        id: 'a',
-        maxLep: 20,
-        steigerungen: {'lep': 3},
-      );
+      const c = HeroCompanion(id: 'a', maxLep: 20, steigerungen: {'lep': 3});
       expect(companionEffektiverPoolwert(c, 'lep'), 23);
     });
 
@@ -140,11 +132,7 @@ void main() {
     });
 
     test('AuP faellt auf maxAup zurueck wenn startAup null', () {
-      const c = HeroCompanion(
-        id: 'a',
-        maxAup: 20,
-        steigerungen: {'aup': 2},
-      );
+      const c = HeroCompanion(id: 'a', maxAup: 20, steigerungen: {'aup': 2});
       expect(companionEffektiverPoolwert(c, 'aup'), 22);
     });
 
@@ -156,10 +144,7 @@ void main() {
 
   group('companionEffektiverRk', () {
     test('addiert Basis-RK und Steigerung', () {
-      const c = HeroCompanion(
-        id: 'a',
-        steigerungen: {'rk': 3},
-      );
+      const c = HeroCompanion(id: 'a', steigerungen: {'rk': 3});
       expect(companionEffektiverRk(c, 5), 8);
     });
 

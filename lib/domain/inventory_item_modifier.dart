@@ -2,7 +2,12 @@
 enum InventoryModifierKind { stat, attribut, talent, talentgruppe }
 
 /// Kategorie eines Inventar-Eintrags.
-enum InventoryItemType { ausruestung, verbrauchsgegenstand, wertvolles, sonstiges }
+enum InventoryItemType {
+  ausruestung,
+  verbrauchsgegenstand,
+  wertvolles,
+  sonstiges,
+}
 
 /// Ursprung eines Inventar-Eintrags.
 ///

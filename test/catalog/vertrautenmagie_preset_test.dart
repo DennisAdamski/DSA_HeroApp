@@ -35,9 +35,9 @@ void main() {
       final jsonFile = File(
         'assets/catalogs/house_rules_v1/vertrautenmagie_rituale.json',
       );
-      final decoded =
-          jsonDecode(jsonFile.readAsStringSync(encoding: utf8))
-              as Map<String, dynamic>;
+      final decoded = jsonDecode(
+        jsonFile.readAsStringSync(encoding: utf8),
+      ) as Map<String, dynamic>;
 
       expect(kVertrautenmagiePresetCategory.toJson(), decoded);
     });

@@ -117,9 +117,7 @@ class _InventoryModifierEditorState extends State<InventoryModifierEditor> {
           onPressed: _add,
           icon: const Icon(Icons.add, size: 16),
           label: const Text('Modifikator hinzufügen'),
-          style: TextButton.styleFrom(
-            visualDensity: VisualDensity.compact,
-          ),
+          style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
         ),
       ],
     );
@@ -189,7 +187,7 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
     final talents = catalog == null
         ? const <TalentDef>[]
         : (List<TalentDef>.of(catalog.talents)
-          ..sort((a, b) => a.name.compareTo(b.name)));
+            ..sort((a, b) => a.name.compareTo(b.name)));
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -210,8 +208,10 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
                     labelText: 'Art',
                     border: OutlineInputBorder(),
                     isDense: true,
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
                   ),
                   items: const [
                     DropdownMenuItem(
@@ -248,9 +248,7 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
               ),
               const SizedBox(width: 6),
               // Ziel-Dropdown
-              Expanded(
-                child: _buildTargetField(mod, talents),
-              ),
+              Expanded(child: _buildTargetField(mod, talents)),
               // Loeschen
               IconButton(
                 icon: Icon(
@@ -276,11 +274,14 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
                     labelText: 'Wert',
                     border: OutlineInputBorder(),
                     isDense: true,
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
                   ),
-                  keyboardType:
-                      const TextInputType.numberWithOptions(signed: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    signed: true,
+                  ),
                   onChanged: (v) => _emit(wert: int.tryParse(v) ?? 0),
                 ),
               ),
@@ -292,15 +293,19 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
                     labelText: 'Quelle (optional)',
                     border: OutlineInputBorder(),
                     isDense: true,
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
                   ),
                   maxLength: 60,
                   onChanged: (v) => _emit(beschreibung: v),
                   buildCounter: (
-                    _,  {required currentLength, required isFocused, maxLength}
-                  ) =>
-                      null,
+                    _, {
+                    required currentLength,
+                    required isFocused,
+                    maxLength,
+                  }) => null,
                 ),
               ),
             ],
@@ -332,8 +337,9 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
         final labels = mod.kind == InventoryModifierKind.stat
             ? kStatFieldLabels
             : kAttributeFieldLabels;
-        final resolved =
-            labels.containsKey(mod.targetId) ? mod.targetId : labels.keys.first;
+        final resolved = labels.containsKey(mod.targetId)
+            ? mod.targetId
+            : labels.keys.first;
         return DropdownButtonFormField<String>(
           key: ValueKey<String>('target-${mod.kind.name}-${mod.targetId}'),
           isExpanded: true,
@@ -356,7 +362,7 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
         final initialName = talents.isEmpty
             ? mod.targetId
             : (talents.where((t) => t.id == mod.targetId).firstOrNull?.name ??
-                mod.targetId);
+                  mod.targetId);
         return Autocomplete<TalentDef>(
           key: ValueKey<String>('talent-auto-${mod.targetId}'),
           initialValue: TextEditingValue(text: initialName),
@@ -375,8 +381,10 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
                 labelText: 'Talent suchen',
                 border: OutlineInputBorder(),
                 isDense: true,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 8,
+                ),
               ),
             );
           },
@@ -396,8 +404,7 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
                       return ListTile(
                         dense: true,
                         title: Text(t.name),
-                        subtitle:
-                            t.group.isNotEmpty ? Text(t.group) : null,
+                        subtitle: t.group.isNotEmpty ? Text(t.group) : null,
                         onTap: () => onSelected(t),
                       );
                     },
@@ -410,8 +417,9 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
 
       case InventoryModifierKind.talentgruppe:
         final groups = _talentGroups(talents);
-        final resolved =
-            groups.contains(mod.targetId) ? mod.targetId : (groups.isNotEmpty ? groups.first : '');
+        final resolved = groups.contains(mod.targetId)
+            ? mod.targetId
+            : (groups.isNotEmpty ? groups.first : '');
         return DropdownButtonFormField<String>(
           key: ValueKey<String>('target-talentgruppe-${mod.targetId}'),
           isExpanded: true,

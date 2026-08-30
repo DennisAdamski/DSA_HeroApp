@@ -131,9 +131,11 @@ void main() {
     await container
         .read(heroActionsProvider)
         .uploadHeroImage(heroId: 'demo', imageBytes: bytes);
-    final entryId = (await repo.loadHeroById(
-      'demo',
-    ))!.appearance.avatarGallery.single.id;
+    final entryId = (await repo.loadHeroById('demo'))!
+        .appearance
+        .avatarGallery
+        .single
+        .id;
 
     await container
         .read(heroActionsProvider)

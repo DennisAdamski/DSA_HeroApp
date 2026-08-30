@@ -24,9 +24,7 @@ class _NotesSection extends StatelessWidget {
       children: [
         _SectionCard(
           title: 'Freie Chroniken',
-          subtitle: isEditing
-              ? 'Lege Einträge mit Titel und Beschreibung an.'
-              : 'Tippe auf einen Titel, um die vollständige Beschreibung zu sehen.',
+          subtitle: isEditing ? 'Lege Einträge mit Titel und Beschreibung an.' : 'Tippe auf einen Titel, um die vollständige Beschreibung zu sehen.',
           action: FilledButton(
             key: const ValueKey<String>('notes-add-note'),
             onPressed: onAdd,

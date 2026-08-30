@@ -71,11 +71,10 @@ class WorkspaceTabCallbacks {
 }
 
 /// Baut den Inhalt eines einzelnen Workspace-Tabs.
-typedef WorkspaceTabContentBuilder =
-    Widget Function({
-      required String heroId,
-      required WorkspaceTabCallbacks callbacks,
-    });
+typedef WorkspaceTabContentBuilder = Widget Function({
+  required String heroId,
+  required WorkspaceTabCallbacks callbacks,
+});
 
 /// Baut optionale Header-Aktionen fuer einen Workspace-Tab.
 typedef WorkspaceTabHeaderActionsBuilder =

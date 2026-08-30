@@ -188,9 +188,8 @@ void main() {
           if (tabellenAnsicht != null)
             tabellenAnsichtProvider.overrideWithValue(tabellenAnsicht),
           if (epicAdvantagesActive != null)
-            isHouseRuleActiveProvider(
-              EpicRuleKeys.advantages,
-            ).overrideWithValue(epicAdvantagesActive),
+            isHouseRuleActiveProvider(EpicRuleKeys.advantages)
+                .overrideWithValue(epicAdvantagesActive),
         ],
         child: MaterialApp(
           home: Scaffold(
@@ -339,10 +338,7 @@ void main() {
 
       expect(sectionTitle('Koerper'), findsOneWidget);
       expect(sectionTitle('Natur'), findsNothing);
-      expect(
-        sectionTitle('Ohne Gruppe', skipOffstage: false),
-        findsOneWidget,
-      );
+      expect(sectionTitle('Ohne Gruppe', skipOffstage: false), findsOneWidget);
       expect(sectionTitle('Kampftalent'), findsNothing);
       expect(find.text('Athletik'), findsOneWidget);
       expect(find.text('Boote Fahren'), findsNothing);
@@ -813,9 +809,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.tap(
-        find.byKey(
-          const ValueKey<String>('talents-special-abilities-catalog'),
-        ),
+        find.byKey(const ValueKey<String>('talents-special-abilities-catalog')),
       );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Allgemein'));
@@ -848,95 +842,92 @@ void main() {
     },
   );
 
-  testWidgets(
-    'multi-select SF can be acquired twice with different variants',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero().copyWith(apAvailable: 500)],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 0,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
+  testWidgets('multi-select SF can be acquired twice with different variants', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero().copyWith(apAvailable: 500)],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final catalog = buildCatalog(
+      generalSpecialAbilities: const <SpecialAbilityDef>[
+        SpecialAbilityDef(
+          id: 'asf_gelaendekunde',
+          name: 'Geländekunde',
+          gruppe: 'allgemein',
+          kategorie: 'Überleben',
+          beschreibung: 'Erleichtert Proben in vertrauter Wildnis.',
+          kosten: '150 AP für die erste Geländekunde, je 100 AP weitere',
+          mehrfachwaehlbar: true,
+          variantenLabel: 'Gelände',
+          varianten: <String>['Waldkundig', 'Wüstenkundig'],
+          variantenFreitext: false,
+          apErstwerb: 150,
+          apFolgeerwerb: 100,
+        ),
+      ],
+    );
+
+    final actions = await openTalentsTab(tester, repo, catalog);
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Sonderfertigkeiten'));
+    await tester.pumpAndSettle();
+
+    Future<void> acquireVariant(String variante) async {
+      await tester.tap(
+        find.byKey(const ValueKey<String>('talents-special-abilities-catalog')),
       );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Allgemein'));
+      await tester.pumpAndSettle();
 
-      final catalog = buildCatalog(
-        generalSpecialAbilities: const <SpecialAbilityDef>[
-          SpecialAbilityDef(
-            id: 'asf_gelaendekunde',
-            name: 'Geländekunde',
-            gruppe: 'allgemein',
-            kategorie: 'Überleben',
-            beschreibung: 'Erleichtert Proben in vertrauter Wildnis.',
-            kosten: '150 AP für die erste Geländekunde, je 100 AP weitere',
-            mehrfachwaehlbar: true,
-            variantenLabel: 'Gelände',
-            varianten: <String>['Waldkundig', 'Wüstenkundig'],
-            variantenFreitext: false,
-            apErstwerb: 150,
-            apFolgeerwerb: 100,
-          ),
-        ],
+      // Mehrfach waehlbare SF zeigen einen Hinzufuegen-Button statt Switch.
+      expect(find.byType(Switch), findsNothing);
+      await tester.tap(
+        find.byKey(const ValueKey<String>('sf-add-variant-Geländekunde')),
       );
-
-      final actions = await openTalentsTab(tester, repo, catalog);
-      await actions.startEdit();
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Sonderfertigkeiten'));
+      await tester.tap(
+        find.byKey(const ValueKey<String>('sf-variant-dropdown')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(variante).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Weiter'));
       await tester.pumpAndSettle();
 
-      Future<void> acquireVariant(String variante) async {
-        await tester.tap(
-          find.byKey(
-            const ValueKey<String>('talents-special-abilities-catalog'),
-          ),
-        );
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Allgemein'));
-        await tester.pumpAndSettle();
-
-        // Mehrfach waehlbare SF zeigen einen Hinzufuegen-Button statt Switch.
-        expect(find.byType(Switch), findsNothing);
-        await tester.tap(
-          find.byKey(const ValueKey<String>('sf-add-variant-Geländekunde')),
-        );
-        await tester.pumpAndSettle();
-
-        await tester.tap(
-          find.byKey(const ValueKey<String>('sf-variant-dropdown')),
-        );
-        await tester.pumpAndSettle();
-        await tester.tap(find.text(variante).last);
-        await tester.pumpAndSettle();
-        await tester.tap(find.widgetWithText(FilledButton, 'Weiter'));
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Fertig'));
-        await tester.pumpAndSettle();
-      }
-
-      await acquireVariant('Waldkundig');
-      await acquireVariant('Wüstenkundig');
-
-      await actions.save();
+      await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Fertig'));
+      await tester.pumpAndSettle();
+    }
 
-      final heroes = await repo.listHeroes();
-      final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-      expect(hero.talentSpecialAbilities, const <TalentSpecialAbility>[
-        TalentSpecialAbility(name: 'Geländekunde (Waldkundig)'),
-        TalentSpecialAbility(name: 'Geländekunde (Wüstenkundig)'),
-      ]);
-      // Gestaffelte Kosten: 150 AP fuer die erste, 100 AP fuer die zweite.
-      expect(hero.apSpent, 250);
-    },
-  );
+    await acquireVariant('Waldkundig');
+    await acquireVariant('Wüstenkundig');
+
+    await actions.save();
+    await tester.pumpAndSettle();
+
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.talentSpecialAbilities, const <TalentSpecialAbility>[
+      TalentSpecialAbility(name: 'Geländekunde (Waldkundig)'),
+      TalentSpecialAbility(name: 'Geländekunde (Wüstenkundig)'),
+    ]);
+    // Gestaffelte Kosten: 150 AP fuer die erste, 100 AP fuer die zweite.
+    expect(hero.apSpent, 250);
+  });
 
   testWidgets('special ability add action stays available outside edit mode', (
     tester,
@@ -1096,63 +1087,64 @@ void main() {
     },
   );
 
-  testWidgets('inventory talent modifiers are shown directly in the mod column', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [
-        buildHero(
-          talents: const <String, HeroTalentEntry>{
-            'tal_a': HeroTalentEntry(talentValue: 5),
-          },
-          inventoryEntries: const <HeroInventoryEntry>[
-            HeroInventoryEntry(
-              gegenstand: 'Kletterhandschuhe',
-              itemType: InventoryItemType.ausruestung,
-              istAusgeruestet: true,
-              modifiers: <InventoryItemModifier>[
-                InventoryItemModifier(
-                  kind: InventoryModifierKind.talent,
-                  targetId: 'tal_a',
-                  wert: 2,
-                  beschreibung: 'Kletterhandschuhe',
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
+  testWidgets(
+    'inventory talent modifiers are shown directly in the mod column',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(talentValue: 5),
+            },
+            inventoryEntries: const <HeroInventoryEntry>[
+              HeroInventoryEntry(
+                gegenstand: 'Kletterhandschuhe',
+                itemType: InventoryItemType.ausruestung,
+                istAusgeruestet: true,
+                modifiers: <InventoryItemModifier>[
+                  InventoryItemModifier(
+                    kind: InventoryModifierKind.talent,
+                    targetId: 'tal_a',
+                    wert: 2,
+                    beschreibung: 'Kletterhandschuhe',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
 
-    await openTalentsTab(tester, repo, buildCatalog());
+      await openTalentsTab(tester, repo, buildCatalog());
 
-    expect(
-      find.descendant(
-        of: find.byKey(
-          const ValueKey<String>('talents-field-tal_a-modifier-total'),
+      expect(
+        find.descendant(
+          of: find.byKey(
+            const ValueKey<String>('talents-field-tal_a-modifier-total'),
+          ),
+          matching: find.text('2'),
         ),
-        matching: find.text('2'),
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(
-        of: find.byKey(
-          const ValueKey<String>('talents-field-tal_a-computed-taw'),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(
+            const ValueKey<String>('talents-field-tal_a-computed-taw'),
+          ),
+          matching: find.text('7'),
         ),
-        matching: find.text('7'),
-      ),
-      findsOneWidget,
-    );
-  });
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets(
     'modifier dialog truncates descriptions, skips empty entries and shows details',
@@ -1614,9 +1606,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(
-          const ValueKey<String>('talents-field-tal_a-talentValue'),
-        ),
+        find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
         findsNothing,
       );
 

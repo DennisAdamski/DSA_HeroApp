@@ -174,8 +174,7 @@ extension _CatalogEntryFormFieldBuilders on _CatalogEntryEditorScreenState {
         label: 'Geschossvorlagen',
         fieldKey: 'rangedProjectiles',
         minLines: 5,
-        helper:
-            'Eine Zeile pro Geschoss: Name|Anzahl|TP-Mod|INI-Mod|AT-Mod|Beschreibung',
+        helper: 'Eine Zeile pro Geschoss: Name|Anzahl|TP-Mod|INI-Mod|AT-Mod|Beschreibung',
       ),
       const SizedBox(height: 12),
       SwitchListTile(

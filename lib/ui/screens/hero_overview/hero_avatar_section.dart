@@ -77,9 +77,8 @@ class _SketchedAvatarPlaceholder extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Kein Portraet',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.outlineVariant,
-                ),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: colorScheme.outlineVariant),
               ),
             ],
           ),
@@ -419,15 +418,20 @@ class _AlbumCard extends ConsumerWidget {
               tooltip: isAktiv
                   ? 'Bereits aktiv (Header + Übersicht)'
                   : 'Als aktives Bild setzen (Header + Übersicht)',
-              icon: Icon(isAktiv ? Icons.visibility : Icons.visibility_outlined),
+              icon: Icon(
+                isAktiv ? Icons.visibility : Icons.visibility_outlined,
+              ),
               iconSize: 20,
               visualDensity: VisualDensity.compact,
               color: isAktiv ? colorScheme.primary : null,
               onPressed: isAktiv
                   ? null
                   : () => ref
-                      .read(heroActionsProvider)
-                      .setActiveAvatar(heroId: heroId, galleryEntryId: entry.id),
+                        .read(heroActionsProvider)
+                        .setActiveAvatar(
+                          heroId: heroId,
+                          galleryEntryId: entry.id,
+                        ),
             ),
             IconButton(
               tooltip: isPrimaer
@@ -825,12 +829,7 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
               final dstSize = fitted.destination;
               final dx = (size.width - dstSize.width) / 2;
               final dy = (size.height - dstSize.height) / 2;
-              fittedRect = Rect.fromLTWH(
-                dx,
-                dy,
-                dstSize.width,
-                dstSize.height,
-              );
+              fittedRect = Rect.fromLTWH(dx, dy, dstSize.width, dstSize.height);
             }
 
             return Listener(
@@ -894,9 +893,9 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
                   // Fokus rechts).
                   final isPointer =
                       _lastPointerKind == PointerDeviceKind.mouse ||
-                          _lastPointerKind == PointerDeviceKind.trackpad ||
-                          _lastPointerKind == PointerDeviceKind.stylus ||
-                          _lastPointerKind == PointerDeviceKind.invertedStylus;
+                      _lastPointerKind == PointerDeviceKind.trackpad ||
+                      _lastPointerKind == PointerDeviceKind.stylus ||
+                      _lastPointerKind == PointerDeviceKind.invertedStylus;
                   final sign = isPointer ? 1.0 : -1.0;
                   setState(() {
                     _zoom = newZoom;
@@ -911,54 +910,57 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
                   });
                 },
                 child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Center(
-                    child: _imageProvider == null
-                        ? const Icon(Icons.broken_image_outlined, size: 40)
-                        : Image(
-                            image: _imageProvider!,
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, _, _) => const Center(
-                              child: Icon(Icons.broken_image_outlined, size: 40),
-                            ),
-                          ),
-                  ),
-                  if (fittedRect != null)
-                    Positioned(
-                      left:
-                          fittedRect.left +
-                          (_focusPoint.dx * fittedRect.width) -
-                          16,
-                      top:
-                          fittedRect.top +
-                          (_focusPoint.dy * fittedRect.height) -
-                          16,
-                      child: IgnorePointer(
-                        child: Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.24),
-                            border: Border.all(color: Colors.white, width: 2),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.4),
-                                blurRadius: 4,
+                  fit: StackFit.expand,
+                  children: [
+                    Center(
+                      child: _imageProvider == null
+                          ? const Icon(Icons.broken_image_outlined, size: 40)
+                          : Image(
+                              image: _imageProvider!,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, _, _) => const Center(
+                                child: Icon(
+                                  Icons.broken_image_outlined,
+                                  size: 40,
+                                ),
                               ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.center_focus_strong,
-                            size: 16,
-                            color: Colors.white,
+                            ),
+                    ),
+                    if (fittedRect != null)
+                      Positioned(
+                        left:
+                            fittedRect.left +
+                            (_focusPoint.dx * fittedRect.width) -
+                            16,
+                        top:
+                            fittedRect.top +
+                            (_focusPoint.dy * fittedRect.height) -
+                            16,
+                        child: IgnorePointer(
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.24),
+                              border: Border.all(color: Colors.white, width: 2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.4),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.center_focus_strong,
+                              size: 16,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                ],
-              ),
+                  ],
+                ),
               ),
             );
           },
@@ -999,10 +1001,7 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
 // ---------------------------------------------------------------------------
 
 class _AvatarFullscreenDialog extends StatelessWidget {
-  const _AvatarFullscreenDialog({
-    required this.heroId,
-    required this.fileName,
-  });
+  const _AvatarFullscreenDialog({required this.heroId, required this.fileName});
 
   final String heroId;
   final String fileName;

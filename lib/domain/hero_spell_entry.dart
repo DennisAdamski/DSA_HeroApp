@@ -105,9 +105,7 @@ class HeroSpellEntry {
       modifier: (json['modifier'] as num?)?.toInt() ?? 0,
       hauszauber: json['hauszauber'] as bool? ?? false,
       gifted: json['gifted'] as bool? ?? false,
-      learnedRepresentation: _readNullableString(
-        json['learnedRepresentation'],
-      ),
+      learnedRepresentation: _readNullableString(json['learnedRepresentation']),
       learnedTradition: _readNullableString(json['learnedTradition']),
       specializations: specs,
       textOverrides: HeroSpellTextOverrides.fromJsonValue(

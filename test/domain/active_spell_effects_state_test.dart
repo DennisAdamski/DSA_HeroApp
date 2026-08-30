@@ -11,17 +11,20 @@ void main() {
   );
 
   group('ActiveSpellEffectsState mit Zusatzdaten', () {
-    test('withDetail speichert Wert und Wirkungsdauer eines aktiven Effekts', () {
-      final state = const ActiveSpellEffectsState()
-          .withToggled('effect_a', true)
-          .withDetail(
-            'effect_a',
-            ActiveSpellEffectDetail(amount: 3, duration: duration),
-          );
+    test(
+      'withDetail speichert Wert und Wirkungsdauer eines aktiven Effekts',
+      () {
+        final state = const ActiveSpellEffectsState()
+            .withToggled('effect_a', true)
+            .withDetail(
+              'effect_a',
+              ActiveSpellEffectDetail(amount: 3, duration: duration),
+            );
 
-      expect(state.detailFor('effect_a').amount, 3);
-      expect(state.detailFor('effect_a').duration, duration);
-    });
+        expect(state.detailFor('effect_a').amount, 3);
+        expect(state.detailFor('effect_a').duration, duration);
+      },
+    );
 
     test('Zusatzdaten inaktiver Effekte werden verworfen', () {
       final state = const ActiveSpellEffectsState().withDetail(

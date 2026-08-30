@@ -56,14 +56,11 @@ void main() {
     expect(restored.epicMainAttributes.kk, 1);
     expect(restored.epicMainAttributes.kl, 0);
     expect(restored.epicActivationPolicy, 'standard');
-    expect(
-      restored.epicLockedWaffenmeisterCategories,
-      {'nahkampf', 'schilde'},
-    );
-    expect(
-      restored.epicUnactivatedTalentIds,
-      {'tal_alchimie', 'tal_himmelskunde'},
-    );
+    expect(restored.epicLockedWaffenmeisterCategories, {'nahkampf', 'schilde'});
+    expect(restored.epicUnactivatedTalentIds, {
+      'tal_alchimie',
+      'tal_himmelskunde',
+    });
   });
 
   test('Fehlende Epic-Felder im JSON liefern Defaults zurueck', () {

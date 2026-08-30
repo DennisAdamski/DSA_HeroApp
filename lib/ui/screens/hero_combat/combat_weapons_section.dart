@@ -14,24 +14,24 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor/helper
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor_screen.dart';
 
 /// Callback-Typ fuer Inline-Aenderungen an einem Waffen-Slot.
-typedef WeaponSlotUpdater =
-    void Function(
-      int index,
-      MainWeaponSlot Function(MainWeaponSlot current) update,
-    );
+typedef WeaponSlotUpdater = void Function(
+  int index,
+  MainWeaponSlot Function(MainWeaponSlot current) update,
+);
 
 /// Callback-Typ fuer Filter-Aenderungen.
-typedef WeaponFilterChanged =
-    void Function({
-      String? talentId,
-      String? combatType,
-      String? weaponType,
-      String? distanceClass,
-    });
+typedef WeaponFilterChanged = void Function({
+  String? talentId,
+  String? combatType,
+  String? weaponType,
+  String? distanceClass,
+});
 
 /// Persistiert einen Waffen-Draft als neuen oder bestehenden Slot.
-typedef WeaponSaveCallback =
-    Future<void> Function(MainWeaponSlot slot, {int? slotIndex});
+typedef WeaponSaveCallback = Future<void> Function(
+  MainWeaponSlot slot, {
+  int? slotIndex,
+});
 
 /// Verwaltet Waffenliste und responsiven Waffen-Editor.
 class CombatWeaponsSection extends StatefulWidget {

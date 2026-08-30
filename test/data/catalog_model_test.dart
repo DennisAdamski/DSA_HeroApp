@@ -335,24 +335,21 @@ void main() {
     expect(roundtrip.kosten, '200 AP');
   });
 
-  test(
-    'maneuver neue Felder: Rueckwaertskompatibilitaet — Defaults bei fehlendem JSON',
-    () {
-      const raw = '''
+  test('maneuver neue Felder: Rueckwaertskompatibilitaet — Defaults bei fehlendem JSON', () {
+    const raw = '''
 {
   "id": "man_alt",
   "name": "Altmanoever"
 }
 ''';
 
-      final map = jsonDecode(raw) as Map<String, dynamic>;
-      final maneuver = ManeuverDef.fromJson(map);
+    final map = jsonDecode(raw) as Map<String, dynamic>;
+    final maneuver = ManeuverDef.fromJson(map);
 
-      expect(maneuver.nurFuerTalente, isEmpty);
-      expect(maneuver.mussSeparatErlerntWerden, false);
-      expect(maneuver.giltFuerTalentTyp, '');
-    },
-  );
+    expect(maneuver.nurFuerTalente, isEmpty);
+    expect(maneuver.mussSeparatErlerntWerden, false);
+    expect(maneuver.giltFuerTalentTyp, '');
+  });
 
   test('maneuver neue Felder: Lesen aus JSON', () {
     const raw = '''

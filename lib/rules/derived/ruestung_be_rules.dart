@@ -114,7 +114,9 @@ int computeTalentEbe({
   final offset = -numeric;
   final reduction = normalizedBase - offset;
   final effectiveReduction = reduction < 0 ? 0 : reduction;
-  return clampNonPositive(-_scaleReduction(effectiveReduction, reductionMultiplier));
+  return clampNonPositive(
+    -_scaleReduction(effectiveReduction, reductionMultiplier),
+  );
 }
 
 // Skaliert eine nicht-negative Behinderung und rundet zugunsten des Helden ab.

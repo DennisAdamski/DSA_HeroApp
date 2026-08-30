@@ -341,9 +341,8 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     }
 
     _editController.markSaved();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Status gespeichert')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Status gespeichert')));
   }
 
   Future<void> _cancelChanges() async {
@@ -503,9 +502,8 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       }
       _latestHero = updatedHero;
       _viewRevision.value++;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('$label aktualisiert')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('$label aktualisiert')));
       return;
     }
     _onFieldChanged(updatedValue.toString());

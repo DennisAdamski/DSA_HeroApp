@@ -113,9 +113,7 @@ class _RangedProjectileEditorDialogState
           ),
           const SizedBox(height: 10),
           TextField(
-            key: const ValueKey<String>(
-              'combat-projectile-form-description',
-            ),
+            key: const ValueKey<String>('combat-projectile-form-description'),
             controller: _descriptionController,
             minLines: 2,
             maxLines: 4,

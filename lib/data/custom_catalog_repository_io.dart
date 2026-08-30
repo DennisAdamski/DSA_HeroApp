@@ -57,8 +57,7 @@ class CustomCatalogRepository {
                 section: section,
                 entryId: entry.id,
                 filePath: file.path,
-                message:
-                    'Doppelte Custom-ID innerhalb derselben Sektion; Datei wird ignoriert.',
+                message: 'Doppelte Custom-ID innerhalb derselben Sektion; Datei wird ignoriert.',
               ),
             );
             continue;

@@ -22,11 +22,7 @@ class CodexPageScaffold extends StatelessWidget {
     final codex = context.codexTheme;
 
     if (!codex.showDecoration) {
-      return Container(
-        color: codex.parchment,
-        padding: padding,
-        child: child,
-      );
+      return Container(color: codex.parchment, padding: padding, child: child);
     }
 
     return Container(

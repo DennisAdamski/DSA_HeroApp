@@ -70,7 +70,10 @@ class _SpellDurationFieldState extends State<SpellDurationField> {
       return;
     }
     widget.onChanged(
-      SpellDuration(amount: isPermanent && amount <= 0 ? 1 : amount, unit: _unit),
+      SpellDuration(
+        amount: isPermanent && amount <= 0 ? 1 : amount,
+        unit: _unit,
+      ),
     );
   }
 

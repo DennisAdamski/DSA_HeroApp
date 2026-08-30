@@ -83,7 +83,9 @@ String encryptCatalogValue(String plaintext, String password) {
   final key = _deriveKeyV2(password, salt);
   final encrypter = Encrypter(AES(key, mode: AESMode.gcm));
   final encrypted = encrypter.encrypt(plaintext, iv: nonce);
-  final combined = Uint8List(_saltLength + _nonceLength + encrypted.bytes.length);
+  final combined = Uint8List(
+    _saltLength + _nonceLength + encrypted.bytes.length,
+  );
   combined.setAll(0, salt);
   combined.setAll(_saltLength, nonce.bytes);
   combined.setAll(_saltLength + _nonceLength, encrypted.bytes);
@@ -124,9 +126,11 @@ String? _decryptV2(String b64Payload, String password) {
   final combined = base64Decode(b64Payload);
   if (combined.length <= _saltLength + _nonceLength) return null;
   final salt = Uint8List.fromList(combined.sublist(0, _saltLength));
-  final nonce = IV(Uint8List.fromList(
-    combined.sublist(_saltLength, _saltLength + _nonceLength),
-  ));
+  final nonce = IV(
+    Uint8List.fromList(
+      combined.sublist(_saltLength, _saltLength + _nonceLength),
+    ),
+  );
   final cipherBytes = Uint8List.fromList(
     combined.sublist(_saltLength + _nonceLength),
   );

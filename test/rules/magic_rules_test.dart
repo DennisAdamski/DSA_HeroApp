@@ -438,10 +438,7 @@ void main() {
 
   group('allLearningOptionsForHero', () {
     test('liefert nur regulaere Optionen, wenn keine fremden Herkuenfte', () {
-      final result = allLearningOptionsForHero(
-        'Mag3',
-        const <String>['Mag'],
-      );
+      final result = allLearningOptionsForHero('Mag3', const <String>['Mag']);
       expect(result, hasLength(1));
       expect(result.single.tradition, 'Mag');
       expect(result.single.learnedRepresentation, 'Mag');
@@ -455,10 +452,11 @@ void main() {
         'Mag3, Hex4, Elf2',
         const <String>['Mag'],
       );
-      expect(
-        result.map((e) => e.storageKey).toList(),
-        <String>['Mag->Mag', 'Hex->Mag', 'Elf->Mag'],
-      );
+      expect(result.map((e) => e.storageKey).toList(), <String>[
+        'Mag->Mag',
+        'Hex->Mag',
+        'Elf->Mag',
+      ]);
       expect(result[0].isForeignRepresentation, isFalse);
       expect(result[1].isForeignRepresentation, isTrue);
       expect(result[1].verbreitung, 4);
@@ -468,40 +466,33 @@ void main() {
 
     test('bietet jede Helden-Repraesentation als Traeger an', () {
       // Held mit Mag und Elf. Zauber rein Hex: zwei synthetische Eintraege.
-      final result = allLearningOptionsForHero(
-        'Hex4',
-        const <String>['Mag', 'Elf'],
-      );
-      expect(
-        result.map((e) => e.storageKey).toSet(),
-        <String>{'Hex->Mag', 'Hex->Elf'},
-      );
+      final result = allLearningOptionsForHero('Hex4', const <String>[
+        'Mag',
+        'Elf',
+      ]);
+      expect(result.map((e) => e.storageKey).toSet(), <String>{
+        'Hex->Mag',
+        'Hex->Elf',
+      });
     });
 
     test('respektiert Dru(Elf)-Notation als regulaer und dedupliziert', () {
       // Held mit Dru-Repr. Zauber Dru(Elf)2: tradition=Dru ist regulaer.
       // Synthetische Eintraege mit storageKey Dru->Elf duerfen nicht
       // zusaetzlich aufgenommen werden.
-      final result = allLearningOptionsForHero(
-        'Dru(Elf)2',
-        const <String>['Dru'],
-      );
+      final result = allLearningOptionsForHero('Dru(Elf)2', const <String>[
+        'Dru',
+      ]);
       expect(result, hasLength(1));
       expect(result.single.storageKey, 'Dru->Elf');
     });
 
     test('liefert leere Liste fuer Helden ohne Repraesentationen', () {
-      expect(
-        allLearningOptionsForHero('Mag3', const <String>[]),
-        isEmpty,
-      );
+      expect(allLearningOptionsForHero('Mag3', const <String>[]), isEmpty);
     });
 
     test('liefert leere Liste fuer leere Availability', () {
-      expect(
-        allLearningOptionsForHero('', const <String>['Mag']),
-        isEmpty,
-      );
+      expect(allLearningOptionsForHero('', const <String>['Mag']), isEmpty);
     });
   });
 }

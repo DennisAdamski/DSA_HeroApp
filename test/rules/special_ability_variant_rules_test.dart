@@ -86,10 +86,7 @@ void main() {
     });
 
     test('liefert die belegten Varianten', () {
-      expect(
-        ownedVariantsFor(owned, 'Kulturkunde'),
-        {'novadi', 'thorwal'},
-      );
+      expect(ownedVariantsFor(owned, 'Kulturkunde'), {'novadi', 'thorwal'});
     });
   });
 
@@ -150,14 +147,8 @@ void main() {
     });
 
     test('faellt ohne AP-Felder auf den Kostentext zurueck', () {
-      expect(
-        suggestVariantApCost(def: standfest, bereitsErworben: 0),
-        200,
-      );
-      expect(
-        suggestVariantApCost(def: standfest, bereitsErworben: 3),
-        200,
-      );
+      expect(suggestVariantApCost(def: standfest, bereitsErworben: 0), 200);
+      expect(suggestVariantApCost(def: standfest, bereitsErworben: 3), 200);
     });
 
     test('liefert 0, wenn der Kostentext keinen AP-Betrag enthaelt', () {
@@ -233,10 +224,7 @@ void main() {
     });
 
     test('variantGroupFor findet die Gruppe umlauttolerant', () {
-      expect(
-        variantGroupFor(hexenfluesche, 'Warzen spriessen')?.ap,
-        50,
-      );
+      expect(variantGroupFor(hexenfluesche, 'Warzen spriessen')?.ap, 50);
       expect(variantGroupFor(hexenfluesche, 'Unbekannt'), isNull);
       expect(variantGroupFor(hexenfluesche, '  '), isNull);
     });

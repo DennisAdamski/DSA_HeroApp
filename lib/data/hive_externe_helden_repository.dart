@@ -30,8 +30,9 @@ class HiveExterneHeldenRepository {
     final box = await Hive.openBox<Map>(_boxName, path: storagePath);
     final repository = HiveExterneHeldenRepository._(box);
     repository._seedIndex();
-    repository._eventSubscription =
-        repository._box.watch().listen(repository._handleBoxEvent);
+    repository._eventSubscription = repository._box.watch().listen(
+      repository._handleBoxEvent,
+    );
     return repository;
   }
 

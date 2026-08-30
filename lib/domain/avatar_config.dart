@@ -29,10 +29,7 @@ class AvatarApiConfig {
   /// Ob ein API-Key hinterlegt ist.
   bool get isConfigured => apiKey.isNotEmpty;
 
-  AvatarApiConfig copyWith({
-    AvatarApiProvider? provider,
-    String? apiKey,
-  }) {
+  AvatarApiConfig copyWith({AvatarApiProvider? provider, String? apiKey}) {
     return AvatarApiConfig(
       provider: provider ?? this.provider,
       apiKey: apiKey ?? this.apiKey,
@@ -40,13 +37,14 @@ class AvatarApiConfig {
   }
 
   Map<String, dynamic> toJson() => {
-        'provider': provider.name,
-        'apiKey': apiKey,
-      };
+    'provider': provider.name,
+    'apiKey': apiKey,
+  };
 
   static AvatarApiConfig fromJson(Map<String, dynamic> json) {
     return AvatarApiConfig(
-      provider: AvatarApiProvider.fromId(json['provider'] as String?) ??
+      provider:
+          AvatarApiProvider.fromId(json['provider'] as String?) ??
           AvatarApiProvider.openaiGptImage1,
       apiKey: (json['apiKey'] as String?) ?? '',
     );

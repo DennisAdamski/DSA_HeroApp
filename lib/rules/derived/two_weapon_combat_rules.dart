@@ -286,8 +286,7 @@ TwoWeaponActionOption _buildExtraOffhandAttackOption({
       label: 'Zusatzangriff links',
       description: 'Keine zusätzliche Angriffsquelle aktiv.',
       isAvailable: false,
-      availabilityReason:
-          'Aktiviere Beidhändiger Kampf II oder Tod von Links für einen Zusatzangriff.',
+      availabilityReason: 'Aktiviere Beidhändiger Kampf II oder Tod von Links für einen Zusatzangriff.',
     );
   }
   if (offhandRequiresLinkhandViolation) {
@@ -350,8 +349,7 @@ TwoWeaponActionOption _buildExtraOffhandParryOption({
       label: 'Zusatzparade links',
       description: 'Keine zusätzliche Abwehrquelle aktiv.',
       isAvailable: false,
-      availabilityReason:
-          'Aktiviere Beidhändiger Kampf II oder Parierwaffen II für eine Zusatzparade.',
+      availabilityReason: 'Aktiviere Beidhändiger Kampf II oder Parierwaffen II für eine Zusatzparade.',
     );
   }
   if (offhandRequiresLinkhandViolation) {

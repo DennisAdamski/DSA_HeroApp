@@ -216,7 +216,8 @@ extension _HeroOverviewRaiseActions on _HeroOverviewTabState {
     // Der Dialog rechnet auf der Effektivebene, weil Startwert und Maximum
     // dort liegen. Gespeichert wird danach wieder die Rohspalte.
     final startDelta = _startAttributeDelta(hero, code);
-    final aktuellerWert = readAttributeValue(hero.attributes, code) + startDelta;
+    final aktuellerWert =
+        readAttributeValue(hero.attributes, code) + startDelta;
     final maxWert = _eigenschaftMaxWert(hero, code);
     final startWert = _eigenschaftStartwert(hero, code);
     final result = await showSteigerungsDialog(

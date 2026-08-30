@@ -9,9 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 
 class StartupHeroImporter {
-  const StartupHeroImporter({
-    this.assetsPrefix = 'assets/heroes/',
-  });
+  const StartupHeroImporter({this.assetsPrefix = 'assets/heroes/'});
 
   final String assetsPrefix;
 

@@ -73,15 +73,15 @@ class WorkspaceImportExportActions {
               child: const Text('Abbrechen'),
             ),
             OutlinedButton(
-              onPressed: () => Navigator.of(
-                dialogContext,
-              ).pop(ImportConflictResolution.createNewHero),
+              onPressed: () =>
+                  Navigator.of(dialogContext)
+                      .pop(ImportConflictResolution.createNewHero),
               child: const Text('Als neu erstellen'),
             ),
             FilledButton(
-              onPressed: () => Navigator.of(
-                dialogContext,
-              ).pop(ImportConflictResolution.overwriteExisting),
+              onPressed: () =>
+                  Navigator.of(dialogContext)
+                      .pop(ImportConflictResolution.overwriteExisting),
               child: const Text('Überschreiben'),
             ),
           ],

@@ -67,9 +67,7 @@ Future<RulesIndexSearch> importRulesIndexDatabase(Uint8List bytes) async {
     validated = sqlite3.open(tmpPath, mode: OpenMode.readOnly);
   } on SqliteException {
     await tmpFile.delete();
-    throw const FormatException(
-      'Datei ist keine gültige SQLite-Datenbank.',
-    );
+    throw const FormatException('Datei ist keine gültige SQLite-Datenbank.');
   }
   try {
     validated.select('SELECT count(*) FROM chunks_fts LIMIT 1');

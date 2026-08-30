@@ -197,8 +197,7 @@ class _TalentCatalogTableState extends State<_TalentCatalogTable> {
                                         ),
                                         if (isLocked)
                                           const Tooltip(
-                                            message:
-                                                'Wird von einem Meta-Talent verwendet',
+                                            message: 'Wird von einem Meta-Talent verwendet',
                                             child: Icon(Icons.lock, size: 16),
                                           ),
                                       ],

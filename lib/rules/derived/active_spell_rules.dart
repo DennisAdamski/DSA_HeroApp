@@ -36,30 +36,29 @@ const String activeSpellEffectAttributo = 'effect_spell_attributo';
 const String activeSpellEffectArmatrutz = 'effect_spell_armatrutz';
 
 /// Wichtige, direkt im Popup aktivierbare Zaubereffekte.
-const List<ActiveSpellEffectDefinition> importantActiveSpellEffects =
-    <ActiveSpellEffectDefinition>[
-      ActiveSpellEffectDefinition(
-        id: activeSpellEffectAxxeleratus,
-        label: 'Axxeleratus',
-        description:
-            'Beschleunigt den Helden und erhöht Initiative, GS und Nahkampfwerte.',
-      ),
-      ActiveSpellEffectDefinition(
-        id: activeSpellEffectAttributo,
-        label: 'Attributo',
-        description:
-            'Erhöht temporär einzelne Eigenschaften des Helden.',
-      ),
-      ActiveSpellEffectDefinition(
-        id: activeSpellEffectArmatrutz,
-        label: 'Armatrutz',
-        description:
-            'Legt eine magische Rüstung auf; der erzauberte RS zählt zusätzlich '
-            'zur getragenen Rüstung.',
-        // Wirkungsdauer laut Liber Cantiones: maximal eine Spielrunde.
-        defaultDurationUnit: SpellDurationUnit.spielrunden,
-      ),
-    ];
+const List<ActiveSpellEffectDefinition>
+importantActiveSpellEffects = <ActiveSpellEffectDefinition>[
+  ActiveSpellEffectDefinition(
+    id: activeSpellEffectAxxeleratus,
+    label: 'Axxeleratus',
+    description:
+        'Beschleunigt den Helden und erhöht Initiative, GS und Nahkampfwerte.',
+  ),
+  ActiveSpellEffectDefinition(
+    id: activeSpellEffectAttributo,
+    label: 'Attributo',
+    description: 'Erhöht temporär einzelne Eigenschaften des Helden.',
+  ),
+  ActiveSpellEffectDefinition(
+    id: activeSpellEffectArmatrutz,
+    label: 'Armatrutz',
+    description:
+        'Legt eine magische Rüstung auf; der erzauberte RS zählt zusätzlich '
+        'zur getragenen Rüstung.',
+    // Wirkungsdauer laut Liber Cantiones: maximal eine Spielrunde.
+    defaultDurationUnit: SpellDurationUnit.spielrunden,
+  ),
+];
 
 /// Liefert die Definition zu einer Effekt-ID oder `null`, wenn unbekannt.
 ActiveSpellEffectDefinition? importantActiveSpellEffectById(String effectId) {

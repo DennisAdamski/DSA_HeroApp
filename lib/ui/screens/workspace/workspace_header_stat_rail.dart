@@ -246,8 +246,8 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
         final mode = available >= t1
             ? _StatRailMode.full
             : available >= t2
-                ? _StatRailMode.dense
-                : _StatRailMode.statusFocused;
+            ? _StatRailMode.dense
+            : _StatRailMode.statusFocused;
         return _buildLayout(context, mode);
       },
     );
@@ -319,9 +319,8 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 'Eig.',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: codex.ink,
-                ),
+                style: Theme.of(context).textTheme.labelMedium
+                    ?.copyWith(color: codex.ink),
               ),
             ],
           ),
@@ -366,10 +365,7 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Eigenschaften',
-                  style: theme.textTheme.titleMedium,
-                ),
+                Text('Eigenschaften', style: theme.textTheme.titleMedium),
                 const SizedBox(height: 24),
                 Wrap(
                   alignment: WrapAlignment.center,
@@ -482,9 +478,8 @@ class _BeStepperDialogState extends ConsumerState<_BeStepperDialog> {
                 const SizedBox(width: 16),
                 Text(
                   '$_value',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.headlineMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(width: 16),
                 IconButton.filled(

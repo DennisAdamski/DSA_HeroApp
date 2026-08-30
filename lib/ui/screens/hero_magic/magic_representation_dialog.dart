@@ -14,10 +14,7 @@ class _MerkmaleLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     if (zauberMerkmale.isEmpty) {
-      return Text(
-        'Merkmale: -',
-        style: theme.textTheme.bodyMedium,
-      );
+      return Text('Merkmale: -', style: theme.textTheme.bodyMedium);
     }
     return Wrap(
       spacing: 6,
@@ -148,10 +145,7 @@ class _SpellRepresentationDialogState
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.spellName,
-              style: theme.textTheme.titleMedium,
-            ),
+            Text(widget.spellName, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             _MerkmaleLine(
               key: const ValueKey<String>(

@@ -76,9 +76,9 @@ class _InspectorWundenSectionState
     final hero = ref.read(heroByIdProvider(widget.heroId));
     if (hero == null) return;
     final effekte = computeWundEffekte(
-        neuerZustand,
-        halbierteProbenErschwernis: isEpicWoundReliefActive(ref, hero),
-      );
+      neuerZustand,
+      halbierteProbenErschwernis: isEpicWoundReliefActive(ref, hero),
+    );
     final unterdruecken = await showWundUnterdrueckungDialog(
       context: context,
       hero: hero,
@@ -147,9 +147,8 @@ class _InspectorWundenSectionState
                 const SizedBox(width: 4),
                 Text(
                   'WS ${widget.wundschwelle}',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: secondaryColor),
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: secondaryColor),
                 ),
               ],
             ),
@@ -252,9 +251,9 @@ class InspectorWundenCard extends ConsumerWidget {
     final hero = ref.read(heroByIdProvider(heroId));
     if (hero == null) return;
     final effekte = computeWundEffekte(
-        neuerZustand,
-        halbierteProbenErschwernis: isEpicWoundReliefActive(ref, hero),
-      );
+      neuerZustand,
+      halbierteProbenErschwernis: isEpicWoundReliefActive(ref, hero),
+    );
     final unterdruecken = await showWundUnterdrueckungDialog(
       context: context,
       hero: hero,
@@ -368,9 +367,8 @@ class _WundEffekteSubtitle extends StatelessWidget {
       children.add(
         Text(
           '(${effekte.unterdrueckteGesamt} unterdr.)',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }

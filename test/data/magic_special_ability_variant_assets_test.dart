@@ -54,28 +54,34 @@ void main() {
       final ability = byId('emsf_merkmalsgrossmeister');
 
       expect(ability.variantenLabel, 'Merkmal');
-      expect(
-        ability.variantenGruppen.map((gruppe) => gruppe.ap),
-        [600, 800, 1000],
-      );
-      expect(
-        ability.variantenGruppen.map((gruppe) => gruppe.label),
-        ['Stufe I', 'Stufe II', 'Stufe III'],
-      );
+      expect(ability.variantenGruppen.map((gruppe) => gruppe.ap), [
+        600,
+        800,
+        1000,
+      ]);
+      expect(ability.variantenGruppen.map((gruppe) => gruppe.label), [
+        'Stufe I',
+        'Stufe II',
+        'Stufe III',
+      ]);
       expect(ability.variantenFreitext, isFalse);
     });
 
     test('Arkane Meisterschaft staffelt 400 / 550 / 700 AP', () {
       final ability = byId('emsf_arkane_meisterschaft');
 
-      expect(
-        ability.variantenGruppen.map((gruppe) => gruppe.ap),
-        [400, 550, 700],
-      );
+      expect(ability.variantenGruppen.map((gruppe) => gruppe.ap), [
+        400,
+        550,
+        700,
+      ]);
     });
 
     test('beide decken exakt die 34 Katalog-Merkmale ab', () {
-      for (final id in ['emsf_merkmalsgrossmeister', 'emsf_arkane_meisterschaft']) {
+      for (final id in [
+        'emsf_merkmalsgrossmeister',
+        'emsf_arkane_meisterschaft',
+      ]) {
         final ability = byId(id);
         expect(ability.alleVarianten, hasLength(34), reason: id);
         expect(ability.alleVarianten.toSet(), kMerkmale.toSet(), reason: id);
@@ -92,7 +98,14 @@ void main() {
     final ability = byId('emsf_elementaraspekt');
 
     expect(ability.variantenLabel, 'Element');
-    expect(ability.varianten, ['Eis', 'Erz', 'Feuer', 'Humus', 'Luft', 'Wasser']);
+    expect(ability.varianten, [
+      'Eis',
+      'Erz',
+      'Feuer',
+      'Humus',
+      'Luft',
+      'Wasser',
+    ]);
     expect(ability.variantenGruppen, isEmpty);
     expect(ability.apErstwerb, 250);
     expect(ability.apFolgeerwerb, 250);

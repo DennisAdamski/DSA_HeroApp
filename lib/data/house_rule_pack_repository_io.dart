@@ -66,8 +66,7 @@ class HouseRulePackRepository {
               packId: manifest.id,
               packTitle: manifest.title,
               filePath: manifestFile.path,
-              message:
-                  'Doppelte importierte Paket-ID; das spaetere Manifest wird ignoriert.',
+              message: 'Doppelte importierte Paket-ID; das spaetere Manifest wird ignoriert.',
             ),
           );
           continue;

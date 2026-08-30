@@ -75,8 +75,7 @@ class CatalogLoader {
             packId: pack.id,
             packTitle: pack.title,
             filePath: result.assetPath,
-            message:
-                'Doppelte eingebaute Paket-ID; das spaetere Manifest wird ignoriert.',
+            message: 'Doppelte eingebaute Paket-ID; das spaetere Manifest wird ignoriert.',
           ),
         );
         continue;

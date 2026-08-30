@@ -253,9 +253,8 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
             ref: ref,
             importExportActions: importExportActions,
           ),
-          onOpenSettings: () => Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
+          onOpenSettings: () => Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
         ),
       ),
       floatingActionButton: layout == AppLayoutClass.compact && !apple
@@ -274,8 +273,7 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
               child: Center(
                 child: CodexEmptyState(
                   title: 'Dein Heldenarchiv ist noch leer',
-                  message:
-                      'Lege deinen ersten Helden an oder importiere einen bestehenden Bogen, um auf dem iPad mit einem digitalen Heldenbogen zu arbeiten.',
+                  message: 'Lege deinen ersten Helden an oder importiere einen bestehenden Bogen, um auf dem iPad mit einem digitalen Heldenbogen zu arbeiten.',
                   assetPath: 'assets/ui/codex/empty_ledger.png',
                   action: FilledButton.icon(
                     onPressed: createHero,
@@ -443,9 +441,8 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
     if (!context.mounted) {
       return;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Held gelöscht: ${hero.name}')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Held gelöscht: ${hero.name}')));
   }
 
   Future<void> _exportSelectedHero({

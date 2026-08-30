@@ -21,45 +21,62 @@ void main() {
   });
 
   group('HiveSettingsRepository — Secure Storage', () {
-    test('API-Key wird in Secure Storage gespeichert und wieder gelesen', () async {
-      final repo = await HiveSettingsRepository.create(storagePath: root.path);
-      addTearDown(repo.close);
+    test(
+      'API-Key wird in Secure Storage gespeichert und wieder gelesen',
+      () async {
+        final repo = await HiveSettingsRepository.create(
+          storagePath: root.path,
+        );
+        addTearDown(repo.close);
 
-      const apiKey = 'sk-test-1234';
-      await repo.save(
-        const AppSettings(avatarApiConfig: AvatarApiConfig(apiKey: apiKey)),
-      );
+        const apiKey = 'sk-test-1234';
+        await repo.save(
+          const AppSettings(avatarApiConfig: AvatarApiConfig(apiKey: apiKey)),
+        );
 
-      final loaded = repo.load();
-      expect(loaded.avatarApiConfig.apiKey, apiKey);
-    });
+        final loaded = repo.load();
+        expect(loaded.avatarApiConfig.apiKey, apiKey);
+      },
+    );
 
-    test('Katalog-Passwort wird in Secure Storage gespeichert und wieder gelesen', () async {
-      final repo = await HiveSettingsRepository.create(storagePath: root.path);
-      addTearDown(repo.close);
+    test(
+      'Katalog-Passwort wird in Secure Storage gespeichert und wieder gelesen',
+      () async {
+        final repo = await HiveSettingsRepository.create(
+          storagePath: root.path,
+        );
+        addTearDown(repo.close);
 
-      const pw = 'meinKatalogPw99';
-      await repo.save(const AppSettings(catalogContentPassword: pw));
+        const pw = 'meinKatalogPw99';
+        await repo.save(const AppSettings(catalogContentPassword: pw));
 
-      final loaded = repo.load();
-      expect(loaded.catalogContentPassword, pw);
-    });
+        final loaded = repo.load();
+        expect(loaded.catalogContentPassword, pw);
+      },
+    );
 
     test('API-Key und Passwort landen nicht im Hive-Klartext', () async {
       final repo = await HiveSettingsRepository.create(storagePath: root.path);
       addTearDown(repo.close);
 
-      await repo.save(const AppSettings(
-        avatarApiConfig: AvatarApiConfig(apiKey: 'sk-geheim'),
-        catalogContentPassword: 'pw-geheim',
-      ));
+      await repo.save(
+        const AppSettings(
+          avatarApiConfig: AvatarApiConfig(apiKey: 'sk-geheim'),
+          catalogContentPassword: 'pw-geheim',
+        ),
+      );
 
       // Hive-Box-Datei nach sensiblen Strings durchsuchen
       final hiveFile = File('${root.path}/app_settings_v1.hive');
-      expect(await hiveFile.exists(), isTrue,
-          reason: 'app_settings_v1.hive muss nach save() existieren');
+      expect(
+        await hiveFile.exists(),
+        isTrue,
+        reason: 'app_settings_v1.hive muss nach save() existieren',
+      );
       final bytes = await hiveFile.readAsBytes();
-      final content = String.fromCharCodes(bytes.where((b) => b >= 32 && b < 127));
+      final content = String.fromCharCodes(
+        bytes.where((b) => b >= 32 && b < 127),
+      );
       expect(content, isNot(contains('sk-geheim')));
       expect(content, isNot(contains('pw-geheim')));
     });
@@ -97,7 +114,10 @@ void main() {
       addTearDown(repo.close);
 
       // Box wieder öffnen und direkt lesen
-      final verifyBox = await Hive.openBox<Map>('app_settings_v1', path: root.path);
+      final verifyBox = await Hive.openBox<Map>(
+        'app_settings_v1',
+        path: root.path,
+      );
       addTearDown(verifyBox.close);
       final raw = verifyBox.get('settings');
       final apiKeyInHive =

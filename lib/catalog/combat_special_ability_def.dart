@@ -51,7 +51,8 @@ class CombatSpecialAbilityDef implements SpecialAbilityEntry {
   final List<String> aktiviertManoeverIds; // Freigeschaltete Manoever-IDs
   final List<CombatSpecialAbilityBonusDef> kampfwertBoni; // Direkte Boni
   final RuleMeta? ruleMeta; // Strukturierte Herkunfts- und Freischaltmetadaten
-  final String quelle; // Freitext-Quellreferenz (z. B. 'Wege des Schwerts S. 112')
+  final String
+  quelle; // Freitext-Quellreferenz (z. B. 'Wege des Schwerts S. 112')
   final bool hausregel; // Eintrag stammt aus einer Hausregel
   @override
   final bool nurEpisch; // Nur fuer episch eingestufte Helden verfuegbar
@@ -76,10 +77,8 @@ class CombatSpecialAbilityDef implements SpecialAbilityEntry {
 
   /// Anzeigename plus alle Alias-Namen.
   @override
-  List<String> get alleNamen => List<String>.unmodifiable(<String>[
-    name,
-    ...aliasNamen,
-  ]);
+  List<String> get alleNamen =>
+      List<String>.unmodifiable(<String>[name, ...aliasNamen]);
 
   /// Deserialisiert die Sonderfertigkeit tolerant aus JSON.
   factory CombatSpecialAbilityDef.fromJson(Map<String, dynamic> json) {
@@ -115,10 +114,10 @@ class CombatSpecialAbilityDef implements SpecialAbilityEntry {
       quelle: readCatalogString(json, 'quelle', fallback: ''),
       hausregel: readCatalogBool(json, 'hausregel', fallback: false),
       nurEpisch: readCatalogBool(json, 'nurEpisch', fallback: false),
-      voraussetzungenStruktur:
-          readCatalogObjectList(json, 'voraussetzungen_struktur')
-              .map(SpecialAbilityRequirement.fromJson)
-              .toList(growable: false),
+      voraussetzungenStruktur: readCatalogObjectList(
+        json,
+        'voraussetzungen_struktur',
+      ).map(SpecialAbilityRequirement.fromJson).toList(growable: false),
       kette: ketteJson == null
           ? null
           : SpecialAbilityChainRef.fromJson(ketteJson),

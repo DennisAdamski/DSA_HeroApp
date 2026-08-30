@@ -5,9 +5,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/combat_quick_stats.dart';
 
 void main() {
   Widget buildTestWidget(CombatQuickStats widget) {
-    return MaterialApp(
-      home: Scaffold(body: widget),
-    );
+    return MaterialApp(home: Scaffold(body: widget));
   }
 
   group('CombatQuickStats', () {
@@ -39,8 +37,9 @@ void main() {
       expect(find.textContaining('Geschosse'), findsNothing);
     });
 
-    testWidgets('versteckt PA und zeigt Ladezeit/Geschosse im Fernkampf',
-        (tester) async {
+    testWidgets('versteckt PA und zeigt Ladezeit/Geschosse im Fernkampf', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
           const CombatQuickStats(
@@ -97,8 +96,9 @@ void main() {
       expect(find.text('eBE: 0'), findsOneWidget);
     });
 
-    testWidgets('nutzt ActionChips wenn Roll-Callbacks gesetzt sind',
-        (tester) async {
+    testWidgets('nutzt ActionChips wenn Roll-Callbacks gesetzt sind', (
+      tester,
+    ) async {
       var atTapped = 0;
       await tester.pumpWidget(
         buildTestWidget(

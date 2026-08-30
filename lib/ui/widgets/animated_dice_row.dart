@@ -70,8 +70,7 @@ class _AnimatedDiceRowState extends State<AnimatedDiceRow>
   void initState() {
     super.initState();
     widget.controller._attach(this);
-    final totalMs =
-        _baseDurationMs + (widget.diceSpec.count - 1) * _staggerMs;
+    final totalMs = _baseDurationMs + (widget.diceSpec.count - 1) * _staggerMs;
     _animController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: totalMs),
@@ -155,10 +154,7 @@ class _AnimatedDiceRowState extends State<AnimatedDiceRow>
       spacing: 12,
       runSpacing: 10,
       alignment: WrapAlignment.center,
-      children: List<Widget>.generate(
-        widget.diceSpec.count,
-        _buildDieSlot,
-      ),
+      children: List<Widget>.generate(widget.diceSpec.count, _buildDieSlot),
     );
   }
 
@@ -167,8 +163,7 @@ class _AnimatedDiceRowState extends State<AnimatedDiceRow>
     if (_phase != _DicePhase.rolling) return die;
 
     // Gestaffelter Start: Würfel i beginnt i*80ms später.
-    final totalMs =
-        _baseDurationMs + (widget.diceSpec.count - 1) * _staggerMs;
+    final totalMs = _baseDurationMs + (widget.diceSpec.count - 1) * _staggerMs;
     final staggerOffset = (index * _staggerMs) / totalMs;
     final rawT = _animController.value;
     final localT = staggerOffset >= 1.0
@@ -183,10 +178,7 @@ class _AnimatedDiceRowState extends State<AnimatedDiceRow>
 
     return Transform.scale(
       scale: scale,
-      child: Transform.rotate(
-        angle: angle,
-        child: die,
-      ),
+      child: Transform.rotate(angle: angle, child: die),
     );
   }
 
@@ -423,8 +415,7 @@ class _W6Painter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final rrect =
-        RRect.fromRectAndRadius(rect, const Radius.circular(10));
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(10));
 
     // Schatten
     canvas.drawShadow(
@@ -510,9 +501,7 @@ class _FallbackDie extends StatelessWidget {
         child: Text(
           value != null ? '$value' : 'W$sides',
           style: TextStyle(
-            color: value != null
-                ? Colors.white
-                : Colors.white.withAlpha(102),
+            color: value != null ? Colors.white : Colors.white.withAlpha(102),
             fontSize: value != null ? 15 : 11,
             fontWeight: FontWeight.w700,
           ),

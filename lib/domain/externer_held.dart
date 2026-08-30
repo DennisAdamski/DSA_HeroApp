@@ -51,8 +51,7 @@ class ExternerHeld {
   final DateTime updatedAt;
 
   /// `true` wenn dieser Held ueber Firebase verknuepft ist.
-  bool get istVerknuepft =>
-      quelleHeroId != null && quelleHeroId!.isNotEmpty;
+  bool get istVerknuepft => quelleHeroId != null && quelleHeroId!.isNotEmpty;
 
   /// `true` wenn dieser Held manuell angelegt wurde.
   bool get istManuell => !istVerknuepft;
@@ -61,10 +60,7 @@ class ExternerHeld {
   ///
   /// Manuell angelegte Helden (`karte.istManuell`) behalten
   /// `quelleHeroId == null`, damit [istManuell] korrekt bleibt.
-  factory ExternerHeld.fromVisitenkarte(
-    HeldVisitenkarte karte, {
-    String? id,
-  }) {
+  factory ExternerHeld.fromVisitenkarte(HeldVisitenkarte karte, {String? id}) {
     return ExternerHeld(
       id: id ?? karte.heroId,
       name: karte.name,

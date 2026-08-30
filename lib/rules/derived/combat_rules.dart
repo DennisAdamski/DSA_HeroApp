@@ -379,7 +379,8 @@ CombatPreviewStats computeCombatPreviewStats(
   // Der Armatrutz legt eine rein magische Ruestung auf: Sein RS zaehlt zur
   // getragenen Ruestung hinzu, erzeugt aber bewusst keine Behinderung.
   final armatrutzRsBonus = computeArmatrutzRsBonus(sheet: sheet, state: state);
-  final rsTotal = computeRsTotal(activeArmorPieces) + mods.rs + armatrutzRsBonus;
+  final rsTotal =
+      computeRsTotal(activeArmorPieces) + mods.rs + armatrutzRsBonus;
   final beTotalRaw = computeBeTotalRaw(activeArmorPieces);
   final rgReduction = computeRgReduction(
     globalArmorTrainingLevel: armor.globalArmorTrainingLevel,

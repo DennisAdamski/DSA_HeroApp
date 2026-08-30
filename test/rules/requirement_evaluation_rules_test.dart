@@ -144,18 +144,21 @@ void main() {
       expect(ergebnis.sollText, contains('II'));
     });
 
-    test('eine hoehere Stufe erfuellt die Forderung nach einer niedrigeren', () {
-      final ergebnis = evaluateRequirement(
-        const SpecialAbilityRequirement(
-          art: RequirementArt.sonderfertigkeit,
-          name: 'Eiserner Wille',
-          stufe: 1,
-        ),
-        context(sonderfertigkeiten: const <String>['Eiserner Wille II']),
-      );
+    test(
+      'eine hoehere Stufe erfuellt die Forderung nach einer niedrigeren',
+      () {
+        final ergebnis = evaluateRequirement(
+          const SpecialAbilityRequirement(
+            art: RequirementArt.sonderfertigkeit,
+            name: 'Eiserner Wille',
+            stufe: 1,
+          ),
+          context(sonderfertigkeiten: const <String>['Eiserner Wille II']),
+        );
 
-      expect(ergebnis.status, RequirementStatus.erfuellt);
-    });
+        expect(ergebnis.status, RequirementStatus.erfuellt);
+      },
+    );
 
     test('der alte Sammelname zaehlt als Stufe I', () {
       final ergebnis = evaluateRequirement(
@@ -170,18 +173,21 @@ void main() {
       expect(ergebnis.status, RequirementStatus.erfuellt);
     });
 
-    test('ein Eintrag ohne Stufenangabe erfuellt die Forderung nach Stufe I', () {
-      final ergebnis = evaluateRequirement(
-        const SpecialAbilityRequirement(
-          art: RequirementArt.sonderfertigkeit,
-          name: 'Eiserner Wille',
-          stufe: 1,
-        ),
-        context(sonderfertigkeiten: const <String>['Eiserner Wille']),
-      );
+    test(
+      'ein Eintrag ohne Stufenangabe erfuellt die Forderung nach Stufe I',
+      () {
+        final ergebnis = evaluateRequirement(
+          const SpecialAbilityRequirement(
+            art: RequirementArt.sonderfertigkeit,
+            name: 'Eiserner Wille',
+            stufe: 1,
+          ),
+          context(sonderfertigkeiten: const <String>['Eiserner Wille']),
+        );
 
-      expect(ergebnis.status, RequirementStatus.erfuellt);
-    });
+        expect(ergebnis.status, RequirementStatus.erfuellt);
+      },
+    );
 
     test('ein Eintrag ohne Stufenangabe erfuellt Stufe II nicht', () {
       final ergebnis = evaluateRequirement(
@@ -244,7 +250,9 @@ void main() {
           name: 'Geode',
           min: 3,
         ),
-        context(ritualkenntnisse: const <String, int>{'Ritualkenntnis Geode': 5}),
+        context(
+          ritualkenntnisse: const <String, int>{'Ritualkenntnis Geode': 5},
+        ),
       );
 
       expect(ergebnis.status, RequirementStatus.erfuellt);
@@ -340,9 +348,7 @@ void main() {
 
     test('eine Merkmalskenntnis ohne konkretes Merkmal genuegt irgendeine', () {
       final ergebnis = evaluateRequirement(
-        const SpecialAbilityRequirement(
-          art: RequirementArt.merkmalskenntnis,
-        ),
+        const SpecialAbilityRequirement(art: RequirementArt.merkmalskenntnis),
         context(merkmalskenntnisse: const <String>['Antimagie']),
       );
 
@@ -551,10 +557,7 @@ void main() {
     test('ohne Bedingungen gilt alles als erfuellt', () {
       expect(
         alleVoraussetzungenErfuellt(
-          evaluateRequirements(
-            const <SpecialAbilityRequirement>[],
-            context(),
-          ),
+          evaluateRequirements(const <SpecialAbilityRequirement>[], context()),
         ),
         isTrue,
       );

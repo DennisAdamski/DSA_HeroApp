@@ -28,11 +28,11 @@ class _KampfWerteSection extends StatelessWidget {
     final mrView = isEditing
         ? companion.magieresistenz
         : companionEffektiverPoolwert(companion, 'mr') ??
-            companion.magieresistenz;
+              companion.magieresistenz;
     final loyView = isEditing
         ? companion.loyalitaet
         : companionEffektivwert(companion, 'loyalitaet') ??
-            companion.loyalitaet;
+              companion.loyalitaet;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,11 +65,11 @@ class _KampfWerteSection extends StatelessWidget {
                     onChanged(companion.copyWith(magieresistenz: v)),
                 suffixIcon:
                     onRaisePool != null && companion.magieresistenz != null
-                        ? _RaiseIconButton(
-                            tooltip: 'MR steigern',
-                            onPressed: () => onRaisePool!('mr', 'MR'),
-                          )
-                        : null,
+                    ? _RaiseIconButton(
+                        tooltip: 'MR steigern',
+                        onPressed: () => onRaisePool!('mr', 'MR'),
+                      )
+                    : null,
               ),
             ),
             const SizedBox(width: _fieldSpacing),
@@ -81,12 +81,12 @@ class _KampfWerteSection extends StatelessWidget {
                 onChanged: (v) => onChanged(companion.copyWith(loyalitaet: v)),
                 suffixIcon:
                     onRaiseRegular != null && companion.loyalitaet != null
-                        ? _RaiseIconButton(
-                            tooltip: 'Loyalität steigern',
-                            onPressed: () =>
-                                onRaiseRegular!('loyalitaet', 'Loyalität'),
-                          )
-                        : null,
+                    ? _RaiseIconButton(
+                        tooltip: 'Loyalität steigern',
+                        onPressed: () =>
+                            onRaiseRegular!('loyalitaet', 'Loyalität'),
+                      )
+                    : null,
               ),
             ),
           ],
@@ -118,7 +118,8 @@ class _KampfWerteSection extends StatelessWidget {
             Expanded(
               child: _NullableIntField(
                 label: 'AP Verfügbar',
-                value: (companion.apGesamt != null ||
+                value:
+                    (companion.apGesamt != null ||
                         companion.apAusgegeben != null)
                     ? computeAvailableAp(
                         companion.apGesamt ?? 0,
@@ -235,10 +236,7 @@ class _GeschwindigkeitenEditor extends StatelessWidget {
           ],
         ),
         if (speeds.isEmpty && !isEditing)
-          Text(
-            '–',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          Text('–', style: Theme.of(context).textTheme.bodyMedium),
         for (int i = 0; i < speeds.length; i++)
           Padding(
             padding: const EdgeInsets.only(top: 4),
@@ -251,8 +249,7 @@ class _GeschwindigkeitenEditor extends StatelessWidget {
                 onChanged(next);
               },
               onDelete: () {
-                final next = List<HeroCompanionSpeed>.from(speeds)
-                  ..removeAt(i);
+                final next = List<HeroCompanionSpeed>.from(speeds)..removeAt(i);
                 onChanged(next);
               },
             ),

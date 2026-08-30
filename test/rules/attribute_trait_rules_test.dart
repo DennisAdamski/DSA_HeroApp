@@ -22,9 +22,9 @@ void main() {
 
   test('erkennt ausgeschriebene Eigenschaftsnamen inklusive Umlaut', () {
     expect(
-      parseAdvantage(
-        'Herausragende Eigenschaft Körperkraft 2',
-      )!.attributeMods.kk,
+      parseAdvantage('Herausragende Eigenschaft Körperkraft 2')!
+          .attributeMods
+          .kk,
       2,
     );
     expect(
@@ -32,9 +32,9 @@ void main() {
       1,
     );
     expect(
-      parseAdvantage(
-        'Herausragende Eigenschaft Intuition 3',
-      )!.attributeMods.inn,
+      parseAdvantage('Herausragende Eigenschaft Intuition 3')!
+          .attributeMods
+          .inn,
       3,
     );
     // IN wird als 'IN' gespeichert, heisst im Modell aber 'inn' — genau der

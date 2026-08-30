@@ -8,8 +8,14 @@
 /// `null`, damit Aufrufer auf manuelle Eingabe zurueckfallen koennen.
 library;
 
-final RegExp _apAmountPattern = RegExp(r'(\d[\d.]*)\s*AP\b', caseSensitive: false);
-final RegExp _gpAmountPattern = RegExp(r'(-?\d[\d.]*)\s*GP\b', caseSensitive: false);
+final RegExp _apAmountPattern = RegExp(
+  r'(\d[\d.]*)\s*AP\b',
+  caseSensitive: false,
+);
+final RegExp _gpAmountPattern = RegExp(
+  r'(-?\d[\d.]*)\s*GP\b',
+  caseSensitive: false,
+);
 
 /// Extrahiert den ersten AP-Betrag aus einem Sonderfertigkeiten-/
 /// Manoever-Kostentext, z. B. "400 AP" oder "200 AP pro Stufe" -> `200`.

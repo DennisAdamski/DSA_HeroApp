@@ -233,8 +233,9 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     if (hero == null || catalog == null) {
       return;
     }
-    final abilities =
-        karmal ? catalog.karmalSpecialAbilities : catalog.generalSpecialAbilities;
+    final abilities = karmal
+        ? catalog.karmalSpecialAbilities
+        : catalog.generalSpecialAbilities;
     final owned = _draftTalentSpecialAbilities
         .map((a) => a.name.trim().toLowerCase())
         .toSet();
@@ -393,10 +394,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                       apKosten = erwerb.apKosten;
                     }
                     onSave(
-                      TalentSpecialAbility(
-                        name: name,
-                        note: draftNote.trim(),
-                      ),
+                      TalentSpecialAbility(name: name, note: draftNote.trim()),
                       apKosten,
                     );
                     if (dialogContext.mounted) {
@@ -445,10 +443,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                   tooltip: group,
                   onPressed: onPressed,
                 );
-          return Padding(
-            padding: const EdgeInsets.only(right: 6),
-            child: chip,
-          );
+          return Padding(padding: const EdgeInsets.only(right: 6), child: chip);
         }).toList(),
       ),
     );

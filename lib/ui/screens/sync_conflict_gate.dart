@@ -222,7 +222,8 @@ class _BulkActions extends StatelessWidget {
               runSpacing: 8,
               children: [
                 OutlinedButton.icon(
-                  onPressed: () => onResolveAll(SyncResolutionChoice.keepRemote),
+                  onPressed: () =>
+                      onResolveAll(SyncResolutionChoice.keepRemote),
                   icon: const Icon(Icons.cloud_done_outlined),
                   label: const Text('Alle: Online behalten'),
                 ),

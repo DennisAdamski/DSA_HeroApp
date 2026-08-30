@@ -102,12 +102,8 @@ void main() {
             ko: 8,
             kk: 8,
           ),
-          talents: <String, HeroTalentEntry>{
-            'tal_custom': HeroTalentEntry(),
-          },
-          spells: <String, HeroSpellEntry>{
-            'spell_custom': HeroSpellEntry(),
-          },
+          talents: <String, HeroTalentEntry>{'tal_custom': HeroTalentEntry()},
+          spells: <String, HeroSpellEntry>{'spell_custom': HeroSpellEntry()},
           sprachen: <String, HeroLanguageEntry>{
             'spr_custom': HeroLanguageEntry(),
           },
@@ -187,12 +183,15 @@ void main() {
     );
 
     final ids = bundle.catalogEntries!.map((entry) => entry.id).toSet();
-    expect(ids, containsAll(<String>[
-      'tal_custom',
-      'spell_custom',
-      'spr_custom',
-      'sch_custom',
-    ]));
+    expect(
+      ids,
+      containsAll(<String>[
+        'tal_custom',
+        'spell_custom',
+        'spr_custom',
+        'sch_custom',
+      ]),
+    );
   });
 
   test('createHero stores raw and effective start attributes', () async {
@@ -303,7 +302,8 @@ void main() {
 
 CatalogRuntimeData _buildRuntimeData({
   String version = 'house_rules_v1',
-  List<CustomCatalogEntryRecord> customEntries = const <CustomCatalogEntryRecord>[],
+  List<CustomCatalogEntryRecord> customEntries =
+      const <CustomCatalogEntryRecord>[],
 }) {
   final baseData = CatalogSourceData(
     version: version,

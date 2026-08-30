@@ -28,7 +28,10 @@ void main() {
         DiceLogFilter.attribute.matches(_entry(ProbeType.attribute)),
         isTrue,
       );
-      expect(DiceLogFilter.attribute.matches(_entry(ProbeType.talent)), isFalse);
+      expect(
+        DiceLogFilter.attribute.matches(_entry(ProbeType.talent)),
+        isFalse,
+      );
       expect(DiceLogFilter.talent.matches(_entry(ProbeType.talent)), isTrue);
       expect(DiceLogFilter.talent.matches(_entry(ProbeType.spell)), isFalse);
       expect(DiceLogFilter.spell.matches(_entry(ProbeType.spell)), isTrue);

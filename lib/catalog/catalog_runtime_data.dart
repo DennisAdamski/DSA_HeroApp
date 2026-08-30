@@ -190,8 +190,7 @@ class CatalogRuntimeData {
             section: entry.section,
             entryId: entry.id,
             filePath: entry.filePath,
-            message:
-                'Custom-ID kollidiert mit einem Basis-Eintrag und wird ignoriert.',
+            message: 'Custom-ID kollidiert mit einem Basis-Eintrag und wird ignoriert.',
           ),
         );
         continue;

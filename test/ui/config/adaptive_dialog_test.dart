@@ -23,16 +23,16 @@ Widget _buildHost({
 }
 
 Widget _sampleDialog() => const AdaptiveInputDialog(
-      title: 'Test-Dialog',
-      content: SizedBox(
-        height: 80,
-        child: TextField(
-          key: ValueKey<String>('input'),
-          decoration: InputDecoration(labelText: 'Eingabe'),
-        ),
-      ),
-      actions: [Text('Speichern')],
-    );
+  title: 'Test-Dialog',
+  content: SizedBox(
+    height: 80,
+    child: TextField(
+      key: ValueKey<String>('input'),
+      decoration: InputDecoration(labelText: 'Eingabe'),
+    ),
+  ),
+  actions: [Text('Speichern')],
+);
 
 void main() {
   group('showAdaptiveInputDialog', () {
@@ -91,8 +91,9 @@ void main() {
       expect(find.text('Test-Dialog'), findsOneWidget);
     });
 
-    testWidgets('BottomSheet-Inhalt erhaelt Bottom-Padding aus viewInsets',
-        (tester) async {
+    testWidgets('BottomSheet-Inhalt erhaelt Bottom-Padding aus viewInsets', (
+      tester,
+    ) async {
       const keyboardInset = 320.0;
       tester.view.viewInsets = FakeViewPadding(
         bottom: keyboardInset * tester.view.devicePixelRatio,
@@ -131,8 +132,9 @@ void main() {
   });
 
   group('showAdaptiveDetailSheet', () {
-    testWidgets('Detail-Sheet erhaelt viewInsets-Padding auf iOS',
-        (tester) async {
+    testWidgets('Detail-Sheet erhaelt viewInsets-Padding auf iOS', (
+      tester,
+    ) async {
       const keyboardInset = 280.0;
       tester.view.viewInsets = FakeViewPadding(
         bottom: keyboardInset * tester.view.devicePixelRatio,

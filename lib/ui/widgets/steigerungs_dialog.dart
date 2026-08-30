@@ -303,208 +303,204 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-              Text(
-                widget.startWert == null
-                    ? 'Aktueller Wert: ${_aktuellerWertLabel()} | '
-                        'Maximaler Wert: ${widget.maxWert}'
-                    : 'Startwert: ${widget.startWert} | '
-                        'Aktueller Wert: ${_aktuellerWertLabel()} | '
-                        'Maximaler Wert: ${widget.maxWert}',
+          Text(
+            widget.startWert == null
+                ? 'Aktueller Wert: ${_aktuellerWertLabel()} | '
+                      'Maximaler Wert: ${widget.maxWert}'
+                : 'Startwert: ${widget.startWert} | '
+                      'Aktueller Wert: ${_aktuellerWertLabel()} | '
+                      'Maximaler Wert: ${widget.maxWert}',
+          ),
+          const SizedBox(height: 12),
+          Text('Neuer Wert'),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              IconButton(
+                onPressed: _neuerWert <= _minZielwert
+                    ? null
+                    : () => _setNeuerWert(_neuerWert - 1),
+                icon: const Icon(Icons.remove),
+                tooltip: 'Wert senken',
               ),
-              const SizedBox(height: 12),
-              Text('Neuer Wert'),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: _neuerWert <= _minZielwert
-                        ? null
-                        : () => _setNeuerWert(_neuerWert - 1),
-                    icon: const Icon(Icons.remove),
-                    tooltip: 'Wert senken',
-                  ),
-                  SizedBox(
-                    width: 92,
-                    child: TextField(
-                      controller: _wertController,
-                      keyboardType: TextInputType.number,
-                      textAlign: TextAlign.center,
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 10,
-                        ),
-                      ),
-                      onChanged: (raw) {
-                        final parsed = int.tryParse(raw);
-                        if (parsed == null) {
-                          return;
-                        }
-                        _setNeuerWert(parsed);
-                      },
+              SizedBox(
+                width: 92,
+                child: TextField(
+                  controller: _wertController,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 10,
                     ),
                   ),
-                  IconButton(
-                    onPressed: _neuerWert >= _maxZielwert
-                        ? null
-                        : () => _setNeuerWert(_neuerWert + 1),
-                    icon: const Icon(Icons.add),
-                    tooltip: 'Wert steigern',
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text('Komplexität'),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  IconButton(
-                    key: const ValueKey<String>(
-                      'steigerungs-dialog-complexity-decrease',
-                    ),
-                    onPressed:
-                        _ausgewaehlteKomplexitaet == LearnCost.values.first
-                        ? null
-                        : () => _setKomplexitaet(
-                            _ausgewaehlteKomplexitaet.previous(),
-                          ),
-                    icon: const Icon(Icons.remove),
-                    tooltip: 'Komplexität reduzieren',
-                  ),
-                  SizedBox(
-                    width: 92,
-                    child: Center(
-                      child: Text(
-                        _ausgewaehlteKomplexitaetLabel(),
-                        key: const ValueKey<String>(
-                          'steigerungs-dialog-complexity-value',
-                        ),
-                        style: theme.textTheme.titleMedium,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    key: const ValueKey<String>(
-                      'steigerungs-dialog-complexity-increase',
-                    ),
-                    onPressed:
-                        _ausgewaehlteKomplexitaet == LearnCost.values.last
-                        ? null
-                        : () => _setKomplexitaet(
-                            _ausgewaehlteKomplexitaet.next(),
-                          ),
-                    icon: const Icon(Icons.add),
-                    tooltip: 'Komplexität erhöhen',
-                  ),
-                ],
-              ),
-              if (komplexitaetsHinweis != null) ...[
-                Text(komplexitaetsHinweis, style: theme.textTheme.bodySmall),
-                const SizedBox(height: 4),
-              ],
-              const SizedBox(height: 4),
-              Text('AP-Kosten: ${basisKosten.apKosten}'),
-              if (widget.episch && widget.istHaupteigenschaft) ...[
-                Text(
-                  'Haupteigenschaft — kein epischer Aufschlag',
-                  key: const ValueKey<String>(
-                    'steigerungs-dialog-main-attribute-hint',
-                  ),
-                  style: theme.textTheme.bodySmall,
-                ),
-              ] else if (widget.episch && _eposAufschlagDelta > 0) ...[
-                Text(
-                  'Epos-Aufschlag (+25 %): +$_eposAufschlagDelta AP',
-                  style: theme.textTheme.bodySmall,
-                ),
-              ],
-              const SizedBox(height: 12),
-              Text('Verfügbare AP: ${widget.verfuegbareAp}'),
-              Text(
-                'AP nach Steigerung: $restAp',
-                style: !_hatGenugAp
-                    ? theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.error,
-                        fontWeight: FontWeight.w600,
-                      )
-                    : null,
-              ),
-              if (widget.lehrmeisterVerfuegbar) ...[
-                const SizedBox(height: 16),
-                CheckboxListTile(
-                  value: _mitLehrmeister,
-                  contentPadding: EdgeInsets.zero,
-                  dense: true,
-                  title: const Text('Mit Lehrmeister'),
-                  controlAffinity: ListTileControlAffinity.leading,
-                  onChanged: (value) {
-                    setState(() {
-                      _mitLehrmeister = value ?? false;
-                    });
+                  onChanged: (raw) {
+                    final parsed = int.tryParse(raw);
+                    if (parsed == null) {
+                      return;
+                    }
+                    _setNeuerWert(parsed);
                   },
                 ),
-                if (_mitLehrmeister) ...[
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _lehrmeisterController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
-                    decoration: const InputDecoration(
-                      labelText: 'Lehrer-TaW',
-                      helperText: 'Mindestens 15',
-                      isDense: true,
+              ),
+              IconButton(
+                onPressed: _neuerWert >= _maxZielwert
+                    ? null
+                    : () => _setNeuerWert(_neuerWert + 1),
+                icon: const Icon(Icons.add),
+                tooltip: 'Wert steigern',
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text('Komplexität'),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              IconButton(
+                key: const ValueKey<String>(
+                  'steigerungs-dialog-complexity-decrease',
+                ),
+                onPressed: _ausgewaehlteKomplexitaet == LearnCost.values.first
+                    ? null
+                    : () => _setKomplexitaet(
+                        _ausgewaehlteKomplexitaet.previous(),
+                      ),
+                icon: const Icon(Icons.remove),
+                tooltip: 'Komplexität reduzieren',
+              ),
+              SizedBox(
+                width: 92,
+                child: Center(
+                  child: Text(
+                    _ausgewaehlteKomplexitaetLabel(),
+                    key: const ValueKey<String>(
+                      'steigerungs-dialog-complexity-value',
                     ),
-                    onChanged: _setLehrmeisterTaW,
-                    onSubmitted: (raw) {
-                      final normalized = math.max(
-                        int.tryParse(raw.trim()) ?? 15,
-                        15,
-                      );
-                      _lehrmeisterController.value = TextEditingValue(
-                        text: normalized.toString(),
-                        selection: TextSelection.collapsed(
-                          offset: normalized.toString().length,
-                        ),
-                      );
-                      _setLehrmeisterTaW(normalized.toString());
-                    },
+                    style: theme.textTheme.titleMedium,
                   ),
-                  const SizedBox(height: 8),
-                  Text('Kosten (LM): $_effektiveApKosten AP'),
-                  Text('Dukaten: ${_formatDukaten(_dukaten ?? 0)}'),
+                ),
+              ),
+              IconButton(
+                key: const ValueKey<String>(
+                  'steigerungs-dialog-complexity-increase',
+                ),
+                onPressed: _ausgewaehlteKomplexitaet == LearnCost.values.last
+                    ? null
+                    : () => _setKomplexitaet(_ausgewaehlteKomplexitaet.next()),
+                icon: const Icon(Icons.add),
+                tooltip: 'Komplexität erhöhen',
+              ),
+            ],
+          ),
+          if (komplexitaetsHinweis != null) ...[
+            Text(komplexitaetsHinweis, style: theme.textTheme.bodySmall),
+            const SizedBox(height: 4),
+          ],
+          const SizedBox(height: 4),
+          Text('AP-Kosten: ${basisKosten.apKosten}'),
+          if (widget.episch && widget.istHaupteigenschaft) ...[
+            Text(
+              'Haupteigenschaft — kein epischer Aufschlag',
+              key: const ValueKey<String>(
+                'steigerungs-dialog-main-attribute-hint',
+              ),
+              style: theme.textTheme.bodySmall,
+            ),
+          ] else if (widget.episch && _eposAufschlagDelta > 0) ...[
+            Text(
+              'Epos-Aufschlag (+25 %): +$_eposAufschlagDelta AP',
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
+          const SizedBox(height: 12),
+          Text('Verfügbare AP: ${widget.verfuegbareAp}'),
+          Text(
+            'AP nach Steigerung: $restAp',
+            style: !_hatGenugAp
+                ? theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.error,
+                    fontWeight: FontWeight.w600,
+                  )
+                : null,
+          ),
+          if (widget.lehrmeisterVerfuegbar) ...[
+            const SizedBox(height: 16),
+            CheckboxListTile(
+              value: _mitLehrmeister,
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: const Text('Mit Lehrmeister'),
+              controlAffinity: ListTileControlAffinity.leading,
+              onChanged: (value) {
+                setState(() {
+                  _mitLehrmeister = value ?? false;
+                });
+              },
+            ),
+            if (_mitLehrmeister) ...[
+              const SizedBox(height: 8),
+              TextField(
+                controller: _lehrmeisterController,
+                keyboardType: TextInputType.number,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly,
                 ],
-              ],
-              if (_hatMaximalwertErreicht) ...[
-                const SizedBox(height: 12),
-                Text(
-                  'Der Maximalwert ist bereits erreicht.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
+                decoration: const InputDecoration(
+                  labelText: 'Lehrer-TaW',
+                  helperText: 'Mindestens 15',
+                  isDense: true,
                 ),
-              ] else if (!_istGueltigerZielwert) ...[
-                const SizedBox(height: 12),
-                Text(
-                  'Der neue Wert muss über dem aktuellen Wert liegen.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
-                ),
-              ] else if (!_hatGenugAp) ...[
-                const SizedBox(height: 12),
-                Text(
-                  'Nicht genug AP für diese Steigerung.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
-                ),
-              ],
+                onChanged: _setLehrmeisterTaW,
+                onSubmitted: (raw) {
+                  final normalized = math.max(
+                    int.tryParse(raw.trim()) ?? 15,
+                    15,
+                  );
+                  _lehrmeisterController.value = TextEditingValue(
+                    text: normalized.toString(),
+                    selection: TextSelection.collapsed(
+                      offset: normalized.toString().length,
+                    ),
+                  );
+                  _setLehrmeisterTaW(normalized.toString());
+                },
+              ),
+              const SizedBox(height: 8),
+              Text('Kosten (LM): $_effektiveApKosten AP'),
+              Text('Dukaten: ${_formatDukaten(_dukaten ?? 0)}'),
+            ],
+          ],
+          if (_hatMaximalwertErreicht) ...[
+            const SizedBox(height: 12),
+            Text(
+              'Der Maximalwert ist bereits erreicht.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+            ),
+          ] else if (!_istGueltigerZielwert) ...[
+            const SizedBox(height: 12),
+            Text(
+              'Der neue Wert muss über dem aktuellen Wert liegen.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+            ),
+          ] else if (!_hatGenugAp) ...[
+            const SizedBox(height: 12),
+            Text(
+              'Nicht genug AP für diese Steigerung.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+            ),
+          ],
         ],
       ),
       actions: [

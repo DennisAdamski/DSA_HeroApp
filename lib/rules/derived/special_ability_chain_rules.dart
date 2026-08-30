@@ -43,9 +43,8 @@ class SpecialAbilityChain<T extends SpecialAbilityEntry> {
 /// uebergangen: Eine „Kette“ aus einem Glied ist eine gewoehnliche
 /// Sonderfertigkeit und soll auch so aussehen. Die Reihenfolge der Ketten
 /// folgt dem ersten Auftreten im Katalog, damit die Anzeige stabil bleibt.
-List<SpecialAbilityChain<T>> buildSpecialAbilityChains<T extends SpecialAbilityEntry>(
-  Iterable<T> katalog,
-) {
+List<SpecialAbilityChain<T>>
+buildSpecialAbilityChains<T extends SpecialAbilityEntry>(Iterable<T> katalog) {
   final gruppen = <String, List<T>>{};
   final reihenfolge = <String>[];
   for (final def in katalog) {
