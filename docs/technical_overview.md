@@ -37,12 +37,13 @@ Helden im Pen-&-Paper-Rollenspiel *Das Schwarze Auge* (DSA). Die App bietet:
 | Sprache | Dart ^3.13.0 |
 | Framework | Flutter (Material 3), >=3.47.1 |
 | Zustandsverwaltung | flutter_riverpod ^3.4.2 |
-| Lokale Datenbank | hive ^2.2.3, hive_flutter ^1.1.0 |
+| Lokale Datenbank | hive_ce ^2.19.3, hive_ce_flutter ^2.3.4 |
 | Volltextsuche | sqlite3 ^3.5.2 (native Libs ueber Build-Hook) |
 | Datei-I/O | file_picker ^12.1.0, path_provider ^2.1.5 |
+| Web-Interop | web ^1.1.1 (`package:web` + `dart:js_interop`) |
 | Teilen | share_plus ^13.3.0 |
 | Sichere Speicherung | flutter_secure_storage ^11.0.0 |
-| Krypto | encrypt ^5.0.3, pointycastle ^3.9.1 |
+| Krypto | pointycastle ^4.0.0 (`lib/crypto/aes_primitives.dart`) |
 | IDs | uuid ^4.5.1 |
 | Linting | flutter_lints ^6.0.0 |
 | Tests | flutter_test, integration_test |

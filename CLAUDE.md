@@ -12,6 +12,31 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 
 - `dsa_heldenverwaltung` ist eine Flutter-App zur Verwaltung von DSA-Helden.
 - Die App nutzt lokale Persistenz, katalogbasierte Inhalte und getrennte Regellogik.
+- Lokale Persistenz laeuft ueber `hive_ce` / `hive_ce_flutter`, den gepflegten
+  Fork von Hive 2 (das Original ist seit 2022 ohne Release). Das Box-Format
+  auf Platte ist identisch, Bestandsdaten brauchen keine Migration. Es sind
+  keine `TypeAdapter` im Einsatz — Boxen halten `Map` bzw. `Uint8List`.
+- Die AES-Schicht liegt in `lib/crypto/aes_primitives.dart` direkt auf
+  `pointycastle`; `encrypt` ist entfernt. Das Modul ist bewusst blattartig,
+  weil `catalog` und `data` es beide brauchen und die Richtung
+  `data -> catalog` nicht umgedreht werden darf.
+- Das Krypto-Wire-Format ist durch ausgelieferte Daten festgelegt und in
+  `test/catalog/catalog_crypto_golden_test.dart` sowie
+  `test/data/secrets_cipher_golden_test.dart` mit festen Chiffraten gepinnt.
+  Diese Fixtures duerfen **nicht** angepasst werden, wenn sie brechen: dann
+  ist die Implementierung inkompatibel geworden und jeder `enc:`-Katalogwert
+  sowie jedes Firestore-Geheimnis waere unlesbar. Die uebrigen Krypto-Tests
+  pruefen nur Round-Trips und wuerden das nicht bemerken.
+- Web-Interop laeuft ueber `package:web` + `dart:js_interop`, nie ueber
+  `dart:html` (deprecated und von `dart2wasm` nicht uebersetzbar). Bedingte
+  Importe muessen auf `dart.library.js_interop` stehen, **nicht** auf
+  `dart.library.html`: unter dart2wasm ist letzteres `false`, ein Wasm-Build
+  zoege dann stillschweigend die Stub-Implementierung. Der Web-Download liegt
+  gemeinsam in `lib/data/web_download.dart`.
+- `flutter analyze` bricht auch bei `info`-Lints ab, die CI faellt also
+  darauf. Die Sprachversion aus `environment: sdk:` steuert mit, welche Lints
+  ueberhaupt feuern und wie breit `dart format` umbricht — ein SDK-Bump zieht
+  beides nach sich.
 - Regellogik gehoert nach `lib/rules/derived/`.
 - Aventurische Waehrungsumrechnung fuer Dukaten/Silber/Kreuzer liegt in
   `lib/rules/derived/currency_rules.dart`.

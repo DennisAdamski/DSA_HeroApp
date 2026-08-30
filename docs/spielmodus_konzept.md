@@ -114,6 +114,23 @@ Zusätzlich verifiziert: `flutter build web --release` kompiliert fehlerfrei
 (inkl. Wasm-Dry-Run), und ein lokal servierter Build liefert `sqlite3.wasm`
 korrekt mit `Content-Type: application/wasm` aus.
 
+### Nachtrag 2026-08-30: Wasm-Dry-Run wieder scharf
+
+Der Absatz oben behauptete, `flutter build web --release` laufe „inkl.
+Wasm-Dry-Run". Das stimmte fuer den lokalen Aufruf, nicht fuer die CI: beide
+Hosting-Workflows liefen mit `--no-wasm-dry-run`, weil zwei Datei-Gateways an
+`dart:html` hingen und `dart2wasm` das nicht uebersetzt.
+
+Beide sind jetzt auf `package:web` + `dart:js_interop` umgestellt, der Flag
+ist aus den Workflows raus, und der Build meldet „Wasm dry run succeeded".
+Zusaetzlich standen alle sechs bedingten Importe auf `dart.library.html` —
+unter dart2wasm `false`, ein Wasm-Build haette also die Stubs gezogen. Sie
+stehen jetzt auf `dart.library.js_interop`.
+
+Ein tatsaechlicher `--wasm`-Build ist damit nicht beschlossen, nur nicht mehr
+verbaut. Der offene Punkt „manueller Browser-Durchlauf" unten gilt dafuer
+unveraendert und betrifft insbesondere den sqlite3-WASM-Pfad.
+
 ### Nachtrag 2026-08-25: sqlite3 3.x
 
 `package:sqlite3` wurde von 2.9.4 auf 3.5.2 gehoben und `sqlite3_flutter_libs`

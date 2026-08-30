@@ -363,7 +363,7 @@ Authenticode-Status und optional einen lokalen Microsoft-Defender-Scan.
 ```bash
 flutter pub get
 flutter build windows --release
-flutter pub run msix:create
+dart run msix:create
 ```
 
 Der Windows-Build nutzt `flutter_secure_storage_windows`. Dessen native
