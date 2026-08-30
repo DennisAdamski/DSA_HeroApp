@@ -155,9 +155,8 @@ Widget _buildApp({
 class _FakeSyncController extends AppSyncController {
   _FakeSyncController(
     SyncStatusSnapshot initial, {
-    Map<String, SyncObjectDiff> diffs = const <String, SyncObjectDiff>{},
-  }) : _current = initial,
-       _diffs = diffs;
+    this._diffs = const <String, SyncObjectDiff>{},
+  }) : _current = initial;
 
   final StreamController<SyncStatusSnapshot> _controller =
       StreamController<SyncStatusSnapshot>.broadcast();
