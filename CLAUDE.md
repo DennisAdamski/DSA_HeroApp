@@ -255,8 +255,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `cors.json` im Repo und wird **nicht** von `firebase deploy` übertragen,
   sondern mit
   `gsutil cors set cors.json gs://heldensync-ccf0b.firebasestorage.app`
-  (z. B. in der Google Cloud Shell). Neue Origins müssen dort ergänzt werden;
-  GCS erlaubt keine Wildcard innerhalb einer Origin.
+  (z. B. in der Google Cloud Shell). `cors.json` hat zwei Einträge: zuerst die
+  drei bekannten Origins (die bekommen ihre exakte Origin zurückgespiegelt),
+  danach eine Sammelregel `"origin": ["*"]` für lesende Zugriffe. Die
+  Sammelregel ist nötig, weil jeder Branch einen eigenen Firebase-Preview-Channel
+  mit eigener Origin bekommt und GCS keine Wildcard **innerhalb** einer Origin
+  erlaubt — vorab eintragen ließe sich also keine davon. Ohne sie zeigen
+  Preview-Channels grundsätzlich keine Avatare, und der Fehler sieht wie ein
+  App-Bug aus. Schreibzugriffe laufen über das Firebase-SDK und bleiben bewusst
+  ohne CORS-Freigabe.
 - Im Web liegen geladene Avatarbytes zusätzlich in der Hive-Box
   `avatar_blobs_v1` (IndexedDB, `lib/data/hive_avatar_blob_cache.dart`), damit
   ein Reload sie nicht erneut herunterlädt. Der Cache ist inhaltsadressiert und

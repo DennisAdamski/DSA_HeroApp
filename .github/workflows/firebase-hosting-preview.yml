@@ -33,6 +33,14 @@ jobs:
           test -f build/web/assets/AssetManifest.bin.json
           test -n "$(ls -A build/web/assets/assets/heroes 2>/dev/null)"
 
+      # Jeder Branch bekommt damit einen eigenen Preview-Channel und damit eine
+      # eigene Origin (Firebase haengt an die Channel-ID einen Hash an). Avatare
+      # funktionieren dort nur, weil cors.json neben den drei bekannten Origins
+      # eine Sammelregel "origin": ["*"] fuer GET/HEAD traegt — vorab eintragen
+      # laesst sich keine Preview-Origin, GCS erlaubt keine Wildcard innerhalb
+      # einer Origin. Fehlt die Sammelregel auf dem Bucket, laden die Bilder
+      # nicht und der Fehler sieht wie ein App-Bug aus:
+      # "ClientException: Failed to fetch".
       - name: Channel-ID aus Branch-Name ableiten
         id: channel
         run: |
