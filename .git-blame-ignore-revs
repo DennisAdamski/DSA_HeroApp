@@ -1,0 +1,9 @@
+# Commits, die `git blame` ueberspringen soll: rein mechanische
+# Umformatierungen ohne Verhaltensaenderung.
+#
+# Lokal aktivieren mit:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# GitHub wertet die Datei automatisch aus.
+
+# style: Repo auf den Dart-Tall-Style formatieren (282 Dateien)
+92dfd554
