@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
@@ -30,17 +29,30 @@ final heroTransferFileGatewayProvider = Provider<HeroTransferFileGateway>((
 /// ID des aktuell in der Heldenliste ausgewaehlten Helden (oder `null`).
 ///
 /// Initialisiert sich wenn moeglich aus der zuletzt gespeicherten Auswahl.
-final selectedHeroIdProvider = StateProvider<String?>((ref) {
-  try {
-    final settingsRepository = ref.read(settingsRepositoryProvider);
-    return settingsRepository.load().lastSelectedHeroId;
-  } catch (error) {
-    if (!_isMissingSettingsRepository(error)) {
-      rethrow;
+class SelectedHeroId extends Notifier<String?> {
+  @override
+  String? build() {
+    try {
+      final settingsRepository = ref.read(settingsRepositoryProvider);
+      return settingsRepository.load().lastSelectedHeroId;
+    } catch (error) {
+      if (!_isMissingSettingsRepository(error)) {
+        rethrow;
+      }
+      return null;
     }
-    return null;
   }
-});
+
+  /// Uebernimmt [heroId] als aktuelle Auswahl.
+  ///
+  /// Persistiert nicht selbst — das erledigt der aufrufende Controller.
+  void select(String? heroId) => state = heroId;
+}
+
+/// ID des aktuell in der Heldenliste ausgewaehlten Helden (oder `null`).
+final selectedHeroIdProvider = NotifierProvider<SelectedHeroId, String?>(
+  SelectedHeroId.new,
+);
 
 /// Koordiniert UI-Auswahl und persistierte Startseiten-Selektion.
 class SelectedHeroSelectionActions {
@@ -55,7 +67,7 @@ class SelectedHeroSelectionActions {
   /// parallel in den App-Einstellungen gespeichert.
   Future<void> selectHero(String? heroId) async {
     final normalizedHeroId = _normalizeHeroId(heroId);
-    _ref.read(selectedHeroIdProvider.notifier).state = normalizedHeroId;
+    _ref.read(selectedHeroIdProvider.notifier).select(normalizedHeroId);
     await _persistSelectedHeroId(normalizedHeroId);
   }
 

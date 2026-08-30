@@ -133,18 +133,19 @@ class InspectorStatuswerteBlock extends ConsumerWidget {
             result: activeTalentBe,
             onDecrement: () {
               final nextBe = activeTalentBe > 0 ? activeTalentBe - 1 : 0;
-              ref.read(talentBeOverrideProvider(heroId).notifier).state =
-                  nextBe == combat.beKampf ? null : nextBe;
+              ref
+                  .read(talentBeOverrideProvider(heroId).notifier)
+                  .set(nextBe == combat.beKampf ? null : nextBe);
             },
             onIncrement: () {
               final nextBe = activeTalentBe + 1;
-              ref.read(talentBeOverrideProvider(heroId).notifier).state =
-                  nextBe == combat.beKampf ? null : nextBe;
+              ref
+                  .read(talentBeOverrideProvider(heroId).notifier)
+                  .set(nextBe == combat.beKampf ? null : nextBe);
             },
             onReset: talentBeOverride != null
                 ? () {
-                    ref.read(talentBeOverrideProvider(heroId).notifier).state =
-                        null;
+                    ref.read(talentBeOverrideProvider(heroId).notifier).clear();
                   }
                 : null,
           ),

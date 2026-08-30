@@ -573,14 +573,13 @@ class _TalentBeConfigDialogState extends ConsumerState<TalentBeConfigDialog> {
   void _updateOverride(String raw) {
     final trimmed = raw.trim();
     final nextValue = trimmed.isEmpty ? null : int.tryParse(trimmed);
-    ref.read(talentBeOverrideProvider(widget.heroId).notifier).state =
-        nextValue;
+    ref.read(talentBeOverrideProvider(widget.heroId).notifier).set(nextValue);
     setState(() {});
   }
 
   void _clearOverride() {
     _overrideController.clear();
-    ref.read(talentBeOverrideProvider(widget.heroId).notifier).state = null;
+    ref.read(talentBeOverrideProvider(widget.heroId).notifier).clear();
     setState(() {});
   }
 

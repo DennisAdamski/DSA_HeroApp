@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_decrypt_runner.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_loader.dart';
@@ -38,7 +37,20 @@ final houseRulePackRepositoryProvider = Provider<HouseRulePackRepository>((
 });
 
 /// Manuelle Reload-Zaehlung fuer Basis- und Custom-Katalogdaten.
-final catalogReloadRevisionProvider = StateProvider<int>((ref) => 0);
+///
+/// Jeder [CatalogReloadRevision.bump] invalidiert die davon abhaengige
+/// Katalogkette und erzwingt damit ein Neu-Laden.
+class CatalogReloadRevision extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  /// Erhoeht die Revision und stoesst damit einen Katalog-Reload an.
+  void bump() => state++;
+}
+
+/// Manuelle Reload-Zaehlung fuer Basis- und Custom-Katalogdaten.
+final catalogReloadRevisionProvider =
+    NotifierProvider<CatalogReloadRevision, int>(CatalogReloadRevision.new);
 
 /// Unveraenderte Basisdaten aus den offiziellen Katalog-Assets.
 final baseCatalogSourceDataProvider = FutureProvider<CatalogSourceData>((
@@ -172,7 +184,7 @@ class CatalogActions {
 
   /// Erzwingt einen Neu-Ladevorgang des Basis- und Custom-Katalogs.
   void reloadCatalog() {
-    _ref.read(catalogReloadRevisionProvider.notifier).state++;
+    _ref.read(catalogReloadRevisionProvider.notifier).bump();
   }
 
   /// Speichert einen benutzerdefinierten Katalogeintrag im Heldenspeicher.
