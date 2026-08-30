@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 /// Vermerk, dass ein Avatarbild mit der Cloud abgeglichen ist.
 class AvatarSyncMarker {

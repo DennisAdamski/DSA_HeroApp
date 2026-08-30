@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';

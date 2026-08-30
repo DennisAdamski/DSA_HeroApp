@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 import 'package:dsa_heldenverwaltung/data/firestore_secrets_repository.dart';
 import 'package:dsa_heldenverwaltung/data/secrets_cipher.dart';
