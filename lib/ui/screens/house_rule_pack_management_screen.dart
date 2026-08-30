@@ -31,7 +31,7 @@ class HouseRulePackManagementScreen extends ConsumerWidget {
           IconButton(
             tooltip: 'Hausregeln neu laden',
             onPressed: () {
-              ref.read(catalogReloadRevisionProvider.notifier).state++;
+              ref.read(catalogReloadRevisionProvider.notifier).bump();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Hausregel-Pakete werden neu geladen.'),

@@ -1589,7 +1589,7 @@ ausdruecklicher Quittierung („Verstanden – Werte geprueft"), die
 | `heroRepositoryProvider` | `Provider<HeroRepository>` | Repository (beim Start überschrieben) |
 | `heroTransferCodecProvider` | `Provider<HeroTransferCodec>` | JSON-Codec für Im-/Export |
 | `heroTransferFileGatewayProvider` | `Provider<HeroTransferFileGateway>` | Plattform-I/O |
-| `selectedHeroIdProvider` | `StateProvider<String?>` | Aktuell gewählte Held-ID |
+| `selectedHeroIdProvider` | `NotifierProvider<String?>` | Aktuell gewählte Held-ID |
 | `heroIndexProvider` | `StreamProvider<HeroIndexSnapshot>` | Alle Helden reaktiv |
 | `heroListProvider` | `StreamProvider<List<HeroSheet>>` | Sortierte Heldenliste |
 | `heroByIdProvider(id)` | `Provider.family<HeroSheet?>` | O(1) Lookup per ID |
@@ -1606,9 +1606,7 @@ ausdruecklicher Quittierung („Verstanden – Werte geprueft"), die
 | `catalogRuntimeDataProvider` | `FutureProvider<CatalogRuntimeData>` | Basis + Custom + Fehlerzustand |
 | `catalogAdminSnapshotProvider` | `FutureProvider<CatalogAdminSnapshot>` | Settings-Katalogverwaltung |
 | `rulesCatalogProvider` | `FutureProvider<RulesCatalog>` | Geladener Katalog |
-| `talentBeOverrideProvider(id)` | `StateProvider.family<bool?>` | Manuelle BE-Überschreibung |
-| `talentsVisibilityModeProvider(id)` | `StateProvider.family<bool>` | Verborgene Talente zeigen |
-| `combatTalentsVisibilityModeProvider(id)` | `StateProvider.family<bool>` | Kampftalente einblenden |
+| `talentBeOverrideProvider(id)` | `NotifierProvider.family<int?>` | Manuelle BE-Überschreibung |
 
 `HeroesHomeScreen` waermt `rulesCatalogProvider.future` einmal nach dem ersten
 Frame mit geladener Heldenliste vor. Beim Oeffnen eines Helden wartet der Screen
