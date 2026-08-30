@@ -157,8 +157,9 @@ class WundZustand {
     // Unterdrueckte Wunden auf neue Wundenanzahl clampen.
     final neueWunden = naechste[zone] ?? 0;
     final aktUnterdrueckt = unterdrueckteInZone(zone);
-    final naechsteUnterdrueckt =
-        Map<WundZone, int>.of(unterdrueckteWundenProZone);
+    final naechsteUnterdrueckt = Map<WundZone, int>.of(
+      unterdrueckteWundenProZone,
+    );
     if (aktUnterdrueckt > neueWunden) {
       if (neueWunden > 0) {
         naechsteUnterdrueckt[zone] = neueWunden;
@@ -209,8 +210,7 @@ class WundZustand {
       }
     }
     final rawUnterdrueckt =
-        (json['unterdrueckteWundenProZone'] as Map?)
-            ?.cast<String, dynamic>() ??
+        (json['unterdrueckteWundenProZone'] as Map?)?.cast<String, dynamic>() ??
         const {};
     final unterdruecktMap = <WundZone, int>{};
     for (final zone in WundZone.values) {

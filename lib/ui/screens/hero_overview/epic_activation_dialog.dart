@@ -94,8 +94,14 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
   ];
 
   final Map<String, int> _bonus = {
-    'mu': 0, 'kl': 0, 'inn': 0, 'ch': 0,
-    'ff': 0, 'ge': 0, 'ko': 0, 'kk': 0,
+    'mu': 0,
+    'kl': 0,
+    'inn': 0,
+    'ch': 0,
+    'ff': 0,
+    'ge': 0,
+    'ko': 0,
+    'kk': 0,
   };
 
   String? _selectedMental;
@@ -109,7 +115,10 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
       final initial = _attributeValue(widget.initialMaxBonus, key);
       _bonus[key] = initial.clamp(0, _maxPerAttr);
     }
-    _selectedMental = _firstSelected(_mentalAttrs, widget.initialMainAttributes);
+    _selectedMental = _firstSelected(
+      _mentalAttrs,
+      widget.initialMainAttributes,
+    );
     _selectedPhysical = _firstSelected(
       _physicalAttrs,
       widget.initialMainAttributes,
@@ -150,8 +159,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
 
   int get _totalUsed => _bonus.values.fold(0, (a, b) => a + b);
   int get _remaining => _maxTotal - _totalUsed;
-  bool get _canConfirm =>
-      _selectedMental != null && _selectedPhysical != null;
+  bool get _canConfirm => _selectedMental != null && _selectedPhysical != null;
 
   void _adjust(String key, int delta) {
     final current = _bonus[key]!;
@@ -191,8 +199,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
   }
 
   Attributes _buildMainAttributes() {
-    int valueFor(String code, String? selected) =>
-        selected == code ? 1 : 0;
+    int valueFor(String code, String? selected) => selected == code ? 1 : 0;
     return Attributes(
       mu: valueFor('mu', _selectedMental),
       kl: valueFor('kl', _selectedMental),
@@ -325,8 +332,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
                       key: ValueKey<String>('epic-dialog-mental-$key'),
                       label: Text(label),
                       selected: _selectedMental == key,
-                      onSelected: (_) =>
-                          setState(() => _selectedMental = key),
+                      onSelected: (_) => setState(() => _selectedMental = key),
                     ),
                   );
                 }).toList(),
@@ -358,10 +364,7 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
                 }).toList(),
               ),
               const SizedBox(height: 16),
-              Text(
-                'Aktivierungs-Policy',
-                style: theme.textTheme.labelMedium,
-              ),
+              Text('Aktivierungs-Policy', style: theme.textTheme.labelMedium),
               const SizedBox(height: 4),
               DropdownButtonFormField<String>(
                 initialValue: _policy,
@@ -391,12 +394,12 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
           key: const ValueKey<String>('epic-dialog-confirm'),
           onPressed: _canConfirm
               ? () => Navigator.of(context).pop(
-                    EpicActivationResult(
-                      maxBonus: _buildBonus(),
-                      mainAttributes: _buildMainAttributes(),
-                      policy: _policy,
-                    ),
-                  )
+                  EpicActivationResult(
+                    maxBonus: _buildBonus(),
+                    mainAttributes: _buildMainAttributes(),
+                    policy: _policy,
+                  ),
+                )
               : null,
           child: Text(widget.isEdit ? 'Speichern' : 'Aktivieren'),
         ),

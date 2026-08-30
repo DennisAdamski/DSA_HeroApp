@@ -82,8 +82,7 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
     if (!context.mounted) {
       return;
     }
-    final owned =
-        abilities.map((a) => a.name.trim().toLowerCase()).toSet();
+    final owned = abilities.map((a) => a.name.trim().toLowerCase()).toSet();
     await showSpecialAbilityPicker(
       context: context,
       title: 'Magische Sonderfertigkeiten',
@@ -273,10 +272,7 @@ class _MagicSpecialAbilityDialogState
     }
     var apKosten = 0;
     if (_isNew) {
-      final match = matchCatalogSpecialAbility(
-        widget.catalogAbilities,
-        name,
-      );
+      final match = matchCatalogSpecialAbility(widget.catalogAbilities, name);
       final erwerb = await showErwerbDialog(
         context: context,
         bezeichnung: name,
@@ -287,8 +283,7 @@ class _MagicSpecialAbilityDialogState
         verfuegbareAp: widget.verfuegbareAp,
         episch: widget.episch,
         epischerInhalt: match?.nurEpisch ?? false,
-        voraussetzungen:
-            match == null || widget.requirementContext == null
+        voraussetzungen: match == null || widget.requirementContext == null
             ? const <RequirementCheckResult>[]
             : evaluateRequirements(
                 match.voraussetzungenStruktur,

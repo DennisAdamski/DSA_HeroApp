@@ -10,12 +10,12 @@ import 'catalog_reference_names.dart';
 /// nur als leeres Auswahlfeld — dieselbe Begruendung wie bei den Katalogtests
 /// der Erwerbsvoraussetzungen.
 void main() {
-  final advantages = ladeKatalogDatei(
-    'vorteile.json',
-  ).map(HeroTraitDef.fromJson).toList(growable: false);
-  final disadvantages = ladeKatalogDatei(
-    'nachteile.json',
-  ).map(HeroTraitDef.fromJson).toList(growable: false);
+  final advantages = ladeKatalogDatei('vorteile.json')
+      .map(HeroTraitDef.fromJson)
+      .toList(growable: false);
+  final disadvantages = ladeKatalogDatei('nachteile.json')
+      .map(HeroTraitDef.fromJson)
+      .toList(growable: false);
 
   final catalog = RulesCatalog(
     version: 'house_rules_v1',
@@ -26,13 +26,13 @@ void main() {
       for (final json in ladeKatalogDatei('waffentalente.json'))
         TalentDef.fromJson(json),
     ],
-    spells: ladeKatalogDatei(
-      'magie.json',
-    ).map(SpellDef.fromJson).toList(growable: false),
+    spells: ladeKatalogDatei('magie.json')
+        .map(SpellDef.fromJson)
+        .toList(growable: false),
     weapons: const [],
-    magicSpecialAbilities: ladeKatalogDatei(
-      'magische_sonderfertigkeiten.json',
-    ).map(SpecialAbilityDef.fromJson).toList(growable: false),
+    magicSpecialAbilities: ladeKatalogDatei('magische_sonderfertigkeiten.json')
+        .map(SpecialAbilityDef.fromJson)
+        .toList(growable: false),
     advantages: advantages,
     disadvantages: disadvantages,
   );
@@ -149,10 +149,7 @@ void main() {
     expect(schlechteEigenschaften, contains('Goldgier'));
     expect(schlechteEigenschaften, contains('Jähzorn'));
     // Platzhalter-Eintraege bleiben draussen.
-    expect(
-      schlechteEigenschaften.any((name) => name.contains('[')),
-      isFalse,
-    );
+    expect(schlechteEigenschaften.any((name) => name.contains('[')), isFalse);
   });
 
   test('unbekannte Quelle liefert eine leere Liste statt zu werfen', () {

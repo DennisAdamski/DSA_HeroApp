@@ -73,8 +73,9 @@ class HeroReisebericht {
           items
               .whereType<Map>()
               .map(
-                (entry) =>
-                    ReiseberichtOpenItem.fromJson(entry.cast<String, dynamic>()),
+                (entry) => ReiseberichtOpenItem.fromJson(
+                  entry.cast<String, dynamic>(),
+                ),
               )
               .toList(growable: false),
         );

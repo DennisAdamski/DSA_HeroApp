@@ -74,10 +74,7 @@ class SpecialAbilityChainCard<T extends SpecialAbilityEntry>
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    kette.label,
-                    style: theme.textTheme.titleSmall,
-                  ),
+                  child: Text(kette.label, style: theme.textTheme.titleSmall),
                 ),
                 if (erworbeneStufe > 0)
                   Text(

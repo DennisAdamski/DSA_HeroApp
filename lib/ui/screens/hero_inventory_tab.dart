@@ -126,8 +126,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
         children: [
           const CodexTabHeader(
             title: 'Ausrüstungs-Ledger',
-            subtitle:
-                'Traglast, Herkunft und Ausrüstungsstatus in einer direkten Inventartabelle.',
+            subtitle: 'Traglast, Herkunft und Ausrüstungsstatus in einer direkten Inventartabelle.',
             assetPath: 'assets/ui/codex/compass_mark.png',
           ),
           Padding(
@@ -145,17 +144,13 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
           ),
           const SizedBox(height: 8),
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: _pagePadding - 4,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: _pagePadding - 4),
             child: filterBar,
           ),
           const SizedBox(height: 8),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: _pagePadding,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: _pagePadding),
               child: table,
             ),
           ),
@@ -188,8 +183,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
       children: [
         const CodexTabHeader(
           title: 'Ausrüstungs-Ledger',
-          subtitle:
-              'Traglast, Wert und Ausrüstungsstatus in einer kompakten Inventartabelle.',
+          subtitle: 'Traglast, Wert und Ausrüstungsstatus in einer kompakten Inventartabelle.',
           assetPath: 'assets/ui/codex/compass_mark.png',
         ),
         Padding(

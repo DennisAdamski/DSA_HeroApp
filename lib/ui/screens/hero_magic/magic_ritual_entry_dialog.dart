@@ -122,8 +122,7 @@ class _RitualEntryDialogState extends State<_RitualEntryDialog> {
         wirkungsdauer.isEmpty ||
         merkmale.isEmpty) {
       setState(() {
-        _errorText =
-            'Bitte Name, Wirkung, Kosten, Wirkungsdauer und Merkmale ausfuellen.';
+        _errorText = 'Bitte Name, Wirkung, Kosten, Wirkungsdauer und Merkmale ausfuellen.';
       });
       return;
     }
@@ -423,20 +422,14 @@ class _RitualEntryDialogState extends State<_RitualEntryDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildReadOnlyRow('Name', entry.name),
-            _buildReadOnlyRow(
-              'Wirkung',
-              resolvedWirkung ?? lockedContentHint,
-            ),
+            _buildReadOnlyRow('Wirkung', resolvedWirkung ?? lockedContentHint),
             _buildReadOnlyRow('Kosten', entry.kosten),
             _buildReadOnlyRow('Wirkungsdauer', entry.wirkungsdauer),
             _buildReadOnlyRow('Merkmale', entry.merkmale),
             _buildReadOnlyRow('Zauberdauer', entry.zauberdauer),
             _buildReadOnlyRow('Zielobjekt', entry.zielobjekt),
             _buildReadOnlyRow('Reichweite', entry.reichweite),
-            _buildReadOnlyRow(
-              'Technik',
-              resolvedTechnik ?? lockedContentHint,
-            ),
+            _buildReadOnlyRow('Technik', resolvedTechnik ?? lockedContentHint),
             ...widget.category.additionalFieldDefs.map((fieldDef) {
               final value = additionalValuesById[fieldDef.id];
               final displayValue = switch (fieldDef.type) {

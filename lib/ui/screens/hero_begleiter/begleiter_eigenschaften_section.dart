@@ -74,9 +74,8 @@ class _EigenschaftenSection extends StatelessWidget {
     if (defined.isEmpty) {
       return Text(
         'Keine Eigenschaften definiert.',
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+        style: Theme.of(context).textTheme.bodyMedium
+            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
       );
     }
     return Wrap(
@@ -110,14 +109,11 @@ class _EigenschaftenSection extends StatelessWidget {
                     child: _AttrEditField(
                       label: _attrs[j].$1,
                       value: _valueFor(_attrs[j].$2),
-                      onChanged: (v) =>
-                          onChanged(_setAttr(_attrs[j].$2, v)),
-                      onRaise: onRaiseRegular != null &&
+                      onChanged: (v) => onChanged(_setAttr(_attrs[j].$2, v)),
+                      onRaise:
+                          onRaiseRegular != null &&
                               _valueFor(_attrs[j].$2) != null
-                          ? () => onRaiseRegular!(
-                                _attrs[j].$2,
-                                _attrs[j].$1,
-                              )
+                          ? () => onRaiseRegular!(_attrs[j].$2, _attrs[j].$1)
                           : null,
                     ),
                   ),
@@ -200,9 +196,7 @@ class _AttrEditFieldState extends State<_AttrEditField> {
   void initState() {
     super.initState();
     _enabled = widget.value != null;
-    _controller = TextEditingController(
-      text: widget.value?.toString() ?? '',
-    );
+    _controller = TextEditingController(text: widget.value?.toString() ?? '');
   }
 
   @override
@@ -247,9 +241,7 @@ class _AttrEditFieldState extends State<_AttrEditField> {
                 }
               },
             ),
-            Expanded(
-              child: Text(widget.label),
-            ),
+            Expanded(child: Text(widget.label)),
           ],
         ),
         TextFormField(

@@ -78,10 +78,9 @@ void main() {
 
   group('kettenloseEintraege', () {
     test('liefert alles, was zu keiner Kette gehoert', () {
-      expect(
-        kettenloseEintraege(katalog).map((def) => def.id),
-        <String>['magsf_gedankenschutz'],
-      );
+      expect(kettenloseEintraege(katalog).map((def) => def.id), <String>[
+        'magsf_gedankenschutz',
+      ]);
     });
   });
 
@@ -117,10 +116,7 @@ void main() {
     });
 
     test('ignoriert fremde Eintraege', () {
-      expect(
-        erworbeneKettenstufe(kette, const <String>['Gedankenschutz']),
-        0,
-      );
+      expect(erworbeneKettenstufe(kette, const <String>['Gedankenschutz']), 0);
     });
   });
 
@@ -128,7 +124,10 @@ void main() {
     final kette = buildSpecialAbilityChains(katalog).single;
 
     test('ohne Erwerb ist die erste Stufe faellig', () {
-      expect(naechsteKettenstufe(kette, const <String>[])?.name, 'Eiserner Wille I');
+      expect(
+        naechsteKettenstufe(kette, const <String>[])?.name,
+        'Eiserner Wille I',
+      );
     });
 
     test('nach Stufe I folgt Stufe II', () {
@@ -218,10 +217,9 @@ void main() {
     });
 
     test('laesst kettenlose Eintraege uebrig', () {
-      expect(
-        kettenloseEintraege(kampfKatalog).map((def) => def.id),
-        <String>['ksf_linkhand'],
-      );
+      expect(kettenloseEintraege(kampfKatalog).map((def) => def.id), <String>[
+        'ksf_linkhand',
+      ]);
     });
 
     test('findet die naechste offene Stufe', () {

@@ -121,7 +121,11 @@ void main() {
       );
 
       expect(diff.entries, hasLength(1));
-      expect(diff.entries.single.path, ['inventoryEntries', 'Schild', 'anzahl']);
+      expect(diff.entries.single.path, [
+        'inventoryEntries',
+        'Schild',
+        'anzahl',
+      ]);
       expect(diff.entries.single.kind, SyncDiffKind.changed);
       expect(diff.entries.single.localValue, 1);
       expect(diff.entries.single.remoteValue, 2);
@@ -181,9 +185,7 @@ void main() {
     });
 
     test('bricht bei maxEntries ab und markiert truncated', () {
-      final local = <String, dynamic>{
-        for (var i = 0; i < 20; i++) 'feld$i': i,
-      };
+      final local = <String, dynamic>{for (var i = 0; i < 20; i++) 'feld$i': i};
       final remote = <String, dynamic>{
         for (var i = 0; i < 20; i++) 'feld$i': i + 1,
       };

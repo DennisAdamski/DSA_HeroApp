@@ -10,18 +10,19 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
         : hero.apAvailable;
     final level = isEditing ? computeLevelFromSpentAp(apSpent) : hero.level;
 
-    final epicLevel =
-        computeEpicLevel(hero.isEpisch, apSpent, hero.epicStartAp);
+    final epicLevel = computeEpicLevel(
+      hero.isEpisch,
+      apSpent,
+      hero.epicStartAp,
+    );
 
     final rowItems = <Widget>[
       _buildApValueField(
         label: 'AP Gesamt',
         keyName: 'ap_total',
         currentValue: apTotal,
-        onAddPressed: () => _showApIncrementDialog(
-          targetKey: 'ap_total',
-          label: 'AP Gesamt',
-        ),
+        onAddPressed: () =>
+            _showApIncrementDialog(targetKey: 'ap_total', label: 'AP Gesamt'),
       ),
       _buildApValueField(
         label: 'AP Ausgegeben',
@@ -95,10 +96,7 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
           const SizedBox(height: 2),
           Row(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('$currentValue'),
-              addButton,
-            ],
+            children: [Text('$currentValue'), addButton],
           ),
         ],
       );
@@ -109,9 +107,7 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
       controller: _field(keyName),
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      decoration: _inputDecoration(label).copyWith(
-        suffixIcon: addButton,
-      ),
+      decoration: _inputDecoration(label).copyWith(suffixIcon: addButton),
       onChanged: _onFieldChanged,
     );
   }
@@ -159,7 +155,11 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
     );
     dialogController.dispose();
     if (result == null || !mounted) return;
-    await _applyApIncrement(targetKey: targetKey, label: label, increment: result);
+    await _applyApIncrement(
+      targetKey: targetKey,
+      label: label,
+      increment: result,
+    );
   }
 
   Widget _buildLevelField({required int level, required int? epicLevel}) {
@@ -220,9 +220,7 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
         // Anzahl Spalten anhand der verfuegbaren Breite bestimmen: auf schmalen
         // Screens eine Spalte, auf breiten bis zu so vielen, wie Felder da sind.
         final columns = available.isFinite
-            ? (available / targetItemWidth)
-                  .floor()
-                  .clamp(1, children.length)
+            ? (available / targetItemWidth).floor().clamp(1, children.length)
             : children.length;
         final itemWidth = available.isFinite
             ? (available - _gridSpacing * (columns - 1)) / columns

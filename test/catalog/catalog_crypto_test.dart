@@ -55,14 +55,11 @@ void main() {
       expect(encrypted, startsWith('enc:2:'));
     });
 
-    test(
-      'Zwei Verschlüsselungen desselben Texts sind unterschiedlich (zufälliges Salt)',
-      () {
-        final a = encryptCatalogValue(plaintext, password);
-        final b = encryptCatalogValue(plaintext, password);
-        expect(a, isNot(equals(b)));
-      },
-    );
+    test('Zwei Verschlüsselungen desselben Texts sind unterschiedlich (zufälliges Salt)', () {
+      final a = encryptCatalogValue(plaintext, password);
+      final b = encryptCatalogValue(plaintext, password);
+      expect(a, isNot(equals(b)));
+    });
   });
 
   group('Fehlerfälle', () {
@@ -101,40 +98,53 @@ void main() {
       expect(keyNfc.bytes, keyNfd.bytes);
     });
 
-    test('NFD-Passwort entschluesselt einen mit NFC verschluesselten v3-Wert',
-        () {
-      final salt = _randomSalt();
-      final keyNfc = deriveCatalogKey(password: nfcPassword, salt: salt);
-      final encrypted = encryptCatalogValueV3(
-        plaintext: 'geheim',
-        derivedKey: keyNfc,
-      );
-      expect(
-        decryptCatalogValue(encrypted, nfdPassword, saltV3: salt),
-        'geheim',
-      );
-    });
+    test(
+      'NFD-Passwort entschluesselt einen mit NFC verschluesselten v3-Wert',
+      () {
+        final salt = _randomSalt();
+        final keyNfc = deriveCatalogKey(password: nfcPassword, salt: salt);
+        final encrypted = encryptCatalogValueV3(
+          plaintext: 'geheim',
+          derivedKey: keyNfc,
+        );
+        expect(
+          decryptCatalogValue(encrypted, nfdPassword, saltV3: salt),
+          'geheim',
+        );
+      },
+    );
 
-    test('NFD-Passwort entschluesselt einen mit NFC verschluesselten v2-Wert',
-        () {
-      final encrypted = encryptCatalogValue('geheim', nfcPassword);
-      expect(decryptCatalogValue(encrypted, nfdPassword), 'geheim');
-    });
+    test(
+      'NFD-Passwort entschluesselt einen mit NFC verschluesselten v2-Wert',
+      () {
+        final encrypted = encryptCatalogValue('geheim', nfcPassword);
+        expect(decryptCatalogValue(encrypted, nfdPassword), 'geheim');
+      },
+    );
   });
 
   group('v3 (globaler Salt, pre-derived Key)', () {
     test('Roundtrip mit pre-derived Key', () {
       final salt = _randomSalt();
       final key = deriveCatalogKey(password: password, salt: salt);
-      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: key);
-      final decrypted = decryptCatalogValueV3(encryptedValue: encrypted, derivedKey: key);
+      final encrypted = encryptCatalogValueV3(
+        plaintext: plaintext,
+        derivedKey: key,
+      );
+      final decrypted = decryptCatalogValueV3(
+        encryptedValue: encrypted,
+        derivedKey: key,
+      );
       expect(decrypted, plaintext);
     });
 
     test('Verschlüsselter Wert beginnt mit enc:3:', () {
       final salt = _randomSalt();
       final key = deriveCatalogKey(password: password, salt: salt);
-      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: key);
+      final encrypted = encryptCatalogValueV3(
+        plaintext: plaintext,
+        derivedKey: key,
+      );
       expect(encrypted, startsWith('enc:3:'));
     });
 
@@ -151,16 +161,25 @@ void main() {
       final saltB = _randomSalt();
       final keyA = deriveCatalogKey(password: password, salt: saltA);
       final keyB = deriveCatalogKey(password: password, salt: saltB);
-      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: keyA);
-      expect(decryptCatalogValueV3(encryptedValue: encrypted, derivedKey: keyB), isNull);
+      final encrypted = encryptCatalogValueV3(
+        plaintext: plaintext,
+        derivedKey: keyA,
+      );
+      expect(
+        decryptCatalogValueV3(encryptedValue: encrypted, derivedKey: keyB),
+        isNull,
+      );
     });
 
-    test('deriveCatalogKey ist deterministisch fuer dasselbe (Passwort, Salt)', () {
-      final salt = _randomSalt();
-      final keyA = deriveCatalogKey(password: password, salt: salt);
-      final keyB = deriveCatalogKey(password: password, salt: salt);
-      expect(keyA.bytes, keyB.bytes);
-    });
+    test(
+      'deriveCatalogKey ist deterministisch fuer dasselbe (Passwort, Salt)',
+      () {
+        final salt = _randomSalt();
+        final keyA = deriveCatalogKey(password: password, salt: salt);
+        final keyB = deriveCatalogKey(password: password, salt: salt);
+        expect(keyA.bytes, keyB.bytes);
+      },
+    );
 
     test('Leerer Plaintext bleibt leer', () {
       final salt = _randomSalt();
@@ -174,7 +193,10 @@ void main() {
       final key = deriveCatalogKey(password: password, salt: salt);
       const list = ['Stufe 1', 'Stufe 2', 'Stufe 3'];
       final encrypted = encryptCatalogListV3(values: list, derivedKey: key);
-      final decrypted = decryptCatalogListV3(encryptedValue: encrypted, derivedKey: key);
+      final decrypted = decryptCatalogListV3(
+        encryptedValue: encrypted,
+        derivedKey: key,
+      );
       expect(decrypted, list);
     });
 
@@ -190,14 +212,20 @@ void main() {
     test('entschluesselt v3-Wert wenn saltV3 mitgegeben wird', () {
       final salt = _randomSalt();
       final key = deriveCatalogKey(password: password, salt: salt);
-      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: key);
+      final encrypted = encryptCatalogValueV3(
+        plaintext: plaintext,
+        derivedKey: key,
+      );
       expect(decryptCatalogValue(encrypted, password, saltV3: salt), plaintext);
     });
 
     test('liefert null bei v3-Wert ohne saltV3', () {
       final salt = _randomSalt();
       final key = deriveCatalogKey(password: password, salt: salt);
-      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: key);
+      final encrypted = encryptCatalogValueV3(
+        plaintext: plaintext,
+        derivedKey: key,
+      );
       expect(decryptCatalogValue(encrypted, password), isNull);
     });
 
@@ -205,14 +233,20 @@ void main() {
       final saltA = _randomSalt();
       final saltB = _randomSalt();
       final keyA = deriveCatalogKey(password: password, salt: saltA);
-      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: keyA);
+      final encrypted = encryptCatalogValueV3(
+        plaintext: plaintext,
+        derivedKey: keyA,
+      );
       expect(decryptCatalogValue(encrypted, password, saltV3: saltB), isNull);
     });
 
     test('liefert null bei v3-Wert mit falschem Passwort', () {
       final salt = _randomSalt();
       final key = deriveCatalogKey(password: password, salt: salt);
-      final encrypted = encryptCatalogValueV3(plaintext: plaintext, derivedKey: key);
+      final encrypted = encryptCatalogValueV3(
+        plaintext: plaintext,
+        derivedKey: key,
+      );
       expect(decryptCatalogValue(encrypted, 'falsch!', saltV3: salt), isNull);
     });
 

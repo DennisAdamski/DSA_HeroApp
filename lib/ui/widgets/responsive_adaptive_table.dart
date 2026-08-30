@@ -49,8 +49,7 @@ class ResponsiveAdaptiveTable<T> extends StatelessWidget {
       builder: (context, constraints) {
         final available = constraints.maxWidth;
         final isTooNarrow = available.isFinite && available < minWidth;
-        final useCards =
-            isTooNarrow && ansicht == TabellenAnsicht.automatisch;
+        final useCards = isTooNarrow && ansicht == TabellenAnsicht.automatisch;
         if (useCards) {
           return _buildCardList(context);
         }

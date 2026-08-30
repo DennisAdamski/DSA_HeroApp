@@ -64,8 +64,10 @@ final decryptedCatalogSourceDataProvider = FutureProvider<CatalogSourceData>((
   ref,
 ) async {
   final baseData = await ref.watch(baseCatalogSourceDataProvider.future);
-  final password =
-      ref.watch(appSettingsProvider).valueOrNull?.catalogContentPassword;
+  final password = ref
+      .watch(appSettingsProvider)
+      .valueOrNull
+      ?.catalogContentPassword;
   if (password == null || password.isEmpty) {
     return baseData;
   }

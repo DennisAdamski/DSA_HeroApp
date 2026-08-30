@@ -23,8 +23,7 @@ extension _HouseRulePackStructuredEditor on _HouseRulePackEditorScreenState {
                   controller: _idController,
                   onChanged: _markValidationStale,
                   label: 'ID',
-                  helper:
-                      'Muss unter allen eingebauten und importierten Paketen eindeutig sein.',
+                  helper: 'Muss unter allen eingebauten und importierten Paketen eindeutig sein.',
                 ),
                 const SizedBox(height: 12),
                 _EditorTextField(

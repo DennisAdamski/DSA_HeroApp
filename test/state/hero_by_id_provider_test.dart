@@ -34,10 +34,7 @@ void main() {
   }
 
   test('findHeroById returns hero or null', () {
-    final heroes = <HeroSheet>[
-      buildHero('h-1', 'A'),
-      buildHero('h-2', 'B'),
-    ];
+    final heroes = <HeroSheet>[buildHero('h-1', 'A'), buildHero('h-2', 'B')];
 
     expect(findHeroById(heroes, 'h-2')?.name, 'B');
     expect(findHeroById(heroes, 'missing'), isNull);
@@ -45,10 +42,7 @@ void main() {
 
   test('heroByIdProvider resolves existing hero after list load', () async {
     final repo = FakeRepository(
-      heroes: <HeroSheet>[
-        buildHero('h-1', 'A'),
-        buildHero('h-2', 'B'),
-      ],
+      heroes: <HeroSheet>[buildHero('h-1', 'A'), buildHero('h-2', 'B')],
     );
     final container = buildContainer(repo);
 
@@ -71,24 +65,30 @@ void main() {
     expect(hero!.name, 'B');
   });
 
-  test('heroByIdProvider and heroByIdFutureProvider return null for missing id', () async {
-    final repo = FakeRepository(heroes: <HeroSheet>[buildHero('h-1', 'A')]);
-    final container = buildContainer(repo);
+  test(
+    'heroByIdProvider and heroByIdFutureProvider return null for missing id',
+    () async {
+      final repo = FakeRepository(heroes: <HeroSheet>[buildHero('h-1', 'A')]);
+      final container = buildContainer(repo);
 
-    final heroListSub = container.listen<AsyncValue<List<HeroSheet>>>(
-      heroListProvider,
-      (_, _) {},
-      fireImmediately: true,
-    );
-    addTearDown(heroListSub.close);
-    for (var attempt = 0; attempt < 20; attempt++) {
-      if (heroListSub.read().hasValue) {
-        break;
+      final heroListSub = container.listen<AsyncValue<List<HeroSheet>>>(
+        heroListProvider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(heroListSub.close);
+      for (var attempt = 0; attempt < 20; attempt++) {
+        if (heroListSub.read().hasValue) {
+          break;
+        }
+        await container.pump();
       }
-      await container.pump();
-    }
-    expect(heroListSub.read().hasValue, isTrue);
-    expect(container.read(heroByIdProvider('missing')), isNull);
-    expect(await container.read(heroByIdFutureProvider('missing').future), isNull);
-  });
+      expect(heroListSub.read().hasValue, isTrue);
+      expect(container.read(heroByIdProvider('missing')), isNull);
+      expect(
+        await container.read(heroByIdFutureProvider('missing').future),
+        isNull,
+      );
+    },
+  );
 }

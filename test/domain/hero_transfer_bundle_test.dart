@@ -56,10 +56,9 @@ void main() {
     expect(reloaded.state.currentLep, bundle.state.currentLep);
     expect(reloaded.state.currentAu, bundle.state.currentAu);
     expect(reloaded.state.tempAttributeMods.mu, 2);
-    expect(
-      reloaded.state.activeSpellEffects.activeEffectIds,
-      <String>[activeSpellEffectAxxeleratus],
-    );
+    expect(reloaded.state.activeSpellEffects.activeEffectIds, <String>[
+      activeSpellEffectAxxeleratus,
+    ]);
     expect(reloaded.exportedAt.toUtc(), bundle.exportedAt.toUtc());
   });
 

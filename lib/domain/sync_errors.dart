@@ -76,7 +76,11 @@ enum SyncErrorKind {
 /// Unveraenderliche, UI-taugliche Beschreibung des letzten Sync-Fehlers.
 class SyncFailure {
   /// Erstellt eine Fehlerbeschreibung.
-  const SyncFailure({required this.kind, required this.message, this.occurredAt});
+  const SyncFailure({
+    required this.kind,
+    required this.message,
+    this.occurredAt,
+  });
 
   /// Klassifiziert einen beliebigen Fehler anhand seines Typs.
   factory SyncFailure.fromError(Object error, {DateTime? occurredAt}) {

@@ -39,8 +39,7 @@ void main() {
       password: 'secret',
     );
 
-    final expected =
-        'Basic ${base64Encode(utf8.encode('reader:secret'))}';
+    final expected = 'Basic ${base64Encode(utf8.encode('reader:secret'))}';
     expect(capturedHeader, expected);
   });
 

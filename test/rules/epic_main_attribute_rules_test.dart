@@ -243,10 +243,10 @@ void main() {
         isEpisch: true,
         mainAttributes: muKkMain,
       );
-      expect(
-        boni.map((bonus) => bonus.code).toSet(),
-        <AttributeCode>{AttributeCode.mu, AttributeCode.kk},
-      );
+      expect(boni.map((bonus) => bonus.code).toSet(), <AttributeCode>{
+        AttributeCode.mu,
+        AttributeCode.kk,
+      });
     });
 
     test('KK liefert genau einen automatischen und drei manuelle Boni', () {
@@ -291,8 +291,11 @@ void main() {
     test('erkennt KK in allen Katalog-Schreibweisen', () {
       for (final token in const <String>['KK', 'Koerperkraft', 'Körperkraft']) {
         expect(
-          talentProbeUsesAttribute(<String>['Mut', 'Gewandheit', token],
-              AttributeCode.kk),
+          talentProbeUsesAttribute(<String>[
+            'Mut',
+            'Gewandheit',
+            token,
+          ], AttributeCode.kk),
           isTrue,
           reason: token,
         );
@@ -301,10 +304,11 @@ void main() {
 
     test('lehnt Ketten ohne die Eigenschaft ab', () {
       expect(
-        talentProbeUsesAttribute(
-          <String>['Klugheit', 'Intuition', 'Charisma'],
-          AttributeCode.kk,
-        ),
+        talentProbeUsesAttribute(<String>[
+          'Klugheit',
+          'Intuition',
+          'Charisma',
+        ], AttributeCode.kk),
         isFalse,
       );
     });

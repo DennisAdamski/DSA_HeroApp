@@ -9,8 +9,7 @@ import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
 /// Prueft ob die aktuelle Plattform iOS oder macOS ist.
 bool isApplePlatform(BuildContext context) {
   final platform = Theme.of(context).platform;
-  return platform == TargetPlatform.iOS ||
-      platform == TargetPlatform.macOS;
+  return platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
 }
 
 // ---------------------------------------------------------------------------
@@ -40,8 +39,8 @@ double adaptiveMinTouchTarget(BuildContext context) =>
 /// MaterialTapTargetSize: padded auf Apple, shrinkWrap sonst.
 MaterialTapTargetSize adaptiveTapTargetSize(BuildContext context) =>
     isApplePlatform(context)
-        ? MaterialTapTargetSize.padded
-        : MaterialTapTargetSize.shrinkWrap;
+    ? MaterialTapTargetSize.padded
+    : MaterialTapTargetSize.shrinkWrap;
 
 // ---------------------------------------------------------------------------
 // Adaptive Scroll-Physik
@@ -50,5 +49,5 @@ MaterialTapTargetSize adaptiveTapTargetSize(BuildContext context) =>
 /// BouncingScrollPhysics auf Apple, ClampingScrollPhysics sonst.
 ScrollPhysics adaptiveScrollPhysics(BuildContext context) =>
     isApplePlatform(context)
-        ? const BouncingScrollPhysics()
-        : const ClampingScrollPhysics();
+    ? const BouncingScrollPhysics()
+    : const ClampingScrollPhysics();

@@ -35,15 +35,27 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
   static const List<AdaptiveTableColumnSpec> _columnSpecs =
       <AdaptiveTableColumnSpec>[
         AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 260, flex: 2), // Name
-        AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 180, flex: 1), // Typ (Schild/Parierwaffe)
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),             // BF
-        AdaptiveTableColumnSpec(minWidth: 90, maxWidth: 150, flex: 1),  // Schildgröße
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),             // INI-Mod
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),             // AT-Mod
-        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84),             // PA-Mod
-        AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),            // Artefakt
-        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2), // Artefaktbeschreibung
-        AdaptiveTableColumnSpec.fixed(56),                               // Aktion
+        AdaptiveTableColumnSpec(
+          minWidth: 110,
+          maxWidth: 180,
+          flex: 1,
+        ), // Typ (Schild/Parierwaffe)
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84), // BF
+        AdaptiveTableColumnSpec(
+          minWidth: 90,
+          maxWidth: 150,
+          flex: 1,
+        ), // Schildgröße
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84), // INI-Mod
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84), // AT-Mod
+        AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84), // PA-Mod
+        AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110), // Artefakt
+        AdaptiveTableColumnSpec(
+          minWidth: 180,
+          maxWidth: 320,
+          flex: 2,
+        ), // Artefaktbeschreibung
+        AdaptiveTableColumnSpec.fixed(56), // Aktion
       ];
 
   int? _editingEntryIndex;
@@ -149,10 +161,7 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
 
     final tableCard = Card(
       key: const ValueKey<String>('combat-offhand-card'),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: tableSection,
-      ),
+      child: Padding(padding: const EdgeInsets.all(12), child: tableSection),
     );
 
     if (!_isWideLayout || _editorSeedEntry == null) {

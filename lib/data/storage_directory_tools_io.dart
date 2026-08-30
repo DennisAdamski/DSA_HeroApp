@@ -25,7 +25,8 @@ Future<void> openStorageDirectoryImpl(String path) async {
     throw ProcessException(
       executable,
       arguments,
-      result.stderr?.toString() ?? 'Unbekannter Fehler beim Oeffnen des Ordners.',
+      result.stderr?.toString() ??
+          'Unbekannter Fehler beim Oeffnen des Ordners.',
       result.exitCode,
     );
   }

@@ -18,10 +18,38 @@ class SecretsCipher {
   SecretsCipher._(this._encrypter);
 
   static const List<int> _appSalt = <int>[
-    0x4d, 0x70, 0x53, 0x37, 0x9c, 0xa1, 0xb2, 0xe4,
-    0x18, 0x6f, 0x05, 0x91, 0xd3, 0x2a, 0xc8, 0x76,
-    0x3b, 0xee, 0x49, 0x12, 0x84, 0xfa, 0x60, 0x07,
-    0xab, 0x55, 0x1d, 0xc3, 0x6e, 0x29, 0x77, 0xf0,
+    0x4d,
+    0x70,
+    0x53,
+    0x37,
+    0x9c,
+    0xa1,
+    0xb2,
+    0xe4,
+    0x18,
+    0x6f,
+    0x05,
+    0x91,
+    0xd3,
+    0x2a,
+    0xc8,
+    0x76,
+    0x3b,
+    0xee,
+    0x49,
+    0x12,
+    0x84,
+    0xfa,
+    0x60,
+    0x07,
+    0xab,
+    0x55,
+    0x1d,
+    0xc3,
+    0x6e,
+    0x29,
+    0x77,
+    0xf0,
   ];
   static const int _iterations = 10000;
   static const int _keyLength = 32;
@@ -56,27 +84,17 @@ class SecretsCipher {
   }
 
   /// Entschluesselt einen Cipher-Bytes-Block mit zugehoerigem IV.
-  String decryptString({
-    required Uint8List cipher,
-    required Uint8List iv,
-  }) {
+  String decryptString({required Uint8List cipher, required Uint8List iv}) {
     if (cipher.isEmpty) {
       return '';
     }
-    return _encrypter.decrypt(
-      Encrypted(cipher),
-      iv: IV(iv),
-    );
+    return _encrypter.decrypt(Encrypted(cipher), iv: IV(iv));
   }
 
   static Uint8List _deriveKey(String uid) {
     final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
       ..init(
-        Pbkdf2Parameters(
-          Uint8List.fromList(_appSalt),
-          _iterations,
-          _keyLength,
-        ),
+        Pbkdf2Parameters(Uint8List.fromList(_appSalt), _iterations, _keyLength),
       );
     return derivator.process(Uint8List.fromList(utf8.encode(uid)));
   }

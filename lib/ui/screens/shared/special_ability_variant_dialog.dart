@@ -65,10 +65,12 @@ class _SpecialAbilityVariantDialogState
       }
     }
     final seen = <String>{};
-    _options = options.where((option) {
-      final key = option.name.trim().toLowerCase();
-      return !belegt.contains(key) && seen.add(key);
-    }).toList(growable: false);
+    _options = options
+        .where((option) {
+          final key = option.name.trim().toLowerCase();
+          return !belegt.contains(key) && seen.add(key);
+        })
+        .toList(growable: false);
     _freeTextController = TextEditingController();
     _selected = _options.isEmpty && ability.variantenFreitext
         ? _freeTextValue

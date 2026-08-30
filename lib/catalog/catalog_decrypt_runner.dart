@@ -161,10 +161,7 @@ dynamic _decryptStringIfNeeded(
   String? decrypted;
   if (value.startsWith('${encryptedPrefix}3:')) {
     if (v3Key == null) return value;
-    decrypted = decryptCatalogValueV3(
-      encryptedValue: value,
-      derivedKey: v3Key,
-    );
+    decrypted = decryptCatalogValueV3(encryptedValue: value, derivedKey: v3Key);
   } else {
     // v2 oder v1 — langsamer Fallback.
     decrypted = decryptCatalogValue(value, password);

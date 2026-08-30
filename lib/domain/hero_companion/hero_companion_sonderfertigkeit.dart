@@ -12,10 +12,7 @@ class HeroCompanionSonderfertigkeit {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'name': name,
-    'beschreibung': beschreibung,
-  };
+  Map<String, dynamic> toJson() => {'name': name, 'beschreibung': beschreibung};
 
   static HeroCompanionSonderfertigkeit fromJson(Map<String, dynamic> json) {
     return HeroCompanionSonderfertigkeit(

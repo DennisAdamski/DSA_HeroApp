@@ -57,9 +57,8 @@ extension _HeroLanguagesRaiseActions on _HeroTalentTableTabState {
     if (result == null) {
       return;
     }
-    final updatedSprachen = Map<String, HeroLanguageEntry>.from(
-      _draftSprachen,
-    )..[id] = entry.copyWith(wert: result.neuerWert);
+    final updatedSprachen = Map<String, HeroLanguageEntry>.from(_draftSprachen)
+      ..[id] = entry.copyWith(wert: result.neuerWert);
     final updatedHero = hero.copyWith(
       sprachen: updatedSprachen,
       apSpent: hero.apSpent + result.apKosten,
@@ -71,9 +70,8 @@ extension _HeroLanguagesRaiseActions on _HeroTalentTableTabState {
       return;
     }
     _tableRevision.value++;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('${def.name} gesteigert')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('${def.name} gesteigert')));
   }
 
   Future<void> _steigereSchrift(
@@ -105,9 +103,8 @@ extension _HeroLanguagesRaiseActions on _HeroTalentTableTabState {
     if (result == null) {
       return;
     }
-    final updatedSchriften = Map<String, HeroScriptEntry>.from(
-      _draftSchriften,
-    )..[id] = entry.copyWith(wert: result.neuerWert);
+    final updatedSchriften = Map<String, HeroScriptEntry>.from(_draftSchriften)
+      ..[id] = entry.copyWith(wert: result.neuerWert);
     final updatedHero = hero.copyWith(
       schriften: updatedSchriften,
       apSpent: hero.apSpent + result.apKosten,
@@ -119,8 +116,7 @@ extension _HeroLanguagesRaiseActions on _HeroTalentTableTabState {
       return;
     }
     _tableRevision.value++;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('${def.name} gesteigert')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('${def.name} gesteigert')));
   }
 }

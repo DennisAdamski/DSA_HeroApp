@@ -326,9 +326,9 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
                             return ListTile(
                               leading: const Icon(Icons.edit_note),
                               title: const Text('Freier Eintrag'),
-                              onTap: () => Navigator.of(
-                                dialogContext,
-                              ).pop(const _TraitCatalogPick.freeEntry()),
+                              onTap: () =>
+                                  Navigator.of(dialogContext)
+                                      .pop(const _TraitCatalogPick.freeEntry()),
                             );
                           }
                           final trait = filtered[index - 1];
@@ -343,9 +343,9 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
                             subtitle: subtitleParts.isEmpty
                                 ? null
                                 : Text(subtitleParts.join(' · ')),
-                            onTap: () => Navigator.of(
-                              dialogContext,
-                            ).pop(_TraitCatalogPick.trait(trait)),
+                            onTap: () =>
+                                Navigator.of(dialogContext)
+                                    .pop(_TraitCatalogPick.trait(trait)),
                           );
                         },
                       ),

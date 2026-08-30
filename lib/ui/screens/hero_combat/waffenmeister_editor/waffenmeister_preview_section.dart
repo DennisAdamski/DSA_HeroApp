@@ -38,10 +38,7 @@ class WaffenmeisterPreviewSection extends StatelessWidget {
               style: theme.textTheme.titleSmall,
             ),
           if (draft.styleName.isNotEmpty)
-            Text(
-              'Stil: ${draft.styleName}',
-              style: theme.textTheme.bodySmall,
-            ),
+            Text('Stil: ${draft.styleName}', style: theme.textTheme.bodySmall),
           if (draft.masterName.isNotEmpty)
             Text(
               'Lehrmeister: ${draft.masterName}',
@@ -87,10 +84,7 @@ class WaffenmeisterPreviewSection extends StatelessWidget {
           const Divider(height: 16),
 
           // Eigenschafts-Anforderungen
-          Text(
-            'Voraussetzungen:',
-            style: theme.textTheme.titleSmall,
-          ),
+          Text('Voraussetzungen:', style: theme.textTheme.titleSmall),
           const SizedBox(height: 4),
           Text(
             '${draft.requiredAttribute1} ${draft.requiredAttribute1Value}, '
@@ -139,9 +133,7 @@ class WaffenmeisterPreviewSection extends StatelessWidget {
       case WaffenmeisterBonusType.reloadTimeHalved:
         return 'Ladezeit halbiert (Armbrust)';
       case WaffenmeisterBonusType.customAdvantage:
-        return bonus.description.isNotEmpty
-            ? bonus.description
-            : 'Sonderbonus';
+        return bonus.description.isNotEmpty ? bonus.description : 'Sonderbonus';
     }
   }
 }

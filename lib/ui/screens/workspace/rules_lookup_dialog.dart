@@ -190,9 +190,8 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
         _importError = error.message;
       });
       if (_search != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error.message)));
       }
     }
   }
@@ -254,9 +253,8 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
       _importError = message;
     });
     if (_search != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
     }
   }
 

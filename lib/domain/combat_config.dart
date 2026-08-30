@@ -228,9 +228,8 @@ class CombatConfig {
     final parsedOffhandEquipment = rawOffhandEquipment
         .whereType<Map>()
         .map(
-          (entry) => OffhandEquipmentEntry.fromJson(
-            entry.cast<String, dynamic>(),
-          ),
+          (entry) =>
+              OffhandEquipmentEntry.fromJson(entry.cast<String, dynamic>()),
         )
         .toList(growable: false);
     final legacyOffhand = OffhandSlot.fromJson(readMap('offhand'));
@@ -320,10 +319,7 @@ _migrateLegacyOffhand({
   required List<OffhandEquipmentEntry> existingEntries,
 }) {
   if (legacy.mode == OffhandMode.none || legacy.mode == OffhandMode.linkhand) {
-    return (
-      assignment: const OffhandAssignment(),
-      equipment: existingEntries,
-    );
+    return (assignment: const OffhandAssignment(), equipment: existingEntries);
   }
   final migratedEntry = OffhandEquipmentEntry(
     name: legacy.name,
@@ -352,9 +348,9 @@ List<WaffenmeisterConfig> _parseWaffenmeisterschaften(
   final raw = (json['waffenmeisterschaften'] as List?) ?? const <dynamic>[];
   final parsed = raw
       .whereType<Map>()
-      .map((entry) => WaffenmeisterConfig.fromJson(
-            entry.cast<String, dynamic>(),
-          ))
+      .map(
+        (entry) => WaffenmeisterConfig.fromJson(entry.cast<String, dynamic>()),
+      )
       .toList(growable: false);
   return List<WaffenmeisterConfig>.unmodifiable(parsed);
 }

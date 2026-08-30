@@ -50,10 +50,7 @@ class _CombatSpecializationDialogState
   }
 
   List<String> _normalized() {
-    return _selected
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList()
+    return _selected.map((s) => s.trim()).where((s) => s.isNotEmpty).toList()
       ..sort();
   }
 

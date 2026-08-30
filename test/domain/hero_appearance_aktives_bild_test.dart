@@ -22,22 +22,22 @@ void main() {
       expect(restored.primaerbildId, 'bild-1');
     });
 
-    test('migration: avatarFileName matches gallery entry sets aktivesBildId',
-        () {
-      final restored = HeroAppearance.fromJson({
-        'avatarFileName': 'demo_bild-2.png',
-        'avatarGallery': [
-          {'id': 'bild-1', 'fileName': 'demo_bild-1.png'},
-          {'id': 'bild-2', 'fileName': 'demo_bild-2.png'},
-        ],
-      });
-
-      expect(restored.aktivesBildId, 'bild-2');
-    });
-
     test(
-        'migration: no avatarFileName match falls back to primaerbildId',
-        () {
+      'migration: avatarFileName matches gallery entry sets aktivesBildId',
+      () {
+        final restored = HeroAppearance.fromJson({
+          'avatarFileName': 'demo_bild-2.png',
+          'avatarGallery': [
+            {'id': 'bild-1', 'fileName': 'demo_bild-1.png'},
+            {'id': 'bild-2', 'fileName': 'demo_bild-2.png'},
+          ],
+        });
+
+        expect(restored.aktivesBildId, 'bild-2');
+      },
+    );
+
+    test('migration: no avatarFileName match falls back to primaerbildId', () {
       final restored = HeroAppearance.fromJson({
         'avatarFileName': 'fremd.png',
         'avatarGallery': [

@@ -408,9 +408,8 @@ class _SbProbeSection extends StatelessWidget {
         ),
         Text(
           'Bei 2 Wunden aus einem Treffer: +8; bei 3: +12',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 8),
         FilledButton.tonalIcon(
@@ -501,9 +500,8 @@ class _EffekteZusammenfassung extends StatelessWidget {
         effekte.talentProbeMalus == 0) {
       return Text(
         'Keine Wundeffekte aktiv.',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
       );
     }
     final teile = <String>[];

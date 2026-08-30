@@ -57,14 +57,12 @@ InventoryModifierAggregation aggregateInventoryModifiers(
             mod.wert,
           );
         case InventoryModifierKind.talent:
-          talentMods[mod.targetId] =
-              (talentMods[mod.targetId] ?? 0) + mod.wert;
+          talentMods[mod.targetId] = (talentMods[mod.targetId] ?? 0) + mod.wert;
         case InventoryModifierKind.talentgruppe:
           final groupKey = mod.targetId.toLowerCase().trim();
           for (final talent in talents) {
             if (talent.group.toLowerCase().trim() == groupKey) {
-              talentMods[talent.id] =
-                  (talentMods[talent.id] ?? 0) + mod.wert;
+              talentMods[talent.id] = (talentMods[talent.id] ?? 0) + mod.wert;
             }
           }
       }

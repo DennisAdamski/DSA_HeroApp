@@ -116,8 +116,7 @@ class _MetaTalentManagerDialogState extends State<_MetaTalentManagerDialog> {
                   : ListView.separated(
                       shrinkWrap: true,
                       itemCount: _metaTalents.length,
-                      separatorBuilder: (_, index) =>
-                          const Divider(height: 1),
+                      separatorBuilder: (_, index) => const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final metaTalent = _metaTalents[index];
                         final componentNames = _componentNames(metaTalent);
@@ -150,12 +149,10 @@ class _MetaTalentManagerDialogState extends State<_MetaTalentManagerDialog> {
                                 ),
                                 onPressed: () {
                                   final updated =
-                                      List<HeroMetaTalent>.from(
-                                        _metaTalents,
-                                      )..removeWhere(
-                                        (entry) =>
-                                            entry.id == metaTalent.id,
-                                      );
+                                      List<HeroMetaTalent>.from(_metaTalents)
+                                        ..removeWhere(
+                                          (entry) => entry.id == metaTalent.id,
+                                        );
                                   _updateMetaTalents(updated);
                                 },
                                 icon: const Icon(Icons.delete_outline),
@@ -181,10 +178,7 @@ class _MetaTalentManagerDialogState extends State<_MetaTalentManagerDialog> {
 }
 
 class _MetaTalentEditorDialog extends StatefulWidget {
-  const _MetaTalentEditorDialog({
-    required this.allTalents,
-    this.initialValue,
-  });
+  const _MetaTalentEditorDialog({required this.allTalents, this.initialValue});
 
   final List<TalentDef> allTalents;
   final HeroMetaTalent? initialValue;
@@ -208,18 +202,16 @@ class _MetaTalentEditorDialogState extends State<_MetaTalentEditorDialog> {
     _nameController = TextEditingController(
       text: widget.initialValue?.name ?? '',
     );
-    _beController = TextEditingController(
-      text: widget.initialValue?.be ?? '',
-    );
-    _selectedTalentIds = <String>{
-      ...?widget.initialValue?.componentTalentIds,
-    };
+    _beController = TextEditingController(text: widget.initialValue?.be ?? '');
+    _selectedTalentIds = <String>{...?widget.initialValue?.componentTalentIds};
     _selectedAttributes = List<String?>.filled(3, null, growable: false);
     final initialAttributes =
         widget.initialValue?.attributes ?? const <String>[];
-    for (var index = 0;
-        index < initialAttributes.length && index < 3;
-        index++) {
+    for (
+      var index = 0;
+      index < initialAttributes.length && index < 3;
+      index++
+    ) {
       _selectedAttributes[index] = _normalizeAttributeLabel(
         initialAttributes[index],
       );
@@ -246,8 +238,7 @@ class _MetaTalentEditorDialogState extends State<_MetaTalentEditorDialog> {
     return AttributeCode.values
         .map((code) => _formatAttributeCode(code))
         .map(
-          (label) =>
-              DropdownMenuItem<String>(value: label, child: Text(label)),
+          (label) => DropdownMenuItem<String>(value: label, child: Text(label)),
         )
         .toList(growable: false);
   }
@@ -262,7 +253,8 @@ class _MetaTalentEditorDialogState extends State<_MetaTalentEditorDialog> {
         .where((entry) => entry.isNotEmpty)
         .toList(growable: false);
     final candidate = HeroMetaTalent(
-      id: widget.initialValue?.id ??
+      id:
+          widget.initialValue?.id ??
           'meta_${DateTime.now().microsecondsSinceEpoch}',
       name: _nameController.text.trim(),
       componentTalentIds: componentTalentIds,
@@ -344,9 +336,7 @@ class _MetaTalentEditorDialogState extends State<_MetaTalentEditorDialog> {
                   return SizedBox(
                     width: 180,
                     child: DropdownButtonFormField<String>(
-                      key: ValueKey<String>(
-                        'meta-talent-attribute-$index',
-                      ),
+                      key: ValueKey<String>('meta-talent-attribute-$index'),
                       initialValue: _selectedAttributes[index],
                       decoration: InputDecoration(
                         labelText: 'Eigenschaft ${index + 1}',
@@ -379,47 +369,43 @@ class _MetaTalentEditorDialogState extends State<_MetaTalentEditorDialog> {
                 ),
                 child: ListView(
                   shrinkWrap: true,
-                  children: widget.allTalents.map((talent) {
-                    final selected = _selectedTalentIds.contains(
-                      talent.id,
-                    );
-                    final groupLabel = talent.group.trim().isEmpty
-                        ? talent.type.trim()
-                        : talent.group.trim();
-                    return CheckboxListTile(
-                      key: ValueKey<String>(
-                        'meta-talent-component-${talent.id}',
-                      ),
-                      value: selected,
-                      dense: true,
-                      title: Text(talent.name),
-                      subtitle: groupLabel.isEmpty
-                          ? null
-                          : Text(groupLabel),
-                      onChanged: (enabled) {
-                        setState(() {
-                          if (enabled == true) {
-                            _selectedTalentIds.add(talent.id);
-                          } else {
-                            _selectedTalentIds.remove(talent.id);
-                          }
-                          _validationMessage = null;
-                        });
-                      },
-                    );
-                  }).toList(growable: false),
+                  children: widget.allTalents
+                      .map((talent) {
+                        final selected = _selectedTalentIds.contains(talent.id);
+                        final groupLabel = talent.group.trim().isEmpty
+                            ? talent.type.trim()
+                            : talent.group.trim();
+                        return CheckboxListTile(
+                          key: ValueKey<String>(
+                            'meta-talent-component-${talent.id}',
+                          ),
+                          value: selected,
+                          dense: true,
+                          title: Text(talent.name),
+                          subtitle: groupLabel.isEmpty
+                              ? null
+                              : Text(groupLabel),
+                          onChanged: (enabled) {
+                            setState(() {
+                              if (enabled == true) {
+                                _selectedTalentIds.add(talent.id);
+                              } else {
+                                _selectedTalentIds.remove(talent.id);
+                              }
+                              _validationMessage = null;
+                            });
+                          },
+                        );
+                      })
+                      .toList(growable: false),
                 ),
               ),
               if (_validationMessage != null) ...[
                 const SizedBox(height: 12),
                 Text(
                   _validationMessage!,
-                  key: const ValueKey<String>(
-                    'meta-talent-validation-message',
-                  ),
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  key: const ValueKey<String>('meta-talent-validation-message'),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ],
             ],

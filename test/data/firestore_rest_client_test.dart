@@ -34,9 +34,8 @@ void main() {
         );
       });
 
-      final document = await client(
-        httpClient,
-      ).getDocument('users/user-1/heroes/h-1');
+      final document = await client(httpClient)
+          .getDocument('users/user-1/heroes/h-1');
 
       expect(document, isNotNull);
       expect(document!.id, 'h-1');
@@ -50,9 +49,8 @@ void main() {
         return http.Response('not found', 404);
       });
 
-      final document = await client(
-        httpClient,
-      ).getDocument('users/user-1/heroes/missing');
+      final document = await client(httpClient)
+          .getDocument('users/user-1/heroes/missing');
 
       expect(document, isNull);
     });
@@ -78,21 +76,23 @@ void main() {
       expect(captured.url.queryParameters['currentDocument.exists'], 'true');
     });
 
-    test('patchDocumentFields omits query params without preconditions',
-        () async {
-      late http.Request captured;
-      final httpClient = MockClient((request) async {
-        captured = request;
-        return http.Response(request.body, 200);
-      });
+    test(
+      'patchDocumentFields omits query params without preconditions',
+      () async {
+        late http.Request captured;
+        final httpClient = MockClient((request) async {
+          captured = request;
+          return http.Response(request.body, 200);
+        });
 
-      await client(httpClient).patchDocumentFields(
-        'users/user-1/heroes/h-1',
-        <String, dynamic>{'deleted': false},
-      );
+        await client(httpClient).patchDocumentFields(
+          'users/user-1/heroes/h-1',
+          <String, dynamic>{'deleted': false},
+        );
 
-      expect(captured.url.queryParameters, isEmpty);
-    });
+        expect(captured.url.queryParameters, isEmpty);
+      },
+    );
 
     test('maps failed preconditions in the body to a typed error', () async {
       final httpClient = MockClient((request) async {

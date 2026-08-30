@@ -50,7 +50,9 @@ class CodexMetricTile extends StatelessWidget {
         : codex.panelRaised.withValues(alpha: 0.95);
     final border = highlight ? codex.brass.withValues(alpha: 0.35) : codex.rule;
 
-    final content = compact ? _buildCompact(theme, codex) : _buildExpanded(theme, codex);
+    final content = compact
+        ? _buildCompact(theme, codex)
+        : _buildExpanded(theme, codex);
 
     return Material(
       color: background,

@@ -104,9 +104,17 @@ class HeroCompanionAttack {
           steigerungPa == other.steigerungPa;
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, dk, at, pa, tp, beschreibung, steigerungAt,
-          steigerungPa);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    dk,
+    at,
+    pa,
+    tp,
+    beschreibung,
+    steigerungAt,
+    steigerungPa,
+  );
 }
 
 /// Sentinel-Wert fuer nullable copyWith-Felder.

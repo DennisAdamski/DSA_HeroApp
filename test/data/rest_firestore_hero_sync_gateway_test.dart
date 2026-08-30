@@ -53,9 +53,8 @@ void main() {
           return http.Response(request.body, 200);
         });
 
-        final record = await gateway(
-          client: client,
-        ).saveHero(remoteHero, previousRevision: null);
+        final record = await gateway(client: client)
+            .saveHero(remoteHero, previousRevision: null);
 
         expect(record.hero?.name, 'Alrik');
         expect(record.revision, isNotEmpty);
@@ -126,9 +125,8 @@ void main() {
         return http.Response(request.body, 405);
       });
 
-      final record = await gateway(
-        client: client,
-      ).saveHeroState('h-1', state, previousRevision: null);
+      final record = await gateway(client: client)
+          .saveHeroState('h-1', state, previousRevision: null);
 
       expect(record.heroId, 'h-1');
       expect(record.state?.currentLep, 23);
@@ -182,9 +180,8 @@ void main() {
       });
 
       await expectLater(
-        gateway(
-          client: client,
-        ).saveHero(hero('h-1', 'Alrik'), previousRevision: null),
+        gateway(client: client)
+            .saveHero(hero('h-1', 'Alrik'), previousRevision: null),
         throwsA(isA<SyncPreconditionException>()),
       );
     });
@@ -215,9 +212,8 @@ void main() {
           return http.Response(request.body, 200);
         });
 
-        await gateway(
-          client: client,
-        ).saveHero(hero('h-1', 'Alrik 2'), previousRevision: 'r-1');
+        await gateway(client: client)
+            .saveHero(hero('h-1', 'Alrik 2'), previousRevision: 'r-1');
 
         expect(requests, hasLength(2));
         expect(requests.first.method, 'GET');
@@ -252,9 +248,8 @@ void main() {
       });
 
       await expectLater(
-        gateway(
-          client: client,
-        ).saveHero(hero('h-1', 'Alrik 2'), previousRevision: 'r-1'),
+        gateway(client: client)
+            .saveHero(hero('h-1', 'Alrik 2'), previousRevision: 'r-1'),
         throwsA(
           isA<SyncPreconditionException>()
               .having((e) => e.expectedRevision, 'expectedRevision', 'r-1')
@@ -272,9 +267,8 @@ void main() {
         return http.Response(request.body, 200);
       });
 
-      await gateway(
-        client: client,
-      ).saveHero(hero('h-1', 'Alrik'), previousRevision: null);
+      await gateway(client: client)
+          .saveHero(hero('h-1', 'Alrik'), previousRevision: null);
 
       expect(requests.single.method, 'PATCH');
       expect(

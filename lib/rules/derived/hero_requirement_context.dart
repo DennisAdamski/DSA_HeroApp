@@ -40,9 +40,7 @@ HeroRequirementContext buildHeroRequirementContext(
     },
     sonderfertigkeiten: heroSpecialAbilityNames(hero, catalog: catalog),
     zauberwerte: _werteNachName(
-      eintraege: hero.spells.map(
-        (id, entry) => MapEntry(id, entry.spellValue),
-      ),
+      eintraege: hero.spells.map((id, entry) => MapEntry(id, entry.spellValue)),
       namenNachId: <String, String>{
         for (final spell in catalog?.spells ?? const []) spell.id: spell.name,
       },
@@ -86,7 +84,8 @@ HeroRequirementContext buildHeroRequirementContext(
 /// Namen formulieren („SF Klingenwand“).
 List<String> _manoeverNamen(HeroSheet hero, {RulesCatalog? catalog}) {
   final namenNachId = <String, String>{
-    for (final maneuver in catalog?.maneuvers ?? const []) maneuver.id: maneuver.name,
+    for (final maneuver in catalog?.maneuvers ?? const [])
+      maneuver.id: maneuver.name,
   };
   final talentNamenNachId = <String, String>{
     for (final talent in catalog?.talents ?? const []) talent.id: talent.name,
@@ -146,10 +145,7 @@ List<String> _waffenmeisterTalente(HeroSheet hero, {RulesCatalog? catalog}) {
 /// deshalb ueber [catalog] aufgeloest. Massgeblich ist dabei
 /// [isCombatSpecialAbilityActive], damit auch die in eigenen Feldern
 /// gefuehrten Kampf-SF (`Ausweichen I`, `Ruestungsgewoehnung II`) mitzaehlen.
-List<String> heroSpecialAbilityNames(
-  HeroSheet hero, {
-  RulesCatalog? catalog,
-}) {
+List<String> heroSpecialAbilityNames(HeroSheet hero, {RulesCatalog? catalog}) {
   final namen = <String>[
     for (final ability in hero.talentSpecialAbilities) ability.name,
     for (final ability in hero.magicSpecialAbilities) ability.name,

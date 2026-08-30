@@ -288,10 +288,7 @@ void main() {
       await _pumpAndSettleIgnoringKnownOverflow(tester);
 
       // Neuanlage fragt jetzt die AP-Kosten via Erwerb-Dialog ab.
-      await tester.enterText(
-        find.widgetWithText(TextField, 'AP-Kosten'),
-        '0',
-      );
+      await tester.enterText(find.widgetWithText(TextField, 'AP-Kosten'), '0');
       await _pumpAndSettleIgnoringKnownOverflow(tester);
       await tester.tap(find.text('Erwerben'));
       await _pumpAndSettleIgnoringKnownOverflow(tester);
@@ -492,8 +489,10 @@ void main() {
       find.text('Für eine weitere Spezialisierung wird ZfW 14 benötigt.'),
       findsOneWidget,
     );
-    expect(find.byKey(const ValueKey<String>('spell-specialization-name')),
-        findsNothing);
+    expect(
+      find.byKey(const ValueKey<String>('spell-specialization-name')),
+      findsNothing,
+    );
   });
 
   testWidgets('Zauberspezialisierung wird gespeichert und kostet AP', (
@@ -554,10 +553,9 @@ void main() {
     await _pumpAndSettleIgnoringKnownOverflow(tester);
 
     final savedHero = await opened.repo.loadHeroById('demo');
-    expect(
-      savedHero?.spells['spell_axxeleratus']?.specializations,
-      <String>['Reichweite'],
-    );
+    expect(savedHero?.spells['spell_axxeleratus']?.specializations, <String>[
+      'Reichweite',
+    ]);
     // Ohne Lehrmeister verdoppeln sich die Kosten (Wege des Schwerts S. 17),
     // genau wie bei der Talentspezialisierung: 60 AP -> 120 AP.
     expect(savedHero?.apSpent, 120);
@@ -602,9 +600,7 @@ void main() {
       // nicht im Detaildialog.
       expect(
         find.descendant(
-          of: find.byKey(
-            const ValueKey<String>('magic-spell-details-dialog'),
-          ),
+          of: find.byKey(const ValueKey<String>('magic-spell-details-dialog')),
           matching: find.text('Heldeneintrag'),
         ),
         findsNothing,
@@ -743,9 +739,8 @@ void main() {
     (tester) async {
       final repo = FakeRepository(
         heroes: <HeroSheet>[
-          buildHero(
-            representationen: const <String>['Dru', 'Elf'],
-          ).copyWith(spells: const <String, HeroSpellEntry>{}),
+          buildHero(representationen: const <String>['Dru', 'Elf'])
+              .copyWith(spells: const <String, HeroSpellEntry>{}),
         ],
         states: <String, HeroState>{
           'demo': const HeroState(
@@ -802,9 +797,8 @@ void main() {
     (tester) async {
       final repo = FakeRepository(
         heroes: <HeroSheet>[
-          buildHero(
-            representationen: const <String>['Dru', 'Elf'],
-          ).copyWith(spells: const <String, HeroSpellEntry>{}),
+          buildHero(representationen: const <String>['Dru', 'Elf'])
+              .copyWith(spells: const <String, HeroSpellEntry>{}),
         ],
         states: <String, HeroState>{
           'demo': const HeroState(
@@ -846,20 +840,12 @@ void main() {
       );
       expect(
         find.byKey(
-          const ValueKey<String>(
-            'magic-spell-representation-lernkomplexitaet',
-          ),
+          const ValueKey<String>('magic-spell-representation-lernkomplexitaet'),
         ),
         findsOneWidget,
       );
-      expect(
-        find.textContaining('Lernkomplexität: B'),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining('Basis C'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Lernkomplexität: B'), findsOneWidget);
+      expect(find.textContaining('Basis C'), findsOneWidget);
     },
   );
 
@@ -868,9 +854,8 @@ void main() {
     (tester) async {
       final repo = FakeRepository(
         heroes: <HeroSheet>[
-          buildHero(
-            representationen: const <String>['Mag'],
-          ).copyWith(spells: const <String, HeroSpellEntry>{}),
+          buildHero(representationen: const <String>['Mag'])
+              .copyWith(spells: const <String, HeroSpellEntry>{}),
         ],
         states: <String, HeroState>{
           'demo': const HeroState(
@@ -889,9 +874,7 @@ void main() {
       await _pumpAndSettleIgnoringKnownOverflow(tester);
 
       await tester.tap(
-        find.byKey(
-          const ValueKey<String>('magic-spell-catalog-filter-all'),
-        ),
+        find.byKey(const ValueKey<String>('magic-spell-catalog-filter-all')),
       );
       await _pumpAndSettleIgnoringKnownOverflow(tester);
 
@@ -905,9 +888,7 @@ void main() {
       await _pumpAndSettleIgnoringKnownOverflow(tester);
 
       expect(
-        find.byKey(
-          const ValueKey<String>('magic-spell-representation-dialog'),
-        ),
+        find.byKey(const ValueKey<String>('magic-spell-representation-dialog')),
         findsOneWidget,
       );
       // Beide Herkunftstraditionen (Elf und Dru) werden synthetisch
@@ -946,92 +927,86 @@ void main() {
     },
   );
 
-  testWidgets(
-    'regular spell with foreign options also opens dialog',
-    (tester) async {
-      // Held mit nur Mag-Repr. Zauber 'spell_axxeleratus' hat Verfügbarkeit
-      // 'Mag3, Elf2, Dru(Elf)2': Mag3 ist regulär, der Rest fremd.
-      final repo = FakeRepository(
-        heroes: <HeroSheet>[
-          buildHero(
-            representationen: const <String>['Mag'],
-          ).copyWith(spells: const <String, HeroSpellEntry>{}),
-        ],
-        states: <String, HeroState>{
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 10,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
-      final opened = await openMagicTab(tester, repo: repo);
-
-      await opened.actions.startEdit();
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
-      await tester.tap(find.byKey(const ValueKey<String>('magic-spells-add')));
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
-
-      await tester.tap(
-        find.byKey(
-          const ValueKey<String>(
-            'magic-spell-catalog-toggle-spell_axxeleratus',
-          ),
+  testWidgets('regular spell with foreign options also opens dialog', (
+    tester,
+  ) async {
+    // Held mit nur Mag-Repr. Zauber 'spell_axxeleratus' hat Verfügbarkeit
+    // 'Mag3, Elf2, Dru(Elf)2': Mag3 ist regulär, der Rest fremd.
+    final repo = FakeRepository(
+      heroes: <HeroSheet>[
+        buildHero(representationen: const <String>['Mag'])
+            .copyWith(spells: const <String, HeroSpellEntry>{}),
+      ],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
         ),
-      );
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
+      },
+    );
+    final opened = await openMagicTab(tester, repo: repo);
 
-      // Dialog erscheint auch dann, wenn nur ein regulärer Eintrag passt,
-      // weil zusätzlich fremde Optionen wählbar sind.
-      expect(
-        find.byKey(
-          const ValueKey<String>('magic-spell-representation-dialog'),
-        ),
-        findsOneWidget,
-      );
-      // Regulärer Eintrag Mag3 wird angezeigt.
-      expect(
-        find.byKey(
-          const ValueKey<String>('magic-spell-representation-option-Mag->Mag'),
-        ),
-        findsOneWidget,
-      );
-      // Synthetische fremde Einträge für Elf- und Dru-Herkunft.
-      expect(
-        find.byKey(
-          const ValueKey<String>('magic-spell-representation-option-Elf->Mag'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(
-          const ValueKey<String>('magic-spell-representation-option-Dru->Mag'),
-        ),
-        findsOneWidget,
-      );
+    await opened.actions.startEdit();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.tap(find.byKey(const ValueKey<String>('magic-spells-add')));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
 
-      // Held entscheidet sich für fremde Herkunft Elf.
-      await tester.tap(
-        find.byKey(
-          const ValueKey<String>('magic-spell-representation-option-Elf->Mag'),
-        ),
-      );
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
-      await tester.tap(
-        find.byKey(const ValueKey<String>('magic-spell-representation-save')),
-      );
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.tap(
+      find.byKey(
+        const ValueKey<String>('magic-spell-catalog-toggle-spell_axxeleratus'),
+      ),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
 
-      await opened.actions.save();
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
+    // Dialog erscheint auch dann, wenn nur ein regulärer Eintrag passt,
+    // weil zusätzlich fremde Optionen wählbar sind.
+    expect(
+      find.byKey(const ValueKey<String>('magic-spell-representation-dialog')),
+      findsOneWidget,
+    );
+    // Regulärer Eintrag Mag3 wird angezeigt.
+    expect(
+      find.byKey(
+        const ValueKey<String>('magic-spell-representation-option-Mag->Mag'),
+      ),
+      findsOneWidget,
+    );
+    // Synthetische fremde Einträge für Elf- und Dru-Herkunft.
+    expect(
+      find.byKey(
+        const ValueKey<String>('magic-spell-representation-option-Elf->Mag'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(
+        const ValueKey<String>('magic-spell-representation-option-Dru->Mag'),
+      ),
+      findsOneWidget,
+    );
 
-      final savedHero = await opened.repo.loadHeroById('demo');
-      final entry = savedHero?.spells['spell_axxeleratus'];
-      expect(entry?.learnedRepresentation, 'Mag');
-      expect(entry?.learnedTradition, 'Elf');
-    },
-  );
+    // Held entscheidet sich für fremde Herkunft Elf.
+    await tester.tap(
+      find.byKey(
+        const ValueKey<String>('magic-spell-representation-option-Elf->Mag'),
+      ),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-spell-representation-save')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await opened.actions.save();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    final savedHero = await opened.repo.loadHeroById('demo');
+    final entry = savedHero?.spells['spell_axxeleratus'];
+    expect(entry?.learnedRepresentation, 'Mag');
+    expect(entry?.learnedTradition, 'Elf');
+  });
 
   testWidgets(
     'edit mode stores heldenspezifische text overrides on the active spell',
@@ -1538,9 +1513,8 @@ void main() {
     }) async {
       final repo = FakeRepository(
         heroes: <HeroSheet>[
-          buildHero(
-            magicSpecialAbilities: vorhanden,
-          ).copyWith(apAvailable: 1000),
+          buildHero(magicSpecialAbilities: vorhanden)
+              .copyWith(apAvailable: 1000),
         ],
         states: <String, HeroState>{
           'demo': const HeroState(
@@ -1634,7 +1608,10 @@ void main() {
           find.byKey(const ValueKey<String>('erwerb-voraussetzungen')),
           findsOneWidget,
         );
-        expect(find.text('Eine Voraussetzung ist nicht erfüllt.'), findsOneWidget);
+        expect(
+          find.text('Eine Voraussetzung ist nicht erfüllt.'),
+          findsOneWidget,
+        );
 
         final erwerben = find.widgetWithText(FilledButton, 'Erwerben');
         expect(

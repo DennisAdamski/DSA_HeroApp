@@ -726,8 +726,12 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                             context: context,
                             specializations: entry.specializations,
                             isEditing: isEditing,
-                            onAdd: () =>
-                                _addSpecialization(context, spellId, def, entry),
+                            onAdd: () => _addSpecialization(
+                              context,
+                              spellId,
+                              def,
+                              entry,
+                            ),
                             onRemove: (value) =>
                                 _removeSpecialization(spellId, entry, value),
                           ),
@@ -940,9 +944,7 @@ DataCell _buildSpecializationsCell({
                             padding: EdgeInsets.zero,
                             materialTapTargetSize:
                                 MaterialTapTargetSize.shrinkWrap,
-                            onDeleted: isEditing
-                                ? () => onRemove(value)
-                                : null,
+                            onDeleted: isEditing ? () => onRemove(value) : null,
                           ),
                         )
                         .toList(growable: false),

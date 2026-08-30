@@ -183,7 +183,10 @@ void main() {
     await openRulesTab(tester);
     await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
 
-    expect(find.byKey(const ValueKey<String>('sf-chain-ausweichen')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('sf-chain-ausweichen')),
+      findsOneWidget,
+    );
     // Der Kettenname steht auf der Karte, die Einzelstufen nicht mehr als Chip.
     expect(find.text('Ausweichen'), findsOneWidget);
     expect(find.text('Ausweichen I'), findsNothing);
@@ -267,8 +270,10 @@ void main() {
     await openRulesTab(tester);
     await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
 
-    expect(find.byType(SpecialAbilityChainCard<CombatSpecialAbilityDef>),
-        findsOneWidget);
+    expect(
+      find.byType(SpecialAbilityChainCard<CombatSpecialAbilityDef>),
+      findsOneWidget,
+    );
     expect(
       find.byKey(const ValueKey<String>('sf-chain-acquire-ksf_ausweichen_i')),
       findsOneWidget,

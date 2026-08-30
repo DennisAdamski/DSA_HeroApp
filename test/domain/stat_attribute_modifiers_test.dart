@@ -5,7 +5,14 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 
 const _defaultAttributes = Attributes(
-  mu: 10, kl: 10, inn: 10, ch: 10, ff: 10, ge: 10, ko: 10, kk: 10,
+  mu: 10,
+  kl: 10,
+  inn: 10,
+  ch: 10,
+  ff: 10,
+  ge: 10,
+  ko: 10,
+  kk: 10,
 );
 
 void main() {
@@ -23,9 +30,7 @@ void main() {
           ],
         },
         attributeModifiers: {
-          'mu': [
-            HeroTalentModifier(modifier: 1, description: 'Amulett'),
-          ],
+          'mu': [HeroTalentModifier(modifier: 1, description: 'Amulett')],
         },
       );
 
@@ -64,14 +69,16 @@ void main() {
         'name': 'Test',
         'level': 1,
         'attributes': {
-          'mu': 10, 'kl': 10, 'inn': 10, 'ch': 10,
-          'ff': 10, 'ge': 10, 'ko': 10, 'kk': 10,
+          'mu': 10,
+          'kl': 10,
+          'inn': 10,
+          'ch': 10,
+          'ff': 10,
+          'ge': 10,
+          'ko': 10,
+          'kk': 10,
         },
-        'persistentMods': {
-          'lep': 3,
-          'mr': -1,
-          'au': 0,
-        },
+        'persistentMods': {'lep': 3, 'mr': -1, 'au': 0},
       };
 
       final loaded = HeroSheet.fromJson(json);
@@ -87,31 +94,38 @@ void main() {
       expect(loaded.statModifiers.containsKey('au'), isFalse);
     });
 
-    test('Migration findet nicht statt wenn statModifiers bereits vorhanden', () {
-      final json = <String, dynamic>{
-        'id': 'test',
-        'name': 'Test',
-        'level': 1,
-        'attributes': {
-          'mu': 10, 'kl': 10, 'inn': 10, 'ch': 10,
-          'ff': 10, 'ge': 10, 'ko': 10, 'kk': 10,
-        },
-        'persistentMods': {
-          'lep': 99,
-        },
-        'statModifiers': {
-          'lep': [
-            {'modifier': 5, 'description': 'Eigener Mod'},
-          ],
-        },
-      };
+    test(
+      'Migration findet nicht statt wenn statModifiers bereits vorhanden',
+      () {
+        final json = <String, dynamic>{
+          'id': 'test',
+          'name': 'Test',
+          'level': 1,
+          'attributes': {
+            'mu': 10,
+            'kl': 10,
+            'inn': 10,
+            'ch': 10,
+            'ff': 10,
+            'ge': 10,
+            'ko': 10,
+            'kk': 10,
+          },
+          'persistentMods': {'lep': 99},
+          'statModifiers': {
+            'lep': [
+              {'modifier': 5, 'description': 'Eigener Mod'},
+            ],
+          },
+        };
 
-      final loaded = HeroSheet.fromJson(json);
+        final loaded = HeroSheet.fromJson(json);
 
-      // Bestehende statModifiers behalten, persistentMods nicht migrieren.
-      expect(loaded.statModifiers['lep'], hasLength(1));
-      expect(loaded.statModifiers['lep']![0].modifier, 5);
-      expect(loaded.statModifiers['lep']![0].description, 'Eigener Mod');
-    });
+        // Bestehende statModifiers behalten, persistentMods nicht migrieren.
+        expect(loaded.statModifiers['lep'], hasLength(1));
+        expect(loaded.statModifiers['lep']![0].modifier, 5);
+        expect(loaded.statModifiers['lep']![0].description, 'Eigener Mod');
+      },
+    );
   });
 }

@@ -50,9 +50,8 @@ class _RuestungSection extends StatelessWidget {
                   DropdownMenuItem(value: 2, child: Text('RG II')),
                   DropdownMenuItem(value: 3, child: Text('RG III')),
                 ],
-                onChanged: (v) => onChanged(
-                  companion.copyWith(ruestungsgewoehnung: v ?? 0),
-                ),
+                onChanged: (v) =>
+                    onChanged(companion.copyWith(ruestungsgewoehnung: v ?? 0)),
               ),
             ],
           ),
@@ -79,8 +78,7 @@ class _RuestungSection extends StatelessWidget {
             children: [
               _StatChip(label: 'RS gesamt', wert: rsGesamt),
               _StatChip(label: 'BE (roh)', wert: beRoh),
-              if (rgReduk > 0)
-                _StatChip(label: 'RG-Reduktion', wert: -rgReduk),
+              if (rgReduk > 0) _StatChip(label: 'RG-Reduktion', wert: -rgReduk),
               _StatChip(label: 'BE (Kampf)', wert: beKampf, highlight: true),
             ],
           ),
@@ -332,18 +330,20 @@ class _RuestungsPieceDialogState extends State<_RuestungsPieceDialog> {
   }
 
   ArmorPiece _buildPiece() => ArmorPiece(
-        name: _nameCtrl.text.trim(),
-        rs: int.tryParse(_rsCtrl.text) ?? 0,
-        be: int.tryParse(_beCtrl.text) ?? 0,
-        isActive: _isActive,
-        rg1Active: _rg1Active,
-      );
+    name: _nameCtrl.text.trim(),
+    rs: int.tryParse(_rsCtrl.text) ?? 0,
+    be: int.tryParse(_beCtrl.text) ?? 0,
+    isActive: _isActive,
+    rg1Active: _rg1Active,
+  );
 
   @override
   Widget build(BuildContext context) {
     final isNew = widget.initial == null;
     return AlertDialog(
-      title: Text(isNew ? 'Rüstungsstück hinzufügen' : 'Rüstungsstück bearbeiten'),
+      title: Text(
+        isNew ? 'Rüstungsstück hinzufügen' : 'Rüstungsstück bearbeiten',
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,

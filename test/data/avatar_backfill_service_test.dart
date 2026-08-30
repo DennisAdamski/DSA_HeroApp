@@ -151,11 +151,9 @@ void main() {
 
     await run([hero]);
 
-    expect(
-      cloud.objects.keys,
-      ['held-1.png'],
-      reason: 'Name darf nicht aus heroId und entryId neu gebaut werden',
-    );
+    expect(cloud.objects.keys, [
+      'held-1.png',
+    ], reason: 'Name darf nicht aus heroId und entryId neu gebaut werden');
   });
 
   test('markiert den Lauf mit Zeitstempel und Beschreibung', () async {

@@ -41,27 +41,30 @@ void main() {
     );
   }
 
-  test('collectRestAbilities reads advantages, disadvantages and sf levels', () {
-    final hero = buildHero(
-      vorteileText: 'Schnelle Heilung II, Astrale Regeneration III',
-      nachteileText: 'Schlechte Regeneration, Astraler Block',
-      talentSpecialAbilities: const <TalentSpecialAbility>[
-        TalentSpecialAbility(name: 'Regeneration II'),
-      ],
-      magicSpecialAbilities: const <MagicSpecialAbility>[
-        MagicSpecialAbility(name: 'Meisterliche Regeneration'),
-      ],
-    );
+  test(
+    'collectRestAbilities reads advantages, disadvantages and sf levels',
+    () {
+      final hero = buildHero(
+        vorteileText: 'Schnelle Heilung II, Astrale Regeneration III',
+        nachteileText: 'Schlechte Regeneration, Astraler Block',
+        talentSpecialAbilities: const <TalentSpecialAbility>[
+          TalentSpecialAbility(name: 'Regeneration II'),
+        ],
+        magicSpecialAbilities: const <MagicSpecialAbility>[
+          MagicSpecialAbility(name: 'Meisterliche Regeneration'),
+        ],
+      );
 
-    final abilities = collectRestAbilities(hero);
+      final abilities = collectRestAbilities(hero);
 
-    expect(abilities.fastHealingLevel, 2);
-    expect(abilities.astralRegenerationLevel, 3);
-    expect(abilities.hasPoorRegeneration, isTrue);
-    expect(abilities.hasAstralBlock, isTrue);
-    expect(abilities.talentRegenerationLevel, 2);
-    expect(abilities.hasMasterfulRegeneration, isTrue);
-  });
+      expect(abilities.fastHealingLevel, 2);
+      expect(abilities.astralRegenerationLevel, 3);
+      expect(abilities.hasPoorRegeneration, isTrue);
+      expect(abilities.hasAstralBlock, isTrue);
+      expect(abilities.talentRegenerationLevel, 2);
+      expect(abilities.hasMasterfulRegeneration, isTrue);
+    },
+  );
 
   test('computeRestAuRecovery adds KO bonus and clamps to max', () {
     final result = computeRestAuRecovery(

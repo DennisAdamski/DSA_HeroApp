@@ -1031,10 +1031,10 @@ class _EditableAdventureSeRewardCard extends StatelessWidget {
               onSelected: rewardLocked
                   ? null
                   : (option) => onTargetChanged(
-                        rewardIndex,
-                        targetId: option.id,
-                        targetLabel: option.label,
-                      ),
+                      rewardIndex,
+                      targetId: option.id,
+                      targetLabel: option.label,
+                    ),
               fieldViewBuilder: (context, ctrl, focusNode, onSubmitted) {
                 return TextField(
                   controller: ctrl,

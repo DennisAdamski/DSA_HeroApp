@@ -51,24 +51,27 @@ void main() {
     expect(isCombatTalentDef(byType), isTrue);
   });
 
-  test('validateCombatTalentDistribution flags invalid Nahkampf AT/PA split', () {
-    final talents = <TalentDef>[
-      buildTalent(id: 'sword', name: 'Schwerter', type: 'Nahkampf'),
-    ];
-    final entries = <String, HeroTalentEntry>{
-      'sword': const HeroTalentEntry(talentValue: 8, atValue: 5, paValue: 1),
-    };
+  test(
+    'validateCombatTalentDistribution flags invalid Nahkampf AT/PA split',
+    () {
+      final talents = <TalentDef>[
+        buildTalent(id: 'sword', name: 'Schwerter', type: 'Nahkampf'),
+      ];
+      final entries = <String, HeroTalentEntry>{
+        'sword': const HeroTalentEntry(talentValue: 8, atValue: 5, paValue: 1),
+      };
 
-    final issues = validateCombatTalentDistribution(
-      talents: talents,
-      talentEntries: entries,
-      filter: isCombatTalentDef,
-    );
+      final issues = validateCombatTalentDistribution(
+        talents: talents,
+        talentEntries: entries,
+        filter: isCombatTalentDef,
+      );
 
-    expect(issues.length, 1);
-    expect(issues.single.talentId, 'sword');
-    expect(issues.single.message, contains('AT + PA = TaW'));
-  });
+      expect(issues.length, 1);
+      expect(issues.single.talentId, 'sword');
+      expect(issues.single.message, contains('AT + PA = TaW'));
+    },
+  );
 
   test('validateCombatTalentDistribution flags invalid Fernkampf split', () {
     final talents = <TalentDef>[

@@ -130,15 +130,15 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-          overrides: [
-            heroRepositoryProvider.overrideWithValue(repo),
-            heroTransferFileGatewayProvider.overrideWithValue(fakeGateway),
-            catalogRuntimeDataProvider.overrideWith(
-              (ref) async => _buildRuntimeData(),
-            ),
-          ],
-          child: const MaterialApp(home: HeroesHomeScreen()),
-        ),
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          heroTransferFileGatewayProvider.overrideWithValue(fakeGateway),
+          catalogRuntimeDataProvider.overrideWith(
+            (ref) async => _buildRuntimeData(),
+          ),
+        ],
+        child: const MaterialApp(home: HeroesHomeScreen()),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -195,15 +195,15 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-          overrides: [
-            heroRepositoryProvider.overrideWithValue(repo),
-            heroTransferFileGatewayProvider.overrideWithValue(fakeGateway),
-            catalogRuntimeDataProvider.overrideWith(
-              (ref) async => _buildRuntimeData(),
-            ),
-          ],
-          child: const MaterialApp(home: HeroesHomeScreen()),
-        ),
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          heroTransferFileGatewayProvider.overrideWithValue(fakeGateway),
+          catalogRuntimeDataProvider.overrideWith(
+            (ref) async => _buildRuntimeData(),
+          ),
+        ],
+        child: const MaterialApp(home: HeroesHomeScreen()),
+      ),
     );
     await tester.pumpAndSettle();
 

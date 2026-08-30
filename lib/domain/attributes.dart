@@ -18,23 +18,23 @@ class Attributes {
   });
 
   const Attributes.zero()
-      : mu = 0,
-        kl = 0,
-        inn = 0,
-        ch = 0,
-        ff = 0,
-        ge = 0,
-        ko = 0,
-        kk = 0;
+    : mu = 0,
+      kl = 0,
+      inn = 0,
+      ch = 0,
+      ff = 0,
+      ge = 0,
+      ko = 0,
+      kk = 0;
 
-  final int mu;  // Mut: Tapferkeit, Willenskraft, magische Kraftquelle
-  final int kl;  // Klugheit: Denkvermögen, Lernfähigkeit
+  final int mu; // Mut: Tapferkeit, Willenskraft, magische Kraftquelle
+  final int kl; // Klugheit: Denkvermögen, Lernfähigkeit
   final int inn; // Intuition: Wahrnehmung, Menschenkenntnis
-  final int ch;  // Charisma: Ausstrahlung, Überzeugungskraft
-  final int ff;  // Fingerfertigkeit: Feinmotorik, Geschick der Hände
-  final int ge;  // Gewandtheit: Körperkoordination, Schnelligkeit
-  final int ko;  // Konstitution: Zähigkeit, Gesundheit
-  final int kk;  // Körperkraft: Muskeln, Hebeln, Tragen
+  final int ch; // Charisma: Ausstrahlung, Überzeugungskraft
+  final int ff; // Fingerfertigkeit: Feinmotorik, Geschick der Hände
+  final int ge; // Gewandtheit: Körperkoordination, Schnelligkeit
+  final int ko; // Konstitution: Zähigkeit, Gesundheit
+  final int kk; // Körperkraft: Muskeln, Hebeln, Tragen
 
   Attributes copyWith({
     int? mu,

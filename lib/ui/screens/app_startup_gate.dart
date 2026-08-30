@@ -332,12 +332,10 @@ class _AppStartupGateState extends State<AppStartupGate> {
       if (storage.isCloudBacked) {
         final cache = storage.blobCache;
         if (cache == null) return;
-        final entfernt = await AvatarCacheReconciler(
-          cache: cache,
-        ).run(heroes: await hive.listHeroes());
-        final report = AvatarBackfillReport(
-          verwaisteEntfernt: entfernt,
-        ).abgeschlossen(DateTime.now().toUtc());
+        final entfernt = await AvatarCacheReconciler(cache: cache)
+            .run(heroes: await hive.listHeroes());
+        final report = AvatarBackfillReport(verwaisteEntfernt: entfernt)
+            .abgeschlossen(DateTime.now().toUtc());
         debugPrint('[startup] avatar-cache $report');
         if (mounted) {
           setState(() => _avatarBackfillReport = report);

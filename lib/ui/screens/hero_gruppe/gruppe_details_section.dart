@@ -131,15 +131,11 @@ class GruppeDetailsSection extends ConsumerWidget {
 
   void _codeKopieren(BuildContext context) {
     Clipboard.setData(ClipboardData(text: mitgliedschaft.gruppenCode));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Gruppencode kopiert')),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Gruppencode kopiert')));
   }
 
-  Future<void> _gruppeVerlassen(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _gruppeVerlassen(BuildContext context, WidgetRef ref) async {
     final bestaetigt = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -164,7 +160,9 @@ class GruppeDetailsSection extends ConsumerWidget {
       return;
     }
 
-    await ref.read(heroActionsProvider).verlasseGruppe(
+    await ref
+        .read(heroActionsProvider)
+        .verlasseGruppe(
           heroId: heroId,
           gruppenCode: mitgliedschaft.gruppenCode,
         );

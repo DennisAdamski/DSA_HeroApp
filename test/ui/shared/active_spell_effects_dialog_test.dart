@@ -68,8 +68,10 @@ void main() {
           home: Scaffold(
             body: Builder(
               builder: (context) => TextButton(
-                onPressed: () =>
-                    showActiveSpellEffectsDialog(context: context, heroId: 'demo'),
+                onPressed: () => showActiveSpellEffectsDialog(
+                  context: context,
+                  heroId: 'demo',
+                ),
                 child: const Text('öffnen'),
               ),
             ),
@@ -128,8 +130,13 @@ void main() {
     await tester.pumpAndSettle();
 
     final state = await repo.loadHeroState('demo');
-    expect(state!.activeSpellEffects.isActive(activeSpellEffectArmatrutz), isTrue);
-    final detail = state.activeSpellEffects.detailFor(activeSpellEffectArmatrutz);
+    expect(
+      state!.activeSpellEffects.isActive(activeSpellEffectArmatrutz),
+      isTrue,
+    );
+    final detail = state.activeSpellEffects.detailFor(
+      activeSpellEffectArmatrutz,
+    );
     expect(detail.amount, 3);
     expect(detail.duration?.amount, 2);
     expect(detail.duration?.remaining, 2);
@@ -187,10 +194,7 @@ void main() {
       ).copyWith(activeSpellEffects: effects),
     );
 
-    expect(
-      find.text('noch 4 von 4 Kampfrunden'),
-      findsOneWidget,
-    );
+    expect(find.text('noch 4 von 4 Kampfrunden'), findsOneWidget);
 
     await tester.tap(
       find.byKey(

@@ -260,9 +260,8 @@ class _WaffenmeisterEditorScreenState extends State<WaffenmeisterEditorScreen> {
             children: [
               Text(
                 'Budget: $usedTotal / $totalBudget Punkte',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: isOverBudget ? colorScheme.error : null,
-                ),
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(color: isOverBudget ? colorScheme.error : null),
               ),
               const Spacer(),
               if (autoCost > 0)
@@ -278,7 +277,9 @@ class _WaffenmeisterEditorScreenState extends State<WaffenmeisterEditorScreen> {
                       : 'Frei: $remaining',
                 ),
                 visualDensity: VisualDensity.compact,
-                backgroundColor: isOverBudget ? colorScheme.errorContainer : null,
+                backgroundColor: isOverBudget
+                    ? colorScheme.errorContainer
+                    : null,
               ),
             ],
           ),
@@ -293,7 +294,8 @@ class _WaffenmeisterEditorScreenState extends State<WaffenmeisterEditorScreen> {
   }
 
   Widget _buildActions({required bool isOverBudget}) {
-    final canSave = _draft.talentId.isNotEmpty &&
+    final canSave =
+        _draft.talentId.isNotEmpty &&
         _draft.weaponType.trim().isNotEmpty &&
         !isOverBudget;
     return SafeArea(
