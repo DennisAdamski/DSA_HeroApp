@@ -9,8 +9,7 @@ import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 /// Pflicht-Gate vor dem App-Shell angezeigt; auf Desktop optional ueber
 /// die Einstellungen erreichbar.
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key, AuthService? authService})
-    : _authService = authService;
+  const SignInScreen({super.key, this._authService});
 
   final AuthService? _authService;
 
