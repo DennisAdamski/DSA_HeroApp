@@ -20,3 +20,16 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "ci"
+
+  # Android baut zwar niemand aus (Vertrieb: Windows-MSIX und Web), aber ohne
+  # diesen Eintrag steht der Gradle-Stack voellig unbeobachtet: google-services
+  # 4.3.15, AGP 8.11.1, Kotlin 2.2.20. PRs laufen auf und werden einzeln
+  # entschieden — ein blinder AGP-Sprung ohne Build-Verifikation waere hier
+  # reine Bewegung.
+  - package-ecosystem: "gradle"
+    directory: "/android"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"

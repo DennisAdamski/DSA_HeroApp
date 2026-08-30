@@ -235,11 +235,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `on FirebaseException` verpasst deshalb Netzwerk- und Typfehler.
 - Die Web-App läuft bewusst auch ohne Login (`WebAuthGate` reicht `null` durch).
   Ohne Konto gibt es keinen Cloud-Pfad und damit keine Avatarbilder.
-- Beim lokalen Web-Debuggen ist `flutter run -d chrome --web-port=5000`
-  **Pflicht**, nicht Komfort: Firebase Auth und Hive persistieren pro Origin,
-  und die CORS-Regel des Storage-Buckets nennt genau diesen Port. Ein
-  zufälliger Port bedeutet abgemeldete Sitzung, leeren Speicher **und**
-  blockierte Bilder.
+- Beim lokalen Web-Debuggen ist `--web-port=5000` **Pflicht**, nicht Komfort:
+  Firebase Auth und Hive persistieren pro Origin, und die CORS-Regel des
+  Storage-Buckets nennt genau diesen Port. Ein zufälliger Port bedeutet
+  abgemeldete Sitzung, leeren Speicher **und** blockierte Bilder. Die Pflicht
+  hängt am Port, nicht am Browser: `flutter run -d chrome --web-port=5000`
+  und `flutter run -d edge --web-port=5000` sind gleichwertig. Auf Maschinen
+  ohne Chrome meldet `flutter doctor` „Cannot find Chrome" und `flutter
+  devices` listet nur Edge — dann entweder `-d edge` nehmen oder
+  `CHROME_EXECUTABLE` auf eine Chrome-Installation setzen.
 - Der Storage-Bucket braucht eine **CORS-Konfiguration**, sonst sind Avatare im
   Web unsichtbar. `firebase_storage_web.getData()` lädt die Bytes per
   `http.readBytes` von der Download-URL — ein normaler Browser-Fetch. Diese
