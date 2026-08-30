@@ -103,12 +103,7 @@ const List<TraditionDef> kTraditionen = <TraditionDef>[
     name: 'Geode (Diener Sumus)',
     leiteigenschaft: 'IN',
     repraesentation: 'Geo',
-    aliasNamen: <String>[
-      'Diener Sumus',
-      'Geode',
-      'Geoden',
-      'Geodisch',
-    ],
+    aliasNamen: <String>['Diener Sumus', 'Geode', 'Geoden', 'Geodisch'],
   ),
   TraditionDef(
     id: 'hexe',
@@ -278,8 +273,7 @@ List<TraditionDef> resolveHeroTraditionen({
     final gewaehlt = gewaehlteTraditionen[kuerzel.trim()];
     final kandidaten = traditionenFuerRepraesentation(kuerzel);
     if (gewaehlt != null && gewaehlt.trim().isNotEmpty) {
-      final tradition =
-          traditionById(gewaehlt) ?? traditionByName(gewaehlt);
+      final tradition = traditionById(gewaehlt) ?? traditionByName(gewaehlt);
       if (tradition != null && tradition.repraesentation == kuerzel.trim()) {
         add(tradition);
         continue;

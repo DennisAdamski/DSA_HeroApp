@@ -164,32 +164,33 @@ void main() {
       expect(result.statMods.at, -2);
     });
 
-    test('talentgruppe-Modifikator wird auf alle Talente der Gruppe aufgeloest', () {
-      final talents = [
-        const TalentDef(
-          id: 'tal_klettern',
-          name: 'Klettern',
-          group: 'Körperliche Talente',
-          steigerung: 'B',
-          attributes: ['MU', 'GE', 'KK'],
-        ),
-        const TalentDef(
-          id: 'tal_koerperbeherrschung',
-          name: 'Körperbeherrschung',
-          group: 'Körperliche Talente',
-          steigerung: 'D',
-          attributes: ['MU', 'IN', 'GE'],
-        ),
-        const TalentDef(
-          id: 'tal_menschenkenntnis',
-          name: 'Menschenkenntnis',
-          group: 'Gesellschaftliche Talente',
-          steigerung: 'C',
-          attributes: ['KL', 'IN', 'CH'],
-        ),
-      ];
-      final result = aggregateInventoryModifiers(
-        [
+    test(
+      'talentgruppe-Modifikator wird auf alle Talente der Gruppe aufgeloest',
+      () {
+        final talents = [
+          const TalentDef(
+            id: 'tal_klettern',
+            name: 'Klettern',
+            group: 'Körperliche Talente',
+            steigerung: 'B',
+            attributes: ['MU', 'GE', 'KK'],
+          ),
+          const TalentDef(
+            id: 'tal_koerperbeherrschung',
+            name: 'Körperbeherrschung',
+            group: 'Körperliche Talente',
+            steigerung: 'D',
+            attributes: ['MU', 'IN', 'GE'],
+          ),
+          const TalentDef(
+            id: 'tal_menschenkenntnis',
+            name: 'Menschenkenntnis',
+            group: 'Gesellschaftliche Talente',
+            steigerung: 'C',
+            attributes: ['KL', 'IN', 'CH'],
+          ),
+        ];
+        final result = aggregateInventoryModifiers([
           _equippedItem([
             const InventoryItemModifier(
               kind: InventoryModifierKind.talentgruppe,
@@ -197,27 +198,23 @@ void main() {
               wert: 2,
             ),
           ]),
-        ],
-        talents: talents,
-      );
-      expect(result.talentMods['tal_klettern'], 2);
-      expect(result.talentMods['tal_koerperbeherrschung'], 2);
-      expect(result.talentMods.containsKey('tal_menschenkenntnis'), isFalse);
-    });
+        ], talents: talents);
+        expect(result.talentMods['tal_klettern'], 2);
+        expect(result.talentMods['tal_koerperbeherrschung'], 2);
+        expect(result.talentMods.containsKey('tal_menschenkenntnis'), isFalse);
+      },
+    );
 
     test('talentgruppe-Modifikator ohne passende Talente aendert nichts', () {
-      final result = aggregateInventoryModifiers(
-        [
-          _equippedItem([
-            const InventoryItemModifier(
-              kind: InventoryModifierKind.talentgruppe,
-              targetId: 'Unbekannte Gruppe',
-              wert: 5,
-            ),
-          ]),
-        ],
-        talents: const [],
-      );
+      final result = aggregateInventoryModifiers([
+        _equippedItem([
+          const InventoryItemModifier(
+            kind: InventoryModifierKind.talentgruppe,
+            targetId: 'Unbekannte Gruppe',
+            wert: 5,
+          ),
+        ]),
+      ], talents: const []);
       expect(result.talentMods, isEmpty);
     });
 
@@ -231,23 +228,20 @@ void main() {
           attributes: ['MU', 'GE', 'KK'],
         ),
       ];
-      final result = aggregateInventoryModifiers(
-        [
-          _equippedItem([
-            const InventoryItemModifier(
-              kind: InventoryModifierKind.talentgruppe,
-              targetId: 'Körperliche Talente',
-              wert: 2,
-            ),
-            const InventoryItemModifier(
-              kind: InventoryModifierKind.talent,
-              targetId: 'tal_klettern',
-              wert: 3,
-            ),
-          ]),
-        ],
-        talents: talents,
-      );
+      final result = aggregateInventoryModifiers([
+        _equippedItem([
+          const InventoryItemModifier(
+            kind: InventoryModifierKind.talentgruppe,
+            targetId: 'Körperliche Talente',
+            wert: 2,
+          ),
+          const InventoryItemModifier(
+            kind: InventoryModifierKind.talent,
+            targetId: 'tal_klettern',
+            wert: 3,
+          ),
+        ]),
+      ], talents: talents);
       expect(result.talentMods['tal_klettern'], 5);
     });
 

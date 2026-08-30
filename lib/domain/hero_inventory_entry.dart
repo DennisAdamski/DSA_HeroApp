@@ -248,8 +248,9 @@ class HeroInventoryEntry {
         ? modifiersRaw
               .whereType<Map>()
               .map(
-                (entry) =>
-                    InventoryItemModifier.fromJson(entry.cast<String, dynamic>()),
+                (entry) => InventoryItemModifier.fromJson(
+                  entry.cast<String, dynamic>(),
+                ),
               )
               .toList(growable: false)
         : const <InventoryItemModifier>[];

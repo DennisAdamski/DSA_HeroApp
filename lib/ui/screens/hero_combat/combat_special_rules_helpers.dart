@@ -101,50 +101,63 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
     switch (id) {
       case 'ksf_kampfreflexe':
         _draftCombatConfig = _draftCombatConfig.copyWith(
-            specialRules: rules.copyWith(kampfreflexe: value));
+          specialRules: rules.copyWith(kampfreflexe: value),
+        );
       case 'ksf_kampfgespuer':
         _draftCombatConfig = _draftCombatConfig.copyWith(
-            specialRules: rules.copyWith(kampfgespuer: value));
+          specialRules: rules.copyWith(kampfgespuer: value),
+        );
       case 'ksf_schnellziehen':
         _draftCombatConfig = _draftCombatConfig.copyWith(
-            specialRules: rules.copyWith(schnellziehen: value));
+          specialRules: rules.copyWith(schnellziehen: value),
+        );
       case 'ksf_ausweichen_i':
         _draftCombatConfig = _draftCombatConfig.copyWith(
-            specialRules: rules.copyWith(ausweichenI: value));
+          specialRules: rules.copyWith(ausweichenI: value),
+        );
       case 'ksf_ausweichen_ii':
         _draftCombatConfig = _draftCombatConfig.copyWith(
-            specialRules: rules.copyWith(ausweichenII: value));
+          specialRules: rules.copyWith(ausweichenII: value),
+        );
       case 'ksf_ausweichen_iii':
         _draftCombatConfig = _draftCombatConfig.copyWith(
-            specialRules: rules.copyWith(ausweichenIII: value));
+          specialRules: rules.copyWith(ausweichenIII: value),
+        );
       case 'ksf_linkhand':
         _draftCombatConfig = _draftCombatConfig.copyWith(
-            specialRules: rules.copyWith(linkhandActive: value));
+          specialRules: rules.copyWith(linkhandActive: value),
+        );
       case 'ksf_schildkampf_i':
         _draftCombatConfig = _draftCombatConfig.copyWith(
-            specialRules: rules.copyWith(schildkampfI: value));
+          specialRules: rules.copyWith(schildkampfI: value),
+        );
       case 'ksf_schildkampf_ii':
         _draftCombatConfig = _draftCombatConfig.copyWith(
-            specialRules: rules.copyWith(schildkampfII: value));
+          specialRules: rules.copyWith(schildkampfII: value),
+        );
       case 'ksf_parierwaffen_i':
         _draftCombatConfig = _draftCombatConfig.copyWith(
-            specialRules: rules.copyWith(parierwaffenI: value));
+          specialRules: rules.copyWith(parierwaffenI: value),
+        );
       case 'ksf_parierwaffen_ii':
         _draftCombatConfig = _draftCombatConfig.copyWith(
-            specialRules: rules.copyWith(parierwaffenII: value));
+          specialRules: rules.copyWith(parierwaffenII: value),
+        );
       case 'ksf_klingentaenzer':
         _draftCombatConfig = _draftCombatConfig.copyWith(
-            specialRules: rules.copyWith(klingentaenzer: value));
+          specialRules: rules.copyWith(klingentaenzer: value),
+        );
       case 'ksf_aufmerksamkeit':
         _draftCombatConfig = _draftCombatConfig.copyWith(
-            specialRules: rules.copyWith(aufmerksamkeit: value));
+          specialRules: rules.copyWith(aufmerksamkeit: value),
+        );
       case 'ksf_ruestungsgewoehnung_i':
         _draftCombatConfig = _draftCombatConfig.copyWith(
           armor: armor.copyWith(
             globalArmorTrainingLevel: value
                 ? (armor.globalArmorTrainingLevel < 1
-                    ? 1
-                    : armor.globalArmorTrainingLevel)
+                      ? 1
+                      : armor.globalArmorTrainingLevel)
                 : 0,
           ),
         );
@@ -153,9 +166,11 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
           armor: armor.copyWith(
             globalArmorTrainingLevel: value
                 ? (armor.globalArmorTrainingLevel < 2
-                    ? 2
-                    : armor.globalArmorTrainingLevel)
-                : (armor.globalArmorTrainingLevel > 1 ? 1 : armor.globalArmorTrainingLevel),
+                      ? 2
+                      : armor.globalArmorTrainingLevel)
+                : (armor.globalArmorTrainingLevel > 1
+                      ? 1
+                      : armor.globalArmorTrainingLevel),
           ),
         );
       case 'ksf_ruestungsgewoehnung_iii':
@@ -164,13 +179,16 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
             globalArmorTrainingLevel: value
                 ? 3
                 : (armor.globalArmorTrainingLevel > 2
-                    ? 2
-                    : armor.globalArmorTrainingLevel),
+                      ? 2
+                      : armor.globalArmorTrainingLevel),
           ),
         );
       default:
         _toggleCatalogCombatSpecialAbility(
-            rules: rules, abilityId: id, isActive: value);
+          rules: rules,
+          abilityId: id,
+          isActive: value,
+        );
         return; // _toggleCatalogCombatSpecialAbility already calls _markFieldChanged
     }
     _markFieldChanged();
@@ -229,15 +247,15 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
             voraussetzungen: ergebnisse,
             onGladiatorStyleChanged:
                 ability.id == 'ksf_gladiatorenstil' && isEditing
-                    ? (String? value) {
-                        _draftCombatConfig = _draftCombatConfig.copyWith(
-                          specialRules: rules.copyWith(
-                            gladiatorStyleTalent: value ?? '',
-                          ),
-                        );
-                        _markFieldChanged();
-                      }
-                    : null,
+                ? (String? value) {
+                    _draftCombatConfig = _draftCombatConfig.copyWith(
+                      specialRules: rules.copyWith(
+                        gladiatorStyleTalent: value ?? '',
+                      ),
+                    );
+                    _markFieldChanged();
+                  }
+                : null,
             gladiatorStyleTalent: rules.gladiatorStyleTalent,
           ),
         ),
@@ -570,9 +588,11 @@ class _CombatRuleChip extends StatelessWidget {
         : (isActive ? colorScheme.primary : theme.dividerColor);
     final bgColor = isActive
         ? (isEpic
-            ? Color.alphaBlend(
-                const Color(0x22B8860B), colorScheme.primaryContainer)
-            : colorScheme.primaryContainer)
+              ? Color.alphaBlend(
+                  const Color(0x22B8860B),
+                  colorScheme.primaryContainer,
+                )
+              : colorScheme.primaryContainer)
         : colorScheme.surfaceContainerHighest;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
@@ -635,16 +655,18 @@ class _CombatRuleChip extends StatelessWidget {
                     offeneVoraussetzungen == 1
                         ? '1 Voraussetzung offen'
                         : '$offeneVoraussetzungen Voraussetzungen offen',
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: colorScheme.error),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.error,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   )
                 else if (beschreibung.trim().isNotEmpty)
                   Text(
                     beschreibung.trim(),
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: theme.hintColor),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.hintColor,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

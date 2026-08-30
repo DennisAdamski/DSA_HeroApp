@@ -78,8 +78,7 @@ class HouseRuleCatalogResolver {
                 packTitle: pack.title,
                 filePath: pack.filePath,
                 section: patch.section,
-                message:
-                    'Patch mit setFields trifft keine Eintraege und bleibt wirkungslos.',
+                message: 'Patch mit setFields trifft keine Eintraege und bleibt wirkungslos.',
               ),
             );
           }
@@ -99,8 +98,7 @@ class HouseRuleCatalogResolver {
                     section: patch.section,
                     entryId: entryId,
                     fieldPath: fieldPath,
-                    message:
-                        'Die stabile Eintrags-ID darf von Hausregeln nicht geaendert werden.',
+                    message: 'Die stabile Eintrags-ID darf von Hausregeln nicht geaendert werden.',
                   ),
                 );
                 continue;
@@ -126,8 +124,7 @@ class HouseRuleCatalogResolver {
                       section: patch.section,
                       entryId: entryId,
                       fieldPath: fieldPath,
-                      message:
-                          'Feldkonflikt mit gleich hoher Prioritaet; die spaetere Aenderung wird ignoriert.',
+                      message: 'Feldkonflikt mit gleich hoher Prioritaet; die spaetere Aenderung wird ignoriert.',
                     ),
                   );
                   continue;
@@ -175,8 +172,7 @@ class HouseRuleCatalogResolver {
                 packTitle: pack.title,
                 filePath: pack.filePath,
                 section: patch.section,
-                message:
-                    'Patch mit deactivateEntries trifft keine Eintraege und bleibt wirkungslos.',
+                message: 'Patch mit deactivateEntries trifft keine Eintraege und bleibt wirkungslos.',
               ),
             );
           }
@@ -202,8 +198,7 @@ class HouseRuleCatalogResolver {
                     filePath: pack.filePath,
                     section: patch.section,
                     entryId: entryId,
-                    message:
-                        'addEntries kollidiert mit einer bestehenden ID und wird ignoriert.',
+                    message: 'addEntries kollidiert mit einer bestehenden ID und wird ignoriert.',
                   ),
                 );
                 continue;

@@ -91,7 +91,8 @@ void main() {
       expect(
         bekannt.any((name) => besessenStufeFuer(name, bedingung.name) != null),
         isTrue,
-        reason: 'Voraussetzung "SF ${bedingung.name}" hat keinen Katalogeintrag',
+        reason:
+            'Voraussetzung "SF ${bedingung.name}" hat keinen Katalogeintrag',
       );
     }
   });

@@ -47,10 +47,7 @@ void main() {
         valueKind: 'binary',
         selectionTemplate: 'Verbindungen',
       );
-      expect(
-        parseTraitFragmentValue('Verbindungen', trait),
-        isNull,
-      );
+      expect(parseTraitFragmentValue('Verbindungen', trait), isNull);
     });
 
     test('liefert null bei nicht passendem Fragment', () {

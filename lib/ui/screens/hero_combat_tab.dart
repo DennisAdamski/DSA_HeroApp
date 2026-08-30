@@ -326,8 +326,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                 children: [
                   const CodexTabHeader(
                     title: 'Taktische Kampfansicht',
-                    subtitle:
-                        'Waffenhaltung, Vorschauwerte, Rüstung und Regelmodule in verdichteter Schlachtfeld-Darstellung.',
+                    subtitle: 'Waffenhaltung, Vorschauwerte, Rüstung und Regelmodule in verdichteter Schlachtfeld-Darstellung.',
                     assetPath: 'assets/ui/codex/combat_silhouette.png',
                   ),
                   TabBar(

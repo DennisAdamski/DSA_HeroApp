@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -248,9 +248,8 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       return;
     }
     _editController.markSaved();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Magie gespeichert')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Magie gespeichert')));
   }
 
   Future<void> _cancelChanges() async {
@@ -361,9 +360,8 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       return;
     }
     _tableRevision.value++;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('${spell.name} gesteigert')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('${spell.name} gesteigert')));
   }
 
   void _updateSpellModifier(String spellId, String raw) {
@@ -451,8 +449,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
           children: [
             const CodexTabHeader(
               title: 'Arkane Matrizen',
-              subtitle:
-                  'Zauber, Rituale und magische Sonderfertigkeiten mit Repräsentationen und Merkmalfokus.',
+              subtitle: 'Zauber, Rituale und magische Sonderfertigkeiten mit Repräsentationen und Merkmalfokus.',
               assetPath: 'assets/ui/codex/arcane_seal.png',
             ),
             TabBar(
@@ -560,8 +557,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                   title: spell.name,
                                   targets: targets,
                                   basePool:
-                                      (entry.spellValue ?? 0) +
-                                      entry.modifier,
+                                      (entry.spellValue ?? 0) + entry.modifier,
                                   wundMalus:
                                       (wundEffekte?.talentProbeMalus ?? 0) +
                                       (wundEffekte?.zauberExtraMalus ?? 0),

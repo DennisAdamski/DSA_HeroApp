@@ -55,9 +55,7 @@ void main() {
         ],
       );
       const partial = HeroReisebericht(checkedIds: {'rb_c_1', 'rb_c_2'});
-      const full = HeroReisebericht(
-        checkedIds: {'rb_c_1', 'rb_c_2', 'rb_c_3'},
-      );
+      const full = HeroReisebericht(checkedIds: {'rb_c_1', 'rb_c_2', 'rb_c_3'});
 
       expect(countFixedCollectionChecked(def, partial), 2);
       expect(countFixedCollectionChecked(def, full), 3);
@@ -244,9 +242,7 @@ void main() {
           ReiseberichtFesteintragDef(id: 'rb_cf_3', name: 'Drei'),
         ],
       );
-      const state = HeroReisebericht(
-        checkedIds: {'rb_cf_1', 'rb_cf_2'},
-      );
+      const state = HeroReisebericht(checkedIds: {'rb_cf_1', 'rb_cf_2'});
 
       final rewards = computePendingRewards(catalog: [def], state: state);
 
@@ -306,11 +302,7 @@ void main() {
         openEntries: {
           'rb_co_k': [
             ReiseberichtOpenItem(name: 'A', klassifikation: 'normal', ap: 10),
-            ReiseberichtOpenItem(
-              name: 'B',
-              klassifikation: 'exotisch',
-              ap: 20,
-            ),
+            ReiseberichtOpenItem(name: 'B', klassifikation: 'exotisch', ap: 20),
           ],
         },
       );
@@ -386,17 +378,18 @@ void main() {
         level: 1,
         apTotal: 100,
         attributes: const Attributes(
-          mu: 12, kl: 12, inn: 12, ch: 12,
-          ff: 12, ge: 12, ko: 12, kk: 12,
+          mu: 12,
+          kl: 12,
+          inn: 12,
+          ch: 12,
+          ff: 12,
+          ge: 12,
+          ko: 12,
+          kk: 12,
         ),
       );
-      const rewards = ReiseberichtRewards(
-        ap: 30,
-        newAppliedIds: {'rb_1'},
-      );
-      const updatedState = HeroReisebericht(
-        checkedIds: {'rb_1'},
-      );
+      const rewards = ReiseberichtRewards(ap: 30, newAppliedIds: {'rb_1'});
+      const updatedState = HeroReisebericht(checkedIds: {'rb_1'});
 
       final result = applyReiseberichtRewards(
         hero: hero,
@@ -414,12 +407,16 @@ void main() {
         name: 'Testor',
         level: 1,
         attributes: const Attributes(
-          mu: 12, kl: 12, inn: 12, ch: 12,
-          ff: 12, ge: 12, ko: 12, kk: 12,
+          mu: 12,
+          kl: 12,
+          inn: 12,
+          ch: 12,
+          ff: 12,
+          ge: 12,
+          ko: 12,
+          kk: 12,
         ),
-        talents: const {
-          'Kriegskunst': HeroTalentEntry(talentValue: 5),
-        },
+        talents: const {'Kriegskunst': HeroTalentEntry(talentValue: 5)},
       );
       const rewards = ReiseberichtRewards(
         seRewards: [
@@ -443,12 +440,16 @@ void main() {
         name: 'Testor',
         level: 1,
         attributes: const Attributes(
-          mu: 12, kl: 12, inn: 12, ch: 12,
-          ff: 12, ge: 12, ko: 12, kk: 12,
+          mu: 12,
+          kl: 12,
+          inn: 12,
+          ch: 12,
+          ff: 12,
+          ge: 12,
+          ko: 12,
+          kk: 12,
         ),
-        talents: const {
-          'Gassenwissen': HeroTalentEntry(talentValue: 3),
-        },
+        talents: const {'Gassenwissen': HeroTalentEntry(talentValue: 3)},
       );
       const rewards = ReiseberichtRewards(
         talentBoni: [
@@ -482,8 +483,14 @@ void main() {
         name: 'Testor',
         level: 1,
         attributes: const Attributes(
-          mu: 12, kl: 12, inn: 12, ch: 12,
-          ff: 12, ge: 12, ko: 12, kk: 12,
+          mu: 12,
+          kl: 12,
+          inn: 12,
+          ch: 12,
+          ff: 12,
+          ge: 12,
+          ko: 12,
+          kk: 12,
         ),
       );
       const rewards = ReiseberichtRewards(
@@ -515,14 +522,17 @@ void main() {
         level: 1,
         apTotal: 130,
         attributes: const Attributes(
-          mu: 13, kl: 12, inn: 12, ch: 12,
-          ff: 12, ge: 12, ko: 12, kk: 12,
+          mu: 13,
+          kl: 12,
+          inn: 12,
+          ch: 12,
+          ff: 12,
+          ge: 12,
+          ko: 12,
+          kk: 12,
         ),
         talents: const {
-          'Kriegskunst': HeroTalentEntry(
-            talentValue: 5,
-            specialExperiences: 1,
-          ),
+          'Kriegskunst': HeroTalentEntry(talentValue: 5, specialExperiences: 1),
         },
       );
       const rewards = ReiseberichtRewards(
@@ -562,14 +572,17 @@ void main() {
         level: 1,
         apTotal: 10,
         attributes: const Attributes(
-          mu: 12, kl: 12, inn: 12, ch: 12,
-          ff: 12, ge: 12, ko: 12, kk: 12,
+          mu: 12,
+          kl: 12,
+          inn: 12,
+          ch: 12,
+          ff: 12,
+          ge: 12,
+          ko: 12,
+          kk: 12,
         ),
       );
-      const rewards = ReiseberichtRewards(
-        ap: 50,
-        newAppliedIds: {'rb_x'},
-      );
+      const rewards = ReiseberichtRewards(ap: 50, newAppliedIds: {'rb_x'});
 
       final result = revokeReiseberichtRewards(
         hero: hero,
@@ -616,9 +629,7 @@ void main() {
         typ: 'checkpoint',
         ap: 30,
       );
-      const state = HeroReisebericht(
-        checkedIds: {'rb_cp'},
-      );
+      const state = HeroReisebericht(checkedIds: {'rb_cp'});
 
       final revoke = computeRevocationRewards(
         def: def,

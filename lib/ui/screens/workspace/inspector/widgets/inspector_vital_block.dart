@@ -45,8 +45,8 @@ class InspectorVitalBlock extends StatelessWidget {
     final valueColor = isOverMax
         ? codex.brass
         : isCritical
-            ? theme.colorScheme.error
-            : theme.colorScheme.onSurface;
+        ? theme.colorScheme.error
+        : theme.colorScheme.onSurface;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -174,11 +174,7 @@ class InspectorVitalBlock extends StatelessWidget {
 }
 
 class _StepButton extends StatelessWidget {
-  const _StepButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
-  });
+  const _StepButton({super.key, required this.label, required this.onPressed});
 
   final String label;
   final VoidCallback onPressed;

@@ -77,7 +77,10 @@ void main() {
       expect(reloaded.notes.single.title, 'Schlüsselstelle');
       expect(reloaded.dukatenReward, 12.5);
       expect(reloaded.lootRewards.single.name, 'Mondsilberring');
-      expect(reloaded.lootRewards.single.itemType, InventoryItemType.wertvolles);
+      expect(
+        reloaded.lootRewards.single.itemType,
+        InventoryItemType.wertvolles,
+      );
     });
 
     test('loads legacy payloads with current status and empty new fields', () {

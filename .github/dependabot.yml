@@ -1,0 +1,35 @@
+# Haelt Abhaengigkeiten und Actions sichtbar aktuell.
+#
+# Ohne diese Datei faellt Drift erst beim naechsten manuellen Audit auf —
+# beim letzten waren es 19 zurueckgehaltene Pub-Updates und ein
+# end-of-life-Paket.
+version: 2
+updates:
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+
+  # Android baut zwar niemand aus (Vertrieb: Windows-MSIX und Web), aber ohne
+  # diesen Eintrag steht der Gradle-Stack voellig unbeobachtet: google-services
+  # 4.3.15, AGP 8.11.1, Kotlin 2.2.20. PRs laufen auf und werden einzeln
+  # entschieden — ein blinder AGP-Sprung ohne Build-Verifikation waere hier
+  # reine Bewegung.
+  - package-ecosystem: "gradle"
+    directory: "/android"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"

@@ -14,25 +14,18 @@ Future<String?> showGruppeErstellenDialog({
 }) {
   return showAdaptiveInputDialog<String>(
     context: context,
-    builder: (context) => _GruppeErstellenDialog(
-      heroId: heroId,
-      ref: ref,
-    ),
+    builder: (context) => _GruppeErstellenDialog(heroId: heroId, ref: ref),
   );
 }
 
 class _GruppeErstellenDialog extends StatefulWidget {
-  const _GruppeErstellenDialog({
-    required this.heroId,
-    required this.ref,
-  });
+  const _GruppeErstellenDialog({required this.heroId, required this.ref});
 
   final String heroId;
   final WidgetRef ref;
 
   @override
-  State<_GruppeErstellenDialog> createState() =>
-      _GruppeErstellenDialogState();
+  State<_GruppeErstellenDialog> createState() => _GruppeErstellenDialogState();
 }
 
 class _GruppeErstellenDialogState extends State<_GruppeErstellenDialog> {
@@ -85,17 +78,15 @@ class _GruppeErstellenDialogState extends State<_GruppeErstellenDialog> {
     setState(() => _isLoading = true);
 
     try {
-      final code = await widget.ref.read(heroActionsProvider).erstelleGruppe(
-            heroId: widget.heroId,
-            gruppenName: name,
-          );
+      final code = await widget.ref
+          .read(heroActionsProvider)
+          .erstelleGruppe(heroId: widget.heroId, gruppenName: name);
       if (mounted) Navigator.of(context).pop(code);
     } on Exception catch (error) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Fehler: $error')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Fehler: $error')));
     }
   }
 }

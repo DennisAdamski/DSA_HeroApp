@@ -190,7 +190,7 @@ class HouseRulePackAdminActions {
   }
 
   void _reloadCatalog() {
-    _ref.read(catalogReloadRevisionProvider.notifier).state++;
+    _ref.read(catalogReloadRevisionProvider.notifier).bump();
   }
 
   void _addParentChainToActiveSet({

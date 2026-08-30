@@ -98,14 +98,18 @@ AvatarSnapshotDiff computeAvatarSnapshotDiff(
   final snapshotNachteile = _splitEntries(snapshot.nachteileText);
   final currentNachteile = _splitEntries(current.nachteileText);
 
-  final neueVorteile =
-      currentVorteile.where((v) => !snapshotVorteile.contains(v)).toList();
-  final entfernteVorteile =
-      snapshotVorteile.where((v) => !currentVorteile.contains(v)).toList();
-  final neueNachteile =
-      currentNachteile.where((v) => !snapshotNachteile.contains(v)).toList();
-  final entfernteNachteile =
-      snapshotNachteile.where((v) => !currentNachteile.contains(v)).toList();
+  final neueVorteile = currentVorteile
+      .where((v) => !snapshotVorteile.contains(v))
+      .toList();
+  final entfernteVorteile = snapshotVorteile
+      .where((v) => !currentVorteile.contains(v))
+      .toList();
+  final neueNachteile = currentNachteile
+      .where((v) => !snapshotNachteile.contains(v))
+      .toList();
+  final entfernteNachteile = snapshotNachteile
+      .where((v) => !currentNachteile.contains(v))
+      .toList();
 
   // --- Optische Aenderungen ---
   String? rasseChange;

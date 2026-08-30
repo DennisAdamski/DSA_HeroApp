@@ -52,7 +52,8 @@ class ManeuverDef {
   /// Talenttyp-Filter fuer [mussSeparatErlerntWerden] (z. B. 'fernkampf').
   final String giltFuerTalentTyp;
   final RuleMeta? ruleMeta; // Strukturierte Herkunfts- und Freischaltmetadaten
-  final String quelle; // Freitext-Quellreferenz (z. B. 'Wege des Schwerts S. 112')
+  final String
+  quelle; // Freitext-Quellreferenz (z. B. 'Wege des Schwerts S. 112')
   final bool hausregel; // Eintrag stammt aus einer Hausregel
   final bool nurEpisch; // Nur fuer episch eingestufte Helden verfuegbar
 

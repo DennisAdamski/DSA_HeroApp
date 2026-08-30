@@ -64,7 +64,10 @@ void main() {
         .map((entity) => entity.path.split(Platform.pathSeparator).last)
         .toList();
 
-    expect(settingsFiles.any((name) => name.contains('app_settings_v1')), isTrue);
+    expect(
+      settingsFiles.any((name) => name.contains('app_settings_v1')),
+      isTrue,
+    );
     expect(settingsFiles.any((name) => name.contains('heroes_v1')), isFalse);
     expect(heroFiles.any((name) => name.contains('heroes_v1')), isTrue);
     expect(heroFiles.any((name) => name.contains('app_settings_v1')), isFalse);

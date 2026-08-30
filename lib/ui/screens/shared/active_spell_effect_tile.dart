@@ -56,7 +56,8 @@ class ActiveSpellEffectTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final hasDuration = duration != null && duration!.amount > 0;
-    final canCountDown = hasDuration && !duration!.isPermanent && duration!.remaining > 0;
+    final canCountDown =
+        hasDuration && !duration!.isPermanent && duration!.remaining > 0;
     final durationText = describeSpellDuration(duration);
     final isExpired = duration?.isExpired ?? false;
 
@@ -152,7 +153,10 @@ class ActiveSpellEffectTile extends StatelessWidget {
                         tooltip: 'Wirkungsdauer festlegen',
                         visualDensity: VisualDensity.compact,
                         onPressed: onEditDuration,
-                        icon: const Icon(Icons.edit_calendar_outlined, size: 18),
+                        icon: const Icon(
+                          Icons.edit_calendar_outlined,
+                          size: 18,
+                        ),
                       ),
                     ],
                   ),

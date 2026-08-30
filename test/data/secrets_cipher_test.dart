@@ -41,10 +41,16 @@ void main() {
       final cipher = SecretsCipher.forUser('user-uid-1');
       final a = cipher.encryptString('sk-secret');
       final b = cipher.encryptString('sk-secret');
-      expect(a.iv, isNot(equals(b.iv)),
-          reason: 'IV muss pro Aufruf frisch zufaellig sein');
-      expect(a.cipher, isNot(equals(b.cipher)),
-          reason: 'Cipher unterscheidet sich aufgrund unterschiedlicher IVs');
+      expect(
+        a.iv,
+        isNot(equals(b.iv)),
+        reason: 'IV muss pro Aufruf frisch zufaellig sein',
+      );
+      expect(
+        a.cipher,
+        isNot(equals(b.cipher)),
+        reason: 'Cipher unterscheidet sich aufgrund unterschiedlicher IVs',
+      );
     });
 
     test('IV ist 16 Byte lang (AES-Blockgroesse)', () {
@@ -66,10 +72,7 @@ void main() {
 
       final encrypted = cipherA.encryptString('hallo welt');
       expect(
-        () => cipherB.decryptString(
-          cipher: encrypted.cipher,
-          iv: encrypted.iv,
-        ),
+        () => cipherB.decryptString(cipher: encrypted.cipher, iv: encrypted.iv),
         throwsA(anything),
       );
     });

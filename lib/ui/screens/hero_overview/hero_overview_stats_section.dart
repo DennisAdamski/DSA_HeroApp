@@ -16,26 +16,26 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       maxWidth: 150,
       flex: 2,
     ), // Wert (LeP, AsP, …)
-    AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 132, flex: 1), // Modifikator
+    AdaptiveTableColumnSpec(
+      minWidth: 92,
+      maxWidth: 132,
+      flex: 1,
+    ), // Modifikator
     AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120, flex: 1), // Summe
     AdaptiveTableColumnSpec(minWidth: 92, maxWidth: 130, flex: 1), // Zugekauft
   ];
 
-  static const List<AdaptiveTableColumnSpec> _attributeColumnSpecsBase =
-      <AdaptiveTableColumnSpec>[
-        AdaptiveTableColumnSpec(
-          minWidth: 96,
-          maxWidth: 170,
-          flex: 2,
-        ), // Eigenschaft
-        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120, flex: 1), // Max
-        AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 130, flex: 1), // Wert
-        AdaptiveTableColumnSpec(
-          minWidth: 112,
-          maxWidth: 160,
-          flex: 1,
-        ), // Aktuell
-      ];
+  static const List<AdaptiveTableColumnSpec>
+  _attributeColumnSpecsBase = <AdaptiveTableColumnSpec>[
+    AdaptiveTableColumnSpec(
+      minWidth: 96,
+      maxWidth: 170,
+      flex: 2,
+    ), // Eigenschaft
+    AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 120, flex: 1), // Max
+    AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 130, flex: 1), // Wert
+    AdaptiveTableColumnSpec(minWidth: 112, maxWidth: 160, flex: 1), // Aktuell
+  ];
 
   List<AdaptiveTableColumnSpec> _derivedValueColumnSpecs({
     required bool showStart,
@@ -658,9 +658,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
   /// Formatiert einen Bonus samt Umsetzungs-Marker fuer den Info-Dialog.
   String _epicBonusInfoLine(EpicMainAttributeBonus bonus) {
     final marker = _epicBonusMarker(bonus.umsetzung);
-    return marker == null
-        ? '• ${bonus.text}'
-        : '• ${bonus.text}  ($marker)';
+    return marker == null ? '• ${bonus.text}' : '• ${bonus.text}  ($marker)';
   }
 
   Widget _buildAttributesNumericCell({

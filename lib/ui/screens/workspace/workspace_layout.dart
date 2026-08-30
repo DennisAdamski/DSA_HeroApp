@@ -31,10 +31,7 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
       child: Column(
         children: [
           if (showTabletDesktopHeader)
-            WorkspaceHeroHeader(
-              heroId: widget.heroId,
-              hero: hero,
-            ),
+            WorkspaceHeroHeader(heroId: widget.heroId, hero: hero),
           if (!showTabletDesktopHeader)
             WorkspaceCoreAttributesHeader(heroId: widget.heroId, hero: hero),
           Expanded(child: _buildWorkspaceTabView()),

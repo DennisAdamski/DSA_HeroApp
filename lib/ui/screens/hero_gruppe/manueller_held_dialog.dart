@@ -81,52 +81,52 @@ class _ManuellerHeldDialogState extends State<_ManuellerHeldDialog> {
             decoration: const InputDecoration(labelText: 'Name *'),
             textCapitalization: TextCapitalization.words,
           ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _rasseController,
-                    decoration: const InputDecoration(labelText: 'Rasse'),
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _rasseController,
+                  decoration: const InputDecoration(labelText: 'Rasse'),
+                  textCapitalization: TextCapitalization.sentences,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _kulturController,
-                    decoration: const InputDecoration(labelText: 'Kultur'),
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: _kulturController,
+                  decoration: const InputDecoration(labelText: 'Kultur'),
+                  textCapitalization: TextCapitalization.sentences,
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _professionController,
-              decoration: const InputDecoration(labelText: 'Profession'),
-              textCapitalization: TextCapitalization.sentences,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _ZahlFeld(controller: _stufeController, label: 'Stufe'),
-                const SizedBox(width: 8),
-                _ZahlFeld(controller: _lepController, label: 'LeP'),
-                const SizedBox(width: 8),
-                _ZahlFeld(controller: _aspController, label: 'AsP'),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                _ZahlFeld(controller: _auController, label: 'Au'),
-                const SizedBox(width: 8),
-                _ZahlFeld(controller: _iniController, label: 'INI'),
-                const Spacer(),
-              ],
-            ),
-            const SizedBox(height: 12),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _professionController,
+            decoration: const InputDecoration(labelText: 'Profession'),
+            textCapitalization: TextCapitalization.sentences,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _ZahlFeld(controller: _stufeController, label: 'Stufe'),
+              const SizedBox(width: 8),
+              _ZahlFeld(controller: _lepController, label: 'LeP'),
+              const SizedBox(width: 8),
+              _ZahlFeld(controller: _aspController, label: 'AsP'),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _ZahlFeld(controller: _auController, label: 'Au'),
+              const SizedBox(width: 8),
+              _ZahlFeld(controller: _iniController, label: 'INI'),
+              const Spacer(),
+            ],
+          ),
+          const SizedBox(height: 12),
           TextField(
             controller: _notizenController,
             decoration: const InputDecoration(
@@ -178,7 +178,9 @@ class _ManuellerHeldDialogState extends State<_ManuellerHeldDialog> {
     );
 
     try {
-      await widget.ref.read(heroActionsProvider).addManuellerHeld(
+      await widget.ref
+          .read(heroActionsProvider)
+          .addManuellerHeld(
             heroId: widget.heroId,
             gruppenCode: widget.gruppenCode,
             held: held,
@@ -187,18 +189,14 @@ class _ManuellerHeldDialogState extends State<_ManuellerHeldDialog> {
     } on Exception catch (error) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Fehler: $error')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Fehler: $error')));
     }
   }
 }
 
 class _ZahlFeld extends StatelessWidget {
-  const _ZahlFeld({
-    required this.controller,
-    required this.label,
-  });
+  const _ZahlFeld({required this.controller, required this.label});
 
   final TextEditingController controller;
   final String label;

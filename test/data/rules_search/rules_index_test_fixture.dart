@@ -58,12 +58,12 @@ Uint8List buildMinimalRulesIndexBytes() {
       'text) VALUES (1, 0, 1, 1, ?)',
       ['Ausweichen erschwert eine Behinderung um den Wert der Behinderung.'],
     );
-    db.execute(
-      'INSERT INTO chunks_fts (rowid, text) VALUES (?, ?)',
-      [1, 'Ausweichen erschwert eine Behinderung um den Wert der Behinderung.'],
-    );
+    db.execute('INSERT INTO chunks_fts (rowid, text) VALUES (?, ?)', [
+      1,
+      'Ausweichen erschwert eine Behinderung um den Wert der Behinderung.',
+    ]);
   } finally {
-    db.dispose();
+    db.close();
   }
   final bytes = File(path).readAsBytesSync();
   tempDir.deleteSync(recursive: true);

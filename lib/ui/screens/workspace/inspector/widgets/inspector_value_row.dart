@@ -39,8 +39,8 @@ class InspectorValueRow extends StatelessWidget {
     final modColor = modifier > 0
         ? theme.colorScheme.primary
         : modifier < 0
-            ? theme.colorScheme.error
-            : theme.colorScheme.onSurfaceVariant;
+        ? theme.colorScheme.error
+        : theme.colorScheme.onSurfaceVariant;
     return Row(
       children: [
         Expanded(
@@ -138,24 +138,20 @@ class InspectorReadOnlyValueRow extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(fontWeight: FontWeight.bold),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        SizedBox(
-          width: buttonSize * 2 + 20 + 2 + buttonSize + 2,
-        ),
+        SizedBox(width: buttonSize * 2 + 20 + 2 + buttonSize + 2),
         SizedBox(
           width: 40,
           child: Text(
             '$value',
             textAlign: TextAlign.right,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
       ],

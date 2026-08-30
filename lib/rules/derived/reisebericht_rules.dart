@@ -61,10 +61,7 @@ bool isReiseberichtEntryComplete(
 }
 
 /// Zaehlt abgehakte feste Eintraege einer collection_fixed.
-int countFixedCollectionChecked(
-  ReiseberichtDef def,
-  HeroReisebericht state,
-) {
+int countFixedCollectionChecked(ReiseberichtDef def, HeroReisebericht state) {
   var count = 0;
   for (final eintrag in def.festeEintraege) {
     if (state.checkedIds.contains(eintrag.id)) count++;
@@ -82,10 +79,7 @@ bool isFixedCollectionThresholdMet(
 }
 
 /// Prueft ob der Bonus einer collection_fixed erreicht ist.
-bool isFixedCollectionBonusMet(
-  ReiseberichtDef def,
-  HeroReisebericht state,
-) {
+bool isFixedCollectionBonusMet(ReiseberichtDef def, HeroReisebericht state) {
   if (def.bonus == null) return false;
   final bonusSchwelle = def.bonus!.schwelle > 0
       ? def.bonus!.schwelle
@@ -196,7 +190,11 @@ ReiseberichtRewards computePendingRewards({
     switch (def.typ) {
       case 'checkpoint':
         _collectCheckpointRewards(
-          def, state, totalAp, seRewards, newAppliedIds,
+          def,
+          state,
+          totalAp,
+          seRewards,
+          newAppliedIds,
           (ap) => totalAp += ap,
         );
 
@@ -212,13 +210,20 @@ ReiseberichtRewards computePendingRewards({
 
       case 'collection_fixed':
         _collectFixedCollectionRewards(
-          def, state, seRewards, talentBoni, newAppliedIds,
+          def,
+          state,
+          seRewards,
+          talentBoni,
+          newAppliedIds,
           (ap) => totalAp += ap,
         );
 
       case 'collection_open':
         _collectOpenCollectionRewards(
-          def, state, seRewards, newAppliedIds,
+          def,
+          state,
+          seRewards,
+          newAppliedIds,
           (ap) => totalAp += ap,
         );
 
@@ -301,19 +306,23 @@ void _collectFixedCollectionRewards(
     addAp(def.schwelleBelohnung!.ap);
     _collectSeRewards(schwelleId, def.schwelleBelohnung!.se, state, seRewards);
     for (final tb in def.schwelleBelohnung!.talentBoni) {
-      talentBoni.add(ReiseberichtTalentBonus(
-        sourceId: schwelleId,
-        talentName: tb.talentName,
-        wert: tb.wert,
-        beschreibung: 'Reisebericht: ${def.name}',
-      ));
+      talentBoni.add(
+        ReiseberichtTalentBonus(
+          sourceId: schwelleId,
+          talentName: tb.talentName,
+          wert: tb.wert,
+          beschreibung: 'Reisebericht: ${def.name}',
+        ),
+      );
     }
     newAppliedIds.add(schwelleId);
   }
 
   // Bonus (z. B. Stadtkenner extrem)
   if (def.bonus != null) {
-    final bonusId = def.bonus!.id.isNotEmpty ? def.bonus!.id : '${def.id}_bonus';
+    final bonusId = def.bonus!.id.isNotEmpty
+        ? def.bonus!.id
+        : '${def.id}_bonus';
     final bonusSchwelle = def.bonus!.schwelle > 0
         ? def.bonus!.schwelle
         : def.festeEintraege.length;
@@ -322,12 +331,14 @@ void _collectFixedCollectionRewards(
       addAp(def.bonus!.ap);
       _collectSeRewards(bonusId, def.bonus!.se, state, seRewards);
       for (final tb in def.bonus!.talentBoni) {
-        talentBoni.add(ReiseberichtTalentBonus(
-          sourceId: bonusId,
-          talentName: tb.talentName,
-          wert: tb.wert,
-          beschreibung: 'Reisebericht: ${def.bonus!.name}',
-        ));
+        talentBoni.add(
+          ReiseberichtTalentBonus(
+            sourceId: bonusId,
+            talentName: tb.talentName,
+            wert: tb.wert,
+            beschreibung: 'Reisebericht: ${def.bonus!.name}',
+          ),
+        );
       }
       newAppliedIds.add(bonusId);
     }
@@ -377,16 +388,14 @@ void _collectSeRewards(
       // Wahl-SE: Nutze die gespeicherte Zuordnung
       final chosen = state.wahlSeZuordnungen[sourceId];
       if (chosen != null && chosen.isNotEmpty) {
-        rewards.add(ReiseberichtSeReward(
-          sourceId: sourceId,
-          talentName: chosen,
-        ));
+        rewards.add(
+          ReiseberichtSeReward(sourceId: sourceId, talentName: chosen),
+        );
       }
     } else if (se.ziel == 'talent' || se.ziel == 'grundwert') {
-      rewards.add(ReiseberichtSeReward(
-        sourceId: sourceId,
-        talentName: se.name,
-      ));
+      rewards.add(
+        ReiseberichtSeReward(sourceId: sourceId, talentName: se.name),
+      );
     }
   }
 }
@@ -419,15 +428,24 @@ ReiseberichtEigenschaftsBonus? _resolveEigenschaft(
 
 String? _eigenschaftCodeFromName(String name) {
   switch (name.toUpperCase()) {
-    case 'MU': return 'mu';
-    case 'KL': return 'kl';
-    case 'IN': return 'in';
-    case 'CH': return 'ch';
-    case 'FF': return 'ff';
-    case 'GE': return 'ge';
-    case 'KO': return 'ko';
-    case 'KK': return 'kk';
-    default: return null;
+    case 'MU':
+      return 'mu';
+    case 'KL':
+      return 'kl';
+    case 'IN':
+      return 'in';
+    case 'CH':
+      return 'ch';
+    case 'FF':
+      return 'ff';
+    case 'GE':
+      return 'ge';
+    case 'KO':
+      return 'ko';
+    case 'KK':
+      return 'kk';
+    default:
+      return null;
   }
 }
 
@@ -466,7 +484,9 @@ HeroSheet applyReiseberichtRewards({
     if (talentId != null && talents.containsKey(talentId)) {
       final entry = talents[talentId]!;
       final newModifiers = List<HeroTalentModifier>.of(entry.talentModifiers)
-        ..add(HeroTalentModifier(modifier: tb.wert, description: tb.beschreibung));
+        ..add(
+          HeroTalentModifier(modifier: tb.wert, description: tb.beschreibung),
+        );
       talents[talentId] = entry.copyWith(talentModifiers: newModifiers);
     }
   }
@@ -535,9 +555,8 @@ HeroSheet revokeReiseberichtRewards({
   }
 
   // appliedRewardIds bereinigen
-  final cleanedApplied = <String>{
-    ...updatedState.appliedRewardIds,
-  }..removeAll(rewards.newAppliedIds);
+  final cleanedApplied = <String>{...updatedState.appliedRewardIds}
+    ..removeAll(rewards.newAppliedIds);
 
   return hero.copyWith(
     apTotal: apTotal,
@@ -580,8 +599,7 @@ ReiseberichtRewards computeRevocationRewards({
       // Prüfe ob Gruppen-Bonus betroffen
       final gruppenBonus = catalog.where(
         (d) =>
-            d.typ == 'grouped_progression_bonus' &&
-            d.gruppeId == def.gruppeId,
+            d.typ == 'grouped_progression_bonus' && d.gruppeId == def.gruppeId,
       );
       for (final gb in gruppenBonus) {
         if (state.appliedRewardIds.contains(gb.id)) {
@@ -653,14 +671,23 @@ Attributes _applyEigenschaftsBonus(
   int bonus,
 ) {
   switch (code) {
-    case 'mu': return attributes.copyWith(mu: attributes.mu + bonus);
-    case 'kl': return attributes.copyWith(kl: attributes.kl + bonus);
-    case 'in': return attributes.copyWith(inn: attributes.inn + bonus);
-    case 'ch': return attributes.copyWith(ch: attributes.ch + bonus);
-    case 'ff': return attributes.copyWith(ff: attributes.ff + bonus);
-    case 'ge': return attributes.copyWith(ge: attributes.ge + bonus);
-    case 'ko': return attributes.copyWith(ko: attributes.ko + bonus);
-    case 'kk': return attributes.copyWith(kk: attributes.kk + bonus);
-    default: return attributes;
+    case 'mu':
+      return attributes.copyWith(mu: attributes.mu + bonus);
+    case 'kl':
+      return attributes.copyWith(kl: attributes.kl + bonus);
+    case 'in':
+      return attributes.copyWith(inn: attributes.inn + bonus);
+    case 'ch':
+      return attributes.copyWith(ch: attributes.ch + bonus);
+    case 'ff':
+      return attributes.copyWith(ff: attributes.ff + bonus);
+    case 'ge':
+      return attributes.copyWith(ge: attributes.ge + bonus);
+    case 'ko':
+      return attributes.copyWith(ko: attributes.ko + bonus);
+    case 'kk':
+      return attributes.copyWith(kk: attributes.kk + bonus);
+    default:
+      return attributes;
   }
 }

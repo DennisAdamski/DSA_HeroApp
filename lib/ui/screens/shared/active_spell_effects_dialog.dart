@@ -51,7 +51,8 @@ class _ActiveSpellEffectsDialogState
   }
 
   /// Liest den aktuellen Laufzeitzustand; `null`, solange er nicht geladen ist.
-  HeroState? get _state => ref.read(heroStateProvider(widget.heroId)).valueOrNull;
+  HeroState? get _state =>
+      ref.read(heroStateProvider(widget.heroId)).valueOrNull;
 
   Future<void> _toggleEffect(String effectId, bool value) async {
     final state = _state;
@@ -232,7 +233,9 @@ class _ActiveSpellEffectsDialogState
       content: SizedBox(
         width: kDialogWidthSmall,
         child: !isLoaded
-            ? const Text('Held oder Laufzeitzustand konnte nicht geladen werden.')
+            ? const Text(
+                'Held oder Laufzeitzustand konnte nicht geladen werden.',
+              )
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -47,113 +47,114 @@ class EpicMainAttributeBonus {
 /// gerechnet, Tragkraft nicht).
 const List<EpicMainAttributeBonus> epicMainAttributeBonuses =
     <EpicMainAttributeBonus>[
-  EpicMainAttributeBonus(
-    code: AttributeCode.mu,
-    text: 'MR +7 gegen angstauslösende Zauber',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.mu,
-    text: 'Manipulationsprobe 2×/Tag abwehren',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.mu,
-    text: 'Aurapanzer stark verstärken',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.kl,
-    text: 'Nach gelungener Wissenstalent-Probe: Folgeproben zum Ziel '
-        'um 3 erleichtert',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.kl,
-    text: 'AT/PA/TP gegen analysiertes Ziel +1',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.inn,
-    text: 'Gefahreninstinkt-Immunität gegen Überraschung',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.inn,
-    text: 'Finten gegen den Helden um 2 erschwert',
-    umsetzung: EpicBonusUmsetzung.hinweis,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.ch,
-    text: 'Mitstreiter dürfen CH-Wert für MU-Proben nutzen (max. MU × 1,5)',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.ch,
-    text: 'Zuneigungs-/Loyalitätszauber +7 erschwert',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.ff,
-    text: 'Handwerksprodukte 10 % wertvoller + Zusatzverbesserung',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.ff,
-    text: 'FF-Probe ersetzt Ausweichen gegen Fernwaffen',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.ge,
-    text: 'Gezieltes Ausweichen bereits auf ⅓ des Wertes',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.ge,
-    text: 'Immunität gegen Passierschläge durch Ausweichen',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.ko,
-    text: 'Gifte: ½ Schaden, ½ Giftstufen-Erschwernis',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.ko,
-    text: 'Krankheiten: 70 % Zeit',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.ko,
-    text: 'Ansteckungswurf wiederholen',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.ko,
-    text: 'Wund-Erschwernis auf Proben halbiert',
-    umsetzung: EpicBonusUmsetzung.automatisch,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.kk,
-    text: 'eBE bei KK-Talenten halbiert',
-    umsetzung: EpicBonusUmsetzung.automatisch,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.kk,
-    text: 'Tragkraft KK × 1,5',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.kk,
-    text: 'Niederwerfen-KK-Probe wiederholen',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-  EpicMainAttributeBonus(
-    code: AttributeCode.kk,
-    text: 'Zurückdrängen möglich',
-    umsetzung: EpicBonusUmsetzung.manuell,
-  ),
-];
+      EpicMainAttributeBonus(
+        code: AttributeCode.mu,
+        text: 'MR +7 gegen angstauslösende Zauber',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.mu,
+        text: 'Manipulationsprobe 2×/Tag abwehren',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.mu,
+        text: 'Aurapanzer stark verstärken',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.kl,
+        text:
+            'Nach gelungener Wissenstalent-Probe: Folgeproben zum Ziel '
+            'um 3 erleichtert',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.kl,
+        text: 'AT/PA/TP gegen analysiertes Ziel +1',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.inn,
+        text: 'Gefahreninstinkt-Immunität gegen Überraschung',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.inn,
+        text: 'Finten gegen den Helden um 2 erschwert',
+        umsetzung: EpicBonusUmsetzung.hinweis,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.ch,
+        text: 'Mitstreiter dürfen CH-Wert für MU-Proben nutzen (max. MU × 1,5)',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.ch,
+        text: 'Zuneigungs-/Loyalitätszauber +7 erschwert',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.ff,
+        text: 'Handwerksprodukte 10 % wertvoller + Zusatzverbesserung',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.ff,
+        text: 'FF-Probe ersetzt Ausweichen gegen Fernwaffen',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.ge,
+        text: 'Gezieltes Ausweichen bereits auf ⅓ des Wertes',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.ge,
+        text: 'Immunität gegen Passierschläge durch Ausweichen',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.ko,
+        text: 'Gifte: ½ Schaden, ½ Giftstufen-Erschwernis',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.ko,
+        text: 'Krankheiten: 70 % Zeit',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.ko,
+        text: 'Ansteckungswurf wiederholen',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.ko,
+        text: 'Wund-Erschwernis auf Proben halbiert',
+        umsetzung: EpicBonusUmsetzung.automatisch,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.kk,
+        text: 'eBE bei KK-Talenten halbiert',
+        umsetzung: EpicBonusUmsetzung.automatisch,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.kk,
+        text: 'Tragkraft KK × 1,5',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.kk,
+        text: 'Niederwerfen-KK-Probe wiederholen',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.kk,
+        text: 'Zurückdrängen möglich',
+        umsetzung: EpicBonusUmsetzung.manuell,
+      ),
+    ];
 
 /// Liefert alle Boni-Eintraege einer einzelnen Haupteigenschaft.
 List<EpicMainAttributeBonus> epicMainAttributeBonusesFor(AttributeCode code) {
@@ -167,9 +168,9 @@ List<EpicMainAttributeBonus> epicMainAttributeBonusesFor(AttributeCode code) {
 /// Genutzt fuer Chip-Tooltips im Aktivierungsdialog, wo eine Liste mit
 /// Markern nicht darstellbar ist.
 String epicMainAttributeBonusSummary(AttributeCode code) {
-  return epicMainAttributeBonusesFor(
-    code,
-  ).map((bonus) => bonus.text).join('; ');
+  return epicMainAttributeBonusesFor(code)
+      .map((bonus) => bonus.text)
+      .join('; ');
 }
 
 /// Prüft, ob [code] in [mainAttributes] als Haupteigenschaft markiert ist.
@@ -208,11 +209,11 @@ int epicMrBonusVsFear({
   required Attributes mainAttributes,
 }) {
   return isEpicMainAttributeBonusActive(
-    ruleActive: ruleActive,
-    isEpisch: isEpisch,
-    mainAttributes: mainAttributes,
-    code: AttributeCode.mu,
-  )
+        ruleActive: ruleActive,
+        isEpisch: isEpisch,
+        mainAttributes: mainAttributes,
+        code: AttributeCode.mu,
+      )
       ? 7
       : 0;
 }
@@ -227,11 +228,11 @@ int epicFinteErschwernis({
   required Attributes mainAttributes,
 }) {
   return isEpicMainAttributeBonusActive(
-    ruleActive: ruleActive,
-    isEpisch: isEpisch,
-    mainAttributes: mainAttributes,
-    code: AttributeCode.inn,
-  )
+        ruleActive: ruleActive,
+        isEpisch: isEpisch,
+        mainAttributes: mainAttributes,
+        code: AttributeCode.inn,
+      )
       ? 2
       : 0;
 }
@@ -246,11 +247,11 @@ double epicTragkraftMultiplier({
   required Attributes mainAttributes,
 }) {
   return isEpicMainAttributeBonusActive(
-    ruleActive: ruleActive,
-    isEpisch: isEpisch,
-    mainAttributes: mainAttributes,
-    code: AttributeCode.kk,
-  )
+        ruleActive: ruleActive,
+        isEpisch: isEpisch,
+        mainAttributes: mainAttributes,
+        code: AttributeCode.kk,
+      )
       ? 1.5
       : 1.0;
 }
@@ -265,11 +266,11 @@ double epicKkBeMultiplier({
   required Attributes mainAttributes,
 }) {
   return isEpicMainAttributeBonusActive(
-    ruleActive: ruleActive,
-    isEpisch: isEpisch,
-    mainAttributes: mainAttributes,
-    code: AttributeCode.kk,
-  )
+        ruleActive: ruleActive,
+        isEpisch: isEpisch,
+        mainAttributes: mainAttributes,
+        code: AttributeCode.kk,
+      )
       ? 0.5
       : 1.0;
 }
@@ -285,11 +286,11 @@ double epicGiftDamageMultiplier({
   required Attributes mainAttributes,
 }) {
   return isEpicMainAttributeBonusActive(
-    ruleActive: ruleActive,
-    isEpisch: isEpisch,
-    mainAttributes: mainAttributes,
-    code: AttributeCode.ko,
-  )
+        ruleActive: ruleActive,
+        isEpisch: isEpisch,
+        mainAttributes: mainAttributes,
+        code: AttributeCode.ko,
+      )
       ? 0.5
       : 1.0;
 }
@@ -304,11 +305,11 @@ double epicKrankheitTimeMultiplier({
   required Attributes mainAttributes,
 }) {
   return isEpicMainAttributeBonusActive(
-    ruleActive: ruleActive,
-    isEpisch: isEpisch,
-    mainAttributes: mainAttributes,
-    code: AttributeCode.ko,
-  )
+        ruleActive: ruleActive,
+        isEpisch: isEpisch,
+        mainAttributes: mainAttributes,
+        code: AttributeCode.ko,
+      )
       ? 0.7
       : 1.0;
 }
@@ -362,11 +363,11 @@ double epicHandwerkWertMultiplier({
   required Attributes mainAttributes,
 }) {
   return isEpicMainAttributeBonusActive(
-    ruleActive: ruleActive,
-    isEpisch: isEpisch,
-    mainAttributes: mainAttributes,
-    code: AttributeCode.ff,
-  )
+        ruleActive: ruleActive,
+        isEpisch: isEpisch,
+        mainAttributes: mainAttributes,
+        code: AttributeCode.ff,
+      )
       ? 1.1
       : 1.0;
 }
@@ -384,10 +385,8 @@ List<EpicMainAttributeBonus> activeEpicMainAttributeBonuses({
   if (!ruleActive || !isEpisch) return const <EpicMainAttributeBonus>[];
   return List<EpicMainAttributeBonus>.unmodifiable(
     epicMainAttributeBonuses.where(
-      (bonus) => isEpicMainAttribute(
-        mainAttributes: mainAttributes,
-        code: bonus.code,
-      ),
+      (bonus) =>
+          isEpicMainAttribute(mainAttributes: mainAttributes, code: bonus.code),
     ),
   );
 }

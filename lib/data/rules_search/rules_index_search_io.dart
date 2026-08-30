@@ -67,20 +67,18 @@ Future<RulesIndexSearch> importRulesIndexDatabase(Uint8List bytes) async {
     validated = sqlite3.open(tmpPath, mode: OpenMode.readOnly);
   } on SqliteException {
     await tmpFile.delete();
-    throw const FormatException(
-      'Datei ist keine gültige SQLite-Datenbank.',
-    );
+    throw const FormatException('Datei ist keine gültige SQLite-Datenbank.');
   }
   try {
     validated.select('SELECT count(*) FROM chunks_fts LIMIT 1');
   } on SqliteException {
-    validated.dispose();
+    validated.close();
     await tmpFile.delete();
     throw const FormatException(
       'Datei enthält kein gültiges Regel-Index-Schema.',
     );
   }
-  validated.dispose();
+  validated.close();
 
   final targetFile = File(targetPath);
   if (await targetFile.exists()) {
@@ -129,7 +127,7 @@ class _SqliteRulesIndexSearch implements RulesIndexSearch {
 
   @override
   void dispose() {
-    _db.dispose();
+    _db.close();
   }
 
   @override

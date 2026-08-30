@@ -59,21 +59,19 @@ Future<RulesIndexSearch> importRulesIndexDatabase(Uint8List bytes) async {
   if (validated == null) {
     _deleteFileSync(fs, _importFileName);
     await fs.flush();
-    throw const FormatException(
-      'Datei ist keine gültige SQLite-Datenbank.',
-    );
+    throw const FormatException('Datei ist keine gültige SQLite-Datenbank.');
   }
   try {
     validated.select('SELECT count(*) FROM chunks_fts LIMIT 1');
   } on SqliteException {
-    validated.dispose();
+    validated.close();
     _deleteFileSync(fs, _importFileName);
     await fs.flush();
     throw const FormatException(
       'Datei enthält kein gültiges Regel-Index-Schema.',
     );
   }
-  validated.dispose();
+  validated.close();
 
   _deleteFileSync(fs, _dbFileName);
   _writeFile(fs, _dbFileName, bytes);
@@ -131,9 +129,7 @@ void _disableWalMode(Uint8List bytes) {
 }
 
 Future<WasmSqlite3> _ensureSqlite() {
-  return _sqlite3Future ??= WasmSqlite3.loadFromUrl(
-    Uri.parse('sqlite3.wasm'),
-  );
+  return _sqlite3Future ??= WasmSqlite3.loadFromUrl(Uri.parse('sqlite3.wasm'));
 }
 
 Future<IndexedDbFileSystem> _ensureFileSystem() {
@@ -159,7 +155,7 @@ class _WasmRulesIndexSearch implements RulesIndexSearch {
 
   @override
   void dispose() {
-    _db.dispose();
+    _db.close();
   }
 
   @override

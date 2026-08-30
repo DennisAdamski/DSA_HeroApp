@@ -4,7 +4,6 @@ export 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 export 'package:dsa_heldenverwaltung/state/hero_actions.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
@@ -32,29 +31,29 @@ import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 /// Temporaerer BE-Ueberschreibungswert fuer die Talentansicht je Held.
 ///
 /// Wird vom Nutzer manuell gesetzt und uebersteuert den berechneten BE-Wert.
-final talentBeOverrideProvider = StateProvider.family<int?, String>(
-  (ref, heroId) => null,
-);
+/// `null` bedeutet: keine Ueberschreibung, der berechnete Wert gilt.
+class TalentBeOverride extends Notifier<int?> {
+  /// Erstellt die Ueberschreibung fuer den Helden [heroId].
+  TalentBeOverride(this.heroId);
 
-/// Sichtbarkeitsmodus fuer ausgeblendete Talente je Held.
-///
-/// `true` bedeutet, alle Talente werden angezeigt (inklusive ausgeblendeter).
-final talentsVisibilityModeProvider = StateProvider.family<bool, String>(
-  (ref, heroId) => false,
-);
+  /// Held, fuer den dieser Wert gilt.
+  final String heroId;
 
-/// Sichtbarkeitsmodus fuer Kampftalente je Held.
-///
-/// `true` bedeutet, alle Kampftalente werden angezeigt.
-final combatTalentsVisibilityModeProvider = StateProvider.family<bool, String>(
-  (ref, heroId) => false,
-);
+  @override
+  int? build() => null;
 
-/// Sichtbarkeitsmodus fuer Kampftechniken je Held.
-///
-/// `true` bedeutet, alle Kampftechniken werden angezeigt.
-final combatTechniquesVisibilityModeProvider =
-    StateProvider.family<bool, String>((ref, heroId) => false);
+  /// Setzt den manuellen BE-Wert; `null` entfernt die Ueberschreibung.
+  void set(int? value) => state = value;
+
+  /// Entfernt die Ueberschreibung.
+  void clear() => state = null;
+}
+
+/// Temporaerer BE-Ueberschreibungswert fuer die Talentansicht je Held.
+final talentBeOverrideProvider =
+    NotifierProvider.family<TalentBeOverride, int?, String>(
+      TalentBeOverride.new,
+    );
 
 /// Reaktiver, stream-basierter Heldenindex fuer O(1)-Lookup nach ID.
 final heroIndexProvider = StreamProvider<HeroIndexSnapshot>((ref) {

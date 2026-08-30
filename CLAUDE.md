@@ -12,6 +12,31 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 
 - `dsa_heldenverwaltung` ist eine Flutter-App zur Verwaltung von DSA-Helden.
 - Die App nutzt lokale Persistenz, katalogbasierte Inhalte und getrennte Regellogik.
+- Lokale Persistenz laeuft ueber `hive_ce` / `hive_ce_flutter`, den gepflegten
+  Fork von Hive 2 (das Original ist seit 2022 ohne Release). Das Box-Format
+  auf Platte ist identisch, Bestandsdaten brauchen keine Migration. Es sind
+  keine `TypeAdapter` im Einsatz — Boxen halten `Map` bzw. `Uint8List`.
+- Die AES-Schicht liegt in `lib/crypto/aes_primitives.dart` direkt auf
+  `pointycastle`; `encrypt` ist entfernt. Das Modul ist bewusst blattartig,
+  weil `catalog` und `data` es beide brauchen und die Richtung
+  `data -> catalog` nicht umgedreht werden darf.
+- Das Krypto-Wire-Format ist durch ausgelieferte Daten festgelegt und in
+  `test/catalog/catalog_crypto_golden_test.dart` sowie
+  `test/data/secrets_cipher_golden_test.dart` mit festen Chiffraten gepinnt.
+  Diese Fixtures duerfen **nicht** angepasst werden, wenn sie brechen: dann
+  ist die Implementierung inkompatibel geworden und jeder `enc:`-Katalogwert
+  sowie jedes Firestore-Geheimnis waere unlesbar. Die uebrigen Krypto-Tests
+  pruefen nur Round-Trips und wuerden das nicht bemerken.
+- Web-Interop laeuft ueber `package:web` + `dart:js_interop`, nie ueber
+  `dart:html` (deprecated und von `dart2wasm` nicht uebersetzbar). Bedingte
+  Importe muessen auf `dart.library.js_interop` stehen, **nicht** auf
+  `dart.library.html`: unter dart2wasm ist letzteres `false`, ein Wasm-Build
+  zoege dann stillschweigend die Stub-Implementierung. Der Web-Download liegt
+  gemeinsam in `lib/data/web_download.dart`.
+- `flutter analyze` bricht auch bei `info`-Lints ab, die CI faellt also
+  darauf. Die Sprachversion aus `environment: sdk:` steuert mit, welche Lints
+  ueberhaupt feuern und wie breit `dart format` umbricht — ein SDK-Bump zieht
+  beides nach sich.
 - Regellogik gehoert nach `lib/rules/derived/`.
 - Aventurische Waehrungsumrechnung fuer Dukaten/Silber/Kreuzer liegt in
   `lib/rules/derived/currency_rules.dart`.
@@ -210,11 +235,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `on FirebaseException` verpasst deshalb Netzwerk- und Typfehler.
 - Die Web-App läuft bewusst auch ohne Login (`WebAuthGate` reicht `null` durch).
   Ohne Konto gibt es keinen Cloud-Pfad und damit keine Avatarbilder.
-- Beim lokalen Web-Debuggen ist `flutter run -d chrome --web-port=5000`
-  **Pflicht**, nicht Komfort: Firebase Auth und Hive persistieren pro Origin,
-  und die CORS-Regel des Storage-Buckets nennt genau diesen Port. Ein
-  zufälliger Port bedeutet abgemeldete Sitzung, leeren Speicher **und**
-  blockierte Bilder.
+- Beim lokalen Web-Debuggen ist `--web-port=5000` **Pflicht**, nicht Komfort:
+  Firebase Auth und Hive persistieren pro Origin, und die CORS-Regel des
+  Storage-Buckets nennt genau diesen Port. Ein zufälliger Port bedeutet
+  abgemeldete Sitzung, leeren Speicher **und** blockierte Bilder. Die Pflicht
+  hängt am Port, nicht am Browser: `flutter run -d chrome --web-port=5000`
+  und `flutter run -d edge --web-port=5000` sind gleichwertig. Auf Maschinen
+  ohne Chrome meldet `flutter doctor` „Cannot find Chrome" und `flutter
+  devices` listet nur Edge — dann entweder `-d edge` nehmen oder
+  `CHROME_EXECUTABLE` auf eine Chrome-Installation setzen.
 - Der Storage-Bucket braucht eine **CORS-Konfiguration**, sonst sind Avatare im
   Web unsichtbar. `firebase_storage_web.getData()` lädt die Bytes per
   `http.readBytes` von der Download-URL — ein normaler Browser-Fetch. Diese
@@ -226,8 +255,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `cors.json` im Repo und wird **nicht** von `firebase deploy` übertragen,
   sondern mit
   `gsutil cors set cors.json gs://heldensync-ccf0b.firebasestorage.app`
-  (z. B. in der Google Cloud Shell). Neue Origins müssen dort ergänzt werden;
-  GCS erlaubt keine Wildcard innerhalb einer Origin.
+  (z. B. in der Google Cloud Shell). `cors.json` hat zwei Einträge: zuerst die
+  drei bekannten Origins (die bekommen ihre exakte Origin zurückgespiegelt),
+  danach eine Sammelregel `"origin": ["*"]` für lesende Zugriffe. Die
+  Sammelregel ist nötig, weil jeder Branch einen eigenen Firebase-Preview-Channel
+  mit eigener Origin bekommt und GCS keine Wildcard **innerhalb** einer Origin
+  erlaubt — vorab eintragen ließe sich also keine davon. Ohne sie zeigen
+  Preview-Channels grundsätzlich keine Avatare, und der Fehler sieht wie ein
+  App-Bug aus. Schreibzugriffe laufen über das Firebase-SDK und bleiben bewusst
+  ohne CORS-Freigabe.
 - Im Web liegen geladene Avatarbytes zusätzlich in der Hive-Box
   `avatar_blobs_v1` (IndexedDB, `lib/data/hive_avatar_blob_cache.dart`), damit
   ein Reload sie nicht erneut herunterlädt. Der Cache ist inhaltsadressiert und
@@ -312,7 +348,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`assets/wasm/` im Package), keine fertige `.wasm`. Bei einem Versionswechsel
   von `sqlite3` in `pubspec.yaml` muss `web/sqlite3.wasm` manuell gegen die
   passende `sqlite3.wasm` aus den GitHub-Releases von
-  github.com/simolus3/sqlite3.dart (Tag zur Package-Version) ersetzt werden.
+  github.com/simolus3/sqlite3.dart ersetzt werden — Tag `sqlite3-<version>`,
+  aktuell `sqlite3-3.5.2`. Ein Versatz zwischen Package und `.wasm` faellt
+  **nicht** beim Kompilieren auf, sondern erst zur Laufzeit im Browser.
+- Die nativen SQLite-Bibliotheken fuer Desktop und Mobile liefert seit
+  `sqlite3` 3.x dessen eigener Build-Hook, der SQLite direkt mit der App
+  buendelt (unter Windows erscheint es als `sqlite3.dll` im Release-Ordner).
+  Das frueher noetige `sqlite3_flutter_libs` ist entfallen: es ist mit
+  `0.6.0+eol` end-of-life und enthaelt keinen Code mehr. Beide Pakete
+  duerfen nur gemeinsam bewegt werden — ein isolierter Bump von
+  `sqlite3_flutter_libs` liesse Desktop und Mobile ohne native Bibliothek
+  zurueck. Aus demselben Grund gibt es keinen `open.overrideFor`-Aufruf
+  mehr; das Laden uebernimmt vollstaendig der Hook.
 - Zusaetzlich zum manuellen Weg (lokal bauen bzw. Web-Upload) kann die
   Index-DB per Server-Sync bezogen werden (`lib/domain/rules_index_remote_config.dart`,
   `lib/data/rules_search/rules_index_remote_client.dart`,

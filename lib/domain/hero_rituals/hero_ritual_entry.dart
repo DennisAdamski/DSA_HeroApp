@@ -133,8 +133,15 @@ class HeroRitualEntry {
 
   @override
   int get hashCode => Object.hashAll([
-    name, wirkung, kosten, wirkungsdauer, merkmale,
-    zauberdauer, zielobjekt, reichweite, technik,
+    name,
+    wirkung,
+    kosten,
+    wirkungsdauer,
+    merkmale,
+    zauberdauer,
+    zielobjekt,
+    reichweite,
+    technik,
     ...additionalFieldValues,
   ]);
 }

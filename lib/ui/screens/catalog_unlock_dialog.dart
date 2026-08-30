@@ -182,10 +182,7 @@ class _CatalogUnlockDialogState extends State<_CatalogUnlockDialog> {
           onPressed: () => Navigator.of(context).pop(false),
           child: const Text('Abbrechen'),
         ),
-        FilledButton(
-          onPressed: _submit,
-          child: const Text('Freischalten'),
-        ),
+        FilledButton(onPressed: _submit, child: const Text('Freischalten')),
       ],
     );
   }

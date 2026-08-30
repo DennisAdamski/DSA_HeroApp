@@ -14,22 +14,25 @@ void main() {
     debugDefaultTargetPlatformOverride = null;
   });
 
-  test('resolves settings and hero default paths beneath app support path', () async {
-    final createdPaths = <String>[];
-    final storagePaths = AppStoragePaths(
-      appSupportPathLoader: () async => '/app/support',
-      directoryCreator: (path) async {
-        createdPaths.add(path);
-      },
-    );
+  test(
+    'resolves settings and hero default paths beneath app support path',
+    () async {
+      final createdPaths = <String>[];
+      final storagePaths = AppStoragePaths(
+        appSupportPathLoader: () async => '/app/support',
+        directoryCreator: (path) async {
+          createdPaths.add(path);
+        },
+      );
 
-    final settingsPath = await storagePaths.resolveSettingsStoragePath();
-    final heroPath = await storagePaths.resolveDefaultHeroStoragePath();
+      final settingsPath = await storagePaths.resolveSettingsStoragePath();
+      final heroPath = await storagePaths.resolveDefaultHeroStoragePath();
 
-    expect(settingsPath, p.join('/app/support', 'Einstellungen'));
-    expect(heroPath, p.join('/app/support', 'Helden'));
-    expect(createdPaths, <String>[settingsPath]);
-  });
+      expect(settingsPath, p.join('/app/support', 'Einstellungen'));
+      expect(heroPath, p.join('/app/support', 'Helden'));
+      expect(createdPaths, <String>[settingsPath]);
+    },
+  );
 
   test('uses configured custom hero path when validator accepts it', () async {
     final validatedPaths = <String>[];
@@ -51,24 +54,27 @@ void main() {
     expect(validatedPaths, <String>['/cloud/heroes']);
   });
 
-  test('reports invalid custom hero path without falling back silently', () async {
-    final storagePaths = AppStoragePaths(
-      appSupportPathLoader: () async => '/app/support',
-      directoryValidator: (path) async {
-        throw const HeroStoragePathException('Pfad nicht beschreibbar.');
-      },
-      directoryCreator: (path) async {},
-    );
+  test(
+    'reports invalid custom hero path without falling back silently',
+    () async {
+      final storagePaths = AppStoragePaths(
+        appSupportPathLoader: () async => '/app/support',
+        directoryValidator: (path) async {
+          throw const HeroStoragePathException('Pfad nicht beschreibbar.');
+        },
+        directoryCreator: (path) async {},
+      );
 
-    final location = await storagePaths.describeHeroStorageLocation(
-      configuredPath: '/cloud/heroes',
-    );
+      final location = await storagePaths.describeHeroStorageLocation(
+        configuredPath: '/cloud/heroes',
+      );
 
-    expect(location.usesCustomPath, isTrue);
-    expect(location.isAccessible, isFalse);
-    expect(location.validationError, 'Pfad nicht beschreibbar.');
-    expect(location.effectivePath, '/cloud/heroes');
-  });
+      expect(location.usesCustomPath, isTrue);
+      expect(location.isAccessible, isFalse);
+      expect(location.validationError, 'Pfad nicht beschreibbar.');
+      expect(location.effectivePath, '/cloud/heroes');
+    },
+  );
 
   test(
     'uses logical browser storage paths without creating local directories',

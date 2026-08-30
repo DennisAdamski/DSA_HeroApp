@@ -1,10 +1,7 @@
 /// Strukturierte talentbezogene Sonderfertigkeit (Name + optionale Notiz).
 class TalentSpecialAbility {
   /// Erzeugt eine persistierte Talent-Sonderfertigkeit.
-  const TalentSpecialAbility({
-    required this.name,
-    this.note = '',
-  });
+  const TalentSpecialAbility({required this.name, this.note = ''});
 
   /// Anzeigename der Sonderfertigkeit.
   final String name;
@@ -13,10 +10,7 @@ class TalentSpecialAbility {
   final String note;
 
   /// Liefert eine gezielte immutable Aktualisierung.
-  TalentSpecialAbility copyWith({
-    String? name,
-    String? note,
-  }) {
+  TalentSpecialAbility copyWith({String? name, String? note}) {
     return TalentSpecialAbility(
       name: name ?? this.name,
       note: note ?? this.note,
@@ -25,10 +19,7 @@ class TalentSpecialAbility {
 
   /// Serialisiert die Sonderfertigkeit in JSON.
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'note': note,
-    };
+    return {'name': name, 'note': note};
   }
 
   /// Liest eine Sonderfertigkeit robust aus JSON.

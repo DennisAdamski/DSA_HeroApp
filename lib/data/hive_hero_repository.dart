@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -37,14 +37,8 @@ class HiveHeroRepository implements HeroRepository {
   static Future<HiveHeroRepository> create({
     required String storagePath,
   }) async {
-    final heroes = await Hive.openBox<Map>(
-      _heroesBoxName,
-      path: storagePath,
-    );
-    final states = await Hive.openBox<Map>(
-      _statesBoxName,
-      path: storagePath,
-    );
+    final heroes = await Hive.openBox<Map>(_heroesBoxName, path: storagePath);
+    final states = await Hive.openBox<Map>(_statesBoxName, path: storagePath);
     final repository = HiveHeroRepository._(heroes, states);
     repository._seedHeroIndex();
     repository._heroEventSubscription = repository._heroesBox.watch().listen(

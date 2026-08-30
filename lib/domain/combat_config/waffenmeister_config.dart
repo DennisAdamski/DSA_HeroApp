@@ -107,9 +107,7 @@ class WaffenmeisterBonus {
   /// Tolerant bei fehlenden Feldern (Standardwerte werden gesetzt).
   static WaffenmeisterBonus fromJson(Map<String, dynamic> json) {
     return WaffenmeisterBonus(
-      type: waffenmeisterBonusTypeFromJson(
-        (json['type'] as String?) ?? '',
-      ),
+      type: waffenmeisterBonusTypeFromJson((json['type'] as String?) ?? ''),
       value: (json['value'] as num?)?.toInt() ?? 0,
       targetManeuver: (json['targetManeuver'] as String?) ?? '',
       description: (json['description'] as String?) ?? '',
@@ -212,9 +210,7 @@ class WaffenmeisterConfig {
       'talentId': talentId,
       'weaponType': weaponType,
       'isSchild': isSchild,
-      'bonuses': bonuses
-          .map((bonus) => bonus.toJson())
-          .toList(growable: false),
+      'bonuses': bonuses.map((bonus) => bonus.toJson()).toList(growable: false),
       'additionalWeaponTypes': List<String>.from(additionalWeaponTypes),
       'styleName': styleName,
       'masterName': masterName,
@@ -232,9 +228,9 @@ class WaffenmeisterConfig {
     final rawBonuses = (json['bonuses'] as List?) ?? const <dynamic>[];
     final parsedBonuses = rawBonuses
         .whereType<Map>()
-        .map((entry) => WaffenmeisterBonus.fromJson(
-              entry.cast<String, dynamic>(),
-            ))
+        .map(
+          (entry) => WaffenmeisterBonus.fromJson(entry.cast<String, dynamic>()),
+        )
         .toList(growable: false);
     final rawAdditional =
         (json['additionalWeaponTypes'] as List?) ?? const <dynamic>[];

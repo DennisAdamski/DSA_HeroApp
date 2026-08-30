@@ -36,27 +36,24 @@ void main() {
     },
   );
 
-  test(
-    'Fernkampf-SF wurden als Manoever migriert (WdS S. 95)',
-    () {
-      final maneuverNames = maneuvers.map((entry) => entry.name).toSet();
+  test('Fernkampf-SF wurden als Manoever migriert (WdS S. 95)', () {
+    final maneuverNames = maneuvers.map((entry) => entry.name).toSet();
 
-      expect(maneuverNames, contains('Berittener Schütze'));
-      expect(maneuverNames, contains('Eisenhagel'));
-      expect(maneuverNames, contains('Scharfschütze'));
-      expect(maneuverNames, contains('Meisterschütze'));
-      expect(maneuverNames, contains('Schnellladen (Bogen)'));
-      expect(maneuverNames, contains('Schnellladen (Armbrust)'));
+    expect(maneuverNames, contains('Berittener Schütze'));
+    expect(maneuverNames, contains('Eisenhagel'));
+    expect(maneuverNames, contains('Scharfschütze'));
+    expect(maneuverNames, contains('Meisterschütze'));
+    expect(maneuverNames, contains('Schnellladen (Bogen)'));
+    expect(maneuverNames, contains('Schnellladen (Armbrust)'));
 
-      final ksfNames = combatSpecialAbilities.map((entry) => entry.name).toSet();
-      expect(ksfNames, isNot(contains('Berittener Schütze')));
-      expect(ksfNames, isNot(contains('Eisenhagel')));
-      expect(ksfNames, isNot(contains('Scharfschütze')));
-      expect(ksfNames, isNot(contains('Meisterschütze')));
-      expect(ksfNames, isNot(contains('Schnellladen (Bogen)')));
-      expect(ksfNames, isNot(contains('Schnellladen (Armbrust)')));
-    },
-  );
+    final ksfNames = combatSpecialAbilities.map((entry) => entry.name).toSet();
+    expect(ksfNames, isNot(contains('Berittener Schütze')));
+    expect(ksfNames, isNot(contains('Eisenhagel')));
+    expect(ksfNames, isNot(contains('Scharfschütze')));
+    expect(ksfNames, isNot(contains('Meisterschütze')));
+    expect(ksfNames, isNot(contains('Schnellladen (Bogen)')));
+    expect(ksfNames, isNot(contains('Schnellladen (Armbrust)')));
+  });
 }
 
 List<ManeuverDef> _loadManeuvers() {

@@ -66,10 +66,7 @@ bool isValidManualProbeInput(
 }
 
 /// Wertet eine vollstaendig aufgeloeste Probe gegen eine Wurfeingabe aus.
-ProbeResult evaluateProbe(
-  ResolvedProbeRequest request,
-  ProbeRollInput input,
-) {
+ProbeResult evaluateProbe(ResolvedProbeRequest request, ProbeRollInput input) {
   if (!isValidManualProbeInput(request, input)) {
     throw ArgumentError('Ungueltige Wurfeingabe fuer ${request.title}.');
   }
@@ -138,7 +135,9 @@ ProbeResult _evaluateCompensationProbe(
   var overflowSum = 0;
   for (var index = 0; index < input.diceValues.length; index++) {
     final roll = input.diceValues[index];
-    final target = index < effectiveTargets.length ? effectiveTargets[index] : 0;
+    final target = index < effectiveTargets.length
+        ? effectiveTargets[index]
+        : 0;
     final overflow = _overflow(roll, target);
     overflows.add(overflow);
     overflowSum += overflow;

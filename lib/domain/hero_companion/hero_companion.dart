@@ -4,8 +4,7 @@
 /// Aufbau wie Helden, sind aber wesentlich weniger komplex.
 library;
 
-import 'package:dsa_heldenverwaltung/domain/combat_config.dart'
-    show ArmorPiece;
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart' show ArmorPiece;
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_attack.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_sonderfertigkeit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_speed.dart';
@@ -313,8 +312,12 @@ class HeroCompanion {
       loyalitaet: identical(loyalitaet, _keepNull)
           ? this.loyalitaet
           : loyalitaet as int?,
-      apGesamt: identical(apGesamt, _keepNull) ? this.apGesamt : apGesamt as int?,
-      apAusgegeben: identical(apAusgegeben, _keepNull) ? this.apAusgegeben : apAusgegeben as int?,
+      apGesamt: identical(apGesamt, _keepNull)
+          ? this.apGesamt
+          : apGesamt as int?,
+      apAusgegeben: identical(apAusgegeben, _keepNull)
+          ? this.apAusgegeben
+          : apAusgegeben as int?,
       geschwindigkeiten: geschwindigkeiten ?? this.geschwindigkeiten,
       maxLep: identical(maxLep, _keepNull) ? this.maxLep : maxLep as int?,
       maxAup: identical(maxAup, _keepNull) ? this.maxAup : maxAup as int?,
@@ -342,8 +345,7 @@ class HeroCompanion {
       startAsp: identical(startAsp, _keepNull)
           ? this.startAsp
           : startAsp as int?,
-      startMr:
-          identical(startMr, _keepNull) ? this.startMr : startMr as int?,
+      startMr: identical(startMr, _keepNull) ? this.startMr : startMr as int?,
     );
   }
 
@@ -394,8 +396,9 @@ class HeroCompanion {
           .toList(growable: false),
       'ruestungsgewoehnung': ruestungsgewoehnung,
       if (ritualCategories.isNotEmpty)
-        'ritualCategories':
-            ritualCategories.map((c) => c.toJson()).toList(growable: false),
+        'ritualCategories': ritualCategories
+            .map((c) => c.toJson())
+            .toList(growable: false),
       if (steigerungen.isNotEmpty) 'steigerungen': steigerungen,
       if (startLep != null) 'startLep': startLep,
       if (startAup != null) 'startAup': startAup,
@@ -431,14 +434,13 @@ class HeroCompanion {
       magieresistenz: (json['magieresistenz'] as num?)?.toInt(),
       loyalitaet: (json['loyalitaet'] as num?)?.toInt(),
       // Backward-Compat: eigenAp wurde in apGesamt umbenannt.
-      apGesamt: (json['apGesamt'] as num?)?.toInt() ??
+      apGesamt:
+          (json['apGesamt'] as num?)?.toInt() ??
           (json['eigenAp'] as num?)?.toInt(),
       apAusgegeben: (json['apAusgegeben'] as num?)?.toInt(),
       geschwindigkeiten: rawGeschwindigkeiten
           .whereType<Map>()
-          .map(
-            (m) => HeroCompanionSpeed.fromJson(m.cast<String, dynamic>()),
-          )
+          .map((m) => HeroCompanionSpeed.fromJson(m.cast<String, dynamic>()))
           .toList(growable: false),
       maxLep: (json['maxLep'] as num?)?.toInt(),
       maxAup: (json['maxAup'] as num?)?.toInt(),
@@ -448,7 +450,8 @@ class HeroCompanion {
       ausbildung: (json['ausbildung'] as String?) ?? '',
       futterbedarf: (json['futterbedarf'] as String?) ?? '',
       // Backward-Compat: altes 'vorNachteile'-Feld wird in 'vorteile' migriert.
-      vorteile: (json['vorteile'] as String?) ??
+      vorteile:
+          (json['vorteile'] as String?) ??
           (json['vorNachteile'] as String?) ??
           '',
       nachteile: (json['nachteile'] as String?) ?? '',
@@ -472,8 +475,7 @@ class HeroCompanion {
           .whereType<Map>()
           .map((m) => ArmorPiece.fromJson(m.cast<String, dynamic>()))
           .toList(growable: false),
-      ruestungsgewoehnung:
-          (json['ruestungsgewoehnung'] as num?)?.toInt() ?? 0,
+      ruestungsgewoehnung: (json['ruestungsgewoehnung'] as num?)?.toInt() ?? 0,
       ritualCategories:
           ((json['ritualCategories'] as List?) ?? const <dynamic>[])
               .whereType<Map>()
@@ -481,8 +483,10 @@ class HeroCompanion {
                 (m) => HeroRitualCategory.fromJson(m.cast<String, dynamic>()),
               )
               .toList(growable: false),
-      steigerungen: ((json['steigerungen'] as Map?) ?? const <String, dynamic>{})
-          .map((k, v) => MapEntry(k as String, (v as num).toInt())),
+      steigerungen:
+          ((json['steigerungen'] as Map?) ?? const <String, dynamic>{}).map(
+            (k, v) => MapEntry(k as String, (v as num).toInt()),
+          ),
       startLep: (json['startLep'] as num?)?.toInt(),
       startAup: (json['startAup'] as num?)?.toInt(),
       startAsp: (json['startAsp'] as num?)?.toInt(),
@@ -599,10 +603,7 @@ int? _parseIntOrString(dynamic value) {
 /// Sentinel-Wert fuer nullable copyWith-Felder.
 const Object _keepNull = Object();
 
-bool _speedListEqual(
-  List<HeroCompanionSpeed> a,
-  List<HeroCompanionSpeed> b,
-) {
+bool _speedListEqual(List<HeroCompanionSpeed> a, List<HeroCompanionSpeed> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {
     if (a[i] != b[i]) return false;

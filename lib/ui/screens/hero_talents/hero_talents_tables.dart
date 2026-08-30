@@ -114,11 +114,11 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               ),
               cardBuilder: (cardContext, metaTalent) =>
                   _buildMetaTalentMobileCard(
-                metaTalent: metaTalent,
-                catalogTalents: catalogTalents,
-                effectiveAttributes: effectiveAttributes,
-                activeBaseBe: activeBaseBe,
-              ),
+                    metaTalent: metaTalent,
+                    catalogTalents: catalogTalents,
+                    effectiveAttributes: effectiveAttributes,
+                    activeBaseBe: activeBaseBe,
+                  ),
               ansicht: _tabellenAnsicht,
             ),
           ),
@@ -447,9 +447,8 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final rowColor = isInvalid
         ? Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.4)
         : (entry.gifted && isEditing
-              ? Theme.of(
-                  context,
-                ).colorScheme.tertiaryContainer.withValues(alpha: 0.4)
+              ? Theme.of(context).colorScheme.tertiaryContainer
+                    .withValues(alpha: 0.4)
               : null);
 
     return TableRow(
@@ -754,7 +753,8 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         : _splitSpecializationTokens(entry.specializations);
     final subtitleParts = <String>[
       if (talent.weaponCategory.trim().isNotEmpty) talent.weaponCategory,
-      if (talent.alternatives.trim().isNotEmpty) 'Ersatz: ${talent.alternatives}',
+      if (talent.alternatives.trim().isNotEmpty)
+        'Ersatz: ${talent.alternatives}',
     ];
 
     final detailParts = <String>[

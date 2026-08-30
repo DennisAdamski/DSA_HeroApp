@@ -16,8 +16,7 @@ Uint8List _randomSalt([int length = 32]) {
 CatalogSourceData _sourceFrom({
   Map<CatalogSectionId, List<Map<String, dynamic>>> sections =
       const <CatalogSectionId, List<Map<String, dynamic>>>{},
-  List<Map<String, dynamic>> reisebericht =
-      const <Map<String, dynamic>>[],
+  List<Map<String, dynamic>> reisebericht = const <Map<String, dynamic>>[],
 }) {
   return CatalogSourceData(
     version: 'test',
@@ -166,67 +165,75 @@ void main() {
       );
     });
 
-    test('Werte die nicht entschluesselt werden koennen bleiben unveraendert',
-        () async {
-      // v3-Wert mit falschem Salt -> Decrypt schlaegt fehl
-      final saltA = _randomSalt();
-      final saltB = _randomSalt();
-      final keyA = deriveCatalogKey(password: password, salt: saltA);
-      final encrypted = encryptCatalogValueV3(plaintext: 'X', derivedKey: keyA);
+    test(
+      'Werte die nicht entschluesselt werden koennen bleiben unveraendert',
+      () async {
+        // v3-Wert mit falschem Salt -> Decrypt schlaegt fehl
+        final saltA = _randomSalt();
+        final saltB = _randomSalt();
+        final keyA = deriveCatalogKey(password: password, salt: saltA);
+        final encrypted = encryptCatalogValueV3(
+          plaintext: 'X',
+          derivedKey: keyA,
+        );
 
-      final source = _sourceFrom(
-        sections: <CatalogSectionId, List<Map<String, dynamic>>>{
-          CatalogSectionId.spells: <Map<String, dynamic>>[
-            <String, dynamic>{'id': 'a', 'wirkung': encrypted},
-          ],
-        },
-      );
+        final source = _sourceFrom(
+          sections: <CatalogSectionId, List<Map<String, dynamic>>>{
+            CatalogSectionId.spells: <Map<String, dynamic>>[
+              <String, dynamic>{'id': 'a', 'wirkung': encrypted},
+            ],
+          },
+        );
 
-      final result = await decryptAllCatalogValues(
-        encrypted: source,
-        password: password,
-        globalSaltV3: saltB,
-      );
+        final result = await decryptAllCatalogValues(
+          encrypted: source,
+          password: password,
+          globalSaltV3: saltB,
+        );
 
-      // Bei Decrypt-Fehler bleibt der Originalwert erhalten.
-      expect(
-        result.entriesFor(CatalogSectionId.spells).single['wirkung'],
-        encrypted,
-      );
-    });
+        // Bei Decrypt-Fehler bleibt der Originalwert erhalten.
+        expect(
+          result.entriesFor(CatalogSectionId.spells).single['wirkung'],
+          encrypted,
+        );
+      },
+    );
 
-    test('Listen-Felder werden nach Decrypt als List zurueckgeliefert', () async {
-      // Schema wie magie.json `variants`: das ganze Feld ist ein einziger
-      // enc:-String der eine JSON-Liste enthaelt.
-      final salt = _randomSalt();
-      final key = deriveCatalogKey(password: password, salt: salt);
-      final encryptedListField = encryptCatalogListV3(
-        values: const ['Variante A', 'Variante B', 'Variante C'],
-        derivedKey: key,
-      );
+    test(
+      'Listen-Felder werden nach Decrypt als List zurueckgeliefert',
+      () async {
+        // Schema wie magie.json `variants`: das ganze Feld ist ein einziger
+        // enc:-String der eine JSON-Liste enthaelt.
+        final salt = _randomSalt();
+        final key = deriveCatalogKey(password: password, salt: salt);
+        final encryptedListField = encryptCatalogListV3(
+          values: const ['Variante A', 'Variante B', 'Variante C'],
+          derivedKey: key,
+        );
 
-      final source = _sourceFrom(
-        sections: <CatalogSectionId, List<Map<String, dynamic>>>{
-          CatalogSectionId.spells: <Map<String, dynamic>>[
-            <String, dynamic>{
-              'id': 'spell.x',
-              'variants': encryptedListField,
-            },
-          ],
-        },
-      );
+        final source = _sourceFrom(
+          sections: <CatalogSectionId, List<Map<String, dynamic>>>{
+            CatalogSectionId.spells: <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 'spell.x',
+                'variants': encryptedListField,
+              },
+            ],
+          },
+        );
 
-      final result = await decryptAllCatalogValues(
-        encrypted: source,
-        password: password,
-        globalSaltV3: salt,
-      );
+        final result = await decryptAllCatalogValues(
+          encrypted: source,
+          password: password,
+          globalSaltV3: salt,
+        );
 
-      expect(
-        result.entriesFor(CatalogSectionId.spells).single['variants'],
-        <dynamic>['Variante A', 'Variante B', 'Variante C'],
-      );
-    });
+        expect(
+          result.entriesFor(CatalogSectionId.spells).single['variants'],
+          <dynamic>['Variante A', 'Variante B', 'Variante C'],
+        );
+      },
+    );
 
     test('Reisebericht-Daten werden ebenfalls entschluesselt', () async {
       final salt = _randomSalt();
@@ -248,10 +255,7 @@ void main() {
         globalSaltV3: salt,
       );
 
-      expect(
-        result.reisebericht.single['beschreibung'],
-        'Reise-Geheimnis',
-      );
+      expect(result.reisebericht.single['beschreibung'], 'Reise-Geheimnis');
     });
 
     test('Metadaten und Version werden uebernommen', () async {

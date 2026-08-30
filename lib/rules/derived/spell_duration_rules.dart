@@ -62,7 +62,10 @@ String describeSpellDuration(SpellDuration? duration) {
   if (duration.amount <= 0) {
     return 'Wirkungsdauer offen';
   }
-  final unitLabel = spellDurationUnitLabel(duration.unit, amount: duration.amount);
+  final unitLabel = spellDurationUnitLabel(
+    duration.unit,
+    amount: duration.amount,
+  );
   if (duration.isExpired) {
     return 'abgelaufen (${duration.amount} $unitLabel)';
   }

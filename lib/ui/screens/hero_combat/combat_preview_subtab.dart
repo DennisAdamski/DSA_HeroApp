@@ -126,8 +126,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
     final offhandPreview = preview.offhandPreview;
     return CodexSectionCard(
       title: 'Aktuelle Kampfwerte',
-      subtitle:
-          'Sofort spielbare Werte für die aktive Waffenhaltung und aktuelle Distanz.',
+      subtitle: 'Sofort spielbare Werte für die aktive Waffenhaltung und aktuelle Distanz.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

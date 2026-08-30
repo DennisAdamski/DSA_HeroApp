@@ -13,13 +13,7 @@ class BoughtStats {
   final int kap;
   final int mr;
 
-  BoughtStats copyWith({
-    int? lep,
-    int? au,
-    int? asp,
-    int? kap,
-    int? mr,
-  }) {
+  BoughtStats copyWith({int? lep, int? au, int? asp, int? kap, int? mr}) {
     return BoughtStats(
       lep: lep ?? this.lep,
       au: au ?? this.au,
@@ -30,13 +24,7 @@ class BoughtStats {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'lep': lep,
-      'au': au,
-      'asp': asp,
-      'kap': kap,
-      'mr': mr,
-    };
+    return {'lep': lep, 'au': au, 'asp': asp, 'kap': kap, 'mr': mr};
   }
 
   static BoughtStats fromJson(Map<String, dynamic> json) {

@@ -76,10 +76,7 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
     final sectionContent = _buildSectionContent(context);
     final tableCard = Card(
       key: const ValueKey<String>('combat-armor-card'),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: sectionContent,
-      ),
+      child: Padding(padding: const EdgeInsets.all(12), child: sectionContent),
     );
     if (!_isWideLayout || _editorSeedPiece == null) {
       return tableCard;
@@ -241,17 +238,32 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
     required bool showPieceRg1,
   }) {
     return <AdaptiveTableColumnSpec>[
-      const AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 260, flex: 2), // Name
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),             // RS
-      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80),             // BE
-      const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100),            // Aktiv
-      const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),            // Artefakt
-      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2), // Artefaktbeschreibung
-      const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110),            // Geweiht
-      const AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 320, flex: 2), // Beschreibung (geweiht)
+      const AdaptiveTableColumnSpec(
+        minWidth: 150,
+        maxWidth: 260,
+        flex: 2,
+      ), // Name
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80), // RS
+      const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80), // BE
+      const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100), // Aktiv
+      const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110), // Artefakt
+      const AdaptiveTableColumnSpec(
+        minWidth: 180,
+        maxWidth: 320,
+        flex: 2,
+      ), // Artefaktbeschreibung
+      const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110), // Geweiht
+      const AdaptiveTableColumnSpec(
+        minWidth: 180,
+        maxWidth: 320,
+        flex: 2,
+      ), // Beschreibung (geweiht)
       if (showPieceRg1)
-        const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100),          // RG I aktiv
-      const AdaptiveTableColumnSpec.fixed(56),                               // Aktion
+        const AdaptiveTableColumnSpec(
+          minWidth: 68,
+          maxWidth: 100,
+        ), // RG I aktiv
+      const AdaptiveTableColumnSpec.fixed(56), // Aktion
     ];
   }
 

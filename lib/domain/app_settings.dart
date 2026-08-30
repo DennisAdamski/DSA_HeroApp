@@ -142,9 +142,7 @@ class AppSettings {
         UiVariante.codex;
     final rawAnsicht = json['tabellenAnsicht'] as String?;
     final tabellenAnsicht =
-        TabellenAnsicht.values
-            .where((v) => v.name == rawAnsicht)
-            .firstOrNull ??
+        TabellenAnsicht.values.where((v) => v.name == rawAnsicht).firstOrNull ??
         TabellenAnsicht.automatisch;
 
     return AppSettings(

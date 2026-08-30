@@ -24,10 +24,7 @@ void main() {
         'activeManeuvers': <dynamic>[],
       };
       final rules = CombatSpecialRules.fromJson(json);
-      expect(
-        rules.activeManeuvers,
-        isNot(contains('man_schnellladen_bogen')),
-      );
+      expect(rules.activeManeuvers, isNot(contains('man_schnellladen_bogen')));
       expect(rules.activeManeuvers, contains('man_schnellladen_armbrust'));
     });
 

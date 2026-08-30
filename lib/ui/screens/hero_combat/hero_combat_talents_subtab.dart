@@ -159,9 +159,8 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       return;
     }
     _viewRevision.value++;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('${talent.name} gesteigert')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('${talent.name} gesteigert')));
   }
 
   List<AdaptiveTableColumnSpec> _combatSubtabColumnSpecs({
@@ -509,9 +508,8 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     final rowColor = isInvalid
         ? Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.4)
         : (entry.gifted && isEditing
-              ? Theme.of(
-                  context,
-                ).colorScheme.tertiaryContainer.withValues(alpha: 0.4)
+              ? Theme.of(context).colorScheme.tertiaryContainer
+                    .withValues(alpha: 0.4)
               : null);
 
     return TableRow(

@@ -76,7 +76,10 @@ void main() {
     await tester.tap(find.text('Öffnen'));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Epos-Aufschlag (+25 %): +25 AP'), findsOneWidget);
+    expect(
+      find.textContaining('Epos-Aufschlag (+25 %): +25 AP'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text('Erwerben'));
     await tester.pumpAndSettle();
@@ -123,9 +126,7 @@ void main() {
   });
 
   group('lehrmeisterVerdoppeltOhneIhn', () {
-    testWidgets('ohne Haken werden die Basiskosten verdoppelt', (
-      tester,
-    ) async {
+    testWidgets('ohne Haken werden die Basiskosten verdoppelt', (tester) async {
       ErwerbErgebnis? result;
 
       await tester.pumpWidget(

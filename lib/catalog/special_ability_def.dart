@@ -91,7 +91,8 @@ class SpecialAbilityDef implements SpecialAbilityEntry {
   final String verbreitung; // Verbreitungsangabe laut Regelwerk
   @override
   final String kosten; // AP-Kosten laut Regelwerk
-  final String quelle; // Freitext-Quellreferenz (z. B. 'Wege der Zauberei S. 140')
+  final String
+  quelle; // Freitext-Quellreferenz (z. B. 'Wege der Zauberei S. 140')
   final bool hausregel; // Eintrag stammt aus einer Hausregel
   @override
   final bool nurEpisch; // Nur fuer episch eingestufte Helden verfuegbar
@@ -147,10 +148,8 @@ class SpecialAbilityDef implements SpecialAbilityEntry {
   /// Anzeigename plus alle Alias-Namen — die vollstaendige Menge an
   /// Schreibweisen, unter denen dieser Eintrag bei einem Helden stehen kann.
   @override
-  List<String> get alleNamen => List<String>.unmodifiable(<String>[
-    name,
-    ...aliasNamen,
-  ]);
+  List<String> get alleNamen =>
+      List<String>.unmodifiable(<String>[name, ...aliasNamen]);
 
   /// Alle waehlbaren Varianten — flache Liste plus alle Gruppen, in dieser
   /// Reihenfolge und ohne Duplikate.
@@ -192,15 +191,12 @@ class SpecialAbilityDef implements SpecialAbilityEntry {
         'mehrfachwaehlbar',
         fallback: false,
       ),
-      variantenLabel: readCatalogString(
-        json,
-        'varianten_label',
-        fallback: '',
-      ),
+      variantenLabel: readCatalogString(json, 'varianten_label', fallback: ''),
       varianten: readCatalogStringList(json, 'varianten'),
-      variantenGruppen: readCatalogObjectList(json, 'varianten_gruppen')
-          .map(SpecialAbilityVariantGroup.fromJson)
-          .toList(growable: false),
+      variantenGruppen: readCatalogObjectList(
+        json,
+        'varianten_gruppen',
+      ).map(SpecialAbilityVariantGroup.fromJson).toList(growable: false),
       variantenFreitext: readCatalogBool(
         json,
         'varianten_freitext',
@@ -208,19 +204,15 @@ class SpecialAbilityDef implements SpecialAbilityEntry {
       ),
       apErstwerb: _readNullableInt(json, 'ap_erstwerb'),
       apFolgeerwerb: _readNullableInt(json, 'ap_folgeerwerb'),
-      voraussetzungenStruktur:
-          readCatalogObjectList(json, 'voraussetzungen_struktur')
-              .map(SpecialAbilityRequirement.fromJson)
-              .toList(growable: false),
+      voraussetzungenStruktur: readCatalogObjectList(
+        json,
+        'voraussetzungen_struktur',
+      ).map(SpecialAbilityRequirement.fromJson).toList(growable: false),
       kette: ketteJson == null
           ? null
           : SpecialAbilityChainRef.fromJson(ketteJson),
       aliasNamen: readCatalogStringList(json, 'alias_namen'),
-      nurInformation: readCatalogBool(
-        json,
-        'nur_information',
-        fallback: false,
-      ),
+      nurInformation: readCatalogBool(json, 'nur_information', fallback: false),
       ruleMeta: ruleMetaJson == null ? null : RuleMeta.fromJson(ruleMetaJson),
     );
   }

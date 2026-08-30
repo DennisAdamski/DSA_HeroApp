@@ -60,8 +60,7 @@ class WeaponBasicInfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return WeaponEditorSectionCard(
       title: 'Stammdaten',
-      subtitle:
-          'Waffentalent und Waffenart bleiben nach Kampftyp und Vorlage gefiltert.',
+      subtitle: 'Waffentalent und Waffenart bleiben nach Kampftyp und Vorlage gefiltert.',
       child: Column(
         children: [
           TextField(

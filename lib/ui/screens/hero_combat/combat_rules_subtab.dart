@@ -50,10 +50,10 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
 
     final nahkampfManeuver =
         groupedManeuvers['bewaffnet'] ?? const <ManeuverDef>[];
-    final fernkampfManeuver = catalog.maneuvers
-        .where((m) => m.gruppe == 'fernkampf')
-        .toList()
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final fernkampfManeuver =
+        catalog.maneuvers.where((m) => m.gruppe == 'fernkampf').toList()..sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
     final waffenloseManeuver =
         groupedManeuvers['waffenlos'] ?? const <ManeuverDef>[];
 
@@ -78,8 +78,9 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
       );
     }
 
-    final combatTalents =
-        catalog.talents.where((t) => t.group == 'Kampftalent').toList();
+    final combatTalents = catalog.talents
+        .where((t) => t.group == 'Kampftalent')
+        .toList();
 
     return ListView(
       padding: const EdgeInsets.all(12),
@@ -122,7 +123,8 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
         const SizedBox(height: 8),
         buildGroup(
           title: 'Fernkampf-Manöver',
-          count: _countFernkampfEntries(fernkampfManeuver, fkTalents) +
+          count:
+              _countFernkampfEntries(fernkampfManeuver, fkTalents) +
               epischeFernkampfSf.length,
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,10 +218,8 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
               IconButton(
                 icon: const Icon(Icons.add),
                 tooltip: 'Waffenmeister hinzufügen',
-                onPressed: () => _openWaffenmeisterEditor(
-                  catalog: catalog,
-                  index: -1,
-                ),
+                onPressed: () =>
+                    _openWaffenmeisterEditor(catalog: catalog, index: -1),
               ),
           ],
         ),
@@ -245,8 +245,8 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
           final grossmeister = grossmeisterSf
               .where((g) => g.name == 'Waffen-Großmeister ($talentName)')
               .firstOrNull;
-          final isGmActive = grossmeister != null &&
-              _isCatalogSfActive(grossmeister.id);
+          final isGmActive =
+              grossmeister != null && _isCatalogSfActive(grossmeister.id);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -277,10 +277,8 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
                                 final next = List<WaffenmeisterConfig>.from(
                                   wmList,
                                 )..removeAt(index);
-                                _draftCombatConfig =
-                                    _draftCombatConfig.copyWith(
-                                  waffenmeisterschaften: next,
-                                );
+                                _draftCombatConfig = _draftCombatConfig
+                                    .copyWith(waffenmeisterschaften: next);
                                 _markFieldChanged();
                               },
                             ),
@@ -316,8 +314,9 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     final initial = isNew
         ? const WaffenmeisterConfig()
         : _draftCombatConfig.waffenmeisterschaften[index];
-    final combatTalents =
-        catalog.talents.where((t) => t.group == 'Kampftalent').toList();
+    final combatTalents = catalog.talents
+        .where((t) => t.group == 'Kampftalent')
+        .toList();
 
     Navigator.of(context).push(
       MaterialPageRoute<WaffenmeisterConfig>(
@@ -367,9 +366,10 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
         final isActive = activeManeuverIds.contains(maneuver.id);
         final typStr = maneuver.typ.trim();
         final erschStr = maneuver.erschwernis.trim();
-        final beschreibung = [typStr, erschStr]
-            .where((s) => s.isNotEmpty)
-            .join(' · ');
+        final beschreibung = [
+          typStr,
+          erschStr,
+        ].where((s) => s.isNotEmpty).join(' · ');
         return ConstrainedBox(
           constraints: const BoxConstraints(minWidth: 160, maxWidth: 260),
           child: _CombatRuleChip(
@@ -420,8 +420,8 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
         count += m.nurFuerTalente.isEmpty
             ? fkTalents.length
             : m.nurFuerTalente
-                .where((id) => fkTalents.any((t) => t.id == id))
-                .length;
+                  .where((id) => fkTalents.any((t) => t.id == id))
+                  .length;
       } else {
         count += 1;
       }
@@ -451,15 +451,17 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     for (final maneuver in fernkampfManeuver) {
       final typStr = maneuver.typ.trim();
       final erschStr = maneuver.erschwernis.trim();
-      final beschreibung =
-          [typStr, erschStr].where((s) => s.isNotEmpty).join(' · ');
+      final beschreibung = [
+        typStr,
+        erschStr,
+      ].where((s) => s.isNotEmpty).join(' · ');
 
       if (maneuver.mussSeparatErlerntWerden) {
         final applicableTalents = maneuver.nurFuerTalente.isEmpty
             ? fkTalents
             : fkTalents
-                .where((t) => maneuver.nurFuerTalente.contains(t.id))
-                .toList();
+                  .where((t) => maneuver.nurFuerTalente.contains(t.id))
+                  .toList();
         for (final talent in applicableTalents) {
           final toggleId = '${maneuver.id}::${talent.id}';
           final isActive = activeManeuverIds.contains(toggleId);
@@ -578,11 +580,7 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
           color: offen.isEmpty ? epicColor : theme.colorScheme.error,
           size: 20,
         ),
-        title: Row(
-          children: [
-            Expanded(child: Text(grossmeister.name)),
-          ],
-        ),
+        title: Row(children: [Expanded(child: Text(grossmeister.name))]),
         subtitle: offen.isNotEmpty
             ? Text(
                 offen.length == 1

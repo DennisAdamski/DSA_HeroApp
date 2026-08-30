@@ -136,8 +136,7 @@ extension _HeroTalentsRaiseActions on _HeroTalentTableTabState {
       return;
     }
     _tableRevision.value++;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('${talent.name} gesteigert')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('${talent.name} gesteigert')));
   }
 }

@@ -587,9 +587,8 @@ void main() {
             rulesCatalogProvider.overrideWith(
               (ref) async => _buildRulesCatalog(),
             ),
-            isHouseRuleActiveProvider(
-              EpicRuleKeys.advantages,
-            ).overrideWithValue(true),
+            isHouseRuleActiveProvider(EpicRuleKeys.advantages)
+                .overrideWithValue(true),
           ],
           child: MaterialApp(
             home: Scaffold(

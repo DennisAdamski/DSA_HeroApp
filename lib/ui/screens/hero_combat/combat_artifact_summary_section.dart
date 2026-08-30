@@ -149,9 +149,7 @@ extension _CombatArtifactSummarySection on _HeroCombatTabState {
 
   /// Rendert einen einzelnen Artefakt-Eintrag kompakt mit Typ und Beschreibung.
   Widget _buildArtifactSummaryEntry(_ArtifactSummaryEntry entry) {
-    final metaParts = <String>[
-      if (entry.entryType != null) entry.entryType!,
-    ];
+    final metaParts = <String>[if (entry.entryType != null) entry.entryType!];
     final metaText = metaParts.join(' • ');
 
     return Padding(
@@ -167,10 +165,7 @@ extension _CombatArtifactSummarySection on _HeroCombatTabState {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                entry.label,
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
+              Text(entry.label, style: Theme.of(context).textTheme.labelLarge),
               if (metaText.isNotEmpty) ...[
                 const SizedBox(height: 2),
                 Text(metaText, style: Theme.of(context).textTheme.bodySmall),
@@ -198,7 +193,9 @@ extension _CombatArtifactSummarySection on _HeroCombatTabState {
     if (description.isEmpty) {
       return null;
     }
-    final label = weapon.name.trim().isEmpty ? fallbackLabel : weapon.name.trim();
+    final label = weapon.name.trim().isEmpty
+        ? fallbackLabel
+        : weapon.name.trim();
     return _ArtifactSummaryEntry(
       keyName:
           'combat-artifact-summary-entry-${sectionLabel.toLowerCase()}-${_normalizeArtifactKey(label)}',
@@ -240,7 +237,9 @@ extension _CombatArtifactSummarySection on _HeroCombatTabState {
     if (description.isEmpty) {
       return null;
     }
-    final label = piece.name.trim().isEmpty ? 'Rüstungsteil' : piece.name.trim();
+    final label = piece.name.trim().isEmpty
+        ? 'Rüstungsteil'
+        : piece.name.trim();
     return _ArtifactSummaryEntry(
       keyName:
           'combat-artifact-summary-entry-armor-${_normalizeArtifactKey(label)}',
@@ -264,7 +263,9 @@ extension _CombatArtifactSummarySection on _HeroCombatTabState {
     if (description.isEmpty) {
       return null;
     }
-    final label = weapon.name.trim().isEmpty ? fallbackLabel : weapon.name.trim();
+    final label = weapon.name.trim().isEmpty
+        ? fallbackLabel
+        : weapon.name.trim();
     return _ArtifactSummaryEntry(
       keyName:
           'combat-geweiht-summary-entry-${sectionLabel.toLowerCase()}-${_normalizeArtifactKey(label)}',
@@ -307,7 +308,9 @@ extension _CombatArtifactSummarySection on _HeroCombatTabState {
     if (description.isEmpty) {
       return null;
     }
-    final label = piece.name.trim().isEmpty ? 'Rüstungsteil' : piece.name.trim();
+    final label = piece.name.trim().isEmpty
+        ? 'Rüstungsteil'
+        : piece.name.trim();
     return _ArtifactSummaryEntry(
       keyName:
           'combat-geweiht-summary-entry-armor-${_normalizeArtifactKey(label)}',

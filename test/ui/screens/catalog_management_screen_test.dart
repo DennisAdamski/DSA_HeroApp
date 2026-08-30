@@ -93,7 +93,8 @@ CatalogAdminSnapshot _buildAdminSnapshot() {
         CustomCatalogEntryRecord(
           section: CatalogSectionId.talents,
           id: 'tal_custom',
-          filePath: '/heroes/custom_catalogs/house_rules_v1/talente/tal_custom.json',
+          filePath:
+              '/heroes/custom_catalogs/house_rules_v1/talente/tal_custom.json',
           data: <String, dynamic>{
             'id': 'tal_custom',
             'name': 'Hauswissen',
@@ -107,7 +108,8 @@ CatalogAdminSnapshot _buildAdminSnapshot() {
       issues: <CatalogIssue>[
         CatalogIssue(
           section: CatalogSectionId.talents,
-          filePath: '/heroes/custom_catalogs/house_rules_v1/talente/kaputt.json',
+          filePath:
+              '/heroes/custom_catalogs/house_rules_v1/talente/kaputt.json',
           message: 'Datei konnte nicht gelesen werden.',
         ),
       ],

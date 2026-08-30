@@ -202,7 +202,8 @@ RestAbilitySummary collectRestAbilities(HeroSheet hero) {
 
 /// Berechnet den effektiven Umweltmodifikator für LeP/AsP-Regeneration.
 int computeRestEnvironmentModifier(RestEnvironmentInput input) {
-  var total = input.weatherModifier + input.sleepSiteModifier + input.extraModifier;
+  var total =
+      input.weatherModifier + input.sleepSiteModifier + input.extraModifier;
   if (input.hasBadCamp) {
     total -= 1;
   }
@@ -282,15 +283,10 @@ RestRecoveryPhaseResult computeRestRecoveryPhase({
 
   final supportsMagic = magicEnabled;
   final masterfulBase = supportsMagic
-      ? computeMagicLeadAttributeBonus(
-          effectiveAttributes,
-          magicLeadAttribute,
-        )
+      ? computeMagicLeadAttributeBonus(effectiveAttributes, magicLeadAttribute)
       : 0;
   final usesMasterful = supportsMagic && abilities.hasMasterfulRegeneration;
-  final aspBase = supportsMagic
-      ? (usesMasterful ? masterfulBase : aspRoll)
-      : 0;
+  final aspBase = supportsMagic ? (usesMasterful ? masterfulBase : aspRoll) : 0;
   final aspBonus = supportsMagic
       ? _computeAspBonus(
           abilities: abilities,

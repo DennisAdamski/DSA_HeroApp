@@ -12,7 +12,7 @@ class CombatTalentValidationIssue {
   });
 
   final String talentId; // ID des betroffenen Talents
-  final String message;  // Beschreibung des Problems (auf Deutsch)
+  final String message; // Beschreibung des Problems (auf Deutsch)
 }
 
 /// Prueft, ob eine [TalentDef] ein Kampftalent ist.

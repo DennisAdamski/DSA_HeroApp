@@ -363,9 +363,8 @@ class _AktionsLeisteState extends ConsumerState<_AktionsLeiste> {
 
   void _codeTeilen() {
     Clipboard.setData(ClipboardData(text: widget.gruppenCode));
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Gruppencode kopiert')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Gruppencode kopiert')));
   }
 }
 
@@ -396,9 +395,8 @@ class _GruppenSyncHinweisCard extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSecondaryContainer,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: colorScheme.onSecondaryContainer),
             ),
           ),
         ],

@@ -3,4 +3,4 @@
 // im Heldenspeicher. Auf Web liefert die Stub-Implementierung leere
 // Snapshots und wirft bei Schreibvorgaengen einen UnsupportedError.
 export 'custom_catalog_repository_io.dart'
-    if (dart.library.html) 'custom_catalog_repository_web.dart';
+    if (dart.library.js_interop) 'custom_catalog_repository_web.dart';

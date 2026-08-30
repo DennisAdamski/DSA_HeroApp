@@ -85,13 +85,13 @@ class DsaAppShell extends ConsumerWidget {
                     child: Chip(
                       label: Text(label),
                       visualDensity: VisualDensity.compact,
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.tertiaryContainer,
+                      backgroundColor: Theme.of(context)
+                          .colorScheme
+                          .tertiaryContainer,
                       labelStyle: TextStyle(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onTertiaryContainer,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onTertiaryContainer,
                         fontSize: 11,
                       ),
                     ),

@@ -7,5 +7,5 @@
 library;
 
 export 'rules_index_search_stub.dart'
-    if (dart.library.html) 'rules_index_search_web.dart'
+    if (dart.library.js_interop) 'rules_index_search_web.dart'
     if (dart.library.io) 'rules_index_search_io.dart';

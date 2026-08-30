@@ -134,10 +134,7 @@ class WaffenmeisterBonusSection extends StatelessWidget {
       avatar: const Icon(Icons.add, size: 16),
       label: Text(label),
       onPressed: () {
-        onAddBonus(WaffenmeisterBonus(
-          type: type,
-          value: defaultValue,
-        ));
+        onAddBonus(WaffenmeisterBonus(type: type, value: defaultValue));
       },
     );
   }
@@ -159,7 +156,10 @@ class WaffenmeisterBonusSection extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
+                  child: Text(
+                    label,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ),
                 Chip(
                   label: Text('$cost Pkt'),
@@ -196,15 +196,20 @@ class WaffenmeisterBonusSection extends StatelessWidget {
           icon: const Icon(Icons.remove, size: 18),
           visualDensity: VisualDensity.compact,
           onPressed: bonus.value > 1
-              ? () => onUpdateBonus(index, bonus.copyWith(value: bonus.value - 1))
+              ? () =>
+                    onUpdateBonus(index, bonus.copyWith(value: bonus.value - 1))
               : null,
         ),
-        Text('${bonus.value}', style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(
+          '${bonus.value}',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         IconButton(
           icon: const Icon(Icons.add, size: 18),
           visualDensity: VisualDensity.compact,
           onPressed: bonus.value < maxValue
-              ? () => onUpdateBonus(index, bonus.copyWith(value: bonus.value + 1))
+              ? () =>
+                    onUpdateBonus(index, bonus.copyWith(value: bonus.value + 1))
               : null,
         ),
       ],
@@ -223,18 +228,25 @@ class WaffenmeisterBonusSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: DropdownButtonFormField<String>(
-        initialValue: bonus.targetManeuver.isNotEmpty ? bonus.targetManeuver : null,
+        initialValue: bonus.targetManeuver.isNotEmpty
+            ? bonus.targetManeuver
+            : null,
         decoration: const InputDecoration(
           labelText: 'Manöver',
           border: OutlineInputBorder(),
           isDense: true,
         ),
-        items: maneuvers.map((m) {
-          final erschwernis = m.erschwernis.isNotEmpty
-              ? ' (${m.erschwernis})'
-              : '';
-          return DropdownMenuItem(value: m.name, child: Text('${m.name}$erschwernis'));
-        }).toList(growable: false),
+        items: maneuvers
+            .map((m) {
+              final erschwernis = m.erschwernis.isNotEmpty
+                  ? ' (${m.erschwernis})'
+                  : '';
+              return DropdownMenuItem(
+                value: m.name,
+                child: Text('${m.name}$erschwernis'),
+              );
+            })
+            .toList(growable: false),
         onChanged: (value) {
           onUpdateBonus(index, bonus.copyWith(targetManeuver: value ?? ''));
         },
@@ -267,7 +279,9 @@ class WaffenmeisterBonusSection extends StatelessWidget {
               onPressed: bonus.customPointCost > 2
                   ? () => onUpdateBonus(
                       index,
-                      bonus.copyWith(customPointCost: bonus.customPointCost - 1),
+                      bonus.copyWith(
+                        customPointCost: bonus.customPointCost - 1,
+                      ),
                     )
                   : null,
             ),
@@ -281,7 +295,9 @@ class WaffenmeisterBonusSection extends StatelessWidget {
               onPressed: bonus.customPointCost < 5
                   ? () => onUpdateBonus(
                       index,
-                      bonus.copyWith(customPointCost: bonus.customPointCost + 1),
+                      bonus.copyWith(
+                        customPointCost: bonus.customPointCost + 1,
+                      ),
                     )
                   : null,
             ),
@@ -324,9 +340,7 @@ class WaffenmeisterBonusSection extends StatelessWidget {
       case WaffenmeisterBonusType.reloadTimeHalved:
         return 'Ladezeit halbiert';
       case WaffenmeisterBonusType.customAdvantage:
-        return bonus.description.isNotEmpty
-            ? bonus.description
-            : 'Sonderbonus';
+        return bonus.description.isNotEmpty ? bonus.description : 'Sonderbonus';
     }
   }
 

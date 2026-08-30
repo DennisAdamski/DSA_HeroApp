@@ -58,7 +58,11 @@ class SpellDuration {
   /// Wird [amount] ohne eigenes [remaining] gesetzt, laeuft die Wirkungsdauer
   /// wieder voll -- eine neue Gesamtdauer bedeutet in der Praxis, dass der
   /// Zauber neu gewirkt oder korrigiert wurde.
-  SpellDuration copyWith({int? amount, int? remaining, SpellDurationUnit? unit}) {
+  SpellDuration copyWith({
+    int? amount,
+    int? remaining,
+    SpellDurationUnit? unit,
+  }) {
     final nextAmount = amount ?? this.amount;
     final nextRemaining = remaining ?? amount ?? this.remaining;
     return SpellDuration(

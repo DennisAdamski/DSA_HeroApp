@@ -51,8 +51,11 @@ class FirestoreSecretsRepository implements RemoteSecretsRepository {
   final String userId;
   final FirebaseFirestore _firestore;
 
-  DocumentReference<Map<String, dynamic>> get _ref =>
-      _firestore.collection('users').doc(userId).collection('private').doc('secrets');
+  DocumentReference<Map<String, dynamic>> get _ref => _firestore
+      .collection('users')
+      .doc(userId)
+      .collection('private')
+      .doc('secrets');
 
   @override
   Future<RemoteSecrets?> load() async {
@@ -71,7 +74,9 @@ class FirestoreSecretsRepository implements RemoteSecretsRepository {
       apiKeyIv: _readBytes(data['apiKeyIv']),
       apiProvider: (data['apiProvider'] as String?) ?? '',
       cipherVersion: (data['cipherVersion'] as int?) ?? 1,
-      lastModified: lastModifiedRaw is Timestamp ? lastModifiedRaw.toDate() : null,
+      lastModified: lastModifiedRaw is Timestamp
+          ? lastModifiedRaw.toDate()
+          : null,
     );
   }
 

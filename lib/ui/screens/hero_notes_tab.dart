@@ -347,9 +347,8 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     );
     if (!applyCheck.isAllowed) {
       if (applyCheck.reason.trim().isNotEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(applyCheck.reason)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(applyCheck.reason)));
       }
       return;
     }
@@ -382,9 +381,8 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     );
     if (!check.isAllowed) {
       if (check.reason.trim().isNotEmpty && mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(check.reason)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(check.reason)));
       }
       return;
     }
@@ -528,8 +526,7 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
             if (showHeader)
               const CodexTabHeader(
                 title: 'Chroniken, Kontakte & Abenteuer',
-                subtitle:
-                    'Freie Chroniken, soziale Verbindungen und Abenteueretappen in derselben Codex-Oberfläche.',
+                subtitle: 'Freie Chroniken, soziale Verbindungen und Abenteueretappen in derselben Codex-Oberfläche.',
                 assetPath: 'assets/ui/codex/compass_mark.png',
               ),
             TabBar(

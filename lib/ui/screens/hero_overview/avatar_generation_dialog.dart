@@ -95,11 +95,9 @@ class _AvatarGenerationDialogState
 
   Widget _buildConfigView(double? estimatedCost) {
     final supportsRef = ref.watch(avatarSupportsReferenceProvider);
-    final hasPrimaerbild =
-        widget.hero.appearance.primaerbildId.isNotEmpty;
+    final hasPrimaerbild = widget.hero.appearance.primaerbildId.isNotEmpty;
     final showRefToggle = supportsRef && hasPrimaerbild;
-    final snapshotDiff =
-        ref.watch(avatarSnapshotDiffProvider(widget.heroId));
+    final snapshotDiff = ref.watch(avatarSnapshotDiffProvider(widget.heroId));
     final kiCount = ref.watch(kiImageCountProvider(widget.heroId));
     final kiLimitReached = kiCount >= maxKiBilderProHeld;
 
@@ -204,10 +202,8 @@ class _AvatarGenerationDialogState
           controller: _promptController,
           decoration: const InputDecoration(
             labelText: 'Prompt',
-            hintText:
-                'Der vollständige Prompt kann hier angepasst werden.',
-            helperText:
-                'Beim Öffnen automatisch aus den Heldendaten erzeugt.',
+            hintText: 'Der vollständige Prompt kann hier angepasst werden.',
+            helperText: 'Beim Öffnen automatisch aus den Heldendaten erzeugt.',
             border: OutlineInputBorder(),
           ),
           minLines: 6,
@@ -227,9 +223,7 @@ class _AvatarGenerationDialogState
           runSpacing: 12,
           children: [
             OutlinedButton.icon(
-              key: const ValueKey<String>(
-                'avatar-generation-reset-prompt',
-              ),
+              key: const ValueKey<String>('avatar-generation-reset-prompt'),
               onPressed: _loading ? null : _resetPromptToAutoPrompt,
               icon: const Icon(Icons.refresh),
               label: const Text('Neu aus Heldendaten erzeugen'),
@@ -267,9 +261,8 @@ class _AvatarGenerationDialogState
             padding: const EdgeInsets.only(bottom: 16),
             child: Text(
               _error!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.error,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: Theme.of(context).colorScheme.error),
             ),
           ),
         ],
@@ -341,18 +334,17 @@ class _AvatarGenerationDialogState
             style: Theme.of(context).textTheme.labelMedium,
           ),
           const SizedBox(height: 4),
-          ...items.take(6).map(
-                (item) => Text(
-                  item,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+          ...items
+              .take(6)
+              .map(
+                (item) =>
+                    Text(item, style: Theme.of(context).textTheme.bodySmall),
               ),
           if (items.length > 6)
             Text(
               '... und ${items.length - 6} weitere',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontStyle: FontStyle.italic,
-              ),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(fontStyle: FontStyle.italic),
             ),
         ],
       ),
@@ -414,8 +406,9 @@ class _AvatarGenerationDialogState
     try {
       List<int> bytes;
       if (_useReferenceImage && client.supportsReferenceImage) {
-        final refBytes =
-            await ref.read(primaerbildBytesProvider(widget.heroId).future);
+        final refBytes = await ref.read(
+          primaerbildBytesProvider(widget.heroId).future,
+        );
         if (refBytes != null && refBytes.isNotEmpty) {
           bytes = await client.generatePortraitWithReference(
             prompt: _currentPrompt,
@@ -470,12 +463,14 @@ class _AvatarGenerationDialogState
     setState(() => _loading = true);
 
     try {
-      await ref.read(heroActionsProvider).saveHeroAvatar(
-        heroId: widget.heroId,
-        pngBytes: _resultBytes!,
-        stilId: _selectedStyle.name,
-        promptAuszug: _currentPrompt,
-      );
+      await ref
+          .read(heroActionsProvider)
+          .saveHeroAvatar(
+            heroId: widget.heroId,
+            pngBytes: _resultBytes!,
+            stilId: _selectedStyle.name,
+            promptAuszug: _currentPrompt,
+          );
       if (!mounted) return;
 
       // Der Byte-Provider cached pro Dateiname; ohne Invalidierung zeigte die

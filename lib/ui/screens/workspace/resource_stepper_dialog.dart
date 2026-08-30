@@ -23,10 +23,7 @@ Future<void> showResourceStepperDialog({
 }
 
 class _ResourceStepperDialog extends ConsumerWidget {
-  const _ResourceStepperDialog({
-    required this.heroId,
-    required this.resource,
-  });
+  const _ResourceStepperDialog({required this.heroId, required this.resource});
 
   final String heroId;
   final ResourceType resource;
@@ -85,9 +82,7 @@ class _ResourceStepperDialog extends ConsumerWidget {
                 Text(
                   '$current',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: isLow
-                        ? Theme.of(context).colorScheme.error
-                        : null,
+                    color: isLow ? Theme.of(context).colorScheme.error : null,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

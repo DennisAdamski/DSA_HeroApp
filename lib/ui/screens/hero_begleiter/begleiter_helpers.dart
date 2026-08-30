@@ -22,9 +22,8 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
-        ),
+        style: Theme.of(context).textTheme.titleSmall
+            ?.copyWith(color: Theme.of(context).colorScheme.primary),
       ),
     );
   }
@@ -32,10 +31,7 @@ class _SectionHeader extends StatelessWidget {
 
 /// Kompakter Steigern-Button (trending_up) fuer Inline-Steigerung.
 class _RaiseIconButton extends StatelessWidget {
-  const _RaiseIconButton({
-    required this.tooltip,
-    required this.onPressed,
-  });
+  const _RaiseIconButton({required this.tooltip, required this.onPressed});
 
   final String tooltip;
   final VoidCallback onPressed;
