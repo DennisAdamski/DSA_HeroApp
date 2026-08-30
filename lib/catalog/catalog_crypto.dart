@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:encrypt/encrypt.dart';
+import 'package:dsa_heldenverwaltung/crypto/aes_primitives.dart';
 import 'package:pointycastle/digests/sha256.dart';
 import 'package:pointycastle/key_derivators/api.dart';
 import 'package:pointycastle/key_derivators/pbkdf2.dart';
@@ -55,16 +55,31 @@ Uint8List _randomBytes(int length) {
   return Uint8List.fromList(List.generate(length, (_) => rng.nextInt(256)));
 }
 
-Key _deriveKeyLegacy(String password) {
-  final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
-    ..init(Pbkdf2Parameters(_legacySalt, _legacyIterations, 32));
-  return Key(derivator.process(_passwordBytes(password)));
+/// Abgeleiteter AES-256-Schluessel fuer die Katalog-Krypto.
+///
+/// Eigener Typ statt `Uint8List`, damit ein Schluessel nicht versehentlich
+/// gegen beliebige Bytes getauscht wird, und statt `encrypt.Key`, damit kein
+/// Fremdtyp durch die Schichten wandert: `catalog_decrypt_runner.dart`
+/// brauchte dafuer bisher ein `import 'package:flutter/foundation.dart'
+/// hide Key;`, um der Namenskollision mit Flutters `Key` auszuweichen.
+class CatalogKey {
+  /// Erstellt einen Schluessel aus bereits abgeleiteten Bytes.
+  const CatalogKey(this.bytes);
+
+  /// Die rohen Schluesselbytes (32 Byte fuer AES-256).
+  final Uint8List bytes;
 }
 
-Key _deriveKeyV2(String password, Uint8List salt) {
+CatalogKey _deriveKeyLegacy(String password) {
+  final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
+    ..init(Pbkdf2Parameters(_legacySalt, _legacyIterations, 32));
+  return CatalogKey(derivator.process(_passwordBytes(password)));
+}
+
+CatalogKey _deriveKeyV2(String password, Uint8List salt) {
   final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
     ..init(Pbkdf2Parameters(salt, _v2Iterations, 32));
-  return Key(derivator.process(_passwordBytes(password)));
+  return CatalogKey(derivator.process(_passwordBytes(password)));
 }
 
 // ── Oeffentliche API ──────────────────────────────────────────────────────────
@@ -79,16 +94,17 @@ bool isEncryptedValue(dynamic value) =>
 String encryptCatalogValue(String plaintext, String password) {
   if (plaintext.isEmpty) return plaintext;
   final salt = _randomBytes(_saltLength);
-  final nonce = IV(Uint8List.fromList(_randomBytes(_nonceLength)));
+  final nonce = _randomBytes(_nonceLength);
   final key = _deriveKeyV2(password, salt);
-  final encrypter = Encrypter(AES(key, mode: AESMode.gcm));
-  final encrypted = encrypter.encrypt(plaintext, iv: nonce);
-  final combined = Uint8List(
-    _saltLength + _nonceLength + encrypted.bytes.length,
+  final encrypted = aesGcmEncrypt(
+    key: key.bytes,
+    nonce: nonce,
+    plaintext: Uint8List.fromList(utf8.encode(plaintext)),
   );
+  final combined = Uint8List(_saltLength + _nonceLength + encrypted.length);
   combined.setAll(0, salt);
-  combined.setAll(_saltLength, nonce.bytes);
-  combined.setAll(_saltLength + _nonceLength, encrypted.bytes);
+  combined.setAll(_saltLength, nonce);
+  combined.setAll(_saltLength + _nonceLength, encrypted);
   return '$encryptedPrefix$_v2Marker${base64Encode(combined)}';
 }
 
@@ -126,27 +142,27 @@ String? _decryptV2(String b64Payload, String password) {
   final combined = base64Decode(b64Payload);
   if (combined.length <= _saltLength + _nonceLength) return null;
   final salt = Uint8List.fromList(combined.sublist(0, _saltLength));
-  final nonce = IV(
-    Uint8List.fromList(
-      combined.sublist(_saltLength, _saltLength + _nonceLength),
-    ),
+  final nonce = Uint8List.fromList(
+    combined.sublist(_saltLength, _saltLength + _nonceLength),
   );
   final cipherBytes = Uint8List.fromList(
     combined.sublist(_saltLength + _nonceLength),
   );
   final key = _deriveKeyV2(password, salt);
-  final encrypter = Encrypter(AES(key, mode: AESMode.gcm));
-  return encrypter.decrypt(Encrypted(cipherBytes), iv: nonce);
+  return utf8.decode(
+    aesGcmDecrypt(key: key.bytes, nonce: nonce, cipherWithTag: cipherBytes),
+  );
 }
 
 String? _decryptLegacy(String b64Payload, String password) {
   final combined = base64Decode(b64Payload);
   if (combined.length <= _legacyIvLength) return null;
-  final iv = IV(Uint8List.fromList(combined.sublist(0, _legacyIvLength)));
+  final iv = Uint8List.fromList(combined.sublist(0, _legacyIvLength));
   final cipherBytes = Uint8List.fromList(combined.sublist(_legacyIvLength));
   final key = _deriveKeyLegacy(password);
-  final encrypter = Encrypter(AES(key, mode: AESMode.cbc));
-  return encrypter.decrypt(Encrypted(cipherBytes), iv: iv);
+  return utf8.decode(
+    aesCbcDecrypt(key: key.bytes, iv: iv, cipher: cipherBytes),
+  );
 }
 
 // ── v3-API ────────────────────────────────────────────────────────────────────
@@ -155,10 +171,13 @@ String? _decryptLegacy(String b64Payload, String password) {
 ///
 /// In v3 wird der Salt einmal pro Katalog (nicht pro Wert) verwendet, sodass
 /// diese Ableitung pro Passwort+Katalog nur ein einziges Mal noetig ist.
-Key deriveCatalogKey({required String password, required Uint8List salt}) {
+CatalogKey deriveCatalogKey({
+  required String password,
+  required Uint8List salt,
+}) {
   final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
     ..init(Pbkdf2Parameters(salt, _v3Iterations, 32));
-  return Key(derivator.process(_passwordBytes(password)));
+  return CatalogKey(derivator.process(_passwordBytes(password)));
 }
 
 /// Verschluesselt einen Klartext-String mit AES-GCM und einem bereits
@@ -168,15 +187,18 @@ Key deriveCatalogKey({required String password, required Uint8List salt}) {
 /// Leere Strings werden unveraendert zurueckgegeben.
 String encryptCatalogValueV3({
   required String plaintext,
-  required Key derivedKey,
+  required CatalogKey derivedKey,
 }) {
   if (plaintext.isEmpty) return plaintext;
-  final nonce = IV(Uint8List.fromList(_randomBytes(_nonceLength)));
-  final encrypter = Encrypter(AES(derivedKey, mode: AESMode.gcm));
-  final encrypted = encrypter.encrypt(plaintext, iv: nonce);
-  final combined = Uint8List(_nonceLength + encrypted.bytes.length);
-  combined.setAll(0, nonce.bytes);
-  combined.setAll(_nonceLength, encrypted.bytes);
+  final nonce = _randomBytes(_nonceLength);
+  final encrypted = aesGcmEncrypt(
+    key: derivedKey.bytes,
+    nonce: nonce,
+    plaintext: Uint8List.fromList(utf8.encode(plaintext)),
+  );
+  final combined = Uint8List(_nonceLength + encrypted.length);
+  combined.setAll(0, nonce);
+  combined.setAll(_nonceLength, encrypted);
   return '$encryptedPrefix$_v3Marker${base64Encode(combined)}';
 }
 
@@ -186,7 +208,7 @@ String encryptCatalogValueV3({
 /// v3-Wert).
 String? decryptCatalogValueV3({
   required String encryptedValue,
-  required Key derivedKey,
+  required CatalogKey derivedKey,
 }) {
   if (!encryptedValue.startsWith(encryptedPrefix)) return encryptedValue;
   try {
@@ -195,10 +217,15 @@ String? decryptCatalogValueV3({
     final b64 = payload.substring(_v3Marker.length);
     final combined = base64Decode(b64);
     if (combined.length <= _nonceLength) return null;
-    final nonce = IV(Uint8List.fromList(combined.sublist(0, _nonceLength)));
+    final nonce = Uint8List.fromList(combined.sublist(0, _nonceLength));
     final cipherBytes = Uint8List.fromList(combined.sublist(_nonceLength));
-    final encrypter = Encrypter(AES(derivedKey, mode: AESMode.gcm));
-    return encrypter.decrypt(Encrypted(cipherBytes), iv: nonce);
+    return utf8.decode(
+      aesGcmDecrypt(
+        key: derivedKey.bytes,
+        nonce: nonce,
+        cipherWithTag: cipherBytes,
+      ),
+    );
   } catch (_) {
     return null;
   }
@@ -209,7 +236,7 @@ String? decryptCatalogValueV3({
 /// Leere Listen werden als JSON `[]` (ohne `enc:`-Praefix) zurueckgegeben.
 String encryptCatalogListV3({
   required List<String> values,
-  required Key derivedKey,
+  required CatalogKey derivedKey,
 }) {
   if (values.isEmpty) return jsonEncode(values);
   return encryptCatalogValueV3(
@@ -221,7 +248,7 @@ String encryptCatalogListV3({
 /// Entschluesselt einen v3-`enc:`-Wert zurueck in eine String-Liste.
 List<String>? decryptCatalogListV3({
   required String encryptedValue,
-  required Key derivedKey,
+  required CatalogKey derivedKey,
 }) {
   final decrypted = decryptCatalogValueV3(
     encryptedValue: encryptedValue,

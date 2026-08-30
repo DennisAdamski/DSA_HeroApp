@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:encrypt/encrypt.dart' as enc_pkg;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pointycastle/digests/sha256.dart';
 import 'package:pointycastle/key_derivators/api.dart';
@@ -10,6 +9,7 @@ import 'package:pointycastle/key_derivators/pbkdf2.dart';
 import 'package:pointycastle/macs/hmac.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
+import 'package:dsa_heldenverwaltung/crypto/aes_primitives.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 
 Uint8List _randomSalt([int length = 32]) {
@@ -18,24 +18,24 @@ Uint8List _randomSalt([int length = 32]) {
 }
 
 // Repliziert den v1-Algorithmus aus catalog_crypto.dart für Test-Fixtures.
+//
+// v1 wird von der App nur noch entschluesselt, nicht mehr erzeugt — die
+// Verschluesselungsseite lebt deshalb hier. Das feste Bestandschiffrat liegt
+// zusaetzlich in catalog_crypto_golden_test.dart.
 String _encryptV1(String plaintext, String password) {
   final salt = Uint8List.fromList('dsa_helden_catalog_salt_2026'.codeUnits);
   final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
     ..init(Pbkdf2Parameters(salt, 10000, 32));
   final keyBytes = derivator.process(Uint8List.fromList(utf8.encode(password)));
-  final key = enc_pkg.Key(keyBytes);
-  final rng = Random.secure();
-  final ivBytes = Uint8List.fromList(
-    List.generate(16, (_) => rng.nextInt(256)),
+  final ivBytes = secureRandomBytes(16);
+  final encrypted = aesCbcEncrypt(
+    key: keyBytes,
+    iv: ivBytes,
+    plaintext: Uint8List.fromList(utf8.encode(plaintext)),
   );
-  final iv = enc_pkg.IV(ivBytes);
-  final encrypter = enc_pkg.Encrypter(
-    enc_pkg.AES(key, mode: enc_pkg.AESMode.cbc),
-  );
-  final encrypted = encrypter.encrypt(plaintext, iv: iv);
-  final combined = Uint8List(16 + encrypted.bytes.length);
+  final combined = Uint8List(16 + encrypted.length);
   combined.setAll(0, ivBytes);
-  combined.setAll(16, encrypted.bytes);
+  combined.setAll(16, encrypted);
   return 'enc:${base64Encode(combined)}';
 }
 
