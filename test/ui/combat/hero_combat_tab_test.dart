@@ -315,7 +315,11 @@ void main() {
   }
 
   /// Findet den Switch im Chip mit dem angegebenen Namen und tippt ihn.
-  Future<void> tapChipSwitch(WidgetTester tester, String chipName) async {
+  Future<void> tapChipSwitch(
+    WidgetTester tester,
+    String chipName, {
+    int apKosten = 0,
+  }) async {
     await tester.scrollUntilVisible(
       find.text(chipName),
       300,
@@ -334,7 +338,10 @@ void main() {
     // Deaktivierung oeffnet keinen Dialog.
     final erwerbButton = find.widgetWithText(FilledButton, 'Erwerben');
     if (erwerbButton.evaluate().isNotEmpty) {
-      await tester.enterText(find.widgetWithText(TextField, 'AP-Kosten'), '0');
+      await tester.enterText(
+        find.widgetWithText(TextField, 'AP-Kosten'),
+        '$apKosten',
+      );
       await tester.pumpAndSettle();
       await tester.tap(erwerbButton);
       await tester.pumpAndSettle();
@@ -735,6 +742,78 @@ void main() {
       (entry) => entry.id == 'demo',
     );
     expect(hero.combatConfig.specialRules.schnellziehen, isTrue);
+  });
+
+  testWidgets('erworbene Kampf-Sonderfertigkeit zieht AP ab', (tester) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero().copyWith(apTotal: 2000, apSpent: 500, apAvailable: 1500),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openCombatTab(tester, repo);
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfregeln');
+    await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
+    await tapChipSwitch(tester, 'Schnellziehen', apKosten: 100);
+    await tapChipSwitch(tester, 'Blindkampf', apKosten: 50);
+
+    await actions.save();
+    await tester.pumpAndSettle();
+
+    final hero = (await repo.listHeroes()).firstWhere(
+      (entry) => entry.id == 'demo',
+    );
+    expect(hero.combatConfig.specialRules.schnellziehen, isTrue);
+    expect(
+      hero.combatConfig.specialRules.activeCombatSpecialAbilityIds,
+      contains('ksf_blindkampf'),
+    );
+    expect(hero.apSpent, 650);
+    expect(hero.apAvailable, 1350);
+  });
+
+  testWidgets('abgebrochener Erwerb laesst die AP unveraendert', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero().copyWith(apTotal: 2000, apSpent: 500, apAvailable: 1500),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openCombatTab(tester, repo);
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+    await tapTab(tester, 'Kampfregeln');
+    await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
+    await tapChipSwitch(tester, 'Schnellziehen', apKosten: 100);
+
+    await actions.cancel();
+    await tester.pumpAndSettle();
+
+    final hero = (await repo.listHeroes()).firstWhere(
+      (entry) => entry.id == 'demo',
+    );
+    expect(hero.combatConfig.specialRules.schnellziehen, isFalse);
+    expect(hero.apSpent, 500);
   });
 
   testWidgets(
@@ -1144,6 +1223,60 @@ void main() {
     expect(entry, isNotNull);
     expect(entry!.combatSpecializations, const <String>['Schwert']);
     expect(entry.specializations, 'Schwert');
+  });
+
+  testWidgets('Kampftechnik-Spezialisierung zieht AP ab', (tester) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(talentValue: 7, atValue: 4, paValue: 3),
+          },
+        ).copyWith(apTotal: 2000, apSpent: 500, apAvailable: 1500),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openCombatTab(tester, repo);
+    await tapTab(tester, 'Kampftechniken');
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    final specButton = find.byKey(
+      const ValueKey<String>('combat-spec-add-tal_nah'),
+    );
+    await tester.ensureVisible(specButton);
+    await tester.tap(specButton);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(CheckboxListTile, 'Schwert'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Übernehmen'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.widgetWithText(TextField, 'AP-Kosten'), '40');
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
+    await tester.pumpAndSettle();
+
+    await actions.save();
+    await tester.pumpAndSettle();
+
+    final hero = (await repo.listHeroes()).firstWhere(
+      (entry) => entry.id == 'demo',
+    );
+    expect(hero.talents['tal_nah']!.combatSpecializations, const <String>[
+      'Schwert',
+    ]);
+    // Ohne Lehrmeister verdoppeln sich die eingegebenen Kosten.
+    expect(hero.apSpent, 580);
+    expect(hero.apAvailable, 1420);
   });
 
   testWidgets('weapon table shows reduced columns', (tester) async {
