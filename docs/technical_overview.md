@@ -1352,6 +1352,28 @@ level         = floor(sqrt(apSpent / 50 + 0.25) + 0.5)
 apAvailable   = max(0, apTotal − apSpent)
 ```
 
+**AP-Abzug beim Erwerb (`_draftApSpentDelta`)**
+
+Bestätigte Erwerbs-Dialoge (Sonderfertigkeiten, Manöver, Spezialisierungen)
+dürfen ihre AP-Kosten **nicht** direkt in das Feld `_latestHero` eines Tabs
+schreiben. Talente-, Magie- und Kampf-Tab lesen den Helden in `build()`
+unconditional aus `heroByIdProvider` und überschreiben `_latestHero` bei jedem
+Rebuild — und ein Rebuild passiert unmittelbar nach dem Erwerb, weil
+`_markFieldChanged()` den Dirty-Zustand umlegt. Der Erwerb landete dann in der
+Liste, der AP-Abzug ging verloren.
+
+Stattdessen summiert jeder Tab die bestätigten Kosten in einem
+`_draftApSpentDelta` (wie die anderen `_draftXxx`-Felder), das erst beim
+Speichern auf den dann aktuellen `hero.apSpent` addiert und danach
+zurückgesetzt wird; `_syncDraftFromHero` setzt es beim Verwerfen ebenfalls auf
+`0`. Erwerbs-Dialoge im selben Bearbeitungsvorgang bekommen ihre verfügbaren AP
+über `_verfuegbareApImDraft(hero)`, also abzüglich des noch nicht gespeicherten
+Deltas.
+
+Sofort speichernde Aktionen (Steigerungs-Dialoge) sind davon nicht betroffen:
+sie sind nur bei `isEditing && !isDirty` erreichbar, es kann also kein Delta
+offen sein.
+
 ### 4.9 Erwerbsvoraussetzungen und Stufenketten
 
 **Dateien:** `lib/catalog/special_ability_requirement.dart`,

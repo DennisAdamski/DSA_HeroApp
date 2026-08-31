@@ -106,6 +106,18 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   Set<String> _invalidCombatTalentIds = <String>{};
   CombatConfig _draftCombatConfig = const CombatConfig();
+
+  /// Aufsummierte AP-Kosten aus Erwerbs-Dialogen (Kampf-Sonderfertigkeiten,
+  /// Manoever, Kampftalent-Spezialisierungen) seit dem letzten Sync/Save.
+  ///
+  /// Bewusst nicht direkt in `_latestHero.apSpent` geschrieben: `build()`
+  /// liest den Helden unconditional aus `heroByIdProvider` und ueberschreibt
+  /// `_latestHero` bei jedem Rebuild (z. B. ausgeloest durch
+  /// `_markFieldChanged()`), bevor `_saveChanges()` laeuft. Wie die anderen
+  /// `_draftXxx`-Felder wird dieser Delta-Wert erst beim Speichern auf den
+  /// dann aktuellen `hero.apSpent` angewendet. Gleiche Begruendung wie
+  /// `_draftApSpentDelta` in `hero_talents_tab.dart`.
+  int _draftApSpentDelta = 0;
   int? _temporaryIniRoll;
   TwoWeaponActionType _selectedTwoWeaponAction = TwoWeaponActionType.none;
   String _weaponFilterTalentId = '';
@@ -174,6 +186,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _draftTalents = Map<String, HeroTalentEntry>.from(hero.talents);
     _invalidCombatTalentIds = <String>{};
     _draftCombatConfig = hero.combatConfig;
+    _draftApSpentDelta = 0;
     _temporaryIniRoll = null;
     _seedCombatControllers();
   }

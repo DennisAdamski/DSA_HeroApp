@@ -467,4 +467,61 @@ void main() {
     expect(entry.specializations, contains('Dolch'));
     expect(entry.specializations, contains('Kurzschwert'));
   });
+
+  testWidgets('erworbene Spezialisierungen ziehen ihre AP ab', (tester) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(talentValue: 14, atValue: 7, paValue: 7),
+          },
+        ).copyWith(apTotal: 2000, apSpent: 500, apAvailable: 1500),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openCombatTab(tester, repo, buildCatalog());
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    final specButton = find.byKey(
+      const ValueKey<String>('talents-combat-spec-add-tal_nah'),
+    );
+    await tester.ensureVisible(specButton);
+    await tester.tap(specButton);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dolch'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kurzschwert'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Übernehmen'));
+    await tester.pumpAndSettle();
+
+    for (var i = 0; i < 2; i++) {
+      final erwerbButton = find.widgetWithText(FilledButton, 'Erwerben');
+      expect(erwerbButton, findsOneWidget);
+      await tester.enterText(find.widgetWithText(TextField, 'AP-Kosten'), '40');
+      await tester.pumpAndSettle();
+      await tester.tap(erwerbButton);
+      await tester.pumpAndSettle();
+    }
+
+    await actions.save();
+    await tester.pumpAndSettle();
+
+    final hero = (await repo.listHeroes()).firstWhere(
+      (entry) => entry.id == 'demo',
+    );
+    expect(hero.talents['tal_nah']!.combatSpecializations, hasLength(2));
+    // Ohne Lehrmeister verdoppeln sich die eingegebenen Kosten je Erwerb.
+    expect(hero.apSpent, 660);
+    expect(hero.apAvailable, 1340);
+  });
 }

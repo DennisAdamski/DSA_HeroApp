@@ -265,6 +265,13 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _editController.markDiscarded();
   }
 
+  /// Noch verfuegbare AP unter Beruecksichtigung der im Draft vorgemerkten,
+  /// aber noch nicht gespeicherten Erwerbskosten.
+  int _verfuegbareApImDraft(HeroSheet hero) {
+    final rest = hero.apAvailable - _draftApSpentDelta;
+    return rest < 0 ? 0 : rest;
+  }
+
   void _markFieldChanged() {
     if (!mounted) {
       return;
@@ -516,7 +523,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             controllerFor: _controllerFor,
                             canRaiseValues: _canUseSteigerungsDialog,
                             onRaiseSpell: _steigeZauber,
-                            verfuegbareAp: hero.apAvailable,
+                            verfuegbareAp: _verfuegbareApImDraft(hero),
                             episch: hero.isEpisch,
                             onApKostenBestaetigt:
                                 _onMagicSpecialAbilityApKosten,
@@ -576,7 +583,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             heroTalents: hero.talents,
                             isEditing: _editController.isEditing,
                             onChanged: _updateRitualCategories,
-                            verfuegbareAp: hero.apAvailable,
+                            verfuegbareAp: _verfuegbareApImDraft(hero),
                             episch: hero.isEpisch,
                             onApKostenBestaetigt:
                                 _onMagicSpecialAbilityApKosten,
@@ -605,7 +612,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                 _updateMerkmalskenntnisse,
                             onMagicLeadAttributeChanged:
                                 _updateMagicLeadAttribute,
-                            verfuegbareAp: hero.apAvailable,
+                            verfuegbareAp: _verfuegbareApImDraft(hero),
                             episch: hero.isEpisch,
                             onApKostenBestaetigt:
                                 _onMagicSpecialAbilityApKosten,
@@ -615,7 +622,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             isEditing: _editController.isEditing,
                             onChanged: _updateMagicSpecialAbilities,
                             catalogAbilities: catalog.magicSpecialAbilities,
-                            verfuegbareAp: hero.apAvailable,
+                            verfuegbareAp: _verfuegbareApImDraft(hero),
                             episch: hero.isEpisch,
                             requirementContext: _buildRequirementContext(
                               hero,

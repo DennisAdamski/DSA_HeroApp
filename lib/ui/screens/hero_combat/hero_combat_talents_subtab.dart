@@ -733,7 +733,9 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                           'TaW ≥ $requiredTaw nötig; ohne Lehrmeister '
                           'doppelte Kosten (Wege des Schwerts S. 17)',
                       vorgeschlageneApKosten: vorgeschlageneKosten,
-                      verfuegbareAp: hero?.apAvailable ?? 0,
+                      verfuegbareAp: hero == null
+                          ? 0
+                          : _verfuegbareApImDraft(hero),
                       episch: hero?.isEpisch ?? false,
                       lehrmeisterUeblich: true,
                       lehrmeisterVerdoppeltOhneIhn: true,
@@ -741,10 +743,11 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                     if (erwerb == null) {
                       continue;
                     }
-                    if (erwerb.apKosten > 0 && hero != null) {
-                      _latestHero = hero.copyWith(
-                        apSpent: hero.apSpent + erwerb.apKosten,
-                      );
+                    // Vormerken statt `_latestHero` beschreiben: `build()`
+                    // ueberschreibt das Feld aus dem Provider, bevor
+                    // gespeichert wird.
+                    if (erwerb.apKosten > 0) {
+                      _draftApSpentDelta += erwerb.apKosten;
                     }
                     finalList.add(spec);
                     runningCount++;

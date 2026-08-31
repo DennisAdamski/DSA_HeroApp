@@ -224,7 +224,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
                           'TaW ≥ $requiredTaw nötig; ohne Lehrmeister '
                           'doppelte Kosten (Wege des Schwerts S. 17)',
                       vorgeschlageneApKosten: vorgeschlageneKosten,
-                      verfuegbareAp: hero?.apAvailable ?? 0,
+                      verfuegbareAp: _verfuegbareApImDraft(hero),
                       episch: hero?.isEpisch ?? false,
                       lehrmeisterUeblich: true,
                       lehrmeisterVerdoppeltOhneIhn: true,
@@ -232,10 +232,11 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
                     if (erwerb == null) {
                       continue;
                     }
-                    if (erwerb.apKosten > 0 && hero != null) {
-                      _latestHero = hero.copyWith(
-                        apSpent: hero.apSpent + erwerb.apKosten,
-                      );
+                    // Vormerken statt `_latestHero` beschreiben: `build()`
+                    // ueberschreibt das Feld aus dem Provider, bevor
+                    // `_saveChanges()` laeuft.
+                    if (erwerb.apKosten > 0) {
+                      _draftApSpentDelta += erwerb.apKosten;
                     }
                     finalList.add(spec);
                     runningCount++;
@@ -499,7 +500,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
           'TaW ≥ $requiredTaw nötig; ohne Lehrmeister doppelte Kosten '
           '(Wege des Schwerts S. 17)',
       vorgeschlageneApKosten: vorgeschlageneKosten,
-      verfuegbareAp: hero?.apAvailable ?? 0,
+      verfuegbareAp: _verfuegbareApImDraft(hero),
       episch: hero?.isEpisch ?? false,
       lehrmeisterUeblich: true,
       lehrmeisterVerdoppeltOhneIhn: true,
