@@ -282,6 +282,16 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`lib/ui/widgets/sync_conflict_comparison_table.dart` mit den deutschen
   Feldnamen aus `lib/ui/widgets/sync_conflict_field_labels.dart`), sowohl im
   Start-Gate als auch unter `Einstellungen > Konto & Sync`.
+- Ein `HeroState` gehört zu genau einem Helden und wird nie gegenläufig zu ihm
+  entschieden: Solange zu einem Helden ein Konflikt offen ist, bekommt sein
+  Zustands-Konflikt keinen eigenen Listeneintrag, sondern hängt in
+  `_boundStateConflicts` am Helden-Konflikt und folgt dessen Entscheidung
+  (`keepLocal` schiebt die lokalen Laufzeitwerte hoch, `keepRemote` übernimmt
+  die Online-Werte, `keepBoth` gibt der lokalen Kopie die lokalen Werte). Der
+  lokale Zustand muss dafür **vor** dem ersten Schreibzugriff eingelesen
+  werden, sonst bekommt die Kopie die bereits übernommenen Online-Werte. Ein
+  eigener `Zustand:`-Konflikt entsteht nur ohne offenen Helden-Konflikt;
+  `SyncConflict.includesHeroState` steuert den Hinweis in der Konflikt-UI.
 - Laufzeitzustände (`HeroState`) tragen wie `HeroSheet` ein `lastModified`,
   damit die Konflikt-UI beim `Zustand:`-Konflikt nicht auf beiden Seiten
   `Unbekannt` anzeigt. Gehasht wird ein Zustand ausschließlich über
