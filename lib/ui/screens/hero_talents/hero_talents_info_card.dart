@@ -246,7 +246,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
           : 'Allgemeine Sonderfertigkeiten',
       catalog: abilities,
       ownedNamesLower: owned,
-      verfuegbareAp: hero.apAvailable,
+      verfuegbareAp: _verfuegbareApImDraft(hero),
       episch: hero.isEpisch,
       eigeneKultur: hero.background.kultur,
       // Aus dem Draft gebaut, nicht aus dem gespeicherten Helden: Wer gerade
@@ -384,7 +384,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                         vorgeschlageneApKosten: match == null
                             ? null
                             : parseLeadingApAmount(match.kosten),
-                        verfuegbareAp: hero?.apAvailable ?? 0,
+                        verfuegbareAp: _verfuegbareApImDraft(hero),
                         episch: hero?.isEpisch ?? false,
                         epischerInhalt: match?.nurEpisch ?? false,
                       );

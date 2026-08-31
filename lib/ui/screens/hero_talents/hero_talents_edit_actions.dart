@@ -142,6 +142,16 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
     _markFieldChanged();
   }
 
+  /// Noch verfuegbare AP unter Beruecksichtigung der im Draft vorgemerkten,
+  /// aber noch nicht gespeicherten Erwerbskosten.
+  int _verfuegbareApImDraft(HeroSheet? hero) {
+    if (hero == null) {
+      return 0;
+    }
+    final rest = hero.apAvailable - _draftApSpentDelta;
+    return rest < 0 ? 0 : rest;
+  }
+
   void _markFieldChanged() {
     if (!mounted) {
       return;
