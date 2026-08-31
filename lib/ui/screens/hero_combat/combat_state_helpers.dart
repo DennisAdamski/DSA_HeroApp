@@ -91,8 +91,12 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       return;
     }
     try {
-      final updatedHero = hero.copyWith(combatConfig: _draftCombatConfig);
+      final updatedHero = hero.copyWith(
+        combatConfig: _draftCombatConfig,
+        apSpent: hero.apSpent + _draftApSpentDelta,
+      );
       await ref.read(heroActionsProvider).saveHero(updatedHero);
+      _draftApSpentDelta = 0;
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -168,8 +172,10 @@ extension _CombatStateHelpers on _HeroCombatTabState {
     final updatedHero = hero.copyWith(
       talents: Map<String, HeroTalentEntry>.from(_draftTalents),
       combatConfig: _draftCombatConfig,
+      apSpent: hero.apSpent + _draftApSpentDelta,
     );
     await ref.read(heroActionsProvider).saveHero(updatedHero);
+    _draftApSpentDelta = 0;
     if (!mounted) {
       return;
     }
@@ -261,6 +267,13 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       specializations: normalized.join(', '),
     );
     _markFieldChanged();
+  }
+
+  /// Noch verfuegbare AP unter Beruecksichtigung der im Draft vorgemerkten,
+  /// aber noch nicht gespeicherten Erwerbskosten.
+  int _verfuegbareApImDraft(HeroSheet hero) {
+    final rest = hero.apAvailable - _draftApSpentDelta;
+    return rest < 0 ? 0 : rest;
   }
 
   void _markFieldChanged() {

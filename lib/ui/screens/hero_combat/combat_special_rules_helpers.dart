@@ -43,7 +43,8 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
   }
 
   /// Fragt bei Aktivierung einer Kampf-SF/eines Manoevers die AP-Kosten ab
-  /// und erhoeht bei Bestaetigung `_latestHero.apSpent`.
+  /// und merkt sie bei Bestaetigung in `_draftApSpentDelta` vor; beim
+  /// Speichern wandern sie auf `hero.apSpent`.
   /// Liefert `false`, wenn der Nutzer abgebrochen hat (Toggle bleibt aus).
   ///
   /// [voraussetzungen] blendet die Checkliste im Dialog ein. Offene Punkte
@@ -64,7 +65,9 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
       bezeichnung: bezeichnung,
       kostenHinweis: kostenHinweis.trim().isEmpty ? null : kostenHinweis.trim(),
       vorgeschlageneApKosten: parseLeadingApAmount(kostenHinweis),
-      verfuegbareAp: hero.apAvailable,
+      // Bereits im selben Bearbeitungsvorgang erworbene Eintraege sind noch
+      // nicht gespeichert; ihr Delta muss der Dialog trotzdem kennen.
+      verfuegbareAp: _verfuegbareApImDraft(hero),
       episch: hero.isEpisch,
       epischerInhalt: epischerInhalt,
       voraussetzungen: voraussetzungen,
@@ -72,7 +75,10 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
     if (result == null) {
       return false;
     }
-    _latestHero = hero.copyWith(apSpent: hero.apSpent + result.apKosten);
+    // Bewusst nicht `_latestHero` beschreiben: `build()` ueberschreibt das
+    // Feld beim naechsten Rebuild aus dem Provider, der Erwerb waere dann
+    // ohne AP-Abzug gespeichert.
+    _draftApSpentDelta += result.apKosten;
     return true;
   }
 
