@@ -68,6 +68,12 @@ class _SyncConflictComparisonTableState
           ],
         ),
         ..._footerWidgets(theme, diff, visibleEntries.length),
+        if (widget.conflict.includesHeroState)
+          _note(
+            theme,
+            'Der Zustand des Helden (Laufzeitwerte wie LeP, AsP und Wunden) '
+            'wird mit der gewählten Version übernommen.',
+          ),
       ],
     );
   }
