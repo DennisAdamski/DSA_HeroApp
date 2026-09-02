@@ -199,6 +199,45 @@ vier Stellen in `syncing_hero_repository.dart`. Bestandsdaten haben zunaechst
 kein `lastModified` und zeigen bis zum naechsten Speichern weiterhin
 `Unbekannt`; das ist gewollt, geraten wird nichts.
 
+Seit 2026-08-31 wird ein Zustands-Konflikt nicht mehr unabhaengig vom Helden
+entschieden. Ein `HeroState` gehoert zu genau einem Heldenblatt; zwei getrennte
+Fragen (`Held: Alrik` und `Zustand: Alrik`) liessen sich gegenlaeufig
+beantworten und ergaben dann ein Heldenblatt der einen Seite mit den
+Laufzeitwerten der anderen. `SyncingHeroRepository` haelt Zustands-Konflikte
+zu einem Helden mit offener Entscheidung deshalb in `_boundStateConflicts`
+(Schluessel: Helden-ID) statt in der Konfliktliste — welcher der beiden zuerst
+erkannt wird, haengt nur an der Reihenfolge von `_syncHeroes` und
+`_syncHeroStates`, weshalb die Bindung in beide Richtungen greift
+(`_absorbStateConflict` beim Oeffnen des Helden-Konflikts, die Pruefung
+`_hasOpenHeroConflict` in `_openStateConflict`).
+
+Die Entscheidung zum Helden zieht den Zustand dann mit, auch ohne offenen
+Zustands-Konflikt:
+
+- `keepLocal` schiebt die lokalen Laufzeitwerte mit hoch
+  (`_pushLocalStateWithHero`).
+- `keepRemote` uebernimmt die Online-Laufzeitwerte (`_adoptRemoteStateWithHero`);
+  ist die Online-Version ein Tombstone, faellt der Held lokal weg und der
+  Zustand mit ihm (`local.deleteHero` raeumt beides, `_tombstoneStateBestEffort`
+  setzt den Remote-Tombstone).
+- `keepBoth` gibt der lokalen Kopie die lokalen Laufzeitwerte und dem Original
+  die Online-Werte. Der lokale Zustand wird deshalb **vor** dem ersten
+  Schreibzugriff eingelesen, sonst haette die Kopie bereits die uebernommenen
+  Online-Werte.
+- Der Loesch-Konflikt (`Lokal geloescht` vs. online geaendert) verhaelt sich
+  analog: `keepLocal` setzt den Zustands-Tombstone, `keepRemote` holt mit dem
+  Helden auch dessen Online-Zustand zurueck.
+
+Fehlt online ein Zustandsdokument, bleibt der lokale Stand stehen — der
+naechste Sync legt ihn an. Laeuft der Zustands-Push in eine
+`SyncPreconditionException`, wird bewusst nur ein eigener Zustands-Konflikt
+geoeffnet: der Helden-Konflikt ist an dieser Stelle bereits entschieden und
+darf nicht erneut aufgehen. Ein eigener `Zustand:`-Eintrag entsteht damit nur
+noch, wenn zum selben Helden kein Helden-Konflikt offen ist (der Normalfall:
+zwei Geraete tracken Laufzeitwerte, das Heldenblatt bleibt gleich).
+`SyncConflict.includesHeroState` sagt der UI, dass die Entscheidung den Zustand
+mit umfasst; die Vergleichstabelle blendet dazu einen Hinweis ein.
+
 Windows-Sonderfall: Firebase Auth bleibt dort verfügbar, der Konto-Sync nutzt
 aber bewusst den Firestore-REST-Transport (`RestFirestoreHeroSyncGateway` und
 `RestFirestoreSecretsRepository`) statt des nativen `cloud_firestore`-Pluginpfads.

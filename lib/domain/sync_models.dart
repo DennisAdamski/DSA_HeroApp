@@ -207,6 +207,7 @@ class SyncConflict {
     required this.remoteSummary,
     required this.detectedAt,
     this.supportsKeepBoth = false,
+    this.includesHeroState = false,
     this.localApTotal,
     this.localApAvailable,
     this.localUpdatedAt,
@@ -238,6 +239,14 @@ class SyncConflict {
 
   /// Ob `Beide behalten` fuer diesen Konflikt sinnvoll anwendbar ist.
   final bool supportsKeepBoth;
+
+  /// Ob die Entscheidung den Laufzeitzustand des Helden mit uebernimmt.
+  ///
+  /// Ein `HeroState` gehoert fachlich zu genau einem Helden und darf nicht
+  /// gegenlaeufig zu ihm entschieden werden. Helden-Konflikte tragen den
+  /// Zustand deshalb mit; ein eigener `Zustand:`-Konflikt entsteht nur, wenn
+  /// zum selben Helden kein Helden-Konflikt offen ist.
+  final bool includesHeroState;
 
   /// Gesamt-AP der lokalen Version (nur fuer Hero-Konflikte).
   final int? localApTotal;
