@@ -547,6 +547,206 @@ void main() {
       },
     );
 
+    group('Zustand folgt der Helden-Entscheidung', () {
+      /// Baut den Fall "beide Seiten haben Held und Zustand geaendert".
+      ///
+      /// Lokal steht Alrik lokal mit 20 LeP, online Alrik online mit 12 LeP;
+      /// beide Seiten sind seit der letzten Basisrevision auseinandergelaufen.
+      Future<
+        (
+          SyncingHeroRepository,
+          FakeRepository,
+          FakeRemoteHeroAndStateSyncGateway,
+        )
+      >
+      buildDivergedPair({bool withStateDivergence = true}) async {
+        final local = FakeRepository.empty();
+        final remote = FakeRemoteHeroAndStateSyncGateway();
+        final repository = SyncingHeroRepository(
+          local: local,
+          remote: remote,
+          metadataStore: InMemorySyncMetadataStore(),
+          accountId: 'user-1',
+          startRemoteListener: false,
+        );
+        await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
+        await remote.saveHeroState(
+          'h-1',
+          const HeroState.empty().copyWith(currentLep: 30),
+          previousRevision: null,
+        );
+        await repository.syncNow();
+
+        await remote.saveHero(
+          hero('h-1', 'Alrik online'),
+          previousRevision: null,
+        );
+        await remote.saveHeroState(
+          'h-1',
+          const HeroState.empty().copyWith(currentLep: 12),
+          previousRevision: null,
+        );
+        await repository.saveHero(hero('h-1', 'Alrik lokal'));
+        if (withStateDivergence) {
+          await repository.saveHeroState(
+            'h-1',
+            const HeroState.empty().copyWith(currentLep: 20),
+          );
+        }
+        return (repository, local, remote);
+      }
+
+      test('Zustands-Konflikt wird nicht separat gestellt', () async {
+        final (repository, _, _) = await buildDivergedPair();
+
+        final conflict = repository.currentStatus.openConflicts.single;
+        expect(conflict.objectType, SyncObjectType.hero);
+        expect(conflict.objectId, 'h-1');
+        expect(conflict.includesHeroState, isTrue);
+      });
+
+      test('keepRemote uebernimmt auch die Online-Laufzeitwerte', () async {
+        final (repository, local, _) = await buildDivergedPair();
+        final conflictId = repository.currentStatus.openConflicts.single.id;
+
+        await repository.resolveConflict(
+          conflictId,
+          SyncResolutionChoice.keepRemote,
+        );
+
+        expect((await local.loadHeroById('h-1'))?.name, 'Alrik online');
+        expect((await local.loadHeroState('h-1'))?.currentLep, 12);
+        expect(repository.currentStatus.openConflicts, isEmpty);
+      });
+
+      test('keepLocal schiebt auch die lokalen Laufzeitwerte hoch', () async {
+        final (repository, local, remote) = await buildDivergedPair();
+        final conflictId = repository.currentStatus.openConflicts.single.id;
+
+        await repository.resolveConflict(
+          conflictId,
+          SyncResolutionChoice.keepLocal,
+        );
+
+        expect((await local.loadHeroState('h-1'))?.currentLep, 20);
+        expect((await remote.loadHero('h-1'))?.hero?.name, 'Alrik lokal');
+        expect((await remote.loadHeroState('h-1'))?.state?.currentLep, 20);
+        expect(repository.currentStatus.openConflicts, isEmpty);
+      });
+
+      test('keepBoth gibt der Kopie die lokalen Laufzeitwerte', () async {
+        final (repository, local, remote) = await buildDivergedPair();
+        final conflictId = repository.currentStatus.openConflicts.single.id;
+
+        await repository.resolveConflict(
+          conflictId,
+          SyncResolutionChoice.keepBoth,
+        );
+
+        expect((await local.loadHeroState('h-1'))?.currentLep, 12);
+        final copy = (await local.listHeroes()).singleWhere(
+          (entry) => entry.id != 'h-1',
+        );
+        expect(copy.name, startsWith('Alrik lokal'));
+        expect((await local.loadHeroState(copy.id))?.currentLep, 20);
+        expect((await remote.loadHeroState(copy.id))?.state?.currentLep, 20);
+        expect(repository.currentStatus.openConflicts, isEmpty);
+      });
+
+      test(
+        'keepRemote holt die Online-Werte auch ohne Zustands-Konflikt',
+        () async {
+          final (repository, local, _) = await buildDivergedPair(
+            withStateDivergence: false,
+          );
+          final conflict = repository.currentStatus.openConflicts.single;
+          expect(conflict.objectType, SyncObjectType.hero);
+
+          await repository.resolveConflict(
+            conflict.id,
+            SyncResolutionChoice.keepRemote,
+          );
+
+          expect((await local.loadHeroState('h-1'))?.currentLep, 12);
+        },
+      );
+
+      test('geloeschter Held nimmt seinen Zustand mit', () async {
+        final local = FakeRepository.empty();
+        final remote = FakeRemoteHeroAndStateSyncGateway();
+        final repository = SyncingHeroRepository(
+          local: local,
+          remote: remote,
+          metadataStore: InMemorySyncMetadataStore(),
+          accountId: 'user-1',
+          startRemoteListener: false,
+        );
+        await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
+        await remote.saveHeroState(
+          'h-1',
+          const HeroState.empty().copyWith(currentLep: 30),
+          previousRevision: null,
+        );
+        await repository.syncNow();
+
+        await remote.deleteHero('h-1', previousRevision: null);
+        await repository.saveHero(hero('h-1', 'Alrik lokal'));
+        final conflict = repository.currentStatus.openConflicts.single;
+        expect(conflict.objectType, SyncObjectType.hero);
+
+        await repository.resolveConflict(
+          conflict.id,
+          SyncResolutionChoice.keepRemote,
+        );
+
+        expect(await local.loadHeroById('h-1'), isNull);
+        expect(await local.loadHeroState('h-1'), isNull);
+        expect((await remote.loadHeroState('h-1'))?.isDeleted, isTrue);
+      });
+
+      test(
+        'wiederhergestellter Held bekommt seine Online-Werte zurueck',
+        () async {
+          final local = FakeRepository.empty();
+          final remote = _OfflineRemoteHeroAndStateSyncGateway();
+          final repository = SyncingHeroRepository(
+            local: local,
+            remote: remote,
+            metadataStore: InMemorySyncMetadataStore(),
+            accountId: 'user-1',
+            startRemoteListener: false,
+          );
+          await remote.saveHero(hero('h-1', 'Alrik'), previousRevision: null);
+          await remote.saveHeroState(
+            'h-1',
+            const HeroState.empty().copyWith(currentLep: 30),
+            previousRevision: null,
+          );
+          await repository.syncNow();
+
+          remote.offline = true;
+          await repository.deleteHero('h-1');
+          remote.offline = false;
+          await remote.saveHero(
+            hero('h-1', 'Remote Neu'),
+            previousRevision: null,
+          );
+          await repository.syncNow();
+          final conflict = repository.currentStatus.openConflicts.single;
+          expect(conflict.localSummary, 'Lokal gelöscht');
+          expect(conflict.includesHeroState, isTrue);
+
+          await repository.resolveConflict(
+            conflict.id,
+            SyncResolutionChoice.keepRemote,
+          );
+
+          expect((await local.loadHeroById('h-1'))?.name, 'Remote Neu');
+          expect((await local.loadHeroState('h-1'))?.currentLep, 30);
+        },
+      );
+    });
+
     test('conflictDiff vergleicht Offline-Helden mit Konto-Version', () async {
       final local = FakeRepository(
         heroes: <HeroSheet>[hero('h-1', 'Konto Alrik')],
@@ -1024,6 +1224,84 @@ class _OfflineRemoteHeroSyncGateway extends FakeRemoteHeroSyncGateway {
   }) {
     _failIfOffline();
     return super.deleteHero(heroId, previousRevision: previousRevision);
+  }
+
+  void _failIfOffline() {
+    if (offline) {
+      throw const SyncNetworkException('Cloud nicht erreichbar');
+    }
+  }
+}
+
+/// Offline-Simulation wie [_OfflineRemoteHeroSyncGateway], aber inklusive
+/// Zustandsdokumenten.
+class _OfflineRemoteHeroAndStateSyncGateway
+    extends FakeRemoteHeroAndStateSyncGateway {
+  bool offline = false;
+
+  @override
+  Future<List<RemoteHeroRecord>> loadAllHeroes() {
+    _failIfOffline();
+    return super.loadAllHeroes();
+  }
+
+  @override
+  Future<RemoteHeroRecord?> loadHero(String heroId) {
+    _failIfOffline();
+    return super.loadHero(heroId);
+  }
+
+  @override
+  Future<RemoteHeroRecord> saveHero(
+    HeroSheet hero, {
+    required String? previousRevision,
+  }) {
+    _failIfOffline();
+    return super.saveHero(hero, previousRevision: previousRevision);
+  }
+
+  @override
+  Future<RemoteHeroRecord> deleteHero(
+    String heroId, {
+    required String? previousRevision,
+  }) {
+    _failIfOffline();
+    return super.deleteHero(heroId, previousRevision: previousRevision);
+  }
+
+  @override
+  Future<List<RemoteHeroStateRecord>> loadAllHeroStates() {
+    _failIfOffline();
+    return super.loadAllHeroStates();
+  }
+
+  @override
+  Future<RemoteHeroStateRecord?> loadHeroState(String heroId) {
+    _failIfOffline();
+    return super.loadHeroState(heroId);
+  }
+
+  @override
+  Future<RemoteHeroStateRecord> saveHeroState(
+    String heroId,
+    HeroState state, {
+    required String? previousRevision,
+  }) {
+    _failIfOffline();
+    return super.saveHeroState(
+      heroId,
+      state,
+      previousRevision: previousRevision,
+    );
+  }
+
+  @override
+  Future<RemoteHeroStateRecord> deleteHeroState(
+    String heroId, {
+    required String? previousRevision,
+  }) {
+    _failIfOffline();
+    return super.deleteHeroState(heroId, previousRevision: previousRevision);
   }
 
   void _failIfOffline() {
