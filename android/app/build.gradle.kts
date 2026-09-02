@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -18,10 +20,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "de.adamski.heldenverwaltung"
@@ -39,6 +37,16 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
+    }
+}
+
+// Ersetzt den frueheren android.kotlinOptions-Block: Kotlin 2.4 hat
+// kotlinOptions und dessen jvmTarget deprecated, und die Gradle-Kotlin-DSL
+// meldet das als Kompilierfehler, nicht als Warnung. Der Zielwert bleibt 17
+// und damit gleich den compileOptions oben.
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 
