@@ -324,6 +324,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   ueberstimmt die Breiten-Automatik von `ResponsiveAdaptiveTable`. Ohne diese
   Einstellung weichen breite Tabellen auf Tablet-Breiten zwingend auf Karten
   aus. Bedienbar im Talente-Tab und unter `Einstellungen > Darstellung`.
+- `PersistedTableColumnLayout` bindet `FlexibleTable`, `ResponsiveAdaptiveTable`
+  und `DataTable` an geraeteweite Breiten unter `AppSettings.tableColumnWidths`;
+  nur stabile, textlastige Spalten-IDs erhalten Resize-Griffe im Tabellenmodus.
 - Reisebericht-Daten bleiben separat unter `assets/catalogs/reiseberichte/house_rules_v1/`.
 - Geschuetzte Katalog-Felder (Wirkung/Varianten von Zaubern, Erklaerungstexte
   von Manoevern und Kampf-Sonderfertigkeiten) sind v3-verschluesselt

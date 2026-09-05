@@ -140,4 +140,38 @@ void main() {
       TabellenAnsicht.automatisch,
     );
   });
+
+  test('table column widths round-trip through json', () {
+    const settings = AppSettings(
+      tableColumnWidths: <String, Map<String, double>>{
+        'magic.activeSpells': <String, double>{'name': 320},
+        'inventory.items': <String, double>{'status': 480.5},
+      },
+    );
+
+    final restored = AppSettings.fromJson(settings.toJson());
+
+    expect(restored.tableColumnWidths, <String, Map<String, double>>{
+      'magic.activeSpells': <String, double>{'name': 320},
+      'inventory.items': <String, double>{'status': 480.5},
+    });
+  });
+
+  test('invalid table column widths are discarded during parsing', () {
+    final settings = AppSettings.fromJson(<String, dynamic>{
+      'tableColumnWidths': <String, dynamic>{
+        'magic.activeSpells': <String, dynamic>{
+          'name': 280,
+          'negative': -20,
+          'text': 'wide',
+          'infinite': double.infinity,
+        },
+        'not-a-map': 'invalid',
+      },
+    });
+
+    expect(settings.tableColumnWidths, <String, Map<String, double>>{
+      'magic.activeSpells': <String, double>{'name': 280},
+    });
+  });
 }

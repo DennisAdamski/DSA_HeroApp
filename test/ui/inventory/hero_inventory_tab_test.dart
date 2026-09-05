@@ -173,6 +173,24 @@ void main() {
         find.byKey(const ValueKey<String>('inventory-table')),
         findsOneWidget,
       );
+      expect(
+        find.byKey(
+          const ValueKey<String>('table-column-resize-inventory.items-name'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('table-column-resize-inventory.items-status'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('table-column-resize-inventory.items-count'),
+        ),
+        findsNothing,
+      );
     });
 
     testWidgets('filtert Einträge nach Typ', (tester) async {

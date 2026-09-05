@@ -168,19 +168,28 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
   }) {
     return <AdaptiveTableColumnSpec>[
       const AdaptiveTableColumnSpec(
+        columnId: 'name',
         minWidth: 160,
         maxWidth: 240,
         flex: 2,
+        resizable: true,
+        resizeMaxWidth: 480,
       ), // Talent-Name
       const AdaptiveTableColumnSpec(
+        columnId: 'weaponCategory',
         minWidth: 180,
         maxWidth: 320,
         flex: 2,
+        resizable: true,
+        resizeMaxWidth: 480,
       ), // Waffengattung
       const AdaptiveTableColumnSpec(
+        columnId: 'alternatives',
         minWidth: 160,
         maxWidth: 240,
         flex: 2,
+        resizable: true,
+        resizeMaxWidth: 480,
       ), // Ersatzweise
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80), // Kompl.
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 72), // BE
@@ -195,9 +204,12 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90), // PA
       const AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 100), // max TaW
       const AdaptiveTableColumnSpec(
+        columnId: 'specialization',
         minWidth: 180,
         maxWidth: 320,
         flex: 3,
+        resizable: true,
+        resizeMaxWidth: 640,
       ), // Spezialisierung
       if (isEditing) const AdaptiveTableColumnSpec.fixed(90), // Begabung
     ];
@@ -383,8 +395,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
   }) {
     final isEditing = _editController.isEditing;
     final columnSpecs = _combatSubtabColumnSpecs(isEditing: isEditing);
-    final rows = <TableRow>[
-      _buildCombatHeaderRow(isEditing: isEditing),
+    final dataRows = <TableRow>[
       ...talents.map(
         (talent) => _buildCombatTalentRow(
           talent,
@@ -396,24 +407,38 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final layout = resolveAdaptiveTableLayout(
-            columnSpecs,
-            availableWidth: constraints.maxWidth,
-          );
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SizedBox(
-              width: layout.tableWidth,
-              child: Table(
-                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                columnWidths: layout.toColumnWidthMap(),
-                children: rows,
+      child: PersistedTableColumnLayout(
+        tableId: 'combat.talents',
+        builder: (context, resizeBinding) => LayoutBuilder(
+          builder: (context, constraints) {
+            final layout = resolveAdaptiveTableLayout(
+              columnSpecs,
+              availableWidth: constraints.maxWidth,
+              userWidths: resizeBinding.widths,
+            );
+            final header = _buildCombatHeaderRow(isEditing: isEditing);
+            final headerCells = buildResizableTableHeaderCells(
+              cells: header.children,
+              specs: columnSpecs,
+              resolvedWidths: layout.columnWidths,
+              resizeBinding: resizeBinding,
+            );
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: layout.tableWidth,
+                child: Table(
+                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                  columnWidths: layout.toColumnWidthMap(),
+                  children: <TableRow>[
+                    TableRow(children: headerCells),
+                    ...dataRows,
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

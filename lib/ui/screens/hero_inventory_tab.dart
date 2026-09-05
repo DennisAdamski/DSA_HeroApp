@@ -16,6 +16,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 
 part 'hero_inventory/inventory_display.dart';
 part 'hero_inventory/inventory_editor_routing.dart';
@@ -58,23 +59,61 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
   bool get _isDetailPanelVisible =>
       _selectedIndex != null || _pendingNewEntry != null;
 
-  static const List<AdaptiveTableColumnSpec>
-  _columnSpecs = <AdaptiveTableColumnSpec>[
-    AdaptiveTableColumnSpec(
-      minWidth: 180,
-      maxWidth: 280,
-      flex: 2,
-    ), // Gegenstand
-    AdaptiveTableColumnSpec(minWidth: 130, maxWidth: 180, flex: 1), // Typ
-    AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 150, flex: 1), // Quelle
-    AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 220, flex: 1), // Träger
-    AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 92), // Anzahl
-    AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120), // Gewicht
-    AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120), // Wert
-    AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 280, flex: 2), // Status
-    AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 280, flex: 2), // Herkunft
-    AdaptiveTableColumnSpec.fixed(88), // Aktion
-  ];
+  static const List<AdaptiveTableColumnSpec> _columnSpecs =
+      <AdaptiveTableColumnSpec>[
+        AdaptiveTableColumnSpec(
+          columnId: 'name',
+          minWidth: 180,
+          maxWidth: 280,
+          flex: 2,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ), // Gegenstand
+        AdaptiveTableColumnSpec(
+          columnId: 'type',
+          minWidth: 130,
+          maxWidth: 180,
+          flex: 1,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ), // Typ
+        AdaptiveTableColumnSpec(
+          columnId: 'source',
+          minWidth: 110,
+          maxWidth: 150,
+          flex: 1,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ), // Quelle
+        AdaptiveTableColumnSpec(
+          columnId: 'carrier',
+          minWidth: 140,
+          maxWidth: 220,
+          flex: 1,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ), // Träger
+        AdaptiveTableColumnSpec(minWidth: 72, maxWidth: 92), // Anzahl
+        AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120), // Gewicht
+        AdaptiveTableColumnSpec(minWidth: 88, maxWidth: 120), // Wert
+        AdaptiveTableColumnSpec(
+          columnId: 'status',
+          minWidth: 180,
+          maxWidth: 280,
+          flex: 2,
+          resizable: true,
+          resizeMaxWidth: 640,
+        ), // Status
+        AdaptiveTableColumnSpec(
+          columnId: 'origin',
+          minWidth: 160,
+          maxWidth: 280,
+          flex: 2,
+          resizable: true,
+          resizeMaxWidth: 640,
+        ), // Herkunft
+        AdaptiveTableColumnSpec.fixed(88), // Aktion
+      ];
 
   @override
   void initState() {

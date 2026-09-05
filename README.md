@@ -187,6 +187,9 @@ Technischer Stack:
 - Breite Datenlisten lassen sich unter `Einstellungen > Darstellung` sowie im
   Kopf des Talente-Tabs zwischen automatischer, Tabellen- und Kartenansicht
   umschalten
+- Textlastige Spalten der Haupttabellen lassen sich am rechten Rand ihres
+  Tabellenkopfs verbreitern; die Breiten werden geraeteweit gespeichert und
+  koennen je Tabelle zurueckgesetzt werden
 - Hausregeln werden als global aktivierbare Paket-Manifeste geladen; eingebaute
   Pakete liegen unter `assets/catalogs/house_rules_v1/packs/`, importierte
   Pakete im Heldenspeicher unter `house_rule_packs/<version>/<packId>/`

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 
 /// Tabelle, die sich auf zu schmalen Bildschirmen automatisch in eine
 /// Karten-Liste umschaltet.
@@ -26,6 +27,7 @@ class ResponsiveAdaptiveTable<T> extends StatelessWidget {
     this.tableVerticalAlignment = TableCellVerticalAlignment.middle,
     this.cardSpacing = 8,
     this.ansicht = TabellenAnsicht.automatisch,
+    this.columnResize,
   });
 
   final List<AdaptiveTableColumnSpec> columnSpecs;
@@ -35,6 +37,9 @@ class ResponsiveAdaptiveTable<T> extends StatelessWidget {
   final Widget Function(BuildContext context, T item) cardBuilder;
   final TableCellVerticalAlignment tableVerticalAlignment;
   final double cardSpacing;
+
+  /// Optionale Bindung für verstellbare Spalten im Tabellenmodus.
+  final TableColumnResizeBinding? columnResize;
 
   /// Erzwingt Tabelle oder Karten; Standard ist die Breiten-Automatik.
   final TabellenAnsicht ansicht;
@@ -62,8 +67,10 @@ class ResponsiveAdaptiveTable<T> extends StatelessWidget {
     final layout = resolveAdaptiveTableLayout(
       columnSpecs,
       availableWidth: availableWidth,
+      userWidths: columnResize?.widths ?? const <String, double>{},
     );
-    final rows = <TableRow>[headerRow, ...items.map(tableRowBuilder)];
+    final resolvedHeaderRow = _buildHeaderRow(layout);
+    final rows = <TableRow>[resolvedHeaderRow, ...items.map(tableRowBuilder)];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: SizedBox(
@@ -73,6 +80,23 @@ class ResponsiveAdaptiveTable<T> extends StatelessWidget {
           columnWidths: layout.toColumnWidthMap(),
           children: rows,
         ),
+      ),
+    );
+  }
+
+  TableRow _buildHeaderRow(AdaptiveTableLayout layout) {
+    final resizeBinding = columnResize;
+    if (resizeBinding == null) {
+      return headerRow;
+    }
+    return TableRow(
+      key: headerRow.key,
+      decoration: headerRow.decoration,
+      children: buildResizableTableHeaderCells(
+        cells: headerRow.children,
+        specs: columnSpecs,
+        resolvedWidths: layout.columnWidths,
+        resizeBinding: resizeBinding,
       ),
     );
   }

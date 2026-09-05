@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 
 /// Beschreibt eine einzelne Zeile fuer [FlexibleTable].
 class FlexibleTableRow {
@@ -22,6 +23,7 @@ class FlexibleTable extends StatefulWidget {
     this.tableKey,
     this.minChars = 3,
     this.columnSpecs,
+    this.columnResize,
     this.horizontalPadding = const EdgeInsets.fromLTRB(6, 4, 6, 6),
   }) : assert(
          columnSpecs == null || columnSpecs.length == headerCells.length,
@@ -34,6 +36,9 @@ class FlexibleTable extends StatefulWidget {
   final Key? tableKey;
   final int minChars;
   final List<AdaptiveTableColumnSpec>? columnSpecs;
+
+  /// Optionale Nutzerbreiten und Resize-Aktionen für adaptive Spalten.
+  final TableColumnResizeBinding? columnResize;
   final EdgeInsets horizontalPadding;
 
   @override
@@ -77,30 +82,6 @@ class _FlexibleTableState extends State<FlexibleTable> {
     final codex = context.codexTheme;
     final minWidth = (widget.minChars <= 0 ? 3 : widget.minChars) * 12.0;
     final useLegacyCellMinWidth = widget.columnSpecs == null;
-    final allRows = <TableRow>[
-      ...widget.preHeaderRows.map(
-        (cells) => _buildRow(
-          cells: cells,
-          minWidth: minWidth,
-          useLegacyCellMinWidth: useLegacyCellMinWidth,
-        ),
-      ),
-      _buildRow(
-        cells: widget.headerCells,
-        minWidth: minWidth,
-        isHeader: true,
-        useLegacyCellMinWidth: useLegacyCellMinWidth,
-      ),
-      ...widget.rows.map(
-        (row) => _buildRow(
-          key: row.key,
-          cells: row.cells,
-          minWidth: minWidth,
-          useLegacyCellMinWidth: useLegacyCellMinWidth,
-          backgroundColor: row.backgroundColor,
-        ),
-      ),
-    ];
     return Container(
       decoration: BoxDecoration(
         color: codex.panelRaised.withValues(alpha: 0.45),
@@ -122,6 +103,9 @@ class _FlexibleTableState extends State<FlexibleTable> {
                     : resolveAdaptiveTableLayout(
                         widget.columnSpecs!,
                         availableWidth: constraints.maxWidth,
+                        userWidths:
+                            widget.columnResize?.widths ??
+                            const <String, double>{},
                       );
                 final columnWidths = widget.columnSpecs == null
                     ? null
@@ -132,6 +116,31 @@ class _FlexibleTableState extends State<FlexibleTable> {
                 final minTableWidth = constraints.maxWidth.isFinite
                     ? constraints.maxWidth
                     : tableWidth;
+                final headerCells = _buildHeaderCells(responsiveLayout);
+                final allRows = <TableRow>[
+                  ...widget.preHeaderRows.map(
+                    (cells) => _buildRow(
+                      cells: cells,
+                      minWidth: minWidth,
+                      useLegacyCellMinWidth: useLegacyCellMinWidth,
+                    ),
+                  ),
+                  _buildRow(
+                    cells: headerCells,
+                    minWidth: minWidth,
+                    isHeader: true,
+                    useLegacyCellMinWidth: useLegacyCellMinWidth,
+                  ),
+                  ...widget.rows.map(
+                    (row) => _buildRow(
+                      key: row.key,
+                      cells: row.cells,
+                      minWidth: minWidth,
+                      useLegacyCellMinWidth: useLegacyCellMinWidth,
+                      backgroundColor: row.backgroundColor,
+                    ),
+                  ),
+                ];
 
                 return SingleChildScrollView(
                   controller: _scrollController,
@@ -177,6 +186,20 @@ class _FlexibleTableState extends State<FlexibleTable> {
             ),
         ],
       ),
+    );
+  }
+
+  List<Widget> _buildHeaderCells(AdaptiveTableLayout? layout) {
+    final specs = widget.columnSpecs;
+    final resizeBinding = widget.columnResize;
+    if (specs == null || resizeBinding == null || layout == null) {
+      return widget.headerCells;
+    }
+    return buildResizableTableHeaderCells(
+      cells: widget.headerCells,
+      specs: specs,
+      resolvedWidths: layout.columnWidths,
+      resizeBinding: resizeBinding,
     );
   }
 
