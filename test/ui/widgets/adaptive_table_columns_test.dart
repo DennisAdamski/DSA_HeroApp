@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/responsive_adaptive_table.dart';
 
 void main() {
   test('AdaptiveDataColumnSpec builds DataColumn with numeric and width', () {
@@ -123,6 +125,76 @@ void main() {
     expect(layout.widthFor(2), 56);
   });
 
+  test('user width override changes only the addressed resizable column', () {
+    const specs = <AdaptiveTableColumnSpec>[
+      AdaptiveTableColumnSpec(
+        columnId: 'name',
+        minWidth: 100,
+        maxWidth: 180,
+        flex: 2,
+        resizable: true,
+        resizeMaxWidth: 480,
+      ),
+      AdaptiveTableColumnSpec(
+        columnId: 'type',
+        minWidth: 80,
+        maxWidth: 120,
+        flex: 1,
+        resizable: true,
+        resizeMaxWidth: 480,
+      ),
+      AdaptiveTableColumnSpec.fixed(56),
+    ];
+
+    final automatic = resolveAdaptiveTableLayout(specs, availableWidth: 300);
+    final customized = resolveAdaptiveTableLayout(
+      specs,
+      availableWidth: 300,
+      userWidths: const <String, double>{'name': 240},
+    );
+
+    expect(customized.widthFor(0), 240);
+    expect(customized.widthFor(1), automatic.widthFor(1));
+    expect(customized.widthFor(2), automatic.widthFor(2));
+    expect(
+      customized.tableWidth,
+      closeTo(automatic.tableWidth + 240 - automatic.widthFor(0), 0.001),
+    );
+  });
+
+  test('user widths clamp to resize bounds and ignore fixed columns', () {
+    const specs = <AdaptiveTableColumnSpec>[
+      AdaptiveTableColumnSpec(
+        columnId: 'name',
+        minWidth: 100,
+        maxWidth: 180,
+        resizable: true,
+        resizeMaxWidth: 480,
+      ),
+      AdaptiveTableColumnSpec(columnId: 'fixed', minWidth: 56, maxWidth: 56),
+    ];
+
+    final belowMinimum = resolveAdaptiveTableLayout(
+      specs,
+      availableWidth: 156,
+      userWidths: const <String, double>{'name': 1, 'fixed': 300},
+    );
+    final aboveMaximum = resolveAdaptiveTableLayout(
+      specs,
+      availableWidth: 156,
+      userWidths: const <String, double>{'name': 999},
+    );
+    final invalid = resolveAdaptiveTableLayout(
+      specs,
+      availableWidth: 156,
+      userWidths: const <String, double>{'name': double.nan},
+    );
+
+    expect(belowMinimum.columnWidths, <double>[100, 56]);
+    expect(aboveMaximum.columnWidths, <double>[480, 56]);
+    expect(invalid.columnWidths, <double>[100, 56]);
+  });
+
   testWidgets(
     'FlexibleTable preserves fixed columns while adaptive columns fill the row',
     (tester) async {
@@ -230,6 +302,125 @@ void main() {
     expect(longWidth, greaterThan(shortWidth));
     expect(longWidth, lessThanOrEqualTo(180));
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('FlexibleTable applies persisted widths and renders a handle', (
+    tester,
+  ) async {
+    final resizeBinding = TableColumnResizeBinding(
+      tableId: 'inventory.items',
+      widths: const <String, double>{'name': 180},
+      updateWidth: (_, _) {},
+      commitWidth: (_) async {},
+      resetWidths: () async {},
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Material(
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 220,
+              child: FlexibleTable(
+                horizontalPadding: EdgeInsets.zero,
+                columnResize: resizeBinding,
+                columnSpecs: const <AdaptiveTableColumnSpec>[
+                  AdaptiveTableColumnSpec(
+                    columnId: 'name',
+                    minWidth: 100,
+                    maxWidth: 140,
+                    resizable: true,
+                    resizeMaxWidth: 480,
+                  ),
+                  AdaptiveTableColumnSpec.fixed(40),
+                ],
+                headerCells: const <Widget>[Text('Name'), Text('Wert')],
+                rows: const <FlexibleTableRow>[
+                  FlexibleTableRow(
+                    cells: <Widget>[
+                      _MeasuredCell(
+                        measureKey: ValueKey<String>('resized-flex-cell'),
+                      ),
+                      Text('7'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.byKey(
+        const ValueKey<String>('table-column-resize-inventory.items-name'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey<String>('resized-flex-cell')))
+          .width,
+      180,
+    );
+  });
+
+  testWidgets('ResponsiveAdaptiveTable hides resize controls in card mode', (
+    tester,
+  ) async {
+    final resizeBinding = TableColumnResizeBinding(
+      tableId: 'talents.general',
+      widths: const <String, double>{'name': 180},
+      updateWidth: (_, _) {},
+      commitWidth: (_) async {},
+      resetWidths: () async {},
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Material(
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 80,
+              child: ResponsiveAdaptiveTable<String>(
+                columnResize: resizeBinding,
+                columnSpecs: const <AdaptiveTableColumnSpec>[
+                  AdaptiveTableColumnSpec(
+                    columnId: 'name',
+                    minWidth: 100,
+                    maxWidth: 140,
+                    resizable: true,
+                    resizeMaxWidth: 480,
+                  ),
+                  AdaptiveTableColumnSpec.fixed(40),
+                ],
+                headerRow: const TableRow(
+                  children: <Widget>[Text('Name'), Text('Wert')],
+                ),
+                items: const <String>['Axxeleratus'],
+                tableRowBuilder: (item) {
+                  return TableRow(
+                    children: <Widget>[Text(item), const Text('7')],
+                  );
+                },
+                cardBuilder: (context, item) => Text('Karte: $item'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Karte: Axxeleratus'), findsOneWidget);
+    expect(
+      find.byKey(
+        const ValueKey<String>('table-column-resize-talents.general-name'),
+      ),
+      findsNothing,
+    );
   });
 }
 

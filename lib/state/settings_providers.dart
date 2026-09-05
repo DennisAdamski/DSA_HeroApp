@@ -178,6 +178,39 @@ class SettingsActions {
     );
   }
 
+  /// Speichert eine einzelne Spaltenbreite, ohne andere Tabellen anzutasten.
+  Future<void> setTableColumnWidth(
+    String tableId,
+    String columnId,
+    double width,
+  ) async {
+    if (tableId.trim().isEmpty ||
+        columnId.trim().isEmpty ||
+        !width.isFinite ||
+        width <= 0) {
+      return;
+    }
+    final current = _repo.load();
+    final tables = _copyTableColumnWidths(current.tableColumnWidths);
+    final columns = tables.putIfAbsent(tableId, () => <String, double>{});
+    columns[columnId] = width;
+    await _repo.save(
+      current.copyWith(tableColumnWidths: _freezeTableColumnWidths(tables)),
+    );
+  }
+
+  /// Entfernt alle gespeicherten Spaltenbreiten einer Tabelle.
+  Future<void> resetTableColumnWidths(String tableId) async {
+    final current = _repo.load();
+    final tables = _copyTableColumnWidths(current.tableColumnWidths);
+    if (tables.remove(tableId) == null) {
+      return;
+    }
+    await _repo.save(
+      current.copyWith(tableColumnWidths: _freezeTableColumnWidths(tables)),
+    );
+  }
+
   /// Aktiviert oder deaktiviert ein Hausregel-Paket per Pack-ID.
   ///
   /// Semantik: Die persistierte Menge ist Opt-out (leer = alles aktiv).
@@ -196,6 +229,25 @@ class SettingsActions {
       ),
     );
   }
+}
+
+Map<String, Map<String, double>> _copyTableColumnWidths(
+  Map<String, Map<String, double>> source,
+) {
+  return <String, Map<String, double>>{
+    for (final entry in source.entries)
+      entry.key: Map<String, double>.from(entry.value),
+  };
+}
+
+Map<String, Map<String, double>> _freezeTableColumnWidths(
+  Map<String, Map<String, double>> source,
+) {
+  final frozen = <String, Map<String, double>>{
+    for (final entry in source.entries)
+      entry.key: Map<String, double>.unmodifiable(entry.value),
+  };
+  return Map<String, Map<String, double>>.unmodifiable(frozen);
 }
 
 /// Provider fuer Einstellungs-Schreiboperationen.

@@ -2063,6 +2063,22 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   `Einstellungen > Darstellung`; die Einstellung gilt app-weit und damit
   auch fuer die Eigenschafts- und Basiswert-Tabellen der Uebersicht.
 
+### Update 2026-09-05: Persistente Breiten für Haupttabellen
+
+- `AdaptiveTableColumnSpec` kennzeichnet verstellbare Spalten über stabile
+  `columnId`, `resizable` und `resizeMaxWidth`. Die adaptive Breitenauflösung
+  läuft zuerst; anschließend ersetzt ein gültiger Nutzerwert nur seine eigene
+  Spalte und lässt alle Nachbarspalten unverändert.
+- `PersistedTableColumnLayout` hält Drag-Werte zunächst tabellen-ID-weit lokal
+  und speichert erst beim Loslassen. `FlexibleTable`,
+  `ResponsiveAdaptiveTable` und die aktive Zauber-`DataTable` verwenden den
+  gemeinsamen 24-px-Headergriff; Kartenansichten ignorieren Bindung und Griffe.
+- `AppSettings.tableColumnWidths` serialisiert die geräteweiten Profile als
+  `{tableId: {columnId: width}}`. Aktiv sind `magic.activeSpells`,
+  `talents.meta`, `talents.general`, `talents.combat`, `combat.talents`,
+  `combat.weapons`, `combat.armor`, `combat.offhand` und `inventory.items`;
+  Katalog-, Übersichts-, Begleiter- und Sync-Tabellen bleiben unverändert.
+
 ### Update 2026-08-08: Haupteigenschafts-Boni teilweise verdrahtet
 
 - **Boni-Katalog mit Umsetzungsgrad.** Die frühere flache Map

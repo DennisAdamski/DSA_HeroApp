@@ -96,22 +96,26 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 16),
-      child: FlexibleTable(
-        tableKey: const ValueKey<String>('inventory-table'),
-        columnSpecs: _HeroInventoryTabState._columnSpecs,
-        headerCells: const <Widget>[
-          Text('Gegenstand'),
-          Text('Typ'),
-          Text('Quelle'),
-          Text('Träger'),
-          Text('Anzahl'),
-          Text('Gewicht'),
-          Text('Wert'),
-          Text('Status'),
-          Text('Herkunft'),
-          Text('Aktion'),
-        ],
-        rows: rows,
+      child: PersistedTableColumnLayout(
+        tableId: 'inventory.items',
+        builder: (context, resizeBinding) => FlexibleTable(
+          tableKey: const ValueKey<String>('inventory-table'),
+          columnSpecs: _HeroInventoryTabState._columnSpecs,
+          columnResize: resizeBinding,
+          headerCells: const <Widget>[
+            Text('Gegenstand'),
+            Text('Typ'),
+            Text('Quelle'),
+            Text('Träger'),
+            Text('Anzahl'),
+            Text('Gewicht'),
+            Text('Wert'),
+            Text('Status'),
+            Text('Herkunft'),
+            Text('Aktion'),
+          ],
+          rows: rows,
+        ),
       ),
     );
   }
