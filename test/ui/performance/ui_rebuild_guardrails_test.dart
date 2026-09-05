@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -211,8 +213,9 @@ void main() {
 
   Future<WorkspaceTabEditActions> openMagicTab(
     WidgetTester tester,
-    FakeRepository repo,
-  ) async {
+    FakeRepository repo, {
+    Stream<AppSettings>? appSettingsStream,
+  }) async {
     WorkspaceTabEditActions? actions;
     await tester.pumpWidget(
       ProviderScope(
@@ -220,7 +223,9 @@ void main() {
           heroRepositoryProvider.overrideWithValue(repo),
           rulesCatalogProvider.overrideWith((ref) async => buildMagicCatalog()),
           appSettingsProvider.overrideWith(
-            (ref) => Stream<AppSettings>.value(const AppSettings()),
+            (ref) =>
+                appSettingsStream ??
+                Stream<AppSettings>.value(const AppSettings()),
           ),
         ],
         child: MaterialApp(
@@ -343,6 +348,40 @@ void main() {
     await tester.pump();
 
     expect(UiRebuildObserver.count('hero_magic_tab'), lessThanOrEqualTo(1));
+  });
+
+  testWidgets('saving a table width does not rebuild the full magic tab', (
+    tester,
+  ) async {
+    final settingsUpdates = StreamController<AppSettings>();
+    addTearDown(settingsUpdates.close);
+    final settingsStream = Stream<AppSettings>.value(const AppSettings())
+        .asyncExpand((_) => settingsUpdates.stream);
+    final repo = FakeRepository(
+      heroes: [buildMagicHero()],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openMagicTab(tester, repo, appSettingsStream: settingsStream);
+
+    UiRebuildObserver.reset('hero_magic_tab');
+    settingsUpdates.add(
+      const AppSettings(
+        tableColumnWidths: <String, Map<String, double>>{
+          'magic.activeSpells': <String, double>{'name': 360},
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(UiRebuildObserver.count('hero_magic_tab'), 0);
   });
 
   testWidgets('hero name changes do not fan out to combat quick stats', (

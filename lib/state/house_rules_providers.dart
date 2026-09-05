@@ -7,8 +7,7 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 
 /// Menge der vom Benutzer deaktivierten Hausregel-Paket-IDs.
 final disabledHouseRulePackIdsProvider = Provider<Set<String>>((ref) {
-  final settings = ref.watch(appSettingsProvider).valueOrNull;
-  return settings?.disabledHouseRulePackIds ?? const <String>{};
+  return ref.watch(catalogDisabledHouseRulePackIdsProvider);
 });
 
 /// Rueckwaertskompatibler Alias fuer bestehende Call-Sites.

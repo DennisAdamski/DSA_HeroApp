@@ -327,6 +327,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - `PersistedTableColumnLayout` bindet `FlexibleTable`, `ResponsiveAdaptiveTable`
   und `DataTable` an geraeteweite Breiten unter `AppSettings.tableColumnWidths`;
   nur stabile, textlastige Spalten-IDs erhalten Resize-Griffe im Tabellenmodus.
+  Selektive Settings-Provider halten Breiten-Saves aus der Katalog-Pipeline und
+  dem vollstaendigen Zaubertab heraus.
 - Reisebericht-Daten bleiben separat unter `assets/catalogs/reiseberichte/house_rules_v1/`.
 - Geschuetzte Katalog-Felder (Wirkung/Varianten von Zaubern, Erklaerungstexte
   von Manoevern und Kampf-Sonderfertigkeiten) sind v3-verschluesselt

@@ -445,10 +445,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         };
         final effectiveAttributes = computeEffectiveAttributes(hero);
         final contentUnlocked = ref.watch(catalogContentVisibleProvider);
-        final contentPassword = ref
-            .watch(appSettingsProvider)
-            .valueOrNull
-            ?.catalogContentPassword;
+        final contentPassword = ref.watch(catalogContentPasswordProvider);
         _syncProtectedContentCache(
           contentUnlocked: contentUnlocked,
           contentPassword: contentPassword,

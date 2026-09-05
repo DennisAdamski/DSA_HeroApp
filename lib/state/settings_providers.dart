@@ -40,6 +40,46 @@ final appSettingsProvider = StreamProvider<AppSettings>((ref) {
   });
 });
 
+/// Liefert nur das Passwort, dessen Änderung den Katalog neu entschlüsselt.
+final catalogContentPasswordProvider = Provider<String?>((ref) {
+  return ref.watch(
+    appSettingsProvider.select(
+      (settings) => settings.valueOrNull?.catalogContentPassword,
+    ),
+  );
+});
+
+// Vergleicht Settings-Mengen nach Inhalt, damit ein Repository-Reload mit
+// neuen Set-Instanzen keine fachlich unveränderten Abhängigkeiten auslöst.
+class _StringSetSelection {
+  _StringSetSelection(Set<String> values)
+    : values = Set<String>.unmodifiable(values);
+
+  final Set<String> values;
+
+  @override
+  bool operator ==(Object other) {
+    return other is _StringSetSelection &&
+        values.length == other.values.length &&
+        values.containsAll(other.values);
+  }
+
+  @override
+  int get hashCode => Object.hashAllUnordered(values);
+}
+
+/// Liefert nur die Paket-Auswahl, deren Änderung den Katalog neu auflöst.
+final catalogDisabledHouseRulePackIdsProvider = Provider<Set<String>>((ref) {
+  final selection = ref.watch(
+    appSettingsProvider.select(
+      (settings) => _StringSetSelection(
+        settings.valueOrNull?.disabledHouseRulePackIds ?? const <String>{},
+      ),
+    ),
+  );
+  return selection.values;
+});
+
 /// Schnellzugriff auf den Debug-Modus-Zustand.
 final debugModusProvider = Provider<bool>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.debugModus ?? false;
@@ -71,7 +111,7 @@ final summaryRailCollapsedProvider = Provider<bool>((ref) {
 /// true wenn ein gueltiges Entschluesselungspasswort gespeichert ist.
 /// Damit sind geschuetzte Kataloginhalte dauerhaft freigeschaltet.
 final catalogContentVisibleProvider = Provider<bool>((ref) {
-  final pw = ref.watch(appSettingsProvider).valueOrNull?.catalogContentPassword;
+  final pw = ref.watch(catalogContentPasswordProvider);
   return pw != null && pw.isNotEmpty;
 });
 

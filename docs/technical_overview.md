@@ -1686,9 +1686,11 @@ Konsumenten nicht pro Anzeige PBKDF2/AES anwerfen, sitzt zwischen
 `baseCatalogSourceDataProvider` und `catalogRuntimeDataProvider` der neue
 `decryptedCatalogSourceDataProvider`:
 
-- Watcht `appSettingsProvider.catalogContentPassword`. Ohne Passwort wird
+- Watcht den selektiven `catalogContentPasswordProvider`. Ohne Passwort wird
   die Quelle unveraendert durchgereicht; geschuetzte Felder bleiben mit
-  `enc:`-Praefix bestehen und die UI zeigt einen Locked-Hinweis.
+  `enc:`-Praefix bestehen und die UI zeigt einen Locked-Hinweis. Andere
+  Einstellungen wie gespeicherte Spaltenbreiten invalidieren die
+  Katalog-Pipeline nicht.
 - Mit Passwort ruft er `decryptAllCatalogValues` auf. Der Runner zaehlt die
   `enc:`-Werte: ab 64 wird der Bulk-Decrypt via `compute()` auf einen Web
   Worker / Isolate ausgelagert, sonst synchron im aufrufenden Thread.
@@ -2078,6 +2080,9 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   `talents.meta`, `talents.general`, `talents.combat`, `combat.talents`,
   `combat.weapons`, `combat.armor`, `combat.offhand` und `inventory.items`;
   Katalog-, Übersichts-, Begleiter- und Sync-Tabellen bleiben unverändert.
+- Selektive Provider für Katalogpasswort und deaktivierte Hausregel-Pakete
+  verhindern, dass das Persistieren einer Breite den Katalog oder den gesamten
+  Zaubertab neu aufbaut.
 
 ### Update 2026-08-08: Haupteigenschafts-Boni teilweise verdrahtet
 
