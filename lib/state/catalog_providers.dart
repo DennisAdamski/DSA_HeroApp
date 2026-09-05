@@ -10,7 +10,6 @@ import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/data/custom_catalog_repository.dart';
 import 'package:dsa_heldenverwaltung/data/house_rule_pack_repository.dart';
-import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 
 /// Laedt die Basis-Assets und typisiert daraus Laufzeitkataloge.
@@ -76,10 +75,7 @@ final decryptedCatalogSourceDataProvider = FutureProvider<CatalogSourceData>((
   ref,
 ) async {
   final baseData = await ref.watch(baseCatalogSourceDataProvider.future);
-  final password = ref
-      .watch(appSettingsProvider)
-      .valueOrNull
-      ?.catalogContentPassword;
+  final password = ref.watch(catalogContentPasswordProvider);
   if (password == null || password.isEmpty) {
     return baseData;
   }
@@ -124,9 +120,7 @@ final catalogRuntimeDataProvider = FutureProvider<CatalogRuntimeData>((
   final customSnapshot = await repository.load(
     catalogVersion: baseData.version,
   );
-  final disabledPackIds =
-      ref.watch(appSettingsProvider).valueOrNull?.disabledHouseRulePackIds ??
-      const <String>{};
+  final disabledPackIds = ref.watch(catalogDisabledHouseRulePackIdsProvider);
   final activePackIds = packCatalog.resolveActivePackIds(disabledPackIds);
   final houseRuleResult = HouseRuleCatalogResolver.resolve(
     baseData: baseData,
