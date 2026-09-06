@@ -9,7 +9,6 @@ import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
-import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
@@ -45,7 +44,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dar
 import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_picker.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_table_cell.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
@@ -55,10 +53,8 @@ part 'hero_talents/hero_talents_edit_actions.dart';
 part 'hero_talents/hero_talents_grouping.dart';
 part 'hero_talents/hero_talents_info_card.dart';
 part 'hero_talents/hero_talents_mutations.dart';
-part 'hero_talents/hero_talents_raise_actions.dart';
 part 'hero_talents/hero_talents_tables.dart';
 part 'hero_talents/hero_languages_tab.dart';
-part 'hero_talents/hero_languages_raise_actions.dart';
 part 'hero_talents/meta_talent_dialogs.dart';
 part 'hero_talents/talent_catalog_table.dart';
 part 'hero_talents/talent_detail_dialog.dart';
@@ -134,7 +130,6 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   /// Ob das Hausregel-Paket der epischen Vorteile aktiv ist. Wird aus
   /// demselben Grund wie [_tabellenAnsicht] in `build` gelesen.
   bool _epicAdvantagesActive = false;
-  List<TalentDef> _latestCatalogTalents = const <TalentDef>[];
   CatalogRuleResolver _latestCatalogRuleResolver = const CatalogRuleResolver();
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   List<HeroMetaTalent> _draftMetaTalents = <HeroMetaTalent>[];
@@ -234,7 +229,6 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         error: (error, stackTrace) =>
             Center(child: Text('Katalog-Fehler: $error')),
         data: (catalog) {
-          _latestCatalogTalents = catalog.talents;
           _latestCatalogRuleResolver = catalog.ruleResolver;
           final combatBaseBe = widget.scope == _TalentTabScope.nonCombat
               ? computeCombatPreviewStats(
@@ -380,12 +374,6 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       _draftSchriften.remove(id);
                       _markFieldChanged();
                     },
-                    onRaiseSprache: _canUseLanguageSteigerungsDialog
-                        ? (id) => _steigereSprache(id, catalog.sprachen)
-                        : null,
-                    onRaiseSchrift: _canUseLanguageSteigerungsDialog
-                        ? (id) => _steigereSchrift(id, catalog.schriften)
-                        : null,
                   ),
                 if (widget.scope == _TalentTabScope.combat ||
                     _subTabController?.index == 0)

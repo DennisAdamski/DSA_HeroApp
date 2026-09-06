@@ -236,11 +236,12 @@ void main() {
     expect(find.text('1 Voraussetzung offen'), findsNothing);
   });
 
-  testWidgets('der Erwerb bei offenen Punkten verlangt den Meisterentscheid', (
+  testWidgets('manuelle Korrektur bei offenen Punkten verbraucht keine AP', (
     tester,
   ) async {
-    final actions = await openCombatTab(tester, buildRepo());
-    actions.startEdit();
+    final repo = buildRepo();
+    final actions = await openCombatTab(tester, repo);
+    await actions.startEdit();
     await tester.pumpAndSettle();
     await openRulesTab(tester);
     await expandCombatGroup(tester, 'Allgemeine Kampf-Sonderfertigkeiten');
@@ -254,13 +255,15 @@ void main() {
     await tester.tap(find.descendant(of: chip, matching: find.byType(Switch)));
     await tester.pumpAndSettle();
 
-    // Der Dialog zeigt die Checkliste und sperrt den Knopf bis zur Bestaetigung.
-    expect(find.textContaining('Trotzdem erwerben'), findsOneWidget);
-    expect(find.textContaining('SF Kampfgespür'), findsOneWidget);
-    final erwerben = tester.widget<FilledButton>(
-      find.widgetWithText(FilledButton, 'Erwerben'),
+    expect(find.widgetWithText(FilledButton, 'Erwerben'), findsNothing);
+    await actions.save();
+    await tester.pumpAndSettle();
+    final saved = await repo.loadHeroById('demo');
+    expect(
+      saved?.combatConfig.specialRules.activeCombatSpecialAbilityIds,
+      contains('ksf_blindkampf'),
     );
-    expect(erwerben.onPressed, isNull);
+    expect(saved?.apSpent, 0);
   });
 
   testWidgets('die Stufenkarte ist auch ohne erworbene Stufe da', (

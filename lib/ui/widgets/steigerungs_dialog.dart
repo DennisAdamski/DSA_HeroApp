@@ -18,6 +18,7 @@ class SteigerungsErgebnis {
     required this.seVerbraucht,
     required this.lehrmeisterTaW,
     required this.dukaten,
+    this.effektiveKomplexitaet,
   });
 
   /// Neuer Zielwert nach der Steigerung.
@@ -34,6 +35,9 @@ class SteigerungsErgebnis {
 
   /// Errechnete Dukatenkosten fuer den Lehrmeister oder `null`.
   final double? dukaten;
+
+  /// Tatsächlich gewählte Lernkomplexität für die spätere Regelprüfung.
+  final LearnCost? effektiveKomplexitaet;
 }
 
 /// Oeffnet einen Dialog zur AP-basierten Steigerung eines Werts.
@@ -41,6 +45,9 @@ class SteigerungsErgebnis {
 /// `aktuellerWert < 0` repraesentiert einen noch nicht aktivierten Wert.
 /// Dadurch koennen Talente mit Aktivierungskosten ohne separates Zusatz-Flag
 /// verarbeitet werden.
+///
+/// [previewBuilder] ergänzt eine rein informative Vorschau für den normalisierten
+/// Zielwert; der Dialog kennt keine fachlichen Abhängigkeiten der Vorschau.
 ///
 /// `istHaupteigenschaft` markiert eine der beiden epischen Haupteigenschaften.
 /// Sie steigern sich laut Hausregel Kap. 2.1 ohne den epischen AP-Aufschlag.
@@ -51,6 +58,8 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
   required LearnCost effektiveKomplexitaet,
   required int verfuegbareAp,
   required int maxWert,
+  String? confirmLabel,
+  Widget Function(BuildContext context, int targetValue)? previewBuilder,
   int seAnzahl = 0,
   bool lehrmeisterVerfuegbar = false,
   String? komplexitaetsHinweis,
@@ -63,6 +72,8 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
     builder: (dialogContext) {
       return _SteigerungsDialog(
         bezeichnung: bezeichnung,
+        confirmLabel: confirmLabel,
+        previewBuilder: previewBuilder,
         aktuellerWert: aktuellerWert,
         maxWert: maxWert,
         effektiveKomplexitaet: effektiveKomplexitaet,
@@ -81,19 +92,23 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
 class _SteigerungsDialog extends StatefulWidget {
   const _SteigerungsDialog({
     required this.bezeichnung,
+    this.confirmLabel,
     required this.aktuellerWert,
     required this.maxWert,
     required this.effektiveKomplexitaet,
     required this.verfuegbareAp,
     required this.seAnzahl,
     required this.lehrmeisterVerfuegbar,
+    this.previewBuilder,
     this.komplexitaetsHinweis,
     this.startWert,
     this.episch = false,
     this.istHaupteigenschaft = false,
   });
 
+  final Widget Function(BuildContext context, int targetValue)? previewBuilder;
   final String bezeichnung;
+  final String? confirmLabel;
   final int aktuellerWert;
   final int maxWert;
   final LearnCost effektiveKomplexitaet;
@@ -358,6 +373,10 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
             ],
           ),
           const SizedBox(height: 12),
+          if (widget.previewBuilder != null) ...[
+            widget.previewBuilder!(context, _neuerWert),
+            const SizedBox(height: 12),
+          ],
           Text('Komplexität'),
           const SizedBox(height: 6),
           Row(
@@ -515,6 +534,7 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
                   Navigator.of(context).pop(
                     SteigerungsErgebnis(
                       neuerWert: _neuerWert,
+                      effektiveKomplexitaet: _ausgewaehlteKomplexitaet,
                       apKosten: _effektiveApKosten,
                       seVerbraucht: basisKosten.seVerbraucht,
                       lehrmeisterTaW: _mitLehrmeister ? _lehrmeisterTaW : null,
@@ -523,7 +543,7 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
                   );
                 },
           icon: const Icon(Icons.trending_up),
-          label: const Text('Steigern'),
+          label: Text(widget.confirmLabel ?? 'Steigern'),
         ),
       ],
     );

@@ -82,6 +82,32 @@ AttributeCode? parseAttributeCode(String raw) {
   }
 }
 
+/// Ausgeschriebener deutscher Name einer Eigenschaft fuer sichtbare Texte.
+///
+/// [attributeCodeKey] bleibt der persistierte Code; dieser Name ist rein fuer
+/// die Oberflaeche gedacht, damit Listen und Suchen nicht nur die Kurzform
+/// treffen.
+String attributeCodeName(AttributeCode code) {
+  switch (code) {
+    case AttributeCode.mu:
+      return 'Mut';
+    case AttributeCode.kl:
+      return 'Klugheit';
+    case AttributeCode.inn:
+      return 'Intuition';
+    case AttributeCode.ch:
+      return 'Charisma';
+    case AttributeCode.ff:
+      return 'Fingerfertigkeit';
+    case AttributeCode.ge:
+      return 'Gewandtheit';
+    case AttributeCode.ko:
+      return 'Konstitution';
+    case AttributeCode.kk:
+      return 'Körperkraft';
+  }
+}
+
 /// Liefert den aktuellen Eigenschaftswert fuer einen kanonischen Code.
 int readAttributeValue(Attributes attributes, AttributeCode code) {
   switch (code) {

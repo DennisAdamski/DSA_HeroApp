@@ -33,6 +33,7 @@ classDiagram
         +List~MagicSpecialAbility~ magicSpecialAbilities
         +String magicLeadAttribute
         +int apTotal / apSpent
+        +List~HeroAdvancementEntry~ advancementHistory
         +int schemaVersion
         +copyWith() HeroSheet
     }
@@ -50,6 +51,61 @@ classDiagram
         +empty()$ HeroState
         +copyWith() HeroState
     }
+
+    class HeroAdvancementEntry {
+        +String id / sessionId / targetId
+        +DateTime createdAt
+        +AdvancementKind kind
+        +int fromValue / toValue
+        +int apCost / seSpent
+        +toJson() Map
+    }
+
+    class AdvancementSession {
+        +HeroSheet base / preview
+        +List~HeroAdvancementEntry~ entries
+        +Map~String,String~ errors
+        +bool canCommit
+    }
+
+    class AdvancementSessionController {
+        +start()
+        +add()
+        +remove()
+        +discard()
+        +commit() Future
+    }
+
+    class AdvancementContext {
+        +HeroSheet hero
+        +RulesCatalog catalog
+        +Attributes permanentAttributes
+        +HeroRequirementContext requirementContext
+        +ownedAbilityIds(kind) Set~String~
+        +actionableAbilityTargets(kind) Set~String~
+    }
+
+    class AdvancementOption {
+        +AdvancementKind kind
+        +String targetId / label
+        +int currentValue / maxValue
+        +bool isOwned
+        +int ownedCount
+        +String? unavailableReason
+    }
+
+    class AdvancementScope {
+        <<enumeration>>
+        active
+        inactive
+        all
+    }
+
+    HeroSheet "1" *-- "*" HeroAdvancementEntry : übernommene Historie
+    AdvancementSession "1" *-- "*" HeroAdvancementEntry : geplante Einträge
+    AdvancementSessionController --> AdvancementSession : Entwurf
+    AdvancementContext --> AdvancementOption : löst Ziele auf
+    AdvancementScope --> AdvancementContext : begrenzt den Umfang
 
     class Attributes {
         +int mu, kl, inn, ch
@@ -386,6 +442,12 @@ flüchtigen Laufzeitzustand (aktuelle LeP/AsP/KaP/Au und temporäre Modifikatore
 Parierwaffen, Rüstung, Sonderregeln und Waffenmeisterschaften.
 
 ### State (`lib/state/`)
+
+`HeroStatInputs` bereitet die Modifikatoren für `HeroComputedSnapshot` und
+`AdvancementImpact` gemeinsam vor. `AdvancementImpact` enthält
+`AdvancementStatChange` für die Basiswertsummen und im Eigenschaftsdialog
+`AdvancementUnlockedValue` mit den bisherigen und neuen Steigerungsoptionen.
+Diese Vorschautypen werden nicht persistiert.
 
 `HeroComputedSnapshot` ist der zentrale Aggregator — er fasst `HeroSheet`,
 `HeroState`, geparste Modifikatoren und alle berechneten Werte in einem

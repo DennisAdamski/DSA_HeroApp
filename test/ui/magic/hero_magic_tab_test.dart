@@ -333,9 +333,7 @@ void main() {
       await _pumpAndSettleIgnoringKnownOverflow(tester);
 
       // Neuanlage fragt jetzt die AP-Kosten via Erwerb-Dialog ab.
-      await tester.enterText(find.widgetWithText(TextField, 'AP-Kosten'), '0');
       await _pumpAndSettleIgnoringKnownOverflow(tester);
-      await tester.tap(find.text('Erwerben'));
       await _pumpAndSettleIgnoringKnownOverflow(tester);
 
       await opened.actions.save();
@@ -351,69 +349,65 @@ void main() {
     },
   );
 
-  testWidgets(
-    'special ability catalog picker adds magische SF and increases apSpent',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: <HeroSheet>[buildHero().copyWith(apAvailable: 500)],
-        states: <String, HeroState>{
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 10,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
-      final catalog = buildCatalog(
-        magicSpecialAbilities: const <SpecialAbilityDef>[
-          SpecialAbilityDef(
-            id: 'magsf_konzentrationsstaerke',
-            name: 'Konzentrationsstärke',
-            gruppe: 'magisch',
-            kategorie: 'Zauberkontrolle',
-            beschreibung: 'Erleichtert Proben zur Konzentration.',
-            kosten: '100 AP',
-          ),
-        ],
-      );
-      final opened = await openMagicTab(tester, repo: repo, catalog: catalog);
-
-      await tester.tap(find.text('Repr. & SF'));
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
-
-      await tester.tap(
-        find.byKey(const ValueKey<String>('magic-sf-add-from-catalog')),
-      );
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
-
-      expect(find.text('Magische Sonderfertigkeiten'), findsOneWidget);
-      expect(find.text('Konzentrationsstärke'), findsOneWidget);
-
-      await tester.tap(find.byType(Switch).first);
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
-
-      expect(find.text('Katalog: 100 AP'), findsOneWidget);
-      await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
-
-      await tester.tap(find.text('Fertig'));
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
-
-      await opened.actions.save();
-      await _pumpAndSettleIgnoringKnownOverflow(tester);
-
-      final savedHero = await opened.repo.loadHeroById('demo');
-      expect(savedHero?.magicSpecialAbilities.map((a) => a.name), [
-        'Konzentrationsstärke',
-      ]);
-      expect(savedHero?.apSpent, 100);
-    },
-  );
-
-  testWidgets('Merkmalskenntnis-Chip verrechnet die Klassifikationskosten', (
+  testWidgets('manual catalog picker adds magische SF without AP', (
     tester,
   ) async {
+    final repo = FakeRepository(
+      heroes: <HeroSheet>[buildHero().copyWith(apAvailable: 500)],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    final catalog = buildCatalog(
+      magicSpecialAbilities: const <SpecialAbilityDef>[
+        SpecialAbilityDef(
+          id: 'magsf_konzentrationsstaerke',
+          name: 'Konzentrationsstärke',
+          gruppe: 'magisch',
+          kategorie: 'Zauberkontrolle',
+          beschreibung: 'Erleichtert Proben zur Konzentration.',
+          kosten: '100 AP',
+        ),
+      ],
+    );
+    final opened = await openMagicTab(tester, repo: repo, catalog: catalog);
+
+    await tester.tap(find.text('Repr. & SF'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-sf-add-from-catalog')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    expect(find.text('Magische Sonderfertigkeiten'), findsOneWidget);
+    expect(find.text('Konzentrationsstärke'), findsOneWidget);
+
+    await tester.tap(find.byType(Switch).first);
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    expect(find.widgetWithText(TextField, 'AP-Kosten'), findsNothing);
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await tester.tap(find.text('Fertig'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await opened.actions.save();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    final savedHero = await opened.repo.loadHeroById('demo');
+    expect(savedHero?.magicSpecialAbilities.map((a) => a.name), [
+      'Konzentrationsstärke',
+    ]);
+    expect(savedHero?.apSpent, 0);
+  });
+
+  testWidgets('manuelle Merkmalskenntnis verbraucht keine AP', (tester) async {
     final repo = FakeRepository(
       heroes: <HeroSheet>[buildHero().copyWith(apAvailable: 1000)],
       states: <String, HeroState>{
@@ -436,18 +430,14 @@ void main() {
     await tester.tap(find.widgetWithText(FilterChip, 'Limbus'));
     await _pumpAndSettleIgnoringKnownOverflow(tester);
 
-    expect(find.text('Merkmalskenntnis Limbus erwerben'), findsOneWidget);
-    expect(find.textContaining('Klassifikation 3: 300 AP'), findsOneWidget);
-
-    await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
-    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    expect(find.widgetWithText(TextField, 'AP-Kosten'), findsNothing);
 
     await opened.actions.save();
     await _pumpAndSettleIgnoringKnownOverflow(tester);
 
     final savedHero = await opened.repo.loadHeroById('demo');
     expect(savedHero?.merkmalskenntnisse, contains('Limbus'));
-    expect(savedHero?.apSpent, 300);
+    expect(savedHero?.apSpent, 0);
   });
 
   testWidgets('abgebrochener Merkmalskenntnis-Erwerb laesst den Chip aus', (
@@ -462,7 +452,7 @@ void main() {
 
     await tester.tap(find.widgetWithText(FilterChip, 'Limbus'));
     await _pumpAndSettleIgnoringKnownOverflow(tester);
-    await tester.tap(find.widgetWithText(TextButton, 'Abbrechen'));
+    await opened.actions.cancel();
     await _pumpAndSettleIgnoringKnownOverflow(tester);
 
     await opened.actions.save();
@@ -473,7 +463,7 @@ void main() {
     expect(savedHero?.apSpent, 0);
   });
 
-  testWidgets('Repraesentations-Chip schlaegt den Vollzauberer-Preis vor', (
+  testWidgets('manuelle Repraesentation wird ohne AP-Dialog gespeichert', (
     tester,
   ) async {
     // Held hat bereits drei Repraesentationen -> die vierte hat keinen
@@ -503,12 +493,12 @@ void main() {
     );
     await _pumpAndSettleIgnoringKnownOverflow(tester);
 
-    expect(find.text('Repräsentation Druide (Dru) erwerben'), findsOneWidget);
-    expect(
-      find.textContaining('2. Repräsentation: Vollzauberer 2000 AP'),
-      findsOneWidget,
-    );
-    expect(find.textContaining('Halbzauberer 3000 AP'), findsOneWidget);
+    expect(find.widgetWithText(TextField, 'AP-Kosten'), findsNothing);
+    await opened.actions.save();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    final saved = await opened.repo.loadHeroById('demo');
+    expect(saved?.representationen, contains('Dru'));
+    expect(saved?.apSpent, 0);
   });
 
   testWidgets('Zauberspezialisierung verlangt den noetigen ZfW', (
@@ -540,7 +530,7 @@ void main() {
     );
   });
 
-  testWidgets('Zauberspezialisierung wird gespeichert und kostet AP', (
+  testWidgets('manuelle Zauberspezialisierung wird ohne AP gespeichert', (
     tester,
   ) async {
     final repo = FakeRepository(
@@ -586,13 +576,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Weiter'));
     await _pumpAndSettleIgnoringKnownOverflow(tester);
 
-    // Zauber der Kategorie C, erste Spezialisierung: 20 * 3 * 1 = 60 AP.
-    expect(find.text('Spezialisierung: Reichweite erwerben'), findsOneWidget);
-    expect(find.textContaining('ZfW ≥ 7 nötig'), findsOneWidget);
-    expect(find.widgetWithText(TextField, '60'), findsOneWidget);
-
-    await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
-    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    expect(find.widgetWithText(TextField, 'AP-Kosten'), findsNothing);
 
     await opened.actions.save();
     await _pumpAndSettleIgnoringKnownOverflow(tester);
@@ -603,7 +587,7 @@ void main() {
     ]);
     // Ohne Lehrmeister verdoppeln sich die Kosten (Wege des Schwerts S. 17),
     // genau wie bei der Talentspezialisierung: 60 AP -> 120 AP.
-    expect(savedHero?.apSpent, 120);
+    expect(savedHero?.apSpent, 0);
   });
 
   testWidgets('magic tab stores global lead attribute', (tester) async {
@@ -1634,7 +1618,7 @@ void main() {
     });
 
     testWidgets(
-      'der Erwerbsdialog verlangt bei offenen Punkten den Meisterentscheid',
+      'manuelle Korrektur verlangt keinen AP-Erwerb oder Meisterentscheid',
       (tester) async {
         final opened = await openPicker(tester);
 
@@ -1649,28 +1633,7 @@ void main() {
         );
         await _pumpAndSettleIgnoringKnownOverflow(tester);
 
-        expect(
-          find.byKey(const ValueKey<String>('erwerb-voraussetzungen')),
-          findsOneWidget,
-        );
-        expect(
-          find.text('Eine Voraussetzung ist nicht erfüllt.'),
-          findsOneWidget,
-        );
-
-        final erwerben = find.widgetWithText(FilledButton, 'Erwerben');
-        expect(
-          tester.widget<FilledButton>(erwerben).onPressed,
-          isNull,
-          reason: 'ohne Meisterentscheid darf nicht erworben werden',
-        );
-
-        await tester.tap(
-          find.byKey(const ValueKey<String>('erwerb-meisterentscheid')),
-        );
-        await _pumpAndSettleIgnoringKnownOverflow(tester);
-        await tester.tap(erwerben);
-        await _pumpAndSettleIgnoringKnownOverflow(tester);
+        expect(find.widgetWithText(TextField, 'AP-Kosten'), findsNothing);
         await tester.tap(find.text('Fertig'));
         await _pumpAndSettleIgnoringKnownOverflow(tester);
         await opened.actions.save();
@@ -1680,7 +1643,7 @@ void main() {
         expect(savedHero?.magicSpecialAbilities.map((a) => a.name), [
           'Gedankenschutz',
         ]);
-        expect(savedHero?.apSpent, 250);
+        expect(savedHero?.apSpent, 0);
       },
     );
 
@@ -1709,12 +1672,7 @@ void main() {
         find.byKey(const ValueKey<String>('erwerb-meisterentscheid')),
         findsNothing,
       );
-      expect(
-        tester
-            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Erwerben'))
-            .onPressed,
-        isNotNull,
-      );
+      expect(find.widgetWithText(FilledButton, 'Erwerben'), findsNothing);
     });
   });
 }

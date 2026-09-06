@@ -218,6 +218,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
                       specializationOrdinal: runningCount + 1,
                     );
                     final erwerb = await showErwerbDialog(
+                      manualCorrection: true,
                       context: context,
                       bezeichnung: 'Spezialisierung: $spec',
                       kostenHinweis:
@@ -269,8 +270,6 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     required int value,
     required bool isEditing,
     bool isError = false,
-    VoidCallback? onRaise,
-    String? raiseTooltip,
   }) {
     final controller = _controllerFor(talentId, field, value.toString());
     return EditAwareTableCell(
@@ -284,24 +283,6 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
           ? (raw) => _updateIntField(talentId, field, raw)
           : null,
       padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
-      suffixIcon: onRaise == null
-          ? null
-          : IconButton(
-              key: ValueKey<String>('talents-raise-$talentId-$field'),
-              visualDensity: VisualDensity.compact,
-              iconSize: 18,
-              tooltip: raiseTooltip ?? 'Steigern',
-              onPressed: onRaise,
-              icon: const Icon(Icons.trending_up),
-            ),
-      // Auf Apple-Plattformen (inkl. iPad-Web) greift die HIG-Mindestgroesse
-      // von 44 pt, damit der Button per Finger sicher zu treffen ist.
-      suffixIconConstraints: onRaise == null
-          ? null
-          : BoxConstraints(
-              minWidth: adaptiveMinTouchTarget(context),
-              minHeight: adaptiveMinTouchTarget(context),
-            ),
     );
   }
 
@@ -494,6 +475,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
       specializationOrdinal: currentSpecs.length + 1,
     );
     final erwerb = await showErwerbDialog(
+      manualCorrection: true,
       context: context,
       bezeichnung: 'Spezialisierung: $name',
       kostenHinweis:

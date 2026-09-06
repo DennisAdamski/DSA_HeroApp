@@ -240,6 +240,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
         .map((a) => a.name.trim().toLowerCase())
         .toSet();
     showSpecialAbilityPicker(
+      manualCorrection: true,
       context: context,
       title: karmal
           ? 'Karmale Sonderfertigkeiten'
@@ -378,6 +379,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                         name,
                       );
                       final erwerb = await showErwerbDialog(
+                        manualCorrection: true,
                         context: dialogContext,
                         bezeichnung: name,
                         kostenHinweis: match?.kosten,

@@ -43,6 +43,7 @@ Future<void> showSpecialAbilityPicker({
   )
   onAdd,
   required void Function(SpecialAbilityDef ability) onRemove,
+  bool manualCorrection = false,
   String eigeneKultur = '',
   HeroRequirementContext? requirementContext,
 }) {
@@ -50,6 +51,7 @@ Future<void> showSpecialAbilityPicker({
     context: context,
     builder: (_) => _SpecialAbilityPickerScreen(
       title: title,
+      manualCorrection: manualCorrection,
       catalog: catalog,
       ownedNamesLower: ownedNamesLower,
       verfuegbareAp: verfuegbareAp,
@@ -65,6 +67,7 @@ Future<void> showSpecialAbilityPicker({
 class _SpecialAbilityPickerScreen extends StatefulWidget {
   const _SpecialAbilityPickerScreen({
     required this.title,
+    required this.manualCorrection,
     required this.catalog,
     required this.ownedNamesLower,
     required this.verfuegbareAp,
@@ -76,6 +79,7 @@ class _SpecialAbilityPickerScreen extends StatefulWidget {
   });
 
   final String title;
+  final bool manualCorrection;
   final List<SpecialAbilityDef> catalog;
   final Set<String> ownedNamesLower;
   final int verfuegbareAp;
@@ -194,6 +198,7 @@ class _SpecialAbilityPickerScreenState
 
     final anzeigeName = buildVariantAbilityName(ability.name, variante);
     final result = await showErwerbDialog(
+      manualCorrection: widget.manualCorrection,
       context: context,
       bezeichnung: anzeigeName,
       kostenHinweis: ability.kosten,

@@ -9,7 +9,6 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
-import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
@@ -55,7 +54,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers
 import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_chain_card.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/requirement_checklist.dart';
-import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
 part 'hero_combat/combat_talent_catalog_table.dart';
@@ -69,7 +67,6 @@ part 'hero_combat/combat_special_rules_helpers.dart';
 part 'hero_combat/combat_maneuver_helpers.dart';
 part 'hero_combat/combat_maneuver_dialog.dart';
 part 'hero_combat/combat_state_helpers.dart';
-part 'hero_combat/combat_at_pa_dialog.dart';
 
 class HeroCombatTab extends ConsumerStatefulWidget {
   const HeroCombatTab({

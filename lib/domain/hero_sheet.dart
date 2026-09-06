@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
@@ -67,6 +68,7 @@ class HeroSheet {
     this.notes = const <HeroNoteEntry>[],
     this.connections = const <HeroConnectionEntry>[],
     this.adventures = const <HeroAdventureEntry>[],
+    this.advancementHistory = const <HeroAdvancementEntry>[],
     this.attributeSePool = const HeroAttributeSePool(),
     this.statSePool = const HeroStatSePool(),
     this.companions = const <HeroCompanion>[],
@@ -139,6 +141,9 @@ class HeroSheet {
   final List<HeroNoteEntry> notes;
   final List<HeroConnectionEntry> connections;
   final List<HeroAdventureEntry> adventures;
+
+  /// Ausschließlich übernommene, unveränderlich zu behandelnde Erwerbsnachweise.
+  final List<HeroAdvancementEntry> advancementHistory;
 
   /// Zeitpunkt der letzten lokalen Speicherung (UTC).
   final DateTime? lastModified;
@@ -228,6 +233,7 @@ class HeroSheet {
     List<HeroNoteEntry>? notes,
     List<HeroConnectionEntry>? connections,
     List<HeroAdventureEntry>? adventures,
+    List<HeroAdvancementEntry>? advancementHistory,
     Object? lastModified = _copySentinel,
     HeroAttributeSePool? attributeSePool,
     HeroStatSePool? statSePool,
@@ -289,6 +295,7 @@ class HeroSheet {
       notes: notes ?? this.notes,
       connections: connections ?? this.connections,
       adventures: adventures ?? this.adventures,
+      advancementHistory: advancementHistory ?? this.advancementHistory,
       lastModified: identical(lastModified, _copySentinel)
           ? this.lastModified
           : lastModified as DateTime?,
@@ -371,6 +378,10 @@ class HeroSheet {
       'adventures': adventures
           .map((entry) => entry.toJson())
           .toList(growable: false),
+      if (advancementHistory.isNotEmpty)
+        'advancementHistory': advancementHistory
+            .map((entry) => entry.toJson())
+            .toList(growable: false),
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
       'attributeSePool': attributeSePool.toJson(),
@@ -577,6 +588,14 @@ class HeroSheet {
                 HeroAdventureEntry.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
+      advancementHistory: List<HeroAdvancementEntry>.unmodifiable(
+        ((json['advancementHistory'] as List?) ?? const [])
+            .whereType<Map>()
+            .map(
+              (entry) =>
+                  HeroAdvancementEntry.fromJson(entry.cast<String, dynamic>()),
+            ),
+      ),
       lastModified: DateTime.tryParse(json['lastModified'] as String? ?? ''),
       attributeSePool: HeroAttributeSePool.fromJson(
         (json['attributeSePool'] as Map?)?.cast<String, dynamic>() ??

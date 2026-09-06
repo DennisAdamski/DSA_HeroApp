@@ -61,6 +61,7 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
       return false;
     }
     final result = await showErwerbDialog(
+      manualCorrection: true,
       context: context,
       bezeichnung: bezeichnung,
       kostenHinweis: kostenHinweis.trim().isEmpty ? null : kostenHinweis.trim(),

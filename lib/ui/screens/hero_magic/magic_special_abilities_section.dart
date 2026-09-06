@@ -84,6 +84,7 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
     }
     final owned = abilities.map((a) => a.name.trim().toLowerCase()).toSet();
     await showSpecialAbilityPicker(
+      manualCorrection: true,
       context: context,
       title: 'Magische Sonderfertigkeiten',
       catalog: catalogAbilities,
@@ -274,6 +275,7 @@ class _MagicSpecialAbilityDialogState
     if (_isNew) {
       final match = matchCatalogSpecialAbility(widget.catalogAbilities, name);
       final erwerb = await showErwerbDialog(
+        manualCorrection: true,
         context: context,
         bezeichnung: name,
         kostenHinweis: match?.kosten,

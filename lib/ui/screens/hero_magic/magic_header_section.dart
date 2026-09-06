@@ -68,6 +68,7 @@ class _MagicHeaderSection extends StatelessWidget {
     }
     final stufe = merkmalsklassifikation(merkmal);
     final erwerb = await showErwerbDialog(
+      manualCorrection: true,
       context: context,
       bezeichnung: 'Merkmalskenntnis $merkmal',
       kostenHinweis:
@@ -133,6 +134,7 @@ class _MagicHeaderSection extends StatelessWidget {
       istHalbzauberer: true,
     );
     final erwerb = await showErwerbDialog(
+      manualCorrection: true,
       context: context,
       bezeichnung: 'Repräsentation ${_anzeigeName(representation)}',
       kostenHinweis: _representationKostenHinweis(
