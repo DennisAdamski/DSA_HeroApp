@@ -18,11 +18,9 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     required this.onTextOverridesChanged,
     required this.onRemoveSpell,
     required this.controllerFor,
-    required this.canRaiseValues,
     required this.protectedContentCache,
     this.contentUnlocked = true,
     this.contentPassword,
-    this.onRaiseSpell,
     this.onAddSpell,
     this.onRollSpell,
     this.onSpecializationsChanged,
@@ -49,11 +47,9 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final void Function(String spellId) onRemoveSpell;
   final TextEditingController Function(String id, String field, String initial)
   controllerFor;
-  final bool canRaiseValues;
   final ProtectedContentCache protectedContentCache;
   final bool contentUnlocked;
   final String? contentPassword;
-  final Future<void> Function(String spellId, SpellDef spell)? onRaiseSpell;
   final VoidCallback? onAddSpell;
   final void Function(String spellId, SpellDef spell, HeroSpellEntry entry)?
   onRollSpell;
@@ -113,6 +109,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     }
 
     final erwerb = await showErwerbDialog(
+      manualCorrection: true,
       context: context,
       bezeichnung: 'Spezialisierung: ${name.trim()}',
       kostenHinweis:
@@ -593,22 +590,6 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                               ),
                                             ),
                                           ),
-                                          if (canRaiseValues &&
-                                              onRaiseSpell != null)
-                                            IconButton(
-                                              key: ValueKey<String>(
-                                                'magic-spells-raise-$spellId',
-                                              ),
-                                              visualDensity:
-                                                  VisualDensity.compact,
-                                              iconSize: 18,
-                                              tooltip: 'Zauber steigern',
-                                              onPressed: () =>
-                                                  onRaiseSpell!(spellId, def),
-                                              icon: const Icon(
-                                                Icons.trending_up,
-                                              ),
-                                            ),
                                         ],
                                       ),
                                     )

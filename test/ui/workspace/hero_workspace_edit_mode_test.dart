@@ -103,9 +103,15 @@ void main() {
     );
     await tester.pumpAndSettle();
     final heroTile = find.widgetWithText(ListTile, 'Rondra');
+    final alreadyOpen = find
+        .byKey(const ValueKey<String>('workspace-back-button'))
+        .evaluate()
+        .isNotEmpty;
     if (heroTile.evaluate().isNotEmpty) {
       await tester.tap(heroTile.first);
-    } else {
+    } else if (!alreadyOpen) {
+      // Nur tippen, wenn der Workspace nicht ohnehin offen ist: sonst trifft
+      // der Tap den AppBar-Titel und je nach Aktionsleiste eine Schaltflaeche.
       await tester.tap(find.text('Rondra').first);
     }
     await tester.pumpAndSettle();
@@ -1615,40 +1621,31 @@ void main() {
       await selectWorkspaceTab(tester, 'Übersicht');
       await tapWorkspaceEditAction(tester);
 
-      final verticalScrollable = activeTabVerticalScrollable();
-      final muRaiseButton = find.byKey(
-        const ValueKey<String>('overview-raise-mu'),
+      expect(
+        find.byKey(const ValueKey<String>('overview-raise-mu')),
+        findsNothing,
       );
-      final lepRaiseButton = find.byKey(
-        const ValueKey<String>('overview-derived-raise-b_lep'),
+      expect(
+        find.byKey(const ValueKey<String>('overview-derived-raise-b_lep')),
+        findsNothing,
       );
+      final muField = find.byKey(const ValueKey<String>('overview-field-mu'));
       await tester.scrollUntilVisible(
-        muRaiseButton,
+        muField,
         240,
-        scrollable: verticalScrollable,
+        scrollable: activeTabVerticalScrollable(),
       );
-      await revealAndTap(tester, muRaiseButton);
-      await tester.pumpAndSettle();
-      expect(find.textContaining('Mit 1 SE: 1 Schritt als G'), findsOneWidget);
-      await tester.tap(find.text('Steigern'));
-      await tester.pumpAndSettle();
-
-      await tester.scrollUntilVisible(
-        lepRaiseButton,
-        240,
-        scrollable: verticalScrollable,
-      );
-      await revealAndTap(tester, lepRaiseButton);
-      await tester.pumpAndSettle();
-      expect(find.textContaining('Mit 1 SE: 1 Schritt als G'), findsOneWidget);
-      await tester.tap(find.text('Steigern'));
+      await tester.enterText(muField, '15');
+      await tapWorkspaceSaveAction(tester);
       await tester.pumpAndSettle();
 
       heroes = await repo.listHeroes();
       hero = findHeroById(heroes, 'demo');
       expect(hero, isNotNull);
-      expect(hero!.attributeSePool.mu, 0);
-      expect(hero.statSePool.lep, 0);
+      expect(hero!.attributeSePool.mu, 1);
+      expect(hero.statSePool.lep, 1);
+      expect(hero.attributes.mu, 15);
+      expect(hero.apSpent, 500);
     },
   );
 

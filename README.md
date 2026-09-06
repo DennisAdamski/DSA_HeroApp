@@ -90,6 +90,30 @@ Technischer Stack:
 
 ### Uebersicht und Stammdaten
 
+- **Bearbeiten** korrigiert Werte manuell ohne automatische AP-Buchung.
+- **Steigern** öffnet eine eigene, heldenweite Steigerungsrunde. Geplante
+  Änderungen werden erst mit **Änderungen übernehmen** gemeinsam wirksam.
+  Der Inspektor zeigt AP-Reservierungen und die Historie. Einträge der laufenden
+  Runde sind einzeln entfernbar, übernommene Einträge bleiben fest. Werden durch
+  Entfernen Folgeeinträge ungültig, müssen diese vor der Übernahme korrigiert
+  werden. Auf kleinen Bildschirmen ist die Historie im **Detailpanel** erreichbar.
+- Der Steigerungskatalog zeigt nur Einträge, die der Held bereits auf dem Bogen
+  führt — auch solche, die eingeblendet, aber noch nicht aktiviert sind. Alles
+  Weitere kommt je Kategorie über **Talent, Sprache oder Schrift erlernen**,
+  **Zauber erlernen** bzw. **Sonderfertigkeit erwerben** aus einem
+  durchsuchbaren Erwerbsblatt. Die Auswahl führt direkt in den
+  Steigerungsdialog: Aktivieren und Steigern sind ein Schritt, der Zielwert ist
+  frei wählbar und die Aktivierungskosten sind enthalten. Sucht man in der
+  Hauptliste ins Leere, führt ein Hinweis mit demselben Suchtext ins Erwerbsblatt.
+- Bei **Sonderfertigkeiten** zeigt die Liste die erworbenen als Bestand, die
+  nächste Stufe bereits begonnener Stufenketten und weitere Auswahlmöglichkeiten
+  mehrfach wählbarer Sonderfertigkeiten.
+- Unter **Eigenschaften** zeigt die Basiswerte-Karte die Summen vor der Runde
+  und nach den vorgemerkten Änderungen. Der Eigenschaftsdialog zeigt live die
+  zusätzliche Wirkung des Zielwerts sowie bisher begrenzte Talente, Kampftalente
+  und Zauber, die dadurch weiter steigerbar werden. Diese Auskunft beschreibt
+  den regeltechnischen Spielraum unabhängig von den noch verfügbaren AP.
+
 - Pflege von Name, Rasse, Kultur, Profession und Biografiedaten
 - Verwaltung von AP, Stufe, Ressourcen und textbasierten Modifikatoren
 - Katalogbasierte Auswahl von Vorteilen und Nachteilen in der Übersicht;
@@ -106,7 +130,7 @@ Technischer Stack:
 - Validierung von AT/PA-Aufteilungen bei Kampftalenten
 - Unterstuetzung fuer Talentspezialisierungen, Sondererfahrungen, Begabungen und strukturierte Talent-Sonderfertigkeiten
 - Steigerungsdialog fuer Talente mit Live-AP-Kosten, SE-Verbrauch, manueller Komplexitaetskorrektur und Lehrmeister-Rabatt
-- AP-Steigerung fuer Kampftalente auch direkt im Kampftechniken-Tab
+- AP-Steigerung für Kampftalente im eigenen Steigerungsmodus
 - Eigener Bereich fuer Sprachen und Schriften auf Basis von Katalogdaten
 
 ### Kampf

@@ -47,8 +47,6 @@ class _SprachenSchriftenTab extends StatelessWidget {
     required this.onRemoveSprache,
     required this.onAddSchrift,
     required this.onRemoveSchrift,
-    this.onRaiseSprache,
-    this.onRaiseSchrift,
   });
 
   final String heroId;
@@ -69,8 +67,6 @@ class _SprachenSchriftenTab extends StatelessWidget {
 
   /// Oeffnet den AP-Steigerungsdialog fuer eine Sprache/Schrift (optional —
   /// nur im Talente-Tab verfuegbar, wo Hero-Kontext fuer AP-Kosten besteht).
-  final void Function(String id)? onRaiseSprache;
-  final void Function(String id)? onRaiseSchrift;
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +85,6 @@ class _SprachenSchriftenTab extends StatelessWidget {
             onMuttersprachChanged: onMuttersprachChanged,
             onAddSprache: onAddSprache,
             onRemoveSprache: onRemoveSprache,
-            onRaise: onRaiseSprache,
           ),
           const SizedBox(height: 8),
           _SchriftenSection(
@@ -100,7 +95,6 @@ class _SprachenSchriftenTab extends StatelessWidget {
             onWertChanged: onSchriftWertChanged,
             onAddSchrift: onAddSchrift,
             onRemoveSchrift: onRemoveSchrift,
-            onRaise: onRaiseSchrift,
           ),
         ],
       ),
@@ -123,7 +117,6 @@ class _SprachenSection extends StatelessWidget {
     required this.onMuttersprachChanged,
     required this.onAddSprache,
     required this.onRemoveSprache,
-    this.onRaise,
   });
 
   final Map<String, HeroLanguageEntry> draftSprachen;
@@ -135,7 +128,6 @@ class _SprachenSection extends StatelessWidget {
   final void Function(String id) onMuttersprachChanged;
   final void Function(String id) onAddSprache;
   final void Function(String id) onRemoveSprache;
-  final void Function(String id)? onRaise;
 
   @override
   Widget build(BuildContext context) {
@@ -235,7 +227,6 @@ class _SprachenSection extends StatelessWidget {
             onWertChanged: (v) => onWertChanged(def.id, v),
             onMuttersprachChanged: () => onMuttersprachChanged(def.id),
             onRemove: () => onRemoveSprache(def.id),
-            onRaise: onRaise == null ? null : () => onRaise!(def.id),
           ),
         );
       }
@@ -329,7 +320,6 @@ class _SprachRow extends StatefulWidget {
     required this.onWertChanged,
     required this.onMuttersprachChanged,
     required this.onRemove,
-    this.onRaise,
   });
 
   final SpracheDef def;
@@ -340,7 +330,6 @@ class _SprachRow extends StatefulWidget {
   final void Function(int wert) onWertChanged;
   final VoidCallback onMuttersprachChanged;
   final VoidCallback onRemove;
-  final VoidCallback? onRaise;
 
   @override
   State<_SprachRow> createState() => _SprachRowState();
@@ -465,24 +454,7 @@ class _SprachRowState extends State<_SprachRow> {
               ),
             ),
           ),
-          // Steigern-Button
-          if (widget.isEditing && widget.onRaise != null)
-            IconButton(
-              icon: const Icon(Icons.trending_up, size: 18),
-              tooltip: 'Steigern',
-              onPressed: widget.onRaise,
-              visualDensity: VisualDensity.compact,
-            ),
-          // Entfernen-Button
-          if (widget.isEditing)
-            IconButton(
-              icon: const Icon(Icons.remove_circle_outline, size: 18),
-              tooltip: 'Entfernen',
-              onPressed: widget.onRemove,
-              visualDensity: VisualDensity.compact,
-            )
-          else
-            const SizedBox(width: 40),
+          const SizedBox(width: 40),
         ],
       ),
     );
@@ -502,7 +474,6 @@ class _SchriftenSection extends StatelessWidget {
     required this.onWertChanged,
     required this.onAddSchrift,
     required this.onRemoveSchrift,
-    this.onRaise,
   });
 
   final Map<String, HeroScriptEntry> draftSchriften;
@@ -512,7 +483,6 @@ class _SchriftenSection extends StatelessWidget {
   final void Function(String id, int wert) onWertChanged;
   final void Function(String id) onAddSchrift;
   final void Function(String id) onRemoveSchrift;
-  final void Function(String id)? onRaise;
 
   @override
   Widget build(BuildContext context) {
@@ -569,7 +539,6 @@ class _SchriftenSection extends StatelessWidget {
                 isEditing: isEditing,
                 onWertChanged: (v) => onWertChanged(def.id, v),
                 onRemove: () => onRemoveSchrift(def.id),
-                onRaise: onRaise == null ? null : () => onRaise!(def.id),
               );
             }),
         ],
@@ -664,7 +633,6 @@ class _SchriftRow extends StatefulWidget {
     required this.isEditing,
     required this.onWertChanged,
     required this.onRemove,
-    this.onRaise,
   });
 
   final SchriftDef def;
@@ -672,7 +640,6 @@ class _SchriftRow extends StatefulWidget {
   final bool isEditing;
   final void Function(int wert) onWertChanged;
   final VoidCallback onRemove;
-  final VoidCallback? onRaise;
 
   @override
   State<_SchriftRow> createState() => _SchriftRowState();
@@ -778,24 +745,7 @@ class _SchriftRowState extends State<_SchriftRow> {
               ),
             ),
           ),
-          // Steigern-Button
-          if (widget.isEditing && widget.onRaise != null)
-            IconButton(
-              icon: const Icon(Icons.trending_up, size: 18),
-              tooltip: 'Steigern',
-              onPressed: widget.onRaise,
-              visualDensity: VisualDensity.compact,
-            ),
-          // Entfernen-Button
-          if (widget.isEditing)
-            IconButton(
-              icon: const Icon(Icons.remove_circle_outline, size: 18),
-              tooltip: 'Entfernen',
-              onPressed: widget.onRemove,
-              visualDensity: VisualDensity.compact,
-            )
-          else
-            const SizedBox(width: 40),
+          const SizedBox(width: 40),
         ],
       ),
     );
