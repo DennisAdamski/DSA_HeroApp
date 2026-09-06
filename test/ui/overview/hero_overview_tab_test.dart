@@ -91,9 +91,7 @@ void main() {
     expect(find.text('Eigenschaftsprobe: Mut'), findsOneWidget);
   });
 
-  testWidgets('bought stat dialog respects rule maximum for LeP', (
-    tester,
-  ) async {
+  testWidgets('manual bought stats have no AP raising action', (tester) async {
     WorkspaceTabEditActions? editActions;
     final repo = FakeRepository(
       heroes: <HeroSheet>[
@@ -143,97 +141,75 @@ void main() {
     final raiseButton = find.byKey(
       const ValueKey<String>('overview-derived-raise-b_lep'),
     );
-    await tester.scrollUntilVisible(
-      raiseButton,
-      240,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(raiseButton);
-    await tester.pumpAndSettle();
-
-    expect(find.text('LeP steigern'), findsOneWidget);
-    expect(find.textContaining('Aktueller Wert: 7'), findsOneWidget);
-    expect(find.textContaining('Maximaler Wert: 7'), findsOneWidget);
-    expect(find.text('Der Maximalwert ist bereits erreicht.'), findsOneWidget);
+    expect(raiseButton, findsNothing);
   });
 
-  testWidgets(
-    'raising a bought stat via dialog survives a subsequent Speichern without touching ap_spent',
-    (tester) async {
-      WorkspaceTabEditActions? editActions;
-      final repo = FakeRepository(
-        heroes: <HeroSheet>[
-          buildHero().copyWith(
-            apTotal: 9999,
-            apAvailable: 9999,
-            apSpent: 0,
-            bought: const BoughtStats(lep: 0),
+  testWidgets('manual bought stat correction saves without touching AP', (
+    tester,
+  ) async {
+    WorkspaceTabEditActions? editActions;
+    final repo = FakeRepository(
+      heroes: <HeroSheet>[
+        buildHero().copyWith(
+          apTotal: 9999,
+          apAvailable: 9999,
+          apSpent: 0,
+          bought: const BoughtStats(lep: 0),
+        ),
+      ],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith(
+            (ref) async => _buildRulesCatalog(),
           ),
         ],
-        states: <String, HeroState>{
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 0,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            heroRepositoryProvider.overrideWithValue(repo),
-            rulesCatalogProvider.overrideWith(
-              (ref) async => _buildRulesCatalog(),
-            ),
-          ],
-          child: MaterialApp(
-            home: Scaffold(
-              body: HeroOverviewTab(
-                heroId: 'demo',
-                onDirtyChanged: (_) {},
-                onEditingChanged: (_) {},
-                onRegisterDiscard: (_) {},
-                onRegisterEditActions: (actions) {
-                  editActions = actions;
-                },
-              ),
+        child: MaterialApp(
+          home: Scaffold(
+            body: HeroOverviewTab(
+              heroId: 'demo',
+              onDirtyChanged: (_) {},
+              onEditingChanged: (_) {},
+              onRegisterDiscard: (_) {},
+              onRegisterEditActions: (actions) {
+                editActions = actions;
+              },
             ),
           ),
         ),
-      );
-      await tester.pumpAndSettle();
-      await editActions!.startEdit();
-      await tester.pumpAndSettle();
+      ),
+    );
+    await tester.pumpAndSettle();
+    await editActions!.startEdit();
+    await tester.pumpAndSettle();
 
-      final raiseButton = find.byKey(
-        const ValueKey<String>('overview-derived-raise-b_lep'),
-      );
-      await tester.scrollUntilVisible(
-        raiseButton,
-        240,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(raiseButton);
-      await tester.pumpAndSettle();
+    final field = find.byKey(
+      const ValueKey<String>('overview-derived-bought-b_lep'),
+    );
+    await tester.scrollUntilVisible(
+      field,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.enterText(field, '1');
+    await editActions!.save();
+    await tester.pumpAndSettle();
 
-      expect(find.text('LeP steigern'), findsOneWidget);
-      await tester.tap(find.widgetWithText(FilledButton, 'Steigern'));
-      await tester.pumpAndSettle();
-
-      // Speichern beruehrt das ap_spent-Feld nicht manuell - es darf den
-      // durch die Steigerung bereits persistierten Wert nicht ueberschreiben.
-      await editActions!.save();
-      await tester.pumpAndSettle();
-
-      final saved = await repo.loadHeroById('demo');
-      expect(saved!.bought.lep, 1);
-      expect(saved.apSpent, greaterThan(0));
-    },
-  );
+    final saved = await repo.loadHeroById('demo');
+    expect(saved!.bought.lep, 1);
+    expect(saved.apSpent, 0);
+  });
 
   testWidgets('advantage chips can be selected from catalog and saved', (
     tester,
@@ -297,11 +273,6 @@ void main() {
     await tester.tap(find.text('Übernehmen'));
     await tester.pumpAndSettle();
 
-    // Opt-in-Abfrage fuer nachtraeglichen AP-Erwerb: Standardpfad ohne
-    // AP-Kosten waehlen (Verhalten wie vor der Steigerungskosten-Funktion).
-    await tester.tap(find.text('Ohne AP-Kosten'));
-    await tester.pumpAndSettle();
-
     await editActions!.save();
     await tester.pumpAndSettle();
 
@@ -310,180 +281,155 @@ void main() {
     expect(saved.unknownModifierFragments, isEmpty);
   });
 
-  testWidgets(
-    'Nachteil-Abbau (SE-Marker) summiert AP pro gesenktem Punkt und aktualisiert den Text',
-    (tester) async {
-      WorkspaceTabEditActions? editActions;
-      final repo = FakeRepository(
-        heroes: <HeroSheet>[
-          buildHero().copyWith(
-            apTotal: 9999,
-            apAvailable: 9999,
-            apSpent: 0,
-            nachteileText: 'Goldgier 8',
+  testWidgets('manuelle Nachteil-Korrektur aktualisiert den Text ohne AP', (
+    tester,
+  ) async {
+    WorkspaceTabEditActions? editActions;
+    final repo = FakeRepository(
+      heroes: <HeroSheet>[
+        buildHero().copyWith(
+          apTotal: 9999,
+          apAvailable: 9999,
+          apSpent: 0,
+          nachteileText: 'Goldgier 8',
+        ),
+      ],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith(
+            (ref) async => _buildRulesCatalog(),
           ),
         ],
-        states: <String, HeroState>{
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 0,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            heroRepositoryProvider.overrideWithValue(repo),
-            rulesCatalogProvider.overrideWith(
-              (ref) async => _buildRulesCatalog(),
-            ),
-          ],
-          child: MaterialApp(
-            home: Scaffold(
-              body: HeroOverviewTab(
-                heroId: 'demo',
-                onDirtyChanged: (_) {},
-                onEditingChanged: (_) {},
-                onRegisterDiscard: (_) {},
-                onRegisterEditActions: (actions) {
-                  editActions = actions;
-                },
-              ),
+        child: MaterialApp(
+          home: Scaffold(
+            body: HeroOverviewTab(
+              heroId: 'demo',
+              onDirtyChanged: (_) {},
+              onEditingChanged: (_) {},
+              onRegisterDiscard: (_) {},
+              onRegisterEditActions: (actions) {
+                editActions = actions;
+              },
             ),
           ),
         ),
-      );
-      await tester.pumpAndSettle();
-      await editActions!.startEdit();
-      await tester.pumpAndSettle();
+      ),
+    );
+    await tester.pumpAndSettle();
+    await editActions!.startEdit();
+    await tester.pumpAndSettle();
 
-      final chip = find.byKey(
-        const ValueKey<String>('overview-trait-chip-nachteile-0'),
-      );
-      await tester.scrollUntilVisible(
-        chip,
-        240,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.descendant(of: chip, matching: find.byTooltip('Delete')),
-      );
-      await tester.pumpAndSettle();
+    final chip = find.byKey(
+      const ValueKey<String>('overview-trait-chip-nachteile-0'),
+    );
+    await tester.scrollUntilVisible(
+      chip,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Eintrag'),
+      'Goldgier 3',
+    );
+    await tester.tap(find.text('Übernehmen'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Goldgier abbauen'), findsOneWidget);
-      // Standard-Ziel: 8 -> 7, also 1 gesenkter Punkt im Selbststudium (75x).
-      expect(find.text('AP-Kosten: 75'), findsOneWidget);
+    await editActions!.save();
+    await tester.pumpAndSettle();
 
-      final senkenButton = find.widgetWithIcon(IconButton, Icons.remove);
-      for (var i = 0; i < 4; i++) {
-        await tester.tap(senkenButton);
-        await tester.pumpAndSettle();
-      }
-      // Ziel jetzt 3, also 5 gesenkte Punkte: 5 * 75 = 375 AP.
-      expect(find.text('AP-Kosten: 375'), findsOneWidget);
+    final saved = await repo.loadHeroById('demo');
+    expect(saved!.nachteileText, 'Goldgier 3');
+    expect(saved.apSpent, 0);
+  });
 
-      await tester.tap(find.text('Abbauen'));
-      await tester.pumpAndSettle();
+  testWidgets('manuelles Entfernen eines Nachteils verbraucht keine AP', (
+    tester,
+  ) async {
+    WorkspaceTabEditActions? editActions;
+    final repo = FakeRepository(
+      heroes: <HeroSheet>[
+        buildHero().copyWith(
+          apTotal: 9999,
+          apAvailable: 9999,
+          apSpent: 0,
+          nachteileText: 'Kurzatmig 1',
+        ),
+      ],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
 
-      await editActions!.save();
-      await tester.pumpAndSettle();
-
-      final saved = await repo.loadHeroById('demo');
-      expect(saved!.nachteileText, 'Goldgier 3');
-      expect(saved.apSpent, 375);
-    },
-  );
-
-  testWidgets(
-    'Nachteil-Abbau ohne SE-Marker entfernt den Eintrag vollstaendig beim Unterschreiten des Minimums',
-    (tester) async {
-      WorkspaceTabEditActions? editActions;
-      final repo = FakeRepository(
-        heroes: <HeroSheet>[
-          buildHero().copyWith(
-            apTotal: 9999,
-            apAvailable: 9999,
-            apSpent: 0,
-            nachteileText: 'Kurzatmig 1',
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith(
+            (ref) async => _buildRulesCatalog(),
           ),
         ],
-        states: <String, HeroState>{
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 0,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            heroRepositoryProvider.overrideWithValue(repo),
-            rulesCatalogProvider.overrideWith(
-              (ref) async => _buildRulesCatalog(),
-            ),
-          ],
-          child: MaterialApp(
-            home: Scaffold(
-              body: HeroOverviewTab(
-                heroId: 'demo',
-                onDirtyChanged: (_) {},
-                onEditingChanged: (_) {},
-                onRegisterDiscard: (_) {},
-                onRegisterEditActions: (actions) {
-                  editActions = actions;
-                },
-              ),
+        child: MaterialApp(
+          home: Scaffold(
+            body: HeroOverviewTab(
+              heroId: 'demo',
+              onDirtyChanged: (_) {},
+              onEditingChanged: (_) {},
+              onRegisterDiscard: (_) {},
+              onRegisterEditActions: (actions) {
+                editActions = actions;
+              },
             ),
           ),
         ),
-      );
-      await tester.pumpAndSettle();
-      await editActions!.startEdit();
-      await tester.pumpAndSettle();
+      ),
+    );
+    await tester.pumpAndSettle();
+    await editActions!.startEdit();
+    await tester.pumpAndSettle();
 
-      final chip = find.byKey(
-        const ValueKey<String>('overview-trait-chip-nachteile-0'),
-      );
-      await tester.scrollUntilVisible(
-        chip,
-        240,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.descendant(of: chip, matching: find.byTooltip('Delete')),
-      );
-      await tester.pumpAndSettle();
+    final chip = find.byKey(
+      const ValueKey<String>('overview-trait-chip-nachteile-0'),
+    );
+    await tester.scrollUntilVisible(
+      chip,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(of: chip, matching: find.byTooltip('Delete')),
+    );
+    await tester.pumpAndSettle();
 
-      expect(find.text('Kurzatmig abbauen'), findsOneWidget);
-      expect(find.text('entfernt'), findsOneWidget);
-      expect(
-        find.byKey(
-          const ValueKey<String>('nachteil-abbau-dialog-spezielle-erfahrung'),
-        ),
-        findsNothing,
-      );
-      // Kein SE-Marker -> 100er Faktor, 1 gesenkter Punkt -> 100 AP.
-      expect(find.text('AP-Kosten: 100'), findsOneWidget);
+    expect(find.text('Kurzatmig abbauen'), findsNothing);
 
-      await tester.tap(find.text('Abbauen'));
-      await tester.pumpAndSettle();
+    await editActions!.save();
+    await tester.pumpAndSettle();
 
-      await editActions!.save();
-      await tester.pumpAndSettle();
-
-      final saved = await repo.loadHeroById('demo');
-      expect(saved!.nachteileText, '');
-      expect(saved.apSpent, 100);
-    },
-  );
+    final saved = await repo.loadHeroById('demo');
+    expect(saved!.nachteileText, '');
+    expect(saved.apSpent, 0);
+  });
 
   testWidgets('epischer Held ohne Haupteigenschaften kann sie nachtragen', (
     tester,
@@ -850,7 +796,6 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Übernehmen'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Ohne AP-Kosten'));
     await tester.pumpAndSettle();
 
     await editActions.save();
@@ -876,7 +821,6 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Übernehmen'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Ohne AP-Kosten'));
     await tester.pumpAndSettle();
 
     await editActions.save();
@@ -928,17 +872,19 @@ void main() {
     await tester.pumpAndSettle();
 
     final raiseButton = find.byKey(const ValueKey<String>('overview-raise-kk'));
+    expect(raiseButton, findsNothing);
+    final field = find.byKey(const ValueKey<String>('overview-field-kk'));
     await tester.scrollUntilVisible(
-      raiseButton,
+      field,
       240,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.enterText(field, '16');
+    await editActions.save();
     await tester.pumpAndSettle();
-    await tester.tap(raiseButton);
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining('Startwert: 15'), findsOneWidget);
-    expect(find.textContaining('Maximaler Wert: 23'), findsOneWidget);
+    final saved = await repo.loadHeroById('demo');
+    expect(saved?.attributes.kk, 16);
+    expect(saved?.apSpent, 0);
   });
 
   testWidgets('Bestandshelden-Hinweis erscheint und laesst sich quittieren', (

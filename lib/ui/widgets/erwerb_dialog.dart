@@ -16,6 +16,7 @@ class ErwerbErgebnis {
     required this.mitLehrmeister,
     required this.lehrmeisterTaW,
     required this.dukaten,
+    this.meisterentscheid = false,
   });
 
   /// Effektive AP-Kosten, inklusive Epos-Aufschlag und moeglichem
@@ -30,6 +31,9 @@ class ErwerbErgebnis {
 
   /// Errechnete Dukatenkosten fuer den Lehrmeister oder `null`.
   final double? dukaten;
+
+  /// Ob offene Voraussetzungen bewusst durch einen Meisterentscheid bestätigt wurden.
+  final bool meisterentscheid;
 }
 
 /// Oeffnet einen Dialog zur AP-basierten Bestaetigung eines Einmalkaufs
@@ -43,12 +47,16 @@ class ErwerbErgebnis {
 /// Punkte blockieren den Erwerb nicht, verlangen aber eine bewusste
 /// Bestaetigung — Hausregeln und Meisterentscheide sollen moeglich bleiben,
 /// ohne dass die App so tut, als waere alles in Ordnung.
+/// [manualCorrection] trägt eine manuelle Korrektur ohne AP-Dialog ein.
+/// [confirmLabel] benennt die Bestätigung für eine geplante Sitzung um.
 Future<ErwerbErgebnis?> showErwerbDialog({
   required BuildContext context,
   required String bezeichnung,
   String? kostenHinweis,
   int? vorgeschlageneApKosten,
   required int verfuegbareAp,
+  bool manualCorrection = false,
+  String? confirmLabel,
   bool lehrmeisterUeblich = false,
   bool episch = false,
   bool epischerInhalt = false,
@@ -56,11 +64,22 @@ Future<ErwerbErgebnis?> showErwerbDialog({
   List<RequirementCheckResult> voraussetzungen =
       const <RequirementCheckResult>[],
 }) {
+  if (manualCorrection) {
+    return Future<ErwerbErgebnis?>.value(
+      const ErwerbErgebnis(
+        apKosten: 0,
+        mitLehrmeister: false,
+        lehrmeisterTaW: null,
+        dukaten: null,
+      ),
+    );
+  }
   return showAdaptiveInputDialog<ErwerbErgebnis>(
     context: context,
     builder: (dialogContext) {
       return _ErwerbDialog(
         bezeichnung: bezeichnung,
+        confirmLabel: confirmLabel,
         kostenHinweis: kostenHinweis,
         vorgeschlageneApKosten: vorgeschlageneApKosten,
         verfuegbareAp: verfuegbareAp,
@@ -77,6 +96,7 @@ Future<ErwerbErgebnis?> showErwerbDialog({
 class _ErwerbDialog extends StatefulWidget {
   const _ErwerbDialog({
     required this.bezeichnung,
+    this.confirmLabel,
     this.kostenHinweis,
     this.vorgeschlageneApKosten,
     required this.verfuegbareAp,
@@ -88,6 +108,7 @@ class _ErwerbDialog extends StatefulWidget {
   });
 
   final String bezeichnung;
+  final String? confirmLabel;
   final String? kostenHinweis;
   final int? vorgeschlageneApKosten;
   final int verfuegbareAp;
@@ -380,6 +401,7 @@ class _ErwerbDialogState extends State<_ErwerbDialog> {
                   Navigator.of(context).pop(
                     ErwerbErgebnis(
                       apKosten: _effektiveApKosten,
+                      meisterentscheid: _meisterentscheid,
                       mitLehrmeister: _mitLehrmeister,
                       lehrmeisterTaW: _mitLehrmeister ? _lehrmeisterTaW : null,
                       dukaten: _mitLehrmeister ? _dukaten : null,
@@ -387,7 +409,7 @@ class _ErwerbDialogState extends State<_ErwerbDialog> {
                   );
                 },
           icon: const Icon(Icons.shopping_cart_checkout),
-          label: const Text('Erwerben'),
+          label: Text(widget.confirmLabel ?? 'Erwerben'),
         ),
       ],
     );

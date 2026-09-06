@@ -40,6 +40,7 @@ class _MagicRitualsSection extends StatelessWidget {
     }
     if (created.fremdeTradition && context.mounted) {
       final erwerb = await showErwerbDialog(
+        manualCorrection: true,
         context: context,
         bezeichnung: 'Ritualkenntnis ${created.category.name}',
         kostenHinweis:

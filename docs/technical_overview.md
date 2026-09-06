@@ -1391,7 +1391,124 @@ level         = floor(sqrt(apSpent / 50 + 0.25) + 0.5)
 apAvailable   = max(0, apTotal − apSpent)
 ```
 
-**AP-Abzug beim Erwerb (`_draftApSpentDelta`)**
+**Steigerungsrunden und manuelle Korrekturen (September 2026)**
+
+Die Kategorie **Eigenschaften** ergänzt einen Basiswertvergleich vom Beginn
+der Runde zur gültigen Vorschau. Der optionale `previewBuilder` des
+`showSteigerungsDialog` erhält den normalisierten Zielwert und zeigt dort
+zusätzlich die Wirkung der gerade gewählten Eigenschaftserhöhung.
+`advancement_impact_rules.dart` berechnet die Vergleiche, während
+`advancement_attribute_rules.dart` die effektive Zielwertübertragung mit dem
+Replay teilt. `hero_stat_inputs.dart` wird auch vom `heroComputedProvider`
+verwendet: Inventar, permanente und temporäre Modifikatoren sowie Wunden
+fließen dadurch identisch in die Basiswertsummen ein. Beide Vergleichsseiten
+verwenden denselben Laufzeitzustand. AsP/KaP folgen der Ressourcenfreischaltung.
+
+Die Dialogliste enthält bereits aktivierte Talente, Kampftalente und Zauber
+am bisherigen Limit nur dann, wenn ihr neues Maximum über dem aktuellen Wert
+liegt und keine andere regeltechnische Sperre verbleibt. Die bestehenden
+Optionsregeln bestimmen die Grenzen einschließlich Begabung und epischer
+Sonderfälle. Feste Sprach-/Schriftgrenzen ändern sich nicht. Die Auskunft prüft
+keine AP-Verfügbarkeit und erzeugt keine Folgeeinträge oder Persistenzänderungen.
+
+Der Workspace bietet **Steigern** unabhängig von **Bearbeiten** an. Die normalen
+Bearbeitungsansichten ändern Werte und Einträge manuell ohne automatische
+AP-Buchung. Die eigene Steigerungsoberfläche unter `ui/screens/advancement/`
+verwendet die bestehenden Kosten- und Erwerbsdialoge für geplante Änderungen.
+
+`AdvancementSessionController` hält je Held eine feste Basis, den Katalog dieser
+Runde und eine Liste von `HeroAdvancementEntry`. Das Regel-Replay unter
+`rules/derived/advancement*.dart` baut daraus eine Vorschau einschließlich AP/SE
+auf. Der normale Heldenprovider bleibt bis zur Übernahme unverändert.
+Entfernen ist nur für Einträge der laufenden Runde erlaubt. Nach jedem Entfernen
+wird die Liste erneut geprüft: ungültige Folgeeinträge bleiben mit Begründung
+sichtbar und sperren die Übernahme, statt unbemerkt falsch gebucht zu werden.
+
+**Änderungen übernehmen** schreibt den resultierenden Helden mit AP, SE und
+`advancementHistory` gemeinsam. Historieneinträge tragen Sitzungs-ID, Zeitpunkt,
+Ziel, vorherigen/neuen Wert und Kosten. Frühere Runden sind fest; Bestandshelden
+erhalten keine rückwirkend erfundene Historie. Ein leeres Historienfeld wird bei
+der JSON-Ausgabe ausgelassen, damit bestehende Sync-Hashes gleich bleiben. Die
+Helden-Serialisierung übernimmt Import/Export und Sync.
+
+Vor dem Schreiben wird die Sitzungsbasis mit dem aktuellen Repository verglichen.
+`HeroActions.saveHero(expectedContentHash: ...)` prüft nochmals nach der
+asynchronen Normalisierung. Bei Konflikten oder Speicherfehlern bleibt die Runde
+erhalten. Die AP- und History-Ansicht erscheint auf breiten Geräten im Inspektor
+und mobil im **Detailpanel**. Das Verlassen einer geänderten Runde bietet
+Weiterplanen, Verwerfen und bei gültigen Einträgen Übernehmen an.
+
+**Aktive Einträge und Erwerbsblatt (September 2026)**
+
+Der Katalog einer Runde zeigt nur, was der Held **auf dem Bogen führt**.
+Maßgeblich ist der Schlüssel in `talents`, `spells`, `sprachen` bzw. `schriften`
+— nicht der Wert. Ein eingeblendeter Eintrag mit Wert `null` ist damit
+vorhanden; offen sind nur noch seine Aktivierungskosten. `AdvancementOption`
+trägt das als `isOwned` für **alle** Arten, nicht mehr nur für
+Sonderfertigkeiten:
+
+| `isOwned` | `currentValue` | Bedeutung | Ort | Aktion |
+|---|---|---|---|---|
+| `false` | `-1` | nicht auf dem Bogen | Erwerbsblatt | Aktivieren |
+| `true` | `-1` | eingeblendet, noch nicht aktiviert | Hauptliste | Aktivieren |
+| `true` | `>= 0` | aktiviert | Hauptliste | Steigern |
+
+Eigenschaften und Grundwerte besitzt jeder Held; sie sind immer `isOwned` und
+erscheinen nie im Erwerbsblatt.
+
+`AdvancementScope` (`rules/derived/advancement_scope_rules.dart`) steuert den
+Umfang: `active`, `inactive` oder `all` (Vorgabe). `buildAdvancementOptions`
+prüft den Umfang **vor** dem Auflösen, damit ein eingeschränkter Aufruf die
+teure Regelauswertung gar nicht erst anstößt; die UI filtert nie selbst über
+rund 800 Einträge. `resolveAdvancementOption` behält dagegen seine
+uneingeschränkte Semantik — Replay und Auswirkungsvorschau müssen jedes Ziel
+auflösen können, ob aktiv oder nicht.
+
+Bei Sonderfertigkeiten zählt zum aktiven Umfang außerdem, was daraus unmittelbar
+folgt: die nächste Stufe jeder Kette, von der mindestens eine Stufe erworben ist
+(`naechsteKettenstufe`), sowie weitere Varianten mehrfach wählbarer Einträge.
+Eine unangetastete Kette bleibt vollständig im Erwerbsblatt — sie ist kein
+Folgeschritt, sondern ein Neuerwerb. Der Bestand wird alias-fähig über
+`istEintragErworben` und für Kampf-SF über `isCombatSpecialAbilityActive`
+ermittelt; mehrfach wählbare Einträge zählen über ihre Varianten, weil ein Held
+nur `Geländekunde (Wüste)` führt und nie den Basisnamen.
+`unavailableReason == 'Bereits erworben'` bleibt die Sperre, auf die sich
+`_validateEntry` verlässt; nur die Karte stellt sie für erworbene Einträge als
+Bestandsnachweis („Erworben“, ohne Knopf) statt als Warnung dar. Wer den
+Sperrgrund umbaut, muss beide Seiten anfassen.
+
+Das Erwerbsblatt (`ui/screens/advancement/advancement_activation_sheet.dart`)
+listet den `inactive`-Umfang einer Kategorie mit Suche, Artfiltern und dem
+standardmäßig aktiven Schalter „Nur erwerbbare“. Es **schließt sich selbst** und
+gibt das gewählte Ziel zurück; geplant wird erst danach beim Aufrufer über
+denselben `_plan`-Pfad wie die Hauptliste. Damit liegt der Planungsdialog nie
+über einem Blatt derselben Root-Navigator-Ebene, und die Sitzung wird weiterhin
+nur an einer Stelle verändert. Aktivieren und Steigern sind ein Schritt: Der
+Steigerungsdialog öffnet mit `aktuellerWert = -1` und freiem Zielwert, die
+Kosten des Schritts `-1 → 0` sind die Aktivierungskosten
+(`LearnCost.initialStepCost`). Weil eine aktiv-gefilterte Liste sonst lernbare
+Ziele verstecken würde, blendet die Hauptliste bei nicht leerem Suchtext eine
+Brücke ins Erwerbsblatt ein.
+
+Rituale und Liturgien haben kein `AdvancementKind` und keine Katalogunterstützung;
+sie liegen außerhalb des Steigerungsmodus und fehlen in beiden Umfängen. Das ist
+keine Lücke der Aktivfilterung.
+
+`AdvancementContext` bündelt Held und Katalog für einen Optionsaufbau und hält
+`permanentAttributes`, `ownedAbilityNames` und `requirementContext` als
+`late final`. Ohne diese Bündelung baute jede der rund 280 SF-Optionen den
+vollständigen Voraussetzungskontext neu auf (ID→Name-Karten über alle Talente
+und Zauber plus AT/PA/FK/INI), und jede der rund 800 Optionen liefe erneut durch
+`parseModifierTextsForHero`. `resolveAdvancementOptionIn` nimmt den Kontext
+entgegen; die Auswirkungsvorschau legt je einen Kontext für beide
+Vergleichsstände außerhalb ihrer Schleife an. `advancementOptionsProvider`
+(`state/advancement_providers.dart`) memoisiert die Liste je Umfang an der
+Sitzung, damit ein Tastenanschlag in der Suche keinen Katalogaufbau auslöst.
+
+**Historischer Hintergrund: AP-Abzug im Bearbeitungsmodus vor der Trennung**
+
+Die folgende Beschreibung dokumentiert die frühere Draft-Delta-Lösung und deren
+Fehlerursache; neue Steigerungsaktionen verwenden ausschließlich Sitzungen:
 
 Bestätigte Erwerbs-Dialoge (Sonderfertigkeiten, Manöver, Spezialisierungen)
 dürfen ihre AP-Kosten **nicht** direkt in das Feld `_latestHero` eines Tabs
