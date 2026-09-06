@@ -1,168 +1,6 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 
 extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
-  bool get _canUseSteigerungsDialog {
-    return _editController.isEditing && !_editController.isDirty;
-  }
-
-  HeroTalentEntry _entryWithRaisedCombatTalentValue({
-    required TalentDef talent,
-    required HeroTalentEntry entry,
-    required int neuerWert,
-    int? explicitAtDelta,
-  }) {
-    final aktuellerWert = entry.talentValue ?? 0;
-    final delta = neuerWert - aktuellerWert;
-    final normalizedType = talent.type.trim().toLowerCase();
-    if (normalizedType == 'fernkampf') {
-      return entry.copyWith(
-        talentValue: neuerWert,
-        atValue: neuerWert,
-        paValue: 0,
-      );
-    }
-    if (normalizedType == 'nahkampf') {
-      if (explicitAtDelta != null) {
-        return entry.copyWith(
-          talentValue: neuerWert,
-          atValue: entry.atValue + explicitAtDelta,
-          paValue: entry.paValue + (delta - explicitAtDelta),
-        );
-      }
-      final hasValidDistribution =
-          entry.atValue >= 0 &&
-          entry.paValue >= 0 &&
-          entry.atValue + entry.paValue == aktuellerWert;
-      if (hasValidDistribution) {
-        return entry.copyWith(
-          talentValue: neuerWert,
-          atValue: entry.atValue + delta,
-        );
-      }
-      final nextPaValue = entry.paValue.clamp(0, neuerWert);
-      return entry.copyWith(
-        talentValue: neuerWert,
-        atValue: neuerWert - nextPaValue,
-        paValue: nextPaValue,
-      );
-    }
-    return entry.copyWith(talentValue: neuerWert);
-  }
-
-  Future<void> _steigereKampftalent(
-    TalentDef talent, {
-    required Attributes effectiveAttributes,
-  }) async {
-    final hero = _latestHero;
-    if (hero == null || !_canUseSteigerungsDialog) {
-      return;
-    }
-
-    final entry = _entryForTalent(talent.id);
-    final complexityResolution = _resolveTalentComplexity(talent, entry);
-    final learnCost = learnCostFromKomplexitaet(
-      complexityResolution.effectiveKomplexitaet,
-    );
-    if (learnCost == null) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unbekannte Lernkomplexität für ${talent.name}: '
-            '${complexityResolution.effectiveKomplexitaet}',
-          ),
-        ),
-      );
-      return;
-    }
-
-    final maxWert = computeCombatTalentMaxValue(
-      effectiveAttributes: effectiveAttributes,
-      talentType: talent.type,
-      gifted: entry.gifted,
-    );
-    final result = await showSteigerungsDialog(
-      context: context,
-      bezeichnung: talent.name,
-      aktuellerWert: entry.talentValue ?? -1,
-      maxWert: maxWert,
-      effektiveKomplexitaet: learnCost,
-      komplexitaetsHinweis: complexityResolution.houseRuleHint,
-      verfuegbareAp: hero.apAvailable,
-      seAnzahl: entry.specialExperiences,
-      lehrmeisterVerfuegbar: true,
-      episch: hero.isEpisch,
-    );
-    if (result == null) {
-      return;
-    }
-
-    final aktuellerWert = entry.talentValue ?? 0;
-    final delta = result.neuerWert - aktuellerWert;
-    final normalizedType = talent.type.trim().toLowerCase();
-    int? explicitAtDelta;
-    if (normalizedType == 'nahkampf' && delta > 0) {
-      if (!mounted) {
-        return;
-      }
-      explicitAtDelta = await _showAtPaVerteilungDialog(
-        talentName: talent.name,
-        delta: delta,
-        currentAt: entry.atValue,
-        currentPa: entry.paValue,
-        neuerWert: result.neuerWert,
-      );
-      if (explicitAtDelta == null) {
-        return;
-      }
-    }
-
-    final normalizedSe = (entry.specialExperiences - result.seVerbraucht).clamp(
-      0,
-      entry.specialExperiences,
-    );
-    final raisedEntry = _entryWithRaisedCombatTalentValue(
-      talent: talent,
-      entry: entry.copyWith(specialExperiences: normalizedSe),
-      neuerWert: result.neuerWert,
-      explicitAtDelta: explicitAtDelta,
-    );
-    final updatedTalents = <String, HeroTalentEntry>{
-      ..._draftTalents,
-      talent.id: raisedEntry,
-    };
-    final updatedHero = hero.copyWith(
-      talents: updatedTalents,
-      combatConfig: _draftCombatConfig,
-      apSpent: hero.apSpent + result.apKosten,
-    );
-
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
-    _latestHero = updatedHero;
-    _draftTalents = updatedTalents;
-    _invalidCombatTalentIds.remove(talent.id);
-    _setControllerText(
-      'talent::${talent.id}::talentValue',
-      result.neuerWert.toString(),
-    );
-    _setControllerText(
-      'talent::${talent.id}::atValue',
-      raisedEntry.atValue.toString(),
-    );
-    _setControllerText(
-      'talent::${talent.id}::paValue',
-      raisedEntry.paValue.toString(),
-    );
-    if (!mounted) {
-      return;
-    }
-    _viewRevision.value++;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('${talent.name} gesteigert')));
-  }
-
   List<AdaptiveTableColumnSpec> _combatSubtabColumnSpecs({
     required bool isEditing,
   }) {
@@ -488,13 +326,6 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
         value: entry.talentValue ?? 0,
         isEditing: isEditing,
         isError: isInvalid,
-        onRaise: isEditing && _canUseSteigerungsDialog
-            ? () => _steigereKampftalent(
-                talent,
-                effectiveAttributes: effectiveAttributes,
-              )
-            : null,
-        raiseTooltip: 'Kampftalent steigern',
       ),
       _intInputCell(
         talentId: talent.id,
@@ -603,8 +434,6 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     required int value,
     required bool isEditing,
     bool isError = false,
-    VoidCallback? onRaise,
-    String? raiseTooltip,
   }) {
     final controller = _controllerFor(
       'talent::$talentId::$field',
@@ -617,23 +446,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
         controller: controller,
         readOnly: !isEditing,
         keyboardType: TextInputType.number,
-        decoration: _cellInputDecoration(isError: isError).copyWith(
-          suffixIcon: onRaise == null
-              ? null
-              : IconButton(
-                  key: ValueKey<String>(
-                    'combat-talents-raise-$talentId-$field',
-                  ),
-                  visualDensity: VisualDensity.compact,
-                  iconSize: 18,
-                  tooltip: raiseTooltip ?? 'Steigern',
-                  onPressed: onRaise,
-                  icon: const Icon(Icons.trending_up),
-                ),
-          suffixIconConstraints: onRaise == null
-              ? null
-              : const BoxConstraints(minWidth: 32, minHeight: 32),
-        ),
+        decoration: _cellInputDecoration(isError: isError),
         onChanged: isEditing
             ? (raw) => _updateIntField(talentId, field, raw)
             : null,
@@ -752,6 +565,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                       specializationOrdinal: runningCount + 1,
                     );
                     final erwerb = await showErwerbDialog(
+                      manualCorrection: true,
                       context: context,
                       bezeichnung: 'Spezialisierung: $spec',
                       kostenHinweis:
@@ -813,24 +627,5 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       return value.toInt().toString();
     }
     return value.toString();
-  }
-
-  Future<int?> _showAtPaVerteilungDialog({
-    required String talentName,
-    required int delta,
-    required int currentAt,
-    required int currentPa,
-    required int neuerWert,
-  }) async {
-    return showAdaptiveDetailSheet<int>(
-      context: context,
-      builder: (_) => _AtPaVerteilungDialog(
-        talentName: talentName,
-        delta: delta,
-        currentAt: currentAt,
-        currentPa: currentPa,
-        neuerWert: neuerWert,
-      ),
-    );
   }
 }

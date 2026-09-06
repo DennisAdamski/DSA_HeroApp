@@ -245,7 +245,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               ),
             _buildTappableStatModifierCell(entry, hero, state, snapshot),
             _buildDerivedValueCell(value: entry.current.toString()),
-            _buildDerivedBoughtCellFor(entry),
+            _buildDerivedBoughtCell(entry),
           ],
         ),
         cardBuilder: (cardContext, entry) => _buildDerivedValueMobileCard(
@@ -475,14 +475,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               ? '${maximumValue - epicBonusVal}+$epicBonusVal'
               : maximumValue.toString(),
         ),
-        _buildAttributesNumericCell(
-          keyName: key,
-          isAdjustable: true,
-          onRaise: _canUseSteigerungsDialog
-              ? () => _steigeEigenschaft(parseAttributeCode(key)!)
-              : null,
-          raiseTooltip: '${entry.$1} steigern',
-        ),
+        _buildAttributesNumericCell(keyName: key, isAdjustable: true),
         _buildTappableAttributeComputedCell(
           label: entry.$1,
           attrKey: key,
@@ -546,10 +539,6 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               value: _buildAttributesNumericCell(
                 keyName: key,
                 isAdjustable: true,
-                onRaise: _canUseSteigerungsDialog
-                    ? () => _steigeEigenschaft(parseAttributeCode(key)!)
-                    : null,
-                raiseTooltip: '${entry.$1} steigern',
               ),
             ),
             _buildStatCardFieldRow(
@@ -664,8 +653,6 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
   Widget _buildAttributesNumericCell({
     required String keyName,
     required bool isAdjustable,
-    VoidCallback? onRaise,
-    String? raiseTooltip,
   }) {
     if (!isAdjustable) {
       return _buildAttributesStaticCell(
@@ -684,19 +671,6 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       keyboardType: TextInputType.number,
       onChanged: isEditing ? _onFieldChanged : null,
       padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
-      suffixIcon: onRaise == null
-          ? null
-          : IconButton(
-              key: ValueKey<String>('overview-raise-$keyName'),
-              visualDensity: VisualDensity.compact,
-              iconSize: 18,
-              tooltip: raiseTooltip ?? 'Steigern',
-              onPressed: onRaise,
-              icon: const Icon(Icons.trending_up),
-            ),
-      suffixIconConstraints: onRaise == null
-          ? null
-          : const BoxConstraints(minWidth: 32, minHeight: 32),
     );
   }
 
@@ -725,11 +699,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     return _buildAttributesStaticCell(value: value);
   }
 
-  Widget _buildDerivedBoughtCell(
-    _DerivedRow entry, {
-    VoidCallback? onRaise,
-    String? raiseTooltip,
-  }) {
+  Widget _buildDerivedBoughtCell(_DerivedRow entry) {
     final keyName = entry.boughtKey;
     if (keyName == null) {
       return _buildDerivedValueCell(value: '-');
@@ -743,39 +713,6 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       keyboardType: TextInputType.number,
       onChanged: isEditing ? _onFieldChanged : null,
       padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
-      suffixIcon: onRaise == null
-          ? null
-          : IconButton(
-              key: ValueKey<String>('overview-derived-raise-$keyName'),
-              visualDensity: VisualDensity.compact,
-              iconSize: 18,
-              tooltip: raiseTooltip ?? 'Steigern',
-              onPressed: onRaise,
-              icon: const Icon(Icons.trending_up),
-            ),
-      suffixIconConstraints: onRaise == null
-          ? null
-          : const BoxConstraints(minWidth: 32, minHeight: 32),
-    );
-  }
-
-  /// Baut die "Zugekauft"-Zelle inkl. Steigern-Logik fuer einen Basiswert.
-  ///
-  /// Kapselt die Pruefung, ob ein Wert ueber den Steigerungs-Dialog erhoeht
-  /// werden darf, damit Tabellen- und Kartenlayout dieselbe Logik nutzen.
-  Widget _buildDerivedBoughtCellFor(_DerivedRow entry) {
-    final boughtKey = entry.boughtKey;
-    if (boughtKey == null) {
-      return _buildDerivedBoughtCell(entry);
-    }
-    final statId = boughtKey.replaceFirst('b_', '');
-    final canRaise =
-        _canUseSteigerungsDialog &&
-        kGrundwertKomplexitaeten.containsKey(statId);
-    return _buildDerivedBoughtCell(
-      entry,
-      onRaise: canRaise ? () => _steigeGrundwert(statId) : null,
-      raiseTooltip: '${entry.label} steigern',
     );
   }
 
@@ -846,7 +783,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
             ),
             _buildStatCardFieldRow(
               label: 'Zugekauft',
-              value: _buildDerivedBoughtCellFor(entry),
+              value: _buildDerivedBoughtCell(entry),
             ),
           ],
         ),

@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
@@ -26,6 +29,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
 part 'workspace/workspace_layout.dart';
+part 'workspace/workspace_advancement.dart';
 
 /// Zentraler Workspace-Screen fuer die Bearbeitung und Anzeige eines Helden.
 ///
@@ -312,6 +316,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
 
   /// Navigiert zur Heldenauswahl und prueft vorher auf ungespeicherte Aenderungen.
   Future<void> _navigateToHomeWithGuard() async {
+    if (!await _confirmLeaveAdvancement() || !mounted) return;
     final activeTabId = _tabRegistry.activeTabId;
     final mayLeave = activeTabId == null
         ? true
@@ -366,6 +371,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
 
   /// Baut die Aktionsschaltflaechen fuer die AppBar.
   List<Widget> _buildWorkspaceActions({required bool isCompactLayout}) {
+    if (_advancementSession != null) {
+      return _buildAdvancementActions(isCompactLayout: isCompactLayout);
+    }
     final activeTab = _activeTabSpec();
     if (activeTab == null) {
       return _buildGlobalPlayActions();
@@ -388,6 +396,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     final widgets = <Widget>[];
     if (!isEditing) {
       widgets.addAll(_buildGlobalPlayActions());
+      widgets.add(
+        _buildStartAdvancementAction(isCompactLayout: isCompactLayout),
+      );
     }
     final headerActions = <WorkspaceHeaderAction>[
       ...activeTab.buildHeaderActions(
@@ -513,9 +524,18 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     });
   }
 
+  /// Faehrt das Detailpanel aus, damit die Steigerungshistorie sichtbar wird.
+  void _expandWorkspaceDetails() {
+    setState(() {
+      _workspaceDetailsExpanded = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final hero = ref.watch(heroByIdProvider(widget.heroId));
+    final session = ref.watch(advancementSessionProvider(widget.heroId));
+    ref.watch(rulesCatalogProvider);
     final layout = appLayoutOf(context);
 
     if (hero == null) {
@@ -538,8 +558,10 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     final apple = isApplePlatform(context);
     final hasVisibleTabs = _visibleTabs.isNotEmpty;
     final isCompactLayout = layout == AppLayoutClass.compact;
-    final useBottomNav = isCompactLayout && apple && hasVisibleTabs;
-    final showTabBar = isCompactLayout && !apple && hasVisibleTabs;
+    final useBottomNav =
+        session == null && isCompactLayout && apple && hasVisibleTabs;
+    final showTabBar =
+        session == null && isCompactLayout && !apple && hasVisibleTabs;
     final showInspectorAction =
         layout == AppLayoutClass.tabletPortrait ||
         layout == AppLayoutClass.compact;
@@ -553,7 +575,10 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(hero.name),
+          title: Text(
+            session == null ? hero.name : '${hero.name} · Steigern',
+            overflow: TextOverflow.ellipsis,
+          ),
           leading: IconButton(
             key: const ValueKey<String>('workspace-back-button'),
             icon: Icon(apple ? Icons.arrow_back_ios : Icons.arrow_back),
@@ -570,8 +595,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
             ..._buildSpacedWorkspaceActions(
               _buildWorkspaceActions(isCompactLayout: isCompactLayout),
             ),
-            if (!(_tabRegistry.activeTabId != null &&
-                _tabRegistry.isEditing(_tabRegistry.activeTabId!)))
+            if (session == null &&
+                !(_tabRegistry.activeTabId != null &&
+                    _tabRegistry.isEditing(_tabRegistry.activeTabId!)))
               IconButton(
                 tooltip: 'Einstellungen',
                 onPressed: () => Navigator.of(context).push(
@@ -594,16 +620,28 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
                 },
               )
             : null,
-        body: switch (layout) {
-          AppLayoutClass.compact => _buildCompactWorkspaceBody(hero),
-          AppLayoutClass.tabletPortrait => _buildTabletPortraitWorkspaceBody(
-            hero,
-          ),
-          AppLayoutClass.tabletLandscape => _buildTabletLandscapeWorkspaceBody(
-            hero,
-          ),
-          AppLayoutClass.desktopWide => _buildDesktopWideWorkspaceBody(hero),
-        },
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Offstage(
+              offstage: session != null,
+              child: TickerMode(
+                enabled: session == null,
+                child: switch (layout) {
+                  AppLayoutClass.compact => _buildCompactWorkspaceBody(hero),
+                  AppLayoutClass.tabletPortrait =>
+                    _buildTabletPortraitWorkspaceBody(hero),
+                  AppLayoutClass.tabletLandscape =>
+                    _buildTabletLandscapeWorkspaceBody(hero),
+                  AppLayoutClass.desktopWide => _buildDesktopWideWorkspaceBody(
+                    hero,
+                  ),
+                },
+              ),
+            ),
+            if (session != null) _buildAdvancementBody(layout),
+          ],
+        ),
       ),
     );
   }

@@ -6,17 +6,13 @@ export 'package:dsa_heldenverwaltung/state/hero_actions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
-import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/inventory_modifier_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
@@ -160,52 +156,24 @@ final heroComputedProvider =
           ref.watch(rulesCatalogProvider).valueOrNull?.combatSpecialAbilities ??
           const <CombatSpecialAbilityDef>[];
 
-      final parsed = parseModifierTextsForHero(hero);
+      final epicAdvantagesActive = ref.watch(
+        isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+      );
+      final inputs = computeHeroStatInputs(
+        hero: hero,
+        state: state,
+        talents: catalogTalents,
+        epicAdvantagesActive: epicAdvantagesActive,
+      );
+      final parsed = inputs.parsed;
+      final inventoryMods = inputs.inventory;
+      final effective = inputs.effective;
+      final wundEffekte = inputs.wounds;
       final resourceActivation = computeHeroResourceActivation(hero);
       final effectiveStartAttributes = computeHeroEffectiveStartAttributes(
         hero,
       );
       final attributeMaximums = computeHeroAttributeMaximums(hero);
-
-      // Inventar-Modifikatoren aus ausgeruesteten Items aggregieren
-      final inventoryMods = aggregateInventoryModifiers(
-        hero.inventoryEntries,
-        talents: catalogTalents,
-      );
-
-      final namedAttrMods = aggregateNamedAttributeModifiers(
-        hero.attributeModifiers,
-      );
-      // Permanente Attribute ohne temporaere Boni (fuer LeP/Au/AsP-Maxima).
-      // Attributo und aehnliche Zauber-Effekte sollen die Ressourcen-Obergrenzen
-      // nicht veraendern.
-      final permanent = applyAttributeModifiers(
-        hero.attributes,
-        parsed.attributeMods + namedAttrMods + inventoryMods.attributeMods,
-      );
-      // Effektive Attribute inkl. temporaerer Boni (fuer AT/PA/INI/GS/MR/FK).
-      final effective = applyAttributeModifiers(
-        hero.attributes,
-        parsed.attributeMods +
-            namedAttrMods +
-            state.tempAttributeMods +
-            inventoryMods.attributeMods,
-      );
-      // Wundberechnung -- die epische KO-Haupteigenschaft halbiert die
-      // Proben-Erschwernis (Kap. 2.1).
-      final epicAdvantagesActive = ref.watch(
-        isHouseRuleActiveProvider(EpicRuleKeys.advantages),
-      );
-      final wundEffekte = computeWundEffekte(
-        state.wpiZustand,
-        halbierteProbenErschwernis: isEpicMainAttributeBonusActive(
-          ruleActive: epicAdvantagesActive,
-          isEpisch: hero.isEpisch,
-          mainAttributes: hero.epicMainAttributes,
-          code: AttributeCode.ko,
-        ),
-      );
-      final wundStatMods = wundEffekteToStatModifiers(wundEffekte);
       final wundschwelleMods = hero.statModifiers['wundschwelle'] ?? const [];
       final wundschwelle = computeWundschwelle(
         ko: effective.ko,
@@ -218,15 +186,7 @@ final heroComputedProvider =
         nachteileText: hero.nachteileText,
       );
 
-      final derived = computeDerivedStatsFromInputs(
-        sheet: hero,
-        state: state,
-        parsedModifiers: parsed,
-        effectiveAttributes: effective,
-        permanentAttributes: permanent,
-        inventoryStatMods: inventoryMods.statMods,
-        wundStatMods: wundStatMods,
-      );
+      final derived = inputs.derive(hero, state);
       final combat = computeCombatPreviewStats(
         hero,
         state,

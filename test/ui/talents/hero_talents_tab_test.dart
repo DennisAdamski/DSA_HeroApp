@@ -672,38 +672,45 @@ void main() {
     expect(find.text('19'), findsOneWidget);
   });
 
-  testWidgets('save persists edited talent values', (tester) async {
-    final repo = FakeRepository(
-      heroes: [
-        buildHero(
-          talents: const <String, HeroTalentEntry>{'tal_a': HeroTalentEntry()},
-        ),
-      ],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
+  testWidgets(
+    'manual talent correction persists without AP or raising actions',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(),
+            },
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
 
-    final actions = await openTalentsTab(tester, repo, buildCatalog());
-    await actions.startEdit();
-    await tester.pumpAndSettle();
+      final actions = await openTalentsTab(tester, repo, buildCatalog());
+      await actions.startEdit();
+      await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
-      '7',
-    );
-    await actions.save();
-    await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.trending_up), findsNothing);
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talents-field-tal_a-talentValue')),
+        '7',
+      );
+      await actions.save();
+      await tester.pumpAndSettle();
 
-    final heroes = await repo.listHeroes();
-    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-    expect(hero.talents['tal_a']?.talentValue, 7);
-  });
+      final heroes = await repo.listHeroes();
+      final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+      expect(hero.talents['tal_a']?.talentValue, 7);
+      expect(hero.apSpent, 0);
+    },
+  );
 
   testWidgets('structured talent special abilities are saved from the sf tab', (
     tester,
@@ -740,9 +747,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Neuanlage fragt jetzt die AP-Kosten via Erwerb-Dialog ab.
-    await tester.enterText(find.widgetWithText(TextField, 'AP-Kosten'), '0');
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
     await tester.pumpAndSettle();
 
     await actions.save();
@@ -755,112 +760,100 @@ void main() {
     ]);
   });
 
-  testWidgets(
-    'free text special ability with nonzero AP-Kosten increases apSpent',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero().copyWith(apAvailable: 500)],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 0,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
+  testWidgets('manual free text special ability preserves AP', (tester) async {
+    final repo = FakeRepository(
+      heroes: [buildHero().copyWith(apAvailable: 500)],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
 
-      final actions = await openTalentsTab(tester, repo, buildCatalog());
-      await actions.startEdit();
-      await tester.pumpAndSettle();
+    final actions = await openTalentsTab(tester, repo, buildCatalog());
+    await actions.startEdit();
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Sonderfertigkeiten'));
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(const ValueKey<String>('talents-special-abilities-add')),
-      );
-      await tester.pumpAndSettle();
-      await tester.enterText(
-        find.byKey(const ValueKey<String>('talents-special-ability-name')),
-        'Regeneration I',
-      );
-      await tester.tap(
-        find.byKey(const ValueKey<String>('talents-special-ability-save')),
-      );
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Sonderfertigkeiten'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-special-abilities-add')),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talents-special-ability-name')),
+      'Regeneration I',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-special-ability-save')),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.enterText(
-        find.widgetWithText(TextField, 'AP-Kosten'),
-        '100',
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
-      await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-      await actions.save();
-      await tester.pumpAndSettle();
+    await actions.save();
+    await tester.pumpAndSettle();
 
-      final heroes = await repo.listHeroes();
-      final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-      expect(hero.apSpent, 100);
-    },
-  );
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.apSpent, 0);
+  });
 
-  testWidgets(
-    'special ability catalog picker adds allgemeine SF and increases apSpent',
-    (tester) async {
-      final repo = FakeRepository(
-        heroes: [buildHero().copyWith(apAvailable: 500)],
-        states: {
-          'demo': const HeroState(
-            currentLep: 10,
-            currentAsp: 0,
-            currentKap: 0,
-            currentAu: 10,
-          ),
-        },
-      );
+  testWidgets('manual catalog selection saves SF without AP charge', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [buildHero().copyWith(apAvailable: 500)],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
 
-      final actions = await openTalentsTab(tester, repo, buildCatalog());
-      await actions.startEdit();
-      await tester.pumpAndSettle();
+    final actions = await openTalentsTab(tester, repo, buildCatalog());
+    await actions.startEdit();
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Sonderfertigkeiten'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Sonderfertigkeiten'));
+    await tester.pumpAndSettle();
 
-      await tester.tap(
-        find.byKey(const ValueKey<String>('talents-special-abilities-catalog')),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Allgemein'));
-      await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-special-abilities-catalog')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Allgemein'));
+    await tester.pumpAndSettle();
 
-      // Katalog-Browser ist offen und zeigt die Fixture-SF "Kulturkunde".
-      expect(find.text('Allgemeine Sonderfertigkeiten'), findsOneWidget);
-      expect(find.text('Kulturkunde'), findsOneWidget);
+    // Katalog-Browser ist offen und zeigt die Fixture-SF "Kulturkunde".
+    expect(find.text('Allgemeine Sonderfertigkeiten'), findsOneWidget);
+    expect(find.text('Kulturkunde'), findsOneWidget);
 
-      await tester.tap(find.byType(Switch).first);
-      await tester.pumpAndSettle();
+    await tester.tap(find.byType(Switch).first);
+    await tester.pumpAndSettle();
 
-      // Erwerb-Dialog mit dem Katalog-Kostenvorschlag bestaetigen.
-      expect(find.text('Katalog: 150 AP'), findsOneWidget);
-      await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
-      await tester.pumpAndSettle();
+    expect(find.widgetWithText(TextField, 'AP-Kosten'), findsNothing);
 
-      await tester.tap(find.text('Fertig'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Fertig'));
+    await tester.pumpAndSettle();
 
-      await actions.save();
-      await tester.pumpAndSettle();
+    await actions.save();
+    await tester.pumpAndSettle();
 
-      final heroes = await repo.listHeroes();
-      final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-      expect(hero.talentSpecialAbilities, const <TalentSpecialAbility>[
-        TalentSpecialAbility(name: 'Kulturkunde'),
-      ]);
-      expect(hero.apSpent, 150);
-    },
-  );
+    final heroes = await repo.listHeroes();
+    final hero = heroes.firstWhere((entry) => entry.id == 'demo');
+    expect(hero.talentSpecialAbilities, const <TalentSpecialAbility>[
+      TalentSpecialAbility(name: 'Kulturkunde'),
+    ]);
+    expect(hero.apSpent, 0);
+  });
 
   testWidgets('multi-select SF can be acquired twice with different variants', (
     tester,
@@ -927,7 +920,6 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Weiter'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(FilledButton, 'Erwerben'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Fertig'));
       await tester.pumpAndSettle();
@@ -946,7 +938,7 @@ void main() {
       TalentSpecialAbility(name: 'Geländekunde (Wüstenkundig)'),
     ]);
     // Gestaffelte Kosten: 150 AP fuer die erste, 100 AP fuer die zweite.
-    expect(hero.apSpent, 250);
+    expect(hero.apSpent, 0);
   });
 
   testWidgets('special ability add action stays available outside edit mode', (
@@ -1591,7 +1583,7 @@ void main() {
   );
 
   testWidgets(
-    'schmale Layouts bieten den Steigern-Button auf der Talent-Karte',
+    'schmale Layouts trennen manuelle Talent-Korrekturen von Steigerungen',
     (tester) async {
       final repo = FakeRepository(
         heroes: [
@@ -1633,66 +1625,55 @@ void main() {
       final raiseButton = find.byKey(
         const ValueKey<String>('talents-mobile-raise-tal_a'),
       );
-      await scrollMainListUpUntilVisible(tester, raiseButton);
-      await tester.ensureVisible(raiseButton);
-      await tester.pumpAndSettle();
-      await tester.tap(raiseButton);
-      await tester.pumpAndSettle();
-
-      expect(find.text('Athletik steigern'), findsOneWidget);
+      expect(raiseButton, findsNothing);
     },
   );
 
-  testWidgets('Talent-Detail-Sheet bietet eine Steigern-Aktion', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: [
-        buildHero(
-          talents: const <String, HeroTalentEntry>{
-            'tal_a': HeroTalentEntry(talentValue: 4),
-          },
-        ).copyWith(apTotal: 9999, apAvailable: 9999),
-      ],
-      states: {
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 0,
-          currentKap: 0,
-          currentAu: 10,
-        ),
-      },
-    );
+  testWidgets(
+    'Talent-Detail-Sheet bietet keine AP-Steigerung im Bearbeitungsmodus',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(talentValue: 4),
+            },
+          ).copyWith(apTotal: 9999, apAvailable: 9999),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
 
-    final actions = await openTalentsTab(
-      tester,
-      repo,
-      buildCatalog(),
-      viewSize: const Size(820, 1180),
-    );
-    await actions.startEdit();
-    await tester.pumpAndSettle();
+      final actions = await openTalentsTab(
+        tester,
+        repo,
+        buildCatalog(),
+        viewSize: const Size(820, 1180),
+      );
+      await actions.startEdit();
+      await tester.pumpAndSettle();
 
-    final card = find.byKey(
-      const ValueKey<String>('talents-mobile-card-tal_a'),
-    );
-    await scrollMainListUpUntilVisible(tester, card);
-    await tester.ensureVisible(card);
-    await tester.pumpAndSettle();
-    await tester.tap(card);
-    await tester.pumpAndSettle();
+      final card = find.byKey(
+        const ValueKey<String>('talents-mobile-card-tal_a'),
+      );
+      await scrollMainListUpUntilVisible(tester, card);
+      await tester.ensureVisible(card);
+      await tester.pumpAndSettle();
+      await tester.tap(card);
+      await tester.pumpAndSettle();
 
-    final sheetRaise = find.byKey(
-      const ValueKey<String>('talent-detail-raise-tal_a'),
-    );
-    expect(sheetRaise, findsOneWidget);
-    await tester.ensureVisible(sheetRaise);
-    await tester.pumpAndSettle();
-    await tester.tap(sheetRaise);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Athletik steigern'), findsOneWidget);
-  });
+      final sheetRaise = find.byKey(
+        const ValueKey<String>('talent-detail-raise-tal_a'),
+      );
+      expect(sheetRaise, findsNothing);
+    },
+  );
 
   testWidgets(
     'erzwungene Tabellenansicht behaelt die Tabelle auf schmalen Layouts',
@@ -1731,7 +1712,7 @@ void main() {
       );
       expect(
         find.byKey(
-          const ValueKey<String>('talents-raise-tal_a-talentValue'),
+          const ValueKey<String>('talents-field-tal_a-talentValue'),
           skipOffstage: false,
         ),
         findsOneWidget,

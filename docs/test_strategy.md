@@ -20,6 +20,23 @@ technische UI-Aspekte getrennt getestet werden.
 - `test/data/`: Loader/Transfer/Repository-nahe Tests
 - `test/domain/`: Serialisierung/Model-Roundtrips
 - `test/workspace/`: Workspace-Koordinationslogik
+- Steigerungsrunden: `test/rules/advancement_rules_test.dart` prüft Replay und
+  Abhängigkeiten; `test/domain/hero_advancement_entry_test.dart` die persistierte
+  Historie; `test/state/advancement_session_test.dart` Planung, Entfernen,
+  Übernahme und Konflikte; `test/ui/advancement/` die getrennte Bedienung.
+- Aktive Einträge und Erwerbsblatt:
+  `test/rules/advancement_scope_rules_test.dart` prüft, was als „auf dem Bogen“
+  gilt (eingeblendete Werte ohne Wert eingeschlossen), die Aufteilung in
+  `active`/`inactive`, die nächste Stufe begonnener Ketten, Alias-Namen als
+  Erwerbsnachweis und die Aktivierungskosten des Schritts `-1 → 0`.
+  `test/ui/advancement/advancement_activation_sheet_test.dart` prüft Suche,
+  Artfilter, den Schalter „Nur erwerbbare“, die Bestandsdarstellung erworbener
+  Sonderfertigkeiten, die Suchbrücke und die Bedienbarkeit auf 390 und 320 px.
+- Eigenschaftsvorschau: `test/rules/advancement_impact_rules_test.dart` prüft
+  Rundung, Herkunftsboni, Inventar-/Zustandsmodifikatoren, Begabung und normale,
+  Kampf-, Zauber- sowie epische Grenzen. Die Katalog-Widgettests prüfen
+  Live-Zielwerte, Abbrechen, Vormerken/Entfernen, Ressourcenfreischaltung und
+  die gemeinsame Scrollbarkeit von Basiswerten und Optionen auf 320 px Breite.
 
 ## Zuordnungsmatrix
 

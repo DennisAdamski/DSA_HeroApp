@@ -38,6 +38,48 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   ueberhaupt feuern und wie breit `dart format` umbricht — ein SDK-Bump zieht
   beides nach sich.
 - Regellogik gehoert nach `lib/rules/derived/`.
+- Steigerungen laufen getrennt von manuellen Korrekturen als Sitzung:
+  `lib/domain/hero_advancement_entry.dart` trägt persistierbare Einträge,
+  `lib/rules/derived/advancement*.dart` Optionen und Replay,
+  `lib/state/advancement_providers.dart` den flüchtigen Entwurf.
+  `lib/ui/screens/advancement/` bietet Katalog und Inspector-Historie;
+  `workspace/workspace_advancement.dart` verbindet sie mit dem Workspace.
+  Nur Übernehmen schreibt Werte, AP/SE und `HeroSheet.advancementHistory`
+  gemeinsam. Alte Einträge sind nicht entfernbar; ungültige Folgeeinträge
+  blockieren die Übernahme. Leere Historie darf nicht ins JSON geschrieben
+  werden (Bestands-Sync-Hashes). `HeroActions.saveHero` prüft für Sitzungen
+  zusätzlich den erwarteten Inhalt vor dem Schreiben.
+- Der Steigerungskatalog zeigt nur Ziele, die der Held **auf dem Bogen führt**.
+  Maßgeblich ist der Schlüssel in `talents`/`spells`/`sprachen`/`schriften`,
+  nicht der Wert: Ein eingeblendeter Eintrag ohne Wert (`null`) ist vorhanden,
+  seine Aktivierungskosten sind nur noch offen. `AdvancementOption.isOwned`
+  trägt das für **alle** Arten (Eigenschaften und Grundwerte sind immer `true`);
+  zusammen mit `currentValue` ergeben sich die drei Zustände. Den Umfang steuert
+  `AdvancementScope` (`lib/rules/derived/advancement_scope_rules.dart`) —
+  gefiltert wird vor dem Auflösen, die UI siebt nie 800 Einträge selbst.
+  Alles Übrige läuft über das Erwerbsblatt
+  (`lib/ui/screens/advancement/advancement_activation_sheet.dart`), das sich
+  selbst schließt und das gewählte Ziel zurückgibt; geplant wird erst danach
+  beim Aufrufer, damit die Sitzung nur an einer Stelle verändert wird.
+  Aktivieren und Steigern sind ein Schritt: `fromValue: -1` auf einen freien
+  Zielwert, die Kosten des Schritts `-1 → 0` sind die Aktivierungskosten.
+  Bei Sonderfertigkeiten zeigt die Liste erworbene Einträge, die nächste Stufe
+  **begonnener** Ketten und weitere Varianten mehrfach wählbarer SF;
+  `unavailableReason == 'Bereits erworben'` bleibt dabei die Sperre für
+  `_validateEntry` und wird nur in der Karte als Bestandsnachweis dargestellt.
+  Rituale und Liturgien haben kein `AdvancementKind` und liegen außerhalb des
+  Modus — das ist keine Lücke der Aktivfilterung.
+- `AdvancementContext` bündelt Held und Katalog für einen Optionsaufbau.
+  `buildHeroRequirementContext` und `parseModifierTextsForHero` dürfen nie
+  wieder je Option laufen — sonst baut jede der rund 280 SF-Optionen den
+  vollständigen Prüfkontext neu auf. `advancementOptionsProvider` memoisiert
+  die Liste je Umfang, damit die Suche keinen Katalogaufbau auslöst.
+- Eigenschaftsfolgen: `rules/derived/advancement_impact_rules.dart` liefert
+  Basiswertvergleiche und neu steigerbare Werte; `advancement_attribute_rules.dart`
+  teilt die effektive Zielwertübertragung mit dem Replay. `hero_stat_inputs.dart`
+  bereitet die gemeinsamen Modifikatoren für Übersicht und Vorschau vor.
+  `ui/screens/advancement/advancement_impact_panel.dart` zeigt Rundenvergleich
+  bzw. Dialogvorschau ohne Buchung; Talentgrenzen bleiben beim Optionsmodul.
 - Aventurische Waehrungsumrechnung fuer Dukaten/Silber/Kreuzer liegt in
   `lib/rules/derived/currency_rules.dart`.
 - Die kanonische Katalogquelle bleibt `assets/catalogs/house_rules_v1/`.

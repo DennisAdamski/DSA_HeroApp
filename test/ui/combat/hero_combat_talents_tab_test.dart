@@ -446,14 +446,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Neue Spezialisierungen fragen jetzt AP-Kosten ab (einzeln, je Erwerb).
-    for (var i = 0; i < 2; i++) {
-      final erwerbButton = find.widgetWithText(FilledButton, 'Erwerben');
-      expect(erwerbButton, findsOneWidget);
-      await tester.enterText(find.widgetWithText(TextField, 'AP-Kosten'), '0');
-      await tester.pumpAndSettle();
-      await tester.tap(erwerbButton);
-      await tester.pumpAndSettle();
-    }
+    expect(find.widgetWithText(FilledButton, 'Erwerben'), findsNothing);
 
     await actions.save();
     await tester.pumpAndSettle();
@@ -468,7 +461,9 @@ void main() {
     expect(entry.specializations, contains('Kurzschwert'));
   });
 
-  testWidgets('erworbene Spezialisierungen ziehen ihre AP ab', (tester) async {
+  testWidgets('manuelle Spezialisierungen lassen AP unveraendert', (
+    tester,
+  ) async {
     final repo = FakeRepository(
       heroes: [
         buildHero(
@@ -504,14 +499,7 @@ void main() {
     await tester.tap(find.text('Übernehmen'));
     await tester.pumpAndSettle();
 
-    for (var i = 0; i < 2; i++) {
-      final erwerbButton = find.widgetWithText(FilledButton, 'Erwerben');
-      expect(erwerbButton, findsOneWidget);
-      await tester.enterText(find.widgetWithText(TextField, 'AP-Kosten'), '40');
-      await tester.pumpAndSettle();
-      await tester.tap(erwerbButton);
-      await tester.pumpAndSettle();
-    }
+    expect(find.widgetWithText(FilledButton, 'Erwerben'), findsNothing);
 
     await actions.save();
     await tester.pumpAndSettle();
@@ -521,7 +509,7 @@ void main() {
     );
     expect(hero.talents['tal_nah']!.combatSpecializations, hasLength(2));
     // Ohne Lehrmeister verdoppeln sich die eingegebenen Kosten je Erwerb.
-    expect(hero.apSpent, 660);
-    expect(hero.apAvailable, 1340);
+    expect(hero.apSpent, 500);
+    expect(hero.apAvailable, 1500);
   });
 }

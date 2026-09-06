@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_text.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -17,6 +18,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
@@ -109,7 +111,15 @@ class HeroActions {
   /// [level] und [apAvailable] werden aus [apSpent] neu berechnet.
   /// Unbekannte Modifier-Fragmente werden in [HeroSheet.unknownModifierFragments]
   /// festgehalten.
-  Future<void> saveHero(HeroSheet hero) async {
+  /// [expectedContentHash] verhindert, dass eine Steigerungsrunde Änderungen
+  /// überschreibt, die während ihrer Planung oder Normalisierung gespeichert wurden.
+  /// [validationCatalog] hält die Katalogprüfung einer Steigerungsrunde stabil
+  /// und vermeidet ein erneutes asynchrones Laden beim Übernehmen.
+  Future<void> saveHero(
+    HeroSheet hero, {
+    String? expectedContentHash,
+    RulesCatalog? validationCatalog,
+  }) async {
     final repo = _ref.read(heroRepositoryProvider);
 
     final normalizedApTotal = hero.apTotal < 0 ? 0 : hero.apTotal;
@@ -122,6 +132,7 @@ class HeroActions {
     final parsed = parseModifierTextsForHero(hero);
     final unknownModifierFragments = await _filterKnownTraitWarnings(
       parsed.unknownFragments,
+      catalog: validationCatalog,
     );
     final effectiveStartAttributes = computeHeroEffectiveStartAttributes(hero);
 
@@ -144,6 +155,15 @@ class HeroActions {
       inventoryEntries: reconciledEntries,
     );
 
+    if (expectedContentHash != null) {
+      final current = await repo.loadHeroById(hero.id);
+      if (current == null || heroContentHash(current) != expectedContentHash) {
+        throw StateError(
+          'Der Held wurde inzwischen geändert. Die Steigerungen wurden '
+          'nicht übernommen.',
+        );
+      }
+    }
     await repo.saveHero(reconciledHero);
   }
 
@@ -156,16 +176,24 @@ class HeroActions {
   // Katalogisierte Vor-/Nachteile sollen nicht als Parser-Restfragmente
   // erscheinen; bei Test- oder Bootstrap-Kontexten ohne Katalog bleibt der
   // bisherige Parserzustand unverändert.
-  Future<List<String>> _filterKnownTraitWarnings(List<String> fragments) async {
+  Future<List<String>> _filterKnownTraitWarnings(
+    List<String> fragments, {
+    RulesCatalog? catalog,
+  }) async {
     if (fragments.isEmpty) {
       return fragments;
     }
     try {
-      final catalog = await _ref.read(rulesCatalogProvider.future);
+      final RulesCatalog resolvedCatalog;
+      if (catalog != null) {
+        resolvedCatalog = catalog;
+      } else {
+        resolvedCatalog = await _ref.read(rulesCatalogProvider.future);
+      }
       return filterKnownHeroTraitFragments(
         fragments: fragments,
-        advantages: catalog.advantages,
-        disadvantages: catalog.disadvantages,
+        advantages: resolvedCatalog.advantages,
+        disadvantages: resolvedCatalog.disadvantages,
       );
     } on Object {
       return fragments;

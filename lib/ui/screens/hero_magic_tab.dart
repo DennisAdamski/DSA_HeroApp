@@ -12,7 +12,6 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
-import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
@@ -43,7 +42,6 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_picker.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 import 'package:uuid/uuid.dart';
 
 part 'hero_magic/magic_active_spells_table.dart';
@@ -204,17 +202,6 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     );
   }
 
-  void _setControllerText(String spellId, String field, String value) {
-    final controller = _cellControllers['$spellId::$field'];
-    if (controller == null || controller.text == value) {
-      return;
-    }
-    controller.value = TextEditingValue(
-      text: value,
-      selection: TextSelection.collapsed(offset: value.length),
-    );
-  }
-
   Future<void> _startEdit() async {
     final hero = _latestHero;
     if (hero == null) {
@@ -286,90 +273,6 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     final current = _draftSpells[spellId] ?? const HeroSpellEntry();
     _draftSpells[spellId] = current.copyWith(spellValue: parsed);
     _markFieldChanged();
-  }
-
-  bool get _canUseSteigerungsDialog {
-    return _editController.isEditing && !_editController.isDirty;
-  }
-
-  Future<void> _steigeZauber(String spellId, SpellDef spell) async {
-    final hero = _latestHero;
-    if (hero == null || !_canUseSteigerungsDialog) {
-      return;
-    }
-
-    final entry = _draftSpells[spellId] ?? const HeroSpellEntry();
-    final currentAvailabilityEntry = entry.learnedRepresentation == null
-        ? null
-        : findSpellAvailabilityEntry(
-            availability: spell.availability,
-            learnedRepresentation: entry.learnedRepresentation!,
-            originTradition: entry.learnedTradition,
-          );
-    final fremdReprPenaltySteps =
-        currentAvailabilityEntry?.isForeignRepresentation == true ? 2 : 0;
-    final maxWert = computeTalentMaxValue(
-      effectiveAttributes: computeEffectiveAttributes(hero),
-      attributeNames: spell.attributes,
-      gifted: entry.gifted,
-    );
-    final effektiveKomplexitaet = effectiveSteigerung(
-      basisSteigerung: spell.steigerung,
-      istHauszauber: entry.hauszauber,
-      zauberMerkmale: parseSpellTraits(spell.traits),
-      heldMerkmalskenntnisse: _draftMerkmalskenntnisse,
-      istBegabt: entry.gifted,
-      fremdReprPenaltySteps: fremdReprPenaltySteps,
-    );
-    final learnCost = learnCostFromKomplexitaet(effektiveKomplexitaet);
-    if (learnCost == null) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unbekannte Lernkomplexität für ${spell.name}: $effektiveKomplexitaet',
-          ),
-        ),
-      );
-      return;
-    }
-
-    final result = await showSteigerungsDialog(
-      context: context,
-      bezeichnung: spell.name,
-      aktuellerWert: entry.spellValue ?? -1,
-      maxWert: maxWert,
-      effektiveKomplexitaet: learnCost,
-      verfuegbareAp: hero.apAvailable,
-      lehrmeisterVerfuegbar: true,
-      episch: hero.isEpisch,
-    );
-    if (result == null) {
-      return;
-    }
-
-    final updatedEntry = entry.copyWith(spellValue: result.neuerWert);
-    final updatedSpells = <String, HeroSpellEntry>{
-      ..._draftSpells,
-      spellId: updatedEntry,
-    };
-    final updatedHero = hero.copyWith(
-      spells: updatedSpells,
-      apSpent: hero.apSpent + result.apKosten,
-    );
-
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
-    _latestHero = updatedHero;
-    _draftSpells = updatedSpells;
-    _setControllerText(spellId, 'spellValue', result.neuerWert.toString());
-    if (!mounted) {
-      return;
-    }
-    _tableRevision.value++;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('${spell.name} gesteigert')));
   }
 
   void _updateSpellModifier(String spellId, String raw) {
@@ -519,8 +422,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                 _updateSpellSpecializations,
                             onRemoveSpell: _removeSpell,
                             controllerFor: _controllerFor,
-                            canRaiseValues: _canUseSteigerungsDialog,
-                            onRaiseSpell: _steigeZauber,
+
                             verfuegbareAp: _verfuegbareApImDraft(hero),
                             episch: hero.isEpisch,
                             onApKostenBestaetigt:
