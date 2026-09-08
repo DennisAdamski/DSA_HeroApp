@@ -25,6 +25,7 @@ void main() {
       WorkspaceTabIds.talents,
       WorkspaceTabIds.combat,
       WorkspaceTabIds.magic,
+      WorkspaceTabIds.skilltree,
       WorkspaceTabIds.inventory,
       WorkspaceTabIds.notes,
       WorkspaceTabIds.reisebericht,
