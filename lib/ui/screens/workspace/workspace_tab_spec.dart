@@ -15,7 +15,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_notes_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_reisebericht_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/skill_tree/skill_tree_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 /// Stabile IDs fuer Workspace-Tabs.
@@ -31,9 +30,6 @@ abstract final class WorkspaceTabIds {
 
   /// ID des Magie-Tabs.
   static const String magic = 'magic';
-
-  /// ID des Skilltree-Tabs.
-  static const String skilltree = 'skilltree';
 
   /// ID des Inventar-Tabs.
   static const String inventory = 'inventory';
@@ -191,20 +187,6 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       helper: 'Katalogansicht für Zauber',
       isVisible: (hero) => computeHeroResourceActivation(hero).magic.isEnabled,
       buildContent: ({required heroId, required callbacks}) => HeroMagicTab(
-        heroId: heroId,
-        onDirtyChanged: callbacks.onDirtyChanged,
-        onEditingChanged: callbacks.onEditingChanged,
-        onRegisterDiscard: callbacks.onRegisterDiscard,
-        onRegisterEditActions: callbacks.onRegisterEditActions,
-      ),
-    ),
-    WorkspaceTabSpec(
-      id: WorkspaceTabIds.skilltree,
-      label: 'Skilltree',
-      icon: Icons.account_tree_outlined,
-      helper: 'Aufeinander aufbauende Sonderfertigkeiten als Skilltree',
-      isEditable: false,
-      buildContent: ({required heroId, required callbacks}) => SkillTreeTab(
         heroId: heroId,
         onDirtyChanged: callbacks.onDirtyChanged,
         onEditingChanged: callbacks.onEditingChanged,
