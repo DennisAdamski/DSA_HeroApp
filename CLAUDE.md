@@ -328,7 +328,16 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   und `DataTable` an geraeteweite Breiten unter `AppSettings.tableColumnWidths`;
   nur stabile, textlastige Spalten-IDs erhalten Resize-Griffe im Tabellenmodus.
   Selektive Settings-Provider halten Breiten-Saves aus der Katalog-Pipeline und
-  dem vollstaendigen Zaubertab heraus.
+  dem vollstaendigen Zaubertab heraus; die Tabellen selbst lesen ihre Breiten
+  ueber `tableColumnWidthsProvider(tableId)`.
+- Objekte, die `AppStartupGate._buildScope` per `overrideWithValue` in den
+  `ProviderScope` reicht, brauchen Wertgleichheit **und** eine stabile Instanz
+  ueber Rebuilds hinweg (`CustomCatalogRepository`, `HouseRulePackRepository`
+  liegen dafuer im Bootstrap-Ergebnis). Eine neue Instanz gilt sonst als
+  geaenderter Override, invalidiert die Katalogkette und laesst die App
+  sichtbar neu laden. Aus demselben Grund reagiert der Settings-Listener des
+  Gates nur auf `heroStoragePath` — jede andere Einstellung (etwa eine
+  gespeicherte Spaltenbreite) darf dort kein `setState` ausloesen.
 - Reisebericht-Daten bleiben separat unter `assets/catalogs/reiseberichte/house_rules_v1/`.
 - Geschuetzte Katalog-Felder (Wirkung/Varianten von Zaubern, Erklaerungstexte
   von Manoevern und Kampf-Sonderfertigkeiten) sind v3-verschluesselt

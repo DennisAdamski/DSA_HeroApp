@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 
@@ -182,13 +181,17 @@ class _PersistedTableColumnLayoutState
 
   @override
   Widget build(BuildContext context) {
-    final settings = ref.watch(appSettingsProvider).valueOrNull;
-    final persistedWidths = settings?.tableColumnWidths[widget.tableId];
+    // Selektiv auf die eigene Tabelle: ein `ref.watch(appSettingsProvider)`
+    // wuerde jede Einstellungsaenderung in einen kompletten Neuaufbau der
+    // Tabelle uebersetzen — auch die Breite einer ganz anderen Tabelle.
+    final persistedWidths = ref.watch(
+      tableColumnWidthsProvider(widget.tableId),
+    );
     final transientWidths = ref.watch(
       _tableTransientWidthsProvider(widget.tableId),
     );
     final effectiveWidths = <String, double>{
-      ...?persistedWidths,
+      ...persistedWidths,
       ...transientWidths,
     };
     final binding = TableColumnResizeBinding(

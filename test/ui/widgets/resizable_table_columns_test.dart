@@ -249,6 +249,83 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('a saved width rebuilds only the resized table', (tester) async {
+    final repository = _FakeSettingsRepository(const AppSettings());
+    addTearDown(repository.dispose);
+    var resizedBuilds = 0;
+    var otherBuilds = 0;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [settingsRepositoryProvider.overrideWithValue(repository)],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: <Widget>[
+                _CountingTable(
+                  tableId: 'magic.activeSpells',
+                  onBuild: () => resizedBuilds++,
+                ),
+                _CountingTable(
+                  tableId: 'inventory.items',
+                  onBuild: () => otherBuilds++,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    resizedBuilds = 0;
+    otherBuilds = 0;
+    await tester.drag(
+      find.byKey(
+        const ValueKey<String>('table-column-resize-magic.activeSpells-name'),
+      ),
+      const Offset(40, 0),
+    );
+    await tester.pumpAndSettle();
+
+    expect(repository.saveCount, 1);
+    expect(resizedBuilds, greaterThan(0));
+    expect(otherBuilds, 0);
+  });
+}
+
+class _CountingTable extends StatelessWidget {
+  const _CountingTable({required this.tableId, required this.onBuild});
+
+  final String tableId;
+  final VoidCallback onBuild;
+
+  @override
+  Widget build(BuildContext context) {
+    return PersistedTableColumnLayout(
+      tableId: tableId,
+      builder: (context, binding) {
+        onBuild();
+        return SizedBox(
+          width: 240,
+          height: 48,
+          child: ResizableTableHeaderCell(
+            spec: const AdaptiveTableColumnSpec(
+              columnId: 'name',
+              minWidth: 100,
+              maxWidth: 180,
+              resizable: true,
+              resizeMaxWidth: 480,
+            ),
+            currentWidth: binding.widths['name'] ?? 120,
+            resizeBinding: binding,
+            child: const Text('Name'),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _ResizeHarness extends StatelessWidget {

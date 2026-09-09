@@ -104,10 +104,16 @@ class _AppStartupGateState extends State<AppStartupGate> {
       if (!mounted) {
         return;
       }
-      setState(() {
-        _settings = settings;
-        _ensureBootstrap();
-      });
+      // Nur der Heldenspeicherpfad beeinflusst diesen Gate. Ein `setState`
+      // bei jeder anderen Einstellung (etwa einer gespeicherten
+      // Spaltenbreite) baut den ProviderScope neu auf und stoesst darueber
+      // einen sichtbaren Neuaufbau der gesamten App an.
+      final pathChanged = settings.heroStoragePath != _settings.heroStoragePath;
+      _settings = settings;
+      if (!pathChanged) {
+        return;
+      }
+      setState(_ensureBootstrap);
     });
     _ensureBootstrap();
   }
@@ -298,7 +304,15 @@ class _AppStartupGateState extends State<AppStartupGate> {
         heroRepository: heroRepository,
         syncController: syncingRepository,
         externeHeldenRepository: externeHeldenRepository,
-        heroStoragePath: heroStoragePath,
+        // Einmal erzeugt und im Ergebnis gehalten: `_buildScope` reicht die
+        // Instanzen per `overrideWithValue` weiter, deshalb muessen sie ueber
+        // Rebuilds hinweg dieselben bleiben.
+        customCatalogRepository: CustomCatalogRepository(
+          heroStoragePath: heroStoragePath,
+        ),
+        houseRulePackRepository: HouseRulePackRepository(
+          heroStoragePath: heroStoragePath,
+        ),
       );
     } on Object catch (error, stackTrace) {
       debugPrint('[startup] FAILED: $error\n$stackTrace');
@@ -455,12 +469,8 @@ class _AppStartupGateState extends State<AppStartupGate> {
           repository: result.heroRepository,
           syncController: result.syncController,
           externeHeldenRepository: result.externeHeldenRepository,
-          customCatalogRepository: CustomCatalogRepository(
-            heroStoragePath: result.heroStoragePath,
-          ),
-          houseRulePackRepository: HouseRulePackRepository(
-            heroStoragePath: result.heroStoragePath,
-          ),
+          customCatalogRepository: result.customCatalogRepository,
+          houseRulePackRepository: result.houseRulePackRepository,
           home: SyncConflictGate(
             syncController: result.syncController,
             child: const HeroesHomeScreen(),
@@ -528,13 +538,15 @@ class _HeroRepositoryBootstrapResult {
     required this.heroRepository,
     required this.syncController,
     required this.externeHeldenRepository,
-    required this.heroStoragePath,
+    required this.customCatalogRepository,
+    required this.houseRulePackRepository,
   });
 
   final HeroRepository heroRepository;
   final AppSyncController? syncController;
   final HiveExterneHeldenRepository externeHeldenRepository;
-  final String heroStoragePath;
+  final CustomCatalogRepository customCatalogRepository;
+  final HouseRulePackRepository houseRulePackRepository;
 }
 
 /// Fehleransicht fuer ungueltige oder nicht verfuegbare Heldenspeicherpfade.

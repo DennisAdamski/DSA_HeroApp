@@ -80,6 +80,53 @@ final catalogDisabledHouseRulePackIdsProvider = Provider<Set<String>>((ref) {
   return selection.values;
 });
 
+// Vergleicht Breiten-Karten nach Inhalt. `AppSettings.tableColumnWidths` wird
+// bei jedem Save komplett neu aufgebaut, auch fuer nicht betroffene Tabellen.
+class _ColumnWidthSelection {
+  _ColumnWidthSelection(Map<String, double> widths)
+    : widths = Map<String, double>.unmodifiable(widths);
+
+  final Map<String, double> widths;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! _ColumnWidthSelection ||
+        other.widths.length != widths.length) {
+      return false;
+    }
+    for (final entry in widths.entries) {
+      if (other.widths[entry.key] != entry.value) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode => Object.hashAllUnordered(
+    widths.entries.map((entry) => Object.hash(entry.key, entry.value)),
+  );
+}
+
+/// Liefert die gespeicherten Spaltenbreiten genau einer Tabelle.
+///
+/// Bewusst selektiv: Ohne diesen Zuschnitt baut jede gespeicherte Breite
+/// saemtliche Tabellen der App neu auf.
+final tableColumnWidthsProvider = Provider.family<Map<String, double>, String>((
+  ref,
+  tableId,
+) {
+  final selection = ref.watch(
+    appSettingsProvider.select(
+      (settings) => _ColumnWidthSelection(
+        settings.valueOrNull?.tableColumnWidths[tableId] ??
+            const <String, double>{},
+      ),
+    ),
+  );
+  return selection.widths;
+});
+
 /// Schnellzugriff auf den Debug-Modus-Zustand.
 final debugModusProvider = Provider<bool>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.debugModus ?? false;
@@ -124,10 +171,13 @@ final rulesIndexRemoteConfigProvider = Provider<RulesIndexRemoteConfig>((ref) {
 /// Aktuelle Beschreibung des wirksamen Heldenspeicherorts.
 final heroStorageLocationProvider = FutureProvider<HeroStorageLocation>((ref) {
   final storagePaths = ref.watch(appStoragePathsProvider);
-  final configuredPath = ref
-      .watch(appSettingsProvider)
-      .valueOrNull
-      ?.heroStoragePath;
+  // Selektiv: Ein `ref.watch(appSettingsProvider)` wuerde diesen Provider bei
+  // jeder gespeicherten Spaltenbreite erneut in den Ladezustand schicken.
+  final configuredPath = ref.watch(
+    appSettingsProvider.select(
+      (settings) => settings.valueOrNull?.heroStoragePath,
+    ),
+  );
   return storagePaths.describeHeroStorageLocation(
     configuredPath: configuredPath,
   );
