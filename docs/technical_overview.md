@@ -272,6 +272,9 @@ Oberflächen:
   `tabletPortrait`, `tabletLandscape` und `desktopWide`.
 - `lib/ui/widgets/codex_split_view.dart` kapselt wiederverwendbare
   Split-Layouts für Master-Detail-Ansichten.
+- `CodexPageScaffold` trennt den dekorativen Hintergrund durch eine transparente
+  `Material`-Fläche vom Inhalt. So zeichnen `ListTile` und `ExpansionTile`
+  ihre Hintergründe und Ink-Effekte über der Pergamentfläche, auch ohne Dekoration.
 - `HeroesHomeScreen` nutzt auf iPad-Landscape ein persistentes
   Archiv-/Vorschau-Layout und stellt die zuletzt gespeicherte
   Heldenauswahl beim Start wieder her.

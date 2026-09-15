@@ -20,9 +20,11 @@ class CodexPageScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final codex = context.codexTheme;
+    // Zeichnet ListTile-Hintergründe und Ink-Effekte über der Seitendekoration.
+    final content = Material(type: MaterialType.transparency, child: child);
 
     if (!codex.showDecoration) {
-      return Container(color: codex.parchment, padding: padding, child: child);
+      return Container(color: codex.parchment, padding: padding, child: content);
     }
 
     return Container(
@@ -51,7 +53,7 @@ class CodexPageScaffold extends StatelessWidget {
               assetPath: 'assets/ui/codex/compass_mark.png',
             ),
           ),
-          Padding(padding: padding, child: child),
+          Padding(padding: padding, child: content),
         ],
       ),
     );
