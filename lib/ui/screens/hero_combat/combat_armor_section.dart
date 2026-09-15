@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 
 /// Verwaltet Ruestungsstuecke und oeffnet den Editor auf breiten Layouts rechts.
 class CombatArmorSection extends StatefulWidget {
@@ -167,22 +168,26 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
               key: const ValueKey<String>('combat-armor-table-section'),
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                FlexibleTable(
-                  tableKey: const ValueKey<String>('combat-armor-table'),
-                  columnSpecs: _columnSpecs(showPieceRg1: showPieceRg1),
-                  headerCells: [
-                    const Text('Name'),
-                    const Text('RS'),
-                    const Text('BE'),
-                    const Text('Aktiv'),
-                    const Text('Artefakt'),
-                    const Text('Artefaktbeschreibung'),
-                    const Text('Geweiht'),
-                    const Text('Beschreibung (geweiht)'),
-                    if (showPieceRg1) const Text('RG I'),
-                    const Text('Aktion'),
-                  ],
-                  rows: armorRows,
+                PersistedTableColumnLayout(
+                  tableId: 'combat.armor',
+                  builder: (context, resizeBinding) => FlexibleTable(
+                    tableKey: const ValueKey<String>('combat-armor-table'),
+                    columnSpecs: _columnSpecs(showPieceRg1: showPieceRg1),
+                    columnResize: resizeBinding,
+                    headerCells: [
+                      const Text('Name'),
+                      const Text('RS'),
+                      const Text('BE'),
+                      const Text('Aktiv'),
+                      const Text('Artefakt'),
+                      const Text('Artefaktbeschreibung'),
+                      const Text('Geweiht'),
+                      const Text('Beschreibung (geweiht)'),
+                      if (showPieceRg1) const Text('RG I'),
+                      const Text('Aktion'),
+                    ],
+                    rows: armorRows,
+                  ),
                 ),
                 if (armorRows.isEmpty)
                   const Padding(
@@ -239,24 +244,33 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
   }) {
     return <AdaptiveTableColumnSpec>[
       const AdaptiveTableColumnSpec(
+        columnId: 'name',
         minWidth: 150,
         maxWidth: 260,
         flex: 2,
+        resizable: true,
+        resizeMaxWidth: 480,
       ), // Name
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80), // RS
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80), // BE
       const AdaptiveTableColumnSpec(minWidth: 68, maxWidth: 100), // Aktiv
       const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110), // Artefakt
       const AdaptiveTableColumnSpec(
+        columnId: 'artifactDescription',
         minWidth: 180,
         maxWidth: 320,
         flex: 2,
+        resizable: true,
+        resizeMaxWidth: 640,
       ), // Artefaktbeschreibung
       const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110), // Geweiht
       const AdaptiveTableColumnSpec(
+        columnId: 'blessedDescription',
         minWidth: 180,
         maxWidth: 320,
         flex: 2,
+        resizable: true,
+        resizeMaxWidth: 640,
       ), // Beschreibung (geweiht)
       if (showPieceRg1)
         const AdaptiveTableColumnSpec(

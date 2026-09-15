@@ -4,15 +4,31 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   // Meta-Talente haben eine andere Struktur, daher eigene Spaltenspezifikationen
   static const List<AdaptiveTableColumnSpec> _metaTalentColumnSpecs =
       <AdaptiveTableColumnSpec>[
-        AdaptiveTableColumnSpec(minWidth: 160, maxWidth: 240, flex: 2), // Name
-        AdaptiveTableColumnSpec(minWidth: 180, maxWidth: 180), // Eigenschaften
+        AdaptiveTableColumnSpec(
+          columnId: 'name',
+          minWidth: 160,
+          maxWidth: 240,
+          flex: 2,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ), // Name
+        AdaptiveTableColumnSpec(
+          columnId: 'attributes',
+          minWidth: 180,
+          maxWidth: 180,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ), // Eigenschaften
         AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 70), // TaW*
         AdaptiveTableColumnSpec(minWidth: 60, maxWidth: 60), // eBE
         AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 70), // TaW
         AdaptiveTableColumnSpec(
+          columnId: 'components',
           minWidth: 180,
           maxWidth: 400,
           flex: 2,
+          resizable: true,
+          resizeMaxWidth: 640,
         ), // Bestandteile
       ];
 
@@ -20,13 +36,19 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   List<AdaptiveTableColumnSpec> _talentColumnSpecs({required bool isEditing}) {
     return <AdaptiveTableColumnSpec>[
       const AdaptiveTableColumnSpec(
+        columnId: 'name',
         minWidth: 160,
         maxWidth: 240,
         flex: 2,
+        resizable: true,
+        resizeMaxWidth: 480,
       ), // Talent-Name
       const AdaptiveTableColumnSpec(
+        columnId: 'attributes',
         minWidth: 180,
         maxWidth: 180,
+        resizable: true,
+        resizeMaxWidth: 480,
       ), // Eigenschaften
       const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 70), // TaW*
       const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 70), // Kompl.
@@ -41,9 +63,12 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 70), // Mod
       const AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 70), // SE
       const AdaptiveTableColumnSpec(
+        columnId: 'specializations',
         minWidth: 160,
         maxWidth: 280,
         flex: 3,
+        resizable: true,
+        resizeMaxWidth: 640,
       ), // Spezialisierungen
       if (isEditing) const AdaptiveTableColumnSpec.fixed(90), // Begabung
     ];
@@ -55,19 +80,28 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   }) {
     return <AdaptiveTableColumnSpec>[
       const AdaptiveTableColumnSpec(
+        columnId: 'name',
         minWidth: 160,
         maxWidth: 240,
         flex: 2,
+        resizable: true,
+        resizeMaxWidth: 480,
       ), // Talent-Name
       const AdaptiveTableColumnSpec(
+        columnId: 'weaponCategory',
         minWidth: 180,
         maxWidth: 320,
         flex: 2,
+        resizable: true,
+        resizeMaxWidth: 480,
       ), // Waffengattung
       const AdaptiveTableColumnSpec(
+        columnId: 'alternatives',
         minWidth: 160,
         maxWidth: 240,
         flex: 2,
+        resizable: true,
+        resizeMaxWidth: 480,
       ), // Ersatzweise
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 80), // Kompl.
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90), // TaW
@@ -75,9 +109,12 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       const AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 90), // PA
       if (isEditing) const AdaptiveTableColumnSpec.fixed(90), // Begabung
       const AdaptiveTableColumnSpec(
+        columnId: 'specialization',
         minWidth: 180,
         maxWidth: 320,
         flex: 3,
+        resizable: true,
+        resizeMaxWidth: 640,
       ), // Spezialisierung
     ];
   }
@@ -102,24 +139,29 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
-            child: ResponsiveAdaptiveTable<HeroMetaTalent>(
-              columnSpecs: _metaTalentColumnSpecs,
-              headerRow: _buildMetaHeaderRow(),
-              items: metaTalents,
-              tableRowBuilder: (metaTalent) => _buildMetaTalentRow(
-                metaTalent: metaTalent,
-                catalogTalents: catalogTalents,
-                effectiveAttributes: effectiveAttributes,
-                activeBaseBe: activeBaseBe,
-              ),
-              cardBuilder: (cardContext, metaTalent) =>
-                  _buildMetaTalentMobileCard(
-                    metaTalent: metaTalent,
-                    catalogTalents: catalogTalents,
-                    effectiveAttributes: effectiveAttributes,
-                    activeBaseBe: activeBaseBe,
+            child: PersistedTableColumnLayout(
+              tableId: 'talents.meta',
+              builder: (context, resizeBinding) =>
+                  ResponsiveAdaptiveTable<HeroMetaTalent>(
+                    columnSpecs: _metaTalentColumnSpecs,
+                    columnResize: resizeBinding,
+                    headerRow: _buildMetaHeaderRow(),
+                    items: metaTalents,
+                    tableRowBuilder: (metaTalent) => _buildMetaTalentRow(
+                      metaTalent: metaTalent,
+                      catalogTalents: catalogTalents,
+                      effectiveAttributes: effectiveAttributes,
+                      activeBaseBe: activeBaseBe,
+                    ),
+                    cardBuilder: (cardContext, metaTalent) =>
+                        _buildMetaTalentMobileCard(
+                          metaTalent: metaTalent,
+                          catalogTalents: catalogTalents,
+                          effectiveAttributes: effectiveAttributes,
+                          activeBaseBe: activeBaseBe,
+                        ),
+                    ansicht: _tabellenAnsicht,
                   ),
-              ansicht: _tabellenAnsicht,
             ),
           ),
         ],
@@ -138,25 +180,29 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
-      child: ResponsiveAdaptiveTable<TalentDef>(
-        columnSpecs: columnSpecs,
-        headerRow: _buildHeaderRow(isEditing: isEditing),
-        items: talents,
-        tableRowBuilder: (talent) => _buildTalentRow(
-          talent: talent,
-          effectiveAttributes: effectiveAttributes,
-          isEditing: isEditing,
-          activeBaseBe: activeBaseBe,
-          inventoryMod: inventoryTalentMods[talent.id] ?? 0,
+      child: PersistedTableColumnLayout(
+        tableId: 'talents.general',
+        builder: (context, resizeBinding) => ResponsiveAdaptiveTable<TalentDef>(
+          columnSpecs: columnSpecs,
+          columnResize: resizeBinding,
+          headerRow: _buildHeaderRow(isEditing: isEditing),
+          items: talents,
+          tableRowBuilder: (talent) => _buildTalentRow(
+            talent: talent,
+            effectiveAttributes: effectiveAttributes,
+            isEditing: isEditing,
+            activeBaseBe: activeBaseBe,
+            inventoryMod: inventoryTalentMods[talent.id] ?? 0,
+          ),
+          cardBuilder: (cardContext, talent) => _buildTalentMobileCard(
+            talent: talent,
+            effectiveAttributes: effectiveAttributes,
+            isEditing: isEditing,
+            activeBaseBe: activeBaseBe,
+            inventoryMod: inventoryTalentMods[talent.id] ?? 0,
+          ),
+          ansicht: _tabellenAnsicht,
         ),
-        cardBuilder: (cardContext, talent) => _buildTalentMobileCard(
-          talent: talent,
-          effectiveAttributes: effectiveAttributes,
-          isEditing: isEditing,
-          activeBaseBe: activeBaseBe,
-          inventoryMod: inventoryTalentMods[talent.id] ?? 0,
-        ),
-        ansicht: _tabellenAnsicht,
       ),
     );
   }
@@ -167,15 +213,21 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
-      child: ResponsiveAdaptiveTable<TalentDef>(
-        columnSpecs: columnSpecs,
-        headerRow: _buildCombatHeaderRow(isEditing: isEditing),
-        items: talents,
-        tableRowBuilder: (talent) =>
-            _buildCombatTalentRow(talent: talent, isEditing: isEditing),
-        cardBuilder: (cardContext, talent) =>
-            _buildCombatTalentMobileCard(talent: talent, isEditing: isEditing),
-        ansicht: _tabellenAnsicht,
+      child: PersistedTableColumnLayout(
+        tableId: 'talents.combat',
+        builder: (context, resizeBinding) => ResponsiveAdaptiveTable<TalentDef>(
+          columnSpecs: columnSpecs,
+          columnResize: resizeBinding,
+          headerRow: _buildCombatHeaderRow(isEditing: isEditing),
+          items: talents,
+          tableRowBuilder: (talent) =>
+              _buildCombatTalentRow(talent: talent, isEditing: isEditing),
+          cardBuilder: (cardContext, talent) => _buildCombatTalentMobileCard(
+            talent: talent,
+            isEditing: isEditing,
+          ),
+          ansicht: _tabellenAnsicht,
+        ),
       ),
     );
   }

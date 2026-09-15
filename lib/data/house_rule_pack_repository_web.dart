@@ -41,4 +41,17 @@ class HouseRulePackRepository {
   }) async {
     // No-Op: Es gibt keine importierten Pakete im Web.
   }
+
+  // Wertgleichheit ist hier korrektheitsrelevant: Das Repository wird per
+  // `overrideWithValue` in den ProviderScope gereicht. Ohne `==` gilt jede
+  // neue Instanz beim Rebuild des Scopes als geaenderter Wert und laesst die
+  // gesamte Katalogkette neu laden.
+  @override
+  bool operator ==(Object other) {
+    return other is HouseRulePackRepository &&
+        other.heroStoragePath == heroStoragePath;
+  }
+
+  @override
+  int get hashCode => heroStoragePath.hashCode;
 }

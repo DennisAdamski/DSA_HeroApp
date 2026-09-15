@@ -364,6 +364,26 @@ void main() {
           expect(right, greaterThanOrEqualTo(left));
         }
       }
+      expect(
+        find.byKey(
+          const ValueKey<String>('table-column-resize-talents.general-name'),
+        ),
+        findsWidgets,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>(
+            'table-column-resize-talents.general-specializations',
+          ),
+        ),
+        findsWidgets,
+      );
+      expect(
+        find.byKey(
+          const ValueKey<String>('table-column-resize-talents.general-taw'),
+        ),
+        findsNothing,
+      );
       expect(find.text('Sonderfertigkeiten'), findsOneWidget);
       expect(
         find.byKey(const ValueKey<String>('talents-be-screen-open')),

@@ -13,13 +13,20 @@ class AdaptiveTableColumnSpec {
     required this.minWidth,
     required this.maxWidth,
     this.flex,
-  });
+    this.columnId,
+    this.resizable = false,
+    this.resizeMaxWidth,
+  }) : assert(!resizable || columnId != null),
+       assert(resizeMaxWidth == null || resizeMaxWidth > 0);
 
   /// Erzeugt eine feste Spalte ohne adaptive Breitenberechnung.
   const AdaptiveTableColumnSpec.fixed(double width)
     : minWidth = width,
       maxWidth = width,
-      flex = null;
+      flex = null,
+      columnId = null,
+      resizable = false,
+      resizeMaxWidth = null;
 
   /// Die minimale Spaltenbreite in logischen Pixeln.
   final double minWidth;
@@ -30,11 +37,25 @@ class AdaptiveTableColumnSpec {
   /// Optionaler Flex-Wert fuer Restbreite innerhalb der Tabelle.
   final double? flex;
 
+  /// Stabile ID für geräteweit gespeicherte Nutzerbreiten.
+  final String? columnId;
+
+  /// Ob die Spalte über einen Griff im Tabellenkopf verändert werden darf.
+  final bool resizable;
+
+  /// Obergrenze für eine manuell eingestellte Breite.
+  final double? resizeMaxWidth;
+
   /// Die normalisierte Mindestbreite der Spalte.
   double get lowerBound => math.min(minWidth, maxWidth);
 
   /// Die normalisierte Maximalbreite der Spalte.
   double get upperBound => math.max(minWidth, maxWidth);
+
+  /// Normalisierte Obergrenze für manuelle Breitenänderungen.
+  double get resizeUpperBound {
+    return math.max(upperBound, resizeMaxWidth ?? upperBound);
+  }
 
   /// Baut die zugehoerige Flutter-[TableColumnWidth].
   TableColumnWidth toTableColumnWidth() {
@@ -80,19 +101,28 @@ class AdaptiveDataColumnSpec {
   final double contentPadding;
 
   /// Baut die zugehoerige Flutter-[DataColumn].
-  DataColumn toDataColumn({double? resolvedWidth}) {
+  DataColumn toDataColumn({double? resolvedWidth, Widget? labelOverride}) {
     final headerAlignment = numeric
         ? Alignment.centerRight
         : Alignment.centerLeft;
-    return DataColumn(
-      label: Align(
-        alignment: headerAlignment,
-        child: FittedBox(
+    final resolvedLabel =
+        labelOverride ??
+        FittedBox(
           fit: BoxFit.scaleDown,
           alignment: headerAlignment,
           child: label,
-        ),
-      ),
+        );
+    final alignedLabel = Align(
+      alignment: headerAlignment,
+      child: resolvedLabel,
+    );
+    // DataTable bettet Labels in eine Row ein. Resize-Header müssen dort den
+    // verfügbaren Zellraum einnehmen, damit lange Titel nicht überlaufen.
+    final dataTableLabel = labelOverride == null
+        ? alignedLabel
+        : Expanded(child: alignedLabel);
+    return DataColumn(
+      label: dataTableLabel,
       numeric: numeric,
       columnWidth: resolvedWidth == null
           ? width.toTableColumnWidth()
@@ -210,6 +240,7 @@ double adaptiveDataTableMinWidth(
 AdaptiveTableLayout resolveAdaptiveTableLayout(
   List<AdaptiveTableColumnSpec> specs, {
   required double availableWidth,
+  Map<String, double> userWidths = const <String, double>{},
 }) {
   final resolvedWidths = _resolveAdaptiveWidths(
     specs.map((spec) => spec.lowerBound).toList(growable: false),
@@ -217,6 +248,7 @@ AdaptiveTableLayout resolveAdaptiveTableLayout(
     specs.map((spec) => spec.flex ?? 0).toList(growable: false),
     availableWidth: availableWidth,
   );
+  _applyTableUserWidths(specs, resolvedWidths, userWidths);
 
   return AdaptiveTableLayout(
     specs: specs,
@@ -231,6 +263,7 @@ List<DataColumn> buildAdaptiveDataColumns(
   double? availableWidth,
   double columnSpacing = 56,
   double horizontalMargin = 24,
+  Map<String, double> userWidths = const <String, double>{},
 }) {
   if (availableWidth == null) {
     return specs.map((spec) => spec.toDataColumn()).toList(growable: false);
@@ -240,6 +273,7 @@ List<DataColumn> buildAdaptiveDataColumns(
     availableWidth: availableWidth,
     columnSpacing: columnSpacing,
     horizontalMargin: horizontalMargin,
+    userWidths: userWidths,
   ).columns;
 }
 
@@ -249,6 +283,7 @@ AdaptiveDataTableLayout resolveAdaptiveDataTableLayout(
   required double availableWidth,
   required double columnSpacing,
   required double horizontalMargin,
+  Map<String, double> userWidths = const <String, double>{},
 }) {
   final minColumnWidths = specs
       .map((spec) => spec.width.lowerBound + spec.contentPadding)
@@ -270,6 +305,7 @@ AdaptiveDataTableLayout resolveAdaptiveDataTableLayout(
     specs.map((spec) => spec.width.flex ?? 0).toList(growable: false),
     availableWidth: availableContentWidth,
   );
+  _applyDataTableUserWidths(specs, resolvedWidths, userWidths);
   final minTableWidth = minColumnWidths.fold<double>(
     0,
     (sum, width) => sum + width,
@@ -287,6 +323,56 @@ AdaptiveDataTableLayout resolveAdaptiveDataTableLayout(
     tableMinWidth: minTableWidth,
     tableWidth: resolvedWidths.fold<double>(0, (sum, width) => sum + width),
   );
+}
+
+// Ersetzt nach der adaptiven Auflösung nur explizit angepasste Spalten,
+// damit Nachbarspalten beim Ziehen stabil bleiben.
+void _applyTableUserWidths(
+  List<AdaptiveTableColumnSpec> specs,
+  List<double> resolvedWidths,
+  Map<String, double> userWidths,
+) {
+  for (var i = 0; i < specs.length; i++) {
+    final requestedWidth = _validUserWidth(specs[i], userWidths);
+    if (requestedWidth != null) {
+      resolvedWidths[i] = requestedWidth;
+    }
+  }
+}
+
+// DataTable-Breiten enthalten zusätzlich das spaltenspezifische Padding;
+// gespeichert wird bewusst nur die nutzbare Inhaltsbreite.
+void _applyDataTableUserWidths(
+  List<AdaptiveDataColumnSpec> specs,
+  List<double> resolvedWidths,
+  Map<String, double> userWidths,
+) {
+  for (var i = 0; i < specs.length; i++) {
+    final spec = specs[i];
+    final requestedWidth = _validUserWidth(spec.width, userWidths);
+    if (requestedWidth != null) {
+      resolvedWidths[i] = requestedWidth + spec.contentPadding;
+    }
+  }
+}
+
+double? _validUserWidth(
+  AdaptiveTableColumnSpec spec,
+  Map<String, double> userWidths,
+) {
+  final columnId = spec.columnId;
+  if (!spec.resizable || columnId == null) {
+    return null;
+  }
+  final requestedWidth = userWidths[columnId];
+  if (requestedWidth == null ||
+      !requestedWidth.isFinite ||
+      requestedWidth <= 0) {
+    return null;
+  }
+  return requestedWidth
+      .clamp(spec.lowerBound, spec.resizeUpperBound)
+      .toDouble();
 }
 
 List<double> _resolveAdaptiveWidths(
