@@ -182,11 +182,25 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     final columns = <AdaptiveDataColumnSpec>[
       const AdaptiveDataColumnSpec(
         label: Text('Name'),
-        width: AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 220, flex: 2),
+        width: AdaptiveTableColumnSpec(
+          columnId: 'name',
+          minWidth: 220,
+          maxWidth: 320,
+          flex: 3,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ),
       ),
       const AdaptiveDataColumnSpec(
         label: Text('Eigenschaften'),
-        width: AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 200, flex: 1),
+        width: AdaptiveTableColumnSpec(
+          columnId: 'attributes',
+          minWidth: 140,
+          maxWidth: 200,
+          flex: 1,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ),
       ),
       const AdaptiveDataColumnSpec(
         label: Text('ZfW'),
@@ -200,7 +214,14 @@ class _MagicActiveSpellsTable extends StatelessWidget {
       ),
       const AdaptiveDataColumnSpec(
         label: Text('Repr.'),
-        width: AdaptiveTableColumnSpec(minWidth: 80, maxWidth: 160, flex: 1),
+        width: AdaptiveTableColumnSpec(
+          columnId: 'representation',
+          minWidth: 80,
+          maxWidth: 160,
+          flex: 1,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ),
       ),
       const AdaptiveDataColumnSpec(
         label: Text('Kompl.'),
@@ -217,35 +238,89 @@ class _MagicActiveSpellsTable extends StatelessWidget {
         ),
       const AdaptiveDataColumnSpec(
         label: Text('Merkmale'),
-        width: AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 220, flex: 1),
+        width: AdaptiveTableColumnSpec(
+          columnId: 'traits',
+          minWidth: 120,
+          maxWidth: 220,
+          flex: 1,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ),
       ),
       const AdaptiveDataColumnSpec(
         label: Text('Zauberdauer'),
-        width: AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 220, flex: 1),
+        width: AdaptiveTableColumnSpec(
+          columnId: 'castingTime',
+          minWidth: 150,
+          maxWidth: 220,
+          flex: 1,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ),
       ),
       const AdaptiveDataColumnSpec(
         label: Text('Kosten'),
-        width: AdaptiveTableColumnSpec(minWidth: 84, maxWidth: 120),
+        width: AdaptiveTableColumnSpec(
+          columnId: 'cost',
+          minWidth: 84,
+          maxWidth: 120,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ),
       ),
       const AdaptiveDataColumnSpec(
         label: Text('Reichweite'),
-        width: AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 180, flex: 1),
+        width: AdaptiveTableColumnSpec(
+          columnId: 'range',
+          minWidth: 120,
+          maxWidth: 180,
+          flex: 1,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ),
       ),
       const AdaptiveDataColumnSpec(
         label: Text('Dauer'),
-        width: AdaptiveTableColumnSpec(minWidth: 90, maxWidth: 130),
+        width: AdaptiveTableColumnSpec(
+          columnId: 'duration',
+          minWidth: 90,
+          maxWidth: 130,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ),
       ),
       const AdaptiveDataColumnSpec(
         label: Text('Wirkung'),
-        width: AdaptiveTableColumnSpec(minWidth: 130, maxWidth: 240, flex: 2),
+        width: AdaptiveTableColumnSpec(
+          columnId: 'effect',
+          minWidth: 130,
+          maxWidth: 240,
+          flex: 2,
+          resizable: true,
+          resizeMaxWidth: 640,
+        ),
       ),
       const AdaptiveDataColumnSpec(
         label: Text('Varianten'),
-        width: AdaptiveTableColumnSpec(minWidth: 140, maxWidth: 320, flex: 2),
+        width: AdaptiveTableColumnSpec(
+          columnId: 'variants',
+          minWidth: 140,
+          maxWidth: 320,
+          flex: 2,
+          resizable: true,
+          resizeMaxWidth: 640,
+        ),
       ),
       const AdaptiveDataColumnSpec(
         label: Text('Spez.'),
-        width: AdaptiveTableColumnSpec(minWidth: 110, maxWidth: 220, flex: 1),
+        width: AdaptiveTableColumnSpec(
+          columnId: 'specializations',
+          minWidth: 110,
+          maxWidth: 220,
+          flex: 1,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ),
       ),
       if (isEditing)
         const AdaptiveDataColumnSpec(
@@ -286,471 +361,526 @@ class _MagicActiveSpellsTable extends StatelessWidget {
         subtitle:
             '${sortedIds.length} Einträge mit Repräsentation, Wirkung und Varianten.',
         trailing: addSpellAction,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            const columnSpacing = 2.0;
-            const horizontalMargin = 0.0;
-            final layout = resolveAdaptiveDataTableLayout(
-              columns,
-              availableWidth: constraints.maxWidth,
-              columnSpacing: columnSpacing,
-              horizontalMargin: horizontalMargin,
-            );
+        child: PersistedTableColumnLayout(
+          tableId: 'magic.activeSpells',
+          builder: (context, resizeBinding) {
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                const columnSpacing = 2.0;
+                const horizontalMargin = 0.0;
+                final layout = resolveAdaptiveDataTableLayout(
+                  columns,
+                  availableWidth: constraints.maxWidth,
+                  columnSpacing: columnSpacing,
+                  horizontalMargin: horizontalMargin,
+                  userWidths: resizeBinding.widths,
+                );
 
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                columnSpacing: columnSpacing,
-                horizontalMargin: horizontalMargin,
-                headingRowHeight: 36,
-                dataRowMinHeight: 36,
-                dataRowMaxHeight: 52,
-                columns: layout.columns,
-                rows: sortedIds
-                    .map((spellId) {
-                      final def = spellDefs[spellId];
-                      final entry =
-                          spellEntries[spellId] ?? const HeroSpellEntry();
-                      if (def == null) {
-                        return DataRow(
-                          cells: [
-                            DataCell(Text(spellId)),
-                            const DataCell(Text('?')),
-                            const DataCell(Text('0')),
-                            const DataCell(Text('0')),
-                            const DataCell(Text('?')),
-                            const DataCell(Text('-')),
-                            const DataCell(Text('-')),
-                            if (isEditing) const DataCell(Text('-')),
-                            const DataCell(Text('-')),
-                            const DataCell(Text('-')),
-                            const DataCell(Text('-')),
-                            const DataCell(Text('-')),
-                            const DataCell(Text('-')),
-                            const DataCell(Text('-')),
-                            const DataCell(Text('-')),
-                            const DataCell(Text('-')),
-                            if (isEditing)
-                              DataCell(
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.remove_circle_outline,
-                                    size: 18,
-                                  ),
-                                  onPressed: () => onRemoveSpell(spellId),
-                                ),
-                              ),
-                          ],
-                        );
-                      }
-
-                      final currentAvailabilityEntry =
-                          entry.learnedRepresentation == null
-                          ? null
-                          : findSpellAvailabilityEntry(
-                              availability: def.availability,
-                              learnedRepresentation:
-                                  entry.learnedRepresentation!,
-                              originTradition: entry.learnedTradition,
-                            );
-                      final isLearnedAsForeign =
-                          currentAvailabilityEntry?.isForeignRepresentation ==
-                              true ||
-                          isForeignLearnedRepresentation(
-                            learnedRepresentation: entry.learnedRepresentation,
-                            learnedTradition: entry.learnedTradition,
-                          );
-                      final fremdReprPenaltySteps = isLearnedAsForeign ? 2 : 0;
-                      final probeLabel = _probeWithValuesLabel(
-                        effectiveAttributes,
-                        def.attributes,
-                      );
-                      final merkmale = parseSpellTraits(def.traits);
-                      final effSteigerung = effectiveSteigerung(
-                        basisSteigerung: def.steigerung,
-                        istHauszauber: entry.hauszauber,
-                        zauberMerkmale: merkmale,
-                        heldMerkmalskenntnisse: merkmalskenntnisse,
-                        istBegabt: entry.gifted,
-                        fremdReprPenaltySteps: fremdReprPenaltySteps,
-                      );
-                      final representationLabel =
-                          currentAvailabilityEntry == null
-                          ? (entry.learnedRepresentation == null
-                                ? 'Auswahl fehlt'
-                                : isLearnedAsForeign
-                                ? '${entry.learnedRepresentation!} '
-                                      '(fremd: ${entry.learnedTradition})'
-                                : entry.learnedRepresentation!)
-                          : _compactRepresentationLabel(
-                              currentAvailabilityEntry,
-                            );
-                      final availableEntriesForHero =
-                          availableSpellEntriesForRepresentations(
-                            def.availability,
-                            heroRepresentationen,
-                          );
-                      final dropdownEntries = <SpellAvailabilityEntry>[
-                        ...availableEntriesForHero,
-                      ];
-                      if (currentAvailabilityEntry != null &&
-                          !dropdownEntries.any(
-                            (candidate) =>
-                                candidate.storageKey ==
-                                currentAvailabilityEntry.storageKey,
-                          )) {
-                        dropdownEntries.add(currentAvailabilityEntry);
-                      }
-                      if (isLearnedAsForeign &&
-                          currentAvailabilityEntry == null &&
-                          entry.learnedTradition != null) {
-                        for (final repr in heroRepresentationen) {
-                          final synthetic = SpellAvailabilityEntry(
-                            tradition: entry.learnedTradition!,
-                            learnedRepresentation: repr,
-                            verbreitung: 0,
-                          );
-                          if (!dropdownEntries.any(
-                            (candidate) =>
-                                candidate.storageKey == synthetic.storageKey,
-                          )) {
-                            dropdownEntries.add(synthetic);
-                          }
-                        }
-                      }
-                      final preview = _SpellTablePreview.fromSpell(
-                        def: def,
-                        entry: entry,
-                      );
-
-                      void openDetails() {
-                        _openSpellDetails(context, spellId, def, entry);
-                      }
-
-                      return DataRow(
-                        cells: [
-                          DataCell(
-                            SizedBox(
-                              width: layout.contentWidthFor(0),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: GestureDetector(
-                                      onTap: openDetails,
-                                      child: Text(
-                                        def.name,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ),
-                                  if (onRollSpell != null)
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columnSpacing: columnSpacing,
+                    horizontalMargin: horizontalMargin,
+                    headingRowHeight: 36,
+                    dataRowMinHeight: 36,
+                    dataRowMaxHeight: 52,
+                    columns: buildResizableDataColumns(
+                      layout: layout,
+                      resizeBinding: resizeBinding,
+                    ),
+                    rows: sortedIds
+                        .map((spellId) {
+                          final def = spellDefs[spellId];
+                          final entry =
+                              spellEntries[spellId] ?? const HeroSpellEntry();
+                          if (def == null) {
+                            return DataRow(
+                              cells: [
+                                DataCell(Text(spellId)),
+                                const DataCell(Text('?')),
+                                const DataCell(Text('0')),
+                                const DataCell(Text('0')),
+                                const DataCell(Text('?')),
+                                const DataCell(Text('-')),
+                                const DataCell(Text('-')),
+                                if (isEditing) const DataCell(Text('-')),
+                                const DataCell(Text('-')),
+                                const DataCell(Text('-')),
+                                const DataCell(Text('-')),
+                                const DataCell(Text('-')),
+                                const DataCell(Text('-')),
+                                const DataCell(Text('-')),
+                                const DataCell(Text('-')),
+                                const DataCell(Text('-')),
+                                if (isEditing)
+                                  DataCell(
                                     IconButton(
-                                      key: ValueKey<String>(
-                                        'magic-spells-roll-$spellId',
+                                      icon: const Icon(
+                                        Icons.remove_circle_outline,
+                                        size: 18,
                                       ),
-                                      visualDensity: VisualDensity.compact,
-                                      iconSize: 18,
-                                      tooltip: '${def.name} würfeln',
-                                      onPressed: () =>
-                                          onRollSpell!(spellId, def, entry),
-                                      icon: const Icon(Icons.casino_outlined),
+                                      onPressed: () => onRemoveSpell(spellId),
                                     ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          DataCell(
-                            Text(probeLabel, style: theme.textTheme.bodySmall),
-                          ),
-                          isEditing
-                              ? DataCell(
-                                  Row(
+                                  ),
+                              ],
+                            );
+                          }
+
+                          final currentAvailabilityEntry =
+                              entry.learnedRepresentation == null
+                              ? null
+                              : findSpellAvailabilityEntry(
+                                  availability: def.availability,
+                                  learnedRepresentation:
+                                      entry.learnedRepresentation!,
+                                  originTradition: entry.learnedTradition,
+                                );
+                          final isLearnedAsForeign =
+                              currentAvailabilityEntry
+                                      ?.isForeignRepresentation ==
+                                  true ||
+                              isForeignLearnedRepresentation(
+                                learnedRepresentation:
+                                    entry.learnedRepresentation,
+                                learnedTradition: entry.learnedTradition,
+                              );
+                          final fremdReprPenaltySteps = isLearnedAsForeign
+                              ? 2
+                              : 0;
+                          final probeLabel = _probeWithValuesLabel(
+                            effectiveAttributes,
+                            def.attributes,
+                          );
+                          final merkmale = parseSpellTraits(def.traits);
+                          final effSteigerung = effectiveSteigerung(
+                            basisSteigerung: def.steigerung,
+                            istHauszauber: entry.hauszauber,
+                            zauberMerkmale: merkmale,
+                            heldMerkmalskenntnisse: merkmalskenntnisse,
+                            istBegabt: entry.gifted,
+                            fremdReprPenaltySteps: fremdReprPenaltySteps,
+                          );
+                          final representationLabel =
+                              currentAvailabilityEntry == null
+                              ? (entry.learnedRepresentation == null
+                                    ? 'Auswahl fehlt'
+                                    : isLearnedAsForeign
+                                    ? '${entry.learnedRepresentation!} '
+                                          '(fremd: ${entry.learnedTradition})'
+                                    : entry.learnedRepresentation!)
+                              : _compactRepresentationLabel(
+                                  currentAvailabilityEntry,
+                                );
+                          final availableEntriesForHero =
+                              availableSpellEntriesForRepresentations(
+                                def.availability,
+                                heroRepresentationen,
+                              );
+                          final dropdownEntries = <SpellAvailabilityEntry>[
+                            ...availableEntriesForHero,
+                          ];
+                          if (currentAvailabilityEntry != null &&
+                              !dropdownEntries.any(
+                                (candidate) =>
+                                    candidate.storageKey ==
+                                    currentAvailabilityEntry.storageKey,
+                              )) {
+                            dropdownEntries.add(currentAvailabilityEntry);
+                          }
+                          if (isLearnedAsForeign &&
+                              currentAvailabilityEntry == null &&
+                              entry.learnedTradition != null) {
+                            for (final repr in heroRepresentationen) {
+                              final synthetic = SpellAvailabilityEntry(
+                                tradition: entry.learnedTradition!,
+                                learnedRepresentation: repr,
+                                verbreitung: 0,
+                              );
+                              if (!dropdownEntries.any(
+                                (candidate) =>
+                                    candidate.storageKey ==
+                                    synthetic.storageKey,
+                              )) {
+                                dropdownEntries.add(synthetic);
+                              }
+                            }
+                          }
+                          final preview = _SpellTablePreview.fromSpell(
+                            def: def,
+                            entry: entry,
+                          );
+
+                          void openDetails() {
+                            _openSpellDetails(context, spellId, def, entry);
+                          }
+
+                          return DataRow(
+                            cells: [
+                              DataCell(
+                                SizedBox(
+                                  width: layout.contentWidthFor(0),
+                                  child: Row(
                                     children: [
                                       Expanded(
-                                        child: TextField(
+                                        child: GestureDetector(
+                                          onTap: openDetails,
+                                          child: Text(
+                                            def.name,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
+                                      if (onRollSpell != null)
+                                        IconButton(
                                           key: ValueKey<String>(
-                                            'magic-spells-field-$spellId-spellValue',
+                                            'magic-spells-roll-$spellId',
                                           ),
-                                          controller: controllerFor(
-                                            spellId,
-                                            'spellValue',
-                                            (entry.spellValue ?? 0).toString(),
+                                          visualDensity: VisualDensity.compact,
+                                          iconSize: 18,
+                                          tooltip: '${def.name} würfeln',
+                                          onPressed: () =>
+                                              onRollSpell!(spellId, def, entry),
+                                          icon: const Icon(
+                                            Icons.casino_outlined,
                                           ),
-                                          keyboardType: TextInputType.number,
-                                          inputFormatters: [
-                                            FilteringTextInputFormatter.allow(
-                                              RegExp(r'-?\d*'),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  probeLabel,
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                              ),
+                              isEditing
+                                  ? DataCell(
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: TextField(
+                                              key: ValueKey<String>(
+                                                'magic-spells-field-$spellId-spellValue',
+                                              ),
+                                              controller: controllerFor(
+                                                spellId,
+                                                'spellValue',
+                                                (entry.spellValue ?? 0)
+                                                    .toString(),
+                                              ),
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              inputFormatters: [
+                                                FilteringTextInputFormatter.allow(
+                                                  RegExp(r'-?\d*'),
+                                                ),
+                                              ],
+                                              onChanged: (raw) =>
+                                                  onSpellValueChanged(
+                                                    spellId,
+                                                    raw,
+                                                  ),
+                                              textAlign: TextAlign.center,
+                                              style: theme.textTheme.bodySmall,
+                                              decoration: const InputDecoration(
+                                                isDense: true,
+                                                contentPadding:
+                                                    EdgeInsets.symmetric(
+                                                      horizontal: 4,
+                                                      vertical: 6,
+                                                    ),
+                                              ),
                                             ),
-                                          ],
-                                          onChanged: (raw) =>
-                                              onSpellValueChanged(spellId, raw),
-                                          textAlign: TextAlign.center,
-                                          style: theme.textTheme.bodySmall,
+                                          ),
+                                          if (canRaiseValues &&
+                                              onRaiseSpell != null)
+                                            IconButton(
+                                              key: ValueKey<String>(
+                                                'magic-spells-raise-$spellId',
+                                              ),
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              iconSize: 18,
+                                              tooltip: 'Zauber steigern',
+                                              onPressed: () =>
+                                                  onRaiseSpell!(spellId, def),
+                                              icon: const Icon(
+                                                Icons.trending_up,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    )
+                                  : DataCell(
+                                      Text((entry.spellValue ?? 0).toString()),
+                                    ),
+                              isEditing
+                                  ? DataCell(
+                                      TextField(
+                                        key: ValueKey<String>(
+                                          'magic-spells-field-$spellId-modifier',
+                                        ),
+                                        controller: controllerFor(
+                                          spellId,
+                                          'modifier',
+                                          entry.modifier.toString(),
+                                        ),
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.allow(
+                                            RegExp(r'-?\d*'),
+                                          ),
+                                        ],
+                                        onChanged: (raw) =>
+                                            onModifierChanged(spellId, raw),
+                                        textAlign: TextAlign.center,
+                                        style: theme.textTheme.bodySmall,
+                                        decoration: const InputDecoration(
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                            vertical: 6,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : DataCell(Text(entry.modifier.toString())),
+                              DataCell(
+                                SizedBox(
+                                  width: layout.contentWidthFor(4),
+                                  child: isEditing
+                                      ? DropdownButtonFormField<String>(
+                                          key: ValueKey<String>(
+                                            'magic-spells-repr-$spellId-${currentAvailabilityEntry?.storageKey ?? 'none'}',
+                                          ),
+                                          initialValue: currentAvailabilityEntry
+                                              ?.storageKey,
+                                          isExpanded: true,
+                                          isDense: true,
                                           decoration: const InputDecoration(
                                             isDense: true,
                                             contentPadding:
                                                 EdgeInsets.symmetric(
-                                                  horizontal: 4,
+                                                  horizontal: 8,
                                                   vertical: 6,
                                                 ),
                                           ),
-                                        ),
-                                      ),
-                                      if (canRaiseValues &&
-                                          onRaiseSpell != null)
-                                        IconButton(
-                                          key: ValueKey<String>(
-                                            'magic-spells-raise-$spellId',
-                                          ),
-                                          visualDensity: VisualDensity.compact,
-                                          iconSize: 18,
-                                          tooltip: 'Zauber steigern',
-                                          onPressed: () =>
-                                              onRaiseSpell!(spellId, def),
-                                          icon: const Icon(Icons.trending_up),
-                                        ),
-                                    ],
-                                  ),
-                                )
-                              : DataCell(
-                                  Text((entry.spellValue ?? 0).toString()),
-                                ),
-                          isEditing
-                              ? DataCell(
-                                  TextField(
-                                    key: ValueKey<String>(
-                                      'magic-spells-field-$spellId-modifier',
-                                    ),
-                                    controller: controllerFor(
-                                      spellId,
-                                      'modifier',
-                                      entry.modifier.toString(),
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(
-                                        RegExp(r'-?\d*'),
-                                      ),
-                                    ],
-                                    onChanged: (raw) =>
-                                        onModifierChanged(spellId, raw),
-                                    textAlign: TextAlign.center,
-                                    style: theme.textTheme.bodySmall,
-                                    decoration: const InputDecoration(
-                                      isDense: true,
-                                      contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 4,
-                                        vertical: 6,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : DataCell(Text(entry.modifier.toString())),
-                          DataCell(
-                            SizedBox(
-                              width: layout.contentWidthFor(4),
-                              child: isEditing
-                                  ? DropdownButtonFormField<String>(
-                                      key: ValueKey<String>(
-                                        'magic-spells-repr-$spellId-${currentAvailabilityEntry?.storageKey ?? 'none'}',
-                                      ),
-                                      initialValue:
-                                          currentAvailabilityEntry?.storageKey,
-                                      isExpanded: true,
-                                      isDense: true,
-                                      decoration: const InputDecoration(
-                                        isDense: true,
-                                        contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 6,
-                                        ),
-                                      ),
-                                      items: dropdownEntries
-                                          .map((candidate) {
-                                            return DropdownMenuItem<String>(
-                                              value: candidate.storageKey,
-                                              child: Text(
-                                                candidate.displayLabel,
-                                              ),
-                                            );
-                                          })
-                                          .toList(growable: false),
-                                      selectedItemBuilder: (context) {
-                                        return dropdownEntries
-                                            .map((candidate) {
-                                              return Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  _compactRepresentationLabel(
-                                                    candidate,
+                                          items: dropdownEntries
+                                              .map((candidate) {
+                                                return DropdownMenuItem<String>(
+                                                  value: candidate.storageKey,
+                                                  child: Text(
+                                                    candidate.displayLabel,
                                                   ),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              );
-                                            })
-                                            .toList(growable: false);
-                                      },
-                                      onChanged: dropdownEntries.isEmpty
-                                          ? null
-                                          : (value) {
-                                              if (value == null) {
-                                                return;
-                                              }
-                                              final selected = dropdownEntries
-                                                  .firstWhere(
-                                                    (candidate) =>
-                                                        candidate.storageKey ==
-                                                        value,
+                                                );
+                                              })
+                                              .toList(growable: false),
+                                          selectedItemBuilder: (context) {
+                                            return dropdownEntries
+                                                .map((candidate) {
+                                                  return Align(
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                    child: Text(
+                                                      _compactRepresentationLabel(
+                                                        candidate,
+                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
                                                   );
-                                              onLearnedRepresentationChanged(
-                                                spellId,
-                                                selected,
-                                              );
-                                            },
-                                    )
-                                  : Text(
-                                      representationLabel,
-                                      style: currentAvailabilityEntry == null
-                                          ? theme.textTheme.bodySmall?.copyWith(
-                                              color: theme.colorScheme.error,
-                                            )
-                                          : theme.textTheme.bodySmall,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                            ),
-                          ),
-                          DataCell(
-                            Text(
-                              effSteigerung,
-                              style:
-                                  effSteigerung != def.steigerung ||
-                                      currentAvailabilityEntry == null
-                                  ? theme.textTheme.bodySmall?.copyWith(
-                                      color: currentAvailabilityEntry == null
-                                          ? theme.colorScheme.error
-                                          : theme.colorScheme.primary,
-                                      fontWeight: FontWeight.bold,
-                                    )
-                                  : theme.textTheme.bodySmall,
-                            ),
-                          ),
-                          DataCell(
-                            isEditing
-                                ? Checkbox(
+                                                })
+                                                .toList(growable: false);
+                                          },
+                                          onChanged: dropdownEntries.isEmpty
+                                              ? null
+                                              : (value) {
+                                                  if (value == null) {
+                                                    return;
+                                                  }
+                                                  final selected =
+                                                      dropdownEntries.firstWhere(
+                                                        (candidate) =>
+                                                            candidate
+                                                                .storageKey ==
+                                                            value,
+                                                      );
+                                                  onLearnedRepresentationChanged(
+                                                    spellId,
+                                                    selected,
+                                                  );
+                                                },
+                                        )
+                                      : Text(
+                                          representationLabel,
+                                          style:
+                                              currentAvailabilityEntry == null
+                                              ? theme.textTheme.bodySmall
+                                                    ?.copyWith(
+                                                      color: theme
+                                                          .colorScheme
+                                                          .error,
+                                                    )
+                                              : theme.textTheme.bodySmall,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  effSteigerung,
+                                  style:
+                                      effSteigerung != def.steigerung ||
+                                          currentAvailabilityEntry == null
+                                      ? theme.textTheme.bodySmall?.copyWith(
+                                          color:
+                                              currentAvailabilityEntry == null
+                                              ? theme.colorScheme.error
+                                              : theme.colorScheme.primary,
+                                          fontWeight: FontWeight.bold,
+                                        )
+                                      : theme.textTheme.bodySmall,
+                                ),
+                              ),
+                              DataCell(
+                                isEditing
+                                    ? Checkbox(
+                                        key: ValueKey<String>(
+                                          'magic-spells-hauszauber-$spellId',
+                                        ),
+                                        value: entry.hauszauber,
+                                        onChanged: (value) =>
+                                            onHauszauberChanged(
+                                              spellId,
+                                              value ?? false,
+                                            ),
+                                      )
+                                    : Icon(
+                                        entry.hauszauber
+                                            ? Icons.star
+                                            : Icons.star_border,
+                                        size: 18,
+                                        color: entry.hauszauber
+                                            ? theme.colorScheme.primary
+                                            : theme.disabledColor,
+                                      ),
+                              ),
+                              if (isEditing)
+                                DataCell(
+                                  Checkbox(
                                     key: ValueKey<String>(
-                                      'magic-spells-hauszauber-$spellId',
+                                      'magic-spells-gifted-$spellId',
                                     ),
-                                    value: entry.hauszauber,
-                                    onChanged: (value) => onHauszauberChanged(
+                                    value: entry.gifted,
+                                    onChanged: (value) => onGiftedChanged(
                                       spellId,
                                       value ?? false,
                                     ),
-                                  )
-                                : Icon(
-                                    entry.hauszauber
-                                        ? Icons.star
-                                        : Icons.star_border,
-                                    size: 18,
-                                    color: entry.hauszauber
-                                        ? theme.colorScheme.primary
-                                        : theme.disabledColor,
                                   ),
-                          ),
-                          if (isEditing)
-                            DataCell(
-                              Checkbox(
-                                key: ValueKey<String>(
-                                  'magic-spells-gifted-$spellId',
                                 ),
-                                value: entry.gifted,
-                                onChanged: (value) =>
-                                    onGiftedChanged(spellId, value ?? false),
-                              ),
-                            ),
-                          DataCell(
-                            ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: layout.contentWidthFor(
-                                  isEditing ? 8 : 7,
+                              DataCell(
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxWidth: layout.contentWidthFor(
+                                      isEditing ? 8 : 7,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    def.traits.isNotEmpty ? def.traits : '-',
+                                    style: theme.textTheme.bodySmall,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ),
-                              child: Text(
-                                def.traits.isNotEmpty ? def.traits : '-',
-                                style: theme.textTheme.bodySmall,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                          _buildDetailCell(
-                            width: layout.contentWidthFor(isEditing ? 9 : 8),
-                            context: context,
-                            text: preview.castingTime,
-                            onTap: openDetails,
-                          ),
-                          _buildDetailCell(
-                            width: layout.contentWidthFor(isEditing ? 10 : 9),
-                            context: context,
-                            text: preview.aspCost,
-                            onTap: openDetails,
-                          ),
-                          _buildDetailCell(
-                            width: layout.contentWidthFor(isEditing ? 11 : 10),
-                            context: context,
-                            text: preview.range,
-                            onTap: openDetails,
-                          ),
-                          _buildDetailCell(
-                            width: layout.contentWidthFor(isEditing ? 12 : 11),
-                            context: context,
-                            text: preview.duration,
-                            onTap: openDetails,
-                          ),
-                          _buildDetailCell(
-                            width: layout.contentWidthFor(isEditing ? 13 : 12),
-                            context: context,
-                            text: preview.wirkung,
-                            maxLines: 2,
-                            underline: true,
-                            onTap: openDetails,
-                          ),
-                          _buildVariantsCell(
-                            width: layout.contentWidthFor(isEditing ? 14 : 13),
-                            context: context,
-                            variants: preview.variants,
-                            protectedPreview: preview.variantsProtected,
-                            onTap: openDetails,
-                          ),
-                          _buildSpecializationsCell(
-                            width: layout.contentWidthFor(isEditing ? 15 : 14),
-                            context: context,
-                            specializations: entry.specializations,
-                            isEditing: isEditing,
-                            onAdd: () => _addSpecialization(
-                              context,
-                              spellId,
-                              def,
-                              entry,
-                            ),
-                            onRemove: (value) =>
-                                _removeSpecialization(spellId, entry, value),
-                          ),
-                          if (isEditing)
-                            DataCell(
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.remove_circle_outline,
-                                  size: 18,
+                              _buildDetailCell(
+                                width: layout.contentWidthFor(
+                                  isEditing ? 9 : 8,
                                 ),
-                                onPressed: () => onRemoveSpell(spellId),
-                                tooltip: 'Deaktivieren',
+                                context: context,
+                                text: preview.castingTime,
+                                onTap: openDetails,
                               ),
-                            ),
-                        ],
-                      );
-                    })
-                    .toList(growable: false),
-              ),
+                              _buildDetailCell(
+                                width: layout.contentWidthFor(
+                                  isEditing ? 10 : 9,
+                                ),
+                                context: context,
+                                text: preview.aspCost,
+                                onTap: openDetails,
+                              ),
+                              _buildDetailCell(
+                                width: layout.contentWidthFor(
+                                  isEditing ? 11 : 10,
+                                ),
+                                context: context,
+                                text: preview.range,
+                                onTap: openDetails,
+                              ),
+                              _buildDetailCell(
+                                width: layout.contentWidthFor(
+                                  isEditing ? 12 : 11,
+                                ),
+                                context: context,
+                                text: preview.duration,
+                                onTap: openDetails,
+                              ),
+                              _buildDetailCell(
+                                width: layout.contentWidthFor(
+                                  isEditing ? 13 : 12,
+                                ),
+                                context: context,
+                                text: preview.wirkung,
+                                maxLines: 2,
+                                underline: true,
+                                onTap: openDetails,
+                              ),
+                              _buildVariantsCell(
+                                width: layout.contentWidthFor(
+                                  isEditing ? 14 : 13,
+                                ),
+                                context: context,
+                                variants: preview.variants,
+                                protectedPreview: preview.variantsProtected,
+                                onTap: openDetails,
+                              ),
+                              _buildSpecializationsCell(
+                                width: layout.contentWidthFor(
+                                  isEditing ? 15 : 14,
+                                ),
+                                context: context,
+                                specializations: entry.specializations,
+                                isEditing: isEditing,
+                                onAdd: () => _addSpecialization(
+                                  context,
+                                  spellId,
+                                  def,
+                                  entry,
+                                ),
+                                onRemove: (value) => _removeSpecialization(
+                                  spellId,
+                                  entry,
+                                  value,
+                                ),
+                              ),
+                              if (isEditing)
+                                DataCell(
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.remove_circle_outline,
+                                      size: 18,
+                                    ),
+                                    onPressed: () => onRemoveSpell(spellId),
+                                    tooltip: 'Deaktivieren',
+                                  ),
+                                ),
+                            ],
+                          );
+                        })
+                        .toList(growable: false),
+                  ),
+                );
+              },
             );
           },
         ),

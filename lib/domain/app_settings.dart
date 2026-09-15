@@ -33,6 +33,7 @@ class AppSettings {
     this.uiVariante = UiVariante.codex,
     this.tabellenAnsicht = TabellenAnsicht.automatisch,
     this.summaryRailCollapsed = false,
+    this.tableColumnWidths = const <String, Map<String, double>>{},
     this.catalogContentPassword,
     this.rulesIndexRemoteConfig = const RulesIndexRemoteConfig(),
     Set<String> disabledHouseRulePackIds = const <String>{},
@@ -60,6 +61,9 @@ class AppSettings {
   /// Ob die Kernwerte-Rail im Workspace zugeklappt ist.
   final bool summaryRailCollapsed;
 
+  /// Geräteweit gespeicherte Spaltenbreiten nach Tabellen- und Spalten-ID.
+  final Map<String, Map<String, double>> tableColumnWidths;
+
   /// Passwort fuer den Zugriff auf geschuetzte Kataloginhalte.
   final String? catalogContentPassword;
 
@@ -83,6 +87,7 @@ class AppSettings {
     UiVariante? uiVariante,
     TabellenAnsicht? tabellenAnsicht,
     bool? summaryRailCollapsed,
+    Map<String, Map<String, double>>? tableColumnWidths,
     Object? catalogContentPassword = _copySentinel,
     RulesIndexRemoteConfig? rulesIndexRemoteConfig,
     Set<String>? disabledHouseRulePackIds,
@@ -102,6 +107,7 @@ class AppSettings {
       uiVariante: uiVariante ?? this.uiVariante,
       tabellenAnsicht: tabellenAnsicht ?? this.tabellenAnsicht,
       summaryRailCollapsed: summaryRailCollapsed ?? this.summaryRailCollapsed,
+      tableColumnWidths: tableColumnWidths ?? this.tableColumnWidths,
       catalogContentPassword: identical(catalogContentPassword, _copySentinel)
           ? this.catalogContentPassword
           : catalogContentPassword as String?,
@@ -123,6 +129,10 @@ class AppSettings {
     'uiVariante': uiVariante.name,
     'tabellenAnsicht': tabellenAnsicht.name,
     'summaryRailCollapsed': summaryRailCollapsed,
+    'tableColumnWidths': <String, Map<String, double>>{
+      for (final entry in tableColumnWidths.entries)
+        entry.key: Map<String, double>.from(entry.value),
+    },
     'catalogContentPassword': catalogContentPassword,
     'rulesIndexRemoteConfig': rulesIndexRemoteConfig.toJson(),
     'disabledHouseRulePackIds': disabledHouseRulePackIds.toList(
@@ -158,6 +168,7 @@ class AppSettings {
       uiVariante: uiVariante,
       tabellenAnsicht: tabellenAnsicht,
       summaryRailCollapsed: json['summaryRailCollapsed'] as bool? ?? false,
+      tableColumnWidths: _parseTableColumnWidths(json['tableColumnWidths']),
       catalogContentPassword: _parseNullableString(
         json['catalogContentPassword'],
       ),
@@ -187,6 +198,38 @@ class AppSettings {
       return fallback;
     }
     return Set<String>.unmodifiable(result);
+  }
+
+  static Map<String, Map<String, double>> _parseTableColumnWidths(dynamic raw) {
+    if (raw is! Map) {
+      return const <String, Map<String, double>>{};
+    }
+    final result = <String, Map<String, double>>{};
+    for (final tableEntry in raw.entries) {
+      final tableId = tableEntry.key;
+      final rawWidths = tableEntry.value;
+      if (tableId is! String || tableId.trim().isEmpty || rawWidths is! Map) {
+        continue;
+      }
+      final widths = <String, double>{};
+      for (final widthEntry in rawWidths.entries) {
+        final columnId = widthEntry.key;
+        final rawWidth = widthEntry.value;
+        if (columnId is! String ||
+            columnId.trim().isEmpty ||
+            rawWidth is! num) {
+          continue;
+        }
+        final width = rawWidth.toDouble();
+        if (width.isFinite && width > 0) {
+          widths[columnId] = width;
+        }
+      }
+      if (widths.isNotEmpty) {
+        result[tableId] = Map<String, double>.unmodifiable(widths);
+      }
+    }
+    return Map<String, Map<String, double>>.unmodifiable(result);
   }
 
   static String? _parseNullableString(dynamic raw) {

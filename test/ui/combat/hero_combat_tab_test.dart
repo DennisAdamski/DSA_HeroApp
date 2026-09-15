@@ -1458,6 +1458,12 @@ void main() {
     );
     expect(offhandCard, findsOneWidget);
     expect(
+      find.byKey(
+        const ValueKey<String>('table-column-resize-combat.offhand-name'),
+      ),
+      findsOneWidget,
+    );
+    expect(
       find.byKey(const ValueKey<String>('combat-offhand-editor-card')),
       findsNothing,
     );
@@ -1856,6 +1862,12 @@ void main() {
       find.byKey(const ValueKey<String>('combat-weapons-overview-table')),
       findsOneWidget,
     );
+    expect(
+      find.byKey(
+        const ValueKey<String>('table-column-resize-combat.weapons-name'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('shows only combat talent groups that have active talents', (
@@ -1884,6 +1896,12 @@ void main() {
 
     expect(find.widgetWithText(ExpansionTile, 'Fernkampf'), findsOneWidget);
     expect(find.widgetWithText(ExpansionTile, 'Nahkampf'), findsNothing);
+    expect(
+      find.byKey(
+        const ValueKey<String>('table-column-resize-combat.talents-name'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('shared save persists changes from melee and sf subtabs', (
@@ -3329,6 +3347,12 @@ void main() {
     );
     expect(armorTable, findsOneWidget);
     expect(armorCalculation, findsOneWidget);
+    expect(
+      find.byKey(
+        const ValueKey<String>('table-column-resize-combat.armor-name'),
+      ),
+      findsOneWidget,
+    );
 
     final tableTopLeft = tester.getTopLeft(armorTable);
     final calculationTopLeft = tester.getTopLeft(armorCalculation);

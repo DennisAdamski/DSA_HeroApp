@@ -37,6 +37,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
@@ -444,10 +445,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         };
         final effectiveAttributes = computeEffectiveAttributes(hero);
         final contentUnlocked = ref.watch(catalogContentVisibleProvider);
-        final contentPassword = ref
-            .watch(appSettingsProvider)
-            .valueOrNull
-            ?.catalogContentPassword;
+        final contentPassword = ref.watch(catalogContentPasswordProvider);
         _syncProtectedContentCache(
           contentUnlocked: contentUnlocked,
           contentPassword: contentPassword,

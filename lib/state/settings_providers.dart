@@ -40,6 +40,93 @@ final appSettingsProvider = StreamProvider<AppSettings>((ref) {
   });
 });
 
+/// Liefert nur das Passwort, dessen Änderung den Katalog neu entschlüsselt.
+final catalogContentPasswordProvider = Provider<String?>((ref) {
+  return ref.watch(
+    appSettingsProvider.select(
+      (settings) => settings.valueOrNull?.catalogContentPassword,
+    ),
+  );
+});
+
+// Vergleicht Settings-Mengen nach Inhalt, damit ein Repository-Reload mit
+// neuen Set-Instanzen keine fachlich unveränderten Abhängigkeiten auslöst.
+class _StringSetSelection {
+  _StringSetSelection(Set<String> values)
+    : values = Set<String>.unmodifiable(values);
+
+  final Set<String> values;
+
+  @override
+  bool operator ==(Object other) {
+    return other is _StringSetSelection &&
+        values.length == other.values.length &&
+        values.containsAll(other.values);
+  }
+
+  @override
+  int get hashCode => Object.hashAllUnordered(values);
+}
+
+/// Liefert nur die Paket-Auswahl, deren Änderung den Katalog neu auflöst.
+final catalogDisabledHouseRulePackIdsProvider = Provider<Set<String>>((ref) {
+  final selection = ref.watch(
+    appSettingsProvider.select(
+      (settings) => _StringSetSelection(
+        settings.valueOrNull?.disabledHouseRulePackIds ?? const <String>{},
+      ),
+    ),
+  );
+  return selection.values;
+});
+
+// Vergleicht Breiten-Karten nach Inhalt. `AppSettings.tableColumnWidths` wird
+// bei jedem Save komplett neu aufgebaut, auch fuer nicht betroffene Tabellen.
+class _ColumnWidthSelection {
+  _ColumnWidthSelection(Map<String, double> widths)
+    : widths = Map<String, double>.unmodifiable(widths);
+
+  final Map<String, double> widths;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! _ColumnWidthSelection ||
+        other.widths.length != widths.length) {
+      return false;
+    }
+    for (final entry in widths.entries) {
+      if (other.widths[entry.key] != entry.value) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode => Object.hashAllUnordered(
+    widths.entries.map((entry) => Object.hash(entry.key, entry.value)),
+  );
+}
+
+/// Liefert die gespeicherten Spaltenbreiten genau einer Tabelle.
+///
+/// Bewusst selektiv: Ohne diesen Zuschnitt baut jede gespeicherte Breite
+/// saemtliche Tabellen der App neu auf.
+final tableColumnWidthsProvider = Provider.family<Map<String, double>, String>((
+  ref,
+  tableId,
+) {
+  final selection = ref.watch(
+    appSettingsProvider.select(
+      (settings) => _ColumnWidthSelection(
+        settings.valueOrNull?.tableColumnWidths[tableId] ??
+            const <String, double>{},
+      ),
+    ),
+  );
+  return selection.widths;
+});
+
 /// Schnellzugriff auf den Debug-Modus-Zustand.
 final debugModusProvider = Provider<bool>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.debugModus ?? false;
@@ -71,7 +158,7 @@ final summaryRailCollapsedProvider = Provider<bool>((ref) {
 /// true wenn ein gueltiges Entschluesselungspasswort gespeichert ist.
 /// Damit sind geschuetzte Kataloginhalte dauerhaft freigeschaltet.
 final catalogContentVisibleProvider = Provider<bool>((ref) {
-  final pw = ref.watch(appSettingsProvider).valueOrNull?.catalogContentPassword;
+  final pw = ref.watch(catalogContentPasswordProvider);
   return pw != null && pw.isNotEmpty;
 });
 
@@ -84,10 +171,13 @@ final rulesIndexRemoteConfigProvider = Provider<RulesIndexRemoteConfig>((ref) {
 /// Aktuelle Beschreibung des wirksamen Heldenspeicherorts.
 final heroStorageLocationProvider = FutureProvider<HeroStorageLocation>((ref) {
   final storagePaths = ref.watch(appStoragePathsProvider);
-  final configuredPath = ref
-      .watch(appSettingsProvider)
-      .valueOrNull
-      ?.heroStoragePath;
+  // Selektiv: Ein `ref.watch(appSettingsProvider)` wuerde diesen Provider bei
+  // jeder gespeicherten Spaltenbreite erneut in den Ladezustand schicken.
+  final configuredPath = ref.watch(
+    appSettingsProvider.select(
+      (settings) => settings.valueOrNull?.heroStoragePath,
+    ),
+  );
   return storagePaths.describeHeroStorageLocation(
     configuredPath: configuredPath,
   );
@@ -178,6 +268,39 @@ class SettingsActions {
     );
   }
 
+  /// Speichert eine einzelne Spaltenbreite, ohne andere Tabellen anzutasten.
+  Future<void> setTableColumnWidth(
+    String tableId,
+    String columnId,
+    double width,
+  ) async {
+    if (tableId.trim().isEmpty ||
+        columnId.trim().isEmpty ||
+        !width.isFinite ||
+        width <= 0) {
+      return;
+    }
+    final current = _repo.load();
+    final tables = _copyTableColumnWidths(current.tableColumnWidths);
+    final columns = tables.putIfAbsent(tableId, () => <String, double>{});
+    columns[columnId] = width;
+    await _repo.save(
+      current.copyWith(tableColumnWidths: _freezeTableColumnWidths(tables)),
+    );
+  }
+
+  /// Entfernt alle gespeicherten Spaltenbreiten einer Tabelle.
+  Future<void> resetTableColumnWidths(String tableId) async {
+    final current = _repo.load();
+    final tables = _copyTableColumnWidths(current.tableColumnWidths);
+    if (tables.remove(tableId) == null) {
+      return;
+    }
+    await _repo.save(
+      current.copyWith(tableColumnWidths: _freezeTableColumnWidths(tables)),
+    );
+  }
+
   /// Aktiviert oder deaktiviert ein Hausregel-Paket per Pack-ID.
   ///
   /// Semantik: Die persistierte Menge ist Opt-out (leer = alles aktiv).
@@ -196,6 +319,25 @@ class SettingsActions {
       ),
     );
   }
+}
+
+Map<String, Map<String, double>> _copyTableColumnWidths(
+  Map<String, Map<String, double>> source,
+) {
+  return <String, Map<String, double>>{
+    for (final entry in source.entries)
+      entry.key: Map<String, double>.from(entry.value),
+  };
+}
+
+Map<String, Map<String, double>> _freezeTableColumnWidths(
+  Map<String, Map<String, double>> source,
+) {
+  final frozen = <String, Map<String, double>>{
+    for (final entry in source.entries)
+      entry.key: Map<String, double>.unmodifiable(entry.value),
+  };
+  return Map<String, Map<String, double>>.unmodifiable(frozen);
 }
 
 /// Provider fuer Einstellungs-Schreiboperationen.

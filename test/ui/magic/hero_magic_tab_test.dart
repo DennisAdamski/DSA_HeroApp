@@ -238,6 +238,51 @@ void main() {
     },
   );
 
+  testWidgets('active spell name stays readable and resizable in both modes', (
+    tester,
+  ) async {
+    final opened = await openMagicTab(
+      tester,
+      appSettings: const AppSettings(
+        tableColumnWidths: <String, Map<String, double>>{
+          'magic.activeSpells': <String, double>{'name': 360},
+        },
+      ),
+    );
+    const handleKey = ValueKey<String>(
+      'table-column-resize-magic.activeSpells-name',
+    );
+
+    DataTable activeSpellTable() {
+      return tester.widget<DataTable>(find.byType(DataTable).first);
+    }
+
+    double nameColumnWidth() {
+      final width = activeSpellTable().columns.first.columnWidth;
+      return (width! as FixedColumnWidth).value;
+    }
+
+    expect(find.byKey(handleKey), findsOneWidget);
+    expect(nameColumnWidth(), 384);
+
+    await opened.actions.startEdit();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    expect(find.byKey(handleKey), findsOneWidget);
+    expect(nameColumnWidth(), 384);
+  });
+
+  testWidgets('active spell name starts with at least 220 pixels of content', (
+    tester,
+  ) async {
+    await openMagicTab(tester);
+    final table = tester.widget<DataTable>(find.byType(DataTable).first);
+    final width = table.columns.first.columnWidth! as FixedColumnWidth;
+
+    expect(width.value, greaterThanOrEqualTo(244));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'magische Sonderfertigkeiten nutzen feste Sektion und speichern Beschreibung',
     (tester) async {

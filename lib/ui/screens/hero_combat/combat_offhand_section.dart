@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 
 /// Verwaltet Nebenhand-Eintraege und oeffnet den Editor auf breiten Layouts rechts.
 class CombatOffhandSection extends StatefulWidget {
@@ -34,26 +35,42 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
   static const double _wideLayoutBreakpoint = 1280;
   static const List<AdaptiveTableColumnSpec> _columnSpecs =
       <AdaptiveTableColumnSpec>[
-        AdaptiveTableColumnSpec(minWidth: 150, maxWidth: 260, flex: 2), // Name
         AdaptiveTableColumnSpec(
+          columnId: 'name',
+          minWidth: 150,
+          maxWidth: 260,
+          flex: 2,
+          resizable: true,
+          resizeMaxWidth: 480,
+        ), // Name
+        AdaptiveTableColumnSpec(
+          columnId: 'type',
           minWidth: 110,
           maxWidth: 180,
           flex: 1,
+          resizable: true,
+          resizeMaxWidth: 480,
         ), // Typ (Schild/Parierwaffe)
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84), // BF
         AdaptiveTableColumnSpec(
+          columnId: 'size',
           minWidth: 90,
           maxWidth: 150,
           flex: 1,
+          resizable: true,
+          resizeMaxWidth: 480,
         ), // Schildgröße
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84), // INI-Mod
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84), // AT-Mod
         AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 84), // PA-Mod
         AdaptiveTableColumnSpec(minWidth: 70, maxWidth: 110), // Artefakt
         AdaptiveTableColumnSpec(
+          columnId: 'artifactDescription',
           minWidth: 180,
           maxWidth: 320,
           flex: 2,
+          resizable: true,
+          resizeMaxWidth: 640,
         ), // Artefaktbeschreibung
         AdaptiveTableColumnSpec.fixed(56), // Aktion
       ];
@@ -134,22 +151,26 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
           ],
         ),
         const SizedBox(height: 8),
-        FlexibleTable(
-          tableKey: const ValueKey<String>('combat-offhand-table'),
-          columnSpecs: _columnSpecs,
-          headerCells: [
-            const Text('Name'),
-            const Text('Typ'),
-            const Text('BF'),
-            const Text('Größe'),
-            const Text('INI Mod'),
-            const Text('AT Mod'),
-            const Text('PA Mod'),
-            const Text('Artefakt'),
-            const Text('Artefaktbeschreibung'),
-            const Text('Aktion'),
-          ],
-          rows: rows,
+        PersistedTableColumnLayout(
+          tableId: 'combat.offhand',
+          builder: (context, resizeBinding) => FlexibleTable(
+            tableKey: const ValueKey<String>('combat-offhand-table'),
+            columnSpecs: _columnSpecs,
+            columnResize: resizeBinding,
+            headerCells: [
+              const Text('Name'),
+              const Text('Typ'),
+              const Text('BF'),
+              const Text('Größe'),
+              const Text('INI Mod'),
+              const Text('AT Mod'),
+              const Text('PA Mod'),
+              const Text('Artefakt'),
+              const Text('Artefaktbeschreibung'),
+              const Text('Aktion'),
+            ],
+            rows: rows,
+          ),
         ),
         if (rows.isEmpty)
           const Padding(

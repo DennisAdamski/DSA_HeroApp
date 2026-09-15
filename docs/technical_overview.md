@@ -1686,9 +1686,11 @@ Konsumenten nicht pro Anzeige PBKDF2/AES anwerfen, sitzt zwischen
 `baseCatalogSourceDataProvider` und `catalogRuntimeDataProvider` der neue
 `decryptedCatalogSourceDataProvider`:
 
-- Watcht `appSettingsProvider.catalogContentPassword`. Ohne Passwort wird
+- Watcht den selektiven `catalogContentPasswordProvider`. Ohne Passwort wird
   die Quelle unveraendert durchgereicht; geschuetzte Felder bleiben mit
-  `enc:`-Praefix bestehen und die UI zeigt einen Locked-Hinweis.
+  `enc:`-Praefix bestehen und die UI zeigt einen Locked-Hinweis. Andere
+  Einstellungen wie gespeicherte Spaltenbreiten invalidieren die
+  Katalog-Pipeline nicht.
 - Mit Passwort ruft er `decryptAllCatalogValues` auf. Der Runner zaehlt die
   `enc:`-Werte: ab 64 wird der Bulk-Decrypt via `compute()` auf einen Web
   Worker / Isolate ausgelagert, sonst synchron im aufrufenden Thread.
@@ -2063,6 +2065,30 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   `Einstellungen > Darstellung`; die Einstellung gilt app-weit und damit
   auch fuer die Eigenschafts- und Basiswert-Tabellen der Uebersicht.
 
+### Update 2026-09-05: Persistente Breiten für Haupttabellen
+
+- `AdaptiveTableColumnSpec` kennzeichnet verstellbare Spalten über stabile
+  `columnId`, `resizable` und `resizeMaxWidth`. Die adaptive Breitenauflösung
+  läuft zuerst; anschließend ersetzt ein gültiger Nutzerwert nur seine eigene
+  Spalte und lässt alle Nachbarspalten unverändert.
+- `PersistedTableColumnLayout` hält Drag-Werte zunächst tabellen-ID-weit lokal
+  und speichert erst beim Loslassen. `FlexibleTable`,
+  `ResponsiveAdaptiveTable` und die aktive Zauber-`DataTable` verwenden den
+  gemeinsamen 24-px-Headergriff; Kartenansichten ignorieren Bindung und Griffe.
+- `AppSettings.tableColumnWidths` serialisiert die geräteweiten Profile als
+  `{tableId: {columnId: width}}`. Aktiv sind `magic.activeSpells`,
+  `talents.meta`, `talents.general`, `talents.combat`, `combat.talents`,
+  `combat.weapons`, `combat.armor`, `combat.offhand` und `inventory.items`;
+  Katalog-, Übersichts-, Begleiter- und Sync-Tabellen bleiben unverändert.
+- Selektive Provider für Katalogpasswort und deaktivierte Hausregel-Pakete
+  verhindern, dass das Persistieren einer Breite den Katalog oder den gesamten
+  Zaubertab neu aufbaut.
+- `PersistedTableColumnLayout` liest die gespeicherten Breiten über den
+  selektiven `tableColumnWidthsProvider(tableId)`. `AppSettings.tableColumnWidths`
+  wird bei jedem Save komplett neu aufgebaut, deshalb vergleicht der Provider
+  den Inhalt und nicht die Map-Instanz — sonst baut jede gespeicherte Breite
+  auch alle übrigen sichtbaren Tabellen neu auf.
+
 ### Update 2026-08-08: Haupteigenschafts-Boni teilweise verdrahtet
 
 - **Boni-Katalog mit Umsetzungsgrad.** Die frühere flache Map
@@ -2370,6 +2396,32 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   Monats-Dropdown / Jahr) und das schreibgeschuetzte `Alter (aktuell)`. Der
   Geburtsmonat liegt als Entwurfsfeld `_draftGeburtsmonat` im Tab-State, weil
   ein Dropdown sich nicht als `TextEditingController` puffern laesst.
+
+### Update 2026-09-09: Kein App-Neuaufbau beim Speichern einer Spaltenbreite
+
+Symptom: Im Web lud die App nach jeder verstellten Spaltenbreite im Talente-Tab
+sichtbar neu (Ladeindikator statt Tabelle). Ursache war nicht die Katalogkette,
+sondern der `ProviderScope` darüber.
+
+- `AppStartupGate` hört auf `settingsRepository.watch()`. Der Listener rief bei
+  **jeder** Einstellungsänderung `setState` auf, obwohl nur
+  `AppSettings.heroStoragePath` das Gate betrifft. Er vergleicht jetzt den Pfad
+  und baut sonst nichts neu auf.
+- `_buildScope` erzeugte bei jedem Rebuild frische
+  `CustomCatalogRepository`- und `HouseRulePackRepository`-Instanzen für
+  `overrideWithValue`. Ohne Wertgleichheit gilt eine neue Instanz als geänderter
+  Override: Riverpod benachrichtigt die Abhängigen, `houseRulePackCatalogProvider`
+  und `catalogRuntimeDataProvider` laufen erneut, und jeder Tab, der auf
+  `rulesCatalogProvider` wartet, fällt zurück in den Ladezustand. Beide
+  Repositories haben deshalb jetzt `==`/`hashCode` über `heroStoragePath`, und
+  das Bootstrap-Ergebnis hält je eine stabile Instanz.
+- Regressionstest: `test/state/catalog_settings_dependencies_test.dart`
+  (»rebuilding the app scope keeps the resolved catalog«) baut einen
+  `ProviderScope` mit denselben Overrides neu auf und prüft, dass der aufgelöste
+  Katalog identisch bleibt.
+- `heroStorageLocationProvider` liest den Pfad ebenfalls selektiv, damit eine
+  gespeicherte Breite die Speicherort-Karte in den Einstellungen nicht in den
+  Ladezustand schickt.
 
 ---
 
