@@ -1467,8 +1467,9 @@ auflösen können, ob aktiv oder nicht.
 Bei Sonderfertigkeiten zählt zum aktiven Umfang außerdem, was daraus unmittelbar
 folgt: die nächste Stufe jeder Kette, von der mindestens eine Stufe erworben ist
 (`naechsteKettenstufe`), sowie weitere Varianten mehrfach wählbarer Einträge.
-Eine unangetastete Kette bleibt vollständig im Erwerbsblatt — sie ist kein
-Folgeschritt, sondern ein Neuerwerb. Der Bestand wird alias-fähig über
+Eine unangetastete Kette gehört zum inaktiven Umfang. Der Fähigkeitenbaum der
+Kategorie Sonderfertigkeiten verwendet jedoch `all` und zeigt auch solche
+Neuerwerbe direkt an. Der Bestand wird alias-fähig über
 `istEintragErworben` und für Kampf-SF über `isCombatSpecialAbilityActive`
 ermittelt; mehrfach wählbare Einträge zählen über ihre Varianten, weil ein Held
 nur `Geländekunde (Wüste)` führt und nie den Basisnamen.
@@ -1476,6 +1477,16 @@ nur `Geländekunde (Wüste)` führt und nie den Basisnamen.
 `_validateEntry` verlässt; nur die Karte stellt sie für erworbene Einträge als
 Bestandsnachweis („Erworben“, ohne Knopf) statt als Warnung dar. Wer den
 Sperrgrund umbaut, muss beide Seiten anfassen.
+
+Der Fähigkeitenbaum (`rules/derived/advancement_skill_tree.dart`) bildet
+Sonderfertigkeiten und Manöver samt UND-/ODER-Voraussetzungen ab. Vorstufen aus
+Stufenketten werden auch bei der Erwerbsprüfung berücksichtigt. Die Oberfläche
+in `advancement_skill_tree_view.dart` und `skill_tree_branch.dart` zeigt Status,
+Kategoriefilter, Suche und Erwerbsdetails; Vormerken nutzt die bestehende Sitzung.
+`advancement_maneuver_rules.dart` bestimmt Kosten und Voraussetzungen für
+`AdvancementKind.maneuver`, gegebenenfalls pro aktivem Kampftalent mit der ID
+`manöverId::talentId`. Übernahme ergänzt `activeManeuvers`; der Besitz umfasst
+über `learnedManeuverIds` auch Freischaltungen erworbener Kampf-Sonderfertigkeiten.
 
 Das Erwerbsblatt (`ui/screens/advancement/advancement_activation_sheet.dart`)
 listet den `inactive`-Umfang einer Kategorie mit Suche, Artfiltern und dem
@@ -1547,15 +1558,15 @@ angezeigt, der Strukturblock erlaubt zusätzlich die Prüfung gegen den Helden.
 Einträge ohne Strukturblock — etwa aus Hausregel-Paketen — verhalten sich wie
 zuvor.
 
-Gepflegt ist der Block für die magischen, die allgemeinen und die
-Kampf-Sonderfertigkeiten. Die karmalen fehlen bewusst: Ihre
-Kernvoraussetzungen (Liturgiekenntnis/LkW, Gottheit, Entrückungsstufe) haben
-im `HeroSheet` kein Gegenstück, wären also fast ausschließlich `hinweis`.
+Gepflegt ist der Block für magische, allgemeine, Kampf- und karmale
+Sonderfertigkeiten sowie Manöver. Nicht modellierte karmale Voraussetzungen
+(Liturgiekenntnis/LkW, Gottheit, Entrückungsstufe) bleiben `hinweis` zur
+manuellen Prüfung; Eigenschaften und SF-Abhängigkeiten sind strukturiert prüfbar.
 
 Getragen wird beides — Voraussetzungen wie Ketten — von der schmalen
 Schnittstelle `SpecialAbilityEntry`, die `SpecialAbilityDef` (allgemein,
-magisch, karmal) und `CombatSpecialAbilityDef` gemeinsam implementieren. Damit
-teilen sich beide Katalogfamilien Ketten-Logik und Stufen-Karte, ohne dass
+magisch, karmal), `CombatSpecialAbilityDef` und `ManeuverDef` implementieren. Damit
+teilen sich die Katalogfamilien die Voraussetzungsprüfung und Erwerbsdarstellung, ohne dass
 ihre übrigen Felder (Varianten hier, Manöver-Freischaltungen dort)
 zusammengelegt werden müssten.
 

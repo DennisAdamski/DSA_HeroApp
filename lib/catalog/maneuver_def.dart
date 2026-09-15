@@ -1,5 +1,7 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 import 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
+import 'special_ability_entry.dart';
+import 'special_ability_requirement.dart';
 
 /// Definition eines Kampfmanoeuvers aus dem Regelkatalog.
 ///
@@ -7,7 +9,7 @@ import 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
 /// [erschwernis] enthaelt den Erschwernis-Wert als Freitext (z. B. '-4' oder '+0').
 /// Fernkampf-Manoever mit [mussSeparatErlerntWerden] werden pro aktivem FK-Talent
 /// einzeln aktiviert; die gespeicherte ID lautet dann `<id>::<talentId>`.
-class ManeuverDef {
+class ManeuverDef implements SpecialAbilityEntry {
   const ManeuverDef({
     required this.id,
     required this.name,
@@ -27,9 +29,12 @@ class ManeuverDef {
     this.quelle = '',
     this.hausregel = false,
     this.nurEpisch = false,
+    this.voraussetzungenStruktur = const [],
   });
 
+  @override
   final String id;
+  @override
   final String name;
   final String gruppe;
   final String typ;
@@ -39,6 +44,7 @@ class ManeuverDef {
   final String erklarungLang;
   final String voraussetzungen;
   final String verbreitung;
+  @override
   final String kosten;
 
   /// Schraenkt Sichtbarkeit auf bestimmte Talent-IDs ein.
@@ -55,7 +61,19 @@ class ManeuverDef {
   final String
   quelle; // Freitext-Quellreferenz (z. B. 'Wege des Schwerts S. 112')
   final bool hausregel; // Eintrag stammt aus einer Hausregel
+  @override
   final bool nurEpisch; // Nur fuer episch eingestufte Helden verfuegbar
+
+  @override
+  final List<SpecialAbilityRequirement> voraussetzungenStruktur;
+
+  /// Manöver werden über ihre eigene Katalog-ID und ihren Namen aufgelöst.
+  @override
+  List<String> get alleNamen => [name];
+
+  /// Manöverabhängigkeiten stehen ausdrücklich in ihren Voraussetzungen.
+  @override
+  SpecialAbilityChainRef? get kette => null;
 
   factory ManeuverDef.fromJson(Map<String, dynamic> json) {
     final ruleMetaJson = readCatalogObject(json, 'ruleMeta');
@@ -86,6 +104,8 @@ class ManeuverDef {
       quelle: readCatalogString(json, 'quelle', fallback: ''),
       hausregel: readCatalogBool(json, 'hausregel', fallback: false),
       nurEpisch: readCatalogBool(json, 'nurEpisch', fallback: false),
+      voraussetzungenStruktur: readCatalogObjectList(json, 'voraussetzungen_struktur')
+          .map(SpecialAbilityRequirement.fromJson).toList(growable: false),
     );
   }
 
@@ -102,6 +122,9 @@ class ManeuverDef {
       'voraussetzungen': voraussetzungen,
       'verbreitung': verbreitung,
       'kosten': kosten,
+      if (voraussetzungenStruktur.isNotEmpty)
+        'voraussetzungen_struktur': voraussetzungenStruktur
+            .map((requirement) => requirement.toJson()).toList(growable: false),
       if (nurFuerTalente.isNotEmpty) 'nur_fuer_talente': nurFuerTalente,
       if (mussSeparatErlerntWerden) 'muss_separat_erlernt_werden': true,
       if (giltFuerTalentTyp.isNotEmpty)

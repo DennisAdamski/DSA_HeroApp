@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/special_ability_entry.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
@@ -21,6 +22,8 @@ import 'modifier_source_breakdown.dart';
 import 'requirement_evaluation_rules.dart';
 import 'special_ability_chain_rules.dart';
 import 'special_ability_variant_rules.dart';
+import 'advancement_maneuver_rules.dart';
+import 'maneuver_rules.dart';
 
 part 'advancement_value_options.dart';
 part 'advancement_ability_options.dart';
@@ -131,6 +134,9 @@ class AdvancementContext {
   final Map<AdvancementKind, Set<String>> _ownedAbilityIds = {};
   final Map<AdvancementKind, Set<String>> _actionableAbilityIds = {};
 
+  /// Einmal aufgelöster Besitz einschließlich durch Kampf-SF gewährter Manöver.
+  late final Set<String> ownedManeuverIds = learnedManeuverIds(hero.combatConfig, catalog);
+
   /// Ob der Held eine Sonderfertigkeit unter genau diesem Anzeigenamen führt.
   bool hasOwnedAbilityName(String displayName) =>
       _normalizedOwnedNames.contains(normalizeSpecialAbilityName(displayName));
@@ -184,6 +190,8 @@ List<AdvancementOption> buildAdvancementOptions({
       (AdvancementKind.karmalAbility, def.id),
     for (final def in catalog.combatSpecialAbilities)
       (AdvancementKind.combatAbility, def.id),
+    for (final id in advancementManeuverTargets(hero, catalog))
+      (AdvancementKind.maneuver, id),
   ];
   return [
     for (final target in targets)
@@ -233,6 +241,7 @@ AdvancementOption? resolveAdvancementOptionIn({
     AdvancementKind.spell => _spellOption(context, targetId, options),
     AdvancementKind.language => _languageOption(context, targetId),
     AdvancementKind.script => _scriptOption(context, targetId),
+    AdvancementKind.maneuver => resolveAdvancementManeuver(context, targetId),
     _ => _abilityOption(context, kind, targetId, options),
   };
 }

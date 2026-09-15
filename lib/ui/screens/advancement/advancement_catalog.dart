@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_activation_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog_actions.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_option_card.dart';
+import 'advancement_skill_tree_view.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 
 /// Durchsuchbarer Steigerungskatalog auf Basis der ungespeicherten Vorschau.
@@ -35,6 +36,7 @@ enum _CatalogCategory {
   ]),
   spells('Zauber', [AdvancementKind.spell]),
   abilities('Sonderfertigkeiten', [
+    AdvancementKind.maneuver,
     AdvancementKind.generalAbility,
     AdvancementKind.magicAbility,
     AdvancementKind.karmalAbility,
@@ -91,7 +93,8 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
     final options = ref.watch(
       advancementOptionsProvider((
         heroId: widget.heroId,
-        scope: AdvancementScope.active,
+        scope: _category == _CatalogCategory.abilities
+            ? AdvancementScope.all : AdvancementScope.active,
       )),
     );
     final filtered = options.where((option) {
@@ -163,7 +166,7 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
-                    '${filtered.length} ${showImpact ? 'Einträge' : 'aktive Einträge'}'
+                    '${filtered.length} ${showImpact || _category == _CatalogCategory.abilities ? 'Einträge' : 'aktive Einträge'}'
                     ' · ${session.preview.apAvailable} AP verfügbar',
                     style: Theme.of(context).textTheme.bodySmall
                         ?.copyWith(color: context.codexTheme.inkMuted),
@@ -183,7 +186,10 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
           ),
         ),
         Expanded(
-          child: ListView.separated(
+          child: _category == _CatalogCategory.abilities
+              ? AdvancementSkillTreeView(session: session, options: options,
+                  query: query, onPlan: session.isSaving || _dialogOpen ? null : _plan)
+              : ListView.separated(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             itemCount: headerCount + optionCount + bridgeCount,
             separatorBuilder: (_, _) => const SizedBox(height: 10),

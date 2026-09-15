@@ -9,6 +9,13 @@ HeroSheet _applyEntry(
 ) {
   final id = entry.targetId;
   switch (entry.kind) {
+    case AdvancementKind.maneuver:
+      final rules = hero.combatConfig.specialRules;
+      return hero.copyWith(combatConfig: hero.combatConfig.copyWith(
+        specialRules: rules.copyWith(activeManeuvers: [
+          ...rules.activeManeuvers, id,
+        ]),
+      ));
     case AdvancementKind.attribute:
       final code = parseAttributeCode(id)!;
       final raised = applyAdvancementAttributeValue(hero, code, entry.toValue!);

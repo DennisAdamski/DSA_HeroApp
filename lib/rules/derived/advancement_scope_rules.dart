@@ -31,6 +31,7 @@ bool isAdvancementTargetOwned({
     AdvancementKind.spell => hero.spells.containsKey(targetId),
     AdvancementKind.language => hero.sprachen.containsKey(targetId),
     AdvancementKind.script => hero.schriften.containsKey(targetId),
+    AdvancementKind.maneuver => isAdvancementManeuverOwned(context, targetId),
     _ => context.ownedAbilityIds(kind).contains(targetId),
   };
 }
