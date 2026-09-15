@@ -38,6 +38,10 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   ueberhaupt feuern und wie breit `dart format` umbricht — ein SDK-Bump zieht
   beides nach sich.
 - Regellogik gehoert nach `lib/rules/derived/`.
+- `CodexPageScaffold` legt eine transparente `Material`-Fläche über den
+  Seitenhintergrund, damit `ListTile`-/`ExpansionTile`-Hintergründe und
+  Ink-Effekte sichtbar bleiben. Der Regressionstest liegt unter
+  `test/ui/widgets/codex_page_scaffold_test.dart`.
 - Steigerungen laufen getrennt von manuellen Korrekturen als Sitzung:
   `lib/domain/hero_advancement_entry.dart` trägt persistierbare Einträge,
   `lib/rules/derived/advancement*.dart` Optionen und Replay,
