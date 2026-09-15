@@ -42,6 +42,9 @@ technische UI-Aspekte getrennt getestet werden.
   `test/rules/advancement_maneuver_test.dart` prüft Erwerb, Talentbindung,
   Duplikate und Katalog-Roundtrips. `test/ui/advancement/advancement_skill_tree_ui_test.dart`
   deckt Erwerbsbedienung, Suche und Details auf schmalen Bildschirmen ab.
+  `advancement_ability_details_test.dart` prüft vollständige Beschreibungstexte,
+  Variantenkosten, Kampfboni, aufgelöste Manövernamen, Scrollbarkeit und
+  passwortgeschützte Regeltexte im Detaildialog.
 
 ## Zuordnungsmatrix
 

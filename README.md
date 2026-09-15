@@ -110,6 +110,9 @@ Technischer Stack:
   Filter trennen Kampf, Allgemein, Magie und Karma; die Suche erhält zugehörige
   Vorstufen. Knoten zeigen Erwerbsstatus und AP-Kosten und öffnen Details zum
   Vormerken. Getrennt lernbare Manöver werden pro passendem Kampftalent erworben.
+  Die geöffneten Details zeigen außerdem die verfügbaren Beschreibungen und
+  Regeltexte, Originalvoraussetzungen, Variantenkosten, Kampfboni und Quellen.
+  Geschützte Texte nutzen die Katalogfreischaltung aus den Einstellungen.
 - Unter **Eigenschaften** zeigt die Basiswerte-Karte die Summen vor der Runde
   und nach den vorgemerkten Änderungen. Der Eigenschaftsdialog zeigt live die
   zusätzliche Wirkung des Zielwerts sowie bisher begrenzte Talente, Kampftalente

@@ -1491,6 +1491,14 @@ Kategoriefilter, Suche und Erwerbsdetails; Vormerken nutzt die bestehende Sitzun
 `manöverId::talentId`. Übernahme ergänzt `activeManeuvers`; der Besitz umfasst
 über `learnedManeuverIds` auch Freischaltungen erworbener Kampf-Sonderfertigkeiten.
 
+Der Baum-Detaildialog ergänzt die Erwerbskarte durch `advancement_ability_details.dart`:
+Beschreibung, Langtext, Originalvoraussetzungen, Verbreitung, Varianten samt
+Kosten, Kampfboni, freigeschaltete Manöver und Quellen sind bei vorhandenen
+Katalogangaben zugänglich. Der adaptive Dialog scrollt lange Inhalte.
+Geschützte Texte werden über die bestehende Katalogfreischaltung aufgelöst;
+ohne Passwort erscheint der Sperrhinweis. Technische Importmetadaten werden
+nicht als Regelinformation ausgegeben.
+
 Das Erwerbsblatt (`ui/screens/advancement/advancement_activation_sheet.dart`)
 listet den `inactive`-Umfang einer Kategorie mit Suche, Artfiltern und dem
 standardmäßig aktiven Schalter „Nur erwerbbare“. Es **schließt sich selbst** und

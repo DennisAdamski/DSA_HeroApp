@@ -80,6 +80,10 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   zeichnet die Zweige. `rules/derived/advancement_maneuver_rules.dart` löst
   Manövererwerbe einschließlich talentgebundener IDs (`id::talentId`) auf.
   `learnedManeuverIds` berücksichtigt auch Freischaltungen durch Kampf-SF.
+- `ui/screens/advancement/advancement_ability_details.dart` ergänzt den
+  Baum-Detaildialog um die verfügbaren Katalogangaben für Sonderfertigkeiten
+  und Manöver. Die Darstellung löst Referenznamen aus dem Sitzungskatalog auf
+  und verwendet `resolveProtectedValue` mit dem selektiven Passwort-Provider.
 - `AdvancementContext` bündelt Held und Katalog für einen Optionsaufbau.
   `buildHeroRequirementContext` und `parseModifierTextsForHero` dürfen nie
   wieder je Option laufen — sonst baut jede der rund 280 SF-Optionen den
