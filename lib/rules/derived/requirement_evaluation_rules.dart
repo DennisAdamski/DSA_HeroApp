@@ -606,7 +606,9 @@ RequirementCheckResult _pruefeManoever(
   final vorhanden =
       needle.isNotEmpty &&
       context.manoever.any(
-        (eintrag) => besessenStufeFuer(eintrag, requirement.name) != null,
+        (eintrag) => requirement.name.contains('(')
+            ? normalizeSpecialAbilityName(eintrag) == needle
+            : besessenStufeFuer(eintrag, requirement.name) != null,
       );
   return RequirementCheckResult(
     requirement: requirement,

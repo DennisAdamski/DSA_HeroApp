@@ -8,7 +8,7 @@
     "beschreibung": "Automatische Seelenprüfung bei jedem Blickkontakt (ab 35 Entrückung).",
     "voraussetzungen": "—",
     "kosten": "500 AP (300 AP bei Praios)",
-    "erklarung_lang": "enc:3:Kdh7HOoffzi6w6X+y+nzrkGfehCYqM8f9pWcNqpXzQBq4WVWeXdflxLg6sszLvZGymBtLmqd/t6zXqBMiL6vW4yX7l9j6EqinrcvHHH+AP3yOnvVHNi/fuvPRsbF7dc6pxTwnPfMgc0ZI/7JwrcG+bSPGANxeKCzV3AOJAAX3fYaH2DaaWbNYttDCRhDfrWB2ldsbevC0f2kmbQPcH/NFlzBtSwa5MWAETDUJQgk9HOGqtTtXK/oHMBE5DKnzoCcq5iJfZvLojGOPr0SNANBmx8TxRc3kLgmSGEWaW01bqLeZ6JwT/W5e2aRWWjwQCVGm/9XvOlaqGjuCTFsllVaN7V4U96XS+M9GW8zNcC83za9/3YzPbjC5LMfIlGGUuLd0OX2OxS3qvE5Mz4Hx8ZRACCq33rUOAa7+z8Krzud8blrcCP4Y1igv9PqR9K86ycsBV5ZjwuJxAX7o0AJCfUiG66u+NlppfIeVmqNIpiaGweSUWQXowlIUbKkWqpmx0PmUuY4t239sNW7jsdDyHcqtlQK+IQpApJx8caNutsV+ejFd0Sq2x6Z4Q==",
+    "erklarung_lang": "enc:3:8fPWTg7i9zbbTSanl7Zf2vDQSKp/qFTwyHIbn6fOe0X+P/x8Vwdo0uXombr5mti10Wv+C4v1LQQjTNAmvVF4/yw/bBBHPu61IGuoDHGiR6qhbAZvQWUhgrahshFUkWvu3e46cJ1uBKkhFwutYrymBosTWLu9FjWBr+XH33c5eRDltPcamOIwKeog+widReENajZFS249XoEX7PgtSMJL2KIEIkiSWSKx54aOx0n1s/uQCpPbWepPNz7xW4hIabxttyQxEk2htmRF/gr3+f/QgZNvJuGg8bW135NSztAqXl4QA5i/o7EwBv+YnGpKgTYhREIXMbqYMWOXAZTqXtWs3DOYCQneTJPxN44/u9FJVRVauExtEiZdNu5G4KvgTqZPCc00s61FbVePu7QKrqpiRHabCGbN3qQRN/rlraIf0l3W73H73GNao0mu+NYc+s4K1ihv5ggGQYo1I4mBPgRIKdgA7csWo8nSskPVFcCDf/vQXQfy9gT99OARYoY007Avb6U5i9rKPPwY7/VzRDdhPKmRuKQndszbc4hAUGlb3N5YAiFMXVY6Mw==",
     "quelle": "Epische Stufen S. 51",
     "hausregel": true,
     "nurEpisch": true,
@@ -37,7 +37,7 @@
     "beschreibung": "Geweihter wirkt auf Dämonen und Paktierer der Nemesis wie Schreckgestalt I (ab 50 Entrückung).",
     "voraussetzungen": "CH 18",
     "kosten": "500 AP",
-    "erklarung_lang": "enc:3:uOuzjHMCYvIvdOBgGcMBQsd8sr616ObXjlZ7ybJK0Ly3qtZrTyeuGFIq1iJ9eY4oLA4TKqzYZOonvAccddd94DXDMW9TEt1sumf263Lcq1+a1PGrx9NIgaQcmPA4ZYFYgZWTOVLWdZaHIoKeCbgObEMGrIoL+w5cAMDDvoI3q3pyA8bfFFnX9co1VFQ5qMLCcm3MdkpY2DzsabTj4oyUWwQMXJn3JwDbIZuw1c2g2q2uP4WE1lNweOemvb4DseZTlCbTptjVQuK3IGwLxB/idEo41cV5pv/GhSpwG51lGRRcF+f7qK33XfpUJsCfnX0YsmCY7Y03p/YNAXbIppirk2ii0TEKOz53sWUvuYizYu23QcZsf9Uy9FUtayeX6L5rthBI/Ny7G1jK7mGKkGqgOJZL67Yx5CX5DUPfgcYGGURpJuj/zG0ZNyj5AgtYmCs4F+akb5sT7AX7dxOWOfw0URCx1WaO6cUAmR6s0sAcSYudfyrMWcaEpQaZUccJ0562KTsmZBbyRsyCOECHlHe4jUuo1A6Sdh8TKSmyuJr/6z6BhIYU29FsoC04teflSnPY9A==",
+    "erklarung_lang": "enc:3:3K9p0j97wOar8bbF8xxSHjzLYsnZjXTz3S/hMEcy03iIvtTzfl8RUj+e+cnNr71R+fO96N55uhotDSrM/kl7MyQo1Mi7W/4XqI6M6hkEsM8q/kXoaD8UZUHUKADHwaSagiTh29Cge6vBOUlCOBbd3mJ72Y4Hhsl2IMSfTBax813TzFcgRN9s5ieR9k+Nizz6uFoKLFomjxU5L+b2OBCVff6pzPpQ15bi7pZrxRR55t0q/+GwWzJ5hApO+rl6d8GwY+jewwQzTGbCYkWjLmgfF8QSEOHKBd0YzkDFRFgMJYrPu6ajtauMO8pZMsGqQ12hj8zEfifLShUTJCMwba/jmgkIj/lYCI9+V0gpw5ZoIx1/0cmseYdNchvQEAZQcjSwTVGfgnTr0/arPxaY76tvQUb1teinzaCFNI8hoE6s97FlL6HKvVYTncYs9XI1zahGv2UM2Lgo2lOwsfFmQt3jI6QLRrgWkWhJymVZTE5ubUurkqPeHJgH6Mo873e+mZujak+lBbofBBsPWL74xXMAN2B+wKv+udRVmHY+UKXixUuqJ7BK+UxC/UBwvOX2zipJvw==",
     "quelle": "Epische Stufen S. 51",
     "hausregel": true,
     "nurEpisch": true,
@@ -55,7 +55,14 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 18
+      }
+    ]
   },
   {
     "id": "eksf_goettliche_beruehrung",
@@ -66,7 +73,7 @@
     "beschreibung": "Dämonen durch Hautkontakt exorzieren; Paktierern LeP gleich investierter KaP entziehen.",
     "voraussetzungen": "MU 20, SF Karmale Substitution, SF Heilige Hand",
     "kosten": "400 AP",
-    "erklarung_lang": "enc:3:2MoUWhLApt0+AoifHUhe92Cy6t5/er22gU2ln4mfMw5VnOlAUugK+9x07VQKE9yOappkPHmsEuBhzDtXdxNVQ3xOZqm2vwJ+Y85yxpGBEIbFl4/EmBzebrrVNNEMsGeOxn1MZFXiskzMgpGdnpxvDH2DdlVY9JTI7iB9UIpL/Vm5EqB5P1yrRMLHs0uUxcntAxA3igjiO1CsphS9EaaHy8BVWn/lsqm7GDIjRHAcWqoQKQt3RRS/QzO91Gito/RMF516KR07l2f7jRW0+TttO0v3b8o/9rgYKeFtQHAb8dFrd//opZCEHLaM6MBmp9DGgi3Fpt7ZtzgIkShQtf3NKmWYKs8A/aApStpcxjYkoe0xr4kOMB5GNxFwn4Hbz8sDd2/SH4PXXB1Ny72DRHxWlnkwckkS6TUCekAFk1lbuJ6zIxuhheqodQpbYqK8eeyL7wrBFONIC7q7p6mFlGtjGfhjWgYiTg6hKM2QPF0/0ozm/e9cNXScwYOUZQh+SF+5cxRapzCM798YiPbTiZbeWK6wVLq30J/NrKdExpzKjBY9URqJ",
+    "erklarung_lang": "enc:3:VbhH95c5HfedSF69gVvbZMQac2X3D0Mxpov7MDXcSBg4YTFZ3dbcP3hfZcapHWZYBmcl8pMy+nz1Sqw5f9zjhzTM6pARQu9lAXF/MTjzelXXeox0fb6sFmuuwAW8Z9yCMoujN0VmUj1uYU+tSI9dhB90pc9Nl+R2tvBeesAW8t5Ox10VmnJMKNtirFHXyMm484Uk29JSWPm42gM60ppIDBmfrvatzNu+JHZ0BHTZbBAgkOndsX2BwY+tAo0hmAxn4pVqfjyLybcKJXFGXQjmo1JUbUaMD/LbguHxkFQPyn1/e9SoaYKBIGKKcLFIl3oI+opgHOaFb7CAI3B08quH1K/VZiRttHCrvWnuvOqTgqOcoPV07SfPkaOE1/zbiI+f6iUorLQDgo9yYoI1y3eJ90N93QmPKmht3tWLtVLRn61h1ojN0dGfDZ0heTJF0JAo6LRpfvofUDvY4mobADSFoQuL38M/o7+gPI1vCm7WEXf9/lK+944KZ70wDo1PRcOyHTKr3rN7/3s40uzjjcW4J0/XLFAVQTlWR0VZZSUU/JHJ5UYB",
     "quelle": "Epische Stufen S. 51",
     "hausregel": true,
     "nurEpisch": true,
@@ -84,7 +91,22 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 20
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Karmale Substitution"
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Heilige Hand"
+      }
+    ]
   },
   {
     "id": "eksf_heilige_hand",
@@ -95,7 +117,7 @@
     "beschreibung": "Jede Waffe in der Hand des Geweihten gilt als geweiht und verletzend.",
     "voraussetzungen": "—",
     "kosten": "400 AP (300 AP bei Kor und Rondra)",
-    "erklarung_lang": "enc:3:WnVVnETaSn+JOfGOw/F6+9bmu4c1NA06B4q0pjGNm2LkB90LO5HPdGfNLRSQhfj7N/etP1mxaW0TFrXDiH99zdExnFRPQz2JTGm2qqmYLdMILcYfW3uZ8zyk23nFCn6k3FkGyOQh0STuxHS9L5Eo0LGzXgmJqfA9RsuKbT9fj1vyRGAuoIQSzyh5/1U72wZbsDtyeHzWL03J+EeDbMeBJAqcQu1NUe2E8HJJFZFOui/lAhBaGha2b0EMKaQObAQ8dgUSpDK3/gRopVWNJhwwayhAtv/NDT51819s",
+    "erklarung_lang": "enc:3:UtDX/MGPJ5gKoj2dKxFxodKgskEVOJ+6E1sHIEbHIiab6SRVnWnQK56epg5a9ai8q6d212kcNqNO3Uuw4yvBDqKUhhT82+SBq7hNkPXVFScnLKF8fygLT04OB5wIFdL2lndK+DOrVr9cu7hHio8V4Lw0eKEF2pafcEm9dupMabxYWVnxjBn1WPwC/BZAsBHSjxc+EP5+4QfPHL0eQQFHeKyUrFIWT+Xp6AdbpQvfIxISON+pgIzG1U7mQ6r9CDk6hMC3mZXRg5/0SE7sHt1Yvkb8cYv4jL0ijdv2",
     "quelle": "Epische Stufen S. 51",
     "hausregel": true,
     "nurEpisch": true,
@@ -124,7 +146,7 @@
     "beschreibung": "Generiert Entrückung 20 % schneller.",
     "voraussetzungen": "SF Göttliche Berührung",
     "kosten": "300 AP",
-    "erklarung_lang": "enc:3:qcEODf6GeIAlg15RC8nuKT36/WfP9UjtWjm784TcVVXSDHGEIlNvkop4FMIM5kRqkOuLlu2Gx7HzKey/80yTq7cPOzR9mh83AS1zrJXa",
+    "erklarung_lang": "enc:3:1DtlRXgN1mmekMbi4pLk4OOpxxvl9izY6Hb+aoClKFIPkvxAMjBAV/7nTN613T6Ja31AQbOs7Nfi1E43X7396pla4tVZejq9UmdgYlY+",
     "quelle": "Epische Stufen S. 52",
     "hausregel": true,
     "nurEpisch": true,
@@ -142,7 +164,13 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "sonderfertigkeit",
+        "name": "Göttliche Berührung"
+      }
+    ]
   },
   {
     "id": "eksf_inspirierende_aura",
@@ -153,7 +181,7 @@
     "beschreibung": "Überträgt Entrückung auf Lebewesen in CH/2 Schritt Umkreis mit halber Stärke.",
     "voraussetzungen": "CH oder MU 18",
     "kosten": "500 AP",
-    "erklarung_lang": "enc:3:yWDvqiQaiUC8cWVDb61K3sV/MeKSBraz711p77KzewwKFj0sB0abUTEiJTHf+UNJKerNrYFApMVSOLNDtLY2fAnLuhK/eY5NMIcEvkj0sqiMeolhNV3oBlWyx2N3RQqYIufBg24LF4wa54+XJX7EuUxJFmx+WbofAJeUF4ZNvuWDJ4lCBaJLHH8lSshpmU3NCaI4D3LSnjRXL8CDU95tnQuOIoF6Ga2hhUA9pVCD2uA3+H1otDv/Jq6YS3ViY9/eB9cCZuddmIxD/sqvNZTXvmfnHdIMSUSOegR1SjcEo+5a6dcPKgoYr9TK2UfkAKxwB++fGh2N01wdPZFZIhutntRQHOIvHB0kIRGxNgtzkIsc8nwfPC3GiQ5CQqEo+x98pbhMt1E5GLDO4pmh3DNN8W3oR4zfMHT75Y+H04jPpp75KPSR/PN4hIDXRWhwYT1D692+BGJ0mMAbuTvfwlGWJggAzK35uObPy5sfInwDnHUNqzSCPROf69SiEDI1zS+n+n9R6VNaNkCi6hLltLhgD4QCJUZpVbEqWv/A3wUzR6aJNISjYdkiWz/MphtItoifVthTkLgbEgWuyrdTe1GgHypz8LX4QJfjds9K88NyCcXtmxoyUcD9WdDN6U+tQOw9LgBgErwjrqJwTuThjpHg8n9Knveb9Ji+jA==",
+    "erklarung_lang": "enc:3:9nxS5RR3uTzIRPwte/rnqMyukUBrLd2bXvpZt1LXVmuD2ETi+TX4TFtNGRL87sV04JO5aXhn4dSdxiJDzZiLVAAdBV81BchraxNrImq7UL8rOcVxnOBqJBb3RN2TB+U7ut+Dvxkj6Q6ig3v8pr6Ib+13hHyR7NACarRHhViH/VSZwe40cvaJDkVGZvmzvWvv/D2K2+6XjT4rrPRI0F1g/hw0OX0bNpklKnlxWNCpMKEgCbnmgG1dloui/xjtdSg0ibTO22XItZGHKPi8V8IdDCG08YcjuliEQsv7Ep4tvZLRIBqUlSl9cMG8IklOBVMcMQGMLlSaUgx9+1yY17ywH2zNM6z6hSHn2bokzjfWhlpYErknEW+WZ3VS4evpWxHVP34a6o+5EJ/uMBBDobk/mIf0VPYUiqNf/A+XDO75Rt5gghMgI15PXbLPr/3puoBrNSjkqetOTYM7gHDYQKIh6aDDI8EGbZz8BeBJRaDc2T6+mNSHZV3cJkf2r9CvDMv1ZRqtGUPLhmjsFPuM6NH4EN34CHHXnZgsfI7rKVpOOPbSKh64bh8mlx4RuzRyL0sFLTO9ufEMpbjQUJ8MMqMX0OQarKMUa+ov9K8uodc5OhzhEcCvclzbyuFD7KykK602zD4lEYWqgTfPGPgCQMFa3tgnmXHenTzdBg==",
     "quelle": "Epische Stufen S. 52",
     "hausregel": true,
     "nurEpisch": true,
@@ -171,7 +199,24 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "eigenschaft",
+            "code": "CH",
+            "min": 18
+          },
+          {
+            "art": "eigenschaft",
+            "code": "MU",
+            "min": 18
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "eksf_karmale_substitution",
@@ -182,7 +227,7 @@
     "beschreibung": "Ersetzt 1 pKaP durch 5 weitere KaP bei Liturgien (nur ein pKaP pro Probe).",
     "voraussetzungen": "LkW 21",
     "kosten": "400 AP",
-    "erklarung_lang": "enc:3:+gkD3tpaLr/k4pkoFbo3nhFjjnl6hoJ7OcR1Vf1Vdhij3Q9agCIjZGT/d5fKzNjINvl7rg9vQeCJgj6x81WIJCZGI9qdc9Vsv0hVDzWMEpJ5ekM4kCQ309CUBgUapoJT7ivyr+yAZkBqV4pCMfj8szjaw6ymad6VhAS/5LhYKtGs+AFo7ozssKfor2I1FtO1hzeS79EKoZLax08+5isFVni2Va0iVfzv9XlWq91C9bI+Kfa0wd6F/tPSiuVRrOo7Nc0/cLcejC7gx9EOHyWCz0NDNcXPF0tl1E7jGtre/NwJ9i2ogeyJcCTUD0T3tTXUxZecKK9rNOo+uaucFv4TbZbBotX7qBmDDHfuKbF4jLO+CEtV0wEvzaKF6Lj3ZOdPaMtiKgq0zsiKWGWfbqEmOedObFpF",
+    "erklarung_lang": "enc:3:Ubrgg3mHrQyXxeUARz80XNYuQXGl266zu69rVNyE4JmsXnrbgX8ER53raX2WJx++eNtf+0Wug8No8DYzN8lVR75EjGtZuLV1UTkV81dGKq5XtNuYsFte1f23lgeOP1bYOj8+tmesfneEnozbl0F/5GSyRvT748600ImqwV591Uq8RNFOomfW3j5SQRXO/dn6sMjk1IqcSLO7SnwOARJCKvnxaRBiZMtrs51NO08HxQk6mrPwdAmWfhMovHnribMfPCEMsWQ64ILVg8QrgbBP1gKqaMhtkCWiy7dmnuJaRyYRh3iPAQgPCXiczgAoCn8TJOkHeeJyQW0dDQT1LmJv4GvIupitBb7kIx16kY4VA2VjbZ6+zQ6Z5Fl3T5hvHl6vnkzyw7zMq/m4R7playinJjk39/u7",
     "quelle": "Epische Stufen S. 52",
     "hausregel": true,
     "nurEpisch": true,
@@ -200,7 +245,13 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "LkW 21"
+      }
+    ]
   },
   {
     "id": "eksf_liturgischer_meister",
@@ -211,7 +262,7 @@
     "beschreibung": "Die zusätzliche Erschwernis von +2 beim Aufstufen von Liturgien entfällt.",
     "voraussetzungen": "Liturgiekenntnis 21+, mindestens 10 Jahre Erfahrung als Geweihter",
     "kosten": "350 AP",
-    "erklarung_lang": "enc:3:5kJSA2U/Ap7pkL4PPh+GL+TmuvdsqkqljKxUAoEjGm4Wp+5bok0q1EG3klatDDlp0WInBwMBjIVx/aQ99L74WTwcORN2jgTxyXspAmAoIGx1OH8o6BrByg3qtuAPUX1V/tfbROjDsDV9fgZ3fWfGNhD47SpPhl/sVwk50DPQI2nLQKMU65J6NNlfkZlwCT4GZd1VBh9XwYJhQXJq5kOleZIVvQD/6j5yiTscQCLteW50n4sfWMQ1wNoCKnXPYCVcvRDucRWu8JKBV1LEYgw1l7XC5Tw6VhOXkqWQalzdvm0qPOWbehZE0b5QOm+DhBJdJMSACBAJzIyI22uhZmpXOltPtLRBb0hA3UjP5MCURNAwuMEi2lYWiWc1oEQs69hbjY8ZH5arbKe9qxJF2GL2I+1RvfDNQhZCY9Qb3XrSr2rag4U=",
+    "erklarung_lang": "enc:3:rJuDOjrtMEteXmbd1flbErzphFRoROffZKP6SmpNXdqIpmGw3e307+pxgFKbcJxLYPUAaUhMTUa/CDClVaPuNv3fz8ImBL/bd5DDxlFqlp5/H2HNsAXsqqMvKFQt5ODT+gBOxQ7sAN+QKd5+HQsKX5T/2Jz+2y0cENB+4CE8+BC1DacFAkT0JLCFBziJv9ksYUi3myS9a+Az1hEw6NkyN7dBQr1/QWsxk2RaQ0+mdN9qWzvCWfwtv1H9QNyGeQzdBc4ArxWdci9zIjtPbYoJONeLAo8wtREwQrFLMXhzrAOLOdc/0yJ3b943W41azVE4R5uKfWrDv8wgazxBsZYYQYW/64SHa+n5mj79a+oWXxc7+4I5uARyGs9BekbDWiJFrVr0Rin+epnOKbsBBubNIWYV/YXUjkjyKTvbhfCZOCl0GXE=",
     "quelle": "Epische Stufen S. 52",
     "hausregel": true,
     "nurEpisch": true,
@@ -229,7 +280,17 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Liturgiekenntnis 21+"
+      },
+      {
+        "art": "hinweis",
+        "text": "mindestens 10 Jahre Erfahrung als Geweihter"
+      }
+    ]
   },
   {
     "id": "eli_ausgleichssegen",
@@ -241,7 +302,7 @@
     "beschreibung": "Stoßgebet (2), V/G/allgemein: Zusatzaktionen zur Parade je zusätzlichem Gegner.",
     "voraussetzungen": "Zwölfgötterkult",
     "kosten": "—",
-    "erklarung_lang": "enc:3:VFExQCR3T8LPCl5a3lNQQXGOiq0hk/uEpMEdXNYsF6hAvUCmZLFRX3VG7OmMbSFp4oEg9+eTJCBtMspSqLGkApOOl/Ib1xIfAdRfyiPhFkhXZ/hE2nXfF3xdxmyd4/+svZ5Ab9QU5ryMwxruRPNbZOsilN3rcKoWZTtXwZ+jrT/JmWFi6Dc4emSaIJf1w3Z2zePWsj+gXLwc+sNmNW3QymSzP5+rCLR6sIAKLKHblkmYR4CN3iXbshjQxVjHoOnKqv5wnx+pY/lQRT7kY3h+Crbryi/gVMA1c0GvfxMDL57UCWB89wW3WH3p3ZP8tYfg5AMvgbTXiEXMEoaDNnogNJ7ypZyn1qtDaHeIHNaq6eOKclML9gEsr+k1bIfv/e/R0175fy8vwiznRHeppXATTD76SSNm4aaj7jmBlgpimxEZJfMcX9S6vvXI9tDV+fQ69iUnN7Mmc5AMLRHLJ6MWzPAoJVvJ8Z2dKPwP9qupoPB7MzADxzh8mD/NpKzlcen7U2Pkv466BQeZEAcKzohAebdfkGaxJQ+rS2eHK1zmWx3T2a152gNTxkTEj0p0mP3yg8+Oj92omgpg561tED0aYyHj9Pxeybp8n+O8NHoNLmoRR+V4qP+xC0dR58RmIX9rrSG5Ow==",
+    "erklarung_lang": "enc:3:CcdMfR1clusDr+mwEJvUr5tzRQUg5vUZFcqIQwzsYMJLmf86LLdGwd2AMZHNNT8OhzssTBqU+SX0esBdyFr3mA0XKX7sDWfbZFa+k3wbuWfVd8FkYqbTqQbxHiH9ho/R5rUeRiJ0UqEd0rft7veflWTMNiD+Xot0rbBQ+ucFkl1ZUKpGj+39mPwixiS+qNfZqgRbP0ElOvN5XuB2BDGW1i9j78pNYh3bT0Nzik/sStDkoqBeYEcsqqjNa0JGAvjSBkD51cAmbUyRUyjdEYRDkhNCKc6NYKylOrXN8DNKtHFHY4tE3iGgAYI89UPvF7pGwiONzs+JPHUm78X3E/eTOncZoy5B5qO8NsTJpE1yaz+EatrWJGNpUcvkL9TOoAg/MUlHFdrBYbrKQiSoIqYmK45Botzc6KsLIEJ7cNigKQfj154EVt2E2Bq+78xO8AAbOo+C6Q4Uubly5guZAzdsMr9BJdahNxRtsiDqmUY5zAVs+6H0tLh4uUZg7i0G0KHbVHSHSyZTsY9Q/k40pyJpAgNJCW517azCe6tweoNVe0VODRKegGi1fb6cHPG62iovcXUTjWqUY7wVN8cSFPhjOne9/vAOH+hfsyR3F22BHvOpw8EiRBYkHielwUlCa6aoDKUuVw==",
     "quelle": "Epische Stufen S. 52",
     "hausregel": true,
     "nurEpisch": true,
@@ -259,7 +320,13 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Zwölfgötterkult"
+      }
+    ]
   },
   {
     "id": "eli_goettlicher_schild",
@@ -271,7 +338,7 @@
     "beschreibung": "Götter-spezifische Schutzliturgie (Praios, Rondra, Efferd, Firun, Hesinde, Travia, Boron, Peraine, Tsa, Phex, Ingerimm, Rahja).",
     "voraussetzungen": "Gottheit-spezifisch (siehe Beschreibung)",
     "kosten": "—",
-    "erklarung_lang": "enc:3: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",
+    "erklarung_lang": "enc:3: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",
     "quelle": "Epische Stufen S. 52–54",
     "hausregel": true,
     "nurEpisch": true,
@@ -289,7 +356,13 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Gottheit-spezifisch (siehe Beschreibung)"
+      }
+    ]
   },
   {
     "id": "eli_karmale_explosion",
@@ -301,7 +374,7 @@
     "beschreibung": "Grad III, Gebet: Ultimative Waffe gegen Dämonen – bündelt alle KaP in einer Welle.",
     "voraussetzungen": "MU 18",
     "kosten": "400 AP",
-    "erklarung_lang": "enc:3:wb6AoJzd5NTDrt0mx3p17HcP/soPyb0b0rXQH9YGScPrvV+rP02PguiDOT91sqyBsUds0mn/S0yilcSQ+K79UObz0atP6lbuvGsuZMcjjScK7AsOm/zLNX0GbmiTMRW0eFZHY28RxMMJFNBjcTU3nPwENwbz5Ph7gxmMp4sFvOGTX+JCws0VEvQ5RtdaUwLqxKiNLTv0qA1MbujUvDMFcA+fqn6FHoF9wl6vyvnBQ1nIMucX7aFEU8wLt33oexutDbNpUgY5FZUV3r96yNggAF4h4LgfcSb0ONT2mBvbIE4SdlGkCPmSJmtiQfFPT0DA8y+Nbz9T4xIo0tg1HvpfRErl8uhbDvqIh/o2mcMmg67k7Iqaj7clBB0qUPmkyoUvtVHDZCfwwu03Bf2ymH1zjsehaRJRYuv8P1viZwCfqlgmcxW8gI6jkI86CcjdvqTxoexDbpKrUMPDNJp5PAHCC/eEc6FKQYnljtWU9FW6TYVoyIExhPjnP3mjvcZZEebpNBuBv1ZPhMdMArvL9BT7fCcjQxmHSxh/1Kyxf9c58XXTlaGx+Xje7RV7kewCKIGOVT5drfiheacSgIMJo8WCxhla2DldijcgZWg0OkK6UyBfC/aAooe1hKJGrhlskMZFXOf8y77U25gRYKDtwAL3iIehUFvDAWmP/inxv7rLywvfJEgm4a0WriJ5gfYHe2DvxzXgsIlO8Y00/CRE6wlLg/JHiFZNzFbqIYN4HfOErwzCwWMB",
+    "erklarung_lang": "enc:3:sCGtE/C+HfdIUPqf//nhcU767zNt4fGj2/tnPCVBwgTEhqC8UnsXsXSfB/stfx3DwPz0x39LQ2HarwRSjEx/UumVteR8navwy0OKA5Tu44/DyAvG2Wt69pj9I210FvrBmxK9QM4J9UVwUu/FZX/GnUmA34KlxcH4QyThk5s+Oe4/PVUpwxlwK9d2/Dv8/UcmrHzxmOy+Hm8bwGoGJQ5QRfdepHlqYnBt8JRBswGzzBy2YJBfzrfBcGeDHpvd73sK6rQANYpd8YERHuIr5OdXg4xj6H2sFw2sKoSuC2POQMxUxA1OCgnuTMlt4h7cDKlStHaJQC7uScbvkkNxaI4ADYykkaQgl2bB1J2nCkQnKscXbK1ZgviZLMFEXJP6JPvD98d6YfQnMsmVYd9M2NMwjS1qHIgxWrreWFCRqpenTmNXk03+/nDBKStfr5oCjyX9ovR94EK3RDeC+Z3MZ3rRGvyEbiaWjcTbUZcNebrx43J9ulQGYmsjNpZfrtJj0ODtoQK8UgyLh3JNmlgWoXxoOgGmHirk2raWhcBYbH9FyDufp3VL0DqfhWoem8bHn2iP4Vu8lAh1mWdQ6g+bNMXYGNC/VdZFGh4EZsXAOrixnA1ev0iErNKgbfI93bmds5SrjAi2srRD1MtwIjX6mGt+2nA+2VpNdOGxPtJ8QmjooJXCbBfZjpxQu7fNFQN3UNCtv7Bzt0yBusLiw4nU/C7ZzqQdjfmE5ZUPAMXcC6hWYv179gWp",
     "quelle": "Epische Stufen S. 56",
     "hausregel": true,
     "nurEpisch": true,
@@ -319,7 +392,14 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "MU",
+        "min": 18
+      }
+    ]
   },
   {
     "id": "epfad_praios",
@@ -331,7 +411,7 @@
     "beschreibung": "Entrückungsstufen 20/40/60/80/100: Durchdringender Blick, Zauberabsorption, Wahrer Blick, Zauberverzerrung, Aura der Herrschaft.",
     "voraussetzungen": "Geweihter des Praios; Entrückungsstufen ab 20; Stufen in Reihenfolge kaufen",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "enc:3:EF1N2zTzYr3imVxoP/7npgTsML0ksS6aiOqBf8dT2r3tf2+khlttlaKwg6UVMLdGLTj7wSI4XHAbiCUHuJiKDjb27AzbIgZgaQyMCug2duGboqOvvqO8VbRHo8R9FJ7b37eQmcl2jhck+Z+iNstOZ0W/bFtWSUEzPQDy1qOBCXLN85NOzDeZHHMD6/E7UArqqF+Lvf5BIFD2soeC0lFYmk/BdCirsWUt94CdDKWU9NG1e69t7hFKLV8u8i2UKM7tW6fPNlTMci/wunmhOopQonfxX2QsHZ+rw4qgThykS1UlP55GLoHU/CLo5+GZyy00IOk0Hdi9Os+hqyP1qjcAGC+KK1UVGUhoHOLyEjFSXT1OrueK2uG50u0vyGteaM2duUE7VthTguwdRyzq9gi43r0S5db0qsfOm/KlwztrBUnOrS6LZxqFoyoc1toGAHtqjv+fNqFlwbkt0m4X+kUFcBeG9wCCfkIwzUmd722cvWPFhGQ9p8gWDxRXkHEaLxQtQnjKXjhKNUO0bpt8AJjEKajx5Jfaw9+hd6lm6kQ6bFo9MlQX5//1XrFO/LX8wHSMqLjjegk3E3/d/LHXwCsY8sC/oo5s8PDcL8FD8xploqKEWScrJ9btOftnmJUbsaq2xFnC5nNuq+8oiPPmHm+xUSL4nMKbz5LtFkAZFD3gNg50/1UwcTylRuORDHzgGps9jK3DKhMvROcvafnqGmQVkuIITIPsIajifJptFLdPpa3mCv8k3ZTI6JgUuEmnjZlHXMZaI7RtSUGWXrOiS+QxcL3ZaNpSBnUPhSLOIQAXUl/xFXR1X8QCJFDG3FP40xR1vofZaqEOs8KRU4yhMTZ4DwCluzmwinKsVrhXXEs9h98=",
+    "erklarung_lang": "enc:3:A17pdvCmrMPMCeNDEBozkwaEn9LGFH3ryQz9bGausI7tdYHe7RiGqOC2hpkR/lUr/5o+k5jcDwyNortWXzbcIHBcq3jG68+08Ut9+qIvCeMEEmyM05td25wf7gZKwkJDv3Yd/dnamosFZ721WS4HAJVynGJQyNGDZmmeRgPztPgW4Ys5kSJYpzuhYli0rnx3g+PU9nOkxs58w6NQ0BEEO8Hpbt+3Pz0hsxMVaZpyUhB1lh130W6sOXJICYgnToM/ozO+/xRZ7V+sFJhxoDxgAAzschCUQteBgddoeBCAtpU/9mkY7QGiVSmrcxDKHiRKPqxhn3C9MZF5AZ3xpg5YiG6pUoxOJ4tMo5cSBys5kY/6El3oQQ666yNzWptrB6zQuldn+FQCsDenfqpESo7OYwMfPWQcsBPtGZI+dLzW9oZHlqDlVXhImN6LyykzEeiXpiKGPuVYrQ07Lmme1unXTzHOVQHg0mp6/CmDJh/fuQyAiO5EIspUl0dbRVxyP0ZJPYXfVtz8WMkQkPT231W+YasCeig7QdOxW7toloZCrm2xZZq14UBHRKFXNOSRsk4kgcKHdjJVtPl24zf86VtqKDUdC5P+0jErmfDoK8CH+bpbnnsda+fYiR45BSKqudX2NS/ghMYEC4l+VXoYjbvlgdrf6iou+341YNKW8Eku9M/nuQLa6Z4FnaRzUTvBpvZR1zm76D9czvT8504rM/xFZA3+5y3gz+KAb9iNUetfSDCsArxle3yPWABhz9hVkwouKfX190QfCiTJ8NwF2QKJKgWkVc310/+NTth/W82BQGrqBfE71UwkNiSCshaVxEth1jBA9/b2LQJwYGHzK3LjviEK+3SU4yiZynUkL2j2yE4=",
     "quelle": "Epische Stufen S. 57",
     "hausregel": true,
     "nurEpisch": true,
@@ -349,7 +429,21 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Geweihter des Praios"
+      },
+      {
+        "art": "hinweis",
+        "text": "Entrückungsstufen ab 20"
+      },
+      {
+        "art": "hinweis",
+        "text": "Stufen in Reihenfolge kaufen"
+      }
+    ]
   },
   {
     "id": "epfad_rondra",
@@ -361,7 +455,7 @@
     "beschreibung": "20/40/60/80/100: Projektilschutz, Perfekter Angriff, Demoralisierung, Blitzschild, Aura des Löwen.",
     "voraussetzungen": "Geweihter der Rondra; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "enc:3:BLDPc0zt7XyhktsgrwAFUwQyoY1uTa1Lwwna3RUHVfoF1Fk3gWSD6LkBtDR0i101C+j4aE5q6/myQin81sdzWgtna//NKveUUKDMWQUVfVq/igsx099EBQ5UdDHS20eNjO64bL++sQaYlg3lFCo+vZVOwn3yZAW3lTe99xPoAZZXlM9TLaqCSBP24C4Qa1b/g3EvjN2VVBv6QWGnGB0Vdlj8amS+EpmjeaqCYq7bGC9fjIDEy/I3/DjHS7Q+iotdcvZmEgKeK7EHPUKnqSkhEOO79aFbtPSbJo3a2kcfhl+Lr6WhT6ehhIGxYO3Cp4fnR4jUWtAwuMTeknWuM+t0J9c4NcR1ImewI4FAhOrXx5rVVkifHe4w7utraKX4E7M+z4BT6KAZY4kKmJ1m4Y5Bz2KzaXrIoHdeYwZWKtDkqz38xuk3gN9Lx2G8xTqMRUylXVBqA6TMJMhjk5wIhVSO4hwcYfIH1IZnpluh1W4sNDbYp1goLqVDu/vFPf+I/oELNTNV7xmL6NkH/ThC6GKdHgV6PDKohFJJ9xVFsyjqGM/cq3TY7inTzXpqk8Y6Y4hnH576xBcYWI/ZdNfl2YmrIDIzd9CcsqScoJY/QE4usuFXMGvf1nrJm9r4d+o1Px+SoUf/EM0dqefruKoU+xBR0MbrPGY0Ep8Cg6vJzvHUxuw7cDReJzVAjFD1CC+mL+fnzc8KKzLGg9JtX3vXvLfTKWQe1OxLkBA0QCihN0hEdTW3NVPGtFbxTyhDvOVdMHXvRcRYTbsAKoPxbrOHvglEDNnYEoYlBsamthdS4O4fXgiKWBvNA7q7k1sqStxxL/9sxTpGmyxUl1jonedonUjaeryyHANqgWIha97Dn0v4svJiLaUbd5/LMDd6XbPgj8i2QgpCVg==",
+    "erklarung_lang": "enc:3:pu7BexgFI37EKTBxI6u2BiQg9RbTVERQjJRpJI565a7QI5sMOiOxIDiBQmnRnPZ647tN41Oq1J+eXxy8rXA1nlqfiyJQoEAHVIaEalWwNEbwXQCvim4f4O5larfWscnVitw3yhtkzfXzgb9+hg4zquDtTBDEuOKPbWsnFnfnYBmjvns7t3Lzn1sEeLuk4UAGaSabZC4GOhKjSf4ZzmfsMZpjlCkC1e/29RKC4nzPApjtSXxoAu7seCUhdWksPLBv9qBLbrGepIFk3iY2mZPJiFuJiVpSkkX982XQMZIcMFIgbBXbP7DADTpM15TXQo9fJzpZhtEByo/kHULMRkuXpjEObVa8oneXYYZDJRncwcop3M0FwieeWh639x1xHnGoSwmloISzhodfQN8PD4DdolCrrMXVPyWzgXEj1n+RqW50HYqMmcXNvNrpGF2YTRfC8demE69lF5udKAM7Uy8dU7m+7aWCsZCr76XkoeJhMrhsUcdyK8kcypuGxdMB12O/yJIgdZwsH3LVvokb7cFc1e3ccIgLcG3bMC8PX+uR9yKiaSuHVZ1kZLDxmAqLzWuq2jB6rcZ8qpOwpLfPjTpqdP970P/l0Ly8eNN1I6Y6Sp4othiwY4G2sxbAB35+sqzYzvzCgYZy8DSKpzVLZ7mclRsKDYJ//028sbbWyS6mVxTz2wQchxmHsncO8IWufftQPOuPhBUXojtRxGfFdo5psNTPeoPQ5ZGio4Iu0oHWJZuyfolA5aRqICIWPzmDlqIu9Xp6slHIE329jEi4cazyv5uKIUPfYC8PA9KaZK0iFTpBtY6o+CU+qJRiEvtCdE1dHM8qEUi1boVNxMy5zZFs04GuC5G0ttomIbLUhKvgGA0GzlorSPk5z30HF0n1HEruapxM0w==",
     "quelle": "Epische Stufen S. 58",
     "hausregel": true,
     "nurEpisch": true,
@@ -379,7 +473,21 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Geweihter der Rondra"
+      },
+      {
+        "art": "hinweis",
+        "text": "Entrückung 20+"
+      },
+      {
+        "art": "hinweis",
+        "text": "Stufen in Reihenfolge"
+      }
+    ]
   },
   {
     "id": "epfad_efferd",
@@ -391,7 +499,7 @@
     "beschreibung": "20/40/60/80/100: Sturmsprint, Zorn der See, Temporäre Formlosigkeit, Sturmflug, Meister der Formen.",
     "voraussetzungen": "Geweihter des Efferd; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "enc:3:HWWfZH5lTWYTvThks4zSRiCpKFDv1vlqvbyG8kRf2IEtcYjL71/WsuGmI55ugI1bQNWhVE3XcSXmRX7VAvCBpeWN8/yLmHRjviR5s5yNc5yk7cAqVnJ61F+ehqtLHvMR2odog3rxB3NohCc9dxSK2ZJIrWfzuwHbXnJuEGna7oAbBtlCDY/HN2U5S31wX0YqIFDsHj1S8hmBCgpYo4JaRAGbrdrFYhLJFY0bLJjOIlxv2ELrxC4wEvYaSqbBQ91CZ1L0za4Ou+3IIEWldskuF56xZxmNt4Da87lZDXPqbTw1O8z8nuj8H+1IukGsIi09Ol8EeRfc8TGFXbv4/QqnX+VioH4/AgE0AxqwoTrrpr3VMKsvZdUrlVRKjEquj4f26qBhMWdN3WxIuAcIBmt2/WbAt/ozW4Qh4gEZitSjRyZQqqzG9VDAkvTQKudcmUTM59i972YHklJRbvmNutzuqWF4HNIGbikaXultsElM6ed/xcVhRnaQkNUhMhrqd8WX2QnHBNCipIqtg9XoqVhahIFglG53PYgS+nge8+zjXjJ3yOgWE2MbvMCQJrT7+kXLO2irs02FfuCdOxwW09GY6gV7yBF88yR+2LfwcKMrIV61ACze9lIxo2nCMZfHlibcWMjtSja4rB/D35GHurfJAjBgc/lrsY6ZJF65ypieyeODnN20mCu7jFwjmUKSUSgKI1OMywjkSEkIkisypy3EsVvL7KiDEj6fT9o1TMHjDlUA6NxIgG/8FgyGRUsBd3z6s/Q/f2EeIRJJZiCKTQSkJ1uEZwe54Qg5gExuDSP+mH0cLnpSFJ/6x1C4A9DPKcThJEbeG/lbvJOxnDEtaXP+dXkCAYVJNPcTnVy3Y3ZLjYM0ftbhkrKXAsprPRMUQBdmq2y78mCniQVhIke7RqSnEKIPY4fNfDoCh8Uoj60oS3pgBlLM2LVnm9R/cSOHNrs=",
+    "erklarung_lang": "enc:3:iQYbWHI1fBw4xdnItyyRxvatZ9Gwb5UNXNgFOgo4CQruqSyUoHZ4/FuKZY0yPSmgAGdsBDtwQU3A5g07NKXAlybucIACggAUZTc4ZOi1VzMy9YBO4jukwI2WadRwYYImeV0MlwMEFiWvMDHC9qR7osRja5F4a2Ata+YfTgJYrYsoERKIoy2qF2JLQVYK4ibcy+Jc/n7c1a3xlLEKEgitpejiWB87OB2VbadYVKGmjG9RI/rp+PT1VxxoJR3P0HabEhBSsHyCCYmxxwpjYFZ67zhMFhw6N1koCy3f97+G/DK+yzjzEG/n+QcoASKyBoAWjw7QNfJsB4/VY5R+4gRR6FYqLGBssn7VwLuzLQtogHCn5865TmtOIzYRXOrOqxaEQwJVWcgF1+wU2NRWWb7B7lFMEdQ1D2aVh7LhR+PSk6JI/o/lN/7apQx4NJM0NYnGSoqGd9J+0eV0EDDf7evd1c2ZceGRlcnCHHv6T3z+gYEFaTlFt2mtxuz/6QGWg1aYBL8CKDqw/y87ziBqWJn5krVnWnSRnZI1Y4XE0D8PnlAK/iuC4Vh7z9rP/qrD0VZy9ZjL0f1LPtZfP0QzHXXWLVRqTBxx8pZ8QprgXtZsujjP0EcyJFplj+qZbUvqhk/XM8MtFSVbp7+FDy4jHI9AsnAQ83vR8vheEkRUaj4Bz6ZwGy4U6gHXS3IQJDdvYh3f32cKkVK/wN1fj0ABFhaoZ9+RHxDDiFw1BrAmdYzm3YG1CHYBWRxm3kpoK+z6z1oMx6oIxR/RDwZq3rUl36LD6F8pmbSsyJ4vNtjyjRfsdaX0Cl+shxRgm0X8BgyWkegzgTauU9ctcL1xELfAmN1MrUbX52O6O9SyKuLdr5c7Ddvr5lgtgM8wwK65gn22ywecNbstWlDKEV7hOBf3An7LXBrmTCwFaTA1FpCygkeUIer9vT0PaSqp4HXxEBUKQqo=",
     "quelle": "Epische Stufen S. 58–59",
     "hausregel": true,
     "nurEpisch": true,
@@ -409,7 +517,21 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Geweihter des Efferd"
+      },
+      {
+        "art": "hinweis",
+        "text": "Entrückung 20+"
+      },
+      {
+        "art": "hinweis",
+        "text": "Stufen in Reihenfolge"
+      }
+    ]
   },
   {
     "id": "epfad_travia",
@@ -421,7 +543,7 @@
     "beschreibung": "20/40/60/80/100: Bund der Aufnahme, Band der Treue, Band der Einheit, Zorn des Herdfeuers, Travias Trutzburg.",
     "voraussetzungen": "Geweihter der Travia; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "enc:3:RaAwS7xoTcxoa0RNBX37nCEUzVm3gfPd6zf4bQ8RZImfxFdfy7hNGrI3S6qmXj0MSlera3MAEKgdSWG3fL/ln/oirWID/zxGdcjUopzGXojygpFp/8E4kTqxaWFNTAO7YLVIOLGs22sEV+4qRk8LZf3p4UKxlcjp3Sf5hkf4Ej+xLBkE7rfCEKiwybhYRvycGJCBAWCfrqjCGC/PVdyT9avIDfj2d1KvDnfZVGw9Hz9d8EtqwKkFZANS4p1ZlXER1k3MZqkk1b5nV5pjQBNCKuXFG1KID7Dby7RbTpKNcqLy+T6wAY0DyeAPvyJIyGKAhMaP5WQrsN0R8FETpfTM4a4v9CDhv4GQIJ+zsWbvVzl768lpZ/ZggP7TgW2GXxI0tDNplt2UCOL1oQbqDssDx13E3UYd0ip+hjawpfNDUfn3AYaOhBt8WISXkfaunWR45Jm86F9gigIxSSTHLlJX2XidnIbqFLQWvv5LYRrADAuoTVlj3U6A0RlB/irXfJwv+AjlGID+xf4C+QV0xKK2X/MCFtBRdiKNp3HJ2NxO4sRXIWxZcSzstDWhIkFyiTl24aYJIAP81AUeBdnqACHlVErEHYWfoXxguHii+L+z6QIGCnbumqFU3te+gPzor0qB3ZXgjoRmOlTbN5hGIKEC9NIYLl25BUKpaGIVuE/YYBu5ZqeC7/KMwMim7HLiRWs1ZWozyenhUPEh+rXV/El1UZ60r+zaNRO2YA4vpEmlmsedwjbfbnBVmvhmzbJJTRErQW54ZJq+4kuJikBSdNKKVPRufyOL/zKPTTs18RhaFn88HhtTaL0tenp/pRdYrJy9dtO7bIyJNytfPUhxsPaDOZ/Do2LPwyhBV4JTyknFac8ub3zAzdHbI9nfWnNlo7v+iM42oWMzjZscG/gvr1Dk7/7oNqCVocValeA5zsRn9/E3CxZ7GS/ThfKH8vEmv8+aYINvH7R6LGuVuD/+zqAdnio1tiFC5IMwZ8QTArpzwhJlO06R43dSRYGxr04YcXYRtgo=",
+    "erklarung_lang": "enc:3:yzgNBbK+p0QOERS/aa9IXvyz6+KdjspYV6lYColQAqSKYJMvyXsvf2nECjTVYV5JsJa0CpBqhx1t/diyMYTlyCGr1+i+zJ4imU+9zSoCohpuO8v/GsSsNitt8XE1g7eFZOuoSBQ+nezU2hxcU9p0F7ss5y0l2ZkrHVp9ChBX8wnCy7iIucaSAuSad3DT0+Sm/4v8285xKvGolG2M6+4QNls11qeRL1QTeyre2CNh30G7jSiRSK2dvuIaAYNkxLAGpzt1ejx0FbGPdXXjDTAnkOViC8UY3UWV0tsRuNBOPz/liHEIsUnMDzUK+6V+t8sSphODIHTgarGchjLdnHKZalMlMJlxroyQONAp88sYbar2wlyn2Qleq6eYukuz3r1l89AQlr0+lWVt6PTMn35/MfdOfO9UfeKkIGCKCk7BAGkr0hpTe8jXC/M1b4XacDdIobOdadSV3McWL7Tzd9wulX7OC8bIpDCQF+VnPltAFmolDrd/caNoTW/MJNeTRR9uwL64iwS320Vs/mOitPcHVVIUTkfw+yldQr8s8FlogpWKXiww1e6uZgsVhJJva64r7FOiLf9gkhIdZ3kRHwfXqcHXRzNF4N+KmxYan9kwnq6VEFX03G1BuNvJByFC6p47Mqzhzx0ABBap5QDiQNZaoroiF4PYiLnwszYlhl2b7DILkanSRWNmhxnVLBYc3NQ/GocKI2CvUuBshEXaj7mYULMAf8Gypo50Nk32qV0YScDTAE0zC4NNwBPsDEtIx62SjsEL45cqW+HYQ92Raa2UlZ8lUROcHE21wPZ5HMxqIji29/mM1XSTAkP3IrddqbnDpHeVh6FoMakSaZM4TLCAd+TOOSgOhKrQSfM4EuSHabeGMRov0RUBf4E6fF7k3tY9gKyt/VWV+aU7m69LTXqSXPPkbQ+mPO87cddTleCDAyLVfvRGT3+tRpamDhWNyLm9QugtLrAjRFqDgYuf2xUxZbypaB0MfRGyPE4unrQRKmrLBeYNDLh89HC6yfCqgbLdsS0=",
     "quelle": "Epische Stufen S. 59–60",
     "hausregel": true,
     "nurEpisch": true,
@@ -439,7 +561,21 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Geweihter der Travia"
+      },
+      {
+        "art": "hinweis",
+        "text": "Entrückung 20+"
+      },
+      {
+        "art": "hinweis",
+        "text": "Stufen in Reihenfolge"
+      }
+    ]
   },
   {
     "id": "epfad_boron",
@@ -451,7 +587,7 @@
     "beschreibung": "20/40/60/80/100: Borons Ruhe, Vergessen, Traumversteck, Seelenhirte, Borons Urteil.",
     "voraussetzungen": "Geweihter des Boron; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "enc:3:xjcRxx4F4coVwQ5B//sYWbS6z3YtpaQK4jSOp7tcpqayYVomoc4Era0SE7v8QiAO3snIE7My27366DhDvHbGtnRW/yciBmd5fWDQTQ+ifltqkOLBRNDlxfFfKU+0Xu7XHKD+IN0/0YzMAHZuMJ69VScRVhsX5HBZHIBlY8SRvFUMCmRO08gShl0NScLnMl3jL4uHFzfUi02GnS68QxwUfHg8rg9ScRXNc/WjYqpKWI+5PrGgotXY7CUEGHM+5bjDs277KpTMHeeCOBHnMDslPfmZuhbF0QFj/HGPTgde+HZ74qEgfc5kpcGP/u/ALe562WD/4c+xyQGhLKgx/WRbJY3S1Kibn0wgA2ktXMEjYUaOeiXsz2C1HRmb/w52/MD+lDrjfOjDYci+OlXtqpDwujBHXLrtdTIX/T+M9XzIO9RosZ3LRL5kZF52WNzvookvFXAIDvd9jxXmskBTizNM38uVK/TwhlX7RA0MCaSy8DveXwAq2ZrHyevnV5vs3byfQlYXm5q2+HiR1odv3l6adT7nCsak4vWlBIJfWA0ojFkEpYk5aXMQeKawEJv7DLwbGy+sscqKIcDpuPpu70h3/CrEoRvGYlSO6nC7ti8FdxgU9snpoH2/nQQ53ZAyadDIu+VkOwY8qMu/q1Pw55RtE493l/Y+1Z/1dP24S9VcV0FKGdiHqVJ04N9o+4XMe2/EXDAcB+TJhruKZVgArwGWBVQ7Ir80w6f9e0qLTTvAfQ+F6ljjVZ6iugOV4JI/td806NUPXfqoW3HJwDj7rqdZU7YynB4aePuN2PY0M3DUHnAoWdBZ7eFqzuZLnoRXkmAJraKe26f3VN+2hw6pIjd7h6MEf7j7yJ1yjww3mL1nNkwCwWEc8k47zxjCbtzFGeytN+v599GOPKwrCxAbURf+KG45289jhY6LTdQSrc+784z/6WLq3Ba9RDlNgaTEAniqphxSohJ27pp6DvwUVBsLjT0rgXATEzSYh0Q4iJ/zkpsOZ47syU64T45PIhfLk0Ok4kE/2B+t1ZD2VbsmBLTq1dSABShx7rSLozG86W0a91FCH8A3coLTmWn44hyDMPY2V4+AjYgTL7fIvQKqurCMQrhEXHkFcQUlu84mAksR9Dlo2P0l9Ea5dvDNP0wtwqgBKCQU2XMAYbbavogfR4p7uaLR9bGJkuXEDWmcQ0YTKIc4gwCL+CMKb91Qqf7puifo52EIY9hOJFM=",
+    "erklarung_lang": "enc:3:+YKVmx/ejQnJcyB05VSv2zbKE/ah1P16TtdMUaLERG1hStdlFnSCn+C6NePJC3zUaO+jqV9Nxk1u4rXul6AF+rBjjV0aNBgycre6ZciXIVptKDHHhK23BROzqxq9c/dbBTGc5+uk84UzU1YhU1PJRz2q5F/DjZNnD9JB8ninK9AVDE55hWYMAvEuQo7HJGWC3W2ahrQT8CTZhYP2N4Ed7QxYw4E+UImSHYTZ1yPCRNJLlRNr3WncWIoxAb5/lf8poQvIaQhAdsj7AiT7bhvR46CZBxpt/0NhI6V5bH3k5xGfBBMLF+b3wvfrn59eYMfnpKstYQnaG1B20tbYfAe/zcSZxszWjmQH23b+QIqIVyv4Gto+f9TgVsETdy08dKpvVnX8MJYbGnsYEkpRCRUBNLAtM2RlDqUetU0tUTZX5Roa73bXpqEWvXgG0TR0VEMDXzQwQMEic7GXtB2Yk8tnJfRKlD3HkmIeOOhMlvwOaHw8FvEIpnatSKCoSZy9CgVQNWqG2tkH3I8OW6BohjdnyE/JukEt/mx8i5CbQqUc5/9SuVV+loBZ5R8kxaan5SggeKIwZqOBFiEbTFkIUKJGr+IxeuYKdte5BxWdffsfYPszzIHYZD6QZfIvDYgLWRwhIhHv3D8tfbPI85dZjhV7qKdgm2+Q4eSmzvIvYDD9lQX2ookKDWSsGC+DZhzDchoJ4i4h89B7IJ6oVDV/k5TOxuGPiinhWZGzeV9QbzX+LuvNBTTuNW/pd8k0tPJRfHJYbNl6Rgg+kVEW1Wxt0f8BLJykbULSjgtDuE8BOrtUSbFuY1VNJHFaDKag150KsNXU0JNYbE3a06NsmCAMwBp2KHXnC+06epky2I0DfYzIRn28OQSvFePAXk2NCmtaIXHmF339YyeFgG7EUnpfYpnNoHnuB0LMK1IZCSEHKYnF0i80jkFfK/L4RdHd29XUaVyeQXpd39HcNPbgSiPDpz4N0nYgBMsAMfhR+deUQ7mqzYFY1om/aF1dcRdJM57Z2F3gMkSwU7a3EHnW/KD3ADF9F1Ap/SCsFwiHpOdbcYXUM+bcJOnXZqnSceN7XDF+VSblcq5QgYgc2EFhH8xaDhgtOevHdhYNlbRxyq2mLaoULKxMfV6+L0RNYDTKNCOt8jwt08CBJO7zsF24l64MgXfmJzQlWeV2gygDwgK3WdttfOEwilrfJsnDhLzRaNZs3sEegOtVhw5OOG4=",
     "quelle": "Epische Stufen S. 61",
     "hausregel": true,
     "nurEpisch": true,
@@ -469,7 +605,21 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Geweihter des Boron"
+      },
+      {
+        "art": "hinweis",
+        "text": "Entrückung 20+"
+      },
+      {
+        "art": "hinweis",
+        "text": "Stufen in Reihenfolge"
+      }
+    ]
   },
   {
     "id": "epfad_hesinde",
@@ -481,7 +631,7 @@
     "beschreibung": "20/40/60/80/100: Gedächtnispalast, Präzisionsblick, Magisches Auge, Zauberblock, Elementarherrschaft.",
     "voraussetzungen": "Geweihter der Hesinde; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "enc:3:Vh1cjmQK26ly5Oz5zHxkJd9veTUxTtiggW+kUa1HU0Tl6EoAhl65SaMpLzTDwfY2c6O6/3EFrAG/Q9MozQSSzifesX8ZL/w3jzcD5TXkLsUvS1UxbiDsnU+unFT3OWiVDbWxMm054hlgjv0MHX9vV2FzUWeuHdd3upuaRYLoewqaJQOwDVSUFZn/oTkuOAtOewEndnPBEbAAJJ7u8dhl33qv4xd2yG6B/RfvzJb5TUX0K27JEtti2jxYjeK/WessuhFNEXZYIJ7VdyJXRLOw2WUDkPx/ymGYktfZywMFrpZbZVrMAW8AoGb0buqpH5WertqpO4co4yxWcxvfT7bZnWynlypSCCmB0H/68if8yIxwIoQxpCI0/sIuX8xDxeV+5Gal+16HgoK2h0BVl6uyYy6itHXrLQQL8HKG0X9pFzaCEPgrY2+MBJ0IHmYofXGKtTO6s9cX6C+ZFWMZJbu3rY+2pUXL/TTyVft4SVOJGP6e95OYJVp2+H674AzEZk+lsr4Wbyh6UF/Nh/0TeFE4rScX9wUU1wC+gtSAp3L2SZYEZ7V4h6T9ZuCmsfGM3QKCxKtr8sjegYkqZdEOysY95WaFC/nMq/biSjmQX3scd2wU8fJld65Mv8U8ENf9SqsDBdbRcExknY8tYlPZP5toeidP6cyy1DCsvIKx90x0Z16nAnYU6YzskHRtqAgqfO6Bw7G5sVLl27PZSZdW4gh7YYppj3n5QJlgi1vG9WN8njvm4B3gzbGJN9zPPgPbO0fymlTgCSzNh6xdeYwYN9Y7zyLobCZy4+5i+fbq4s3x9+TeXbtRaQMrGrPNsaPrbrGwa/g3q4G9Ptl5VfCyoBnDPKVH/hUcbUql4Z2mklcD6GP8xD60rFz/szDqbCwV4ipdeXO8MQpiTIjZUeJAvhovPofpErVunaq+8Hx7PLM7OqI/X5CRk46bMFf9OxXL",
+    "erklarung_lang": "enc:3:R3iPPOYTMgP32sTGjOCgW+zUZT9S2Rsk3+6clxg9haNHsNmWMm6BueRmEAkROCf8H90/meFdED+0E+A6oFTs6Chp/G6bn34qG6bF3RGXtZ5qH45CMDEuVVYrM/Rlrh2b7wLsAYrSAlGgoi6A6qgts0VB8Ljjw8Bt7bQtnvd0hp/Sq0ayDcf1OfRbDrQPWyJc6m7PKiBS+5GcPwB9LdZBS8KKCJSMazBj448fPbymrq+7PrnUpkv3d57/qHXKMxlYkbzZEbbVTUICY465Mp06PnohxgbqIFyeXhkXlyyiN7BQQmeeoxuBnvaXacWPsPD6hBRwnV7AuDJMT/jm0OnN6qJQxjA7PcelPzRb7q/9pZahl+G02iive/TIVJiZ9Zqf583NUrQ8xWc/uPq2sIws3ZruOMk9Jja2OdLqONh/rAZ+jyWvttd3z6LDkFGRtYpeb6ZpT0aBJoFwqH9VRpON63qq4BXUF8iOp0NVAEt7iZGe3va6ueRQ+1R99qVAtAmWwMIpBlkntHteAZMZQwR2iTjWMIKuAsrEHx+xHMqEi6cpExtEO7Xnp76sIdK1LRx9aLvoGaZmxhN023gJdU1oWrlpawdKEp6fwaC+YYO+Ibbex+D1IWENsoAnmHgwKbTuwhriWysja0zuu0apZ7ob/yrxIA24aBhAt1ESdI6dwCclkn1C36zCSqXstSGxOAxM5F9z6HAZ/BTPMg4z4HggUtgcrGKsF07pjqabwPfOxPYEymvOXUVu8B246as1USjnlWvvX5a0NLpw5woGp5oRD0AfODqXIjGFttrEpxITwxjakhP5B20zTUVrDWm4bKM77tA9OZY3r/g4uC+82doUHZh7Onx3X+e6OKb2mfWxAydoiIrqRh4rcnidCXp0PMybGsVCisEuBSKYdrdzRLwggfgnAcPHUrvwD/z9+grrKX/KzH4/GX9yz2D50JkR",
     "quelle": "Epische Stufen S. 62",
     "hausregel": true,
     "nurEpisch": true,
@@ -499,7 +649,21 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Geweihter der Hesinde"
+      },
+      {
+        "art": "hinweis",
+        "text": "Entrückung 20+"
+      },
+      {
+        "art": "hinweis",
+        "text": "Stufen in Reihenfolge"
+      }
+    ]
   },
   {
     "id": "epfad_firun",
@@ -511,7 +675,7 @@
     "beschreibung": "20/40/60/80/100: Eins mit der Natur, Adlerauge, Entsagung, Jagdinstinkt, Unverwüstliche Aura.",
     "voraussetzungen": "Geweihter des Firun; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "enc:3:ysum7Lg0vhKihQEpQ0dq7y+Y/mkdYz72nXQWgs+uq+OFNdr0VvZ+Zu2j/UemNrwZ36YwaPPbeClBFxh5deUKcDzygrqk61OQTfEVtFV/mJB01JjViOnd69JldzrHwIRhQ39yMlOqWZhV27r+gbTWF+4Qj4Nf/ZgDHY7QU0AzPEosywIUTuq4foepcrMpXnv7kN62262AKXiCRmSKFrXM4rvmxf7jfSEKiOf9Rglh/1YG6jReJp0/ctAdmsYeygySRMuLHD+gPOCSU8ETpfcK05nQ57zHbj/yCWzeb8XftchGzIkr8uQpiqqZo4k9W4kAvg+NN8d1/xk59Ftcm/eX81Zz+TuqoR95PVpwGnrbi7pZWttCS1ll2npvUM0TrMNbbp+IWHZwEgBOKMyOk4RYr9pvY8A2U6r76RFX7xXycfCJOO0QZohti5VEr+JJ9phygcDHo455WvD64I5ewzXGYTZ1aO1L8OMjiEG5yS1ZLmgep/LXEx8/NyiPPd37tSiTvbb/sd53F4h1wRMfgsXNR5Vp5yl6cCuPoVwC3KyD/irA74yQm4St75smc5rUfjwndpZL/pVh1v+Ut76kIsIDkgPCMKAdQ1k67RxPvhqwBJbuI41mkviLxbhPRTaFUoPLoRRx4OOLdxDpbfOoSDub8EbIW/aNTl+UOIz6Rov7MPBrtyYvXSBVdb8+O5ESqItyHQzrchAwsO+6rKPtXG78Y4u+ypgiepJJamFuJuxYSkDvdlViPLyRkpgxQ90o0Pecp/WaBoMbV/8LIMU8CTXF4gcg8WQGCbZVeG1tqM2SK9b0uxOzYI+uoH615Cqx7TEKnIOfLf/iF8KOqL+1lxYI9yuR67cG9c2HTOK1udkKmOLd0GXdFmVmdvCEBvCxKQDZbocaLQT0ptL2UJOVAQOcvSouaYaG0c7hp/2/F4Z4pYrhghs8aAMLAJqSGJrD4XOmLKnLVKfVGTDfTF3HRvRof74wWA==",
+    "erklarung_lang": "enc:3:NuXhjDaq++tjQ5w/yMd8ldNM9GuHv8Y1yIzcZ0Z96pj4hvP3bsrbOLmUHPNDAz39zAKVvAmtRjLiUn8QWe/yZqc+tzQneqXy2HoIqDJq8F0UUNdst9Tf0sxcZUn+umZ79t++qRDsh+xmWFa/TY7oid7KfBu1lRFtMp5dNghuUN0kuWOUl2lzZICNu+nq3dsLPfC4DK4PzKf2esp+CxVcBb3U98Xi5zw6R5dSjZXaYIV3tn0Hm21bXCv4Armr2POWw/QyGiSRYt7SZJnegCFa/+QyQyF9RvcCSuL4eXKeydgJBUS1pa8EDBcCXvNPUkm3YdWyfQye68nQdCAsHBFv5TMpRL9lp37ERphVjImKipmr6l5r7siV2rWnvFkBNOSxXqvqxLYO+/WnIHsytwEfqesUD/AvvgWw/nNPWAlepjP/Mrx9HcWckDts4pPM0Hlv/H/SZp7it+0iNPDzBqsMqd6zc6BDFHIEIUCQTJMJD7vAebIw25mqJ/Dg1mdBhvRRWfi5SjRlygVdxCcFEWKwz39pLcjcXgav+8lpq5zJICp7PLg/B7YBvTsGblAr4Z1f8teMJ+xvFhO9/1MEHQXEC/3yvDlL12Jnxg0dd72AAloQ0x+hgi/E5hO+yvrGJ6mge6rj+QiGmO2wx0i1NHoo/jPEFmwKLndleMHHPz1G3nO/ID8iH+SXsmznO6O+Uoni9LJF5PsSEmjKXlTMqwWid6bnDDA30z/OUB1zjoyxRW/JimBlB3zZWNA6EONEnm8j8ZpRrrlAnFEAmN3OFk4dHuTrJeMf4Z+RPqeFjWwmtQ4AMsJWVMnWqjVSNWEz7ZlgclVu3BrIKnnhYWuZ0u+ZanrerdscmFRVdLUjz6P+m/8IOoDtcM4kY5RAe/Zr7Gu1fZjl9N5T2pDwcyZhwbDTd0358zCKN15HuQU+ilSTgsnaEgvvQp67hoc45G74UHZKEHHojEJk70PSpklXdmFRQqKSQw==",
     "quelle": "Epische Stufen S. 63",
     "hausregel": true,
     "nurEpisch": true,
@@ -529,7 +693,21 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Geweihter des Firun"
+      },
+      {
+        "art": "hinweis",
+        "text": "Entrückung 20+"
+      },
+      {
+        "art": "hinweis",
+        "text": "Stufen in Reihenfolge"
+      }
+    ]
   },
   {
     "id": "epfad_tsa",
@@ -541,7 +719,7 @@
     "beschreibung": "20/40/60/80/100: Friedenstauben, Echsenhaut, Tsas Ohrfeige, Unbeschwert, Lebenshauch.",
     "voraussetzungen": "Geweihter der Tsa; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "enc:3:SSs4LLzAfdu/kmHZxFoxdjnpnL4L9FdYZwSxDJc3BBTecYWg75ZTS8jWYp+RUbzJwUMZCg/fk5mdfDdcOThFnJB5QuQ2x2NG+4LzXvamZsBY8lQuwHredM/eVwA+V+IWelnCJ6uzB4Esy9HB1PY+OV5vRedHrtdIBWfVwSHn7JeFchxoOmTdua0FGhmxl8xhzk0oNgD/4TIKQeSG2zIgq/9Ols5B4gzChamTRrbcvtkiv3Ez91hp1AbbRL9hqu3dl7ETiVWiUNJtP/ekyPq+wqu1kJI4+PuxBK0YR606xODfmeBdY5AT/itdUb6tzV8WWuyjZR3YnqY7QtHpBNN3T7GkYhILwpcKkxOohO83Jx0loS6DqrL896y4gIK/sc9ND/E2mYoIEQRy4KuPORkJveuWuxRjx4jl9E1ygRIzLh7jFSxN0d50XEz4DjBRZY/8SjG121l8biQl5AOIi8Eg7G5KPNfJmsZyvWwraUlcjTlmvQDwcx0R88WqBT7DBoLHbb0lFTT39nutnh1UH0fTvBVVXeKfr1lTMeFm9QRvwz7aigzrOG03DTe91N85Dwdm0tPMth/EhHzC6cHGXtgYGJkFnHYvpeyze9sN4FqlAF+cFgjrBGnbYfxI4qCWvM9tSlqD2amKlEVv5TFGnLm1vALbEqsMdbe82s9HovlnIM77bsxBE2R/KjKCde/lvJWkZC3XKevrkCmPJ2svxjM/GIQd1Pi4BZCaEavAwXkgfIrdJTNFSMsIp1KeK9OWAMdkUp0Knf/Yn7ZJudz6HflPhgOcLPiqsJAgnMG3nwhXMzMMLhGzNcRlF8O8OO2jf8FC8vChDPOq8gkNcAIMUnlSXdEWVX+AoEgzSHTnxzGbAuO5iqbAac8Rza0H0zdLiSqy4tKv4RgVvnKCthO3UXS2hBlXIxj/iL2GxnaLEP4FJoL03QpHpDrL2FQqg0o0N3ZwAerGPXgvqlQ1w89bpX4Dmdu9NzmafTWd1DGqjINAVVwJRcSnkHl9nLVngAN7mS9FNiQqsOrCWGvfvYAvRGdDfpMLxXQ7xtJI9VWySGBINvPek2uakiqMZ17IX/ReRytQarD5",
+    "erklarung_lang": "enc:3:v787PiWAGvRFf4Y2C3eCMSEAaldMA0fD3Dj5yqk72r96jgjpQR4NrN+LUQeK1T2X3ves2c9tBNud54VeVcaz1QNZaEgsosvUZ259Oygw8R2rtPssln+20gt1dmK6O5mKD5xMKaV6mKG2oJLvHcZTsWP0Hg1VVzYnQnxBW13h7jZg5Sl/nEUVGQsHPZgmkH27SCHJSoXSxSVWZaHQPNnNLBSzOUZOg3O5bMKF+i+6cqEZjokmEGVab9BPAW5gO7kQwkplXyMh3TCzEJEPWTR9r9+QxqGEW2wWxBUkj+mGh7W9iUrUe4uY9TjJo0KzbLDBXiK7GhLDyuS18Pwxnh0+5ExOKd0LGb4O6QT4NXKZB/8RvHUySetfNiRgcoXa80XhqV4seZrs+TsXQNiTQjYSpWRTPW9WWmK4aiXkLWfv21mvvbZro9CNz4gkQcnaYEw8JEbIYWhQml2gE/s/0KIyUv/FLtOon5pTPpMUVCAll4zZH0aFiB1BgE8rPgTYwfEz2PhMT+NQ3fQIO3rTKqiizPK72IdzyEmvx30t/xRTTh+j0pY8wA8y5wEdku3hgNdxjhhgqGyIoqaNh1PFHUfhQPYlkwnUS/M4YxortIJA5tsX9ujbRREXgJgdTeedojtp2ve6fFW9qCsaEOJwoRbwH5BZjqpnw0gk61TKMjnZonpSLQLVVDuzc9159WCEhVuiAPf6eeGz4kBlr/AsDyi/TJTRf0e4V+HBkPQHeLZb2Mji/g8ba9Ow149mN/v0OUCmJq6PdwGBBMTyFQcirMlcxWD22W1VnXOpG1Uy9oGMwJ+4QnZjS2RlbYbUTW4Z+geV2iY0xYX5wI7pEdgFA/UzmY1OgYEklQGOaPzO8JwMTSFo2jGfADGXAzm/8e1fBXu4OSh/iM7/CxSk18Of2bX4N0TiGUp8VSlgwy2MCpdbg+ZWnTFku5clu6Asp9GrkfmruWrxnvlN9OAxoGslpmTQa6cbH0N9I7nbLOGvtGIJ76bmcZsQzLjYctcAcWNrS6nzWDzQsXvFIuDgSz7oPwOLpsThUVMsFcHllBdSITwSIBLHazQU3hlrb6ZbO0Ac/dSPsS9H",
     "quelle": "Epische Stufen S. 64",
     "hausregel": true,
     "nurEpisch": true,
@@ -559,7 +737,21 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Geweihter der Tsa"
+      },
+      {
+        "art": "hinweis",
+        "text": "Entrückung 20+"
+      },
+      {
+        "art": "hinweis",
+        "text": "Stufen in Reihenfolge"
+      }
+    ]
   },
   {
     "id": "epfad_phex",
@@ -571,7 +763,7 @@
     "beschreibung": "20/40/60/80/100: Herausgefordert, Sternenflug, Mysterium, Enigmatisch, Glücksbringer.",
     "voraussetzungen": "Geweihter des Phex; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "enc:3:52g7stBE3WMixzUdyTSDj8ahAHQkOnBMaYhiI2DNJW+NZ4EmPQcuhmmExL9VV5yNEpw6zCFfnwKgZYu+FvGrnBzS7RZ4J1/Yn56Wg8QBDJYk3tm/i/r020JZlX9FfUrCqu2PMK8M/+npx1y9UDynntwHsiCg07m6EzXFy5VJIRLyXk/+TmiuS+mydZJw4x6q7CPPwoayT9OVH8aSiYuWbX97r0QPGB2y0r4YLeli51tScZv2YiZ8YysiHDaGIwXJpmqekOvxBL112DvZOqh4QBZ3TxoubUZrRJkxEvj7mDGIb1odyBkE+AuWM1YSzATLa8RfbsALIYyHN+ZldnN3qPdzJlv1CyltWS2/WfRYYN+Qs5/E1i+/K/Q2o1BS/78it57m+t0AfCgdSFnuOcpPO8OUfOO0hjDcoco1sZBMln6kexf3DuFbYYmeY8uJmrt7g9LtL8OvKTFGpn8T/l8FOkkAw72FS0CtngjcA9qxpENCYf1JjzvbfrGGBcu9Y/V/4yuD4gdGmVyo7yD/iKBCVgqN9qEQvn4M2rfa3/b5Xabjr1idqvYdlPMCqz1MUDoib1TrypWJqQbCFeTa/VmsELhh6Ya7dECzC01xCOBy35lHvqzE7meD5Kcn6lPWIOFJH86BaSwkrLgCsSorBExBG7cQSKx7A47YX2hia576R7kaB7tXFFY/Gvd52fcB60iwvqk+TOqbPxPlVhTKQUUzmqYnGAbRGeIoSLTqtMmP0H9OfMgrrwoAX3GU2EHSp0NpZKHsYLrU6Doo4Rmlwp86V1dOqFSRbEZDpiLxgrdppvzbR4OaHor5rEljH7lp1n1ML2vGLc+RbVo57qnsmugc2uTwgMvjQFWbdCaVfJeyTlgC/DGBR1KXphm/6xiep98bt9mjnG6Zyov5hMRU7yXKRupWoAVammGc31KomsRX11TAgWmtQ8bXSnkL/vkA4g3EaUMuhkO2a6Nc0MsZLzry5z94nn3lpDzbQhdYhCmRHCADWPe84MzF+6mywJX8CEFggyebtL/KXx/HvhU0ErV7g6FfH40orV8Qm3R0xeqJhrf50T3p3gXKQXB5/h3Oi/w02W61x1uBo6XJkIXJdhkCvvDYn3naWSf6/rgFvOXJjQCS/PJxXJKJEugyKF8Hjss6XAokiROGPFEe+myNg+jwAZ2I5eHy",
+    "erklarung_lang": "enc:3:aH9MW65yPGDUn8zHGyiZoCxDcwGt7wpP0ENxsGHq7CkYrYzQ3pQE+lg59EJLDRONPx2wkN0UugcGTGelfluH4x/PBL82lhwpk52YsVb//2b4S4ABovYs73EQJbrbcpBG75SRGLzrOeg6WztEdjNGUBpk/Ws0/K0t/1dPLDjz9SGbD0MvfSWxNPCSm0r3hC1HWBZXAchYtU5vZigUxahU4k8sma3K+13I4uStslq1U2MIuI8foGC3wvRxVwSFfSWcsScKCeXaKDbHVjPXeJL2VJtORBZipMFJEFdCRQkqpjzU08ZgLasUMsiWo5EesxDBjALJXO9mFfhw23WJWY5KH73rrx45vc4Yyu45qTJ5E2fiQs9P1QQAjCxD6W/NWRvdGv2fK2HxxLElWcrIaMjQZ0InueKzjB6IOeMPImqDOPrCBWXMIFvg5eOeHLD2iehpHJPJILw0mPUGh7kpFz8qBBsg29kNyhKyvpfqtLZpOoV1kQKGUK2BopDvTzyxfAtCn04nxgHARfcbJ0tIfyAuo1jYzqcO++C02cq5Msu6gIPr/v0HwyQVliz3iAcWL8P0DJpIVLJXmm1Mmp2iFziwU5Zq8x+3InM5W/T8JjsqWjb8ZWhuyqenJAB3f7jJ7yhXA/MIMsRezwa555RNKLfMKymxIXBRt+hbByZTM1rNElCeWlDfmJTJyFZCv6qsdWB/qMCxrVy8JROMTRgiYejnbI1eizxV8X5BZ9YXKB0noEYaRiInN+GaCH0pJJQk4ahjlzWOlnjauDLRaxWEPRqbdcXo6OZDsJFp3bvwgjehd7JzuIe+y6Qeu63uWNo4TX1BsbuwFU9bZZLpQEa5NtRWM20iLlu+Bx15doxMkJY5CN3udXdifiH3rNP/Hs4rdf4ywREgzhxM1y/NKOGqaXa0srL7IWT0m8gHuP22I1Z9cQo8FVLjiJvKgd4bKVtm+xj0fpwBb1JmCGkJXzQeQUKFCYh9v3P3JKO4TA5Auh2tvk3j3K/eVcZn9FcRea837U3uv+8Oo0Rx8LnZ7nSPeQrPE1IPSKZ0xpi/UvHzBj1UFWriaA93ucBXGhvZaW9v83kyPkjrsP4Tn8pS423eDrVncbEATWxBA0JLjG8E9shZc1lfJZDmzmZJ8fK6/Z2PXEJw/LNaaQ378S6iYz1qJlvbHTk5HaHR",
     "quelle": "Epische Stufen S. 65",
     "hausregel": true,
     "nurEpisch": true,
@@ -589,7 +781,21 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Geweihter des Phex"
+      },
+      {
+        "art": "hinweis",
+        "text": "Entrückung 20+"
+      },
+      {
+        "art": "hinweis",
+        "text": "Stufen in Reihenfolge"
+      }
+    ]
   },
   {
     "id": "epfad_peraine",
@@ -601,7 +807,7 @@
     "beschreibung": "20/40/60/80/100: Humushand, Robuste Gesundheit, Heilende Berührung, Rache der Natur, Fluss der Heilung.",
     "voraussetzungen": "Geweihter der Peraine; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "enc:3:nY6frCyaEyoDbwqsgj78vXKyJs20SftUP2MajoWhEKzC1iWGit15qXP0esL/2dm1QsktbDNC0YU6ihISFubsVZJ0kltkCo1AWSUzZ7xjvj9J7QRPF6rSjxI33Wpxoc1a4kpbXz5tQDv2w01wlleSdxo/r569zr5fZoKdsr9OH874NU93eex5AQdmeD5NnvabhYdJduYGNcGI2x5xbLajYWLVOfJ7/F3NpDjWV7dRctEXUuIAPWsl0OlYWnN7W3niWusrZGvU+RPKG70AlojM4pEBJS6A8eEUbNCCyAXvjjLH9/EODpMQ9WGsr4rNIVdji8jycs34ch8ofjW7nYLl/E2ji5LXGV9Dx5h8BZ0ZjeJLBHAbh/VMlS35T8/t0aAnQjGO40CfPT60l1w5iRKOVH6Rg60rjZjFQTpNkNdrOcITiP84LtAx3xrbtKnwBUa9gESC2X5TBBnh73eRxkph2Qejn/WgjK8m9nIQPzPSoXjqWKhkyNt/YAYTBsBMCtk83mGRUXlE68SBp8G+HnAIG9ZBM7xDQQDemMzB69dJK/OIfczIgv7ffGc6xsMsddRxvgzTSWkBfKs2bciuFuBchP6igWCsz/sVBXtOWQgyS6B3eJA01cOiMNNexb8jZbEekJe4M7CEwWJx+mSqT0gxbZjFX6ZjROXM1x/il39MXEU2dMIZOEq33RMuVxHH8Bsm3gEJLGPV5srYG1ajVR2EtpYhWE61q+t7Kpg85ovmh0oqbSDlYMNe7VYDeNoBiH/KQjZcaBMY9phsa3x+0IV10nJY4lAd37FkzMsPwMwjRH/EXYR9TThAMgzzoazrZc6Sckfn+lsRMjsDGgc0WtLpXg9WAJZZeUbajSc54tAVtkjiy1clfHaR+GqojtppFxFJRyAFXBYsFQCzE/g=",
+    "erklarung_lang": "enc:3:kwVtKOjJlMKleHZMgE/y8Htc+AqxyDHJLHbM7qj4sFO624Uua7BqcSTtJAqmiQvvhcC2JZyMNJsKkBEOQFAxRACQLe3uw+DyMCJXO81bKk94RKLKq62WrZ7wa480MADirO3rUIuDBNllgpxVpBqdXqziyhU7W8iOHoBh/TO/k97tCpewu77tQhbu1GOqPkGrB+0+sN+in1ZAiBf745GZBhPGW/+KIHNixnBtadUX7Y6cuKddgmN+oe+w1A8eu6zKNjt/nvMUCCgLyHNYbeovf/nunlFtAWLksyVOMX2nIouAJsL1p7p5HU7bqVJkC3rmG+4tfUE/aCMeiCNl4sYQQ1HfdS6PDchsVxO5m6DsioGR4WQmDPl2aCmDoVs2pYyeTqViPKNa5caSF3LEV19qjpxE3nWPW88sKua3gYoF2l+UCEr2CNVGI4h9F/bAscfw+SGxusG1bu4QAuSzUtkL4gkoKRsj6QSNFY7hF/p9+MDsS8xJPrlBaYLpQbqUT/zKt47X7/w2RHKxVQicLoRG6Rn+SeDc4VofklJlW1g9q/+b84JH881dI0eADOOqxeF1u38baluN2q78gYBYkonfLlOSb4eyswEJ6DFhSUgUcmbGRZgO69MdVX4Ehjwt/pl01hiiw/fHHiRmW3fj8CycGZY6Nu95/2H3bKZL/QqMwsaZAySD+eZdsZ1r+eiP/Scqa1XVnUqHGz+cLx4mOG6RDbEUcAdy0czf71SVLwtEUqR1YMSDTraczlLfIbHIx8HY2F30sx7Fb/huWy2ULHSXjuU46TwPZTmLQLNauqjAlwKHzi6FJvtnMKgeChP9+VynfqFcV+EyGvdbpkVkITXkodo0yTBrIpKylnblZvYSBPisWxvdsY3UoUusKT7H/cRWdxhuc98/dtbFRJQ=",
     "quelle": "Epische Stufen S. 66",
     "hausregel": true,
     "nurEpisch": true,
@@ -619,7 +825,21 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Geweihter der Peraine"
+      },
+      {
+        "art": "hinweis",
+        "text": "Entrückung 20+"
+      },
+      {
+        "art": "hinweis",
+        "text": "Stufen in Reihenfolge"
+      }
+    ]
   },
   {
     "id": "epfad_ingerimm",
@@ -631,7 +851,7 @@
     "beschreibung": "20/40/60/80/100: Erz und Flammen, Meister der Werkbank, Meister der Schmiede, Esse und Rammbock, Herrscher über Feuer und Stahl.",
     "voraussetzungen": "Geweihter des Ingerimm; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "enc:3:ZZjFB4aEX+f0ZmE+QsN/ufmUK7ObrfBy5tOCXFe6i3P55PuCl51JPZmuQydIH7gRU0+52wWcD0lFySymZe5eljYe4mBq2nS3PX6g1wQy6Oe8G7hV03JqyhV4I7exrX0nu6GZz6sj3pFite7ZVZEgX23FKG/GZpAe9pFVqaVIdV5HPPH0E4keBfMdITmlgr5J6lsFu1q8BHCTC+SHUJnpPTvnf8BP0jiZXmEyS1b8UnnqjAO1zwvWcrvdCrNJrDxHJq39zosMB0zLjXKBrGqrcbJC1RnRB2Ja1bYldjee3poVGQylVIV+UJhgx4bG1vesx5NMwYV1vHLwQzqXNSNs68TN5X8UGgX17NOzJkxPvMGEyeRza3blm2ANsDtK9JKnGHM5/6k9Cxc8JX4TdlgXXRysTmkEY0VTV+4URzCaymCcQLiczzsJ5qzWg9bCIEGrCVVAy/bSi0zVPN/PcIe9zdZYjzrFWrIN5iNGs98VKtN32SAifFFsts655lQ/JInYYhUXniCcdhi7eL72rpuybqGQSDNLTLtO1YRVZX0cO1t7ClBrkEjJDrmhoOg8Wg6jNr6QBL3OpkUimUx/1dllGxIY8o6//fugDf+YrlFdrornXKKyz1C+E8Lgyy16k8OqAqIChrOZTHvNEW8P1x0LWq62lUE6mXmnS8fQJ4kvnG60HRKpM8TPmw4GQenyOmTQMGf0EatfaosMN0RJPLVAUP5QsT7olq+UxzFCPCJiatXoOXj3nEgCsGtJ2LcP976J2E6Q5iPmPJjgFhabkedWcC/j0X7OYtq72Hkr+KlWm62iINWeG0wvLbKeHjRSpjJYqPbQDqsPC1wCYuSpzPvKy66yb06OygdhYrkzXENIBNtA8AxZb4r5Yjr6RONeMyWBSzJ7fO6dibxH01r2UwfF9kWExwIJFveJYiKM04Hh/p1k+Xn7EC0Wjg+N4VCe3lAIcgeW5VKH+9jvAF4MLh1oiWx2dHPheuwfsbS1MLyhWcICka2JQDXyzKHwCwfW9ivpdcJwz8uOAQF++jb3pIm2/tstW+SCuBRRYBQ8YsFKgCKFuqTkoZdlapvMOzB7d3bO3DBj/8ByQFiwS09S0CZt0W39L3+sut5uQO3NldYnG2eQekH7lNPm7uLVa/ie32HoyZjR4WBfosGGWPVdtKmqI34kGkVk+DxK9evYMLV80GTOpcAurOrgU78yEvqvF0GUX1nJdLKq",
+    "erklarung_lang": "enc:3:9YD5lPZf8GYxdupRX1I4jS4iwOMJRg4Voxob/BX9eILfJXycDbNPZe5wfQy5wwn1KPdwQBNFBuonxn0hqPvDv2KBRXd1IkAC2xF/BibDOG3SAzdgXvkR1CZlPoCOV20SNuE686R/IdYBOCNYIx1/M+hpPwiHwssSZNNx+KdGGyNDeFM/smG04hO7veKtThnBX4NfSTSIIJLhxUg8HvZy6pCSFjvSPUSPBiKbELpYEeXAllzIZ2FU1g5h8mJkLoCtXuHZT9DbroUxGWCMGSX4ybrw6CYT7nUH8vVSVzhwxn0NFSyi/inuxzBebuizwttj1QGVBRmTIxSdWnzRPN0cnGZuLIzPuPTD0gm0QYcfiSkTvPNp9gXk6RLGgks9pF7beGnDcOEL4lARoluMbLjVKgPiznS3avgX7k3L5R/yqTgtD1+PEgwR+KLc5kr8HRzMCcbmKbJ5Fhib6Aozk62bHuQYkm//Gq9JDw2+BLQBdu1yPmrwnCOAQuX/tOZ67TPiT4bDcajrYSbBUezsGbHlcPmDCfLcoieKpm3nErLS37w5qC3+PVixxCBGf5Wo2jR/hMpGptEaE/3f0QTkO7hXppy7QJgOHKBzj39oCrYOgUIQ0YmpGoG4MwUX7PpeTuW8p9KxWtwGXkSNZbjMAiIK8Z8RcwRusGSB+b2rEcK5XcSUeFCgBi8hvLaq9lc1VmZY5WwPaU9u+oMvwjveGhuTmD4zRnJJhxKROx+55Jibefw1lPPopZnwQUaaTqvAjOr2LMXp2BmGQ7hzMqAOpGHdJd4rUKoNCJSN0bXXTbQ7sYhLNyeNYCnk/p09/dyXuOcgSUqCIOfExE9zsYnRNCtzb07NuUAHxmrxnlquNxAUqOqqEdD4VPKuRet7n9N6n1G3pBKFD1cDT8LZsz6YScUU9At26C/yC3kHKrk9kLV2FhgxU/zcZHpJo0vLkfjsyMbiqVVIMEMIqb4QMMYHJ3KaGwkVZWJLpdUIBrMR1M9HXS9QMGLQcDHPfrHmGbtq50Z7xSG1hHttWrSvNAdHjm7taqtnFHID84ZYleys6c9U7KkitupRnyZhOMwxMuxzTrasf9kTR3PrGUe/79Rw2MRCu2OFbKo4WGAlPHfn7LnB7Xq2MDelp6SBhBZi60I/1DZA3R94B1sK5BQ/1vu/emOw6c0WOQR8G7yAmUctm9MZUk36St2uMzzdHxgPyYtnjKmcDiKYxAZu",
     "quelle": "Epische Stufen S. 67–68",
     "hausregel": true,
     "nurEpisch": true,
@@ -649,7 +869,21 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Geweihter des Ingerimm"
+      },
+      {
+        "art": "hinweis",
+        "text": "Entrückung 20+"
+      },
+      {
+        "art": "hinweis",
+        "text": "Stufen in Reihenfolge"
+      }
+    ]
   },
   {
     "id": "epfad_rahja",
@@ -661,7 +895,7 @@
     "beschreibung": "20/40/60/80/100: Göttliche Anmut, Rahjas Leidenschaft, Königin der Nacht, Rahjas Verführung, Aura der Harmonie.",
     "voraussetzungen": "Geweihter der Rahja; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "enc:3:d5FoEJr2gKBmdwmGxIHhrUH8XW7AYlkYW4+YTwyrY3J3GZ5BBIxTtBkRZy38iCCP5yow8M4ZuE0HvisMNepGkWQBwK/NOV4eIEpf+43OJElWgS1HybyiEyNCyu1ax7o4qwharGN36FgL+Mi3nNCN5iH4rysp2Ktcl6l72AUyNaf86lnK56I3aVYugFwTPdCVxEYysILgZ7hJc4Z8FTh8gRM/jmPuftUrr4ngVDXtcN35CYZ7k2ptYDCx5FOADYUkGUHqpBS2yGP1SU0AeO4o5haJaEux1vxmMHonQV7DRzOe6iW8t3qLK4RtU5J/gBYTOnjS6/6N+vi5ZXFTbYJw3K+V/grugspI8wE6XQJtu2+JKZJ3y+YoV74aJUVnbxzeiH9CmrvLgfW6lB1Z6XLS/HOCEed1aqmPCiAKwpWhJ5BXSyHTPJYi2Qn5ane6KmPNlWwq1gonutsqsy1Blw9CZgtmwq5760wzi51kM697ErRQir66o1a3BxfnE/F+GxeIqYrLd4h1GKXRKuCGI3YfzT40p3v4RQv4iYe74/E1K2kjRqgQmw90fZ+2g2Bn/kJ4KdiJJXtlvcDwsjwGF+nPMgEZEP8MqrtF+mFyVilPpiuF/IeuMFeh/0nugCe1II7GVYMmYfU7wCbF031lXTxobigAEf/xa3H8j1AT151xnqsNZ+mm64xrFhBIarFIvIvR9SNDUiGX8E8BTL4aiSSCJWo4ZMv1IssTwriWNWmyxXyDPdgMC5Z8z4Whg6+W+s/nhUZUeUQVSUG6Jpecxuuquh31Q7R3yXX2Rq37O3naT/MZVKZnwN+evByT7utZoiIhzu0a0OXcGzJ8iXnEUqJx6RchTE4NMWw+o3D8jc/8ZTUeS9qqihRatkr3n3+pXGAZSgnhYvx+nl/8Q7AhNbXQHYiXU765ZJ2EcQ2ZgXUQ0lgr23hwhxvBZPtTkwY/f42ktJtX3fWxBBfEVitcYCaQ25tbtPLHJtRcNTVSQ+7Q5kjgKlhBjgPPd6u7RhgVZJhSlZ1dziNKoG/jFB+sEJz9PWy/I0dq6+8EO2dgBKucLdnj44zUGJMglg5dOnqkuPaP/Xpaw8w+q4SRIiEnmPzniNyP2u9IWNKwE77MtQLf+Guo/R0x9M7WDHjOMrpP09V6mP6Ggdiw9u14xM3o4gzrhWnVinNi4nBlXeh3ZYPe+bC4TnHO5Vvd4BvUhsuuXKU+LHd7zI8=",
+    "erklarung_lang": "enc:3:3OopCoh2axQhSM2UHqMC2XxKpDORb77IN3jI6VIHgTT/OOnA/tVqm+ToSrSq+t8S2AS3VH4F9h5dLitnAvDb1rPMRwpAALTHY5x+YEfgDgw4dbf0ukmSZguXFRjlSJ+vwx5Jk+DxqhNRc3R09PMEV5bme+kqEUPMSGaDwECSPfZJqs9kXM6gSD0St+nVxQfIAc0Ie9zNYN3ByLEjpO4K1ORdgXMk5o2CQ3/CRmhZkMQULQySqn8mF8+TAlcbbBhTnEJgVyTE/i2ZXT1HhpQdXDawqzY+L4d2+ElEJpq4FBi5jQXz78OxCz2rQIMP5Ssf7leZ7VHzMdHHgxUQEEdOtKIMrhgDloCrZodaPY7VM7TGp0wmF/nZXhQOS+u3nbp7IDIaLXbV6V17CZSDndgO8yiJ9Ix2uTKm0IwHbz+izYBfwuIdl6xUkS0RPjsgA/MnxetPrqd8zVxN4W08Zuh9fPC1ZGcP+f4+nOEW7E8BOg2WXfoB2tH4NjbpDmDGiTXI1AOQ4RUWaMZNFIXIINE/9J/tNoMQ8XISh9cOM3nFM9AmZcDi4WY05o+zP8SrIxs+G9uAK8Rf8FwBqq8tBm9sc2O9xSyvpoD3MBQ+NjJLsLh5oPQkzp1lZ44LPojuBV+p4gbiH/FjN2nNsRXLAe9bBxjb8j6pX0RRF8SHQy0esIfEtiR/sSspiYn2pj443+gRXTp05A1Iz8WQt8E5chJ4JbnOoR1q1iE3Myn5Lpkxw6O7x4ajuAo9X96RgmNjj3gLKWL/1xtGUQQele+byGT2KOtbpIY/fjlj2LCQ5NbRHL8QNCvnMhjW+Hp7DwZ0am4GoOiy5JFZbr2spDCp1MqOmdYwVZMfAoWTHnBIs/lenzg8Wbc7bAs9xblgWFKUnHz6669YTbUiZHczZgpZMmng8ge632R+Qqnk+m20Oe9fFssYFE1FdLiSwiO2Y2Kzj6vf3TKIQC5cR342TXEa4mjDDc29+ifRqDXvfTQwShxZ1CFhAkW74UYiWnWBTt7i4uxWbQe67dNrwPA59yKANMzkkeo9LsKsj7g+S8KuKpM4QlQECnx3EfoODa1/LOqf02mTCkYsGeGtCL/VAx5fifPeIlNB38eGyqSscxTMAXsOHQrWmaLxUuXTN4o6dDOj2p1/25OxMJWHEVuw1pUUxmAQqEXJNwLofW/ep5QTZvdkX/QKOkAN0lBSUCHzTiDx0hTmO3DFKhI=",
     "quelle": "Epische Stufen S. 68",
     "hausregel": true,
     "nurEpisch": true,
@@ -679,7 +913,21 @@
         "requiresOptIn": true,
         "eligibleFromLevel": 21
       }
-    }
+    },
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Geweihter der Rahja"
+      },
+      {
+        "art": "hinweis",
+        "text": "Entrückung 20+"
+      },
+      {
+        "art": "hinweis",
+        "text": "Stufen in Reihenfolge"
+      }
+    ]
   },
   {
     "id": "karmsf_akoluth",
@@ -692,10 +940,28 @@
     "voraussetzungen": "TaW Götter/Kulte 5; Initiat der jeweiligen Kirche; Eigenschafts-Voraussetzungen jeweils 1 Punkt niedriger als die der entsprechenden Geweihten; je nach Kirche auch Einschränkungen für Zauberer",
     "verbreitung": "je nach Verbreitung der Kirche",
     "kosten": "50 AP; diese AP werden bei einer Spätweihe angerechnet",
-    "erklarung_lang": "enc:3:TXIZLTIVXmLFkR24hpriwjBEyYL1/uvcQOCW1+zz5ItLSGQriyvPGJ/JRjFpR/8kDK2kRtcJc74tV2MTZfDimuTnyevQ15ILwg5WkGj04OzP4cP6geNIlT8rDc7EwmauitPORa/NdykkaNuwKwdXBWVsTI0A/sH1k8NS0z0uf+pDEzMyWjgBKqJjNtm6F48Give3IIHDmIPJY1DJVP2Dlu2U7qRm9pstmq+Lq26KvwQAYRIHWDCidYvJzuqw0xNdaKrYOLXPvrYUb80JWXkm9tavsL22gsClk0OUDAapLcIoGdwZsy12eyXm8E/l+vf787AhjYZ7XPxDi9GKlyAAuX5UfA5YusmLw7zWHgdG+R/iqMuBHa+/cfXJFeALNkHxdg54EI6mB525P/wRKbyuPmF5qDWzXuO2KYDl3WnjNk4eByX0lGyttyj7SBCn9snNiaNdUIgvUTHREIx+ch3TsD9Jufwl+Bw8mALZY5mLbz+7ioxBbAhaDZ+KW/IjmPeeNEf06qFTJpKS0IQYWv8syisM4tBDYnaZKfsdZYHglsi8AtjNNcwjB8/pf1aEA5W+R3yYC7qJkttXUt5KRxwNpNE0/UO/A276z8tCVh8gzFMah6m/f0ptvF4Lftb+QyHGdycsoZvTWVMAsyW1tl5/e+a5Y1QpVtSLT1X9yhM39bK6T3A0DOjyDZXo+V8s+SzAVbUChm40a274TfzUUWVTATlAJLqgIjL34rn6qZSNVMrqtuvb2dnnyRgcBXR97iu/yrIGIFZRsN5eShSASD4Oj/ejI2N/bfuoZghBrpwJQd+VDA/rO/oovPukKHAxPaNfQC1gVOUXw/I5wuJQCBNefB/3RF5uvjCv0jRJJh7H55ONw6Cm6WVSboO1H+QDttq4U4StGWm9qgMYhqZcHOsl4ahqKNw4L8yYVp0T6j4NUE3l/4YM8RztHGNRXbEfQSWokB6d/BibuwNhD1OBu7oY8yNKtfN7/nOoqH3KGD2vRBlWIXNm/+nTk5lh3mNeh29sU6yLLUNSeuqOO6fQtcaK9a/QkyUDRHo4PU9L0gkmn7RzvQxuV5y6j7ZQXcBsKUT81V41CGymVFXukPVqO8qqI8B3+QEx9QUSzG0ExsQMaSszdkK3O4EuPaeMOJUk9GOV2qf3slWQNoNv4ZcfesAkYfYMe+bmuxK4ksfAWn5y5u84++oG+zm2CPBXX2QB1u9+Cjnuu/DESyVfJhxqwHYes0LiYAuPC+MC0+UN9mvT/0UNcg==",
+    "erklarung_lang": "enc:3:zwTmsotcD5XPWehoYhBaJAMJSQLdb4kKlkmdxaxW/peOJPWX4PtBj8STMKypLo5UHWJ0ic0/xO1KyyEF1wZis7vzprPQgSyOS4ckPjvhttdwHmtoU3iEmPmNgbBHIFaW/5b9qqU6lvSkkIIv9vSTRKxQLTkaKU4ieYVb+WDz2sxiWEu7VG9SqaMD2tIyilG+AFPiWvWRrIIu+BEA2yyngb0vmFYPan9QI6VIpxeLD0d59YfDzg2XWhNDJjs++lE8orj4Q3wX8gPL1aaevoQCAUgeGbtky5KU98/ANDNnZQBmdp8DeJDNEbTA0EIOWy9bmva/ANP/GZ4iiY4oYbgWrAlIx5O6wwO1LlGVNVGPkyBxBea/ZBFL4P2uZScD4DmqkOkq9JNm9MeIqWP+MuhsUdQNfW703qWbxTWO14gZ6U6Rb2HqZ06nm872+CeUvkSNlZmy3W0Y/XuCfJakNa1zPGlLHZDf7jzcgeAi5ReJco13pRlsTofWXW4bKhQit34y1r46S5HdeaYBgiFS8LWFBLfPpaEx0aw1eWxxN9MiaeMIcCR34DUEtSwySxBrAlUALrC5YYz7zPcgQzyC8x7srIqb3Rlejwl0VbqslYHE0k1f/T3k8/SoVHZrkuzxV3nF/9WmvUaiZkFBC7KFx3a06F/kBLCA7acWo2TfaxfPtTb8uL48mUw3CJbv8y/Tt1Y7aI5HeXU+QPHgSB+AOgv4o71JmU9gvpkluD4ASVi527e0bT3r6zTe9fWIglst+5L2QdpBc2VXkhQCKJ3o+ZD8CKJ5vMhdip8rTBBVeMeRQDZXcatFfnJjvW2K6uOA9Lz6MAlfel6ZP4ZG2kS8jSBYUzQbLcImHLkk6LFCbdtmkiT5V0UBtfLby7VLKM6MVnkk/7JVbyEpAoKK/ye9ciAIpGlvCwMpPFmcOCjJmxP3wuBEUsucJ6m6Pv7LFe96QB09emuvNPngcyGalOR/8QvrUfCNm0TwP8I8sD/bmDO3vvlXO0E4qr/9jkpb4eD+JwxeV3DWdW9B/l3gtis6ut9bLejWjOMJJR60tjRLnud2b6NPM10h1JadO77QT6KKJ9HikuD+6KTa41vHJCDCYssj/xSdH/fah5XHTH92Wb1Hh6y3Z5sojNRw2tLFH7RL0ciWQcH3Z7gTV9TUB28u76WBP7x9ChK1PKxMzD7HlxVcgmKslxDosvBIHxc+FjHxJLyxhZuPapulv0awEu7rLQ+qIhUY4n0xXPTjKf1aAD1HMZXZeQ==",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "TaW Götter/Kulte 5"
+      },
+      {
+        "art": "hinweis",
+        "text": "Initiat der jeweiligen Kirche"
+      },
+      {
+        "art": "hinweis",
+        "text": "Eigenschafts-Voraussetzungen jeweils 1 Punkt niedriger als die der entsprechenden Geweihten"
+      },
+      {
+        "art": "hinweis",
+        "text": "je nach Kirche auch Einschränkungen für Zauberer"
+      }
+    ]
   },
   {
     "id": "karmsf_aura_der_heiligkeit",
@@ -708,10 +974,26 @@
     "voraussetzungen": "IN 15, CH 15, Liturgiekenntnis der eigenen Religion mindestens 12",
     "verbreitung": "je nach Kult 2-3",
     "kosten": "250 AP",
-    "erklarung_lang": "enc:3:IXsJpUiYp9CvwI4YuvGTJ9P7w1jm8avPfzsBvM7EmVh7lm42pxZRNwwlBg7JAsCtwKVKYQ8onlZ/qwTcIKAlyKkAp6XimCa7jxZiOAJzX6tkpB7jneoWHIPcLdRiELC0S4KVp7WqX3BMSnbppOb7a/Jbsummx5K5cJpIwTQtc1V4FLYC5HfK7ua8pUC429SZLuAHf0q0XC2n9wh9j4MM0lbYI6UkCHx0oHx9RtgrqhqFD6ZOkj0wRyNnxsQJIh8Ft75eyPfOMNgQrzozNCNbJKelx3jUY2G73BGq+zqdz81IPN5zc9TiU7AcPXCP8oYmq13SulKbrMTGtw5NnwUINIpvHT+gpQ0Rooxl48xHklQ632bZIZ7/pPIK+kTrwGZKyV3pYI03tis/AL2hFJYuOO6CPyxkw+tzfzxqVCWlzPri4jdM4YYJT7sxAKZXt6zZs8mSW8ULm0B42vu3qbDC/KtYqCkMtZWilXYNF8X+nJnwaxCJn+yXZ1r37wdiFcKgwhWyDUAPwAhSBewvNnCPo4fd+oZ96dtt2It2dBS7ox3jVQPq3wlsrK6TBgPGzauqviwHUFqiv/7D4v/FjlnmvLoapDG+yWFVSJPRIlPjM3hjGuIChQHXPI0USy/HV3nFSICicjtMFcXfmR27HGisPnvCmCw99VaYGDHC8MZA+TXSYLP7Z4/TiCrNKJI7Cso+pf8HALmtSZgo0LGezf6JrESc8R6a8YRUhl1ZuJ+esEjbiTBxK+Zq9vxNiHc4yMKLdXfaWntp1aK8rrt9a7+G0cFLSzRQnT8kzLOLEfv6mTPEi+G/XvK9nQdzYRwKnB4Dq9i/q6IARmX5vwiQrVd2vuneB6IucfuvhF7yRA9+HcxpiLQ2OfNkPXLp8q1VxIY69qbsZ2be5zLhvCT+/c3BP7jPIyXf1ad7Y/WOE6TYc8NwDfNbHdtSARo0wEAgjDcpVI5NfchvnnWuLzaZmMzu",
+    "erklarung_lang": "enc:3:EK6Muu2ioMqu/d4kw7PzZ53+eox6gyQ/WpXB6DtkZkNAQjGFv4Ib2cLj4ixFG4QCGpoedxVpAxFx3AriTvRD+u0TWA3lHB43NnV4Lo5qH+UEqhCQ7KF/NTNl9TTu0YSS9WbwE9Z3lZNPXH2qqVc5W+THvwJIpBSG2aivM9rRrfqclYJViZNbKbFD3rWHS/iSJFmEvCXYCoWcl5UbX++AHZtJM6yaNXwR+/M4cG87z/TScktAim/Arvs0ior8bP16c46x2bHoUAmqng7g2SOwh3proqYBvwgwDy0o5EKkbeLPb4qNjp+mkrd/Ha3raadsxo/lPt+ed7jnoTwOFzmuaweUdZoHHh7kHnXPOIOpHMrpMCq0kwQuSjkAT6+xCv+akXhGCLdOHbrDIY6hd9lXWLeXpu6XJdLkrTnfJeDh39cj2e8/JjYZB90uQ/FlVplx+O9q+WzX74MAJtfAaRido8zukb6ClXxa4Flx0fVhe6jAnU0RtMB3KX1lix3t7vZ9aWVugDpv9yctXwqQOOXzLpXlRxSjWC8vz5Gr0+gMgvrEXs+o25lb55D7eFZsC1+KZ/rTCclvpPk0uWUSuWfp3z68JlMCeLmBNaYQeCsvttPbX6W7GBXGPvLbe9fDBO+w0NKizdWU5RNfkiZ6yl64+QjA+8DI8GkryWU22V+JL5jiykaDZwVKOM9SJoIWFi88hEFjER6uZvU6Vy7ud4NkAq5pFlfWj+Fcuc7l2cx7XmmWSjgpyhkpyGcrfQhIb7yH4Qt9SAt7oXyfo/7mqjGMv5QgCW+KkU4xEZHcpPZpWj2qay0m37+ponvQq+x48aEWFgoHHrLXw6dpLp7TcU/WTeyLXGLqTscDws+XTpXJL+tw2TiTI6PboItg9FW9OkyBk0zWsQX3ipvkiyHnzhxT/MZDSP+JQAdxs0kqVmukGp3Vo4tF8oRRkY1gXQ7hz8ikGpZnb0tToagdX+Mgh9v0",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "IN",
+        "min": 15
+      },
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 15
+      },
+      {
+        "art": "hinweis",
+        "text": "Liturgiekenntnis der eigenen Religion mindestens 12"
+      }
+    ]
   },
   {
     "id": "karmsf_karmalqueste",
@@ -724,10 +1006,20 @@
     "voraussetzungen": "TaW Götter/Kulte 7; LkW 7 oder SF Kontakt zum Großen Geist",
     "verbreitung": "6",
     "kosten": "Erlernen der korrekten Anrufungen 50 AP (in den entsprechenden Vorteilen enthalten), Durchführung 300 AP (250 AP für Geweihte nicht-alveranischer Götter)",
-    "erklarung_lang": "enc:3:jZKGv8R4ixDxRoPJTGsNWq7cNGALe0cT7/N5dbH9DGfEE9iP7zPl+cup6RplisKXGbwrnT1NGABANleWh8atbZ34j4QH5p3oEXMnepYSr0yUbiFnnfMYAsmsZFdtWf/vsOBzDauVvw+hhFnvBOE/XTeatpnSvshX7YRexlUPv2w+W8IIcNPt3g87DEzhhpEGyEyrrTTHCU1tz5tZxEBmonuCSimy6sTOUoRuWHK0guJcmJuNeFbGYtHIo8pVNywYgn0FOLxgTX2ROBP2kBMG+k9EBPoBfkpKnkjxfHCUW+hyS7VglgTd8vSua71dN58dsemPoGjApF76Rp2YRsbIYnZW/gt3VdoMXeZ98d1P1FX/52LMwFYL3rV1ha96Ovx09YzgVuJanhR6FzGP96FG2L/NEKpd3ubkPy4W5gXKIJZC644iYD0NK39EMgy/ujUAnuo6dDhQnAMZy0XCidl4K07a8xSxP1FsHCzr9FIG3IsOBMW92LsQxtIYO3R5zzND35uyiSy9SPquvn4eGJIrH6Nzg01aL8nsxyeyiewcS3/I1X5lKcSDhqT3NejB7IyuAe6qCzTGAOcJDRyiPynf5OzrTKdn9BVAE/VH/mD22eFJmb9ieeRzH0F5ug7nmZncuPWOPuM0JnJAFpnJOvbklK+i8iqZYwD08PsPvb9VQbH774NaP+EZ5o8quJSAfMaKLJn04ULyhnR0Y3RvvdqU5fwWh1nm8BK1JzAcmsj1SPKkuqMNjqFfBijqpXroH2zkDKVukB/rdjK7ymLM9shcCc+gPtK558PJj6KpSyQLf1EDTbPJgzmxbqxv0Dns3Q==",
+    "erklarung_lang": "enc:3:9YFogkeWAEu0L078FQqvcpjZMPm9zs3GIvUj0K1DI/zVIKE9tXD9ySO2e/+IzlANOizwr9KRnJYdg6uFp9xt8mV/tPRiqTyTEJxyrnfaX+Gfeed/I83dHP4DEEA5hSgNnXX0R+9kU3QYlVPgFWiCUZNaQ/3Rkdd6raiCpKWVNzCY1XA9OS8BkAzFzbAHRP2Gfk0fq3JaqTw7anGUzRvmP7+KTsdesnLrWGlnr8MXjUFvgcQCv2bobPuzEpVylObLhRrYzq0EE2/t1iUG8woV1kTHH8LY388vOrnKb7BFs9BJf0IphgVhYvfjZxH0D7cSNrmieSRIHnxPWkrIA4BgKBGSHz9bAeVYFl1dpD2Jf14aHKXK6CHu50PRTfq+0hujE79wWBhD3pQxP2gAosTNceBbAg1X9GuGQsC6VJk1wLND4k79FoXwHCUXXb5suPnoMD1qo+9MSz0K0184VRr1QolQLE0gkyIEbDh8ioBy28dn+IuE64R53Yacw2MbD48S6FBkmWXlzDryldQ7Y9O6Ag0XKuhpTwO2AUe3XFnJNkkOPhMtsTJ/X1P9MsDmUhx22cROkk1L8Kwciy+VIMCtq8zq7YUCxjDreJ2P4Lz0I6jHrrv7o0mOd5aNtA2H6L8g/PlI+7G5XLiIw9UzJja0JOTvyRg86XTEvLvPX2DlClulH6B6Gurxwe4W9OSQ6NhNiVmipjbXU27aZUpSuiHefmbfYArtGL8gt/ufRQ3bJxqLtXGpmik+lTnM/aQo14Dg4BZ/EEA+jMQCFhA2zx4bbbAbU8ruRbgVEwY6gYCWtTr5XBrY6Q2pUn7Z1VSd+g==",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "TaW Götter/Kulte 7"
+      },
+      {
+        "art": "hinweis",
+        "text": "LkW 7 oder SF Kontakt zum Großen Geist"
+      }
+    ]
   },
   {
     "id": "karmsf_liturgien",
@@ -740,10 +1032,20 @@
     "voraussetzungen": "Vorteil Geweiht oder SF Spätweihe und passende Liturgiekenntnis, oder SF Kontakt zum Großen Geist",
     "verbreitung": "je nach Kirche und Grad der Liturgie",
     "kosten": "50 AP mal Grad der Liturgie",
-    "erklarung_lang": "enc:3:1TbM1mR6Q1OYeuyaDZPI81PIDZ0mXvWyO3pHLsfkAbgAP8tkN2lfZnb57Uu9+F8f6xUurtTkIdts5Z/VVGQUOmvT8czNTf7g7lRgL/jocwS21AHdqAd2FhkxB0K8wY69BJmNHCI6asLpA28fuJ/zzVqn5hnikLevd0Ey0Y4pFi6C5fXzYItFwt4HdywRH6MLkHGeuxcE2hqmpAiXVDgZ9A09WnjtNmhFvURrGy96TyvkN43vRAS8A9SmWpCW7qjOsdS6SW5s6WgZ6x5i1Z7iSC9fhUeRe6asQvbTeBbhd7AkcS3WQMMUCtG0GSuh+I0alcM+GVBqAJVnuSPNBhUq0wYd8Yqn7upihU0tLIxIeGrDgnTkneVSFGVEf51TF8B15jettNHC1kUf2XL3XqhQCKMdV1Nk+6rgyp1N1h1iPQqBH9y51E/+v6Dm5XH5os873YJ/d89lSbScEjXb7+FQYTtZB5I7OPblLnmicTajRV8MIhojYJ0ZSaUsNVCv++tgBgCXVaSbEOafTeYIlqZ1bd4J4VK5UCPs+EWrdE00u4lofTS9fQl+YGeffCgylxxoqxUjg0sSTkvkKcW3anU0wyCW33LqTA9l2NixVX+HuJCYLt0kz88ESedEKphegjgx92mp+ykFlafT5DUfDalhOJ3KJnYT1i+jKLRL34Ti/XQsczqyY+OHSctFjM0Yw8ejh3F6RfMhRiSvQmtnBUFzMYnOXuV7XFLy9W9jufdyQTUIfuZ0NjZdi+TPv6n3h9mxdAKZcKKmw9gyIWsG/UM1pYQ+hSfrFeBIamo3LF0jGTvRZq4HNRvy3z+uxXrzVL1THp1vjOMgpYid+XHXJsqE2XskIj04psgDtFALpSlY1znRKH9dPQ12r8uQoBbiO6NORv+3qlNfIATiaguePZ9BXoJlW0ELOZpuU3rf9cxF/MqC7ojuaKi0ynJ9Y773xwqt32hqLRnAnHRVBweBugbQXFd1kDxmFU15Pgf1UUjT2CVjZANC3jH7hBcX+QpIEc0b3jFaph6diztTXFzXerQcmXqUSmC347VWmAq4ys2BPAx47xt6h+uxXuYa96v5H79P5Vvv8/QS",
+    "erklarung_lang": "enc:3:n8adwe3tYuvtQVWAnv2325YxZ/JR/nBxWWkwlcOTYnHYU5ODBA8/vrWUXrHu1ARBd+KqSiu24rQ6ytsRVWXwv8MlPg+DhJhG+cB2qFRIO/XM+YQ1DwmdwzMUK0lQEodSVTqooHIeMu2wU0suVvU++fZBklAMeGzo4OUC7KczPCX/7Os/qgQDncr5jSNxuL8jnP9d/AiGsSxeaTca3YxAeyFdElLJ26zMTR/VeFy/F0XQ8709rmegGQ9D5gm96clQkoLTVM35vYg1fK7ioPhkN0eL1EylF+k7Khti7Sg30vaBEMvA9HC4JRFUqqg9MkmBVAn91dlzIc3kLKNRCFUF9LlhFboOUWqXNi1lGaxzplN8t0knvtHUTka1zSkuYDxAnSDknj5W2a3Cb6qCCZ/X44TdHOmNJyOv06iKuD0+6HSwRe9MSr1XqW+Q9cxeEzLu95oZPsvdFivtJjd5aCNdGenAiBl+xuiKe3PKWGFJkjRGriMl5IaY8QGVREUhN/wI5iObmiy3XN/MH5qVES+KfQQ4FzgVPRINJzY+hJlRTgRMcbvbjn/vxFKaF7CbJfuYrjfgdEyND/5aeHOfCITAx97xmUbnxnezdw9OlkpK4FDKYyPyGLfeoP/TgKATBotZNZaepYcb14eQdY5qMOnfi1hPppSZc7i44NQtFXyaQMqfE2K9udARdZ8vnQc9IKgS7mPqpSIQgymhiicXPEyho4W3JxQ90RdDj/TAXaHm977PqLttZLYmF6YZrfSrQb0ieFIKBmNpjBzW3FOKgfFjOofqj+xS71LetD/ESk8G0UXJTrCj2F3YArEvmoRGvhgYMVX6dHYBIwHYyWFjGFUCgqcVDQrjDzmhIEYcuyRD1szVkRPT8TXu8Qx0tKCIl6AnJ5f7ILv7R+x4QSGq37SKQUaosqw/b+6qO17F+IlWrtk5oI6WzHp3inYFQyVJ2pJklDaYFoWhdYxsXtwyqbio2u8RGukUDOuxkYkXb8OizXKHbjrftg91cX2LgIBHHuB+rd4Qjtjs1DE8jIZVIg7QHOhFEgkG+HDnxj3rMGRzgZPXSCnrCy+cNZ63OsQZosXB7YSQU8qK",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Vorteil Geweiht oder SF Spätweihe und passende Liturgiekenntnis"
+      },
+      {
+        "art": "hinweis",
+        "text": "oder SF Kontakt zum Großen Geist"
+      }
+    ]
   },
   {
     "id": "karmsf_kontakt_zum_grossen_geist",
@@ -755,10 +1057,33 @@
     "beschreibung": "Der Schamane erhält die 'zweite Initiation' zum Hochschamanen und ist damit einer nicht-alveranischen Gottheit geweiht.",
     "voraussetzungen": "Der Held muss ein Schamane der Nivesen, Waldmenschen, Utulus oder Orks (Tairach-Priester) sein; CH 15; alle vier schamanistischen Ritualfertigkeiten je 10+",
     "kosten": "700 AP",
-    "erklarung_lang": "enc:3:TLoPJXbfwFXJqvYL+oquKJUoqHkzlEA7lVfdUYriOmG2LZklzA/Se5KFs0VjLXW1lJ0O/yx+fS+ZdiDKFZoD4k0C53i7nXT1n27UjF2qgfBdumelAftecrs4MDr+WgXn/0ffD4fLqQaCrwyxmytvTn+9ZRbM9d5CSFAxN16Xc+prWcRBb1Y7p0fh0Lx8uTsj/y8SvBYj/ARVqcMsAer6asrDZ+Hm5GzSYj+BX3QDz7TKUQvLCiC6Q5DgK6qFqnogjrpxBJtFo1TDC3rOeLeKRldBJN11wzisCBoOGSEtGi+90Mlq/PJhviWG7ap4oEOhNDy261dcPvuRXwp5Xj26SLqvweQUDSfXblnXjEXansK+9r3GN/k8kghK77LHzNUHa6iNpiKZjeXcyDZpm6xnXwf4JfpkrJsacKdRVl1QJB4CI/Fl/QuW6hj+7Non9mrxVeRS2TnIKqfvGIev8Wz78Ig5/FV8EldyPmQT+FPff8dL9frZcIVvhM8HIS7ecWnKl59pjPTUNyMjbxvVVwn2F3I4VqJuDPwMQnZRsLwkqJymPLLfuR6TrVzLRjUyluUiXDcw/pcsoLXpYikHj4gSQOcaJxtnDZ7BG7psrCZClkyr9iEhqlzT/MkJSAqO1sfpmPvAP+Q/sTIX73IoHEPzky2I4ZAx+VxfV6+6RKJYjBlbmonTidqhXk6h2t6jUA/QI8odLN5NKmpBnL/tbuaiOiWkhTiaCABTFrcUPDBPDMDw37ueCpYQcdQP68WSnXQAKuf+OQxOQtQVk3KHkqvf8Ehe",
+    "erklarung_lang": "enc:3:VlFQAurFGR3SOPMRTvhFQtJbVhD1u4qg++Zrbz7+7645zUMuEFIsXdAcAmu4LmXR+9Mi7TU84IqTeXEgpqP2hwa7QuUtF/YS2t3YRZnBcDqyrxLGVQTjPQ1Di6dP1g7F3h0TsuiOEE6J2wR1sWIRyobst6buQwqJ8+4vpKCLWBzay5Dgx4uEUn1fF+To1lDGuEGWmeoEf2xrtvjMgUT2f3L1MpPzBqrc6h2Kpt2GP8LH5nxDS8RSPyNIjKfaDYqgiRBSbx4QHJoEdJjJ6j2rJ3WXUNcv7SzdPAN94Fk2qW80Uai8GSSRl3LqrDN4l5JhD4gk3IFMAKblQJ81u7wDPaXBo7DgITT2l/xpKIwtuCrqy6wLA+ayov6cgo1EEIawi8tBb+dRTCKPP9V1VuTxp45c5dBBcJIPZLC0MetBUdUTrNzEjkV4GfuQ12CU2COYWoTU+SiHLrt4OwqppN9bChqDBihUmplt2ieBLQ6OK19YJ8UztC2qwmBPJzjiPgaUnlntzE59ODni6CcRPrFNUmk/tsECC+X9Ti2c/1+ljNr2uOJpXoCO0FY1xskLBZVWGbHKa8cNGkkT/+LUEOjkocxOVJ4uwvhpfajHvUoNGVxE6jv0rUxoViIWJ+j2bn7qXCDiPo7bhMfJnpNutDTB9Ou77psZZ7JbjyXmuVBGeTNPLjXzw2rIIAAbButhwf6SwavjKLSjXsFpkyXY08X2hod+lPplD/JLjFUFFHKOPlmZTDu3HGf0Tw6d/SdRm90a75+QxSwFqoqNPzcQwAKwKgXr",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Der Held muss ein Schamane der Nivesen"
+      },
+      {
+        "art": "hinweis",
+        "text": "Waldmenschen"
+      },
+      {
+        "art": "hinweis",
+        "text": "Utulus oder Orks (Tairach-Priester) sein"
+      },
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 15
+      },
+      {
+        "art": "hinweis",
+        "text": "alle vier schamanistischen Ritualfertigkeiten je 10+"
+      }
+    ]
   },
   {
     "id": "karmsf_ritualkenntnis_schamanentradition",
@@ -771,10 +1096,16 @@
     "voraussetzungen": "Profession Schamane",
     "verbreitung": "6 bei den jeweiligen Kulturen",
     "kosten": "Ritualkenntnis der eigenen Tradition wird als Teil des Vorteils Halbzauberer aktiviert, die vier enthaltenen Fertigkeiten werden einzeln nach Spalte E gesteigert; Ritualkenntnis einer fremden Tradition kostet 250 AP Aktivierungskosten (erfordert meisterliche Erlaubnis), die Fertigkeiten werden dann nach Spalte G gesteigert",
-    "erklarung_lang": "enc:3:XMTf0r5yu4fSYe+cDBcmwW08PdQc+aXNZJpIDBANVMWLzufzy7dJrDd9PIXIAWuT8P/Nk5/YvdC50ZI/QDf0M89aXfVOHNA7xe6PN3RCZbWz8mODIYv2rF31muahiXP+ZMRB1wBDR67L0lDvGMvDpCDWv26QDvBoLPTldNvc35zhbuVMXZD0JHbkOwFASIrImtxxLT+Nrdv2sDR9RWsqndfY9CoLYKKaG84ow5yokggJ5LAcmZU60zlefmWlL/5od51ZykiFgukTp8R77Qnt7tyBgJelz64OCui2QLYcgQi9rYsq8pwovQvIbBpzF7gwYTybzvAbc04LtPZ19boeOLuZedml1KhZD9S3h2ZDU3rHUf/Cz5Oi6vDbNUUlfx9lzU5WWkio76JV+HwVDo0iXDP7a4cRontHxUCNxYbNTCnTk1fd7mvmfwTAGCelNd1Y5TSnByHNpq3DfWe0pLAZ38vUyWwc/aM/Jz1UkANMJWZd7N4jfrpgXl4B8wlW+upwWmJSxz6qyf9GRLvotfCDpKkp5VXSxc3EsSDkz6NlknpTnpQ2cmyzJMHF+rlKjw7VsVRnoRfJtNoWjPFniR6CvlcWljol3mWC/ITex3SDhYVbtVdjfzfKlZ62ggz+mul53aO0wSnipDdO5goDrTUsJscr0z9USpD4EwT3//od8BEng2pFVnh+syJXg3ZMgqfJFllmrXffd5pjHFcsjCw2hdpe/g8LyMoXpII39Z73mLjvjdJq/2t+ilJI2xyv0zW6ZXsu9mmtiTvpANtE3Cr58BAjoeBommzrxB6TuZtTh1PxwluBSavaMN0P3AO1ZLkowPIlN2PL+nC92HqWSPHZ395wVga5k7Y3rEFWWHbPEcV9Q+VJBRAmXP5YXx2gseI+EklJ83MOIOl4e2ukBAk3XI2MmqrGSlOFzf9EevcUe0NLwBnAMlCNJ+Q4Zz+5UCNyTCU0WCSb+WYWV3dYU9/vWnMEpZd0QotpuAxhWsoSWfbElAMgDz470f8tXHNL",
+    "erklarung_lang": "enc:3:qe7UMBv3G32HUngOAKswP7+7lRutxXU6gHOBTBdJfwboWSyMHYrNCdqEENd9wR1cRF7W4+Womn7PM0PhS5UXD6O36f98UHJJaQGlqoNpB0YjwCOc8C8HVqFmDHkpOBnztry592fGdJqU6cioyV1cOIePwo8Fyfa1EfS1n5o3dOZYL9XxERsrxwvp1WYbA48/7GKXOpzTkDwQTgIqpb9hyaL2fdwYNyfffyNI+2SwDHj/tSQxU6D4FnJh9mDLAsu/WQCVK0wMiWzg3T3Xp8UOXDgE9qP0tJfjmA5MYTrIDEdfjejAuQnz/ziytRjduqWnEii68cc+0STokp1LuNdsoAJHwZ0EWJbzOCz8+GYgbTqBOS4Pv+ReJaL8+mpBfNBsGCgVWuDkJUufSqwuR8fwIEyyaasuACJUdyLdmAXD4KuM5arqkBKXduPV9x0zSW4+0dLvzT32RQMV99bEKOmhaPbm79tl91c0Zv/IChr2sDCJP/QO6VD8Fp1uSV5TcdcTZbwSqKkQh/p+6icMpk0JO/ajG41dSRfKv+V43f60TQpOw7F8AS3hshXl5Ct4URG7kYhygq1cjwR2q0nMWPGQD995grldzL+vt6sViu7ptfZf6I/DVWzeBqFI+p2E+k44dS18x+h4Gu3UakFnvmUat1Ay5r2z2MBLntOoFxjjxBSBNOpp6m1ZhWY3yxnuYzlTDwVeM66gCnGFxykcFp1vbABtyhnNcfXesnjwHU0BTcfyCP3gVrxtgH/rvIk+yRDM1O+OybDww6BGRG28fTezg8lSaPa7icLN1YSYAI67mYYlQu+yAxoXjI6fen1F/VCRMnzKR/AGXAPdQtsgp+U8RJh22Qpmc+UxCq91U/1z0aJcQujdCvuwfzihyyyM05Br6dkShdhZTU2n5VcE5XK6YNgvHJDroVQrK3KK04PQy9P8L2KBarE2z/trZ7R2x6XevtCicQ58GNf8ojQfarFvgou3p7By8RFqAPSl4bhcEhpcxL0ndDky8J39aTjW",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Profession Schamane"
+      }
+    ]
   },
   {
     "id": "karmsf_liturgiekenntnis_kirche",
@@ -787,10 +1118,16 @@
     "voraussetzungen": "Vorteil Geweiht oder SF Spätweihe oder Akoluth",
     "verbreitung": "7 bei der jeweiligen Kirche",
     "kosten": "Steigerungskosten nach Spalte F der Steigerungskostentabelle; Liturgiekenntnis der eigenen Kirche wird als Teil des Vorteils Geweiht oder der SF Spätweihe bzw. Akoluth aktiviert und dabei auf einen Startwert von 3 gesetzt",
-    "erklarung_lang": "enc:3:iswUr0Ox1TFKbwzeYTx2Tc7C8plfuv11VfX81t6cFJ3d8Md9z0Bc8IaVvhEJiaIkK5UaKBSfxHggxjalYwP8auOWhMFKVO/bp26B1glYtF48oIJCvKGU7akYV2/v4o/n+6xc5ItQT+TRDi0BDqngEiObwNpOJ0oPh1py+J0hoiOGtoVtizGwEvzWUjSqRWY2sOL6IdLJEF3x0VWRGhf+ctW5qF8eWS4Cq1rYYcKQn3Fy3VvVTsEvDiVYJBVqqV09DaFFBT0Lpo7yhlZFeaUWZqm07c+rznP+mObQK3RRPXhIJHfcaJEuzcNWxV+GJz2pgXWQ7agExGpAbniwreLoozBXMpJ2Oqka+Zi1ed8WIKMoC4xydLFNKOjOtmV4xk9885l/Fc3vo8iXaTunE+8uoXejZtX7",
+    "erklarung_lang": "enc:3:ZtXOKqKQ//k7g7Sq2cHIi4w2/OdQo/ZI8lhq2iyn6764XJYR3Okv82uwQVAftbtYkOR0PVwlGOBCg8N019rSmNYEPZjA/7e6iXcl48dENI+nbBLYIRlES8bl1CUt9PUYUMd6/MUe3Y035mTQAiOHhC3/5fwnp9P/9DoW2mlQ6eQWEPP0837dFFfXqBmeYMOCH0ZWaK3nrd6y75JXTFNufo1dxVemQR/0WNn8BXa61R+W50RRdJZt65ulFfPiUg0aP0iH1roP25iU8WtSSm+C7VJd2HTKDmP1gk87dgy7pMvRzCvKB3pWMrIC0hMl9ZeTxUz4SNDC9gRBtSgYLJUh+w5EW+obCrhB+mgu67dHs32byRXaKeT6xG0ejmYHGJkFL37S9AFPbOwbVzKkLeXE9HE83p8Z",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "hinweis",
+        "text": "Vorteil Geweiht oder SF Spätweihe oder Akoluth"
+      }
+    ]
   },
   {
     "id": "karmsf_spaetweihe",
@@ -803,9 +1140,32 @@
     "voraussetzungen": "CH 11; weitere Eigenschafts-Voraussetzungen wie bei der betreffenden Geweihten-Profession; Talentwerte mindestens in Höhe der Boni der entsprechenden priesterlichen Profession; der Held muss sich zu den Lehren und Prinzipien der Gottheit und ihrer Kirche hingezogen fühlen; kann nicht bei Spielbeginn gewählt werden",
     "verbreitung": "3; erfordert immer die Zustimmung des Meisters",
     "kosten": "1.000 / 700 AP; für Halbzauberer 1.500 / 1.000 AP; für Vollzauberer 2.000 / 1.500 AP (jeweils alveranische / nicht-alveranische Gottheit)",
-    "erklarung_lang": "enc:3:NWetzlpk8kfT53xyxqaHupdJKX6EpcudMSSqFFQ9Wlu2Mt8keU8ClEJM9PBdlaS3eMjJEtR2dQuiVwfPQKswki9KedTjo5ejK2TJ17LBZKXVkS5oQgOjyTjLEl/OBlY0sNqOZAAfjw7wYuXgCEmLPrJkOQUYYJ4U/vBZ/9HHjLHBhabXHFj1TLm7oDbd8UU1yj1E37Ml2f94R/h6a9KJwSitQRymymL8yEgZOK4YKKp76f5o7OSwboOmB9j7FArj+M5m7d0CK6vKElTlnER7OElYHuYWFmZDDEMkfVMItQokKPuhV0NBs41adGxp4Kzd3CvdQUm50sxVuTUtxY5k0cM8dSxiJAU0H9ODRsoFYZ1868FfqlW0lAjAK3uYGRn7ngtypcuj+1a1C9rN5RXzkcOHGN5QypDoACfKMMiKQO0/OFQdE6xFBP402NlDwxFP3+f2wwtKE8kpcVd2dXYoUFfWdXSIDYeJBpkAJW5mZKIS1JYWWR/oMlCklWQ6oyAEo/jAwIUfVM35Ko9SCMYA7uRYchPw+c67xizOckfEJiiHquEFjc7ehVnrqaRQtpsf/+fgQ/dbjmuKRa977NRQxO62P/7pc0iqlcNLZctTs9LUF8XHvTkc8Hdc/O3DlOLE4yInJxsoVlTZfAR/0sUBp6Bb6wSjZ0+FoQethFKxNCePoQhZOZtqyobJxH02vjmi0iypqB5RnOM43RGRuqg6YMCCbeK+s2x95R2vSxb+CJhSQY3Khl3i2BfPesuZRm4719fL+9n9EdYIEjvc3d4K+dClbLtdm/tBiyPoKvDX/XKOC6TtUXxKLIMVWBjPMGMY+xLJUa97Y3gfOrGDfL1lD5rFPgqLZvdEQ8xDmYesGVXMh75qE52dji7ybdhH5s0PxWNEzpZbu/sBHJjBgyqht5884DzHLMLaR+xtdWEnf6Te46MJCivKnLI6Y0yKXgISmZZN+B10h6QI2oc4cIifbys5hnvvQgq+Pst5pJYBV15kvkfgRNDluxjg6ifjVijsmb7BbYXmfXLICfEqfkGk5TRxUcvCnKbzFf1ZnTv21xKe9/AYBnLZ8Pdqrc1EgMtig8gcTdHwp631Vni70KYVno830FbRLkxvSAP92p33rzswm3vzghr5z+3eZKih38WwLdBVVdsMBusAZaUCSfVUip9Mrx3N2CFsXk5rG8GVpBVxhosP9Og5muQWzlqM3BnWN3FZNb64QwREdfwoXI5kq753cRvbdXZ/UesrYjQWUd62Npu+GuU6uA8jX+OxwaxKjKmjdDEZKEPpCphQSdWGtay6twTJOx6kw3KA4Z9ijugh4o9MFSfMfj7bmiEK0A/z1J93ev0dPgxzNjGeToagV8xKBmhAVMZeUdPh0UhBo4qS",
+    "erklarung_lang": "enc:3:mssLi3ozAz34SRVU/jkDe/me23sCGljyu1rLvF8KdtfXlCrUbDKOVIobEMfdxWg3DEL04r0AkNJBwf0ULCP0nAbEkcLLDeXwYc2EMzpfgPTuORRl3TJ5O0FhrfZR2kbm7+7gK7Spie9ByedMTujpMKQloP/c5od72jLF+HejSjCg7LW8IJfh782QgM4uAGB7Mk9v1zucwZUlq4V/UgLGQkLtXqE73t5cIwHTVq1myFgiG1H9zynoZgjNO9B6fwUJa53xoVm6XzUyLrDaWcMZhSL1DYvUCZV0ApS71iDJYZbZfU/L2O3ioUvVveFY711/KvqWhHB443rdPbaWKC4FiqCPJTRcpps9kLNXtv76bwiB3quKRNpl8DqMrlNMrlgoKuVgVuBQVPsYp57UQk1E9qbpKgQsjAuFThY3k2drn+JiFxNDzWS+8h7atBwbkEW331eyG0adTyQ33DfVnhAjSVUurvoCpvylzpA/UwNRUsyQapS6mRlhNQUUxOvvUmuDm+gX/J6hc8ygBkXQHSQF1K6w8Yib4cnCM3mr2cyA1nj1crzx1gKp4XPvKqyvF1ljWTLgZp7gfTp25CgVETQgvBqB6A5Bli589Klh6r60cBWtnq6knFcjykJHn39th8e64n+7wV+MOM8xI29+c6IOCcG4qxoP2j5NcCJiRsIN4wKASZ0g3IV6MgA3Wixn3xrFH7MXvYJ3xc+mKMt8N/JeFzrD0rJ2A8dmpuKwVmSnNC54hue+EL3NpNMziGzuEsX0fyf9OTzZaAXMj4Db92chwuOPhz5N127L/lE1miGsh8bsrqbV2VGeCr8MpWUIhiqPpd0AtuEEEyahlobX8mVpUzt9gjjxX+MgLRxsdQJ+lnVXF6MP1ARp9f90SKyoPUgo7TaYYNFJdyO67Mc34gvAKah5yaT4HmqEG4Ih4oMpfSHq0navK6kQ6/HXRYtxsURxLxQ6nvH8F8QxoX6ojB11k1h/B15Y+vzr4LSQ66yAbJnXu6HFe5yxbN0ZEdDqjBr7Nd4eOTJfNHsak6UueYSd9/GcNBu01qYmMIaH4zAalu0AP2rmpqRhg03Wl59YeKfmhsIR8sa2LuXIGK3nGp84EuZPAhSaFzozbT3dWptxvhUKQGJmqIbPNB2/vfIBTscfGbOXQmQSrrwL71wZ3Fv1WRNDjuPuJP7ZvFXMZpiWX442akaRJh/7JCcVaDJ2WnoijDit8VKkcAdqHCY1W0LO/K838MRR+Z0z1RfRw+OocMl/8LMWoWKB20dJ4GLFVabHa6Jr21avLclJDa3CFYqTUbvozcZFUnIQh9dqe1kJiT7buHwDRFrdq/lLgjyUimODiqFJiIoVOQdCTS6Lm+rz0Pmgn7hduKsgsfCSJaOIL4++",
     "quelle": "Wege der Helden",
     "hausregel": false,
-    "nurEpisch": false
+    "nurEpisch": false,
+    "voraussetzungen_struktur": [
+      {
+        "art": "eigenschaft",
+        "code": "CH",
+        "min": 11
+      },
+      {
+        "art": "hinweis",
+        "text": "weitere Eigenschafts-Voraussetzungen wie bei der betreffenden Geweihten-Profession"
+      },
+      {
+        "art": "hinweis",
+        "text": "Talentwerte mindestens in Höhe der Boni der entsprechenden priesterlichen Profession"
+      },
+      {
+        "art": "hinweis",
+        "text": "der Held muss sich zu den Lehren und Prinzipien der Gottheit und ihrer Kirche hingezogen fühlen"
+      },
+      {
+        "art": "hinweis",
+        "text": "kann nicht bei Spielbeginn gewählt werden"
+      }
+    ]
   }
 ]

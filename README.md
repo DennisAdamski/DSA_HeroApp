@@ -97,7 +97,7 @@ Technischer Stack:
   Runde sind einzeln entfernbar, übernommene Einträge bleiben fest. Werden durch
   Entfernen Folgeeinträge ungültig, müssen diese vor der Übernahme korrigiert
   werden. Auf kleinen Bildschirmen ist die Historie im **Detailpanel** erreichbar.
-- Der Steigerungskatalog zeigt nur Einträge, die der Held bereits auf dem Bogen
+- Für Talente, Sprachen, Schriften und Zauber zeigt der Steigerungskatalog nur Einträge, die der Held bereits auf dem Bogen
   führt — auch solche, die eingeblendet, aber noch nicht aktiviert sind. Alles
   Weitere kommt je Kategorie über **Talent, Sprache oder Schrift erlernen**,
   **Zauber erlernen** bzw. **Sonderfertigkeit erwerben** aus einem
@@ -105,9 +105,11 @@ Technischer Stack:
   Steigerungsdialog: Aktivieren und Steigern sind ein Schritt, der Zielwert ist
   frei wählbar und die Aktivierungskosten sind enthalten. Sucht man in der
   Hauptliste ins Leere, führt ein Hinweis mit demselben Suchtext ins Erwerbsblatt.
-- Bei **Sonderfertigkeiten** zeigt die Liste die erworbenen als Bestand, die
-  nächste Stufe bereits begonnener Stufenketten und weitere Auswahlmöglichkeiten
-  mehrfach wählbarer Sonderfertigkeiten.
+- Bei **Sonderfertigkeiten** zeigt ein Fähigkeitenbaum Sonderfertigkeiten und
+  Manöver mit ihren Voraussetzungen, einschließlich UND-/ODER-Verknüpfungen.
+  Filter trennen Kampf, Allgemein, Magie und Karma; die Suche erhält zugehörige
+  Vorstufen. Knoten zeigen Erwerbsstatus und AP-Kosten und öffnen Details zum
+  Vormerken. Getrennt lernbare Manöver werden pro passendem Kampftalent erworben.
 - Unter **Eigenschaften** zeigt die Basiswerte-Karte die Summen vor der Runde
   und nach den vorgemerkten Änderungen. Der Eigenschaftsdialog zeigt live die
   zusätzliche Wirkung des Zielwerts sowie bisher begrenzte Talente, Kampftalente

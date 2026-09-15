@@ -13,6 +13,7 @@ class AdvancementOptionCard extends StatelessWidget {
     required this.option,
     required this.planned,
     required this.onPlan,
+    this.expandRequirements = false,
   });
 
   /// Bereits durch das Regelmodul aufgelöstes Steigerungsziel.
@@ -23,6 +24,9 @@ class AdvancementOptionCard extends StatelessWidget {
 
   /// Öffnet den passenden Planungsdialog; null sperrt die Aktion vorübergehend.
   final VoidCallback? onPlan;
+
+  /// Öffnet die Voraussetzungen sofort, wenn die Karte als Knotendetail dient.
+  final bool expandRequirements;
 
   /// Bricht die Kopfaktion auf schmalen Geräten unter den Titel um.
   @override
@@ -44,7 +48,7 @@ class AdvancementOptionCard extends StatelessWidget {
         ? (option.currentValue < 0 ? 'Aktivieren' : 'Steigern')
         : acquired
         ? 'Weitere Auswahl'
-        : '+ Sonderfertigkeit';
+        : option.kind == AdvancementKind.maneuver ? '+ Manöver' : '+ Sonderfertigkeit';
     final action = acquiredClosed
         ? Row(
             key: ValueKey(
@@ -134,6 +138,7 @@ class AdvancementOptionCard extends StatelessWidget {
               ),
             if (option.requirements.isNotEmpty)
               ExpansionTile(
+                initiallyExpanded: expandRequirements,
                 tilePadding: EdgeInsets.zero,
                 title: const Text('Voraussetzungen'),
                 children: [
@@ -160,6 +165,7 @@ class AdvancementOptionCard extends StatelessWidget {
   // Beschriftungen halten gemeinsame Katalogbereiche nachvollziehbar.
   String _kindLabel(AdvancementKind kind) => switch (kind) {
     AdvancementKind.attribute => 'Eigenschaft',
+    AdvancementKind.maneuver => 'Manöver',
     AdvancementKind.boughtStat => 'Grundwert · Zukauf',
     AdvancementKind.talent => option.isCombatTalent ? 'Kampftalent' : 'Talent',
     AdvancementKind.language => 'Sprache',

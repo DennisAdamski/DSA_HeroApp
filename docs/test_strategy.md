@@ -37,6 +37,11 @@ technische UI-Aspekte getrennt getestet werden.
   Kampf-, Zauber- sowie epische Grenzen. Die Katalog-Widgettests prüfen
   Live-Zielwerte, Abbrechen, Vormerken/Entfernen, Ressourcenfreischaltung und
   die gemeinsame Scrollbarkeit von Basiswerten und Optionen auf 320 px Breite.
+- Fähigkeitenbaum und Manöver: `test/rules/advancement_skill_tree_test.dart`
+  prüft UND-/ODER-Verknüpfungen, Vorstufen, Zyklen und Planungsstatus;
+  `test/rules/advancement_maneuver_test.dart` prüft Erwerb, Talentbindung,
+  Duplikate und Katalog-Roundtrips. `test/ui/advancement/advancement_skill_tree_ui_test.dart`
+  deckt Erwerbsbedienung, Suche und Details auf schmalen Bildschirmen ab.
 
 ## Zuordnungsmatrix
 

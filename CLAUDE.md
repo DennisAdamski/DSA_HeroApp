@@ -49,7 +49,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   blockieren die Übernahme. Leere Historie darf nicht ins JSON geschrieben
   werden (Bestands-Sync-Hashes). `HeroActions.saveHero` prüft für Sitzungen
   zusätzlich den erwarteten Inhalt vor dem Schreiben.
-- Der Steigerungskatalog zeigt nur Ziele, die der Held **auf dem Bogen führt**.
+- Für Talente, Zauber, Sprachen und Schriften zeigt der Steigerungskatalog nur
+  Ziele, die der Held **auf dem Bogen führt**.
   Maßgeblich ist der Schlüssel in `talents`/`spells`/`sprachen`/`schriften`,
   nicht der Wert: Ein eingeblendeter Eintrag ohne Wert (`null`) ist vorhanden,
   seine Aktivierungskosten sind nur noch offen. `AdvancementOption.isOwned`
@@ -63,12 +64,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   beim Aufrufer, damit die Sitzung nur an einer Stelle verändert wird.
   Aktivieren und Steigern sind ein Schritt: `fromValue: -1` auf einen freien
   Zielwert, die Kosten des Schritts `-1 → 0` sind die Aktivierungskosten.
-  Bei Sonderfertigkeiten zeigt die Liste erworbene Einträge, die nächste Stufe
-  **begonnener** Ketten und weitere Varianten mehrfach wählbarer SF;
+  Bei Sonderfertigkeiten nutzt der Fähigkeitenbaum dagegen `AdvancementScope.all`
+  und zeigt auch neue Ketten sowie Manöver;
   `unavailableReason == 'Bereits erworben'` bleibt dabei die Sperre für
   `_validateEntry` und wird nur in der Karte als Bestandsnachweis dargestellt.
   Rituale und Liturgien haben kein `AdvancementKind` und liegen außerhalb des
   Modus — das ist keine Lücke der Aktivfilterung.
+- `rules/derived/advancement_skill_tree.dart` baut Abhängigkeiten und Status
+  einschließlich UND-/ODER-Knoten. `ui/screens/advancement/advancement_skill_tree_view.dart`
+  bindet Suche, Filter und Erwerbsdetails an die Sitzung; `skill_tree_branch.dart`
+  zeichnet die Zweige. `rules/derived/advancement_maneuver_rules.dart` löst
+  Manövererwerbe einschließlich talentgebundener IDs (`id::talentId`) auf.
+  `learnedManeuverIds` berücksichtigt auch Freischaltungen durch Kampf-SF.
 - `AdvancementContext` bündelt Held und Katalog für einen Optionsaufbau.
   `buildHeroRequirementContext` und `parseModifierTextsForHero` dürfen nie
   wieder je Option laufen — sonst baut jede der rund 280 SF-Optionen den
@@ -118,9 +125,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   maschinenlesbarer Block `voraussetzungen_struktur` im Katalog
   (`lib/catalog/special_ability_requirement.dart`, Schema in
   `docs/technical_overview.md` Abschnitt 4.9). Gepflegt für magische,
-  allgemeine und Kampf-Sonderfertigkeiten; karmale fehlen bewusst, weil
-  Liturgiekenntnis, Gottheit und Entrückung im `HeroSheet` kein Gegenstück
-  haben. Geprüft wird über `buildHeroRequirementContext` und
+  allgemeine, Kampf- und karmale Sonderfertigkeiten sowie Manöver.
+  Nicht modellierte karmale Voraussetzungen wie Gottheit oder Entrückung
+  bleiben Hinweise zur manuellen Prüfung. Geprüft wird über `buildHeroRequirementContext` und
   `evaluateRequirements` (`lib/rules/derived/`). Ein offener Punkt sperrt nie:
   Die UI zeigt eine Checkliste (`lib/ui/widgets/requirement_checklist.dart`)
   und verlangt im Erwerbsdialog die Bestätigung „Trotzdem erwerben

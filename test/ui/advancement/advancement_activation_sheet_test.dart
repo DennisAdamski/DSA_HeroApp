@@ -259,7 +259,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Hauptliste zeigt Erworbene und die nächste Kettenstufe', (
+  testWidgets('Skilltree zeigt erworbene und alle folgenden Kettenstufen', (
     tester,
   ) async {
     await openCatalog(
@@ -273,21 +273,18 @@ void main() {
     await tester.tap(find.text('Sonderfertigkeiten'));
     await tester.pumpAndSettle();
     expect(
-      find.byKey(const ValueKey('advancement-owned-generalAbility-will1')),
+      find.byKey(const ValueKey('skill-node-generalAbility:will1')),
       findsOneWidget,
     );
     expect(
       find.byKey(const ValueKey('advancement-plan-generalAbility-will1')),
       findsNothing,
     );
-    final next = find.byKey(
-      const ValueKey('advancement-plan-generalAbility-will2'),
-    );
+    final next = find.byKey(const ValueKey('skill-node-generalAbility:will2'));
     expect(next, findsOneWidget);
-    expect(tester.widget<OutlinedButton>(next).onPressed, isNotNull);
     expect(
-      find.byKey(const ValueKey('advancement-plan-generalAbility-will3')),
-      findsNothing,
+      find.byKey(const ValueKey('skill-node-generalAbility:will3')),
+      findsOneWidget,
     );
     // Der Sperrgrund erworbener Eintraege darf nicht wie ein Fehler wirken.
     expect(find.text('Bereits erworben'), findsNothing);
