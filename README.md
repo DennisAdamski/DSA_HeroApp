@@ -113,6 +113,12 @@ Technischer Stack:
   Die geöffneten Details zeigen außerdem die verfügbaren Beschreibungen und
   Regeltexte, Originalvoraussetzungen, Variantenkosten, Kampfboni und Quellen.
   Geschützte Texte nutzen die Katalogfreischaltung aus den Einstellungen.
+- Magische und karmale Sonderfertigkeiten werden in Auswahl und Fähigkeitenbaum
+  ohne passende Befähigung standardmäßig ausgeblendet. **Unpassende
+  Sonderfertigkeiten anzeigen** überschreibt dies dauerhaft je Held. Bereits
+  erworbene oder vorgemerkte Fähigkeiten bleiben sichtbar; fehlende Vorstufen,
+  Eigenschaften oder AP blenden zukünftige Ziele nicht aus. Der Schalter ändert
+  keine Erwerbsvoraussetzungen und erhält laufende Steigerungsentwürfe.
 - Unter **Eigenschaften** zeigt die Basiswerte-Karte die Summen vor der Runde
   und nach den vorgemerkten Änderungen. Der Eigenschaftsdialog zeigt live die
   zusätzliche Wirkung des Zielwerts sowie bisher begrenzte Talente, Kampftalente

@@ -339,6 +339,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `apAvailable` | `int` | Verfügbare AP (= apTotal − apSpent) |
 | `dukaten` | `String` | Geldmenge (Freitext) |
 | `resourceActivationConfig` | `HeroResourceActivationConfig` | Nullable Auto-/Override-Schalter fuer Magie und goettliche Ressourcen |
+| `showInapplicableSpecialAbilities` | `bool` | Unpassende Magie-/Karma-Sonderfertigkeiten anzeigen; Standard `false`, nur bei `true` serialisiert |
 | `inventoryEntries` | `List<HeroInventoryEntry>` | Ausrüstung/Inventar |
 | `notes` | `List<HeroNoteEntry>` | Freie Chroniken mit Titel und Beschreibung |
 | `connections` | `List<HeroConnectionEntry>` | Kontakte/Verbindungen mit Ort, Sozialstatus, Loyalität, Beschreibung und optionaler Abenteuer-Referenz |

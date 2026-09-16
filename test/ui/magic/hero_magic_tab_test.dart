@@ -57,6 +57,7 @@ void main() {
     return HeroSheet(
       id: 'demo',
       name: 'Rondra',
+      vorteileText: 'AsP+1',
       level: 1,
       attributes: Attributes(
         mu: 14,
@@ -349,63 +350,84 @@ void main() {
     },
   );
 
-  testWidgets('manual catalog picker adds magische SF without AP', (
-    tester,
-  ) async {
-    final repo = FakeRepository(
-      heroes: <HeroSheet>[buildHero().copyWith(apAvailable: 500)],
-      states: <String, HeroState>{
-        'demo': const HeroState(
-          currentLep: 10,
-          currentAsp: 10,
-          currentKap: 0,
-          currentAu: 10,
+  testWidgets(
+    'manual catalog override persists while adding magische SF without AP',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          buildHero().copyWith(apAvailable: 500, vorteileText: ''),
+        ],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+      final catalog = buildCatalog(
+        magicSpecialAbilities: const <SpecialAbilityDef>[
+          SpecialAbilityDef(
+            id: 'magsf_konzentrationsstaerke',
+            name: 'Konzentrationsstärke',
+            gruppe: 'magisch',
+            kategorie: 'Zauberkontrolle',
+            beschreibung: 'Erleichtert Proben zur Konzentration.',
+            kosten: '100 AP',
+          ),
+        ],
+      );
+      final opened = await openMagicTab(tester, repo: repo, catalog: catalog);
+
+      await tester.tap(find.text('Repr. & SF'));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('magic-sf-add-from-catalog')),
+      );
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+      expect(find.text('Magische Sonderfertigkeiten'), findsOneWidget);
+      expect(find.text('Konzentrationsstärke'), findsNothing);
+      await tester.tap(find.text('Unpassende Sonderfertigkeiten anzeigen'));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+      expect(
+        (await repo.loadHeroById('demo'))!.showInapplicableSpecialAbilities,
+        true,
+      );
+      expect(find.text('Konzentrationsstärke'), findsOneWidget);
+
+      await tester.tap(
+        find.descendant(
+          of: find
+              .ancestor(
+                of: find.text('Konzentrationsstärke'),
+                matching: find.byType(Container),
+              )
+              .first,
+          matching: find.byType(Switch),
         ),
-      },
-    );
-    final catalog = buildCatalog(
-      magicSpecialAbilities: const <SpecialAbilityDef>[
-        SpecialAbilityDef(
-          id: 'magsf_konzentrationsstaerke',
-          name: 'Konzentrationsstärke',
-          gruppe: 'magisch',
-          kategorie: 'Zauberkontrolle',
-          beschreibung: 'Erleichtert Proben zur Konzentration.',
-          kosten: '100 AP',
-        ),
-      ],
-    );
-    final opened = await openMagicTab(tester, repo: repo, catalog: catalog);
+      );
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
 
-    await tester.tap(find.text('Repr. & SF'));
-    await _pumpAndSettleIgnoringKnownOverflow(tester);
+      expect(find.widgetWithText(TextField, 'AP-Kosten'), findsNothing);
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
 
-    await tester.tap(
-      find.byKey(const ValueKey<String>('magic-sf-add-from-catalog')),
-    );
-    await _pumpAndSettleIgnoringKnownOverflow(tester);
+      await tester.tap(find.text('Fertig'));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
 
-    expect(find.text('Magische Sonderfertigkeiten'), findsOneWidget);
-    expect(find.text('Konzentrationsstärke'), findsOneWidget);
+      await opened.actions.save();
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
 
-    await tester.tap(find.byType(Switch).first);
-    await _pumpAndSettleIgnoringKnownOverflow(tester);
-
-    expect(find.widgetWithText(TextField, 'AP-Kosten'), findsNothing);
-    await _pumpAndSettleIgnoringKnownOverflow(tester);
-
-    await tester.tap(find.text('Fertig'));
-    await _pumpAndSettleIgnoringKnownOverflow(tester);
-
-    await opened.actions.save();
-    await _pumpAndSettleIgnoringKnownOverflow(tester);
-
-    final savedHero = await opened.repo.loadHeroById('demo');
-    expect(savedHero?.magicSpecialAbilities.map((a) => a.name), [
-      'Konzentrationsstärke',
-    ]);
-    expect(savedHero?.apSpent, 0);
-  });
+      final savedHero = await opened.repo.loadHeroById('demo');
+      expect(savedHero?.magicSpecialAbilities.map((a) => a.name), [
+        'Konzentrationsstärke',
+      ]);
+      expect(savedHero?.apSpent, 0);
+      expect(savedHero?.showInapplicableSpecialAbilities, true);
+    },
+  );
 
   testWidgets('manuelle Merkmalskenntnis verbraucht keine AP', (tester) async {
     final repo = FakeRepository(

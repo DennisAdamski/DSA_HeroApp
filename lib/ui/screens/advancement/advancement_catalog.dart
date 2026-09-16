@@ -194,6 +194,9 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
                   session: session,
                   options: options,
                   query: query,
+                  onShowInapplicableChanged: ref
+                      .read(advancementSessionProvider(widget.heroId).notifier)
+                      .setShowInapplicableSpecialAbilities,
                   onPlan: session.isSaving || _dialogOpen ? null : _plan,
                 )
               : ListView.separated(
