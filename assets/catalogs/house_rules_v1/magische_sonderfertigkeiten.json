@@ -914,6 +914,10 @@
     },
     "voraussetzungen_struktur": [
       {
+        "art": "sonderfertigkeit",
+        "name": "Spontane Regeneration I"
+      },
+      {
         "art": "eigenschaft",
         "code": "KO",
         "min": 17
@@ -967,6 +971,10 @@
       }
     },
     "voraussetzungen_struktur": [
+      {
+        "art": "sonderfertigkeit",
+        "name": "Spontane Regeneration II"
+      },
       {
         "art": "eigenschaft",
         "code": "KO",
@@ -1022,6 +1030,10 @@
     },
     "voraussetzungen_struktur": [
       {
+        "art": "sonderfertigkeit",
+        "name": "Spontane Regeneration III"
+      },
+      {
         "art": "eigenschaft",
         "code": "KO",
         "min": 19
@@ -1075,6 +1087,10 @@
       }
     },
     "voraussetzungen_struktur": [
+      {
+        "art": "sonderfertigkeit",
+        "name": "Spontane Regeneration IV"
+      },
       {
         "art": "eigenschaft",
         "code": "KO",
@@ -3160,6 +3176,10 @@
     "nurEpisch": false,
     "voraussetzungen_struktur": [
       {
+        "art": "sonderfertigkeit",
+        "name": "Meisterliche Zauberkontrolle I (ZH)"
+      },
+      {
         "art": "eigenschaft",
         "code": "MU",
         "min": 12
@@ -3607,6 +3627,10 @@
     "hausregel": false,
     "nurEpisch": false,
     "voraussetzungen_struktur": [
+      {
+        "art": "sonderfertigkeit",
+        "name": "Semipermanenz I (Z)"
+      },
       {
         "art": "zauber",
         "name": "ARCANOVI",

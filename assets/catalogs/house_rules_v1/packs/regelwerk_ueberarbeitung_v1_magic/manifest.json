@@ -11,6 +11,18 @@
         {
           "id": "msf_arkane_sensitivitaet_i",
           "name": "Arkane Sensitivität I",
+          "kette": {
+            "id": "arkane_sensitivitaet",
+            "stufe": 1,
+            "label": "Arkane Sensitivität"
+          },
+          "voraussetzungen_struktur": [
+            {
+              "art": "eigenschaft",
+              "code": "IN",
+              "min": 16
+            }
+          ],
           "gruppe": "magisch",
           "typ": "sonderfertigkeit",
           "seite": "15",
@@ -35,6 +47,21 @@
         {
           "id": "msf_arkane_sensitivitaet_ii",
           "name": "Arkane Sensitivität II",
+          "kette": {
+            "id": "arkane_sensitivitaet",
+            "stufe": 2
+          },
+          "voraussetzungen_struktur": [
+            {
+              "art": "eigenschaft",
+              "code": "IN",
+              "min": 18
+            },
+            {
+              "art": "sonderfertigkeit",
+              "name": "Arkane Sensitivität I"
+            }
+          ],
           "gruppe": "magisch",
           "typ": "sonderfertigkeit",
           "seite": "15",

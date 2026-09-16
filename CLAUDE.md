@@ -164,6 +164,19 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   dieselbe Darstellung bekommen wie die magischen. Alte Sammelnamen wie
   `Eiserner Wille I / II` bleiben als `alias_namen` der ersten Stufe erhalten,
   damit Bestandshelden erkannt werden.
+- Die unmittelbare Vorstufe steht auch in `voraussetzungen_struktur`, einschließlich
+  Zusatzpaketen und Ketten mit unnummerierter erster Stufe. Der Asset-Test
+  `test/data/special_ability_chain_integrity_test.dart` prüft Vollständigkeit,
+  eindeutige Stufen und rückwärts gerichtete Stufenabhängigkeiten.
+- `rules/derived/special_ability_visibility_rules.dart` filtert unpassende Magie-/
+  Karmabereiche anhand der effektiven Ressourcenaktivierung; Bestand und geplante
+  Erwerbe bleiben sichtbar. `shared/special_ability_visibility_toggle.dart`
+  speichert `HeroSheet.showInapplicableSpecialAbilities` (Standard `false`, dann
+  kein JSON-Feld). Picker und Fähigkeitenbaum verwenden dieselbe Präferenz.
+  `AdvancementSessionController.setShowInapplicableSpecialAbilities` persistiert
+  ausschließlich die Einstellung und aktualisiert bei offener Runde deren Basis
+  mit erneutem Replay. Weder Entwurf noch AP werden dabei übernommen; fremde
+  Heldenänderungen lösen weiterhin einen Konflikt aus.
 - Laufende Zaubereffekte (`Axxeleratus`, `Attributo`, `Armatrutz`) stehen in
   `lib/rules/derived/active_spell_rules.dart` und werden über
   `Magie-Tab > Zauber aktivieren` gepflegt. Zusatzdaten je Effekt (Zahlenwert

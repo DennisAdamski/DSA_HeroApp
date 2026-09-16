@@ -246,6 +246,10 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
           ? 'Karmale Sonderfertigkeiten'
           : 'Allgemeine Sonderfertigkeiten',
       catalog: abilities,
+      hero: hero,
+      onShowInapplicableChanged: ref
+          .read(advancementSessionProvider(hero.id).notifier)
+          .setShowInapplicableSpecialAbilities,
       ownedNamesLower: owned,
       verfuegbareAp: _verfuegbareApImDraft(hero),
       episch: hero.isEpisch,

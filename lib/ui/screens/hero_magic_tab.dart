@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -518,6 +519,12 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                 _onMagicSpecialAbilityApKosten,
                           ),
                           _MagicSpecialAbilitiesSection(
+                            hero: hero,
+                            onShowInapplicableChanged: ref
+                                .read(
+                                  advancementSessionProvider(hero.id).notifier,
+                                )
+                                .setShowInapplicableSpecialAbilities,
                             abilities: _draftMagicSpecialAbilities,
                             isEditing: _editController.isEditing,
                             onChanged: _updateMagicSpecialAbilities,

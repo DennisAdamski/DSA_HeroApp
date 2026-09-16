@@ -88,6 +88,75 @@ void main() {
   AdvancementSession session() =>
       container.read(advancementSessionProvider('hero'))!;
 
+  test('visibility persists without committing or losing the draft', () async {
+    controller.add(_entry(session().sessionId));
+    final sessionId = session().sessionId;
+    final reserved = session().apReserved;
+    await controller.setShowInapplicableSpecialAbilities(true);
+    expect(session().sessionId, sessionId);
+    expect(session().entries, hasLength(1));
+    expect(session().apReserved, reserved);
+    expect(session().preview.showInapplicableSpecialAbilities, true);
+    final beforeCommit = (await repo.loadHeroById('hero'))!;
+    expect(beforeCommit.attributes.mu, 12);
+    expect(beforeCommit.showInapplicableSpecialAbilities, true);
+    await controller.commit();
+    final saved = (await repo.loadHeroById('hero'))!;
+    expect(saved.attributes.mu, 13);
+    expect(saved.showInapplicableSpecialAbilities, true);
+  });
+
+  test(
+    'failed visibility save leaves the draft and preference intact',
+    () async {
+      controller.add(_entry(session().sessionId));
+      repo.fail = true;
+      await expectLater(
+        controller.setShowInapplicableSpecialAbilities(true),
+        throwsStateError,
+      );
+      expect(session().isSaving, false);
+      expect(session().entries, hasLength(1));
+      expect(session().base.showInapplicableSpecialAbilities, false);
+    },
+  );
+
+  test(
+    'preference without session stays isolated when switching heroes',
+    () async {
+      controller.discard();
+      await repo.saveHero(_hero.copyWith(id: 'other'));
+      await controller.setShowInapplicableSpecialAbilities(true);
+      final saved = (await repo.loadHeroById('hero'))!;
+      expect(saved.showInapplicableSpecialAbilities, true);
+      expect(
+        (await repo.loadHeroById('other'))!.showInapplicableSpecialAbilities,
+        false,
+      );
+      controller.start(hero: saved, catalog: _catalog);
+      expect(session().preview.showInapplicableSpecialAbilities, true);
+      await controller.setShowInapplicableSpecialAbilities(false);
+      controller.discard();
+      expect(
+        (await repo.loadHeroById('hero'))!
+            .toJson()
+            .containsKey('showInapplicableSpecialAbilities'),
+        false,
+      );
+    },
+  );
+
+  test('visibility cannot overwrite concurrent hero edits', () async {
+    controller.add(_entry(session().sessionId));
+    await repo.saveHero(_hero.copyWith(name: 'Geändert'));
+    await expectLater(
+      controller.setShowInapplicableSpecialAbilities(true),
+      throwsStateError,
+    );
+    expect(session().entries, hasLength(1));
+    expect((await repo.loadHeroById('hero'))!.name, 'Geändert');
+  });
+
   test(
     'planning never persists; commit saves values and history together',
     () async {

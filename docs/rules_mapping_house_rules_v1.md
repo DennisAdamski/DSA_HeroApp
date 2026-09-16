@@ -97,6 +97,22 @@ Quelle: `Charaktersheet_DSA_mit_Hausregeln Hexe.xlsx`
 
 ### Magische Sonderfertigkeiten: Voraussetzungen und Stufenketten
 
+Alle Kettenstufen führen die unmittelbare Vorstufe als strukturierte Voraussetzung;
+Verweise können den vollständigen Namen oder den Basisnamen mit `stufe` verwenden.
+Das gilt auch für Stufen mit Traditionszusätzen und unnummerierte erste Stufen.
+Ergänzt sind insbesondere Spontane Regeneration II–V, Meisterliche Zauberkontrolle II
+und Semipermanenz II sowie die Zusatzpaket-Ketten Arkane Sensitivität I–II und
+Zweihändiger Kampf I–III. Die Katalogmetadaten bleiben die verbindliche Quelle;
+Namen werden zur Laufzeit nicht automatisch zu neuen Ketten verbunden.
+
+Die Auswahl blendet magische/karmale Bereiche ohne effektive Magie-/Karmabefähigung
+aus. Maßgeblich ist `computeHeroResourceActivation`, einschließlich manueller
+Overrides, unabhängig vom aktuellen AsP-/KaP-Vorrat. Der je Held gespeicherte
+Schalter „Unpassende Sonderfertigkeiten anzeigen“ hebt nur die Ausblendung auf.
+Bestand und geplante Einträge bleiben sichtbar, ebenso die Voraussetzungen
+sichtbarer Ziele als Referenzknoten. Erwerbsprüfung und Meisterentscheid bleiben
+unverändert.
+
 - Alle 105 Eintraege in `magische_sonderfertigkeiten.json` tragen den Block
   `voraussetzungen_struktur`; das Schema steht in `docs/technical_overview.md`
   Abschnitt 4.9. Der Freitext `voraussetzungen` bleibt unveraendert erhalten.
