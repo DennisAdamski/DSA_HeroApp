@@ -1,12 +1,16 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+
 import 'combat_special_ability_state.dart';
+
 import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Verbindet direkt gelernte Manöver mit Freischaltungen erworbener Kampf-SF.
 Set<String> learnedManeuverIds(CombatConfig config, RulesCatalog catalog) {
-  final ids = normalizeManeuverIds(config.specialRules.activeManeuvers,
-      catalogManeuvers: catalog.maneuvers).toSet();
+  final ids = normalizeManeuverIds(
+    config.specialRules.activeManeuvers,
+    catalogManeuvers: catalog.maneuvers,
+  ).toSet();
   for (final ability in catalog.combatSpecialAbilities) {
     if (isCombatSpecialAbilityActive(config, ability.id)) {
       ids.addAll(ability.aktiviertManoeverIds);

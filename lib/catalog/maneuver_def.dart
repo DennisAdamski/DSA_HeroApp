@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 import 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
+
 import 'special_ability_entry.dart';
 import 'special_ability_requirement.dart';
 
@@ -104,8 +105,10 @@ class ManeuverDef implements SpecialAbilityEntry {
       quelle: readCatalogString(json, 'quelle', fallback: ''),
       hausregel: readCatalogBool(json, 'hausregel', fallback: false),
       nurEpisch: readCatalogBool(json, 'nurEpisch', fallback: false),
-      voraussetzungenStruktur: readCatalogObjectList(json, 'voraussetzungen_struktur')
-          .map(SpecialAbilityRequirement.fromJson).toList(growable: false),
+      voraussetzungenStruktur: readCatalogObjectList(
+        json,
+        'voraussetzungen_struktur',
+      ).map(SpecialAbilityRequirement.fromJson).toList(growable: false),
     );
   }
 
@@ -124,7 +127,8 @@ class ManeuverDef implements SpecialAbilityEntry {
       'kosten': kosten,
       if (voraussetzungenStruktur.isNotEmpty)
         'voraussetzungen_struktur': voraussetzungenStruktur
-            .map((requirement) => requirement.toJson()).toList(growable: false),
+            .map((requirement) => requirement.toJson())
+            .toList(growable: false),
       if (nurFuerTalente.isNotEmpty) 'nur_fuer_talente': nurFuerTalente,
       if (mussSeparatErlerntWerden) 'muss_separat_erlernt_werden': true,
       if (giltFuerTalentTyp.isNotEmpty)

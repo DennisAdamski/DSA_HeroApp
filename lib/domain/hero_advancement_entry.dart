@@ -10,6 +10,7 @@ enum AdvancementKind {
   boughtStat,
   language,
   script,
+
   /// Einmaliger Manövererwerb, gegebenenfalls pro Kampftalent.
   maneuver,
 }

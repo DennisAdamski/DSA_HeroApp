@@ -17,7 +17,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/combat_special_ability_state.
 import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
+
 import 'maneuver_rules.dart';
+
 import 'package:dsa_heldenverwaltung/rules/derived/tradition_rules.dart';
 
 /// Baut den Pruefkontext eines Helden.
@@ -92,7 +94,8 @@ List<String> _manoeverNamen(HeroSheet hero, {RulesCatalog? catalog}) {
     for (final talent in catalog?.talents ?? const []) talent.id: talent.name,
   };
   final result = <String>[];
-  final ids = catalog == null ? hero.combatConfig.specialRules.activeManeuvers
+  final ids = catalog == null
+      ? hero.combatConfig.specialRules.activeManeuvers
       : learnedManeuverIds(hero.combatConfig, catalog);
   for (final eintrag in ids) {
     final teile = eintrag.split('::');

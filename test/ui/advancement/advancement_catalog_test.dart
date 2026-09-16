@@ -399,7 +399,9 @@ void main() {
       'Geländekunde (Wüste)',
     );
     // Mehrfach waehlbare SF bleiben in der Hauptliste handlungsfaehig.
-    await tester.tap(find.byKey(const ValueKey('skill-node-generalAbility:terrain')));
+    await tester.tap(
+      find.byKey(const ValueKey('skill-node-generalAbility:terrain')),
+    );
     await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey('advancement-plan-generalAbility-terrain')),
