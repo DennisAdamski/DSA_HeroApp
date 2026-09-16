@@ -29,13 +29,26 @@ AdvancementOption? _abilityOption(
   final structured = [...def.voraussetzungenStruktur];
   final chain = def.kette;
   if (chain != null) {
-    final previous = context.abilityEntries(kind).where((entry) =>
-        entry.kette?.id == chain.id && entry.kette!.stufe < chain.stufe).toList();
-    previous.sort((a,b) => b.kette!.stufe.compareTo(a.kette!.stufe));
-    if (previous.isNotEmpty && !structured.any((r) =>
-        r.art == RequirementArt.sonderfertigkeit && r.name == previous.first.name)) {
-      structured.add(SpecialAbilityRequirement(art: RequirementArt.sonderfertigkeit,
-          name: previous.first.name));
+    final previous = context
+        .abilityEntries(kind)
+        .where(
+          (entry) =>
+              entry.kette?.id == chain.id && entry.kette!.stufe < chain.stufe,
+        )
+        .toList();
+    previous.sort((a, b) => b.kette!.stufe.compareTo(a.kette!.stufe));
+    if (previous.isNotEmpty &&
+        !structured.any(
+          (r) =>
+              r.art == RequirementArt.sonderfertigkeit &&
+              r.name == previous.first.name,
+        )) {
+      structured.add(
+        SpecialAbilityRequirement(
+          art: RequirementArt.sonderfertigkeit,
+          name: previous.first.name,
+        ),
+      );
     }
   }
   final requirements = evaluateRequirements(

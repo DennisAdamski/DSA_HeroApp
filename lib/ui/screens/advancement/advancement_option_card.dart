@@ -48,7 +48,9 @@ class AdvancementOptionCard extends StatelessWidget {
         ? (option.currentValue < 0 ? 'Aktivieren' : 'Steigern')
         : acquired
         ? 'Weitere Auswahl'
-        : option.kind == AdvancementKind.maneuver ? '+ Manöver' : '+ Sonderfertigkeit';
+        : option.kind == AdvancementKind.maneuver
+        ? '+ Manöver'
+        : '+ Sonderfertigkeit';
     final action = acquiredClosed
         ? Row(
             key: ValueKey(

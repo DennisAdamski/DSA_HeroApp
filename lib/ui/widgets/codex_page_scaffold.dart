@@ -24,7 +24,11 @@ class CodexPageScaffold extends StatelessWidget {
     final content = Material(type: MaterialType.transparency, child: child);
 
     if (!codex.showDecoration) {
-      return Container(color: codex.parchment, padding: padding, child: content);
+      return Container(
+        color: codex.parchment,
+        padding: padding,
+        child: content,
+      );
     }
 
     return Container(

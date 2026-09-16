@@ -135,7 +135,10 @@ class AdvancementContext {
   final Map<AdvancementKind, Set<String>> _actionableAbilityIds = {};
 
   /// Einmal aufgelöster Besitz einschließlich durch Kampf-SF gewährter Manöver.
-  late final Set<String> ownedManeuverIds = learnedManeuverIds(hero.combatConfig, catalog);
+  late final Set<String> ownedManeuverIds = learnedManeuverIds(
+    hero.combatConfig,
+    catalog,
+  );
 
   /// Ob der Held eine Sonderfertigkeit unter genau diesem Anzeigenamen führt.
   bool hasOwnedAbilityName(String displayName) =>

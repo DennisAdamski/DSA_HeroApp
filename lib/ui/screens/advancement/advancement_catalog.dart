@@ -8,7 +8,9 @@ import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_activation_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog_actions.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_option_card.dart';
+
 import 'advancement_skill_tree_view.dart';
+
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 
 /// Durchsuchbarer Steigerungskatalog auf Basis der ungespeicherten Vorschau.
@@ -94,7 +96,8 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
       advancementOptionsProvider((
         heroId: widget.heroId,
         scope: _category == _CatalogCategory.abilities
-            ? AdvancementScope.all : AdvancementScope.active,
+            ? AdvancementScope.all
+            : AdvancementScope.active,
       )),
     );
     final filtered = options.where((option) {
@@ -187,50 +190,56 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
         ),
         Expanded(
           child: _category == _CatalogCategory.abilities
-              ? AdvancementSkillTreeView(session: session, options: options,
-                  query: query, onPlan: session.isSaving || _dialogOpen ? null : _plan)
+              ? AdvancementSkillTreeView(
+                  session: session,
+                  options: options,
+                  query: query,
+                  onPlan: session.isSaving || _dialogOpen ? null : _plan,
+                )
               : ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-            itemCount: headerCount + optionCount + bridgeCount,
-            separatorBuilder: (_, _) => const SizedBox(height: 10),
-            itemBuilder: (context, index) {
-              if (showImpact && index == 0) {
-                return AdvancementImpactPanel(session: session);
-              }
-              final offset = index - headerCount;
-              if (showBridge && offset == optionCount) {
-                return Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    key: ValueKey(
-                      'advancement-activate-hint-${_category.name}',
-                    ),
-                    onPressed: () => _activate(
-                      _category,
-                      // Der Suchtext wandert unverändert weiter; `query` ist
-                      // für den Vergleich bereits kleingeschrieben.
-                      initialQuery: _searchController.text.trim(),
-                    ),
-                    icon: const Icon(Icons.search),
-                    label: const Text('Weitere Treffer im Erwerbsblatt suchen'),
-                  ),
-                );
-              }
-              if (filtered.isEmpty) {
-                return _buildEmptyState(context, query);
-              }
-              final option = filtered[offset];
-              return AdvancementOptionCard(
-                option: option,
-                planned: plannedTargets.contains(
-                  '${option.kind.name}:${option.targetId}',
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                  itemCount: headerCount + optionCount + bridgeCount,
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    if (showImpact && index == 0) {
+                      return AdvancementImpactPanel(session: session);
+                    }
+                    final offset = index - headerCount;
+                    if (showBridge && offset == optionCount) {
+                      return Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          key: ValueKey(
+                            'advancement-activate-hint-${_category.name}',
+                          ),
+                          onPressed: () => _activate(
+                            _category,
+                            // Der Suchtext wandert unverändert weiter; `query` ist
+                            // für den Vergleich bereits kleingeschrieben.
+                            initialQuery: _searchController.text.trim(),
+                          ),
+                          icon: const Icon(Icons.search),
+                          label: const Text(
+                            'Weitere Treffer im Erwerbsblatt suchen',
+                          ),
+                        ),
+                      );
+                    }
+                    if (filtered.isEmpty) {
+                      return _buildEmptyState(context, query);
+                    }
+                    final option = filtered[offset];
+                    return AdvancementOptionCard(
+                      option: option,
+                      planned: plannedTargets.contains(
+                        '${option.kind.name}:${option.targetId}',
+                      ),
+                      onPlan: session.isSaving || _dialogOpen
+                          ? null
+                          : () => _plan(option),
+                    );
+                  },
                 ),
-                onPlan: session.isSaving || _dialogOpen
-                    ? null
-                    : () => _plan(option),
-              );
-            },
-          ),
         ),
       ],
     );
