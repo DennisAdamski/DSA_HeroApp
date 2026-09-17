@@ -4,6 +4,8 @@ part of '../hero_magic_tab.dart';
 class _MagicSpecialAbilitiesSection extends StatelessWidget {
   const _MagicSpecialAbilitiesSection({
     required this.abilities,
+    required this.hero,
+    required this.onShowInapplicableChanged,
     required this.isEditing,
     required this.onChanged,
     this.onEnsureEditing,
@@ -15,6 +17,8 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
   });
 
   final List<MagicSpecialAbility> abilities;
+  final HeroSheet hero;
+  final Future<void> Function(bool) onShowInapplicableChanged;
   final bool isEditing;
   final void Function(List<MagicSpecialAbility>) onChanged;
   final Future<void> Function()? onEnsureEditing;
@@ -88,6 +92,8 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
       context: context,
       title: 'Magische Sonderfertigkeiten',
       catalog: catalogAbilities,
+      hero: hero,
+      onShowInapplicableChanged: onShowInapplicableChanged,
       ownedNamesLower: owned,
       verfuegbareAp: verfuegbareAp,
       episch: episch,

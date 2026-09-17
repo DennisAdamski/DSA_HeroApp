@@ -64,6 +64,7 @@ class HeroSheet {
     this.apAvailable = 0,
     this.dukaten = '',
     this.resourceActivationConfig = const HeroResourceActivationConfig(),
+    this.showInapplicableSpecialAbilities = false,
     this.inventoryEntries = const <HeroInventoryEntry>[],
     this.notes = const <HeroNoteEntry>[],
     this.connections = const <HeroConnectionEntry>[],
@@ -137,6 +138,9 @@ class HeroSheet {
   final int apAvailable;
   final String dukaten;
   final HeroResourceActivationConfig resourceActivationConfig;
+
+  /// Zeigt auch Sonderfertigkeiten ohne passende Magie- oder Karmabefähigung.
+  final bool showInapplicableSpecialAbilities;
   final List<HeroInventoryEntry> inventoryEntries;
   final List<HeroNoteEntry> notes;
   final List<HeroConnectionEntry> connections;
@@ -229,6 +233,7 @@ class HeroSheet {
     int? apAvailable,
     String? dukaten,
     HeroResourceActivationConfig? resourceActivationConfig,
+    bool? showInapplicableSpecialAbilities,
     List<HeroInventoryEntry>? inventoryEntries,
     List<HeroNoteEntry>? notes,
     List<HeroConnectionEntry>? connections,
@@ -291,6 +296,9 @@ class HeroSheet {
       dukaten: dukaten ?? this.dukaten,
       resourceActivationConfig:
           resourceActivationConfig ?? this.resourceActivationConfig,
+      showInapplicableSpecialAbilities:
+          showInapplicableSpecialAbilities ??
+          this.showInapplicableSpecialAbilities,
       inventoryEntries: inventoryEntries ?? this.inventoryEntries,
       notes: notes ?? this.notes,
       connections: connections ?? this.connections,
@@ -368,6 +376,8 @@ class HeroSheet {
       'apAvailable': apAvailable,
       'dukaten': dukaten,
       'resourceActivationConfig': resourceActivationConfig.toJson(),
+      if (showInapplicableSpecialAbilities)
+        'showInapplicableSpecialAbilities': true,
       'inventoryEntries': inventoryEntries
           .map((entry) => entry.toJson())
           .toList(growable: false),
@@ -563,6 +573,8 @@ class HeroSheet {
         (json['resourceActivationConfig'] as Map?)?.cast<String, dynamic>() ??
             const <String, dynamic>{},
       ),
+      showInapplicableSpecialAbilities:
+          json['showInapplicableSpecialAbilities'] == true,
       inventoryEntries: rawInventoryEntries
           .whereType<Map>()
           .map(

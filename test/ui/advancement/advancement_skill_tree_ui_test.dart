@@ -32,6 +32,20 @@ const _catalog = RulesCatalog(
   talents: [],
   spells: [],
   weapons: [],
+  magicSpecialAbilities: [
+    SpecialAbilityDef(
+      id: 'magic_test',
+      name: 'Magisches Testziel',
+      gruppe: 'magisch',
+    ),
+  ],
+  karmalSpecialAbilities: [
+    SpecialAbilityDef(
+      id: 'karma_test',
+      name: 'Karmales Testziel',
+      gruppe: 'karmal',
+    ),
+  ],
   maneuvers: [
     ManeuverDef(
       id: 'man_base',
@@ -151,6 +165,16 @@ void main() {
     await tester.pumpAndSettle();
     final base = find.byKey(const ValueKey('skill-node-maneuver:man_base'));
     final next = find.byKey(const ValueKey('skill-node-maneuver:man_next'));
+    await tester.scrollUntilVisible(
+      next,
+      100,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const ValueKey('advancement-skill-tree')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     expect(base, findsOneWidget);
     expect(next, findsOneWidget);
     await tester.ensureVisible(next);
@@ -160,6 +184,34 @@ void main() {
     expect(find.text('+ Manöver'), findsOneWidget);
     await tester.tap(find.text('Schließen'));
     await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Bereiche lassen sich je Held anzeigen und wieder ausblenden', (
+    tester,
+  ) async {
+    final container = await open(tester, const Size(1400, 1000));
+    final magic = find.byKey(
+      const ValueKey('skill-node-magicAbility:magic_test'),
+    );
+    final karma = find.byKey(
+      const ValueKey('skill-node-karmalAbility:karma_test'),
+    );
+    expect(magic, findsNothing);
+    expect(karma, findsNothing);
+    await tester.tap(find.text('Unpassende Sonderfertigkeiten anzeigen'));
+    await tester.pumpAndSettle();
+    expect(magic, findsOneWidget);
+    expect(karma, findsOneWidget);
+    final repo = container.read(heroRepositoryProvider);
+    expect(
+      (await repo.loadHeroById(_hero.id))!.showInapplicableSpecialAbilities,
+      true,
+    );
+    await tester.tap(find.text('Unpassende Sonderfertigkeiten anzeigen'));
+    await tester.pumpAndSettle();
+    expect(magic, findsNothing);
+    expect(karma, findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

@@ -36,6 +36,22 @@
         {
           "id": "ksf_zweihaendiger_kampf_i",
           "name": "Zweihändiger Kampf I",
+          "kette": {
+            "id": "zweihaendiger_kampf",
+            "stufe": 1,
+            "label": "Zweihändiger Kampf"
+          },
+          "voraussetzungen_struktur": [
+            {
+              "art": "sonderfertigkeit",
+              "name": "Linkhand"
+            },
+            {
+              "art": "eigenschaft",
+              "code": "KK",
+              "min": 12
+            }
+          ],
           "gruppe": "kampf",
           "typ": "sonderfertigkeit",
           "seite": "12",
@@ -61,6 +77,26 @@
         {
           "id": "ksf_zweihaendiger_kampf_ii",
           "name": "Zweihändiger Kampf II",
+          "kette": {
+            "id": "zweihaendiger_kampf",
+            "stufe": 2
+          },
+          "voraussetzungen_struktur": [
+            {
+              "art": "eigenschaft",
+              "code": "GE",
+              "min": 13
+            },
+            {
+              "art": "eigenschaft",
+              "code": "KK",
+              "min": 15
+            },
+            {
+              "art": "sonderfertigkeit",
+              "name": "Zweihändiger Kampf I"
+            }
+          ],
           "gruppe": "kampf",
           "typ": "sonderfertigkeit",
           "seite": "12",
@@ -86,6 +122,26 @@
         {
           "id": "ksf_zweihaendiger_kampf_iii",
           "name": "Zweihändiger Kampf III",
+          "kette": {
+            "id": "zweihaendiger_kampf",
+            "stufe": 3
+          },
+          "voraussetzungen_struktur": [
+            {
+              "art": "eigenschaft",
+              "code": "KK",
+              "min": 18
+            },
+            {
+              "art": "eigenschaft",
+              "code": "GE",
+              "min": 14
+            },
+            {
+              "art": "sonderfertigkeit",
+              "name": "Zweihändiger Kampf II"
+            }
+          ],
           "gruppe": "kampf",
           "typ": "sonderfertigkeit",
           "seite": "12",
