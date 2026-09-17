@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/special_ability_visibility_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_visibility_toggle.dart';
 
 import 'advancement_ability_details.dart';
 
@@ -18,11 +21,15 @@ class AdvancementSkillTreeView extends StatefulWidget {
     required this.options,
     required this.query,
     this.onPlan,
+    this.onShowInapplicableChanged,
   });
   final AdvancementSession session;
   final List<AdvancementOption> options;
   final String query;
   final ValueChanged<AdvancementOption>? onPlan;
+
+  /// Speichert die heldenspezifische Anzeige unter Erhalt des Entwurfs.
+  final Future<void> Function(bool)? onShowInapplicableChanged;
 
   /// Behält den gewählten Themenbereich während einzelner Planungsschritte.
   @override
@@ -52,8 +59,18 @@ class _AdvancementSkillTreeViewState extends State<AdvancementSkillTreeView> {
 
   // Die Such-/Filterbedienung benötigt keine erneute Regelauswertung.
   void _rebuildGraph() {
-    _graph = buildAdvancementSkillTree(
+    final hero = widget.session.preview;
+    final visible = visibleAdvancementAbilityOptions(
       options: widget.options,
+      activation: computeHeroResourceActivation(hero),
+      showInapplicable: hero.showInapplicableSpecialAbilities,
+      plannedTargets: {
+        for (final entry in widget.session.entries)
+          '${entry.kind.name}:${entry.targetId}',
+      },
+    );
+    _graph = buildAdvancementSkillTree(
+      options: visible,
       availableAp: widget.session.preview.apAvailable,
       plannedTargets: {
         for (final entry in widget.session.entries)
@@ -72,6 +89,15 @@ class _AdvancementSkillTreeViewState extends State<AdvancementSkillTreeView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SpecialAbilityVisibilityToggle(
+            value: widget.session.preview.showInapplicableSpecialAbilities,
+            onChanged: widget.session.isSaving
+                ? null
+                : widget.onShowInapplicableChanged,
+          ),
+        ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),

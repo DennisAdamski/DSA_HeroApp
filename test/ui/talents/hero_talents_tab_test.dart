@@ -836,7 +836,15 @@ void main() {
     expect(find.text('Allgemeine Sonderfertigkeiten'), findsOneWidget);
     expect(find.text('Kulturkunde'), findsOneWidget);
 
-    await tester.tap(find.byType(Switch).first);
+    final abilityChip = find
+        .ancestor(
+          of: find.text('Kulturkunde'),
+          matching: find.byType(Container),
+        )
+        .first;
+    await tester.tap(
+      find.descendant(of: abilityChip, matching: find.byType(Switch)),
+    );
     await tester.pumpAndSettle();
 
     expect(find.widgetWithText(TextField, 'AP-Kosten'), findsNothing);
@@ -905,7 +913,16 @@ void main() {
       await tester.pumpAndSettle();
 
       // Mehrfach waehlbare SF zeigen einen Hinzufuegen-Button statt Switch.
-      expect(find.byType(Switch), findsNothing);
+      final abilityChip = find
+          .ancestor(
+            of: find.text('Geländekunde'),
+            matching: find.byType(Container),
+          )
+          .first;
+      expect(
+        find.descendant(of: abilityChip, matching: find.byType(Switch)),
+        findsNothing,
+      );
       await tester.tap(
         find.byKey(const ValueKey<String>('sf-add-variant-Geländekunde')),
       );

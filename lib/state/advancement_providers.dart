@@ -126,6 +126,59 @@ class AdvancementSessionController extends Notifier<AdvancementSession?> {
     state = null;
   }
 
+  /// Speichert die Anzeige je Held und erhält eine offene Steigerungsrunde.
+  /// Nur diese Präferenz wird persistiert; geplante Erwerbe bleiben im Entwurf.
+  Future<void> setShowInapplicableSpecialAbilities(bool value) async {
+    final current = state == null ? null : _editableSession();
+    if (current != null) {
+      state = _updated(
+        current,
+        current.entries,
+        _replay(current, current.entries),
+        isSaving: true,
+      );
+    }
+    try {
+      final repo = ref.read(heroRepositoryProvider);
+      final latest = await repo.loadHeroById(heroId);
+      if (!ref.mounted ||
+          (current != null && state?.sessionId != current.sessionId)) {
+        throw StateError('Die Steigerungsrunde wurde inzwischen geschlossen.');
+      }
+      if (latest == null ||
+          (current != null &&
+              heroContentHash(latest) != heroContentHash(current.base))) {
+        throw StateError('Der Held wurde inzwischen geändert.');
+      }
+      final updated = latest.copyWith(showInapplicableSpecialAbilities: value);
+      // Eine reine Anzeigepräferenz darf weder AP normalisieren noch Inventar
+      // abgleichen. Das Repository übernimmt wie üblich Sync und Benachrichtigung.
+      await repo.saveHero(updated);
+      if (current != null &&
+          ref.mounted &&
+          state?.sessionId == current.sessionId) {
+        state = AdvancementSession(
+          sessionId: current.sessionId,
+          base: updated,
+          catalog: current.catalog,
+          entries: current.entries,
+          replay: replayAdvancements(
+            base: updated,
+            entries: current.entries,
+            catalog: current.catalog,
+          ),
+        );
+      }
+    } catch (_) {
+      if (current != null &&
+          ref.mounted &&
+          state?.sessionId == current.sessionId) {
+        state = current;
+      }
+      rethrow;
+    }
+  }
+
   /// Speichert Werte, AP, SE und feste Historie gemeinsam nach Konfliktprüfung.
   ///
   /// Bei einem Fehler bleibt die Runde vollständig erhalten. Ein mittlerweile

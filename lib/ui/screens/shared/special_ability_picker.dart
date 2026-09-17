@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/special_ability_visibility_rules.dart';
+
+import 'special_ability_visibility_toggle.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
@@ -29,6 +34,8 @@ import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 /// [requirementContext] schaltet die Voraussetzungspruefung frei: Ohne ihn
 /// verhaelt sich der Picker wie zuvor, mit ihm zeigt er Checklisten, sperrt
 /// Eintraege sichtbar und verlangt bei offenen Punkten einen Meisterentscheid.
+/// [hero] liefert die Befähigung für die Bereichsausblendung. Änderungen der
+/// Anzeige werden über [onShowInapplicableChanged] heldenspezifisch gespeichert.
 Future<void> showSpecialAbilityPicker({
   required BuildContext context,
   required String title,
@@ -46,6 +53,8 @@ Future<void> showSpecialAbilityPicker({
   bool manualCorrection = false,
   String eigeneKultur = '',
   HeroRequirementContext? requirementContext,
+  HeroSheet? hero,
+  Future<void> Function(bool)? onShowInapplicableChanged,
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
@@ -60,6 +69,8 @@ Future<void> showSpecialAbilityPicker({
       onRemove: onRemove,
       eigeneKultur: eigeneKultur,
       requirementContext: requirementContext,
+      hero: hero,
+      onShowInapplicableChanged: onShowInapplicableChanged,
     ),
   );
 }
@@ -76,6 +87,8 @@ class _SpecialAbilityPickerScreen extends StatefulWidget {
     required this.onRemove,
     required this.eigeneKultur,
     required this.requirementContext,
+    required this.hero,
+    required this.onShowInapplicableChanged,
   });
 
   final String title;
@@ -93,6 +106,8 @@ class _SpecialAbilityPickerScreen extends StatefulWidget {
   final void Function(SpecialAbilityDef ability) onRemove;
   final String eigeneKultur;
   final HeroRequirementContext? requirementContext;
+  final HeroSheet? hero;
+  final Future<void> Function(bool)? onShowInapplicableChanged;
 
   @override
   State<_SpecialAbilityPickerScreen> createState() =>
@@ -104,12 +119,14 @@ class _SpecialAbilityPickerScreenState
   late final Set<String> _ownedNamesLower;
   late int _verfuegbareAp;
   final _searchController = TextEditingController();
+  late bool _showInapplicable;
 
   @override
   void initState() {
     super.initState();
     _ownedNamesLower = Set<String>.from(widget.ownedNamesLower);
     _verfuegbareAp = widget.verfuegbareAp;
+    _showInapplicable = widget.hero?.showInapplicableSpecialAbilities ?? false;
     _searchController.addListener(() => setState(() {}));
   }
 
@@ -239,11 +256,22 @@ class _SpecialAbilityPickerScreenState
   @override
   Widget build(BuildContext context) {
     final query = _searchController.text.trim().toLowerCase();
+    final hero = widget.hero;
+    final activation = hero == null
+        ? null
+        : computeHeroResourceActivation(hero);
+    final visible = widget.catalog.where((ability) {
+      return activation == null ||
+          isSpecialAbilityVisible(
+            group: ability.gruppe,
+            activation: activation,
+            showInapplicable: _showInapplicable,
+            isOwned: _isOwned(ability),
+          );
+    }).toList();
     final filtered = query.isEmpty
-        ? widget.catalog
-        : widget.catalog
-              .where((a) => a.name.toLowerCase().contains(query))
-              .toList();
+        ? visible
+        : visible.where((a) => a.name.toLowerCase().contains(query)).toList();
     final grouped = <String, List<SpecialAbilityDef>>{};
     for (final ability in filtered) {
       final key = ability.kategorie.trim().isEmpty
@@ -266,6 +294,16 @@ class _SpecialAbilityPickerScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (hero != null)
+              SpecialAbilityVisibilityToggle(
+                value: _showInapplicable,
+                onChanged: widget.onShowInapplicableChanged == null
+                    ? null
+                    : (value) async {
+                        await widget.onShowInapplicableChanged!(value);
+                        if (mounted) setState(() => _showInapplicable = value);
+                      },
+              ),
             TextField(
               controller: _searchController,
               decoration: const InputDecoration(
