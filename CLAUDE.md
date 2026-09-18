@@ -6,6 +6,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 
 - `AGENTS.md` ist die verbindliche Agentenrichtlinie.
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
+- [Architektur-To-dos](docs/architecture_roadmap.md) halten sieben offene
+  Verbesserungen mit Ist-Zustand, Abhängigkeiten und Abnahmekriterien fest.
+  Bei Architekturarbeiten den Aufgabenstatus prüfen und nach abgeschlossenen
+  Teilumfängen aktualisieren.
+- Das [Codex-Mockup](docs/mockups/README.md) zeigt den geplanten Workspace mit
+  drei Arbeitsbereichen als eigenständigen HTML/CSS/JavaScript-Prototyp.
+  Es nutzt ausschließlich flüchtige Beispieldaten und keine produktive Regellogik.
 - Detaildokumentation liegt bei Bedarf in `docs/technical_overview.md`, `docs/test_strategy.md`, `docs/catalog_import_workflow.md`, `docs/pdf_agent_workflow.md`, `docs/rule_audit_regelwerk_ueberarbeitung.md`, `docs/ios_xcode_setup.md` und `docs/windows_antivirus_audit.md`.
 
 ## Projektkontext

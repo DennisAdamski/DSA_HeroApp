@@ -333,6 +333,10 @@ Fuer die konkrete Umsetzung im Projekt sind diese Dokus die besten Einstiege:
 - `docs/pdf_agent_workflow.md` fuer den lokalen PDF-Agenten und die DSA-Wissensbasis
 - `docs/rules_mapping_house_rules_v1.md` fuer die fachliche Zuordnung der Hausregeln
 - `docs/test_strategy.md` fuer Testaufbau und Qualitaetssicherung
+- [Architektur-To-do-Liste](docs/architecture_roadmap.md) für sieben geplante
+  Verbesserungen mit Einstiegspunkten, Abhängigkeiten und Abnahmekriterien
+- [Klickbares Codex-Mockup](docs/mockups/README.md) für die geplanten Bereiche
+  Spielen, Held verwalten und Entwicklung planen
 
 ## Projektstruktur
 
