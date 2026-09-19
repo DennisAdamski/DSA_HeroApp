@@ -90,7 +90,10 @@ void main() {
   test('Zahlen laufen in der Wertrolle auf gleicher Breite', () {
     // Tabellenziffern sind der Grund, warum Zahlen in einer Spalte
     // untereinander stehen. Ohne sie wandert jede Zeile.
-    final stil = buildKartoTextTheme(kartoHell).wert;
+    final stil = buildKartoTextTheme(
+      kartoHell,
+      ThemeData(brightness: Brightness.light).textTheme,
+    ).wert;
     final breiten = <String, double>{
       for (final ziffernfolge in <String>[
         '1111111111',
@@ -118,7 +121,10 @@ void main() {
   });
 
   test('die Rollen benutzen die vorgesehenen Familien', () {
-    final rollen = buildKartoTextTheme(kartoHell);
+    final rollen = buildKartoTextTheme(
+      kartoHell,
+      ThemeData(brightness: Brightness.light).textTheme,
+    );
     for (final rolle in <(String, TextStyle)>[
       ('titelGross', rollen.titelGross),
       ('titel', rollen.titel),
@@ -142,7 +148,10 @@ void main() {
   test('die Schriftskala wird nach oben tatsaechlich genutzt', () {
     // Die bestehende Oberflaeche nutzt praktisch nur das untere Drittel. Die
     // neue Skala ist deshalb kuerzer und muss oben offen sein.
-    final rollen = buildKartoTextTheme(kartoHell);
+    final rollen = buildKartoTextTheme(
+      kartoHell,
+      ThemeData(brightness: Brightness.light).textTheme,
+    );
     expect(rollen.titelGross.fontSize, greaterThanOrEqualTo(32));
     expect(rollen.wertGross.fontSize, greaterThanOrEqualTo(24));
     expect(

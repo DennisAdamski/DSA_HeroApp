@@ -242,8 +242,19 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   das. Der Neubau liest nur `heroComputedProvider` (nie dessen vier
   Ableitungen einzeln) und schreibt nur über `heroActionsProvider`.
   Die UI-Variante `klassisch` ist entfallen, es gibt nur noch Hell und Dunkel.
+- **Solange beide Oberflächen parallel laufen, müssen ihre Themes
+  ineinander überblendbar sein.** `MaterialApp` animiert den Themenwechsel,
+  und `TextStyle.lerp` wirft, sobald zwei Stile verschiedene `inherit`-Werte
+  tragen oder einer von beiden `null` ist. Daraus folgen zwei Regeln für
+  `buildKartoTheme`: Schriftrollen entstehen per `copyWith` auf
+  `ThemeData.textTheme` (ein mit dem Konstruktor gebauter `TextStyle` trägt
+  `inherit: true`, Materials Stile `false`), und kein Komponenten-Theme setzt
+  einen Textstil, den das Codex-Theme nicht auch setzt. Beides ist in
+  `test/ui2/theme/karto_theme_uebergang_test.dart` gepinnt. Der Fehler zeigt
+  sich **nur** beim Übergang, nie beim Bau eines einzelnen Themes.
 - Kartograph-Token liegen in `lib/ui2/theme/` (`KartoTheme` als
-  `ThemeExtension`, 16 rollenbenannte Farben, zwei Paletten), die
+  `ThemeExtension`, 19 rollenbenannte Farben einschließlich der drei
+  Ressourcenfarben, zwei Paletten), die
   helligkeitsunabhängigen Skalen in `lib/ui2/foundation/` (`Abstand`,
   `Strich`, `KartoBreite`). Abstände, Linienstärken und Breakpoints gehören
   bewusst **nicht** ins Theme. Linienstärke trägt die Hierarchie: `kueste`,

@@ -16,7 +16,6 @@ ThemeData buildKartoTheme({
   required bool centerAppBarTitle,
 }) {
   final t = brightness == Brightness.dark ? kartoDunkel : kartoHell;
-  final textTheme = buildKartoTextTheme(t);
   final radius = BorderRadius.circular(kKartoRadius);
   const durchsichtig = Color(0x00000000);
 
@@ -44,17 +43,30 @@ ThemeData buildKartoTheme({
     onInverseSurface: t.blatt,
   );
 
-  return ThemeData(
+  // Erst die Material-Grundlage bauen, dann die Schriftrollen darauf.
+  // Nicht abkuerzen: Materials Stile tragen `inherit: false`, ein frisch
+  // gebauter `TextStyle` dagegen `true`. `TextStyle.lerp` wirft, sobald beides
+  // aufeinandertrifft — und genau das passiert, wenn `MaterialApp` beim
+  // Umschalten der Oberflaeche zwischen den Themes ueberblendet.
+  final basis = ThemeData(
     useMaterial3: true,
     brightness: brightness,
     colorScheme: colorScheme,
     scaffoldBackgroundColor: t.blatt,
     canvasColor: t.blatt,
-    textTheme: textTheme,
     extensions: <ThemeExtension<dynamic>>[t],
     // Kartograph kennt keine Schatten. Was hier durchrutscht, faellt sofort
     // auf, weil sonst nichts in der Oberflaeche schwebt.
     shadowColor: durchsichtig,
+  );
+  final textTheme = buildKartoTextTheme(t, basis.textTheme);
+
+  // Bewusst ohne eigene Textstile an Knoepfen, Kacheln und Dialogen: das
+  // bestehende Theme setzt dort keine, und beim Ueberblenden zwischen beiden
+  // Oberflaechen traefe ein gesetzter Stil auf null. TextStyle.lerp wirft
+  // dann. Material loest diese Stile ohnehin aus der Schriftskala auf.
+  return basis.copyWith(
+    textTheme: textTheme,
 
     appBarTheme: AppBarTheme(
       centerTitle: centerAppBarTitle,
@@ -134,7 +146,6 @@ ThemeData buildKartoTheme({
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: radius),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        textStyle: textTheme.labelLarge,
       ),
     ),
 
@@ -144,7 +155,6 @@ ThemeData buildKartoTheme({
         side: BorderSide(color: t.grat, width: Strich.grat),
         shape: RoundedRectangleBorder(borderRadius: radius),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        textStyle: textTheme.labelLarge,
       ),
     ),
 
@@ -152,15 +162,12 @@ ThemeData buildKartoTheme({
       style: TextButton.styleFrom(
         foregroundColor: t.meer,
         shape: RoundedRectangleBorder(borderRadius: radius),
-        textStyle: textTheme.labelLarge,
       ),
     ),
 
     listTileTheme: ListTileThemeData(
       iconColor: t.schriftLeise,
       textColor: t.schrift,
-      titleTextStyle: textTheme.fliess,
-      subtitleTextStyle: textTheme.legende,
       shape: RoundedRectangleBorder(borderRadius: radius),
     ),
 
@@ -199,8 +206,6 @@ ThemeData buildKartoTheme({
       backgroundColor: t.blatt,
       surfaceTintColor: durchsichtig,
       elevation: 0,
-      titleTextStyle: textTheme.abschnitt,
-      contentTextStyle: textTheme.fliess,
       shape: RoundedRectangleBorder(
         borderRadius: radius,
         side: BorderSide(color: t.kueste, width: Strich.kueste),
