@@ -74,7 +74,7 @@ class _AppearanceSettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dunkelModus = ref.watch(dunkelModusProvider);
-    final variante = ref.watch(uiVarianteProvider);
+    final oberflaeche = ref.watch(oberflaecheProvider);
     final ansicht = ref.watch(tabellenAnsichtProvider);
     final actions = ref.read(settingsActionsProvider);
     final theme = Theme.of(context);
@@ -98,32 +98,18 @@ class _AppearanceSettingsPage extends ConsumerWidget {
                 onChanged: (_) => actions.toggleDunkelModus(),
               ),
               const Divider(height: 24),
-              Text('Design', style: theme.textTheme.titleSmall),
-              const SizedBox(height: 12),
-              SegmentedButton<UiVariante>(
-                segments: const <ButtonSegment<UiVariante>>[
-                  ButtonSegment(
-                    value: UiVariante.klassisch,
-                    label: Text('Klassisch'),
-                    icon: Icon(Icons.palette_outlined),
-                  ),
-                  ButtonSegment(
-                    value: UiVariante.codex,
-                    label: Text('Codex'),
-                    icon: Icon(Icons.auto_stories),
-                  ),
-                ],
-                selected: <UiVariante>{variante},
-                onSelectionChanged: (selected) {
-                  actions.setUiVariante(selected.first);
-                },
-              ),
-              const SizedBox(height: 12),
-              Text(
-                variante == UiVariante.codex
-                    ? 'Pergament- und Messing-Ästhetik mit Texturen und dekorativen Elementen.'
-                    : 'Schlichtes Material-Design ohne dekorative Elemente.',
-                style: theme.textTheme.bodySmall,
+              SwitchListTile.adaptive(
+                key: const ValueKey<String>('settings-oberflaeche'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Neue Oberfläche verwenden'),
+                subtitle: const Text(
+                  'Der Neubau entsteht Bereich für Bereich. Du kannst '
+                  'jederzeit zurückschalten.',
+                ),
+                value: oberflaeche == Oberflaeche.kartograph,
+                onChanged: (an) => actions.setOberflaeche(
+                  an ? Oberflaeche.kartograph : Oberflaeche.codex,
+                ),
               ),
               const Divider(height: 24),
               Text('Datenlisten', style: theme.textTheme.titleSmall),

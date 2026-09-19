@@ -2035,7 +2035,6 @@ Plattform-Dispatch über bedingte Imports (`_stub.dart` / `_io.dart` / `_web.dar
 | `hero_magic_tab.dart` | `HeroMagicTab` | Zauber, Ritualkategorien/Rituale, Repräsentationen, magische SF und globale Leiteigenschaft |
 | `hero_inventory_tab.dart` | `HeroInventoryTab` | Direkte Inventartabelle mit AppBar-Aktion, Split-Editor und Sofortspeicherung |
 | `hero_notes_tab.dart` | `HeroNotesTab` | Untertabs fuer Chroniken, Kontakte und Abenteuer mit Chip-Workspace, Popups und gefuehrtem Abenteuer-Abschluss |
-| `hero_detail_screen.dart` | `HeroDetailScreen` | Legacy-Platzhalter (nicht eingebunden) |
 
 ### Responsive Layout
 

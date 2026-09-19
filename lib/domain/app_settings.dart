@@ -1,13 +1,17 @@
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';
 import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart';
 
-/// Visuelle Darstellungsvariante der App-Oberflaeche.
-enum UiVariante {
-  /// Schlichtes Material-3-Design ohne dekorative Elemente.
-  klassisch,
-
-  /// Pergament-und-Messing-Aesthetik mit Texturen und Wasserzeichen.
+/// Aktive Oberflaeche der App.
+///
+/// Waehrend des Oberflaechen-Neubaus stehen die bestehende und die neue
+/// Oberflaeche nebeneinander. Diese Einstellung waehlt zwischen ihnen und
+/// entfaellt wieder, sobald die alte Oberflaeche geloescht ist.
+enum Oberflaeche {
+  /// Bestehende Oberflaeche (Pergament und Messing).
   codex,
+
+  /// Neue Oberflaeche (Kartograph).
+  kartograph,
 }
 
 /// Darstellung breiter Datenlisten (Talente, Eigenschaften, Basiswerte).
@@ -30,7 +34,7 @@ class AppSettings {
     this.heroStoragePath,
     this.lastSelectedHeroId,
     this.avatarApiConfig = const AvatarApiConfig(),
-    this.uiVariante = UiVariante.codex,
+    this.oberflaeche = Oberflaeche.codex,
     this.tabellenAnsicht = TabellenAnsicht.automatisch,
     this.summaryRailCollapsed = false,
     this.tableColumnWidths = const <String, Map<String, double>>{},
@@ -52,8 +56,8 @@ class AppSettings {
   /// Konfiguration fuer die KI-Bildgenerierungs-API.
   final AvatarApiConfig avatarApiConfig;
 
-  /// Aktive visuelle Darstellungsvariante.
-  final UiVariante uiVariante;
+  /// Aktive Oberflaeche (bestehend oder Neubau).
+  final Oberflaeche oberflaeche;
 
   /// Gewuenschte Darstellung breiter Datenlisten.
   final TabellenAnsicht tabellenAnsicht;
@@ -84,7 +88,7 @@ class AppSettings {
     Object? heroStoragePath = _copySentinel,
     Object? lastSelectedHeroId = _copySentinel,
     AvatarApiConfig? avatarApiConfig,
-    UiVariante? uiVariante,
+    Oberflaeche? oberflaeche,
     TabellenAnsicht? tabellenAnsicht,
     bool? summaryRailCollapsed,
     Map<String, Map<String, double>>? tableColumnWidths,
@@ -104,7 +108,7 @@ class AppSettings {
           ? this.lastSelectedHeroId
           : lastSelectedHeroId as String?,
       avatarApiConfig: avatarApiConfig ?? this.avatarApiConfig,
-      uiVariante: uiVariante ?? this.uiVariante,
+      oberflaeche: oberflaeche ?? this.oberflaeche,
       tabellenAnsicht: tabellenAnsicht ?? this.tabellenAnsicht,
       summaryRailCollapsed: summaryRailCollapsed ?? this.summaryRailCollapsed,
       tableColumnWidths: tableColumnWidths ?? this.tableColumnWidths,
@@ -126,7 +130,7 @@ class AppSettings {
     'heroStoragePath': heroStoragePath,
     'lastSelectedHeroId': lastSelectedHeroId,
     'avatarApiConfig': avatarApiConfig.toJson(),
-    'uiVariante': uiVariante.name,
+    'oberflaeche': oberflaeche.name,
     'tabellenAnsicht': tabellenAnsicht.name,
     'summaryRailCollapsed': summaryRailCollapsed,
     'tableColumnWidths': <String, Map<String, double>>{
@@ -146,10 +150,10 @@ class AppSettings {
         ? rawHeroStoragePath.trim()
         : null;
     final lastSelectedHeroId = _parseNullableString(json['lastSelectedHeroId']);
-    final rawVariante = json['uiVariante'] as String?;
-    final uiVariante =
-        UiVariante.values.where((v) => v.name == rawVariante).firstOrNull ??
-        UiVariante.codex;
+    final rawOberflaeche = json['oberflaeche'] as String?;
+    final oberflaeche =
+        Oberflaeche.values.where((v) => v.name == rawOberflaeche).firstOrNull ??
+        Oberflaeche.codex;
     final rawAnsicht = json['tabellenAnsicht'] as String?;
     final tabellenAnsicht =
         TabellenAnsicht.values.where((v) => v.name == rawAnsicht).firstOrNull ??
@@ -165,7 +169,7 @@ class AppSettings {
       avatarApiConfig: AvatarApiConfig.fromJson(
         (json['avatarApiConfig'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
-      uiVariante: uiVariante,
+      oberflaeche: oberflaeche,
       tabellenAnsicht: tabellenAnsicht,
       summaryRailCollapsed: json['summaryRailCollapsed'] as bool? ?? false,
       tableColumnWidths: _parseTableColumnWidths(json['tableColumnWidths']),

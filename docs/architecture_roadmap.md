@@ -90,6 +90,28 @@ Der Schadensablauf verwendet dieselben Regeln wie die übrige App.
 `test/ui/shared/`; Bedienprüfung auf schmalen und breiten Fenstern. Neue fachliche
 Schadensregeln separat unter `test/rules/` prüfen.
 
+**Umsetzungsstand 19.09.2026:** Die Flutter-Umsetzung hat als
+Oberflächen-Neubau begonnen. Bestand (`lib/ui/`) und Neubau (`lib/ui2/`)
+laufen parallel, `AppSettings.oberflaeche` schaltet um. Fertig sind:
+
+- **Aufräumen.** Toter Legacy-Screen entfernt, UI-Variante `klassisch` samt
+  zweitem Theme gestrichen.
+- **Naht und Umschalter.** `AppRootSwitch` als `child` von `SyncConflictGate`;
+  ein Wechsel tauscht nur den Bildschirm und baut Heldenspeicher, Sync und
+  Katalog nicht neu auf (`test/ui2/shell/app_root_switch_test.dart`).
+- **Token-Schicht.** Farb-, Abstands-, Linien- und Schriftskalen unter
+  `lib/ui2/theme/` und `lib/ui2/foundation/`, Sichtprüfung über das
+  Token-Blatt. Dabei fiel auf, dass Merriweather und Cinzel ihren Fettschnitt
+  nur behaupten: Regular und 700 zeigen in `pubspec.yaml` auf dieselbe Datei.
+  Der Neubau verhindert das durch zwei Tests, einen auf das Manifest und einen,
+  der die Zeichenbreiten misst.
+
+Offen und vor dem Bau der Navigation zu entscheiden: **zwei oder drei
+Arbeitsbereiche.** Diese Aufgabe und das Mockup nennen drei (Spielen, Held
+verwalten, Entwicklung planen); der Umsetzungsplan sah zunächst zwei vor und
+behandelte die Entwicklung als Sitzung über dem offenen Bereich, wie es
+`workspace_advancement.dart` heute tut.
+
 **Abhängigkeiten / offene Entscheidungen:** Schreibende Spielaktionen auf
 ARCH-05/06 aufbauen. Navigation, Favoritenverhalten und Korrekturbedienung sind
 noch zu konkretisieren. Die im Spielmodus-Konzept vereinbarte Spielerrolle
