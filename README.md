@@ -337,6 +337,8 @@ Fuer die konkrete Umsetzung im Projekt sind diese Dokus die besten Einstiege:
   Verbesserungen mit Einstiegspunkten, Abhängigkeiten und Abnahmekriterien
 - [Klickbares Codex-Mockup](docs/mockups/README.md) für die geplanten Bereiche
   Spielen, Held verwalten und Entwicklung planen
+- [Redesign-Umsetzungspläne](docs/redesign_implementation.md) mit drei
+  Arbeitspaketen, kopierfertigen Agentenprompts und Modell-Empfehlung
 
 ## Projektstruktur
 

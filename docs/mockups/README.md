@@ -77,3 +77,11 @@ Die neuen Redesign-Dateien und diese Anleitung werden gezielt versioniert;
 die allgemeine Ignore-Regel für sonstige lokale Mockups bleibt bestehen.
 Vor einer Umsetzung in Flutter die Roadmap-Abhängigkeiten, vollständige
 Funktionsabdeckung und noch offenen Produktentscheidungen prüfen.
+
+## Übergang zur Flutter-Umsetzung
+
+Die [Redesign-Übergabe](../redesign_implementation.md) enthält drei konkrete
+Umsetzungspläne mit Startprompts für weitere Agenten. Sie nutzen das inzwischen
+vorhandene Kartograph-Fundament unter `lib/ui2/`, übernehmen die drei
+Arbeitsbereiche und grenzen simulierte Funktionen von vorhandener Fachlogik ab.
+Die Pläne sind Arbeitsaufträge, kein Nachweis ihrer Umsetzung.
