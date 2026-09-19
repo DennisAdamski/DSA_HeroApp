@@ -51,6 +51,13 @@ ARCH-05. Die Umsetzung von ARCH-01 folgt diesen Grundlagen, während die Prüfun
 der Bedienabläufe und ein Oberflächenentwurf schon früher möglich sind.
 ARCH-07 begleitet jede Phase und wird nicht erst am Ende begonnen.
 
+Für den bereits begonnenen Oberflächen-Neubau konkretisieren die
+[Redesign-Pläne R1–R3](redesign_implementation.md) einen früher lieferbaren
+UI-Teilumfang von ARCH-01 auf vorhandenen Modellen und Aktionen. Dieser
+Teilumfang benötigt keine vorgezogene Datenmigration. Erweiterungen wie
+strukturierte Merkmale, Regelprofile und atomarer Schaden mit Korrektur bleiben
+an ihre hier genannten Grundlagen gebunden; ARCH-07 begleitet auch R1–R3.
+
 ## ARCH-01 — Oberfläche nach Spielsituationen organisieren
 
 **Ist-Zustand:** Der Workspace ist nach Fachgebieten wie Talente, Kampf, Magie
@@ -106,11 +113,13 @@ laufen parallel, `AppSettings.oberflaeche` schaltet um. Fertig sind:
   Der Neubau verhindert das durch zwei Tests, einen auf das Manifest und einen,
   der die Zeichenbreiten misst.
 
-Offen und vor dem Bau der Navigation zu entscheiden: **zwei oder drei
-Arbeitsbereiche.** Diese Aufgabe und das Mockup nennen drei (Spielen, Held
-verwalten, Entwicklung planen); der Umsetzungsplan sah zunächst zwei vor und
-behandelte die Entwicklung als Sitzung über dem offenen Bereich, wie es
-`workspace_advancement.dart` heute tut.
+**Planungsstand nach Mockup-Freigabe, 19.09.2026:** Die
+[Umsetzungspläne mit Agentenprompts](redesign_implementation.md) setzen auf dem
+vorhandenen UI2-Fundament auf. Für diese Folgeaufträge gelten die **drei
+Arbeitsbereiche des freigegebenen Mockups**. Damit wird der ältere Vorschlag
+mit zwei Bereichen ersetzt. Entwicklung bleibt technisch eine Sitzung, erhält
+aber einen eigenen sichtbaren Bereich. R1–R3 sind noch offen; sie decken den
+ersten produktiven UI-Stand ab, nicht den zusätzlichen atomaren Schadensablauf.
 
 **Abhängigkeiten / offene Entscheidungen:** Schreibende Spielaktionen auf
 ARCH-05/06 aufbauen. Navigation, Favoritenverhalten und Korrekturbedienung sind
