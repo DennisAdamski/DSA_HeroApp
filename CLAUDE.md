@@ -229,6 +229,37 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Die adaptive Settings-Navigation wird von `lib/ui/screens/settings_screen.dart`
   orchestriert; wiederverwendbare Teilseiten liegen unter
   `lib/ui/screens/settings/`.
+- **Die Oberfläche wird neu gebaut.** Bestand (`lib/ui/`) und Neubau
+  (`lib/ui2/`, Bildsprache „Kartograph") laufen nebeneinander;
+  `AppSettings.oberflaeche` wählt unter `Einstellungen > Darstellung`. Die
+  Weiche ist `AppRootSwitch` (`lib/ui2/shell/karto_app_root.dart`) als `child`
+  von `SyncConflictGate` — die **einzige** Stelle, an der sich beide Bäume
+  berühren, und die einzige Datei unter `lib/ui2/`, die aus `lib/ui/`
+  importiert. Sie muss dort bleiben: ein zweites `AppStartupGate` baute
+  Heldenspeicher, Sync und Katalog ein zweites Mal auf. Dass ein Wechsel nichts
+  darunter anfasst, hängt daran, dass der Settings-Listener des Gates nur auf
+  `heroStoragePath` reagiert; `test/ui2/shell/app_root_switch_test.dart` pinnt
+  das. Der Neubau liest nur `heroComputedProvider` (nie dessen vier
+  Ableitungen einzeln) und schreibt nur über `heroActionsProvider`.
+  Die UI-Variante `klassisch` ist entfallen, es gibt nur noch Hell und Dunkel.
+- Kartograph-Token liegen in `lib/ui2/theme/` (`KartoTheme` als
+  `ThemeExtension`, 16 rollenbenannte Farben, zwei Paletten), die
+  helligkeitsunabhängigen Skalen in `lib/ui2/foundation/` (`Abstand`,
+  `Strich`, `KartoBreite`). Abstände, Linienstärken und Breakpoints gehören
+  bewusst **nicht** ins Theme. Linienstärke trägt die Hierarchie: `kueste`,
+  `grat` und `hoehenlinie` sind fest an die gleichnamigen Farbtoken gepaart.
+  Das Token-Blatt (`lib/ui2/debug/karto_token_sheet.dart`) zeigt alles auf
+  einer Seite und ist im Debugmodus aus der neuen Oberfläche erreichbar.
+- Schriften des Neubaus: **Spectral** (statisch, vier eigene Schnitte) für
+  Titel, **Inter Tight** (nur variabel, Gewicht über `fontVariations`) für
+  Daten. Innerhalb einer Familie darf kein `asset:`-Pfad zweimal stehen —
+  genau das machen Merriweather und Cinzel heute, deren Fettschnitt deshalb
+  dieselben Glyphen liefert wie der reguläre. `test/ui2/theme/` prüft das
+  doppelt: das Manifest auf doppelte Pfade, und `karto_weights_test.dart`
+  **misst** die Zeichenbreiten, weil eine Behauptung im Manifest sonst nicht
+  auffällt. Tests, die Schriften brauchen, laden sie über
+  `test/ui2/theme/karto_test_fonts.dart`; ohne das misst `flutter test` die
+  Ersatzschrift.
 - Auf einen asynchronen Provider darf **nicht** mit
   `ref.read(provider.future)` gewartet werden. In Riverpod 3.2 wird diese
   Future bei einem Fehler nie erfüllt — der Provider geht in `AsyncLoading`

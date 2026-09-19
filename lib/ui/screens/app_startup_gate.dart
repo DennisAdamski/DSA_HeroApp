@@ -39,9 +39,9 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/state/sync_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/app_shell.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/sync_conflict_gate.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_app_root.dart';
 
 /// Initialisiert das Helden-Repository anhand der aktuellen Einstellungen.
 class AppStartupGate extends StatefulWidget {
@@ -473,7 +473,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
           houseRulePackRepository: result.houseRulePackRepository,
           home: SyncConflictGate(
             syncController: result.syncController,
-            child: const HeroesHomeScreen(),
+            child: const AppRootSwitch(),
           ),
         );
       },

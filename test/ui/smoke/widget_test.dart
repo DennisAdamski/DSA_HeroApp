@@ -43,7 +43,6 @@ void main() {
       ProviderScope(
         overrides: [
           dunkelModusProvider.overrideWith((ref) => false),
-          uiVarianteProvider.overrideWith((ref) => UiVariante.codex),
           debugModusProvider.overrideWith((ref) => true),
         ],
         child: const DsaAppShell(

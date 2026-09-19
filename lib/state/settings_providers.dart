@@ -9,7 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/avatar_config.dart'
 import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart'
     show RulesIndexRemoteConfig;
 export 'package:dsa_heldenverwaltung/domain/app_settings.dart'
-    show TabellenAnsicht, UiVariante;
+    show Oberflaeche, TabellenAnsicht;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 
 /// Settings-Repository (wird beim App-Start uebersteuert).
@@ -137,10 +137,10 @@ final dunkelModusProvider = Provider<bool>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.dunkelModus ?? false;
 });
 
-/// Schnellzugriff auf die aktive UI-Variante.
-final uiVarianteProvider = Provider<UiVariante>((ref) {
-  return ref.watch(appSettingsProvider).valueOrNull?.uiVariante ??
-      UiVariante.codex;
+/// Schnellzugriff auf die aktive Oberflaeche (bestehend oder Neubau).
+final oberflaecheProvider = Provider<Oberflaeche>((ref) {
+  return ref.watch(appSettingsProvider).valueOrNull?.oberflaeche ??
+      Oberflaeche.codex;
 });
 
 /// Gewuenschte Darstellung breiter Datenlisten (Tabelle oder Karten).
@@ -223,10 +223,10 @@ class SettingsActions {
     await _repo.save(current.copyWith(heroStoragePath: null));
   }
 
-  /// Setzt die visuelle Darstellungsvariante.
-  Future<void> setUiVariante(UiVariante variante) async {
+  /// Setzt die aktive Oberflaeche.
+  Future<void> setOberflaeche(Oberflaeche oberflaeche) async {
     final current = _repo.load();
-    await _repo.save(current.copyWith(uiVariante: variante));
+    await _repo.save(current.copyWith(oberflaeche: oberflaeche));
   }
 
   /// Setzt die Darstellung breiter Datenlisten.
