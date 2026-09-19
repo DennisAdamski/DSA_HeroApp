@@ -23,7 +23,7 @@ const List<FontFeature> _tabellenziffern = <FontFeature>[
   FontFeature.tabularFigures(),
 ];
 
-/// Baut die Schriftrollen der neuen Oberflaeche.
+/// Baut die Schriftrollen der neuen Oberflaeche auf [basis] auf.
 ///
 /// Neun Rollen statt fuenfzehn rollenloser Material-Schubladen. Der Grund ist
 /// erfahrungsgestuetzt: in der bestehenden Oberflaeche entfallen 251 von 635
@@ -34,91 +34,120 @@ const List<FontFeature> _tabellenziffern = <FontFeature>[
 /// Die Rollen liegen auf `TextTheme`-Slots, damit Material-Interna wie
 /// `ListTile` und `AlertDialog` weiter funktionieren. Welcher Slot welche
 /// Rolle traegt, steht in [KartoRollen].
-TextTheme buildKartoTextTheme(KartoTheme t) {
-  final titel = TextStyle(fontFamily: kSchriftTitel, color: t.schrift);
-  final daten = TextStyle(fontFamily: kSchriftDaten, color: t.schrift);
+///
+/// **[basis] ist nicht optional und darf nicht durch frisch gebaute
+/// `TextStyle` ersetzt werden.** Materials Stile tragen `inherit: false`, ein
+/// mit dem Konstruktor erzeugter `TextStyle` dagegen `true`. `TextStyle.lerp`
+/// wirft, sobald zwei Stile darin nicht uebereinstimmen — und genau das tut
+/// `MaterialApp`, wenn die Oberflaeche umgeschaltet wird und beide Themes
+/// ineinander ueberblendet werden. Der Fehler zeigt sich nur beim Uebergang,
+/// nie beim Bau eines einzelnen Themes. Gepinnt in
+/// `test/ui2/theme/karto_theme_uebergang_test.dart`.
+TextTheme buildKartoTextTheme(KartoTheme t, TextTheme basis) {
+  TextStyle titel(
+    TextStyle? slot, {
+    required double groesse,
+    FontWeight gewicht = FontWeight.w600,
+    double hoehe = 1.2,
+    double? laufweite,
+    FontStyle? neigung,
+    Color? farbe,
+  }) {
+    return slot!.copyWith(
+      fontFamily: kSchriftTitel,
+      fontSize: groesse,
+      fontWeight: gewicht,
+      height: hoehe,
+      letterSpacing: laufweite,
+      fontStyle: neigung,
+      color: farbe ?? t.schrift,
+      // Spectral ist statisch; eine Achse gibt es hier nicht zu setzen.
+      fontVariations: const <FontVariation>[],
+    );
+  }
 
-  return TextTheme(
+  TextStyle daten(
+    TextStyle? slot, {
+    required double groesse,
+    required double gewicht,
+    double hoehe = 1.3,
+    double? laufweite,
+    bool tabellenziffern = false,
+    Color? farbe,
+  }) {
+    return slot!.copyWith(
+      fontFamily: kSchriftDaten,
+      fontSize: groesse,
+      fontWeight: FontWeight.values[(gewicht ~/ 100) - 1],
+      height: hoehe,
+      letterSpacing: laufweite,
+      color: farbe ?? t.schrift,
+      fontVariations: _gewicht(gewicht),
+      fontFeatures: tabellenziffern ? _tabellenziffern : const <FontFeature>[],
+    );
+  }
+
+  return basis.copyWith(
     // titelGross: Heldenname, Modustitel.
-    displaySmall: titel.copyWith(
-      fontSize: 34,
-      fontWeight: FontWeight.w600,
-      height: 1.15,
-      letterSpacing: -0.2,
+    displaySmall: titel(
+      basis.displaySmall,
+      groesse: 34,
+      hoehe: 1.15,
+      laufweite: -0.2,
     ),
     // titel: Bereichsueberschrift.
-    headlineMedium: titel.copyWith(
-      fontSize: 24,
-      fontWeight: FontWeight.w600,
-      height: 1.2,
-    ),
+    headlineMedium: titel(basis.headlineMedium, groesse: 24),
     // wertGross: LeP, AsP, AU im Spielen-Modus.
-    headlineSmall: daten.copyWith(
-      fontSize: 28,
-      fontWeight: FontWeight.w600,
-      height: 1.1,
-      fontVariations: _gewicht(600),
-      fontFeatures: _tabellenziffern,
+    headlineSmall: daten(
+      basis.headlineSmall,
+      groesse: 28,
+      gewicht: 600,
+      hoehe: 1.1,
+      tabellenziffern: true,
     ),
     // abschnitt: Abschnittsueberschrift.
-    titleMedium: titel.copyWith(
-      fontSize: 18,
-      fontWeight: FontWeight.w600,
-      height: 1.25,
-    ),
+    titleMedium: titel(basis.titleMedium, groesse: 18, hoehe: 1.25),
     // wert: Zahl in Tabelle und Zeile.
-    titleSmall: daten.copyWith(
-      fontSize: 15,
-      fontWeight: FontWeight.w500,
-      height: 1.3,
-      fontVariations: _gewicht(500),
-      fontFeatures: _tabellenziffern,
+    titleSmall: daten(
+      basis.titleSmall,
+      groesse: 15,
+      gewicht: 500,
+      tabellenziffern: true,
     ),
     // fliess: Lesetext.
-    bodyMedium: daten.copyWith(
-      fontSize: 15,
-      height: 1.45,
-      fontVariations: _gewicht(400),
-    ),
+    bodyMedium: daten(basis.bodyMedium, groesse: 15, gewicht: 400, hoehe: 1.45),
     // legende: Helfertext, Regelzitat, Herkunft. Echte Kursive.
-    bodySmall: titel.copyWith(
-      fontSize: 15,
-      height: 1.5,
-      fontStyle: FontStyle.italic,
-      color: t.schriftLeise,
+    bodySmall: titel(
+      basis.bodySmall,
+      groesse: 15,
+      gewicht: FontWeight.w400,
+      hoehe: 1.5,
+      neigung: FontStyle.italic,
+      farbe: t.schriftLeise,
     ),
     // etikett: Feldbeschriftung, Spaltenkopf.
-    labelMedium: daten.copyWith(
-      fontSize: 13,
-      fontWeight: FontWeight.w500,
-      height: 1.3,
-      letterSpacing: 0.2,
-      fontVariations: _gewicht(500),
-      color: t.schriftLeise,
+    labelMedium: daten(
+      basis.labelMedium,
+      groesse: 13,
+      gewicht: 500,
+      laufweite: 0.2,
+      farbe: t.schriftLeise,
     ),
     // marke: Chip, Statuswort.
-    labelSmall: daten.copyWith(
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      height: 1.2,
-      letterSpacing: 0.6,
-      fontVariations: _gewicht(600),
+    labelSmall: daten(
+      basis.labelSmall,
+      groesse: 11,
+      gewicht: 600,
+      hoehe: 1.2,
+      laufweite: 0.6,
     ),
     // Restliche Slots abgeleitet, damit Material nichts vermisst.
-    displayLarge: titel.copyWith(fontSize: 48, fontWeight: FontWeight.w600),
-    displayMedium: titel.copyWith(fontSize: 40, fontWeight: FontWeight.w600),
-    headlineLarge: titel.copyWith(fontSize: 28, fontWeight: FontWeight.w600),
-    titleLarge: titel.copyWith(fontSize: 20, fontWeight: FontWeight.w600),
-    bodyLarge: daten.copyWith(
-      fontSize: 17,
-      height: 1.45,
-      fontVariations: _gewicht(400),
-    ),
-    labelLarge: daten.copyWith(
-      fontSize: 15,
-      fontWeight: FontWeight.w500,
-      fontVariations: _gewicht(500),
-    ),
+    displayLarge: titel(basis.displayLarge, groesse: 48),
+    displayMedium: titel(basis.displayMedium, groesse: 40),
+    headlineLarge: titel(basis.headlineLarge, groesse: 28),
+    titleLarge: titel(basis.titleLarge, groesse: 20),
+    bodyLarge: daten(basis.bodyLarge, groesse: 17, gewicht: 400, hoehe: 1.45),
+    labelLarge: daten(basis.labelLarge, groesse: 15, gewicht: 500),
   );
 }
 
