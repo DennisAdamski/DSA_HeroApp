@@ -24,6 +24,9 @@ class KartoTheme extends ThemeExtension<KartoTheme> {
     required this.schriftLeise,
     required this.schriftStumm,
     required this.schriftAufSignal,
+    required this.navigation,
+    required this.navigationText,
+    required this.navigationMuted,
     required this.meer,
     required this.siegel,
     required this.wachs,
@@ -64,6 +67,15 @@ class KartoTheme extends ThemeExtension<KartoTheme> {
 
   /// Text auf [meer] oder [siegel].
   final Color schriftAufSignal;
+
+  /// Dunkler Grund der globalen Bereichsnavigation.
+  final Color navigation;
+
+  /// Hervorgehobener Text und Symbole auf [navigation].
+  final Color navigationText;
+
+  /// Ruhiger Text und Symbole auf [navigation].
+  final Color navigationMuted;
 
   /// Interaktion und Auswahl.
   final Color meer;
@@ -119,6 +131,9 @@ class KartoTheme extends ThemeExtension<KartoTheme> {
     Color? schriftLeise,
     Color? schriftStumm,
     Color? schriftAufSignal,
+    Color? navigation,
+    Color? navigationText,
+    Color? navigationMuted,
     Color? meer,
     Color? siegel,
     Color? wachs,
@@ -140,6 +155,9 @@ class KartoTheme extends ThemeExtension<KartoTheme> {
       schriftLeise: schriftLeise ?? this.schriftLeise,
       schriftStumm: schriftStumm ?? this.schriftStumm,
       schriftAufSignal: schriftAufSignal ?? this.schriftAufSignal,
+      navigation: navigation ?? this.navigation,
+      navigationText: navigationText ?? this.navigationText,
+      navigationMuted: navigationMuted ?? this.navigationMuted,
       meer: meer ?? this.meer,
       siegel: siegel ?? this.siegel,
       wachs: wachs ?? this.wachs,
@@ -167,6 +185,9 @@ class KartoTheme extends ThemeExtension<KartoTheme> {
       schriftLeise: m(schriftLeise, other.schriftLeise),
       schriftStumm: m(schriftStumm, other.schriftStumm),
       schriftAufSignal: m(schriftAufSignal, other.schriftAufSignal),
+      navigation: m(navigation, other.navigation),
+      navigationText: m(navigationText, other.navigationText),
+      navigationMuted: m(navigationMuted, other.navigationMuted),
       meer: m(meer, other.meer),
       siegel: m(siegel, other.siegel),
       wachs: m(wachs, other.wachs),
@@ -199,6 +220,9 @@ const KartoTheme kartoHell = KartoTheme(
   schriftLeise: Color(0xFF4A4F55),
   schriftStumm: Color(0xFF8C857A),
   schriftAufSignal: Color(0xFFF2EDE1),
+  navigation: Color(0xFF162C30),
+  navigationText: Color(0xFFF2EDE1),
+  navigationMuted: Color(0xFFBFC6BD),
   meer: Color(0xFF1F4E5F),
   siegel: Color(0xFFA6501E),
   // Dunkler als der Entwurfswert 0xFF8A6A16: der lag mit 4,33:1 unter der
@@ -230,6 +254,9 @@ const KartoTheme kartoDunkel = KartoTheme(
   schriftLeise: Color(0xFFB3AC9E),
   schriftStumm: Color(0xFF6E6355),
   schriftAufSignal: Color(0xFF101820),
+  navigation: Color(0xFF0B1116),
+  navigationText: Color(0xFFF2EDE1),
+  navigationMuted: Color(0xFFB3AC9E),
   meer: Color(0xFF4E9AAF),
   siegel: Color(0xFFD97E43),
   wachs: Color(0xFFC9A44C),

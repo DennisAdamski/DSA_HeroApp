@@ -80,6 +80,30 @@ class KartoTokenSheet extends StatelessWidget {
             ),
           ),
           _Abschnitt(
+            titel: 'Navigation',
+            erklaerung:
+                'Die Navigation bleibt dunkel und verwendet eigene '
+                'Textrollen fuer aktive und ruhige Ziele.',
+            child: Container(
+              color: t.navigation,
+              padding: const EdgeInsets.all(Abstand.block),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'navigationText',
+                    style: s.fliess.copyWith(color: t.navigationText),
+                  ),
+                  const SizedBox(height: Abstand.knapp),
+                  Text(
+                    'navigationMuted',
+                    style: s.fliess.copyWith(color: t.navigationMuted),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          _Abschnitt(
             titel: 'Die neun Schriftrollen',
             erklaerung:
                 'Bereichs-Code wählt nie eine Größe, sondern ein Baustein, '
