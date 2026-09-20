@@ -338,6 +338,11 @@ Korrekturen ergänzen die ursprünglichen Übergaben:
   Regressionstest aktualisiert AsP zwischen Rendern und LeP-Klick und prüft,
   dass LeP −1 diese AsP erhält. Die bestehenden Repository-Schnittstellen
   bleiben unverändert; dies führt keine globale Schreibtransaktion ein.
+- **R1, Editoraktionen:** Der gemeinsame `WorkspaceManagementCoordinator`
+  sperrt direkte Aktionen während der gesamten Verlassen-Prüfung, samt deren
+  asynchronem Speichern. Der Header zeigt die Sperre unmittelbar an und wird
+  nach Abbruch oder Fehler wieder freigegeben. Der Regressionstest hält einen
+  Guard-Save offen, betätigt erneut Speichern und weist genau einen Write nach.
 
 ## Prüfung dieser Planungsänderung
 

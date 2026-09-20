@@ -52,8 +52,8 @@ class WorkspaceManagementCoordinator extends ChangeNotifier {
   /// Sichtbare Abschnitte in ihrer kanonischen Reihenfolge.
   List<WorkspaceTabSpec> get visibleTabs => _visibleTabs;
 
-  /// Gibt an, ob gerade eine Editoraktion läuft.
-  bool get isRunningEditAction => _runningEditAction;
+  /// Sperrt Editoraktionen auch während einer Verlassen-Prüfung samt Save.
+  bool get isRunningEditAction => _runningEditAction || _runningLeaveGuard;
 
   /// Liefert die aktive Abschnitts-ID.
   String? get activeTabId => _registry.activeTabId;
@@ -121,7 +121,7 @@ class WorkspaceManagementCoordinator extends ChangeNotifier {
 
   /// Führt eine Editoraktion aus und verhindert parallele Doppelausführung.
   Future<void> runEditAction(WorkspaceAsyncAction? action) async {
-    if (_runningEditAction || action == null) {
+    if (isRunningEditAction || action == null) {
       return;
     }
     _runningEditAction = true;
@@ -163,6 +163,7 @@ class WorkspaceManagementCoordinator extends ChangeNotifier {
     }
 
     _runningLeaveGuard = true;
+    notifyListeners();
     try {
       final result = await showWorkspaceDiscardDialog(contextProvider());
       if (!hostIsMounted() || result == AdaptiveConfirmResult.cancel) {
@@ -174,6 +175,9 @@ class WorkspaceManagementCoordinator extends ChangeNotifier {
       return await _discardBeforeLeaving(tabId);
     } finally {
       _runningLeaveGuard = false;
+      if (hostIsMounted()) {
+        notifyListeners();
+      }
     }
   }
 
@@ -189,6 +193,7 @@ class WorkspaceManagementCoordinator extends ChangeNotifier {
       return false;
     }
     _runningLeaveGuard = true;
+    notifyListeners();
     try {
       await cancelAction();
       return hostIsMounted() && !_registry.isEditing(tabId);
@@ -197,6 +202,9 @@ class WorkspaceManagementCoordinator extends ChangeNotifier {
       return false;
     } finally {
       _runningLeaveGuard = false;
+      if (hostIsMounted()) {
+        notifyListeners();
+      }
     }
   }
 

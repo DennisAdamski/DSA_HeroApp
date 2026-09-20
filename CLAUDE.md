@@ -315,6 +315,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Bearbeitungsimplementierung darf nicht entstehen, sonst laufen Speichern,
   Verwerfen und Tabwechsel auseinander. Die Abschnittsliste kommt weiterhin aus
   `buildWorkspaceTabs`/`visibleWorkspaceTabsForHero`; UI2 pflegt keine zweite.
+  Eine laufende Verlassen-Prüfung sperrt auch die direkten Editoraktionen
+  einschließlich Speichern und Abbrechen. Der Koordinator meldet Beginn und
+  Ende dieser Sperre an beide Hosts, auch bei Abbruch oder Speicherfehler.
 - **Während eine Steigerungssitzung offen ist, sind manuelle Korrekturen
   gesperrt.** Der Verwaltungsbody zeigt dafür vorerst einen erklärten
   Sperrzustand für die **gesamte** Fläche, nicht nur ohne „Bearbeiten": ein Teil
