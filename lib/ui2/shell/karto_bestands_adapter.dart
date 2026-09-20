@@ -76,8 +76,11 @@ abstract interface class KartoBestandsAdapter {
   /// Öffnet Anlegen, Import und weitere Aktionen der bisherigen Heldenliste.
   Future<void> heldenVerwalten(BuildContext context);
 
-  /// Öffnet die vorhandenen Einstellungen im gemeinsamen ProviderScope.
-  Future<void> einstellungen(BuildContext context);
+  /// Öffnet Einstellungen und prüft vor einem dortigen Oberflächenwechsel.
+  Future<void> einstellungen(
+    BuildContext context, {
+    KartoVerlassenPruefung? vorOberflaechenwechsel,
+  });
 
   /// Öffnet die gemeinsame Probensuche mit bestehenden Würfelaktionen.
   Future<void> probeSuchen({

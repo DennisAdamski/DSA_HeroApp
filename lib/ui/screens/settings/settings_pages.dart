@@ -68,11 +68,42 @@ class _SettingsSectionCard extends StatelessWidget {
   }
 }
 
-class _AppearanceSettingsPage extends ConsumerWidget {
-  const _AppearanceSettingsPage();
+class _AppearanceSettingsPage extends ConsumerStatefulWidget {
+  const _AppearanceSettingsPage({this.beforeSurfaceChange});
+
+  final Future<bool> Function()? beforeSurfaceChange;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_AppearanceSettingsPage> createState() =>
+      _AppearanceSettingsPageState();
+}
+
+class _AppearanceSettingsPageState
+    extends ConsumerState<_AppearanceSettingsPage> {
+  bool _switchingSurface = false;
+
+  // Ein erneuter Klick darf weder einen zweiten Guard noch einen zweiten Save starten.
+  Future<void> _changeSurface(bool enabled) async {
+    if (_switchingSurface) return;
+    setState(() => _switchingSurface = true);
+    try {
+      final mayLeave = await widget.beforeSurfaceChange?.call() ?? true;
+      if (!mayLeave || !mounted) return;
+      await ref
+          .read(settingsActionsProvider)
+          .setOberflaeche(enabled ? Oberflaeche.kartograph : Oberflaeche.codex);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Oberflächenwechsel fehlgeschlagen: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _switchingSurface = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final dunkelModus = ref.watch(dunkelModusProvider);
     final oberflaeche = ref.watch(oberflaecheProvider);
     final ansicht = ref.watch(tabellenAnsichtProvider);
@@ -107,9 +138,7 @@ class _AppearanceSettingsPage extends ConsumerWidget {
                   'jederzeit zurückschalten.',
                 ),
                 value: oberflaeche == Oberflaeche.kartograph,
-                onChanged: (an) => actions.setOberflaeche(
-                  an ? Oberflaeche.kartograph : Oberflaeche.codex,
-                ),
+                onChanged: _switchingSurface ? null : _changeSurface,
               ),
               const Divider(height: 24),
               Text('Datenlisten', style: theme.textTheme.titleSmall),

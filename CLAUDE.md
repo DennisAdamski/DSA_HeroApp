@@ -16,8 +16,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;
-  die dort geplante Bestandsbrücke ist noch nicht implementiert. Vor Folgearbeit
-  den Paketstatus prüfen. Die freigegebene Navigation hat drei Arbeitsbereiche.
+  R1 samt Bestandsbrücke und R2 sind implementiert, R3 ist offen. Vor Folgearbeit
+  den Paketstatus und die Nachprüfung lesen. Die Navigation hat drei Arbeitsbereiche.
 - Detaildokumentation liegt bei Bedarf in `docs/technical_overview.md`, `docs/test_strategy.md`, `docs/catalog_import_workflow.md`, `docs/pdf_agent_workflow.md`, `docs/rule_audit_regelwerk_ueberarbeitung.md`, `docs/ios_xcode_setup.md` und `docs/windows_antivirus_audit.md`.
 
 ## Projektkontext
@@ -327,6 +327,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   zusätzlich nach dem offenen Plan; aufgelegte Screens (Einstellungen,
   Token-Blatt) prüfen nur den Editor, weil die Sitzung im gemeinsamen
   `ProviderScope` liegt und einen Push überlebt.
+  Beim tatsächlichen Oberflächenwechsel in den Einstellungen greift jedoch
+  dieselbe Planabfrage: `KartoBestandsAdapter.einstellungen` reicht
+  `vorOberflaechenwechsel` an `SettingsScreen.beforeSurfaceChange` weiter.
+  Beide Settings-Layouts prüfen vor dem Schreiben; Abbruch und fehlgeschlagene
+  Planübernahme erhalten Oberfläche und Sitzung. Laufende Wechsel sind gesperrt.
 - **Solange beide Oberflächen parallel laufen, müssen ihre Themes
   ineinander überblendbar sein.** `MaterialApp` animiert den Themenwechsel,
   und `TextStyle.lerp` wirft, sobald zwei Stile verschiedene `inherit`-Werte

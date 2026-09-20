@@ -55,7 +55,13 @@ extension _KartoWorkspaceNavigation on _KartoWorkspaceState {
       case 'helden':
         await _verlassen(() => widget.bestand.heldenVerwalten(context));
       case 'einstellungen':
-        await _aufgelegt(() => widget.bestand.einstellungen(context));
+        await _aufgelegt(
+          () => widget.bestand.einstellungen(
+            context,
+            // Nach einem erlaubten Wechsel ist dieser Workspace abgebaut.
+            vorOberflaechenwechsel: () async => !mounted || await _pruefePlan(),
+          ),
+        );
       case 'bestand':
         await _verlassen(
           () => ref

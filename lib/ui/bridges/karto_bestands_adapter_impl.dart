@@ -108,9 +108,15 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
 
   /// Öffnet die vorhandenen Einstellungen im aktuellen ProviderScope.
   @override
-  Future<void> einstellungen(BuildContext context) {
+  Future<void> einstellungen(
+    BuildContext context, {
+    KartoVerlassenPruefung? vorOberflaechenwechsel,
+  }) {
     return Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            SettingsScreen(beforeSurfaceChange: vorOberflaechenwechsel),
+      ),
     );
   }
 

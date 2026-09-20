@@ -93,7 +93,10 @@ class TestBestand implements KartoBestandsAdapter {
   }
 
   @override
-  Future<void> einstellungen(BuildContext context) async {
+  Future<void> einstellungen(
+    BuildContext context, {
+    KartoVerlassenPruefung? vorOberflaechenwechsel,
+  }) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => Scaffold(
