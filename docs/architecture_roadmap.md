@@ -118,8 +118,25 @@ laufen parallel, `AppSettings.oberflaeche` schaltet um. Fertig sind:
 vorhandenen UI2-Fundament auf. Für diese Folgeaufträge gelten die **drei
 Arbeitsbereiche des freigegebenen Mockups**. Damit wird der ältere Vorschlag
 mit zwei Bereichen ersetzt. Entwicklung bleibt technisch eine Sitzung, erhält
-aber einen eigenen sichtbaren Bereich. R1–R3 sind noch offen; sie decken den
-ersten produktiven UI-Stand ab, nicht den zusätzlichen atomaren Schadensablauf.
+aber einen eigenen sichtbaren Bereich. R1–R3 decken den ersten produktiven
+UI-Stand ab, nicht den zusätzlichen atomaren Schadensablauf.
+
+**Umsetzungsstand 20.09.2026 — Paket R1 fertig:** Der Neubau ist ein
+benutzbarer Rahmen mit echten Helden. Umgesetzt sind die drei Arbeitsbereiche
+mit dunkler Navigation, die Heldenwahl über die vorhandenen Provider und der
+Schutz ungespeicherter Eingaben bei Modus-, Helden- und Oberflächenwechsel
+einschließlich System-Zurück. Tabs, Editoraktionen und Leave-Guard der
+Verwaltung liegen jetzt im gemeinsamen `WorkspaceManagementCoordinator`, den
+beide Oberflächen benutzen; die vollständigen Fachansichten erreicht der
+Neubau vorerst über die injizierte Brücke `KartoBestandsAdapter`. Nachweise,
+Commit-IDs und Abgrenzungen stehen unter „R1: Übergabe“ in den
+[Umsetzungsplänen](redesign_implementation.md).
+
+**ARCH-01 bleibt trotzdem offen.** Der Spielinhalt ist noch der bestehende
+Inspector statt der Mockup-Anordnung (R2), die gestalterische Integration der
+Fachansichten steht aus (R3), und „Schaden erhalten“ als zusammenhängender
+Ablauf mit nachvollziehbarer Korrektur fehlt weiterhin — er hängt an ARCH-05
+und ARCH-06 und ist kein UI-Teilumfang.
 
 **Abhängigkeiten / offene Entscheidungen:** Schreibende Spielaktionen auf
 ARCH-05/06 aufbauen. Navigation, Favoritenverhalten und Korrekturbedienung sind

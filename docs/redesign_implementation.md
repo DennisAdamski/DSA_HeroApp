@@ -3,8 +3,8 @@
 Stand: 19.09.2026 · geprüfter Ausgangsstand: `8501232b`.
 
 Dieses Dokument enthält **Umsetzungspläne und kopierfertige Startprompts** für
-das freigegebene [Mockup](mockups/README.md). Es dokumentiert einen Arbeitsauftrag;
-die untenstehenden Pakete sind noch nicht umgesetzt.
+das freigegebene [Mockup](mockups/README.md). **R1 ist umgesetzt** (siehe
+Übergabestatus); R2 und R3 sind noch offen.
 
 ## Empfehlung
 
@@ -132,9 +132,65 @@ Ergebnis. Ein grüner Testlauf der Dokumentation setzt kein Umsetzungshäkchen.
 
 | Paket | Status | Implementierungscommits | Nachweis / Abweichungen |
 |---|---|---|---|
-| R1 | offen | noch keine | Navigation und Bestandsadapter noch nicht implementiert |
+| R1 | umgesetzt | `80f7d69c`, `76c8029c`, `ee4aec62` | siehe Abschnitt „R1: Übergabe“ |
 | R2 | offen | noch keine | Spielansicht in UI2 noch nicht implementiert |
 | R3 | offen | noch keine | Integrierte Planung und Gesamtabnahme noch offen |
+
+### R1: Übergabe
+
+**Umgesetzt.** `KartoArbeitsbereich` mit den drei Bereichen, die rein
+darstellende `KartoModusNavigation` samt eigenen Navigationstoken und
+Kontrastprüfung, der aus dem Bestands-Workspace herausgelöste
+`WorkspaceManagementCoordinator`, den **beide** Oberflächen benutzen, der
+`WorkspaceManagementBody` ohne äußere Navigation und Inspector, die
+Übergangsbrücke `KartoBestandsAdapter`/`KartoBestandsAdapterImpl`, die echte
+Heldenwahl über die vorhandenen Provider sowie der gemeinsame Verlassen-Guard
+für Moduswechsel, Heldenwechsel, Menüwege und System-Zurück.
+
+**Tatsächlich gebauter Adaptervertrag** — unverändert gegenüber der Spec:
+`verwaltung`, `planKatalog`, `planHistorie`, `spielDetails`, `heldenVerwalten`,
+`einstellungen`, `probeSuchen`, `rast`, `effekte`. Keine zusätzliche Methode.
+
+**Prüfungen** (lokal, Flutter-Toolchain des Projekts):
+
+| Befehl | Ergebnis |
+|---|---|
+| `dart format --output=none --set-exit-if-changed lib test tool` | 729 Dateien, 0 geändert |
+| `flutter analyze --no-pub` | No issues found |
+| `python tool/check_screen_loc_budget.py --max-lines 700` | OK, 21 Dateien |
+| `flutter test --no-pub` | +1903 ~3, exit 0 |
+
+Responsives Verhalten ist bei 320, 390, 744, 1024 und 1440 dp getestet, jeweils
+doppelt: gegen einen Fake-Adapter (`karto_workspace_test.dart`) und gegen die
+echten Bestandsansichten (`karto_bestands_integration_test.dart`), dazu bei
+Textskalierung 2. `app_root_switch_test.dart` und
+`karto_theme_uebergang_test.dart` blieben unverändert grün; der
+Oberflächenwechsel baut Repository, Sync und Katalog weiterhin nicht neu auf.
+
+**Abweichungen und bewusste Grenzen.**
+
+1. Bei offener Planung ersetzt ein erklärter Sperrhinweis die **gesamte**
+   Verwaltungsfläche, statt einzelne Schreibaktionen zu deaktivieren. Inventar-
+   und Gruppenaktionen speichern sofort und lassen sich noch nicht einzeln
+   abschalten; eine scheinbar bearbeitbare Fläche wäre schlechter. Der Plan
+   lässt diesen Zwischenstand ausdrücklich zu.
+2. `spielDetails` ist in R1 der vorhandene `InspectorPanel`, ergänzt um die
+   Direktaktionen Probe, Rast und Effekte. Die Spielanordnung des Mockups
+   ersetzt R2.
+3. Einstellungen und Token-Blatt prüfen nur den Editor-Dirty-Guard, nicht den
+   offenen Plan. Sie legen einen Screen auf den Workspace, bauen ihn nicht ab,
+   und die Sitzung liegt im gemeinsamen `ProviderScope`. Die Planabfrage
+   greift bei Heldenwahl, Heldenliste, Rückkehr zur Bestandsoberfläche und
+   System-Zurück.
+4. ARCH-01 bleibt offen: der atomare Schadensablauf mit Rücknahme fehlt
+   weiterhin, ebenso R2 und R3.
+
+**Einstieg für R2.** Die Spielanordnung ersetzt `_spielen()` in
+`lib/ui2/shell/karto_workspace.dart`. `heroComputedProvider(heroId)` ist die
+gemeinsame Wertquelle, `heroActionsProvider` der Schreibweg. Neue
+Adaptermethoden nur mit konkretem Aufrufer und Test, beide Seiten im selben
+Commit. Der Verlassen-Guard in `karto_workspace_navigation.dart` bleibt
+unangetastet; keine zweite fachliche Steigerungsprüfung.
 
 Für jede Übergabe dokumentieren: ausgeführte Befehle und Ergebnis, tatsächlich
 verwendete Schnittstellen, Screenshots, verbliebene Fehler und fachliche
