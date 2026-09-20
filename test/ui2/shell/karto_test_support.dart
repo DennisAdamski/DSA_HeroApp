@@ -35,6 +35,9 @@ HeroSheet testHero([String id = 'rondra', String name = 'Rondra']) => HeroSheet(
 class TestBestand implements KartoBestandsAdapter {
   Future<bool> Function()? pruefung;
 
+  /// Zählt die Aufrufe je Bestandsaktion für die Prüfungen der Spielansicht.
+  final List<String> aufrufe = <String>[];
+
   @override
   Widget verwaltung({
     required String heroId,
@@ -46,8 +49,6 @@ class TestBestand implements KartoBestandsAdapter {
     gesperrt: korrekturenGesperrt,
   );
 
-  @override
-  Widget spielDetails(String heroId) => Text('Spielwerte $heroId');
   @override
   Widget planKatalog(String heroId) => Text('Plankatalog $heroId');
   @override
@@ -79,17 +80,34 @@ class TestBestand implements KartoBestandsAdapter {
     required BuildContext context,
     required WidgetRef ref,
     required String heroId,
-  }) async {}
+  }) async {
+    aufrufe.add('probeSuchen:$heroId');
+  }
+
   @override
   Future<void> rast({
     required BuildContext context,
     required String heroId,
-  }) async {}
+  }) async {
+    aufrufe.add('rast:$heroId');
+  }
+
   @override
   Future<void> effekte({
     required BuildContext context,
     required String heroId,
-  }) async {}
+  }) async {
+    aufrufe.add('effekte:$heroId');
+  }
+
+  @override
+  Future<void> ressourceBearbeiten({
+    required BuildContext context,
+    required String heroId,
+    required KartoRessource ressource,
+  }) async {
+    aufrufe.add('ressource:$heroId:${ressource.name}');
+  }
 }
 
 class _TestVerwaltung extends StatefulWidget {

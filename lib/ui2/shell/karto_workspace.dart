@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_arbeitsbereich.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_modus_navigation.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 
 part 'karto_workspace_navigation.dart';
@@ -198,51 +199,12 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     );
   }
 
-  // R1 zeigt vorhandene Spielwerte; R2 ersetzt diese Anordnung.
-  Widget _spielen() => Column(
-    children: [
-      Padding(
-        padding: const EdgeInsets.all(Abstand.normal),
-        child: Wrap(
-          spacing: Abstand.normal,
-          runSpacing: Abstand.knapp,
-          children: [
-            OutlinedButton.icon(
-              onPressed: () => _laufzeitAktion(
-                () => widget.bestand.probeSuchen(
-                  context: context,
-                  ref: ref,
-                  heroId: widget.heroId,
-                ),
-              ),
-              icon: const Icon(Icons.casino_outlined),
-              label: const Text('Probe suchen'),
-            ),
-            OutlinedButton.icon(
-              onPressed: () => _laufzeitAktion(
-                () => widget.bestand.rast(
-                  context: context,
-                  heroId: widget.heroId,
-                ),
-              ),
-              icon: const Icon(Icons.hotel_outlined),
-              label: const Text('Rast'),
-            ),
-            OutlinedButton.icon(
-              onPressed: () => _laufzeitAktion(
-                () => widget.bestand.effekte(
-                  context: context,
-                  heroId: widget.heroId,
-                ),
-              ),
-              icon: const Icon(Icons.auto_awesome_outlined),
-              label: const Text('Effekte'),
-            ),
-          ],
-        ),
-      ),
-      Expanded(child: widget.bestand.spielDetails(widget.heroId)),
-    ],
+  // Die Spielanordnung liegt vollständig in ui2/spielen und liest den
+  // gemeinsamen Snapshot selbst; der Workspace reicht nur seinen Guard herein.
+  Widget _spielen() => KartoSpielansicht(
+    heroId: widget.heroId,
+    bestand: widget.bestand,
+    aktion: _laufzeitAktion,
   );
 
   // Während einer Sitzung bleiben sämtliche manuellen Schreibwege gesperrt.
