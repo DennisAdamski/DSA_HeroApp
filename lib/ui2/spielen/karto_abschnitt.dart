@@ -48,30 +48,42 @@ class KartoAbschnitt extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(titel, style: texte.abschnitt),
-                      if (hinweis != null)
-                        Text(
-                          hinweis!,
-                          style: texte.legende.copyWith(
-                            color: karto.schriftLeise,
-                          ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final kopf = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(titel, style: texte.abschnitt),
+                    if (hinweis != null)
+                      Text(
+                        hinweis!,
+                        style: texte.legende.copyWith(
+                          color: karto.schriftLeise,
                         ),
-                    ],
-                  ),
-                ),
-                if (aktion != null) ...[
-                  const SizedBox(width: Abstand.normal),
-                  aktion!,
-                ],
-              ],
+                      ),
+                  ],
+                );
+                if (aktion == null) return kopf;
+                // Wrap statt Row: in einer schmalen Seitenspalte passt eine
+                // ausgeschriebene Kopfaktion sonst nicht mehr neben den Titel
+                // und laeuft um Bruchteile eines Pixels ueber.
+                return Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: Abstand.normal,
+                  runSpacing: Abstand.normal,
+                  children: [
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: constraints.maxWidth,
+                      ),
+                      child: kopf,
+                    ),
+                    aktion!,
+                  ],
+                );
+              },
             ),
             const SizedBox(height: Abstand.weit),
             child,

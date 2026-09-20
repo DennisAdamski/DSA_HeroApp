@@ -69,6 +69,16 @@ class TestBestand implements KartoBestandsAdapter {
   }) => Text('Zustand $heroId');
 
   @override
+  Widget spielEffekte({
+    required String heroId,
+    required HeroComputedSnapshot werte,
+  }) => Text('Effekte $heroId');
+
+  @override
+  Widget spielProtokoll(HeroComputedSnapshot werte) =>
+      Text('Protokoll ${werte.state.diceLog.length}');
+
+  @override
   Widget planKatalog(String heroId) => Text('Plankatalog $heroId');
   @override
   Widget planHistorie(String heroId) => Text('Planhistorie $heroId');

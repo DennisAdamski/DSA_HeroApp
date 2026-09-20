@@ -55,6 +55,18 @@ abstract interface class KartoBestandsAdapter {
     required HeroComputedSnapshot werte,
   });
 
+  /// Baut die Anzeige laufender Effekte — ohne eigene Schaltfläche.
+  ///
+  /// Die Verwaltenaktion steht laut Projektrichtlinie im Abschnittskopf der
+  /// aufrufenden Ansicht und läuft über [effekte].
+  Widget spielEffekte({
+    required String heroId,
+    required HeroComputedSnapshot werte,
+  });
+
+  /// Baut das vorhandene Würfelprotokoll samt seiner Filter.
+  Widget spielProtokoll(HeroComputedSnapshot werte);
+
   /// Baut Belastung, Wunden und Statuswerte aus denselben Werten.
   Widget spielZustand({
     required String heroId,
