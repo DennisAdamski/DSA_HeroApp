@@ -178,6 +178,9 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
             body: schmal
                 ? inhalt
                 : Row(
+                    // Ohne stretch bekommt die Leiste nur die Hoehe ihrer drei
+                    // Ziele und saesse als dunkler Block mitten im Hellen.
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       SizedBox(
                         width: breite.hatDreiSpalten ? 232 : 184,
