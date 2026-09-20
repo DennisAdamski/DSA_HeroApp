@@ -328,6 +328,17 @@ sinnvollerweise nach `lib/ui2/` hochgezogen. Der Verlassen-Guard in
 `karto_workspace_navigation.dart` blieb in R2 unangetastet und sollte es
 bleiben.
 
+## Nachprüfung und Korrekturen vom 20.09.2026
+
+Eine nachträgliche Codeprüfung fand drei Lücken in R1/R2. Die folgenden
+Korrekturen ergänzen die ursprünglichen Übergaben:
+
+- **R2, Ressourcen:** Der Schreibweg lädt den Laufzeitzustand unmittelbar vor
+  der gezielten Änderung über `HeroActions.updateHeroState` neu. Ein
+  Regressionstest aktualisiert AsP zwischen Rendern und LeP-Klick und prüft,
+  dass LeP −1 diese AsP erhält. Die bestehenden Repository-Schnittstellen
+  bleiben unverändert; dies führt keine globale Schreibtransaktion ein.
+
 ## Prüfung dieser Planungsänderung
 
 Am 19.09.2026 wurden die lokalen Dokumentlinks, Codeblock-Abschlüsse und

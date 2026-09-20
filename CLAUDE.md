@@ -286,6 +286,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `InspectorVitalBlock` in einem Blatt öffnet (±5/±1, Zurücksetzen,
   Untergrenze `kVitalFloor`). **Nicht** `showResourceStepperDialog`: der klemmt
   auf `0..max` und könnte negative Werte gar nicht erzeugen.
+  Ressourcenänderungen verwenden `HeroActions.updateHeroState`: vor dem
+  Schreiben den Zustand aus dem gemeinsamen Repository neu laden und nur das
+  betroffene Feld ersetzen. Ein beim Rendern erfasster Gesamtsnapshot darf
+  zwischenzeitliche Änderungen anderer Ressourcen nicht überschreiben.
+  Dieser Weg ist keine Transaktion gegen parallele externe Schreibvorgänge.
 - Eigenschafts- und Kampf-Schnellproben liegen seit R2 als
   `InspectorAttributeProbes` und `InspectorCombatProbes` in
   `inspector/widgets/`; `InspectorProbeTab` ist nur noch ihre Zusammenstellung.
