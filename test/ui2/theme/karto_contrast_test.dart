@@ -93,6 +93,11 @@ void main() {
         pruefe('Schrift auf Siegel', t.schriftAufSignal, t.siegel, 4.5);
       });
 
+      test('Navigationstext ist auf der Navigation lesbar', () {
+        pruefe('Navigationstext', t.navigationText, t.navigation, 4.5);
+        pruefe('Leiser Navigationstext', t.navigationMuted, t.navigation, 4.5);
+      });
+
       test('tragende Linien sind sichtbar', () {
         // Kueste und Grat gliedern die Oberflaeche und sind damit
         // bedeutungstragend: WCAG 1.4.11 verlangt 3:1.
@@ -143,5 +148,6 @@ void main() {
     expect(kartoHell.siegel, isNot(kartoDunkel.siegel));
     expect(kartoHell.wachs, isNot(kartoDunkel.wachs));
     expect(kartoHell.moos, isNot(kartoDunkel.moos));
+    expect(kartoHell.navigation, isNot(kartoDunkel.navigation));
   });
 }
