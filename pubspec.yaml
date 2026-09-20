@@ -21,7 +21,7 @@ dependencies:
   firebase_core: ^4.6.0
   cloud_firestore: ^6.2.0
   firebase_auth: ^6.2.0
-  firebase_storage: ^13.3.0
+  firebase_storage: ^13.6.0
   pointycastle: ^4.0.0
   flutter_secure_storage: ^11.0.0
   unorm_dart: ^0.3.0
