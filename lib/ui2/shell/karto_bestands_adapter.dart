@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
+
 /// Prüft das Verlassen eines Editors; false erhält Ansicht und Entwurf.
 typedef KartoVerlassenPruefung = Future<bool> Function();
 
@@ -37,6 +39,27 @@ abstract interface class KartoBestandsAdapter {
 
   /// Zeigt Vorschau und Historie derselben Sitzung.
   Widget planHistorie(String heroId);
+
+  /// Baut die vorhandenen Eigenschafts-Schnellproben.
+  ///
+  /// Der Snapshot wird durchgereicht, damit die Brücke keine zweite
+  /// Providerbeobachtung für dieselben Werte aufmacht.
+  Widget spielEigenschaftsproben({
+    required String heroId,
+    required HeroComputedSnapshot werte,
+  });
+
+  /// Baut die vorhandenen Kampf-Schnellproben samt Nebenhand und Schild.
+  Widget spielKampfproben({
+    required String heroId,
+    required HeroComputedSnapshot werte,
+  });
+
+  /// Baut Belastung, Wunden und Statuswerte aus denselben Werten.
+  Widget spielZustand({
+    required String heroId,
+    required HeroComputedSnapshot werte,
+  });
 
   /// Öffnet Anlegen, Import und weitere Aktionen der bisherigen Heldenliste.
   Future<void> heldenVerwalten(BuildContext context);

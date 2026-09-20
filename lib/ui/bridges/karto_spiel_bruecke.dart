@@ -9,11 +9,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_belastung_section.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_statuswerte_block.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_vital_block.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector_wunden_card.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 
 /// Öffnet die vorhandene Ressourcenbedienung als aufgelegtes Blatt.
@@ -145,6 +149,50 @@ class _RessourcenBlatt extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Baut Belastung, Wunden und Statuswerte als einen Block.
+///
+/// Fasst genau die Teile des Vitals-Tabs zusammen, die nicht Ressourcen sind.
+/// Die Bausteine bleiben die vorhandenen: Wunden bringen ihren eigenen
+/// Detaildialog mit, Belastung ihren eigenen Schreibweg.
+class KartoZustandsblock extends StatelessWidget {
+  /// Erstellt den Zustandsblock aus dem bereits gelesenen Snapshot.
+  const KartoZustandsblock({
+    super.key,
+    required this.heroId,
+    required this.werte,
+  });
+
+  /// ID im gemeinsam genutzten Heldenspeicher.
+  final String heroId;
+
+  /// Gemeinsamer Snapshot des Spielbereichs.
+  final HeroComputedSnapshot werte;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        InspectorBelastungSection(heroId: heroId, heroState: werte.state),
+        const SizedBox(height: 14),
+        InspectorWundenSection(
+          heroId: heroId,
+          heroState: werte.state,
+          wundEffekte: werte.wundEffekte,
+          wundschwelle: werte.wundschwelle,
+        ),
+        const SizedBox(height: 14),
+        InspectorStatuswerteBlock(
+          heroId: heroId,
+          hero: werte.hero,
+          derived: werte.derivedStats,
+          combat: werte.combatPreviewStats,
+        ),
+      ],
     );
   }
 }

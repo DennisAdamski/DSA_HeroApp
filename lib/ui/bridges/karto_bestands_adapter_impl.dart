@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_spiel_bruecke.dart';
+import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_panel.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_attribute_probes.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_combat_probes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_body.dart';
@@ -39,6 +42,39 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
   @override
   Widget planHistorie(String heroId) {
     return AdvancementHistoryPanel(heroId: heroId);
+  }
+
+  /// Baut die vorhandenen Eigenschafts-Schnellproben.
+  @override
+  Widget spielEigenschaftsproben({
+    required String heroId,
+    required HeroComputedSnapshot werte,
+  }) {
+    return InspectorAttributeProbes(
+      heroId: heroId,
+      effectiveAttributes: werte.effectiveAttributes,
+    );
+  }
+
+  /// Baut die vorhandenen Kampf-Schnellproben.
+  @override
+  Widget spielKampfproben({
+    required String heroId,
+    required HeroComputedSnapshot werte,
+  }) {
+    return InspectorCombatProbes(
+      heroId: heroId,
+      combat: werte.combatPreviewStats,
+    );
+  }
+
+  /// Baut Belastung, Wunden und Statuswerte des Bestands.
+  @override
+  Widget spielZustand({
+    required String heroId,
+    required HeroComputedSnapshot werte,
+  }) {
+    return KartoZustandsblock(heroId: heroId, werte: werte);
   }
 
   /// Öffnet die vorhandene Heldenliste für Anlegen, Import und Verwaltung.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
@@ -121,7 +122,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
             inhalt = IndexedStack(
               index: _bereich.index,
               children: [
-                _spielen(),
+                _mitProbenkuerzel(_spielen()),
                 _verwaltungBesucht
                     ? _verwaltung(session != null)
                     : const SizedBox.shrink(),
@@ -195,6 +196,33 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
                   ),
           );
         },
+      ),
+    );
+  }
+
+  // Strg/Cmd+K gilt nur im Spielen-Bereich und verschwindet mit dem
+  // Workspace. Der IndexedStack haelt die anderen Bereiche am Leben, deshalb
+  // entscheidet der aktive Bereich und nicht allein die Position im Baum.
+  Widget _mitProbenkuerzel(Widget kind) {
+    if (_bereich != KartoArbeitsbereich.spielen) return kind;
+    return CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.keyK, control: true):
+            _probeSuchen,
+        const SingleActivator(LogicalKeyboardKey.keyK, meta: true):
+            _probeSuchen,
+      },
+      child: Focus(autofocus: true, child: kind),
+    );
+  }
+
+  // Derselbe Weg wie die Schaltfläche: geschützt und über den Bestand.
+  void _probeSuchen() {
+    _laufzeitAktion(
+      () => widget.bestand.probeSuchen(
+        context: context,
+        ref: ref,
+        heroId: widget.heroId,
       ),
     );
   }

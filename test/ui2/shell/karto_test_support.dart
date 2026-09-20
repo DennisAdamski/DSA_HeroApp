@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 
 const testCatalog = RulesCatalog(
@@ -48,6 +49,24 @@ class TestBestand implements KartoBestandsAdapter {
     registrieren: onVerlassenRegistriert,
     gesperrt: korrekturenGesperrt,
   );
+
+  @override
+  Widget spielEigenschaftsproben({
+    required String heroId,
+    required HeroComputedSnapshot werte,
+  }) => Text('Eigenschaftsproben $heroId');
+
+  @override
+  Widget spielKampfproben({
+    required String heroId,
+    required HeroComputedSnapshot werte,
+  }) => Text('Kampfproben $heroId');
+
+  @override
+  Widget spielZustand({
+    required String heroId,
+    required HeroComputedSnapshot werte,
+  }) => Text('Zustand $heroId');
 
   @override
   Widget planKatalog(String heroId) => Text('Plankatalog $heroId');

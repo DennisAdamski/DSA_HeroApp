@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielaktionen.dart';
 
 /// Führt eine Laufzeitaktion aus und meldet Fehler sichtbar.
 ///
@@ -123,34 +124,45 @@ class KartoSpielansicht extends ConsumerWidget {
       ),
       KartoAbschnitt(
         titel: 'Schnellaktionen',
-        child: Wrap(
-          spacing: Abstand.weit,
-          runSpacing: Abstand.normal,
-          children: [
-            FilledButton.icon(
-              key: const ValueKey<String>('karto-spiel-probe'),
-              onPressed: () => aktion(
-                () => bestand.probeSuchen(
-                  context: context,
-                  ref: ref,
-                  heroId: heroId,
-                ),
-              ),
-              icon: const Icon(Icons.search),
-              label: const Text('Probe suchen'),
-            ),
-          ],
+        hinweis: 'Würfeln und Rasten über die bestehenden Wege',
+        child: KartoSpielaktionen(
+          kuerzelHinweis: 'Strg K',
+          onProbeSuchen: () => aktion(
+            () =>
+                bestand.probeSuchen(context: context, ref: ref, heroId: heroId),
+          ),
+          onRast: () =>
+              aktion(() => bestand.rast(context: context, heroId: heroId)),
         ),
+      ),
+      KartoAbschnitt(
+        titel: 'Eigenschaften',
+        hinweis: 'Ein Tippen würfelt die Probe',
+        child: bestand.spielEigenschaftsproben(heroId: heroId, werte: werte),
       ),
     ];
   }
 
-  // Kampf, Effekte und Zustand kommen mit den folgenden Teilumfängen dazu.
+  // Auf breiten Fenstern steht diese Spalte neben den Spielaktionen; auf
+  // schmalen folgt sie ihnen in derselben Reihenfolge.
   List<Widget> _seitenabschnitte(
     BuildContext context,
     WidgetRef ref,
     HeroComputedSnapshot werte,
-  ) => const <Widget>[];
+  ) {
+    return <Widget>[
+      KartoAbschnitt(
+        titel: 'Kampf',
+        hinweis: 'Schnellproben aus der vorhandenen Vorschau',
+        child: bestand.spielKampfproben(heroId: heroId, werte: werte),
+      ),
+      KartoAbschnitt(
+        titel: 'Zustand',
+        hinweis: 'Belastung, Wunden und Statuswerte',
+        child: bestand.spielZustand(heroId: heroId, werte: werte),
+      ),
+    ];
+  }
 
   // Abschnitte bekommen einen gleichmäßigen Abstand statt eigener Ränder.
   List<Widget> _mitLuecken(List<Widget> abschnitte) {

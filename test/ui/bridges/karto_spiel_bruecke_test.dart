@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
-import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_bestands_adapter_impl.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
@@ -109,6 +109,82 @@ void main() {
       ressource: KartoRessource.karma,
     );
     expect(find.text('Karmapunkte anpassen'), findsOneWidget);
+  });
+  group('Eigenschafts-Schnellproben über die Brücke', () {
+    Future<FakeRepository> zeigeProben(WidgetTester tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(900, 1200);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final repo = FakeRepository(heroes: [testHero()]);
+      final container = ProviderContainer(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        ],
+      );
+      addTearDown(container.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            home: Scaffold(
+              body: Consumer(
+                builder: (context, ref, _) {
+                  final werte = ref
+                      .watch(heroComputedProvider('rondra'))
+                      .asData
+                      ?.value;
+                  if (werte == null) {
+                    return const CircularProgressIndicator();
+                  }
+                  return adapter.spielEigenschaftsproben(
+                    heroId: 'rondra',
+                    werte: werte,
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      return repo;
+    }
+
+    testWidgets('Abbrechen schreibt keinen Protokolleintrag', (tester) async {
+      final repo = await zeigeProben(tester);
+      await tester.tap(find.byKey(const ValueKey('inspector-probe-attr-MU')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('MU'), findsWidgets);
+      await tester.tap(find.text('Schließen'));
+      await tester.pumpAndSettle();
+      final zustand = await repo.loadHeroState('rondra');
+      expect(zustand?.diceLog ?? const [], isEmpty);
+    });
+
+    testWidgets('gewürfelte Probe landet im Protokoll', (tester) async {
+      final repo = await zeigeProben(tester);
+      await tester.tap(find.byKey(const ValueKey('inspector-probe-attr-MU')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Würfeln').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Schließen'));
+      await tester.pumpAndSettle();
+      final zustand = await repo.loadHeroState('rondra');
+      expect(zustand!.diceLog, isNotEmpty);
+      expect(zustand.diceLog.last.title, contains('MU'));
+    });
+
+    testWidgets('alle acht Eigenschaften stehen zur Verfügung', (tester) async {
+      await zeigeProben(tester);
+      for (final label in ['MU', 'KL', 'IN', 'CH', 'FF', 'GE', 'KO', 'KK']) {
+        expect(
+          find.byKey(ValueKey('inspector-probe-attr-$label')),
+          findsOneWidget,
+        );
+      }
+    });
   });
 }
 
