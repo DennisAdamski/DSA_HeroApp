@@ -80,17 +80,12 @@ class _RessourcenBlatt extends ConsumerWidget {
   };
 
   // Ein fehlgeschlagener Write darf nie als stille Uebernahme erscheinen.
-  Future<void> _speichere(
-    BuildContext context,
-    WidgetRef ref,
-    HeroState state,
-    int wert,
-  ) async {
+  Future<void> _speichere(BuildContext context, WidgetRef ref, int wert) async {
     final bote = ScaffoldMessenger.of(context);
     try {
       await ref
           .read(heroActionsProvider)
-          .saveHeroState(heroId, _mitWert(state, wert));
+          .updateHeroState(heroId, (current) => _mitWert(current, wert));
     } catch (fehler) {
       bote.showSnackBar(
         SnackBar(content: Text('$_kurz nicht gespeichert: $fehler')),
@@ -133,8 +128,7 @@ class _RessourcenBlatt extends ConsumerWidget {
                   current: _aktuell(state),
                   max: maximum,
                   kind: _art,
-                  onChanged: (naechster) =>
-                      _speichere(context, ref, state, naechster),
+                  onChanged: (naechster) => _speichere(context, ref, naechster),
                 ),
               const SizedBox(height: 8),
               Align(

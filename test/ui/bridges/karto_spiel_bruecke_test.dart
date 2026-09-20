@@ -110,6 +110,38 @@ void main() {
     );
     expect(find.text('Karmapunkte anpassen'), findsOneWidget);
   });
+  testWidgets('Ressourcenänderung erhält aktuellere fremde Zustandsfelder', (
+    tester,
+  ) async {
+    final initial = const HeroState.empty().copyWith(
+      currentLep: 20,
+      currentAsp: 0,
+    );
+    final repo = FakeRepository(
+      heroes: [testHero()],
+      states: {'rondra': initial},
+    );
+    final container = await oeffne(tester, repository: repo);
+    await repo.saveHeroState('rondra', initial.copyWith(currentAsp: 7));
+    await tester.idle();
+    expect(
+      container
+          .read(heroComputedProvider('rondra'))
+          .requireValue
+          .state
+          .currentAsp,
+      7,
+    );
+    await tester.tap(find.byKey(const ValueKey('vital-block-minus-1')));
+    await tester.pumpAndSettle();
+    final saved = await repo.loadHeroState('rondra');
+    expect(saved!.currentLep, 19);
+    expect(
+      saved.currentAsp,
+      7,
+      reason: 'LeP ändern darf neue AsP nicht überschreiben',
+    );
+  });
   group('Eigenschafts-Schnellproben über die Brücke', () {
     Future<FakeRepository> zeigeProben(WidgetTester tester) async {
       tester.view.devicePixelRatio = 1;

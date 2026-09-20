@@ -173,6 +173,19 @@ class HeroActions {
     await repo.saveHeroState(heroId, state);
   }
 
+  /// Wendet eine gezielte Änderung auf den frisch geladenen Laufzeitzustand an.
+  ///
+  /// Erhält Felder, die seit dem letzten UI-Aufbau geändert wurden. Dies ist
+  /// keine Transaktion gegenüber gleichzeitig laufenden Repository-Schreibwegen.
+  Future<void> updateHeroState(
+    String heroId,
+    HeroState Function(HeroState current) update,
+  ) async {
+    final repo = _ref.read(heroRepositoryProvider);
+    final current = await repo.loadHeroState(heroId) ?? const HeroState.empty();
+    await repo.saveHeroState(heroId, update(current));
+  }
+
   // Katalogisierte Vor-/Nachteile sollen nicht als Parser-Restfragmente
   // erscheinen; bei Test- oder Bootstrap-Kontexten ohne Katalog bleibt der
   // bisherige Parserzustand unverändert.
