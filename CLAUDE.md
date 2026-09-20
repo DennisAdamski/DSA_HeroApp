@@ -266,6 +266,43 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Adaptermethoden nur mit konkretem Aufrufer und Test, beide Seiten im selben
   Commit. Die Brücke wird abschnittsweise entbehrlich, ihre Entfernung ist kein
   Abnahmekriterium.
+- **Die Spielansicht des Neubaus liegt in `lib/ui2/spielen/`.**
+  `KartoSpielansicht` liest `heroComputedProvider(heroId)` **einmal** und reicht
+  den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die
+  Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
+  Providerbeobachtung aufmacht. Die Reihenfolge ist überall Ressourcen,
+  Schnellaktionen, Eigenschaften, Kampf, Effekte, Zustand, Würfelprotokoll; ab
+  `KartoBreite.breit` wandern Kampf, Effekte und Zustand in eine Seitenspalte,
+  das Protokoll bleibt der letzte Abschnitt beider Anordnungen. Den
+  Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
+  die Spielansicht macht keinen zweiten Fehlerweg auf.
+- `KartoRessourcenwert` ist rein darstellend. Der Balkenanteil wird auf 0..1
+  begrenzt, der **gespeicherte Wert nie**: negative Lebenspunkte, Überheilung
+  und Maximum 0 bleiben unverkürzt lesbar. AsP und KaP zeigt
+  `KartoRessourcenleiste` nur bei tatsächlich aktivierter Ressource
+  (`resourceActivation`), nie aufgrund einer Profession. Karma bekommt bewusst
+  keine eigene Farbe — nur LeP, AsP und AuP haben ein Ressourcentoken.
+  Bearbeitet wird über `ressourceBearbeiten`, das in der Brücke den vorhandenen
+  `InspectorVitalBlock` in einem Blatt öffnet (±5/±1, Zurücksetzen,
+  Untergrenze `kVitalFloor`). **Nicht** `showResourceStepperDialog`: der klemmt
+  auf `0..max` und könnte negative Werte gar nicht erzeugen.
+- Eigenschafts- und Kampf-Schnellproben liegen seit R2 als
+  `InspectorAttributeProbes` und `InspectorCombatProbes` in
+  `inspector/widgets/`; `InspectorProbeTab` ist nur noch ihre Zusammenstellung.
+  Beide Oberflächen benutzen dieselben Bausteine und dieselben Widget-Keys.
+  Requests entstehen ausschließlich über `probe_request_factory.dart`,
+  gewürfelt und protokolliert wird über `showLoggedProbeDialog` — UI2 kennt
+  keine W20-/W6-Simulation. Strg/Cmd+K öffnet dieselbe Suche, aber nur im
+  Bereich Spielen: der `IndexedStack` hält die anderen Bereiche am Leben,
+  deshalb entscheidet der aktive Bereich, nicht die Position im Baum.
+- `InspectorArcaneEffectsBlock` ist Consumer-Wrapper um die darstellende
+  `InspectorArcaneEffectsView`. Die Chipliste baut
+  `lib/rules/derived/active_spell_display_rules.dart` — eigene Datei, weil
+  `active_spell_rules.dart` von `combat_rules` und `magic_rules` importiert
+  wird und sie deshalb nicht zurückholen darf.
+- Nicht enthalten und bewusst nicht erfunden: pauschaler Schadens- und
+  Rücknahmeknopf, KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne
+  echten Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.
 - **Tabs, Editoraktionen und Leave-Guard der Heldenverwaltung liegen im
   `WorkspaceManagementCoordinator`** (`lib/ui/screens/workspace/`), den
   **beide** Oberflächen benutzen: der bestehende `HeroWorkspaceScreen` und der

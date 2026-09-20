@@ -3,8 +3,8 @@
 Stand: 19.09.2026 · geprüfter Ausgangsstand: `8501232b`.
 
 Dieses Dokument enthält **Umsetzungspläne und kopierfertige Startprompts** für
-das freigegebene [Mockup](mockups/README.md). **R1 ist umgesetzt** (siehe
-Übergabestatus); R2 und R3 sind noch offen.
+das freigegebene [Mockup](mockups/README.md). **R1 und R2 sind umgesetzt**
+(siehe Übergabestatus); R3 ist noch offen.
 
 ## Empfehlung
 
@@ -133,7 +133,7 @@ Ergebnis. Ein grüner Testlauf der Dokumentation setzt kein Umsetzungshäkchen.
 | Paket | Status | Implementierungscommits | Nachweis / Abweichungen |
 |---|---|---|---|
 | R1 | umgesetzt | `80f7d69c`, `76c8029c`, `ee4aec62` | siehe Abschnitt „R1: Übergabe“ |
-| R2 | offen | noch keine | Spielansicht in UI2 noch nicht implementiert |
+| R2 | umgesetzt | `e4d52dfd`, `24cadcc1`, `6faab4c2`, `1bb47e8e` | siehe Abschnitt „R2: Übergabe“ |
 | R3 | offen | noch keine | Integrierte Planung und Gesamtabnahme noch offen |
 
 ### R1: Übergabe
@@ -218,6 +218,115 @@ Für jede Übergabe dokumentieren: ausgeführte Befehle und Ergebnis, tatsächli
 verwendete Schnittstellen, Screenshots, verbliebene Fehler und fachliche
 Abgrenzungen. Relevante Erkenntnisse anschließend nach Duplikatprüfung knapp
 in Mempalace im Wing `flutter_application_1` ablegen.
+
+### R2: Übergabe
+
+**Umgesetzt.** Die Spielansicht des Mockups liegt in `lib/ui2/spielen/`:
+`KartoSpielansicht` als Host, `KartoRessourcenleiste`/`KartoRessourcenwert`,
+`KartoSpielaktionen` und `KartoAbschnitt` als Rahmen. Sie liest
+`heroComputedProvider(heroId)` **einmal** und reicht den `HeroComputedSnapshot`
+an alle Abschnitte weiter, auch an die Adaptermethoden. Der provisorische
+`InspectorPanel` aus R1 ist damit abgelöst.
+
+**Anordnung.** Ressourcen, Schnellaktionen, Eigenschaften, Kampf, Effekte,
+Zustand, Würfelprotokoll. Ab `KartoBreite.breit` stehen Kampf, Effekte und
+Zustand in einer Seitenspalte (280 dp, ab `sehrBreit` 320 dp); das Protokoll
+schließt beide Anordnungen ab.
+
+**Tatsächlich gebauter Adaptervertrag.** `spielDetails` ist **entfallen** — die
+neue Anordnung ersetzt es, und die Brücke soll abschnittsweise kleiner werden.
+Neu, jeweils mit Aufrufer und Test im selben Commit:
+`spielEigenschaftsproben`, `spielKampfproben`, `spielEffekte`, `spielZustand`,
+`spielProtokoll`, `ressourceBearbeiten` (mit dem UI2-eigenen Aufzählungstyp
+`KartoRessource`). Unverändert: `verwaltung`, `planKatalog`, `planHistorie`,
+`heldenVerwalten`, `einstellungen`, `probeSuchen`, `rast`, `effekte`. Die
+Spielbausteine der Brücke liegen in `lib/ui/bridges/karto_spiel_bruecke.dart`.
+
+**Herauslösungen im Bestand** (Verhalten und Widget-Keys unverändert):
+`InspectorAttributeProbes` und `InspectorCombatProbes` aus `InspectorProbeTab`
+(der dadurch von 299 auf 61 Zeilen schrumpft und nun beide Oberflächen
+beliefert), sowie die darstellende `InspectorArcaneEffectsView` aus
+`InspectorArcaneEffectsBlock`, der Consumer-Wrapper bleibt. Die Chipliste der
+Effekte wandert aus dem Widget in die neue Regeldatei
+`lib/rules/derived/active_spell_display_rules.dart`.
+
+**Prüfungen** (lokal, Flutter-Toolchain des Projekts):
+
+| Befehl | Ergebnis |
+|---|---|
+| `dart format --output=none --set-exit-if-changed lib test tool` | 743 Dateien, 0 geändert |
+| `flutter analyze --no-pub` | No issues found |
+| `python tool/check_screen_loc_budget.py --max-lines 700` | OK, 21 Dateien |
+| `flutter test --no-pub` | +1946 ~3, exit 0 (Ausgangsstand: +1903 ~3) |
+
+Neue Testdateien: `test/ui2/spielen/karto_ressourcenwert_test.dart`,
+`karto_spielansicht_test.dart`, `karto_spielaktionen_test.dart`,
+`karto_spielverlauf_test.dart` und `test/ui/bridges/karto_spiel_bruecke_test.dart`.
+Geprüft sind weltlicher, magischer und geweihter Held, gelöschter Held,
+Ladefehler, Speicherfehler ohne falsche Erfolgsmeldung, negative LeP,
+Überheilung, Maximum 0, langer Ressourcenname, Textskalierung 2, Hell und
+Dunkel sowie 320, 390, 744, 1024 und 1440 dp.
+
+**Visuelle Abnahme.** Zwei Wege, weil einer allein nicht gereicht hätte.
+
+1. *Gerenderte Bilder.* Die echte Spielansicht wurde mit
+   `KartoBestandsAdapterImpl` und den echten Schriften als PNG rasterisiert —
+   drei Archetypen (weltlich ohne AsP/KaP, magisch mit AsP, geweiht mit KaP)
+   mal 390, 744, 1024 und 1440 dp — und angesehen. Das fand einen Fehler, den
+   kein Widgettest bemerkt hatte: auf schmalen Fenstern stand das
+   Würfelprotokoll mitten in der Spalte statt am Ende, weil die einspaltige
+   Anordnung Haupt- und Seitenabschnitte nur hintereinanderhängte. Behoben in
+   `1bb47e8e`, der Reihenfolgetest prüft die Position jetzt mit.
+2. *Laufende Windows-App* (Debug-Build, echter Heldenspeicher, DPI 1,0). Der
+   Bildschirminhalt einer Flutter-Windows-App ist mit GDI (`CopyFromScreen`,
+   `PrintWindow`) **nicht** auslesbar — die Titelleiste kommt durch, die
+   GPU-komponierte Client-Fläche bleibt weiß. Stattdessen wurde über den
+   VM-Service `ext.flutter.debugDumpRenderTree` die gezeichnete Geometrie
+   ausgewertet, bei jeder der vier Breiten neu:
+
+   | Fensterbreite | Spielansicht | Navigation | LeP-Kachel | Überläufe |
+   |---|---|---|---|---|
+   | 390 dp | 390 × 778 | 390 × 66 (unten) | 326 | 0 |
+   | 744 dp | 560 × 844 | 184 × 844 | 244 | 0 |
+   | 1024 dp | 840 × 844 | 184 × 844 | 250,7 | 0 |
+   | 1440 dp | 1208 × 844 | 232 × 844 | 269,3 | 0 |
+
+   Die Summen gehen auf (Fensterbreite minus Navigationsbreite, Höhe minus
+   AppBar und gegebenenfalls Bottom-Bar), die dunkle Navigation steht weiterhin
+   über die volle Höhe, und an keiner Breite meldet der Renderbaum einen
+   Überlauf. Genau die Fehlerklasse aus R1 — eine Fläche, die in ihre
+   Constraints passt, aber zu klein gezeichnet wird — ist damit ausgeschlossen.
+   Der geöffnete Held war ein magischer; die Archetypen deckt Weg 1 ab.
+   Es wurden keine Heldendaten verändert: es wurde nur gelesen, in der App
+   nichts bedient und kein Schreibweg ausgelöst.
+
+**Abweichungen und bewusste Grenzen.**
+
+1. Nicht gebaut, weil ohne echten Zustand erfunden: pauschaler Schadens- und
+   Rücknahmeknopf, KR-Zähler und „Nächste Kampfrunde“, persistente Favoriten,
+   Offline-/Sync-Status, Notizen im Verlauf. Die Abgrenzungstabelle der Spec
+   gilt unverändert; ein Test in `test/ui2/spielen/` hält ihre Abwesenheit fest.
+   Ressourcen und Wunden bleiben über die vorhandenen Wege bedienbar.
+2. Das Mockup zeigt Ressourcenhinweise wie „6 LeP fehlen“. Solche Texte hätten
+   eine eigene Regelaussage; die Spielansicht zeigt stattdessen Wert, Maximum
+   und Balken.
+3. Die Bestandswidgets im Zustandsabschnitt sind für eine breitere Fläche
+   gebaut. In der 280 dp schmalen Seitenspalte kürzt die Belastungszeile ihren
+   Hinweistext per Ellipse. Kein Funktionsfehler, aber eine gestalterische
+   Grobheit — die Integration der Bestandsansichten ist Gegenstand von R3.
+4. Die Ressourcenbearbeitung öffnet den vorhandenen `InspectorVitalBlock`
+   statt `showResourceStepperDialog`. Der Stepper klemmt hart auf `0..max` und
+   könnte die geforderten negativen Lebenspunkte gar nicht erzeugen.
+5. ARCH-01 bleibt offen: der atomare Schadensablauf mit Rücknahme fehlt
+   weiterhin, ebenso R3.
+
+**Einstieg für R3.** Verwaltung und Planung tragen noch die Bestandsgestaltung;
+der Sperrhinweis bei offener Planung steht weiterhin allein auf leerer Fläche.
+`KartoAbschnitt` aus `lib/ui2/spielen/` ist der vorhandene Abschnittsrahmen und
+dürfte beim Gestalten der übrigen Bereiche der Ausgangspunkt sein — dann
+sinnvollerweise nach `lib/ui2/` hochgezogen. Der Verlassen-Guard in
+`karto_workspace_navigation.dart` blieb in R2 unangetastet und sollte es
+bleiben.
 
 ## Prüfung dieser Planungsänderung
 
