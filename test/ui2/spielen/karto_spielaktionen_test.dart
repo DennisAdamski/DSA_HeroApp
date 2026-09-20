@@ -125,10 +125,14 @@ void main() {
     final eigenschaften = tester.getTopLeft(find.text('Eigenschaften')).dy;
     final kampf = tester.getTopLeft(find.text('Kampf')).dy;
     final zustand = tester.getTopLeft(find.text('Zustand')).dy;
+    final protokoll = tester.getTopLeft(find.text('Würfelprotokoll')).dy;
     expect(ressourcen, lessThan(aktionen));
     expect(aktionen, lessThan(eigenschaften));
     expect(eigenschaften, lessThan(kampf));
     expect(kampf, lessThan(zustand));
+    // Das Protokoll schliesst die Spalte ab; die Spezifikation nennt es
+    // ausdruecklich als letzten Abschnitt der schmalen Reihenfolge.
+    expect(zustand, lessThan(protokoll));
     expect(tester.takeException(), isNull);
   });
 }

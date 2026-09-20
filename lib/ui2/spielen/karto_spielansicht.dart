@@ -63,6 +63,11 @@ class KartoSpielansicht extends ConsumerWidget {
         final breite = kartoBreiteFuer(constraints.maxWidth);
         final haupt = _hauptabschnitte(context, ref, werte);
         final seite = _seitenabschnitte(context, ref, werte);
+        final protokoll = KartoAbschnitt(
+          titel: 'Würfelprotokoll',
+          hinweis: 'Letzte Würfe dieses Helden',
+          child: bestand.spielProtokoll(werte),
+        );
         final rand = EdgeInsets.all(breite.seitenrand);
 
         // Ohne Seiteninhalt gäbe eine zweite Spalte nur leere Fläche.
@@ -71,7 +76,7 @@ class KartoSpielansicht extends ConsumerWidget {
             padding: rand,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: _mitLuecken([...haupt, ...seite]),
+              children: _mitLuecken([...haupt, ...seite, protokoll]),
             ),
           );
         }
@@ -83,7 +88,7 @@ class KartoSpielansicht extends ConsumerWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: _mitLuecken(haupt),
+                  children: _mitLuecken([...haupt, protokoll]),
                 ),
               ),
               const SizedBox(width: Abstand.bahn),
@@ -139,11 +144,6 @@ class KartoSpielansicht extends ConsumerWidget {
         titel: 'Eigenschaften',
         hinweis: 'Ein Tippen würfelt die Probe',
         child: bestand.spielEigenschaftsproben(heroId: heroId, werte: werte),
-      ),
-      KartoAbschnitt(
-        titel: 'Würfelprotokoll',
-        hinweis: 'Letzte Würfe dieses Helden',
-        child: bestand.spielProtokoll(werte),
       ),
     ];
   }
