@@ -238,8 +238,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`lib/ui2/`, Bildsprache „Kartograph") laufen nebeneinander;
   `AppSettings.oberflaeche` wählt unter `Einstellungen > Darstellung`. Die
   Weiche ist `AppRootSwitch` (`lib/ui2/shell/karto_app_root.dart`) als `child`
-  von `SyncConflictGate` — die **einzige** Stelle, an der sich beide Bäume
-  berühren, und die einzige Datei unter `lib/ui2/`, die aus `lib/ui/`
+  von `SyncConflictGate` — der **einzige Verdrahtungspunkt** beider Bäume und
+  die einzige Datei unter `lib/ui2/`, die aus `lib/ui/`
   importiert. Sie muss dort bleiben: ein zweites `AppStartupGate` baute
   Heldenspeicher, Sync und Katalog ein zweites Mal auf. Dass ein Wechsel nichts
   darunter anfasst, hängt daran, dass der Settings-Listener des Gates nur auf
@@ -247,6 +247,41 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   das. Der Neubau liest nur `heroComputedProvider` (nie dessen vier
   Ableitungen einzeln) und schreibt nur über `heroActionsProvider`.
   Die UI-Variante `klassisch` ist entfallen, es gibt nur noch Hell und Dunkel.
+- **Der Neubau hat drei Arbeitsbereiche für denselben Helden**
+  (`KartoArbeitsbereich`: `spielen`, `verwalten`, `entwickeln`). `KartoShell`
+  zeigt Heldenwahl oder `KartoWorkspace`, die Bereichsnavigation
+  (`karto_modus_navigation.dart`) ist rein darstellend und ändert selbst keinen
+  Provider. Die dunkle Navigation über dem hellen Codex hat eigene Token
+  (`navigation`, `navigationText`, `navigationMuted`); `schriftAufSignal` gehört
+  zu `meer`/`siegel` und darf dort **nicht** ersatzweise stehen.
+- **`KartoBestandsAdapter` ist die dokumentierte Übergangsbrücke** zu den
+  vorhandenen Fachansichten, solange UI2 sie noch nicht selbst trägt. Die
+  Schnittstelle liegt in `lib/ui2/shell/karto_bestands_adapter.dart` und
+  importiert nichts aus `lib/ui/`, `lib/data/` oder einem Repository; die
+  Implementierung `KartoBestandsAdapterImpl`
+  (`lib/ui/bridges/karto_bestands_adapter_impl.dart`) hält die Bestandswidgets.
+  Die Richtung ist entscheidend: `lib/ui/` importiert aus `lib/ui2/`, nie
+  umgekehrt. `AppRootSwitch` erzeugt die Implementierung und injiziert sie;
+  produktive Konstruktoren bekommen keinen stillen Fallback-Adapter. Neue
+  Adaptermethoden nur mit konkretem Aufrufer und Test, beide Seiten im selben
+  Commit. Die Brücke wird abschnittsweise entbehrlich, ihre Entfernung ist kein
+  Abnahmekriterium.
+- **Tabs, Editoraktionen und Leave-Guard der Heldenverwaltung liegen im
+  `WorkspaceManagementCoordinator`** (`lib/ui/screens/workspace/`), den
+  **beide** Oberflächen benutzen: der bestehende `HeroWorkspaceScreen` und der
+  `WorkspaceManagementBody` des neuen Rahmens. Eine zweite
+  Bearbeitungsimplementierung darf nicht entstehen, sonst laufen Speichern,
+  Verwerfen und Tabwechsel auseinander. Die Abschnittsliste kommt weiterhin aus
+  `buildWorkspaceTabs`/`visibleWorkspaceTabsForHero`; UI2 pflegt keine zweite.
+- **Während eine Steigerungssitzung offen ist, sind manuelle Korrekturen
+  gesperrt.** Der Verwaltungsbody zeigt dafür vorerst einen erklärten
+  Sperrzustand für die **gesamte** Fläche, nicht nur ohne „Bearbeiten": ein Teil
+  der Altansichten (Inventar, Gruppe) speichert sofort und lässt sich noch nicht
+  einzeln abschalten. Wechsel, die den Workspace abbauen (Heldenwahl,
+  Heldenliste, Rückkehr zur Bestandsoberfläche, System-Zurück), fragen
+  zusätzlich nach dem offenen Plan; aufgelegte Screens (Einstellungen,
+  Token-Blatt) prüfen nur den Editor, weil die Sitzung im gemeinsamen
+  `ProviderScope` liegt und einen Push überlebt.
 - **Solange beide Oberflächen parallel laufen, müssen ihre Themes
   ineinander überblendbar sein.** `MaterialApp` animiert den Themenwechsel,
   und `TextStyle.lerp` wirft, sobald zwei Stile verschiedene `inherit`-Werte
