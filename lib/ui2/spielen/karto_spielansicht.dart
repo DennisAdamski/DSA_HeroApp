@@ -140,6 +140,11 @@ class KartoSpielansicht extends ConsumerWidget {
         hinweis: 'Ein Tippen würfelt die Probe',
         child: bestand.spielEigenschaftsproben(heroId: heroId, werte: werte),
       ),
+      KartoAbschnitt(
+        titel: 'Würfelprotokoll',
+        hinweis: 'Letzte Würfe dieses Helden',
+        child: bestand.spielProtokoll(werte),
+      ),
     ];
   }
 
@@ -155,6 +160,17 @@ class KartoSpielansicht extends ConsumerWidget {
         titel: 'Kampf',
         hinweis: 'Schnellproben aus der vorhandenen Vorschau',
         child: bestand.spielKampfproben(heroId: heroId, werte: werte),
+      ),
+      KartoAbschnitt(
+        titel: 'Aktive Effekte',
+        hinweis: 'Auch Fremdzauber auf nichtmagische Helden',
+        aktion: TextButton(
+          key: const ValueKey<String>('karto-spiel-effekte'),
+          onPressed: () =>
+              aktion(() => bestand.effekte(context: context, heroId: heroId)),
+          child: const Text('Effekte verwalten'),
+        ),
+        child: bestand.spielEffekte(heroId: heroId, werte: werte),
       ),
       KartoAbschnitt(
         titel: 'Zustand',

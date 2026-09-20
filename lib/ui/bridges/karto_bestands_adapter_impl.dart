@@ -8,8 +8,10 @@ import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_arcane_effects_block.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_attribute_probes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_combat_probes.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_dice_log_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_body.dart';
@@ -66,6 +68,25 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
       heroId: heroId,
       combat: werte.combatPreviewStats,
     );
+  }
+
+  /// Baut die vorhandene Effektanzeige ohne eigene Schaltfläche.
+  @override
+  Widget spielEffekte({
+    required String heroId,
+    required HeroComputedSnapshot werte,
+  }) {
+    return InspectorArcaneEffectsView(
+      sheet: werte.hero,
+      state: werte.state,
+      combat: werte.combatPreviewStats,
+    );
+  }
+
+  /// Baut das vorhandene Würfelprotokoll mit den Einträgen des Zustands.
+  @override
+  Widget spielProtokoll(HeroComputedSnapshot werte) {
+    return InspectorDiceLogSection(entries: werte.state.diceLog);
   }
 
   /// Baut Belastung, Wunden und Statuswerte des Bestands.
