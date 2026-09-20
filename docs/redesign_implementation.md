@@ -167,6 +167,28 @@ Textskalierung 2. `app_root_switch_test.dart` und
 `karto_theme_uebergang_test.dart` blieben unverändert grün; der
 Oberflächenwechsel baut Repository, Sync und Katalog weiterhin nicht neu auf.
 
+**Visuelle Abnahme in der laufenden Windows-App** (Debug-Build, DPI-Skalierung
+1,0, Fensterbreiten exakt gesetzt, echter Heldenspeicher mit vier Helden):
+Umschalten unter `Einstellungen > Darstellung` wechselt das Thema live ohne
+Ausnahme. Bei 390 dp erscheint die Navigation als Bottom-Bar, bei 744 und
+1024 dp als schmale Leiste, bei 1440 dp breit mit Detailspalte in der Planung —
+überall ohne horizontalen Überlauf. Geprüfte Abläufe: Moduswechsel über alle
+drei Bereiche, Verwaltung mit allen Abschnitten und echten Werten, Start einer
+Steigerungssitzung mit geladenem Katalog, Vormerken einer Eigenschaft
+(MU 16 → 17, 480 AP, Auswirkungsvorschau AsP +1), Verlassen-Versuch mit
+Planabfrage, „Weiterplanen“ erhält den Entwurf, „Verwerfen“ räumt ihn ab,
+Sperrhinweis der Verwaltung bei offener Planung, Einstellungen bei offener
+Planung ohne Planabfrage mit anschließend unveränderter Sitzung, Rückweg zur
+bestehenden Oberfläche. Der Held blieb dabei unverändert (31402 AP vorher wie
+nachher); es wurde nichts übernommen.
+
+Die Sichtprüfung fand einen Fehler, den kein Widgettest sehen konnte: die
+dunkle Navigationsleiste bekam auf Tablet- und Desktopbreiten nur die Höhe
+ihrer drei Ziele und saß als Block mitten in der hellen Fläche. Behoben in
+`6208f7e5`. Offene gestalterische Grobheit ohne Funktionsfehler: der
+Sperrhinweis der Verwaltung steht einzeln auf sonst leerer Fläche — die
+gestalterische Integration der Bestandsansichten ist Gegenstand von R3.
+
 **Abweichungen und bewusste Grenzen.**
 
 1. Bei offener Planung ersetzt ein erklärter Sperrhinweis die **gesamte**
