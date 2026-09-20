@@ -4,6 +4,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Prüft das Verlassen eines Editors; false erhält Ansicht und Entwurf.
 typedef KartoVerlassenPruefung = Future<bool> Function();
 
+/// Ressourcen, die der Spielbereich über den Bestandsweg bearbeiten lässt.
+///
+/// Eigener Aufzählungstyp, weil `ResourceType` und `VitalKind` in `lib/ui/`
+/// liegen und UI2 von dort nichts importiert. Die Zuordnung auf den
+/// Bestandstyp macht ausschließlich die Brücke.
+enum KartoRessource {
+  /// Lebensenergie (LeP).
+  lebensenergie,
+
+  /// Ausdauer (AuP).
+  ausdauer,
+
+  /// Astralenergie (AsP); nur bei aktivierter Magie.
+  astralenergie,
+
+  /// Karmaenergie (KaP); nur bei aktivierten göttlichen Ressourcen.
+  karma,
+}
+
 /// Begrenzte Übergangsbrücke zu bestehenden Fachansichten und Dialogen.
 abstract interface class KartoBestandsAdapter {
   /// Baut die gemeinsame Verwaltung und registriert ihren Leave-Guard.
@@ -18,9 +37,6 @@ abstract interface class KartoBestandsAdapter {
 
   /// Zeigt Vorschau und Historie derselben Sitzung.
   Widget planHistorie(String heroId);
-
-  /// Zeigt gespeicherte Spielwerte unabhängig von einer offenen Planung.
-  Widget spielDetails(String heroId);
 
   /// Öffnet Anlegen, Import und weitere Aktionen der bisherigen Heldenliste.
   Future<void> heldenVerwalten(BuildContext context);
@@ -40,4 +56,15 @@ abstract interface class KartoBestandsAdapter {
 
   /// Öffnet die vorhandene Verwaltung laufender Effekte.
   Future<void> effekte({required BuildContext context, required String heroId});
+
+  /// Öffnet die vorhandene Bedienung einer einzelnen Ressource.
+  ///
+  /// Der Spielbereich zeigt Ressourcen nur an; Schrittweiten, Überheilung und
+  /// Untergrenze bleiben beim Bestandswidget, damit es keine zweite
+  /// Plus-/Minus-Logik gibt.
+  Future<void> ressourceBearbeiten({
+    required BuildContext context,
+    required String heroId,
+    required KartoRessource ressource,
+  });
 }

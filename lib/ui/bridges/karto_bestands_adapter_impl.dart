@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/ui/bridges/karto_spiel_bruecke.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_panel.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/inspector_panel.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_body.dart';
@@ -39,12 +39,6 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
   @override
   Widget planHistorie(String heroId) {
     return AdvancementHistoryPanel(heroId: heroId);
-  }
-
-  /// Baut den Spielinspector direkt mit den gespeicherten Heldenwerten.
-  @override
-  Widget spielDetails(String heroId) {
-    return InspectorPanel(heroId: heroId, isExpanded: true);
   }
 
   /// Öffnet die vorhandene Heldenliste für Anlegen, Import und Verwaltung.
@@ -86,5 +80,19 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
     required String heroId,
   }) {
     return showActiveSpellEffectsDialog(context: context, heroId: heroId);
+  }
+
+  /// Öffnet die vorhandene Ressourcenbedienung des Bestands.
+  @override
+  Future<void> ressourceBearbeiten({
+    required BuildContext context,
+    required String heroId,
+    required KartoRessource ressource,
+  }) {
+    return zeigeRessourcenBlatt(
+      context: context,
+      heroId: heroId,
+      ressource: ressource,
+    );
   }
 }

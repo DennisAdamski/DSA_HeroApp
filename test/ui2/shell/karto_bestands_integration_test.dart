@@ -129,7 +129,11 @@ void main() {
       await mode(tester, 'Entwicklung planen');
       expect(container.read(advancementSessionProvider('rondra')), isNotNull);
       await mode(tester, 'Spielen');
-      expect(find.byKey(const ValueKey('inspector-tab-bar')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('karto-ressource-lebensenergie')),
+        findsOneWidget,
+      );
+      expect(find.text('Ressourcen'), findsOneWidget);
       expect(find.byKey(const ValueKey('advancement-history')), findsNothing);
       await mode(tester, 'Held verwalten');
       expect(find.widgetWithText(Tab, 'Inventar'), findsNothing);

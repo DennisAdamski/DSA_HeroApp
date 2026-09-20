@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_shell.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_workspace.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
 import 'karto_test_support.dart';
@@ -88,13 +89,13 @@ void main() {
     await tester.tap(find.text('Rondra'));
     await tester.pumpAndSettle();
     expect(container.read(selectedHeroIdProvider), 'rondra');
-    expect(find.text('Spielwerte rondra'), findsOneWidget);
+    expect(find.byType(KartoSpielansicht), findsOneWidget);
   });
 
   testWidgets('gültige gespeicherte Auswahl öffnet direkt', (tester) async {
     await pumpShell(tester, selected: 'rondra');
     expect(find.byType(KartoWorkspace), findsOneWidget);
-    expect(find.text('Spielwerte rondra'), findsOneWidget);
+    expect(find.byType(KartoSpielansicht), findsOneWidget);
   });
 
   testWidgets('fehlende gespeicherte Auswahl zeigt keinen fremden Helden', (
@@ -183,7 +184,7 @@ void main() {
     await modus(tester, 'Entwicklung planen');
     final session = container.read(advancementSessionProvider('rondra'))!;
     await modus(tester, 'Spielen');
-    expect(find.text('Spielwerte rondra'), findsOneWidget);
+    expect(find.byType(KartoSpielansicht), findsOneWidget);
     await modus(tester, 'Held verwalten');
     expect(find.text('Verwaltung gesperrt'), findsOneWidget);
     await modus(tester, 'Entwicklung planen');
