@@ -203,6 +203,26 @@ void main() {
     expect(find.text('Bearbeiten'), findsNothing);
   });
 
+  testWidgets('guard save blocks parallel header saves', (tester) async {
+    final repository = _ControlledSaveRepository(hero());
+    final guard = await pumpBody(tester, repository);
+    await beginDirtyOverview(tester);
+    final result = guard();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Änderungen speichern'));
+    await tester.pumpAndSettle();
+    await tapSave(tester);
+    await tester.pump();
+    final countBeforeCompletion = repository.saveCount;
+    repository.completeSave();
+    await tester.pumpAndSettle();
+    await result;
+    expect(
+      countBeforeCompletion,
+      1,
+      reason: 'A guard save must serialize header saves',
+    );
+  });
   testWidgets('cancel keeps the draft and refuses leaving', (tester) async {
     final guard = await pumpBody(
       tester,
@@ -339,11 +359,13 @@ class _ControlledSaveRepository extends FakeRepository {
 
   final Completer<void> _saveCompleter = Completer<void>();
   bool saveStarted = false;
+  int saveCount = 0;
 
   @override
   /// Verzögert das Speichern, bis der Test den Schreibvorgang freigibt.
   Future<void> saveHero(HeroSheet hero) async {
     saveStarted = true;
+    saveCount++;
     await _saveCompleter.future;
     await super.saveHero(hero);
   }
