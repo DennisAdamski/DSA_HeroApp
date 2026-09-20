@@ -9,7 +9,7 @@ extension _WorkspaceAdvancement on _HeroWorkspaceScreenState {
   /// Bietet Steigern getrennt von der tabbezogenen manuellen Bearbeitung an.
   Widget _buildStartAdvancementAction({required bool isCompactLayout}) {
     final catalog = ref.read(rulesCatalogProvider).valueOrNull;
-    final onPressed = catalog == null || _runningEditAction
+    final onPressed = catalog == null || _management.isRunningEditAction
         ? null
         : () => _runEditAction(_startAdvancement);
     if (isCompactLayout) {
@@ -30,10 +30,14 @@ extension _WorkspaceAdvancement on _HeroWorkspaceScreenState {
 
   /// Beendet alte Tab-Entwürfe über ihren bestehenden Guard, dann startet die Runde.
   Future<void> _startAdvancement() async {
-    for (final tab in _visibleTabs) {
-      if (!await _confirmLeaveForTab(tab.id) || !mounted) return;
-      if (_tabRegistry.isEditing(tab.id)) {
-        await _tabRegistry.editActionsFor(tab.id)?.cancel();
+    for (final tab in _management.visibleTabs) {
+      final mayLeave = await _management.confirmLeaveForTab(
+        tab.id,
+        allowDuringEditAction: true,
+      );
+      if (!mayLeave || !mounted) return;
+      if (_management.isEditing(tab.id)) {
+        await _management.editActionsFor(tab.id)?.cancel();
       }
     }
     if (!mounted) return;
