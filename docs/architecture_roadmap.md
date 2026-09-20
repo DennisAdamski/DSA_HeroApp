@@ -132,9 +132,9 @@ Neubau vorerst über die injizierte Brücke `KartoBestandsAdapter`. Nachweise,
 Commit-IDs und Abgrenzungen stehen unter „R1: Übergabe“ in den
 [Umsetzungsplänen](redesign_implementation.md).
 
-**ARCH-01 bleibt trotzdem offen.** Der Spielinhalt ist noch der bestehende
-Inspector statt der Mockup-Anordnung (R2), die gestalterische Integration der
-Fachansichten steht aus (R3), und „Schaden erhalten“ als zusammenhängender
+**ARCH-01 bleibt trotzdem offen.** Die Spielanordnung mit echten Werten und
+Bestandsaktionen ist inzwischen umgesetzt (R2). Die gestalterische Integration
+der Fachansichten steht aus (R3), und „Schaden erhalten“ als zusammenhängender
 Ablauf mit nachvollziehbarer Korrektur fehlt weiterhin — er hängt an ARCH-05
 und ARCH-06 und ist kein UI-Teilumfang.
 

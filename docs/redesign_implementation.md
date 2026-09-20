@@ -199,9 +199,11 @@ gestalterische Integration der Bestandsansichten ist Gegenstand von R3.
 2. `spielDetails` ist in R1 der vorhandene `InspectorPanel`, ergänzt um die
    Direktaktionen Probe, Rast und Effekte. Die Spielanordnung des Mockups
    ersetzt R2.
-3. Einstellungen und Token-Blatt prüfen nur den Editor-Dirty-Guard, nicht den
-   offenen Plan. Sie legen einen Screen auf den Workspace, bauen ihn nicht ab,
-   und die Sitzung liegt im gemeinsamen `ProviderScope`. Die Planabfrage
+3. Das Öffnen von Einstellungen und Token-Blatt prüft nur den Editor-Dirty-Guard,
+   nicht den offenen Plan. Sie legen einen Screen auf den Workspace, bauen ihn
+   nicht ab, und die Sitzung liegt im gemeinsamen `ProviderScope`. Seit der
+   Nachprüfung prüft ein tatsächlicher Oberflächenwechsel innerhalb der
+   Einstellungen zusätzlich den Plan. Die Planabfrage
    greift bei Heldenwahl, Heldenliste, Rückkehr zur Bestandsoberfläche und
    System-Zurück.
 4. ARCH-01 bleibt offen: der atomare Schadensablauf mit Rücknahme fehlt
@@ -343,6 +345,31 @@ Korrekturen ergänzen die ursprünglichen Übergaben:
   asynchronem Speichern. Der Header zeigt die Sperre unmittelbar an und wird
   nach Abbruch oder Fehler wieder freigegeben. Der Regressionstest hält einen
   Guard-Save offen, betätigt erneut Speichern und weist genau einen Write nach.
+- **R1, Einstellungen:** Die Bestandsbrücke reicht optional
+  `vorOberflaechenwechsel` an `SettingsScreen.beforeSurfaceChange` weiter.
+  Das bloße Öffnen erhält die Planung. Erst der Oberflächenschalter fragt
+  „Weiterplanen / Verwerfen / Übernehmen“ ab, bevor er die Einstellung schreibt.
+  Schmale Detailseiten und breite geteilte Ansichten verwenden denselben
+  Ablauf. Abbruch oder fehlgeschlagene Übernahme verhindern den Wechsel;
+  erneute Klicks während einer laufenden Prüfung sind gesperrt.
+
+**Prüfung:** `flutter analyze --no-pub` ohne Befund. Die folgenden relevanten
+Tests bestanden mit **293 erfolgreichen Tests und 3 bestehenden Überspringungen**.
+Die neuen Regressionstests reproduzierten vor den Fixes die Fehler und sind
+danach grün; die Settings-Tests prüfen 390 und 1200 dp, alle Planentscheidungen
+und einen fehlgeschlagenen Save mit anschließend erfolgreichem Versuch.
+
+```text
+flutter test --no-pub test/ui2 test/ui/workspace test/ui/shared
+  test/ui/advancement test/ui/inventory test/ui/gruppe test/ui/bridges
+  test/ui/smoke test/ui/screens/settings_screen_test.dart
+  test/ui/screens/settings_sync_page_test.dart test/ui/dice_log_filter_test.dart
+  test/state/advancement_session_test.dart test/state/hero_computed_snapshot_test.dart
+  test/rules/rest_rules_test.dart test/rules/spell_duration_rules_test.dart
+```
+
+Die drei festgestellten Abnahmefehler sind behoben. R3 und die bereits
+dokumentierten Architekturabgrenzungen bleiben unverändert offen.
 
 ## Prüfung dieser Planungsänderung
 

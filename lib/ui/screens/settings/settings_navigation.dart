@@ -53,26 +53,31 @@ extension _SettingsDestinationX on _SettingsDestination {
   ValueKey<String> get detailTitleKey =>
       ValueKey<String>('settings-detail-$name');
 
-  Widget buildPage() => switch (this) {
-    _SettingsDestination.appearance => const _AppearanceSettingsPage(),
-    _SettingsDestination.accountSync => const _AccountSyncSettingsPage(),
-    _SettingsDestination.storage => const _StorageSettingsPage(),
-    _SettingsDestination.catalog => const _CatalogSettingsPage(),
-    _SettingsDestination.houseRules => const _HouseRulesSettingsPage(),
-    _SettingsDestination.imageGeneration => const _AvatarApiSettingsPage(),
-    _SettingsDestination.legal => const _LegalSettingsPage(),
-    _SettingsDestination.debugMode => const SizedBox.shrink(),
-  };
+  Widget buildPage({Future<bool> Function()? beforeSurfaceChange}) =>
+      switch (this) {
+        _SettingsDestination.appearance => _AppearanceSettingsPage(
+          beforeSurfaceChange: beforeSurfaceChange,
+        ),
+        _SettingsDestination.accountSync => const _AccountSyncSettingsPage(),
+        _SettingsDestination.storage => const _StorageSettingsPage(),
+        _SettingsDestination.catalog => const _CatalogSettingsPage(),
+        _SettingsDestination.houseRules => const _HouseRulesSettingsPage(),
+        _SettingsDestination.imageGeneration => const _AvatarApiSettingsPage(),
+        _SettingsDestination.legal => const _LegalSettingsPage(),
+        _SettingsDestination.debugMode => const SizedBox.shrink(),
+      };
 }
 
 class _SettingsSplitView extends StatelessWidget {
   const _SettingsSplitView({
+    this.beforeSurfaceChange,
     required this.selectedDestination,
     required this.onSelectDestination,
     required this.onToggleDebugMode,
   });
 
   final _SettingsDestination selectedDestination;
+  final Future<bool> Function()? beforeSurfaceChange;
   final ValueChanged<_SettingsDestination> onSelectDestination;
   final Future<void> Function() onToggleDebugMode;
 
@@ -90,7 +95,12 @@ class _SettingsSplitView extends StatelessWidget {
           ),
         ),
         const VerticalDivider(width: 1),
-        Expanded(child: _SettingsDetailPane(destination: selectedDestination)),
+        Expanded(
+          child: _SettingsDetailPane(
+            destination: selectedDestination,
+            beforeSurfaceChange: beforeSurfaceChange,
+          ),
+        ),
       ],
     );
   }
@@ -197,9 +207,13 @@ class _SettingsNavigationPane extends ConsumerWidget {
 }
 
 class _SettingsDetailPane extends StatelessWidget {
-  const _SettingsDetailPane({required this.destination});
+  const _SettingsDetailPane({
+    required this.destination,
+    this.beforeSurfaceChange,
+  });
 
   final _SettingsDestination destination;
+  final Future<bool> Function()? beforeSurfaceChange;
 
   @override
   Widget build(BuildContext context) {
@@ -224,22 +238,30 @@ class _SettingsDetailPane extends StatelessWidget {
           ),
         ),
         const Divider(height: 1),
-        Expanded(child: destination.buildPage()),
+        Expanded(
+          child: destination.buildPage(
+            beforeSurfaceChange: beforeSurfaceChange,
+          ),
+        ),
       ],
     );
   }
 }
 
 class _SettingsDetailScreen extends StatelessWidget {
-  const _SettingsDetailScreen({required this.destination});
+  const _SettingsDetailScreen({
+    required this.destination,
+    this.beforeSurfaceChange,
+  });
 
   final _SettingsDestination destination;
+  final Future<bool> Function()? beforeSurfaceChange;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(destination.title)),
-      body: destination.buildPage(),
+      body: destination.buildPage(beforeSurfaceChange: beforeSurfaceChange),
     );
   }
 }
