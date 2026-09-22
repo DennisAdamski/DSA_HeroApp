@@ -170,6 +170,7 @@ class _ManagementHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final activeTab = coordinator.activeTab;
     final tabs = TabBar(
       controller: coordinator.tabController,
       isScrollable: true,
@@ -182,20 +183,54 @@ class _ManagementHeader extends StatelessWidget {
       reverse: true,
       child: Row(children: <Widget>[...actions, const SizedBox(width: 8)]),
     );
+    final heading = activeTab == null
+        ? const SizedBox.shrink()
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                activeTab.label,
+                key: const ValueKey<String>('management-active-title'),
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                activeTab.helper,
+                key: const ValueKey<String>('management-active-helper'),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          );
     if (compact) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          tabs,
-          if (actions.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: heading,
+          ),
+          if (actions.isNotEmpty) ...<Widget>[
             Align(alignment: Alignment.centerRight, child: actionRow),
+            const SizedBox(height: 4),
+          ],
+          tabs,
         ],
       );
     }
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Expanded(child: tabs),
-        Flexible(child: actionRow),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Expanded(child: heading),
+              if (actions.isNotEmpty) Flexible(child: actionRow),
+            ],
+          ),
+        ),
+        tabs,
       ],
     );
   }
