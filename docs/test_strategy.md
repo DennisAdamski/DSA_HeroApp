@@ -86,10 +86,18 @@ technische UI-Aspekte getrennt getestet werden.
 | `test/workspace/workspace_area_registry_test.dart` | workspace | Area-Registry |
 | `test/workspace/workspace_tab_edit_controller_test.dart` | workspace | Tab-Edit-Controller |
 | `test/ui2/shell/app_root_switch_test.dart` | ui2 | Weiche zwischen bestehender und neuer Oberfläche |
+| `test/ui2/shell/karto_workspace_journey_test.dart` | ui2 | Durchgehender Ablauf mit echten Schreibvorgängen |
+| `test/ui2/shell/karto_workspace_visual_test.dart` | ui2 | Sieben Breiten × zwei Helligkeiten × Textskalierung 1/2; erzeugt mit `--dart-define=R3_SCREENSHOT_DIR=…` echte PNGs |
 
 ## Fallstricke bei Oberflächentests
 
-Zwei Muster führen zu Tests, die **hängen statt zu scheitern** — sie laufen
+`scrollUntilVisible` hält an, sobald der Finder greift. Eine `ListView` baut
+aber über den sichtbaren Bereich hinaus, das gesuchte Element kann also
+außerhalb des Fensters liegen und ein `tap()` daneben gehen. Davor gehören
+`ensureVisible` **und** `pumpAndSettle`: der Scroll wirkt erst im nächsten
+Frame, sonst rechnet der Tap mit der alten Position.
+
+Zwei weitere Muster führen zu Tests, die **hängen statt zu scheitern** — sie laufen
 dann bis zum Zeitlimit und melden nichts Brauchbares.
 
 **Teardown-Reihenfolge bei Stream-Repositories.** `addTearDown` läuft
