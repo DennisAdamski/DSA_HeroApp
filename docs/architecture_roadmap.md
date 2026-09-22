@@ -133,10 +133,11 @@ Commit-IDs und Abgrenzungen stehen unter „R1: Übergabe“ in den
 [Umsetzungsplänen](redesign_implementation.md).
 
 **ARCH-01 bleibt trotzdem offen.** Die Spielanordnung mit echten Werten und
-Bestandsaktionen ist inzwischen umgesetzt (R2). Die gestalterische Integration
-der Fachansichten steht aus (R3), und „Schaden erhalten“ als zusammenhängender
-Ablauf mit nachvollziehbarer Korrektur fehlt weiterhin — er hängt an ARCH-05
-und ARCH-06 und ist kein UI-Teilumfang.
+Bestandsaktionen ist umgesetzt (R2), ebenso die gestalterische Integration der
+Fachansichten und der Entwicklungsbereich samt Gesamtabnahme (R3, siehe
+[redesign_acceptance.md](redesign_acceptance.md)). „Schaden erhalten“ als
+zusammenhängender Ablauf mit nachvollziehbarer Korrektur fehlt weiterhin — er
+hängt an ARCH-05 und ARCH-06 und ist kein UI-Teilumfang.
 
 **Abhängigkeiten / offene Entscheidungen:** Schreibende Spielaktionen auf
 ARCH-05/06 aufbauen. Navigation, Favoritenverhalten und Korrekturbedienung sind

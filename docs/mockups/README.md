@@ -85,3 +85,10 @@ Umsetzungspläne mit Startprompts für weitere Agenten. Sie nutzen das inzwische
 vorhandene Kartograph-Fundament unter `lib/ui2/`, übernehmen die drei
 Arbeitsbereiche und grenzen simulierte Funktionen von vorhandener Fachlogik ab.
 Die Pläne sind Arbeitsaufträge, kein Nachweis ihrer Umsetzung.
+
+Alle drei Pakete sind inzwischen umgesetzt. Wie der Flutter-Stand tatsächlich
+aussieht, zeigen die echten Screenshots unter
+[`docs/screenshots/redesign-r3/`](../screenshots/redesign-r3/); die Abnahme mit
+Funktionsmatrix und verbliebenen Grenzen steht in
+[redesign_acceptance.md](../redesign_acceptance.md). Dieses Mockup bleibt die
+gestalterische Vorlage, nicht der Stand der App.

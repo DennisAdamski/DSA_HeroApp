@@ -3,8 +3,9 @@
 Stand: 19.09.2026 · geprüfter Ausgangsstand: `8501232b`.
 
 Dieses Dokument enthält **Umsetzungspläne und kopierfertige Startprompts** für
-das freigegebene [Mockup](mockups/README.md). **R1 und R2 sind umgesetzt**
-(siehe Übergabestatus); R3 ist noch offen.
+das freigegebene [Mockup](mockups/README.md). **R1, R2 und R3 sind umgesetzt**
+(siehe Übergabestatus). Die Abnahme steht in
+[redesign_acceptance.md](redesign_acceptance.md).
 
 ## Empfehlung
 
@@ -134,7 +135,7 @@ Ergebnis. Ein grüner Testlauf der Dokumentation setzt kein Umsetzungshäkchen.
 |---|---|---|---|
 | R1 | umgesetzt | `80f7d69c`, `76c8029c`, `ee4aec62` | siehe Abschnitt „R1: Übergabe“ |
 | R2 | umgesetzt | `e4d52dfd`, `24cadcc1`, `6faab4c2`, `1bb47e8e` | siehe Abschnitt „R2: Übergabe“ |
-| R3 | offen | noch keine | Integrierte Planung und Gesamtabnahme noch offen |
+| R3 | umgesetzt | `832066da`, `0258aa11` | siehe Abschnitt „R3: Übergabe“ |
 
 ### R1: Übergabe
 
@@ -370,6 +371,50 @@ flutter test --no-pub test/ui2 test/ui/workspace test/ui/shared
 
 Die drei festgestellten Abnahmefehler sind behoben. R3 und die bereits
 dokumentierten Architekturabgrenzungen bleiben unverändert offen.
+
+### R3: Übergabe
+
+**Umgesetzt.** `buildKartoCompatTheme` (`lib/ui/bridges/karto_compat_theme.dart`)
+bildet die Codex-Farbrollen innerhalb der Brücke auf Kartograph-Token ab; der
+Adapter legt es um Bestandsinhalte und Dialoge, UI2 importiert es nicht selbst.
+`KartoEntwicklungsansicht` (`lib/ui2/entwicklung/`) ordnet Katalog, AP-Vorschau
+und Historie an und liest alle Werte unverändert aus der laufenden
+`AdvancementSession`.
+
+**Prüfungen** (lokal, Flutter-Toolchain des Projekts):
+
+| Befehl | Ergebnis |
+|---|---|
+| `dart format --output=none --set-exit-if-changed lib test tool` | 755 Dateien, 0 geändert |
+| `flutter analyze --no-pub` | No issues found |
+| `flutter test --no-pub` | +1997 ~3, alle bestanden (Ausgangsstand: +1946 ~3) |
+| `python tool/check_screen_loc_budget.py` | OK, 21 Dateien |
+| `python tool/check_screen_loc_budget.py --root lib/ui2 --recursive` | OK, 22 Dateien |
+
+Das visuelle Raster deckt 320, 390, 744, 768, 1024, 1366 und 1440 dp in beiden
+Helligkeiten bei Textskalierung 1 und 2 ab (28 Kombinationen) und erzeugt auf
+Wunsch echte PNGs über `--dart-define=R3_SCREENSHOT_DIR=…`.
+
+**Der zuerst abgelegte Stand war nicht lauffähig.** `Strich.haar` gibt es
+nicht, wodurch `lib/ui2/` nicht übersetzte und zehn Testdateien schon beim
+Laden scheiterten; danach blieben 16 Fehlschläge. Die sechs Ursachen und ihre
+Behebung stehen in [redesign_acceptance.md](redesign_acceptance.md) unter
+„Befunde der Abschlussprüfung“. Zwei davon betrafen den Bestand: der Kopf von
+`AdvancementCatalog` lief bei 320 dp schon bei normaler Schrift über, und ein
+fehlgeschlagenes Speichern im Inventareditor verschwand als unbehandelte
+asynchrone Ausnahme.
+
+**Abweichungen und bewusste Grenzen.**
+
+1. Bei offener Planung bleibt die **gesamte** Verwaltungsfläche gesperrt; die
+   Begründung aus R1 gilt unverändert.
+2. Die Rechtsausrichtung numerischer Spalten wurde nicht umgesetzt, nur die
+   Tabellenziffern. Kein Test deckt die Ausrichtung ab, und sie hätte das
+   visuelle Raster berührt.
+3. ARCH-01 bleibt wegen des fehlenden Schadensablaufs **teilweise offen**;
+   ARCH-02 bis ARCH-06 sind durch eine neue Darstellung nicht erledigt.
+4. Brücke und alte Screens bleiben bestehen. Eine Ablösung und jede Änderung
+   des Oberflächenstandards brauchen einen eigenen Auftrag.
 
 ## Prüfung dieser Planungsänderung
 

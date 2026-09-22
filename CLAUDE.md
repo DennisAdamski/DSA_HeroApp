@@ -16,7 +16,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;
-  R1 samt Bestandsbrücke und R2 sind implementiert, R3 ist offen. Vor Folgearbeit
+  R1 samt Bestandsbrücke, R2 und R3 sind implementiert; die Abnahme steht in
+  [docs/redesign_acceptance.md](docs/redesign_acceptance.md). Vor Folgearbeit
   den Paketstatus und die Nachprüfung lesen. Die Navigation hat drei Arbeitsbereiche.
 - Detaildokumentation liegt bei Bedarf in `docs/technical_overview.md`, `docs/test_strategy.md`, `docs/catalog_import_workflow.md`, `docs/pdf_agent_workflow.md`, `docs/rule_audit_regelwerk_ueberarbeitung.md`, `docs/ios_xcode_setup.md` und `docs/windows_antivirus_audit.md`.
 
