@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/ui/bridges/karto_compat_theme.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_spiel_bruecke.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
@@ -29,21 +32,25 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
     required bool korrekturenGesperrt,
     required ValueChanged<KartoVerlassenPruefung?> onVerlassenRegistriert,
   }) {
-    return WorkspaceManagementBody(
-      heroId: heroId,
-      korrekturenGesperrt: korrekturenGesperrt,
-      onVerlassenRegistriert: onVerlassenRegistriert,
+    return _KartoCompatHost(
+      child: WorkspaceManagementBody(
+        heroId: heroId,
+        korrekturenGesperrt: korrekturenGesperrt,
+        onVerlassenRegistriert: onVerlassenRegistriert,
+      ),
     );
   }
 
   /// Baut den vorhandenen Katalog für die aktive Planung.
   @override
-  Widget planKatalog(String heroId) => AdvancementCatalog(heroId: heroId);
+  Widget planKatalog(String heroId) {
+    return _KartoCompatHost(child: AdvancementCatalog(heroId: heroId));
+  }
 
   /// Baut die vorhandene Vorschau und Historie der aktiven Planung.
   @override
   Widget planHistorie(String heroId) {
-    return AdvancementHistoryPanel(heroId: heroId);
+    return _KartoCompatHost(child: AdvancementHistoryPanel(heroId: heroId));
   }
 
   /// Baut die vorhandenen Eigenschafts-Schnellproben.
@@ -52,9 +59,11 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
     required String heroId,
     required HeroComputedSnapshot werte,
   }) {
-    return InspectorAttributeProbes(
-      heroId: heroId,
-      effectiveAttributes: werte.effectiveAttributes,
+    return _KartoCompatHost(
+      child: InspectorAttributeProbes(
+        heroId: heroId,
+        effectiveAttributes: werte.effectiveAttributes,
+      ),
     );
   }
 
@@ -64,9 +73,11 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
     required String heroId,
     required HeroComputedSnapshot werte,
   }) {
-    return InspectorCombatProbes(
-      heroId: heroId,
-      combat: werte.combatPreviewStats,
+    return _KartoCompatHost(
+      child: InspectorCombatProbes(
+        heroId: heroId,
+        combat: werte.combatPreviewStats,
+      ),
     );
   }
 
@@ -76,18 +87,20 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
     required String heroId,
     required HeroComputedSnapshot werte,
   }) {
-    return InspectorArcaneEffectsView(
-      sheet: werte.hero,
-      state: werte.state,
-      combat: werte.combatPreviewStats,
+    return _KartoCompatHost(
+      child: InspectorArcaneEffectsView(
+        sheet: werte.hero,
+        state: werte.state,
+        combat: werte.combatPreviewStats,
+      ),
     );
   }
 
   /// Baut das vorhandene Würfelprotokoll mit den Einträgen des Zustands.
   @override
-  Widget spielProtokoll(HeroComputedSnapshot werte) {
-    return InspectorDiceLogSection(entries: werte.state.diceLog);
-  }
+  Widget spielProtokoll(HeroComputedSnapshot werte) => _KartoCompatHost(
+    child: InspectorDiceLogSection(entries: werte.state.diceLog),
+  );
 
   /// Baut Belastung, Wunden und Statuswerte des Bestands.
   @override
@@ -95,14 +108,18 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
     required String heroId,
     required HeroComputedSnapshot werte,
   }) {
-    return KartoZustandsblock(heroId: heroId, werte: werte);
+    return _KartoCompatHost(
+      child: KartoZustandsblock(heroId: heroId, werte: werte),
+    );
   }
 
   /// Öffnet die vorhandene Heldenliste für Anlegen, Import und Verwaltung.
   @override
   Future<void> heldenVerwalten(BuildContext context) {
     return Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(builder: (_) => const HeroesHomeScreen()),
+      MaterialPageRoute<void>(
+        builder: (_) => const _KartoCompatHost(child: HeroesHomeScreen()),
+      ),
     );
   }
 
@@ -114,8 +131,9 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
   }) {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) =>
-            SettingsScreen(beforeSurfaceChange: vorOberflaechenwechsel),
+        builder: (_) => _KartoCompatHost(
+          child: SettingsScreen(beforeSurfaceChange: vorOberflaechenwechsel),
+        ),
       ),
     );
   }
@@ -127,13 +145,23 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
     required WidgetRef ref,
     required String heroId,
   }) {
-    return showProbeQuickSearch(context: context, ref: ref, heroId: heroId);
+    return _withKartoCompatContext(
+      context,
+      (themedContext) => showProbeQuickSearch(
+        context: themedContext,
+        ref: ref,
+        heroId: heroId,
+      ),
+    );
   }
 
   /// Öffnet die vorhandene Rastbedienung.
   @override
   Future<void> rast({required BuildContext context, required String heroId}) {
-    return showRestDialog(context: context, heroId: heroId);
+    return _withKartoCompatContext(
+      context,
+      (themedContext) => showRestDialog(context: themedContext, heroId: heroId),
+    );
   }
 
   /// Öffnet die vorhandene Verwaltung laufender Effekte.
@@ -142,7 +170,11 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
     required BuildContext context,
     required String heroId,
   }) {
-    return showActiveSpellEffectsDialog(context: context, heroId: heroId);
+    return _withKartoCompatContext(
+      context,
+      (themedContext) =>
+          showActiveSpellEffectsDialog(context: themedContext, heroId: heroId),
+    );
   }
 
   /// Öffnet die vorhandene Ressourcenbedienung des Bestands.
@@ -152,10 +184,64 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
     required String heroId,
     required KartoRessource ressource,
   }) {
-    return zeigeRessourcenBlatt(
-      context: context,
-      heroId: heroId,
-      ressource: ressource,
+    return _withKartoCompatContext(
+      context,
+      (themedContext) => zeigeRessourcenBlatt(
+        context: themedContext,
+        heroId: heroId,
+        ressource: ressource,
+      ),
     );
   }
+}
+
+class _KartoCompatHost extends StatelessWidget {
+  const _KartoCompatHost({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Theme(data: buildKartoCompatTheme(Theme.of(context)), child: child);
+  }
+}
+
+// Stellt Dialogaufrufen einen echten BuildContext unter dem Compat-Theme bereit,
+// damit auch ihre nachgelagerten Dialoge dieselben geerbten Tokens erfassen.
+Future<void> _withKartoCompatContext(
+  BuildContext context,
+  Future<void> Function(BuildContext themedContext) open,
+) async {
+  final overlay = Overlay.of(context);
+  final theme = buildKartoCompatTheme(Theme.of(context));
+  final completion = Completer<void>();
+  late final OverlayEntry entry;
+  var started = false;
+  entry = OverlayEntry(
+    builder: (_) => Theme(
+      data: theme,
+      child: Builder(
+        builder: (themedContext) {
+          if (!started) {
+            started = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              try {
+                await open(themedContext);
+                completion.complete();
+              } catch (error, stackTrace) {
+                completion.completeError(error, stackTrace);
+              } finally {
+                if (entry.mounted) {
+                  entry.remove();
+                }
+              }
+            });
+          }
+          return const SizedBox.shrink();
+        },
+      ),
+    ),
+  );
+  overlay.insert(entry);
+  await completion.future;
 }
