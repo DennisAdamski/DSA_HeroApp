@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_impact_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +16,10 @@ import 'advancement_skill_tree_view.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 
 /// Durchsuchbarer Steigerungskatalog auf Basis der ungespeicherten Vorschau.
+// Eine Listenzeile bleibt immer sichtbar; darunter wäre der Katalog nur
+// noch Kopfzeile und es ließe sich nichts mehr auswählen.
+const double _kMindestListenHoehe = 56;
+
 class AdvancementCatalog extends ConsumerStatefulWidget {
   /// Bindet den Katalog an die bereits gestartete Steigerungsrunde des Helden.
   const AdvancementCatalog({super.key, required this.heroId});
@@ -114,137 +120,159 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
     final headerCount = showImpact ? 1 : 0;
     final optionCount = filtered.isEmpty ? 1 : filtered.length;
     final bridgeCount = showBridge ? 1 : 0;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Steigerungen planen',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Werte und Voraussetzungen verwenden die Vorschau. '
-                'Vorgemerkte Änderungen werden erst beim Übernehmen gespeichert.',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  for (final category in _CatalogCategory.values)
-                    ChoiceChip(
-                      label: Text(category.label),
-                      selected: _category == category,
-                      onSelected: (_) => setState(() => _category = category),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                key: const ValueKey('advancement-search'),
-                controller: _searchController,
-                onChanged: (_) => setState(() {}),
-                decoration: InputDecoration(
-                  labelText: '${_category.label} durchsuchen',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: query.isEmpty
-                      ? null
-                      : IconButton(
-                          tooltip: 'Suche löschen',
-                          onPressed: () => setState(_searchController.clear),
-                          icon: const Icon(Icons.close),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 12,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text(
-                    '${filtered.length} ${showImpact || _category == _CatalogCategory.abilities ? 'Einträge' : 'aktive Einträge'}'
-                    ' · ${session.preview.apAvailable} AP verfügbar',
-                    style: Theme.of(context).textTheme.bodySmall
-                        ?.copyWith(color: context.codexTheme.inkMuted),
-                  ),
-                  if (_category.supportsActivation)
-                    OutlinedButton.icon(
-                      key: ValueKey('advancement-activate-${_category.name}'),
-                      onPressed: session.isSaving || _dialogOpen
-                          ? null
-                          : () => _activate(_category),
-                      icon: const Icon(Icons.add),
-                      label: Text(_category.activationLabel),
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: _category == _CatalogCategory.abilities
-              ? AdvancementSkillTreeView(
-                  session: session,
-                  options: options,
-                  query: query,
-                  onShowInapplicableChanged: ref
-                      .read(advancementSessionProvider(widget.heroId).notifier)
-                      .setShowInapplicableSpecialAbilities,
-                  onPlan: session.isSaving || _dialogOpen ? null : _plan,
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                  itemCount: headerCount + optionCount + bridgeCount,
-                  separatorBuilder: (_, _) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    if (showImpact && index == 0) {
-                      return AdvancementImpactPanel(session: session);
-                    }
-                    final offset = index - headerCount;
-                    if (showBridge && offset == optionCount) {
-                      return Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          key: ValueKey(
-                            'advancement-activate-hint-${_category.name}',
-                          ),
-                          onPressed: () => _activate(
-                            _category,
-                            // Der Suchtext wandert unverändert weiter; `query` ist
-                            // für den Vergleich bereits kleingeschrieben.
-                            initialQuery: _searchController.text.trim(),
-                          ),
-                          icon: const Icon(Icons.search),
-                          label: const Text(
-                            'Weitere Treffer im Erwerbsblatt suchen',
-                          ),
-                        ),
-                      );
-                    }
-                    if (filtered.isEmpty) {
-                      return _buildEmptyState(context, query);
-                    }
-                    final option = filtered[offset];
-                    return AdvancementOptionCard(
-                      option: option,
-                      planned: plannedTargets.contains(
-                        '${option.kind.name}:${option.targetId}',
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Der Kopf behält seine natürliche Höhe, solange sie passt. Erst wenn
+        // er der Liste nicht einmal mehr eine Zeile ließe — schmales Gerät,
+        // große Schrift —, scrollt er in sich, statt überzulaufen und den
+        // Katalog unerreichbar zu machen.
+        final maxKopfHoehe = constraints.maxHeight.isFinite
+            ? math.max(constraints.maxHeight - _kMindestListenHoehe, 0.0)
+            : double.infinity;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: maxKopfHoehe),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Steigerungen planen',
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      onPlan: session.isSaving || _dialogOpen
-                          ? null
-                          : () => _plan(option),
-                    );
-                  },
+                      const SizedBox(height: 4),
+                      Text(
+                        'Werte und Voraussetzungen verwenden die Vorschau. '
+                        'Vorgemerkte Änderungen werden erst beim Übernehmen gespeichert.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          for (final category in _CatalogCategory.values)
+                            ChoiceChip(
+                              label: Text(category.label),
+                              selected: _category == category,
+                              onSelected: (_) =>
+                                  setState(() => _category = category),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        key: const ValueKey('advancement-search'),
+                        controller: _searchController,
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          labelText: '${_category.label} durchsuchen',
+                          prefixIcon: const Icon(Icons.search),
+                          suffixIcon: query.isEmpty
+                              ? null
+                              : IconButton(
+                                  tooltip: 'Suche löschen',
+                                  onPressed: () =>
+                                      setState(_searchController.clear),
+                                  icon: const Icon(Icons.close),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            '${filtered.length} ${showImpact || _category == _CatalogCategory.abilities ? 'Einträge' : 'aktive Einträge'}'
+                            ' · ${session.preview.apAvailable} AP verfügbar',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: context.codexTheme.inkMuted),
+                          ),
+                          if (_category.supportsActivation)
+                            OutlinedButton.icon(
+                              key: ValueKey(
+                                'advancement-activate-${_category.name}',
+                              ),
+                              onPressed: session.isSaving || _dialogOpen
+                                  ? null
+                                  : () => _activate(_category),
+                              icon: const Icon(Icons.add),
+                              label: Text(_category.activationLabel),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-        ),
-      ],
+              ),
+            ),
+            Expanded(
+              child: _category == _CatalogCategory.abilities
+                  ? AdvancementSkillTreeView(
+                      session: session,
+                      options: options,
+                      query: query,
+                      onShowInapplicableChanged: ref
+                          .read(
+                            advancementSessionProvider(widget.heroId).notifier,
+                          )
+                          .setShowInapplicableSpecialAbilities,
+                      onPlan: session.isSaving || _dialogOpen ? null : _plan,
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                      itemCount: headerCount + optionCount + bridgeCount,
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      itemBuilder: (context, index) {
+                        if (showImpact && index == 0) {
+                          return AdvancementImpactPanel(session: session);
+                        }
+                        final offset = index - headerCount;
+                        if (showBridge && offset == optionCount) {
+                          return Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              key: ValueKey(
+                                'advancement-activate-hint-${_category.name}',
+                              ),
+                              onPressed: () => _activate(
+                                _category,
+                                // Der Suchtext wandert unverändert weiter; `query` ist
+                                // für den Vergleich bereits kleingeschrieben.
+                                initialQuery: _searchController.text.trim(),
+                              ),
+                              icon: const Icon(Icons.search),
+                              label: const Text(
+                                'Weitere Treffer im Erwerbsblatt suchen',
+                              ),
+                            ),
+                          );
+                        }
+                        if (filtered.isEmpty) {
+                          return _buildEmptyState(context, query);
+                        }
+                        final option = filtered[offset];
+                        return AdvancementOptionCard(
+                          option: option,
+                          planned: plannedTargets.contains(
+                            '${option.kind.name}:${option.targetId}',
+                          ),
+                          onPlan: session.isSaving || _dialogOpen
+                              ? null
+                              : () => _plan(option),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        );
+      },
     );
   }
 

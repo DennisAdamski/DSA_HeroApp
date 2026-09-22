@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/debug/karto_token_sheet.dart';
+import 'package:dsa_heldenverwaltung/ui2/entwicklung/karto_entwicklungsansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_arbeitsbereich.dart';
@@ -126,7 +127,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
                 _verwaltungBesucht
                     ? _verwaltung(session != null)
                     : const SizedBox.shrink(),
-                _planung(breite, session),
+                _planung(session),
               ],
             );
           }
@@ -264,8 +265,8 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     ],
   );
 
-  // Die mobile Historie bekommt ein begrenztes Sheet statt verschachtelter Scrolls.
-  Widget _planung(KartoBreite breite, AdvancementSession? session) {
+  // Start, Speichern und Verwerfen bleiben beim gemeinsamen Workspace-Guard.
+  Widget _planung(AdvancementSession? session) {
     if (_bereich != KartoArbeitsbereich.entwickeln) {
       return const SizedBox.shrink();
     }
@@ -289,18 +290,6 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
         ],
       );
     }
-    final katalog = widget.bestand.planKatalog(widget.heroId);
-    final inhalt = breite.hatDetailspalte
-        ? Row(
-            children: [
-              Expanded(child: katalog),
-              SizedBox(
-                width: breite.hatDreiSpalten ? 320 : 280,
-                child: widget.bestand.planHistorie(widget.heroId),
-              ),
-            ],
-          )
-        : katalog;
     return Column(
       children: [
         Padding(
@@ -315,18 +304,21 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
                 child: const Text('Verwerfen'),
               ),
               FilledButton(
+                key: const ValueKey('karto-plan-commit'),
                 onPressed: session.canCommit ? _uebernehmePlan : null,
-                child: Text(session.isSaving ? 'Speichert …' : 'Übernehmen'),
-              ),
-              if (!breite.hatDetailspalte)
-                TextButton(
-                  onPressed: _zeigePlanHistorie,
-                  child: const Text('AP und Historie'),
+                child: Text(
+                  session.isSaving ? 'Speichert …' : 'Änderungen übernehmen',
                 ),
+              ),
             ],
           ),
         ),
-        Expanded(child: inhalt),
+        Expanded(
+          child: KartoEntwicklungsansicht(
+            heroId: widget.heroId,
+            bestand: widget.bestand,
+          ),
+        ),
       ],
     );
   }
@@ -357,18 +349,4 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
       ),
     ),
   );
-
-  // Die Historie liest denselben Sitzungsprovider wie die Desktopspalte.
-  void _zeigePlanHistorie() {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      builder: (context) => SizedBox(
-        height: MediaQuery.sizeOf(context).height * .8,
-        child: widget.bestand.planHistorie(widget.heroId),
-      ),
-    );
-  }
 }
