@@ -352,6 +352,41 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `grat` und `hoehenlinie` sind fest an die gleichnamigen Farbtoken gepaart.
   Das Token-Blatt (`lib/ui2/debug/karto_token_sheet.dart`) zeigt alles auf
   einer Seite und ist im Debugmodus aus der neuen Oberfläche erreichbar.
+- **Tiefe trägt die Fläche, Gliederung die Linie** — beide dreistufig.
+  `senke` < `blatt` < `feld` gilt in **beiden** Paletten (hell wird `feld`
+  heller, dunkel weniger dunkel); gesetzt wird eine Stufe nie direkt, sondern
+  über `KartoFlaeche` / `KartoFlaechenstufe`
+  (`lib/ui2/widgets/karto_flaeche.dart`), das auch die Paarung Strichgewicht ↔
+  Farbtoken erzwingt. Verteilung: Seitengrund `blatt`, Abschnitte/Karten/
+  Dialoge `feld`, Kontextspalten und Eingabefelder `senke`, schwebendes
+  (Tooltip, Snackbar) `senke`. Ein Eingabefeld auf `feld` wäre innerhalb eines
+  Abschnitts farbgleich und damit unsichtbar. Schatten gibt es weiterhin
+  keine. Radien: `kKartoRadius` 8 für Flächen, `kKartoRadiusKlein` 4 für
+  Chips und Knöpfe — mehr Stufen nicht.
+- Jede Arbeitsfläche beginnt mit `KartoSeitenkopf`
+  (`lib/ui2/widgets/karto_seitenkopf.dart`): Kontextzeile, Titel, eine Aktion,
+  getrennt durch Weißraum statt Linie. Er ist die **einzige** Verwendung von
+  `titelGross`, und die Kontextzeile steht nur dort, nie über einem Abschnitt.
+  Die Seitentitel (`Am Spieltisch`, `Nächste Schritte`) dürfen die
+  Navigationsbeschriftungen nicht wiederholen — beide stehen gleichzeitig im
+  Baum, und die Navigationsprüfungen erwarten ihre Beschriftung genau einmal.
+  Auf `KartoBreite.schmal` entfällt der Titel in der Planung: der Katalog führt
+  dort schon eine eigene Überschrift, und die Höhe wird für die erste
+  Steigerungskarte gebraucht.
+- Die dunkle Bereichsnavigation trägt oben `KartoHeldenmarke`
+  (Avatar oder ringgefasstes Monogramm, Name, Profession) und unten
+  `Heldenauswahl` und `Workspace-Menü`; auf breiten Fenstern gibt es deshalb
+  **keine** `AppBar`, auf schmalen bleibt sie. Beide Tooltips müssen wortgleich
+  erhalten bleiben. Der Avatar kommt über `KartoBestandsAdapter.heldenbild`,
+  nicht über ein eigenes Bildwidget auf `avatarBytesProvider`: Bilder rendert
+  ausschließlich `AvatarGalleryImage`.
+- Zahlen mit Bezugsgröße werden als **ein** `Text.rich` aus mehreren Spans
+  gesetzt, nicht als mehrere `Text`. So trägt der aktuelle Wert das Gewicht und
+  die Bezugsgröße bleibt leise, während `find.text` die Zeile weiterhin als
+  Ganzes findet — der Finder fällt bei fehlendem `Text.data` auf
+  `textSpan.toPlainText()` zurück. Genutzt von `KartoRessourcenwert`
+  (`'27 / 22'`) und `KartoApUebersicht` (`'Frei zu Beginn: 1375 AP'`); beide
+  Formate sind wörtlich gepinnt.
 - Schriften des Neubaus: **Spectral** (statisch, vier eigene Schnitte) für
   Titel, **Inter Tight** (nur variabel, Gewicht über `fontVariations`) für
   Daten. Innerhalb einer Familie darf kein `asset:`-Pfad zweimal stehen —

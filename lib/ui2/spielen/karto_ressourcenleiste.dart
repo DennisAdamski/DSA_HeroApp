@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenwert.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
@@ -11,6 +12,11 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 /// LeP und AuP hat jeder Held. AsP und KaP erscheinen **nur** bei tatsächlich
 /// aktivierter Ressource (`resourceActivation`) — nie aufgrund einer
 /// Profession oder eines Beispielprofils.
+///
+/// Die Werte stehen in **einer** Fläche und sind nur durch Linien getrennt,
+/// nicht als einzeln gerahmte Kacheln. Sie gehören zusammen: es sind die
+/// Vorräte desselben Helden, und vier eigene Kästen lassen sie wie vier
+/// unabhängige Bereiche aussehen.
 class KartoRessourcenleiste extends StatelessWidget {
   /// Erstellt die Leiste aus dem bereits gelesenen Snapshot.
   const KartoRessourcenleiste({
@@ -41,6 +47,7 @@ class KartoRessourcenleiste extends StatelessWidget {
           ({
             KartoRessource art,
             String name,
+            IconData icon,
             int aktuell,
             int maximum,
             Color? farbe,
@@ -49,6 +56,7 @@ class KartoRessourcenleiste extends StatelessWidget {
           (
             art: KartoRessource.lebensenergie,
             name: 'Lebenspunkte',
+            icon: Icons.favorite_outline,
             aktuell: state.currentLep,
             maximum: abgeleitet.maxLep,
             farbe: karto.lebensenergie,
@@ -56,6 +64,7 @@ class KartoRessourcenleiste extends StatelessWidget {
           (
             art: KartoRessource.ausdauer,
             name: 'Ausdauer',
+            icon: Icons.bolt_outlined,
             aktuell: state.currentAu,
             maximum: abgeleitet.maxAu,
             farbe: karto.ausdauer,
@@ -64,6 +73,7 @@ class KartoRessourcenleiste extends StatelessWidget {
             (
               art: KartoRessource.astralenergie,
               name: 'Astralpunkte',
+              icon: Icons.auto_awesome_outlined,
               aktuell: state.currentAsp,
               maximum: abgeleitet.maxAsp,
               farbe: karto.astralenergie,
@@ -72,6 +82,7 @@ class KartoRessourcenleiste extends StatelessWidget {
             (
               art: KartoRessource.karma,
               name: 'Karmapunkte',
+              icon: Icons.brightness_low_outlined,
               aktuell: state.currentKap,
               maximum: abgeleitet.maxKap,
               // Karma hat bewusst kein eigenes Ressourcentoken: nur die drei
@@ -90,26 +101,65 @@ class KartoRessourcenleiste extends StatelessWidget {
             : _mindestbreite;
         final rohSpalten = (verfuegbar / _mindestbreite).floor();
         final spalten = rohSpalten.clamp(1, eintraege.length).toInt();
-        final zellenbreite = spalten == 1
-            ? verfuegbar
-            : (verfuegbar - (spalten - 1) * Abstand.normal) / spalten;
 
-        return Wrap(
-          spacing: Abstand.normal,
-          runSpacing: Abstand.normal,
+        final reihen = <List<int>>[];
+        for (var start = 0; start < eintraege.length; start += spalten) {
+          final ende = start + spalten > eintraege.length
+              ? eintraege.length
+              : start + spalten;
+          reihen.add(<int>[for (var i = start; i < ende; i++) i]);
+        }
+
+        Widget senkrechterTrenner() => VerticalDivider(
+          width: Strich.hoehenlinie,
+          thickness: Strich.hoehenlinie,
+          color: karto.hoehenlinie,
+        );
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            for (final eintrag in eintraege)
-              SizedBox(
-                width: zellenbreite,
-                child: KartoRessourcenwert(
-                  key: ValueKey<String>('karto-ressource-${eintrag.art.name}'),
-                  bezeichnung: eintrag.name,
-                  aktuell: eintrag.aktuell,
-                  maximum: eintrag.maximum,
-                  farbe: eintrag.farbe,
-                  onBearbeiten: () => onBearbeiten(eintrag.art),
+            for (var r = 0; r < reihen.length; r++) ...[
+              if (r > 0)
+                Divider(
+                  height: Abstand.normal,
+                  thickness: Strich.hoehenlinie,
+                  color: karto.hoehenlinie,
+                ),
+              // IntrinsicHeight, damit die senkrechten Trenner die Hoehe der
+              // hoechsten Zelle der Reihe bekommen statt null.
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var c = 0; c < reihen[r].length; c++) ...[
+                      if (c > 0) senkrechterTrenner(),
+                      Expanded(
+                        child: KartoRessourcenwert(
+                          key: ValueKey<String>(
+                            'karto-ressource-'
+                            '${eintraege[reihen[r][c]].art.name}',
+                          ),
+                          bezeichnung: eintraege[reihen[r][c]].name,
+                          icon: eintraege[reihen[r][c]].icon,
+                          aktuell: eintraege[reihen[r][c]].aktuell,
+                          maximum: eintraege[reihen[r][c]].maximum,
+                          farbe: eintraege[reihen[r][c]].farbe,
+                          onBearbeiten: () =>
+                              onBearbeiten(eintraege[reihen[r][c]].art),
+                        ),
+                      ),
+                    ],
+                    // Fuellt eine unvollstaendige letzte Reihe auf, damit ihre
+                    // Zellen dieselbe Breite behalten wie darueber.
+                    for (var c = reihen[r].length; c < spalten; c++) ...[
+                      senkrechterTrenner(),
+                      const Expanded(child: SizedBox.shrink()),
+                    ],
+                  ],
                 ),
               ),
+            ],
           ],
         );
       },

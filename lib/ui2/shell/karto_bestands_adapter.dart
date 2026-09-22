@@ -105,4 +105,21 @@ abstract interface class KartoBestandsAdapter {
     required String heroId,
     required KartoRessource ressource,
   });
+
+  /// Baut das Avatarbild eines Helden als quadratische Flaeche.
+  ///
+  /// Liegt in der Bruecke, weil Bilder ausschliesslich ueber
+  /// `AvatarGalleryImage` gerendert werden duerfen: dort haengen die drei
+  /// getrennten Zustaende (Laden, kein Bild, Fehlschlag mit Grund) und die
+  /// Weitergabe der Bytes per Identitaet, ohne die der globale `ImageCache`
+  /// bei jedem Rebuild verfehlt wird. Ein eigenes Bildwidget in UI2 auf
+  /// `avatarBytesProvider` waere der naheliegende, aber falsche Weg.
+  ///
+  /// [ersatz] erscheint, solange kein Bild vorliegt oder es nicht ladbar ist.
+  Widget heldenbild({
+    required String heroId,
+    required String dateiname,
+    required double groesse,
+    required Widget ersatz,
+  });
 }

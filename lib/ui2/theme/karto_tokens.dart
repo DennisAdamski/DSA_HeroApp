@@ -38,13 +38,23 @@ class KartoTheme extends ThemeExtension<KartoTheme> {
     required this.schleier,
   });
 
-  /// Grund der Seite.
+  /// Grund der Seite: die mittlere der drei Flaechenstufen.
+  ///
+  /// Die drei Flaechen bilden eine Hierarchie wie die drei Linienstaerken:
+  /// [senke] liegt zurueck, [blatt] ist der Grund, [feld] tritt hervor. Die
+  /// Richtung gilt in **beiden** Paletten — hell wird [feld] heller und [senke]
+  /// dunkler, dunkel genau umgekehrt. Gesetzt wird eine Stufe nie direkt,
+  /// sondern ueber `KartoFlaeche` in `lib/ui2/foundation/karto_flaeche.dart`.
   final Color blatt;
 
-  /// Flaeche von Eingaben und hervorgehobenen Zeilen.
+  /// Hervortretende Flaeche: Abschnitte, Karten, Dialoge, Eingaben.
+  ///
+  /// Traegt die Tiefe der Oberflaeche. Kartograph kennt keine Schatten, also
+  /// muss der Flaechenunterschied die Ebene zeigen; ein Abschnitt auf [blatt]
+  /// haette nur seinen Rahmen und saehe aus wie ein Formularkasten.
   final Color feld;
 
-  /// Flaeche von Randspalten und Leisten.
+  /// Zurueckgesetzte Flaeche: Kontextspalten, Leisten, Tabellenkoepfe.
   final Color senke;
 
   /// Staerkste Linie: Grenze eines Bereichs.
@@ -201,12 +211,20 @@ class KartoTheme extends ThemeExtension<KartoTheme> {
   }
 }
 
-/// Einziger Eckenradius der neuen Oberflaeche.
+/// Eckenradius von Flaechen: Abschnitte, Karten, Dialoge, Blaetter.
 ///
-/// Kartograph gliedert mit Linien, nicht mit abgerundeten Kaesten. Der Radius
-/// nimmt Kanten nur die Haerte und wechselt nie mit der Helligkeit, gehoert
+/// Kartograph gliedert weiterhin mit Linien und Flaechen, nicht mit tiefen
+/// Wannen. Der Radius nimmt einer Flaeche aber die Haerte, und das braucht auf
+/// einer Papieroberflaeche mehr als die frueheren 2: bei 2 liest sich jeder
+/// Abschnitt als Formularkasten. Er wechselt nie mit der Helligkeit, gehoert
 /// also nicht ins Theme.
-const double kKartoRadius = 2;
+const double kKartoRadius = 8;
+
+/// Eckenradius kleiner Bedienelemente: Marken, Chips, Knoepfe, Felder.
+///
+/// Eigene Stufe, weil [kKartoRadius] auf einem 21 dp hohen Chip fast zur
+/// Kapsel wird. Mehr als zwei Stufen gibt es bewusst nicht.
+const double kKartoRadiusKlein = 4;
 
 /// Helle Palette: Karte.
 const KartoTheme kartoHell = KartoTheme(

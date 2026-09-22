@@ -18,6 +18,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/insp
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_body.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 
 /// Bindet den neuen Rahmen an die vorhandenen, fachlich vollständigen Ansichten.
@@ -190,6 +191,24 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
         context: themedContext,
         heroId: heroId,
         ressource: ressource,
+      ),
+    );
+  }
+
+  @override
+  Widget heldenbild({
+    required String heroId,
+    required String dateiname,
+    required double groesse,
+    required Widget ersatz,
+  }) {
+    return SizedBox(
+      width: groesse,
+      height: groesse,
+      child: AvatarGalleryImage(
+        heroId: heroId,
+        fileName: dateiname,
+        placeholder: ersatz,
       ),
     );
   }
