@@ -190,3 +190,113 @@ ARCH-01 bleibt wegen des Schadensablaufs **teilweise offen**. ARCH-02 bis
 ARCH-06 werden durch eine neue Darstellung nicht erledigt. Die Brücke und
 alten Screens bleiben bestehen; eine spätere Ablösung und jede Änderung des
 Oberflächenstandards erfordern einen eigenen Auftrag.
+
+## Gestalterische Überarbeitung (22.09.2026)
+
+Die Abnahme oben prüfte Funktionsumfang und Informationsarchitektur. Der
+Bildvergleich zwischen `docs/mockups/hero-workspace-redesign-desktop.png` und
+dem damaligen `spielen-1440-light.png` zeigte danach, dass die **visuelle**
+Qualität des Mockups nicht erreicht war. Ursache war nicht die Schriftwahl,
+sondern die Anwendung der vorhandenen Token.
+
+### Befund
+
+| # | Befund | Ursache |
+|---|---|---|
+| 1 | Keine Flächenhierarchie; sechs gleich aussehende Kästen | `KartoAbschnitt` setzte nur einen Rahmen, kein `color`. Inhalt und Seitengrund waren beide `blatt`. |
+| 2 | Dunkle Navigationsspalte zu ~85 % leer | Sie trug nur die drei Bereichsziele. |
+| 3 | Kein Seitenkopf | Die Schriftrolle `titelGross` (34) kam nirgends vor; alles begann bei 18. |
+| 4 | Kursivrauschen | Eine 15-px-Kursivzeile unter **jedem** Abschnittstitel, meist ohne Aussage. |
+| 5 | Ressourcen betonten das Falsche | `'27 / 22'` ganz in Ressourcenfarbe, beide Zahlen gleich groß; 2,5-dp-Balken direkt unter dem Text las sich als Unterstreichung. |
+| 6 | „Formular“ statt „Codex“ | Radius 2 auf allem, dazu überall dieselbe 1-px-Kante. |
+
+### Entscheidung
+
+Freigegeben wurde, Maße und Flächenbehandlung an das Mockup anzugleichen;
+Schriften und Token-Architektur blieben unberührt. Der Nachtrag steht in
+`docs/superpowers/specs/2026-09-19-codex-redesign-design.md`.
+
+**Die Palette musste dafür nicht geändert werden.** `feld` und `senke`
+kodierten die richtige Beziehung zu `blatt` bereits, wurden aber fast nur als
+Eingabefüllung benutzt. Aus der Umwidmung entstand die dreistufige
+Flächenhierarchie `senke` < `blatt` < `feld`, die in beiden Paletten dieselbe
+Richtung hat. `karto_contrast_test.dart` prüft Text gegen alle drei Flächen
+bereits auf 4,5:1, die Umwidmung war damit abgesichert.
+
+Geändert wurden: `kKartoRadius` 2 → 8 (neu daneben `kKartoRadiusKlein` 4 für
+Chips, Knöpfe und Kacheln), `KartoBreite.seitenrand` 16/20/24/32 → 20/28/36/44,
+Panelkante von `grat` auf `hoehenlinie`, Eingabefüllung von `feld` auf `senke`
+(ein Feld ist eingelassen, nicht erhoben; auf `feld` wäre es innerhalb eines
+Abschnitts farbgleich).
+
+### Neue Bausteine
+
+| Datei | Aufgabe |
+|---|---|
+| `lib/ui2/widgets/karto_flaeche.dart` | `KartoFlaeche` mit `KartoFlaechenstufe`; erzwingt die Paarung Strichgewicht ↔ Farbtoken wie `Strich` |
+| `lib/ui2/widgets/karto_seitenkopf.dart` | Kontextzeile, Seitentitel, eine Seitenaktion; einzige Verwendung von `titelGross` |
+| `lib/ui2/shell/karto_heldenmarke.dart` | Bild oder Monogramm in gleicher Ringfassung, Name, Herkunft |
+
+Die Identitätsspalte zeigt den echten Avatar. Weil Bilder ausschließlich
+`AvatarGalleryImage` rendern darf, läuft er über die neue Adaptermethode
+`KartoBestandsAdapter.heldenbild`. `avatarBytesProvider` wäre aus UI2 direkt
+erreichbar — ein eigenes Bildwidget darauf verlöre die drei getrennten
+Zustände und den `ImageCache`-Treffer. Helden ohne Bild bekommen ein
+ringgefasstes Monogramm.
+
+Auf breiten Fenstern entfällt die `AppBar`; „Heldenauswahl“ und
+„Workspace-Menü“ wandern in den Fußbereich der Spalte und behalten ihre
+Tooltips. Auf schmalen Fenstern bleibt alles wie zuvor.
+
+### Warum kein Test brach
+
+Die bestehenden Pins blieben unverändert gültig, auch die heiklen:
+
+- **`find.text('23 / 35')`** überlebt die Aufteilung in großen Wert und leises
+  Maximum, weil `Text.rich` verwendet wird und `_MatchTextFinder` bei fehlendem
+  `Text.data` auf `textSpan.toPlainText()` zurückfällt
+  (`flutter_test/lib/src/finders.dart`). Dieselbe Technik trägt die AP-Zeilen
+  `'Frei zu Beginn: 1375 AP'`.
+- **`LinearProgressIndicator`** bleibt als Widgettyp erhalten; geändert wurden
+  nur `minHeight` (2,5 → 5) und die Rinnenfarbe (`raster` statt `hoehenlinie`).
+- **`kKartoRadius`** wird in `karto_compat_theme_test.dart` gegen die Konstante
+  verglichen, nicht gegen einen Zahlenwert.
+- Alle Abschnittstitel, Navigationslabels, Verwaltungstexte und `ValueKey`
+  blieben wörtlich. Die Seitentitel sind deshalb bewusst **„Am Spieltisch“**
+  und **„Nächste Schritte“**: eine Wiederholung der Navigationsbeschriftungen
+  hätte die `findsOneWidget`-Prüfungen gebrochen.
+
+Neu hinzugekommen sind `test/ui2/widgets/karto_flaeche_test.dart`,
+`test/ui2/widgets/karto_seitenkopf_test.dart`,
+`test/ui2/shell/karto_heldenmarke_test.dart` und
+`test/ui2/shell/karto_identitaet_test.dart` (Anbindung von `heldenbild`).
+
+### Sichtprüfungsbefunde
+
+Zwei Fehler fanden erst die neu erzeugten Screenshots, keine Widgetprüfung:
+
+1. **Der Seitenkopf der Planung stand zentriert.** `Column` richtet seine
+   schrumpfenden Kinder ohne `crossAxisAlignment: stretch` mittig aus. Betraf
+   auch den Sperrhinweis der Verwaltung.
+2. **Auf 390 dp verschärfte der neue Seitentitel ein bekanntes Platzproblem.**
+   Die Abnahme oben hatte bereits notiert, dass die Planung dort zwei Drittel
+   der Höhe braucht, bevor die erste Steigerungskarte beginnt. Schmale Fenster
+   bekommen in der Planung deshalb **keinen** Seitentitel; der Katalog darunter
+   führt mit „Steigerungen planen“ ohnehin seine eigene Überschrift.
+
+Außerdem wurde die Navigationsspalte dreistufig breit (272/248/208 dp): mit
+durchgehend 232 dp nahm sie auf Tabletbreiten fast ein Drittel der Fläche ein.
+
+### Bewusst nicht enthalten
+
+Keine neuen Funktionen. Die Negativprüfung in
+`test/ui2/spielen/karto_spielverlauf_test.dart` blieb unverändert und sperrt
+weiterhin Schadensknopf, KR-Zähler, Favoriten und erfundene Sync-Angaben.
+
+Die über `KartoBestandsAdapter` eingebundenen Ansichten aus `lib/ui/` wurden
+nicht überarbeitet; sie erben nur die Theme-Änderungen über
+`buildKartoCompatTheme`. Sichtbar bleibt das an drei Stellen: der
+Steigerungskatalog führt unter dem Seitentitel seine eigene Überschrift samt
+kursiver Erläuterung, seine Metazeilen sind weiterhin punktverbundene
+Fließtexte (`Wert: 15 · Maximum: 21 · SE: 0`) statt ausgerichteter Zahlen, und
+die Rechtsausrichtung numerischer Inventarspalten steht weiterhin aus.

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
@@ -9,6 +10,8 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielaktionen.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
 
 /// Führt eine Laufzeitaktion aus und meldet Fehler sichtbar.
 ///
@@ -65,10 +68,14 @@ class KartoSpielansicht extends ConsumerWidget {
         final seite = _seitenabschnitte(context, ref, werte);
         final protokoll = KartoAbschnitt(
           titel: 'Würfelprotokoll',
-          hinweis: 'Letzte Würfe dieses Helden',
           child: bestand.spielProtokoll(werte),
         );
         final rand = EdgeInsets.all(breite.seitenrand);
+        final kopf = KartoSeitenkopf(
+          titel: 'Am Spieltisch',
+          kontext: _laufendesAbenteuer(werte),
+          kompakt: breite == KartoBreite.schmal,
+        );
 
         // Ohne Seiteninhalt gäbe eine zweite Spalte nur leere Fläche.
         if (!breite.hatDetailspalte || seite.isEmpty) {
@@ -76,34 +83,54 @@ class KartoSpielansicht extends ConsumerWidget {
             padding: rand,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: _mitLuecken([...haupt, ...seite, protokoll]),
+              children: [
+                kopf,
+                ..._mitLuecken([...haupt, ...seite, protokoll]),
+              ],
             ),
           );
         }
         return SingleChildScrollView(
           padding: rand,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: _mitLuecken([...haupt, protokoll]),
-                ),
-              ),
-              const SizedBox(width: Abstand.bahn),
-              SizedBox(
-                width: breite.hatDreiSpalten ? 320 : 280,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: _mitLuecken(seite),
-                ),
+              kopf,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: _mitLuecken([...haupt, protokoll]),
+                    ),
+                  ),
+                  const SizedBox(width: Abstand.bahn),
+                  SizedBox(
+                    width: breite.hatDreiSpalten ? 320 : 280,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: _mitLuecken(seite),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         );
       },
     );
+  }
+
+  // Titel des laufenden Abenteuers als Einordnung der Seite. Leer, wenn keines
+  // gepflegt ist — eine erfundene Zeile waere schlimmer als gar keine.
+  String? _laufendesAbenteuer(HeroComputedSnapshot werte) {
+    for (final abenteuer in werte.hero.adventures) {
+      if (abenteuer.status != HeroAdventureStatus.current) continue;
+      final titel = abenteuer.title.trim();
+      if (titel.isNotEmpty) return titel;
+    }
+    return null;
   }
 
   // Reihenfolge laut Spezifikation: Ressourcen zuerst, dann Aktionen.
@@ -115,7 +142,6 @@ class KartoSpielansicht extends ConsumerWidget {
     return <Widget>[
       KartoAbschnitt(
         titel: 'Ressourcen',
-        hinweis: 'Gespeicherte Werte dieses Helden',
         child: KartoRessourcenleiste(
           werte: werte,
           onBearbeiten: (ressource) => aktion(
@@ -129,7 +155,6 @@ class KartoSpielansicht extends ConsumerWidget {
       ),
       KartoAbschnitt(
         titel: 'Schnellaktionen',
-        hinweis: 'Würfeln und Rasten über die bestehenden Wege',
         child: KartoSpielaktionen(
           kuerzelHinweis: 'Strg K',
           onProbeSuchen: () => aktion(
@@ -149,7 +174,9 @@ class KartoSpielansicht extends ConsumerWidget {
   }
 
   // Auf breiten Fenstern steht diese Spalte neben den Spielaktionen; auf
-  // schmalen folgt sie ihnen in derselben Reihenfolge.
+  // schmalen folgt sie ihnen in derselben Reihenfolge. Sie sitzt eine
+  // Flächenstufe tiefer, damit sie als Begleitspalte lesbar bleibt und nicht
+  // mit der Hauptspalte um dieselbe Aufmerksamkeit konkurriert.
   List<Widget> _seitenabschnitte(
     BuildContext context,
     WidgetRef ref,
@@ -158,12 +185,12 @@ class KartoSpielansicht extends ConsumerWidget {
     return <Widget>[
       KartoAbschnitt(
         titel: 'Kampf',
-        hinweis: 'Schnellproben aus der vorhandenen Vorschau',
+        stufe: KartoFlaechenstufe.senke,
         child: bestand.spielKampfproben(heroId: heroId, werte: werte),
       ),
       KartoAbschnitt(
         titel: 'Aktive Effekte',
-        hinweis: 'Auch Fremdzauber auf nichtmagische Helden',
+        stufe: KartoFlaechenstufe.senke,
         aktion: TextButton(
           key: const ValueKey<String>('karto-spiel-effekte'),
           onPressed: () =>
@@ -174,7 +201,7 @@ class KartoSpielansicht extends ConsumerWidget {
       ),
       KartoAbschnitt(
         titel: 'Zustand',
-        hinweis: 'Belastung, Wunden und Statuswerte',
+        stufe: KartoFlaechenstufe.senke,
         child: bestand.spielZustand(heroId: heroId, werte: werte),
       ),
     ];

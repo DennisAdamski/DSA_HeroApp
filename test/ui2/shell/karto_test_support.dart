@@ -140,6 +140,21 @@ class TestBestand implements KartoBestandsAdapter {
   }) async {
     aufrufe.add('ressource:$heroId:${ressource.name}');
   }
+
+  @override
+  Widget heldenbild({
+    required String heroId,
+    required String dateiname,
+    required double groesse,
+    required Widget ersatz,
+  }) {
+    aufrufe.add('heldenbild:$heroId:$dateiname');
+    return SizedBox(
+      width: groesse,
+      height: groesse,
+      child: Center(child: Text('Bild $dateiname')),
+    );
+  }
 }
 
 class _TestVerwaltung extends StatefulWidget {

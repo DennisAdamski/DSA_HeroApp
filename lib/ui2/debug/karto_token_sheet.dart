@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 
 /// Zeigt alle Token der neuen Oberflaeche auf einer Seite.
 ///
@@ -32,15 +33,38 @@ class KartoTokenSheet extends StatelessWidget {
           _Abschnitt(
             titel: 'Flächen',
             erklaerung:
-                'Drei Ebenen, mehr gibt es nicht. Tiefe entsteht durch '
-                'Linien, nicht durch Schatten.',
-            child: Wrap(
-              spacing: Abstand.weit,
-              runSpacing: Abstand.weit,
+                'Drei Ebenen, mehr gibt es nicht. Tiefe entsteht durch die '
+                'Fläche, nicht durch Schatten: senke liegt zurück, blatt ist '
+                'der Grund, feld tritt hervor. In der dunklen Palette dreht '
+                'sich der Helligkeitswert, die Rolle bleibt.',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _Feld('blatt', t.blatt, t),
-                _Feld('feld', t.feld, t),
-                _Feld('senke', t.senke, t),
+                Wrap(
+                  spacing: Abstand.weit,
+                  runSpacing: Abstand.weit,
+                  children: [
+                    _Feld('senke', t.senke, t),
+                    _Feld('blatt', t.blatt, t),
+                    _Feld('feld', t.feld, t),
+                  ],
+                ),
+                const SizedBox(height: Abstand.block),
+                // Die Stapelung ist der eigentliche Punkt: nebeneinander
+                // sehen die drei Toene fast gleich aus, uebereinander tragen
+                // sie die Ebene.
+                KartoFlaeche(
+                  stufe: KartoFlaechenstufe.senke,
+                  innen: const EdgeInsets.all(Abstand.weit),
+                  child: KartoFlaeche(
+                    stufe: KartoFlaechenstufe.blatt,
+                    innen: const EdgeInsets.all(Abstand.weit),
+                    child: KartoFlaeche(
+                      innen: const EdgeInsets.all(Abstand.weit),
+                      child: Text('senke · blatt · feld', style: s.etikett),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

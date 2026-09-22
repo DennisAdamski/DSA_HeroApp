@@ -54,10 +54,14 @@ extension KartoBreiteX on KartoBreite {
   bool get hatDreiSpalten => this == KartoBreite.sehrBreit;
 
   /// Seitenrand des Inhalts.
+  ///
+  /// Bewusst grosszuegiger als der Innenraum eines Abschnitts. Eine Arbeits-
+  /// flaeche wirkt ruhig, wenn sie aussen Luft hat und innen dicht steht; bei
+  /// gleich grossen Abstaenden verschwimmen Seite und Abschnitt ineinander.
   double get seitenrand => switch (this) {
-    KartoBreite.schmal => 16,
-    KartoBreite.tablet => 20,
-    KartoBreite.breit => 24,
-    KartoBreite.sehrBreit => 32,
+    KartoBreite.schmal => 20,
+    KartoBreite.tablet => 28,
+    KartoBreite.breit => 36,
+    KartoBreite.sehrBreit => 44,
   };
 }

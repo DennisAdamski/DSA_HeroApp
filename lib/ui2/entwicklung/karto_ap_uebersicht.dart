@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:flutter/material.dart';
 
 /// Zeigt die drei bereits berechneten AP-Werte einer Steigerungsrunde.
@@ -64,10 +65,25 @@ class _ApWert extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final style = emphasized
-        ? theme.textTheme.titleSmall?.copyWith(color: context.karto.meer)
-        : theme.textTheme.bodyMedium;
-    return Text('$label: $value AP', style: style);
+    final karto = context.karto;
+    final texte = Theme.of(context).textTheme;
+    final zahlfarbe = emphasized ? karto.meer : karto.schrift;
+    // Eine Textzeile aus drei Spans statt eines Satzes: Beschriftung und
+    // Einheit bleiben leise, die Zahl traegt das Gewicht. Der zusammengesetzte
+    // Klartext ist unveraendert, die Zeile also weiterhin als Ganzes
+    // auffindbar und vorlesbar.
+    return Text.rich(
+      TextSpan(
+        style: texte.etikett.copyWith(color: karto.schriftLeise),
+        children: <InlineSpan>[
+          TextSpan(text: '$label: '),
+          TextSpan(
+            text: '$value',
+            style: texte.wertGross.copyWith(color: zahlfarbe),
+          ),
+          const TextSpan(text: ' AP'),
+        ],
+      ),
+    );
   }
 }

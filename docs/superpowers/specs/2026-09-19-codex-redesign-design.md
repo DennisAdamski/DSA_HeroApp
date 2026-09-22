@@ -13,10 +13,21 @@ Drei Bereiche heißen **Spielen**, **Held verwalten**, **Entwicklung planen**.
 
 Der inzwischen vorhandene Kartograph-Unterbau bleibt erhalten: `KartoTheme`,
 `Abstand`, `Strich`, `KartoBreite`, Spectral und Inter Tight. Das ist die
-technische Gestaltungsbasis; Cinzel/Segoe UI aus dem HTML und große Rundungen
-werden nicht zusätzlich als konkurrierendes Flutter-Designsystem eingeführt.
+technische Gestaltungsbasis; Cinzel/Segoe UI aus dem HTML werden nicht
+zusätzlich als konkurrierendes Flutter-Designsystem eingeführt.
 Den visuellen Gesamteindruck anhand echter Flutter-Screenshots überprüfen.
 Heller Modus ist die Hauptreferenz, dunkler Modus bleibt bedienbar.
+
+> **Nachtrag 22.09.2026 — Maße und Flächen freigegeben.** Der Satz oben
+> untersagte ursprünglich auch „große Rundungen“. Die Abnahme von R1–R3 hat
+> gezeigt, dass dadurch der sichtbare Abstand zum Mockup blieb: Abschnitte
+> trugen nur einen Rahmen auf dem Seitengrund und standen mit Radius 2 als
+> gleichförmige Formularkästen untereinander. Freigegeben sind seither
+> `kKartoRadius` 8 (plus `kKartoRadiusKlein` 4) und die dreistufige
+> Flächenhierarchie `senke`/`blatt`/`feld`. **Die Schriften und die
+> Token-Architektur sind davon ausdrücklich nicht berührt.** Umsetzung und
+> Begründung stehen in [redesign_acceptance.md](../../redesign_acceptance.md)
+> im Abschnitt „Gestalterische Überarbeitung“.
 
 `AppRootSwitch` unter `SyncConflictGate` bleibt die Startweiche. Kein zweites
 `MaterialApp`, `AppStartupGate`, Repository oder Sync-System. Die bestehende

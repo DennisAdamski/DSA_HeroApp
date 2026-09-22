@@ -99,7 +99,14 @@ class KartoEntwicklungsansicht extends ConsumerWidget {
                         ),
                         SizedBox(
                           width: breite.hatDreiSpalten ? 336 : 304,
-                          child: bestand.planHistorie(heroId),
+                          // Begleitspalte auf der zurueckgesetzten Flaeche,
+                          // wie die Kontextspalte der Spielansicht. Ohne
+                          // Radius, weil sie ueber die volle Hoehe laeuft und
+                          // eine Kachel waere.
+                          child: ColoredBox(
+                            color: context.karto.senke,
+                            child: bestand.planHistorie(heroId),
+                          ),
                         ),
                       ],
                     )

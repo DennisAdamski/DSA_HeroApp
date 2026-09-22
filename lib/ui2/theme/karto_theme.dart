@@ -7,16 +7,22 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 /// Baut das Theme der neuen Oberflaeche.
 ///
 /// Der Leitgedanke steckt in den Komponenten-Themes: keine Schatten, keine
-/// Fuellkaesten, keine Verlaeufe. Flaechen werden durch Linien gegliedert, und
-/// die Linienstaerke traegt die Hierarchie. Deshalb ist `elevation` durchgehend
-/// 0, `surfaceTintColor` durchgehend transparent, und Eingaben bekommen eine
-/// Unterlinie statt eines Rahmens.
+/// Verlaeufe. Tiefe entsteht aus der **Flaeche**, Gliederung aus der **Linie**,
+/// und beide sind dreistufig (`senke`/`blatt`/`feld`,
+/// `hoehenlinie`/`grat`/`kueste`). Deshalb ist `elevation` durchgehend 0 und
+/// `surfaceTintColor` durchgehend transparent.
+///
+/// Die Flaechen sind so verteilt: Seitengrund `blatt`, erhobene Flaechen wie
+/// Karten und Dialoge `feld`, eingelassene wie Eingabefelder und schwebende wie
+/// Tooltip und Snackbar `senke`. Ein Eingabefeld auf `feld` waere innerhalb
+/// eines Abschnitts unsichtbar, weil der Abschnitt dieselbe Farbe traegt.
 ThemeData buildKartoTheme({
   required Brightness brightness,
   required bool centerAppBarTitle,
 }) {
   final t = brightness == Brightness.dark ? kartoDunkel : kartoHell;
   final radius = BorderRadius.circular(kKartoRadius);
+  final radiusKlein = BorderRadius.circular(kKartoRadiusKlein);
   const durchsichtig = Color(0x00000000);
 
   final colorScheme = ColorScheme(
@@ -84,14 +90,17 @@ ThemeData buildKartoTheme({
       ),
     ),
 
+    // Eine Karte ist eine erhobene Flaeche. Mit Fuellung genuegt die
+    // schwaechste Kante; der frueher noetige `grat` war nur deshalb noetig,
+    // weil die Karte denselben Grund wie die Seite trug.
     cardTheme: CardThemeData(
-      color: t.blatt,
+      color: t.feld,
       surfaceTintColor: durchsichtig,
       elevation: 0,
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: radius,
-        side: BorderSide(color: t.grat, width: Strich.grat),
+        side: BorderSide(color: t.hoehenlinie, width: Strich.hoehenlinie),
       ),
     ),
 
@@ -102,10 +111,12 @@ ThemeData buildKartoTheme({
     ),
 
     // Unterlinie statt Kasten: ein Feld ist eine beschriebene Zeile, kein
-    // eigener Behaelter.
+    // eigener Behaelter. Die Fuellung ist `senke`, nicht `feld` — ein Feld ist
+    // in seine Flaeche eingelassen, und auf `feld` waere es innerhalb eines
+    // Abschnitts farbgleich und damit unsichtbar.
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: t.feld,
+      fillColor: t.senke,
       isDense: true,
       labelStyle: textTheme.etikett,
       helperStyle: textTheme.legende,
@@ -131,7 +142,7 @@ ThemeData buildKartoTheme({
       backgroundColor: t.feld,
       selectedColor: t.meer.withValues(alpha: 0.14),
       side: BorderSide(color: t.grat, width: Strich.grat),
-      shape: RoundedRectangleBorder(borderRadius: radius),
+      shape: RoundedRectangleBorder(borderRadius: radiusKlein),
       labelStyle: textTheme.marke,
       secondaryLabelStyle: textTheme.marke,
       showCheckmark: false,
@@ -144,7 +155,7 @@ ThemeData buildKartoTheme({
         backgroundColor: t.meer,
         foregroundColor: t.schriftAufSignal,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: radius),
+        shape: RoundedRectangleBorder(borderRadius: radiusKlein),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       ),
     ),
@@ -153,7 +164,7 @@ ThemeData buildKartoTheme({
       style: OutlinedButton.styleFrom(
         foregroundColor: t.schrift,
         side: BorderSide(color: t.grat, width: Strich.grat),
-        shape: RoundedRectangleBorder(borderRadius: radius),
+        shape: RoundedRectangleBorder(borderRadius: radiusKlein),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       ),
     ),
@@ -161,14 +172,14 @@ ThemeData buildKartoTheme({
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: t.meer,
-        shape: RoundedRectangleBorder(borderRadius: radius),
+        shape: RoundedRectangleBorder(borderRadius: radiusKlein),
       ),
     ),
 
     listTileTheme: ListTileThemeData(
       iconColor: t.schriftLeise,
       textColor: t.schrift,
-      shape: RoundedRectangleBorder(borderRadius: radius),
+      shape: RoundedRectangleBorder(borderRadius: radiusKlein),
     ),
 
     tabBarTheme: TabBarThemeData(
@@ -182,10 +193,12 @@ ThemeData buildKartoTheme({
       ),
     ),
 
+    // Schwebendes bekommt `senke`: auf `feld` waere ein Tooltip ueber einem
+    // Abschnitt farbgleich mit ihm.
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(
         color: t.senke,
-        borderRadius: radius,
+        borderRadius: radiusKlein,
         border: Border.all(color: t.grat, width: Strich.grat),
       ),
       textStyle: textTheme.fliess,
@@ -202,8 +215,10 @@ ThemeData buildKartoTheme({
       ),
     ),
 
+    // Ein Dialog ist die am staerksten erhobene Flaeche und grenzt sich mit der
+    // staerksten Linie ab.
     dialogTheme: DialogThemeData(
-      backgroundColor: t.blatt,
+      backgroundColor: t.feld,
       surfaceTintColor: durchsichtig,
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -212,16 +227,18 @@ ThemeData buildKartoTheme({
       ),
     ),
 
+    // Die Rinne ist `raster` (Gitter), nicht `hoehenlinie` (Linie): sie ist
+    // eine Flaeche und muss auch auf `feld` noch als leerer Rest lesbar sein.
     progressIndicatorTheme: ProgressIndicatorThemeData(
       color: t.meer,
-      linearTrackColor: t.hoehenlinie,
-      circularTrackColor: t.hoehenlinie,
+      linearTrackColor: t.raster,
+      circularTrackColor: t.raster,
     ),
 
     scrollbarTheme: ScrollbarThemeData(
       thumbColor: WidgetStatePropertyAll<Color>(t.grat),
       thickness: const WidgetStatePropertyAll<double>(6),
-      radius: const Radius.circular(kKartoRadius),
+      radius: const Radius.circular(kKartoRadiusKlein),
     ),
   );
 }

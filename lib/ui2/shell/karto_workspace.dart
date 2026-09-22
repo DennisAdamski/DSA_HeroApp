@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/debug/karto_token_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui2/entwicklung/karto_entwicklungsansicht.dart';
@@ -12,8 +13,10 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_arbeitsbereich.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_heldenmarke.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_modus_navigation.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 
 part 'karto_workspace_navigation.dart';
@@ -106,6 +109,10 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
             bereich: _bereich,
             kompakt: schmal,
             onAuswahl: _wechsleBereich,
+            // Identitaet und globale Aktionen fuellen die Spalte nur dort, wo
+            // es eine gibt. Schmal traegt sie die AppBar.
+            kopf: schmal || hero == null ? null : _navigationsKopf(hero),
+            fuss: schmal ? null : _navigationsFuss(),
           );
           Widget inhalt;
           if (computed.hasError) {
@@ -127,48 +134,35 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
                 _verwaltungBesucht
                     ? _verwaltung(session != null)
                     : const SizedBox.shrink(),
-                _planung(session),
+                _planung(session, breite),
               ],
             );
           }
           return Scaffold(
-            appBar: AppBar(
-              title: Text(
-                hero?.name ?? 'Held',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              leading: IconButton(
-                tooltip: 'Heldenauswahl',
-                onPressed: _zurHeldenwahl,
-                icon: const Icon(Icons.arrow_back),
-              ),
-              actions: [
-                PopupMenuButton<String>(
-                  tooltip: 'Workspace-Menü',
-                  onSelected: _menueAktion,
-                  itemBuilder: (_) => [
-                    const PopupMenuItem(
-                      value: 'helden',
-                      child: Text('Helden verwalten'),
+            // Breit tragen Identitaetsspalte und Seitenkopf die Kopfzeile; eine
+            // zusaetzliche AppBar brachte nur den Heldennamen ein zweites Mal
+            // und schob den Inhalt nach unten.
+            appBar: schmal
+                ? AppBar(
+                    title: Text(
+                      hero?.name ?? 'Held',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const PopupMenuItem(
-                      value: 'einstellungen',
-                      child: Text('Einstellungen'),
+                    leading: IconButton(
+                      tooltip: 'Heldenauswahl',
+                      onPressed: _zurHeldenwahl,
+                      icon: const Icon(Icons.arrow_back),
                     ),
-                    const PopupMenuItem(
-                      value: 'bestand',
-                      child: Text('Zur bestehenden Oberfläche'),
-                    ),
-                    if (ref.read(debugModusProvider))
-                      const PopupMenuItem(
-                        value: 'token',
-                        child: Text('Token-Blatt'),
+                    actions: [
+                      PopupMenuButton<String>(
+                        tooltip: 'Workspace-Menü',
+                        onSelected: _menueAktion,
+                        itemBuilder: (_) => _menueEintraege(),
                       ),
-                  ],
-                ),
-              ],
-            ),
+                    ],
+                  )
+                : null,
             bottomNavigationBar: schmal
                 ? Material(
                     color: context.karto.navigation,
@@ -180,26 +174,102 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
                 : null,
             body: schmal
                 ? inhalt
-                : Row(
-                    // Ohne stretch bekommt die Leiste nur die Hoehe ihrer drei
-                    // Ziele und saesse als dunkler Block mitten im Hellen.
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(
-                        width: breite.hatDreiSpalten ? 232 : 184,
-                        child: ColoredBox(
-                          color: context.karto.navigation,
-                          child: SingleChildScrollView(child: navigation),
+                : SafeArea(
+                    child: Row(
+                      // Ohne stretch bekommt die Leiste nur die Hoehe ihrer
+                      // drei Ziele und saesse als dunkler Block mitten im
+                      // Hellen.
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SizedBox(
+                          width: switch (breite) {
+                            KartoBreite.sehrBreit => 272.0,
+                            KartoBreite.breit => 248.0,
+                            _ => 208.0,
+                          },
+                          child: ColoredBox(
+                            color: context.karto.navigation,
+                            child: SingleChildScrollView(child: navigation),
+                          ),
                         ),
-                      ),
-                      Expanded(child: inhalt),
-                    ],
+                        Expanded(child: inhalt),
+                      ],
+                    ),
                   ),
           );
         },
       ),
     );
   }
+
+  // Die Marke zeigt, wessen Bogen offen ist. Das Bild kommt ueber die Bruecke,
+  // weil Avatare ausschliesslich `AvatarGalleryImage` rendern darf.
+  Widget _navigationsKopf(HeroSheet hero) {
+    final dateiname = hero.appearance.aktivesBild?.fileName;
+    return KartoHeldenmarke(
+      name: hero.name,
+      herkunft: _herkunft(hero),
+      bild: dateiname == null
+          ? null
+          : (ersatz) => widget.bestand.heldenbild(
+              heroId: widget.heroId,
+              dateiname: dateiname,
+              groesse: 88,
+              ersatz: ersatz,
+            ),
+    );
+  }
+
+  // Die Profession benennt einen Helden am genauesten; Kultur und Rasse
+  // springen nur ein, damit die Zeile bei unvollstaendigen Boegen nicht leer
+  // bleibt und die Marke ihre Hoehe behaelt.
+  String _herkunft(HeroSheet hero) {
+    final kandidaten = <String>[
+      hero.background.profession,
+      hero.background.kultur,
+      hero.background.rasse,
+    ];
+    for (final wert in kandidaten) {
+      if (wert.trim().isNotEmpty) return wert.trim();
+    }
+    return '';
+  }
+
+  // Beide Wege tragen dieselben Tooltips wie zuvor in der AppBar: sie sind die
+  // Einstiege, auf die sich Bedien- und Abnahmetests beziehen.
+  Widget _navigationsFuss() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      _Fussziel(
+        icon: Icons.arrow_back,
+        beschriftung: 'Heldenauswahl',
+        onTap: _zurHeldenwahl,
+      ),
+      PopupMenuButton<String>(
+        tooltip: 'Workspace-Menü',
+        onSelected: _menueAktion,
+        itemBuilder: (_) => _menueEintraege(),
+        // Kein eigener Tooltip im Ziel: der Knopf bringt bereits einen mit,
+        // und zwei gleichlautende waeren in den Bedientests doppelt.
+        child: const _Fussziel(
+          icon: Icons.more_horiz,
+          beschriftung: 'Workspace-Menü',
+        ),
+      ),
+    ],
+  );
+
+  List<PopupMenuEntry<String>> _menueEintraege() => <PopupMenuEntry<String>>[
+    const PopupMenuItem(value: 'helden', child: Text('Helden verwalten')),
+    const PopupMenuItem(value: 'einstellungen', child: Text('Einstellungen')),
+    const PopupMenuItem(
+      value: 'bestand',
+      child: Text('Zur bestehenden Oberfläche'),
+    ),
+    if (ref.read(debugModusProvider))
+      const PopupMenuItem(value: 'token', child: Text('Token-Blatt')),
+  ];
 
   // Strg/Cmd+K gilt nur im Spielen-Bereich und verschwindet mit dem
   // Workspace. Der IndexedStack haelt die anderen Bereiche am Leben, deshalb
@@ -238,6 +308,9 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
 
   // Während einer Sitzung bleiben sämtliche manuellen Schreibwege gesperrt.
   Widget _verwaltung(bool gesperrt) => Column(
+    // Ohne stretch zentriert Column seine schrumpfenden Kinder; der
+    // Sperrhinweis staende dann mittig statt am linken Rand.
+    crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       if (gesperrt)
         Padding(
@@ -266,7 +339,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
   );
 
   // Start, Speichern und Verwerfen bleiben beim gemeinsamen Workspace-Guard.
-  Widget _planung(AdvancementSession? session) {
+  Widget _planung(AdvancementSession? session, KartoBreite breite) {
     if (_bereich != KartoArbeitsbereich.entwickeln) {
       return const SizedBox.shrink();
     }
@@ -291,27 +364,17 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
       );
     }
     return Column(
+      // Siehe _verwaltung: ohne stretch zentriert Column den Seitenkopf.
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.all(Abstand.normal),
-          child: Wrap(
-            spacing: Abstand.normal,
-            runSpacing: Abstand.knapp,
-            children: [
-              const Text('Entwurf – wird erst beim Übernehmen gespeichert.'),
-              OutlinedButton(
-                onPressed: session.isSaving ? null : _verwirfPlan,
-                child: const Text('Verwerfen'),
-              ),
-              FilledButton(
-                key: const ValueKey('karto-plan-commit'),
-                onPressed: session.canCommit ? _uebernehmePlan : null,
-                child: Text(
-                  session.isSaving ? 'Speichert …' : 'Änderungen übernehmen',
-                ),
-              ),
-            ],
+          padding: EdgeInsets.fromLTRB(
+            breite.seitenrand,
+            breite.seitenrand,
+            breite.seitenrand,
+            0,
           ),
+          child: _planungskopf(session, breite),
         ),
         Expanded(
           child: KartoEntwicklungsansicht(
@@ -320,6 +383,57 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
           ),
         ),
       ],
+    );
+  }
+
+  // Der Entwurfshinweis ist die Einordnung dieser Seite und steht deshalb als
+  // Kontextzeile ueber dem Titel, nicht als eigene Leiste daneben.
+  //
+  // Schmale Fenster bekommen **keinen** Seitentitel: der Katalog darunter
+  // fuehrt bereits seine eigene Ueberschrift, und die Planung braucht die
+  // Hoehe fuer die erste Steigerungskarte. Auf breiten Fenstern ist beides
+  // Platz genug und die Stufung Seite → Abschnitt hilfreich.
+  Widget _planungskopf(AdvancementSession session, KartoBreite breite) {
+    const entwurf = 'Entwurf – wird erst beim Übernehmen gespeichert.';
+    final aktionen = Wrap(
+      spacing: Abstand.normal,
+      runSpacing: Abstand.knapp,
+      children: [
+        OutlinedButton(
+          onPressed: session.isSaving ? null : _verwirfPlan,
+          child: const Text('Verwerfen'),
+        ),
+        FilledButton(
+          key: const ValueKey('karto-plan-commit'),
+          onPressed: session.canCommit ? _uebernehmePlan : null,
+          child: Text(
+            session.isSaving ? 'Speichert …' : 'Änderungen übernehmen',
+          ),
+        ),
+      ],
+    );
+    if (breite != KartoBreite.schmal) {
+      return KartoSeitenkopf(
+        titel: 'Nächste Schritte',
+        kontext: entwurf,
+        aktion: aktionen,
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Abstand.block),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            entwurf,
+            style: Theme.of(context).textTheme.labelMedium
+                ?.copyWith(color: context.karto.schriftLeise),
+          ),
+          const SizedBox(height: Abstand.normal),
+          aktionen,
+        ],
+      ),
     );
   }
 
@@ -349,4 +463,62 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
       ),
     ),
   );
+}
+
+/// Ruhiger Eintrag im Fussbereich der Bereichsnavigation.
+///
+/// Bewusst leiser als ein Navigationsziel: diese Wege fuehren aus dem
+/// Workspace heraus und sollen nicht mit den drei Arbeitsbereichen um
+/// Aufmerksamkeit konkurrieren.
+///
+/// Ohne [onTap] liefert das Ziel nur seine Darstellung. Diesen Fall braucht
+/// das Workspace-Menue: sein [PopupMenuButton] bringt Tooltip, Semantik und
+/// Trefferflaeche bereits mit, und ein zweiter Tooltip gleichen Wortlauts
+/// waere in den Bedientests doppelt vorhanden.
+class _Fussziel extends StatelessWidget {
+  const _Fussziel({required this.icon, required this.beschriftung, this.onTap});
+
+  final IconData icon;
+  final String beschriftung;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final token = KartoTheme.of(context);
+    final inhalt = Container(
+      constraints: const BoxConstraints(minHeight: 48),
+      padding: const EdgeInsets.symmetric(
+        horizontal: Abstand.block,
+        vertical: Abstand.normal,
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: token.navigationMuted),
+          const SizedBox(width: Abstand.weit),
+          Expanded(
+            child: Text(
+              beschriftung,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelMedium
+                  ?.copyWith(color: token.navigationMuted),
+            ),
+          ),
+        ],
+      ),
+    );
+    final ziel = onTap;
+    if (ziel == null) return inhalt;
+    // MergeSemantics ist hier nicht schmueckend: ein Tooltip legt seine Angabe
+    // auf einen Knoten *unterhalb* seiner selbst, waehrend die Pruefung vom
+    // Tooltip aus nach oben sucht. Ohne die Verschmelzung findet sie den
+    // umgebenden Scrollbereich und damit eine leere Angabe. In der frueheren
+    // AppBar uebernahm das der IconButton.
+    return MergeSemantics(
+      child: Tooltip(
+        message: beschriftung,
+        child: InkWell(onTap: ziel, child: inhalt),
+      ),
+    );
+  }
 }
