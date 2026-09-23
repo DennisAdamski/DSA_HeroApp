@@ -367,6 +367,12 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`lib/ui2/widgets/karto_seitenkopf.dart`): Kontextzeile, Titel, eine Aktion,
   getrennt durch Weißraum statt Linie. Er ist die **einzige** Verwendung von
   `titelGross`, und die Kontextzeile steht nur dort, nie über einem Abschnitt.
+  In der Spielansicht trägt das erste laufende Abenteuer mit Titel den
+  Seitentitel; `Am Spieltisch` rückt dann in die Kontextzeile, darunter folgen
+  optional `unterzeile` (aventurisches Datum, aktueller Stand vor Startdatum,
+  nur aus **demselben** Abenteuer) und eine auf 3 bzw. 2 Zeilen gekürzte
+  `beschreibung` (Zusammenfassung). Ohne laufendes Abenteuer bleibt
+  `Am Spieltisch` der Titel.
   Die Seitentitel (`Am Spieltisch`, `Nächste Schritte`) dürfen die
   Navigationsbeschriftungen nicht wiederholen — beide stehen gleichzeitig im
   Baum, und die Navigationsprüfungen erwarten ihre Beschriftung genau einmal.

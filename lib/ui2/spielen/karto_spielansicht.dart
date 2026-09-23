@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -71,11 +72,7 @@ class KartoSpielansicht extends ConsumerWidget {
           child: bestand.spielProtokoll(werte),
         );
         final rand = EdgeInsets.all(breite.seitenrand);
-        final kopf = KartoSeitenkopf(
-          titel: 'Am Spieltisch',
-          kontext: _laufendesAbenteuer(werte),
-          kompakt: breite == KartoBreite.schmal,
-        );
+        final kopf = _kopf(werte, kompakt: breite == KartoBreite.schmal);
 
         // Ohne Seiteninhalt gäbe eine zweite Spalte nur leere Fläche.
         if (!breite.hatDetailspalte || seite.isEmpty) {
@@ -122,13 +119,42 @@ class KartoSpielansicht extends ConsumerWidget {
     );
   }
 
-  // Titel des laufenden Abenteuers als Einordnung der Seite. Leer, wenn keines
-  // gepflegt ist — eine erfundene Zeile waere schlimmer als gar keine.
-  String? _laufendesAbenteuer(HeroComputedSnapshot werte) {
+  // Das laufende Abenteuer traegt den Seitentitel, die Ansicht rueckt in die
+  // Kontextzeile. Ohne gepflegtes Abenteuer bleibt der Kopf schlicht — ein
+  // erfundener Titel waere schlimmer als gar keiner.
+  KartoSeitenkopf _kopf(HeroComputedSnapshot werte, {required bool kompakt}) {
+    final abenteuer = _laufendesAbenteuer(werte);
+    if (abenteuer == null) {
+      return KartoSeitenkopf(titel: 'Am Spieltisch', kompakt: kompakt);
+    }
+    return KartoSeitenkopf(
+      titel: abenteuer.title.trim(),
+      kontext: 'Am Spieltisch',
+      unterzeile: _abenteuerDatum(abenteuer),
+      beschreibung: abenteuer.summary,
+      kompakt: kompakt,
+    );
+  }
+
+  HeroAdventureEntry? _laufendesAbenteuer(HeroComputedSnapshot werte) {
     for (final abenteuer in werte.hero.adventures) {
       if (abenteuer.status != HeroAdventureStatus.current) continue;
-      final titel = abenteuer.title.trim();
-      if (titel.isNotEmpty) return titel;
+      if (abenteuer.title.trim().isNotEmpty) return abenteuer;
+    }
+    return null;
+  }
+
+  // Bewusst nur aus demselben Abenteuer: `resolveCurrentAdventureDate` wiche
+  // auf andere Abenteuer aus, und das Datum passte dann nicht zum Titel.
+  String? _abenteuerDatum(HeroAdventureEntry abenteuer) {
+    for (final datum in <HeroAdventureDateValue>[
+      abenteuer.currentAventurianDate,
+      abenteuer.startAventurianDate,
+    ]) {
+      if (!datum.hasContent) continue;
+      return formatAventurianDate(
+        AventurianDate.fromParts(datum.day, datum.month, datum.year),
+      );
     }
     return null;
   }

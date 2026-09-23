@@ -76,6 +76,56 @@ void main() {
     expect(find.byType(Text), findsOneWidget);
   });
 
+  testWidgets('Unterzeile und Beschreibung folgen dem Titel', (tester) async {
+    await pumpKopf(
+      tester,
+      const KartoSeitenkopf(
+        titel: 'Die Spuren im Nebel',
+        kontext: 'Am Spieltisch',
+        unterzeile: '12. Phex 1043 BF',
+        beschreibung: 'Die Gruppe folgt der Spur des Nebelreiters.',
+      ),
+    );
+    final titel = tester.getTopLeft(find.text('Die Spuren im Nebel')).dy;
+    final datum = tester.getTopLeft(find.text('12. Phex 1043 BF')).dy;
+    final text = tester
+        .getTopLeft(find.text('Die Gruppe folgt der Spur des Nebelreiters.'))
+        .dy;
+    expect(datum, greaterThan(titel));
+    expect(text, greaterThan(datum));
+  });
+
+  testWidgets('leere Zusatzzeilen erzeugen keine Zeile', (tester) async {
+    await pumpKopf(
+      tester,
+      const KartoSeitenkopf(
+        titel: 'Am Spieltisch',
+        unterzeile: ' ',
+        beschreibung: '  ',
+      ),
+    );
+    expect(find.byType(Text), findsOneWidget);
+  });
+
+  testWidgets('die Beschreibung bleibt eine kurze Gedaechtnisstuetze', (
+    tester,
+  ) async {
+    await pumpKopf(
+      tester,
+      const KartoSeitenkopf(titel: 'Am Spieltisch', beschreibung: 'Lang'),
+    );
+    expect(tester.widget<Text>(find.text('Lang')).maxLines, 3);
+    await pumpKopf(
+      tester,
+      const KartoSeitenkopf(
+        titel: 'Am Spieltisch',
+        beschreibung: 'Lang',
+        kompakt: true,
+      ),
+    );
+    expect(tester.widget<Text>(find.text('Lang')).maxLines, 2);
+  });
+
   testWidgets('die Seitenaktion steht rechts neben dem Titel', (tester) async {
     await pumpKopf(
       tester,

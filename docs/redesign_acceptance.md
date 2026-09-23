@@ -234,7 +234,7 @@ Abschnitts farbgleich).
 | Datei | Aufgabe |
 |---|---|
 | `lib/ui2/widgets/karto_flaeche.dart` | `KartoFlaeche` mit `KartoFlaechenstufe`; erzwingt die Paarung Strichgewicht ↔ Farbtoken wie `Strich` |
-| `lib/ui2/widgets/karto_seitenkopf.dart` | Kontextzeile, Seitentitel, eine Seitenaktion; einzige Verwendung von `titelGross` |
+| `lib/ui2/widgets/karto_seitenkopf.dart` | Kontextzeile, Seitentitel, optionale Unterzeile und Kurzbeschreibung, eine Seitenaktion; einzige Verwendung von `titelGross`. Die Spielansicht setzt das laufende Abenteuer als Titel |
 | `lib/ui2/shell/karto_heldenmarke.dart` | Bild oder Monogramm in gleicher Ringfassung, Name, Herkunft |
 
 Die Identitätsspalte zeigt den echten Avatar. Weil Bilder ausschließlich

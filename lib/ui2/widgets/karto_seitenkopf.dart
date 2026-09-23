@@ -6,6 +6,10 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 /// Kopfzeile einer Arbeitsflaeche: Kontextzeile, Titel, eine Aktion.
 ///
+/// Optional folgen dem Titel eine leise [unterzeile] und eine kurze
+/// [beschreibung] — die Spielansicht setzt dort Datum und Zusammenfassung des
+/// laufenden Abenteuers, das dann selbst den Titel traegt.
+///
 /// Der Titel ist die einzige Stelle, an der [KartoRollen.titelGross] vorkommt.
 /// Ohne ihn beginnt jede Ansicht bei der Abschnittsgroesse, und es entsteht
 /// keine Hierarchie — genau das war der Zustand vor dieser Ueberarbeitung.
@@ -20,6 +24,8 @@ class KartoSeitenkopf extends StatelessWidget {
     required this.titel,
     this.kontext,
     this.aktion,
+    this.unterzeile,
+    this.beschreibung,
     this.kompakt = false,
   });
 
@@ -30,7 +36,8 @@ class KartoSeitenkopf extends StatelessWidget {
   /// erwarten ihre Beschriftung genau einmal.
   final String titel;
 
-  /// Ruhige Zeile ueber dem Titel, etwa das laufende Abenteuer.
+  /// Ruhige Zeile ueber dem Titel, etwa der Name der Ansicht, wenn das
+  /// laufende Abenteuer den Titel traegt.
   ///
   /// Steht **nur** hier und nie ueber einem Abschnitt — sonst entsteht wieder
   /// eine Zweitzeile pro Kasten.
@@ -38,6 +45,15 @@ class KartoSeitenkopf extends StatelessWidget {
 
   /// Einzelne Aktion rechts neben dem Titel.
   final Widget? aktion;
+
+  /// Leise Zeile direkt unter dem Titel, etwa das aventurische Datum.
+  final String? unterzeile;
+
+  /// Kurzer Fliesstext unter dem Titel, auf wenige Zeilen gekuerzt.
+  ///
+  /// Der Kopf ist keine Leseflaeche: laengere Texte gehoeren in ihre
+  /// Fachansicht, hier dienen sie nur als Gedaechtnisstuetze.
+  final String? beschreibung;
 
   /// Verkleinert den Titel fuer schmale Fenster.
   final bool kompakt;
@@ -47,6 +63,8 @@ class KartoSeitenkopf extends StatelessWidget {
     final token = KartoTheme.of(context);
     final texte = Theme.of(context).textTheme;
     final kontextzeile = kontext?.trim() ?? '';
+    final datumszeile = unterzeile?.trim() ?? '';
+    final text = beschreibung?.trim() ?? '';
     final titelStil = kompakt ? texte.titel : texte.titelGross;
 
     final ueberschrift = Column(
@@ -63,6 +81,28 @@ class KartoSeitenkopf extends StatelessWidget {
           const SizedBox(height: Abstand.knapp),
         ],
         Text(titel, style: titelStil),
+        if (datumszeile.isNotEmpty) ...[
+          const SizedBox(height: Abstand.eng),
+          Text(
+            datumszeile,
+            style: texte.etikett.copyWith(color: token.schriftLeise),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+        if (text.isNotEmpty) ...[
+          const SizedBox(height: Abstand.normal),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: Breite.lesespalte),
+            child: Text(
+              text,
+              style: texte.fliess.copyWith(color: token.schrift),
+              // Schmale Fenster brauchen die Hoehe fuer die erste Aktion.
+              maxLines: kompakt ? 2 : 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ],
     );
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -12,6 +13,7 @@ import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 import '../shell/karto_test_support.dart';
 
@@ -29,6 +31,26 @@ HeroSheet magisch() => testHero('liora', 'Liora').copyWith(
 HeroSheet geweiht() => testHero('tsaiane', 'Tsaiane').copyWith(
   resourceActivationConfig: const HeroResourceActivationConfig(
     divineEnabledOverride: true,
+  ),
+);
+
+/// Held mit den übergebenen Abenteuern.
+HeroSheet mitAbenteuern(List<HeroAdventureEntry> abenteuer) =>
+    weltlich().copyWith(adventures: abenteuer);
+
+const _nebel = HeroAdventureEntry(
+  id: 'nebel',
+  title: 'Die Spuren im Nebel',
+  summary: 'Die Gruppe folgt der Spur des Nebelreiters.',
+  startAventurianDate: HeroAdventureDateValue(
+    day: '1',
+    month: 'phex',
+    year: '1043',
+  ),
+  currentAventurianDate: HeroAdventureDateValue(
+    day: '12',
+    month: 'phex',
+    year: '1043',
   ),
 );
 
@@ -174,9 +196,67 @@ void main() {
     expect(find.textContaining('7 /'), findsOneWidget);
   });
 
+  group('laufendes Abenteuer im Seitenkopf', () {
+    testWidgets('das Abenteuer trägt den Titel, die Ansicht den Kontext', (
+      tester,
+    ) async {
+      await zeige(tester, held: mitAbenteuern([_nebel]), breite: 1024);
+      final titel = tester.widget<Text>(find.text('Die Spuren im Nebel'));
+      final theme = Theme.of(tester.element(find.text('Die Spuren im Nebel')));
+      expect(titel.style!.fontSize, theme.textTheme.titelGross.fontSize);
+      expect(find.text('Am Spieltisch'), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text('Am Spieltisch')).dy,
+        lessThan(tester.getTopLeft(find.text('Die Spuren im Nebel')).dy),
+      );
+      expect(find.text('12. Phex 1043 BF'), findsOneWidget);
+      expect(
+        find.text('Die Gruppe folgt der Spur des Nebelreiters.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('ohne aktuellen Stand gilt das Startdatum', (tester) async {
+      await zeige(
+        tester,
+        held: mitAbenteuern([
+          _nebel.copyWith(
+            currentAventurianDate: const HeroAdventureDateValue(),
+          ),
+        ]),
+      );
+      expect(find.text('1. Phex 1043 BF'), findsOneWidget);
+    });
+
+    testWidgets('abgeschlossene Abenteuer bleiben aus dem Kopf', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: mitAbenteuern([
+          _nebel.copyWith(status: HeroAdventureStatus.completed),
+        ]),
+      );
+      final theme = Theme.of(tester.element(find.text('Am Spieltisch')));
+      expect(
+        tester.widget<Text>(find.text('Am Spieltisch')).style!.fontSize,
+        theme.textTheme.titel.fontSize,
+      );
+      expect(find.text('Die Spuren im Nebel'), findsNothing);
+      expect(find.textContaining('Phex'), findsNothing);
+    });
+  });
+
   for (final breite in [320.0, 390.0, 744.0, 1024.0, 1440.0]) {
     testWidgets('Spielansicht bei $breite dp ohne Überlauf', (tester) async {
-      await zeige(tester, held: magisch(), breite: breite, skalierung: 2);
+      // Mit Abenteuerkopf: Titel, Datum und Zusammenfassung sind die
+      // laengsten Zeilen der Ansicht.
+      await zeige(
+        tester,
+        held: magisch().copyWith(adventures: const [_nebel]),
+        breite: breite,
+        skalierung: 2,
+      );
       expect(ressource(KartoRessource.lebensenergie), findsOneWidget);
       expect(find.text('Ressourcen'), findsOneWidget);
       expect(tester.takeException(), isNull);
