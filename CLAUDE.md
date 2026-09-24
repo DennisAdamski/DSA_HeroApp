@@ -373,6 +373,26 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   nur aus **demselben** Abenteuer) und eine auf 3 bzw. 2 Zeilen gekürzte
   `beschreibung` (Zusammenfassung). Ohne laufendes Abenteuer bleibt
   `Am Spieltisch` der Titel.
+  Einen Knopf gibt es dafür nicht: `KartoSeitenkopf.onTap` macht den ganzen
+  Abenteuerkopf antippbar (Pfeil hinter dem Titel, Tooltip „Abenteuer öffnen“,
+  Key `karto-spiel-abenteuer`). Er öffnet das Abenteuerblatt
+  (`lib/ui2/spielen/karto_abenteuerblatt.dart`): Datum, Zusammenfassung,
+  Notizen und Personen lesen und pflegen, Abschluss und Belohnungen bleiben in
+  der Verwaltung. Das Blatt ist eine eigene Seite (Grund `blatt`); Personen
+  und Notizen stehen als `feld`-Karten im `KartoKartenraster`
+  (`karto_abenteuer_karten.dart`), Personen mit derselben Ringfassung wie die
+  Heldenmarke, Anlegen als leise `senke`-Kachel am Rasterende. Es ist UI2-eigen, weil der Notizen-Tab beim Speichern seinen
+  **ganzen** Entwurf (Notizen, Kontakte, alle Abenteuer) über den Helden legt.
+  Das Blatt schreibt dagegen nur dieses eine Abenteuer, über
+  `HeroActions.updateHero` (frisch laden, dann ändern, analog zu
+  `updateHeroState`) und `ersetzeAbenteuer`
+  (`karto_laufendes_abenteuer.dart`). Vor dem Öffnen läuft die Editorprüfung
+  der Verwaltung, sonst überschriebe ein späteres Speichern dort die Einträge.
+  Gespeichert und Fehler angezeigt wird im Blatt selbst, **nicht** über
+  `KartoLaufzeitAktion`: das Öffnen läuft bereits in deren Re-Entrancy-Guard,
+  jede weitere Aktion darin würde still verworfen. Bei offener Planung ist das
+  Blatt schreibgeschützt, weil jede Heldenänderung den Inhalts-Hash der Runde
+  bräche.
   Die Seitentitel (`Am Spieltisch`, `Nächste Schritte`) dürfen die
   Navigationsbeschriftungen nicht wiederholen — beide stehen gleichzeitig im
   Baum, und die Navigationsprüfungen erwarten ihre Beschriftung genau einmal.

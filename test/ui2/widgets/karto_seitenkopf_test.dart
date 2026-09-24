@@ -126,6 +126,39 @@ void main() {
     expect(tester.widget<Text>(find.text('Lang')).maxLines, 2);
   });
 
+  testWidgets('mit onTap ist der ganze Kopf die Klickflaeche', (tester) async {
+    var getippt = 0;
+    await pumpKopf(
+      tester,
+      KartoSeitenkopf(
+        titel: 'Die Spuren im Nebel',
+        kontext: 'Am Spieltisch',
+        beschreibung: 'Die Gruppe folgt der Spur.',
+        tippHinweis: 'Abenteuer öffnen',
+        onTap: () => getippt++,
+      ),
+    );
+    await tester.tap(find.text('Die Gruppe folgt der Spur.'));
+    await tester.tap(find.text('Die Spuren im Nebel'));
+    expect(getippt, 2);
+    expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+    expect(find.byTooltip('Abenteuer öffnen'), findsOneWidget);
+    // Der Titel bleibt ein eigener Text in der grossen Rolle.
+    final theme = Theme.of(tester.element(find.text('Die Spuren im Nebel')));
+    expect(
+      stilVon(tester, 'Die Spuren im Nebel').fontSize,
+      theme.textTheme.titelGross.fontSize,
+    );
+  });
+
+  testWidgets('ohne onTap gibt es weder Pfeil noch Klickflaeche', (
+    tester,
+  ) async {
+    await pumpKopf(tester, const KartoSeitenkopf(titel: 'Am Spieltisch'));
+    expect(find.byIcon(Icons.chevron_right), findsNothing);
+    expect(find.byType(InkWell), findsNothing);
+  });
+
   testWidgets('die Seitenaktion steht rechts neben dem Titel', (tester) async {
     await pumpKopf(
       tester,

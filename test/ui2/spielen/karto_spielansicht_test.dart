@@ -64,6 +64,7 @@ void main() {
     double breite = 390,
     double skalierung = 1,
     Brightness helligkeit = Brightness.light,
+    Future<bool> Function()? vorAbenteuer,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 1000);
@@ -96,6 +97,7 @@ void main() {
               heroId: held.id,
               bestand: bestand ?? TestBestand(),
               aktion: (auftrag) => auftrag(),
+              vorAbenteuerbearbeitung: vorAbenteuer ?? () async => true,
             ),
           ),
         ),
@@ -228,6 +230,31 @@ void main() {
       expect(find.text('1. Phex 1043 BF'), findsOneWidget);
     });
 
+    testWidgets('Abenteuer öffnen prüft zuerst die Verwaltung', (tester) async {
+      var geprueft = 0;
+      await zeige(
+        tester,
+        held: mitAbenteuern([_nebel]),
+        breite: 1024,
+        vorAbenteuer: () async {
+          geprueft++;
+          return false;
+        },
+      );
+      await tester.tap(find.byKey(const ValueKey('karto-spiel-abenteuer')));
+      await tester.pumpAndSettle();
+      expect(geprueft, 1);
+      expect(find.byType(BottomSheet), findsNothing);
+    });
+
+    testWidgets('Abenteuer öffnen zeigt das Abenteuerblatt', (tester) async {
+      await zeige(tester, held: mitAbenteuern([_nebel]), breite: 1024);
+      await tester.tap(find.byKey(const ValueKey('karto-spiel-abenteuer')));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsOneWidget);
+      expect(find.text('Notizen'), findsOneWidget);
+    });
+
     testWidgets('abgeschlossene Abenteuer bleiben aus dem Kopf', (
       tester,
     ) async {
@@ -244,6 +271,7 @@ void main() {
       );
       expect(find.text('Die Spuren im Nebel'), findsNothing);
       expect(find.textContaining('Phex'), findsNothing);
+      expect(find.byKey(const ValueKey('karto-spiel-abenteuer')), findsNothing);
     });
   });
 
