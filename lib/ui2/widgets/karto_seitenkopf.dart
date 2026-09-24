@@ -10,6 +10,10 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 /// [beschreibung] — die Spielansicht setzt dort Datum und Zusammenfassung des
 /// laufenden Abenteuers, das dann selbst den Titel traegt.
 ///
+/// Mit [onTap] wird der ganze Kopf zur Klickflaeche. Ein leiser Pfeil hinter
+/// dem Titel zeigt das an und nimmt beim Ueberfahren die Interaktionsfarbe an;
+/// ein zusaetzlicher Knopf wuerde nur wiederholen, was der Titel schon sagt.
+///
 /// Der Titel ist die einzige Stelle, an der [KartoRollen.titelGross] vorkommt.
 /// Ohne ihn beginnt jede Ansicht bei der Abschnittsgroesse, und es entsteht
 /// keine Hierarchie — genau das war der Zustand vor dieser Ueberarbeitung.
@@ -27,6 +31,9 @@ class KartoSeitenkopf extends StatelessWidget {
     this.unterzeile,
     this.beschreibung,
     this.kompakt = false,
+    this.onTap,
+    this.tippHinweis,
+    this.tippSchluessel,
   });
 
   /// Name der Arbeitsflaeche, etwa `Am Spieltisch`.
@@ -58,6 +65,16 @@ class KartoSeitenkopf extends StatelessWidget {
   /// Verkleinert den Titel fuer schmale Fenster.
   final bool kompakt;
 
+  /// Macht Kontext, Titel, Unterzeile und Beschreibung antippbar.
+  final VoidCallback? onTap;
+
+  /// Tooltip und Bildschirmleser-Text der Klickflaeche, etwa
+  /// `Abenteuer oeffnen`.
+  final String? tippHinweis;
+
+  /// Schluessel der Klickflaeche, damit Tests genau sie treffen.
+  final Key? tippSchluessel;
+
   @override
   Widget build(BuildContext context) {
     final token = KartoTheme.of(context);
@@ -67,7 +84,21 @@ class KartoSeitenkopf extends StatelessWidget {
     final text = beschreibung?.trim() ?? '';
     final titelStil = kompakt ? texte.titel : texte.titelGross;
 
-    final ueberschrift = Column(
+    Widget titelzeile(Color pfeilfarbe) => onTap == null
+        ? Text(titel, style: titelStil)
+        : Row(
+            children: [
+              Flexible(child: Text(titel, style: titelStil)),
+              const SizedBox(width: Abstand.eng),
+              Icon(
+                Icons.chevron_right,
+                size: titelStil.fontSize,
+                color: pfeilfarbe,
+              ),
+            ],
+          );
+
+    Widget ueberschriftMit(Color pfeilfarbe) => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -80,7 +111,7 @@ class KartoSeitenkopf extends StatelessWidget {
           ),
           const SizedBox(height: Abstand.knapp),
         ],
-        Text(titel, style: titelStil),
+        titelzeile(pfeilfarbe),
         if (datumszeile.isNotEmpty) ...[
           const SizedBox(height: Abstand.eng),
           Text(
@@ -106,6 +137,16 @@ class KartoSeitenkopf extends StatelessWidget {
       ],
     );
 
+    final ueberschrift = onTap == null
+        ? ueberschriftMit(token.schriftLeise)
+        : _Klickflaeche(
+            key: tippSchluessel,
+            onTap: onTap!,
+            hinweis: tippHinweis,
+            builder: (aktiv) =>
+                ueberschriftMit(aktiv ? token.meer : token.schriftLeise),
+          );
+
     return Padding(
       // Schmale Fenster geben ihre Hoehe nicht so freigiebig her.
       padding: EdgeInsets.only(bottom: kompakt ? Abstand.block : Abstand.bahn),
@@ -130,5 +171,53 @@ class KartoSeitenkopf extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+/// Klickflaeche des Kopfes mit Hover- und Fokuszustand fuer den Pfeil.
+///
+/// Keine Hover-Flaeche: sie laege ohne Innenabstand direkt an den Buchstaben
+/// an, und ein Innenabstand verschoebe den Titel gegen die Abschnitte darunter.
+/// Die Tastaturmarkierung bleibt dagegen sichtbar.
+class _Klickflaeche extends StatefulWidget {
+  const _Klickflaeche({
+    super.key,
+    required this.onTap,
+    required this.builder,
+    this.hinweis,
+  });
+
+  final VoidCallback onTap;
+  final Widget Function(bool aktiv) builder;
+  final String? hinweis;
+
+  @override
+  State<_Klickflaeche> createState() => _KlickflaecheState();
+}
+
+class _KlickflaecheState extends State<_Klickflaeche> {
+  bool _hover = false;
+  bool _fokus = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final hinweis = widget.hinweis?.trim() ?? '';
+    final flaeche = Semantics(
+      button: true,
+      label: hinweis.isEmpty ? null : hinweis,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: widget.onTap,
+          onHover: (wert) => setState(() => _hover = wert),
+          onFocusChange: (wert) => setState(() => _fokus = wert),
+          hoverColor: Colors.transparent,
+          borderRadius: BorderRadius.circular(kKartoRadius),
+          child: widget.builder(_hover || _fokus),
+        ),
+      ),
+    );
+    if (hinweis.isEmpty) return flaeche;
+    return Tooltip(message: hinweis, child: flaeche);
   }
 }

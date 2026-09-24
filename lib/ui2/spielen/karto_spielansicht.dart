@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielaktionen.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
@@ -36,6 +36,7 @@ class KartoSpielansicht extends ConsumerWidget {
     required this.heroId,
     required this.bestand,
     required this.aktion,
+    required this.vorAbenteuerbearbeitung,
   });
 
   /// ID im gemeinsam genutzten Heldenspeicher.
@@ -46,6 +47,13 @@ class KartoSpielansicht extends ConsumerWidget {
 
   /// Geschützter Ausführungsweg für Dialoge und Bestandsaktionen.
   final KartoLaufzeitAktion aktion;
+
+  /// Prüft vor dem Abenteuerblatt einen offenen Verwaltungsentwurf.
+  ///
+  /// Der Notizen-Tab speichert seinen ganzen Entwurf über den Helden; ohne
+  /// diese Prüfung überschriebe ein späteres Speichern dort die Einträge aus
+  /// dem Blatt. `false` bricht das Öffnen ab.
+  final Future<bool> Function() vorAbenteuerbearbeitung;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -72,7 +80,11 @@ class KartoSpielansicht extends ConsumerWidget {
           child: bestand.spielProtokoll(werte),
         );
         final rand = EdgeInsets.all(breite.seitenrand);
-        final kopf = _kopf(werte, kompakt: breite == KartoBreite.schmal);
+        final kopf = _kopf(
+          context,
+          werte,
+          kompakt: breite == KartoBreite.schmal,
+        );
 
         // Ohne Seiteninhalt gäbe eine zweite Spalte nur leere Fläche.
         if (!breite.hatDetailspalte || seite.isEmpty) {
@@ -120,43 +132,35 @@ class KartoSpielansicht extends ConsumerWidget {
   }
 
   // Das laufende Abenteuer traegt den Seitentitel, die Ansicht rueckt in die
-  // Kontextzeile. Ohne gepflegtes Abenteuer bleibt der Kopf schlicht — ein
-  // erfundener Titel waere schlimmer als gar keiner.
-  KartoSeitenkopf _kopf(HeroComputedSnapshot werte, {required bool kompakt}) {
-    final abenteuer = _laufendesAbenteuer(werte);
+  // Kontextzeile, und der ganze Kopf oeffnet das Abenteuerblatt. Ohne
+  // gepflegtes Abenteuer bleibt der Kopf schlicht — ein erfundener Titel waere
+  // schlimmer als gar keiner.
+  KartoSeitenkopf _kopf(
+    BuildContext context,
+    HeroComputedSnapshot werte, {
+    required bool kompakt,
+  }) {
+    final abenteuer = laufendesAbenteuer(werte.hero);
     if (abenteuer == null) {
       return KartoSeitenkopf(titel: 'Am Spieltisch', kompakt: kompakt);
     }
     return KartoSeitenkopf(
       titel: abenteuer.title.trim(),
       kontext: 'Am Spieltisch',
-      unterzeile: _abenteuerDatum(abenteuer),
+      unterzeile: abenteuerDatum(abenteuer),
       beschreibung: abenteuer.summary,
       kompakt: kompakt,
+      tippHinweis: 'Abenteuer öffnen',
+      tippSchluessel: const ValueKey<String>('karto-spiel-abenteuer'),
+      onTap: () => aktion(() async {
+        if (!await vorAbenteuerbearbeitung() || !context.mounted) return;
+        await zeigeAbenteuerblatt(
+          context: context,
+          heroId: heroId,
+          abenteuerId: abenteuer.id,
+        );
+      }),
     );
-  }
-
-  HeroAdventureEntry? _laufendesAbenteuer(HeroComputedSnapshot werte) {
-    for (final abenteuer in werte.hero.adventures) {
-      if (abenteuer.status != HeroAdventureStatus.current) continue;
-      if (abenteuer.title.trim().isNotEmpty) return abenteuer;
-    }
-    return null;
-  }
-
-  // Bewusst nur aus demselben Abenteuer: `resolveCurrentAdventureDate` wiche
-  // auf andere Abenteuer aus, und das Datum passte dann nicht zum Titel.
-  String? _abenteuerDatum(HeroAdventureEntry abenteuer) {
-    for (final datum in <HeroAdventureDateValue>[
-      abenteuer.currentAventurianDate,
-      abenteuer.startAventurianDate,
-    ]) {
-      if (!datum.hasContent) continue;
-      return formatAventurianDate(
-        AventurianDate.fromParts(datum.day, datum.month, datum.year),
-      );
-    }
-    return null;
   }
 
   // Reihenfolge laut Spezifikation: Ressourcen zuerst, dann Aktionen.

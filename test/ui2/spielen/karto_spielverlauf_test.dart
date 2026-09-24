@@ -56,6 +56,7 @@ void main() {
               heroId: heroId,
               bestand: bestand ?? TestBestand(),
               aktion: (auftrag) => auftrag(),
+              vorAbenteuerbearbeitung: () async => true,
             ),
           ),
         ),
@@ -160,6 +161,7 @@ void main() {
                 heroId: 'rondra',
                 bestand: KartoBestandsAdapterImpl(),
                 aktion: _direkt,
+                vorAbenteuerbearbeitung: _freigegeben,
               ),
             ),
           ),
@@ -210,3 +212,5 @@ void main() {
 
 /// Führt eine Laufzeitaktion ohne zusätzlichen Schutz aus.
 Future<void> _direkt(Future<void> Function() auftrag) => auftrag();
+
+Future<bool> _freigegeben() async => true;

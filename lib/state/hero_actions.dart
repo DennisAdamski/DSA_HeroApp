@@ -167,6 +167,26 @@ class HeroActions {
     await repo.saveHero(reconciledHero);
   }
 
+  /// Wendet eine gezielte Änderung auf den frisch geladenen Helden an.
+  ///
+  /// Gegenstück zu [updateHeroState] für den Heldenbogen: Felder, die seit dem
+  /// letzten UI-Aufbau anderswo gespeichert wurden, bleiben erhalten, weil
+  /// [update] den Stand aus dem Repository bekommt statt eines beim Rendern
+  /// erfassten Snapshots. Gespeichert wird über [saveHero], die Normalisierung
+  /// bleibt also dieselbe. Dies ist keine Transaktion gegenüber gleichzeitig
+  /// laufenden Repository-Schreibwegen.
+  Future<void> updateHero(
+    String heroId,
+    HeroSheet Function(HeroSheet current) update,
+  ) async {
+    final repo = _ref.read(heroRepositoryProvider);
+    final current = await repo.loadHeroById(heroId);
+    if (current == null) {
+      throw StateError('Der Held wurde nicht gefunden.');
+    }
+    await saveHero(update(current));
+  }
+
   /// Speichert den Laufzeitzustand (LeP, AsP, KaP, Au, temp. Mods) eines Helden.
   Future<void> saveHeroState(String heroId, HeroState state) async {
     final repo = _ref.read(heroRepositoryProvider);

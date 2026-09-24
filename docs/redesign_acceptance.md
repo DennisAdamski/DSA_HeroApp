@@ -234,7 +234,9 @@ Abschnitts farbgleich).
 | Datei | Aufgabe |
 |---|---|
 | `lib/ui2/widgets/karto_flaeche.dart` | `KartoFlaeche` mit `KartoFlaechenstufe`; erzwingt die Paarung Strichgewicht ↔ Farbtoken wie `Strich` |
-| `lib/ui2/widgets/karto_seitenkopf.dart` | Kontextzeile, Seitentitel, optionale Unterzeile und Kurzbeschreibung, eine Seitenaktion; einzige Verwendung von `titelGross`. Die Spielansicht setzt das laufende Abenteuer als Titel |
+| `lib/ui2/widgets/karto_seitenkopf.dart` | Kontextzeile, Seitentitel, optionale Unterzeile und Kurzbeschreibung, eine Seitenaktion oder mit `onTap` ein antippbarer Kopf; einzige Verwendung von `titelGross`. Die Spielansicht setzt das laufende Abenteuer als Titel, ein Tippen öffnet das Abenteuerblatt |
+| `lib/ui2/spielen/karto_abenteuer_karten.dart` | Kartenraster mit gleich hohen Zeilen, Figurenkarte (Ringfassung wie die Heldenmarke), Notizkarte und leise Anlege-Kachel |
+| `lib/ui2/spielen/karto_abenteuerblatt.dart` | Abenteuerblatt der Spielansicht: Datum, Zusammenfassung, Notizen und Personen lesen und pflegen; schreibt gezielt über `HeroActions.updateHero` + `ersetzeAbenteuer`, prüft vorher den Verwaltungseditor, schreibgeschützt bei offener Planung |
 | `lib/ui2/shell/karto_heldenmarke.dart` | Bild oder Monogramm in gleicher Ringfassung, Name, Herkunft |
 
 Die Identitätsspalte zeigt den echten Avatar. Weil Bilder ausschließlich
