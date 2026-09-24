@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
 /// Wurzel-Widget der DSA-Heldenverwaltung mit plattformspezifischem Theme.
 class DsaAppShell extends ConsumerWidget {
@@ -31,9 +32,30 @@ class DsaAppShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dunkelModus = ref.watch(dunkelModusProvider);
-    final variante = ref.watch(uiVarianteProvider);
     final debugModus = ref.watch(debugModusProvider);
+    final oberflaeche = ref.watch(oberflaecheProvider);
     final apple = _isApple();
+
+    // Beide Oberflaechen bringen ihr eigenes Theme mit. Die Wahl muss hier
+    // fallen und nicht weiter unten: gepushte Routen und Dialoge haengen am
+    // Theme der `MaterialApp`, ein `Theme`-Wrapper im Inhalt erreichte sie
+    // nicht.
+    ThemeData themeFuer(Brightness helligkeit) {
+      final basis = switch (oberflaeche) {
+        Oberflaeche.codex => buildAppTheme(
+          brightness: helligkeit,
+          centerAppBarTitle: apple,
+        ),
+        Oberflaeche.kartograph => buildKartoTheme(
+          brightness: helligkeit,
+          centerAppBarTitle: apple,
+        ),
+      };
+      return basis.copyWith(
+        materialTapTargetSize: apple ? MaterialTapTargetSize.padded : null,
+        pageTransitionsTheme: _pageTransitionsTheme,
+      );
+    }
 
     return ScrollConfiguration(
       behavior: _AdaptiveScrollBehavior(),
@@ -41,28 +63,8 @@ class DsaAppShell extends ConsumerWidget {
         title: 'DSA Heldenverwaltung',
         debugShowCheckedModeBanner: false,
         themeMode: dunkelModus ? ThemeMode.dark : ThemeMode.light,
-        theme:
-            buildAppTheme(
-              variante: variante,
-              brightness: Brightness.light,
-              centerAppBarTitle: apple,
-            ).copyWith(
-              materialTapTargetSize: apple
-                  ? MaterialTapTargetSize.padded
-                  : null,
-              pageTransitionsTheme: _pageTransitionsTheme,
-            ),
-        darkTheme:
-            buildAppTheme(
-              variante: variante,
-              brightness: Brightness.dark,
-              centerAppBarTitle: apple,
-            ).copyWith(
-              materialTapTargetSize: apple
-                  ? MaterialTapTargetSize.padded
-                  : null,
-              pageTransitionsTheme: _pageTransitionsTheme,
-            ),
+        theme: themeFuer(Brightness.light),
+        darkTheme: themeFuer(Brightness.dark),
         home: home,
         builder: (context, child) {
           if (!debugModus) return child!;

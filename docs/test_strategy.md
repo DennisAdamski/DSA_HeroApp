@@ -15,7 +15,10 @@ technische UI-Aspekte getrennt getestet werden.
 ## Ordnerstruktur
 
 - `test/rules/`: pure Logik, Formeln, Validierung
-- `test/ui/`: Widget-/Smoke-/Performance-Tests
+- `test/ui/`: Widget-/Smoke-/Performance-Tests der bestehenden Oberfläche
+- `test/ui2/`: dasselbe für die neue Oberfläche (`lib/ui2/`), gespiegelt zur
+  Quellstruktur. Beide Bäume laufen während des Oberflächen-Neubaus
+  nebeneinander; `test/ui/` wird erst entfernt, wenn die alte Oberfläche fällt.
 - `test/state/`: Provider- und Stream-Verhalten
 - `test/data/`: Loader/Transfer/Repository-nahe Tests
 - `test/domain/`: Serialisierung/Model-Roundtrips
@@ -82,12 +85,52 @@ technische UI-Aspekte getrennt getestet werden.
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |
 | `test/workspace/workspace_area_registry_test.dart` | workspace | Area-Registry |
 | `test/workspace/workspace_tab_edit_controller_test.dart` | workspace | Tab-Edit-Controller |
+| `test/ui2/shell/app_root_switch_test.dart` | ui2 | Weiche zwischen bestehender und neuer Oberfläche |
+| `test/ui2/shell/karto_workspace_journey_test.dart` | ui2 | Durchgehender Ablauf mit echten Schreibvorgängen |
+| `test/ui2/shell/karto_workspace_visual_test.dart` | ui2 | Sieben Breiten × zwei Helligkeiten × Textskalierung 1/2; erzeugt mit `--dart-define=R3_SCREENSHOT_DIR=…` echte PNGs |
+
+## Fallstricke bei Oberflächentests
+
+`scrollUntilVisible` hält an, sobald der Finder greift. Eine `ListView` baut
+aber über den sichtbaren Bereich hinaus, das gesuchte Element kann also
+außerhalb des Fensters liegen und ein `tap()` daneben gehen. Davor gehören
+`ensureVisible` **und** `pumpAndSettle`: der Scroll wirkt erst im nächsten
+Frame, sonst rechnet der Tap mit der alten Position.
+
+Zwei weitere Muster führen zu Tests, die **hängen statt zu scheitern** — sie laufen
+dann bis zum Zeitlimit und melden nichts Brauchbares.
+
+**Teardown-Reihenfolge bei Stream-Repositories.** `addTearDown` läuft
+rückwärts. Wer erst den Container und danach das Repository registriert,
+schließt den Stream, solange der Provider noch daran hängt:
+
+```dart
+// Falsch: close() laeuft zuerst und wartet auf einen Zuhoerer,
+// den erst dispose() abmeldet.
+addTearDown(container.dispose);
+addTearDown(settingsRepository.close);
+
+// Richtig: dispose() zuerst, dann close().
+addTearDown(settingsRepository.close);
+addTearDown(container.dispose);
+```
+
+**`pumpAndSettle` auf Bildschirmen mit Ladezustand.** Ein
+`CircularProgressIndicator` animiert endlos, `pumpAndSettle` wartet also bis zu
+seinem Zehn-Minuten-Limit. Wenn ein Test nur wissen muss, welcher Bildschirm
+montiert ist, genügen einzelne `pump`-Aufrufe.
+
+Dazu gilt die Regel aus `CLAUDE.md` auch im Test: auf einen asynchronen
+Provider nie mit `read(provider.future)` warten. Wer einen Provider am Leben
+halten muss, nimmt `container.listen(...)`.
 
 ## Laufbefehle
 
 ```bash
 flutter analyze
+dart format --output=none --set-exit-if-changed lib/ test/
 flutter test test/rules
 flutter test test/ui
+flutter test test/ui2
 flutter test
 ```

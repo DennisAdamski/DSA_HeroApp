@@ -6,6 +6,19 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 
 - `AGENTS.md` ist die verbindliche Agentenrichtlinie.
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
+- [Architektur-To-dos](docs/architecture_roadmap.md) halten sieben offene
+  Verbesserungen mit Ist-Zustand, Abhängigkeiten und Abnahmekriterien fest.
+  Bei Architekturarbeiten den Aufgabenstatus prüfen und nach abgeschlossenen
+  Teilumfängen aktualisieren.
+- Das [Codex-Mockup](docs/mockups/README.md) zeigt den geplanten Workspace mit
+  drei Arbeitsbereichen als eigenständigen HTML/CSS/JavaScript-Prototyp.
+  Es nutzt ausschließlich flüchtige Beispieldaten und keine produktive Regellogik.
+- [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
+  aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
+  unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;
+  R1 samt Bestandsbrücke, R2 und R3 sind implementiert; die Abnahme steht in
+  [docs/redesign_acceptance.md](docs/redesign_acceptance.md). Vor Folgearbeit
+  den Paketstatus und die Nachprüfung lesen. Die Navigation hat drei Arbeitsbereiche.
 - Detaildokumentation liegt bei Bedarf in `docs/technical_overview.md`, `docs/test_strategy.md`, `docs/catalog_import_workflow.md`, `docs/pdf_agent_workflow.md`, `docs/rule_audit_regelwerk_ueberarbeitung.md`, `docs/ios_xcode_setup.md` und `docs/windows_antivirus_audit.md`.
 
 ## Projektkontext
@@ -222,6 +235,194 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Die adaptive Settings-Navigation wird von `lib/ui/screens/settings_screen.dart`
   orchestriert; wiederverwendbare Teilseiten liegen unter
   `lib/ui/screens/settings/`.
+- **Die Oberfläche wird neu gebaut.** Bestand (`lib/ui/`) und Neubau
+  (`lib/ui2/`, Bildsprache „Kartograph") laufen nebeneinander;
+  `AppSettings.oberflaeche` wählt unter `Einstellungen > Darstellung`. Die
+  Weiche ist `AppRootSwitch` (`lib/ui2/shell/karto_app_root.dart`) als `child`
+  von `SyncConflictGate` — der **einzige Verdrahtungspunkt** beider Bäume und
+  die einzige Datei unter `lib/ui2/`, die aus `lib/ui/`
+  importiert. Sie muss dort bleiben: ein zweites `AppStartupGate` baute
+  Heldenspeicher, Sync und Katalog ein zweites Mal auf. Dass ein Wechsel nichts
+  darunter anfasst, hängt daran, dass der Settings-Listener des Gates nur auf
+  `heroStoragePath` reagiert; `test/ui2/shell/app_root_switch_test.dart` pinnt
+  das. Der Neubau liest nur `heroComputedProvider` (nie dessen vier
+  Ableitungen einzeln) und schreibt nur über `heroActionsProvider`.
+  Die UI-Variante `klassisch` ist entfallen, es gibt nur noch Hell und Dunkel.
+- **Der Neubau hat drei Arbeitsbereiche für denselben Helden**
+  (`KartoArbeitsbereich`: `spielen`, `verwalten`, `entwickeln`). `KartoShell`
+  zeigt Heldenwahl oder `KartoWorkspace`, die Bereichsnavigation
+  (`karto_modus_navigation.dart`) ist rein darstellend und ändert selbst keinen
+  Provider. Die dunkle Navigation über dem hellen Codex hat eigene Token
+  (`navigation`, `navigationText`, `navigationMuted`); `schriftAufSignal` gehört
+  zu `meer`/`siegel` und darf dort **nicht** ersatzweise stehen.
+- **`KartoBestandsAdapter` ist die dokumentierte Übergangsbrücke** zu den
+  vorhandenen Fachansichten, solange UI2 sie noch nicht selbst trägt. Die
+  Schnittstelle liegt in `lib/ui2/shell/karto_bestands_adapter.dart` und
+  importiert nichts aus `lib/ui/`, `lib/data/` oder einem Repository; die
+  Implementierung `KartoBestandsAdapterImpl`
+  (`lib/ui/bridges/karto_bestands_adapter_impl.dart`) hält die Bestandswidgets.
+  Die Richtung ist entscheidend: `lib/ui/` importiert aus `lib/ui2/`, nie
+  umgekehrt. `AppRootSwitch` erzeugt die Implementierung und injiziert sie;
+  produktive Konstruktoren bekommen keinen stillen Fallback-Adapter. Neue
+  Adaptermethoden nur mit konkretem Aufrufer und Test, beide Seiten im selben
+  Commit. Die Brücke wird abschnittsweise entbehrlich, ihre Entfernung ist kein
+  Abnahmekriterium.
+- **Die Spielansicht des Neubaus liegt in `lib/ui2/spielen/`.**
+  `KartoSpielansicht` liest `heroComputedProvider(heroId)` **einmal** und reicht
+  den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die
+  Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
+  Providerbeobachtung aufmacht. Die Reihenfolge ist überall Ressourcen,
+  Schnellaktionen, Eigenschaften, Kampf, Effekte, Zustand, Würfelprotokoll; ab
+  `KartoBreite.breit` wandern Kampf, Effekte und Zustand in eine Seitenspalte,
+  das Protokoll bleibt der letzte Abschnitt beider Anordnungen. Den
+  Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
+  die Spielansicht macht keinen zweiten Fehlerweg auf.
+- `KartoRessourcenwert` ist rein darstellend. Der Balkenanteil wird auf 0..1
+  begrenzt, der **gespeicherte Wert nie**: negative Lebenspunkte, Überheilung
+  und Maximum 0 bleiben unverkürzt lesbar. AsP und KaP zeigt
+  `KartoRessourcenleiste` nur bei tatsächlich aktivierter Ressource
+  (`resourceActivation`), nie aufgrund einer Profession. Karma bekommt bewusst
+  keine eigene Farbe — nur LeP, AsP und AuP haben ein Ressourcentoken.
+  Bearbeitet wird über `ressourceBearbeiten`, das in der Brücke den vorhandenen
+  `InspectorVitalBlock` in einem Blatt öffnet (±5/±1, Zurücksetzen,
+  Untergrenze `kVitalFloor`). **Nicht** `showResourceStepperDialog`: der klemmt
+  auf `0..max` und könnte negative Werte gar nicht erzeugen.
+  Ressourcenänderungen verwenden `HeroActions.updateHeroState`: vor dem
+  Schreiben den Zustand aus dem gemeinsamen Repository neu laden und nur das
+  betroffene Feld ersetzen. Ein beim Rendern erfasster Gesamtsnapshot darf
+  zwischenzeitliche Änderungen anderer Ressourcen nicht überschreiben.
+  Dieser Weg ist keine Transaktion gegen parallele externe Schreibvorgänge.
+- Eigenschafts- und Kampf-Schnellproben liegen seit R2 als
+  `InspectorAttributeProbes` und `InspectorCombatProbes` in
+  `inspector/widgets/`; `InspectorProbeTab` ist nur noch ihre Zusammenstellung.
+  Beide Oberflächen benutzen dieselben Bausteine und dieselben Widget-Keys.
+  Requests entstehen ausschließlich über `probe_request_factory.dart`,
+  gewürfelt und protokolliert wird über `showLoggedProbeDialog` — UI2 kennt
+  keine W20-/W6-Simulation. Strg/Cmd+K öffnet dieselbe Suche, aber nur im
+  Bereich Spielen: der `IndexedStack` hält die anderen Bereiche am Leben,
+  deshalb entscheidet der aktive Bereich, nicht die Position im Baum.
+- `InspectorArcaneEffectsBlock` ist Consumer-Wrapper um die darstellende
+  `InspectorArcaneEffectsView`. Die Chipliste baut
+  `lib/rules/derived/active_spell_display_rules.dart` — eigene Datei, weil
+  `active_spell_rules.dart` von `combat_rules` und `magic_rules` importiert
+  wird und sie deshalb nicht zurückholen darf.
+- Nicht enthalten und bewusst nicht erfunden: pauschaler Schadens- und
+  Rücknahmeknopf, KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne
+  echten Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.
+- **Tabs, Editoraktionen und Leave-Guard der Heldenverwaltung liegen im
+  `WorkspaceManagementCoordinator`** (`lib/ui/screens/workspace/`), den
+  **beide** Oberflächen benutzen: der bestehende `HeroWorkspaceScreen` und der
+  `WorkspaceManagementBody` des neuen Rahmens. Eine zweite
+  Bearbeitungsimplementierung darf nicht entstehen, sonst laufen Speichern,
+  Verwerfen und Tabwechsel auseinander. Die Abschnittsliste kommt weiterhin aus
+  `buildWorkspaceTabs`/`visibleWorkspaceTabsForHero`; UI2 pflegt keine zweite.
+  Eine laufende Verlassen-Prüfung sperrt auch die direkten Editoraktionen
+  einschließlich Speichern und Abbrechen. Der Koordinator meldet Beginn und
+  Ende dieser Sperre an beide Hosts, auch bei Abbruch oder Speicherfehler.
+- **Während eine Steigerungssitzung offen ist, sind manuelle Korrekturen
+  gesperrt.** Der Verwaltungsbody zeigt dafür vorerst einen erklärten
+  Sperrzustand für die **gesamte** Fläche, nicht nur ohne „Bearbeiten": ein Teil
+  der Altansichten (Inventar, Gruppe) speichert sofort und lässt sich noch nicht
+  einzeln abschalten. Wechsel, die den Workspace abbauen (Heldenwahl,
+  Heldenliste, Rückkehr zur Bestandsoberfläche, System-Zurück), fragen
+  zusätzlich nach dem offenen Plan; aufgelegte Screens (Einstellungen,
+  Token-Blatt) prüfen nur den Editor, weil die Sitzung im gemeinsamen
+  `ProviderScope` liegt und einen Push überlebt.
+  Beim tatsächlichen Oberflächenwechsel in den Einstellungen greift jedoch
+  dieselbe Planabfrage: `KartoBestandsAdapter.einstellungen` reicht
+  `vorOberflaechenwechsel` an `SettingsScreen.beforeSurfaceChange` weiter.
+  Beide Settings-Layouts prüfen vor dem Schreiben; Abbruch und fehlgeschlagene
+  Planübernahme erhalten Oberfläche und Sitzung. Laufende Wechsel sind gesperrt.
+- **Solange beide Oberflächen parallel laufen, müssen ihre Themes
+  ineinander überblendbar sein.** `MaterialApp` animiert den Themenwechsel,
+  und `TextStyle.lerp` wirft, sobald zwei Stile verschiedene `inherit`-Werte
+  tragen oder einer von beiden `null` ist. Daraus folgen zwei Regeln für
+  `buildKartoTheme`: Schriftrollen entstehen per `copyWith` auf
+  `ThemeData.textTheme` (ein mit dem Konstruktor gebauter `TextStyle` trägt
+  `inherit: true`, Materials Stile `false`), und kein Komponenten-Theme setzt
+  einen Textstil, den das Codex-Theme nicht auch setzt. Beides ist in
+  `test/ui2/theme/karto_theme_uebergang_test.dart` gepinnt. Der Fehler zeigt
+  sich **nur** beim Übergang, nie beim Bau eines einzelnen Themes.
+- Kartograph-Token liegen in `lib/ui2/theme/` (`KartoTheme` als
+  `ThemeExtension`, 19 rollenbenannte Farben einschließlich der drei
+  Ressourcenfarben, zwei Paletten), die
+  helligkeitsunabhängigen Skalen in `lib/ui2/foundation/` (`Abstand`,
+  `Strich`, `KartoBreite`). Abstände, Linienstärken und Breakpoints gehören
+  bewusst **nicht** ins Theme. Linienstärke trägt die Hierarchie: `kueste`,
+  `grat` und `hoehenlinie` sind fest an die gleichnamigen Farbtoken gepaart.
+  Das Token-Blatt (`lib/ui2/debug/karto_token_sheet.dart`) zeigt alles auf
+  einer Seite und ist im Debugmodus aus der neuen Oberfläche erreichbar.
+- **Tiefe trägt die Fläche, Gliederung die Linie** — beide dreistufig.
+  `senke` < `blatt` < `feld` gilt in **beiden** Paletten (hell wird `feld`
+  heller, dunkel weniger dunkel); gesetzt wird eine Stufe nie direkt, sondern
+  über `KartoFlaeche` / `KartoFlaechenstufe`
+  (`lib/ui2/widgets/karto_flaeche.dart`), das auch die Paarung Strichgewicht ↔
+  Farbtoken erzwingt. Verteilung: Seitengrund `blatt`, Abschnitte/Karten/
+  Dialoge `feld`, Kontextspalten und Eingabefelder `senke`, schwebendes
+  (Tooltip, Snackbar) `senke`. Ein Eingabefeld auf `feld` wäre innerhalb eines
+  Abschnitts farbgleich und damit unsichtbar. Schatten gibt es weiterhin
+  keine. Radien: `kKartoRadius` 8 für Flächen, `kKartoRadiusKlein` 4 für
+  Chips und Knöpfe — mehr Stufen nicht.
+- Jede Arbeitsfläche beginnt mit `KartoSeitenkopf`
+  (`lib/ui2/widgets/karto_seitenkopf.dart`): Kontextzeile, Titel, eine Aktion,
+  getrennt durch Weißraum statt Linie. Er ist die **einzige** Verwendung von
+  `titelGross`, und die Kontextzeile steht nur dort, nie über einem Abschnitt.
+  In der Spielansicht trägt das erste laufende Abenteuer mit Titel den
+  Seitentitel; `Am Spieltisch` rückt dann in die Kontextzeile, darunter folgen
+  optional `unterzeile` (aventurisches Datum, aktueller Stand vor Startdatum,
+  nur aus **demselben** Abenteuer) und eine auf 3 bzw. 2 Zeilen gekürzte
+  `beschreibung` (Zusammenfassung). Ohne laufendes Abenteuer bleibt
+  `Am Spieltisch` der Titel.
+  Einen Knopf gibt es dafür nicht: `KartoSeitenkopf.onTap` macht den ganzen
+  Abenteuerkopf antippbar (Pfeil hinter dem Titel, Tooltip „Abenteuer öffnen“,
+  Key `karto-spiel-abenteuer`). Er öffnet das Abenteuerblatt
+  (`lib/ui2/spielen/karto_abenteuerblatt.dart`): Datum, Zusammenfassung,
+  Notizen und Personen lesen und pflegen, Abschluss und Belohnungen bleiben in
+  der Verwaltung. Das Blatt ist eine eigene Seite (Grund `blatt`); Personen
+  und Notizen stehen als `feld`-Karten im `KartoKartenraster`
+  (`karto_abenteuer_karten.dart`), Personen mit derselben Ringfassung wie die
+  Heldenmarke, Anlegen als leise `senke`-Kachel am Rasterende. Es ist UI2-eigen, weil der Notizen-Tab beim Speichern seinen
+  **ganzen** Entwurf (Notizen, Kontakte, alle Abenteuer) über den Helden legt.
+  Das Blatt schreibt dagegen nur dieses eine Abenteuer, über
+  `HeroActions.updateHero` (frisch laden, dann ändern, analog zu
+  `updateHeroState`) und `ersetzeAbenteuer`
+  (`karto_laufendes_abenteuer.dart`). Vor dem Öffnen läuft die Editorprüfung
+  der Verwaltung, sonst überschriebe ein späteres Speichern dort die Einträge.
+  Gespeichert und Fehler angezeigt wird im Blatt selbst, **nicht** über
+  `KartoLaufzeitAktion`: das Öffnen läuft bereits in deren Re-Entrancy-Guard,
+  jede weitere Aktion darin würde still verworfen. Bei offener Planung ist das
+  Blatt schreibgeschützt, weil jede Heldenänderung den Inhalts-Hash der Runde
+  bräche.
+  Die Seitentitel (`Am Spieltisch`, `Nächste Schritte`) dürfen die
+  Navigationsbeschriftungen nicht wiederholen — beide stehen gleichzeitig im
+  Baum, und die Navigationsprüfungen erwarten ihre Beschriftung genau einmal.
+  Auf `KartoBreite.schmal` entfällt der Titel in der Planung: der Katalog führt
+  dort schon eine eigene Überschrift, und die Höhe wird für die erste
+  Steigerungskarte gebraucht.
+- Die dunkle Bereichsnavigation trägt oben `KartoHeldenmarke`
+  (Avatar oder ringgefasstes Monogramm, Name, Profession) und unten
+  `Heldenauswahl` und `Workspace-Menü`; auf breiten Fenstern gibt es deshalb
+  **keine** `AppBar`, auf schmalen bleibt sie. Beide Tooltips müssen wortgleich
+  erhalten bleiben. Der Avatar kommt über `KartoBestandsAdapter.heldenbild`,
+  nicht über ein eigenes Bildwidget auf `avatarBytesProvider`: Bilder rendert
+  ausschließlich `AvatarGalleryImage`.
+- Zahlen mit Bezugsgröße werden als **ein** `Text.rich` aus mehreren Spans
+  gesetzt, nicht als mehrere `Text`. So trägt der aktuelle Wert das Gewicht und
+  die Bezugsgröße bleibt leise, während `find.text` die Zeile weiterhin als
+  Ganzes findet — der Finder fällt bei fehlendem `Text.data` auf
+  `textSpan.toPlainText()` zurück. Genutzt von `KartoRessourcenwert`
+  (`'27 / 22'`) und `KartoApUebersicht` (`'Frei zu Beginn: 1375 AP'`); beide
+  Formate sind wörtlich gepinnt.
+- Schriften des Neubaus: **Spectral** (statisch, vier eigene Schnitte) für
+  Titel, **Inter Tight** (nur variabel, Gewicht über `fontVariations`) für
+  Daten. Innerhalb einer Familie darf kein `asset:`-Pfad zweimal stehen —
+  genau das machen Merriweather und Cinzel heute, deren Fettschnitt deshalb
+  dieselben Glyphen liefert wie der reguläre. `test/ui2/theme/` prüft das
+  doppelt: das Manifest auf doppelte Pfade, und `karto_weights_test.dart`
+  **misst** die Zeichenbreiten, weil eine Behauptung im Manifest sonst nicht
+  auffällt. Tests, die Schriften brauchen, laden sie über
+  `test/ui2/theme/karto_test_fonts.dart`; ohne das misst `flutter test` die
+  Ersatzschrift.
 - Auf einen asynchronen Provider darf **nicht** mit
   `ref.read(provider.future)` gewartet werden. In Riverpod 3.2 wird diese
   Future bei einem Fehler nie erfüllt — der Provider geht in `AsyncLoading`

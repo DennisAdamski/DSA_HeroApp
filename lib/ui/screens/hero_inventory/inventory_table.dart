@@ -12,6 +12,13 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
     return result;
   }
 
+  // Tabellenziffern halten Menge, Gewicht und Wert spaltenweise untereinander;
+  // Proportionalziffern lassen die Spalte sonst sichtbar zittern.
+  Widget _zahlenzelle(String text) => Text(
+    text,
+    style: const TextStyle(fontFeatures: [FontFeature.tabularFigures()]),
+  );
+
   Widget _buildTable(BuildContext context) {
     final filteredEntries = _filteredEntries();
     if (filteredEntries.isEmpty) {
@@ -51,9 +58,11 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
             Text(_typeLabel(entry.itemType)),
             Text(_sourceLabel(entry.source)),
             Text(_traegerName(entry)),
-            Text(entry.anzahl.trim().isEmpty ? '–' : entry.anzahl.trim()),
-            Text(_formatWeight(entry.gewichtGramm)),
-            Text(_formatValue(entry.wertSilber)),
+            _zahlenzelle(
+              entry.anzahl.trim().isEmpty ? '–' : entry.anzahl.trim(),
+            ),
+            _zahlenzelle(_formatWeight(entry.gewichtGramm)),
+            _zahlenzelle(_formatValue(entry.wertSilber)),
             Wrap(
               spacing: 6,
               runSpacing: 6,

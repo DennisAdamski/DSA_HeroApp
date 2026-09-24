@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
 import '../../test_support/list_tile_material_assertions.dart';
 
@@ -43,6 +44,7 @@ Future<void> _openTab(
   WidgetTester tester,
   FakeRepository repo, {
   Size size = const Size(1200, 800),
+  ThemeData? theme,
 }) async {
   tester.view.devicePixelRatio = 1.0;
   tester.view.physicalSize = size;
@@ -53,6 +55,7 @@ Future<void> _openTab(
     ProviderScope(
       overrides: [heroRepositoryProvider.overrideWithValue(repo)],
       child: MaterialApp(
+        theme: theme,
         home: Scaffold(
           body: HeroInventoryTab(
             heroId: 'hero-1',
@@ -310,6 +313,77 @@ void main() {
       final heroes = await repo.listHeroes();
       final hero = heroes.single;
       expect(hero.inventoryEntries.single.gegenstand, 'Seil, 20 m');
+    });
+
+    testWidgets('numerische Inventarspalten verwenden Tabellenziffern', (
+      tester,
+    ) async {
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          _buildHero(
+            inventoryEntries: const <HeroInventoryEntry>[
+              HeroInventoryEntry(
+                gegenstand: 'Seil',
+                anzahl: '17',
+                source: InventoryItemSource.manuell,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await _openTab(
+        tester,
+        repo,
+        theme: buildKartoTheme(
+          brightness: Brightness.light,
+          centerAppBarTitle: false,
+        ),
+      );
+
+      final number = tester.widget<Text>(find.text('17'));
+      expect(
+        number.style?.fontFeatures,
+        contains(FontFeature.tabularFigures()),
+      );
+    });
+
+    testWidgets('Speicherfehler bleibt im geöffneten Inventareditor sichtbar', (
+      tester,
+    ) async {
+      final repo = _FailingInventoryRepository(
+        heroes: <HeroSheet>[
+          _buildHero(
+            inventoryEntries: const <HeroInventoryEntry>[
+              HeroInventoryEntry(
+                gegenstand: 'Seil',
+                source: InventoryItemSource.manuell,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await _openTab(tester, repo);
+      await tester.tap(
+        find.byKey(const ValueKey<String>('inventory-row-open-0')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('inventory-editor-name')),
+        'Seil, 20 m',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('inventory-editor-save')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Speichern fehlgeschlagen'), findsOneWidget);
+      expect(find.text('Gegenstand bearbeiten'), findsOneWidget);
+      expect(
+        (await repo.listHeroes()).single.inventoryEntries.single.gegenstand,
+        'Seil',
+      );
     });
 
     testWidgets('verknüpfter Eintrag pflegt magisch und geweiht im Inventar', (
@@ -577,4 +651,13 @@ void main() {
       );
     });
   });
+}
+
+class _FailingInventoryRepository extends FakeRepository {
+  _FailingInventoryRepository({required super.heroes});
+
+  @override
+  Future<void> saveHero(HeroSheet hero) async {
+    throw StateError('Inventar-Testfehler');
+  }
 }

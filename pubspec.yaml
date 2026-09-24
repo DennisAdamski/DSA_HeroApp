@@ -75,6 +75,10 @@ flutter:
     - assets/heroes/
     - assets/ui/codex/
   fonts:
+    # Bestehende Oberflaeche. Faellt mit ihr weg.
+    # Achtung: Regular und 700 zeigen hier auf dieselbe Datei, der Fettschnitt
+    # ist also nur registriert und liefert dieselben Glyphen. Fuer die neuen
+    # Familien darf das nicht wieder passieren - siehe unten.
     - family: Merriweather
       fonts:
         - asset: assets/fonts/merriweather/Merriweather.ttf
@@ -85,4 +89,22 @@ flutter:
         - asset: assets/fonts/cinzel/Cinzel.ttf
         - asset: assets/fonts/cinzel/Cinzel.ttf
           weight: 700
+    # Neue Oberflaeche "Kartograph".
+    # Spectral liegt statisch vor: je Gewicht eine eigene Datei, jeder
+    # asset-Pfad innerhalb der Familie genau einmal.
+    - family: Spectral
+      fonts:
+        - asset: assets/fonts/spectral/Spectral-Regular.ttf
+        - asset: assets/fonts/spectral/Spectral-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/spectral/Spectral-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/spectral/Spectral-Italic.ttf
+          style: italic
+    # Inter Tight gibt es bei Google Fonts nur variabel. Die Datei wird
+    # deshalb genau einmal deklariert; das Gewicht setzt die Typo-Rolle ueber
+    # fontVariations, nicht ein zweiter asset-Eintrag.
+    - family: InterTight
+      fonts:
+        - asset: assets/fonts/inter_tight/InterTight-Variable.ttf
 

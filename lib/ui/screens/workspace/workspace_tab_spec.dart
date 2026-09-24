@@ -170,7 +170,7 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       id: WorkspaceTabIds.combat,
       label: 'Kampf',
       icon: Icons.sports_martial_arts_outlined,
-      helper: 'Kampftechniken, Nahkampf, Sonderfertigkeiten, Manoever',
+      helper: 'Kampftechniken, Nahkampf, Sonderfertigkeiten, Manöver',
       buildContent: ({required heroId, required callbacks}) => HeroCombatTab(
         heroId: heroId,
         showInlineCombatTalentsActions: false,
