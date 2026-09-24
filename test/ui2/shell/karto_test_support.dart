@@ -93,6 +93,14 @@ class TestBestand implements KartoBestandsAdapter {
   }
 
   @override
+  Future<void> anmelden(
+    BuildContext context, {
+    bool registrieren = false,
+  }) async {
+    aufrufe.add(registrieren ? 'registrieren' : 'anmelden');
+  }
+
+  @override
   Future<void> einstellungen(
     BuildContext context, {
     KartoVerlassenPruefung? vorOberflaechenwechsel,

@@ -9,9 +9,16 @@ import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 /// Pflicht-Gate vor dem App-Shell angezeigt; auf Desktop optional ueber
 /// die Einstellungen erreichbar.
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key, this._authService});
+  const SignInScreen({
+    super.key,
+    this._authService,
+    this.initialRegisterMode = false,
+  });
 
   final AuthService? _authService;
+
+  /// Startet direkt im Registriermodus statt im Login.
+  final bool initialRegisterMode;
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();
@@ -22,7 +29,7 @@ class _SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isRegisterMode = false;
+  late bool _isRegisterMode = widget.initialRegisterMode;
   bool _isBusy = false;
   String? _errorMessage;
 
@@ -55,6 +62,11 @@ class _SignInScreenState extends State<SignInScreen> {
         );
       }
       // Beim Erfolg uebernimmt der WebAuthGate via authStateChanges().
+      // Als gepushte Route schliesst sich der Screen selbst, damit er einen
+      // Profilwechsel unterhalb der MaterialApp nicht ueberlebt.
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
     } on FirebaseAuthException catch (error) {
       setState(() {
         _errorMessage = _localizeError(error);

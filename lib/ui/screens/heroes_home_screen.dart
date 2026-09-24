@@ -6,11 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/home/hero_home_account_prompt.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/home/hero_home_tablet_panels.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/home/heroes_home_dialogs.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_workspace_screen.dart';
@@ -266,17 +269,49 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
         data: (heroes) {
           _scheduleCatalogPrewarmAfterFrame();
           if (heroes.isEmpty) {
+            final authService = ref.watch(authServiceProvider);
+            final authUser = ref.watch(authUserProvider).asData?.value;
+            final showAccountPrompt = authService != null && authUser == null;
             return CodexPageScaffold(
               padding: EdgeInsets.all(layout.contentPadding),
               child: Center(
-                child: CodexEmptyState(
-                  title: 'Dein Heldenarchiv ist noch leer',
-                  message: 'Lege deinen ersten Helden an oder importiere einen bestehenden Bogen, um auf dem iPad mit einem digitalen Heldenbogen zu arbeiten.',
-                  assetPath: 'assets/ui/codex/empty_ledger.png',
-                  action: FilledButton.icon(
-                    onPressed: createHero,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Ersten Helden anlegen'),
+                child: SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 560),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (showAccountPrompt) ...[
+                          HeroHomeAccountPrompt(
+                            onSignIn: () =>
+                                openSignInScreen(context, authService),
+                            onRegister: () => openSignInScreen(
+                              context,
+                              authService,
+                              register: true,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        CodexEmptyState(
+                          title: 'Dein Heldenarchiv ist noch leer',
+                          message: 'Lege deinen ersten Helden an oder importiere einen bestehenden Bogen, um auf dem iPad mit einem digitalen Heldenbogen zu arbeiten.',
+                          assetPath: 'assets/ui/codex/empty_ledger.png',
+                          // Mit Konto-Karte bleibt Anmelden die Primaeraktion.
+                          action: showAccountPrompt
+                              ? FilledButton.tonalIcon(
+                                  onPressed: createHero,
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Ersten Helden anlegen'),
+                                )
+                              : FilledButton.icon(
+                                  onPressed: createHero,
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Ersten Helden anlegen'),
+                                ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

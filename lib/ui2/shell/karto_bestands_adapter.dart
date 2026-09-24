@@ -76,6 +76,12 @@ abstract interface class KartoBestandsAdapter {
   /// Öffnet Anlegen, Import und weitere Aktionen der bisherigen Heldenliste.
   Future<void> heldenVerwalten(BuildContext context);
 
+  /// Öffnet Login oder Registrierung für den optionalen Konto-Sync.
+  ///
+  /// Die leere Heldenwahl bietet das ohne Konto prominent an; Bildschirm und
+  /// Auth-Dienst bleiben beim Bestand.
+  Future<void> anmelden(BuildContext context, {bool registrieren = false});
+
   /// Öffnet Einstellungen und prüft vor einem dortigen Oberflächenwechsel.
   Future<void> einstellungen(
     BuildContext context, {
