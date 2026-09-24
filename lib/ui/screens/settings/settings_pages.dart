@@ -348,11 +348,7 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
     BuildContext context,
     AuthService authService,
   ) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => SignInScreen(authService: authService),
-      ),
-    );
+    await openSignInScreen(context, authService);
   }
 
   Future<void> _confirmAndSignOut(

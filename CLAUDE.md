@@ -570,6 +570,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   entfernt — genau wie `heroContentHash`. Wer irgendwo `stableContentHash`
   direkt auf `state.toJson()` anwendet, baut einen Scheinkonflikt bei jedem
   Speichern ein.
+- Ohne Helden **und** ohne Login zeigen beide Startseiten eine hervorgehobene
+  Konto-Karte (`Anmelden`, `Konto anlegen`) vor dem Anlegen: Bestand über
+  `HeroHomeAccountPrompt` (`lib/ui/screens/home/`), UI2 in `KartoHeldenwahl`
+  über die Adaptermethode `KartoBestandsAdapter.anmelden`. Sichtbar nur, wenn
+  `authServiceProvider` einen Dienst liefert. Geöffnet wird immer
+  `openSignInScreen` (`lib/ui/screens/auth/open_sign_in.dart`); der
+  `SignInScreen` schließt sich nach Erfolg selbst.
 - `FirebaseBootstrapResult.isAccountSyncAvailable` steuert den privaten
   Konto-Sync; `isFirestoreAvailable` steht für native Firestore-Funktionen wie
   Gruppen-Cloudaktionen und bleibt auf Windows deaktiviert.
