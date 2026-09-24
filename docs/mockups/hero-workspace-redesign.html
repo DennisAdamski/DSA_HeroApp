@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Heldenverwaltung – Codex Redesign</title>
+  <link rel="stylesheet" href="hero-workspace-redesign.css">
+  <script src="hero-workspace-redesign.js" defer></script>
+</head>
+<body>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m16 8-3 5-5 3 3-5 5-3Z"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>
+    <symbol id="i-grow" viewBox="0 0 24 24"><path d="M12 21V9m0 6c-6 0-8-4-8-9 6 0 8 4 8 9Zm0-4c0-6 4-9 8-9 0 6-3 9-8 9Z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></symbol>
+    <symbol id="i-dice" viewBox="0 0 24 24"><path d="m12 2 10 7-4 12H6L2 9 10 2Zm0 0L6 21 22 9H2l16 12L12 2Z"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.6 5.6 0 0 0-8 0L12 5.4l-.8-.8a5.6 5.6 0 0 0-8 8L12 22l8.8-9.4a5.6 5.6 0 0 0 0-8Z"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 2.8 7.2L22 12l-7.2 2.8L12 22l-2.8-7.2L2 12l7.2-2.8L12 2Z"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M14 2 5 14h6l-1 8 9-12h-6l1-8Z"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z"/></symbol>
+    <symbol id="i-sword" viewBox="0 0 24 24"><path d="m14 3 7-1-1 7L9 20l-5-5L14 3ZM4 11l9 9M2 22l5-5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5C8 2 4 3 2 4v16c4-2 7-1 10 1 3-2 6-3 10-1V4c-3-1-7-2-10 1Zm0 0v16"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M4 10h10a6 6 0 0 1 0 12M4 10l5-5M4 10l5 5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5 5 8 9 10 4-2 9-5 9-10V6l-9-4Z"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+  </svg>
+
+  <div class="preview-bar">
+    <span><strong>Codex</strong><span class="preview-divider"></span> Redesign-Entwurf</span>
+    <span class="preview-disclaimer">Beispieldaten · simulierte Aktionen</span>
+    <button class="preview-reset" id="reset-demo">Zurücksetzen</button>
+  </div>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Hauptnavigation">
+      <a class="brand" href="#spielen" aria-label="Heldenverwaltung, Spielansicht">
+        <svg class="icon brand-icon"><use href="#i-compass"/></svg>
+        <span>Heldenverwaltung<small>Das Schwarze Auge</small></span>
+      </a>
+      <div class="hero-identity">
+        <div class="hero-sigil" aria-hidden="true">
+          <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="51"/><circle cx="60" cy="60" r="43"/>
+            <path d="M60 13v18m0 58v18M13 60h18m58 0h18M27 27l12 12m42 42 12 12M27 93l12-12m42-42 12-12"/>
+            <path class="sigil-fill" d="m60 25 10 25 25 10-25 10-10 25-10-25-25-10 25-10 10-25Z"/>
+            <path d="m60 40 20 20-20 20-20-20Z"/></svg>
+        </div>
+        <h2>Liora Sternfels</h2>
+        <p>Gildenmagierin aus dem Mittelreich</p>
+      </div>
+      <nav class="mode-navigation" aria-label="Arbeitsbereich">
+        <a class="mode-link active" href="#spielen" data-mode="spielen" aria-current="page">
+          <svg class="icon"><use href="#i-compass"/></svg><span>Spielen<small>Alles für den Spielabend</small></span>
+        </a>
+        <a class="mode-link" href="#verwalten" data-mode="verwalten">
+          <svg class="icon"><use href="#i-person"/></svg><span>Held verwalten<small>Dein vollständiger Heldenbogen</small></span>
+        </a>
+        <a class="mode-link" href="#entwickeln" data-mode="entwickeln">
+          <svg class="icon"><use href="#i-grow"/></svg><span>Entwicklung planen<small>Neue Möglichkeiten entdecken</small></span>
+          <span id="plan-badge" class="nav-badge" hidden>0</span>
+        </a>
+      </nav>
+      <div class="adventure-marker">
+        <svg class="icon"><use href="#i-book"/></svg>
+        <div><small>Dein Abenteuer</small><strong>Die Spuren im Nebel</strong><span>Spielabend 12</span></div>
+      </div>
+      <div class="sidebar-bottom">
+        <button class="profile-button" data-action="profile"><svg class="icon"><use href="#i-shield"/></svg><span>Unsere Hausregeln<small>Regelprofil 1.4</small></span><span aria-hidden="true">›</span></button>
+        <span class="offline-status"><span class="status-dot"></span> Offline verfügbar</span>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="workspace-header">
+        <div class="breadcrumb">Deine Helden <span>/</span> <strong>Liora Sternfels</strong></div>
+        <div class="quick-search-wrap">
+          <svg class="icon search-icon"><use href="#i-search"/></svg>
+          <input id="quick-search" type="search" autocomplete="off" placeholder="Probe oder Regel suchen …" aria-label="Probe oder Regel suchen" aria-controls="search-results">
+          <kbd>Strg K</kbd>
+          <div id="search-results" class="search-results" hidden></div>
+        </div>
+      </header>
+
+      <main id="main-content">
+        <section id="view-spielen" class="view" aria-labelledby="play-title">
+          <div class="page-heading">
+            <div><p class="context-line">Die Spuren im Nebel <span>Spielabend 12</span></p><h1 id="play-title">Am Spieltisch</h1></div>
+            <button class="button button-secondary" data-action="rest"><svg class="icon"><use href="#i-moon"/></svg>Rast beginnen</button>
+          </div>
+          <div class="play-layout">
+            <div class="main-column">
+              <section class="resources paper-panel" aria-label="Aktuelle Ressourcen">
+                <div class="resource resource-life">
+                  <div class="resource-label"><svg class="icon"><use href="#i-heart"/></svg>Lebensenergie</div>
+                  <div class="resource-value"><strong id="life-value">32</strong><span>/ 38</span></div>
+                  <div class="resource-track" role="progressbar" aria-label="Lebensenergie" aria-valuemin="0" aria-valuemax="38" aria-valuenow="32" id="life-bar"><span style="width:84%"></span></div>
+                  <small id="life-caption">6 LeP fehlen</small>
+                </div>
+                <div class="resource resource-astral">
+                  <div class="resource-label"><svg class="icon"><use href="#i-star"/></svg>Astralenergie</div>
+                  <div class="resource-value"><strong id="astral-value">24</strong><span>/ 42</span></div>
+                  <div class="resource-track" role="progressbar" aria-label="Astralenergie" aria-valuemin="0" aria-valuemax="42" aria-valuenow="24" id="astral-bar"><span style="width:57%"></span></div>
+                  <small>Für deine nächsten Zauber</small>
+                </div>
+                <div class="resource resource-stamina">
+                  <div class="resource-label"><svg class="icon"><use href="#i-bolt"/></svg>Ausdauer</div>
+                  <div class="resource-value"><strong>29</strong><span>/ 35</span></div>
+                  <div class="resource-track" role="progressbar" aria-label="Ausdauer" aria-valuemin="0" aria-valuemax="35" aria-valuenow="29"><span style="width:83%"></span></div>
+                  <small>Bereit für die nächste Etappe</small>
+                </div>
+                <div class="resource-footer"><span><span class="status-dot"></span> Keine Wunden</span><button class="text-button danger-text" data-action="damage">Schaden erhalten <span aria-hidden="true">＋</span></button></div>
+              </section>
+
+              <section class="favorites-section">
+                <div class="section-heading"><h2>Deine häufigen Proben</h2><span class="quiet-label">Ein Klick zum Wurf</span></div>
+                <div class="filter-tabs" role="group" aria-label="Proben filtern">
+                  <button class="filter active" data-filter="Alle" aria-pressed="true">Alle</button>
+                  <button class="filter" data-filter="Talente" aria-pressed="false">Talente</button>
+                  <button class="filter" data-filter="Zauber" aria-pressed="false">Zauber</button>
+                </div>
+                <div class="probe-list paper-panel" id="probe-list"></div>
+              </section>
+
+              <section class="session-section">
+                <div class="section-heading"><h2>Verlauf des Spielabends</h2><button class="text-button" data-action="note">+ Notiz</button></div>
+                <ol class="session-log" id="session-log"></ol>
+                <button class="text-button undo-button" id="undo-action" disabled><svg class="icon"><use href="#i-undo"/></svg>Letzte Änderung zurücknehmen</button>
+              </section>
+            </div>
+
+            <aside class="inspector" aria-label="Kampf und aktive Effekte">
+              <section class="combat-panel">
+                <div class="combat-heading"><svg class="icon"><use href="#i-sword"/></svg><h2>Im Gefecht</h2><span id="round-label">KR 4</span></div>
+                <div class="weapon-heading"><span class="weapon-art" aria-hidden="true">✧</span><div><h3 id="equipped-name">Magierstab</h3><p id="equipped-kind">Stäbe · beidhändig</p></div></div>
+                <div class="combat-values"><button data-action="attack-detail"><strong id="attack-value">12</strong><span>Attacke <span aria-hidden="true">ⓘ</span></span></button><div><strong id="parry-value">10</strong><span>Parade</span></div><div><strong>11</strong><span>Initiative</span></div></div>
+                <button class="button button-primary full-width" data-action="attack"><svg class="icon"><use href="#i-dice"/></svg>Attacke würfeln</button>
+                <button class="text-button round-button" data-action="round">Nächste Kampfrunde <svg class="icon"><use href="#i-arrow"/></svg></button>
+              </section>
+              <section class="effects-panel">
+                <div class="section-heading"><h2>Aktive Effekte</h2><span class="count-badge" id="effect-count">1</span></div>
+                <div class="effect-entry" id="active-effect"><div class="effect-symbol"><svg class="icon"><use href="#i-bolt"/></svg></div><div><h3>Axxeleratus</h3><p>Bewegung wie der Wind</p><span id="effect-duration" class="effect-duration">Noch 3 Kampfrunden</span></div></div>
+                <p id="effects-empty" class="muted" hidden>Zurzeit sind keine Effekte aktiv.</p>
+              </section>
+              <div class="rule-note"><svg class="icon"><use href="#i-book"/></svg><p>Woher kommt ein Wert?<br><button class="text-button" data-action="attack-detail">Lass dir die Herleitung zeigen.</button></p></div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="view-verwalten" class="view" aria-labelledby="manage-title" hidden>
+          <div class="page-heading"><div><p class="context-line">Liora Sternfels</p><h1 id="manage-title">Held verwalten</h1></div><span class="subtle-pill">Manuelle Pflege ohne AP-Buchung</span></div>
+          <div class="manage-tabs" role="group" aria-label="Heldenbogen-Bereich"><button class="filter active" data-sheet="equipment" aria-pressed="true">Ausrüstung</button><button class="filter" data-sheet="traits" aria-pressed="false">Merkmale</button><button class="filter" data-sheet="biography" aria-pressed="false">Biografie</button></div>
+          <div id="sheet-equipment" class="sheet-section">
+            <div class="section-heading"><div><h2>Was dich begleitet</h2><p class="muted">Gegenstände und ihre Verwendung an einem Ort.</p></div><button class="button button-primary" data-action="add-item">+ Gegenstand</button></div>
+            <section class="paper-panel inventory-panel"><div class="table-heading"><span>Gegenstand</span><span>Getragen</span><span>Verwendung</span></div><div id="inventory-list"></div></section>
+            <div class="equipment-summary"><svg class="icon"><use href="#i-shield"/></svg><p>Deine ausgerüstete Waffe erscheint auch unter <a href="#spielen">Spielen</a>. Änderungen bleiben beim Wechsel zwischen den Bereichen erhalten.</p></div>
+          </div>
+          <div id="sheet-traits" class="sheet-section" hidden>
+            <div class="section-heading"><h2>Was dich ausmacht</h2><button class="button button-secondary" data-action="trait-info">Merkmalsdetails</button></div>
+            <div class="trait-grid"><article class="paper-panel trait-card"><span class="trait-kind">Vorteil</span><h3>Gutes Gedächtnis</h3><p>Wissen, Namen und Erlebnisse bleiben dir besonders gut in Erinnerung.</p><span class="subtle-pill">Aus deinem Regelprofil</span></article><article class="paper-panel trait-card"><span class="trait-kind">Vorteil mit Auswahl</span><h3>Begabung</h3><p>Gewähltes Talent: <strong>Sinnenschärfe</strong></p><span class="subtle-pill">Auswahl am Merkmal gespeichert</span></article><article class="paper-panel trait-card"><span class="trait-kind">Nachteil</span><h3>Neugier</h3><p>Stufe <strong>6</strong></p><span class="subtle-pill">Persönliches Merkmal</span></article></div>
+          </div>
+          <div id="sheet-biography" class="sheet-section" hidden>
+            <div class="section-heading"><h2>Deine Geschichte</h2></div>
+            <form id="biography-form" class="paper-panel biography-form"><label>Name<input name="heroName" value="Liora Sternfels" maxlength="60" required></label><label>Herkunft<input name="origin" value="Mittelreich" maxlength="80" required></label><label class="full-width">Persönliche Notiz<textarea name="bio" rows="5" maxlength="1500">Ich suche die Wahrheit hinter den Nebeln. Und einen guten Tee für den Weg.</textarea></label><div class="form-footer"><span>Änderungen gelten nur in diesem Entwurf.</span><button class="button button-primary" type="submit">Änderungen speichern</button></div></form>
+          </div>
+        </section>
+
+        <section id="view-entwickeln" class="view" aria-labelledby="advance-title" hidden>
+          <div class="page-heading"><div><p class="context-line">Liora Sternfels</p><h1 id="advance-title">Entwicklung planen</h1></div><span class="subtle-pill"><svg class="icon"><use href="#i-grow"/></svg>Deine nächste Steigerungsrunde</span></div>
+          <div class="advancement-layout"><div>
+            <section class="ap-summary paper-panel" aria-label="Abenteuerpunkte"><div><span>Verfügbare AP</span><strong id="ap-total">320</strong></div><span class="ap-operator" aria-hidden="true">−</span><div><span>Vorgemerkt</span><strong id="ap-reserved">0</strong></div><span class="ap-operator" aria-hidden="true">=</span><div class="ap-remaining"><span>Danach übrig</span><strong id="ap-remaining">320</strong></div></section>
+            <div class="section-heading advancement-heading"><h2>Deine nächsten Schritte</h2><span class="quiet-label">Voraussetzungen erfüllt</span></div>
+            <div class="paper-panel" id="advancement-options"></div>
+            <div class="planning-hint"><svg class="icon"><use href="#i-book"/></svg><p>Probiere deine nächsten Schritte aus. Werte und AP ändern sich erst, wenn du die Runde übernimmst.</p></div>
+          </div><aside class="plan-panel paper-panel" aria-label="Geplante Steigerungen"><div class="section-heading"><h2>Deine Planung</h2><span id="plan-count" class="count-badge">0</span></div><div id="plan-list"></div><div class="plan-footer"><div><span>Gesamtkosten</span><strong id="plan-cost">0 AP</strong></div><button class="button button-primary full-width" id="apply-plan" disabled>Änderungen übernehmen</button><p>Werte, AP und Historie werden gemeinsam übernommen.</p></div></aside></div>
+        </section>
+      </main>
+      <footer class="workspace-footer"><span class="footer-mark">✧</span><span>Jeder Held hat eine Geschichte.</span><span class="footer-meta">Codex · Interaktiver Designentwurf</span></footer>
+    </div>
+  </div>
+
+  <dialog id="action-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-header"><h2 id="dialog-title"></h2><button class="icon-button" id="close-dialog" aria-label="Dialog schließen"><svg class="icon"><use href="#i-close"/></svg></button></div>
+    <div id="dialog-body"></div>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

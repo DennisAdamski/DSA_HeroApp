@@ -51,16 +51,16 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
     return CodexSplitView(
       railWidth: _commandDeckCollapsedWidth,
       rail: WorkspaceCommandDeckNavigationPanel(
-        tabs: _visibleTabs,
+        tabs: _management.visibleTabs,
         activeTabIndex: activeTabIndex,
         isExpanded: false,
-        isDirty: _tabRegistry.isDirty,
+        isDirty: _management.isDirty,
         onToggleExpanded: null,
         onSelectTab: (index) {
-          if (_tabController.index == index) {
+          if (_management.tabController.index == index) {
             return;
           }
-          _tabController.animateTo(index);
+          _management.tabController.animateTo(index);
         },
       ),
       primary: _buildWorkspaceContentShell(
@@ -80,17 +80,17 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
     return CodexSplitView(
       railWidth: navigationWidth,
       rail: WorkspaceCommandDeckNavigationPanel(
-        tabs: _visibleTabs,
+        tabs: _management.visibleTabs,
         activeTabIndex: activeTabIndex,
         isExpanded: heroDeckExpanded,
-        isDirty: _tabRegistry.isDirty,
+        isDirty: _management.isDirty,
         onToggleExpanded: () =>
             _toggleHeroDeckExpanded(AppLayoutClass.tabletLandscape),
         onSelectTab: (index) {
-          if (_tabController.index == index) {
+          if (_management.tabController.index == index) {
             return;
           }
-          _tabController.animateTo(index);
+          _management.tabController.animateTo(index);
         },
       ),
       primary: _buildWorkspaceContentShell(
@@ -118,17 +118,17 @@ extension _HeroWorkspaceLayoutX on _HeroWorkspaceScreenState {
     return CodexSplitView(
       railWidth: navigationWidth,
       rail: WorkspaceCommandDeckNavigationPanel(
-        tabs: _visibleTabs,
+        tabs: _management.visibleTabs,
         activeTabIndex: activeTabIndex,
         isExpanded: heroDeckExpanded,
-        isDirty: _tabRegistry.isDirty,
+        isDirty: _management.isDirty,
         onToggleExpanded: () =>
             _toggleHeroDeckExpanded(AppLayoutClass.desktopWide),
         onSelectTab: (index) {
-          if (_tabController.index == index) {
+          if (_management.tabController.index == index) {
             return;
           }
-          _tabController.animateTo(index);
+          _management.tabController.animateTo(index);
         },
       ),
       primary: _buildWorkspaceContentShell(
