@@ -90,6 +90,12 @@ class _KartoShellState extends ConsumerState<KartoShell> {
               ),
               onVerwalten: () =>
                   _aktion(() => widget.bestand.heldenVerwalten(context)),
+              onAnmelden: (registrieren) => _aktion(
+                () => widget.bestand.anmelden(
+                  context,
+                  registrieren: registrieren,
+                ),
+              ),
             ),
           ),
           SafeArea(

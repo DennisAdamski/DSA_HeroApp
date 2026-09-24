@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_compat_theme.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_spiel_bruecke.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_panel.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
@@ -122,6 +124,20 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
         builder: (_) => const _KartoCompatHost(child: HeroesHomeScreen()),
       ),
     );
+  }
+
+  /// Öffnet den vorhandenen Login-Bildschirm im gewünschten Modus.
+  @override
+  Future<void> anmelden(
+    BuildContext context, {
+    bool registrieren = false,
+  }) async {
+    final authService = ProviderScope.containerOf(
+      context,
+      listen: false,
+    ).read(authServiceProvider);
+    if (authService == null) return;
+    await openSignInScreen(context, authService, register: registrieren);
   }
 
   /// Öffnet die vorhandenen Einstellungen im aktuellen ProviderScope.
