@@ -11,19 +11,19 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  flutter_riverpod: ^3.4.2
+  flutter_riverpod: ^3.4.3
   file_picker: ^12.2.0
   path: ^1.9.1
   path_provider: ^2.1.5
   share_plus: ^13.3.0
   uuid: ^4.5.1
   http: ^1.3.0
-  firebase_core: ^4.6.0
+  firebase_core: ^4.15.0
   cloud_firestore: ^6.2.0
   firebase_auth: ^6.7.0
-  firebase_storage: ^13.3.0
+  firebase_storage: ^13.6.0
   pointycastle: ^4.0.0
-  flutter_secure_storage: ^11.0.0
+  flutter_secure_storage: ^11.2.0
   unorm_dart: ^0.3.0
   sqlite3: ^3.5.2
   web: ^1.1.1
@@ -75,6 +75,10 @@ flutter:
     - assets/heroes/
     - assets/ui/codex/
   fonts:
+    # Bestehende Oberflaeche. Faellt mit ihr weg.
+    # Achtung: Regular und 700 zeigen hier auf dieselbe Datei, der Fettschnitt
+    # ist also nur registriert und liefert dieselben Glyphen. Fuer die neuen
+    # Familien darf das nicht wieder passieren - siehe unten.
     - family: Merriweather
       fonts:
         - asset: assets/fonts/merriweather/Merriweather.ttf
@@ -85,4 +89,22 @@ flutter:
         - asset: assets/fonts/cinzel/Cinzel.ttf
         - asset: assets/fonts/cinzel/Cinzel.ttf
           weight: 700
+    # Neue Oberflaeche "Kartograph".
+    # Spectral liegt statisch vor: je Gewicht eine eigene Datei, jeder
+    # asset-Pfad innerhalb der Familie genau einmal.
+    - family: Spectral
+      fonts:
+        - asset: assets/fonts/spectral/Spectral-Regular.ttf
+        - asset: assets/fonts/spectral/Spectral-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/spectral/Spectral-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/spectral/Spectral-Italic.ttf
+          style: italic
+    # Inter Tight gibt es bei Google Fonts nur variabel. Die Datei wird
+    # deshalb genau einmal deklariert; das Gewicht setzt die Typo-Rolle ueber
+    # fontVariations, nicht ein zweiter asset-Eintrag.
+    - family: InterTight
+      fonts:
+        - asset: assets/fonts/inter_tight/InterTight-Variable.ttf
 

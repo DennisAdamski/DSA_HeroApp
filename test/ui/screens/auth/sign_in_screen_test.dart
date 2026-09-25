@@ -41,6 +41,40 @@ void main() {
       orderedEquals([AutofillHints.newPassword]),
     );
   });
+
+  testWidgets('schließt sich als gepushte Route nach erfolgreichem Login', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => SignInScreen(
+                  authService: _FakeAuthService(),
+                  initialRegisterMode: true,
+                ),
+              ),
+            ),
+            child: const Text('öffnen'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('öffnen'));
+    await tester.pumpAndSettle();
+    expect(find.text('Stattdessen anmelden'), findsOneWidget);
+
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'held@example.de');
+    await tester.enterText(fields.at(1), 'geheim123');
+    await tester.tap(find.widgetWithText(FilledButton, 'Konto anlegen'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SignInScreen), findsNothing);
+    expect(find.text('öffnen'), findsOneWidget);
+  });
 }
 
 List<TextField> _textFields(WidgetTester tester) {

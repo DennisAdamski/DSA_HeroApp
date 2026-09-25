@@ -20,7 +20,7 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/state/sync_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/auth/sign_in_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_management_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_unlock_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/house_rule_pack_management_screen.dart';
@@ -32,7 +32,11 @@ part 'settings/settings_pages.dart';
 /// Einstellungs-Screen für globale, heldenunabhängige Optionen.
 class SettingsScreen extends ConsumerStatefulWidget {
   /// Erstellt die adaptive Einstellungsnavigation.
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, this.beforeSurfaceChange});
+
+  /// Prüft offene Workspace-Entwürfe vor dem tatsächlichen Oberflächenwechsel.
+  /// Ohne einbettenden Workspace ist keine zusätzliche Prüfung nötig.
+  final Future<bool> Function()? beforeSurfaceChange;
 
   @override
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
@@ -62,6 +66,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       body: showSplitView
           ? _SettingsSplitView(
+              beforeSurfaceChange: widget.beforeSurfaceChange,
               selectedDestination: _selectedDestination,
               onSelectDestination: _selectDestination,
               onToggleDebugMode: _toggleDebugMode,
@@ -111,7 +116,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => _SettingsDetailScreen(destination: destination),
+        builder: (_) => _SettingsDetailScreen(
+          destination: destination,
+          beforeSurfaceChange: widget.beforeSurfaceChange,
+        ),
       ),
     );
   }
