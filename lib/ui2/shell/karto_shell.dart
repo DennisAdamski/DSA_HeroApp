@@ -83,6 +83,8 @@ class _KartoShellState extends ConsumerState<KartoShell> {
           Expanded(
             child: KartoHeldenwahl(
               fehlendeAuswahl: id != null && helden.hasValue && !vorhanden,
+              // Bilder rendert ausschliesslich die Bruecke.
+              heldenbild: widget.bestand.heldenbild,
               onAuswahl: (id) => _aktion(
                 () => ref
                     .read(selectedHeroSelectionActionsProvider)
