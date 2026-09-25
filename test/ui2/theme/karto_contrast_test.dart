@@ -124,12 +124,7 @@ void main() {
         // Akzentkante. WCAG 1.4.11 verlangt dafuer 3:1.
         pruefe('Messing auf Blatt', t.messing, t.blatt, 3);
         pruefe('Messing auf Feld', t.messing, t.feld, 3);
-        pruefe(
-          'Messing auf Navigation',
-          t.messingNavigation,
-          t.navigation,
-          3,
-        );
+        pruefe('Messing auf Navigation', t.messingNavigation, t.navigation, 3);
         // Ornament und Warnung duerfen nicht dieselbe Farbe tragen.
         expect(t.messing, isNot(t.wachs));
       });

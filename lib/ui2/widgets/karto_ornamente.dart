@@ -276,7 +276,8 @@ class _KompassringMaler extends CustomPainter {
       final winkel = i * _vollkreis / 36 - math.pi / 2;
       final lang = i % 3 == 0;
       canvas.drawLine(
-        mitte + Offset.fromDirection(winkel, aussen - band * (lang ? 0.7 : 0.4)),
+        mitte +
+            Offset.fromDirection(winkel, aussen - band * (lang ? 0.7 : 0.4)),
         mitte + Offset.fromDirection(winkel, aussen),
         haar,
       );

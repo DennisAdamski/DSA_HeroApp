@@ -30,11 +30,7 @@ void main() {
     group('Ornamente ${helligkeit.name}', () {
       testWidgets('Kompassrose zeichnet in jeder Groesse', (tester) async {
         for (final groesse in <double>[0, 12, 48, 220]) {
-          await zeige(
-            tester,
-            helligkeit,
-            KartoKompassrose(groesse: groesse),
-          );
+          await zeige(tester, helligkeit, KartoKompassrose(groesse: groesse));
           expect(tester.takeException(), isNull, reason: 'Groesse $groesse');
         }
       });
