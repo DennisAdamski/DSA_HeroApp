@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 /// Ergänzt ein Kartograph-Theme um die Rollen der Bestandsoberfläche.
 ///
-/// Die Brücke verändert weder Material-Komponenten noch Typografie. Dadurch
-/// bleiben Bestandswidgets im neuen Rahmen lesbar, ohne dort ein zweites
-/// Designsystem oder nicht interpolierbare Textstile einzuführen.
+/// Die Brücke verändert keine Material-Komponenten und von der Typografie nur
+/// einen Slot: `bodySmall` trägt im Bestandsbaum die aufrechte Datenschrift
+/// statt der kursiven Legende (`buildKartoBestandsTextTheme`). Die Bestands-
+/// widgets greifen für kleine Texte fast immer zu diesem Slot; ohne die
+/// Umlegung stünde jede ihrer Beschriftungen in kursiver Serife.
+///
+/// Der Stil entsteht per `copyWith` auf dem Kartograph-Slot, trägt also
+/// dasselbe `inherit`. Überblendet wird dieser verschachtelte Baum ohnehin
+/// nie: `Theme` animiert nicht, nur das `AnimatedTheme` der `MaterialApp`.
 ThemeData buildKartoCompatTheme(ThemeData base) {
   final karto =
       base.extension<KartoTheme>() ??
@@ -41,5 +48,8 @@ ThemeData buildKartoCompatTheme(ThemeData base) {
     }
   }
   extensions.add(codex);
-  return base.copyWith(extensions: extensions);
+  return base.copyWith(
+    extensions: extensions,
+    textTheme: buildKartoBestandsTextTheme(karto, base.textTheme),
+  );
 }

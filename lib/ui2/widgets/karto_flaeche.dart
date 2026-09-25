@@ -47,6 +47,7 @@ class KartoFlaeche extends StatelessWidget {
     this.kante = StrichGewicht.hoehenlinie,
     this.innen,
     this.klein = false,
+    this.toenung,
   });
 
   /// Inhalt der Flaeche.
@@ -67,6 +68,13 @@ class KartoFlaeche extends StatelessWidget {
 
   /// Nutzt den Radius kleiner Bedienelemente statt des Flaechenradius.
   final bool klein;
+
+  /// Halbtransparente Farbe, die ueber die Stufe gelegt wird.
+  ///
+  /// Die Stufe bleibt massgeblich; die Toenung faerbt nur leicht ein, etwa
+  /// astral fuer laufende Zauber. Deckend darf sie nicht sein, sonst waere es
+  /// eine vierte Flaechenstufe.
+  final Color? toenung;
 
   BorderSide? _kante(KartoTheme token) => switch (kante) {
     null => null,
@@ -91,7 +99,9 @@ class KartoFlaeche extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: stufe.farbe(token),
+        color: toenung == null
+            ? stufe.farbe(token)
+            : Color.alphaBlend(toenung!, stufe.farbe(token)),
         border: seite == null ? null : Border.fromBorderSide(seite),
         borderRadius: BorderRadius.circular(
           klein ? kKartoRadiusKlein : kKartoRadius,

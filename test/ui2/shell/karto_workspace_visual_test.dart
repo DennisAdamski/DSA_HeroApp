@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
 
 import '../theme/karto_test_fonts.dart';
 import 'karto_acceptance_support.dart';
@@ -173,6 +174,11 @@ Future<void> _capture(
   String name,
 ) async {
   if (_screenshotDirectory.isEmpty) return;
+  // Die Papiertextur laedt als Asset asynchron; ohne echtes Warten fehlte
+  // sie im Rasterbild, obwohl sie in der App sichtbar ist.
+  await tester.runAsync(
+    () => precacheImage(KartoPapier.textur, boundaryKey.currentContext!),
+  );
   await tester.pumpAndSettle();
   final boundary =
       boundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
