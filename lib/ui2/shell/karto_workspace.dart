@@ -18,6 +18,7 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_heldenmarke.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_modus_navigation.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_navigationsgrund.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 
@@ -130,17 +131,21 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
           } else if (hero == null) {
             inhalt = const Center(child: CircularProgressIndicator());
           } else {
-            inhalt = _BereichsBlende(
-              index: _bereich.index,
-              child: IndexedStack(
+            // Der Papiergrund liegt unter allen drei Bereichen, damit ein
+            // Wechsel nicht zwischen Papier und glatter Flaeche springt.
+            inhalt = KartoPapier(
+              child: _BereichsBlende(
                 index: _bereich.index,
-                children: [
-                  _mitProbenkuerzel(_spielen()),
-                  _verwaltungBesucht
-                      ? _verwaltung(session != null)
-                      : const SizedBox.shrink(),
-                  _planung(session, breite),
-                ],
+                child: IndexedStack(
+                  index: _bereich.index,
+                  children: [
+                    _mitProbenkuerzel(_spielen()),
+                    _verwaltungBesucht
+                        ? _verwaltung(session != null)
+                        : const SizedBox.shrink(),
+                    _planung(session, breite),
+                  ],
+                ),
               ),
             );
           }

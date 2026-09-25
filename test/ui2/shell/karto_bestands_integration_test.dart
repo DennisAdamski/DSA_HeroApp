@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_bestands_adapter_impl.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_shell.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
@@ -119,6 +120,23 @@ void main() {
     await tester.pumpAndSettle();
     expect(container.read(selectedHeroIdProvider), 'rondra');
     expect(find.text('Ungespeichert'), findsOneWidget);
+  });
+
+  testWidgets('Statuswerte stehen im Zustand ohne eigene Karte', (
+    tester,
+  ) async {
+    await pump(tester, width: 1440);
+    final zeile = find.byKey(const ValueKey('workspace-status-row-Ini'));
+    await tester.ensureVisible(zeile);
+    expect(zeile, findsOneWidget);
+    expect(find.text('Statuswerte'), findsOneWidget);
+    // Der Abschnitt "Zustand" ist schon die Flaeche; eine CodexSectionCard
+    // darin waere eine Karte in der Karte.
+    expect(
+      find.ancestor(of: zeile, matching: find.byType(CodexSectionCard)),
+      findsNothing,
+    );
+    expect(find.text('Schnellzugriff'), findsNothing);
   });
 
   for (final width in [320.0, 390.0, 744.0, 1024.0, 1440.0]) {

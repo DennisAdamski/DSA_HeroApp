@@ -185,6 +185,9 @@ class KartoZustandsblock extends StatelessWidget {
           hero: werte.hero,
           derived: werte.derivedStats,
           combat: werte.combatPreviewStats,
+          // Der Zustand ist bereits ein Abschnitt; eine eigene Karte darin
+          // waere eine Karte in der Karte.
+          eingebettet: true,
         ),
       ],
     );

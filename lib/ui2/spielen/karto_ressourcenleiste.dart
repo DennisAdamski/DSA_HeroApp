@@ -47,6 +47,7 @@ class KartoRessourcenleiste extends StatelessWidget {
           ({
             KartoRessource art,
             String name,
+            String kuerzel,
             IconData icon,
             int aktuell,
             int maximum,
@@ -56,6 +57,7 @@ class KartoRessourcenleiste extends StatelessWidget {
           (
             art: KartoRessource.lebensenergie,
             name: 'Lebenspunkte',
+            kuerzel: 'LeP',
             icon: Icons.favorite_outline,
             aktuell: state.currentLep,
             maximum: abgeleitet.maxLep,
@@ -64,6 +66,7 @@ class KartoRessourcenleiste extends StatelessWidget {
           (
             art: KartoRessource.ausdauer,
             name: 'Ausdauer',
+            kuerzel: 'AuP',
             icon: Icons.bolt_outlined,
             aktuell: state.currentAu,
             maximum: abgeleitet.maxAu,
@@ -73,6 +76,7 @@ class KartoRessourcenleiste extends StatelessWidget {
             (
               art: KartoRessource.astralenergie,
               name: 'Astralpunkte',
+              kuerzel: 'AsP',
               icon: Icons.auto_awesome_outlined,
               aktuell: state.currentAsp,
               maximum: abgeleitet.maxAsp,
@@ -82,6 +86,7 @@ class KartoRessourcenleiste extends StatelessWidget {
             (
               art: KartoRessource.karma,
               name: 'Karmapunkte',
+              kuerzel: 'KaP',
               icon: Icons.brightness_low_outlined,
               aktuell: state.currentKap,
               maximum: abgeleitet.maxKap,
@@ -145,6 +150,7 @@ class KartoRessourcenleiste extends StatelessWidget {
                           aktuell: eintraege[reihen[r][c]].aktuell,
                           maximum: eintraege[reihen[r][c]].maximum,
                           farbe: eintraege[reihen[r][c]].farbe,
+                          kuerzel: eintraege[reihen[r][c]].kuerzel,
                           onBearbeiten: () =>
                               onBearbeiten(eintraege[reihen[r][c]].art),
                         ),

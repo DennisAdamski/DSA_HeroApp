@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
-import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 
 /// Person des Abenteuers als Figur: Siegel mit Initiale, Name, Rolle.
 ///
@@ -229,7 +229,7 @@ class _Siegel extends StatelessWidget {
 
   final String name;
 
-  static const double _groesse = 44;
+  static const double _groesse = 52;
 
   String get _initiale {
     final getrimmt = name.trim();
@@ -240,25 +240,25 @@ class _Siegel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final karto = context.karto;
-    return Container(
-      width: _groesse,
-      height: _groesse,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
+    // Dieselbe Fassung wie die Heldenmarke, nur kleiner: Begegnungen stehen
+    // als Figuren auf derselben Karte wie der Held.
+    return KartoKompassring(
+      groesse: _groesse,
+      child: ColoredBox(
         color: karto.senke,
-        border: Border.all(color: karto.grat, width: Strich.grat),
-      ),
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(Abstand.knapp),
-      // Grosse Systemschrift darf die Initiale verkleinern, nie den Ring
-      // sprengen.
-      child: ExcludeSemantics(
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            _initiale,
-            style: Theme.of(context).textTheme.titel
-                .copyWith(color: karto.schrift, height: 1),
+        child: Padding(
+          padding: const EdgeInsets.all(Abstand.eng),
+          // Grosse Systemschrift darf die Initiale verkleinern, nie den Ring
+          // sprengen.
+          child: ExcludeSemantics(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                _initiale,
+                style: Theme.of(context).textTheme.titel
+                    .copyWith(color: karto.schrift, height: 1),
+              ),
+            ),
           ),
         ),
       ),

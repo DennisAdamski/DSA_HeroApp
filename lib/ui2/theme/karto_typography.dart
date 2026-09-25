@@ -151,6 +151,32 @@ TextTheme buildKartoTextTheme(KartoTheme t, TextTheme basis) {
   );
 }
 
+/// Schriftrollen fuer Bestandswidgets im neuen Rahmen.
+///
+/// Die Bestandsoberflaeche greift fuer "klein und leise" fast immer zu
+/// `bodySmall` (rund 250 Zugriffe). In Kartograph ist `bodySmall` die
+/// Legende — Spectral kursiv in Fliesstextgroesse — und liesse jede
+/// Feldbeschriftung, Zweitzeile und Metazeile der Altansichten als kursive
+/// Serife erscheinen ("Haupthand", "Wert: 15 · Maximum: 21"). Im Bestandsbaum
+/// traegt der Slot deshalb die aufrechte Datenschrift in Etikettgroesse.
+///
+/// Alle uebrigen Slots bleiben unveraendert. Gebaut wird per `copyWith` auf
+/// dem vorhandenen Slot, damit `inherit` bleibt, wie Material es setzt — auch
+/// wenn dieser verschachtelte Baum nie selbst ueberblendet wird.
+TextTheme buildKartoBestandsTextTheme(KartoTheme t, TextTheme basis) {
+  return basis.copyWith(
+    bodySmall: basis.bodySmall!.copyWith(
+      fontFamily: kSchriftDaten,
+      fontStyle: FontStyle.normal,
+      fontSize: 13,
+      fontWeight: FontWeight.w400,
+      height: 1.4,
+      color: t.schriftLeise,
+      fontVariations: _gewicht(400),
+    ),
+  );
+}
+
 /// Die neun Schriftrollen unter ihren Namen.
 ///
 /// Bereichs-Code waehlt **nie** eine Groesse; er waehlt ein Primitiv, und das

@@ -13,6 +13,10 @@ import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 /// jetzt, die Kante schärft nur noch.
 ///
 /// Listenaktionen stehen laut Projektrichtlinie im Abschnittskopf.
+///
+/// Ein [akzent] hebt einzelne Begleitflaechen hervor, ohne eine weitere
+/// Flaechenstufe einzufuehren: eine Messingkante oben wie bei einer
+/// Kartenkartusche, oder eine leichte astrale Toenung fuer laufende Zauber.
 class KartoAbschnitt extends StatelessWidget {
   /// Erstellt einen benannten Abschnitt.
   const KartoAbschnitt({
@@ -22,6 +26,8 @@ class KartoAbschnitt extends StatelessWidget {
     this.hinweis,
     this.aktion,
     this.stufe = KartoFlaechenstufe.feld,
+    this.symbol,
+    this.akzent,
   });
 
   /// Überschrift des Abschnitts.
@@ -43,14 +49,32 @@ class KartoAbschnitt extends StatelessWidget {
   /// Flächenstufe; die Kontextspalte sitzt bewusst zurückgesetzt.
   final KartoFlaechenstufe stufe;
 
+  /// Kleines Symbol vor der Überschrift, in der Farbe des Akzents.
+  final IconData? symbol;
+
+  /// Hervorhebung einer Begleitfläche; `null` lässt den Abschnitt schlicht.
+  final KartoAkzent? akzent;
+
   @override
   Widget build(BuildContext context) {
     final karto = context.karto;
     final texte = Theme.of(context).textTheme;
     final zweitzeile = hinweis?.trim() ?? '';
+    final akzentFarbe = akzent?.farbe(karto);
+    final ueberschrift = symbol == null
+        ? Text(titel, style: texte.abschnitt)
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(symbol, size: 18, color: akzentFarbe ?? karto.messing),
+              const SizedBox(width: Abstand.normal),
+              Flexible(child: Text(titel, style: texte.abschnitt)),
+            ],
+          );
 
-    return KartoFlaeche(
+    final flaeche = KartoFlaeche(
       stufe: stufe,
+      toenung: akzent?.toenung(karto),
       innen: const EdgeInsets.all(Abstand.block),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -62,7 +86,7 @@ class KartoAbschnitt extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(titel, style: texte.abschnitt),
+                  ueberschrift,
                   if (zweitzeile.isNotEmpty) ...[
                     const SizedBox(height: Abstand.eng),
                     // Etikett statt der kursiven Legende: kursiv gesetzte
@@ -99,5 +123,54 @@ class KartoAbschnitt extends StatelessWidget {
         ],
       ),
     );
+    final kante = akzent?.kante(karto);
+    if (kante == null) return flaeche;
+    // Eine einseitige Kante vertraegt keinen Radius an der Dekoration; sie
+    // liegt deshalb als Leiste ueber der Flaeche und wird mit ihr gerundet.
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(kKartoRadius),
+      child: Stack(
+        children: [
+          flaeche,
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 3,
+            child: ColoredBox(color: kante),
+          ),
+        ],
+      ),
+    );
   }
+}
+
+/// Die zwei Hervorhebungen einer Begleitfläche.
+///
+/// Bewusst eine Aufzählung und keine freie Farbe: so bleibt die Spielansicht
+/// bei den Token, und die drei Ressourcenfarben behalten ihren Vorrang.
+enum KartoAkzent {
+  /// Messingkante oben, etwa für den Kampf.
+  messing,
+
+  /// Leichte astrale Tönung, für laufende Zauber und Effekte.
+  astral;
+
+  /// Farbe des Symbols.
+  Color farbe(KartoTheme token) => switch (this) {
+    KartoAkzent.messing => token.messing,
+    KartoAkzent.astral => token.astralenergie,
+  };
+
+  /// Oberkante oder `null`.
+  Color? kante(KartoTheme token) => switch (this) {
+    KartoAkzent.messing => token.messing,
+    KartoAkzent.astral => null,
+  };
+
+  /// Tönung der Fläche oder `null`.
+  Color? toenung(KartoTheme token) => switch (this) {
+    KartoAkzent.messing => null,
+    KartoAkzent.astral => token.astralenergie.withValues(alpha: 0.08),
+  };
 }

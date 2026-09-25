@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/ui/bridges/karto_compat_theme.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 void main() {
   for (final brightness in Brightness.values) {
@@ -62,17 +63,39 @@ void main() {
 
     final result = buildKartoCompatTheme(base);
 
-    expect(result.textTheme, base.textTheme);
-    expect(
-      result.textTheme.bodyMedium?.inherit,
-      base.textTheme.bodyMedium?.inherit,
-    );
-    expect(
-      result.textTheme.titleLarge?.inherit,
-      base.textTheme.titleLarge?.inherit,
-    );
+    // Nur bodySmall weicht ab; alle anderen Rollen bleiben identisch.
+    expect(result.textTheme.bodyMedium, base.textTheme.bodyMedium);
+    expect(result.textTheme.titleLarge, base.textTheme.titleLarge);
+    expect(result.textTheme.labelMedium, base.textTheme.labelMedium);
+    for (final paar in <(TextStyle?, TextStyle?)>[
+      (result.textTheme.bodySmall, base.textTheme.bodySmall),
+      (result.textTheme.bodyMedium, base.textTheme.bodyMedium),
+      (result.textTheme.titleLarge, base.textTheme.titleLarge),
+    ]) {
+      expect(paar.$1?.inherit, paar.$2?.inherit);
+    }
     expect(() => ThemeData.lerp(base, result, 0.5), returnsNormally);
+    expect(() => ThemeData.lerp(result, base, 0.5), returnsNormally);
   });
+
+  for (final brightness in Brightness.values) {
+    test('small legacy text is upright data type ($brightness)', () {
+      // Die Bestandswidgets setzen kleine Beschriftungen fast immer in
+      // bodySmall. Kursive Serife waere dort die Legende des Neubaus und
+      // liesse jede Feldbeschriftung wie ein Zitat aussehen.
+      final base = buildKartoTheme(
+        brightness: brightness,
+        centerAppBarTitle: false,
+      );
+      final klein = buildKartoCompatTheme(base).textTheme.bodySmall!;
+      final karto = base.extension<KartoTheme>()!;
+      expect(klein.fontFamily, kSchriftDaten);
+      expect(klein.fontStyle, FontStyle.normal);
+      expect(klein.color, karto.schriftLeise);
+      // Der Neubau selbst behaelt seine kursive Legende.
+      expect(base.textTheme.bodySmall!.fontStyle, FontStyle.italic);
+    });
+  }
 }
 
 class _MarkerTheme extends ThemeExtension<_MarkerTheme> {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_bewegung.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
@@ -19,6 +20,10 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 /// stattdessen die ganze Zeile die Ressourcenfarbe, ist nicht mehr erkennbar,
 /// welche der beiden Zahlen zaehlt, und vier bunte Zeilen nebeneinander lesen
 /// sich als Dekoration statt als Messwerte.
+///
+/// Mit [kuerzel] steht unter dem Balken, was bis zum Maximum fehlt — die
+/// Frage, die am Spieltisch tatsaechlich gestellt wird. Aendert sich der Wert,
+/// laeuft der Balken kurz nach; beim ersten Aufbau steht er sofort.
 class KartoRessourcenwert extends StatelessWidget {
   /// Erstellt die Anzeige einer einzelnen Ressource.
   const KartoRessourcenwert({
@@ -28,6 +33,7 @@ class KartoRessourcenwert extends StatelessWidget {
     required this.maximum,
     this.icon,
     this.farbe,
+    this.kuerzel,
     this.onBearbeiten,
   });
 
@@ -48,8 +54,24 @@ class KartoRessourcenwert extends StatelessWidget {
   /// [KartoTheme.ausdauer] stehen in der Spielansicht fuer sich.
   final Color? farbe;
 
+  /// Kurzform fuer die Hinweiszeile, etwa `LeP`. `null` laesst sie weg.
+  final String? kuerzel;
+
   /// Oeffnet die Bearbeitung. `null` blendet das Bearbeitungsziel aus.
   final VoidCallback? onBearbeiten;
+
+  /// Abstand zum Maximum in Worten, oder `null` ohne [kuerzel] und Maximum.
+  ///
+  /// Wortlaut gepinnt in `karto_ressourcenwert_test.dart`. Ein negativer Wert
+  /// zaehlt voll mit: bei -3 von 35 fehlen 38.
+  String? get hinweis {
+    final kurz = kuerzel;
+    if (kurz == null || maximum <= 0) return null;
+    final fehlt = maximum - aktuell;
+    if (fehlt == 0) return 'Voll';
+    if (fehlt < 0) return '${-fehlt} über Maximum';
+    return fehlt == 1 ? '1 $kurz fehlt' : '$fehlt $kurz fehlen';
+  }
 
   // Anteil fuer den Balken; ausserhalb von 0..1 gibt es nichts zu zeichnen.
   double get _anteil {
@@ -63,6 +85,7 @@ class KartoRessourcenwert extends StatelessWidget {
     final texte = Theme.of(context).textTheme;
     final akzent = farbe ?? karto.schriftLeise;
     final werteZeile = '$aktuell / $maximum';
+    final zusatz = hinweis;
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -129,14 +152,34 @@ class KartoRessourcenwert extends StatelessWidget {
             value: werteZeile,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(kKartoRadiusKlein),
-              child: LinearProgressIndicator(
-                value: _anteil,
-                minHeight: 5,
-                backgroundColor: karto.raster,
-                valueColor: AlwaysStoppedAnimation<Color>(akzent),
+              // Ohne Anfangswert beginnt die Tween am Ziel: der erste Aufbau
+              // zeichnet sofort, erst eine Aenderung laeuft nach.
+              child: TweenAnimationBuilder<double>(
+                tween: Tween<double>(end: _anteil),
+                duration: kartoDauer(context, Bewegung.mittel),
+                curve: Bewegung.kurve,
+                builder: (context, anteil, _) => LinearProgressIndicator(
+                  value: anteil,
+                  minHeight: 5,
+                  backgroundColor: karto.raster,
+                  valueColor: AlwaysStoppedAnimation<Color>(akzent),
+                ),
               ),
             ),
           ),
+          if (zusatz != null) ...[
+            const SizedBox(height: Abstand.knapp),
+            Text(
+              zusatz,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: texte.marke.copyWith(
+                color: karto.schriftLeise,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
         ],
       ),
     );
