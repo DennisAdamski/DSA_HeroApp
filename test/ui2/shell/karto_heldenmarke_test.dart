@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_heldenmarke.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 
 Future<void> pumpMarke(WidgetTester tester, KartoHeldenmarke marke) {
   return tester.pumpWidget(
@@ -55,21 +56,10 @@ void main() {
   testWidgets('Bild und Monogramm tragen dieselbe runde Fassung', (
     tester,
   ) async {
-    Set<Object?> fassungen() {
-      final treffer = find.byWidgetPredicate(
-        (widget) =>
-            widget is Container &&
-            widget.foregroundDecoration is BoxDecoration &&
-            (widget.foregroundDecoration! as BoxDecoration).shape ==
-                BoxShape.circle,
-      );
-      return tester
-          .widgetList<Container>(treffer)
-          .map(
-            (c) => (c.foregroundDecoration! as BoxDecoration).border?.top.color,
-          )
-          .toSet();
-    }
+    Set<Object?> fassungen() => tester
+        .widgetList<KartoKompassring>(find.byType(KartoKompassring))
+        .map((ring) => (ring.farbe, ring.groesse, ring.schein))
+        .toSet();
 
     await pumpMarke(tester, const KartoHeldenmarke(name: 'Rondra'));
     final ohneBild = fassungen();
@@ -77,8 +67,22 @@ void main() {
       tester,
       KartoHeldenmarke(name: 'Rondra', bild: (_) => const Text('Bildinhalt')),
     );
-    expect(ohneBild, <Object?>{kartoHell.navigationMuted});
+    expect(ohneBild, <Object?>{(kartoHell.messingNavigation, 112.0, true)});
     expect(fassungen(), ohneBild);
+    // Der Inhalt ist rund beschnitten und liegt innerhalb des Rings.
+    expect(
+      find.ancestor(
+        of: find.text('Bildinhalt'),
+        matching: find.byType(ClipOval),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  test('ein Bild fuellt die Fassung bis an den Ring', () {
+    final innen = KartoHeldenmarke.bildGroesse(112);
+    expect(innen, 112 - 2 * KartoKompassring.randFuer(112));
+    expect(innen, greaterThan(80));
   });
 
   testWidgets('ein leerer Name laesst die Fassung nicht leer stehen', (

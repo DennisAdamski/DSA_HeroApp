@@ -9,12 +9,14 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/debug/karto_token_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui2/entwicklung/karto_entwicklungsansicht.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_bewegung.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_arbeitsbereich.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_heldenmarke.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_modus_navigation.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_navigationsgrund.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
@@ -113,6 +115,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
             // es eine gibt. Schmal traegt sie die AppBar.
             kopf: schmal || hero == null ? null : _navigationsKopf(hero),
             fuss: schmal ? null : _navigationsFuss(),
+            vorgemerkt: session?.entries.length ?? 0,
           );
           Widget inhalt;
           if (computed.hasError) {
@@ -127,15 +130,18 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
           } else if (hero == null) {
             inhalt = const Center(child: CircularProgressIndicator());
           } else {
-            inhalt = IndexedStack(
+            inhalt = _BereichsBlende(
               index: _bereich.index,
-              children: [
-                _mitProbenkuerzel(_spielen()),
-                _verwaltungBesucht
-                    ? _verwaltung(session != null)
-                    : const SizedBox.shrink(),
-                _planung(session, breite),
-              ],
+              child: IndexedStack(
+                index: _bereich.index,
+                children: [
+                  _mitProbenkuerzel(_spielen()),
+                  _verwaltungBesucht
+                      ? _verwaltung(session != null)
+                      : const SizedBox.shrink(),
+                  _planung(session, breite),
+                ],
+              ),
             );
           }
           return Scaffold(
@@ -187,8 +193,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
                             KartoBreite.breit => 248.0,
                             _ => 208.0,
                           },
-                          child: ColoredBox(
-                            color: context.karto.navigation,
+                          child: KartoNavigationsgrund(
                             child: SingleChildScrollView(child: navigation),
                           ),
                         ),
@@ -206,17 +211,27 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
   // weil Avatare ausschliesslich `AvatarGalleryImage` rendern darf.
   Widget _navigationsKopf(HeroSheet hero) {
     final dateiname = hero.appearance.aktivesBild?.fileName;
-    return KartoHeldenmarke(
-      name: hero.name,
-      herkunft: _herkunft(hero),
-      bild: dateiname == null
-          ? null
-          : (ersatz) => widget.bestand.heldenbild(
-              heroId: widget.heroId,
-              dateiname: dateiname,
-              groesse: 88,
-              ersatz: ersatz,
-            ),
+    const groesse = 112.0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const KartoMarkenzeile(),
+        const SizedBox(height: Abstand.bahn),
+        KartoHeldenmarke(
+          name: hero.name,
+          herkunft: _herkunft(hero),
+          groesse: groesse,
+          bild: dateiname == null
+              ? null
+              : (ersatz) => widget.bestand.heldenbild(
+                  heroId: widget.heroId,
+                  dateiname: dateiname,
+                  groesse: KartoHeldenmarke.bildGroesse(groesse),
+                  ersatz: ersatz,
+                ),
+        ),
+      ],
     );
   }
 
@@ -521,6 +536,64 @@ class _Fussziel extends StatelessWidget {
         message: beschriftung,
         child: InkWell(onTap: ziel, child: inhalt),
       ),
+    );
+  }
+}
+
+/// Blendet einen neu gewaehlten Arbeitsbereich weich ein.
+///
+/// Der `IndexedStack` darunter bleibt unangetastet: er haelt die Bereiche am
+/// Leben, und die Strg+K-Logik haengt am aktiven Index. Die Blende legt nur
+/// eine kurze Deckkraft- und Hoehenbewegung darueber, sobald der Index
+/// wechselt. Bei abgeschalteten Systemanimationen steht sie sofort am Ziel.
+class _BereichsBlende extends StatefulWidget {
+  const _BereichsBlende({required this.index, required this.child});
+
+  final int index;
+  final Widget child;
+
+  @override
+  State<_BereichsBlende> createState() => _BereichsBlendeState();
+}
+
+class _BereichsBlendeState extends State<_BereichsBlende>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _steuerung = AnimationController(
+    vsync: this,
+    value: 1,
+  );
+  late final Animation<double> _verlauf = CurvedAnimation(
+    parent: _steuerung,
+    curve: Bewegung.kurve,
+  );
+  late final Animation<Offset> _anstieg = Tween<Offset>(
+    begin: const Offset(0, 0.01),
+    end: Offset.zero,
+  ).animate(_verlauf);
+
+  @override
+  void didUpdateWidget(_BereichsBlende alt) {
+    super.didUpdateWidget(alt);
+    if (alt.index != widget.index) {
+      _steuerung.duration = kartoDauer(context, Bewegung.mittel);
+      _steuerung.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _steuerung.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      key: const ValueKey<String>('karto-bereichsblende'),
+      opacity: _verlauf,
+      // Waehrend der Blende bleibt der Bereich fuer Screenreader erreichbar.
+      alwaysIncludeSemantics: true,
+      child: SlideTransition(position: _anstieg, child: widget.child),
     );
   }
 }
