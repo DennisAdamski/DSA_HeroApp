@@ -119,6 +119,21 @@ void main() {
         pruefe('Hoehenlinie', t.hoehenlinie, t.blatt, 1.3);
       });
 
+      test('Messing ist als Ornament sichtbar', () {
+        // Messing ist nie Textfarbe, sondern Grafik: Kompassrose, Zierlinie,
+        // Akzentkante. WCAG 1.4.11 verlangt dafuer 3:1.
+        pruefe('Messing auf Blatt', t.messing, t.blatt, 3);
+        pruefe('Messing auf Feld', t.messing, t.feld, 3);
+        pruefe(
+          'Messing auf Navigation',
+          t.messingNavigation,
+          t.navigation,
+          3,
+        );
+        // Ornament und Warnung duerfen nicht dieselbe Farbe tragen.
+        expect(t.messing, isNot(t.wachs));
+      });
+
       test('die drei Linienstaerken sind voneinander unterscheidbar', () {
         // Wenn Linienstaerke die Hierarchie tragen soll, muessen sich die
         // drei Stufen auch farblich staffeln: je wichtiger, desto kraeftiger.
@@ -149,5 +164,7 @@ void main() {
     expect(kartoHell.wachs, isNot(kartoDunkel.wachs));
     expect(kartoHell.moos, isNot(kartoDunkel.moos));
     expect(kartoHell.navigation, isNot(kartoDunkel.navigation));
+    expect(kartoHell.messing, isNot(kartoDunkel.messing));
+    expect(kartoHell.schatten, isNot(kartoDunkel.schatten));
   });
 }
