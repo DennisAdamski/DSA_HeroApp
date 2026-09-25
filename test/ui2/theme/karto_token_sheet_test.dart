@@ -53,6 +53,8 @@ void main() {
         // gleich, dass keiner davon ueberlaeuft.
         final liste = find.byType(Scrollable).first;
         for (final abschnitt in <String>[
+          'Akzent und Ornament',
+          'Tiefe',
           'Die neun Schriftrollen',
           'Gewichtsprobe',
           'Ziffernprobe',
