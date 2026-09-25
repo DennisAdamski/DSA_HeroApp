@@ -269,6 +269,17 @@ Die UI nutzt seit dem iPad-Redesign ein gemeinsames Layoutmodell aus
 Tablet-Breiten konsistent zwischen Fokusansicht und Master-Detail wechseln.
 ```
 
+Die Oberflaeche wird derzeit neu gebaut. Bestand (`lib/ui/`) und Neubau
+(`lib/ui2/`, Bildsprache „Kartograph") laufen nebeneinander; umgeschaltet wird
+unter `Einstellungen > Darstellung`. Beide teilen sich Heldenspeicher, Sync,
+Kataloge und Regelmodule vollstaendig — der Neubau hat weder ein eigenes
+Startup-Gate noch ein eigenes Repository. Er gliedert einen Helden in die drei
+Arbeitsbereiche **Spielen**, **Held verwalten** und **Entwicklung planen**.
+Die fachlich umfangreichen Bestandsansichten erreicht er waehrend des Uebergangs
+ueber den injizierten `KartoBestandsAdapter` (`lib/ui/bridges/`); Tabs,
+Editoraktionen und Leave-Guard der Verwaltung teilen sich beide Oberflaechen
+ueber denselben `WorkspaceManagementCoordinator`.
+
 Grundprinzipien des Projekts:
 
 - Domain-Modelle sind immutable und serialisierbar
@@ -333,6 +344,12 @@ Fuer die konkrete Umsetzung im Projekt sind diese Dokus die besten Einstiege:
 - `docs/pdf_agent_workflow.md` fuer den lokalen PDF-Agenten und die DSA-Wissensbasis
 - `docs/rules_mapping_house_rules_v1.md` fuer die fachliche Zuordnung der Hausregeln
 - `docs/test_strategy.md` fuer Testaufbau und Qualitaetssicherung
+- [Architektur-To-do-Liste](docs/architecture_roadmap.md) für sieben geplante
+  Verbesserungen mit Einstiegspunkten, Abhängigkeiten und Abnahmekriterien
+- [Klickbares Codex-Mockup](docs/mockups/README.md) für die geplanten Bereiche
+  Spielen, Held verwalten und Entwicklung planen
+- [Redesign-Umsetzungspläne](docs/redesign_implementation.md) mit drei
+  Arbeitspaketen, kopierfertigen Agentenprompts und Modell-Empfehlung
 
 ## Projektstruktur
 
@@ -344,6 +361,8 @@ lib/
   rules/derived/  Fach- und Regellogik
   state/          Riverpod-Provider und berechnete Snapshots
   ui/             Screens, Widgets und Workspace-Layout
+  ui/bridges/     Uebergangsbruecke der Bestandsansichten zur neuen Oberflaeche
+  ui2/            Neubau „Kartograph": Token, Rahmen und drei Arbeitsbereiche
 
 assets/
   catalogs/house_rules_v1/  Split-JSON-Kataloge

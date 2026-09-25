@@ -42,6 +42,9 @@ class InventoryItemEditor extends StatefulWidget {
 class _InventoryItemEditorState extends State<InventoryItemEditor> {
   late HeroInventoryEntry _draft;
   bool _isSaving = false;
+  // Ein fehlgeschlagener Schreibvorgang darf den Entwurf nicht stillschweigend
+  // verlieren: der Editor bleibt offen und nennt den Grund.
+  String? _speicherFehler;
 
   late TextEditingController _nameCtrl;
   late TextEditingController _anzahlCtrl;
@@ -118,9 +121,16 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
       geweihtDescription: _geweihtDescriptionCtrl.text.trim(),
     );
 
-    setState(() => _isSaving = true);
+    setState(() {
+      _isSaving = true;
+      _speicherFehler = null;
+    });
     try {
       await widget.onSaved(updated);
+    } catch (error) {
+      if (mounted) {
+        setState(() => _speicherFehler = 'Speichern fehlgeschlagen: $error');
+      }
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -181,6 +191,13 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
               onCancel: widget.onCancelled,
               isSaving: _isSaving,
             ),
+          if (_speicherFehler != null) ...[
+            Text(
+              _speicherFehler!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+            const SizedBox(height: _fieldSpacing),
+          ],
           _SectionTitle('Stammdaten'),
           const SizedBox(height: 8),
           _buildStammdaten(context),

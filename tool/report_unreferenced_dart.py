@@ -8,7 +8,6 @@ from pathlib import Path
 IMPORT_RE = re.compile(r"'([^']+\.dart)'")
 INTENTIONAL_LEGACY_FILES = {
     Path("lib/rules/derived/mods_rules.dart"),
-    Path("lib/ui/screens/hero_detail_screen.dart"),
 }
 
 
