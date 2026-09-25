@@ -302,3 +302,61 @@ Steigerungskatalog führt unter dem Seitentitel seine eigene Überschrift samt
 kursiver Erläuterung, seine Metazeilen sind weiterhin punktverbundene
 Fließtexte (`Wert: 15 · Maximum: 21 · SE: 0`) statt ausgerichteter Zahlen, und
 die Rechtsausrichtung numerischer Inventarspalten steht weiterhin aus.
+
+## Atmosphäre (25.09.2026)
+
+Nach der Überarbeitung vom 22.09. war die Oberfläche geordnet, aber karg:
+`lib/ui2/` enthielt keinen einzigen Verlauf, Schatten, `CustomPaint`, kein
+Bild und keine Animation, und „Kartograph“ stand nur in den Tokennamen. Die
+Frage, ob Flutter hier an Grenzen stößt, ließ sich verneinen — alles aus dem
+Mockup und mehr ist mit Bordmitteln zeichenbar. Freigegeben wurde deshalb,
+das Prinzip „keine Schatten, keine Verläufe“ gezielt zu lockern, zuerst für
+Rahmen, Heldenwahl und Spielansicht.
+
+### Neue Regel
+
+- Liegendes bleibt flach (Fläche plus Linie), Schwebendes wirft Schatten
+  (`KartoTiefe.schwebend`/`.angehoben`, Farbe `schatten`).
+- Verläufe nur im Navigationsgrund und im Wappenschein.
+- Ornamente in `messing`, nie als Textfarbe, ohne eigene Bedeutung.
+- Bewegung kurz (150/250 ms) und über `kartoDauer` abschaltbar.
+
+### Umsetzung
+
+| Commit | Inhalt |
+|---|---|
+| A1 | Token `messing`, `messingNavigation`, `schatten` (22 → 25); `KartoTiefe`, `Bewegung`/`kartoDauer`; Ornamente (`karto_ornamente.dart`); `KartoPapier`; Token-Blatt zeigt Akzent, Ornament, Tiefe |
+| A2 | Navigationsgrund mit Verlauf und Höhenlinien, Markenzeile, Heldenmarke im Kompassring mit Schein, aktive Ziele mit Messingkante und Hover, Marke „vorgemerkt“ an der Planung, Bereichsblende |
+| A3 | Heldenwahl als Kartenraster auf Papier mit Wasserzeichen; Karten mit Kompassring, Profession, Herkunft, freien AP und Hover-Anhebung; `KartoKartenraster` nach `lib/ui2/widgets/` |
+| A4 | Papier unter allen Bereichen; `KartoAkzent` (Kampf Messingkante, Effekte astral); Ressourcenhinweise und nachlaufende Balken; aufrechte Bestandsschrift; Statuswerte ohne Karte in der Karte; Personen im Kompassring; Abschluss mit Zierlinie |
+
+Screenshots: `docs/screenshots/redesign-a1/`, erzeugt mit
+`flutter test test/ui2/shell/karto_workspace_visual_test.dart
+--dart-define=R3_SCREENSHOT_DIR=docs/screenshots/redesign-a1`. Das Raster
+umfasst jetzt auch die Heldenwahl (20 weitere Kombinationen, ohne Überlauf).
+
+### Sichtprüfungsbefunde
+
+1. **Die Papierstruktur war zunächst zu kräftig.** Mit Deckkraft 0,9 färbte sie
+   den Grund bräunlich und fleckig; 0,4 lässt `blatt` maßgeblich und zeigt
+   nur noch die Fasern.
+2. **Die Planungsmarke verdeckte breit das Symbol.** Sie sitzt deshalb nur
+   kompakt am Symbol und breit als Pille am Zeilenende.
+
+### Bewusst geänderte Pins
+
+- `test/ui/bridges/karto_compat_theme_test.dart` verlangte eine unveränderte
+  Typografie im Bestandsbaum. Der Zweck war Überblendbarkeit; der Test prüft
+  jetzt genau das (gleiches `inherit`, `ThemeData.lerp` in beide Richtungen)
+  und zusätzlich die aufrechte Datenschrift in `bodySmall`.
+- Die Journey tippt den Helden über `karto-heldenwahl-held-<id>` statt über
+  ein `ListTile`.
+
+### Bewusst nicht enthalten
+
+Verwaltung und Planung wurden nicht nativ überarbeitet; sie erben Papier,
+Schatten und die aufrechte Bestandsschrift. Die Eigenschaftskacheln und
+Kampfchips bleiben die gemeinsamen Bestandsbausteine mit ihren Keys. Dunkel
+gibt es keine Papierstruktur. Die Negativprüfung in
+`test/ui2/spielen/karto_spielverlauf_test.dart` bleibt unverändert: der
+Abschlusssatz ist Schmuck, keine Angabe.

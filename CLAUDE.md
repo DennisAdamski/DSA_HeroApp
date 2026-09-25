@@ -344,10 +344,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `test/ui2/theme/karto_theme_uebergang_test.dart` gepinnt. Der Fehler zeigt
   sich **nur** beim Übergang, nie beim Bau eines einzelnen Themes.
 - Kartograph-Token liegen in `lib/ui2/theme/` (`KartoTheme` als
-  `ThemeExtension`, 19 rollenbenannte Farben einschließlich der drei
-  Ressourcenfarben, zwei Paletten), die
+  `ThemeExtension`, 25 rollenbenannte Farben einschließlich der drei
+  Ressourcenfarben, `messing`/`messingNavigation` und `schatten`, zwei
+  Paletten), die
   helligkeitsunabhängigen Skalen in `lib/ui2/foundation/` (`Abstand`,
-  `Strich`, `KartoBreite`). Abstände, Linienstärken und Breakpoints gehören
+  `Strich`, `KartoBreite`, `KartoTiefe`, `Bewegung`). Abstände, Linienstärken und Breakpoints gehören
   bewusst **nicht** ins Theme. Linienstärke trägt die Hierarchie: `kueste`,
   `grat` und `hoehenlinie` sind fest an die gleichnamigen Farbtoken gepaart.
   Das Token-Blatt (`lib/ui2/debug/karto_token_sheet.dart`) zeigt alles auf
@@ -360,9 +361,31 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Farbtoken erzwingt. Verteilung: Seitengrund `blatt`, Abschnitte/Karten/
   Dialoge `feld`, Kontextspalten und Eingabefelder `senke`, schwebendes
   (Tooltip, Snackbar) `senke`. Ein Eingabefeld auf `feld` wäre innerhalb eines
-  Abschnitts farbgleich und damit unsichtbar. Schatten gibt es weiterhin
-  keine. Radien: `kKartoRadius` 8 für Flächen, `kKartoRadiusKlein` 4 für
-  Chips und Knöpfe — mehr Stufen nicht.
+  Abschnitts farbgleich und damit unsichtbar. **Liegendes wirft keinen
+  Schatten, Schwebendes schon**: Dialog, Blatt, Menü, Snackbar, Tooltip und
+  die Hover-Anhebung antippbarer Karten nehmen `KartoTiefe`
+  (`lib/ui2/foundation/karto_tiefe.dart`, zwei Stufen, Farbe `schatten`);
+  Karten, Chips und Knöpfe bleiben bei `elevation: 0`. Verläufe gibt es nur
+  im Navigationsgrund und im Wappenschein. Radien: `kKartoRadius` 8 für
+  Flächen, `kKartoRadiusKlein` 4 für Chips und Knöpfe — mehr Stufen nicht.
+- **Atmosphäre kommt aus Ornament, Papier und kurzer Bewegung**, nie aus neuer
+  Bedeutung. Ornamente (`lib/ui2/widgets/karto_ornamente.dart`: Kompassrose,
+  Kompassring, Höhenlinien, Zierlinie, Stern) sind deterministische
+  CustomPainter ohne Semantik und Hit-Test und zeichnen in `messing` — das ist
+  **nie** Textfarbe, deshalb genügt 3:1 als Grafik. `KartoPapier`
+  (`lib/ui2/widgets/karto_papier.dart`) legt hell die vorhandene
+  Pergamenttextur per Multiplikation auf `blatt`, dunkel bleibt der Grund
+  glatt; Rasterbilder müssen `KartoPapier.textur` vorab laden. Jede Animation
+  nimmt ihre Dauer über `kartoDauer` (`lib/ui2/foundation/karto_bewegung.dart`)
+  und steht bei abgeschalteten Systemanimationen sofort am Ziel. Begleitflächen
+  heben sich nur über `KartoAkzent` (Messingkante, astrale Tönung) ab, nie
+  über freie Farben.
+- Im Bestandsbaum (`buildKartoCompatTheme`) trägt `bodySmall` die aufrechte
+  Datenschrift statt der kursiven Spectral-Legende
+  (`buildKartoBestandsTextTheme` in `karto_typography.dart`): die
+  Altansichten setzen dort fast alle kleinen Beschriftungen. Nur dieser Slot
+  weicht ab; `test/ui/bridges/karto_compat_theme_test.dart` hält `inherit`
+  und die Überblendbarkeit fest.
 - Jede Arbeitsfläche beginnt mit `KartoSeitenkopf`
   (`lib/ui2/widgets/karto_seitenkopf.dart`): Kontextzeile, Titel, eine Aktion,
   getrennt durch Weißraum statt Linie. Er ist die **einzige** Verwendung von
@@ -380,8 +403,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Notizen und Personen lesen und pflegen, Abschluss und Belohnungen bleiben in
   der Verwaltung. Das Blatt ist eine eigene Seite (Grund `blatt`); Personen
   und Notizen stehen als `feld`-Karten im `KartoKartenraster`
-  (`karto_abenteuer_karten.dart`), Personen mit derselben Ringfassung wie die
-  Heldenmarke, Anlegen als leise `senke`-Kachel am Rasterende. Es ist UI2-eigen, weil der Notizen-Tab beim Speichern seinen
+  (`lib/ui2/widgets/karto_kartenraster.dart`, geteilt mit der Heldenwahl),
+  Personen mit demselben `KartoKompassring` wie die Heldenmarke, Anlegen als leise `senke`-Kachel am Rasterende. Es ist UI2-eigen, weil der Notizen-Tab beim Speichern seinen
   **ganzen** Entwurf (Notizen, Kontakte, alle Abenteuer) über den Helden legt.
   Das Blatt schreibt dagegen nur dieses eine Abenteuer, über
   `HeroActions.updateHero` (frisch laden, dann ändern, analog zu
@@ -399,13 +422,17 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Auf `KartoBreite.schmal` entfällt der Titel in der Planung: der Katalog führt
   dort schon eine eigene Überschrift, und die Höhe wird für die erste
   Steigerungskarte gebraucht.
-- Die dunkle Bereichsnavigation trägt oben `KartoHeldenmarke`
-  (Avatar oder ringgefasstes Monogramm, Name, Profession) und unten
-  `Heldenauswahl` und `Workspace-Menü`; auf breiten Fenstern gibt es deshalb
+- Die dunkle Bereichsnavigation trägt oben die Markenzeile und
+  `KartoHeldenmarke` (Avatar oder Monogramm im `KartoKompassring`, Name,
+  Profession) und unten `Heldenauswahl` und `Workspace-Menü`; auf breiten Fenstern gibt es deshalb
   **keine** `AppBar`, auf schmalen bleibt sie. Beide Tooltips müssen wortgleich
   erhalten bleiben. Der Avatar kommt über `KartoBestandsAdapter.heldenbild`,
   nicht über ein eigenes Bildwidget auf `avatarBytesProvider`: Bilder rendert
-  ausschließlich `AvatarGalleryImage`.
+  ausschließlich `AvatarGalleryImage`. Die Heldenwahl bekommt dieselbe
+  Methode als `heldenbild` hereingereicht. „Entwicklung planen“ zeigt die Zahl
+  vorgemerkter Einträge der offenen Runde als Marke; der Semantics-Name bleibt
+  unverändert, die Zahl steht als Wert. Der Bereichswechsel blendet über, der
+  `IndexedStack` darunter bleibt.
 - Zahlen mit Bezugsgröße werden als **ein** `Text.rich` aus mehreren Spans
   gesetzt, nicht als mehrere `Text`. So trägt der aktuelle Wert das Gewicht und
   die Bezugsgröße bleibt leise, während `find.text` die Zeile weiterhin als

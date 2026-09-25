@@ -6,8 +6,9 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 /// Die drei Flaechenstufen der neuen Oberflaeche.
 ///
 /// Sie tragen die Tiefe, so wie [StrichGewicht] die Gliederung traegt. Weil
-/// Kartograph keine Schatten kennt, ist der Flaechenunterschied das einzige
-/// Mittel, eine Ebene von der darunterliegenden zu unterscheiden.
+/// Liegendes in Kartograph keinen Schatten wirft, ist der Flaechenunterschied
+/// das einzige Mittel, eine Ebene von der darunterliegenden zu unterscheiden;
+/// Schatten bleiben dem Schwebenden vorbehalten (`KartoTiefe`).
 ///
 /// Die Reihenfolge ist in **beiden** Paletten dieselbe: [senke] liegt zurueck,
 /// [blatt] ist der Grund, [feld] tritt hervor. Hell wird `feld` dazu heller und
