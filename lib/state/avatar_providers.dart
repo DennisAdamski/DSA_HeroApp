@@ -5,9 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_api_client.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_backfill_service.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_file_storage.dart';
+import 'package:dsa_heldenverwaltung/data/avatar_gesicht/avatar_gesichtserkennung.dart';
+import 'package:dsa_heldenverwaltung/data/avatar_gesicht_service.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_thumbnail_encoder.dart';
 import 'package:dsa_heldenverwaltung/data/cloud_avatar_storage.dart';
+import 'package:dsa_heldenverwaltung/data/hive_avatar_gesicht_cache.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_avatar_storage.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_snapshot_diff.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -108,6 +112,48 @@ final avatarBytesProvider =
         heroStoragePath: location.effectivePath,
         fileName: args.fileName,
       );
+    });
+
+/// Gesichtserkennung fuer Avatarbilder (BlazeFace in reinem Dart).
+///
+/// In Widget-Tests per Override durch eine Attrappe ersetzen: Die echte
+/// Erkennung rechnet in einem Isolate, das im Fake-Async nie fertig wird.
+final avatarGesichtserkennungProvider = Provider<AvatarGesichtserkennung>((
+  ref,
+) {
+  return BlazeFaceGesichtserkennung();
+});
+
+/// Liefert Gesichtsbefunde aus dem lokalen Cache oder frisch erkannt.
+final avatarGesichtServiceProvider = Provider<AvatarGesichtService>((ref) {
+  return AvatarGesichtService(
+    erkennung: ref.watch(avatarGesichtserkennungProvider),
+    cacheFuer: (heroStoragePath) =>
+        HiveAvatarGesichtCache(speicherPfad: heroStoragePath),
+  );
+});
+
+/// Gesichtsbefund einer Avatar-Datei; `null` ohne Bild oder bei Fehlern.
+///
+/// Wartet auf dieselben Bytes wie die Anzeige, der Befund kommt also nie vor
+/// dem Bild. Faellt nie in den Fehlerzustand: Ein Erkennungsproblem ergibt
+/// `null` und damit den Standardausschnitt.
+final avatarGesichtProvider =
+    FutureProvider.family<
+      AvatarGesichtsbefund?,
+      ({String heroId, String fileName})
+    >((ref, args) async {
+      if (args.fileName.isEmpty) return null;
+      final bytes = await ref.watch(avatarBytesProvider(args).future);
+      if (bytes == null || bytes.isEmpty) return null;
+      final location = await ref.watch(heroStorageLocationProvider.future);
+      return ref
+          .watch(avatarGesichtServiceProvider)
+          .befund(
+            heroStoragePath: location.effectivePath,
+            fileName: args.fileName,
+            bytes: bytes,
+          );
     });
 
 /// Laedt die PNG-Bytes des Primaerbilds eines Helden.

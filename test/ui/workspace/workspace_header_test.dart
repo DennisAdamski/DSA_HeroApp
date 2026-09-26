@@ -6,16 +6,19 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_workspace_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_hero_header.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/avatar_ausschnitt_bild.dart';
 
 void main() {
   HeroSheet buildHero({HeroAppearance appearance = const HeroAppearance()}) {
@@ -222,6 +225,68 @@ void main() {
           const ValueKey<String>('workspace-header-portrait-initials'),
         ),
         findsNothing,
+      );
+      // Der manuelle Ausschnitt gewinnt ueber das erkannte Gesicht.
+      expect(find.byType(AvatarAusschnittBild), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'workspace header frames the detected face without a manual focus',
+    (tester) async {
+      final imageBytes = base64Decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/aJ0AAAAASUVORK5CYII=',
+      );
+      const befund = AvatarGesichtsbefund(
+        bildBreite: 1024,
+        bildHoehe: 1536,
+        gesicht: AvatarGesichtsrahmen(
+          links: 0.4,
+          oben: 0.2,
+          breite: 0.2,
+          hoehe: 0.12,
+        ),
+        konfidenz: 0.9,
+      );
+      final hero = buildHero(
+        appearance: const HeroAppearance(
+          aktivesBildId: 'bild-1',
+          avatarGallery: [
+            AvatarGalleryEntry(id: 'bild-1', fileName: 'demo_bild-1.png'),
+          ],
+        ),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            heroRepositoryProvider.overrideWithValue(
+              FakeRepository(heroes: [hero]),
+            ),
+            debugModusProvider.overrideWith((ref) => false),
+            activeAvatarBytesProvider.overrideWith(
+              (ref, heroId) async => imageBytes,
+            ),
+            avatarGesichtProvider.overrideWith((ref, args) async => befund),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: WorkspaceHeroHeader(heroId: 'demo', hero: hero),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      final ausschnitt = tester.widget<AvatarAusschnittBild>(
+        find.byType(AvatarAusschnittBild),
+      );
+      expect(ausschnitt.rahmung, AvatarRahmung.kopfzeile);
+      expect(ausschnitt.befund, befund);
+      expect(
+        find.byKey(const ValueKey<String>('workspace-header-portrait-image')),
+        findsOneWidget,
       );
     },
   );

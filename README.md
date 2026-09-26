@@ -198,8 +198,13 @@ Technischer Stack:
 
 - Import und Export kompletter Helden als JSON-Bundle
 - Gruppen-Snapshots und Firestore-Sync uebertragen Avatarbilder nur als
-  kompakte Vorschaubilder; wenn kein kleines Thumbnail erzeugt werden kann,
-  erscheint auf anderen Geraeten stattdessen der Platzhalter
+  kompakte, quadratische Vorschaubilder um das erkannte Gesicht; wenn kein
+  kleines Thumbnail erzeugt werden kann, erscheint auf anderen Geraeten
+  stattdessen der Platzhalter
+- Beschnittene Avatarflaechen (Heldenmarke, Album, Workspace-Header) richten
+  sich automatisch am Gesicht aus. Die Erkennung (BlazeFace, Apache 2.0)
+  rechnet in reinem Dart auf dem Geraet, auch im Web; ein manueller
+  Header-Ausschnitt hat weiterhin Vorrang
 - Konto-Sync fuer Helden speichert Avatar-Dateien selbst noch nicht remote.
   Bildreferenzen bleiben erhalten; fehlende lokale Dateien werden in der UI
   wie bisher als Platzhalter behandelt.
