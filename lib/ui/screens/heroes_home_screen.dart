@@ -22,11 +22,23 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_import_expor
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_empty_state.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_page_scaffold.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_split_view.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 
 /// Startscreen fuer die Heldenauswahl mit iPad-tauglicher Vorschau.
 class HeroesHomeScreen extends ConsumerStatefulWidget {
   /// Erstellt die Heldenzentrale mit adaptivem Tablet-Layout.
-  const HeroesHomeScreen({super.key});
+  const HeroesHomeScreen({super.key, this.onHeldOeffnen, this.onEinstellungen});
+
+  /// Oeffnet einen Helden an Stelle des klassischen Arbeitsbereichs.
+  ///
+  /// Die neue Oberflaeche setzt ihn: dort waehlt "Held oeffnen" den Helden
+  /// fuer den eigenen Workspace aus, statt den alten `HeroWorkspaceScreen`
+  /// darueberzulegen. Ohne ihn bleibt es beim klassischen Weg.
+  final ValueChanged<String>? onHeldOeffnen;
+
+  /// Oeffnet die Einstellungen an Stelle der eigenen Route, damit die neue
+  /// Oberflaeche ihren Weg samt Bruecke benutzt.
+  final VoidCallback? onEinstellungen;
 
   @override
   ConsumerState<HeroesHomeScreen> createState() => _HeroesHomeScreenState();
@@ -163,6 +175,11 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
 
   // Buendelt Auswahl, Katalogvorbereitung und Navigation fuer alle Oeffnungspfade.
   Future<void> _openHeroWorkspace(BuildContext context, String heroId) async {
+    final extern = widget.onHeldOeffnen;
+    if (extern != null) {
+      extern(heroId);
+      return;
+    }
     await ref.read(selectedHeroSelectionActionsProvider).selectHero(heroId);
     if (!context.mounted) {
       return;
@@ -259,12 +276,16 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
             ref: ref,
             importExportActions: importExportActions,
           ),
-          onOpenSettings: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) =>
-                  InheritedTheme.captureAll(context, const SettingsScreen()),
-            ),
-          ),
+          onOpenSettings:
+              widget.onEinstellungen ??
+              () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => InheritedTheme.captureAll(
+                    context,
+                    const SettingsScreen(),
+                  ),
+                ),
+              ),
         ),
       ),
       floatingActionButton: layout == AppLayoutClass.compact && !apple
@@ -420,11 +441,21 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
       ];
     }
 
+    // In der Kopfzeile bleiben 40 Punkte Hoehe; die Kartograph-Knoepfe tragen
+    // sonst 14 oben und unten und schnitten ihre Beschriftung ab.
+    final kopfzeilenKnopf = kartoVariante(context) == null
+        ? null
+        : const ButtonStyle(
+            padding: WidgetStatePropertyAll<EdgeInsetsGeometry>(
+              EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            ),
+          );
     return [
       const SizedBox(width: 8),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: FilledButton.tonalIcon(
+          style: kopfzeilenKnopf,
           onPressed: onCreateHero,
           icon: const Icon(Icons.add),
           label: const Text('Neuer Held'),
@@ -434,6 +465,7 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: OutlinedButton.icon(
+          style: kopfzeilenKnopf,
           onPressed: onImportHero,
           icon: const Icon(Icons.download),
           label: const Text('Importieren'),

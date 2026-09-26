@@ -83,16 +83,22 @@ class _SettingsSplitView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Unter Kartograph sitzt die Bereichsliste als Begleitspalte auf der
+    // zurueckgesetzten Flaeche, wie die Kontextspalten der Arbeitsbereiche.
+    final karto = kartoVariante(context);
+    final bereiche = _SettingsNavigationPane(
+      selectedDestination: selectedDestination,
+      showSelection: true,
+      onSelectDestination: onSelectDestination,
+      onToggleDebugMode: onToggleDebugMode,
+    );
     return Row(
       children: [
         SizedBox(
           width: 320,
-          child: _SettingsNavigationPane(
-            selectedDestination: selectedDestination,
-            showSelection: true,
-            onSelectDestination: onSelectDestination,
-            onToggleDebugMode: onToggleDebugMode,
-          ),
+          child: karto == null
+              ? bereiche
+              : ColoredBox(color: karto.senke, child: bereiche),
         ),
         const VerticalDivider(width: 1),
         Expanded(
@@ -230,7 +236,11 @@ class _SettingsDetailPane extends StatelessWidget {
               Text(
                 destination.title,
                 key: destination.detailTitleKey,
-                style: theme.textTheme.headlineSmall,
+                // headlineSmall ist unter Kartograph die grosse Zahlenschrift;
+                // eine Ueberschrift gehoert in die Titelrolle.
+                style: kartoVariante(context) == null
+                    ? theme.textTheme.headlineSmall
+                    : theme.textTheme.titel,
               ),
               const SizedBox(height: 4),
               Text(destination.subtitle, style: theme.textTheme.bodyMedium),
@@ -261,7 +271,10 @@ class _SettingsDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(destination.title)),
-      body: destination.buildPage(beforeSurfaceChange: beforeSurfaceChange),
+      body: _mitPapier(
+        context,
+        destination.buildPage(beforeSurfaceChange: beforeSurfaceChange),
+      ),
     );
   }
 }

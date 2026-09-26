@@ -12,6 +12,13 @@ import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/data/auth_service.dart';
+import 'package:dsa_heldenverwaltung/ui/bridges/karto_compat_theme.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/auth/sign_in_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
 
 import '../theme/karto_test_fonts.dart';
@@ -217,6 +224,103 @@ void main() {
       }
     }
   }
+
+  for (final width in [390.0, 1024.0, 1440.0]) {
+    for (final brightness in Brightness.values) {
+      for (final scale in [1.0, 2.0]) {
+        testWidgets(
+          'Aufgelegte Seiten $width dp, ${brightness.name}, Text $scale',
+          (tester) async {
+            final screenshotKey = GlobalKey();
+            final hero = held();
+            await pumpAcceptanceWorkspace(
+              tester,
+              repository: AcceptanceRepository(
+                heroes: [hero, testHero('alrik', 'Alrik Feuerstein')],
+              ),
+              selectedHeroId: hero.id,
+              size: Size(width, 1000),
+              textScale: scale,
+              brightness: brightness,
+              screenshotKey: screenshotKey,
+            );
+            final capture =
+                scale == 1 &&
+                ((brightness == Brightness.light &&
+                        (width == 390 || width == 1440)) ||
+                    (brightness == Brightness.dark && width == 1024));
+            final suffix = '${width.toInt()}-${brightness.name}';
+
+            Future<void> menue(String eintrag) async {
+              await tester.tap(find.byTooltip('Workspace-Menü').first);
+              await tester.pumpAndSettle();
+              await tester.tap(find.text(eintrag).last);
+              await tester.pumpAndSettle();
+            }
+
+            await menue('Einstellungen');
+            expect(find.byType(SettingsScreen), findsOneWidget);
+            expect(tester.takeException(), isNull, reason: 'Einstellungen');
+            if (capture) {
+              await _capture(tester, screenshotKey, 'einstellungen-$suffix');
+            }
+            await tester.pageBack();
+            await tester.pumpAndSettle();
+
+            await menue('Helden verwalten');
+            expect(find.byType(HeroesHomeScreen), findsOneWidget);
+            expect(tester.takeException(), isNull, reason: 'Heldenliste');
+            if (capture) {
+              await _capture(tester, screenshotKey, 'heldenliste-$suffix');
+            }
+            await tester.pageBack();
+            await tester.pumpAndSettle();
+          },
+          tags: ['r3-acceptance'],
+        );
+      }
+    }
+  }
+
+  for (final brightness in Brightness.values) {
+    testWidgets('Anmeldung ${brightness.name}', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1024, 900);
+      addTearDown(tester.view.reset);
+      final screenshotKey = GlobalKey();
+      final wurzel = buildKartoTheme(
+        brightness: brightness,
+        centerAppBarTitle: false,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: wurzel,
+          builder: (context, child) =>
+              RepaintBoundary(key: screenshotKey, child: child),
+          home: Theme(
+            data: buildKartoCompatTheme(wurzel),
+            child: Builder(
+              builder: (context) => Center(
+                child: TextButton(
+                  onPressed: () => openSignInScreen(context, _AuthAttrappe()),
+                  child: const Text('Öffnen'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Öffnen'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SignInScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await _capture(
+        tester,
+        screenshotKey,
+        'anmeldung-1024-${brightness.name}',
+      );
+    }, tags: ['r3-acceptance']);
+  }
 }
 
 String _dateiname(String tab) => tab
@@ -252,4 +356,27 @@ Future<void> _capture(
       image.dispose();
     }
   });
+}
+
+class _AuthAttrappe implements AuthService {
+  @override
+  AuthUser? get currentUser => null;
+
+  @override
+  Future<AuthUser> registerWithEmail({
+    required String email,
+    required String password,
+  }) async => AuthUser(uid: email, email: email);
+
+  @override
+  Future<void> signOut() async {}
+
+  @override
+  Future<AuthUser> signInWithEmail({
+    required String email,
+    required String password,
+  }) async => AuthUser(uid: email, email: email);
+
+  @override
+  Stream<AuthUser?> watchUser() => const Stream<AuthUser?>.empty();
 }

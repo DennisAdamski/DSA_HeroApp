@@ -22,6 +22,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_body.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
 /// Bindet den neuen Rahmen an die vorhandenen, fachlich vollständigen Ansichten.
 class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
@@ -120,11 +121,28 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
   }
 
   /// Öffnet die vorhandene Heldenliste für Anlegen, Import und Verwaltung.
+  ///
+  /// "Held öffnen" wählt den Helden für den Kartograph-Workspace und schließt
+  /// die Liste, statt den klassischen Arbeitsbereich darüberzulegen. Die
+  /// Einstellungen laufen über denselben Weg wie aus der Heldenwahl. Offene
+  /// Planungen sind hier bereits geprüft: der Workspace verlässt sich vor
+  /// diesem Aufruf über seine Leave-Prüfung.
   @override
   Future<void> heldenVerwalten(BuildContext context) {
+    final container = ProviderScope.containerOf(context, listen: false);
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => const _KartoCompatHost(child: HeroesHomeScreen()),
+        builder: (routeContext) => _KartoCompatHost(
+          child: HeroesHomeScreen(
+            onHeldOeffnen: (heroId) async {
+              await container
+                  .read(selectedHeroSelectionActionsProvider)
+                  .selectHero(heroId);
+              if (routeContext.mounted) Navigator.of(routeContext).pop();
+            },
+            onEinstellungen: () => einstellungen(routeContext),
+          ),
+        ),
       ),
     );
   }

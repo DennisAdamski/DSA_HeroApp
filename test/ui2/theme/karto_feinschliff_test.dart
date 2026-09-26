@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_rahmen.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 
 void main() {
   for (final helligkeit in Brightness.values) {
@@ -146,6 +147,12 @@ void main() {
     final theme = Theme.of(kontext);
     expect(theme.extension<CodexTheme>()?.showDecoration, isFalse);
     expect(theme.dialogTheme.titleTextStyle?.fontFamily, kSchriftTitel);
+    // Die Anmeldung zeichnet sich dort als Kartusche mit Rueckweg.
+    expect(find.byType(KartoKompassrose), findsOneWidget);
+    expect(find.byType(BackButton), findsOneWidget);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(find.byType(SignInScreen), findsNothing);
   });
 }
 
