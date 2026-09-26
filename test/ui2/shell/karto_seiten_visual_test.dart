@@ -137,6 +137,86 @@ void main() {
       }
     }
   }
+  for (final width in [390.0, 1024.0, 1440.0]) {
+    for (final brightness in Brightness.values) {
+      for (final scale in [1.0, 2.0]) {
+        testWidgets(
+          'Dialoge am Spieltisch $width dp, ${brightness.name}, Text $scale',
+          (tester) async {
+            final screenshotKey = GlobalKey();
+            final hero = held();
+            await pumpAcceptanceWorkspace(
+              tester,
+              repository: AcceptanceRepository(
+                heroes: [hero],
+                states: {
+                  hero.id: const HeroState(
+                    currentLep: 27,
+                    currentAsp: 18,
+                    currentKap: 12,
+                    currentAu: 22,
+                  ),
+                },
+              ),
+              selectedHeroId: hero.id,
+              size: Size(width, 1000),
+              textScale: scale,
+              brightness: brightness,
+              screenshotKey: screenshotKey,
+            );
+            final capture =
+                scale == 1 &&
+                ((brightness == Brightness.light &&
+                        (width == 390 || width == 1440)) ||
+                    (brightness == Brightness.dark && width == 1024));
+            final suffix = '${width.toInt()}-${brightness.name}';
+
+            // Probe: vor und nach dem Wurf.
+            final mut = find.byKey(const ValueKey('inspector-probe-attr-MU'));
+            await tester.ensureVisible(mut);
+            await tester.tap(mut);
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull, reason: 'Probe');
+            if (capture) await _capture(tester, screenshotKey, 'probe-$suffix');
+            await tester.tap(find.text('Würfeln').first);
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull, reason: 'Wurf');
+            if (capture) {
+              await _capture(tester, screenshotKey, 'probe-wurf-$suffix');
+            }
+            await tester.tap(find.text('Schließen').last);
+            await tester.pumpAndSettle();
+
+            // Rast.
+            final rast = find.text('Rast').first;
+            await tester.ensureVisible(rast);
+            await tester.tap(rast);
+            await tester.pumpAndSettle();
+            expect(find.byKey(const ValueKey('rest-dialog')), findsOneWidget);
+            expect(tester.takeException(), isNull, reason: 'Rast');
+            if (capture) await _capture(tester, screenshotKey, 'rast-$suffix');
+            await tester.tap(find.byKey(const ValueKey('rest-dialog-close')));
+            await tester.pumpAndSettle();
+
+            // Ressourcenblatt.
+            final lep = find.byTooltip('Lebenspunkte ändern');
+            await tester.ensureVisible(lep);
+            await tester.tap(lep);
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull, reason: 'Ressource');
+            if (capture) {
+              await _capture(tester, screenshotKey, 'ressource-$suffix');
+            }
+            await tester.tap(
+              find.byKey(const ValueKey('karto-ressource-schliessen')),
+            );
+            await tester.pumpAndSettle();
+          },
+          tags: ['r3-acceptance'],
+        );
+      }
+    }
+  }
 }
 
 String _dateiname(String tab) => tab

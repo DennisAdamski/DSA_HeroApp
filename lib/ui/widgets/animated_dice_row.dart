@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 
 // ---------------------------------------------------------------------------
 // Controller
@@ -108,6 +110,17 @@ class _AnimatedDiceRowState extends State<AnimatedDiceRow>
     if (!mounted) return;
     _cycleTimer?.cancel();
     _finalValues = values;
+    // Ohne Systemanimationen kein Rollen: das Ergebnis steht sofort da.
+    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) {
+      setState(() {
+        _phase = _DicePhase.revealed;
+        _displayValues = values;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onRollComplete?.call();
+      });
+      return;
+    }
     setState(() {
       _phase = _DicePhase.rolling;
       _displayValues = List<int>.filled(widget.diceSpec.count, 1);
@@ -216,7 +229,7 @@ class _W20Die extends StatelessWidget {
         children: [
           CustomPaint(
             size: const Size(_size, _size),
-            painter: _W20Painter(blue: blue),
+            painter: _W20Painter(palette: _W20Palette.von(context, blue: blue)),
           ),
           if (value != null)
             Text(
@@ -249,10 +262,71 @@ class _W20Die extends StatelessWidget {
   }
 }
 
-class _W20Painter extends CustomPainter {
-  const _W20Painter({required this.blue});
+/// Flaechen und Kontur eines W20.
+///
+/// Klassisch die Edelsteinfarben Violett und Blau. Unter Kartograph
+/// ([kartoVariante]) aus den Token abgeleitet — Meer fuer Eigenschafts- und
+/// Kampfproben, Astralenergie fuer die uebrigen —, mit Messingkontur.
+class _W20Palette {
+  const _W20Palette({required this.faces, required this.outline});
 
-  final bool blue;
+  /// Sechs Flaechen von oben rechts im Uhrzeigersinn; oben links am hellsten.
+  final List<Color> faces;
+
+  /// Aussenkontur.
+  final Color outline;
+
+  static _W20Palette von(BuildContext context, {required bool blue}) {
+    final karto = kartoVariante(context);
+    if (karto == null) {
+      return blue
+          ? const _W20Palette(
+              faces: _W20Painter._blueFaces,
+              outline: Color(0xFF93C5FD),
+            )
+          : const _W20Palette(
+              faces: _W20Painter._purpleFaces,
+              outline: Color(0xFFA78BFA),
+            );
+    }
+    final basis = blue ? karto.meer : karto.astralenergie;
+    Color hell(double t) => Color.lerp(basis, const Color(0xFFFFFFFF), t)!;
+    Color dunkel(double t) => Color.lerp(basis, const Color(0xFF000000), t)!;
+    return _W20Palette(
+      faces: <Color>[
+        hell(0.2),
+        basis,
+        dunkel(0.25),
+        dunkel(0.45),
+        dunkel(0.35),
+        hell(0.45),
+      ],
+      outline: karto.messing,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is _W20Palette &&
+      other.outline == outline &&
+      _gleicheFlaechen(other.faces, faces);
+
+  static bool _gleicheFlaechen(List<Color> a, List<Color> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode => Object.hash(outline, Object.hashAll(faces));
+}
+
+class _W20Painter extends CustomPainter {
+  const _W20Painter({required this.palette});
+
+  final _W20Palette palette;
 
   // Farben der 6 Flächen (von oben-rechts im Uhrzeigersinn).
   // Lichtquelle oben-links → Fläche 5 (TL) ist am hellsten.
@@ -292,7 +366,7 @@ class _W20Painter extends CustomPainter {
     canvas.drawShadow(shadowPath, const Color(0xFF000000), 5, false);
 
     // 6 Dreiecksflächen
-    final faces = blue ? _blueFaces : _purpleFaces;
+    final faces = palette.faces;
     for (var i = 0; i < 6; i++) {
       final path = Path()
         ..moveTo(center.dx, center.dy)
@@ -321,7 +395,7 @@ class _W20Painter extends CustomPainter {
     canvas.drawPath(
       outline,
       Paint()
-        ..color = blue ? const Color(0xFF93C5FD) : const Color(0xFFA78BFA)
+        ..color = palette.outline
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2,
     );
@@ -356,7 +430,7 @@ class _W20Painter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _W20Painter old) => old.blue != blue;
+  bool shouldRepaint(covariant _W20Painter old) => old.palette != palette;
 }
 
 // ---------------------------------------------------------------------------
@@ -380,13 +454,15 @@ class _W6Die extends StatelessWidget {
         children: [
           CustomPaint(
             size: const Size(_size, _size),
-            painter: _W6Painter(value: value),
+            painter: _W6Painter(value: value, karto: kartoVariante(context)),
           ),
           if (value == null)
             Text(
               'W6',
               style: TextStyle(
-                color: const Color(0xFF2C1810).withAlpha(64),
+                color:
+                    (kartoVariante(context)?.schrift ?? const Color(0xFF2C1810))
+                        .withAlpha(64),
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
               ),
@@ -398,9 +474,12 @@ class _W6Die extends StatelessWidget {
 }
 
 class _W6Painter extends CustomPainter {
-  const _W6Painter({this.value});
+  const _W6Painter({this.value, this.karto});
 
   final int? value;
+
+  /// Token der Kartograph-Oberflaeche; `null` zeichnet den Knochenwuerfel.
+  final KartoTheme? karto;
 
   // Pip-Positionen als (col, row) im 3×3-Raster (0-basiert).
   static const Map<int, List<(int, int)>> _pipLayout = {
@@ -415,7 +494,11 @@ class _W6Painter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(10));
+    final token = karto;
+    final rrect = RRect.fromRectAndRadius(
+      rect,
+      Radius.circular(token == null ? 10 : kKartoRadius),
+    );
 
     // Schatten
     canvas.drawShadow(
@@ -426,12 +509,23 @@ class _W6Painter extends CustomPainter {
     );
 
     // Hintergrund-Gradient
-    final gradient = const LinearGradient(
-      begin: Alignment(-1, -1.2),
-      end: Alignment(1, 1),
-      colors: [Color(0xFFFFFDF5), Color(0xFFD4C8A8)],
+    final gradient = LinearGradient(
+      begin: const Alignment(-1, -1.2),
+      end: const Alignment(1, 1),
+      colors: token == null
+          ? const [Color(0xFFFFFDF5), Color(0xFFD4C8A8)]
+          : [token.feld, token.senke],
     ).createShader(rect);
     canvas.drawRRect(rrect, Paint()..shader = gradient);
+    if (token != null) {
+      canvas.drawRRect(
+        rrect.deflate(0.5),
+        Paint()
+          ..color = token.messing
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1,
+      );
+    }
 
     // Helles Highlight oben
     canvas.drawLine(
@@ -452,7 +546,7 @@ class _W6Painter extends CustomPainter {
     const pipRadius = 4.5;
 
     final pipPaint = Paint()
-      ..color = const Color(0xFF2C1810)
+      ..color = token?.schrift ?? const Color(0xFF2C1810)
       ..style = PaintingStyle.fill;
     final shadowPaint = Paint()
       ..color = Colors.black.withAlpha(64)
@@ -467,7 +561,8 @@ class _W6Painter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _W6Painter old) => old.value != value;
+  bool shouldRepaint(covariant _W6Painter old) =>
+      old.value != value || old.karto != karto;
 }
 
 // ---------------------------------------------------------------------------
@@ -482,13 +577,17 @@ class _FallbackDie extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final karto = kartoVariante(context);
     return Container(
       width: 56,
       height: 56,
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1B4B),
+        color: karto?.astralenergie ?? const Color(0xFF1E1B4B),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF7C3AED), width: 1.5),
+        border: Border.all(
+          color: karto?.messing ?? const Color(0xFF7C3AED),
+          width: 1.5,
+        ),
         boxShadow: const [
           BoxShadow(
             color: Color(0x80000000),

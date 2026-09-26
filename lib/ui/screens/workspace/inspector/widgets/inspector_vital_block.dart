@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 /// Untergrenze fuer manuell veraenderbare Vitalwerte.
 const int kVitalFloor = -10;
@@ -13,6 +17,10 @@ enum VitalKind { lep, aup, asp, kap }
 /// Repliziert das Layout aus dem Polished-Codex-Mockup. Anpassungen
 /// werden via [onChanged] mit dem neuen Wert delegiert; Persistenz
 /// liegt beim Caller.
+///
+/// Unter Kartograph ([kartoVariante]) dieselbe Bedienung in den Token der
+/// Spielansicht: Ressourcenfarbe am Balken wie bei `KartoRessourcenwert`, der
+/// Wert in Tabellenziffern, die Flaeche als `senke` im Dialog.
 class InspectorVitalBlock extends StatelessWidget {
   const InspectorVitalBlock({
     super.key,
@@ -37,23 +45,51 @@ class InspectorVitalBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final codex = context.codexTheme;
-    final color = _kindColor(codex);
+    final karto = kartoVariante(context);
+    final color = karto == null ? _kindColor(codex) : _kartoFarbe(karto);
     final fillRatio = max <= 0 ? 0.0 : (current / max).clamp(0.0, 1.0);
     final isOverMax = current > max;
     final isCritical = max > 0 && current <= (max / 3).ceil();
 
+    // Messing ist unter Kartograph nie Textfarbe; Ueberheilung steht in Meer.
     final valueColor = isOverMax
-        ? codex.brass
+        ? (karto?.meer ?? codex.brass)
         : isCritical
         ? theme.colorScheme.error
         : theme.colorScheme.onSurface;
+    final labelStyle = karto == null
+        ? theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: codex.brass,
+          )
+        : theme.textTheme.abschnitt;
+    final wertStyle = karto == null
+        ? theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: valueColor,
+          )
+        : theme.textTheme.wertGross.copyWith(color: valueColor);
+    final maxStyle = karto == null
+        ? theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          )
+        : theme.textTheme.wert.copyWith(color: karto.schriftStumm);
 
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: codex.parchment,
-        borderRadius: BorderRadius.circular(codex.panelRadius),
-        border: Border.all(color: codex.brassMuted, width: 1),
-      ),
+      decoration: karto == null
+          ? BoxDecoration(
+              color: codex.parchment,
+              borderRadius: BorderRadius.circular(codex.panelRadius),
+              border: Border.all(color: codex.brassMuted, width: 1),
+            )
+          : BoxDecoration(
+              color: karto.senke,
+              borderRadius: BorderRadius.circular(kKartoRadius),
+              border: Border.all(
+                color: karto.hoehenlinie,
+                width: Strich.hoehenlinie,
+              ),
+            ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
         child: Column(
@@ -62,13 +98,7 @@ class InspectorVitalBlock extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  label,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: codex.brass,
-                  ),
-                ),
+                Text(label, style: labelStyle),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -82,19 +112,8 @@ class InspectorVitalBlock extends StatelessWidget {
                 Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(
-                        text: '$current',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: valueColor,
-                        ),
-                      ),
-                      TextSpan(
-                        text: ' / $max',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
+                      TextSpan(text: '$current', style: wertStyle),
+                      TextSpan(text: ' / $max', style: maxStyle),
                     ],
                   ),
                 ),
@@ -120,8 +139,8 @@ class InspectorVitalBlock extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: fillRatio,
-                minHeight: 8,
-                backgroundColor: codex.parchmentStrong,
+                minHeight: karto == null ? 8 : 6,
+                backgroundColor: karto?.raster ?? codex.parchmentStrong,
                 valueColor: AlwaysStoppedAnimation<Color>(color),
               ),
             ),
@@ -158,6 +177,15 @@ class InspectorVitalBlock extends StatelessWidget {
       ),
     );
   }
+
+  // Dieselben Ressourcenfarben wie die Spielansicht; Karma bleibt bewusst
+  // ohne eigene Farbe.
+  Color _kartoFarbe(KartoTheme karto) => switch (kind) {
+    VitalKind.lep => karto.lebensenergie,
+    VitalKind.aup => karto.ausdauer,
+    VitalKind.asp => karto.astralenergie,
+    VitalKind.kap => karto.schriftLeise,
+  };
 
   Color _kindColor(CodexTheme codex) {
     switch (kind) {
