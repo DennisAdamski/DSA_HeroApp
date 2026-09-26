@@ -8,9 +8,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_load_failure.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/in_memory_avatar_file_storage.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/avatar_ausschnitt_bild.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 
 /// Kleinstmoegliches gueltiges PNG (1x1 Pixel).
@@ -196,5 +199,111 @@ void main() {
       same(storage.files['demo_a.png']),
       reason: 'eine Kopie wuerde den ImageCache bei jedem Rebuild verfehlen',
     );
+  });
+
+  group('mit Rahmung', () {
+    const befund = AvatarGesichtsbefund(
+      bildBreite: 400,
+      bildHoehe: 600,
+      gesicht: AvatarGesichtsrahmen(
+        links: 0.4,
+        oben: 0.2,
+        breite: 0.2,
+        hoehe: 0.15,
+      ),
+      konfidenz: 0.9,
+    );
+
+    Future<void> pumpGerahmt(
+      WidgetTester tester, {
+      required Future<AvatarGesichtsbefund?> Function() befundLaden,
+    }) async {
+      storage.files['demo_a.png'] = _pngBytes;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            avatarBytesProvider.overrideWith(
+              (ref, args) async => storage.files[args.fileName],
+            ),
+            avatarGesichtProvider.overrideWith((ref, args) => befundLaden()),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: AvatarGalleryImage(
+                  heroId: 'demo',
+                  fileName: 'demo_a.png',
+                  width: 100,
+                  height: 100,
+                  rahmung: AvatarRahmung.portraet,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    testWidgets('verschiebt das ganze Bild so, dass der Ausschnitt die '
+        'Flaeche fuellt', (tester) async {
+      await pumpGerahmt(tester, befundLaden: () async => befund);
+      await tester.pumpAndSettle();
+
+      final erwartet = berechneAvatarAusschnitt(
+        bildBreite: 400,
+        bildHoehe: 600,
+        seitenverhaeltnis: 1,
+        rahmung: AvatarRahmung.portraet,
+        gesicht: befund.gesicht,
+      );
+      final bild = tester.getRect(find.byType(Image));
+      final flaeche = tester.getRect(find.byType(AvatarAusschnittBild));
+      expect(flaeche.size, const Size(100, 100));
+      expect(bild.width, closeTo(100 / erwartet.breite, 1e-6));
+      expect(bild.height, closeTo(100 / erwartet.hoehe, 1e-6));
+      expect(
+        flaeche.left - bild.left,
+        closeTo(erwartet.links * bild.width, 1e-6),
+      );
+      expect(
+        flaeche.top - bild.top,
+        closeTo(erwartet.oben * bild.height, 1e-6),
+      );
+
+      final image = tester.widget<Image>(find.byType(Image));
+      expect(
+        (image.image as MemoryImage).bytes,
+        same(storage.files['demo_a.png']),
+      );
+    });
+
+    testWidgets('wartet mit der Anzeige auf den Befund', (tester) async {
+      final befundCompleter = Completer<AvatarGesichtsbefund?>();
+      addTearDown(() {
+        if (!befundCompleter.isCompleted) befundCompleter.complete(null);
+      });
+      await pumpGerahmt(tester, befundLaden: () => befundCompleter.future);
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(Image), findsNothing);
+
+      befundCompleter.complete(befund);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AvatarAusschnittBild), findsOneWidget);
+    });
+
+    testWidgets('ohne Befund zeigt sie den Rueckfall-Ausschnitt', (
+      tester,
+    ) async {
+      await pumpGerahmt(tester, befundLaden: () async => null);
+      await tester.pumpAndSettle();
+
+      final image = tester.widget<Image>(find.byType(Image));
+      expect(image.fit, BoxFit.cover);
+      expect(image.alignment, kAvatarRueckfallAusrichtung);
+    });
   });
 }
