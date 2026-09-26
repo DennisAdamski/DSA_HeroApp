@@ -48,8 +48,11 @@ class KartoRahmen extends OutlinedBorder {
   Path getOuterPath(Rect rect, {TextDirection? textDirection}) =>
       _basis.getOuterPath(rect, textDirection: textDirection);
 
+  // Erst die Kante, dann die Leiste darueber: sonst laege die Kuestenlinie
+  // auf dem Messing und liesse nur einen Haarstrich davon stehen.
   @override
   void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
+    _basis.paint(canvas, rect, textDirection: textDirection);
     final farbe = akzent;
     if (farbe != null && akzentStaerke > 0) {
       canvas.save();
@@ -60,7 +63,6 @@ class KartoRahmen extends OutlinedBorder {
       );
       canvas.restore();
     }
-    _basis.paint(canvas, rect, textDirection: textDirection);
   }
 
   @override
