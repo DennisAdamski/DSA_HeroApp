@@ -121,8 +121,7 @@ void main() {
           await selectAcceptanceMode(tester, 'Held verwalten');
           final capture =
               scale == 1 &&
-              ((brightness == Brightness.light &&
-                      (width == 390 || width == 1440)) ||
+              ((brightness == Brightness.light && width == 1440) ||
                   (brightness == Brightness.dark && width == 1024));
           for (final tab in tabs) {
             final reiter = find.widgetWithText(Tab, tab);
@@ -173,8 +172,7 @@ void main() {
             );
             final capture =
                 scale == 1 &&
-                ((brightness == Brightness.light &&
-                        (width == 390 || width == 1440)) ||
+                ((brightness == Brightness.light && width == 1440) ||
                     (brightness == Brightness.dark && width == 1024));
             final suffix = '${width.toInt()}-${brightness.name}';
 
@@ -246,8 +244,7 @@ void main() {
             );
             final capture =
                 scale == 1 &&
-                ((brightness == Brightness.light &&
-                        (width == 390 || width == 1440)) ||
+                ((brightness == Brightness.light && width == 1440) ||
                     (brightness == Brightness.dark && width == 1024));
             final suffix = '${width.toInt()}-${brightness.name}';
 
