@@ -14,6 +14,12 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 ///
 /// Liegt **hinter** allem Inhalt. Flaechen darauf (`feld`, `senke`) decken die
 /// Struktur ab; sie zeigt sich nur auf dem freien Grund zwischen Abschnitten.
+///
+/// Ueber dem Grund liegt eine durchsichtige `Material`-Schicht, wie bei
+/// `CodexPageScaffold`: Kacheln zeichnen Tinte und Hintergrund auf dem
+/// naechsten `Material`, und ohne diese Schicht laege das unter dem Papier.
+/// Flutter meldet das sonst als "ListTile background color or ink splashes may
+/// be invisible" (`test/ui2/widgets/karto_tintenschicht_test.dart`).
 class KartoPapier extends StatelessWidget {
   /// Legt [child] auf den Seitengrund.
   const KartoPapier({super.key, required this.child});
@@ -43,7 +49,7 @@ class KartoPapier extends StatelessWidget {
               )
             : null,
       ),
-      child: child,
+      child: Material(type: MaterialType.transparency, child: child),
     );
   }
 }

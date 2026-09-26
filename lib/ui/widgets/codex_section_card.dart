@@ -118,64 +118,60 @@ class CodexSectionCard extends StatelessWidget {
     );
   }
 
-  // Flaeche und Linie statt Karte; die transparente Materialschicht haelt
-  // Tinte und Kachelhintergruende darin sichtbar.
+  // Flaeche und Linie statt Karte; die Tintenschicht bringt KartoFlaeche mit.
   Widget _kartograph(BuildContext context, KartoTheme karto) {
     final texte = Theme.of(context).textTheme;
     final zweitzeile = subtitle?.trim() ?? '';
     return KartoFlaeche(
       innen: padded ? Abstand.blockInnen : null,
-      child: Material(
-        type: MaterialType.transparency,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (leading != null)
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      top: Abstand.haar,
-                      right: Abstand.weit,
-                    ),
-                    child: IconTheme.merge(
-                      data: IconThemeData(color: karto.messing),
-                      child: leading!,
-                    ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (leading != null)
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: Abstand.haar,
+                    right: Abstand.weit,
                   ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: texte.abschnitt),
-                      if (zweitzeile.isNotEmpty) ...[
-                        const SizedBox(height: Abstand.eng),
-                        Text(
-                          zweitzeile,
-                          style: texte.etikett.copyWith(
-                            color: karto.schriftLeise,
-                          ),
-                        ),
-                      ],
-                      if (badges.isNotEmpty) ...[
-                        const SizedBox(height: Abstand.normal),
-                        Wrap(
-                          spacing: Abstand.knapp,
-                          runSpacing: Abstand.knapp,
-                          children: badges,
-                        ),
-                      ],
-                    ],
+                  child: IconTheme.merge(
+                    data: IconThemeData(color: karto.messing),
+                    child: leading!,
                   ),
                 ),
-                ...?trailing == null ? null : <Widget>[trailing!],
-              ],
-            ),
-            const SizedBox(height: Abstand.weit),
-            child,
-          ],
-        ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: texte.abschnitt),
+                    if (zweitzeile.isNotEmpty) ...[
+                      const SizedBox(height: Abstand.eng),
+                      Text(
+                        zweitzeile,
+                        style: texte.etikett.copyWith(
+                          color: karto.schriftLeise,
+                        ),
+                      ),
+                    ],
+                    if (badges.isNotEmpty) ...[
+                      const SizedBox(height: Abstand.normal),
+                      Wrap(
+                        spacing: Abstand.knapp,
+                        runSpacing: Abstand.knapp,
+                        children: badges,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              ...?trailing == null ? null : <Widget>[trailing!],
+            ],
+          ),
+          const SizedBox(height: Abstand.weit),
+          child,
+        ],
       ),
     );
   }

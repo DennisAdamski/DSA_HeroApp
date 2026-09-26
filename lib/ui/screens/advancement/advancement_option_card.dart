@@ -170,13 +170,10 @@ class AdvancementOptionCard extends StatelessWidget {
           ),
       ],
     );
-    // Unter Kartograph eine Flaeche wie jeder Abschnitt; die transparente
-    // Materialschicht haelt die Aufklappgruppe darin sichtbar.
+    // Unter Kartograph eine Flaeche wie jeder Abschnitt; die Tintenschicht fuer
+    // die Aufklappgruppe bringt KartoFlaeche mit.
     if (karto != null) {
-      return KartoFlaeche(
-        innen: Abstand.blockInnen,
-        child: Material(type: MaterialType.transparency, child: inhalt),
-      );
+      return KartoFlaeche(innen: Abstand.blockInnen, child: inhalt);
     }
     return Card(
       child: Padding(padding: const EdgeInsets.all(16), child: inhalt),
