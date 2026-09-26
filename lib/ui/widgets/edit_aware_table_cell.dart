@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+
 /// Tabellenzelle, die im View-Modus Plain Text rendert und im Edit-Modus
 /// ein [TextField] mit [OutlineInputBorder] anzeigt.
 ///
@@ -61,6 +63,33 @@ class EditAwareTableCell extends StatelessWidget {
 
     final theme = Theme.of(context).colorScheme;
     final borderColor = isError ? theme.error : theme.outline;
+    // Unter Kartograph gilt das Theme-Feld (Unterlinie auf senke); nur ein
+    // Fehler faerbt die Linie.
+    if (kartoVariante(context) != null) {
+      return Padding(
+        padding: padding,
+        child: TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          decoration: InputDecoration(
+            isDense: true,
+            enabledBorder: isError
+                ? UnderlineInputBorder(
+                    borderSide: BorderSide(color: theme.error),
+                  )
+                : null,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 8,
+            ),
+            suffixIcon: suffixIcon,
+            suffixIconConstraints: suffixIconConstraints,
+          ),
+          onChanged: onChanged,
+        ),
+      );
+    }
     return Padding(
       padding: padding,
       child: TextField(

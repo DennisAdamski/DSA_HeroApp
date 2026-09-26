@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 
 /// Wiederverwendbare Sektion im Codex-Stil mit Titel und Inhaltsbereich.
+///
+/// Unter Kartograph ([kartoVariante]) eine `KartoFlaeche` mit
+/// Abschnittsueberschrift statt einer Karte mit Pergament; Titel, Badges,
+/// Aktionen und Inhalt bleiben dieselben.
 class CodexSectionCard extends StatelessWidget {
   /// Erstellt eine Abschnittskarte mit optionalen Badges und Kopfaktion.
   const CodexSectionCard({
@@ -39,6 +48,8 @@ class CodexSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final karto = kartoVariante(context);
+    if (karto != null) return _kartograph(context, karto);
     final codex = context.codexTheme;
     final theme = Theme.of(context);
 
@@ -102,6 +113,68 @@ class CodexSectionCard extends StatelessWidget {
               child,
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // Flaeche und Linie statt Karte; die transparente Materialschicht haelt
+  // Tinte und Kachelhintergruende darin sichtbar.
+  Widget _kartograph(BuildContext context, KartoTheme karto) {
+    final texte = Theme.of(context).textTheme;
+    final zweitzeile = subtitle?.trim() ?? '';
+    return KartoFlaeche(
+      innen: padded ? Abstand.blockInnen : null,
+      child: Material(
+        type: MaterialType.transparency,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (leading != null)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: Abstand.haar,
+                      right: Abstand.weit,
+                    ),
+                    child: IconTheme.merge(
+                      data: IconThemeData(color: karto.messing),
+                      child: leading!,
+                    ),
+                  ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: texte.abschnitt),
+                      if (zweitzeile.isNotEmpty) ...[
+                        const SizedBox(height: Abstand.eng),
+                        Text(
+                          zweitzeile,
+                          style: texte.etikett.copyWith(
+                            color: karto.schriftLeise,
+                          ),
+                        ),
+                      ],
+                      if (badges.isNotEmpty) ...[
+                        const SizedBox(height: Abstand.normal),
+                        Wrap(
+                          spacing: Abstand.knapp,
+                          runSpacing: Abstand.knapp,
+                          children: badges,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                ...?trailing == null ? null : <Widget>[trailing!],
+              ],
+            ),
+            const SizedBox(height: Abstand.weit),
+            child,
+          ],
         ),
       ),
     );
