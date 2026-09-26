@@ -21,6 +21,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
@@ -28,7 +29,10 @@ import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/data/cloud_avatar_storage.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart'
-    show avatarFileStorageProvider, avatarThumbnailEncoderProvider;
+    show
+        avatarFileStorageProvider,
+        avatarGesichtServiceProvider,
+        avatarThumbnailEncoderProvider;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
@@ -980,10 +984,40 @@ class HeroActions {
       );
       if (avatarBytes == null) return null;
 
+      // Der Befund kommt direkt vom Service statt ueber
+      // `ref.read(avatarGesichtProvider(...).future)`: jene Future wird bei
+      // einem Fehler nie erfuellt (siehe CLAUDE.md). Der Service wirft nie.
+      final befund = await _ref
+          .read(avatarGesichtServiceProvider)
+          .befund(
+            heroStoragePath: heroStoragePath,
+            fileName: entry.fileName,
+            bytes: avatarBytes,
+          );
+      final ausschnitt = befund == null
+          ? null
+          : berechneAvatarAusschnitt(
+              bildBreite: befund.bildBreite,
+              bildHoehe: befund.bildHoehe,
+              seitenverhaeltnis: 1,
+              rahmung: AvatarRahmung.portraet,
+              gesicht: befund.gesicht,
+            );
+
       final encoder = _ref.read(avatarThumbnailEncoderProvider);
       // `await` ist hier zwingend: ohne das laeuft eine Exception aus dem
       // Encoder am `on Exception`-Zweig vorbei und blockiert den Sync doch.
-      return await encoder.createThumbnailBase64(imageBytes: avatarBytes);
+      return await encoder.createThumbnailBase64(
+        imageBytes: avatarBytes,
+        ausschnitt: ausschnitt == null
+            ? null
+            : (
+                links: ausschnitt.links,
+                oben: ausschnitt.oben,
+                breite: ausschnitt.breite,
+                hoehe: ausschnitt.hoehe,
+              ),
+      );
     } on Exception {
       // Avatar-Fehler ignorieren, damit der Sync nicht blockiert.
       return null;

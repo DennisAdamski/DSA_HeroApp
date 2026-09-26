@@ -336,6 +336,7 @@ class _AlbumCard extends ConsumerWidget {
                 child: AvatarGalleryImage(
                   heroId: heroId,
                   fileName: entry.fileName,
+                  rahmung: AvatarRahmung.portraet,
                   placeholder: Container(
                     color: colorScheme.surfaceContainerHighest,
                     child: const Icon(Icons.broken_image_outlined, size: 32),
@@ -525,6 +526,10 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
 
   late Offset _focusPoint;
   late double _zoom;
+
+  /// Ob der Fokus aus dem Eintrag oder vom Nutzer stammt. Sonst startet der
+  /// Dialog auf der erkannten Gesichtsmitte, sobald der Befund vorliegt.
+  late bool _fokusFestgelegt;
   double _gestureStartZoom = 1.0;
   bool _saving = false;
   Size? _imageSize;
@@ -543,6 +548,20 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
       widget.entry.headerFocusY ?? 0.5,
     );
     _zoom = (widget.entry.headerZoom ?? 1.0).clamp(_minZoom, _maxZoom);
+    _fokusFestgelegt =
+        widget.entry.headerFocusX != null || widget.entry.headerFocusY != null;
+  }
+
+  /// Uebernimmt die erkannte Gesichtsmitte als Startfokus.
+  ///
+  /// Wie [_syncImageProvider] aus `build` heraus: das Feld wird im selben
+  /// Aufbau weiter unten gelesen, ein `setState` ist nicht noetig.
+  void _syncGesichtsfokus(AvatarGesichtsbefund? befund) {
+    if (_fokusFestgelegt) return;
+    final gesicht = befund?.gesicht;
+    if (gesicht == null) return;
+    _focusPoint = Offset(gesicht.mitteX, gesicht.mitteY);
+    _fokusFestgelegt = true;
   }
 
   /// Uebernimmt neu geladene Bytes als Bildquelle.
@@ -624,6 +643,18 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
           )
           .valueOrNull,
     );
+    if (!_fokusFestgelegt) {
+      _syncGesichtsfokus(
+        ref
+            .watch(
+              avatarGesichtProvider((
+                heroId: widget.heroId,
+                fileName: widget.entry.fileName,
+              )),
+            )
+            .valueOrNull,
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -650,9 +681,10 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
             builder: (context, constraints) {
               final wide = constraints.maxWidth >= 720;
               final hint = Text(
-                'Tippe oder ziehe im Bild den gewuenschten Fokuspunkt. '
-                'Mausrad oder Pinch-Geste zoomt den Header-Ausschnitt. '
-                'Doppeltipp setzt Fokus und Zoom zurueck.',
+                'Ohne eigenen Ausschnitt richtet sich der Header am erkannten '
+                'Gesicht aus. Tippe oder ziehe im Bild den gewünschten '
+                'Fokuspunkt. Mausrad oder Pinch-Geste zoomt den '
+                'Header-Ausschnitt. Doppeltipp setzt Fokus und Zoom zurück.',
                 style: theme.textTheme.bodyMedium,
               );
               final zoomSlider = Row(
@@ -849,6 +881,7 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
                 behavior: HitTestBehavior.opaque,
                 onDoubleTap: () {
                   setState(() {
+                    _fokusFestgelegt = true;
                     _focusPoint = const Offset(0.5, 0.5);
                     _zoom = _minZoom;
                   });
@@ -865,6 +898,7 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
                       .clamp(0.0, rect.height)
                       .toDouble();
                   setState(() {
+                    _fokusFestgelegt = true;
                     _focusPoint = Offset(
                       (localX / rect.width).clamp(0.0, 1.0).toDouble(),
                       (localY / rect.height).clamp(0.0, 1.0).toDouble(),
@@ -898,6 +932,7 @@ class _HeaderFocusDialogState extends ConsumerState<_HeaderFocusDialog> {
                       _lastPointerKind == PointerDeviceKind.invertedStylus;
                   final sign = isPointer ? 1.0 : -1.0;
                   setState(() {
+                    _fokusFestgelegt = true;
                     _zoom = newZoom;
                     _focusPoint = Offset(
                       (_focusPoint.dx + sign * dxNorm)

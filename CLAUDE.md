@@ -495,6 +495,20 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   werden — ein `Uint8List.fromList(...)` im Widget verfehlt den globalen
   `ImageCache` bei jedem Rebuild, weil `MemoryImage` seine Bytes per Identität
   vergleicht.
+- Beschnittene Avatarflächen (Heldenmarke, Album, Header, Gruppen-Thumbnail)
+  richten sich am erkannten Gesicht aus: `AvatarGalleryImage(rahmung: ...)`,
+  Geometrie in `lib/rules/derived/avatar_rahmung_rules.dart`. Erkannt wird mit
+  BlazeFace **in reinem Dart** (`lib/data/avatar_gesicht/`, Modell-Asset aus
+  `tool/avatar_gesicht/`), ohne native Bibliothek und ohne CDN. Der Befund
+  liegt nur im lokalen Cache `avatar_gesicht_v1` (`AvatarGesichtService`) und
+  **nie** im Helden-JSON — ein Feld am Galerieeintrag ginge in
+  `heroContentHash` ein. Der Golden-Test
+  `test/data/avatar_gesicht/blazeface_golden_test.dart` pinnt den Rechenkern
+  gegen Googles LiteRT; seine Fixtures werden nicht angepasst, wenn er bricht.
+  Nach Modellwechsel steigt `kAvatarGesichtDetektorVersion`. In Widget-Tests
+  `avatarGesichtServiceProvider` mit `festerAvatarGesichtService()`
+  überschreiben: die echte Erkennung rechnet im Isolate und wird im
+  Fake-Async nie fertig. Details in `docs/technical_overview.md` Abschnitt 1.
 - Ein fehlgeschlagener Bildzugriff darf nie stumm als „kein Bild" erscheinen.
   `AvatarLoadException` (`lib/data/avatar_load_failure.dart`) trägt den Grund
   (nicht angemeldet, keine Berechtigung, zu groß, Netzwerk, unbekannt);

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
+import 'package:dsa_heldenverwaltung/data/avatar_gesicht/blazeface_lizenz.dart';
 import 'package:dsa_heldenverwaltung/data/firebase_bootstrap.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker_impl.dart';
@@ -19,6 +20,7 @@ Future<void> main() async {
 
 Future<void> _runApp() async {
   WidgetsFlutterBinding.ensureInitialized();
+  registriereBlazeFaceLizenz();
   debugPrint('[boot] hive init…');
   await Hive.initFlutter();
   debugPrint('[boot] firebase…');

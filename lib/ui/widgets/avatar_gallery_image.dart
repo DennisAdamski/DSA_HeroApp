@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/data/avatar_load_failure.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/avatar_ausschnitt_bild.dart';
 
 /// Zeigt ein Avatarbild anhand seines Galerie-Dateinamens.
 ///
@@ -13,6 +16,11 @@ import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 /// braucht ein Bild drei sequentielle Netzwerkaufrufe — ohne eigenen
 /// Ladezustand sieht das sekundenlang nach Fehler aus. Und ein Fehlschlag
 /// nennt seinen Grund, statt still wie ein fehlendes Bild auszusehen.
+///
+/// Mit [rahmung] richtet sich der Ausschnitt am erkannten Gesicht aus
+/// (`avatarGesichtProvider`); [fit], [alignment] und [scale] gelten dann
+/// nicht. Bis der Befund vorliegt, bleibt der Ladezustand stehen, damit das
+/// Bild nicht erst mittig und dann versetzt erscheint.
 class AvatarGalleryImage extends ConsumerWidget {
   const AvatarGalleryImage({
     super.key,
@@ -24,6 +32,7 @@ class AvatarGalleryImage extends ConsumerWidget {
     this.alignment = Alignment.center,
     this.scale,
     this.placeholder,
+    this.rahmung,
   });
 
   /// Held, zu dem das Bild gehoert.
@@ -45,6 +54,9 @@ class AvatarGalleryImage extends ConsumerWidget {
   /// Ersatzdarstellung bei fehlendem oder nicht ladbarem Bild.
   final Widget? placeholder;
 
+  /// Gesichtsbezogener Ausschnitt; `null` behaelt [fit] und [alignment].
+  final AvatarRahmung? rahmung;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bytesAsync = ref.watch(
@@ -57,6 +69,25 @@ class AvatarGalleryImage extends ConsumerWidget {
       data: (bytes) {
         if (bytes == null || bytes.isEmpty) {
           return _buildPlaceholder();
+        }
+        final rahmung = this.rahmung;
+        if (rahmung != null) {
+          final befundAsync = ref.watch(
+            avatarGesichtProvider((heroId: heroId, fileName: fileName)),
+          );
+          if (befundAsync.isLoading && !befundAsync.hasValue) {
+            return _buildLoading();
+          }
+          return SizedBox(
+            width: width,
+            height: height,
+            child: AvatarAusschnittBild(
+              bytes: bytes,
+              befund: befundAsync.valueOrNull,
+              rahmung: rahmung,
+              fehlerErsatz: _buildPlaceholder(),
+            ),
+          );
         }
         Widget image = Image.memory(
           bytes,

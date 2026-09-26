@@ -1481,6 +1481,31 @@ class _LegalSettingsPage extends StatelessWidget {
             style: theme.textTheme.bodyMedium,
           ),
         ),
+        _SettingsSectionCard(
+          title: 'Verwendete Software',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Die Gesichtserkennung für Avatarbilder nutzt das Modell '
+                'BlazeFace aus Googles MediaPipe (Apache-Lizenz 2.0). Es '
+                'rechnet vollständig auf diesem Gerät; Bilder verlassen es '
+                'dafür nicht.',
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                key: const ValueKey<String>('settings-legal-licenses'),
+                onPressed: () => showLicensePage(
+                  context: context,
+                  applicationName: 'DSA Heldenverwaltung',
+                ),
+                icon: const Icon(Icons.description_outlined),
+                label: const Text('Lizenzen anzeigen'),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
