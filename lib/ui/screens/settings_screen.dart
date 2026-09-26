@@ -116,9 +116,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => _SettingsDetailScreen(
-          destination: destination,
-          beforeSurfaceChange: widget.beforeSurfaceChange,
+        // Nimmt das Theme des Aufrufers mit; eine Route saehe sonst nur das
+        // Wurzeltheme und verloere etwa die Kartograph-Bruecke.
+        builder: (_) => InheritedTheme.captureAll(
+          context,
+          _SettingsDetailScreen(
+            destination: destination,
+            beforeSurfaceChange: widget.beforeSurfaceChange,
+          ),
         ),
       ),
     );

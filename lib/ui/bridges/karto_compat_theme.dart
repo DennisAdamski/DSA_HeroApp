@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_feinschliff.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
@@ -15,7 +16,12 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 /// Der Stil entsteht per `copyWith` auf dem Kartograph-Slot, trägt also
 /// dasselbe `inherit`. Überblendet wird dieser verschachtelte Baum ohnehin
 /// nie: `Theme` animiert nicht, nur das `AnimatedTheme` der `MaterialApp`.
-ThemeData buildKartoCompatTheme(ThemeData base) {
+///
+/// Der Kartograph-Feinschliff (Dialogtitel, Tabellen, Aufklappgruppen, Blatt,
+/// `KartoRahmen`) wird hier erneut angewendet: aufgelegte Seiten sehen nur das
+/// Wurzeltheme, nicht den verschachtelten Feinschliff der `KartoShell`.
+ThemeData buildKartoCompatTheme(ThemeData ausgang) {
+  final base = buildKartoFeinschliff(ausgang);
   final karto =
       base.extension<KartoTheme>() ??
       (base.brightness == Brightness.dark ? kartoDunkel : kartoHell);

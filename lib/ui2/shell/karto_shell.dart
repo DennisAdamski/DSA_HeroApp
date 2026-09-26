@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/ui2/debug/karto_token_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_heldenwahl.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_workspace.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_feinschliff.dart';
 
 /// Zeigt echte Heldenauswahl oder Workspace im vorhandenen ProviderScope.
 class KartoShell extends ConsumerStatefulWidget {
@@ -41,8 +42,19 @@ class _KartoShellState extends ConsumerState<KartoShell> {
     }
   }
 
+  // Der Feinschliff liegt verschachtelt, nicht im Wurzeltheme: er setzt
+  // Textstile an Komponenten, und die darf die ueberblendete MaterialApp nicht
+  // tragen (siehe buildKartoFeinschliff). Dialoge fangen ihn ueber
+  // showDialog ein.
   @override
   Widget build(BuildContext context) {
+    return Theme(
+      data: buildKartoFeinschliff(Theme.of(context)),
+      child: Builder(builder: _inhalt),
+    );
+  }
+
+  Widget _inhalt(BuildContext context) {
     final id = ref.watch(selectedHeroIdProvider);
     final helden = ref.watch(heroListProvider);
     final vorhanden =

@@ -29,6 +29,12 @@ ThemeData buildKartoTheme({
   final radiusKlein = BorderRadius.circular(kKartoRadiusKlein);
   const durchsichtig = Color(0x00000000);
 
+  // Container sind deckende Mischungen auf `feld`. Ohne sie faellt Material
+  // auf die volle Grundfarbe zurueck: eine Auswahl im SegmentedButton stuende
+  // dann siegelrot, ein getoenter Chip Meer auf Meer.
+  Color container(Color farbe, double anteil) =>
+      Color.alphaBlend(farbe.withValues(alpha: anteil), t.feld);
+
   final colorScheme = ColorScheme(
     brightness: brightness,
     primary: t.meer,
@@ -42,9 +48,21 @@ ThemeData buildKartoTheme({
     surface: t.blatt,
     onSurface: t.schrift,
     onSurfaceVariant: t.schriftLeise,
+    primaryContainer: container(t.meer, 0.14),
+    onPrimaryContainer: t.schrift,
+    // Auswahl traegt Messing: der Akzent der Oberflaeche, nicht die
+    // Warnfarbe `siegel`, auf die `secondary` zeigt.
+    secondaryContainer: container(t.messing, 0.22),
+    onSecondaryContainer: t.schrift,
+    tertiaryContainer: container(t.moos, 0.14),
+    onTertiaryContainer: t.schrift,
+    errorContainer: container(t.siegel, 0.14),
+    onErrorContainer: t.schrift,
     surfaceContainerHighest: t.feld,
     surfaceContainerHigh: t.feld,
     surfaceContainer: t.senke,
+    surfaceContainerLow: t.feld,
+    surfaceContainerLowest: t.feld,
     outline: t.grat,
     outlineVariant: t.hoehenlinie,
     shadow: t.schatten,
