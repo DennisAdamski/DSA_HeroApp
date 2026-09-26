@@ -172,7 +172,12 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
       return;
     }
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => HeroWorkspaceScreen(heroId: heroId)),
+      MaterialPageRoute(
+        builder: (_) => InheritedTheme.captureAll(
+          context,
+          HeroWorkspaceScreen(heroId: heroId),
+        ),
+      ),
     );
   }
 
@@ -254,8 +259,12 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
             ref: ref,
             importExportActions: importExportActions,
           ),
-          onOpenSettings: () => Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
+          onOpenSettings: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) =>
+                  InheritedTheme.captureAll(context, const SettingsScreen()),
+            ),
+          ),
         ),
       ),
       floatingActionButton: layout == AppLayoutClass.compact && !apple

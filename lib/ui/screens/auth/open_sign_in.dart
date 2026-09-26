@@ -14,8 +14,11 @@ Future<void> openSignInScreen(
 }) {
   return Navigator.of(context).push<void>(
     MaterialPageRoute<void>(
-      builder: (_) =>
-          SignInScreen(authService: authService, initialRegisterMode: register),
+      // Nimmt das Theme des Aufrufers mit, etwa die Kartograph-Verfeinerung.
+      builder: (_) => InheritedTheme.captureAll(
+        context,
+        SignInScreen(authService: authService, initialRegisterMode: register),
+      ),
     ),
   );
 }

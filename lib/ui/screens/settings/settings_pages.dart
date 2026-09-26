@@ -822,7 +822,10 @@ class _CatalogSettingsPage extends ConsumerWidget {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (_) => const CatalogManagementScreen(),
+                      builder: (_) => InheritedTheme.captureAll(
+                        context,
+                        const CatalogManagementScreen(),
+                      ),
                     ),
                   );
                 },
@@ -888,7 +891,10 @@ class _HouseRulesSettingsPage extends ConsumerWidget {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (_) => const HouseRulePackManagementScreen(),
+                      builder: (_) => InheritedTheme.captureAll(
+                        context,
+                        const HouseRulePackManagementScreen(),
+                      ),
                     ),
                   );
                 },
