@@ -309,6 +309,17 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Nicht enthalten und bewusst nicht erfunden: pauschaler Schadens- und
   Rücknahmeknopf, KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne
   echten Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.
+- Der Kopf von `WorkspaceManagementBody` (nur UI2) ist der
+  `KartoSeitenkopf`: Kontext „Heldenbogen“ (schmal ohne), Tab als Titel,
+  Helfertext als Unterzeile; `management-active-title`/`-helper` hängen über
+  `titelSchluessel`/`unterzeileSchluessel` daran. Die oberste Reiterreihe
+  setzt Meer-Unterstrich und Schrift selbst, alle inneren Reiter kommen als
+  ruhige Pille aus dem Feinschliff. In UI2 zeigt der Planungsverlauf keine
+  AP-Zeilen (`AdvancementHistoryPanel.zeigeApZeilen: false`), die Bilanz
+  steht als Gleichung darüber. `HeroesHomeScreen` bekommt dort
+  `onHeldOeffnen` und `onEinstellungen`: „Held öffnen“ wählt den Helden für
+  den Kartograph-Workspace statt den klassischen `HeroWorkspaceScreen`
+  aufzulegen.
 - **Tabs, Editoraktionen und Leave-Guard der Heldenverwaltung liegen im
   `WorkspaceManagementCoordinator`** (`lib/ui/screens/workspace/`), den
   **beide** Oberflächen benutzen: der bestehende `HeroWorkspaceScreen` und der
@@ -383,9 +394,39 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Im Bestandsbaum (`buildKartoCompatTheme`) trägt `bodySmall` die aufrechte
   Datenschrift statt der kursiven Spectral-Legende
   (`buildKartoBestandsTextTheme` in `karto_typography.dart`): die
-  Altansichten setzen dort fast alle kleinen Beschriftungen. Nur dieser Slot
-  weicht ab; `test/ui/bridges/karto_compat_theme_test.dart` hält `inherit`
-  und die Überblendbarkeit fest.
+  Altansichten setzen dort fast alle kleinen Beschriftungen. Von den
+  Schriftrollen weicht nur dieser Slot ab;
+  `test/ui/bridges/karto_compat_theme_test.dart` hält `inherit` und die
+  Überblendbarkeit fest.
+- **Komponenten-Textstile gibt es nur verschachtelt.** `buildKartoFeinschliff`
+  (`lib/ui2/theme/karto_feinschliff.dart`) setzt Dialogtitel (`titel`),
+  `DataTable`, `ExpansionTile`, die ruhigen inneren Reiter (`senke`-Pille),
+  das Blatt (Radius 8, Küste) und `KartoRahmen` als Dialogform
+  (`lib/ui2/theme/karto_rahmen.dart`: Küste rundum, Messingkante oben). Er
+  liegt als `Theme` in `KartoShell` und wird in `buildKartoCompatTheme`
+  erneut angewendet, weil Routen nur das Wurzeltheme sehen; das überblendete
+  Wurzeltheme bleibt ohne Komponenten-Textstile
+  (`test/ui2/theme/karto_feinschliff_test.dart`). Die Container-Rollen des
+  `ColorScheme` sind dagegen reine Farben und liegen im Wurzeltheme
+  (Auswahl in Messing, sonst fiele Material auf siegelrot zurück).
+- Aufgelegte Seiten aus dem Bestand (Einstellungsdetail, Katalog- und
+  Hausregelverwaltung, Heldenliste, Anmeldung) nehmen das Theme ihres
+  Aufrufers per `InheritedTheme.captureAll` mit; sonst fiele unter
+  Kartograph die Brücke weg und `CodexTheme` auf Pergament zurück.
+- **Bestandsbausteine haben eine Kartograph-Variante, die klassische
+  Oberfläche bleibt Zeichen für Zeichen, wie sie war.** Erkannt wird über
+  `kartoVariante(context)` (`lib/ui/widgets/karto_variante.dart`): nur
+  Kartograph führt `KartoTheme` im Theme, das Codex-Theme allein
+  `CodexTheme` — nie `KartoTheme.of`, das fiele auf die helle Palette zurück.
+  Dort liegen auch `epischerAkzent` (klassisch Goldgelb, Kartograph Messing)
+  und `kartoRadiusOder`. Umgestellt sind u. a. `CodexSectionCard`,
+  `CodexTabHeader`, `CodexMetricTile`, `CodexBadge`, `CodexEmptyState`,
+  `CodexPageScaffold`, `FlexibleTable` (neu `numerischeSpalten`, nur unter
+  Kartograph rechtsbündig), `ResponsiveAdaptiveTable`, `EditAwareTableCell`,
+  `InspectorVitalBlock`, `AnimatedDiceRow`, `AdvancementOptionCard`,
+  `skill_tree_branch.dart`, Reisebericht-Farben, Heldenliste und Anmeldung.
+  `test/ui/widgets/karto_variante_test.dart` prüft jeden Baustein unter
+  beiden Themes. Neue Bestandsbausteine folgen demselben Muster.
 - Jede Arbeitsfläche beginnt mit `KartoSeitenkopf`
   (`lib/ui2/widgets/karto_seitenkopf.dart`): Kontextzeile, Titel, eine Aktion,
   getrennt durch Weißraum statt Linie. Er ist die **einzige** Verwendung von

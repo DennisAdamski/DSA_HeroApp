@@ -360,3 +360,72 @@ Kampfchips bleiben die gemeinsamen Bestandsbausteine mit ihren Keys. Dunkel
 gibt es keine Papierstruktur. Die Negativprüfung in
 `test/ui2/spielen/karto_spielverlauf_test.dart` bleibt unverändert: der
 Abschlusssatz ist Schmuck, keine Angabe.
+
+## Restliche Seiten (26.09.2026)
+
+Nach Rahmen, Heldenwahl und Spielansicht folgten Held verwalten, Entwicklung
+planen, die Dialoge am Spieltisch sowie Einstellungen, Heldenliste und
+Anmeldung. Freigegeben war eine **Kartograph-Variante**: die gemeinsamen
+Bestandsbausteine zeichnen sich nur unter Kartograph neu, die klassische
+Oberfläche bleibt unverändert, und es entsteht keine zweite
+Bearbeitungslogik.
+
+### Befund
+
+Der Abstand kam aus wenigen gemeinsamen Quellen, nicht aus dem Tab-Code:
+
+1. Fehlende Container-Rollen im `ColorScheme`: Material fiel auf volle
+   Grundfarben zurück (siegelrote SegmentedButtons, Meer auf Meer bei
+   Manövern).
+2. Dialogtitel in `headlineSmall`, bei Kartograph die große Zahlenschrift;
+   Blätter mit Radius 28 ohne Kante.
+3. Aufgelegte Seiten verloren die Brücke, weil eine `MaterialPageRoute` das
+   Theme nicht weitergibt; „Held öffnen“ aus der Heldenliste legte sogar den
+   klassischen Arbeitsbereich auf.
+4. Gemeinsame Bausteine ohne eigene Form: Abschnittskarten, Tab-Köpfe,
+   Kennzahlkacheln, Tabellen mit getöntem Kasten.
+
+### Umsetzung
+
+| Commit | Inhalt |
+|---|---|
+| B1 | Container-Rollen; `buildKartoFeinschliff` (nur verschachtelt); `KartoRahmen` als Dialogform; Theme-Weitergabe an Push-Stellen |
+| B2 | `kartoVariante` und Kartograph-Varianten der Codex-Bausteine, `FlexibleTable.numerischeSpalten` |
+| B3 | Verwaltungskopf als `KartoSeitenkopf`, ruhige innere Reiter, Sperrzustand, Porträt im Kompassring, Reisebericht-Palette, `epischerAkzent`, flache Tabellenzeilen |
+| B4 | AP-Bilanz als Gleichung, Verlauf ohne doppelte AP, Kennzahlen statt Punktzeilen, Fähigkeitenbaum in Token, bündige Kanten |
+| B5 | Vitalblock und Würfel in Token, Würfel ohne Animation bei reduzierter Bewegung, Messingkante über der Küste |
+| B6 | Einstellungen auf Papier, Heldenliste mit Kompassringen, `onHeldOeffnen`/`onEinstellungen`, Anmeldung als Kartusche |
+
+Neues Abnahmeraster `test/ui2/shell/karto_seiten_visual_test.dart`: alle
+neun Verwaltungstabs, Probe mit Wurf, Rast, Ressourcenblatt, Einstellungen,
+Heldenliste und Anmeldung über 390/1024/1440 dp, hell und dunkel, Schrift 1
+und 2. Aufnahmen unter `docs/screenshots/redesign-b/` (1440 hell, 1024
+dunkel; Spielen und Planung zusätzlich 390).
+
+### Sichtprüfungsbefunde
+
+1. **Die Aktionsspalte der Inventartabelle** ist 88 breit; zwei kompakte
+   Symbolknöpfe brachen darin um und verdoppelten jede Zeile. Unter
+   Kartograph sind sie kleiner und stehen nebeneinander.
+2. **Der leere Gruppenzustand** lief bei 390 dp und doppelter Schrift schon
+   vorher über (179 px); er ist jetzt scrollbar — in beiden Oberflächen, weil
+   ein Überlauf ein Fehler und keine Gestaltungsfrage ist.
+3. **Die Kopfzeilenknöpfe der Heldenliste** schnitten unter Kartograph ihre
+   Beschriftung ab (40 Punkte Höhe, 14 Innenabstand).
+4. **Die Messingkante der Dialoge** lag unter der Küstenlinie und blieb nur
+   als Haarstrich sichtbar; sie wird jetzt darüber gezeichnet.
+5. **Seitenkopf, AP-Bilanz und Katalog** der Planung standen auf drei
+   verschiedenen Kanten; der Rand folgt jetzt der Flächenbreite.
+
+### Erledigte Befunde aus R3
+
+- Metazeilen im Steigerungskatalog stehen als ausgerichtete Kennzahlen.
+- Zahlenspalten von Inventar und Kampftabellen stehen rechtsbündig.
+- Der Sperrhinweis der Verwaltung steht nicht mehr einzeln auf leerer
+  Fläche.
+
+### Bewusst nicht enthalten
+
+Keine neuen Funktionen und keine zweite Bearbeitungsimplementierung. Der
+Tab-Kopf „Chroniken, Kontakte & Abenteuer“ wiederholt weiterhin den
+Seitentitel; die übrigen Tabs tragen dort eigene Überschriften.
