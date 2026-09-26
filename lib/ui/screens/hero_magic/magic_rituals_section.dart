@@ -147,15 +147,25 @@ class _MagicRitualsSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            // Wrap statt Row mit Spacer: schmal und mit grosser Schrift
+            // rutscht der Knopf in die naechste Zeile, statt ueberzulaufen.
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                Text('Ritualkategorien', style: theme.textTheme.titleSmall),
-                const SizedBox(width: 8),
-                Text(
-                  '(${ritualCategories.length})',
-                  style: theme.textTheme.bodySmall,
+                Wrap(
+                  spacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text('Ritualkategorien', style: theme.textTheme.titleSmall),
+                    Text(
+                      '(${ritualCategories.length})',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
                 ),
-                const Spacer(),
                 FilledButton(
                   key: const ValueKey<String>('magic-rituals-add-category'),
                   onPressed: () => _addCategory(context),

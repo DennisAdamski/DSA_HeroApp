@@ -86,21 +86,20 @@ class _AdvancementSkillTreeViewState extends State<AdvancementSkillTreeView> {
       query: widget.query,
       category: _category,
     );
-    return Column(
+    // Schalter und Bereichswahl laufen mit der Liste: fest darueber nahmen sie
+    // bei wenig Hoehe (grosse Schrift, niedrige Fenster) dem Baum den ganzen
+    // Platz und liefen ueber den Rand.
+    final kopf = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SpecialAbilityVisibilityToggle(
-            value: widget.session.preview.showInapplicableSpecialAbilities,
-            onChanged: widget.session.isSaving
-                ? null
-                : widget.onShowInapplicableChanged,
-          ),
+        SpecialAbilityVisibilityToggle(
+          value: widget.session.preview.showInapplicableSpecialAbilities,
+          onChanged: widget.session.isSaving
+              ? null
+              : widget.onShowInapplicableChanged,
         ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
               for (final category in [
@@ -121,59 +120,59 @@ class _AdvancementSkillTreeViewState extends State<AdvancementSkillTreeView> {
             ],
           ),
         ),
-        Expanded(
-          child: ListView.builder(
-            key: const ValueKey('advancement-skill-tree'),
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-            itemCount: branches.length + 1,
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Fähigkeitenbaum',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Von links nach rechts entwickeln. Knoten öffnen für '
-                        'Voraussetzungen und Erwerb. Breite Zweige seitlich verschieben.',
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 6,
-                        children: [
-                          for (final status in SkillTreeStatus.values)
-                            SkillTreeStatusLabel(status: status),
-                        ],
-                      ),
-                      if (branches.isEmpty) ...[
-                        const SizedBox(height: 24),
-                        const Text(
-                          'Keine passenden Fähigkeiten. Suche oder Bereich ändern.',
-                        ),
-                      ],
-                    ],
-                  ),
-                );
-              }
-              final ids = branches[index - 1];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: SkillTreeBranch(
-                  graph: _graph,
-                  ids: ids,
-                  onSelect: _detailsOpen ? null : _openDetails,
-                ),
-              );
-            },
-          ),
-        ),
       ],
+    );
+    return ListView.builder(
+      key: const ValueKey('advancement-skill-tree'),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      itemCount: branches.length + 1,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                kopf,
+                const SizedBox(height: 12),
+                Text(
+                  'Fähigkeitenbaum',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Von links nach rechts entwickeln. Knoten öffnen für '
+                  'Voraussetzungen und Erwerb. Breite Zweige seitlich verschieben.',
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 6,
+                  children: [
+                    for (final status in SkillTreeStatus.values)
+                      SkillTreeStatusLabel(status: status),
+                  ],
+                ),
+                if (branches.isEmpty) ...[
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Keine passenden Fähigkeiten. Suche oder Bereich ändern.',
+                  ),
+                ],
+              ],
+            ),
+          );
+        }
+        final ids = branches[index - 1];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: SkillTreeBranch(
+            graph: _graph,
+            ids: ids,
+            onSelect: _detailsOpen ? null : _openDetails,
+          ),
+        );
+      },
     );
   }
 

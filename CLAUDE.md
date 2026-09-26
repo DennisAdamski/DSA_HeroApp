@@ -54,7 +54,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - `CodexPageScaffold` legt eine transparente `Material`-Fläche über den
   Seitenhintergrund, damit `ListTile`-/`ExpansionTile`-Hintergründe und
   Ink-Effekte sichtbar bleiben. Der Regressionstest liegt unter
-  `test/ui/widgets/codex_page_scaffold_test.dart`.
+  `test/ui/widgets/codex_page_scaffold_test.dart`. Dasselbe gilt für
+  `KartoPapier` und `KartoFlaeche`: beide tragen diese Schicht selbst
+  (`test/ui2/widgets/karto_tintenschicht_test.dart`). Flutter prüft in
+  `ListTile.build` jede `ColoredBox`, `DecoratedBox` und `ShapeDecoration` mit
+  Farbe zwischen Kachel und nächstem `Material` — jede neue farbige Fläche,
+  die Bestandskacheln aufnimmt, braucht deshalb ebenfalls eine eigene
+  `Material`-Schicht (oder `ListTileMaterial`).
 - Steigerungen laufen getrennt von manuellen Korrekturen als Sitzung:
   `lib/domain/hero_advancement_entry.dart` trägt persistierbare Einträge,
   `lib/rules/derived/advancement*.dart` Optionen und Replay,

@@ -34,6 +34,11 @@ enum KartoFlaechenstufe {
 
 /// Gefuellte Flaeche mit gepaarter Kante.
 ///
+/// Traegt ihre eigene durchsichtige `Material`-Schicht: Kacheln darin
+/// zeichnen Tinte und Hintergrund auf dem naechsten `Material`, und das laege
+/// sonst unter der Fuellung. Aufrufer muessen deshalb keine eigene Schicht mehr
+/// einziehen.
+///
 /// Ersetzt die frueher an jeder Stelle einzeln aufgebaute [BoxDecoration]. Der
 /// Grund ist derselbe, aus dem [Strich] existiert: die Paarung aus Linienstaerke
 /// und Farbtoken laesst sich nur durchsetzen, wenn das Primitiv keine freien
@@ -94,9 +99,10 @@ class KartoFlaeche extends StatelessWidget {
   Widget build(BuildContext context) {
     final token = KartoTheme.of(context);
     final seite = _kante(token);
-    final inhalt = innen == null
+    final gepolstert = innen == null
         ? child
         : Padding(padding: innen!, child: child);
+    final inhalt = Material(type: MaterialType.transparency, child: gepolstert);
 
     return DecoratedBox(
       decoration: BoxDecoration(

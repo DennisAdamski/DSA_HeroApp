@@ -124,7 +124,12 @@ void main() {
               ((brightness == Brightness.light && width == 1440) ||
                   (brightness == Brightness.dark && width == 1024));
           for (final tab in tabs) {
-            final reiter = find.widgetWithText(Tab, tab);
+            // Nur die oberste Reiterreihe: innere Reiter tragen teils
+            // dieselben Namen (Talente › Talente).
+            final reiter = find.descendant(
+              of: find.byType(TabBar).first,
+              matching: find.widgetWithText(Tab, tab),
+            );
             expect(reiter, findsOneWidget, reason: tab);
             await tester.ensureVisible(reiter);
             await tester.tap(reiter);
@@ -135,6 +140,34 @@ void main() {
                 tester,
                 screenshotKey,
                 'verwalten-${_dateiname(tab)}-${width.toInt()}-'
+                '${brightness.name}',
+              );
+            }
+            // Jeden inneren Reiter oeffnen: Kacheln darin stehen oft direkt
+            // auf dem Papier, und genau dort fehlte die Tintenschicht.
+            await _innereReiter(tester, tab);
+          }
+
+          // Planung: alle vier Kategorien, auch der Faehigkeitenbaum mit
+          // dem Schalter fuer unpassende Sonderfertigkeiten.
+          await selectAcceptanceMode(tester, 'Entwicklung planen');
+          for (final kategorie in <String>[
+            'Talente',
+            'Zauber',
+            'Sonderfertigkeiten',
+            'Eigenschaften',
+          ]) {
+            final chip = find.widgetWithText(ChoiceChip, kategorie);
+            expect(chip, findsOneWidget, reason: kategorie);
+            await tester.ensureVisible(chip);
+            await tester.tap(chip);
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull, reason: kategorie);
+            if (capture && kategorie == 'Sonderfertigkeiten') {
+              await _capture(
+                tester,
+                screenshotKey,
+                'planen-sonderfertigkeiten-${width.toInt()}-'
                 '${brightness.name}',
               );
             }
@@ -261,8 +294,38 @@ void main() {
             if (capture) {
               await _capture(tester, screenshotKey, 'einstellungen-$suffix');
             }
-            await tester.pageBack();
-            await tester.pumpAndSettle();
+            // Jeden Bereich oeffnen; der Debugschalter schreibt eine
+            // Einstellung und bleibt deshalb aussen vor.
+            for (final bereich in <String>[
+              'appearance',
+              'accountSync',
+              'storage',
+              'catalog',
+              'houseRules',
+              'imageGeneration',
+              'legal',
+            ]) {
+              final kachel = find.byKey(
+                ValueKey<String>('settings-menu-$bereich'),
+              );
+              await tester.ensureVisible(kachel);
+              await tester.tap(kachel);
+              // Feste Schritte statt pumpAndSettle: einige Bereiche zeigen
+              // eine laufende Ladeanzeige und kommen nie zur Ruhe; der
+              // Seitenuebergang ist nach zwei Sekunden sicher durch.
+              await _warte(tester);
+              expect(tester.takeException(), isNull, reason: bereich);
+              // Schmal legt jeder Bereich eine eigene Seite auf und verdeckt
+              // die Liste; die Seite wird ueber den Navigator geschlossen.
+              if (kachel.hitTestable().evaluate().isEmpty) {
+                tester
+                    .state<NavigatorState>(find.byType(Navigator).first)
+                    .pop();
+                await _warte(tester);
+              }
+            }
+            tester.state<NavigatorState>(find.byType(Navigator).first).pop();
+            await _warte(tester);
 
             await menue('Helden verwalten');
             expect(find.byType(HeroesHomeScreen), findsOneWidget);
@@ -317,6 +380,34 @@ void main() {
         'anmeldung-1024-${brightness.name}',
       );
     }, tags: ['r3-acceptance']);
+  }
+}
+
+/// Laesst zwei Sekunden Zeit vergehen, ohne auf Ruhe zu warten.
+Future<void> _warte(WidgetTester tester) async {
+  for (var i = 0; i < 20; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
+/// Oeffnet jeden inneren Reiter des gerade sichtbaren Verwaltungstabs.
+Future<void> _innereReiter(WidgetTester tester, String tab) async {
+  final seite = find.byType(TabBarView).first;
+  final namen = tester
+      .widgetList<Tab>(find.descendant(of: seite, matching: find.byType(Tab)))
+      .map((reiter) => reiter.text)
+      .whereType<String>()
+      .toList();
+  for (final name in namen) {
+    final reiter = find.descendant(
+      of: seite,
+      matching: find.widgetWithText(Tab, name),
+    );
+    if (reiter.evaluate().isEmpty) continue;
+    await tester.ensureVisible(reiter.first);
+    await tester.tap(reiter.first);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull, reason: '$tab › $name');
   }
 }
 
