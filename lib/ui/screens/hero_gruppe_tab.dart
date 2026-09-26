@@ -11,6 +11,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_erstellen_dia
 import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_mitglieder_liste.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/manueller_held_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 
 /// Workspace-Tab für Gruppenverwaltung.
 ///
@@ -134,17 +136,22 @@ class _LeereGruppenAnsicht extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Scrollbar, damit grosse Schrift die Knoepfe nicht unter den Rand
+    // schiebt; passt alles, aendert sich nichts.
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.group_outlined,
-              size: 64,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            if (kartoVariante(context) != null)
+              const KartoKompassrose(groesse: 88)
+            else
+              Icon(
+                Icons.group_outlined,
+                size: 64,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             const SizedBox(height: 16),
             Text(
               'Noch keiner Gruppe beigetreten',
@@ -382,7 +389,7 @@ class _GruppenSyncHinweisCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(kartoRadiusOder(context, 12)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

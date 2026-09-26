@@ -57,6 +57,21 @@ ThemeData buildKartoFeinschliff(ThemeData basis) {
       horizontalMargin: Abstand.weit,
       columnSpacing: Abstand.bahn,
     ),
+    // Verschachtelte Reiter (Kampf, Magie, Chroniken ...) als ruhige zweite
+    // Ebene: eine senke-Pille statt des Meer-Unterstrichs, den der
+    // Verwaltungskopf fuer die oberste Ebene ausdruecklich setzt.
+    tabBarTheme: basis.tabBarTheme.copyWith(
+      indicator: BoxDecoration(
+        color: t.senke,
+        borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+        border: Border.all(color: t.hoehenlinie, width: Strich.hoehenlinie),
+      ),
+      indicatorSize: TabBarIndicatorSize.tab,
+      labelStyle: s.etikett.copyWith(color: t.schrift),
+      unselectedLabelStyle: s.etikett,
+      labelPadding: const EdgeInsets.symmetric(horizontal: Abstand.weit),
+      splashBorderRadius: BorderRadius.circular(kKartoRadiusKlein),
+    ),
     expansionTileTheme: ExpansionTileThemeData(
       // Aufgeklappt kein Rahmen: die Gruppe gehoert zu ihrer Flaeche.
       shape: const Border(),

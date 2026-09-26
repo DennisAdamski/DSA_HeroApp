@@ -26,7 +26,9 @@ class _AvatarDisplay extends ConsumerWidget {
     return GestureDetector(
       onTap: () => _openFullscreen(context),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(
+          kartoVariante(context) == null ? 12 : kKartoRadius,
+        ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxHeight: 350),
           child: AvatarGalleryImage(
@@ -45,6 +47,56 @@ class _AvatarDisplay extends ConsumerWidget {
       context: context,
       builder: (context) =>
           _AvatarFullscreenDialog(heroId: heroId, fileName: fileName),
+    );
+  }
+}
+
+/// Portraet ohne Bild unter Kartograph: Monogramm im Kompassring statt eines
+/// gestrichelten Kastens, darunter die Bildaktionen.
+///
+/// Dieselbe Fassung wie die Heldenmarke der Navigation und die Karten der
+/// Heldenwahl; ein Held sieht ueberall gleich gebaut aus.
+class _KartoPortraetPlatzhalter extends StatelessWidget {
+  const _KartoPortraetPlatzhalter({required this.name, required this.aktionen});
+
+  final String name;
+  final Widget aktionen;
+
+  String get _monogramm {
+    final getrimmt = name.trim();
+    return getrimmt.isEmpty ? '?' : getrimmt.characters.first.toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final token = KartoTheme.of(context);
+    final texte = Theme.of(context).textTheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        KartoKompassring(
+          groesse: 140,
+          child: ColoredBox(
+            color: token.senke,
+            child: Center(
+              child: Text(
+                _monogramm,
+                style: texte.titelGross.copyWith(
+                  color: token.schriftLeise,
+                  height: 1,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Kein Porträt',
+          style: texte.etikett.copyWith(color: token.schriftStumm),
+        ),
+        const SizedBox(height: 12),
+        aktionen,
+      ],
     );
   }
 }

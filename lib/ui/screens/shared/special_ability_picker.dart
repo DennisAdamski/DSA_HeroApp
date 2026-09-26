@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_chain_car
 import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_details_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_variant_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 
 /// Oeffnet einen durchsuchbaren Katalog-Browser fuer allgemeine, karmale
 /// oder magische Sonderfertigkeiten (analog zum Chip-Raster im Kampf-Tab).
@@ -453,8 +454,6 @@ class _SpecialAbilityChip extends StatelessWidget {
   /// Wird bei mehrfach waehlbaren SF fuer einen weiteren Erwerb aufgerufen.
   final VoidCallback? onAddVariant;
 
-  static const _epicColor = Color(0xFFB8860B); // goldenrod
-
   bool get _istGesperrt => !isOwned && offeneVoraussetzungen > 0;
 
   @override
@@ -462,14 +461,14 @@ class _SpecialAbilityChip extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final borderColor = isEpic
-        ? _epicColor
+        ? epischerAkzent(context)
         : (isOwned
               ? colorScheme.primary
               : (_istGesperrt ? colorScheme.error : theme.dividerColor));
     final bgColor = isOwned
         ? (isEpic
               ? Color.alphaBlend(
-                  const Color(0x22B8860B),
+                  epischerAkzent(context).withValues(alpha: 0x22 / 0xFF),
                   colorScheme.primaryContainer,
                 )
               : colorScheme.primaryContainer)
@@ -499,10 +498,10 @@ class _SpecialAbilityChip extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (isEpic) ...[
-                        const Icon(
+                        Icon(
                           Icons.auto_awesome,
                           size: 13,
-                          color: _epicColor,
+                          color: epischerAkzent(context),
                         ),
                         const SizedBox(width: 4),
                       ],

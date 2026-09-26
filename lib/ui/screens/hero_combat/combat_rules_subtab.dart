@@ -555,7 +555,7 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     List<RequirementCheckResult> voraussetzungen =
         const <RequirementCheckResult>[],
   }) {
-    const epicColor = Color(0xFFB8860B);
+    final epicColor = epischerAkzent(context);
     final theme = Theme.of(context);
     final offen = isActive
         ? const <RequirementCheckResult>[]
@@ -563,14 +563,16 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
     return Card(
       color: isActive
           ? Color.alphaBlend(
-              const Color(0x22B8860B),
+              epicColor.withValues(alpha: 0x22 / 0xFF),
               theme.colorScheme.primaryContainer,
             )
           : null,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(kartoRadiusOder(context, 12)),
         side: BorderSide(
-          color: isActive ? epicColor : const Color(0x66B8860B),
+          color: isActive
+              ? epicColor
+              : epicColor.withValues(alpha: 0x66 / 0xFF),
           width: isActive ? 2.0 : 1.5,
         ),
       ),

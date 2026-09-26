@@ -12,10 +12,12 @@ import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 
 part 'hero_reisebericht/reisebericht_category_view.dart';
 part 'hero_reisebericht/reisebericht_entry_tile.dart';
 part 'hero_reisebericht/reisebericht_dialogs.dart';
+part 'hero_reisebericht/reisebericht_farben.dart';
 
 /// Reisebericht-Tab: Tracker fuer Abenteuererfahrungen mit Belohnungen.
 class HeroReiseberichtTab extends ConsumerStatefulWidget {

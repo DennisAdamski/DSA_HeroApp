@@ -190,6 +190,8 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
                     columnSpecs: _columnSpecs,
                     columnResize: resizeBinding,
                     headerCells: _buildHeaderCells(),
+                    // AT bis eBE; rechtsbuendig nur unter Kartograph.
+                    numerischeSpalten: const <int>{5, 6, 7, 8, 9, 10},
                     preHeaderRows: [
                       _buildFilterRow(sortedTalents: sortedTalents),
                     ],
