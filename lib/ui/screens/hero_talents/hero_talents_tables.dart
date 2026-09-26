@@ -981,7 +981,7 @@ class _MobileCardShell extends StatelessWidget {
       color: background,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(kartoRadiusOder(context, 12)),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
           child: Column(

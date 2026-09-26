@@ -582,8 +582,6 @@ class _CombatRuleChip extends StatelessWidget {
   /// Anzahl der nicht erfuellten Voraussetzungen.
   final int offeneVoraussetzungen;
 
-  static const _epicColor = Color(0xFFB8860B); // goldenrod
-
   bool get _istGesperrt => !isActive && offeneVoraussetzungen > 0;
 
   @override
@@ -591,12 +589,12 @@ class _CombatRuleChip extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final borderColor = isEpic
-        ? _epicColor
+        ? epischerAkzent(context)
         : (isActive ? colorScheme.primary : theme.dividerColor);
     final bgColor = isActive
         ? (isEpic
               ? Color.alphaBlend(
-                  const Color(0x22B8860B),
+                  epischerAkzent(context).withValues(alpha: 0x22 / 0xFF),
                   colorScheme.primaryContainer,
                 )
               : colorScheme.primaryContainer)
@@ -627,10 +625,10 @@ class _CombatRuleChip extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (isEpic) ...[
-                        const Icon(
+                        Icon(
                           Icons.auto_awesome,
                           size: 13,
-                          color: _epicColor,
+                          color: epischerAkzent(context),
                         ),
                         const SizedBox(width: 4),
                       ],

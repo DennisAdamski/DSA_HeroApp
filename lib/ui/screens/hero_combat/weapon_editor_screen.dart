@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor/weapon
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor/weapon_preview_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor/weapon_ranged_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_navigation_guard.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 
 part 'weapon_editor/weapon_editor_state_helpers.dart';
 part 'weapon_editor/weapon_editor_content.dart';

@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 
 part 'hero_inventory/inventory_display.dart';
 part 'hero_inventory/inventory_editor_routing.dart';

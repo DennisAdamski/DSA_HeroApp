@@ -336,18 +336,14 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     children: [
       if (gesperrt)
         Padding(
-          padding: const EdgeInsets.all(Abstand.normal),
-          child: Wrap(
-            spacing: Abstand.normal,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              const Text('Eine Entwicklung ist noch in Planung.'),
-              TextButton(
-                onPressed: () =>
-                    _wechsleBereich(KartoArbeitsbereich.entwickeln),
-                child: const Text('Zur Planung'),
-              ),
-            ],
+          padding: const EdgeInsets.fromLTRB(
+            Abstand.bahn,
+            Abstand.block,
+            Abstand.bahn,
+            0,
+          ),
+          child: _Sperrhinweis(
+            onZurPlanung: () => _wechsleBereich(KartoArbeitsbereich.entwickeln),
           ),
         ),
       Expanded(
@@ -599,6 +595,50 @@ class _BereichsBlendeState extends State<_BereichsBlende>
       // Waehrend der Blende bleibt der Bereich fuer Screenreader erreichbar.
       alwaysIncludeSemantics: true,
       child: SlideTransition(position: _anstieg, child: widget.child),
+    );
+  }
+}
+
+/// Hinweis ueber der gesperrten Verwaltung: eine offene Planung haelt den
+/// Heldenbogen fest.
+///
+/// Eine zurueckgesetzte Flaeche mit Messingkante, damit er als Zustand der
+/// Seite gelesen wird und nicht als verirrte Textzeile.
+class _Sperrhinweis extends StatelessWidget {
+  const _Sperrhinweis({required this.onZurPlanung});
+
+  final VoidCallback onZurPlanung;
+
+  @override
+  Widget build(BuildContext context) {
+    final token = KartoTheme.of(context);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(kKartoRadius),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: token.senke,
+          border: Border(left: BorderSide(color: token.messing, width: 3)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Abstand.block,
+            vertical: Abstand.normal,
+          ),
+          child: Wrap(
+            spacing: Abstand.normal,
+            runSpacing: Abstand.eng,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Icon(Icons.eco_outlined, size: 18, color: token.messing),
+              const Text('Eine Entwicklung ist noch in Planung.'),
+              TextButton(
+                onPressed: onZurPlanung,
+                child: const Text('Zur Planung'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

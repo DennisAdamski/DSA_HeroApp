@@ -4,6 +4,38 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
   Widget _buildBaseInfoSection(HeroSheet hero) {
     final aktivesBild = hero.appearance.aktivesBild;
 
+    if (aktivesBild == null && kartoVariante(context) != null) {
+      return _SectionCard(
+        title: 'Basisinformationen',
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final portraet = _KartoPortraetPlatzhalter(
+              name: hero.name,
+              aktionen: _NoAvatarActions(heroId: widget.heroId, hero: hero),
+            );
+            if (constraints.maxWidth < 720) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(child: portraet),
+                  const SizedBox(height: _gridSpacing),
+                  _buildStandardFieldLayout(hero),
+                ],
+              );
+            }
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _buildStandardFieldLayout(hero)),
+                const SizedBox(width: _gridSpacing * 2),
+                SizedBox(width: 220, child: portraet),
+              ],
+            );
+          },
+        ),
+      );
+    }
+
     if (aktivesBild == null) {
       return _SectionCard(
         title: 'Basisinformationen',

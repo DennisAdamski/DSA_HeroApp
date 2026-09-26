@@ -265,4 +265,30 @@ void main() {
     expect(klassisch.extension<KartoTheme>(), isNull);
     expect(klassisch.extension<CodexTheme>(), isNotNull);
   });
+
+  testWidgets('epischer Akzent und Radien folgen der Oberflaeche', (
+    tester,
+  ) async {
+    Color? akzent;
+    double? radius;
+    double? radiusKlein;
+    Widget messe() => Builder(
+      builder: (context) {
+        akzent = epischerAkzent(context);
+        radius = kartoRadiusOder(context, 12);
+        radiusKlein = kartoRadiusOder(context, 12, klein: true);
+        return const SizedBox();
+      },
+    );
+
+    await zeige(tester, klassisch, messe());
+    expect(akzent, const Color(0xFFB8860B));
+    expect(radius, 12);
+    expect(radiusKlein, 12);
+
+    await zeige(tester, kartograph, messe());
+    expect(akzent, kartoHell.messing);
+    expect(radius, kKartoRadius);
+    expect(radiusKlein, kKartoRadiusKlein);
+  });
 }

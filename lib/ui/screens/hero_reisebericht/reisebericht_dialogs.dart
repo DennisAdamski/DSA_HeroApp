@@ -41,10 +41,10 @@ class _RevokeConfirmDialog extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.remove_circle_outline,
                       size: 16,
-                      color: Colors.red,
+                      color: _ReiseberichtFarben.von(context).fehler,
                     ),
                     const SizedBox(width: 8),
                     Expanded(child: Text(part)),
@@ -158,7 +158,7 @@ class _OpenItemAddDialogState extends State<_OpenItemAddDialog> {
           Text(
             'AP: +$_computedAp',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: Colors.amber.shade800,
+              color: _ReiseberichtFarben.von(context).belohnungText,
               fontWeight: FontWeight.w600,
             ),
           ),

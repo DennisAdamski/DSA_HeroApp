@@ -19,6 +19,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_con
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 
 part 'hero_notes/hero_notes_sections.dart';
 part 'hero_notes/hero_adventure_controller.dart';
