@@ -12,7 +12,7 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^3.4.3
-  file_picker: ^12.2.0
+  file_picker: ^13.1.0
   path: ^1.9.1
   path_provider: ^2.1.5
   share_plus: ^13.3.0
@@ -25,7 +25,7 @@ dependencies:
   pointycastle: ^4.0.0
   flutter_secure_storage: ^11.2.0
   unorm_dart: ^0.3.0
-  sqlite3: ^3.5.2
+  sqlite3: ^3.6.0
   web: ^1.1.1
   hive_ce: ^2.19.3
   hive_ce_flutter: ^2.3.4

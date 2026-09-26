@@ -148,6 +148,15 @@ der WAL-Workaround in `_disableWalMode` bleibt nötig. Zwei Punkte sind neu:
 Der offene Punkt „manueller Browser-Durchlauf" unten bleibt damit bestehen und
 ist nach diesem Versionswechsel eher wichtiger geworden.
 
+### Nachtrag 2026-09-26: sqlite3 3.6.0
+
+`package:sqlite3` steht jetzt auf 3.6.0. Das Release behebt
+`IndexedDbFileSystem.flush()`, das eine laufende Schreibtransaktion nicht
+abwartete — genau der Persistenzpfad des Web-Nachschlags. Die `sqlite3.wasm`
+aus dem Tag `sqlite3-3.6.0` ist byte-identisch mit der aus `sqlite3-3.5.2`
+(SHA-256 `13d3f11d…6688a4`); `web/sqlite3.wasm` musste deshalb nicht getauscht
+werden, entspricht aber nachweislich dem neuen Tag.
+
 Noch offen — **nicht** weil kein Browser verfügbar wäre (Edge ist installiert
 und läuft headless einwandfrei, `flutter devices` listet es als Web-Device),
 sondern weil der dafür nötige interaktive Browser-Test in der bisherigen
