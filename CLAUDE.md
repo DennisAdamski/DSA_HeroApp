@@ -499,10 +499,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   richten sich am erkannten Gesicht aus: `AvatarGalleryImage(rahmung: ...)`,
   Geometrie in `lib/rules/derived/avatar_rahmung_rules.dart`. Erkannt wird mit
   BlazeFace **in reinem Dart** (`lib/data/avatar_gesicht/`, Modell-Asset aus
-  `tool/avatar_gesicht/`), ohne native Bibliothek und ohne CDN. Der Befund
-  liegt nur im lokalen Cache `avatar_gesicht_v1` (`AvatarGesichtService`) und
-  **nie** im Helden-JSON — ein Feld am Galerieeintrag ginge in
-  `heroContentHash` ein. Der Golden-Test
+  `tool/avatar_gesicht/`), ohne native Bibliothek und ohne CDN. Neue Bilder
+  bekommen den Befund **beim Anlegen** (`uploadHeroImage`, `saveHeroAvatar`)
+  als `AvatarGalleryEntry.gesichtsbefund` — im selben `saveHero`, der ohnehin
+  läuft, im JSON (`gesicht`) nur bei belegtem Wert. **Nie nachträglich** in
+  einen Helden schreiben: das Feld geht in `heroContentHash` ein, ein
+  Nachtragen für Bestandsbilder löste Sync-Konflikte aus. Bestandsbilder
+  nutzen den lokalen Cache `avatar_gesicht_v1` (`AvatarGesichtService`);
+  `avatarGesichtProvider` nimmt zuerst den Eintrag, dann den Cache. Der Golden-Test
   `test/data/avatar_gesicht/blazeface_golden_test.dart` pinnt den Rechenkern
   gegen Googles LiteRT; seine Fixtures werden nicht angepasst, wenn er bricht.
   Nach Modellwechsel steigt `kAvatarGesichtDetektorVersion`. In Widget-Tests

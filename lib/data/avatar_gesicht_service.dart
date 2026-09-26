@@ -9,11 +9,13 @@ import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 /// Liefert den Gesichtsbefund eines Avatarbildes: aus dem Cache oder frisch
 /// erkannt.
 ///
-/// Der Befund landet bewusst **nie** im Helden-JSON. Ein Feld am
-/// Galerieeintrag ginge in `heroContentHash` ein, und das Nachtragen fuer
-/// Bestandsbilder wuerde Helden schreiben — genau das, was ein Avatar-Abgleich
-/// nie tun darf (neues `lastModified`, Konfliktwelle beim Sync). Jedes Geraet
-/// erkennt deshalb einmal selbst und merkt sich das Ergebnis lokal.
+/// Neue Bilder tragen ihren Befund bereits am Galerieeintrag
+/// ([erkenneNeu] beim Anlegen); dieser Service ist fuer alle anderen da.
+/// Nachgetragen wird der Befund bewusst **nie** in den Helden: Das Feld geht
+/// in `heroContentHash` ein, und ein Nachtragen fuer Bestandsbilder wuerde
+/// Helden schreiben — genau das, was ein Avatar-Abgleich nie tun darf (neues
+/// `lastModified`, Konfliktwelle beim Sync). Fuer Bestandsbilder erkennt jedes
+/// Geraet deshalb einmal selbst und merkt sich das Ergebnis lokal.
 ///
 /// Wirft nie: Jeder Fehler ergibt `null`, und die Darstellung faellt auf den
 /// Standardausschnitt zurueck. Ein Erkennungsproblem darf nie wie ein
@@ -69,6 +71,28 @@ class AvatarGesichtService {
     );
     _laufend[schluessel] = neu;
     return neu.whenComplete(() => _laufend.remove(schluessel));
+  }
+
+  /// Erkennt ein gerade angelegtes Bild, das noch keinen Dateinamen hat.
+  ///
+  /// Fuer Hochladen und Generieren: Der Befund wandert dort an den neuen
+  /// Galerieeintrag und damit in denselben `saveHero`, der ohnehin laeuft.
+  /// Das kurze [zeitlimit] haelt das Anlegen fluessig; wer `null` bekommt,
+  /// legt den Eintrag ohne Befund an, und die Anzeige erkennt spaeter lokal.
+  /// Wirft nie.
+  Future<AvatarGesichtsbefund?> erkenneNeu(
+    Uint8List bytes, {
+    Duration zeitlimit = const Duration(seconds: 5),
+  }) async {
+    if (bytes.isEmpty) return null;
+    try {
+      return await _nacheinander<AvatarGesichtsbefund?>(
+        () => erkennung.erkenne(bytes),
+      ).timeout(zeitlimit, onTimeout: () => null);
+    } on Object catch (error) {
+      debugPrint('Gesichtserkennung beim Anlegen fehlgeschlagen: $error');
+      return null;
+    }
   }
 
   Future<AvatarGesichtsbefund?> _ermittle({
