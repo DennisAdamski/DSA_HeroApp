@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -24,7 +25,10 @@ import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/data/avatar_gesicht/avatar_gesichtserkennung.dart'
+    show kAvatarGesichtDetektorVersion;
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/data/cloud_avatar_storage.dart';
@@ -32,7 +36,8 @@ import 'package:dsa_heldenverwaltung/state/avatar_providers.dart'
     show
         avatarFileStorageProvider,
         avatarGesichtServiceProvider,
-        avatarThumbnailEncoderProvider;
+        avatarThumbnailEncoderProvider,
+        gespeicherterGesichtsbefund;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
@@ -463,6 +468,7 @@ class HeroActions {
     final storage = _ref.read(avatarFileStorageProvider);
     const uuid = Uuid();
     final entryId = uuid.v4();
+    final gesichtsbefund = _erkenneGesichtBeimAnlegen(pngBytes);
 
     final fileName = await storage.saveGalleryImage(
       heroStoragePath: heroStoragePath,
@@ -472,9 +478,14 @@ class HeroActions {
     );
     _requireStoredFileName(fileName);
 
+    final befund = await gesichtsbefund;
     final entry = AvatarGalleryEntry(
       id: entryId,
       fileName: fileName,
+      gesichtsbefund: befund,
+      gesichtsbefundVersion: befund == null
+          ? null
+          : kAvatarGesichtDetektorVersion,
       quelle: 'ki',
       stilId: stilId,
       erstelltAm: DateTime.now().toUtc().toIso8601String(),
@@ -510,6 +521,7 @@ class HeroActions {
     final storage = _ref.read(avatarFileStorageProvider);
     const uuid = Uuid();
     final entryId = uuid.v4();
+    final gesichtsbefund = _erkenneGesichtBeimAnlegen(imageBytes);
 
     final fileName = await storage.saveGalleryImage(
       heroStoragePath: heroStoragePath,
@@ -519,9 +531,14 @@ class HeroActions {
     );
     _requireStoredFileName(fileName);
 
+    final befund = await gesichtsbefund;
     final entry = AvatarGalleryEntry(
       id: entryId,
       fileName: fileName,
+      gesichtsbefund: befund,
+      gesichtsbefundVersion: befund == null
+          ? null
+          : kAvatarGesichtDetektorVersion,
       quelle: 'upload',
       erstelltAm: DateTime.now().toUtc().toIso8601String(),
     );
@@ -534,6 +551,18 @@ class HeroActions {
       ),
     );
     await saveHero(updated);
+  }
+
+  /// Startet die Gesichtserkennung fuer ein gerade angelegtes Bild.
+  ///
+  /// Laeuft parallel zum Speichern der Bilddatei. Der Befund wandert an den
+  /// neuen Galerieeintrag und damit in den `saveHero`, der ohnehin folgt —
+  /// ein eigener Schreibvorgang entsteht nicht. Liefert der Service `null`
+  /// (Fehler, Zeitlimit), entsteht der Eintrag ohne Befund.
+  Future<AvatarGesichtsbefund?> _erkenneGesichtBeimAnlegen(List<int> bytes) {
+    return _ref
+        .read(avatarGesichtServiceProvider)
+        .erkenneNeu(bytes is Uint8List ? bytes : Uint8List.fromList(bytes));
   }
 
   /// Stellt sicher, dass die Ablage einen gueltigen Dateinamen geliefert hat.
@@ -987,13 +1016,15 @@ class HeroActions {
       // Der Befund kommt direkt vom Service statt ueber
       // `ref.read(avatarGesichtProvider(...).future)`: jene Future wird bei
       // einem Fehler nie erfuellt (siehe CLAUDE.md). Der Service wirft nie.
-      final befund = await _ref
-          .read(avatarGesichtServiceProvider)
-          .befund(
-            heroStoragePath: heroStoragePath,
-            fileName: entry.fileName,
-            bytes: avatarBytes,
-          );
+      final befund =
+          gespeicherterGesichtsbefund(entry) ??
+          await _ref
+              .read(avatarGesichtServiceProvider)
+              .befund(
+                heroStoragePath: heroStoragePath,
+                fileName: entry.fileName,
+                bytes: avatarBytes,
+              );
       final ausschnitt = befund == null
           ? null
           : berechneAvatarAusschnitt(

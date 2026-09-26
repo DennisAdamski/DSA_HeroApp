@@ -153,18 +153,32 @@ Workspace-Header und das Gruppen-Thumbnail. Vollansichten wie die Uebersicht
   auf zwei gemeinfreien Gemaelden unter `test/fixtures/avatar_gesicht/`.
   Faellt der Golden-Test, rechnet der Kern falsch; die Fixtures werden dann
   nicht angepasst.
-- **Cache statt Helden-JSON**: `AvatarGesichtService`
-  (`lib/data/avatar_gesicht_service.dart`) legt den Befund (Bildgroesse,
-  normierter Gesichtsrahmen, Score) in der Hive-Box `avatar_gesicht_v1` im
-  Heldenspeicher ab, geschluesselt nach `AvatarGalleryEntry.fileName`. Ein Feld
-  am Galerieeintrag ginge in `heroContentHash` ein, und ein Nachtragen fuer
-  Bestandsbilder wuerde Helden schreiben — das darf ein Avatar-Abgleich nie.
-  Jedes Geraet erkennt deshalb einmal selbst. Der Eintrag traegt
-  `kAvatarGesichtDetektorVersion` und die Bytelaenge (Schutz fuer den
-  Legacy-Namen `{heroId}.png`); weicht eines ab, wird neu erkannt. Der Service
-  wirft nie: Fehler und Zeitueberschreitung (15 s) ergeben `null` und damit
-  den Rueckfall-Ausschnitt. Eine laenger laufende Erkennung schreibt ihr
-  Ergebnis trotzdem noch in den Cache.
+- **Befund am Eintrag, sonst lokaler Cache**: Neue Bilder bekommen den
+  Befund beim Anlegen. `uploadHeroImage` und `saveHeroAvatar` starten
+  `AvatarGesichtService.erkenneNeu` parallel zum Speichern der Bilddatei
+  (Zeitlimit 5 s) und haengen das Ergebnis als
+  `AvatarGalleryEntry.gesichtsbefund` samt Detektorversion an den neuen
+  Eintrag. Das geschieht im selben `saveHero`, der ohnehin laeuft, also ohne
+  zusaetzlichen Schreibvorgang oder Konflikt. Andere Geraete und das Web
+  zeigen das Bild damit sofort richtig. Im JSON steht der Schluessel `gesicht`
+  nur bei belegtem Wert, Bestandseintraege serialisieren bytegleich. Auch
+  „kein Gesicht“ wird gespeichert (nur Bildgroesse). Export und Import tragen
+  das Feld mit.
+  **Nachgetragen wird nie:** Ein Feld an einem Bestandseintrag aenderte
+  `heroContentHash` und loeste beim Konto-Sync Konflikte aus. Bestandsbilder
+  und Eintraege mit veralteter Detektorversion nutzen deshalb
+  `AvatarGesichtService` (`lib/data/avatar_gesicht_service.dart`) mit der
+  Hive-Box `avatar_gesicht_v1` im Heldenspeicher, geschluesselt nach
+  `AvatarGalleryEntry.fileName`. Jedes Geraet erkennt dort einmal selbst. Der
+  Cache-Eintrag traegt `kAvatarGesichtDetektorVersion` und die Bytelaenge
+  (Schutz fuer den Legacy-Namen `{heroId}.png`); weicht eines ab, wird neu
+  erkannt. `avatarGesichtProvider` nimmt zuerst den Eintrag
+  (`gespeicherterGesichtsbefund`, per `select` auf den Helden), dann den
+  Cache. Der Service wirft nie: Fehler und Zeitueberschreitung (15 s)
+  ergeben `null` und damit den Rueckfall-Ausschnitt. Eine laenger laufende
+  Erkennung schreibt ihr Ergebnis trotzdem noch in den Cache. Erkennungen
+  laufen nacheinander, damit ein frisch geoeffnetes Album nicht fuer jede
+  Kachel gleichzeitig rechnet.
 - **Rahmung** (`lib/rules/derived/avatar_rahmung_rules.dart`):
   `berechneAvatarAusschnitt` liefert einen Quellausschnitt mit exakt dem
   Seitenverhaeltnis der Zielflaeche. `portraet` fasst den Gesichtsrahmen auf

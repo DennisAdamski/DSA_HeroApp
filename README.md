@@ -203,7 +203,8 @@ Technischer Stack:
   stattdessen der Platzhalter
 - Beschnittene Avatarflaechen (Heldenmarke, Album, Workspace-Header) richten
   sich automatisch am Gesicht aus. Die Erkennung (BlazeFace, Apache 2.0)
-  rechnet in reinem Dart auf dem Geraet, auch im Web; ein manueller
+  rechnet in reinem Dart auf dem Geraet, auch im Web. Neue Bilder tragen
+  das Ergebnis am Galerieeintrag und synchronisieren es mit; ein manueller
   Header-Ausschnitt hat weiterhin Vorrang
 - Konto-Sync fuer Helden speichert Avatar-Dateien selbst noch nicht remote.
   Bildreferenzen bleiben erhalten; fehlende lokale Dateien werden in der UI

@@ -66,8 +66,9 @@ class AvatarGesichtsrahmen {
 ///
 /// Traegt immer die Originalgroesse des Bildes, auch wenn kein Gesicht
 /// gefunden wurde: Die Rahmung braucht sie fuer den Rueckfall-Ausschnitt.
-/// Der Befund liegt nur im lokalen Cache und nie im Helden-JSON (siehe
-/// `AvatarGesichtService`).
+/// Neue Bilder tragen ihn beim Anlegen am Galerieeintrag
+/// (`AvatarGalleryEntry.gesichtsbefund`), Bestandsbilder nur im lokalen Cache
+/// (`AvatarGesichtService`) — nachgetragen wird er nie in einen Helden.
 class AvatarGesichtsbefund {
   const AvatarGesichtsbefund({
     required this.bildBreite,

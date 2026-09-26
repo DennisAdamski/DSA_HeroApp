@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/data/avatar_thumbnail_encoder.dart';
 import 'package:dsa_heldenverwaltung/data/cloud_avatar_storage.dart';
 import 'package:dsa_heldenverwaltung/data/hive_avatar_gesicht_cache.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_avatar_storage.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_snapshot_diff.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
@@ -133,17 +134,40 @@ final avatarGesichtServiceProvider = Provider<AvatarGesichtService>((ref) {
   );
 });
 
+/// Am Galerieeintrag gespeicherter Befund, sofern er aktuell genug ist.
+///
+/// Befunde aelterer Detektorversionen gelten nicht: Nach einem Modellwechsel
+/// erkennt die Anzeige lokal neu, statt den Helden umzuschreiben.
+AvatarGesichtsbefund? gespeicherterGesichtsbefund(AvatarGalleryEntry entry) {
+  final befund = entry.gesichtsbefund;
+  final version = entry.gesichtsbefundVersion;
+  if (befund == null || version == null) return null;
+  return version >= kAvatarGesichtDetektorVersion ? befund : null;
+}
+
 /// Gesichtsbefund einer Avatar-Datei; `null` ohne Bild oder bei Fehlern.
 ///
-/// Wartet auf dieselben Bytes wie die Anzeige, der Befund kommt also nie vor
-/// dem Bild. Faellt nie in den Fehlerzustand: Ein Erkennungsproblem ergibt
-/// `null` und damit den Standardausschnitt.
+/// Zuerst gilt der Befund am Galerieeintrag (beim Anlegen erkannt, mit dem
+/// Helden synchronisiert) — dann braucht es weder Bytes noch Erkennung. Sonst
+/// wartet der Provider auf dieselben Bytes wie die Anzeige, der Befund kommt
+/// also nie vor dem Bild. Faellt nie in den Fehlerzustand: Ein
+/// Erkennungsproblem ergibt `null` und damit den Standardausschnitt.
 final avatarGesichtProvider =
     FutureProvider.family<
       AvatarGesichtsbefund?,
       ({String heroId, String fileName})
     >((ref, args) async {
       if (args.fileName.isEmpty) return null;
+      // `select`: andere Aenderungen am Helden bauen den Befund nicht neu.
+      final gespeichert = ref.watch(
+        heroByIdProvider(args.heroId).select((hero) {
+          final eintrag = hero?.appearance.avatarGallery
+              .where((entry) => entry.fileName == args.fileName)
+              .firstOrNull;
+          return eintrag == null ? null : gespeicherterGesichtsbefund(eintrag);
+        }),
+      );
+      if (gespeichert != null) return gespeichert;
       final bytes = await ref.watch(avatarBytesProvider(args).future);
       if (bytes == null || bytes.isEmpty) return null;
       final location = await ref.watch(heroStorageLocationProvider.future);
