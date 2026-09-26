@@ -7,7 +7,9 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/bridges/karto_compat_theme.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_panel.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
 void main() {
   const catalog = RulesCatalog(
@@ -116,5 +118,56 @@ void main() {
     await pumpPanel(tester, container);
     expect(find.text('Noch keine Steigerungen geplant.'), findsOneWidget);
     expect(find.textContaining('Erst beim Übernehmen'), findsOneWidget);
+  });
+
+  testWidgets('die neue Oberflaeche zeigt die AP-Bilanz nicht doppelt', (
+    tester,
+  ) async {
+    // Dort steht dieselbe Bilanz als Gleichung ueber dem Katalog; der
+    // Verlauf beginnt deshalb gleich mit der laufenden Runde.
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(
+      advancementSessionProvider('hero').notifier,
+    );
+    controller.start(hero: hero, catalog: catalog);
+    final sessionId = container
+        .read(advancementSessionProvider('hero'))!
+        .sessionId;
+    controller.add(entry('pending', sessionId));
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          theme: buildKartoCompatTheme(
+            buildKartoTheme(
+              brightness: Brightness.light,
+              centerAppBarTitle: false,
+            ),
+          ),
+          home: const Scaffold(
+            body: SizedBox(
+              width: 320,
+              child: AdvancementHistoryPanel(
+                heroId: 'hero',
+                zeigeApZeilen: false,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Reserviert'), findsNothing);
+    expect(find.text('Laufende Runde'), findsOneWidget);
+    // Unter Kartograph eine Zeile mit rechtsbuendigen Kosten statt Karte.
+    expect(find.text('100 AP'), findsOneWidget);
+    expect(find.text('12 → 13'), findsOneWidget);
+    expect(find.byType(Card), findsNothing);
+    expect(
+      find.byKey(const ValueKey('advancement-remove-pending')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 }

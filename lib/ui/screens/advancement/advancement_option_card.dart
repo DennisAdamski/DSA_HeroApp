@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_options.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/requirement_checklist.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 
 /// Kompakte Zielkarte mit Regelhinweisen und einer vorgemerkten Aktion.
 class AdvancementOptionCard extends StatelessWidget {
@@ -32,6 +37,7 @@ class AdvancementOptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final karto = kartoVariante(context);
     final isValue = option.isValueAdvancement;
     // Eine erworbene Sonderfertigkeit ohne offene Auswahl ist kein Fehlerfall,
     // sondern der Bestandsnachweis. Sie bekommt deshalb weder einen gesperrten
@@ -86,74 +92,94 @@ class AdvancementOptionCard extends StatelessWidget {
         if (planned)
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              'Geplant',
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: context.codexTheme.accent,
-              ),
-            ),
+            child: karto == null
+                ? Text(
+                    'Geplant',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: context.codexTheme.accent,
+                    ),
+                  )
+                : _GeplantMarke(karto: karto),
           ),
       ],
     );
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth < 430) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [title, const SizedBox(height: 8), action],
-                  );
-                }
-                return Row(
-                  children: [
-                    Expanded(child: title),
-                    action,
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-            Text(description, style: theme.textTheme.bodySmall),
-            if (acquired && option.ownedCount > 0)
-              Text(
-                '${option.ownedCount}× erworben',
-                style: theme.textTheme.bodySmall,
-              ),
-            if (option.ability?.kosten.isNotEmpty == true)
-              Text(option.ability!.kosten, style: theme.textTheme.bodySmall),
-            if (option.complexityHint?.isNotEmpty == true)
-              Text(option.complexityHint!, style: theme.textTheme.bodySmall),
-            if (option.unavailableReason != null && !acquiredClosed)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Text(
-                  option.unavailableReason!,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: context.codexTheme.inkMuted,
-                  ),
-                ),
-              ),
-            if (option.requirements.isNotEmpty)
-              ExpansionTile(
-                initiallyExpanded: expandRequirements,
-                tilePadding: EdgeInsets.zero,
-                title: const Text('Voraussetzungen'),
-                children: [
-                  RequirementChecklist(
-                    ergebnisse: option.requirements,
-                    titel: '',
-                    dicht: true,
-                  ),
-                ],
-              ),
-          ],
+    final beschreibung =
+        karto != null && isValue && option.isOwned && option.currentValue >= 0
+        ? Wrap(
+            spacing: Abstand.block,
+            runSpacing: Abstand.eng,
+            children: [
+              _Kennzahl(label: 'Wert', wert: '${option.currentValue}'),
+              _Kennzahl(label: 'Maximum', wert: '${option.maxValue}'),
+              _Kennzahl(label: 'SE', wert: '${option.seAvailable}'),
+            ],
+          )
+        : Text(description, style: theme.textTheme.bodySmall);
+    final inhalt = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth < 430) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [title, const SizedBox(height: 8), action],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: title),
+                action,
+              ],
+            );
+          },
         ),
-      ),
+        const SizedBox(height: 8),
+        beschreibung,
+        if (acquired && option.ownedCount > 0)
+          Text(
+            '${option.ownedCount}× erworben',
+            style: theme.textTheme.bodySmall,
+          ),
+        if (option.ability?.kosten.isNotEmpty == true)
+          Text(option.ability!.kosten, style: theme.textTheme.bodySmall),
+        if (option.complexityHint?.isNotEmpty == true)
+          Text(option.complexityHint!, style: theme.textTheme.bodySmall),
+        if (option.unavailableReason != null && !acquiredClosed)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              option.unavailableReason!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: context.codexTheme.inkMuted,
+              ),
+            ),
+          ),
+        if (option.requirements.isNotEmpty)
+          ExpansionTile(
+            initiallyExpanded: expandRequirements,
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Voraussetzungen'),
+            children: [
+              RequirementChecklist(
+                ergebnisse: option.requirements,
+                titel: '',
+                dicht: true,
+              ),
+            ],
+          ),
+      ],
+    );
+    // Unter Kartograph eine Flaeche wie jeder Abschnitt; die transparente
+    // Materialschicht haelt die Aufklappgruppe darin sichtbar.
+    if (karto != null) {
+      return KartoFlaeche(
+        innen: Abstand.blockInnen,
+        child: Material(type: MaterialType.transparency, child: inhalt),
+      );
+    }
+    return Card(
+      child: Padding(padding: const EdgeInsets.all(16), child: inhalt),
     );
   }
 
@@ -178,4 +204,54 @@ class AdvancementOptionCard extends StatelessWidget {
     AdvancementKind.karmalAbility => 'Karmale Sonderfertigkeit',
     AdvancementKind.combatAbility => 'Kampfsonderfertigkeit',
   };
+}
+
+/// Kennzahl einer Steigerung: leise Beschriftung, Zahl in Tabellenziffern.
+class _Kennzahl extends StatelessWidget {
+  const _Kennzahl({required this.label, required this.wert});
+
+  final String label;
+  final String wert;
+
+  @override
+  Widget build(BuildContext context) {
+    final texte = Theme.of(context).textTheme;
+    final karto = kartoVariante(context)!;
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: '$label ',
+            style: texte.etikett.copyWith(color: karto.schriftLeise),
+          ),
+          TextSpan(text: wert, style: texte.wert),
+        ],
+      ),
+    );
+  }
+}
+
+/// Marke fuer vorgemerkte Ziele; der Text bleibt wortgleich "Geplant".
+class _GeplantMarke extends StatelessWidget {
+  const _GeplantMarke({required this.karto});
+
+  final KartoTheme karto;
+
+  @override
+  Widget build(BuildContext context) {
+    final schema = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: schema.primaryContainer,
+        borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+        child: Text(
+          'Geplant',
+          style: Theme.of(context).textTheme.marke.copyWith(color: karto.meer),
+        ),
+      ),
+    );
+  }
 }

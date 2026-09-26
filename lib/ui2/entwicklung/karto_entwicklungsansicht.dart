@@ -41,7 +41,16 @@ class KartoEntwicklungsansicht extends ConsumerWidget {
       builder: (context, constraints) {
         final breite = kartoBreiteFuer(constraints.maxWidth);
         final hatKontext = breite.hatDetailspalte;
-        final katalog = bestand.planKatalog(heroId);
+        // Der Katalog bringt 16 Innenabstand mit; zusammen stehen seine Karten
+        // buendig mit AP-Bilanz und Seitenkopf.
+        final einzug = math.max(breite.seitenrand - Abstand.block, 0.0);
+        final katalog = Padding(
+          padding: EdgeInsets.only(
+            left: einzug,
+            right: hatKontext ? 0 : einzug,
+          ),
+          child: bestand.planKatalog(heroId),
+        );
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
