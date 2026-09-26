@@ -2,6 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_rahmen.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
 
 /// Login- und Registrierungsbildschirm fuer den Heldenmanager-Web-Build.
 ///
@@ -106,124 +111,163 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'DSA-Heldenverwaltung',
-                    style: theme.textTheme.headlineMedium,
-                    textAlign: TextAlign.center,
+    final formular = Form(
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'DSA-Heldenverwaltung',
+            style: theme.textTheme.headlineMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _isRegisterMode
+                ? 'Neues Konto anlegen'
+                : 'Anmelden, um deine Helden zu synchronisieren',
+            style: theme.textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          AutofillGroup(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'E-Mail',
+                    prefixIcon: Icon(Icons.alternate_email),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _isRegisterMode
-                        ? 'Neues Konto anlegen'
-                        : 'Anmelden, um deine Helden zu synchronisieren',
-                    style: theme.textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
-                  AutofillGroup(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        TextFormField(
-                          controller: _emailController,
-                          decoration: const InputDecoration(
-                            labelText: 'E-Mail',
-                            prefixIcon: Icon(Icons.alternate_email),
-                          ),
-                          keyboardType: TextInputType.emailAddress,
-                          autofillHints: const [
-                            AutofillHints.email,
-                            AutofillHints.username,
-                          ],
-                          autocorrect: false,
-                          enableSuggestions: false,
-                          textInputAction: TextInputAction.next,
-                          validator: (value) {
-                            final v = (value ?? '').trim();
-                            if (v.isEmpty) return 'Bitte E-Mail eingeben.';
-                            if (!v.contains('@') || !v.contains('.')) {
-                              return 'Bitte gültige E-Mail eingeben.';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _passwordController,
-                          decoration: const InputDecoration(
-                            labelText: 'Passwort',
-                            prefixIcon: Icon(Icons.lock_outline),
-                          ),
-                          obscureText: true,
-                          autofillHints: [
-                            _isRegisterMode
-                                ? AutofillHints.newPassword
-                                : AutofillHints.password,
-                          ],
-                          textInputAction: TextInputAction.done,
-                          onFieldSubmitted: (_) => _submit(),
-                          validator: (value) {
-                            final v = value ?? '';
-                            if (v.isEmpty) return 'Bitte Passwort eingeben.';
-                            if (_isRegisterMode && v.length < 6) {
-                              return 'Mindestens 6 Zeichen.';
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      _errorMessage!,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.error,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                  keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [
+                    AutofillHints.email,
+                    AutofillHints.username,
                   ],
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: _isBusy ? null : _submit,
-                    child: _isBusy
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(_isRegisterMode ? 'Konto anlegen' : 'Anmelden'),
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  textInputAction: TextInputAction.next,
+                  validator: (value) {
+                    final v = (value ?? '').trim();
+                    if (v.isEmpty) return 'Bitte E-Mail eingeben.';
+                    if (!v.contains('@') || !v.contains('.')) {
+                      return 'Bitte gültige E-Mail eingeben.';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _passwordController,
+                  decoration: const InputDecoration(
+                    labelText: 'Passwort',
+                    prefixIcon: Icon(Icons.lock_outline),
                   ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: _isBusy
-                        ? null
-                        : () {
-                            setState(() {
-                              _isRegisterMode = !_isRegisterMode;
-                              _errorMessage = null;
-                            });
-                          },
-                    child: Text(
-                      _isRegisterMode
-                          ? 'Stattdessen anmelden'
-                          : 'Neues Konto anlegen',
+                  obscureText: true,
+                  autofillHints: [
+                    _isRegisterMode
+                        ? AutofillHints.newPassword
+                        : AutofillHints.password,
+                  ],
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _submit(),
+                  validator: (value) {
+                    final v = value ?? '';
+                    if (v.isEmpty) return 'Bitte Passwort eingeben.';
+                    if (_isRegisterMode && v.length < 6) {
+                      return 'Mindestens 6 Zeichen.';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          if (_errorMessage != null) ...[
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          const SizedBox(height: 24),
+          FilledButton(
+            onPressed: _isBusy ? null : _submit,
+            child: _isBusy
+                ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(_isRegisterMode ? 'Konto anlegen' : 'Anmelden'),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: _isBusy
+                ? null
+                : () {
+                    setState(() {
+                      _isRegisterMode = !_isRegisterMode;
+                      _errorMessage = null;
+                    });
+                  },
+            child: Text(
+              _isRegisterMode ? 'Stattdessen anmelden' : 'Neues Konto anlegen',
+            ),
+          ),
+        ],
+      ),
+    );
+    final karto = kartoVariante(context);
+    if (karto == null) {
+      return Scaffold(
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Padding(padding: const EdgeInsets.all(24), child: formular),
+          ),
+        ),
+      );
+    }
+    // Unter Kartograph eine Kartusche auf dem Papier, mit Kompassrose ueber
+    // dem Titel. Scrollbar, damit grosse Schrift das Formular nicht
+    // abschneidet; ein Rueckweg nur, wenn es einen gibt.
+    return Scaffold(
+      appBar: Navigator.of(context).canPop() ? AppBar() : null,
+      body: KartoPapier(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 460),
+              child: DecoratedBox(
+                decoration: ShapeDecoration(
+                  color: karto.feld,
+                  shape: KartoRahmen(
+                    side: BorderSide(
+                      color: karto.hoehenlinie,
+                      width: Strich.hoehenlinie,
                     ),
+                    akzent: karto.messing,
                   ),
-                ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 32, 28, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Center(child: KartoKompassrose(groesse: 72)),
+                      const SizedBox(height: 16),
+                      formular,
+                    ],
+                  ),
+                ),
               ),
             ),
           ),

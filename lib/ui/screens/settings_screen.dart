@@ -25,6 +25,9 @@ import 'package:dsa_heldenverwaltung/ui/screens/catalog_management_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_unlock_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/house_rule_pack_management_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/sync_conflict_comparison_table.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
 
 part 'settings/settings_navigation.dart';
 part 'settings/settings_pages.dart';
@@ -64,17 +67,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
         ],
       ),
-      body: showSplitView
-          ? _SettingsSplitView(
-              beforeSurfaceChange: widget.beforeSurfaceChange,
-              selectedDestination: _selectedDestination,
-              onSelectDestination: _selectDestination,
-              onToggleDebugMode: _toggleDebugMode,
-            )
-          : _SettingsMenuOverview(
-              onSelectDestination: _openDestination,
-              onToggleDebugMode: _toggleDebugMode,
-            ),
+      body: _mitPapier(
+        context,
+        showSplitView
+            ? _SettingsSplitView(
+                beforeSurfaceChange: widget.beforeSurfaceChange,
+                selectedDestination: _selectedDestination,
+                onSelectDestination: _selectDestination,
+                onToggleDebugMode: _toggleDebugMode,
+              )
+            : _SettingsMenuOverview(
+                onSelectDestination: _openDestination,
+                onToggleDebugMode: _toggleDebugMode,
+              ),
+      ),
     );
   }
 
@@ -132,4 +138,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _toggleDebugMode() async {
     await ref.read(settingsActionsProvider).toggleDebugModus();
   }
+}
+
+// Unter Kartograph liegen die Einstellungen auf demselben Papier wie die
+// Arbeitsbereiche; klassisch bleibt der Grund, wie er war.
+Widget _mitPapier(BuildContext context, Widget kind) {
+  if (kartoVariante(context) == null) return kind;
+  return KartoPapier(child: kind);
 }
