@@ -678,7 +678,7 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   von `sqlite3` in `pubspec.yaml` muss `web/sqlite3.wasm` manuell gegen die
   passende `sqlite3.wasm` aus den GitHub-Releases von
   github.com/simolus3/sqlite3.dart ersetzt werden — Tag `sqlite3-<version>`,
-  aktuell `sqlite3-3.5.2`. Ein Versatz zwischen Package und `.wasm` faellt
+  aktuell `sqlite3-3.6.0`. Ein Versatz zwischen Package und `.wasm` faellt
   **nicht** beim Kompilieren auf, sondern erst zur Laufzeit im Browser.
 - Die nativen SQLite-Bibliotheken fuer Desktop und Mobile liefert seit
   `sqlite3` 3.x dessen eigener Build-Hook, der SQLite direkt mit der App
