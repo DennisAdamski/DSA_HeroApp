@@ -72,6 +72,17 @@ void main() {
     expect(find.text('Frei zu Beginn: 500 AP'), findsOneWidget);
     expect(find.text('Reserviert: 0 AP'), findsOneWidget);
     expect(find.text('Danach verfügbar: 500 AP'), findsOneWidget);
+    // Die Bilanz steht als Gleichung; die Rechenzeichen sind Beiwerk und
+    // fuer Bildschirmleser ausgeblendet.
+    for (final zeichen in <String>['−', '=']) {
+      expect(
+        find.ancestor(
+          of: find.text(zeichen),
+          matching: find.byType(ExcludeSemantics),
+        ),
+        findsWidgets,
+      );
+    }
     expect(find.byType(AdvancementHistoryPanel), findsNothing);
 
     await tester.tap(find.text('AP und Historie'));

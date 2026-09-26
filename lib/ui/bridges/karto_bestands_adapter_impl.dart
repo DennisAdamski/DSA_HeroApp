@@ -53,7 +53,10 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
   /// Baut die vorhandene Vorschau und Historie der aktiven Planung.
   @override
   Widget planHistorie(String heroId) {
-    return _KartoCompatHost(child: AdvancementHistoryPanel(heroId: heroId));
+    // Die AP-Bilanz steht in der neuen Oberflaeche schon ueber dem Katalog.
+    return _KartoCompatHost(
+      child: AdvancementHistoryPanel(heroId: heroId, zeigeApZeilen: false),
+    );
   }
 
   /// Baut die vorhandenen Eigenschafts-Schnellproben.

@@ -381,26 +381,29 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
         ],
       );
     }
-    return Column(
-      // Siehe _verwaltung: ohne stretch zentriert Column den Seitenkopf.
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(
-            breite.seitenrand,
-            breite.seitenrand,
-            breite.seitenrand,
-            0,
-          ),
-          child: _planungskopf(session, breite),
-        ),
-        Expanded(
-          child: KartoEntwicklungsansicht(
-            heroId: widget.heroId,
-            bestand: widget.bestand,
-          ),
-        ),
-      ],
+    // Der Rand folgt der Breite der Flaeche, nicht des Fensters: so stehen
+    // Seitenkopf, AP-Bilanz und Katalog auf derselben Kante wie in Spielen
+    // und Verwalten.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final rand = kartoBreiteFuer(constraints.maxWidth).seitenrand;
+        return Column(
+          // Siehe _verwaltung: ohne stretch zentriert Column den Seitenkopf.
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(rand, rand, rand, 0),
+              child: _planungskopf(session, breite),
+            ),
+            Expanded(
+              child: KartoEntwicklungsansicht(
+                heroId: widget.heroId,
+                bestand: widget.bestand,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

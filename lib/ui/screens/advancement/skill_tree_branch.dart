@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_skill_tree.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 
 const _nodeWidth = 216.0;
 const _nodeHeight = 112.0;
@@ -51,11 +52,12 @@ class SkillTreeBranch extends StatelessWidget {
       24 + rowCount * _nodeHeight + (rowCount - 1) * _rowGap,
     );
     final colors = context.codexTheme;
+    final karto = kartoVariante(context);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.parchmentStrong,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.rule),
+        borderRadius: BorderRadius.circular(kartoRadiusOder(context, 12)),
+        border: Border.all(color: colors.rule, width: karto == null ? 1 : 0.5),
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -68,7 +70,9 @@ class SkillTreeBranch extends StatelessWidget {
                   painter: _ConnectionsPainter(
                     graph: graph,
                     positions: positions,
-                    color: colors.brass,
+                    // Unter Kartograph ordnen die Linien, sie werben nicht:
+                    // Grat statt der Interaktionsfarbe.
+                    color: karto?.grat ?? colors.brass,
                   ),
                 ),
               ),
@@ -110,7 +114,9 @@ class _Node extends StatelessWidget {
       child: Material(
         color: colors.panel,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(gate ? 24 : 8),
+          borderRadius: BorderRadius.circular(
+            gate ? kartoRadiusOder(context, 24, klein: true) : 8,
+          ),
           side: BorderSide(
             color: color,
             width: node.status == SkillTreeStatus.planned ? 2 : 1,
@@ -194,6 +200,18 @@ class SkillTreeStatusLabel extends StatelessWidget {
 
 Color _statusColor(BuildContext context, SkillTreeStatus status) {
   final colors = context.codexTheme;
+  // Unter Kartograph trennen sich erlernbar (Messing) und geplant (Meer);
+  // ueber die Bruecke fielen beide sonst auf dieselbe Farbe.
+  final karto = kartoVariante(context);
+  if (karto != null) {
+    return switch (status) {
+      SkillTreeStatus.owned => karto.moos,
+      SkillTreeStatus.planned => karto.meer,
+      SkillTreeStatus.available => karto.messing,
+      SkillTreeStatus.blocked => karto.schriftStumm,
+      SkillTreeStatus.review => karto.wachs,
+    };
+  }
   return switch (status) {
     SkillTreeStatus.owned => colors.success,
     SkillTreeStatus.planned => colors.accent,
