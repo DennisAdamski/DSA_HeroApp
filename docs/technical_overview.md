@@ -312,7 +312,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
 | `attributes` | `Attributes` | Aktuelle Eigenschaftswerte (8 Werte) |
 | `startAttributes` | `Attributes` | Abgeleitet: `computeHeroEffectiveStartAttributes`. Nie als Basis einer erneuten Modifikation verwenden (Abschnitt 4.10) |
-| `persistentMods` | `StatModifiers` | Dauerhafte Modifikatoren (aus Vor-/Nachteilen) |
+| `persistentMods` | `StatModifiers` | Schnellmodifikatoren des Inspectors (±-Knöpfe für Ini, GS, AW, AT, PA, RS); zählen zusätzlich zu `statModifiers` |
 | `bought` | `BoughtStats` | Gekaufte Ressourcenerhöhungen |
 | `combatConfig` | `CombatConfig` | Gesamte Kampfkonfiguration |
 | `combatConfig.waffenmeisterschaften` | `List<WaffenmeisterConfig>` | Waffenmeister-Baukasten mit Waffenart, Boni und Voraussetzungen |
@@ -444,8 +444,17 @@ Quellen. Unterstützt feldweises Addieren via `operator +`.
 | `gs` | Geschwindigkeits-Modifikator |
 | `ausweichen` | Ausweichen-Modifikator |
 
-In `HeroSheet` werden `persistentMods` (aus geparsten Vor-/Nachteilen, dauerhaft) und in
-`HeroState` `tempMods` (temporär, z. B. durch Zauber) unterschieden.
+In `HeroSheet` stehen `persistentMods` (Inspector-Schnellmodifikatoren) und
+die benannten `statModifiers` (mit Beschreibung, gepflegt im Modifikator-Dialog
+der Übersicht) nebeneinander und zählen beide; in `HeroState` liegen die
+temporären `tempMods` (z. B. durch Zauber). Textmodifikatoren aus Herkunft und
+Vor-/Nachteilen werden nicht gespeichert, sondern bei jeder Berechnung geparst.
+
+`HeroSheet.fromJson` kopiert `persistentMods` **nicht** nach `statModifiers`.
+Von März bis September 2026 tat es das, sobald `statModifiers` leer war, und
+jeder Inspector-Wert zählte danach doppelt (Befund ARCH-07-B1). Beim Laden
+entfällt deshalb ein benannter Eintrag „Manuell“, der genau dem Inspector-Wert
+desselben Feldes entspricht; abweichende Einträge bleiben stehen.
 
 **`BoughtStats`** (`lib/domain/bought_stats.dart`): Durch AP erkaufte Ressourcenerhöhungen.
 

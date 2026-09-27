@@ -302,8 +302,8 @@ _erwartet = <String, Map<String, Object?>>{
     'maxAsp': 28,
     'maxKap': 0,
     'mr': 3,
-    // Befund ARCH-07-B1: INI +1 zählt doppelt (11 ohne Spiegelung).
-    'iniBase': 12,
+    // Inspector INI +1 zählt einfach (vor Behebung von ARCH-07-B1: 12).
+    'iniBase': 11,
     'atBase': 7,
     'paBase': 7,
     'fkBase': 7,
@@ -348,7 +348,7 @@ _erwartet = <String, Map<String, Object?>>{
       'be': 0,
       'at': 7,
       'pa': 7,
-      'ini': 10,
+      'ini': 9,
       'ausweichen': 7,
       'tp': '1W6+12',
     },
@@ -412,14 +412,14 @@ _erwartet = <String, Map<String, Object?>>{
     'hinweise': <String>[],
   },
   'f07_legacy_schema1': <String, Object?>{
-    // Befund ARCH-07-B1: LeP +2 zählt doppelt (34 ohne Spiegelung).
-    'maxLep': 36,
+    // Alte persistentMods LeP +2 zählen einfach (vor ARCH-07-B1: 36).
+    'maxLep': 34,
     'maxAu': 32,
     'maxAsp': 20,
     'maxKap': 0,
     'mr': 3,
-    // Befund ARCH-07-B1: INI +1 zählt doppelt.
-    'iniBase': 16,
+    // Alte persistentMods INI +1 zählen einfach (vor ARCH-07-B1: 16).
+    'iniBase': 15,
     'atBase': 8,
     'paBase': 8,
     'fkBase': 8,
@@ -464,7 +464,7 @@ _erwartet = <String, Map<String, Object?>>{
       'be': 0,
       'at': 13,
       'pa': 12,
-      'ini': 13,
+      'ini': 12,
       'ausweichen': 8,
       'tp': '1W6+18',
     },

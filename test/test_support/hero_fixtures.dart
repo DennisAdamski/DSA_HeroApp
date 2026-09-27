@@ -27,7 +27,8 @@ enum Bestandsheld {
   episch('f04_episch'),
 
   /// Freitext-Vor-/Nachteile mit unerkannten Fragmenten und einem
-  /// Dauermodifikator nur in `persistentMods` (Befund ARCH-07-B1).
+  /// Inspector-Wert nur in `persistentMods`, `statModifiers` leer — der
+  /// Ausloeser von Befund ARCH-07-B1.
   freitextMerkmale('f05_freitext_merkmale'),
 
   /// Je zwei gleichnamige Waffen, Geschosse und Ruestungsteile mit

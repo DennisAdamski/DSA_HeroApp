@@ -484,6 +484,9 @@ class HeroSheet {
           (json['attributes'] as Map?)?.cast<String, dynamic>() ??
           const {},
     );
+    final parsedPersistentMods = StatModifiers.fromJson(
+      (json['persistentMods'] as Map?)?.cast<String, dynamic>() ?? const {},
+    );
 
     return HeroSheet(
       schemaVersion: (json['schemaVersion'] as num?)?.toInt() ?? 1,
@@ -493,9 +496,7 @@ class HeroSheet {
       attributes: parsedAttributes,
       rawStartAttributes: parsedRawStartAttributes,
       startAttributes: parsedStartAttributes,
-      persistentMods: StatModifiers.fromJson(
-        (json['persistentMods'] as Map?)?.cast<String, dynamic>() ?? const {},
-      ),
+      persistentMods: parsedPersistentMods,
       bought: BoughtStats.fromJson(
         (json['bought'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
@@ -632,11 +633,9 @@ class HeroSheet {
       reisebericht: HeroReisebericht.fromJson(
         (json['reisebericht'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
-      statModifiers: _parseNamedModifiersMap(
-        json['statModifiers'],
-        migrationFallback: StatModifiers.fromJson(
-          (json['persistentMods'] as Map?)?.cast<String, dynamic>() ?? const {},
-        ),
+      statModifiers: _ohneGespiegelteInspectorWerte(
+        _parseNamedModifiersMap(json['statModifiers']),
+        parsedPersistentMods,
       ),
       attributeModifiers: _parseNamedModifiersMap(json['attributeModifiers']),
       unknownModifierFragments: rawUnknown
@@ -701,77 +700,83 @@ List<TalentSpecialAbility> _parseTalentSpecialAbilities(dynamic raw) {
 }
 
 /// Parst eine verschachtelte Modifikator-Map aus JSON.
-///
-/// Bei fehlenden Daten und vorhandenem [migrationFallback] werden Nicht-Null-
-/// Werte aus den alten persistentMods als benannte Eintraege migriert.
-Map<String, List<HeroTalentModifier>> _parseNamedModifiersMap(
-  dynamic raw, {
-  StatModifiers? migrationFallback,
-}) {
-  if (raw is Map) {
-    final result = <String, List<HeroTalentModifier>>{};
-    for (final entry in raw.entries) {
-      final key = entry.key.toString();
-      final list = entry.value;
-      if (list is! List) {
+Map<String, List<HeroTalentModifier>> _parseNamedModifiersMap(dynamic raw) {
+  if (raw is! Map) {
+    return const <String, List<HeroTalentModifier>>{};
+  }
+  final result = <String, List<HeroTalentModifier>>{};
+  for (final entry in raw.entries) {
+    final key = entry.key.toString();
+    final list = entry.value;
+    if (list is! List) {
+      continue;
+    }
+    final modifiers = <HeroTalentModifier>[];
+    for (final item in list) {
+      if (item is! Map) {
         continue;
       }
-      final modifiers = <HeroTalentModifier>[];
-      for (final item in list) {
-        if (item is! Map) {
-          continue;
-        }
-        final parsed = HeroTalentModifier.fromJson(
-          item.cast<String, dynamic>(),
-        );
-        if (parsed != null) {
-          modifiers.add(parsed);
-        }
-      }
-      if (modifiers.isNotEmpty) {
-        result[key] = List<HeroTalentModifier>.unmodifiable(modifiers);
+      final parsed = HeroTalentModifier.fromJson(item.cast<String, dynamic>());
+      if (parsed != null) {
+        modifiers.add(parsed);
       }
     }
-    if (result.isNotEmpty) {
-      return Map<String, List<HeroTalentModifier>>.unmodifiable(result);
+    if (modifiers.isNotEmpty) {
+      result[key] = List<HeroTalentModifier>.unmodifiable(modifiers);
     }
   }
-
-  // Migration: persistentMods-Werte als benannte Eintraege uebernehmen.
-  if (migrationFallback != null) {
-    return _migrateStatModifiers(migrationFallback);
-  }
-  return const <String, List<HeroTalentModifier>>{};
-}
-
-/// Konvertiert alte persistentMods in benannte Modifikatoreintraege.
-Map<String, List<HeroTalentModifier>> _migrateStatModifiers(
-  StatModifiers mods,
-) {
-  final result = <String, List<HeroTalentModifier>>{};
-  void add(String key, int value) {
-    if (value != 0) {
-      result[key] = [
-        HeroTalentModifier(modifier: value, description: 'Manuell'),
-      ];
-    }
-  }
-
-  add('lep', mods.lep);
-  add('au', mods.au);
-  add('asp', mods.asp);
-  add('kap', mods.kap);
-  add('mr', mods.mr);
-  add('iniBase', mods.iniBase);
-  add('at', mods.at);
-  add('pa', mods.pa);
-  add('fk', mods.fk);
-  add('gs', mods.gs);
-  add('ausweichen', mods.ausweichen);
-  add('rs', mods.rs);
-
   if (result.isEmpty) {
     return const <String, List<HeroTalentModifier>>{};
+  }
+  return Map<String, List<HeroTalentModifier>>.unmodifiable(result);
+}
+
+/// Beschreibung, mit der die fruehere Lade-Migration Inspector-Werte als
+/// benannte Modifikatoren kopiert hat.
+const String _gespiegelteBeschreibung = 'Manuell';
+
+/// Entfernt benannte Eintraege, die nur Kopien der Inspector-Werte sind.
+///
+/// Von Maerz bis September 2026 hat `fromJson` die Inspector-Werte
+/// (`persistentMods`) als Eintrag „Manuell“ nach `statModifiers` kopiert,
+/// sobald dort nichts stand — `persistentMods` blieb dabei erhalten, jeder
+/// Wert zaehlte also doppelt (Befund ARCH-07-B1). Nach dem naechsten Speichern
+/// stand die Kopie dauerhaft im Helden. Ein Eintrag „Manuell“, der genau dem
+/// Inspector-Wert desselben Feldes entspricht, ist eine solche Kopie und
+/// entfaellt. Weicht der Wert ab, hat der Nutzer seitdem nachgesteuert; der
+/// Eintrag bleibt dann unangetastet. Die Reparatur ist deterministisch, damit
+/// alle Geraete denselben Inhalt errechnen und kein Sync-Konflikt entsteht.
+Map<String, List<HeroTalentModifier>> _ohneGespiegelteInspectorWerte(
+  Map<String, List<HeroTalentModifier>> benannt,
+  StatModifiers inspector,
+) {
+  if (benannt.isEmpty) {
+    return benannt;
+  }
+  final inspectorWerte = inspector.toJson();
+  var geaendert = false;
+  final result = <String, List<HeroTalentModifier>>{};
+  for (final entry in benannt.entries) {
+    final inspectorWert = (inspectorWerte[entry.key] as int?) ?? 0;
+    final kopieIndex = inspectorWert == 0
+        ? -1
+        : entry.value.indexWhere(
+            (mod) =>
+                mod.description == _gespiegelteBeschreibung &&
+                mod.modifier == inspectorWert,
+          );
+    if (kopieIndex < 0) {
+      result[entry.key] = entry.value;
+      continue;
+    }
+    geaendert = true;
+    final rest = List<HeroTalentModifier>.of(entry.value)..removeAt(kopieIndex);
+    if (rest.isNotEmpty) {
+      result[entry.key] = List<HeroTalentModifier>.unmodifiable(rest);
+    }
+  }
+  if (!geaendert) {
+    return benannt;
   }
   return Map<String, List<HeroTalentModifier>>.unmodifiable(result);
 }
