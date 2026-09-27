@@ -21,16 +21,20 @@ import '../test_support/hero_fixtures.dart';
 /// gespeicherten Bestandshelden einen neuen Hash, und der Konto-Sync meldet
 /// beim naechsten Speichern Konflikte (siehe CLAUDE.md zu `geburtsdatum`).
 /// Nur zusammen mit einer bewusst eingefuehrten Migration anpassen.
+///
+/// f01, f02, f04 und f06 haben verknuepfte Inventareintraege. Seit dem
+/// altversionsvertraeglichen Verweisformat behalten sie beim Laden ihren
+/// Namensverweis in `sourceRef` und bekommen `slotRef` dazu.
 const Map<Bestandsheld, String> _heldenHashes = <Bestandsheld, String>{
-  Bestandsheld.kriegerNormal: 'pJJGuin2B8cZa-mbQ6VWd5s1MqwJuraiLASYllnoVa0=',
-  Bestandsheld.geodeMagisch: 'tlT73OylMMcdh1YuPXYiqGhVPjrfF3sxPbqpX3JZ4BM=',
+  Bestandsheld.kriegerNormal: 'nUrDqy2kw2B08LU66tMD6ITlLy9PNzk04JC1uyk8dac=',
+  Bestandsheld.geodeMagisch: 'aCn3WMhvMh96_iurZS7Ui-2QacmAQ-38Ctz1g1w8FRc=',
   Bestandsheld.geweihterKarmal: 'vLCzKgAFwmZSwLvYNI5LxIjCbottabPf8Noxw6ydTvE=',
-  Bestandsheld.episch: 'JSO-D8TKBuVZ77XS_uPnBveYSuX4-VdRHXFACj_VPJQ=',
+  Bestandsheld.episch: '0ThP26-BCDnT9rH5Az_WTYEE7aOq_XfkCmPPwDZ0TE8=',
   // f05 und f07 laden seit der Behebung von Befund ARCH-07-B1 ohne Kopie der
   // Inspector-Werte in `statModifiers`.
   Bestandsheld.freitextMerkmale: 'Jnwfp6I0Esdy3uCTb7QzmptyqEVPVhGvnPy75vb9XcU=',
   Bestandsheld.gleichnamigeAusruestung:
-      'YlqpQ5HyphLmpbXrlbQMCReGgynmKnE2qOij0Vg4rrc=',
+      'vrgtUzPhCxYNgYn8ZMu4rXXA1gHXhTa9DH-L83YlEWU=',
   Bestandsheld.legacySchema1: 'XZX57WQQ4-gMfMGY7S7YdFeKNHVKXxbXYznvG1VMrcU=',
   Bestandsheld.steigerungshistorie:
       'hnMwYN9ZXVqwdsDvsjKeSZc3WnCNKaGQ8pXMm1Nns7E=',
@@ -81,12 +85,18 @@ void main() {
       ], kampf);
 
       expect(migriert[0].sourceRef, 'w:Dolch');
+      expect(migriert[0].slotRef, isNull);
       expect(migriert[1].sourceRef, 'w:Dolch');
-      expect(migriert[2].sourceRef, 'w#w1');
+      expect(migriert[1].slotRef, isNull);
+      // Der Namensverweis bleibt, damit die veroeffentlichte App den Eintrag
+      // weiter zuordnen kann; die ID kommt als slotRef dazu.
+      expect(migriert[2].sourceRef, 'w:Dolch');
+      expect(migriert[2].slotRef, 'w#w1');
     },
   );
 
-  test('Namensmigration reserviert bereits per ID verknüpfte Slots', () {
+  test('Namensmigration reserviert per ID verknüpfte Slots, auch aus der '
+      'Vorabfassung', () {
     final kampf = ladeBestandsheld(Bestandsheld.gleichnamigeAusruestung)
         .hero
         .combatConfig;
@@ -106,8 +116,11 @@ void main() {
       zweiter,
     ], kampf);
 
-    expect(migriert[0].sourceRef, 'w#w1');
-    expect(migriert[1].sourceRef, 'w#w2');
+    // Die Vorabfassung trug die ID in sourceRef; sie wandert nach slotRef.
+    expect(migriert[0].sourceRef, 'w:Dolch');
+    expect(migriert[0].slotRef, 'w#w1');
+    expect(migriert[1].sourceRef, 'w:Dolch');
+    expect(migriert[1].slotRef, 'w#w2');
     expect(migriert[1].beschreibung, 'Beutestück');
   });
 
@@ -154,12 +167,14 @@ void main() {
           r'^combatConfig/(mainWeapon|weapons/\d+|'
           r'weapons/\d+/rangedProfile/projectiles/\d+|'
           r'armor/pieces/\d+|offhandEquipment/\d+)/id$'
-          r'|^inventoryEntries/\d+/sourceRef$',
+          r'|^inventoryEntries/\d+/slotRef$',
         );
         expect(
           unterschiede.where((pfad) => !erlaubteAenderung.hasMatch(pfad)),
           isEmpty,
-          reason: 'Die ID-Migration darf keine anderen Heldendaten ändern.',
+          reason:
+              'Die ID-Migration darf nur IDs ergänzen; den Namensverweis in '
+              'sourceRef braucht die veröffentlichte App.',
         );
         expectNurGeaendert(
           (roh['state'] as Map).cast<String, dynamic>(),

@@ -34,6 +34,7 @@ class HeroInventoryEntry {
     this.itemType = InventoryItemType.sonstiges,
     this.source = InventoryItemSource.manuell,
     this.sourceRef,
+    this.slotRef,
     this.istAusgeruestet = false,
     this.modifiers = const <InventoryItemModifier>[],
     this.gewichtGramm = 0,
@@ -75,13 +76,22 @@ class HeroInventoryEntry {
 
   /// Verweis auf einen Kampf-Slot oder einen anderen fachlichen Ursprung.
   ///
-  /// Kampf-Formate verwenden stabile Slot-IDs: `w#<id>`, `a#<id>`,
-  /// `w#<waffenId>|p#<geschossId>` und `oh#<id>`. Die frueheren Namensformate
-  /// (`w:<name>` usw.) werden beim Laden migriert. Andere Urspruenge wie
-  /// Abenteuerbeute behalten ihre eigenen Verweisformate.
+  /// Kampf-Eintraege tragen hier den Namensverweis (`w:<Name>`, `a:<Name>`,
+  /// `oh:<Name>`, `w:<Waffe>|p:<Geschoss>`), den auch die bereits
+  /// veroeffentlichte App-Version versteht; zugeordnet wird ueber [slotRef]
+  /// (siehe `inventar_verweise.dart`). Andere Urspruenge wie Abenteuerbeute
+  /// behalten ihre eigenen Verweisformate.
   ///
   /// `null` bei manuell angelegten Eintraegen.
   final String? sourceRef;
+
+  /// Stabiler ID-Verweis auf den Kampf-Slot (`w#<id>`, `a#<id>`, `oh#<id>`,
+  /// `w#<waffenId>|p#<geschossId>`).
+  ///
+  /// Unterscheidet gleichnamige Exemplare. `null` bei Eintraegen ohne
+  /// Kampf-Slot und bei solchen, die zuletzt eine aeltere App-Version
+  /// gespeichert hat; sie erhalten ihn beim Laden ueber den Namen.
+  final String? slotRef;
 
   /// Ob das Item gerade getragen/ausgeruest wird.
   ///
@@ -144,6 +154,7 @@ class HeroInventoryEntry {
     'itemType',
     'source',
     'sourceRef',
+    'slotRef',
     'istAusgeruestet',
     'modifiers',
     'gewichtGramm',
@@ -174,6 +185,7 @@ class HeroInventoryEntry {
     InventoryItemType? itemType,
     InventoryItemSource? source,
     Object? sourceRef = keepFieldValue,
+    Object? slotRef = keepFieldValue,
     bool? istAusgeruestet,
     List<InventoryItemModifier>? modifiers,
     int? gewichtGramm,
@@ -205,6 +217,7 @@ class HeroInventoryEntry {
       sourceRef: sourceRef == keepFieldValue
           ? this.sourceRef
           : sourceRef as String?,
+      slotRef: slotRef == keepFieldValue ? this.slotRef : slotRef as String?,
       istAusgeruestet: istAusgeruestet ?? this.istAusgeruestet,
       modifiers: modifiers ?? this.modifiers,
       gewichtGramm: gewichtGramm ?? this.gewichtGramm,
@@ -248,6 +261,7 @@ class HeroInventoryEntry {
       'itemType': itemType.name,
       'source': source.name,
       if (sourceRef != null) 'sourceRef': sourceRef,
+      if (slotRef != null) 'slotRef': slotRef,
       'istAusgeruestet': istAusgeruestet,
       'modifiers': modifiers.map((m) => m.toJson()).toList(),
       'gewichtGramm': gewichtGramm,
@@ -317,6 +331,7 @@ class HeroInventoryEntry {
       itemType: parseItemType(json['itemType'] as String?),
       source: parseSource(json['source'] as String?),
       sourceRef: json['sourceRef'] as String?,
+      slotRef: json['slotRef'] as String?,
       istAusgeruestet: (json['istAusgeruestet'] as bool?) ?? false,
       modifiers: modifiers,
       gewichtGramm: (json['gewichtGramm'] as num?)?.toInt() ?? 0,

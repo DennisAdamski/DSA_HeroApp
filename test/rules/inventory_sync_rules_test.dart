@@ -417,4 +417,137 @@ void main() {
       expect(updated.weaponSlots[1].geweihtDescription, 'Zweites');
     });
   });
+
+  // -------------------------------------------------------------------------
+  // Zwei Verweise: Name fuer die veroeffentlichte App, ID fuer diese
+  // -------------------------------------------------------------------------
+  group('slotRef', () {
+    const zweiDolche = CombatConfig(
+      weapons: [
+        MainWeaponSlot(id: 'a', name: 'Dolch'),
+        MainWeaponSlot(id: 'b', name: 'Dolch'),
+      ],
+    );
+
+    // Verknuepfter Dolch-Eintrag mit Kennung in der Beschreibung.
+    HeroInventoryEntry dolch(String beschreibung, {String? slotRef}) {
+      return HeroInventoryEntry(
+        gegenstand: 'Dolch',
+        source: InventoryItemSource.waffe,
+        sourceRef: 'w:Dolch',
+        slotRef: slotRef,
+        beschreibung: beschreibung,
+      );
+    }
+
+    test('erwartete Einträge tragen Namens- und ID-Verweis', () {
+      final erwartet = buildExpectedLinkedEntries(zweiDolche);
+
+      expect(erwartet.map((e) => e.sourceRef), ['w:Dolch', 'w:Dolch']);
+      expect(erwartet.map((e) => e.slotRef), ['w#a', 'w#b']);
+    });
+
+    test('die ID schlägt die Reihenfolge', () {
+      final ergebnis = reconcileInventoryWithCombat([
+        dolch('B', slotRef: 'w#b'),
+        dolch('A', slotRef: 'w#a'),
+      ], zweiDolche);
+
+      expect(ergebnis.map((e) => e.beschreibung), ['A', 'B']);
+      expect(ergebnis.map((e) => e.slotRef), ['w#a', 'w#b']);
+    });
+
+    test('ein Eintrag entfernter Waffe wandert nicht per Name weiter', () {
+      const nurZweiter = CombatConfig(
+        weapons: [MainWeaponSlot(id: 'b', name: 'Dolch')],
+      );
+
+      final ergebnis = reconcileInventoryWithCombat([
+        dolch('A', slotRef: 'w#a'),
+      ], nurZweiter);
+
+      expect(ergebnis.single.slotRef, 'w#b');
+      expect(
+        ergebnis.single.beschreibung,
+        isEmpty,
+        reason: 'Befund ARCH-07-B2: die Daten des ersten Dolchs bleiben weg.',
+      );
+    });
+
+    test('Einträge ohne slotRef werden per Name in Reihenfolge zugeordnet', () {
+      final ergebnis = reconcileInventoryWithCombat([
+        dolch('B', slotRef: 'w#b'),
+        dolch('alt'),
+      ], zweiDolche);
+
+      expect(ergebnis.map((e) => e.beschreibung), ['alt', 'B']);
+      expect(ergebnis.first.slotRef, 'w#a');
+    });
+
+    test('Umbenennen ändert nur den Namensverweis', () {
+      const umbenannt = CombatConfig(
+        weapons: [
+          MainWeaponSlot(id: 'a', name: 'Parierdolch'),
+          MainWeaponSlot(id: 'b', name: 'Dolch'),
+        ],
+      );
+
+      final ergebnis = reconcileInventoryWithCombat([
+        dolch('A', slotRef: 'w#a'),
+        dolch('B', slotRef: 'w#b'),
+      ], umbenannt);
+
+      expect(ergebnis.first.sourceRef, 'w:Parierdolch');
+      expect(ergebnis.first.slotRef, 'w#a');
+      expect(ergebnis.first.beschreibung, 'A');
+    });
+
+    test('Inventarangaben gehen über die ID an den richtigen Slot', () {
+      final ergebnis = applyLinkedInventoryDetailsToConfig(zweiDolche, [
+        dolch('B', slotRef: 'w#b').copyWith(isMagisch: true),
+        dolch('A', slotRef: 'w#a'),
+      ]);
+
+      expect(ergebnis.weaponSlots[0].isArtifact, isFalse);
+      expect(ergebnis.weaponSlots[1].isArtifact, isTrue);
+    });
+
+    test('Munition über slotRef trifft den zweiten gleichnamigen Bogen', () {
+      const zweiBoegen = CombatConfig(
+        weapons: [
+          MainWeaponSlot(
+            id: 'a',
+            name: 'Kurzbogen',
+            combatType: WeaponCombatType.ranged,
+            rangedProfile: RangedWeaponProfile(
+              projectiles: [RangedProjectile(id: 'p', name: 'Pfeil')],
+            ),
+          ),
+          MainWeaponSlot(
+            id: 'b',
+            name: 'Kurzbogen',
+            combatType: WeaponCombatType.ranged,
+            rangedProfile: RangedWeaponProfile(
+              projectiles: [RangedProjectile(id: 'p', name: 'Pfeil')],
+            ),
+          ),
+        ],
+      );
+
+      final perId = applyAmmoCountChangeToConfig(zweiBoegen, 'w#b|p#p', 9);
+      final perName = applyAmmoCountChangeToConfig(
+        zweiBoegen,
+        'w:Kurzbogen|p:Pfeil',
+        9,
+      );
+
+      expect(perId.weaponSlots[1].rangedProfile.projectiles.single.count, 9);
+      expect(perId.weaponSlots[0].rangedProfile.projectiles.single.count, 0);
+      expect(
+        perName.weaponSlots[0].rangedProfile.projectiles.single.count,
+        9,
+        reason: 'Der Namensverweis trifft immer den ersten Bogen.',
+      );
+    });
+  });
 }

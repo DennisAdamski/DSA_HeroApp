@@ -195,7 +195,8 @@ void main() {
       (entry) => entry.gegenstand == 'Parierdolch',
     );
     expect(nachNeustart.combatConfig.weaponSlots.first.id, zweiterDolchId);
-    expect(eintrag.sourceRef, 'w#$zweiterDolchId');
+    expect(eintrag.slotRef, 'w#$zweiterDolchId');
+    expect(eintrag.sourceRef, 'w:Parierdolch');
     expect(eintrag.beschreibung, 'Beutestück');
     expect(eintrag.wert, '8');
     expect(eintrag.gewichtGramm, 350);
@@ -281,7 +282,8 @@ void main() {
     final eintrag = nachher.inventoryEntries.singleWhere(
       (entry) => entry.gegenstand == 'Schwere Armbrust',
     );
-    expect(eintrag.sourceRef, 'w#${armbrust.id}');
+    expect(eintrag.slotRef, 'w#${armbrust.id}');
+    expect(eintrag.sourceRef, 'w:Schwere Armbrust');
     final bolzen = nachher.inventoryEntries.singleWhere(
       (entry) => entry.gegenstand == 'Bolzen',
     );
@@ -410,8 +412,14 @@ void main() {
         'inventoryEntries',
         'lastModified',
       }, grund: 'Ausrüsten veränderte fremde Felder');
-      final verknuepft = (nachAusruesten['inventoryEntries'] as List)
-          .map((entry) => (entry as Map)['sourceRef'])
+      final eintraege = (nachAusruesten['inventoryEntries'] as List)
+          .cast<Map>();
+      final verknuepft = eintraege
+          .map((entry) => entry['slotRef'])
+          .whereType<String>()
+          .toList();
+      final namen = eintraege
+          .map((entry) => entry['sourceRef'])
           .whereType<String>()
           .toList();
       final kampf = (nachAusruesten['combatConfig'] as Map)
@@ -429,6 +437,11 @@ void main() {
       expect(
         verknuepft,
         containsAll(<String>['w#$waffenId', 'w#$waffenId|p#$geschossId']),
+      );
+      // Den Namensverweis braucht die veroeffentlichte App-Version.
+      expect(
+        namen,
+        containsAll(<String>['w:Kurzbogen', 'w:Kurzbogen|p:Jagdpfeil']),
       );
 
       // 4. Spielaktion: Treffer mit Wunde, Probe, danach lange Rast.

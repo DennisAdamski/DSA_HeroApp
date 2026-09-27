@@ -79,13 +79,26 @@ Regeln:
   neuen Hash und der Konto-Sync meldete Konflikte. Anpassen nur zusammen mit
   einer bewusst eingeführten Migration.
 - Der B2/B3-Teilfix vergibt beim Laden deterministische Kampf-Slot-IDs und
-  migriert Inventar-Namensverweise. Die Fixture-Dateien bleiben unverändert;
-  Hash-Pins wurden nur für betroffene Helden aktualisiert. Der Domain-Test
-  begrenzt die JSON-Änderungen auf IDs und `sourceRef` und prüft den Fixpunkt
-  nach erneutem Laden sowie gemischte ID-/Namensverweise. Ein Hive-Test
+  ergänzt verknüpfte Inventareinträge um `slotRef`. `sourceRef` bleibt der
+  Namensverweis für die veröffentlichte App. Die Fixture-Dateien bleiben
+  unverändert; Hash-Pins wurden nur für betroffene Helden aktualisiert
+  (f01, f02, f04, f06). Der Domain-Test begrenzt die JSON-Änderungen auf IDs
+  und `slotRef` und prüft den Fixpunkt nach erneutem Laden sowie gemischte
+  ID-/Namensverweise. Ein Hive-Test
   entfernt und benennt einen der beiden gleichnamigen Dolche aus `f06` um
   und prüft Neustart sowie Export. Widgettests stellen sicher, dass die
   Editoren für Geschosse und Nebenhandteile ihre Instanz-ID erhalten.
+- **Mischbetrieb mit der veröffentlichten App** (`main`, vor ARCH-03) bildet
+  `test/test_support/veroeffentlichte_app.dart` nach:
+  - `wieVeroeffentlichteApp` entfernt, was sie beim Speichern verliert
+    (Slot-IDs, `slotRef`, unbekannte Felder);
+  - `zuordnungWieVeroeffentlichteApp` portiert ihre Namenszuordnung auf JSON.
+
+  `test/domain/inventar_verweise_test.dart` prüft damit die Ladetabelle der
+  Verweise, die Vorabfassung und, dass sie jede Fixture vollständig und in
+  Reihenfolge zuordnet — auch nach Entfernen, Umbenennen und Hinzufügen.
+  `sync_app_versionen_test.dart` prüft ihre Änderungen und ihr Echo über den
+  Konto-Sync.
 - **Felder einer neueren App-Version** simuliert
   `test/test_support/zukunftsfelder.dart`. `mitZukunftsfeldern` setzt in f01
   an jeder Ebene der Ausrüstung ein `zukunftsfeld`: Kampfkonfiguration,
@@ -220,11 +233,12 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/data/hero_actions_import_export_test.dart` | data | Actions Import/Export |
 | `test/data/bestandsheld_ablauf_test.dart` | data | Echte Hive-Speichergrenze je Bestandsheld und Ablauf Import bis Export mit Neustart, Befund B4, Felder neuerer Versionen in der Ausrüstung |
 | `test/data/sync_zwei_geraete_test.dart` | data | Zwei Geräte an einer Cloud: Abbruch, verlorene Antwort, Neustart (auch mit Hive), Konfliktauflösungen samt Zustand, Befunde B1/B8 |
-| `test/data/sync_app_versionen_test.dart` | data | Sync mit anderen App-Versionen: Basis gleich lokaler Stand (B10), Ausrüstungsfelder einer neueren Version samt gleichzeitig geänderter Cloud |
+| `test/data/sync_app_versionen_test.dart` | data | Sync mit anderen App-Versionen: Basis gleich lokaler Stand (B10), Ausrüstungsfelder einer neueren Version samt gleichzeitig geänderter Cloud, veröffentlichte App im Mischbetrieb |
 | `test/domain/hero_sheet_model_test.dart` | domain | HeroSheet-Kompatibilitaet |
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |
 | `test/domain/bestandshelden_kompatibilitaet_test.dart` | domain | Bestandsfixtures: Fixpunkt nach einmaligem Laden, Inhalts-Hashes, Altschlüssel, Befunde B1/B5/B6 |
 | `test/domain/unbekannte_ausruestungsfelder_test.dart` | domain | Unbekannte Felder in den zehn Ausrüstungsmodellen, Altschlüssel, Katalogschutz, Fixpunkt mit f01 |
+| `test/domain/inventar_verweise_test.dart` | domain | Ladetabelle `sourceRef`/`slotRef`, Vorabfassung, Mischbetrieb mit der veröffentlichten App |
 | `test/workspace/workspace_area_registry_test.dart` | workspace | Area-Registry |
 | `test/workspace/workspace_tab_edit_controller_test.dart` | workspace | Tab-Edit-Controller |
 | `test/ui2/shell/app_root_switch_test.dart` | ui2 | Weiche zwischen bestehender und neuer Oberfläche |

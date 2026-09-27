@@ -134,9 +134,11 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
       }
 
       final count = int.tryParse(entry.anzahl) ?? 0;
+      // Der ID-Verweis zuerst: der Namensverweis traefe bei zwei gleichnamigen
+      // Boegen immer den ersten.
       updatedConfig = applyAmmoCountChangeToConfig(
         updatedConfig,
-        entry.sourceRef!,
+        entry.slotRef ?? entry.sourceRef!,
         count,
       );
     }
