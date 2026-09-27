@@ -803,7 +803,7 @@ Inventarfelder fuer Quelle, Gewicht, Wert, Modifier und magisch/geweiht.
 | `beschreibung` | Beschreibung |
 | `itemType` | Typisierte Inventarkategorie (`ausruestung`, `verbrauchsgegenstand`, `wertvolles`, `sonstiges`) |
 | `source` | Herkunft des Eintrags (`manuell`, Kampf-Sync oder `abenteuer`) |
-| `sourceRef` | Stabile Referenz fuer synchronisierte oder abenteuerbezogene Eintraege |
+| `sourceRef` | Verweis auf einen Kampf-Slot per ID oder auf Abenteuerbeute; alte Namensverweise werden beim Laden migriert |
 | `istAusgeruestet` | Steuert, ob Modifier des Eintrags aktiv wirken |
 | `modifiers` | Typisierte Inventar-Modifikatoren |
 | `gewichtGramm` | Numerisches Gewicht in Gramm |
@@ -812,6 +812,35 @@ Inventarfelder fuer Quelle, Gewicht, Wert, Modifier und magisch/geweiht.
 | `isMagisch` / `magischDescription` | Magische Markierung und Beschreibung |
 | `isGeweiht` / `geweihtDescription` | Geweihte Markierung und Beschreibung |
 | `traegerTyp` / `traegerId` | Zuordnung zum Helden oder zu einem Begleiter |
+
+**Kampf-/Inventarverweise (ARCH-03, Teilfix B2/B3).** Waffen, Geschosse,
+Ruestungsstuecke und Nebenhand-Teile speichern nun eine Slot-ID. Die
+Verweisformate `w#<id>`, `a#<id>`, `oh#<id>` und
+`w#<waffen-id>|p#<geschoss-id>` stehen in
+`lib/domain/combat_config/inventar_verweise.dart`. `CombatConfig.fromJson`
+vergibt fehlende IDs deterministisch in Listenreihenfolge; `HeroSheet.fromJson`
+ordnet alte Namensverweise den Slots ebenso zu. Ein erneutes Laden aendert
+den Stand nicht mehr. `HeroActions.saveHero` gibt neu angelegten Slots UUIDs,
+damit ein geloeschter Slot seine ID nicht an einen neuen Namensvetter vererbt.
+Der Inventarabgleich und die Uebernahme magischer/geweihter Eigenschaften
+verwenden zuerst die ID. Geschossmengen lassen sich ueber den ID-Verweis
+zurueck in die Kampfkonfiguration schreiben. Bereits per ID belegte Slots
+werden bei einer teilweisen Altformat-Migration nicht erneut zugeordnet.
+Die Editoren fuer Geschosse und Nebenhand-Teile tragen die bestehende ID
+beim Speichern weiter.
+
+Diese einmalige Migration aendert die Helden-Inhalts-Hashes bei Bestandshelden
+mit verknuepfter Ausruestung. Die unveraenderten Export-Fixtures, Hash-Pins
+und der Hive-Test sichern die Migration ab; Zwei-Geraete-Tests pruefen den
+Sync zwischen Geraeten mit dieser App-Version. Kampfkonfiguration
+und Inventar bleiben zwei Darstellungen: Ein gemeinsames Gegenstandsmodell,
+Katalog-IDs und vollstaendige ARCH-03-Migration sind noch offen. Alte App-
+Versionen kennen die neuen verschachtelten IDs nicht; parallele Bearbeitung
+derselben Helden mit alten und neuen Versionen ist daher nicht abgesichert.
+Hat sich die Cloud-Version waehrend eines App-Upgrades geaendert, kann die
+lokale, reine ID-Migration als Inhaltsaenderung einen sichtbaren Sync-Konflikt
+ausloesen. Die Entscheidung erfolgt dann ueber die vorhandene Konfliktansicht;
+ein stilles Zusammenfuehren ist fuer diesen Teilfix nicht festgelegt.
 
 ---
 

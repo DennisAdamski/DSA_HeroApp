@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config/weapon_combat_type.dar
 /// Die Wuerfelseiten sind im aktuellen Hausregel-Fluss fest auf W6 gesetzt.
 class MainWeaponSlot {
   const MainWeaponSlot({
+    this.id = '',
     this.name = '',
     this.talentId = '',
     this.combatType = WeaponCombatType.melee,
@@ -30,6 +31,13 @@ class MainWeaponSlot {
     this.geweihtDescription = '',
     this.rangedProfile = const RangedWeaponProfile(),
   });
+
+  /// Stabile Kennung des Slots innerhalb der Kampfkonfiguration.
+  ///
+  /// Verknuepft den Slot mit seinem Inventareintrag, unabhaengig vom Namen
+  /// (siehe `CombatConfig.withStableIds`). Leer bei neu angelegten Slots,
+  /// bis sie gespeichert werden.
+  final String id;
 
   /// Anzeigename der Waffe.
   final String name;
@@ -101,6 +109,7 @@ class MainWeaponSlot {
   ///
   /// Hinweis: [tpDiceSides] ist immer 6 und wird ignoriert.
   MainWeaponSlot copyWith({
+    String? id,
     String? name,
     String? talentId,
     WeaponCombatType? combatType,
@@ -124,6 +133,7 @@ class MainWeaponSlot {
     RangedWeaponProfile? rangedProfile,
   }) {
     return MainWeaponSlot(
+      id: id ?? this.id,
       name: name ?? this.name,
       talentId: talentId ?? this.talentId,
       combatType: combatType ?? this.combatType,
@@ -152,6 +162,7 @@ class MainWeaponSlot {
   /// Serialisiert den Slot zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
     return {
+      if (id.isNotEmpty) 'id': id,
       'name': name,
       'talentId': talentId,
       'combatType': weaponCombatTypeToJson(combatType),
@@ -198,6 +209,7 @@ class MainWeaponSlot {
     final combatType = weaponCombatTypeFromJson(getString('combatType'));
     final hasWmAt = json.containsKey('wmAt') && json['wmAt'] != null;
     return MainWeaponSlot(
+      id: (json['id'] as String?) ?? '',
       name: getString('name'),
       talentId: getString('talentId'),
       combatType: combatType,

@@ -78,6 +78,14 @@ Regeln:
   Fixture. Ändert sich einer, bekäme jeder gleich gespeicherte Held einen
   neuen Hash und der Konto-Sync meldete Konflikte. Anpassen nur zusammen mit
   einer bewusst eingeführten Migration.
+- Der B2/B3-Teilfix vergibt beim Laden deterministische Kampf-Slot-IDs und
+  migriert Inventar-Namensverweise. Die Fixture-Dateien bleiben unverändert;
+  Hash-Pins wurden nur für betroffene Helden aktualisiert. Der Domain-Test
+  begrenzt die JSON-Änderungen auf IDs und `sourceRef` und prüft den Fixpunkt
+  nach erneutem Laden sowie gemischte ID-/Namensverweise. Ein Hive-Test
+  entfernt und benennt einen der beiden gleichnamigen Dolche aus `f06` um
+  und prüft Neustart sowie Export. Widgettests stellen sicher, dass die
+  Editoren für Geschosse und Nebenhandteile ihre Instanz-ID erhalten.
 - Fehler, die diese Tests aufdecken, werden nicht nebenbei behoben: Der Test
   hält das heutige Verhalten mit dem Kommentar `Befund ARCH-07-Bx` fest, der
   Befund steht mit Folgeauftrag in `docs/architecture_roadmap.md`.

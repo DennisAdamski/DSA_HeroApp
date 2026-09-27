@@ -185,9 +185,9 @@ bleibt während der Übergangsphase als Import-/Kompatibilitätshilfe verfügbar
 
 ## ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf
 
-**Ist-Zustand:** Kampfausrüstung und Inventar werden über
+**Ausgangszustand:** Kampfausrüstung und Inventar werden über
 `reconcileInventoryWithCombat` abgeglichen. Verknüpfungsschlüssel für Waffen,
-Rüstung und Geschosse enthalten Namen; es bestehen mehrere Darstellungen eines
+Rüstung und Geschosse enthielten Namen; es bestehen mehrere Darstellungen eines
 Gegenstands mit unterschiedlichen Zuständigkeiten für seine Felder.
 
 **Ziel:** Jeden konkreten Gegenstand einmal mit stabiler Instanz-ID speichern.
@@ -219,6 +219,22 @@ Import-/Exporttests um Migration, Namensgleichheit und Slotwechsel ergänzen.
 **Abhängigkeiten / offene Entscheidungen:** Bestandsfälle aus ARCH-07 nutzen.
 Mengenstapel, aufgeteilte Munition und Identitätsregeln beim Kopieren eines Helden
 vor der Modelländerung klären. Schreibvorgänge mit ARCH-05/06 abstimmen.
+
+**Teilstand 27.09.2026 — B2/B3 behoben:** Kampf-Slots für Waffen,
+Geschosse, Rüstung und Nebenhand tragen stabile IDs. Beim Laden erhalten
+Bestandsdaten deterministische IDs und die Inventar-Namensverweise werden
+in Slot-Reihenfolge migriert; neue Slots bekommen beim Speichern UUIDs.
+Damit bleiben gleichnamige Exemplare nach Entfernen oder Umbenennen
+unabhängig. Domain-Tests pinnen die einmalig geänderten Inhalts-Hashes und
+prüfen den Fixpunkt, Regeltests die beiden Befunde, ein Hive-Test Neustart
+und Export. `flutter analyze --no-pub` und die vollständige Flutter-Suite
+waren grün (2.278 bestanden, drei übersprungen). Die vollständige
+ARCH-03-Abnahme ist damit **nicht** erreicht: Das gemeinsame Gegenstandsmodell,
+Katalog-IDs und die übrigen Schreibabläufe fehlen. Gemischte Bearbeitung
+mit älteren App-Versionen ist wegen der neuen verschachtelten IDs nicht
+abgesichert. Auch eine reine ID-Migration kann bei gleichzeitig geänderter
+Cloud-Version einen sichtbaren Sync-Konflikt auslösen. Der zugehörige Commit
+steht in der Git-Historie dieses Branches.
 
 ## ARCH-04 — Versionierte Regelprofile und erklärbare Berechnungen
 
@@ -416,9 +432,13 @@ Aufträgen.
 | B7 | mittel/hoch | Nahkampf-AT/PA der Kampfvorschau rechnen mit eigenen Modifikatoren (`combat_rules.dart`: `persistentMods`, Textmodifikatoren, `tempMods`). Wundabzüge fehlen nachweislich, obwohl AT-Basis und Initiative sie enthalten; laut Code fehlen dort auch benannte und Inventar-Modifikatoren (nicht eigens getestet). | Regeltest (f01, f04 mit Wunde) | eigener Regelauftrag, Bezug ARCH-04 |
 | B8 | mittel | Offline geänderte Laufzeitwerte (LeP, AsP, Wunden …) lädt `syncNow` nicht hoch: `_syncHeroStates` überträgt nur Zustände, die online noch fehlen. Erst die nächste Zustandsänderung mit Verbindung holt sie nach; wechselt man vorher das Gerät, sieht es den alten Stand. | `sync_zwei_geraete_test.dart` | eigener Sync-Auftrag, Bezug ARCH-06 |
 
-Nächster Schritt: B1 beheben (doppelte Modifikatoren verfälschen Werte am
-Spieltisch), danach B7 und B8. B5/B6 gehören in eine Versionsstrategie für
-gespeicherte Modelle, bevor ARCH-02 oder ARCH-03 neue Felder einführen.
+**Aktualisierung 27.09.2026:** B1 (`d5f111c`), B7 (`de36df2`), B8
+(`20102a0`), B4 (`9eebf93`) sowie B5/B6 (`6be321c`) haben Fix-Commits.
+B2/B3 sind im ARCH-03-Teilstand oben behoben. Bei B6 bleiben unbekannte
+Felder *innerhalb* verschachtelter Objekte ungeschützt; der Fix bewahrt
+unbekannte Felder oberster Ebene und unbekannte Steigerungsarten. Nächster
+Architekturschritt ist die Versions- und Sync-Kompatibilität für neue
+verschachtelte Felder, bevor ARCH-03 über den B2/B3-Teilfix hinausgeht.
 
 ## Abschluss und Übergabe je Aufgabe
 

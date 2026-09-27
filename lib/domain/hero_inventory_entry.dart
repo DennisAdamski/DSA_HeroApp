@@ -71,13 +71,12 @@ class HeroInventoryEntry {
   /// Ursprung: manuell angelegt oder automatisch aus dem Kampf-Tab synchronisiert.
   final InventoryItemSource source;
 
-  /// Composite-Schluessel fuer die Zuordnung zu einem Kampf-Tab-Eintrag.
+  /// Verweis auf einen Kampf-Slot oder einen anderen fachlichen Ursprung.
   ///
-  /// Format:
-  /// - Waffe:     `'w:{weaponName}'`
-  /// - Ruestung:  `'a:{pieceName}'`
-  /// - Geschoss:  `'w:{weaponName}|p:{projName}'`
-  /// - Nebenhand: `'oh:{equipmentName}'`
+  /// Kampf-Formate verwenden stabile Slot-IDs: `w#<id>`, `a#<id>`,
+  /// `w#<waffenId>|p#<geschossId>` und `oh#<id>`. Die frueheren Namensformate
+  /// (`w:<name>` usw.) werden beim Laden migriert. Andere Urspruenge wie
+  /// Abenteuerbeute behalten ihre eigenen Verweisformate.
   ///
   /// `null` bei manuell angelegten Eintraegen.
   final String? sourceRef;

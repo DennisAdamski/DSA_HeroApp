@@ -1,6 +1,7 @@
 /// Ein konkreter Geschosstyp mit eigenem Bestand und Modifikatoren.
 class RangedProjectile {
   const RangedProjectile({
+    this.id = '',
     this.name = '',
     this.count = 0,
     this.tpMod = 0,
@@ -8,6 +9,9 @@ class RangedProjectile {
     this.atMod = 0,
     this.description = '',
   });
+
+  /// Stabile Kennung des Geschosses innerhalb seiner Waffe.
+  final String id;
 
   /// Anzeigename des Geschosses.
   final String name;
@@ -29,6 +33,7 @@ class RangedProjectile {
 
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   RangedProjectile copyWith({
+    String? id,
     String? name,
     int? count,
     int? tpMod,
@@ -37,6 +42,7 @@ class RangedProjectile {
     String? description,
   }) {
     return RangedProjectile(
+      id: id ?? this.id,
       name: name ?? this.name,
       count: count ?? this.count,
       tpMod: tpMod ?? this.tpMod,
@@ -49,6 +55,7 @@ class RangedProjectile {
   /// Serialisiert das Geschoss fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
     return {
+      if (id.isNotEmpty) 'id': id,
       'name': name,
       'count': count,
       'tpMod': tpMod,
@@ -62,6 +69,7 @@ class RangedProjectile {
   static RangedProjectile fromJson(Map<String, dynamic> json) {
     final hasAtMod = json.containsKey('atMod') && json['atMod'] != null;
     return RangedProjectile(
+      id: (json['id'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
       count: (json['count'] as num?)?.toInt() ?? 0,
       tpMod: (json['tpMod'] as num?)?.toInt() ?? 0,

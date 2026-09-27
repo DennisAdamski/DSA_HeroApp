@@ -582,6 +582,7 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
     final parsedPa = int.tryParse(_paController.text.trim()) ?? 0;
     widget.onSave(
       OffhandEquipmentEntry(
+        id: widget.initialEntry.id,
         name: _nameController.text.trim(),
         type: _type,
         breakFactor: parsedBreakFactor < 0 ? 0 : parsedBreakFactor,

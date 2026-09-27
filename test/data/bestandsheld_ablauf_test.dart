@@ -158,6 +158,57 @@ void main() {
     }
   });
 
+  test('B2/B3: gleichnamige Waffe behält Daten nach Entfernen, Umbenennen '
+      'und Neustart', () async {
+    final pfad = await hiveTempVerzeichnis('arch03_waffen_');
+    var speicher = await oeffnen(pfad);
+    final bundle = ladeBestandsheld(Bestandsheld.gleichnamigeAusruestung);
+    final id = await speicher.actions.importHeroBundle(
+      bundle,
+      resolution: ImportConflictResolution.overwriteExisting,
+    );
+    final vorAenderung = (await speicher.repo.loadHeroById(id))!;
+    final zweiterDolchId = vorAenderung.combatConfig.weaponSlots[1].id;
+    expect(zweiterDolchId, isNotEmpty);
+
+    await speicher.actions.updateHero(id, (aktuell) {
+      final waffen = List<MainWeaponSlot>.of(aktuell.combatConfig.weaponSlots);
+      waffen.removeAt(0);
+      waffen[0] = waffen[0].copyWith(name: 'Parierdolch');
+      return aktuell.copyWith(
+        combatConfig: aktuell.combatConfig.copyWith(
+          weapons: waffen,
+          selectedWeaponIndex: 0,
+        ),
+      );
+    });
+    await speicher.schliessen();
+    speicher = await oeffnen(pfad);
+
+    final nachNeustart = (await speicher.repo.loadHeroById(id))!;
+    final eintrag = nachNeustart.inventoryEntries.singleWhere(
+      (entry) => entry.gegenstand == 'Parierdolch',
+    );
+    expect(nachNeustart.combatConfig.weaponSlots.first.id, zweiterDolchId);
+    expect(eintrag.sourceRef, 'w#$zweiterDolchId');
+    expect(eintrag.beschreibung, 'Beutestück');
+    expect(eintrag.wert, '8');
+    expect(eintrag.gewichtGramm, 350);
+    expect(
+      nachNeustart.inventoryEntries.any(
+        (entry) => entry.beschreibung == 'Erbstück mit Runen',
+      ),
+      isFalse,
+    );
+    final export = await speicher.actions.parseImportJson(
+      await speicher.actions.buildExportJson(id),
+    );
+    expect(
+      jsonUnterschiede(nachNeustart.toJson(), export.hero.toJson()),
+      isEmpty,
+    );
+  });
+
   group('Ablauf mit f01', () {
     test('importieren, steigern, ausrüsten, spielen, neu öffnen, '
         'exportieren', () async {
@@ -280,9 +331,21 @@ void main() {
           .map((entry) => (entry as Map)['sourceRef'])
           .whereType<String>()
           .toList();
+      final kampf = (nachAusruesten['combatConfig'] as Map)
+          .cast<String, dynamic>();
+      final neuerBogen = ((kampf['weapons'] as List)[2] as Map)
+          .cast<String, dynamic>();
+      final waffenId = neuerBogen['id'] as String;
+      final profil = (neuerBogen['rangedProfile'] as Map)
+          .cast<String, dynamic>();
+      final geschoss = ((profil['projectiles'] as List).single as Map)
+          .cast<String, dynamic>();
+      final geschossId = geschoss['id'] as String;
+      expect(waffenId, isNotEmpty);
+      expect(geschossId, isNotEmpty);
       expect(
         verknuepft,
-        containsAll(<String>['w:Kurzbogen', 'w:Kurzbogen|p:Jagdpfeil']),
+        containsAll(<String>['w#$waffenId', 'w#$waffenId|p#$geschossId']),
       );
 
       // 4. Spielaktion: Treffer mit Wunde, Probe, danach lange Rast.

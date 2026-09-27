@@ -3,6 +3,7 @@
 /// Unveraenderlich; Aktualisierungen erfolgen ueber [copyWith].
 class ArmorPiece {
   const ArmorPiece({
+    this.id = '',
     this.name = '',
     this.isActive = false,
     this.rg1Active = false,
@@ -13,6 +14,9 @@ class ArmorPiece {
     this.isGeweiht = false,
     this.geweihtDescription = '',
   });
+
+  /// Stabile Kennung des Ruestungsstuecks (siehe `CombatConfig.withStableIds`).
+  final String id;
 
   /// Anzeigename des Ruestungsstuecks.
   final String name;
@@ -43,6 +47,7 @@ class ArmorPiece {
 
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   ArmorPiece copyWith({
+    String? id,
     String? name,
     bool? isActive,
     bool? rg1Active,
@@ -54,6 +59,7 @@ class ArmorPiece {
     String? geweihtDescription,
   }) {
     return ArmorPiece(
+      id: id ?? this.id,
       name: name ?? this.name,
       isActive: isActive ?? this.isActive,
       rg1Active: rg1Active ?? this.rg1Active,
@@ -69,6 +75,7 @@ class ArmorPiece {
   /// Serialisiert das Ruestungsstueck zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
     return {
+      if (id.isNotEmpty) 'id': id,
       'name': name,
       'isActive': isActive,
       'rg1Active': rg1Active,
@@ -87,6 +94,7 @@ class ArmorPiece {
   static ArmorPiece fromJson(Map<String, dynamic> json) {
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return ArmorPiece(
+      id: (json['id'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
       isActive: (json['isActive'] as bool?) ?? false,
       rg1Active: (json['rg1Active'] as bool?) ?? false,
@@ -103,6 +111,7 @@ class ArmorPiece {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is ArmorPiece &&
+          id == other.id &&
           name == other.name &&
           isActive == other.isActive &&
           rg1Active == other.rg1Active &&
@@ -115,6 +124,7 @@ class ArmorPiece {
 
   @override
   int get hashCode => Object.hash(
+    id,
     name,
     isActive,
     rg1Active,

@@ -67,8 +67,8 @@ void main() {
     final zweiterBogen = waffen[3];
     waffen[3] = zweiterBogen.copyWith(
       rangedProfile: zweiterBogen.rangedProfile.copyWith(
-        projectiles: const <RangedProjectile>[
-          RangedProjectile(name: 'Jagdpfeil', count: 5),
+        projectiles: <RangedProjectile>[
+          zweiterBogen.rangedProfile.projectiles.single.copyWith(count: 5),
         ],
       ),
     );
@@ -84,7 +84,7 @@ void main() {
   });
 
   test('Befund ARCH-07-B2: Entfernen der ersten von zwei gleichnamigen '
-      'Waffen vererbt deren Inventardaten an die zweite', () {
+      'Waffen erhält die Inventardaten der zweiten', () {
     final ohneErstenDolch = List<MainWeaponSlot>.of(
       held.combatConfig.weaponSlots,
     )..removeAt(0);
@@ -95,13 +95,12 @@ void main() {
     );
 
     final dolch = _verknuepft(ergebnis, 'Dolch').single;
-    // Gewollt wäre „Beutestück“ (Wert 8, 350 g) — der verbliebene Dolch.
-    expect(dolch.beschreibung, 'Erbstück mit Runen');
-    expect(dolch.wert, '30');
-    expect(dolch.gewichtGramm, 400);
+    expect(dolch.beschreibung, 'Beutestück');
+    expect(dolch.wert, '8');
+    expect(dolch.gewichtGramm, 350);
   });
 
-  test('Befund ARCH-07-B3: Umbenennen einer Waffe verliert ihre '
+  test('Befund ARCH-07-B3: Umbenennen einer Waffe erhält ihre '
       'Inventardaten', () {
     final waffen = List<MainWeaponSlot>.of(held.combatConfig.weaponSlots);
     waffen[1] = waffen[1].copyWith(name: 'Parierdolch');
@@ -112,13 +111,13 @@ void main() {
     );
 
     final umbenannt = _verknuepft(ergebnis, 'Parierdolch').single;
-    expect(umbenannt.beschreibung, isEmpty);
-    expect(umbenannt.wert, isEmpty);
-    expect(umbenannt.gewichtGramm, 0);
+    expect(umbenannt.beschreibung, 'Beutestück');
+    expect(umbenannt.wert, '8');
+    expect(umbenannt.gewichtGramm, 350);
     expect(
       _beschreibungen(ergebnis),
-      isNot(contains('Beutestück')),
-      reason: 'Der alte Eintrag fällt ersatzlos weg.',
+      contains('Beutestück'),
+      reason: 'Der umbenannte Slot behält den Inventareintrag.',
     );
   });
 }
