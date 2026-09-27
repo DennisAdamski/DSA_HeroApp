@@ -1,23 +1,20 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
-// ---------------------------------------------------------------------------
-// sourceRef-Schluessel
-// ---------------------------------------------------------------------------
-
-/// Erzeugt den sourceRef-Schluessel fuer einen Waffenslot.
-String weaponRef(String weaponName) => 'w:${weaponName.trim()}';
-
-/// Erzeugt den sourceRef-Schluessel fuer ein Ruestungsstueck.
-String armorRef(String pieceName) => 'a:${pieceName.trim()}';
-
-/// Erzeugt den sourceRef-Schluessel fuer ein Geschoss.
-String projectileRef(String weaponName, String projName) =>
-    'w:${weaponName.trim()}|p:${projName.trim()}';
-
-/// Erzeugt den sourceRef-Schluessel fuer ein Nebenhands-Ausruestungsteil.
-String offhandRef(String equipmentName) => 'oh:${equipmentName.trim()}';
+// Das Verweisformat liegt in der Domain, weil `HeroSheet.fromJson` Altdaten
+// schon beim Laden umstellt; Aufrufer erreichen es weiterhin ueber diese Datei.
+export 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart'
+    show
+        weaponRef,
+        armorRef,
+        projectileRef,
+        offhandRef,
+        weaponIdRef,
+        armorIdRef,
+        projectileIdRef,
+        offhandIdRef;
 
 // ---------------------------------------------------------------------------
 // Erwartete verlinkte Eintraege aus CombatConfig ableiten
@@ -39,7 +36,7 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
         gegenstand: name,
         itemType: InventoryItemType.ausruestung,
         source: InventoryItemSource.waffe,
-        sourceRef: weaponRef(name),
+        sourceRef: verweisFuerWaffe(slot).ref,
         istAusgeruestet: true,
         isMagisch: slot.isArtifact,
         magischDescription: slot.artifactDescription,
@@ -58,7 +55,7 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
             anzahl: proj.count.toString(),
             itemType: InventoryItemType.verbrauchsgegenstand,
             source: InventoryItemSource.geschoss,
-            sourceRef: projectileRef(name, projName),
+            sourceRef: verweisFuerGeschoss(slot, proj).ref,
             istAusgeruestet: false,
           ),
         );
@@ -74,7 +71,7 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
         gegenstand: name,
         itemType: InventoryItemType.ausruestung,
         source: InventoryItemSource.ruestung,
-        sourceRef: armorRef(name),
+        sourceRef: verweisFuerRuestung(piece).ref,
         istAusgeruestet: piece.isActive,
         isMagisch: piece.isArtifact,
         magischDescription: piece.artifactDescription,
@@ -92,7 +89,7 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
         gegenstand: name,
         itemType: InventoryItemType.ausruestung,
         source: InventoryItemSource.nebenhand,
-        sourceRef: offhandRef(name),
+        sourceRef: verweisFuerNebenhand(equipment).ref,
         istAusgeruestet: true,
         isMagisch: equipment.isArtifact,
         magischDescription: equipment.artifactDescription,
@@ -121,8 +118,10 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
 ///    - Eintrag nicht mehr erwartet → wird entfernt.
 /// 3. Reihenfolge: manuelle Eintraege zuerst, dann verlinkte in Slot-Reihenfolge.
 ///
-/// Namens-Kollisionen (z. B. zwei Waffen gleichen Namens) werden sicher behandelt,
-/// da List-basiertes Matching statt Map-Lookup verwendet wird.
+/// Zugeordnet wird ueber die Slot-ID (`inventar_verweise.dart`), sodass
+/// gleichnamige Exemplare unabhaengig bleiben und Umbenennen nichts verliert.
+/// Eintraege mit Namensverweis aus Altdaten finden ihren Slot ueber den
+/// Namen, in Listenreihenfolge, und tragen danach den ID-Verweis.
 List<HeroInventoryEntry> reconcileInventoryWithCombat(
   List<HeroInventoryEntry> existing,
   CombatConfig config,
@@ -135,13 +134,20 @@ List<HeroInventoryEntry> reconcileInventoryWithCombat(
   final unmatched = existing.where(_isCombatLinkedInventoryEntry).toList();
 
   final expected = buildExpectedLinkedEntries(config);
+  final verweise = erwarteteVerweise(config);
   final merged = <HeroInventoryEntry>[];
 
-  for (final expectedEntry in expected) {
+  for (var i = 0; i < expected.length; i++) {
+    final expectedEntry = expected[i];
     final ref = expectedEntry.sourceRef!;
+    final altRef = verweise[i].altRef;
 
-    // List-basiertes Matching: ersten Treffer nehmen und aus Pool entfernen
-    final matchIdx = unmatched.indexWhere((e) => e.sourceRef == ref);
+    // List-basiertes Matching: ersten Treffer nehmen und aus Pool entfernen;
+    // ohne ID-Treffer gilt noch ein Namensverweis aus Altdaten.
+    var matchIdx = unmatched.indexWhere((e) => e.sourceRef == ref);
+    if (matchIdx < 0 && altRef != ref) {
+      matchIdx = unmatched.indexWhere((e) => e.sourceRef == altRef);
+    }
 
     if (matchIdx >= 0) {
       final existing_ = unmatched.removeAt(matchIdx);
@@ -215,21 +221,24 @@ CombatConfig applyLinkedInventoryDetailsToConfig(
 
   final updatedWeaponSlots = config.weaponSlots
       .map((slot) {
-        final entry = _takeNextLinkedEntry(weaponEntries, weaponRef(slot.name));
+        final entry = _takeLinkedEntry(weaponEntries, verweisFuerWaffe(slot));
         return _applyInventoryDetailsToWeapon(slot, entry);
       })
       .toList(growable: false);
   final updatedArmorPieces = config.armor.pieces
       .map((piece) {
-        final entry = _takeNextLinkedEntry(armorEntries, armorRef(piece.name));
+        final entry = _takeLinkedEntry(
+          armorEntries,
+          verweisFuerRuestung(piece),
+        );
         return _applyInventoryDetailsToArmor(piece, entry);
       })
       .toList(growable: false);
   final updatedOffhandEntries = config.offhandEquipment
       .map((equipment) {
-        final entry = _takeNextLinkedEntry(
+        final entry = _takeLinkedEntry(
           offhandEntries,
-          offhandRef(equipment.name),
+          verweisFuerNebenhand(equipment),
         );
         return _applyInventoryDetailsToOffhand(equipment, entry);
       })
@@ -263,6 +272,15 @@ Map<String, List<HeroInventoryEntry>> _groupLinkedEntries(
     groupedEntries.putIfAbsent(ref, () => <HeroInventoryEntry>[]).add(entry);
   }
   return groupedEntries;
+}
+
+// Nimmt den Eintrag zum ID-Verweis, sonst zum Namensverweis aus Altdaten.
+HeroInventoryEntry? _takeLinkedEntry(
+  Map<String, List<HeroInventoryEntry>> groupedEntries,
+  SlotVerweis verweis,
+) {
+  return _takeNextLinkedEntry(groupedEntries, verweis.ref) ??
+      _takeNextLinkedEntry(groupedEntries, verweis.altRef);
 }
 
 HeroInventoryEntry? _takeNextLinkedEntry(
@@ -331,9 +349,10 @@ OffhandEquipmentEntry _applyInventoryDetailsToOffhand(
 
 /// Aktualisiert die Geschossanzahl im [CombatConfig] anhand des Inventar-Eintrags.
 ///
-/// Parst [projectileRef_] als `'w:{weaponName}|p:{projName}'`, sucht die
-/// passende Waffe und das Geschoss per Name und gibt eine aktualisierte
-/// [CombatConfig] zurueck.
+/// [projectileRef_] ist ein ID-Verweis (`w#{waffenId}|p#{geschossId}`) oder
+/// ein Namensverweis aus Altdaten (`w:{Waffe}|p:{Geschoss}`). Nur der
+/// ID-Verweis unterscheidet gleichnamige Waffen; der Namensverweis traf
+/// immer die erste (Befund ARCH-07-B2).
 ///
 /// Bei unbekanntem Ref oder keinem Treffer wird [config] unveraendert
 /// zurueckgegeben.
@@ -342,30 +361,13 @@ CombatConfig applyAmmoCountChangeToConfig(
   String projectileRef_,
   int newCount,
 ) {
-  // Format: 'w:{weaponName}|p:{projName}'
-  final sepIdx = projectileRef_.indexOf('|p:');
-  if (sepIdx < 0) return config;
-
-  final weaponName = projectileRef_.substring(2, sepIdx); // nach 'w:'
-  final projName = projectileRef_.substring(sepIdx + 3); // nach '|p:'
-
-  if (weaponName.isEmpty || projName.isEmpty) return config;
+  final treffer = _findeGeschoss(config.weaponSlots, projectileRef_);
+  if (treffer == null) return config;
+  final (slotIdx, projIdx) = treffer;
 
   final useWeaponsList = config.weapons.isNotEmpty;
-  final slots = config.weaponSlots;
-
-  final slotIdx = slots.indexWhere((w) => w.name.trim() == weaponName);
-  if (slotIdx < 0) return config;
-
-  final slot = slots[slotIdx];
-  if (!slot.isRanged) return config;
-
+  final slot = config.weaponSlots[slotIdx];
   final profile = slot.rangedProfile;
-  final projIdx = profile.projectiles.indexWhere(
-    (p) => p.name.trim() == projName,
-  );
-  if (projIdx < 0) return config;
-
   final updatedProjectiles = List<RangedProjectile>.from(profile.projectiles);
   updatedProjectiles[projIdx] = profile.projectiles[projIdx].copyWith(
     count: newCount.clamp(0, 9999),
@@ -381,4 +383,25 @@ CombatConfig applyAmmoCountChangeToConfig(
   } else {
     return config.copyWith(mainWeapon: updatedSlot);
   }
+}
+
+/// Sucht Waffen- und Geschossindex zu einem Geschossverweis.
+(int, int)? _findeGeschoss(List<MainWeaponSlot> slots, String ref) {
+  final idTrennung = ref.indexOf('|p#');
+  final istIdVerweis = ref.startsWith('w#') && idTrennung > 2;
+  final trennung = istIdVerweis ? idTrennung : ref.indexOf('|p:');
+  if (trennung < 2) return null;
+  final waffe = ref.substring(2, trennung);
+  final geschoss = ref.substring(trennung + 3);
+  if (waffe.isEmpty || geschoss.isEmpty) return null;
+
+  final slotIdx = slots.indexWhere(
+    (slot) => istIdVerweis ? slot.id == waffe : slot.name.trim() == waffe,
+  );
+  if (slotIdx < 0 || !slots[slotIdx].isRanged) return null;
+  final projIdx = slots[slotIdx].rangedProfile.projectiles.indexWhere(
+    (proj) => istIdVerweis ? proj.id == geschoss : proj.name.trim() == geschoss,
+  );
+  if (projIdx < 0) return null;
+  return (slotIdx, projIdx);
 }

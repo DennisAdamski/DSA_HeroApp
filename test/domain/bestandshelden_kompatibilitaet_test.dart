@@ -5,30 +5,33 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_type.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 
 import '../test_support/hero_fixtures.dart';
 
-/// Formatwaechter: Inhalts-Hashes der geladenen Bestandshelden.
+/// Formatwaechter: Inhalts-Hashes der geladenen Bestandshelden nach Migration.
 ///
 /// Aendert sich einer dieser Werte, erzeugt die App fuer **jeden** gleich
 /// gespeicherten Bestandshelden einen neuen Hash, und der Konto-Sync meldet
 /// beim naechsten Speichern Konflikte (siehe CLAUDE.md zu `geburtsdatum`).
 /// Nur zusammen mit einer bewusst eingefuehrten Migration anpassen.
 const Map<Bestandsheld, String> _heldenHashes = <Bestandsheld, String>{
-  Bestandsheld.kriegerNormal: 'eXqxBlphUDJS5Yd421Mv43RnA4LLdAd7_nVF-S1SDqI=',
-  Bestandsheld.geodeMagisch: 'ps_Vd_oV2ug2lXeY_wH0snYZWnukcX7WTny7NvLUS8Y=',
+  Bestandsheld.kriegerNormal: 'pJJGuin2B8cZa-mbQ6VWd5s1MqwJuraiLASYllnoVa0=',
+  Bestandsheld.geodeMagisch: 'tlT73OylMMcdh1YuPXYiqGhVPjrfF3sxPbqpX3JZ4BM=',
   Bestandsheld.geweihterKarmal: 'vLCzKgAFwmZSwLvYNI5LxIjCbottabPf8Noxw6ydTvE=',
-  Bestandsheld.episch: 'Ke5FIb-VWW4jc5_1Ak9u-yk9DRfaIKqxC046mXczKD8=',
+  Bestandsheld.episch: 'JSO-D8TKBuVZ77XS_uPnBveYSuX4-VdRHXFACj_VPJQ=',
   // f05 und f07 laden seit der Behebung von Befund ARCH-07-B1 ohne Kopie der
   // Inspector-Werte in `statModifiers`.
   Bestandsheld.freitextMerkmale: 'Jnwfp6I0Esdy3uCTb7QzmptyqEVPVhGvnPy75vb9XcU=',
   Bestandsheld.gleichnamigeAusruestung:
-      'KUmCzbjUsamNmpnLs7OMe6Vk-qPHvlVRKIYk61o_DRg=',
-  Bestandsheld.legacySchema1: 'ZkQmLrSS6y7Vl6txFL0F_0i4smrZilDLbscfa2HL3eM=',
+      'YlqpQ5HyphLmpbXrlbQMCReGgynmKnE2qOij0Vg4rrc=',
+  Bestandsheld.legacySchema1: 'XZX57WQQ4-gMfMGY7S7YdFeKNHVKXxbXYznvG1VMrcU=',
   Bestandsheld.steigerungshistorie:
       'hnMwYN9ZXVqwdsDvsjKeSZc3WnCNKaGQ8pXMm1Nns7E=',
   Bestandsheld.unbekannteSteigerungsart:
@@ -52,6 +55,62 @@ const Map<Bestandsheld, String> _zustandsHashes = <Bestandsheld, String>{
 };
 
 void main() {
+  test(
+    'Namensmigration lässt manuelle Einträge mit ähnlichem Ref unberührt',
+    () {
+      final kampf = ladeBestandsheld(Bestandsheld.gleichnamigeAusruestung)
+          .hero
+          .combatConfig;
+      const manuell = HeroInventoryEntry(
+        source: InventoryItemSource.manuell,
+        sourceRef: 'w:Dolch',
+      );
+      const verknuepft = HeroInventoryEntry(
+        source: InventoryItemSource.waffe,
+        sourceRef: 'w:Dolch',
+      );
+      const fremdeQuelle = HeroInventoryEntry(
+        source: InventoryItemSource.ruestung,
+        sourceRef: 'w:Dolch',
+      );
+
+      final migriert = migriereInventarVerweise(<HeroInventoryEntry>[
+        manuell,
+        fremdeQuelle,
+        verknuepft,
+      ], kampf);
+
+      expect(migriert[0].sourceRef, 'w:Dolch');
+      expect(migriert[1].sourceRef, 'w:Dolch');
+      expect(migriert[2].sourceRef, 'w#w1');
+    },
+  );
+
+  test('Namensmigration reserviert bereits per ID verknüpfte Slots', () {
+    final kampf = ladeBestandsheld(Bestandsheld.gleichnamigeAusruestung)
+        .hero
+        .combatConfig;
+    const erster = HeroInventoryEntry(
+      source: InventoryItemSource.waffe,
+      sourceRef: 'w#w1',
+      beschreibung: 'Erbstück mit Runen',
+    );
+    const zweiter = HeroInventoryEntry(
+      source: InventoryItemSource.waffe,
+      sourceRef: 'w:Dolch',
+      beschreibung: 'Beutestück',
+    );
+
+    final migriert = migriereInventarVerweise(<HeroInventoryEntry>[
+      erster,
+      zweiter,
+    ], kampf);
+
+    expect(migriert[0].sourceRef, 'w#w1');
+    expect(migriert[1].sourceRef, 'w#w2');
+    expect(migriert[1].beschreibung, 'Beutestück');
+  });
+
   group('Bestandshelden laden', () {
     for (final held in Bestandsheld.values) {
       test(
@@ -85,24 +144,29 @@ void main() {
     }
 
     for (final held in Bestandsheld.values.where((h) => h.istAktuellesFormat)) {
-      test(
-        '${held.datei}: aktuelles Format übersteht das Laden unverändert',
-        () {
-          final roh = ladeBestandsheldJson(held);
-          final bundle = ladeBestandsheld(held);
+      test('${held.datei}: Laden ändert nur Ausrüstungsverweise', () {
+        final roh = ladeBestandsheldJson(held);
+        final bundle = ladeBestandsheld(held);
 
-          expectNurGeaendert(
-            (roh['hero'] as Map).cast<String, dynamic>(),
-            bundle.hero.toJson(),
-            const <String>{},
-          );
-          expectNurGeaendert(
-            (roh['state'] as Map).cast<String, dynamic>(),
-            bundle.state.toJson(),
-            const <String>{},
-          );
-        },
-      );
+        final vorher = (roh['hero'] as Map).cast<String, dynamic>();
+        final unterschiede = jsonUnterschiede(vorher, bundle.hero.toJson());
+        final erlaubteAenderung = RegExp(
+          r'^combatConfig/(mainWeapon|weapons/\d+|'
+          r'weapons/\d+/rangedProfile/projectiles/\d+|'
+          r'armor/pieces/\d+|offhandEquipment/\d+)/id$'
+          r'|^inventoryEntries/\d+/sourceRef$',
+        );
+        expect(
+          unterschiede.where((pfad) => !erlaubteAenderung.hasMatch(pfad)),
+          isEmpty,
+          reason: 'Die ID-Migration darf keine anderen Heldendaten ändern.',
+        );
+        expectNurGeaendert(
+          (roh['state'] as Map).cast<String, dynamic>(),
+          bundle.state.toJson(),
+          const <String>{},
+        );
+      });
     }
   });
 

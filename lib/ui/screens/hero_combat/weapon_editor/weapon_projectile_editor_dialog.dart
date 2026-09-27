@@ -134,6 +134,7 @@ class _RangedProjectileEditorDialogState
           onPressed: () {
             Navigator.of(context).pop(
               RangedProjectile(
+                id: widget.initialProjectile.id,
                 name: _nameController.text.trim(),
                 count: _readInt(_countController).clamp(0, 9999),
                 tpMod: _readInt(_tpModController),

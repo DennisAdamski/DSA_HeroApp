@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config/shield_size.dart';
 /// Beschreibt ein Schild oder eine Parierwaffe im Kampf-Inventar.
 class OffhandEquipmentEntry {
   const OffhandEquipmentEntry({
+    this.id = '',
     this.name = '',
     this.type = OffhandEquipmentType.parryWeapon,
     this.breakFactor = 0,
@@ -16,6 +17,9 @@ class OffhandEquipmentEntry {
     this.isGeweiht = false,
     this.geweihtDescription = '',
   });
+
+  /// Stabile Kennung des Nebenhand-Teils (siehe `CombatConfig.withStableIds`).
+  final String id;
 
   /// Anzeigename des Eintrags.
   final String name;
@@ -55,6 +59,7 @@ class OffhandEquipmentEntry {
 
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   OffhandEquipmentEntry copyWith({
+    String? id,
     String? name,
     OffhandEquipmentType? type,
     int? breakFactor,
@@ -68,6 +73,7 @@ class OffhandEquipmentEntry {
     String? geweihtDescription,
   }) {
     return OffhandEquipmentEntry(
+      id: id ?? this.id,
       name: name ?? this.name,
       type: type ?? this.type,
       breakFactor: breakFactor ?? this.breakFactor,
@@ -85,6 +91,7 @@ class OffhandEquipmentEntry {
   /// Serialisiert den Eintrag zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
     return {
+      if (id.isNotEmpty) 'id': id,
       'name': name,
       'type': offhandEquipmentTypeToJson(type),
       'breakFactor': breakFactor,
@@ -103,6 +110,7 @@ class OffhandEquipmentEntry {
   static OffhandEquipmentEntry fromJson(Map<String, dynamic> json) {
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return OffhandEquipmentEntry(
+      id: (json['id'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
       type: offhandEquipmentTypeFromJson((json['type'] as String?) ?? ''),
       breakFactor: getInt('breakFactor'),

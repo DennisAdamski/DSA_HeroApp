@@ -136,7 +136,13 @@ class HeroActions {
     );
     final effectiveStartAttributes = computeHeroEffectiveStartAttributes(hero);
 
+    // Neue Slots bekommen eine zufaellige ID, damit sie nie die Inventardaten
+    // eines gerade entfernten Slots erben; geladene tragen ihre schon.
+    final combatConfigMitIds = hero.combatConfig.withStableIds(
+      neueId: () => const Uuid().v4(),
+    );
     final normalizedHero = hero.copyWith(
+      combatConfig: combatConfigMitIds,
       apTotal: normalizedApTotal,
       apSpent: normalizedApSpent,
       apAvailable: calculatedAvailable,

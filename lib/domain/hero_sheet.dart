@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
@@ -565,6 +566,9 @@ class HeroSheet {
           (json['attributes'] as Map?)?.cast<String, dynamic>() ??
           const {},
     );
+    final parsedCombatConfig = CombatConfig.fromJson(
+      (json['combatConfig'] as Map?)?.cast<String, dynamic>() ?? const {},
+    );
     final verlauf = leseSteigerungsverlauf(
       (json['advancementHistory'] as List?) ?? const <dynamic>[],
     );
@@ -584,9 +588,7 @@ class HeroSheet {
       bought: BoughtStats.fromJson(
         (json['bought'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
-      combatConfig: CombatConfig.fromJson(
-        (json['combatConfig'] as Map?)?.cast<String, dynamic>() ?? const {},
-      ),
+      combatConfig: parsedCombatConfig,
       talents: rawTalents.map((key, value) {
         final map = value is Map
             ? value.cast<String, dynamic>()
@@ -660,13 +662,18 @@ class HeroSheet {
       ),
       showInapplicableSpecialAbilities:
           json['showInapplicableSpecialAbilities'] == true,
-      inventoryEntries: rawInventoryEntries
-          .whereType<Map>()
-          .map(
-            (entry) =>
-                HeroInventoryEntry.fromJson(entry.cast<String, dynamic>()),
-          )
-          .toList(growable: false),
+      // Namensverweise aus Altdaten zeigen danach auf die Slot-IDs
+      // (Befunde ARCH-07-B2/B3).
+      inventoryEntries: migriereInventarVerweise(
+        rawInventoryEntries
+            .whereType<Map>()
+            .map(
+              (entry) =>
+                  HeroInventoryEntry.fromJson(entry.cast<String, dynamic>()),
+            )
+            .toList(growable: false),
+        parsedCombatConfig,
+      ),
       notes: rawNotes
           .whereType<Map>()
           .map((entry) => HeroNoteEntry.fromJson(entry.cast<String, dynamic>()))

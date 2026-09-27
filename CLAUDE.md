@@ -47,6 +47,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   eingebetteten Schluessel von `HeroAppearance`/`HeroBackground`). **Jedes neue
   Feld dort eintragen** — sonst kaeme ein bewusst weggelassener Wert als
   „unbekannt“ zurueck. Verschachtelte Objekte bewahren Unbekanntes nicht.
+- Verknuepfte Kampf-/Inventareintraege tragen stabile Slot-IDs in
+  `lib/domain/combat_config/`; das Verweisformat und die Migration aus
+  Namensverweisen liegen in `inventar_verweise.dart`. `HeroSheet.fromJson`
+  vergibt fuer Altdaten deterministische IDs, `HeroActions.saveHero` fuer neue
+  Slots UUIDs. `inventory_sync_rules.dart` gleicht weiterhin beide
+  Darstellungen ab. Das ist der B2/B3-Teilfix, noch nicht das gemeinsame
+  Gegenstandsmodell aus ARCH-03. Die Migration aendert Inhalts-Hashes;
+  Bestandsfixtures und Hash-Pins nur gemeinsam mit ihr aktualisieren.
 - Die Bestandshelden unter `test/fixtures/heroes/` (ARCH-07) sind genauso
   festgeschrieben: nie anpassen, ein neues Format bekommt eine neue Datei.
   `test/domain/bestandshelden_kompatibilitaet_test.dart` pinnt ihre
