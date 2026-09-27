@@ -49,6 +49,41 @@ technische UI-Aspekte getrennt getestet werden.
   Variantenkosten, Kampfboni, aufgelöste Manövernamen, Scrollbarkeit und
   passwortgeschützte Regeltexte im Detaildialog.
 
+## Bestandsfixtures (ARCH-07)
+
+Unter `test/fixtures/heroes/` liegen synthetische Bestandshelden als
+Transfer-Bundles, genau so, wie die App sie exportiert. Sie vertreten Daten,
+die schon auf Geräten und in der Cloud liegen:
+
+| Datei | Deckt ab |
+|---|---|
+| `f01_krieger_normal` | Nah- und Fernkampfwaffe mit Geschossen, Schild, Rüstung, benannte Modifikatoren, Notiz, laufendes Abenteuer, Wunde, Würfelprotokoll |
+| `f02_geode_magisch` | Repräsentation mit Traditionswahl, Zauber, Rituale, aktiver Armatrutz, Altname `Eiserner Wille I / II` |
+| `f03_geweihter_karmal` | KaP aus der Profession, abgeschaltete Magie, karmale SF |
+| `f04_episch` | epische Felder, Haupteigenschaften, Aktivierungsregel |
+| `f05_freitext_merkmale` | unerkannte Freitext-Merkmale, Dauermodifikator nur in `persistentMods` |
+| `f06_gleichnamige_ausruestung` | je zwei gleichnamige Waffen, Geschosse und Rüstungsteile mit verschiedenen Inventardaten |
+| `f07_legacy_schema1` | handgeschriebener Altstand: Transferversion 1, ohne `schemaVersion`, nur alte Schlüssel |
+| `f08_steigerungshistorie` | Schemaversion 27 mit übernommener Historie; `f08b` mit unbekannter Steigerungsart |
+
+Regeln:
+
+- **Fixtures werden nie angepasst.** Bricht ein Test daran, ist der Code
+  inkompatibel zu vorhandenen Daten geworden — wie bei den Krypto-Goldens.
+  Ein neues Format bekommt eine neue Datei.
+- Eine neue Migration bringt eine eigene Fixture mit altem Stand mit, dazu
+  einen Test, dass erneutes Laden nichts weiter verändert.
+- `bestandshelden_kompatibilitaet_test.dart` pinnt die Inhalts-Hashes jeder
+  Fixture. Ändert sich einer, bekäme jeder gleich gespeicherte Held einen
+  neuen Hash und der Konto-Sync meldete Konflikte. Anpassen nur zusammen mit
+  einer bewusst eingeführten Migration.
+- Fehler, die diese Tests aufdecken, werden nicht nebenbei behoben: Der Test
+  hält das heutige Verhalten mit dem Kommentar `Befund ARCH-07-Bx` fest, der
+  Befund steht mit Folgeauftrag in `docs/architecture_roadmap.md`.
+
+Laden über `test/test_support/hero_fixtures.dart` (`Bestandsheld`,
+`ladeBestandsheld`, `expectNurGeaendert` mit reihenfolgestrengem Pfad-Diff).
+
 ## Zuordnungsmatrix
 
 | Testdatei | Gruppe | Zweck |
@@ -83,6 +118,7 @@ technische UI-Aspekte getrennt getestet werden.
 | `test/data/hero_actions_import_export_test.dart` | data | Actions Import/Export |
 | `test/domain/hero_sheet_model_test.dart` | domain | HeroSheet-Kompatibilitaet |
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |
+| `test/domain/bestandshelden_kompatibilitaet_test.dart` | domain | Bestandsfixtures: Fixpunkt nach einmaligem Laden, Inhalts-Hashes, Altschlüssel, Befunde B1/B5/B6 |
 | `test/workspace/workspace_area_registry_test.dart` | workspace | Area-Registry |
 | `test/workspace/workspace_tab_edit_controller_test.dart` | workspace | Tab-Edit-Controller |
 | `test/ui2/shell/app_root_switch_test.dart` | ui2 | Weiche zwischen bestehender und neuer Oberfläche |
