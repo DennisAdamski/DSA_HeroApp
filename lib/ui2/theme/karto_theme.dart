@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_tiefe.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 /// Baut das Theme der neuen Oberflaeche.
 ///
-/// Der Leitgedanke steckt in den Komponenten-Themes: keine Schatten, keine
-/// Verlaeufe. Tiefe entsteht aus der **Flaeche**, Gliederung aus der **Linie**,
-/// und beide sind dreistufig (`senke`/`blatt`/`feld`,
-/// `hoehenlinie`/`grat`/`kueste`). Deshalb ist `elevation` durchgehend 0 und
-/// `surfaceTintColor` durchgehend transparent.
+/// Der Leitgedanke steckt in den Komponenten-Themes: **Liegendes ist flach,
+/// Schwebendes wirft Schatten.** Tiefe liegender Flaechen entsteht aus der
+/// **Flaeche**, Gliederung aus der **Linie**, und beide sind dreistufig
+/// (`senke`/`blatt`/`feld`, `hoehenlinie`/`grat`/`kueste`). Karten, Chips und
+/// Knoepfe tragen deshalb `elevation: 0`. Dialoge, Blaetter, Menues und
+/// Snackbar schweben ueber dem Papier und bekommen die Stufe
+/// [KartoTiefe.schwebend]; ihr Schatten nimmt die warme Farbe aus
+/// `KartoTheme.schatten`. `surfaceTintColor` bleibt durchgehend transparent.
 ///
 /// Die Flaechen sind so verteilt: Seitengrund `blatt`, erhobene Flaechen wie
 /// Karten und Dialoge `feld`, eingelassene wie Eingabefelder und schwebende wie
@@ -25,6 +29,12 @@ ThemeData buildKartoTheme({
   final radiusKlein = BorderRadius.circular(kKartoRadiusKlein);
   const durchsichtig = Color(0x00000000);
 
+  // Container sind deckende Mischungen auf `feld`. Ohne sie faellt Material
+  // auf die volle Grundfarbe zurueck: eine Auswahl im SegmentedButton stuende
+  // dann siegelrot, ein getoenter Chip Meer auf Meer.
+  Color container(Color farbe, double anteil) =>
+      Color.alphaBlend(farbe.withValues(alpha: anteil), t.feld);
+
   final colorScheme = ColorScheme(
     brightness: brightness,
     primary: t.meer,
@@ -38,12 +48,24 @@ ThemeData buildKartoTheme({
     surface: t.blatt,
     onSurface: t.schrift,
     onSurfaceVariant: t.schriftLeise,
+    primaryContainer: container(t.meer, 0.14),
+    onPrimaryContainer: t.schrift,
+    // Auswahl traegt Messing: der Akzent der Oberflaeche, nicht die
+    // Warnfarbe `siegel`, auf die `secondary` zeigt.
+    secondaryContainer: container(t.messing, 0.22),
+    onSecondaryContainer: t.schrift,
+    tertiaryContainer: container(t.moos, 0.14),
+    onTertiaryContainer: t.schrift,
+    errorContainer: container(t.siegel, 0.14),
+    onErrorContainer: t.schrift,
     surfaceContainerHighest: t.feld,
     surfaceContainerHigh: t.feld,
     surfaceContainer: t.senke,
+    surfaceContainerLow: t.feld,
+    surfaceContainerLowest: t.feld,
     outline: t.grat,
     outlineVariant: t.hoehenlinie,
-    shadow: durchsichtig,
+    shadow: t.schatten,
     scrim: t.schleier,
     inverseSurface: t.schrift,
     onInverseSurface: t.blatt,
@@ -61,9 +83,9 @@ ThemeData buildKartoTheme({
     scaffoldBackgroundColor: t.blatt,
     canvasColor: t.blatt,
     extensions: <ThemeExtension<dynamic>>[t],
-    // Kartograph kennt keine Schatten. Was hier durchrutscht, faellt sofort
-    // auf, weil sonst nichts in der Oberflaeche schwebt.
-    shadowColor: durchsichtig,
+    // Nur Komponenten mit Elevation werfen Schatten; liegende stehen unten
+    // ausdruecklich auf 0.
+    shadowColor: t.schatten,
   );
   final textTheme = buildKartoTextTheme(t, basis.textTheme);
 
@@ -96,6 +118,7 @@ ThemeData buildKartoTheme({
     cardTheme: CardThemeData(
       color: t.feld,
       surfaceTintColor: durchsichtig,
+      shadowColor: durchsichtig,
       elevation: 0,
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
@@ -160,6 +183,15 @@ ThemeData buildKartoTheme({
       ),
     ),
 
+    // Material 3 hebt ElevatedButton um 1 an. Ein Knopf liegt aber auf dem
+    // Papier; angehoben wird bei Kartograph nur, was schwebt.
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: radiusKlein),
+      ),
+    ),
+
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: t.schrift,
@@ -200,6 +232,7 @@ ThemeData buildKartoTheme({
         color: t.senke,
         borderRadius: radiusKlein,
         border: Border.all(color: t.grat, width: Strich.grat),
+        boxShadow: KartoTiefe.schwebend.schatten(t),
       ),
       textStyle: textTheme.fliess,
     ),
@@ -207,7 +240,7 @@ ThemeData buildKartoTheme({
     snackBarTheme: SnackBarThemeData(
       backgroundColor: t.senke,
       contentTextStyle: textTheme.fliess,
-      elevation: 0,
+      elevation: KartoTiefe.schwebend.elevation,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
         borderRadius: radius,
@@ -220,10 +253,30 @@ ThemeData buildKartoTheme({
     dialogTheme: DialogThemeData(
       backgroundColor: t.feld,
       surfaceTintColor: durchsichtig,
-      elevation: 0,
+      elevation: KartoTiefe.schwebend.elevation,
+      shadowColor: t.schatten,
       shape: RoundedRectangleBorder(
         borderRadius: radius,
         side: BorderSide(color: t.kueste, width: Strich.kueste),
+      ),
+    ),
+
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: t.feld,
+      surfaceTintColor: durchsichtig,
+      elevation: KartoTiefe.schwebend.elevation,
+      modalElevation: KartoTiefe.schwebend.elevation,
+      shadowColor: t.schatten,
+    ),
+
+    popupMenuTheme: PopupMenuThemeData(
+      color: t.feld,
+      surfaceTintColor: durchsichtig,
+      elevation: KartoTiefe.schwebend.elevation,
+      shadowColor: t.schatten,
+      shape: RoundedRectangleBorder(
+        borderRadius: radiusKlein,
+        side: BorderSide(color: t.hoehenlinie, width: Strich.hoehenlinie),
       ),
     ),
 

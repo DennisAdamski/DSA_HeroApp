@@ -24,6 +24,8 @@ import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 part 'hero_begleiter/begleiter_helpers.dart';
 part 'hero_begleiter/begleiter_grunddaten_section.dart';

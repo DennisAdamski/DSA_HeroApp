@@ -822,7 +822,10 @@ class _CatalogSettingsPage extends ConsumerWidget {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (_) => const CatalogManagementScreen(),
+                      builder: (_) => InheritedTheme.captureAll(
+                        context,
+                        const CatalogManagementScreen(),
+                      ),
                     ),
                   );
                 },
@@ -888,7 +891,10 @@ class _HouseRulesSettingsPage extends ConsumerWidget {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (_) => const HouseRulePackManagementScreen(),
+                      builder: (_) => InheritedTheme.captureAll(
+                        context,
+                        const HouseRulePackManagementScreen(),
+                      ),
                     ),
                   );
                 },
@@ -1395,6 +1401,9 @@ class _AvatarApiSettingsPageState
               const SizedBox(height: 16),
               DropdownButtonFormField<AvatarApiProvider>(
                 initialValue: _selectedProvider,
+                // Ohne isExpanded legt das Feld den Eintrag in eine Row, die
+                // lange Anbieternamen bei grosser Schrift nicht kuerzt.
+                isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'Anbieter',
                   border: OutlineInputBorder(),
@@ -1403,7 +1412,10 @@ class _AvatarApiSettingsPageState
                     .map(
                       (provider) => DropdownMenuItem(
                         value: provider,
-                        child: Text(provider.displayName),
+                        child: Text(
+                          provider.displayName,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     )
                     .toList(growable: false),

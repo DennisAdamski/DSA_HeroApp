@@ -53,6 +53,7 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_chain_card.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/requirement_checklist.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
@@ -343,6 +344,11 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                   TabBar(
                     controller: _subTabController,
                     isScrollable: true,
+                    // Unter Kartograph buendig unter dem Tab-Kopf; Material
+                    // rueckt scrollbare Reiter sonst um 52 ein.
+                    tabAlignment: kartoVariante(context) == null
+                        ? null
+                        : TabAlignment.start,
                     tabs: const [
                       Tab(text: 'Kampfwerte'),
                       Tab(text: 'Waffen'),

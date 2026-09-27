@@ -155,6 +155,8 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
           tableId: 'combat.offhand',
           builder: (context, resizeBinding) => FlexibleTable(
             tableKey: const ValueKey<String>('combat-offhand-table'),
+            // BF und die drei Modifikatoren; rechtsbuendig nur unter Kartograph.
+            numerischeSpalten: const <int>{2, 4, 5, 6},
             columnSpecs: _columnSpecs,
             columnResize: resizeBinding,
             headerCells: [

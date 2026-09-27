@@ -10,6 +10,7 @@ void main() {
     String bezeichnung = 'Lebenspunkte',
     required int aktuell,
     required int maximum,
+    String? kuerzel,
     VoidCallback? onBearbeiten,
     double breite = 320,
     double skalierung = 1,
@@ -34,6 +35,7 @@ void main() {
             bezeichnung: bezeichnung,
             aktuell: aktuell,
             maximum: maximum,
+            kuerzel: kuerzel,
             onBearbeiten: onBearbeiten,
           ),
         ),
@@ -116,5 +118,61 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     expect(find.text('128 / 140'), findsOneWidget);
+  });
+
+  group('Hinweis unter dem Balken', () {
+    for (final fall in <(int, int, String)>[
+      (23, 35, '12 LeP fehlen'),
+      (34, 35, '1 LeP fehlt'),
+      (35, 35, 'Voll'),
+      (40, 35, '5 über Maximum'),
+      // Negative Werte zaehlen voll: bis 35 fehlen 38.
+      (-3, 35, '38 LeP fehlen'),
+    ]) {
+      testWidgets('${fall.$1} von ${fall.$2} ergibt "${fall.$3}"', (
+        tester,
+      ) async {
+        await zeige(tester, aktuell: fall.$1, maximum: fall.$2, kuerzel: 'LeP');
+        expect(find.text(fall.$3), findsOneWidget);
+      });
+    }
+
+    testWidgets('ohne Maximum oder Kuerzel entfaellt der Hinweis', (
+      tester,
+    ) async {
+      await zeige(tester, aktuell: 12, maximum: 0, kuerzel: 'KaP');
+      expect(find.textContaining('fehl'), findsNothing);
+      expect(find.text('Voll'), findsNothing);
+      await zeige(tester, aktuell: 12, maximum: 35);
+      expect(find.textContaining('fehl'), findsNothing);
+    });
+  });
+
+  testWidgets('der Balken laeuft einer Aenderung nach', (tester) async {
+    Widget wert(int aktuell) => MaterialApp(
+      theme: buildKartoTheme(
+        brightness: Brightness.light,
+        centerAppBarTitle: false,
+      ),
+      home: Scaffold(
+        body: KartoRessourcenwert(
+          bezeichnung: 'Lebenspunkte',
+          aktuell: aktuell,
+          maximum: 40,
+        ),
+      ),
+    );
+    double balken() => tester
+        .widget<LinearProgressIndicator>(find.byType(LinearProgressIndicator))
+        .value!;
+
+    await tester.pumpWidget(wert(10));
+    // Der erste Aufbau steht sofort am Ziel.
+    expect(balken(), 0.25);
+    await tester.pumpWidget(wert(30));
+    await tester.pump(const Duration(milliseconds: 60));
+    expect(balken(), inExclusiveRange(0.25, 0.75));
+    await tester.pumpAndSettle();
+    expect(balken(), 0.75);
   });
 }

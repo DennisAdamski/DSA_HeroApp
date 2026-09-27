@@ -11,7 +11,9 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielaktionen.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
 
 /// Führt eine Laufzeitaktion aus und meldet Fehler sichtbar.
@@ -95,6 +97,7 @@ class KartoSpielansicht extends ConsumerWidget {
               children: [
                 kopf,
                 ..._mitLuecken([...haupt, ...seite, protokoll]),
+                const _Abschluss(),
               ],
             ),
           );
@@ -124,6 +127,7 @@ class KartoSpielansicht extends ConsumerWidget {
                   ),
                 ],
               ),
+              const _Abschluss(),
             ],
           ),
         );
@@ -216,11 +220,15 @@ class KartoSpielansicht extends ConsumerWidget {
       KartoAbschnitt(
         titel: 'Kampf',
         stufe: KartoFlaechenstufe.senke,
+        symbol: Icons.shield_outlined,
+        akzent: KartoAkzent.messing,
         child: bestand.spielKampfproben(heroId: heroId, werte: werte),
       ),
       KartoAbschnitt(
         titel: 'Aktive Effekte',
         stufe: KartoFlaechenstufe.senke,
+        symbol: Icons.auto_awesome_outlined,
+        akzent: KartoAkzent.astral,
         aktion: TextButton(
           key: const ValueKey<String>('karto-spiel-effekte'),
           onPressed: () =>
@@ -232,6 +240,7 @@ class KartoSpielansicht extends ConsumerWidget {
       KartoAbschnitt(
         titel: 'Zustand',
         stufe: KartoFlaechenstufe.senke,
+        symbol: Icons.monitor_heart_outlined,
         child: bestand.spielZustand(heroId: heroId, werte: werte),
       ),
     ];
@@ -264,4 +273,31 @@ class KartoSpielansicht extends ConsumerWidget {
       ),
     ),
   );
+}
+
+/// Leiser Schluss der Spielansicht: Zierlinie und ein Satz.
+///
+/// Rein dekorativ; er schliesst die Seite ab, damit sie nicht mitten im
+/// Protokoll aufhoert. Kein Knopf, keine Angabe — siehe die Negativpruefungen
+/// in `test/ui2/spielen/karto_spielverlauf_test.dart`.
+class _Abschluss extends StatelessWidget {
+  const _Abschluss();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: Abstand.rand, bottom: Abstand.block),
+      child: Column(
+        children: [
+          const KartoZierlinie(maxBreite: 360),
+          const SizedBox(height: Abstand.normal),
+          Text(
+            'Jeder Held hat eine Geschichte.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.legende,
+          ),
+        ],
+      ),
+    );
+  }
 }

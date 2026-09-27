@@ -31,6 +31,21 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
     }
 
     final colorScheme = Theme.of(context).colorScheme;
+    // Unter Kartograph flacher: die Aktionsspalte ist 88 breit, zwei kompakte
+    // Symbolknoepfe umbrachen darin und verdoppelten jede Zeilenhoehe.
+    final karto = kartoVariante(context) != null;
+    final knopfDichte = karto
+        ? const VisualDensity(horizontal: -4, vertical: -4)
+        : VisualDensity.compact;
+    final knopfSymbol = karto ? 18.0 : null;
+    final namensStil = karto
+        ? TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            minimumSize: const Size(0, 32),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+          )
+        : null;
     final rows = <FlexibleTableRow>[];
     for (final (index, entry) in filteredEntries) {
       final isSelected = _selectedIndex == index;
@@ -45,6 +60,7 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
               alignment: Alignment.centerLeft,
               child: TextButton(
                 key: ValueKey<String>('inventory-row-open-$index'),
+                style: namensStil,
                 onPressed: () => _openEditEntryAction(context, index),
                 child: Align(
                   alignment: Alignment.centerLeft,
@@ -80,7 +96,8 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
                   IconButton(
                     key: ValueKey<String>('inventory-row-edit-$index'),
                     tooltip: 'Bearbeiten',
-                    visualDensity: VisualDensity.compact,
+                    visualDensity: knopfDichte,
+                    iconSize: knopfSymbol,
                     onPressed: () => _openEditEntryAction(context, index),
                     icon: const Icon(Icons.edit_outlined),
                   ),
@@ -88,7 +105,8 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
                     IconButton(
                       key: ValueKey<String>('inventory-row-delete-$index'),
                       tooltip: 'Löschen',
-                      visualDensity: VisualDensity.compact,
+                      visualDensity: knopfDichte,
+                      iconSize: knopfSymbol,
                       onPressed: () => _deleteEntry(index),
                       icon: Icon(
                         Icons.delete_outline,
@@ -124,6 +142,8 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
             Text('Aktion'),
           ],
           rows: rows,
+          // Anzahl, Gewicht und Wert; rechtsbuendig nur unter Kartograph.
+          numerischeSpalten: const <int>{4, 5, 6},
         ),
       ),
     );

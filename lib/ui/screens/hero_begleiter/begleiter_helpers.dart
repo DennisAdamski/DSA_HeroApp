@@ -18,12 +18,17 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Unter Kartograph eine echte Abschnittsueberschrift statt einer Zeile in
+    // der Interaktionsfarbe, die wie ein Verweis aussah.
+    final karto = kartoVariante(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleSmall
-            ?.copyWith(color: Theme.of(context).colorScheme.primary),
+        style: karto == null
+            ? Theme.of(context).textTheme.titleSmall
+                  ?.copyWith(color: Theme.of(context).colorScheme.primary)
+            : Theme.of(context).textTheme.abschnitt,
       ),
     );
   }

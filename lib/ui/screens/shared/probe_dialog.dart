@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/trefferzonen_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/animated_dice_row.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 
 /// Oeffnet den gemeinsamen Dialog fuer die Wuerfel-Engine.
 Future<void> showProbeDialog({
@@ -614,7 +615,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
         DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(color: Theme.of(context).dividerColor),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(kartoRadiusOder(context, 12)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

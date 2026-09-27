@@ -6,9 +6,21 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rules_lookup_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_coordinator.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
 
 /// Zeigt die bestehende Heldenverwaltung ohne äußere Navigation und Inspector.
+///
+/// Nur die neue Oberfläche benutzt diesen Körper; sein Kopf ist deshalb der
+/// Kartograph-Seitenkopf, und die Fläche bleibt durchsichtig, damit das Papier
+/// des Arbeitsbereichs durchscheint. Tabs und Bearbeitung kommen unverändert
+/// aus dem gemeinsamen [WorkspaceManagementCoordinator].
 class WorkspaceManagementBody extends ConsumerStatefulWidget {
   /// Erstellt die Verwaltungsfläche und meldet ihren aktuellen Leave-Guard.
   const WorkspaceManagementBody({
@@ -79,14 +91,25 @@ class _WorkspaceManagementBodyState
   @override
   Widget build(BuildContext context) {
     if (widget.korrekturenGesperrt) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'Während einer offenen Entwicklung sind Korrekturen am '
-            'Heldenbogen gesperrt. Wechsle zur Entwicklung, um die Planung '
-            'fortzusetzen, zu übernehmen oder zu verwerfen.',
-            textAlign: TextAlign.center,
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(Abstand.bahn),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: Breite.lesespalte),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const KartoKompassrose(groesse: 96),
+                const SizedBox(height: Abstand.block),
+                Text(
+                  'Während einer offenen Entwicklung sind Korrekturen am '
+                  'Heldenbogen gesperrt. Wechsle zur Entwicklung, um die '
+                  'Planung fortzusetzen, zu übernehmen oder zu verwerfen.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.fliess,
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -112,6 +135,7 @@ class _WorkspaceManagementBodyState
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 744;
+        final rand = kartoBreiteFuer(constraints.maxWidth).seitenrand;
         final actions = buildWorkspaceManagementActions(
           context: context,
           ref: ref,
@@ -122,18 +146,27 @@ class _WorkspaceManagementBodyState
         );
         return Column(
           children: <Widget>[
+            // Durchsichtig: das Papier des Arbeitsbereichs traegt den Grund.
             Material(
-              color: Theme.of(context).colorScheme.surface,
+              type: MaterialType.transparency,
               child: _ManagementHeader(
                 coordinator: _coordinator,
                 compact: compact,
+                rand: rand,
                 actions: actions,
               ),
             ),
             Expanded(
-              child: TabBarView(
-                controller: _coordinator.tabController,
-                children: _coordinator.buildTabContents(),
+              child: Padding(
+                // Die Tabs bringen eigenen Innenabstand mit; zusammen stehen
+                // sie so buendig unter dem Seitenkopf.
+                padding: EdgeInsets.symmetric(
+                  horizontal: (rand - Abstand.weit).clamp(0, rand),
+                ),
+                child: TabBarView(
+                  controller: _coordinator.tabController,
+                  children: _coordinator.buildTabContents(),
+                ),
               ),
             ),
           ],
@@ -161,19 +194,40 @@ class _ManagementHeader extends StatelessWidget {
   const _ManagementHeader({
     required this.coordinator,
     required this.compact,
+    required this.rand,
     required this.actions,
   });
 
   final WorkspaceManagementCoordinator coordinator;
   final bool compact;
+  final double rand;
   final List<Widget> actions;
 
   @override
   Widget build(BuildContext context) {
     final activeTab = coordinator.activeTab;
+    final token = KartoTheme.of(context);
+    final texte = Theme.of(context).textTheme;
+    // Die oberste Ebene setzt Unterstrich und Schrift ausdruecklich; die
+    // verschachtelten Reiter der Tabs nehmen die ruhigere Pille aus dem
+    // Feinschliff und bleiben so als zweite Ebene erkennbar.
     final tabs = TabBar(
       controller: coordinator.tabController,
       isScrollable: true,
+      tabAlignment: TabAlignment.start,
+      padding: EdgeInsets.symmetric(horizontal: rand - Abstand.weit),
+      labelPadding: const EdgeInsets.symmetric(horizontal: Abstand.weit),
+      labelColor: token.schrift,
+      unselectedLabelColor: token.schriftLeise,
+      labelStyle: texte.labelLarge?.copyWith(color: token.schrift),
+      unselectedLabelStyle: texte.labelLarge?.copyWith(
+        color: token.schriftLeise,
+      ),
+      indicator: UnderlineTabIndicator(
+        borderSide: BorderSide(color: token.meer, width: Strich.ufer),
+      ),
+      indicatorSize: TabBarIndicatorSize.label,
+      dividerColor: token.hoehenlinie,
       tabs: coordinator.visibleTabs
           .map((tab) => Tab(text: tab.label))
           .toList(growable: false),
@@ -181,54 +235,42 @@ class _ManagementHeader extends StatelessWidget {
     final actionRow = SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       reverse: true,
-      child: Row(children: <Widget>[...actions, const SizedBox(width: 8)]),
-    );
-    final heading = activeTab == null
-        ? const SizedBox.shrink()
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                activeTab.label,
-                key: const ValueKey<String>('management-active-title'),
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                activeTab.helper,
-                key: const ValueKey<String>('management-active-helper'),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          );
-    if (compact) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: heading,
-          ),
-          if (actions.isNotEmpty) ...<Widget>[
-            Align(alignment: Alignment.centerRight, child: actionRow),
-            const SizedBox(height: 4),
+          for (var i = 0; i < actions.length; i++) ...<Widget>[
+            if (i > 0) const SizedBox(width: Abstand.normal),
+            actions[i],
           ],
-          tabs,
         ],
-      );
-    }
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Expanded(child: heading),
-              if (actions.isNotEmpty) Flexible(child: actionRow),
-            ],
+          padding: EdgeInsets.fromLTRB(
+            rand,
+            compact ? Abstand.block : Abstand.bahn,
+            rand,
+            0,
           ),
+          child: activeTab == null
+              ? const SizedBox.shrink()
+              : KartoSeitenkopf(
+                  // Schmal wird jede Zeile ueber den Reitern gebraucht.
+                  kontext: compact ? null : 'Heldenbogen',
+                  titel: activeTab.label,
+                  unterzeile: activeTab.helper,
+                  kompakt: compact,
+                  titelSchluessel: const ValueKey<String>(
+                    'management-active-title',
+                  ),
+                  unterzeileSchluessel: const ValueKey<String>(
+                    'management-active-helper',
+                  ),
+                  aktion: actions.isEmpty ? null : actionRow,
+                ),
         ),
         tabs,
       ],

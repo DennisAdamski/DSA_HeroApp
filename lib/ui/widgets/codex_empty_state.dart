@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 
 /// Dekorativer Leerzustand fuer leere Listen und nicht aktivierte Bereiche.
+///
+/// Unter Kartograph ([kartoVariante]) ohne Kasten, mit Kompassrose statt der
+/// Illustration aus dem Codex-Bestand.
 class CodexEmptyState extends StatelessWidget {
   /// Erstellt einen dekorativen Leerzustand mit lokaler Illustration.
   const CodexEmptyState({
@@ -29,6 +36,33 @@ class CodexEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final codex = context.codexTheme;
     final theme = Theme.of(context);
+    if (kartoVariante(context) != null) {
+      return Padding(
+        padding: const EdgeInsets.all(Abstand.bahn),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const KartoKompassrose(groesse: 88),
+            const SizedBox(height: Abstand.block),
+            Text(
+              title,
+              style: theme.textTheme.abschnitt,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: Abstand.normal),
+            Text(
+              message,
+              style: theme.textTheme.fliess,
+              textAlign: TextAlign.center,
+            ),
+            if (action != null) ...[
+              const SizedBox(height: Abstand.block),
+              action!,
+            ],
+          ],
+        ),
+      );
+    }
 
     return Container(
       width: double.infinity,

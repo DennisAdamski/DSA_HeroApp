@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 /// Beschreibt eine einzelne Zeile fuer [FlexibleTable].
 class FlexibleTableRow {
@@ -14,6 +18,11 @@ class FlexibleTableRow {
 }
 
 /// Horizontale Tabelle mit optional adaptiven Spaltenbreiten.
+///
+/// Unter Kartograph ([kartoVariante]) ohne getoenten Kasten: eine Haarlinie
+/// rahmt die Tabelle, der Kopf liegt auf `senke` in der Etikettschrift, und
+/// Haarlinien trennen die Zeilen. Spalten aus [numerischeSpalten] stehen dort
+/// rechtsbuendig mit Tabellenziffern, damit Zahlen untereinander stehen.
 class FlexibleTable extends StatefulWidget {
   const FlexibleTable({
     super.key,
@@ -25,6 +34,7 @@ class FlexibleTable extends StatefulWidget {
     this.columnSpecs,
     this.columnResize,
     this.horizontalPadding = const EdgeInsets.fromLTRB(6, 4, 6, 6),
+    this.numerischeSpalten = const <int>{},
   }) : assert(
          columnSpecs == null || columnSpecs.length == headerCells.length,
          'columnSpecs must match headerCells length',
@@ -40,6 +50,9 @@ class FlexibleTable extends StatefulWidget {
   /// Optionale Nutzerbreiten und Resize-Aktionen für adaptive Spalten.
   final TableColumnResizeBinding? columnResize;
   final EdgeInsets horizontalPadding;
+
+  /// Spaltenindizes mit Zahlen; nur unter Kartograph rechtsbuendig gesetzt.
+  final Set<int> numerischeSpalten;
 
   @override
   State<FlexibleTable> createState() => _FlexibleTableState();
@@ -80,14 +93,25 @@ class _FlexibleTableState extends State<FlexibleTable> {
   @override
   Widget build(BuildContext context) {
     final codex = context.codexTheme;
+    final karto = kartoVariante(context);
     final minWidth = (widget.minChars <= 0 ? 3 : widget.minChars) * 12.0;
     final useLegacyCellMinWidth = widget.columnSpecs == null;
+    final zeilenzahl = widget.rows.length;
     return Container(
-      decoration: BoxDecoration(
-        color: codex.panelRaised.withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(codex.panelRadius),
-        border: Border.all(color: codex.rule),
-      ),
+      decoration: karto == null
+          ? BoxDecoration(
+              color: codex.panelRaised.withValues(alpha: 0.45),
+              borderRadius: BorderRadius.circular(codex.panelRadius),
+              border: Border.all(color: codex.rule),
+            )
+          : BoxDecoration(
+              borderRadius: BorderRadius.circular(kKartoRadius),
+              border: Border.all(
+                color: karto.hoehenlinie,
+                width: Strich.hoehenlinie,
+              ),
+            ),
+      clipBehavior: karto == null ? Clip.none : Clip.antiAlias,
       child: Stack(
         children: [
           NotificationListener<ScrollNotification>(
@@ -131,15 +155,15 @@ class _FlexibleTableState extends State<FlexibleTable> {
                     isHeader: true,
                     useLegacyCellMinWidth: useLegacyCellMinWidth,
                   ),
-                  ...widget.rows.map(
-                    (row) => _buildRow(
-                      key: row.key,
-                      cells: row.cells,
+                  for (var i = 0; i < zeilenzahl; i++)
+                    _buildRow(
+                      key: widget.rows[i].key,
+                      cells: widget.rows[i].cells,
                       minWidth: minWidth,
                       useLegacyCellMinWidth: useLegacyCellMinWidth,
-                      backgroundColor: row.backgroundColor,
+                      backgroundColor: widget.rows[i].backgroundColor,
+                      letzte: i == zeilenzahl - 1,
                     ),
-                  ),
                 ];
 
                 return SingleChildScrollView(
@@ -176,8 +200,8 @@ class _FlexibleTableState extends State<FlexibleTable> {
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                       colors: [
-                        codex.panelRaised.withValues(alpha: 0),
-                        codex.panelRaised,
+                        (karto?.feld ?? codex.panelRaised).withValues(alpha: 0),
+                        karto?.feld ?? codex.panelRaised,
                       ],
                     ),
                   ),
@@ -210,7 +234,21 @@ class _FlexibleTableState extends State<FlexibleTable> {
     required bool useLegacyCellMinWidth,
     bool isHeader = false,
     Color? backgroundColor,
+    bool letzte = false,
   }) {
+    final karto = kartoVariante(context);
+    if (karto != null) {
+      return _kartographZeile(
+        karto: karto,
+        key: key,
+        cells: cells,
+        minWidth: minWidth,
+        useLegacyCellMinWidth: useLegacyCellMinWidth,
+        isHeader: isHeader,
+        backgroundColor: backgroundColor,
+        letzte: letzte,
+      );
+    }
     final codex = context.codexTheme;
     return TableRow(
       key: key,
@@ -248,6 +286,86 @@ class _FlexibleTableState extends State<FlexibleTable> {
             ),
           )
           .toList(growable: false),
+    );
+  }
+
+  // Eine Zelle der Kartograph-Tabelle: Kopfschrift oder Tabellenziffern,
+  // numerisch rechtsbuendig, auf Wunsch mit alter Mindestbreite.
+  Widget _kartographZelle(
+    Widget zelle, {
+    required bool numerisch,
+    required bool isHeader,
+    required TextStyle kopfstil,
+    required double? minWidth,
+  }) {
+    var ergebnis = zelle;
+    if (isHeader) {
+      ergebnis = DefaultTextStyle.merge(style: kopfstil, child: ergebnis);
+    } else if (numerisch) {
+      ergebnis = DefaultTextStyle.merge(
+        style: const TextStyle(
+          fontFeatures: <FontFeature>[FontFeature.tabularFigures()],
+        ),
+        child: ergebnis,
+      );
+    }
+    if (numerisch) {
+      ergebnis = Align(alignment: Alignment.centerRight, child: ergebnis);
+    }
+    if (minWidth != null) {
+      ergebnis = ConstrainedBox(
+        constraints: BoxConstraints(minWidth: minWidth),
+        child: ergebnis,
+      );
+    }
+    return ergebnis;
+  }
+
+  // Kopf auf senke in der Etikettschrift, Zeilen durch Haarlinien getrennt.
+  // Numerische Spalten stehen rechtsbuendig mit Tabellenziffern.
+  TableRow _kartographZeile({
+    required KartoTheme karto,
+    required LocalKey? key,
+    required List<Widget> cells,
+    required double minWidth,
+    required bool useLegacyCellMinWidth,
+    required bool isHeader,
+    required Color? backgroundColor,
+    required bool letzte,
+  }) {
+    final texte = Theme.of(context).textTheme;
+    final standardAbstand =
+        widget.horizontalPadding == const EdgeInsets.fromLTRB(6, 4, 6, 6);
+    final abstand = standardAbstand
+        ? const EdgeInsets.symmetric(horizontal: 8, vertical: 6)
+        : widget.horizontalPadding;
+    final kopfstil = texte.etikett.copyWith(color: karto.schriftLeise);
+    return TableRow(
+      key: key,
+      decoration: BoxDecoration(
+        color: isHeader ? karto.senke : backgroundColor,
+        border: isHeader || !letzte
+            ? Border(
+                bottom: BorderSide(
+                  color: karto.hoehenlinie,
+                  width: Strich.hoehenlinie,
+                ),
+              )
+            : null,
+      ),
+      children: <Widget>[
+        for (var spalte = 0; spalte < cells.length; spalte++)
+          Padding(
+            padding: abstand,
+            child: _kartographZelle(
+              cells[spalte],
+              numerisch: widget.numerischeSpalten.contains(spalte),
+              isHeader: isHeader,
+              kopfstil: kopfstil,
+              minWidth: useLegacyCellMinWidth ? minWidth : null,
+            ),
+          ),
+      ],
     );
   }
 }

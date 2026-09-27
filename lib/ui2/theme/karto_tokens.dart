@@ -8,8 +8,9 @@ import 'package:flutter/material.dart';
 /// falsch heissen.
 ///
 /// Bewusst **nicht** enthalten sind Radien und Verlaeufe. Kartograph zeichnet
-/// Linien statt Wannen; ein einziger, helligkeitsunabhaengiger Radius genuegt
-/// und steht als [kKartoRadius] daneben.
+/// Linien statt Wannen; die helligkeitsunabhaengigen Radien stehen als
+/// [kKartoRadius] und [kKartoRadiusKlein] daneben. Die zwei Verlaeufe, die es
+/// gibt (Navigationsgrund, Wappenschein), leiten sich aus diesen Token ab.
 @immutable
 class KartoTheme extends ThemeExtension<KartoTheme> {
   /// Erstellt einen Satz Kartograph-Token.
@@ -36,6 +37,9 @@ class KartoTheme extends ThemeExtension<KartoTheme> {
     required this.ausdauer,
     required this.raster,
     required this.schleier,
+    required this.messing,
+    required this.messingNavigation,
+    required this.schatten,
   });
 
   /// Grund der Seite: die mittlere der drei Flaechenstufen.
@@ -49,9 +53,10 @@ class KartoTheme extends ThemeExtension<KartoTheme> {
 
   /// Hervortretende Flaeche: Abschnitte, Karten, Dialoge, Eingaben.
   ///
-  /// Traegt die Tiefe der Oberflaeche. Kartograph kennt keine Schatten, also
-  /// muss der Flaechenunterschied die Ebene zeigen; ein Abschnitt auf [blatt]
-  /// haette nur seinen Rahmen und saehe aus wie ein Formularkasten.
+  /// Traegt die Tiefe der Oberflaeche. Liegendes wirft in Kartograph keinen
+  /// Schatten, also muss der Flaechenunterschied die Ebene zeigen; ein
+  /// Abschnitt auf [blatt] haette nur seinen Rahmen und saehe aus wie ein
+  /// Formularkasten. Schatten bleiben dem Schwebenden vorbehalten ([schatten]).
   final Color feld;
 
   /// Zurueckgesetzte Flaeche: Kontextspalten, Leisten, Tabellenkoepfe.
@@ -118,6 +123,26 @@ class KartoTheme extends ThemeExtension<KartoTheme> {
   /// Abdunklung hinter Overlays.
   final Color schleier;
 
+  /// Ornament und Akzentkante: Kompassrose, Zierlinie, Oberkante.
+  ///
+  /// Messing ist **nie** Textfarbe und traegt keine Bedeutung, die nicht auch
+  /// ohne es da waere. Deshalb genuegt 3:1 als Grafik (WCAG 1.4.11) statt 4,5:1;
+  /// und deshalb darf es [wachs] nahe liegen, ohne dass eine Warnung verwechselt
+  /// wird — die traegt immer ein Wort.
+  final Color messing;
+
+  /// Messing auf dem dunklen Grund von [navigation].
+  ///
+  /// Eigenes Token wie `navigationText`: die Navigation bleibt in beiden
+  /// Paletten dunkel, [messing] der hellen Palette waere dort zu schwach.
+  final Color messingNavigation;
+
+  /// Schattenfarbe fuer Schwebendes: Dialoge, Blaetter, Menues, Hover.
+  ///
+  /// Liegendes (Abschnitte, Karten) bleibt flach; siehe `KartoTiefe` in
+  /// `lib/ui2/foundation/karto_tiefe.dart`.
+  final Color schatten;
+
   /// Liefert die aktiven Token aus dem Build-Kontext.
   ///
   /// Faellt auf die helle Palette zurueck, damit ein Primitiv auch ausserhalb
@@ -153,6 +178,9 @@ class KartoTheme extends ThemeExtension<KartoTheme> {
     Color? ausdauer,
     Color? raster,
     Color? schleier,
+    Color? messing,
+    Color? messingNavigation,
+    Color? schatten,
   }) {
     return KartoTheme(
       blatt: blatt ?? this.blatt,
@@ -177,6 +205,9 @@ class KartoTheme extends ThemeExtension<KartoTheme> {
       ausdauer: ausdauer ?? this.ausdauer,
       raster: raster ?? this.raster,
       schleier: schleier ?? this.schleier,
+      messing: messing ?? this.messing,
+      messingNavigation: messingNavigation ?? this.messingNavigation,
+      schatten: schatten ?? this.schatten,
     );
   }
 
@@ -207,6 +238,9 @@ class KartoTheme extends ThemeExtension<KartoTheme> {
       ausdauer: m(ausdauer, other.ausdauer),
       raster: m(raster, other.raster),
       schleier: m(schleier, other.schleier),
+      messing: m(messing, other.messing),
+      messingNavigation: m(messingNavigation, other.messingNavigation),
+      schatten: m(schatten, other.schatten),
     );
   }
 }
@@ -254,6 +288,10 @@ const KartoTheme kartoHell = KartoTheme(
   ausdauer: Color(0xFF546E5A),
   raster: Color(0xFFDCD4C3),
   schleier: Color(0x73101820),
+  messing: Color(0xFF9C7A3C),
+  messingNavigation: Color(0xFFC3A46D),
+  // Warmes Braun statt Schwarz: ein grauer Schatten auf Papier wirkt schmutzig.
+  schatten: Color(0x2E3B2A17),
 );
 
 /// Dunkle Palette: Tiefdruck.
@@ -284,6 +322,11 @@ const KartoTheme kartoDunkel = KartoTheme(
   ausdauer: Color(0xFF87AC8F),
   raster: Color(0xFF1C262F),
   schleier: Color(0x9E000000),
+  // Gedaempfter als `wachs` (0xFFC9A44C), damit Ornament und Warnung auch
+  // dunkel nicht zu einer Farbe verschmelzen.
+  messing: Color(0xFFB09470),
+  messingNavigation: Color(0xFFC3A46D),
+  schatten: Color(0x8C000000),
 );
 
 /// Kurzzugriff auf die aktiven Kartograph-Token.

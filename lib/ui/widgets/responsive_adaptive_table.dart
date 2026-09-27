@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 
 /// Tabelle, die sich auf zu schmalen Bildschirmen automatisch in eine
@@ -71,11 +73,22 @@ class ResponsiveAdaptiveTable<T> extends StatelessWidget {
     );
     final resolvedHeaderRow = _buildHeaderRow(layout);
     final rows = <TableRow>[resolvedHeaderRow, ...items.map(tableRowBuilder)];
+    // Unter Kartograph ordnen Haarlinien die Zeilen; klassisch bleibt die
+    // Tabelle linienlos.
+    final karto = kartoVariante(context);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: SizedBox(
         width: layout.tableWidth,
         child: Table(
+          border: karto == null
+              ? null
+              : TableBorder(
+                  horizontalInside: BorderSide(
+                    color: karto.hoehenlinie,
+                    width: Strich.hoehenlinie,
+                  ),
+                ),
           defaultVerticalAlignment: tableVerticalAlignment,
           columnWidths: layout.toColumnWidthMap(),
           children: rows,

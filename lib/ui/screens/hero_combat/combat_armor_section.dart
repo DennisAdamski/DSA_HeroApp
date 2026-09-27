@@ -172,6 +172,8 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
                   tableId: 'combat.armor',
                   builder: (context, resizeBinding) => FlexibleTable(
                     tableKey: const ValueKey<String>('combat-armor-table'),
+                    // RS und BE; rechtsbuendig nur unter Kartograph.
+                    numerischeSpalten: const <int>{1, 2},
                     columnSpecs: _columnSpecs(showPieceRg1: showPieceRg1),
                     columnResize: resizeBinding,
                     headerCells: [

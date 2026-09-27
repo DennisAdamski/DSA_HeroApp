@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 
 double _kanal(double anteil) {
@@ -119,6 +120,16 @@ void main() {
         pruefe('Hoehenlinie', t.hoehenlinie, t.blatt, 1.3);
       });
 
+      test('Messing ist als Ornament sichtbar', () {
+        // Messing ist nie Textfarbe, sondern Grafik: Kompassrose, Zierlinie,
+        // Akzentkante. WCAG 1.4.11 verlangt dafuer 3:1.
+        pruefe('Messing auf Blatt', t.messing, t.blatt, 3);
+        pruefe('Messing auf Feld', t.messing, t.feld, 3);
+        pruefe('Messing auf Navigation', t.messingNavigation, t.navigation, 3);
+        // Ornament und Warnung duerfen nicht dieselbe Farbe tragen.
+        expect(t.messing, isNot(t.wachs));
+      });
+
       test('die drei Linienstaerken sind voneinander unterscheidbar', () {
         // Wenn Linienstaerke die Hierarchie tragen soll, muessen sich die
         // drei Stufen auch farblich staffeln: je wichtiger, desto kraeftiger.
@@ -139,6 +150,54 @@ void main() {
     });
   }
 
+  for (final helligkeit in Brightness.values) {
+    test('Container-Rollen tragen lesbare Schrift (${helligkeit.name})', () {
+      // Ohne gesetzte Container faellt Material auf die volle Grundfarbe
+      // zurueck; eine Auswahl stuende dann siegelrot oder Meer auf Meer.
+      final schema = buildKartoTheme(
+        brightness: helligkeit,
+        centerAppBarTitle: false,
+      ).colorScheme;
+      final token = helligkeit == Brightness.dark ? kartoDunkel : kartoHell;
+      for (final paar in <(String, Color, Color)>[
+        (
+          'primaryContainer',
+          schema.primaryContainer,
+          schema.onPrimaryContainer,
+        ),
+        (
+          'secondaryContainer',
+          schema.secondaryContainer,
+          schema.onSecondaryContainer,
+        ),
+        (
+          'tertiaryContainer',
+          schema.tertiaryContainer,
+          schema.onTertiaryContainer,
+        ),
+        ('errorContainer', schema.errorContainer, schema.onErrorContainer),
+      ]) {
+        final wert = kontrast(paar.$3, paar.$2);
+        expect(
+          wert,
+          greaterThanOrEqualTo(4.5),
+          reason:
+              '${helligkeit.name}: Schrift auf ${paar.$1} nur '
+              '${wert.toStringAsFixed(2)}:1',
+        );
+        expect(
+          kontrast(token.schriftLeise, paar.$2),
+          greaterThanOrEqualTo(4.5),
+          reason: '${helligkeit.name}: leise Schrift auf ${paar.$1}',
+        );
+      }
+      expect(schema.secondaryContainer, isNot(token.siegel));
+      expect(schema.primaryContainer, isNot(token.meer));
+      expect(schema.surfaceContainerLow, token.feld);
+      expect(schema.surfaceContainerLowest, token.feld);
+    });
+  }
+
   test('beide Paletten belegen dieselben Rollen', () {
     // Schuetzt davor, dass beim Nachziehen einer Palette ein Token vergessen
     // wird und still auf einer Farbe der anderen Helligkeit stehen bleibt.
@@ -149,5 +208,7 @@ void main() {
     expect(kartoHell.wachs, isNot(kartoDunkel.wachs));
     expect(kartoHell.moos, isNot(kartoDunkel.moos));
     expect(kartoHell.navigation, isNot(kartoDunkel.navigation));
+    expect(kartoHell.messing, isNot(kartoDunkel.messing));
+    expect(kartoHell.schatten, isNot(kartoDunkel.schatten));
   });
 }

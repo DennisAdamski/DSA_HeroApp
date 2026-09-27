@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
-import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 
 /// Identitaetsbereich der dunklen Bereichsnavigation.
 ///
@@ -11,7 +11,8 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 /// darstellend — das Bild kommt als fertiges Widget von der Bestandsbruecke,
 /// weil Avatare ausschliesslich ueber `AvatarGalleryImage` gerendert werden.
 ///
-/// Bild und Monogramm tragen dieselbe Ringfassung. Der Ring ist damit die
+/// Bild und Monogramm tragen dieselbe Fassung, einen [KartoKompassring] in
+/// `messingNavigation` mit weichem Schein dahinter. Der Ring ist damit die
 /// Konstante und nur sein Inhalt wechselt; ohne ihn saehen Helden mit und ohne
 /// Bild an dieser Stelle verschieden gebaut aus.
 class KartoHeldenmarke extends StatelessWidget {
@@ -21,7 +22,7 @@ class KartoHeldenmarke extends StatelessWidget {
     required this.name,
     this.herkunft,
     this.bild,
-    this.groesse = 96,
+    this.groesse = 112,
   });
 
   /// Ausgeschriebener Heldenname.
@@ -36,8 +37,15 @@ class KartoHeldenmarke extends StatelessWidget {
   /// dieses hier entsteht. Ein `null` zeigt direkt das Monogramm.
   final Widget Function(Widget ersatz)? bild;
 
-  /// Kantenlaenge der Fassung.
+  /// Kantenlaenge der Fassung einschliesslich Ring.
   final double groesse;
+
+  /// Kantenlaenge, die ein Bild in einer Fassung von [groesse] fuellt.
+  ///
+  /// Die Bruecke rendert das Bild in fester Groesse; ohne diesen Wert bliebe
+  /// zwischen Bild und Ring ein Spalt.
+  static double bildGroesse(double groesse) =>
+      groesse - 2 * KartoKompassring.randFuer(groesse);
 
   // Erster Buchstabe des Namens; leere Namen bekommen ein neutrales Zeichen,
   // damit die Fassung nie leer steht.
@@ -67,21 +75,13 @@ class KartoHeldenmarke extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
-          width: groesse,
-          height: groesse,
-          // Der Ring liegt im Vordergrund, damit ein randvolles Bild ihn
-          // nicht ueberdeckt.
-          child: Container(
-            foregroundDecoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: token.navigationMuted,
-                width: Strich.grat,
-              ),
-            ),
-            child: ClipOval(child: bild?.call(monogramm) ?? monogramm),
-          ),
+        // Der Ring liegt im Vordergrund, damit ein randvolles Bild ihn nicht
+        // ueberdeckt.
+        KartoKompassring(
+          groesse: groesse,
+          farbe: token.messingNavigation,
+          schein: true,
+          child: bild?.call(monogramm) ?? monogramm,
         ),
         const SizedBox(height: Abstand.weit),
         Tooltip(

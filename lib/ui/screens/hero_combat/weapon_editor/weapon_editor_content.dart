@@ -260,7 +260,7 @@ extension _WeaponEditorContent on WeaponEditorScreenState {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(kartoRadiusOder(context, 12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -151,14 +151,15 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            // Wrap statt Row: in einer Row bekam die Knopfgruppe keine
+            // Breitengrenze und lief schmal ueber den Rand, statt umzubrechen.
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                Expanded(
-                  child: Text(
-                    'Waffen',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
+                Text('Waffen', style: Theme.of(context).textTheme.titleMedium),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -190,6 +191,8 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
                     columnSpecs: _columnSpecs,
                     columnResize: resizeBinding,
                     headerCells: _buildHeaderCells(),
+                    // AT bis eBE; rechtsbuendig nur unter Kartograph.
+                    numerischeSpalten: const <int>{5, 6, 7, 8, 9, 10},
                     preHeaderRows: [
                       _buildFilterRow(sortedTalents: sortedTalents),
                     ],

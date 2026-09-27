@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 
 /// Visuelle Varianten fuer kleine Codex-Badges.
 enum CodexBadgeTone { neutral, accent, success, warning, danger }
@@ -30,12 +32,19 @@ class CodexBadge extends StatelessWidget {
     final colors = _colorsForTone(codex, tone);
     final textStyle = Theme.of(context).textTheme.labelSmall
         ?.copyWith(color: colors.foreground);
+    // Unter Kartograph ist eine Marke ein kleines Bedienelement: Radius 4 und
+    // knapper Innenraum statt Flaechenradius.
+    final karto = kartoVariante(context) != null;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: karto
+          ? const EdgeInsets.symmetric(horizontal: 8, vertical: 3)
+          : const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: colors.background,
-        borderRadius: BorderRadius.circular(codex.panelRadius),
+        borderRadius: BorderRadius.circular(
+          karto ? kKartoRadiusKlein : codex.panelRadius,
+        ),
         border: Border.all(color: colors.border),
       ),
       child: Row(

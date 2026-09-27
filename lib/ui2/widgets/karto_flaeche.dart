@@ -6,8 +6,9 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 /// Die drei Flaechenstufen der neuen Oberflaeche.
 ///
 /// Sie tragen die Tiefe, so wie [StrichGewicht] die Gliederung traegt. Weil
-/// Kartograph keine Schatten kennt, ist der Flaechenunterschied das einzige
-/// Mittel, eine Ebene von der darunterliegenden zu unterscheiden.
+/// Liegendes in Kartograph keinen Schatten wirft, ist der Flaechenunterschied
+/// das einzige Mittel, eine Ebene von der darunterliegenden zu unterscheiden;
+/// Schatten bleiben dem Schwebenden vorbehalten (`KartoTiefe`).
 ///
 /// Die Reihenfolge ist in **beiden** Paletten dieselbe: [senke] liegt zurueck,
 /// [blatt] ist der Grund, [feld] tritt hervor. Hell wird `feld` dazu heller und
@@ -33,6 +34,11 @@ enum KartoFlaechenstufe {
 
 /// Gefuellte Flaeche mit gepaarter Kante.
 ///
+/// Traegt ihre eigene durchsichtige `Material`-Schicht: Kacheln darin
+/// zeichnen Tinte und Hintergrund auf dem naechsten `Material`, und das laege
+/// sonst unter der Fuellung. Aufrufer muessen deshalb keine eigene Schicht mehr
+/// einziehen.
+///
 /// Ersetzt die frueher an jeder Stelle einzeln aufgebaute [BoxDecoration]. Der
 /// Grund ist derselbe, aus dem [Strich] existiert: die Paarung aus Linienstaerke
 /// und Farbtoken laesst sich nur durchsetzen, wenn das Primitiv keine freien
@@ -47,6 +53,7 @@ class KartoFlaeche extends StatelessWidget {
     this.kante = StrichGewicht.hoehenlinie,
     this.innen,
     this.klein = false,
+    this.toenung,
   });
 
   /// Inhalt der Flaeche.
@@ -68,6 +75,13 @@ class KartoFlaeche extends StatelessWidget {
   /// Nutzt den Radius kleiner Bedienelemente statt des Flaechenradius.
   final bool klein;
 
+  /// Halbtransparente Farbe, die ueber die Stufe gelegt wird.
+  ///
+  /// Die Stufe bleibt massgeblich; die Toenung faerbt nur leicht ein, etwa
+  /// astral fuer laufende Zauber. Deckend darf sie nicht sein, sonst waere es
+  /// eine vierte Flaechenstufe.
+  final Color? toenung;
+
   BorderSide? _kante(KartoTheme token) => switch (kante) {
     null => null,
     StrichGewicht.hoehenlinie => BorderSide(
@@ -85,13 +99,16 @@ class KartoFlaeche extends StatelessWidget {
   Widget build(BuildContext context) {
     final token = KartoTheme.of(context);
     final seite = _kante(token);
-    final inhalt = innen == null
+    final gepolstert = innen == null
         ? child
         : Padding(padding: innen!, child: child);
+    final inhalt = Material(type: MaterialType.transparency, child: gepolstert);
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: stufe.farbe(token),
+        color: toenung == null
+            ? stufe.farbe(token)
+            : Color.alphaBlend(toenung!, stufe.farbe(token)),
         border: seite == null ? null : Border.fromBorderSide(seite),
         borderRadius: BorderRadius.circular(
           klein ? kKartoRadiusKlein : kKartoRadius,

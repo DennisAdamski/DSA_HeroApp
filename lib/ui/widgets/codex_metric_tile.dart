@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_rahmen.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 /// Kompakte Wertekarte fuer Summary-Rails und Statusblöcke.
+///
+/// Unter Kartograph ([kartoVariante]) steht der Wert in der Datenschrift mit
+/// Tabellenziffern statt in der Serife, die Kachel liegt als `senke` in ihrer
+/// Flaeche, und eine Hervorhebung ist eine Messingkante statt einer Toenung.
 class CodexMetricTile extends StatelessWidget {
   /// Erstellt eine kompakte Metrikkarte.
   const CodexMetricTile({
@@ -43,6 +52,8 @@ class CodexMetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final karto = kartoVariante(context);
+    if (karto != null) return _kartograph(context, karto);
     final codex = context.codexTheme;
     final theme = Theme.of(context);
     final background = highlight
@@ -151,6 +162,72 @@ class CodexMetricTile extends StatelessWidget {
           Text(helper!, style: theme.textTheme.bodySmall),
         ],
       ],
+    );
+  }
+
+  Widget _kartograph(BuildContext context, KartoTheme karto) {
+    final texte = Theme.of(context).textTheme;
+    final rahmen = KartoRahmen(
+      side: BorderSide(color: karto.hoehenlinie, width: Strich.hoehenlinie),
+      akzent: highlight ? karto.messing : null,
+      akzentStaerke: 2,
+    );
+    final beschriftung = texte.etikett.copyWith(color: karto.schriftLeise);
+    final wert = compact
+        ? texte.wert.copyWith(color: karto.schrift)
+        : texte.wert.copyWith(color: karto.schrift, fontSize: 17);
+    final zeile = Text.rich(
+      TextSpan(
+        children: [
+          if (!(compact && labelHidden))
+            TextSpan(text: '$label ', style: beschriftung),
+          TextSpan(text: value, style: wert),
+        ],
+      ),
+      overflow: TextOverflow.ellipsis,
+    );
+    final symbol = icon == null
+        ? null
+        : Icon(icon, size: compact ? 14 : 16, color: karto.schriftLeise);
+    final inhalt = compact
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (symbol != null) ...[symbol, const SizedBox(width: 4)],
+              Flexible(child: zeile),
+            ],
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (symbol != null) ...[symbol, const SizedBox(width: 6)],
+                  Flexible(child: zeile),
+                ],
+              ),
+              if (helper != null && helper!.trim().isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(helper!, style: texte.bodySmall),
+              ],
+            ],
+          );
+    return Material(
+      color: karto.senke,
+      shape: rahmen,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: rahmen,
+        child: Padding(
+          padding: compact
+              ? const EdgeInsets.symmetric(horizontal: 8, vertical: 5)
+              : const EdgeInsets.all(10),
+          child: inhalt,
+        ),
+      ),
     );
   }
 }

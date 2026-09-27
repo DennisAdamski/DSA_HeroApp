@@ -6,6 +6,8 @@ import 'package:dsa_heldenverwaltung/ui/widgets/codex_badge.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_metric_tile.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_page_scaffold.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 
 /// Listenbereich der Heldenzentrale fuer Smartphone- und Tablet-Layouts.
 class HeroHomeArchivePane extends StatelessWidget {
@@ -101,23 +103,32 @@ class _HeroArchiveTile extends StatelessWidget {
       alpha: 0.34,
     );
 
+    // Unter Kartograph dieselbe Ringfassung wie Heldenmarke und Heldenwahl.
+    final karto = kartoVariante(context);
+    final monogramm = Text(
+      heroInitials(hero.name),
+      style: theme.textTheme.titleMedium,
+    );
     return Card(
       color: selected ? selectedColor : null,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(kartoRadiusOder(context, 16)),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                radius: 24,
-                child: Text(
-                  heroInitials(hero.name),
-                  style: theme.textTheme.titleMedium,
+              if (karto == null)
+                CircleAvatar(radius: 24, child: monogramm)
+              else
+                KartoKompassring(
+                  groesse: 52,
+                  child: ColoredBox(
+                    color: karto.senke,
+                    child: Center(child: monogramm),
+                  ),
                 ),
-              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(

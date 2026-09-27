@@ -302,3 +302,130 @@ Steigerungskatalog führt unter dem Seitentitel seine eigene Überschrift samt
 kursiver Erläuterung, seine Metazeilen sind weiterhin punktverbundene
 Fließtexte (`Wert: 15 · Maximum: 21 · SE: 0`) statt ausgerichteter Zahlen, und
 die Rechtsausrichtung numerischer Inventarspalten steht weiterhin aus.
+
+## Atmosphäre (25.09.2026)
+
+Nach der Überarbeitung vom 22.09. war die Oberfläche geordnet, aber karg:
+`lib/ui2/` enthielt keinen einzigen Verlauf, Schatten, `CustomPaint`, kein
+Bild und keine Animation, und „Kartograph“ stand nur in den Tokennamen. Die
+Frage, ob Flutter hier an Grenzen stößt, ließ sich verneinen — alles aus dem
+Mockup und mehr ist mit Bordmitteln zeichenbar. Freigegeben wurde deshalb,
+das Prinzip „keine Schatten, keine Verläufe“ gezielt zu lockern, zuerst für
+Rahmen, Heldenwahl und Spielansicht.
+
+### Neue Regel
+
+- Liegendes bleibt flach (Fläche plus Linie), Schwebendes wirft Schatten
+  (`KartoTiefe.schwebend`/`.angehoben`, Farbe `schatten`).
+- Verläufe nur im Navigationsgrund und im Wappenschein.
+- Ornamente in `messing`, nie als Textfarbe, ohne eigene Bedeutung.
+- Bewegung kurz (150/250 ms) und über `kartoDauer` abschaltbar.
+
+### Umsetzung
+
+| Commit | Inhalt |
+|---|---|
+| A1 | Token `messing`, `messingNavigation`, `schatten` (22 → 25); `KartoTiefe`, `Bewegung`/`kartoDauer`; Ornamente (`karto_ornamente.dart`); `KartoPapier`; Token-Blatt zeigt Akzent, Ornament, Tiefe |
+| A2 | Navigationsgrund mit Verlauf und Höhenlinien, Markenzeile, Heldenmarke im Kompassring mit Schein, aktive Ziele mit Messingkante und Hover, Marke „vorgemerkt“ an der Planung, Bereichsblende |
+| A3 | Heldenwahl als Kartenraster auf Papier mit Wasserzeichen; Karten mit Kompassring, Profession, Herkunft, freien AP und Hover-Anhebung; `KartoKartenraster` nach `lib/ui2/widgets/` |
+| A4 | Papier unter allen Bereichen; `KartoAkzent` (Kampf Messingkante, Effekte astral); Ressourcenhinweise und nachlaufende Balken; aufrechte Bestandsschrift; Statuswerte ohne Karte in der Karte; Personen im Kompassring; Abschluss mit Zierlinie |
+
+Screenshots: `docs/screenshots/redesign-a1/`, erzeugt mit
+`flutter test test/ui2/shell/karto_workspace_visual_test.dart
+--dart-define=R3_SCREENSHOT_DIR=docs/screenshots/redesign-a1`. Das Raster
+umfasst jetzt auch die Heldenwahl (20 weitere Kombinationen, ohne Überlauf).
+
+### Sichtprüfungsbefunde
+
+1. **Die Papierstruktur war zunächst zu kräftig.** Mit Deckkraft 0,9 färbte sie
+   den Grund bräunlich und fleckig; 0,4 lässt `blatt` maßgeblich und zeigt
+   nur noch die Fasern.
+2. **Die Planungsmarke verdeckte breit das Symbol.** Sie sitzt deshalb nur
+   kompakt am Symbol und breit als Pille am Zeilenende.
+
+### Bewusst geänderte Pins
+
+- `test/ui/bridges/karto_compat_theme_test.dart` verlangte eine unveränderte
+  Typografie im Bestandsbaum. Der Zweck war Überblendbarkeit; der Test prüft
+  jetzt genau das (gleiches `inherit`, `ThemeData.lerp` in beide Richtungen)
+  und zusätzlich die aufrechte Datenschrift in `bodySmall`.
+- Die Journey tippt den Helden über `karto-heldenwahl-held-<id>` statt über
+  ein `ListTile`.
+
+### Bewusst nicht enthalten
+
+Verwaltung und Planung wurden nicht nativ überarbeitet; sie erben Papier,
+Schatten und die aufrechte Bestandsschrift. Die Eigenschaftskacheln und
+Kampfchips bleiben die gemeinsamen Bestandsbausteine mit ihren Keys. Dunkel
+gibt es keine Papierstruktur. Die Negativprüfung in
+`test/ui2/spielen/karto_spielverlauf_test.dart` bleibt unverändert: der
+Abschlusssatz ist Schmuck, keine Angabe.
+
+## Restliche Seiten (26.09.2026)
+
+Nach Rahmen, Heldenwahl und Spielansicht folgten Held verwalten, Entwicklung
+planen, die Dialoge am Spieltisch sowie Einstellungen, Heldenliste und
+Anmeldung. Freigegeben war eine **Kartograph-Variante**: die gemeinsamen
+Bestandsbausteine zeichnen sich nur unter Kartograph neu, die klassische
+Oberfläche bleibt unverändert, und es entsteht keine zweite
+Bearbeitungslogik.
+
+### Befund
+
+Der Abstand kam aus wenigen gemeinsamen Quellen, nicht aus dem Tab-Code:
+
+1. Fehlende Container-Rollen im `ColorScheme`: Material fiel auf volle
+   Grundfarben zurück (siegelrote SegmentedButtons, Meer auf Meer bei
+   Manövern).
+2. Dialogtitel in `headlineSmall`, bei Kartograph die große Zahlenschrift;
+   Blätter mit Radius 28 ohne Kante.
+3. Aufgelegte Seiten verloren die Brücke, weil eine `MaterialPageRoute` das
+   Theme nicht weitergibt; „Held öffnen“ aus der Heldenliste legte sogar den
+   klassischen Arbeitsbereich auf.
+4. Gemeinsame Bausteine ohne eigene Form: Abschnittskarten, Tab-Köpfe,
+   Kennzahlkacheln, Tabellen mit getöntem Kasten.
+
+### Umsetzung
+
+| Commit | Inhalt |
+|---|---|
+| B1 | Container-Rollen; `buildKartoFeinschliff` (nur verschachtelt); `KartoRahmen` als Dialogform; Theme-Weitergabe an Push-Stellen |
+| B2 | `kartoVariante` und Kartograph-Varianten der Codex-Bausteine, `FlexibleTable.numerischeSpalten` |
+| B3 | Verwaltungskopf als `KartoSeitenkopf`, ruhige innere Reiter, Sperrzustand, Porträt im Kompassring, Reisebericht-Palette, `epischerAkzent`, flache Tabellenzeilen |
+| B4 | AP-Bilanz als Gleichung, Verlauf ohne doppelte AP, Kennzahlen statt Punktzeilen, Fähigkeitenbaum in Token, bündige Kanten |
+| B5 | Vitalblock und Würfel in Token, Würfel ohne Animation bei reduzierter Bewegung, Messingkante über der Küste |
+| B6 | Einstellungen auf Papier, Heldenliste mit Kompassringen, `onHeldOeffnen`/`onEinstellungen`, Anmeldung als Kartusche |
+
+Neues Abnahmeraster `test/ui2/shell/karto_seiten_visual_test.dart`: alle
+neun Verwaltungstabs, Probe mit Wurf, Rast, Ressourcenblatt, Einstellungen,
+Heldenliste und Anmeldung über 390/1024/1440 dp, hell und dunkel, Schrift 1
+und 2. Aufnahmen unter `docs/screenshots/redesign-b/` (1440 hell, 1024
+dunkel; Spielen und Planung zusätzlich 390).
+
+### Sichtprüfungsbefunde
+
+1. **Die Aktionsspalte der Inventartabelle** ist 88 breit; zwei kompakte
+   Symbolknöpfe brachen darin um und verdoppelten jede Zeile. Unter
+   Kartograph sind sie kleiner und stehen nebeneinander.
+2. **Der leere Gruppenzustand** lief bei 390 dp und doppelter Schrift schon
+   vorher über (179 px); er ist jetzt scrollbar — in beiden Oberflächen, weil
+   ein Überlauf ein Fehler und keine Gestaltungsfrage ist.
+3. **Die Kopfzeilenknöpfe der Heldenliste** schnitten unter Kartograph ihre
+   Beschriftung ab (40 Punkte Höhe, 14 Innenabstand).
+4. **Die Messingkante der Dialoge** lag unter der Küstenlinie und blieb nur
+   als Haarstrich sichtbar; sie wird jetzt darüber gezeichnet.
+5. **Seitenkopf, AP-Bilanz und Katalog** der Planung standen auf drei
+   verschiedenen Kanten; der Rand folgt jetzt der Flächenbreite.
+
+### Erledigte Befunde aus R3
+
+- Metazeilen im Steigerungskatalog stehen als ausgerichtete Kennzahlen.
+- Zahlenspalten von Inventar und Kampftabellen stehen rechtsbündig.
+- Der Sperrhinweis der Verwaltung steht nicht mehr einzeln auf leerer
+  Fläche.
+
+### Bewusst nicht enthalten
+
+Keine neuen Funktionen und keine zweite Bearbeitungsimplementierung. Der
+Tab-Kopf „Chroniken, Kontakte & Abenteuer“ wiederholt weiterhin den
+Seitentitel; die übrigen Tabs tragen dort eigene Überschriften.

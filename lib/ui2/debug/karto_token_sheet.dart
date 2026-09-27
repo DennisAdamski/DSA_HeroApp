@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_tiefe.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 
 /// Zeigt alle Token der neuen Oberflaeche auf einer Seite.
 ///
@@ -33,10 +35,10 @@ class KartoTokenSheet extends StatelessWidget {
           _Abschnitt(
             titel: 'Flächen',
             erklaerung:
-                'Drei Ebenen, mehr gibt es nicht. Tiefe entsteht durch die '
-                'Fläche, nicht durch Schatten: senke liegt zurück, blatt ist '
-                'der Grund, feld tritt hervor. In der dunklen Palette dreht '
-                'sich der Helligkeitswert, die Rolle bleibt.',
+                'Drei Ebenen, mehr gibt es nicht. Liegendes trägt seine Tiefe '
+                'über die Fläche, nicht über Schatten: senke liegt zurück, '
+                'blatt ist der Grund, feld tritt hervor. In der dunklen '
+                'Palette dreht sich der Helligkeitswert, die Rolle bleibt.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -123,8 +125,89 @@ class KartoTokenSheet extends StatelessWidget {
                     'navigationMuted',
                     style: s.fliess.copyWith(color: t.navigationMuted),
                   ),
+                  const SizedBox(height: Abstand.weit),
+                  Row(
+                    children: [
+                      KartoKompassring(
+                        groesse: 56,
+                        farbe: t.messingNavigation,
+                        schein: true,
+                        child: ColoredBox(color: t.navigation),
+                      ),
+                      const SizedBox(width: Abstand.weit),
+                      Text(
+                        'messingNavigation',
+                        style: s.fliess.copyWith(color: t.navigationText),
+                      ),
+                    ],
+                  ),
                 ],
               ),
+            ),
+          ),
+          _Abschnitt(
+            titel: 'Akzent und Ornament',
+            erklaerung:
+                'Messing schmückt und ist nie Textfarbe. Kein Ornament trägt '
+                'eine Bedeutung, die nicht auch ohne es da wäre.',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: Abstand.bahn,
+                  runSpacing: Abstand.weit,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    const KartoKompassrose(groesse: 96),
+                    KartoKompassring(
+                      groesse: 72,
+                      child: ColoredBox(color: t.senke),
+                    ),
+                    Container(width: 20, height: 20, color: t.messing),
+                    Text('messing', style: s.etikett),
+                  ],
+                ),
+                const SizedBox(height: Abstand.block),
+                const KartoZierlinie(maxBreite: 320),
+                const SizedBox(height: Abstand.block),
+                SizedBox(
+                  height: 120,
+                  child: KartoFlaeche(
+                    stufe: KartoFlaechenstufe.senke,
+                    child: KartoHoehenlinien(
+                      farbe: t.schrift.withValues(alpha: 0.14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _Abschnitt(
+            titel: 'Tiefe',
+            erklaerung:
+                'Nur Schwebendes wirft Schatten: eine angehobene Karte unter '
+                'dem Mauszeiger, Dialoge, Menüs und Blätter.',
+            child: Wrap(
+              spacing: Abstand.bahn,
+              runSpacing: Abstand.bahn,
+              children: [
+                for (final tiefe in KartoTiefe.values)
+                  Container(
+                    width: 160,
+                    height: 72,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: t.feld,
+                      borderRadius: BorderRadius.circular(kKartoRadius),
+                      border: Border.all(
+                        color: t.hoehenlinie,
+                        width: Strich.hoehenlinie,
+                      ),
+                      boxShadow: tiefe.schatten(t),
+                    ),
+                    child: Text(tiefe.name, style: s.etikett),
+                  ),
+              ],
             ),
           ),
           _Abschnitt(
