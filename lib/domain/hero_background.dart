@@ -1,5 +1,19 @@
 /// Herkunft und sozialer Hintergrund eines Helden.
 class HeroBackground {
+  /// Schluessel, die [fromJson] aus dem flachen Helden-JSON liest.
+  static const Set<String> jsonSchluessel = <String>{
+    'rasse',
+    'rasseModText',
+    'kultur',
+    'kulturModText',
+    'profession',
+    'professionModText',
+    'familieHerkunftHintergrund',
+    'stand',
+    'titel',
+    'sozialstatus',
+  };
+
   const HeroBackground({
     this.rasse = '',
     this.rasseModText = '',

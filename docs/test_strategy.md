@@ -64,7 +64,8 @@ die schon auf Geräten und in der Cloud liegen:
 | `f05_freitext_merkmale` | unerkannte Freitext-Merkmale, Dauermodifikator nur in `persistentMods` |
 | `f06_gleichnamige_ausruestung` | je zwei gleichnamige Waffen, Geschosse und Rüstungsteile mit verschiedenen Inventardaten |
 | `f07_legacy_schema1` | handgeschriebener Altstand: Transferversion 1, ohne `schemaVersion`, nur alte Schlüssel |
-| `f08_steigerungshistorie` | Schemaversion 27 mit übernommener Historie; `f08b` mit unbekannter Steigerungsart |
+| `f08_steigerungshistorie` | Schemaversion 27 mit übernommener Historie |
+| `f08b_unbekannte_steigerungsart` | wie f08, letzter Verlaufseintrag mit einer Steigerungsart aus einer neueren App-Version |
 
 Regeln:
 

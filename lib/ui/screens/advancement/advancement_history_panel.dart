@@ -33,6 +33,7 @@ class AdvancementHistoryPanel extends ConsumerWidget {
     final theme = Theme.of(context);
     final codex = context.codexTheme;
     final oldEntries = session.base.advancementHistory.reversed;
+    final unbekannt = session.base.unbekannteVerlaufseintraege.length;
     return DecoratedBox(
       decoration: BoxDecoration(gradient: codex.heroGradientSoft),
       child: ListView(
@@ -87,10 +88,25 @@ class AdvancementHistoryPanel extends ConsumerWidget {
           const SizedBox(height: 6),
           const Text('Frühere Runden sind abgeschlossen und nicht löschbar.'),
           const SizedBox(height: 8),
-          if (oldEntries.isEmpty)
+          if (oldEntries.isEmpty && unbekannt == 0)
             const Text('Noch keine übernommene Steigerungshistorie vorhanden.'),
           for (final entry in oldEntries)
             _HistoryEntry(entry: entry, removable: false),
+          // Einträge einer neueren App-Version bleiben gespeichert, lassen
+          // sich hier aber nicht darstellen.
+          if (unbekannt > 0)
+            Padding(
+              key: const ValueKey('advancement-history-unbekannt'),
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                unbekannt == 1
+                    ? 'Ein Eintrag aus einer neueren App-Version wird hier '
+                          'nicht angezeigt; er bleibt erhalten.'
+                    : '$unbekannt Einträge aus einer neueren App-Version '
+                          'werden hier nicht angezeigt; sie bleiben erhalten.',
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
         ],
       ),
     );
