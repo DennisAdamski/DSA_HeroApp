@@ -1881,6 +1881,12 @@ heroComputedProvider(heroId):
   → HeroComputedSnapshot (unveränderlich, alle Werte in einem Pass)
 ```
 
+Die Schritte 4–7 liegen als reine Funktion `buildHeroComputedSnapshot`
+(`hero`, `state`, `catalog`, `epicAdvantagesActive`) in derselben Datei. Der
+Provider beobachtet nur die Eingaben und ruft sie auf; Tests rechnen damit
+dieselben Werte ohne `ProviderContainer` (z. B. die Regelwerte der
+Bestandshelden unter `test/rules/`).
+
 `HeroComputedSnapshot`-Felder:
 
 | Feld | Typ |
