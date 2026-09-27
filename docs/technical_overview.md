@@ -310,10 +310,31 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 23
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 28
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
+
+**Daten neuerer App-Versionen.** `fromJson` bewahrt, was diese Version nicht
+kennt, und `toJson` schreibt es unverändert zurück — sonst löschte ein Gerät
+mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
+
+- Schlüssel oberster Ebene, die nicht in `HeroSheet.jsonSchluessel` stehen,
+  landen in `unbekannteFelder` (`lib/domain/unbekannte_json_felder.dart`);
+  `HeroState` macht es genauso. Der Satz umfasst auch die flach eingebetteten
+  Schlüssel von `HeroAppearance` und `HeroBackground` sowie alle nur bedingt
+  geschriebenen. **Jedes neue Feld muss dort eingetragen werden**, sonst käme
+  ein bewusst weggelassener Wert als „unbekannt“ zurück; ein Test in
+  `test/domain/bestandshelden_kompatibilitaet_test.dart` prüft das.
+- Verlaufseinträge mit unbekannter Steigerungsart bleiben als
+  `UnbekannterVerlaufseintrag` an ihrer Position erhalten, statt den Helden
+  unlesbar zu machen. Sie werden nicht ausgewertet; der Verlauf nennt ihre
+  Anzahl.
+- Unbekannte Felder **innerhalb** verschachtelter Objekte (etwa in der
+  Kampfkonfiguration) gehen weiterhin verloren.
+
+Bestandsdaten enthalten nichts Unbekanntes, ihr JSON und ihre Inhalts-Hashes
+ändern sich dadurch nicht.
 
 #### Felder
 

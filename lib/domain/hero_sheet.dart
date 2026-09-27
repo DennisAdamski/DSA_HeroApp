@@ -20,6 +20,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 
 /// Persistiertes Kernmodell eines Helden (ohne Laufzeitzustand).
@@ -70,6 +71,8 @@ class HeroSheet {
     this.connections = const <HeroConnectionEntry>[],
     this.adventures = const <HeroAdventureEntry>[],
     this.advancementHistory = const <HeroAdvancementEntry>[],
+    this.unbekannteVerlaufseintraege = const <UnbekannterVerlaufseintrag>[],
+    this.unbekannteFelder = const <String, Object?>{},
     this.attributeSePool = const HeroAttributeSePool(),
     this.statSePool = const HeroStatSePool(),
     this.companions = const <HeroCompanion>[],
@@ -148,6 +151,14 @@ class HeroSheet {
 
   /// Ausschließlich übernommene, unveränderlich zu behandelnde Erwerbsnachweise.
   final List<HeroAdvancementEntry> advancementHistory;
+
+  /// Verlaufseintraege einer neueren App-Version mit unbekannter
+  /// Steigerungsart; bleiben an ihrer Stelle erhalten (Befund ARCH-07-B5).
+  final List<UnbekannterVerlaufseintrag> unbekannteVerlaufseintraege;
+
+  /// JSON-Felder oberster Ebene, die diese Version nicht kennt; werden beim
+  /// Speichern unveraendert zurueckgeschrieben (Befund ARCH-07-B6).
+  final Map<String, Object?> unbekannteFelder;
 
   /// Zeitpunkt der letzten lokalen Speicherung (UTC).
   final DateTime? lastModified;
@@ -239,6 +250,8 @@ class HeroSheet {
     List<HeroConnectionEntry>? connections,
     List<HeroAdventureEntry>? adventures,
     List<HeroAdvancementEntry>? advancementHistory,
+    List<UnbekannterVerlaufseintrag>? unbekannteVerlaufseintraege,
+    Map<String, Object?>? unbekannteFelder,
     Object? lastModified = _copySentinel,
     HeroAttributeSePool? attributeSePool,
     HeroStatSePool? statSePool,
@@ -304,6 +317,9 @@ class HeroSheet {
       connections: connections ?? this.connections,
       adventures: adventures ?? this.adventures,
       advancementHistory: advancementHistory ?? this.advancementHistory,
+      unbekannteVerlaufseintraege:
+          unbekannteVerlaufseintraege ?? this.unbekannteVerlaufseintraege,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
       lastModified: identical(lastModified, _copySentinel)
           ? this.lastModified
           : lastModified as DateTime?,
@@ -332,9 +348,71 @@ class HeroSheet {
     );
   }
 
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der flach
+  /// eingebetteten von [HeroAppearance] und [HeroBackground] und der nur
+  /// bedingt geschriebenen. Alles andere gilt als unbekannt und bleibt
+  /// erhalten (siehe `unbekannte_json_felder.dart`).
+  static const Set<String> jsonSchluessel = <String>{
+    'schemaVersion',
+    'id',
+    'name',
+    'level',
+    'attributes',
+    'rawStartAttributes',
+    'startAttributes',
+    'persistentMods',
+    'bought',
+    'combatConfig',
+    'talents',
+    'metaTalents',
+    'hiddenTalentIds',
+    'talentSpecialAbilities',
+    'spells',
+    'ritualCategories',
+    'representationen',
+    'repraesentationsTraditionen',
+    'merkmalskenntnisse',
+    'magicSpecialAbilities',
+    'magicLeadAttribute',
+    'sprachen',
+    'schriften',
+    'muttersprache',
+    'vorteileText',
+    'nachteileText',
+    'apTotal',
+    'apSpent',
+    'apAvailable',
+    'dukaten',
+    'resourceActivationConfig',
+    'showInapplicableSpecialAbilities',
+    'inventoryEntries',
+    'notes',
+    'connections',
+    'adventures',
+    'advancementHistory',
+    'lastModified',
+    'attributeSePool',
+    'statSePool',
+    'companions',
+    'gruppen',
+    'reisebericht',
+    'statModifiers',
+    'attributeModifiers',
+    'unknownModifierFragments',
+    'isEpisch',
+    'epicStartAp',
+    'epicAttributeMaxBonus',
+    'epicMainAttributes',
+    'epicActivationPolicy',
+    'epicLockedWaffenmeisterCategories',
+    'epicUnactivatedTalentIds',
+    ...HeroAppearance.jsonSchluessel,
+    ...HeroBackground.jsonSchluessel,
+  };
+
   /// Serialisierung fuer lokale Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return {
+    final json = <String, dynamic>{
       'schemaVersion': schemaVersion,
       'id': id,
       'name': name,
@@ -388,10 +466,12 @@ class HeroSheet {
       'adventures': adventures
           .map((entry) => entry.toJson())
           .toList(growable: false),
-      if (advancementHistory.isNotEmpty)
-        'advancementHistory': advancementHistory
-            .map((entry) => entry.toJson())
-            .toList(growable: false),
+      if (advancementHistory.isNotEmpty ||
+          unbekannteVerlaufseintraege.isNotEmpty)
+        'advancementHistory': schreibeSteigerungsverlauf(
+          advancementHistory,
+          unbekannteVerlaufseintraege,
+        ),
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
       'attributeSePool': attributeSePool.toJson(),
@@ -426,6 +506,7 @@ class HeroSheet {
         growable: false,
       ),
     };
+    return mitUnbekanntenFeldern(json, unbekannteFelder);
   }
 
   /// Rueckwaertskompatibles Laden alter Datenstaende.
@@ -483,6 +564,9 @@ class HeroSheet {
       (json['startAttributes'] as Map?)?.cast<String, dynamic>() ??
           (json['attributes'] as Map?)?.cast<String, dynamic>() ??
           const {},
+    );
+    final verlauf = leseSteigerungsverlauf(
+      (json['advancementHistory'] as List?) ?? const <dynamic>[],
     );
     final parsedPersistentMods = StatModifiers.fromJson(
       (json['persistentMods'] as Map?)?.cast<String, dynamic>() ?? const {},
@@ -601,14 +685,9 @@ class HeroSheet {
                 HeroAdventureEntry.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
-      advancementHistory: List<HeroAdvancementEntry>.unmodifiable(
-        ((json['advancementHistory'] as List?) ?? const [])
-            .whereType<Map>()
-            .map(
-              (entry) =>
-                  HeroAdvancementEntry.fromJson(entry.cast<String, dynamic>()),
-            ),
-      ),
+      advancementHistory: verlauf.bekannt,
+      unbekannteVerlaufseintraege: verlauf.unbekannt,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       lastModified: DateTime.tryParse(json['lastModified'] as String? ?? ''),
       attributeSePool: HeroAttributeSePool.fromJson(
         (json['attributeSePool'] as Map?)?.cast<String, dynamic>() ??

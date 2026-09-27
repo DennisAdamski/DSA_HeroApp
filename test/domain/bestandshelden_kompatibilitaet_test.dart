@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_type.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
@@ -29,6 +31,8 @@ const Map<Bestandsheld, String> _heldenHashes = <Bestandsheld, String>{
   Bestandsheld.legacySchema1: 'ZkQmLrSS6y7Vl6txFL0F_0i4smrZilDLbscfa2HL3eM=',
   Bestandsheld.steigerungshistorie:
       'hnMwYN9ZXVqwdsDvsjKeSZc3WnCNKaGQ8pXMm1Nns7E=',
+  Bestandsheld.unbekannteSteigerungsart:
+      'OEpxoV0GgDW13q6GaptyPTDx7Tpou3GPtLmwynfwoIc=',
 };
 
 /// Wie [_heldenHashes], fuer den Laufzeitzustand.
@@ -42,6 +46,8 @@ const Map<Bestandsheld, String> _zustandsHashes = <Bestandsheld, String>{
       'jSHr3ffvCMWK2uuHMe5rHrMX79Mu-c7M38qbcpX4oao=',
   Bestandsheld.legacySchema1: 'bFjrodz1bjEVi_oDMUKMBygjlZcSoWag99kpcyNuwf8=',
   Bestandsheld.steigerungshistorie:
+      '-28KqI3XR9AU_NmwHCm2BpNgH4qYPj0C5Py8kuHSbGA=',
+  Bestandsheld.unbekannteSteigerungsart:
       '-28KqI3XR9AU_NmwHCm2BpNgH4qYPj0C5Py8kuHSbGA=',
 };
 
@@ -239,24 +245,115 @@ void main() {
     });
   });
 
-  group('Grenzen des heutigen Formats', () {
-    test('Befund ARCH-07-B5: unbekannte Steigerungsart macht den Helden '
-        'unlesbar', () {
-      final roh = ladeBestandsheldRoh(unbekannteSteigerungsartDatei);
+  group('Daten neuerer App-Versionen bleiben erhalten', () {
+    test('ein Verlaufseintrag unbekannter Art bleibt an seiner Stelle '
+        '(Befund ARCH-07-B5)', () {
+      final roh = ladeBestandsheldJson(Bestandsheld.unbekannteSteigerungsart);
+      final rohVerlauf = ((roh['hero'] as Map)['advancementHistory'] as List);
+
+      final held = ladeBestandsheld(Bestandsheld.unbekannteSteigerungsart).hero;
+
+      expect(held.advancementHistory, hasLength(rohVerlauf.length - 1));
+      expect(held.unbekannteVerlaufseintraege.single.json['kind'], 'companion');
       expect(
-        () => const HeroTransferCodec().decode(roh),
-        throwsA(isA<ArgumentError>()),
+        jsonUnterschiede(rohVerlauf, held.toJson()['advancementHistory']),
+        isEmpty,
       );
     });
 
-    test('Befund ARCH-07-B6: unbekannte Felder gehen beim Laden verloren', () {
+    test('neue Einträge folgen hinter dem unbekannten', () {
+      final held = ladeBestandsheld(Bestandsheld.unbekannteSteigerungsart).hero;
+      final neu = HeroAdvancementEntry(
+        id: 'neu',
+        sessionId: 'runde-2',
+        createdAt: DateTime.utc(2026, 9, 27),
+        kind: AdvancementKind.attribute,
+        targetId: 'kl',
+        label: 'Klugheit',
+        fromValue: 12,
+        toValue: 13,
+        apCost: 150,
+      );
+
+      final verlauf =
+          held
+                  .copyWith(
+                    advancementHistory: <HeroAdvancementEntry>[
+                      ...held.advancementHistory,
+                      neu,
+                    ],
+                  )
+                  .toJson()['advancementHistory']
+              as List;
+
+      expect(
+        verlauf.map((eintrag) => (eintrag as Map)['kind']).toList(),
+        <String>[
+          'attribute',
+          'talent',
+          'talent',
+          'maneuver',
+          'combatAbility',
+          'companion',
+          'attribute',
+        ],
+      );
+    });
+
+    test('unbekannte Felder von Held und Zustand bleiben erhalten '
+        '(Befund ARCH-07-B6)', () {
       final roh = ladeBestandsheldJson(Bestandsheld.kriegerNormal);
       final heldJson = (roh['hero'] as Map).cast<String, dynamic>()
-        ..['zukunftsfeld'] = <String, dynamic>{'stufe': 2};
+        ..['zukunftsfeld'] = <String, dynamic>{
+          'stufe': 2,
+          'liste': <int>[1, 2],
+        };
+      final zustandJson = (roh['state'] as Map).cast<String, dynamic>()
+        ..['zukunftszustand'] = 'wach';
 
-      final geladen = HeroSheet.fromJson(heldJson).toJson();
+      final held = HeroSheet.fromJson(heldJson);
+      final zustand = HeroState.fromJson(zustandJson);
 
-      expect(geladen.containsKey('zukunftsfeld'), isFalse);
+      expect(held.toJson()['zukunftsfeld'], <String, dynamic>{
+        'stufe': 2,
+        'liste': <int>[1, 2],
+      });
+      expect(zustand.toJson()['zukunftszustand'], 'wach');
+      expect(
+        held.copyWith(name: 'Umbenannt').toJson()['zukunftsfeld'],
+        isNotNull,
+        reason: 'Änderungen am Helden tragen das Feld weiter',
+      );
+      expect(
+        heroContentHash(HeroSheet.fromJson(held.toJson())),
+        heroContentHash(held),
+      );
+    });
+
+    test('jeder geschriebene Schlüssel gilt als bekannt', () {
+      // Alle nur bedingt geschriebenen Felder belegt: fehlte einer im
+      // bekannten Satz, kaeme er beim Zuruecksetzen als „unbekannt“ mit
+      // altem Wert zurueck.
+      final basis = ladeBestandsheld(Bestandsheld.steigerungshistorie).hero;
+      final voll = basis.copyWith(
+        showInapplicableSpecialAbilities: true,
+        epicActivationPolicy: 'standard',
+        appearance: basis.appearance.copyWith(
+          avatarSnapshot: () => AvatarSnapshot(erstelltAm: '2026-09-27'),
+        ),
+      );
+      final geschrieben = voll.toJson().keys.toSet();
+
+      expect(geschrieben.difference(HeroSheet.jsonSchluessel), isEmpty);
+      expect(
+        ladeBestandsheld(Bestandsheld.kriegerNormal).state
+            .toJson()
+            .keys
+            .toSet()
+            .difference(HeroState.jsonSchluessel),
+        isEmpty,
+      );
+      expect(voll.unbekannteFelder, isEmpty);
     });
 
     test('Transferversion 2 wird weiterhin angenommen', () {

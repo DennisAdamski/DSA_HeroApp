@@ -40,6 +40,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   ist die Implementierung inkompatibel geworden und jeder `enc:`-Katalogwert
   sowie jedes Firestore-Geheimnis waere unlesbar. Die uebrigen Krypto-Tests
   pruefen nur Round-Trips und wuerden das nicht bemerken.
+- `HeroSheet` und `HeroState` bewahren JSON-Felder, die sie nicht kennen, in
+  `unbekannteFelder` und schreiben sie zurueck; Verlaufseintraege unbekannter
+  Steigerungsart bleiben als `UnbekannterVerlaufseintrag` erhalten. Bekannt ist,
+  was in `jsonSchluessel` steht (bei `HeroSheet` einschliesslich der flach
+  eingebetteten Schluessel von `HeroAppearance`/`HeroBackground`). **Jedes neue
+  Feld dort eintragen** — sonst kaeme ein bewusst weggelassener Wert als
+  „unbekannt“ zurueck. Verschachtelte Objekte bewahren Unbekanntes nicht.
 - Die Bestandshelden unter `test/fixtures/heroes/` (ARCH-07) sind genauso
   festgeschrieben: nie anpassen, ein neues Format bekommt eine neue Datei.
   `test/domain/bestandshelden_kompatibilitaet_test.dart` pinnt ihre

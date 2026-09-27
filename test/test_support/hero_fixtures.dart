@@ -40,7 +40,12 @@ enum Bestandsheld {
   legacySchema1('f07_legacy_schema1'),
 
   /// Held mit Schemaversion 27 und uebernommener Steigerungshistorie.
-  steigerungshistorie('f08_steigerungshistorie');
+  steigerungshistorie('f08_steigerungshistorie'),
+
+  /// Wie [steigerungshistorie], der letzte Verlaufseintrag hat aber eine
+  /// Steigerungsart aus einer neueren App-Version. Bis zur Behebung von
+  /// Befund ARCH-07-B5 machte er den ganzen Helden unlesbar.
+  unbekannteSteigerungsart('f08b_unbekannte_steigerungsart');
 
   const Bestandsheld(this.datei);
 
@@ -51,10 +56,6 @@ enum Bestandsheld {
   /// ist ein Import eine Identitaetsabbildung des Heldeninhalts.
   bool get istAktuellesFormat => this != legacySchema1;
 }
-
-/// Variante von [Bestandsheld.steigerungshistorie] mit einer unbekannten
-/// Steigerungsart; sie laesst sich heute nicht laden (Befund ARCH-07-B5).
-const String unbekannteSteigerungsartDatei = 'f08b_unbekannte_steigerungsart';
 
 /// Liest eine Fixture-Datei als Text.
 String ladeBestandsheldRoh(String datei) {
