@@ -355,13 +355,13 @@ der [Teststrategie](test_strategy.md) bleibt erhalten.
 `test/data/syncing_hero_repository_test.dart`, `test/state/advancement_session_test.dart`,
 `test/ui/smoke/widget_test.dart` und `.github/workflows/flutter-tests.yml`.
 
-- [ ] Kleine, anonymisierte bzw. synthetische Bestandsfixtures mit erwarteten
+- [x] Kleine, anonymisierte bzw. synthetische Bestandsfixtures mit erwarteten
   Ergebnissen anlegen: normale, magische/karmale und epische Helden, eigene
   Textmerkmale, gleichnamige Ausrüstung und ältere Schema-Versionen.
-- [ ] Den Ablauf „importieren → steigern → ausrüsten → Spielaktion → schließen
+- [x] Den Ablauf „importieren → steigern → ausrüsten → Spielaktion → schließen
   → wieder öffnen → exportieren“ auf Erhalt der gespeicherten Daten absichern.
   Tests für jede neue Migration direkt im jeweiligen Modellumbau ergänzen.
-- [ ] Unterbrochenen Sync, Wiederholung und Konflikte zweier Geräte reproduzierbar
+- [x] Unterbrochenen Sync, Wiederholung und Konflikte zweier Geräte reproduzierbar
   testen; automatisierte Prüfungen und nötige manuelle Plattformprüfungen in der
   Teststrategie sowie der CI nachvollziehbar verorten.
 
@@ -374,6 +374,51 @@ Plattformen und verbleibende manuelle Prüfungen sind ausdrücklich dokumentiert
 **Abhängigkeiten / offene Entscheidungen:** Vor ARCH-02/03 mit Fixtures beginnen
 und alle Aufgaben begleiten. Umfang echter Integrationstests, Geräteauswahl und
 CI-Ausführung anhand der betroffenen Plattformpfade konkretisieren.
+
+**Umsetzungsstand 27.09.2026 — Grundausstattung fertig.** Die drei
+Unterpunkte sind erledigt; der Hauptpunkt bleibt offen, weil ARCH-07 jede
+weitere Aufgabe begleitet (neue Migration → neue Fixture). Branch
+`task/2026-09-27-arch07-bestandsfixtures`, Commits `2c82021` (Sync-Fakes
+ausgelagert), `1878edd` (`buildHeroComputedSnapshot` als reine Funktion,
+verhaltensneutral), `a4f13ff` (Fixtures, Domain), `16a9e53` (Regelwerte,
+Ausrüstung), `bb73400` (echter Hive-Ablauf) und der Abschluss-Commit mit dem
+Zwei-Geräte-Sync und dieser Dokumentation.
+
+- **Fixtures:** neun Bestandshelden unter `test/fixtures/heroes/` (normal,
+  magisch, karmal, episch, Freitext-Merkmale, gleichnamige Ausrüstung,
+  handgeschriebener Altstand ohne Schemaversion, Schemaversion 27 mit
+  Historie und eine Variante mit unbekannter Steigerungsart). Die Regeln zu
+  Unveränderlichkeit, Formatwächter-Hashes und Aktualisierung der Regelwerte
+  stehen in der [Teststrategie](test_strategy.md#bestandsfixtures-arch-07).
+- **Ablauf:** `test/data/bestandsheld_ablauf_test.dart` mit echtem Hive über
+  Neustart und Export hinweg, dazu Import → Neustart → Export für jede Fixture.
+- **Zwei Geräte:** `test/data/sync_zwei_geraete_test.dart` mit gemeinsamer
+  Cloud, Netzabbruch mitten im Abgleich, verlorener Antwort, Neustart (auch mit
+  echtem Hive) und allen drei Konfliktauflösungen einschließlich gebundenem
+  Zustand. Das Test-Fake hasht dafür jetzt wie die echten Gateways
+  (`heroContentHash`) und prüft auch bei Zuständen die Vorrevision.
+- **Prüfungen:** `flutter analyze` ohne Befund, vollständige Suite grün.
+  Plattformabdeckung und verbleibende manuelle Prüfungen stehen in der
+  Teststrategie; die CI braucht keine Änderung.
+
+**Befunde.** Das Paket ist verhaltensneutral: Die Tests halten das heutige
+Verhalten mit dem Kommentar `Befund ARCH-07-Bx` fest, behoben wird in eigenen
+Aufträgen.
+
+| ID | Risiko | Befund | Nachweis | Folgeauftrag |
+|---|---|---|---|---|
+| B1 | hoch | Der Inspector schreibt Dauermodifikatoren nach `persistentMods`. Ist `statModifiers` leer, spiegelt `HeroSheet.fromJson` sie dorthin; `derived_stats.dart` zählt beides, die Kampfvorschau nur `persistentMods`. Nach jedem Laden stehen die Werte doppelt (f07: LeP 36 statt 34), im Sync folgt ein zusätzlicher Upload. | Domain-, Regel- und Sync-Test (f05, f07) | Sofortfix empfohlen, vor ARCH-02 |
+| B2 | mittel | Entfernt man die erste von zwei gleichnamigen Waffen, erbt die zweite deren Inventardaten (Wert, Beschreibung, Gewicht). | `bestandshelden_ausruestung_test.dart` | ARCH-03 |
+| B3 | mittel | Umbenennen einer Waffe verliert ihre Inventardaten. | `bestandshelden_ausruestung_test.dart` | ARCH-03 |
+| B4 | niedrig | Ohne Konto stempelt `HiveHeroRepository` `lastModified` nur, wenn es fehlt; geladene Objekte bringen ihren Stempel mit, er bleibt der des ersten Speicherns. Mit Konto stempelt `SyncingHeroRepository` korrekt. Die Konfliktansicht zeigt dadurch nach dem Anmelden veraltete Zeiten für Offline-Helden. | `bestandsheld_ablauf_test.dart` | ARCH-06 oder Kleinfix |
+| B5 | mittel | Eine unbekannte Steigerungsart (`kind`) wirft beim Laden und macht den ganzen Helden unlesbar — etwa nach einem Export aus einer neueren App-Version. | Domain-Test (f08b) | Versionsstrategie vor ARCH-02 |
+| B6 | mittel/hoch | Unbekannte Felder gehen bei `fromJson`/`toJson` verloren. Ein Gerät mit älterer App überschreibt per Sync die neueren Felder. | Domain-Test | Versionsstrategie vor ARCH-02/03 |
+| B7 | mittel/hoch | Nahkampf-AT/PA der Kampfvorschau rechnen mit eigenen Modifikatoren (`combat_rules.dart`: `persistentMods`, Textmodifikatoren, `tempMods`). Wundabzüge fehlen nachweislich, obwohl AT-Basis und Initiative sie enthalten; laut Code fehlen dort auch benannte und Inventar-Modifikatoren (nicht eigens getestet). | Regeltest (f01, f04 mit Wunde) | eigener Regelauftrag, Bezug ARCH-04 |
+| B8 | mittel | Offline geänderte Laufzeitwerte (LeP, AsP, Wunden …) lädt `syncNow` nicht hoch: `_syncHeroStates` überträgt nur Zustände, die online noch fehlen. Erst die nächste Zustandsänderung mit Verbindung holt sie nach; wechselt man vorher das Gerät, sieht es den alten Stand. | `sync_zwei_geraete_test.dart` | eigener Sync-Auftrag, Bezug ARCH-06 |
+
+Nächster Schritt: B1 beheben (doppelte Modifikatoren verfälschen Werte am
+Spieltisch), danach B7 und B8. B5/B6 gehören in eine Versionsstrategie für
+gespeicherte Modelle, bevor ARCH-02 oder ARCH-03 neue Felder einführen.
 
 ## Abschluss und Übergabe je Aufgabe
 

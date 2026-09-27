@@ -40,6 +40,17 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   ist die Implementierung inkompatibel geworden und jeder `enc:`-Katalogwert
   sowie jedes Firestore-Geheimnis waere unlesbar. Die uebrigen Krypto-Tests
   pruefen nur Round-Trips und wuerden das nicht bemerken.
+- Die Bestandshelden unter `test/fixtures/heroes/` (ARCH-07) sind genauso
+  festgeschrieben: nie anpassen, ein neues Format bekommt eine neue Datei.
+  `test/domain/bestandshelden_kompatibilitaet_test.dart` pinnt ihre
+  Inhalts-Hashes — bricht einer, bekaeme jeder gleich gespeicherte Held einen
+  neuen Hash und der Konto-Sync meldete Konflikte. Die Regelwerte je Fixture
+  rechnet `buildHeroComputedSnapshot` (reine Funktion hinter
+  `heroComputedProvider`) gegen den echten Katalog
+  (`test/test_support/real_catalog.dart`). Aufgedeckte, bewusst nicht
+  behobene Fehler tragen im Test den Kommentar `Befund ARCH-07-Bx` und stehen
+  mit Folgeauftrag in `docs/architecture_roadmap.md`. Details in
+  `docs/test_strategy.md`.
 - Web-Interop laeuft ueber `package:web` + `dart:js_interop`, nie ueber
   `dart:html` (deprecated und von `dart2wasm` nicht uebersetzbar). Bedingte
   Importe muessen auf `dart.library.js_interop` stehen, **nicht** auf

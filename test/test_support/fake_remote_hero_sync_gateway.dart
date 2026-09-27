@@ -33,7 +33,8 @@ class FakeRemoteHeroSyncGateway implements RemoteHeroSyncGateway {
       id: hero.id,
       hero: hero,
       revision: revision,
-      contentHash: stableContentHash(hero.toJson()),
+      // Wie die echten Gateways: Inhalt ohne `lastModified`.
+      contentHash: heroContentHash(hero),
       isDeleted: false,
       updatedAt: DateTime.utc(2026, 1, 1, 12, _revisionCounter),
     );
@@ -104,6 +105,7 @@ class FakeRemoteHeroAndStateSyncGateway extends FakeRemoteHeroSyncGateway
     HeroState state, {
     required String? previousRevision,
   }) async {
+    _enforcePreviousStateRevision(heroId, previousRevision);
     final revision = 's-${++_stateRevisionCounter}';
     final record = RemoteHeroStateRecord(
       heroId: heroId,
@@ -122,6 +124,7 @@ class FakeRemoteHeroAndStateSyncGateway extends FakeRemoteHeroSyncGateway
     String heroId, {
     required String? previousRevision,
   }) async {
+    _enforcePreviousStateRevision(heroId, previousRevision);
     final revision = 's-${++_stateRevisionCounter}';
     final record = RemoteHeroStateRecord(
       heroId: heroId,
@@ -138,5 +141,20 @@ class FakeRemoteHeroAndStateSyncGateway extends FakeRemoteHeroSyncGateway
   @override
   Stream<List<RemoteHeroStateRecord>> watchHeroStates() {
     return const Stream<List<RemoteHeroStateRecord>>.empty();
+  }
+
+  /// Precondition-Kontrakt fuer Zustandsdokumente, wie bei den Helden.
+  void _enforcePreviousStateRevision(String heroId, String? previousRevision) {
+    if (previousRevision == null) {
+      return;
+    }
+    final current = _states[heroId]?.revision;
+    if (current != previousRevision) {
+      throw SyncPreconditionException(
+        'Zustandsrevision von $heroId hat sich geändert.',
+        expectedRevision: previousRevision,
+        actualRevision: current,
+      );
+    }
   }
 }

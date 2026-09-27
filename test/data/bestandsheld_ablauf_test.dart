@@ -346,7 +346,8 @@ void main() {
 
       // Befund ARCH-07-B4: Hive setzt `lastModified` nur, wenn es fehlt.
       // Geladene Objekte bringen ihren Stempel mit, er bleibt also nach
-      // allen Schreibvorgängen der des Imports.
+      // allen Schreibvorgängen der des Imports. Betrifft den Betrieb ohne
+      // Konto; mit Konto stempelt `SyncingHeroRepository` jedes Speichern.
       expect(
         nachAusruesten['lastModified'],
         fixture.hero.toJson()['lastModified'],
