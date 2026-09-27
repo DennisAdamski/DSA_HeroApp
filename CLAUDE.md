@@ -57,13 +57,21 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Bedeutung bekommt einen neuen Schluessel
   (`docs/technical_overview.md` Abschnitt 2.1).
 - Verknuepfte Kampf-/Inventareintraege tragen stabile Slot-IDs in
-  `lib/domain/combat_config/`; das Verweisformat und die Migration aus
-  Namensverweisen liegen in `inventar_verweise.dart`. `HeroSheet.fromJson`
-  vergibt fuer Altdaten deterministische IDs, `HeroActions.saveHero` fuer neue
-  Slots UUIDs. `inventory_sync_rules.dart` gleicht weiterhin beide
-  Darstellungen ab. Das ist der B2/B3-Teilfix, noch nicht das gemeinsame
-  Gegenstandsmodell aus ARCH-03. Die Migration aendert Inhalts-Hashes;
-  Bestandsfixtures und Hash-Pins nur gemeinsam mit ihr aktualisieren.
+  `lib/domain/combat_config/`; das Verweisformat und die Migration liegen in
+  `inventar_verweise.dart`. `HeroSheet.fromJson` vergibt fuer Altdaten
+  deterministische IDs, `HeroActions.saveHero` fuer neue Slots UUIDs.
+  Ein Inventareintrag traegt **zwei** Verweise: `sourceRef` bleibt der
+  Namensverweis (`w:Name` …), weil die bereits veroeffentlichte App nur ihn
+  versteht. Mit einem ID-Verweis dort verwarf ihr Abgleich alle verknuepften
+  Inventardaten. Den ID-Verweis (`w#id` …) traegt `slotRef`. Zugeordnet wird
+  ueber `slotRef`; nur Eintraege ohne `slotRef` gehen ueber den Namen, und
+  die Reihenfolge „manuell, dann Slot-Reihenfolge“ bleibt. Geschossmengen
+  immer mit `slotRef ?? sourceRef` zurueckschreiben. `inventory_sync_rules.dart`
+  gleicht weiterhin beide Darstellungen ab. Das ist der B2/B3-Teilfix, noch
+  nicht das gemeinsame Gegenstandsmodell aus ARCH-03. Formataenderungen
+  aendern Inhalts-Hashes; Bestandsfixtures und Hash-Pins nur gemeinsam mit
+  ihnen aktualisieren. Den Mischbetrieb bildet
+  `test/test_support/veroeffentlichte_app.dart` nach.
 - Die Bestandshelden unter `test/fixtures/heroes/` (ARCH-07) sind genauso
   festgeschrieben: nie anpassen, ein neues Format bekommt eine neue Datei.
   `test/domain/bestandshelden_kompatibilitaet_test.dart` pinnt ihre

@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import '../test_support/hero_fixtures.dart';
 import '../test_support/real_catalog.dart';
 import '../test_support/sync_geraete.dart';
+import '../test_support/veroeffentlichte_app.dart';
 import '../test_support/zukunftsfelder.dart';
 
 /// Konto-Sync mit Geraeten, auf denen eine **andere App-Version** laeuft.
@@ -19,6 +20,7 @@ import '../test_support/zukunftsfelder.dart';
 /// `fromJson` dieser App. So faellt auf, wo diese App einen Stand nicht
 /// verlustfrei darstellt und ihn womoeglich still verkuerzt zurueckschreibt.
 const String _krieger = 'bestand-f01';
+const String _gleichnamig = 'bestand-f06';
 
 // Legt einen Bestandshelden samt Zustand ueber das Sync-Repository an.
 Future<void> _importiere(SyncTestGeraet geraet, Bestandsheld held) async {
@@ -386,6 +388,121 @@ void main() {
           }
         });
       }
+    });
+  });
+
+  group('veröffentlichte App im Mischbetrieb (f06)', () {
+    late EchterKatalog katalog;
+
+    setUpAll(() async {
+      katalog = await ladeEchtenRegelkatalog();
+    });
+
+    setUp(() async {
+      await _importiere(a, Bestandsheld.gleichnamigeAusruestung);
+      await a.repo.syncNow();
+      await b.repo.syncNow();
+    });
+
+    // Die veroeffentlichte App laedt den Online-Stand, aendert ihn per
+    // [aendere] und speichert ihn in ihrer Fassung zurueck.
+    Future<void> altversionSchreibt([
+      void Function(Map<String, dynamic> json)? aendere,
+    ]) async {
+      final aktuell = (await cloud.loadHero(_gleichnamig))!;
+      final json = wieVeroeffentlichteApp(aktuell.hero!.toJson());
+      aendere?.call(json);
+      await cloud.speichereFremdenStand(
+        json,
+        previousRevision: aktuell.revision,
+      );
+    }
+
+    // Name und Beschreibung je verknuepftem Eintrag, in Listenreihenfolge.
+    Future<List<String>> datenJeSlot(SyncTestGeraet geraet) async {
+      final held = (await geraet.lokal.loadHeroById(_gleichnamig))!;
+      return <String>[
+        for (final entry in held.inventoryEntries)
+          if (entry.slotRef != null)
+            '${entry.slotRef} ${entry.gegenstand}: ${entry.beschreibung}',
+      ];
+    }
+
+    test('eine Änderung der Altversion kommt beim richtigen Dolch an, '
+        'ohne Rückschrieb und ohne Konflikt', () async {
+      await altversionSchreibt((json) {
+        final zweiterDolch = zuordnungWieVeroeffentlichteApp(json)[1]!;
+        ((json['inventoryEntries'] as List)[zweiterDolch] as Map)['wert'] =
+            '99';
+      });
+      final schreibvorgaenge = cloud.schreibvorgaenge;
+
+      for (var runde = 0; runde < 2; runde++) {
+        await a.repo.syncNow();
+        await b.repo.syncNow();
+      }
+
+      expect(cloud.schreibvorgaenge, schreibvorgaenge);
+      for (final geraet in <SyncTestGeraet>[a, b]) {
+        final held = (await geraet.lokal.loadHeroById(_gleichnamig))!;
+        final zweiterDolch = held.inventoryEntries.singleWhere(
+          (entry) => entry.slotRef == 'w#w2',
+        );
+        expect(zweiterDolch.wert, '99');
+        expect(zweiterDolch.beschreibung, 'Beutestück');
+        expect(geraet.konflikte, isEmpty);
+      }
+    });
+
+    test('nach einer Änderung hier ordnet die Altversion weiter alles zu, '
+        'und ihr Echo wird ohne Upload übernommen', () async {
+      final container = ProviderContainer(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(a.repo),
+          ...katalog.overrides,
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(heroActionsProvider).updateHero(_gleichnamig, (
+        held,
+      ) {
+        final waffen = List<MainWeaponSlot>.of(held.combatConfig.weaponSlots)
+          ..removeAt(0)
+          ..add(const MainWeaponSlot(name: 'Speer'));
+        waffen[0] = waffen[0].copyWith(name: 'Parierdolch');
+        return held.copyWith(
+          combatConfig: held.combatConfig.copyWith(
+            weapons: waffen,
+            selectedWeaponIndex: 0,
+          ),
+        );
+      });
+      await a.repo.syncNow();
+      await b.repo.syncNow();
+      final vorEcho = await datenJeSlot(a);
+
+      final online = (await cloud.loadHero(_gleichnamig))!.hero!.toJson();
+      final zuordnung = zuordnungWieVeroeffentlichteApp(
+        wieVeroeffentlichteApp(online),
+      );
+      expect(zuordnung, isNot(contains(null)));
+
+      // Die Altversion speichert einmal in ihrer Fassung (ohne IDs).
+      await altversionSchreibt();
+      final schreibvorgaenge = cloud.schreibvorgaenge;
+      for (var runde = 0; runde < 2; runde++) {
+        await a.repo.syncNow();
+        await b.repo.syncNow();
+      }
+
+      expect(cloud.schreibvorgaenge, schreibvorgaenge);
+      expect(a.konflikte, isEmpty);
+      expect(b.konflikte, isEmpty);
+      // IDs werden aus den Namen neu abgeleitet; die Daten bleiben beim
+      // jeweiligen Slot.
+      String ohneId(String zeile) => zeile.substring(zeile.indexOf(' '));
+      expect((await datenJeSlot(a)).map(ohneId), vorEcho.map(ohneId));
+      expect(await datenJeSlot(b), await datenJeSlot(a));
     });
   });
 }

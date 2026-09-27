@@ -662,8 +662,9 @@ class HeroSheet {
       ),
       showInapplicableSpecialAbilities:
           json['showInapplicableSpecialAbilities'] == true,
-      // Namensverweise aus Altdaten zeigen danach auf die Slot-IDs
-      // (Befunde ARCH-07-B2/B3).
+      // Verknuepfte Eintraege ohne ID-Verweis (Altdaten, zuletzt von einer
+      // aelteren App-Version gespeichert) erhalten ihn hier (Befunde
+      // ARCH-07-B2/B3, inventar_verweise.dart).
       inventoryEntries: migriereInventarVerweise(
         rawInventoryEntries
             .whereType<Map>()

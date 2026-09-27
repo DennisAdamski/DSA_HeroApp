@@ -1,30 +1,37 @@
 /// Verweisformat zwischen Kampfkonfiguration und Inventar.
 ///
-/// Ein verknuepfter Inventareintrag traegt in `sourceRef` den Verweis auf
-/// seinen Slot. Aktuell verweist er ueber die stabile Slot-ID (`w#<id>`,
-/// `a#<id>`, `oh#<id>`, Geschosse `w#<waffe>|p#<geschoss>`). Bis September
-/// 2026 verwies er ueber den Namen (`w:<Name>` …); gleichnamige Exemplare
-/// liessen sich so nur ueber ihre Reihenfolge unterscheiden, Entfernen und
-/// Umbenennen vertauschten oder verloren Inventardaten (Befunde
-/// ARCH-07-B2/B3). Namensverweise werden beim Laden einmalig umgestellt
-/// ([migriereInventarVerweise]).
+/// Ein verknuepfter Inventareintrag traegt **zwei** Verweise auf seinen Slot:
+///
+/// - `sourceRef`: den Namensverweis (`w:<Name>`, `a:<Name>`, `oh:<Name>`,
+///   Geschosse `w:<Waffe>|p:<Geschoss>`). Nur ihn kennt die bereits
+///   veroeffentlichte App; sie ordnet darueber zu und verwirft Eintraege mit
+///   anderem Format samt ihrer Inventardaten.
+/// - `slotRef`: den stabilen ID-Verweis (`w#<id>`, `a#<id>`, `oh#<id>`,
+///   Geschosse `w#<waffe>|p#<geschoss>`). Er unterscheidet gleichnamige
+///   Exemplare, auch nach Entfernen oder Umbenennen (Befunde
+///   ARCH-07-B2/B3). Die veroeffentlichte App verwirft ihn beim Speichern
+///   zusammen mit den Slot-IDs.
+///
+/// Eine Vorabfassung (nur auf dem Entwicklungszweig, September 2026) trug
+/// den ID-Verweis in `sourceRef`. [migriereInventarVerweise] stellt beide
+/// Altformate beim Laden um.
 library;
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
-/// Namensverweis (Altformat) auf einen Waffenslot.
+/// Namensverweis auf einen Waffenslot.
 String weaponRef(String weaponName) => 'w:${weaponName.trim()}';
 
-/// Namensverweis (Altformat) auf ein Ruestungsstueck.
+/// Namensverweis auf ein Ruestungsstueck.
 String armorRef(String pieceName) => 'a:${pieceName.trim()}';
 
-/// Namensverweis (Altformat) auf ein Geschoss einer Waffe.
+/// Namensverweis auf ein Geschoss einer Waffe.
 String projectileRef(String weaponName, String projName) =>
     'w:${weaponName.trim()}|p:${projName.trim()}';
 
-/// Namensverweis (Altformat) auf ein Nebenhand-Teil.
+/// Namensverweis auf ein Nebenhand-Teil.
 String offhandRef(String equipmentName) => 'oh:${equipmentName.trim()}';
 
 /// ID-Verweis auf einen Waffenslot.
@@ -40,50 +47,58 @@ String projectileIdRef(String weaponId, String projectileId) =>
 /// ID-Verweis auf ein Nebenhand-Teil.
 String offhandIdRef(String id) => 'oh#$id';
 
-/// Verweis eines Slots samt seinem Namensverweis aus dem Altformat.
-///
-/// [ref] ist der ID-Verweis; fehlt dem Slot (noch) eine ID, faellt er auf
-/// den Namensverweis zurueck. [altRef] findet Eintraege aus Altbestaenden.
-typedef SlotVerweis = ({String ref, String altRef});
-
-/// Verweis fuer einen Waffenslot.
-SlotVerweis verweisFuerWaffe(MainWeaponSlot slot) {
-  final alt = weaponRef(slot.name);
-  return (ref: slot.id.isEmpty ? alt : weaponIdRef(slot.id), altRef: alt);
+/// Ob [ref] ein ID-Verweis ist (und kein Namensverweis).
+bool istIdVerweis(String ref) {
+  return ref.startsWith('w#') || ref.startsWith('a#') || ref.startsWith('oh#');
 }
 
-/// Verweis fuer ein Geschoss eines Waffenslots.
+/// Beide Verweise eines Slots.
+///
+/// [slotRef] ist `null`, solange der Slot keine ID hat.
+typedef SlotVerweis = ({String sourceRef, String? slotRef});
+
+/// Verweise fuer einen Waffenslot.
+SlotVerweis verweisFuerWaffe(MainWeaponSlot slot) {
+  return (
+    sourceRef: weaponRef(slot.name),
+    slotRef: slot.id.isEmpty ? null : weaponIdRef(slot.id),
+  );
+}
+
+/// Verweise fuer ein Geschoss eines Waffenslots.
 SlotVerweis verweisFuerGeschoss(
   MainWeaponSlot slot,
   RangedProjectile geschoss,
 ) {
-  final alt = projectileRef(slot.name, geschoss.name);
   final hatIds = slot.id.isNotEmpty && geschoss.id.isNotEmpty;
   return (
-    ref: hatIds ? projectileIdRef(slot.id, geschoss.id) : alt,
-    altRef: alt,
+    sourceRef: projectileRef(slot.name, geschoss.name),
+    slotRef: hatIds ? projectileIdRef(slot.id, geschoss.id) : null,
   );
 }
 
-/// Verweis fuer ein Ruestungsstueck.
+/// Verweise fuer ein Ruestungsstueck.
 SlotVerweis verweisFuerRuestung(ArmorPiece piece) {
-  final alt = armorRef(piece.name);
-  return (ref: piece.id.isEmpty ? alt : armorIdRef(piece.id), altRef: alt);
+  return (
+    sourceRef: armorRef(piece.name),
+    slotRef: piece.id.isEmpty ? null : armorIdRef(piece.id),
+  );
 }
 
-/// Verweis fuer ein Nebenhand-Teil.
+/// Verweise fuer ein Nebenhand-Teil.
 SlotVerweis verweisFuerNebenhand(OffhandEquipmentEntry equipment) {
-  final alt = offhandRef(equipment.name);
   return (
-    ref: equipment.id.isEmpty ? alt : offhandIdRef(equipment.id),
-    altRef: alt,
+    sourceRef: offhandRef(equipment.name),
+    slotRef: equipment.id.isEmpty ? null : offhandIdRef(equipment.id),
   );
 }
 
 /// Alle Verweise benannter Slots in kanonischer Reihenfolge.
 ///
 /// Waffen mit ihren Geschossen, dann Ruestung, dann Nebenhand — dieselbe
-/// Reihenfolge, in der das Inventar verknuepfte Eintraege fuehrt.
+/// Reihenfolge, in der das Inventar verknuepfte Eintraege fuehrt. Die
+/// veroeffentlichte App paart gleichnamige Eintraege ueber genau diese
+/// Reihenfolge; sie darf sich nicht aendern.
 List<SlotVerweis> erwarteteVerweise(CombatConfig config) {
   final verweise = <SlotVerweis>[];
   for (final slot in config.weaponSlots) {
@@ -106,48 +121,99 @@ List<SlotVerweis> erwarteteVerweise(CombatConfig config) {
   return verweise;
 }
 
-/// Stellt Namensverweise auf ID-Verweise um, ohne sonst etwas zu aendern.
+/// Ergaenzt verknuepfte Eintraege beim Laden um ihren ID-Verweis.
 ///
-/// Zuordnung wie bisher beim Abgleich: der erste noch freie Eintrag mit dem
-/// passenden Namensverweis, in Slot-Reihenfolge. Deterministisch, damit alle
-/// Geraete aus denselben Altdaten dasselbe errechnen. Eintraege ohne Partner
-/// behalten ihren Verweis; der naechste Abgleich raeumt sie auf.
+/// Zwei Schritte, deterministisch, damit alle Geraete aus denselben Daten
+/// dasselbe errechnen, und ein Fixpunkt:
+///
+/// 1. Eintraege der Vorabfassung mit ID-Verweis in `sourceRef` bekommen ihn
+///    als `slotRef`, `sourceRef` wird wieder zum Namensverweis. Verweist die
+///    ID auf keinen Slot mehr, bleibt `sourceRef` unveraendert; der naechste
+///    Abgleich verwirft den Eintrag.
+/// 2. Eintraege ohne `slotRef` — Altdaten oder zuletzt von der
+///    veroeffentlichten App gespeichert — erhalten ihn ueber den Namen: der
+///    erste noch freie gleichnamige Slot in Slot-Reihenfolge, wie beim
+///    Abgleich der veroeffentlichten App.
+///
+/// Eintraege mit `slotRef` bleiben unberuehrt, ebenso Eintraege ohne
+/// passenden Slot. Aendert sich nichts, kommt dieselbe Liste zurueck.
 List<HeroInventoryEntry> migriereInventarVerweise(
   List<HeroInventoryEntry> entries,
   CombatConfig config,
 ) {
-  final offen = <int>[
-    for (var i = 0; i < entries.length; i++)
-      if (_istNamensverweis(entries[i])) i,
-  ];
-  if (offen.isEmpty) {
-    return entries;
-  }
-  final belegteVerweise = <String>{
-    for (final entry in entries)
-      if (entry.sourceRef != null &&
-          isCombatLinkedInventorySource(entry.source) &&
-          !_istNamensverweis(entry))
-        entry.sourceRef!,
-  };
+  final verweise = erwarteteVerweise(config);
   final ergebnis = List<HeroInventoryEntry>.of(entries);
-  for (final verweis in erwarteteVerweise(config)) {
-    if (verweis.ref == verweis.altRef ||
-        belegteVerweise.contains(verweis.ref)) {
-      continue;
-    }
-    final treffer = offen.indexWhere(
-      (index) => entries[index].sourceRef == verweis.altRef,
-    );
-    if (treffer < 0) continue;
-    final index = offen.removeAt(treffer);
-    ergebnis[index] = entries[index].copyWith(sourceRef: verweis.ref);
-    belegteVerweise.add(verweis.ref);
+  final vergeben = <String>{
+    for (final entry in entries)
+      if (entry.slotRef != null && _istVerknuepft(entry)) entry.slotRef!,
+  };
+  var geaendert = _uebernimmVorabfassung(ergebnis, verweise, vergeben);
+  geaendert |= _ordneNamensverweiseZu(ergebnis, verweise, vergeben);
+  if (!geaendert) {
+    return entries;
   }
   return List<HeroInventoryEntry>.unmodifiable(ergebnis);
 }
 
-// Migriert nur einen Verweis, dessen Altformat zur fachlichen Quelle passt.
+// Schritt 1: ID-Verweis aus `sourceRef` nach `slotRef` verschieben.
+bool _uebernimmVorabfassung(
+  List<HeroInventoryEntry> eintraege,
+  List<SlotVerweis> verweise,
+  Set<String> vergeben,
+) {
+  var geaendert = false;
+  for (var i = 0; i < eintraege.length; i++) {
+    final entry = eintraege[i];
+    final ref = entry.sourceRef;
+    if (entry.slotRef != null ||
+        !_istVerknuepft(entry) ||
+        !istIdVerweis(ref!)) {
+      continue;
+    }
+    final slot = verweise.where((verweis) => verweis.slotRef == ref);
+    eintraege[i] = entry.copyWith(
+      slotRef: ref,
+      sourceRef: slot.isEmpty ? ref : slot.first.sourceRef,
+    );
+    vergeben.add(ref);
+    geaendert = true;
+  }
+  return geaendert;
+}
+
+// Schritt 2: Namensverweise ohne `slotRef` dem ersten freien Slot zuordnen.
+bool _ordneNamensverweiseZu(
+  List<HeroInventoryEntry> eintraege,
+  List<SlotVerweis> verweise,
+  Set<String> vergeben,
+) {
+  final offen = <int>[
+    for (var i = 0; i < eintraege.length; i++)
+      if (eintraege[i].slotRef == null && _istNamensverweis(eintraege[i])) i,
+  ];
+  var geaendert = false;
+  for (final verweis in verweise) {
+    final slotRef = verweis.slotRef;
+    if (offen.isEmpty) break;
+    if (slotRef == null || vergeben.contains(slotRef)) continue;
+    final treffer = offen.indexWhere(
+      (index) => eintraege[index].sourceRef == verweis.sourceRef,
+    );
+    if (treffer < 0) continue;
+    final index = offen.removeAt(treffer);
+    eintraege[index] = eintraege[index].copyWith(slotRef: slotRef);
+    vergeben.add(slotRef);
+    geaendert = true;
+  }
+  return geaendert;
+}
+
+// Mit einem Kampf-Slot verknuepft: Kampfquelle und ein Verweis.
+bool _istVerknuepft(HeroInventoryEntry entry) {
+  return entry.sourceRef != null && isCombatLinkedInventorySource(entry.source);
+}
+
+// Namensverweis, dessen Form zur fachlichen Quelle passt.
 bool _istNamensverweis(HeroInventoryEntry entry) {
   final ref = entry.sourceRef;
   if (ref == null) return false;
