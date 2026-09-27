@@ -26,8 +26,7 @@ import '../test_support/hero_fixtures.dart';
 import '../test_support/real_catalog.dart';
 
 /// Felder, die `HeroActions.saveHero` beim Import eines Altstands neu
-/// berechnet oder abgleicht; `lastModified` stempelt Hive, weil der
-/// Altstand keinen Zeitstempel trägt.
+/// berechnet oder abgleicht. `lastModified` stempelt jeder Schreibvorgang.
 const Set<String> _importNormalisierung = <String>{
   'lastModified',
   'apAvailable',
@@ -125,15 +124,14 @@ void main() {
           expectNurGeaendert(
             bundle.hero.toJson(),
             held1,
-            held.istAktuellesFormat ? const <String>{} : _importNormalisierung,
+            held.istAktuellesFormat
+                ? const {'lastModified'}
+                : _importNormalisierung,
             grund: 'Import veränderte mehr als die Normalisierung',
           );
-          expectNurGeaendert(
-            bundle.state.toJson(),
-            zustand1,
-            held.istAktuellesFormat ? const <String>{} : const {'lastModified'},
-            grund: 'Import veränderte den Zustand',
-          );
+          expectNurGeaendert(bundle.state.toJson(), zustand1, const {
+            'lastModified',
+          }, grund: 'Import veränderte den Zustand');
 
           await speicher.schliessen();
           speicher = await oeffnen(pfad);
@@ -176,7 +174,10 @@ void main() {
       );
       final nachImport = await gespeicherterHeld(speicher, id);
       expect(
-        jsonUnterschiede(fixture.hero.toJson(), nachImport),
+        jsonUnterschiede(
+          ohneZeitstempel(fixture.hero.toJson()),
+          ohneZeitstempel(nachImport),
+        ),
         isEmpty,
         reason: 'aktuelles Format ist beim Import eine Identität',
       );
@@ -228,6 +229,7 @@ void main() {
         'apAvailable',
         'level',
         'advancementHistory',
+        'lastModified',
       }, grund: 'Steigern veränderte fremde Felder');
       expect(nachSteigern['apSpent'], 2650 + 150 + 12);
       expect(nachSteigern['level'], 8, reason: 'Stufe folgt den AP');
@@ -272,6 +274,7 @@ void main() {
         // Altfeld, das den gewählten Slot spiegelt.
         'combatConfig/mainWeapon',
         'inventoryEntries',
+        'lastModified',
       }, grund: 'Ausrüsten veränderte fremde Felder');
       final verknuepft = (nachAusruesten['inventoryEntries'] as List)
           .map((entry) => (entry as Map)['sourceRef'])
@@ -337,6 +340,7 @@ void main() {
         'currentAu',
         'erschoepfung',
         'wpiZustand',
+        'lastModified',
       }, grund: 'Rast veränderte fremde Felder');
       expect(nachRast['currentLep'], werte.maxLep);
       expect(nachRast['wpiZustand'], <String, dynamic>{
@@ -344,15 +348,20 @@ void main() {
         'kopfIniMalus': 0,
       });
 
-      // Befund ARCH-07-B4: Hive setzt `lastModified` nur, wenn es fehlt.
-      // Geladene Objekte bringen ihren Stempel mit, er bleibt also nach
-      // allen Schreibvorgängen der des Imports. Betrifft den Betrieb ohne
-      // Konto; mit Konto stempelt `SyncingHeroRepository` jedes Speichern.
+      // Jeder Schreibvorgang stempelt neu, auch ohne Konto. Vor der
+      // Behebung von Befund ARCH-07-B4 blieb der Stempel des Imports stehen.
+      DateTime stempel(Map<String, dynamic> json) {
+        return DateTime.parse(json['lastModified'] as String);
+      }
+
+      final importiert = stempel(fixture.hero.toJson());
+      expect(stempel(nachImport).isAfter(importiert), isTrue);
+      expect(stempel(nachSteigern).isBefore(stempel(nachImport)), isFalse);
+      expect(stempel(nachAusruesten).isBefore(stempel(nachSteigern)), isFalse);
       expect(
-        nachAusruesten['lastModified'],
-        fixture.hero.toJson()['lastModified'],
+        stempel(nachRast).isAfter(stempel(fixture.state.toJson())),
+        isTrue,
       );
-      expect(nachRast['lastModified'], fixture.state.toJson()['lastModified']);
 
       // 5./6. Schliessen und neu öffnen.
       final heldVorher = await gespeicherterHeld(speicher, id);
@@ -380,9 +389,12 @@ void main() {
       );
 
       // 7. Exportieren und in einen leeren Speicher als neuen Helden laden.
+      // Verglichen wird mit dem Stand nach dem erneuten Speichern, das den
+      // Zeitstempel frisch gesetzt hat.
+      final heldGespeichert = await gespeicherterHeld(speicher, id);
       final exportJson = await speicher.actions.buildExportJson(id);
       final export = await speicher.actions.parseImportJson(exportJson);
-      expect(jsonUnterschiede(heldVorher, export.hero.toJson()), isEmpty);
+      expect(jsonUnterschiede(heldGespeichert, export.hero.toJson()), isEmpty);
       expect(jsonUnterschiede(zustandVorher, export.state.toJson()), isEmpty);
 
       final zweitgeraet = FakeRepository.empty();

@@ -188,6 +188,12 @@ entgegen:
   jedem Speichern einen frischen Wert, `HiveHeroRepository.saveHeroState`
   ergaenzt ihn offline, falls er fehlt. Die Online-Seite kam schon vorher als
   `RemoteHeroStateRecord.updatedAt` an und wurde nur nicht durchgereicht.
+- Ohne Konto blieb der Stempel trotzdem stehen: Hive ergaenzt ihn nur, und
+  jeder geladene Held oder Zustand brachte seinen alten mit (Befund
+  ARCH-07-B4). Seit 2026-09-27 stempeln deshalb `HeroActions.saveHero`,
+  `saveHeroState` und `updateHeroState` jede Nutzeraenderung frisch. Hive
+  bleibt beim Ergaenzen, damit uebernommene Online-Staende ihren Zeitpunkt
+  behalten.
 
 Wichtig dabei: Der Zeitstempel darf nicht in die Konflikterkennung geraten,
 sonst meldet jedes Neuspeichern einen Scheinkonflikt. Dafuer gibt es
