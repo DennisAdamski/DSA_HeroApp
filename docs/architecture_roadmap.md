@@ -233,8 +233,8 @@ ARCH-03-Abnahme ist damit **nicht** erreicht: Das gemeinsame Gegenstandsmodell,
 Katalog-IDs und die übrigen Schreibabläufe fehlen. Gemischte Bearbeitung
 mit älteren App-Versionen ist wegen der neuen verschachtelten IDs nicht
 abgesichert. Auch eine reine ID-Migration kann bei gleichzeitig geänderter
-Cloud-Version einen sichtbaren Sync-Konflikt auslösen. Der zugehörige Commit
-steht in der Git-Historie dieses Branches.
+Cloud-Version einen sichtbaren Sync-Konflikt auslösen. Der zugehörige
+Fix-Commit ist `f0c9ffc`.
 
 ## ARCH-04 — Versionierte Regelprofile und erklärbare Berechnungen
 
