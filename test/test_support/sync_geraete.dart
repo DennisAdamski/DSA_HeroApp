@@ -48,6 +48,19 @@ class GeteilteCloud extends FakeRemoteHeroAndStateSyncGateway {
   }
 
   @override
+  Future<RemoteHeroRecord> speichereFremdenStand(
+    Map<String, dynamic> heldJson, {
+    required String? previousRevision,
+  }) async {
+    final record = await super.speichereFremdenStand(
+      heldJson,
+      previousRevision: previousRevision,
+    );
+    _zaehle(heldSchreibvorgaenge, record.id);
+    return record;
+  }
+
+  @override
   Future<RemoteHeroRecord> deleteHero(
     String heroId, {
     required String? previousRevision,
@@ -69,6 +82,21 @@ class GeteilteCloud extends FakeRemoteHeroAndStateSyncGateway {
     final record = await super.saveHeroState(
       heroId,
       state,
+      previousRevision: previousRevision,
+    );
+    _zaehle(zustandSchreibvorgaenge, heroId);
+    return record;
+  }
+
+  @override
+  Future<RemoteHeroStateRecord> speichereFremdenZustand(
+    String heroId,
+    Map<String, dynamic> zustandJson, {
+    required String? previousRevision,
+  }) async {
+    final record = await super.speichereFremdenZustand(
+      heroId,
+      zustandJson,
       previousRevision: previousRevision,
     );
     _zaehle(zustandSchreibvorgaenge, heroId);

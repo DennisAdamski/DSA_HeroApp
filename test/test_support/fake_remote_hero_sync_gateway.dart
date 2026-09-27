@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -35,6 +37,32 @@ class FakeRemoteHeroSyncGateway implements RemoteHeroSyncGateway {
       revision: revision,
       // Wie die echten Gateways: Inhalt ohne `lastModified`.
       contentHash: heroContentHash(hero),
+      isDeleted: false,
+      updatedAt: DateTime.utc(2026, 1, 1, 12, _revisionCounter),
+    );
+    _heroes[hero.id] = record;
+    return record;
+  }
+
+  /// Legt einen Helden ab, wie ihn eine **andere App-Version** schreibt.
+  ///
+  /// Firestore liefert den Inhalts-Hash des Schreibers mit. Er ist hier wie
+  /// dort ueber das rohe JSON ohne `lastModified` gerechnet, der Held selbst
+  /// entsteht aber mit dem `fromJson` dieser App. Kann sie den Stand nicht
+  /// verlustfrei darstellen, weichen beide Hashes voneinander ab — genau
+  /// diesen Fall braucht ein Test fuer Befund ARCH-07-B10.
+  Future<RemoteHeroRecord> speichereFremdenStand(
+    Map<String, dynamic> heldJson, {
+    required String? previousRevision,
+  }) async {
+    final hero = HeroSheet.fromJson(_jsonKopie(heldJson));
+    _enforcePreviousRevision(hero.id, previousRevision);
+    final revision = 'r-${++_revisionCounter}';
+    final record = RemoteHeroRecord(
+      id: hero.id,
+      hero: hero,
+      revision: revision,
+      contentHash: _schreiberHash(heldJson),
       isDeleted: false,
       updatedAt: DateTime.utc(2026, 1, 1, 12, _revisionCounter),
     );
@@ -119,6 +147,26 @@ class FakeRemoteHeroAndStateSyncGateway extends FakeRemoteHeroSyncGateway
     return record;
   }
 
+  /// Wie [speichereFremdenStand] fuer ein Zustandsdokument.
+  Future<RemoteHeroStateRecord> speichereFremdenZustand(
+    String heroId,
+    Map<String, dynamic> zustandJson, {
+    required String? previousRevision,
+  }) async {
+    _enforcePreviousStateRevision(heroId, previousRevision);
+    final revision = 's-${++_stateRevisionCounter}';
+    final record = RemoteHeroStateRecord(
+      heroId: heroId,
+      state: HeroState.fromJson(_jsonKopie(zustandJson)),
+      revision: revision,
+      contentHash: _schreiberHash(zustandJson),
+      isDeleted: false,
+      updatedAt: DateTime.utc(2026, 1, 2, 12, _stateRevisionCounter),
+    );
+    _states[heroId] = record;
+    return record;
+  }
+
   @override
   Future<RemoteHeroStateRecord> deleteHeroState(
     String heroId, {
@@ -157,4 +205,14 @@ class FakeRemoteHeroAndStateSyncGateway extends FakeRemoteHeroSyncGateway
       );
     }
   }
+}
+
+// Tiefe Kopie ueber JSON, damit der Aufrufer die Vorlage weiterverwenden kann.
+Map<String, dynamic> _jsonKopie(Map<String, dynamic> json) {
+  return jsonDecode(jsonEncode(json)) as Map<String, dynamic>;
+}
+
+// Inhalts-Hash, wie ihn der Schreiber ueber sein rohes JSON rechnet.
+String _schreiberHash(Map<String, dynamic> json) {
+  return stableContentHash(_jsonKopie(json)..remove('lastModified'));
 }

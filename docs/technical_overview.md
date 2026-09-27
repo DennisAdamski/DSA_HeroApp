@@ -213,6 +213,36 @@ Online-Revision noch der Basis entspricht, wartet er auf den Upload
 Cloud erst mit der naechsten Zustandsaenderung (Befund ARCH-07-B8). Ist zum
 Helden eine Entscheidung offen, wartet der Zustand darauf.
 
+**Die Sync-Basis ist der lokale Stand, nicht der des Schreibers**
+(Befund ARCH-07-B10, seit 2026-09-27). Jeder Online-Datensatz bringt den
+Inhalts-Hash seines Schreibers mit. Diese App liest ihn aber mit ihrem eigenen
+`fromJson`. Stammt der Stand von einer neueren Version, deren Felder hier
+nicht bewahrt werden — ausserhalb der Ausruestung oder als unbekannter
+Enum-Wert —, weicht die lokale Darstellung von diesem Hash ab. Frueher merkte
+sich die Basis nach dem Uebernehmen den **Schreiber-Hash** als `localHash`.
+Die verkuerzte lokale Fassung galt danach als lokale Aenderung und wurde im
+selben `syncNow()` ohne Konflikt hochgeladen: Ein blosser Abgleich loeschte
+die fremden Felder auf allen Geraeten.
+
+Heute gilt:
+
+- Nach dem Uebernehmen merken `_storeHeroMetadata`/`_storeStateMetadata` den
+  Hash dessen, was lokal liegt. `remoteHash` bleibt der des Schreibers. Nie
+  den `remoteHash` als `localHash` speichern.
+- Als inhaltlich identisch gilt auch ein lokaler Stand, der genau der
+  hiesigen Darstellung des Online-Stands gleicht. Das greift nach einem
+  App-Update, dessen Laden Altdaten umstellt, und bei Basen aus der Zeit vor
+  dem Fix: Die Basis wird nachgefuehrt, hochgeladen wird nichts.
+- Ein Abgleich allein schreibt also nie. Hochgeladen wird erst bei einer
+  echten Aenderung, und dann in der Fassung dieser Version. Fuer nicht
+  bewahrte Felder bleibt das ein Verlust, aber nur noch durch eine
+  Nutzeraenderung und bei gleichzeitig geaendertem Online-Stand als
+  sichtbarer Konflikt.
+- Die bereits veroeffentlichte App (Stand `main` vor diesem Fix) verhaelt
+  sich weiter wie frueher. Nach jedem Upload einer neueren Version schreibt
+  sie einmal ihre Fassung zurueck (Echo). Diese Version uebernimmt das Echo
+  ohne erneuten Upload, ein Ping-Pong entsteht nicht.
+
 Seit 2026-08-31 wird ein Zustands-Konflikt nicht mehr unabhaengig vom Helden
 entschieden. Ein `HeroState` gehoert zu genau einem Heldenblatt; zwei getrennte
 Fragen (`Held: Alrik` und `Zustand: Alrik`) liessen sich gegenlaeufig

@@ -561,6 +561,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `RestFirestoreHeroSyncGateway`), `HiveSyncMetadataStore` und die Modelle in
   `lib/domain/sync_models.dart`. Konflikte dürfen nicht still überschrieben
   werden; die UI muss lokal, online oder beide behalten anbieten.
+- Die Sync-Basis ist der **lokale** Stand: Nach dem Übernehmen eines
+  Online-Stands merken `_storeHeroMetadata`/`_storeStateMetadata` den Hash
+  dessen, was lokal liegt. Den Schreiber-Hash (`remoteHash`) **nie** als
+  `localHash` merken: Kann diese Version den Stand nicht verlustfrei
+  darstellen, gälte die verkürzte Fassung sonst als lokale Änderung und würde
+  ohne Konflikt hochgeladen (Befund ARCH-07-B10). Ein lokaler Stand, der der
+  hiesigen Darstellung des Online-Stands gleicht, gilt als identisch. Ein
+  Abgleich allein schreibt nie. Getestet wird das mit
+  `speichereFremdenStand` in `test/data/sync_app_versionen_test.dart`.
 - Entscheidungen zu Offline-Helden (`Offline-Held: …`-Konflikte beim Wechsel in
   ein Konto) müssen persistiert werden, sonst wiederholt sich die Frage bei
   jedem Start: die Konfliktliste lebt nur im Speicher und keiner der drei
