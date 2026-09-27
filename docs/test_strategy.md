@@ -158,6 +158,20 @@ Gateways mit `heroContentHash` und prüft auch bei Zuständen die Vorrevision.
 Mit dem früheren Hash inklusive `lastModified` wäre jede Runde ein Upload
 gewesen.
 
+Weil das Fake mit dem Hash dieser App rechnet, sieht es nie einen Stand, den
+die App nicht verlustfrei darstellt. Dafür gibt es
+`speichereFremdenStand`/`speichereFremdenZustand`: Sie legen JSON einer
+**anderen App-Version** ab und rechnen den Hash wie Firestore über das rohe
+JSON des Schreibers. Gelesen wird aber mit dem `fromJson` dieser App.
+`GeteilteCloud` zählt diese Schreibvorgänge mit.
+`test/data/sync_app_versionen_test.dart` prüft damit Befund B10: kein
+Rückschrieb beim bloßen Abgleich, Konflikt statt Überschreiben, eine vor B10
+gemerkte Basis und einen Zustand mit neuerer Schemaversion. Mit
+`mitZukunftsfeldern` prüft er außerdem Felder einer neueren Version in der
+Ausrüstung: verlustfrei darstellbar, Bearbeiten über `HeroActions` mit echtem
+Katalog, gleichzeitig geänderte Cloud mit sichtbarem Feld im Konflikt-Diff
+und alle drei Auflösungen.
+
 ### Plattformabdeckung
 
 Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
@@ -206,6 +220,7 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/data/hero_actions_import_export_test.dart` | data | Actions Import/Export |
 | `test/data/bestandsheld_ablauf_test.dart` | data | Echte Hive-Speichergrenze je Bestandsheld und Ablauf Import bis Export mit Neustart, Befund B4, Felder neuerer Versionen in der Ausrüstung |
 | `test/data/sync_zwei_geraete_test.dart` | data | Zwei Geräte an einer Cloud: Abbruch, verlorene Antwort, Neustart (auch mit Hive), Konfliktauflösungen samt Zustand, Befunde B1/B8 |
+| `test/data/sync_app_versionen_test.dart` | data | Sync mit anderen App-Versionen: Basis gleich lokaler Stand (B10), Ausrüstungsfelder einer neueren Version samt gleichzeitig geänderter Cloud |
 | `test/domain/hero_sheet_model_test.dart` | domain | HeroSheet-Kompatibilitaet |
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |
 | `test/domain/bestandshelden_kompatibilitaet_test.dart` | domain | Bestandsfixtures: Fixpunkt nach einmaligem Laden, Inhalts-Hashes, Altschlüssel, Befunde B1/B5/B6 |
